@@ -1,0 +1,85 @@
+from fastapi import APIRouter
+
+from app.core.deps import AdminUser, DbSession
+from app.core.logging import logger
+from app.schemas.common import MessageResponse
+from app.schemas.recipe import RecipeCreate, RecipeResponse, RecipeUpdate
+from app.services.recipe import RecipeService
+
+router = APIRouter(prefix="/recipes")
+
+
+@router.get("/tags", response_model=list[str])
+async def list_tags(
+    db: DbSession,
+    user: AdminUser,  # noqa: ARG001
+) -> list[str]:
+    svc = RecipeService(db)
+    return await svc.get_all_tags()
+
+
+@router.get("", response_model=list[RecipeResponse])
+async def list_recipes(
+    db: DbSession,
+    user: AdminUser,  # noqa: ARG001
+    search: str | None = None,
+    tag: str | None = None,
+) -> list[RecipeResponse]:
+    svc = RecipeService(db)
+    return await svc.list_recipes(search=search, tag=tag)
+
+
+@router.get("/{recipe_id}", response_model=RecipeResponse)
+async def get_recipe(
+    recipe_id: int,
+    db: DbSession,
+    user: AdminUser,  # noqa: ARG001
+) -> RecipeResponse:
+    svc = RecipeService(db)
+    return await svc.get_recipe(recipe_id)
+
+
+@router.post("", response_model=RecipeResponse)
+async def create_recipe(
+    data: RecipeCreate,
+    db: DbSession,
+    user: AdminUser,
+) -> RecipeResponse:
+    svc = RecipeService(db)
+    recipe = await svc.create_recipe(data)
+    logger.info(
+        "Recipe created",
+        context={"recipe_id": recipe.id, "user_id": user.id},
+    )
+    return recipe
+
+
+@router.put("/{recipe_id}", response_model=RecipeResponse)
+async def update_recipe(
+    recipe_id: int,
+    data: RecipeUpdate,
+    db: DbSession,
+    user: AdminUser,
+) -> RecipeResponse:
+    svc = RecipeService(db)
+    recipe = await svc.update_recipe(recipe_id, data)
+    logger.info(
+        "Recipe updated",
+        context={"recipe_id": recipe_id, "user_id": user.id},
+    )
+    return recipe
+
+
+@router.delete("/{recipe_id}", response_model=MessageResponse)
+async def delete_recipe(
+    recipe_id: int,
+    db: DbSession,
+    user: AdminUser,
+) -> MessageResponse:
+    svc = RecipeService(db)
+    await svc.delete(recipe_id)
+    logger.info(
+        "Recipe deleted",
+        context={"recipe_id": recipe_id, "user_id": user.id},
+    )
+    return MessageResponse(message="Recipe deleted")
