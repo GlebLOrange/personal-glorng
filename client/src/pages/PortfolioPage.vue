@@ -4,19 +4,21 @@ import { onMounted, ref } from "vue";
 import DonationsBlock from "@/components/donations/DonationsBlock.vue";
 import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
-import SpotifyNowPlayingBanner from "@/components/spotify/SpotifyNowPlayingBanner.vue";
 import WeatherWidget from "@/components/weather/WeatherWidget.vue";
 import ExperienceList from "@/components/resume/ExperienceList.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
+import NowPlayingCard from "@/components/resume/NowPlayingCard.vue";
 import ProjectsGrid from "@/components/resume/ProjectsGrid.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
 import CodeBlock from "@/components/ui/CodeBlock.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
+import { useSpotifyNowPlaying } from "@/composables/useSpotifyNowPlaying";
 import { contactLinks } from "@/constants/links";
 import type { DonationsConfig, ResumeData } from "@/types";
 
 const { data: resume, fetch: fetchResume } = useCachedApi<ResumeData>("/resume");
 const { data: donations, fetch: fetchDonations } = useCachedApi<DonationsConfig>("/donations/config");
+const { playback, isVisible: showNowPlaying } = useSpotifyNowPlaying();
 const error = ref(false);
 const showFeedback = ref(false);
 
@@ -35,15 +37,16 @@ onMounted(loadResume);
 
 <template>
   <div v-if="resume">
-    <div
-      class="max-w-5xl mx-auto px-6 pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-    >
-      <SpotifyNowPlayingBanner />
+    <div class="max-w-5xl mx-auto px-6 pt-4 flex justify-end">
       <WeatherWidget city="Wroclaw" compact />
     </div>
 
     <SectionWrapper>
       <HeroBlock :name="resume.name" :title="resume.title" :bio="resume.bio" />
+    </SectionWrapper>
+
+    <SectionWrapper v-if="showNowPlaying && playback" id="now-playing" title="now playing" dark>
+      <NowPlayingCard :playback="playback" />
     </SectionWrapper>
 
     <SectionWrapper id="about" title="about" dark>
