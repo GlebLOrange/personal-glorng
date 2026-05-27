@@ -47,6 +47,19 @@ export interface DonationsConfig {
   crypto: { btc: string; eth: string };
 }
 
+export interface SpotifyNowPlaying {
+  enabled: boolean;
+  is_playing: boolean;
+  title?: string;
+  artist?: string;
+  album?: string;
+  album_art_url?: string;
+  track_url?: string;
+  progress_ms?: number;
+  duration_ms?: number;
+  error?: string;
+}
+
 export interface UrlItem {
   id: number;
   code: string;

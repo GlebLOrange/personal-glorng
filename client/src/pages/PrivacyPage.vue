@@ -22,6 +22,7 @@ function openPreferences() {
         <li><strong class="text-surface-light">Authentication cookies</strong> — stored when you log in, used to keep your session active.</li>
         <li><strong class="text-surface-light">Google Analytics</strong> — collects anonymous page view data (pages visited, time on site, general location). IP addresses are anonymized.</li>
         <li><strong class="text-surface-light">Sentry</strong> — captures errors and performance data to help fix bugs. May collect IP address and browser info when an error occurs.</li>
+        <li><strong class="text-surface-light">Spotify now playing</strong> — when enabled, the portfolio may show the site owner's currently playing track title, artist, and album art via Spotify's API. Visitors do not sign in to Spotify.</li>
       </ul>
     </section>
 

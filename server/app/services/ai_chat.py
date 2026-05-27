@@ -29,50 +29,13 @@ class ProviderConfig:
     settings_key: str  # env var field on Settings
 
 
+# Only DeepSeek is enabled for now; add other providers back here when needed.
 PROVIDERS: dict[str, ProviderConfig] = {
-    "openai": ProviderConfig(
-        base_url=None,
-        models=["gpt-4o-mini", "gpt-4o", "gpt-4.1-nano", "gpt-4.1-mini", "gpt-4.1"],
-        default_model="gpt-4o-mini",
-        settings_key="OPENAI_API_KEY",
-    ),
-    "gemini": ProviderConfig(
-        base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-        models=["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"],
-        default_model="gemini-2.5-flash",
-        settings_key="GEMINI_API_KEY",
-    ),
-    "groq": ProviderConfig(
-        base_url="https://api.groq.com/openai/v1",
-        models=[
-            "llama-3.3-70b-versatile",
-            "llama-3.1-8b-instant",
-            "meta-llama/llama-4-scout-17b-16e-instruct",
-            "qwen/qwen3-32b",
-        ],
-        default_model="llama-3.3-70b-versatile",
-        settings_key="GROQ_API_KEY",
-    ),
     "deepseek": ProviderConfig(
         base_url="https://api.deepseek.com",
         models=["deepseek-chat", "deepseek-reasoner"],
         default_model="deepseek-chat",
         settings_key="DEEPSEEK_API_KEY",
-    ),
-    "anthropic": ProviderConfig(
-        base_url="https://api.anthropic.com/v1/",
-        models=[
-            "claude-sonnet-4-20250514",
-            "claude-haiku-3-5-20241022",
-        ],
-        default_model="claude-sonnet-4-20250514",
-        settings_key="ANTHROPIC_API_KEY",
-    ),
-    "perplexity": ProviderConfig(
-        base_url="https://api.perplexity.ai",
-        models=["sonar", "sonar-pro", "sonar-reasoning"],
-        default_model="sonar",
-        settings_key="PERPLEXITY_API_KEY",
     ),
 }
 
@@ -155,7 +118,7 @@ class OpenAIService:
             logger.warning("AI API timeout")
             raise ApiError(504, "AI API timed out") from None
         except APIConnectionError as exc:
-            logger.error("AI API connection error", error=str(exc))
+            logger.error("AI API connection error", error=exc)
             raise ApiError(502, "AI API unreachable") from None
 
         choice = response.choices[0].message.content or ""
