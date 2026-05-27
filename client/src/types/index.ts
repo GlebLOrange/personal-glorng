@@ -1,0 +1,155 @@
+export interface UserResponse {
+  id: number;
+  email: string;
+  is_verified: boolean;
+  is_admin: boolean;
+  created_at: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+}
+
+export interface ResumeData {
+  name: string;
+  title: string;
+  bio: string;
+  skills: SkillGroup[];
+  experience: Experience[];
+  projects: Project[];
+  links: Record<string, string>;
+}
+
+export interface SkillGroup {
+  category: string;
+  items: string[];
+}
+
+export interface Experience {
+  role: string;
+  company: string;
+  period: string;
+  description: string;
+}
+
+export interface Project {
+  name: string;
+  description: string;
+  tech: string[];
+  url: string;
+}
+
+export interface DonationsConfig {
+  stripe: { enabled: boolean; url: string };
+  telegram: { enabled: boolean; url: string };
+  crypto: { btc: string; eth: string };
+}
+
+export interface UrlItem {
+  id: number;
+  code: string;
+  original_url: string;
+  title: string | null;
+  clicks: number;
+  created_at: string;
+}
+
+export interface WeatherData {
+  current_condition: Array<{
+    temp_C: string;
+    weatherDesc: Array<{ value: string }>;
+    humidity: string;
+    windspeedKmph: string;
+  }>;
+  nearest_area: Array<{
+    areaName: Array<{ value: string }>;
+    country: Array<{ value: string }>;
+  }>;
+}
+
+export interface SharedFile {
+  id: number;
+  code: string;
+  original_filename: string;
+  file_size: number;
+  content_type: string;
+  downloads: number;
+  expires_at: string;
+  created_at: string;
+}
+
+export interface Toast {
+  id: number;
+  message: string;
+  type: "success" | "error" | "info";
+}
+
+export interface TaskItem {
+  id: number;
+  telegram_user_id: number;
+  title: string;
+  description: string | null;
+  location: string | null;
+  scheduled_at: string;
+  status: string;
+  google_event_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskReminder {
+  id: number;
+  task_id: number;
+  remind_at: string;
+  sent: boolean;
+  arq_job_id: string | null;
+  created_at: string;
+}
+
+export interface TaskStatusChange {
+  id: number;
+  task_id: number;
+  old_status: string;
+  new_status: string;
+  changed_at: string;
+}
+
+export interface TaskDetail extends TaskItem {
+  reminders: TaskReminder[];
+  status_history: TaskStatusChange[];
+}
+
+export interface SyncQueueItem {
+  id: number;
+  task_id: number;
+  action: string;
+  attempts: number;
+  last_error: string | null;
+  next_retry_at: string | null;
+  status: string;
+  created_at: string;
+}
+
+export interface TaskStats {
+  pending: number;
+  completed: number;
+  total: number;
+  failed_syncs: number;
+}
+
+export interface Recipe {
+  id: number;
+  title: string;
+  ingredients: string[];
+  steps: string[];
+  notes: string | null;
+  tags: string[];
+  image_url: string | null;
+  prep_time: number | null;
+  cook_time: number | null;
+  servings: number | null;
+  created_at: string;
+  updated_at: string;
+}

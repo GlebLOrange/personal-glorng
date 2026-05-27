@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Roboto Mono", monospace;
+  background: theme("colors.surface.dark");
+  min-height: 100vh;
+  color: theme("colors.surface.light");
+}
+
+.code-block {
+  font-family: "Roboto Mono", monospace;
+  background: theme("colors.surface.card");
+  border: 1px solid theme("colors.surface.border");
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: theme("colors.surface.light");
+  overflow-x: auto;
+}
+
+.accent-gradient {
+  background: linear-gradient(135deg, theme("colors.accent.blue"), theme("colors.accent.violet"));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@layer components {
+  .section-title {
+    @apply text-2xl font-bold mb-6;
+    &::before {
+      content: "€ ";
+      @apply text-accent-blue;
+    }
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+#cc-main {
+  --cc-bg: #1c2230;
+  --cc-primary-color: #f5f2ec;
+  --cc-secondary-color: #d5dcd3;
+  --cc-btn-primary-bg: #7bbde2;
+  --cc-btn-primary-color: #141820;
+  --cc-btn-primary-hover-bg: #9acde9;
+  --cc-btn-primary-hover-color: #141820;
+  --cc-btn-secondary-bg: #2e3a4e;
+  --cc-btn-secondary-color: #f5f2ec;
+  --cc-btn-secondary-hover-bg: #3a4760;
+  --cc-btn-secondary-hover-color: #f5f2ec;
+  --cc-separator-border-color: #2e3a4e;
+  --cc-cookie-category-block-bg: #141820;
+  --cc-cookie-category-block-hover-bg: #1a2030;
+  --cc-overlay-bg: rgba(20, 24, 32, 0.7);
+  --cc-toggle-on-bg: #7bbde2;
+  --cc-toggle-off-bg: #2e3a4e;
+  --cc-toggle-readonly-bg: #3a4760;
+  --cc-section-border: #2e3a4e;
+  --cc-footer-bg: #141820;
+  --cc-footer-color: #8a847e;
+  --cc-footer-border-color: #2e3a4e;
+
+  font-family: "Roboto Mono", monospace;
+}
