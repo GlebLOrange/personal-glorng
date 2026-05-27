@@ -1,0 +1,17 @@
+FROM node:24-alpine AS build
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+FROM nginx:1.30.2-alpine
+RUN adduser -D appuser
+USER appuser
+COPY --from=build /app/dist /dist
+
+VOLUME /usr/share/nginx/html
+CMD ["cp", "-r", "/dist/.", "/usr/share/nginx/html/"]

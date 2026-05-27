@@ -1,0 +1,32 @@
+fastapi[standard]==0.115.*
+uvicorn[standard]==0.34.*
+sqlalchemy[asyncio]==2.0.*
+asyncpg==0.30.*
+alembic==1.15.*
+pydantic-settings==2.7.*
+PyJWT[crypto]==2.9.*
+bcrypt==4.2.*
+redis[hiredis]==5.2.*
+arq==0.26.*
+sentry-sdk[fastapi]==2.60.*
+httpx==0.28.*
+openai>=1.82,<2
+loguru==0.7.*
+python-multipart==0.0.*
+
+# Telegram bot
+aiogram==3.16.*
+
+# NLP parsing
+dateparser==1.2.*
+
+# Google Calendar
+google-auth==2.38.*
+google-auth-oauthlib==1.2.*
+google-api-python-client==2.164.*
+
+# Dev
+ruff==0.8.*
+pytest==8.3.*
+pytest-asyncio==0.24.*
+aiosqlite==0.20.*

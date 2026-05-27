@@ -1,0 +1,128 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-go/refs/heads/main/schema/compose-spec.json
+services:
+  db:
+    image: postgres:17.4-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4 --forwarded-allow-ips="*"
+    restart: unless-stopped
+    volumes:
+      - server_media:/app/media
+    environment:
+      PYTHONPATH: /app
+      RUN_MIGRATIONS: "true"
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    command: python -m app.workers.run app.workers.WorkerSettings
+    restart: unless-stopped
+    environment:
+      PYTHONPATH: /app
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  todobot:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    command: python -m app.todobot.main
+    restart: unless-stopped
+    environment:
+      PYTHONPATH: /app
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
+    restart: "no"
+    volumes:
+      - client_dist:/usr/share/nginx/html
+
+  nginx:
+    image: nginx:1.30.2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/http_common.conf:/etc/nginx/http_common.conf:ro
+      - ./nginx/security_headers.conf:/etc/nginx/security_headers.conf:ro
+      - ./nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
+      - server_media:/app/media:ro
+      - client_dist:/usr/share/nginx/html:ro
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      client:
+        condition: service_completed_successfully
+      server:
+        condition: service_started
+
+volumes:
+  pgdata:
+  redis_data:
+  server_media:
+  client_dist:
+
+networks:
+  frontend:
+  backend:

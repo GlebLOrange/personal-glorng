@@ -1,0 +1,36 @@
+# Environment & secrets
+.env
+*.env.local
+/env
+
+# Python
+__pycache__/
+*.db
+*.py[cod]
+*.egg-info/
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Node
+node_modules/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+*.log
+
+# Media uploads
+media/
+
+# OS
+.DS_Store
+Thumbs.db
