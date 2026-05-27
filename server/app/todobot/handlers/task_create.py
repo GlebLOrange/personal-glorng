@@ -1,0 +1,409 @@
+"""Conversational + NL hybrid task creation flow."""
+
+from datetime import UTC, date, datetime, timedelta
+
+from aiogram import F, Router
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, Message
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.google_sync_queue import SyncAction
+from app.services.task import create_reminder, create_task, enqueue_calendar_sync
+from app.todobot.keyboards.menu import main_menu
+from app.todobot.keyboards.task import (
+    confirmation,
+    date_picker,
+    reminder_presets,
+    skip_button,
+    time_picker,
+)
+from app.todobot.states.task import TaskCreation
+from app.todobot.utils.nlp import parse_task_input
+
+router = Router()
+
+
+# --- Message tracking helpers ---
+
+
+async def _track_msg(state: FSMContext, msg_id: int) -> None:
+    """Append a message ID for post-flow cleanup."""
+    data = await state.get_data()
+    ids = data.get("_msg_ids", [])
+    ids.append(msg_id)
+    await state.update_data(_msg_ids=ids)
+
+
+async def _cleanup_messages(bot, chat_id: int, state: FSMContext) -> None:
+    """Delete tracked flow messages, ignoring failures."""
+    data = await state.get_data()
+    for msg_id in data.get("_msg_ids", []):
+        try:
+            await bot.delete_message(chat_id, msg_id)
+        except Exception:
+            pass
+
+
+# --- Helpers ---
+
+
+def _extract_parsed_fields(text: str) -> dict[str, str | None]:
+    """Parse NLP input and return extracted field dict."""
+    parsed = parse_task_input(text)
+    data: dict[str, str | None] = {}
+    if parsed.title:
+        data["title"] = parsed.title
+    if parsed.date:
+        data["date"] = parsed.date.isoformat()
+    if parsed.time:
+        data["time"] = parsed.time.strftime("%H:%M")
+    if parsed.location:
+        data["location"] = parsed.location
+    return data
+
+
+def _format_summary(data: dict[str, str | None]) -> str:
+    lines = [f"*Task:* {data.get('title', '—')}"]
+    if data.get("date"):
+        lines.append(f"*Date:* {data['date']}")
+    if data.get("time"):
+        lines.append(f"*Time:* {data['time']}")
+    if data.get("location"):
+        lines.append(f"*Location:* {data['location']}")
+    if data.get("notes"):
+        lines.append(f"*Notes:* {data['notes']}")
+    return "\n".join(lines)
+
+
+# --- Entry points ---
+
+
+@router.message(Command("new"))
+async def cmd_new_task(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await _track_msg(state, message.message_id)
+    await state.set_state(TaskCreation.waiting_for_title)
+    sent = await message.answer("What would you like me to remind you about?")
+    await _track_msg(state, sent.message_id)
+
+
+@router.message(TaskCreation.waiting_for_input)
+async def handle_natural_input(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    if not message.text:
+        await message.answer("Please send a text message.")
+        return
+
+    await _track_msg(state, message.message_id)
+    data = _extract_parsed_fields(message.text)
+    await state.update_data(**data)
+    await _advance_to_next_missing(message, state)
+
+
+# --- Step handlers ---
+
+
+@router.message(TaskCreation.waiting_for_title)
+async def handle_title(message: Message, state: FSMContext) -> None:
+    if not message.text:
+        await message.answer("Please send a text message.")
+        return
+
+    await _track_msg(state, message.message_id)
+    data = _extract_parsed_fields(message.text)
+    if not data.get("title"):
+        data["title"] = message.text.strip()
+
+    await state.update_data(**data)
+    await _advance_to_next_missing(message, state)
+
+
+@router.callback_query(F.data.startswith("date:"))
+async def handle_date_callback(
+    callback: CallbackQuery,
+    state: FSMContext,
+) -> None:
+    if not callback.data or not callback.message:
+        return
+    value = callback.data.split(":", 1)[1]
+    await callback.answer()
+
+    if value == "custom":
+        await state.set_state(TaskCreation.waiting_for_date)
+        sent = await callback.message.answer(
+            "Send the date (e.g., June 2, 2026-06-15, next Friday):",
+        )
+        await _track_msg(state, sent.message_id)
+        return
+
+    await state.update_data(date=value)
+    await _advance_to_next_missing(callback.message, state)
+
+
+@router.message(TaskCreation.waiting_for_date)
+async def handle_date_text(message: Message, state: FSMContext) -> None:
+    if not message.text:
+        await message.answer("Please send a date.")
+        return
+
+    await _track_msg(state, message.message_id)
+    parsed = parse_task_input(message.text)
+    if not parsed.date:
+        sent = await message.answer("I couldn't understand that date. Try again:")
+        await _track_msg(state, sent.message_id)
+        return
+
+    if parsed.date < date.today():
+        sent = await message.answer("That date is in the past. Pick a future date:")
+        await _track_msg(state, sent.message_id)
+        return
+
+    await state.update_data(date=parsed.date.isoformat())
+    await _advance_to_next_missing(message, state)
+
+
+@router.callback_query(F.data.startswith("time:"))
+async def handle_time_callback(
+    callback: CallbackQuery,
+    state: FSMContext,
+) -> None:
+    if not callback.data or not callback.message:
+        return
+    value = callback.data.split(":", 1)[1]
+    await callback.answer()
+
+    if value == "custom":
+        await state.set_state(TaskCreation.waiting_for_time)
+        sent = await callback.message.answer("Send the time (e.g., 14:30, 3pm):")
+        await _track_msg(state, sent.message_id)
+        return
+
+    await state.update_data(time=value)
+    await _advance_to_next_missing(callback.message, state)
+
+
+@router.message(TaskCreation.waiting_for_time)
+async def handle_time_text(message: Message, state: FSMContext) -> None:
+    if not message.text:
+        await message.answer("Please send a time.")
+        return
+
+    await _track_msg(state, message.message_id)
+    parsed = parse_task_input(message.text)
+    if parsed.time:
+        await state.update_data(time=parsed.time.strftime("%H:%M"))
+    else:
+        try:
+            t = datetime.strptime(message.text.strip(), "%H:%M")
+            await state.update_data(time=t.strftime("%H:%M"))
+        except ValueError:
+            sent = await message.answer(
+                "I couldn't understand that time. Try HH:MM format:",
+            )
+            await _track_msg(state, sent.message_id)
+            return
+
+    await _advance_to_next_missing(message, state)
+
+
+@router.message(TaskCreation.waiting_for_location)
+async def handle_location(message: Message, state: FSMContext) -> None:
+    if not message.text:
+        await message.answer("Please send a location or skip.")
+        return
+    await _track_msg(state, message.message_id)
+    await state.update_data(location=message.text.strip())
+    await _advance_to_next_missing(message, state)
+
+
+@router.callback_query(F.data == "skip:location")
+async def skip_location(callback: CallbackQuery, state: FSMContext) -> None:
+    if not callback.message:
+        return
+    await callback.answer()
+    await _advance_to_next_missing(callback.message, state, skip="location")
+
+
+@router.message(TaskCreation.waiting_for_notes)
+async def handle_notes(message: Message, state: FSMContext) -> None:
+    if not message.text:
+        await message.answer("Please send notes or skip.")
+        return
+    await _track_msg(state, message.message_id)
+    await state.update_data(notes=message.text.strip())
+    await _advance_to_next_missing(message, state)
+
+
+@router.callback_query(F.data == "skip:notes")
+async def skip_notes(callback: CallbackQuery, state: FSMContext) -> None:
+    if not callback.message:
+        return
+    await callback.answer()
+    await _advance_to_next_missing(callback.message, state, skip="notes")
+
+
+@router.callback_query(F.data.startswith("remind:"))
+async def handle_reminder_choice(
+    callback: CallbackQuery,
+    state: FSMContext,
+) -> None:
+    if not callback.data or not callback.message:
+        return
+    value = callback.data.split(":", 1)[1]
+    await callback.answer()
+
+    if value == "none":
+        await state.update_data(reminder_minutes=None)
+    else:
+        await state.update_data(reminder_minutes=int(value))
+
+    data = await state.get_data()
+    await state.set_state(TaskCreation.confirming)
+    summary = _format_summary(data)
+    sent = await callback.message.answer(
+        f"{summary}\n\nConfirm this task?",
+        reply_markup=confirmation(),
+        parse_mode="Markdown",
+    )
+    await _track_msg(state, sent.message_id)
+
+
+# --- Confirmation ---
+
+
+@router.callback_query(F.data == "confirm:yes")
+async def confirm_task(
+    callback: CallbackQuery,
+    state: FSMContext,
+    db: AsyncSession,
+) -> None:
+    if not callback.message:
+        return
+    await callback.answer()
+    data = await state.get_data()
+
+    task_date = data.get("date", date.today().isoformat())
+    task_time = data.get("time", "12:00")
+    scheduled_str = f"{task_date}T{task_time}:00"
+
+    task = await create_task(
+        db,
+        telegram_user_id=callback.from_user.id,
+        title=data.get("title", "Untitled"),
+        scheduled_at=scheduled_str,
+        description=data.get("notes"),
+        location=data.get("location"),
+    )
+
+    reminder_minutes = data.get("reminder_minutes")
+    if reminder_minutes:
+        scheduled_dt = datetime.fromisoformat(scheduled_str).replace(
+            tzinfo=UTC,
+        )
+        remind_at = scheduled_dt - timedelta(minutes=int(reminder_minutes))
+        if remind_at > datetime.now(UTC):
+            await create_reminder(db, task_id=task.id, remind_at=remind_at)
+
+    await enqueue_calendar_sync(db, task_id=task.id, action=SyncAction.CREATE)
+
+    if callback.bot:
+        await _cleanup_messages(callback.bot, callback.message.chat.id, state)
+
+    await state.clear()
+    await callback.message.answer(
+        f'✅ Task saved! I\'ll remind you about "{task.title}".',
+        reply_markup=main_menu(),
+    )
+
+
+@router.callback_query(F.data == "confirm:edit")
+async def edit_task(callback: CallbackQuery, state: FSMContext) -> None:
+    if not callback.message:
+        return
+    await callback.answer()
+
+    if callback.bot:
+        await _cleanup_messages(callback.bot, callback.message.chat.id, state)
+
+    await state.clear()
+    await state.set_state(TaskCreation.waiting_for_title)
+    sent = await callback.message.answer(
+        "Let's start over. What would you like me to remind you about?",
+    )
+    await _track_msg(state, sent.message_id)
+
+
+@router.callback_query(F.data == "confirm:cancel")
+async def cancel_task(callback: CallbackQuery, state: FSMContext) -> None:
+    if not callback.message:
+        return
+    await callback.answer()
+
+    if callback.bot:
+        await _cleanup_messages(callback.bot, callback.message.chat.id, state)
+
+    await state.clear()
+    await callback.message.answer("Task cancelled.", reply_markup=main_menu())
+
+
+# --- Flow logic ---
+
+
+async def _advance_to_next_missing(
+    target: Message,
+    state: FSMContext,
+    *,
+    skip: str | None = None,
+) -> None:
+    """Move to the next missing field in the flow."""
+    full_data = await state.get_data()
+
+    if skip:
+        skipped = set(full_data.get("_skipped", []))
+        skipped.add(skip)
+        await state.update_data(_skipped=list(skipped))
+        full_data["_skipped"] = list(skipped)
+
+    skipped_fields = set(full_data.get("_skipped", []))
+
+    fields_order = [
+        ("title", TaskCreation.waiting_for_title, "What task?", None),
+        ("date", TaskCreation.waiting_for_date, "When?", date_picker()),
+        (
+            "time",
+            TaskCreation.waiting_for_time,
+            "What time?",
+            time_picker(full_data.get("date")),
+        ),
+        (
+            "location",
+            TaskCreation.waiting_for_location,
+            "Where? (or skip)",
+            skip_button("location"),
+        ),
+        (
+            "notes",
+            TaskCreation.waiting_for_notes,
+            "Additional notes? (or skip)",
+            skip_button("notes"),
+        ),
+    ]
+
+    for field_name, field_state, prompt, keyboard in fields_order:
+        if field_name in skipped_fields:
+            continue
+        if not full_data.get(field_name):
+            await state.set_state(field_state)
+            sent = await target.answer(prompt, reply_markup=keyboard)
+            await _track_msg(state, sent.message_id)
+            return
+
+    await state.set_state(TaskCreation.waiting_for_reminder)
+    sent = await target.answer(
+        "How early should I remind you?",
+        reply_markup=reminder_presets(),
+    )
+    await _track_msg(state, sent.message_id)
