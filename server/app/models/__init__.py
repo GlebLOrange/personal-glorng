@@ -8,6 +8,7 @@ from app.models.reminder import Reminder
 from app.models.shared_file import SharedFile
 from app.models.task import Task
 from app.models.task_status_history import TaskStatusHistory
+from app.models.tool_expense import ToolExpense
 from app.models.url import ShortenedUrl
 from app.models.user import User
 
@@ -23,5 +24,6 @@ __all__ = [
     "ShortenedUrl",
     "Task",
     "TaskStatusHistory",
+    "ToolExpense",
     "User",
 ]

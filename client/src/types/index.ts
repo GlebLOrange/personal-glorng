@@ -153,3 +153,46 @@ export interface Recipe {
   created_at: string;
   updated_at: string;
 }
+
+export interface ToolExpense {
+  id: number;
+  tool_name: string;
+  amount: string;
+  currency: string;
+  expense_date: string;
+  category: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ToolExpenseMonthTotal {
+  period: string;
+  total: string;
+}
+
+export interface ToolExpenseToolTotal {
+  tool_name: string;
+  total: string;
+}
+
+export interface ToolExpenseCategoryTotal {
+  category: string;
+  total: string;
+}
+
+export interface ToolExpenseSummary {
+  total: string;
+  currency: string;
+  rates_updated_at: string | null;
+  by_month: ToolExpenseMonthTotal[];
+  by_tool: ToolExpenseToolTotal[];
+  by_category: ToolExpenseCategoryTotal[];
+}
+
+export interface ExchangeRates {
+  base: string;
+  rates: Record<string, string>;
+  updated_at: string | null;
+  provider: string;
+}

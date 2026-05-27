@@ -62,6 +62,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/admin/tools/expenses",
+    name: "tool-expenses",
+    component: () => import("@/pages/admin/tools/ExpensesTool.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/admin/tools/email",
     name: "tool-email",
     component: () => import("@/pages/admin/tools/EmailTool.vue"),
