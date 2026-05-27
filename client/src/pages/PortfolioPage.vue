@@ -4,6 +4,7 @@ import { onMounted, ref } from "vue";
 import DonationsBlock from "@/components/donations/DonationsBlock.vue";
 import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
+import SpotifyNowPlayingBanner from "@/components/spotify/SpotifyNowPlayingBanner.vue";
 import WeatherWidget from "@/components/weather/WeatherWidget.vue";
 import ExperienceList from "@/components/resume/ExperienceList.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
@@ -34,7 +35,10 @@ onMounted(loadResume);
 
 <template>
   <div v-if="resume">
-    <div class="max-w-5xl mx-auto px-6 pt-4 flex justify-end">
+    <div
+      class="max-w-5xl mx-auto px-6 pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+    >
+      <SpotifyNowPlayingBanner />
       <WeatherWidget city="Wroclaw" compact />
     </div>
 

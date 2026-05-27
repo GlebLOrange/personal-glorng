@@ -75,12 +75,7 @@ AdminUser = Annotated[User, Depends(require_admin)]
 
 def get_ai_registry(settings: AppSettings) -> AIProviderRegistry:
     return AIProviderRegistry(api_keys={
-        "openai": settings.OPENAI_API_KEY,
-        "gemini": settings.GEMINI_API_KEY,
-        "groq": settings.GROQ_API_KEY,
         "deepseek": settings.DEEPSEEK_API_KEY,
-        "anthropic": settings.ANTHROPIC_API_KEY,
-        "perplexity": settings.PERPLEXITY_API_KEY,
     })
 
 

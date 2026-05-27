@@ -96,6 +96,11 @@ class Settings(BaseSettings):
     CRYPTO_BTC_ADDRESS: str = ""
     CRYPTO_ETH_ADDRESS: str = ""
 
+    # Spotify
+    SPOTIFY_CLIENT_ID: str = ""
+    SPOTIFY_CLIENT_SECRET: str = ""
+    SPOTIFY_REFRESH_TOKEN: str = ""
+
     # AI provider API keys
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
