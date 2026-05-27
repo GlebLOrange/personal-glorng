@@ -1,4 +1,4 @@
-.PHONY: dev prod test lint migrate seed down logs bot-logs
+.PHONY: dev prod test lint migrate seed seed-multicooker-recipes down logs bot-logs
 
 dev:
 	docker compose up --build
@@ -26,3 +26,6 @@ migrate:
 
 seed:
 	docker compose exec server python -m app.seed
+
+seed-multicooker-recipes:
+	docker compose exec server python -m app.seed_multicooker_recipes
