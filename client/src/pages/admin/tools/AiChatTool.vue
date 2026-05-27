@@ -24,35 +24,29 @@ interface ChatApiResponse {
   usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number };
 }
 
+const PROVIDER = "groq";
+
 const messages = ref<Message[]>([]);
 const input = ref("");
 const loading = ref(false);
 const chatEnd = ref<HTMLElement | null>(null);
 const { toast } = useNotify();
 
-const providers = ref<ProviderInfo[]>([]);
-const selectedProvider = ref("");
+const models = ref<string[]>([]);
 const selectedModel = ref("");
-
-const currentModels = ref<string[]>([]);
-
-function onProviderChange(): void {
-  const p = providers.value.find((x) => x.id === selectedProvider.value);
-  if (!p) return;
-  currentModels.value = p.models;
-  selectedModel.value = p.default_model;
-}
 
 async function loadProviders(): Promise<void> {
   try {
     const { data } = await api.get<ProviderInfo[]>("/tools/ai-chat/providers");
-    providers.value = data;
-    if (data.length) {
-      selectedProvider.value = data[0].id;
-      onProviderChange();
+    const groq = data.find((p) => p.id === PROVIDER);
+    if (!groq) {
+      toast("Groq API key is not configured", "error");
+      return;
     }
+    models.value = groq.models;
+    selectedModel.value = groq.default_model;
   } catch {
-    toast("Failed to load AI providers", "error");
+    toast("Failed to load AI models", "error");
   }
 }
 
@@ -64,7 +58,7 @@ function scrollToBottom(): void {
 
 async function send(): Promise<void> {
   const text = input.value.trim();
-  if (!text || loading.value) return;
+  if (!text || loading.value || !selectedModel.value) return;
 
   messages.value.push({ role: "user", content: text });
   input.value = "";
@@ -75,7 +69,7 @@ async function send(): Promise<void> {
     const payload = messages.value.map((m) => ({ role: m.role, content: m.content }));
     const { data } = await api.post<ChatApiResponse>("/tools/ai-chat", {
       messages: payload,
-      provider: selectedProvider.value,
+      provider: PROVIDER,
       model: selectedModel.value,
     });
     messages.value.push({ role: "assistant", content: data.reply });
@@ -100,17 +94,7 @@ function clear(): void {
   <AdminPageLayout title="ai chat">
     <BaseCard class="flex flex-col h-[65vh]">
       <div class="flex items-center gap-3 mb-4 pb-4 border-b border-surface-border">
-        <select
-          v-model="selectedProvider"
-          class="bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5
-                 text-surface-light font-mono text-xs focus:outline-none focus:border-accent-blue
-                 transition-colors appearance-none cursor-pointer"
-          @change="onProviderChange"
-        >
-          <option v-for="p in providers" :key="p.id" :value="p.id">
-            {{ p.id }}
-          </option>
-        </select>
+        <span class="text-surface-mid font-mono text-xs uppercase tracking-wider">groq</span>
 
         <select
           v-model="selectedModel"
@@ -118,7 +102,7 @@ function clear(): void {
                  text-surface-light font-mono text-xs focus:outline-none focus:border-accent-blue
                  transition-colors appearance-none cursor-pointer"
         >
-          <option v-for="m in currentModels" :key="m" :value="m">
+          <option v-for="m in models" :key="m" :value="m">
             {{ m }}
           </option>
         </select>
@@ -126,7 +110,7 @@ function clear(): void {
 
       <div class="flex-1 overflow-y-auto space-y-4 mb-4 pr-1">
         <p v-if="!messages.length" class="text-surface-mid text-sm text-center mt-8">
-          Start a conversation — pick a provider above.
+          Start a conversation — pick a model above.
         </p>
 
         <div
@@ -166,7 +150,7 @@ function clear(): void {
           @keydown.enter.exact.prevent="send"
         />
         <div class="flex flex-col gap-2">
-          <BaseButton variant="primary" :disabled="loading || !input.trim() || !selectedProvider">
+          <BaseButton variant="primary" :disabled="loading || !input.trim() || !selectedModel">
             {{ loading ? "..." : "Send" }}
           </BaseButton>
           <BaseButton variant="ghost" size="sm" type="button" :disabled="loading" @click="clear">

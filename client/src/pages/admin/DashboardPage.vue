@@ -17,7 +17,7 @@ const tools = [
   { name: "Tool Expenses", description: "Track SaaS charges and spending charts", route: "/admin/tools/expenses", icon: "¤" },
   { name: "Email", description: "Send styled emails to anyone", route: "/admin/tools/email", icon: "✉" },
   { name: "Feedback", description: "Read visitor feedback messages", route: "/admin/tools/feedback", icon: "💬" },
-  { name: "AI Chat", description: "Chat with GPT from the admin panel", route: "/admin/tools/ai-chat", icon: "⊛" },
+  { name: "AI Chat", description: "Chat with Groq LLMs from the admin panel", route: "/admin/tools/ai-chat", icon: "⊛" },
   { name: "API Docs", description: "Swagger API documentation", route: "/api/docs", icon: "❴❵", external: true },
 ];
 </script>

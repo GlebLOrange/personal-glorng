@@ -102,12 +102,7 @@ class Settings(BaseSettings):
     SPOTIFY_REFRESH_TOKEN: str = ""
 
     # AI provider API keys
-    OPENAI_API_KEY: str = ""
-    GEMINI_API_KEY: str = ""
     GROQ_API_KEY: str = ""
-    DEEPSEEK_API_KEY: str = ""
-    ANTHROPIC_API_KEY: str = ""
-    PERPLEXITY_API_KEY: str = ""
 
     # CORS
     CORS_ORIGINS: Annotated[list[str], NoDecode] = [

@@ -11,7 +11,7 @@ from app.core.exceptions import ForbiddenError, UnauthorizedError
 from app.core.redis import get_redis_client, is_token_blacklisted
 from app.core.security import decode_token
 from app.models.user import User
-from app.services.ai_chat import AIProviderRegistry
+from app.services.ai_chat import AIProviderRegistry, build_api_keys
 from app.settings import Settings, get_settings
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
@@ -74,9 +74,7 @@ AdminUser = Annotated[User, Depends(require_admin)]
 
 
 def get_ai_registry(settings: AppSettings) -> AIProviderRegistry:
-    return AIProviderRegistry(api_keys={
-        "deepseek": settings.DEEPSEEK_API_KEY,
-    })
+    return AIProviderRegistry(api_keys=build_api_keys(settings))
 
 
 AIRegistry = Annotated[AIProviderRegistry, Depends(get_ai_registry)]
