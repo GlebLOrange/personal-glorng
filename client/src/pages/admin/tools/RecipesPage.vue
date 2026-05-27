@@ -213,19 +213,19 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
 
               <div class="grid grid-cols-3 gap-3">
                 <BaseInput
-                  v-model.number="form.prep_time"
+                  v-model="form.prep_time"
                   label="Prep (min)"
                   type="number"
                   placeholder="15"
                 />
                 <BaseInput
-                  v-model.number="form.cook_time"
+                  v-model="form.cook_time"
                   label="Cook (min)"
                   type="number"
                   placeholder="30"
                 />
                 <BaseInput
-                  v-model.number="form.servings"
+                  v-model="form.servings"
                   label="Servings"
                   type="number"
                   placeholder="4"
@@ -326,11 +326,10 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
         @click="toggleExpand(recipe.id)"
       >
         <!-- Image -->
-        <img
-          v-if="recipe.image_url"
+        <BaseImage
           :src="recipe.image_url"
           :alt="recipe.title"
-          class="w-full h-40 object-cover rounded-md mb-3 -mt-1"
+          class="w-full h-40 rounded-md mb-3 -mt-1"
         />
 
         <!-- Title -->
