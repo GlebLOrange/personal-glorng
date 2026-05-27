@@ -326,11 +326,10 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
         @click="toggleExpand(recipe.id)"
       >
         <!-- Image -->
-        <img
-          v-if="recipe.image_url"
+        <BaseImage
           :src="recipe.image_url"
           :alt="recipe.title"
-          class="w-full h-40 object-cover rounded-md mb-3 -mt-1"
+          class="w-full h-40 rounded-md mb-3 -mt-1"
         />
 
         <!-- Title -->

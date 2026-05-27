@@ -36,11 +36,12 @@ onUnmounted(() => {
     rel="noopener noreferrer"
     class="flex items-center gap-3 min-w-0 px-3 py-2 rounded-lg border border-surface-border bg-surface-card hover:border-accent-blue transition-colors group"
   >
-    <img
+    <BaseImage
       v-if="playback.album_art_url"
       :src="playback.album_art_url"
       :alt="`${playback.title} cover`"
-      class="w-10 h-10 rounded object-cover shrink-0"
+      :lazy="false"
+      class="w-10 h-10 rounded shrink-0"
       width="40"
       height="40"
     />
