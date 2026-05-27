@@ -1,13 +1,40 @@
+import json
 from functools import lru_cache
+from typing import Annotated, Any
 
-from pydantic import model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator, model_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 _WEAK_SECRET_MARKERS = ("do-not-use", "changeme", "replace-with", "secret")
 
 
+def _parse_env_list(value: Any) -> list[str]:
+    """Parse list settings from env: JSON array or comma-separated string."""
+    if value is None or value == "":
+        return []
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return []
+        if stripped.startswith("["):
+            parsed = json.loads(stripped)
+            if not isinstance(parsed, list):
+                msg = "Expected a JSON array"
+                raise TypeError(msg)
+            return [str(item).strip() for item in parsed if str(item).strip()]
+        return [part.strip() for part in stripped.split(",") if part.strip()]
+    return [str(value).strip()]
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore")
+
+    @field_validator("GITHUB_ALLOWED_USERS", "CORS_ORIGINS", mode="before")
+    @classmethod
+    def _parse_list_fields(cls, value: Any) -> list[str]:
+        return _parse_env_list(value)
 
     @model_validator(mode="after")
     def _check_production_secrets(self) -> "Settings":
@@ -61,7 +88,7 @@ class Settings(BaseSettings):
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""
     GITHUB_REDIRECT_URI: str = ""
-    GITHUB_ALLOWED_USERS: list[str] = []
+    GITHUB_ALLOWED_USERS: Annotated[list[str], NoDecode] = []
 
     # Donations
     STRIPE_LINK: str = ""
@@ -78,7 +105,10 @@ class Settings(BaseSettings):
     PERPLEXITY_API_KEY: str = ""
 
     # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost", "http://localhost:80"]
+    CORS_ORIGINS: Annotated[list[str], NoDecode] = [
+        "http://localhost",
+        "http://localhost:80",
+    ]
 
     # Seed
     SEED_PASSWORD: str = ""

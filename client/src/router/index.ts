@@ -108,10 +108,14 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   const auth = useAuthStore();
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    next({ name: "login" });
-  } else {
-    next();
+    next({
+      name: "not-found",
+      params: { pathMatch: to.path.split("/").filter(Boolean) },
+      replace: true,
+    });
+    return;
   }
+  next();
 });
 
 export function initAnalytics(id: string): void {

@@ -137,8 +137,10 @@ services:
       - frontend
       - backend
     depends_on:
-      - server
-      - client
+      server:
+        condition: service_started
+      client:
+        condition: service_started
     develop:
       watch:
         - action: sync+restart
