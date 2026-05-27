@@ -62,6 +62,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/admin/tools/expenses",
+    name: "tool-expenses",
+    component: () => import("@/pages/admin/tools/ExpensesTool.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/admin/tools/email",
     name: "tool-email",
     component: () => import("@/pages/admin/tools/EmailTool.vue"),
@@ -108,10 +114,14 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   const auth = useAuthStore();
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    next({ name: "login" });
-  } else {
-    next();
+    next({
+      name: "not-found",
+      params: { pathMatch: to.path.split("/").filter(Boolean) },
+      replace: true,
+    });
+    return;
   }
+  next();
 });
 
 export function initAnalytics(id: string): void {

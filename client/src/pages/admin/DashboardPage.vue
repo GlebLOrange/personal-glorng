@@ -14,6 +14,7 @@ const tools = [
   { name: "File Share", description: "Share files between devices", route: "/admin/tools/file-share", icon: "↗" },
   { name: "Tasks", description: "Manage todobot tasks & reminders", route: "/admin/tools/tasks", icon: "☐" },
   { name: "Recipes", description: "Personal recipe book & food notes", route: "/admin/tools/recipes", icon: "◉" },
+  { name: "Tool Expenses", description: "Track SaaS charges and spending charts", route: "/admin/tools/expenses", icon: "¤" },
   { name: "Email", description: "Send styled emails to anyone", route: "/admin/tools/email", icon: "✉" },
   { name: "Feedback", description: "Read visitor feedback messages", route: "/admin/tools/feedback", icon: "💬" },
   { name: "AI Chat", description: "Chat with GPT from the admin panel", route: "/admin/tools/ai-chat", icon: "⊛" },

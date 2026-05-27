@@ -31,6 +31,10 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 3000,
+    // HMR through nginx on :80 (browser must not connect to :3000 directly)
+    hmr: {
+      clientPort: 80,
+    },
     proxy: {
       "/api": {
         target: "http://server:8000",

@@ -1,3 +1,5 @@
+import json
+import time
 from collections.abc import AsyncGenerator, Generator
 from pathlib import Path
 from typing import Any
@@ -13,9 +15,23 @@ from app.main import app
 from app.models.base import Base
 from app.models.user import User
 from app.settings import get_settings
+from app.services.currency import RATES_CACHE_KEY
 from tests.factories import create_user
 
 ADMIN_EMAIL = "admin@glorng.dev"
+
+TEST_RATES_PAYLOAD = {
+    "result": "success",
+    "base_code": "USD",
+    "time_last_update_utc": "Wed, 27 May 2026 00:00:00 +0000",
+    "time_next_update_unix": int(time.time()) + 86400,
+    "rates": {
+        "USD": 1,
+        "EUR": 0.86,
+        "PLN": 3.64,
+        "BYN": 2.76,
+    },
+}
 ADMIN_PASSWORD = "testpass123"
 
 
@@ -63,6 +79,11 @@ def fake_redis() -> FakeRedis:
     fake = FakeRedis()
     redis_module._redis = fake  # type: ignore[assignment]
     return fake
+
+
+@pytest.fixture(autouse=True)
+async def seed_currency_rates(fake_redis: FakeRedis) -> None:
+    await fake_redis.set(RATES_CACHE_KEY, json.dumps(TEST_RATES_PAYLOAD))
 
 
 @pytest.fixture(autouse=True)
