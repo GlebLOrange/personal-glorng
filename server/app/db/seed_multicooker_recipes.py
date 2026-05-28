@@ -6,9 +6,9 @@ import json
 
 from sqlalchemy import select
 
-from app.core.database import get_session_factory
 from app.core.logging import logger
-from app.models.recipe import Recipe
+from app.db.models.recipe import Recipe
+from app.db.session import get_session_factory
 from app.services.themealdb import ThemealDBClient
 
 

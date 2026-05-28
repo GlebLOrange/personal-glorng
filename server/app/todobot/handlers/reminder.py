@@ -6,7 +6,7 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.task import TaskStatus
+from app.db.models.task import TaskStatus
 from app.services.task import create_reminder, get_task, update_task_status
 
 router = Router()

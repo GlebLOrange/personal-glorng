@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import BigInteger, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.base import Base, BaseModelMixin
+from app.db.base import Base, BaseModelMixin
 
 
 class SharedFile(BaseModelMixin, Base):

@@ -6,11 +6,11 @@ import random
 
 from sqlalchemy import func, select
 
-from app.core.database import get_session_factory
 from app.core.logging import logger
 from app.core.security import hash_password
-from app.models.recipe import Recipe
-from app.models.user import User
+from app.db.models.recipe import Recipe
+from app.db.models.user import User
+from app.db.session import get_session_factory
 from app.settings import get_settings
 
 WEAK_PASSWORDS = {"changeme", "password", "admin", "123456", "secret"}

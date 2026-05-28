@@ -5,7 +5,7 @@ from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.task import TaskStatus
+from app.db.models.task import TaskStatus
 from app.services.task import get_pending_tasks, get_task, update_task_status
 
 router = Router()

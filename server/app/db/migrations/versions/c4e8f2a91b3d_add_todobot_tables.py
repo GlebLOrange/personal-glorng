@@ -8,9 +8,8 @@ Create Date: 2026-05-25 15:50:00.000000
 from collections.abc import Sequence
 
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import ENUM
-
 from alembic import op
+from sqlalchemy.dialects.postgresql import ENUM
 
 revision: str = "c4e8f2a91b3d"
 down_revision: str | None = "a10996a0b1f2"

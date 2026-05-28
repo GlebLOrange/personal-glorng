@@ -3,7 +3,7 @@ import enum
 from sqlalchemy import BigInteger, Enum, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.base import Base, BaseModelMixin
+from app.db.base import Base, BaseModelMixin
 
 
 class TaskStatus(enum.StrEnum):

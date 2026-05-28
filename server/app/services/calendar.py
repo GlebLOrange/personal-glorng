@@ -9,9 +9,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import logger
-from app.models.google_auth import GoogleCredential
-from app.models.google_sync_queue import GoogleSyncQueue, SyncAction
-from app.models.task import Task
+from app.db.models.google_auth import GoogleCredential
+from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction
+from app.db.models.task import Task
 from app.settings import get_settings
 
 

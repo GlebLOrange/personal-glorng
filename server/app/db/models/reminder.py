@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, BaseModelMixin
+from app.db.base import Base, BaseModelMixin
 
 
 class Reminder(BaseModelMixin, Base):

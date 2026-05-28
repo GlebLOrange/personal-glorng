@@ -8,7 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.google_sync_queue import SyncAction
+from app.db.models.google_sync_queue import SyncAction
 from app.services.task import create_reminder, create_task, enqueue_calendar_sync
 from app.todobot.keyboards.menu import main_menu
 from app.todobot.keyboards.task import (

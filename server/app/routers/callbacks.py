@@ -9,7 +9,7 @@ from sqlalchemy import select
 
 from app.core.deps import DbSession
 from app.core.logging import logger
-from app.models.google_auth import GoogleCredential
+from app.db.models.google_auth import GoogleCredential
 from app.settings import get_settings
 
 router = APIRouter()

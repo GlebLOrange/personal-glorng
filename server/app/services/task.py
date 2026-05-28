@@ -6,10 +6,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import logger
-from app.models.google_sync_queue import GoogleSyncQueue, SyncAction, SyncStatus
-from app.models.reminder import Reminder
-from app.models.task import Task, TaskStatus
-from app.models.task_status_history import TaskStatusHistory
+from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction, SyncStatus
+from app.db.models.reminder import Reminder
+from app.db.models.task import Task, TaskStatus
+from app.db.models.task_status_history import TaskStatusHistory
 
 
 async def create_task(

@@ -6,7 +6,7 @@ from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ValidationError
-from app.models.tool_expense import ToolExpense
+from app.db.models.tool_expense import ToolExpense
 from app.schemas.tool_expense import (
     ToolExpenseCategoryTotal,
     ToolExpenseCreate,

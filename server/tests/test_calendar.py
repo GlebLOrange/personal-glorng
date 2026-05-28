@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.google_sync_queue import SyncAction, SyncStatus
+from app.db.models.google_sync_queue import SyncAction, SyncStatus
 from app.services.calendar import _build_event_body, sync_task_to_google
 from app.services.task import enqueue_calendar_sync
 from app.workers.tasks import process_sync_queue

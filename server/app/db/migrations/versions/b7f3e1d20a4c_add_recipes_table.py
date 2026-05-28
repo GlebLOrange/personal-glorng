@@ -1,31 +1,33 @@
-"""add tool_expenses table
+"""add recipes table
 
-Revision ID: e8a1c4f92b0d
-Revises: d2f4a7c83e19
-Create Date: 2026-05-27 12:00:00.000000
+Revision ID: b7f3e1d20a4c
+Revises: c4e8f2a91b3d
+Create Date: 2026-05-25 23:10:00.000000
 """
 
 from collections.abc import Sequence
 
 import sqlalchemy as sa
-
 from alembic import op
 
-revision: str = "e8a1c4f92b0d"
-down_revision: str | None = "d2f4a7c83e19"
+revision: str = "b7f3e1d20a4c"
+down_revision: str | None = "c4e8f2a91b3d"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
     op.create_table(
-        "tool_expenses",
-        sa.Column("tool_name", sa.String(length=255), nullable=False),
-        sa.Column("amount", sa.Numeric(precision=12, scale=2), nullable=False),
-        sa.Column("currency", sa.String(length=3), server_default="USD", nullable=False),
-        sa.Column("expense_date", sa.Date(), nullable=False),
-        sa.Column("category", sa.String(length=64), nullable=True),
+        "recipes",
+        sa.Column("title", sa.String(length=255), nullable=False),
+        sa.Column("ingredients", sa.Text(), nullable=False),
+        sa.Column("steps", sa.Text(), nullable=False),
         sa.Column("notes", sa.Text(), nullable=True),
+        sa.Column("tags", sa.Text(), server_default="[]", nullable=False),
+        sa.Column("image_url", sa.String(length=512), nullable=True),
+        sa.Column("prep_time", sa.Integer(), nullable=True),
+        sa.Column("cook_time", sa.Integer(), nullable=True),
+        sa.Column("servings", sa.Integer(), nullable=True),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column(
             "created_at",
@@ -44,4 +46,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_table("tool_expenses")
+    op.drop_table("recipes")

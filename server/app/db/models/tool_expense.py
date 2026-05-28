@@ -4,7 +4,7 @@ from decimal import Decimal
 from sqlalchemy import Date, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.base import Base, BaseModelMixin
+from app.db.base import Base, BaseModelMixin
 
 
 class ToolExpense(BaseModelMixin, Base):

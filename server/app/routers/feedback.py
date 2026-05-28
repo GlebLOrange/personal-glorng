@@ -8,7 +8,7 @@ from app.core.deps import AdminUser, DbSession
 from app.core.logging import logger
 from app.core.rate_limit import RateLimiter
 from app.core.telegram import notify_admin
-from app.models.feedback import Feedback
+from app.db.models.feedback import Feedback
 from app.schemas.feedback import FeedbackCreate, FeedbackResponse, FeedbackStatusUpdate
 from app.settings import get_settings
 

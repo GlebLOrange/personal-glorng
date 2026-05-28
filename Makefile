@@ -25,7 +25,7 @@ migrate:
 	docker compose exec server alembic upgrade head
 
 seed:
-	docker compose exec server python -m app.seed
+	docker compose exec server python -m app.db.seed
 
 seed-multicooker-recipes:
-	docker compose exec server python -m app.seed_multicooker_recipes
+	docker compose exec server python -m app.db.seed_multicooker_recipes
