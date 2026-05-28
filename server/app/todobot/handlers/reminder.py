@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.task import TaskStatus
 from app.services.task import create_reminder, get_task, update_task_status
+from app.workers.scheduling import schedule_reminder, supersede_unsent_reminders
 
 router = Router()
 
@@ -44,7 +45,9 @@ async def handle_reminder_action(
     if action == "snooze" and len(parts) == 4:
         minutes = int(parts[3])
         remind_at = datetime.now(UTC) + timedelta(minutes=minutes)
-        await create_reminder(db, task_id=task.id, remind_at=remind_at)
+        await supersede_unsent_reminders(db, task.id)
+        reminder = await create_reminder(db, task_id=task.id, remind_at=remind_at)
+        await schedule_reminder(db, reminder)
         await callback.message.answer(
             f'Snoozed! I\'ll remind you about "{task.title}" in {minutes} minutes.',
         )

@@ -20,6 +20,7 @@ from app.todobot.keyboards.task import (
 )
 from app.todobot.states.task import TaskCreation
 from app.todobot.utils.nlp import parse_task_input
+from app.workers.scheduling import schedule_reminder
 
 router = Router()
 
@@ -305,7 +306,8 @@ async def confirm_task(
         )
         remind_at = scheduled_dt - timedelta(minutes=int(reminder_minutes))
         if remind_at > datetime.now(UTC):
-            await create_reminder(db, task_id=task.id, remind_at=remind_at)
+            reminder = await create_reminder(db, task_id=task.id, remind_at=remind_at)
+            await schedule_reminder(db, reminder)
 
     await enqueue_calendar_sync(db, task_id=task.id, action=SyncAction.CREATE)
 

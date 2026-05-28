@@ -1,13 +1,17 @@
 """ARQ worker tasks: emails, reminders, sync queue, cleanup."""
 
+import smtplib
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
+import sentry_sdk
 from aiogram import Bot
+from aiogram.exceptions import TelegramAPIError
 from arq import cron
 from arq.connections import RedisSettings
+from arq.worker import Retry
 
-from app.db.session import get_session_factory
 from app.core.email import (
     get_email_backend,
     render_reset_email,
@@ -17,12 +21,54 @@ from app.core.logging import logger
 from app.db.models.google_sync_queue import SyncStatus
 from app.db.models.reminder import Reminder
 from app.db.models.task import TaskStatus
-from app.services.task import (
-    delete_old_tasks,
-    get_overdue_pending_tasks,
-)
+from app.db.session import get_session_factory
+from app.services.task import delete_old_tasks, get_overdue_pending_tasks
 from app.settings import get_settings
 from app.todobot.keyboards.task import completion_options, reminder_actions
+
+MAX_JOB_TRIES = 3
+
+
+def _init_worker_sentry() -> None:
+    settings = get_settings()
+    if not settings.SERVER_SENTRY_DSN:
+        return
+    sentry_sdk.init(
+        dsn=settings.SERVER_SENTRY_DSN,
+        environment=settings.APP_ENV,
+        release=settings.SERVER_SENTRY_RELEASE or None,
+        send_default_pii=False,
+    )
+
+
+def log_job_failure(job_name: str, ctx: dict[str, Any], exc: BaseException) -> None:
+    """Log job failure; report to Sentry on the final attempt."""
+    job_try = ctx.get("job_try", 1)
+    logger.error(
+        "Background job failed",
+        error=exc,
+        context={"job": job_name, "job_try": job_try, "max_tries": MAX_JOB_TRIES},
+    )
+    if job_try >= MAX_JOB_TRIES:
+        sentry_sdk.capture_exception(exc)
+
+
+def _raise_retry_or_fail(ctx: dict[str, Any], job_name: str, exc: Exception) -> None:
+    job_try = ctx.get("job_try", 1)
+    if job_try >= MAX_JOB_TRIES:
+        log_job_failure(job_name, ctx, exc)
+        raise
+    logger.warning(
+        "Retrying background job",
+        context={"job": job_name, "job_try": job_try, "defer_seconds": 60 * job_try},
+    )
+    raise Retry(defer=60 * job_try) from exc
+
+
+async def worker_startup(ctx: dict[str, Any]) -> None:
+    _init_worker_sentry()
+    logger.info("ARQ worker started", context={"env": get_settings().APP_ENV})
+
 
 # --- Email tasks ---
 
@@ -41,35 +87,41 @@ async def _send_email(
 
 
 async def send_verification_email(
-    ctx: dict,
+    ctx: dict[str, Any],
     email: str,
     token: str,
 ) -> None:
-    await _send_email(
-        email,
-        token,
-        "Verify your email - gLOrng",
-        render_verification_email,
-    )
+    try:
+        await _send_email(
+            email,
+            token,
+            "Verify your email - gLOrng",
+            render_verification_email,
+        )
+    except (smtplib.SMTPException, OSError) as exc:
+        _raise_retry_or_fail(ctx, "send_verification_email", exc)
 
 
 async def send_reset_email(
-    ctx: dict,
+    ctx: dict[str, Any],
     email: str,
     token: str,
 ) -> None:
-    await _send_email(
-        email,
-        token,
-        "Password reset - gLOrng",
-        render_reset_email,
-    )
+    try:
+        await _send_email(
+            email,
+            token,
+            "Password reset - gLOrng",
+            render_reset_email,
+        )
+    except (smtplib.SMTPException, OSError) as exc:
+        _raise_retry_or_fail(ctx, "send_reset_email", exc)
 
 
 # --- Reminder tasks ---
 
 
-async def send_reminder(ctx: dict, reminder_id: int) -> None:
+async def send_reminder(ctx: dict[str, Any], reminder_id: int) -> None:
     """Send a Telegram reminder message for a scheduled reminder."""
     settings = get_settings()
     if not settings.TELEGRAM_BOT_TO_DO_TOKEN:
@@ -110,6 +162,8 @@ async def send_reminder(ctx: dict, reminder_id: int) -> None:
                 "Reminder sent",
                 context={"reminder_id": rem.id, "task_id": task.id},
             )
+        except TelegramAPIError as exc:
+            _raise_retry_or_fail(ctx, "send_reminder", exc)
         finally:
             await bot.session.close()
 
@@ -117,7 +171,7 @@ async def send_reminder(ctx: dict, reminder_id: int) -> None:
 # --- Periodic tasks ---
 
 
-async def check_overdue_tasks(ctx: dict) -> None:
+async def check_overdue_tasks(ctx: dict[str, Any]) -> None:
     """Send follow-up for tasks past their scheduled time."""
     settings = get_settings()
     if not settings.TELEGRAM_BOT_TO_DO_TOKEN:
@@ -146,7 +200,7 @@ async def check_overdue_tasks(ctx: dict) -> None:
             await bot.session.close()
 
 
-async def cleanup_old_tasks(ctx: dict) -> None:
+async def cleanup_old_tasks(ctx: dict[str, Any]) -> None:
     """Delete tasks older than 4 months."""
     session_factory = get_session_factory()
     async with session_factory() as db:
@@ -156,7 +210,7 @@ async def cleanup_old_tasks(ctx: dict) -> None:
             logger.info("Old tasks cleaned up", context={"deleted": deleted})
 
 
-async def process_sync_queue(ctx: dict) -> None:
+async def process_sync_queue(ctx: dict[str, Any]) -> None:
     """Process pending Google Calendar sync items."""
     from sqlalchemy import select
 
@@ -208,6 +262,8 @@ class WorkerSettings:
         send_reset_email,
         send_reminder,
     ]
+    on_startup = worker_startup
+    max_tries = MAX_JOB_TRIES
     _every_5_min = set(range(0, 60, 5))
     _every_2_min = set(range(0, 60, 2))
     cron_jobs = [
