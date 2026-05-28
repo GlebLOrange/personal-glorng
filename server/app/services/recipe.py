@@ -3,7 +3,7 @@ import json
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.recipe import Recipe
+from app.db.models.recipe import Recipe
 from app.schemas.recipe import RecipeCreate, RecipeResponse, RecipeUpdate
 from app.services.base import CRUDService
 

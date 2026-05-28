@@ -8,7 +8,7 @@ from aiogram.types import BotCommand
 from arq import create_pool
 from arq.connections import RedisSettings
 
-from app.core.database import get_session_factory
+from app.db.session import get_session_factory
 from app.core.logging import logger
 from app.services.task import get_unsent_reminders
 from app.settings import get_settings

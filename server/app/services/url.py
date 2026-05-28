@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ApiError, NotFoundError
 from app.core.utils import generate_short_code
-from app.models.url import ShortenedUrl
+from app.db.models.url import ShortenedUrl
 from app.services.base import CRUDService
 
 _MAX_CODE_RETRIES = 3

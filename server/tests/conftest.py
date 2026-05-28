@@ -9,13 +9,13 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 import app.core.redis as redis_module
-from app.core.database import get_db
 from app.core.security import create_access_token
+from app.db.base import Base
+from app.db.models.user import User
+from app.db.session import get_db
 from app.main import app
-from app.models.base import Base
-from app.models.user import User
-from app.settings import get_settings
 from app.services.currency import RATES_CACHE_KEY
+from app.settings import get_settings
 from tests.factories import create_user
 
 ADMIN_EMAIL = "admin@glorng.dev"

@@ -7,16 +7,16 @@ from aiogram import Bot
 from arq import cron
 from arq.connections import RedisSettings
 
-from app.core.database import get_session_factory
+from app.db.session import get_session_factory
 from app.core.email import (
     get_email_backend,
     render_reset_email,
     render_verification_email,
 )
 from app.core.logging import logger
-from app.models.google_sync_queue import SyncStatus
-from app.models.reminder import Reminder
-from app.models.task import TaskStatus
+from app.db.models.google_sync_queue import SyncStatus
+from app.db.models.reminder import Reminder
+from app.db.models.task import TaskStatus
 from app.services.task import (
     delete_old_tasks,
     get_overdue_pending_tasks,
@@ -160,7 +160,7 @@ async def process_sync_queue(ctx: dict) -> None:
     """Process pending Google Calendar sync items."""
     from sqlalchemy import select
 
-    from app.models.google_sync_queue import GoogleSyncQueue
+    from app.db.models.google_sync_queue import GoogleSyncQueue
 
     session_factory = get_session_factory()
     async with session_factory() as db:

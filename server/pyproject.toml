@@ -16,7 +16,7 @@ ignore = []
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["ANN201", "ANN401", "S101", "S105", "S107", "ARG001", "ARG002"]
-"alembic/**/*.py" = ["E501", "ANN"]
+"app/db/migrations/**/*.py" = ["E501", "ANN"]
 "app/workers/**/*.py" = ["ARG001", "RUF012"]
 "app/todobot/middlewares/**/*.py" = ["ANN401"]
 

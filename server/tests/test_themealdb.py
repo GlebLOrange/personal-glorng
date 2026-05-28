@@ -9,8 +9,8 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.recipe import Recipe
-from app.seed_multicooker_recipes import seed_multicooker_recipes
+from app.db.models.recipe import Recipe
+from app.db.seed_multicooker_recipes import seed_multicooker_recipes
 from app.services.themealdb import (
     ThemealDBClient,
     map_meal_to_recipe,
@@ -104,8 +104,8 @@ class TestThemealDBClient:
 
 class TestSeedMulticookerRecipes:
     @pytest.mark.asyncio
-    @patch("app.seed_multicooker_recipes.get_session_factory")
-    @patch("app.seed_multicooker_recipes.ThemealDBClient")
+    @patch("app.db.seed_multicooker_recipes.get_session_factory")
+    @patch("app.db.seed_multicooker_recipes.ThemealDBClient")
     async def test_skips_existing_titles(
         self,
         mock_client_cls: MagicMock,
@@ -134,8 +134,8 @@ class TestSeedMulticookerRecipes:
         assert count == 1
 
     @pytest.mark.asyncio
-    @patch("app.seed_multicooker_recipes.get_session_factory")
-    @patch("app.seed_multicooker_recipes.ThemealDBClient")
+    @patch("app.db.seed_multicooker_recipes.get_session_factory")
+    @patch("app.db.seed_multicooker_recipes.ThemealDBClient")
     async def test_inserts_new_recipes(
         self,
         mock_client_cls: MagicMock,

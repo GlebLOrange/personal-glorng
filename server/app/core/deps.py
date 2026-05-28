@@ -6,11 +6,11 @@ from redis.asyncio import Redis
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.core.exceptions import ForbiddenError, UnauthorizedError
 from app.core.redis import get_redis_client, is_token_blacklisted
 from app.core.security import decode_token
-from app.models.user import User
+from app.db.models.user import User
+from app.db.session import get_db
 from app.services.ai_chat import AIProviderRegistry, build_api_keys
 from app.settings import Settings, get_settings
 

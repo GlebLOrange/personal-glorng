@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import AdminUser, DbSession, require_admin
 from app.core.utils import paginate_params
-from app.models.google_sync_queue import GoogleSyncQueue, SyncStatus
-from app.models.reminder import Reminder
-from app.models.task import Task, TaskStatus
-from app.models.task_status_history import TaskStatusHistory
+from app.db.models.google_sync_queue import GoogleSyncQueue, SyncStatus
+from app.db.models.reminder import Reminder
+from app.db.models.task import Task, TaskStatus
+from app.db.models.task_status_history import TaskStatusHistory
 from app.schemas.common import MessageResponse
 from app.schemas.task import (
     ReminderResponse,

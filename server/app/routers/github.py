@@ -10,7 +10,7 @@ from sqlalchemy import select
 
 from app.core.deps import CurrentUser, DbSession
 from app.core.logging import logger
-from app.models.github_credential import GitHubCredential
+from app.db.models.github_credential import GitHubCredential
 from app.services.github import (
     exchange_code_for_token,
     get_github_user,

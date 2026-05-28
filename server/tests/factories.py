@@ -4,12 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import hash_password
 from app.core.utils import generate_short_code
-from app.models.feedback import Feedback
-from app.models.google_auth import GoogleCredential
-from app.models.google_sync_queue import GoogleSyncQueue, SyncAction, SyncStatus
-from app.models.task import Task, TaskStatus
-from app.models.url import ShortenedUrl
-from app.models.user import User
+from app.db.models.feedback import Feedback
+from app.db.models.google_auth import GoogleCredential
+from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction, SyncStatus
+from app.db.models.task import Task, TaskStatus
+from app.db.models.url import ShortenedUrl
+from app.db.models.user import User
 
 
 async def create_user(

@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
-from app.models.base import Base
+from app.db.base import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
 

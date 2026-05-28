@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ApiError, NotFoundError
 from app.core.utils import generate_short_code, utc_now
-from app.models.shared_file import SharedFile
+from app.db.models.shared_file import SharedFile
 from app.settings import get_settings
 
 MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100 MB
