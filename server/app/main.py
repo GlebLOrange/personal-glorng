@@ -10,6 +10,7 @@ from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.redis import close_redis, init_redis
 from app.settings import get_settings
+from app.workers.pool import close_arq_pool, init_arq_pool
 
 
 def _init_sentry() -> None:
@@ -38,8 +39,11 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     await init_redis(settings.REDIS_URL)
     logger.info("Redis connected")
 
+    await init_arq_pool()
+
     yield
 
+    await close_arq_pool()
     await close_redis()
     logger.info("Shutdown complete")
 

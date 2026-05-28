@@ -1,5 +1,6 @@
 from typing import Annotated
 
+from arq import ArqRedis
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from redis.asyncio import Redis
@@ -13,6 +14,7 @@ from app.db.models.user import User
 from app.db.session import get_db
 from app.services.ai_chat import AIProviderRegistry, build_api_keys
 from app.settings import Settings, get_settings
+from app.workers.pool import get_arq_pool
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
 AppSettings = Annotated[Settings, Depends(get_settings)]
@@ -78,3 +80,10 @@ def get_ai_registry(settings: AppSettings) -> AIProviderRegistry:
 
 
 AIRegistry = Annotated[AIProviderRegistry, Depends(get_ai_registry)]
+
+
+def get_arq_pool_dep() -> ArqRedis:
+    return get_arq_pool()
+
+
+ArqPool = Annotated[ArqRedis, Depends(get_arq_pool_dep)]
