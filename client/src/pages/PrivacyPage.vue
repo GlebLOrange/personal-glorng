@@ -2,6 +2,7 @@
 import * as CookieConsent from "vanilla-cookieconsent";
 
 import { contactLinks } from "@/constants/links";
+import { isAnalyticsEnabled } from "@/constants/analytics";
 
 function openPreferences() {
   CookieConsent.showPreferences();
@@ -20,7 +21,7 @@ function openPreferences() {
       </p>
       <ul class="list-disc list-inside text-surface-sage space-y-1.5 ml-2">
         <li><strong class="text-surface-light">Authentication cookies</strong> — stored when you log in, used to keep your session active.</li>
-        <li><strong class="text-surface-light">Google Analytics</strong> — collects anonymous page view data (pages visited, time on site, general location). IP addresses are anonymized.</li>
+        <li v-if="isAnalyticsEnabled"><strong class="text-surface-light">Google Analytics</strong> — collects anonymous page view data (pages visited, time on site, general location). IP addresses are anonymized.</li>
         <li><strong class="text-surface-light">Sentry</strong> — captures errors and performance data to help fix bugs. May collect IP address and browser info when an error occurs.</li>
         <li><strong class="text-surface-light">Spotify now playing</strong> — when enabled, the portfolio may show the site owner's currently playing track title, artist, and album art via Spotify's API. Visitors do not sign in to Spotify.</li>
       </ul>
@@ -43,12 +44,12 @@ function openPreferences() {
               <td class="px-4 py-2">Stores your cookie consent preferences.</td>
               <td class="px-4 py-2">6 months</td>
             </tr>
-            <tr class="border-b border-surface-border">
+            <tr v-if="isAnalyticsEnabled" class="border-b border-surface-border">
               <td class="px-4 py-2 font-semibold text-surface-light">_ga</td>
               <td class="px-4 py-2">Distinguishes unique visitors (Google Analytics).</td>
               <td class="px-4 py-2">2 years</td>
             </tr>
-            <tr class="border-b border-surface-border">
+            <tr v-if="isAnalyticsEnabled" class="border-b border-surface-border">
               <td class="px-4 py-2 font-semibold text-surface-light">_gid</td>
               <td class="px-4 py-2">Distinguishes unique visitors (Google Analytics).</td>
               <td class="px-4 py-2">24 hours</td>
@@ -72,13 +73,14 @@ function openPreferences() {
           @click="openPreferences"
         >cookie settings</button>.
         Analytics and error monitoring only run if you've given consent.
+        <span v-if="!isAnalyticsEnabled"> Google Analytics is currently disabled.</span>
       </p>
     </section>
 
     <section class="mb-10">
       <h2 class="text-xl font-semibold text-accent-blue mb-3">Third parties</h2>
       <ul class="list-disc list-inside text-surface-sage space-y-1.5 ml-2">
-        <li>
+        <li v-if="isAnalyticsEnabled">
           <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="text-accent-blue hover:text-accent-violet transition-colors">Google Analytics</a>
           — used for anonymous usage statistics.
         </li>
