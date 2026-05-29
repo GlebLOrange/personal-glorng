@@ -141,16 +141,28 @@ const router = createRouter({
   },
 });
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   if (to.name === "tool-ai-chat" && !isAiChatEnabled()) {
     next({ name: "admin" });
     return;
   }
   const auth = useAuthStore();
+  if (!auth.sessionResolved) {
+    await auth.resolveSession();
+  }
+  if (to.name === "login" && auth.isAuthenticated) {
+    const redirect = to.query.redirect;
+    const target =
+      typeof redirect === "string" && redirect.startsWith("/") && !redirect.startsWith("//")
+        ? redirect
+        : "/admin";
+    next({ path: target, replace: true });
+    return;
+  }
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     next({
-      name: "not-found",
-      params: { pathMatch: to.path.split("/").filter(Boolean) },
+      name: "login",
+      query: { redirect: to.fullPath },
       replace: true,
     });
     return;

@@ -9,11 +9,18 @@ export const api = axios.create({
 let isRefreshing = false;
 let pendingQueue: Array<() => void> = [];
 
+function isAuthRefreshRequest(url: string | undefined): boolean {
+  return typeof url === "string" && url.includes("/auth/refresh");
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const orig: AxiosRequestConfig & { _retry?: boolean } = error.config;
     if (error.response?.status !== 401 || orig._retry) {
+      return Promise.reject(error);
+    }
+    if (isAuthRefreshRequest(orig.url)) {
       return Promise.reject(error);
     }
 
@@ -26,7 +33,7 @@ api.interceptors.response.use(
     orig._retry = true;
     isRefreshing = true;
     try {
-      await axios.post("/api/auth/refresh");
+      await api.post("/auth/refresh");
       pendingQueue.forEach((cb) => cb());
       return api(orig);
     } catch {
