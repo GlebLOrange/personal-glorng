@@ -123,7 +123,28 @@ onMounted(loadRates);
         <BaseButton variant="primary" :disabled="!canConvert || loading" @click="convert">
           {{ loading ? "Converting..." : "Convert" }}
         </BaseButton>
-        <BaseButton variant="ghost" @click="swapCurrencies">Swap</BaseButton>
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          aria-label="Swap currencies"
+          @click="swapCurrencies"
+        >
+          <svg
+            class="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M8 3 4 7l4 4" />
+            <path d="M4 7h16" />
+            <path d="m16 21 4-4-4-4" />
+            <path d="M20 17H4" />
+          </svg>
+        </BaseButton>
       </div>
 
       <div
