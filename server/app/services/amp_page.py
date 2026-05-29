@@ -57,9 +57,7 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
     for label, href in contact_links:
         if not href:
             continue
-        contact_html += (
-            f'<a class="chip" href="{_esc(href)}">{_esc(label)}</a>'
-        )
+        contact_html += f'<a class="chip" href="{_esc(href)}">{_esc(label)}</a>'
 
     return f"""<!doctype html>
 <html ⚡ lang="en">

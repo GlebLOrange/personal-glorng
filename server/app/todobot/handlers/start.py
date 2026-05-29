@@ -1,5 +1,7 @@
 """Start, help, and main-menu button handlers."""
 
+from contextlib import suppress
+
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
@@ -75,10 +77,8 @@ async def menu_restart(message: Message, state: FSMContext) -> None:
     msg_ids = data.get("_msg_ids", [])
     if msg_ids and message.bot:
         for msg_id in msg_ids:
-            try:
+            with suppress(Exception):
                 await message.bot.delete_message(message.chat.id, msg_id)
-            except Exception:
-                pass
     await state.clear()
     await message.answer(
         "🔄 Bot restarted. How can I help?",

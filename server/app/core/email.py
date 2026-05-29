@@ -64,8 +64,8 @@ def get_email_backend() -> EmailBackend:
 def _wrap_email(title: str, body: str) -> str:
     """Shared HTML email wrapper -- single source for layout."""
     return (
-        '<div style="font-family:\'Roboto Mono\',monospace;max-width:480px;'
-        'margin:0 auto;padding:24px;background:#1a1a1a;color:#f5f5f5;'
+        "<div style=\"font-family:'Roboto Mono',monospace;max-width:480px;"
+        "margin:0 auto;padding:24px;background:#1a1a1a;color:#f5f5f5;"
         'border-radius:8px;">'
         f'<h2 style="color:#f97316;">{escape(title)}</h2>'
         f"{body}"
@@ -79,7 +79,7 @@ def render_verification_email(token: str, base_url: str) -> str:
     url = f"{escape(base_url)}/api/auth/verify?token={escape(token)}"
     return _wrap_email(
         "Verify your email",
-        f'<p>Click the link below to verify your account:</p>'
+        f"<p>Click the link below to verify your account:</p>"
         f'<a href="{url}" style="color:#f97316;">{url}</a>'
         f'<p style="color:#a3a3a3;font-size:12px;">Expires in 24 hours.</p>',
     )
@@ -89,7 +89,7 @@ def render_reset_email(token: str, base_url: str) -> str:
     url = f"{escape(base_url)}/reset-password?token={escape(token)}"
     return _wrap_email(
         "Reset your password",
-        f'<p>Click the link below to reset your password:</p>'
+        f"<p>Click the link below to reset your password:</p>"
         f'<a href="{url}" style="color:#f97316;">{url}</a>'
         f'<p style="color:#a3a3a3;font-size:12px;">Expires in 1 hour.</p>',
     )

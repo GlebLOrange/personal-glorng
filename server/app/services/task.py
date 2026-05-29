@@ -129,7 +129,10 @@ class TaskService:
                 source=source,
                 resource_type="task",
                 resource_id=task.id,
-                metadata={"old_status": old_status.value, "new_status": new_status.value},
+                metadata={
+                    "old_status": old_status.value,
+                    "new_status": new_status.value,
+                },
             ),
         )
         return task
@@ -201,7 +204,8 @@ class TaskService:
         return TaskDetailResponse(
             **TaskResponse.model_validate(task).model_dump(),
             reminders=[
-                ReminderResponse.model_validate(r) for r in reminders_result.scalars().all()
+                ReminderResponse.model_validate(r)
+                for r in reminders_result.scalars().all()
             ],
             status_history=[
                 StatusHistoryResponse.model_validate(h)

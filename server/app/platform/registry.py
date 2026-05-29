@@ -154,7 +154,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         description="Swagger API documentation",
         api_prefix="/docs",
         admin_route="/api/docs",
-        icon="❴❵",
+        icon="{}",
         capabilities=("read",),
         external=True,
     ),

@@ -63,9 +63,7 @@ class TestBuildEventBody:
 
 
 class TestEnqueueCalendarSync:
-    async def test_creates_pending_entry(
-        self, db: AsyncSession
-    ) -> None:
+    async def test_creates_pending_entry(self, db: AsyncSession) -> None:
         task = await create_task(db)
         entry = await enqueue_calendar_sync(
             db, task_id=task.id, action=SyncAction.CREATE
@@ -77,9 +75,7 @@ class TestEnqueueCalendarSync:
         assert entry.status == SyncStatus.PENDING
         assert entry.next_retry_at is not None
 
-    async def test_preserves_google_event_id(
-        self, db: AsyncSession
-    ) -> None:
+    async def test_preserves_google_event_id(self, db: AsyncSession) -> None:
         task = await create_task(db)
         entry = await enqueue_calendar_sync(
             db,
@@ -102,17 +98,13 @@ class TestSyncTaskToGoogle:
         self, mock_service_fn: MagicMock, db: AsyncSession
     ) -> None:
         task = await create_task(db)
-        await create_google_credential(
-            db, telegram_user_id=task.telegram_user_id
-        )
+        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
             db, task_id=task.id, action=SyncAction.CREATE
         )
 
         mock_service = MagicMock()
-        mock_service.events().insert().execute.return_value = {
-            "id": "gcal_123"
-        }
+        mock_service.events().insert().execute.return_value = {"id": "gcal_123"}
         mock_service_fn.return_value = mock_service
 
         await sync_task_to_google(db, item)
@@ -125,12 +117,8 @@ class TestSyncTaskToGoogle:
     async def test_update_calls_api(
         self, mock_service_fn: MagicMock, db: AsyncSession
     ) -> None:
-        task = await create_task(
-            db, google_event_id="gcal_existing"
-        )
-        await create_google_credential(
-            db, telegram_user_id=task.telegram_user_id
-        )
+        task = await create_task(db, google_event_id="gcal_existing")
+        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
             db, task_id=task.id, action=SyncAction.UPDATE
         )
@@ -146,12 +134,8 @@ class TestSyncTaskToGoogle:
     async def test_delete_calls_api(
         self, mock_service_fn: MagicMock, db: AsyncSession
     ) -> None:
-        task = await create_task(
-            db, google_event_id="gcal_to_delete"
-        )
-        await create_google_credential(
-            db, telegram_user_id=task.telegram_user_id
-        )
+        task = await create_task(db, google_event_id="gcal_to_delete")
+        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
             db, task_id=task.id, action=SyncAction.DELETE
         )
@@ -163,9 +147,7 @@ class TestSyncTaskToGoogle:
 
         mock_service.events().delete.assert_called_once()
 
-    async def test_skips_when_no_credentials(
-        self, db: AsyncSession
-    ) -> None:
+    async def test_skips_when_no_credentials(self, db: AsyncSession) -> None:
         task = await create_task(db, telegram_user_id=999999)
         item = await create_sync_queue_item(
             db, task_id=task.id, action=SyncAction.CREATE
@@ -175,9 +157,7 @@ class TestSyncTaskToGoogle:
         await db.refresh(task)
         assert task.google_event_id is None
 
-    async def test_skips_when_task_deleted(
-        self, db: AsyncSession
-    ) -> None:
+    async def test_skips_when_task_deleted(self, db: AsyncSession) -> None:
         task = await create_task(db)
         item = await create_sync_queue_item(
             db, task_id=task.id, action=SyncAction.CREATE
@@ -201,17 +181,13 @@ class TestProcessSyncQueue:
         db: AsyncSession,
     ) -> None:
         task = await create_task(db)
-        await create_google_credential(
-            db, telegram_user_id=task.telegram_user_id
-        )
+        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
             db, task_id=task.id, action=SyncAction.CREATE
         )
 
         mock_service = MagicMock()
-        mock_service.events().insert().execute.return_value = {
-            "id": "gcal_worker"
-        }
+        mock_service.events().insert().execute.return_value = {"id": "gcal_worker"}
         mock_service_fn.return_value = mock_service
         mock_factory.return_value = _session_ctx(db)
 
@@ -229,17 +205,13 @@ class TestProcessSyncQueue:
         db: AsyncSession,
     ) -> None:
         task = await create_task(db)
-        await create_google_credential(
-            db, telegram_user_id=task.telegram_user_id
-        )
+        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
             db, task_id=task.id, action=SyncAction.CREATE
         )
 
         mock_service = MagicMock()
-        mock_service.events().insert().execute.side_effect = (
-            RuntimeError("API down")
-        )
+        mock_service.events().insert().execute.side_effect = RuntimeError("API down")
         mock_service_fn.return_value = mock_service
         mock_factory.return_value = _session_ctx(db)
 
@@ -259,9 +231,7 @@ class TestProcessSyncQueue:
         db: AsyncSession,
     ) -> None:
         task = await create_task(db)
-        await create_google_credential(
-            db, telegram_user_id=task.telegram_user_id
-        )
+        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
             db,
             task_id=task.id,
@@ -270,8 +240,8 @@ class TestProcessSyncQueue:
         )
 
         mock_service = MagicMock()
-        mock_service.events().insert().execute.side_effect = (
-            RuntimeError("still broken")
+        mock_service.events().insert().execute.side_effect = RuntimeError(
+            "still broken"
         )
         mock_service_fn.return_value = mock_service
         mock_factory.return_value = _session_ctx(db)
@@ -354,9 +324,7 @@ class TestGoogleOAuthCallback:
 
         assert resp.status_code == 400
 
-    async def test_rejects_invalid_state(
-        self, client: AsyncClient
-    ) -> None:
+    async def test_rejects_invalid_state(self, client: AsyncClient) -> None:
         resp = await client.get(
             "/api/callbacks/google",
             params={"code": "auth-code", "state": "not-a-number"},

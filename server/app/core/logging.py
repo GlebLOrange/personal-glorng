@@ -39,9 +39,7 @@ class _InterceptHandler(logging.Handler):
             level = _loguru.level(record.levelname).name
         except ValueError:
             level = record.levelno
-        _loguru.opt(depth=6, exception=record.exc_info).log(
-            level, record.getMessage()
-        )
+        _loguru.opt(depth=6, exception=record.exc_info).log(level, record.getMessage())
 
 
 logging.basicConfig(handlers=[_InterceptHandler()], level=logging.INFO, force=True)

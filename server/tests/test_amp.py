@@ -7,7 +7,8 @@ class TestAmpPage:
         assert resp.status_code == 200
         assert "text/html" in resp.headers.get("content-type", "")
         body = resp.text
-        assert "<html" in body and "⚡" in body
+        assert "<html" in body
+        assert "⚡" in body
         assert "cdn.ampproject.org" in body
         assert "gLOrng" in body
         assert 'rel="canonical"' in body

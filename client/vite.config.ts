@@ -1,4 +1,5 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
@@ -9,16 +10,10 @@ const behindNginx = process.env.VITE_BEHIND_NGINX === "true";
 export default defineConfig({
   build: {
     sourcemap: "hidden",
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ["vue", "vue-router", "pinia", "axios"],
-        },
-      },
-    },
   },
   plugins: [
     vue(),
+    tailwindcss(),
     sentryVitePlugin({
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,

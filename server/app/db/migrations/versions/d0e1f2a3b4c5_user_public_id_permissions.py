@@ -22,7 +22,11 @@ def upgrade() -> None:
         "users",
         sa.Column("permissions", sa.JSON(), server_default="[]", nullable=False),
     )
-    op.execute(sa.text("UPDATE users SET public_id = gen_random_uuid() WHERE public_id IS NULL"))
+    op.execute(
+        sa.text(
+            "UPDATE users SET public_id = gen_random_uuid() WHERE public_id IS NULL"
+        )
+    )
     op.execute(
         sa.text(
             "UPDATE users SET permissions = '[\"platform:superuser\"]'::json "

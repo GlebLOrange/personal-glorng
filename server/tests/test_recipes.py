@@ -60,9 +60,14 @@ class TestRecipesCRUD:
 
     async def test_search_by_title(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
-        await auth_client.post("/api/tools/recipes", json={
-            **RECIPE_DATA, "title": "Risotto", "tags": ["italian"],
-        })
+        await auth_client.post(
+            "/api/tools/recipes",
+            json={
+                **RECIPE_DATA,
+                "title": "Risotto",
+                "tags": ["italian"],
+            },
+        )
         resp = await auth_client.get("/api/tools/recipes?search=carbo")
         assert resp.status_code == 200
         assert len(resp.json()) == 1
@@ -70,12 +75,15 @@ class TestRecipesCRUD:
 
     async def test_search_by_ingredient(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
-        await auth_client.post("/api/tools/recipes", json={
-            **RECIPE_DATA,
-            "title": "Plain Rice",
-            "ingredients": ["rice", "water"],
-            "steps": ["Boil rice"],
-        })
+        await auth_client.post(
+            "/api/tools/recipes",
+            json={
+                **RECIPE_DATA,
+                "title": "Plain Rice",
+                "ingredients": ["rice", "water"],
+                "steps": ["Boil rice"],
+            },
+        )
         resp = await auth_client.get("/api/tools/recipes?search=pancetta")
         assert resp.status_code == 200
         assert len(resp.json()) == 1
@@ -83,9 +91,14 @@ class TestRecipesCRUD:
 
     async def test_filter_by_tag(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
-        await auth_client.post("/api/tools/recipes", json={
-            **RECIPE_DATA, "title": "Salad", "tags": ["healthy"],
-        })
+        await auth_client.post(
+            "/api/tools/recipes",
+            json={
+                **RECIPE_DATA,
+                "title": "Salad",
+                "tags": ["healthy"],
+            },
+        )
         resp = await auth_client.get("/api/tools/recipes?tag=quick")
         assert resp.status_code == 200
         assert len(resp.json()) == 1
@@ -99,13 +112,22 @@ class TestRecipesCRUD:
         assert "quick" in tags
 
     async def test_create_missing_title(self, auth_client: AsyncClient):
-        resp = await auth_client.post("/api/tools/recipes", json={
-            "ingredients": ["a"], "steps": ["b"],
-        })
+        resp = await auth_client.post(
+            "/api/tools/recipes",
+            json={
+                "ingredients": ["a"],
+                "steps": ["b"],
+            },
+        )
         assert resp.status_code == 422
 
     async def test_create_empty_ingredients(self, auth_client: AsyncClient):
-        resp = await auth_client.post("/api/tools/recipes", json={
-            "title": "Empty", "ingredients": [], "steps": ["cook"],
-        })
+        resp = await auth_client.post(
+            "/api/tools/recipes",
+            json={
+                "title": "Empty",
+                "ingredients": [],
+                "steps": ["cook"],
+            },
+        )
         assert resp.status_code == 422
