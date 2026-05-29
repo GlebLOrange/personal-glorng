@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^server/
+      - id: ruff-format
+        files: ^server/
+
+  - repo: local
+    hooks:
+      - id: client-eslint
+        name: client eslint
+        entry: bash -c 'cd client && npm run lint'
+        language: system
+        files: ^client/src/.*\.(vue|ts)$
+        pass_filenames: false
+      - id: client-prettier
+        name: client prettier
+        entry: bash -c 'cd client && npm run format:check'
+        language: system
+        files: ^client/src/.*\.(vue|ts|css)$
+        pass_filenames: false
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks

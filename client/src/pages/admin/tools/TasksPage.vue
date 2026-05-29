@@ -8,13 +8,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { formatDate } from "@/utils/format";
-import type {
-  SyncQueueItem,
-  TaskDetail,
-  TaskIntakeItem,
-  TaskItem,
-  TaskStats,
-} from "@/types";
+import type { SyncQueueItem, TaskDetail, TaskIntakeItem, TaskItem, TaskStats } from "@/types";
 
 type Tab = "tasks" | "sync" | "stats" | "intakes";
 
@@ -85,9 +79,7 @@ async function loadIntakes(): Promise<void> {
 
 async function loadSyncQueue(): Promise<void> {
   try {
-    const { data } = await api.get<SyncQueueItem[]>(
-      "/tools/tasks/sync-queue",
-    );
+    const { data } = await api.get<SyncQueueItem[]>("/tools/tasks/sync-queue");
     syncQueue.value = data;
   } catch (err) {
     console.error(err);
@@ -176,7 +168,7 @@ onMounted(() => {
     <!-- Tab navigation -->
     <div class="flex gap-2 mb-6 border-b border-surface-border pb-2">
       <button
-        v-for="tab in (['tasks', 'intakes', 'sync', 'stats'] as Tab[])"
+        v-for="tab in ['tasks', 'intakes', 'sync', 'stats'] as Tab[]"
         :key="tab"
         :class="[
           'px-3 py-1.5 text-xs font-mono rounded-lg transition-colors',
@@ -191,10 +183,7 @@ onMounted(() => {
     </div>
 
     <!-- Stats -->
-    <div
-      v-if="activeTab === 'stats' && stats"
-      class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-    >
+    <div v-if="activeTab === 'stats' && stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
       <BaseCard>
         <div class="text-2xl font-bold text-surface-light">
           {{ stats.total }}
@@ -264,10 +253,7 @@ onMounted(() => {
               <div class="text-xs text-surface-mid">
                 {{ formatDate(task.scheduled_at) }}
               </div>
-              <div
-                v-if="task.location"
-                class="text-xs text-surface-mid mt-1"
-              >
+              <div v-if="task.location" class="text-xs text-surface-mid mt-1">
                 @ {{ task.location }}
               </div>
             </div>
@@ -297,9 +283,7 @@ onMounted(() => {
           <div class="flex justify-between items-start gap-4">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1">
-                <span class="text-surface-light font-bold text-sm">
-                  Intake #{{ item.id }}
-                </span>
+                <span class="text-surface-light font-bold text-sm"> Intake #{{ item.id }} </span>
                 <span
                   :class="[
                     'text-[10px] px-2 py-0.5 rounded-full border',
@@ -308,23 +292,18 @@ onMounted(() => {
                 >
                   {{ item.status }}
                 </span>
-                <span
-                  v-if="item.task_id"
-                  class="text-xs text-accent-blue"
-                >
+                <span v-if="item.task_id" class="text-xs text-accent-blue">
                   → Task #{{ item.task_id }}
                 </span>
               </div>
-              <p
-                v-if="item.inbound_text"
-                class="text-xs text-surface-mid mb-2 truncate"
-              >
+              <p v-if="item.inbound_text" class="text-xs text-surface-mid mb-2 truncate">
                 {{ item.inbound_text }}
               </p>
               <pre
                 v-if="item.draft_json"
                 class="text-[10px] text-surface-mid bg-surface-dark/50 rounded p-2 overflow-x-auto"
-              >{{ JSON.stringify(item.draft_json, null, 2) }}</pre>
+                >{{ JSON.stringify(item.draft_json, null, 2) }}</pre
+              >
             </div>
             <span class="text-[10px] text-surface-mid shrink-0">
               {{ formatDate(item.created_at) }}
@@ -332,10 +311,7 @@ onMounted(() => {
           </div>
         </BaseCard>
 
-        <p
-          v-if="intakes.length === 0"
-          class="text-surface-mid text-sm text-center py-8"
-        >
+        <p v-if="intakes.length === 0" class="text-surface-mid text-sm text-center py-8">
           No task intakes yet.
         </p>
       </div>
@@ -348,9 +324,7 @@ onMounted(() => {
           <div class="flex justify-between items-start">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1">
-                <span class="text-surface-light font-bold text-sm">
-                  Task #{{ item.task_id }}
-                </span>
+                <span class="text-surface-light font-bold text-sm"> Task #{{ item.task_id }} </span>
                 <span class="text-xs text-accent-blue">
                   {{ item.action }}
                 </span>
@@ -369,10 +343,7 @@ onMounted(() => {
                   | Next retry: {{ formatDate(item.next_retry_at) }}
                 </span>
               </div>
-              <div
-                v-if="item.last_error"
-                class="text-xs text-red-400 mt-1 truncate"
-              >
+              <div v-if="item.last_error" class="text-xs text-red-400 mt-1 truncate">
                 {{ item.last_error }}
               </div>
             </div>
@@ -387,10 +358,7 @@ onMounted(() => {
           </div>
         </BaseCard>
 
-        <p
-          v-if="syncQueue.length === 0"
-          class="text-surface-mid text-sm text-center py-8"
-        >
+        <p v-if="syncQueue.length === 0" class="text-surface-mid text-sm text-center py-8">
           Sync queue is empty.
         </p>
       </div>
@@ -412,19 +380,14 @@ onMounted(() => {
                 label="Scheduled at"
                 type="datetime-local"
               />
-              <BaseInput
-                v-model="createForm.location"
-                label="Location"
-                placeholder="Optional"
-              />
+              <BaseInput v-model="createForm.location" label="Location" placeholder="Optional" />
               <div>
                 <label class="text-sm text-surface-mid font-mono block mb-1">Notes</label>
                 <textarea
                   v-model="createForm.description"
                   rows="3"
                   placeholder="Optional details"
-                  class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
-                         focus:outline-none focus:border-accent-blue transition-colors resize-none"
+                  class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors resize-none"
                 />
               </div>
               <div class="flex gap-3 pt-2">
@@ -449,10 +412,7 @@ onMounted(() => {
           class="fixed inset-0 z-50 flex justify-end"
           @click.self="closeDetail"
         >
-          <div
-            class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            @click="closeDetail"
-          />
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeDetail" />
           <div
             class="relative w-full max-w-md bg-surface-dark border-l border-surface-border overflow-y-auto p-6"
           >
@@ -481,15 +441,9 @@ onMounted(() => {
               </div>
 
               <div class="text-xs text-surface-mid space-y-1">
-                <div>
-                  Scheduled: {{ formatDate(selectedTask.scheduled_at) }}
-                </div>
-                <div v-if="selectedTask.location">
-                  Location: {{ selectedTask.location }}
-                </div>
-                <div v-if="selectedTask.description">
-                  Notes: {{ selectedTask.description }}
-                </div>
+                <div>Scheduled: {{ formatDate(selectedTask.scheduled_at) }}</div>
+                <div v-if="selectedTask.location">Location: {{ selectedTask.location }}</div>
+                <div v-if="selectedTask.description">Notes: {{ selectedTask.description }}</div>
                 <div v-if="selectedTask.google_event_id">
                   Google Event: {{ selectedTask.google_event_id }}
                 </div>
@@ -510,11 +464,7 @@ onMounted(() => {
                     class="text-xs text-surface-mid flex justify-between"
                   >
                     <span>{{ formatDate(r.remind_at) }}</span>
-                    <span
-                      :class="
-                        r.sent ? 'text-green-400' : 'text-yellow-400'
-                      "
-                    >
+                    <span :class="r.sent ? 'text-green-400' : 'text-yellow-400'">
                       {{ r.sent ? "sent" : "pending" }}
                     </span>
                   </div>
@@ -546,11 +496,7 @@ onMounted(() => {
 
               <!-- Retry sync -->
               <div class="border-t border-surface-border pt-4">
-                <BaseButton
-                  variant="ghost"
-                  size="sm"
-                  @click="retrySync(selectedTask.id)"
-                >
+                <BaseButton variant="ghost" size="sm" @click="retrySync(selectedTask.id)">
                   Retry calendar sync
                 </BaseButton>
               </div>

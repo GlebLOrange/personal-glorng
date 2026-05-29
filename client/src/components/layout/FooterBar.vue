@@ -13,7 +13,8 @@ const year = new Date().getFullYear();
       </router-link>
     </div>
     <p class="text-sm text-surface-mid text-center">
-      &copy; {{ year }} <span class="accent-gradient font-bold">gLOrng</span>. Built with FastAPI + Vue 3.
+      &copy; {{ year }} <span class="accent-gradient font-bold">gLOrng</span>. Built with FastAPI +
+      Vue 3.
     </p>
   </footer>
 </template>

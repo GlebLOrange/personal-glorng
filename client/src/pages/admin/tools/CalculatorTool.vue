@@ -12,12 +12,7 @@ const expression = ref("");
 const loading = ref(false);
 const { toast } = useNotify();
 
-const buttons = [
-  "7", "8", "9", "/",
-  "4", "5", "6", "*",
-  "1", "2", "3", "-",
-  "0", ".", "=", "+",
-];
+const buttons = ["7", "8", "9", "/", "4", "5", "6", "*", "1", "2", "3", "-", "0", ".", "=", "+"];
 
 const EXPR_RE = /^(-?\d+\.?\d*)\s*([+\-*/])\s*(-?\d+\.?\d*)$/;
 
@@ -58,8 +53,8 @@ async function handleInput(val: string): Promise<void> {
       }
     } catch (err: unknown) {
       const msg =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data
-          ?.detail ?? "Calculation failed";
+        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
+        "Calculation failed";
       toast(msg, "error");
       display.value = "Error";
       expression.value = "";
@@ -69,7 +64,13 @@ async function handleInput(val: string): Promise<void> {
     return;
   }
 
-  if (val === "." && expression.value.split(/[+\-*/]/).pop()?.includes(".")) {
+  if (
+    val === "." &&
+    expression.value
+      .split(/[+\-*/]/)
+      .pop()
+      ?.includes(".")
+  ) {
     return;
   }
 
@@ -96,9 +97,7 @@ function clear(): void {
       </div>
 
       <div class="grid grid-cols-4 gap-2">
-        <BaseButton variant="ghost" size="sm" class="col-span-2" @click="clear">
-          AC
-        </BaseButton>
+        <BaseButton variant="ghost" size="sm" class="col-span-2" @click="clear"> AC </BaseButton>
         <div class="col-span-2" />
 
         <BaseButton

@@ -23,9 +23,7 @@ const auth = useAuthStore();
 const { can } = usePermissions();
 const services = ref<PlatformService[]>(filterAiChat(PLATFORM_SERVICES));
 
-const visibleServices = computed(() =>
-  services.value.filter((s) => can(s.slug, "read")),
-);
+const visibleServices = computed(() => services.value.filter((s) => can(s.slug, "read")));
 
 const sections = computed(() => groupServicesByCategory(visibleServices.value));
 
@@ -66,12 +64,8 @@ onMounted(async () => {
 <template>
   <AdminPageLayout title="tools" max-width="xl">
     <div class="mb-6">
-      <p class="text-surface-mid text-sm mb-2">
-        Welcome back, {{ auth.user?.email ?? "admin" }}
-      </p>
-      <p class="text-surface-muted text-xs">
-        Services shared across web, bot, and workers
-      </p>
+      <p class="text-surface-mid text-sm mb-2">Welcome back, {{ auth.user?.email ?? "admin" }}</p>
+      <p class="text-surface-muted text-xs">Services shared across web, bot, and workers</p>
     </div>
 
     <section v-for="section in sections" :key="section.category" class="mb-10">

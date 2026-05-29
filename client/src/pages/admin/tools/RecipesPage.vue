@@ -183,8 +183,7 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
       <div class="flex gap-2 items-end">
         <select
           v-model="activeTag"
-          class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
-                 focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
+          class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
         >
           <option :value="null">All tags</option>
           <option v-for="tag in allTags" :key="tag" :value="tag">{{ tag }}</option>
@@ -201,7 +200,9 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
           class="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4 bg-black/60"
           @click.self="showForm = false"
         >
-          <div class="bg-surface-card border border-surface-border rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+          <div
+            class="bg-surface-card border border-surface-border rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto"
+          >
             <h2 class="text-lg font-bold text-surface-light mb-6">
               <span class="accent-gradient">€ {{ formTitle }}</span>
             </h2>
@@ -224,12 +225,7 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
                   type="number"
                   placeholder="30"
                 />
-                <BaseInput
-                  v-model="form.servings"
-                  label="Servings"
-                  type="number"
-                  placeholder="4"
-                />
+                <BaseInput v-model="form.servings" label="Servings" type="number" placeholder="4" />
               </div>
 
               <BaseInput v-model="form.tags" label="Tags" placeholder="dinner, pasta, quick" />
@@ -241,8 +237,7 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
                   <div v-for="(_, idx) in form.ingredients" :key="idx" class="flex gap-2">
                     <input
                       v-model="form.ingredients[idx]"
-                      class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
-                             focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50"
+                      class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50"
                       :placeholder="`Ingredient ${idx + 1}`"
                     />
                     <BaseButton
@@ -255,7 +250,12 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
                       &times;
                     </BaseButton>
                   </div>
-                  <BaseButton variant="ghost" size="sm" type="button" @click="addListItem(form.ingredients)">
+                  <BaseButton
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    @click="addListItem(form.ingredients)"
+                  >
                     + ingredient
                   </BaseButton>
                 </div>
@@ -266,12 +266,13 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
                 <label class="text-sm text-surface-mid font-mono block mb-1">Steps</label>
                 <div class="space-y-2">
                   <div v-for="(_, idx) in form.steps" :key="idx" class="flex gap-2">
-                    <div class="text-surface-mid text-sm font-mono pt-2 w-6 text-right shrink-0">{{ idx + 1 }}.</div>
+                    <div class="text-surface-mid text-sm font-mono pt-2 w-6 text-right shrink-0">
+                      {{ idx + 1 }}.
+                    </div>
                     <textarea
                       v-model="form.steps[idx]"
                       rows="2"
-                      class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
-                             focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
+                      class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
                       :placeholder="`Step ${idx + 1}`"
                     />
                     <BaseButton
@@ -284,7 +285,12 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
                       &times;
                     </BaseButton>
                   </div>
-                  <BaseButton variant="ghost" size="sm" type="button" @click="addListItem(form.steps)">
+                  <BaseButton
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    @click="addListItem(form.steps)"
+                  >
                     + step
                   </BaseButton>
                 </div>
@@ -297,8 +303,7 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
                   v-model="form.notes"
                   rows="3"
                   placeholder="Tips, variations, source link..."
-                  class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
-                         focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
+                  class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
                 />
               </div>
 
@@ -355,11 +360,21 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
         </div>
 
         <!-- Expanded detail -->
-        <div v-if="expandedId === recipe.id" class="mt-4 pt-4 border-t border-surface-border" @click.stop>
+        <div
+          v-if="expandedId === recipe.id"
+          class="mt-4 pt-4 border-t border-surface-border"
+          @click.stop
+        >
           <div class="mb-3">
-            <h4 class="text-xs font-bold text-surface-mid uppercase tracking-wider mb-1">Ingredients</h4>
+            <h4 class="text-xs font-bold text-surface-mid uppercase tracking-wider mb-1">
+              Ingredients
+            </h4>
             <ul class="text-sm text-surface-light space-y-0.5">
-              <li v-for="(ing, i) in recipe.ingredients" :key="i" class="before:content-['·_'] before:text-accent-blue">
+              <li
+                v-for="(ing, i) in recipe.ingredients"
+                :key="i"
+                class="before:content-['·_'] before:text-accent-blue"
+              >
                 {{ ing }}
               </li>
             </ul>
@@ -381,7 +396,9 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
 
           <div class="flex gap-2 pt-2">
             <BaseButton variant="ghost" size="sm" @click="openEdit(recipe)">Edit</BaseButton>
-            <BaseButton variant="ghost" size="sm" @click="deleteRecipe(recipe.id)">Delete</BaseButton>
+            <BaseButton variant="ghost" size="sm" @click="deleteRecipe(recipe.id)"
+              >Delete</BaseButton
+            >
           </div>
         </div>
       </BaseCard>

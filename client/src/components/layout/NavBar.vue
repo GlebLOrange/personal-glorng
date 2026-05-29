@@ -11,9 +11,7 @@ function handleLogout(): void {
 <template>
   <nav class="sticky top-0 z-40 backdrop-blur-md bg-surface-dark/80 border-b border-surface-border">
     <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-      <RouterLink to="/" class="text-xl font-bold accent-gradient">
-        gLOrng
-      </RouterLink>
+      <RouterLink to="/" class="text-xl font-bold accent-gradient"> gLOrng </RouterLink>
 
       <div class="flex items-center gap-4 text-sm">
         <RouterLink to="/" class="text-surface-mid hover:text-surface-light transition-colors">

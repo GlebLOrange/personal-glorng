@@ -60,9 +60,7 @@ onMounted(load);
 
 <template>
   <AdminPageLayout title="audit log">
-    <p class="text-surface-muted text-xs mb-6 -mt-4">
-      Persistent security and domain change trail
-    </p>
+    <p class="text-surface-muted text-xs mb-6 -mt-4">Persistent security and domain change trail</p>
 
     <BaseCard class="mb-6">
       <div class="flex flex-wrap gap-3 items-end">
@@ -100,10 +98,7 @@ onMounted(load);
       <p class="text-xs text-surface-muted">{{ total }} events total</p>
       <BaseCard v-for="event in items" :key="event.id" class="text-sm">
         <div class="flex flex-wrap items-center gap-2 mb-2">
-          <span
-            class="text-xs px-2 py-0.5 rounded"
-            :class="categoryClass(event.category)"
-          >
+          <span class="text-xs px-2 py-0.5 rounded" :class="categoryClass(event.category)">
             {{ event.category }}
           </span>
           <span class="font-mono text-surface-light">{{ event.action }}</span>
@@ -125,7 +120,8 @@ onMounted(load);
           <pre
             v-if="event.metadata"
             class="mt-2 p-2 bg-surface-dark rounded text-xs overflow-x-auto"
-          >{{ JSON.stringify(event.metadata, null, 2) }}</pre>
+            >{{ JSON.stringify(event.metadata, null, 2) }}</pre
+          >
         </div>
       </BaseCard>
     </div>

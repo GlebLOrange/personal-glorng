@@ -16,9 +16,7 @@ const message = ref("");
 const loading = ref(false);
 const { toast } = useNotify();
 
-const canSubmit = computed(
-  () => email.value.trim() && theme.value.trim() && message.value.trim(),
-);
+const canSubmit = computed(() => email.value.trim() && theme.value.trim() && message.value.trim());
 
 async function submit(): Promise<void> {
   if (!canSubmit.value) return;

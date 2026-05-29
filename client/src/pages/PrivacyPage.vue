@@ -17,20 +17,36 @@ function openPreferences() {
     <section class="mb-10">
       <h2 class="text-xl font-semibold text-accent-blue mb-3">What data is collected</h2>
       <p class="text-surface-sage leading-relaxed mb-3">
-        This site collects minimal data to keep things running and to understand how visitors use it.
+        This site collects minimal data to keep things running and to understand how visitors use
+        it.
       </p>
       <ul class="list-disc list-inside text-surface-sage space-y-1.5 ml-2">
-        <li><strong class="text-surface-light">Authentication cookies</strong> — stored when you log in, used to keep your session active.</li>
-        <li v-if="isAnalyticsEnabled"><strong class="text-surface-light">Google Analytics</strong> — collects anonymous page view data (pages visited, time on site, general location). IP addresses are anonymized.</li>
-        <li><strong class="text-surface-light">Sentry</strong> — captures errors and performance data to help fix bugs. May collect IP address and browser info when an error occurs.</li>
-        <li><strong class="text-surface-light">Spotify now playing</strong> — when enabled, the portfolio may show the site owner's currently playing track title, artist, and album art via Spotify's API. Visitors do not sign in to Spotify.</li>
+        <li>
+          <strong class="text-surface-light">Authentication cookies</strong> — stored when you log
+          in, used to keep your session active.
+        </li>
+        <li v-if="isAnalyticsEnabled">
+          <strong class="text-surface-light">Google Analytics</strong> — collects anonymous page
+          view data (pages visited, time on site, general location). IP addresses are anonymized.
+        </li>
+        <li>
+          <strong class="text-surface-light">Sentry</strong> — captures errors and performance data
+          to help fix bugs. May collect IP address and browser info when an error occurs.
+        </li>
+        <li>
+          <strong class="text-surface-light">Spotify now playing</strong> — when enabled, the
+          portfolio may show the site owner's currently playing track title, artist, and album art
+          via Spotify's API. Visitors do not sign in to Spotify.
+        </li>
       </ul>
     </section>
 
     <section class="mb-10">
       <h2 class="text-xl font-semibold text-accent-blue mb-3">Cookies used</h2>
       <div class="overflow-x-auto">
-        <table class="w-full text-sm text-left border border-surface-border rounded-lg overflow-hidden">
+        <table
+          class="w-full text-sm text-left border border-surface-border rounded-lg overflow-hidden"
+        >
           <thead class="bg-surface-card text-surface-mid">
             <tr>
               <th class="px-4 py-2 border-b border-surface-border">Cookie</th>
@@ -71,8 +87,9 @@ function openPreferences() {
         <button
           class="text-accent-blue underline underline-offset-2 hover:text-accent-violet transition-colors"
           @click="openPreferences"
-        >cookie settings</button>.
-        Analytics and error monitoring only run if you've given consent.
+        >
+          cookie settings</button
+        >. Analytics and error monitoring only run if you've given consent.
         <span v-if="!isAnalyticsEnabled"> Google Analytics is currently disabled.</span>
       </p>
     </section>
@@ -81,11 +98,23 @@ function openPreferences() {
       <h2 class="text-xl font-semibold text-accent-blue mb-3">Third parties</h2>
       <ul class="list-disc list-inside text-surface-sage space-y-1.5 ml-2">
         <li v-if="isAnalyticsEnabled">
-          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="text-accent-blue hover:text-accent-violet transition-colors">Google Analytics</a>
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            rel="noopener"
+            class="text-accent-blue hover:text-accent-violet transition-colors"
+            >Google Analytics</a
+          >
           — used for anonymous usage statistics.
         </li>
         <li>
-          <a href="https://sentry.io/privacy/" target="_blank" rel="noopener" class="text-accent-blue hover:text-accent-violet transition-colors">Sentry</a>
+          <a
+            href="https://sentry.io/privacy/"
+            target="_blank"
+            rel="noopener"
+            class="text-accent-blue hover:text-accent-violet transition-colors"
+            >Sentry</a
+          >
           — used for error and performance monitoring.
         </li>
       </ul>
@@ -103,7 +132,8 @@ function openPreferences() {
             target="_blank"
             rel="noopener"
             class="text-accent-blue hover:text-accent-violet transition-colors"
-          >{{ link.label }}</a>
+            >{{ link.label }}</a
+          >
         </li>
       </ul>
     </section>

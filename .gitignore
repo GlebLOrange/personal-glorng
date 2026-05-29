@@ -18,6 +18,8 @@ htmlcov/
 # Node
 node_modules/
 client/.vite/
+client/playwright-report/
+client/test-results/
 dist/
 *.tsbuildinfo
 

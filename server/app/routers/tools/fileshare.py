@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 
 from app.core.deps import AuthorizedUser, DbSession, require_capability
 from app.core.exceptions import ApiError
+from app.core.uploads import read_upload_bounded
 from app.core.rate_limit import rate_limit_api
 from app.core.utils import iter_file, paginate_params
 from app.schemas.common import MessageResponse
@@ -31,7 +32,7 @@ async def upload_file(
     if not file.filename:
         raise ApiError(400, "No file provided")
 
-    contents = await file.read()
+    contents = await read_upload_bounded(file, fileshare_svc.MAX_UPLOAD_SIZE)
     shared = await fileshare_svc.upload(
         db,
         filename=file.filename,

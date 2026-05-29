@@ -14,15 +14,7 @@ import { Line } from "vue-chartjs";
 
 import { CHART_COLORS, chartDefaults } from "@/components/charts/chartTheme";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const props = defineProps<{
   labels: string[];

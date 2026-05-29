@@ -62,7 +62,7 @@ export const useAuthStore = defineStore("auth", () => {
         return;
       }
       sessionError.value = axios.isAxiosError(err)
-        ? (err.message || "Unable to restore session")
+        ? err.message || "Unable to restore session"
         : "Unable to restore session";
       throw err;
     } finally {

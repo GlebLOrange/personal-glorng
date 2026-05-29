@@ -35,9 +35,7 @@ function parseSseEvents(buffer: string): { events: StreamEvent[]; rest: string }
   const rest = parts.pop() ?? "";
 
   for (const part of parts) {
-    const line = part
-      .split("\n")
-      .find((entry) => entry.startsWith("data: "));
+    const line = part.split("\n").find((entry) => entry.startsWith("data: "));
     if (!line) continue;
     try {
       events.push(JSON.parse(line.slice(6)) as StreamEvent);
@@ -66,9 +64,7 @@ async function send(): Promise<void> {
   scrollToBottom();
 
   try {
-    const payload = messages.value
-      .slice(0, -1)
-      .map((m) => ({ role: m.role, content: m.content }));
+    const payload = messages.value.slice(0, -1).map((m) => ({ role: m.role, content: m.content }));
 
     const response = await fetch("/api/tools/ai-chat", {
       method: "POST",
@@ -164,7 +160,8 @@ function clear(): void {
           >
             {{ msg.role }}
           </span>
-          {{ msg.content }}<span
+          {{ msg.content
+          }}<span
             v-if="loading && msg.role === 'assistant' && i === messages.length - 1"
             class="inline-block w-2 h-4 ml-0.5 bg-accent-violet/60 animate-pulse align-middle"
           />
@@ -178,9 +175,7 @@ function clear(): void {
           v-model="input"
           rows="2"
           placeholder="Ask anything..."
-          class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light
-                 font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors
-                 placeholder:text-surface-mid/50 resize-none"
+          class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
           @keydown.enter.exact.prevent="send"
         />
         <div class="flex flex-col gap-2">

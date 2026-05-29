@@ -13,15 +13,13 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
   const editingCategoryName = ref("");
   const { toast } = useNotify();
 
-  const categoryOptions = computed(() =>
-    expenseCategories.value.map((category) => category.name),
-  );
+  const categoryOptions = computed(() => expenseCategories.value.map((category) => category.name));
 
   const defaultCategoryName = computed(
     () =>
-      categoryOptions.value.find((name) => name === "Groceries")
-      ?? categoryOptions.value[0]
-      ?? "Groceries",
+      categoryOptions.value.find((name) => name === "Groceries") ??
+      categoryOptions.value[0] ??
+      "Groceries",
   );
 
   async function loadCategories(): Promise<void> {
@@ -89,10 +87,7 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
       await loadCategories();
     } catch (err) {
       console.error(err);
-      toast(
-        getApiErrorMessage(err, "Cannot delete a category that is used by expenses"),
-        "error",
-      );
+      toast(getApiErrorMessage(err, "Cannot delete a category that is used by expenses"), "error");
     }
   }
 

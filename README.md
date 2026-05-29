@@ -9,7 +9,7 @@ Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + Postg
 - **Database**: PostgreSQL 18
 - **Cache/Queue**: Redis 8
 - **Proxy**: Nginx
-- **Tooling**: Ruff (lint/format), pytest, Docker Compose
+- **Tooling**: Ruff (lint/format), pytest, ESLint, Prettier, Vitest, Playwright, Docker Compose
 
 ## Quick Start
 
@@ -83,7 +83,10 @@ Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN` in `.env`.
 | `make prod`        | Start production environment                     |
 | `make down`    | Stop all containers                  |
 | `make test`    | Run backend tests                    |
-| `make lint`    | Lint and format Python code          |
+| `make lint`    | Lint and format Python code (auto-fix) |
+| `make lint-check` | Ruff verify-only (matches CI)    |
+| `make check`   | Backend lint-check + tests + optional db-check + client lint/test/build |
+| `make db-check`| Alembic migration graph check        |
 | `make db-init` | Run Alembic migrations (`migrate` service) |
 | `make migrate` | Alias for `db-init`                  |
 | `make db-reset`| Wipe DB volume and re-migrate (destructive) |
@@ -128,6 +131,27 @@ FastAPI + Worker + Todobot share PostgreSQL and Redis
 ```
 
 See [docs/platform.md](docs/platform.md) for the service catalog and audit model. Database setup and migrations: [docs/database.md](docs/database.md).
+
+## Quality checks
+
+With `make dev-lite` running (API container up):
+
+```bash
+make lint-check && make test
+cd client && npm ci && npm run lint && npm run format:check && npm run test && npm run build
+```
+
+Optional end-to-end smoke tests (API on :8000, then):
+
+```bash
+cd client && npm run build && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run preview
+# other terminal:
+cd client && npm run e2e
+```
+
+Install git hooks: `pip install pre-commit && pre-commit install`
+
+CI runs backend ruff/pytest, frontend lint/test/build, Alembic check, and Playwright smoke tests on pull requests (see `.github/workflows/ci.yml`).
 
 ## License
 

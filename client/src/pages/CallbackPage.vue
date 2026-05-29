@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { api } from "@/composables/useApi";
+import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
 
 const route = useRoute();
@@ -43,7 +44,9 @@ onMounted(async () => {
   <div class="min-h-[80vh] flex items-center justify-center px-6">
     <div class="w-full max-w-sm text-center">
       <div v-if="status === 'loading'" class="space-y-4">
-        <div class="animate-spin mx-auto h-8 w-8 border-2 border-accent-blue border-t-transparent rounded-full" />
+        <div
+          class="animate-spin mx-auto h-8 w-8 border-2 border-accent-blue border-t-transparent rounded-full"
+        />
         <p class="text-surface-mid">Linking GitHub account...</p>
       </div>
 

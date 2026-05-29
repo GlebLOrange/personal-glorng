@@ -15,7 +15,8 @@ import { contactLinks } from "@/constants/links";
 import type { DonationsConfig, ResumeData } from "@/types";
 
 const { data: resume, fetch: fetchResume } = useCachedApi<ResumeData>("/resume");
-const { data: donations, fetch: fetchDonations } = useCachedApi<DonationsConfig>("/donations/config");
+const { data: donations, fetch: fetchDonations } =
+  useCachedApi<DonationsConfig>("/donations/config");
 const error = ref(false);
 const showFeedback = ref(false);
 

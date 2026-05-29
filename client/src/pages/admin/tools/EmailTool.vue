@@ -8,6 +8,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import { sanitizeEmailHtml } from "@/utils/sanitizeEmailHtml";
 
 const route = useRoute();
 const to = ref("");
@@ -24,6 +25,10 @@ const previewHtml = ref("");
 const { toast } = useNotify();
 
 const canSend = computed(() => to.value.trim() && subject.value.trim() && body.value.trim());
+
+const sanitizedPreviewHtml = computed(() =>
+  previewHtml.value ? sanitizeEmailHtml(previewHtml.value) : "",
+);
 
 async function send(): Promise<void> {
   if (!canSend.value) return;
@@ -81,9 +86,10 @@ async function preview(): Promise<void> {
 
     <div v-if="previewHtml" class="space-y-2">
       <h3 class="text-sm text-surface-mid font-mono">Preview</h3>
+      <!-- eslint-disable-next-line vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
       <div
         class="border border-surface-border rounded-lg p-4 bg-white"
-        v-html="previewHtml"
+        v-html="sanitizedPreviewHtml"
       />
     </div>
   </AdminPageLayout>

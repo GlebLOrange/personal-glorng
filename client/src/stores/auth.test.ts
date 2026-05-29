@@ -1,0 +1,71 @@
+import axios, { AxiosError } from "axios";
+import { createPinia, setActivePinia } from "pinia";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { api } from "@/composables/useApi";
+import { useAuthStore } from "@/stores/auth";
+
+vi.mock("@/composables/useApi", () => ({
+  api: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
+}));
+
+describe("useAuthStore", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
+
+  it("clears user on clearUser", () => {
+    const auth = useAuthStore();
+    auth.user = {
+      id: "1",
+      email: "a@b.c",
+      permissions: [],
+      is_verified: true,
+      created_at: "2026-01-01T00:00:00Z",
+    };
+    auth.clearUser();
+    expect(auth.user).toBeNull();
+    expect(auth.isAuthenticated).toBe(false);
+  });
+
+  it("login fetches user after credentials post", async () => {
+    vi.mocked(api.post).mockResolvedValue({ data: {} });
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        id: "u1",
+        email: "admin@glorng.dev",
+        permissions: ["*"],
+        is_verified: true,
+        created_at: "2026-01-01T00:00:00Z",
+      },
+    });
+
+    const auth = useAuthStore();
+    await auth.login("admin@glorng.dev", "testpass123");
+
+    expect(api.post).toHaveBeenCalledWith("/auth/login", {
+      email: "admin@glorng.dev",
+      password: "testpass123",
+    });
+    expect(auth.user?.email).toBe("admin@glorng.dev");
+    expect(auth.isAuthenticated).toBe(true);
+  });
+
+  it("resolveSession clears user on 401 after refresh fails", async () => {
+    const err401 = new AxiosError("Unauthorized");
+    err401.response = { status: 401 } as NonNullable<AxiosError["response"]>;
+    vi.mocked(api.get).mockRejectedValue(err401);
+    vi.mocked(api.post).mockRejectedValue(err401);
+    vi.spyOn(axios, "isAxiosError").mockReturnValue(true);
+
+    const auth = useAuthStore();
+    await auth.resolveSession();
+
+    expect(auth.user).toBeNull();
+    expect(auth.sessionResolved).toBe(true);
+  });
+});

@@ -20,9 +20,7 @@ const { copy } = useClipboard();
         target="_blank"
         rel="noopener noreferrer"
       >
-        <BaseButton variant="primary" size="lg">
-          Support via Stripe
-        </BaseButton>
+        <BaseButton variant="primary" size="lg"> Support via Stripe </BaseButton>
       </a>
 
       <a
@@ -31,13 +29,14 @@ const { copy } = useClipboard();
         target="_blank"
         rel="noopener noreferrer"
       >
-        <BaseButton variant="secondary" size="lg">
-          Telegram
-        </BaseButton>
+        <BaseButton variant="secondary" size="lg"> Telegram </BaseButton>
       </a>
     </div>
 
-    <div v-if="config.crypto.btc || config.crypto.eth" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div
+      v-if="config.crypto.btc || config.crypto.eth"
+      class="grid grid-cols-1 md:grid-cols-2 gap-4"
+    >
       <BaseCard v-if="config.crypto.btc" hoverable>
         <div class="text-xs text-accent-blue uppercase tracking-wider mb-2">BTC</div>
         <code class="text-xs text-surface-light break-all">{{ config.crypto.btc }}</code>

@@ -80,7 +80,7 @@ onMounted(load);
   <AdminPageLayout title="feedback">
     <div class="flex gap-2 mb-6">
       <BaseButton
-        v-for="f in (['all', 'unread', 'archived'] as const)"
+        v-for="f in ['all', 'unread', 'archived'] as const"
         :key="f"
         :variant="filter === f ? 'primary' : 'ghost'"
         size="sm"
@@ -123,14 +123,9 @@ onMounted(load);
           </BaseButton>
         </div>
 
-        <div
-          v-if="expandedId === item.id"
-          class="mt-3 pt-3 border-t border-surface-border"
-        >
+        <div v-if="expandedId === item.id" class="mt-3 pt-3 border-t border-surface-border">
           <p class="text-sm text-surface-sage whitespace-pre-wrap mb-3">{{ item.message }}</p>
-          <BaseButton variant="ghost" size="sm" @click.stop="reply(item)">
-            Reply
-          </BaseButton>
+          <BaseButton variant="ghost" size="sm" @click.stop="reply(item)"> Reply </BaseButton>
         </div>
       </BaseCard>
 
