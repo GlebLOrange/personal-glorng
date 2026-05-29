@@ -71,6 +71,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./server:/app
+      - server_venv:/app/.venv
       - server_media:/app/media
     environment:
       PYTHONPATH: /app
@@ -103,6 +104,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./server:/app
+      - server_venv:/app/.venv
     environment:
       PYTHONPATH: /app
     env_file:
@@ -133,6 +135,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./server:/app
+      - server_venv:/app/.venv
     environment:
       PYTHONPATH: /app
     env_file:
@@ -198,6 +201,7 @@ services:
 volumes:
   pgdata:
   redis_data:
+  server_venv:
   server_media:
   client_node_modules:
 
