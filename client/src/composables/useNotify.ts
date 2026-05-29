@@ -6,11 +6,7 @@ const toasts = ref<Toast[]>([]);
 let nextId = 0;
 
 export function useNotify() {
-  function toast(
-    message: string,
-    type: Toast["type"] = "info",
-    duration = 3000,
-  ): void {
+  function toast(message: string, type: Toast["type"] = "info", duration = 3000): void {
     const id = nextId++;
     toasts.value.push({ id, message, type });
     setTimeout(() => {

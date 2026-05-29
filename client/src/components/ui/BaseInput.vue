@@ -16,16 +16,14 @@ defineProps<{
       v-model.number="model"
       type="number"
       :placeholder="placeholder"
-      class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
-             focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50"
+      class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50"
     />
     <input
       v-else
       v-model="model"
       :type="type ?? 'text'"
       :placeholder="placeholder"
-      class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
-             focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50"
+      class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50"
     />
   </div>
 </template>

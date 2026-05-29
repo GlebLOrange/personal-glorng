@@ -36,11 +36,7 @@ body {
 }
 
 .accent-gradient {
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-blue),
-    var(--color-accent-violet)
-  );
+  background: linear-gradient(135deg, var(--color-accent-blue), var(--color-accent-violet));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

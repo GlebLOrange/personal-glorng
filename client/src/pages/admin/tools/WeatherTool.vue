@@ -36,11 +36,7 @@ async function fetchWeather(): Promise<void> {
 <template>
   <AdminPageLayout title="weather">
     <form class="flex gap-3 mb-8" @submit.prevent="fetchWeather">
-      <BaseInput
-        v-model="city"
-        placeholder="Enter city name..."
-        class="flex-1"
-      />
+      <BaseInput v-model="city" placeholder="Enter city name..." class="flex-1" />
       <BaseButton variant="primary" :disabled="loading">
         {{ loading ? "..." : "Search" }}
       </BaseButton>

@@ -16,13 +16,8 @@ export function useSpotifyNowPlaying(): {
     CACHE_TTL_MS,
   );
 
-  const isVisible = computed(
-    () =>
-      Boolean(
-        playback.value?.enabled &&
-          playback.value.is_playing &&
-          playback.value.track_url,
-      ),
+  const isVisible = computed(() =>
+    Boolean(playback.value?.enabled && playback.value.is_playing && playback.value.track_url),
   );
 
   let pollTimer: ReturnType<typeof setInterval> | null = null;

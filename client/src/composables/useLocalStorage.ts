@@ -30,11 +30,6 @@ function writeStorage<T>(key: string, value: T): void {
 export function useLocalStorage<T>(key: string, defaultValue: T): Ref<T> {
   const stored = ref(readStorage(key, defaultValue)) as Ref<T>;
 
-  function setValue(value: T): void {
-    stored.value = value;
-    writeStorage(key, value);
-  }
-
   return new Proxy(stored, {
     get(target, prop, receiver) {
       if (prop === "value") {

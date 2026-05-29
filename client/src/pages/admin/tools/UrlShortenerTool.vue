@@ -68,16 +68,8 @@ onMounted(loadUrls);
 <template>
   <AdminPageLayout title="url-shortener">
     <form class="space-y-3 mb-10" @submit.prevent="createUrl">
-      <BaseInput
-        v-model="newUrl"
-        placeholder="https://example.com/very-long-url..."
-        label="URL"
-      />
-      <BaseInput
-        v-model="newTitle"
-        placeholder="Optional title"
-        label="Title"
-      />
+      <BaseInput v-model="newUrl" placeholder="https://example.com/very-long-url..." label="URL" />
+      <BaseInput v-model="newTitle" placeholder="Optional title" label="Title" />
       <BaseButton variant="primary" :disabled="loading">
         {{ loading ? "Creating..." : "Shorten" }}
       </BaseButton>
@@ -102,9 +94,7 @@ onMounted(loadUrls);
             <BaseButton variant="ghost" size="sm" @click="copy(getShortUrl(url.code))">
               Copy
             </BaseButton>
-            <BaseButton variant="ghost" size="sm" @click="deleteUrl(url.id)">
-              Delete
-            </BaseButton>
+            <BaseButton variant="ghost" size="sm" @click="deleteUrl(url.id)"> Delete </BaseButton>
           </div>
         </div>
       </BaseCard>

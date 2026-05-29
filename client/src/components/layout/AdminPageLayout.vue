@@ -19,16 +19,16 @@ const breadcrumbLabel = computed(() => formatBreadcrumbLabel(props.title));
   <div
     :class="[
       'mx-auto px-6 py-16',
-      maxWidth === 'sm' ? 'max-w-sm'
-        : maxWidth === 'md' ? 'max-w-3xl'
-        : maxWidth === 'xl' ? 'max-w-5xl'
-        : 'max-w-3xl',
+      maxWidth === 'sm'
+        ? 'max-w-sm'
+        : maxWidth === 'md'
+          ? 'max-w-3xl'
+          : maxWidth === 'xl'
+            ? 'max-w-5xl'
+            : 'max-w-3xl',
     ]"
   >
-    <AdminBreadcrumbs
-      v-if="showBreadcrumb"
-      :current-label="breadcrumbLabel"
-    />
+    <AdminBreadcrumbs v-if="showBreadcrumb" :current-label="breadcrumbLabel" />
     <h1 class="text-2xl font-bold text-surface-light mb-8">
       <span class="accent-gradient">€ {{ title }}</span>
     </h1>

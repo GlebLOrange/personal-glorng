@@ -108,18 +108,11 @@ onMounted(loadFiles);
       @drop.prevent="onDrop"
       @click="fileInputRef?.click()"
     >
-      <input
-        ref="fileInputRef"
-        type="file"
-        class="hidden"
-        @change="onFileSelect"
-      />
+      <input ref="fileInputRef" type="file" class="hidden" @change="onFileSelect" />
       <p v-if="selectedName" class="text-surface-light text-sm font-mono">
         {{ selectedName }}
       </p>
-      <p v-else class="text-surface-mid text-sm font-mono">
-        Drop a file here or click to browse
-      </p>
+      <p v-else class="text-surface-mid text-sm font-mono">Drop a file here or click to browse</p>
     </div>
 
     <BaseButton
@@ -148,24 +141,15 @@ onMounted(loadFiles);
             </code>
           </div>
           <div class="flex gap-2 ml-4">
-            <BaseButton
-              variant="ghost"
-              size="sm"
-              @click="copy(getDownloadUrl(f.code))"
-            >
+            <BaseButton variant="ghost" size="sm" @click="copy(getDownloadUrl(f.code))">
               Copy
             </BaseButton>
-            <BaseButton variant="ghost" size="sm" @click="deleteFile(f.id)">
-              Delete
-            </BaseButton>
+            <BaseButton variant="ghost" size="sm" @click="deleteFile(f.id)"> Delete </BaseButton>
           </div>
         </div>
       </BaseCard>
 
-      <p
-        v-if="files.length === 0"
-        class="text-surface-mid text-sm text-center py-8"
-      >
+      <p v-if="files.length === 0" class="text-surface-mid text-sm text-center py-8">
         No shared files yet. Upload one above.
       </p>
     </div>

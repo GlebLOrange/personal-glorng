@@ -11,20 +11,12 @@ let sentryInitialized = false;
 let analyticsInitialized = false;
 
 function applyConsent(app: App) {
-  if (
-    isSentryEnabled &&
-    !sentryInitialized &&
-    CookieConsent.acceptedCategory("monitoring")
-  ) {
+  if (isSentryEnabled && !sentryInitialized && CookieConsent.acceptedCategory("monitoring")) {
     initSentry(app);
     sentryInitialized = true;
   }
 
-  if (
-    isAnalyticsEnabled &&
-    !analyticsInitialized &&
-    CookieConsent.acceptedCategory("analytics")
-  ) {
+  if (isAnalyticsEnabled && !analyticsInitialized && CookieConsent.acceptedCategory("analytics")) {
     initAnalytics(import.meta.env.VITE_GA_ID!);
     analyticsInitialized = true;
   }

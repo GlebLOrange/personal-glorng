@@ -101,8 +101,7 @@ onMounted(loadRates);
           <label class="text-sm text-surface-mid font-mono block mb-1">From</label>
           <select
             v-model="fromCurrency"
-            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
-                   focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
+            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
           >
             <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
           </select>
@@ -111,8 +110,7 @@ onMounted(loadRates);
           <label class="text-sm text-surface-mid font-mono block mb-1">To</label>
           <select
             v-model="toCurrency"
-            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
-                   focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
+            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
           >
             <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
           </select>
@@ -123,12 +121,7 @@ onMounted(loadRates);
         <BaseButton variant="primary" :disabled="!canConvert || loading" @click="convert">
           {{ loading ? "Converting..." : "Convert" }}
         </BaseButton>
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          aria-label="Swap currencies"
-          @click="swapCurrencies"
-        >
+        <BaseButton variant="ghost" size="sm" aria-label="Swap currencies" @click="swapCurrencies">
           <svg
             class="w-4 h-4"
             viewBox="0 0 24 24"
@@ -147,10 +140,7 @@ onMounted(loadRates);
         </BaseButton>
       </div>
 
-      <div
-        v-if="result"
-        class="border-t border-surface-border pt-4"
-      >
+      <div v-if="result" class="border-t border-surface-border pt-4">
         <p class="text-xs text-surface-mid font-mono uppercase tracking-wider mb-2">Result</p>
         <p class="text-2xl font-bold text-surface-light">
           {{ formatMoney(result.converted, result.to_currency) }}

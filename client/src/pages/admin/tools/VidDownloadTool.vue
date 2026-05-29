@@ -62,35 +62,22 @@ async function download(): Promise<void> {
 <template>
   <AdminPageLayout title="vid-download">
     <form class="space-y-4 mb-8" @submit.prevent="download">
-      <BaseInput
-        v-model="url"
-        placeholder="https://example.com/video"
-        label="Video URL"
-      />
+      <BaseInput v-model="url" placeholder="https://example.com/video" label="Video URL" />
 
       <div class="flex flex-col gap-1">
         <label class="text-sm text-surface-mid font-mono">Format</label>
         <select
           v-model="format"
-          class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
-                 focus:outline-none focus:border-accent-blue transition-colors"
+          class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors"
         >
-          <option
-            v-for="f in formats"
-            :key="f.value"
-            :value="f.value"
-          >
+          <option v-for="f in formats" :key="f.value" :value="f.value">
             {{ f.label }}
           </option>
         </select>
       </div>
 
       <label class="flex items-center gap-2 text-sm text-surface-mid font-mono cursor-pointer">
-        <input
-          v-model="audioOnly"
-          type="checkbox"
-          class="accent-accent-blue"
-        />
+        <input v-model="audioOnly" type="checkbox" class="accent-accent-blue" />
         Audio only (extract as MP3)
       </label>
 
@@ -115,8 +102,14 @@ async function download(): Promise<void> {
           </p>
           <ul class="list-disc list-inside text-surface-mid space-y-1 ml-2">
             <li><code class="text-surface-light">best</code> -- best single file (default)</li>
-            <li><code class="text-surface-light">bestvideo+bestaudio/best</code> -- merge best streams (needs ffmpeg)</li>
-            <li><code class="text-surface-light">bestvideo[height&lt;=720]+bestaudio</code> -- cap at 720p</li>
+            <li>
+              <code class="text-surface-light">bestvideo+bestaudio/best</code> -- merge best streams
+              (needs ffmpeg)
+            </li>
+            <li>
+              <code class="text-surface-light">bestvideo[height&lt;=720]+bestaudio</code> -- cap at
+              720p
+            </li>
             <li><code class="text-surface-light">bestaudio</code> -- audio stream only</li>
           </ul>
         </div>
@@ -124,9 +117,9 @@ async function download(): Promise<void> {
         <div>
           <h3 class="text-accent-blue font-bold mb-2">Supported sites</h3>
           <p class="text-surface-mid">
-            yt-dlp supports 1800+ sites including YouTube, Twitter/X, Instagram, TikTok,
-            Reddit, Twitch, Vimeo, SoundCloud, and many more.
-            Paste any video/audio URL and it will attempt to extract the media.
+            yt-dlp supports 1800+ sites including YouTube, Twitter/X, Instagram, TikTok, Reddit,
+            Twitch, Vimeo, SoundCloud, and many more. Paste any video/audio URL and it will attempt
+            to extract the media.
           </p>
         </div>
 
@@ -134,16 +127,16 @@ async function download(): Promise<void> {
           <h3 class="text-accent-blue font-bold mb-2">Audio extraction</h3>
           <p class="text-surface-mid">
             Check "Audio only" to extract the audio track as MP3. This uses
-            <code class="text-surface-light">-x --audio-format mp3</code> under the hood.
-            Great for downloading music or podcast episodes.
+            <code class="text-surface-light">-x --audio-format mp3</code> under the hood. Great for
+            downloading music or podcast episodes.
           </p>
         </div>
 
         <div>
           <h3 class="text-accent-blue font-bold mb-2">Limits</h3>
           <p class="text-surface-mid">
-            Downloads are limited to 500 MB and 2 minutes per request.
-            At most 2 concurrent downloads run on the server.
+            Downloads are limited to 500 MB and 2 minutes per request. At most 2 concurrent
+            downloads run on the server.
           </p>
         </div>
 

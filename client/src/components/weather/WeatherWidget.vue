@@ -12,9 +12,7 @@ const props = withDefaults(
   { city: "Wroclaw", compact: false },
 );
 
-const url = computed(
-  () => `/tools/weather/${encodeURIComponent(props.city)}`,
-);
+const url = computed(() => `/tools/weather/${encodeURIComponent(props.city)}`);
 const { data: weather, loading, fetch: fetchWeather } = useCachedApi<WeatherData>(url);
 
 onMounted(() => {
@@ -41,9 +39,7 @@ watch(url, () => {
         {{ weather.current_condition?.[0]?.temp_C }}°C
       </span>
       <span class="text-surface-muted">·</span>
-      <span class="text-surface-mid">
-        {{ weather.current_condition?.[0]?.humidity }}%
-      </span>
+      <span class="text-surface-mid"> {{ weather.current_condition?.[0]?.humidity }}% </span>
       <span class="text-surface-muted">·</span>
       <span class="text-surface-mid">
         {{ weather.current_condition?.[0]?.weatherDesc?.[0]?.value }}

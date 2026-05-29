@@ -1,4 +1,4 @@
-import { computed, ref, type ComputedRef, type Ref } from "vue";
+import { computed, ref } from "vue";
 
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
@@ -7,9 +7,7 @@ import type { ExchangeRates, ToolExpense, ToolExpenseSummary } from "@/types";
 
 import type { CurrencyCode } from "./useExpenseFilters";
 
-function topCategoryChart(
-  summaryData: ToolExpenseSummary,
-): { labels: string[]; values: number[] } {
+function topCategoryChart(summaryData: ToolExpenseSummary): { labels: string[]; values: number[] } {
   const items = summaryData.by_category.map((c) => ({
     label: c.category,
     value: parseFloat(c.total),
@@ -25,9 +23,10 @@ function topCategoryChart(
   };
 }
 
-function topDescriptionChart(
-  summaryData: ToolExpenseSummary,
-): { labels: string[]; values: number[] } {
+function topDescriptionChart(summaryData: ToolExpenseSummary): {
+  labels: string[];
+  values: number[];
+} {
   const items = summaryData.by_tool.map((t) => ({
     label: t.tool_name,
     value: parseFloat(t.total),
@@ -72,9 +71,9 @@ export function useExpenseSummary(
 
   const hasChartData = computed(
     () =>
-      (summary.value?.by_month.length ?? 0) > 0
-      || (summary.value?.by_tool.length ?? 0) > 0
-      || (summary.value?.by_category.length ?? 0) > 0,
+      (summary.value?.by_month.length ?? 0) > 0 ||
+      (summary.value?.by_tool.length ?? 0) > 0 ||
+      (summary.value?.by_category.length ?? 0) > 0,
   );
 
   function convertAmount(amount: string, from: CurrencyCode, to: CurrencyCode): number {

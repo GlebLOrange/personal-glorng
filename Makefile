@@ -1,6 +1,7 @@
-.PHONY: dev dev-lite dev-worker dev-bot dev-full prod test lint migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes down logs bot-logs
+.PHONY: dev dev-lite dev-worker dev-bot dev-full prod test lint lint-check check migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes down logs bot-logs
 
 msg ?=
+CHECK_DB ?= 1
 
 dev:
 	docker compose up --build
@@ -34,6 +35,15 @@ test:
 
 lint:
 	docker compose exec server ruff check --fix . && docker compose exec server ruff format .
+
+lint-check:
+	docker compose exec server ruff check . && docker compose exec server ruff format --check .
+
+check: lint-check test
+ifeq ($(CHECK_DB),1)
+	$(MAKE) db-check
+endif
+	cd client && npm run lint && npm run format:check && npm run test && npm run build
 
 db-init:
 	docker compose run --rm --build migrate

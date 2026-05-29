@@ -18,7 +18,11 @@ defineProps<{
         : variant === 'ghost'
           ? 'bg-transparent text-surface-light border-surface-border hover:border-accent-blue'
           : 'bg-surface-card text-surface-light border-surface-border hover:border-accent-blue',
-      size === 'sm' ? 'px-3 py-1.5 text-xs' : size === 'lg' ? 'px-6 py-3 text-base' : 'px-4 py-2 text-sm',
+      size === 'sm'
+        ? 'px-3 py-1.5 text-xs'
+        : size === 'lg'
+          ? 'px-6 py-3 text-base'
+          : 'px-4 py-2 text-sm',
     ]"
   >
     <slot />
