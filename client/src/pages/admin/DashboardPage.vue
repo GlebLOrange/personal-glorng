@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
-import WeatherWidget from "@/components/weather/WeatherWidget.vue";
+import WeatherCard from "@/components/weather/WeatherCard.vue";
 import { api } from "@/composables/useApi";
 import {
   groupServicesByCategory,
@@ -56,15 +56,14 @@ onMounted(async () => {
 
 <template>
   <AdminPageLayout title="dashboard" max-width="xl">
-    <p class="text-surface-mid text-sm mb-2 -mt-4">
-      Welcome back, {{ auth.user?.email ?? "admin" }}
-    </p>
-    <p class="text-surface-muted text-xs mb-6">
-      Services shared across web, bot, and workers
-    </p>
-
-    <div class="mb-10">
-      <WeatherWidget city="Wroclaw" />
+    <div class="relative mb-6 pr-48 sm:pr-72">
+      <WeatherCard />
+      <p class="text-surface-mid text-sm mb-2 -mt-4">
+        Welcome back, {{ auth.user?.email ?? "admin" }}
+      </p>
+      <p class="text-surface-muted text-xs">
+        Services shared across web, bot, and workers
+      </p>
     </div>
 
     <section v-for="section in sections" :key="section.category" class="mb-10">

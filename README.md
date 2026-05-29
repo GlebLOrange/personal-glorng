@@ -82,10 +82,10 @@ Admin tools are grouped into platform pillars:
 
 | Pillar | Services |
 |--------|----------|
-| **Productivity** | Tasks, Email |
+| **Productivity** | Tasks, Email, Expenses |
 | **Content** | Recipes, File share, URL shortener |
-| **Utilities** | Weather, Calculator, Video download, AI chat |
-| **Operations** | Expenses, Feedback, Audit log |
+| **Utilities** | Calculator, Video download, AI chat |
+| **Operations** | Feedback, Audit log |
 
 Each capability follows a module-as-service pattern: business logic in `server/app/services/`, thin HTTP routers in `server/app/routers/tools/`, and a shared registry at `GET /api/platform/services`.
 

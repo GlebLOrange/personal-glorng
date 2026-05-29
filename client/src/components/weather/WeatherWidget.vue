@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { computed, onMounted, watch } from "vue";
 
 import { useCachedApi } from "@/composables/useCachedApi";
 import type { WeatherData } from "@/types";
@@ -12,10 +12,18 @@ const props = withDefaults(
   { city: "Wroclaw", compact: false },
 );
 
-const url = `/tools/weather/${encodeURIComponent(props.city)}`;
+const url = computed(
+  () => `/tools/weather/${encodeURIComponent(props.city)}`,
+);
 const { data: weather, loading, fetch: fetchWeather } = useCachedApi<WeatherData>(url);
 
-onMounted(fetchWeather);
+onMounted(() => {
+  void fetchWeather();
+});
+
+watch(url, () => {
+  void fetchWeather();
+});
 </script>
 
 <template>
@@ -24,13 +32,19 @@ onMounted(fetchWeather);
   </div>
 
   <div v-else-if="weather" class="font-mono">
-    <div v-if="compact" class="flex items-center gap-3 text-sm">
+    <div v-if="compact" class="flex items-center gap-2 text-sm flex-wrap">
       <span class="text-surface-light font-bold">
         {{ weather.nearest_area?.[0]?.areaName?.[0]?.value }}
       </span>
+      <span class="text-surface-muted">·</span>
       <span class="accent-gradient text-lg font-bold">
         {{ weather.current_condition?.[0]?.temp_C }}°C
       </span>
+      <span class="text-surface-muted">·</span>
+      <span class="text-surface-mid">
+        {{ weather.current_condition?.[0]?.humidity }}%
+      </span>
+      <span class="text-surface-muted">·</span>
       <span class="text-surface-mid">
         {{ weather.current_condition?.[0]?.weatherDesc?.[0]?.value }}
       </span>

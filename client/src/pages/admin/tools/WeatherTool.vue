@@ -7,9 +7,11 @@ import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import { useWeatherCity } from "@/composables/useWeatherCity";
 import type { WeatherData } from "@/types";
 
-const city = ref("Wroclaw");
+const { weatherCity, setWeatherCity } = useWeatherCity();
+const city = ref(weatherCity.value);
 const weather = ref<WeatherData | null>(null);
 const loading = ref(false);
 const { toast } = useNotify();
@@ -21,6 +23,7 @@ async function fetchWeather(): Promise<void> {
   try {
     const { data } = await api.get<WeatherData>(`/tools/weather/${encodeURIComponent(city.value)}`);
     weather.value = data;
+    setWeatherCity(city.value);
   } catch (err) {
     console.error(err);
     toast("Failed to fetch weather", "error");
