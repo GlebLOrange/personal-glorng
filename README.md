@@ -149,7 +149,7 @@ cd client && npm run build && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm ru
 cd client && npm run e2e
 ```
 
-Install git hooks: `pip install pre-commit && pre-commit install`
+Install git hooks: `pip install pre-commit && pre-commit install` (ruff, client eslint/prettier/typecheck, gitleaks)
 
 CI runs backend ruff/pytest, frontend lint/test/build, Alembic check, and Playwright smoke tests on pull requests (see `.github/workflows/ci.yml`).
 

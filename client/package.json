@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{vue,ts,css}\"",
     "format:check": "prettier --check \"src/**/*.{vue,ts,css}\"",
+    "typecheck": "vue-tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
