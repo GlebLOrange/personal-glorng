@@ -1,147 +1,196 @@
-# Portfolio plan
+# Learning & improvement roadmap
 
-Living roadmap. Update **one section** when status changes.
+Personal platform repo: FastAPI + Vue 3 + PostgreSQL + Redis + ARQ + Telegram bot.
 
-| Section | Status |
-|---------|--------|
-| Expenses calculator | done |
-| Expenses Telegram quick-log | done |
-| Currency converter | done |
-| AI Chat off | done |
-| Admin task create | done |
-| sitemap.xml | done |
+**How to use:** Pick one item per sprint. Prefer **Tier A** (close gaps) before **Tier B** (incremental upgrades) unless exploring is the goal. Mark items `[x]` when done, `[~]` in progress, `[-]` skipped.
 
-## Expenses calculator
-
-**Status:** done
-
-**Goal:** Personal monthly expense ledger — log spending for a month, see total and breakdown with graphs.
-
-**Scope:**
-- Calendar month picker (this month / last month / custom)
-- Description + category as primary fields (DB column `tool_name` stores description)
-- Hero month total; category-first charts
-- Optional `?month=YYYY-MM` on list and summary APIs
-
-**Key files:** `client/src/pages/admin/tools/ExpensesTool.vue`, `server/app/services/tool_expense.py`, `server/app/routers/tools/expenses.py`, `server/app/platform/registry.py`
-
-**Acceptance:** Select a month, add mixed-currency items, see converted total and category charts.
-
-**Notes:** Shipped on `cursor/portfolio-roadmap` — month picker, category-first charts, description labels.
+**Related docs:** [docs/platform.md](docs/platform.md) (channels, observability model) · [docs/database.md](docs/database.md) (migrations, Postgres test gap)
 
 ---
 
-## Expenses Telegram quick-log
+## Recommended first five
 
-**Status:** done
-
-**Goal:** Log expenses from Telegram in one message or a short guided flow; default PLN.
-
-**Scope:**
-- `/spend <amount> [category|place]` — rule-based parser (`expense_nlp.py`)
-- `/spend` guided flow with category chips
-- `/expenses` — month total (PLN) + recent rows
-- Main menu **Log expense** button
-- Web quick-add bar + lighter reload on admin page
-
-**Key files:** `server/app/todobot/handlers/expense.py`, `server/app/todobot/utils/expense_nlp.py`, `client/src/pages/admin/tools/ExpensesTool.vue`
-
-**Acceptance:** `/spend 89.50 biedronka` saves Groceries in PLN; `/expenses` shows month total; admin quick-add works without opening modal.
+1. `[x]` **Quality CI** — [`.github/workflows/ci.yml`](.github/workflows/ci.yml): ruff, pytest, client lint/test/build, Alembic check, Playwright smoke
+2. `[x]` **pre-commit** — [`.pre-commit-config.yaml`](.pre-commit-config.yaml): ruff, client eslint/prettier/typecheck, gitleaks (`pip install pre-commit && pre-commit install`)
+3. `[~]` **Vitest** — composable tests added; optional follow-up: [`ExpensesTool.vue`](client/src/pages/admin/tools/ExpensesTool.vue) component test
+4. `[ ]` **Instructor** — smallest LLM refactor vs adopting LangChain ← **next**
+5. `[ ]` **Postgres integration tests** — closes blind spot for recipe FTS and PG-only features
 
 ---
 
-## Currency converter
+## Already in place
 
-**Status:** done
+Do not re-build these; extend or integrate with them instead.
 
-**Goal:** Standalone admin tool to convert amounts between EUR, USD, PLN, and BYN.
-
-**Scope:**
-- `GET /api/tools/currency/rates`, `POST /api/tools/currency/convert`
-- `CurrencyConverterTool.vue` admin page
-- Platform registry + router entry
-
-**Key files:** `server/app/routers/tools/currency.py`, `server/app/schemas/currency.py`, `client/src/pages/admin/tools/CurrencyConverterTool.vue`
-
-**Acceptance:** 100 EUR → PLN matches server-side conversion using cached rates.
-
-**Notes:** Shipped — `/api/tools/currency/*` and admin UI at `/admin/tools/currency`.
-
----
-
-## AI Chat
-
-**Status:** done
-
-**Goal:** Disable AI chat without removing code; re-enable via env flag.
-
-**Scope:**
-- `AI_CHAT_ENABLED` / `VITE_AI_CHAT_ENABLED` settings
-- API returns 503 when disabled
-- Hidden from platform catalog and dashboard
-
-**Key files:** `server/app/settings.py`, `server/app/routers/tools/ai_chat.py`, `server/app/routers/platform.py`, `client/src/router/index.ts`
-
-**Acceptance:** No dashboard tile; API 503; flag `true` restores behavior.
-
-**Notes:** Shipped — default off via `AI_CHAT_ENABLED` / `VITE_AI_CHAT_ENABLED`.
+| Area | What exists |
+|------|-------------|
+| Task queue | ARQ workers — [`server/app/workers/`](server/app/workers/) |
+| Observability | Structured JSON logs (Loguru), Sentry — [`server/app/main.py`](server/app/main.py), [`client/src/instrument.ts`](client/src/instrument.ts) |
+| Audit trail | `audit_events` + `/admin/tools/audit` — see [docs/platform.md](docs/platform.md) |
+| Backend tests | 33 test files under [`server/tests/`](server/tests/) |
+| Local quality | `make test`, `make lint` — [`Makefile`](Makefile), [`server/pyproject.toml`](server/pyproject.toml) |
+| Security CI | gitleaks, pip-audit, npm audit — [`.github/workflows/security.yml`](.github/workflows/security.yml) |
+| Quality CI | ruff, pytest, frontend lint/test/build, db check, Playwright — [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
+| Git hooks | pre-commit (ruff + client lint/format/typecheck) — [`.pre-commit-config.yaml`](.pre-commit-config.yaml) |
+| Frontend tests | Vitest — `client/src/**/*.test.ts` (composables, stores, utils) |
+| Dependency updates | Dependabot weekly — [`.github/dependabot.yml`](.github/dependabot.yml) |
+| Rate limiting | Atomic Redis Lua (`INCR` + `EXPIRE`) — [`server/app/core/rate_limit.py`](server/app/core/rate_limit.py) |
 
 ---
 
-## Admin tasks
+## Tier A — Close gaps in the current stack
 
-**Status:** done
+Highest ROI; directly tied to repo pain points.
 
-**Goal:** Create tasks from the admin panel (same model as Telegram bot).
+### CI and hooks
 
-**Scope:**
-- `POST /api/tools/tasks` with `TaskCreate` schema
-- Defaults `telegram_user_id` to `TELEGRAM_ALLOWED_USER_ID`
-- Enqueue Google Calendar sync on create
-- Form on `TasksPage.vue`
+- `[x]` **Quality CI** — [`.github/workflows/ci.yml`](.github/workflows/ci.yml); local mirror: `make check` (set `CHECK_DB=0` to skip db-check)
+  - [`Makefile`](Makefile)
 
-**Key files:** `server/app/routers/tools/tasks_admin.py`, `server/app/schemas/task.py`, `client/src/pages/admin/tools/TasksPage.vue`
+- `[x]` **pre-commit** — [`.pre-commit-config.yaml`](.pre-commit-config.yaml) includes client `typecheck` (`vue-tsc -b`)
 
-**Acceptance:** Admin creates task; it appears in list for the configured Telegram user.
+### Frontend tests
 
-**Notes:** Shipped — `POST /api/tools/tasks` + create form on Tasks page.
+- `[~]` **Vitest + Vue Test Utils** — Composable coverage done; component test for expenses page still optional.
+  - [`client/src/composables/useExpenseFilters.test.ts`](client/src/composables/useExpenseFilters.test.ts)
+  - [`client/src/composables/useCachedApi.test.ts`](client/src/composables/useCachedApi.test.ts)
+  - [`client/src/pages/admin/tools/ExpensesTool.vue`](client/src/pages/admin/tools/ExpensesTool.vue) (optional next)
+
+### Backend test coverage gaps
+
+- `[ ]` **Postgres integration tests** — Default pytest uses SQLite; GIN full-text search and other PG features are not exercised. Add optional `pytest` marker + compose profile for recipe search and migration-sensitive paths.
+  - [docs/database.md](docs/database.md) (Tests section)
+  - [`server/tests/conftest.py`](server/tests/conftest.py)
+  - [`server/app/db/recipe_search.py`](server/app/db/recipe_search.py)
+
+- `[ ]` **Hypothesis** — Property-based tests for NLP parsers where edge cases are hard to enumerate manually.
+  - [`server/app/todobot/utils/nlp.py`](server/app/todobot/utils/nlp.py) (`parse_task_input`)
+  - [`server/app/todobot/utils/expense_nlp.py`](server/app/todobot/utils/expense_nlp.py) (`parse_expense_text`)
+  - [`server/tests/test_nlp.py`](server/tests/test_nlp.py), [`server/tests/test_expense_nlp.py`](server/tests/test_expense_nlp.py)
+
+### Load testing
+
+- `[ ]` **locust** — Load-test rate limits and hot API paths under concurrency. Lua script is already atomic; value is validation and capacity planning, not fixing a race.
+  - [`server/app/core/rate_limit.py`](server/app/core/rate_limit.py)
+  - [`server/tests/test_rate_limit_lua.py`](server/tests/test_rate_limit_lua.py)
 
 ---
 
-## sitemap.xml
+## Tier B — Incremental upgrades
 
-**Status:** done
+Improve what you built without replacing the whole stack.
 
-**Goal:** Valid `sitemap.xml` and `robots.txt` for public SEO.
+### LLM / NLP
 
-**Scope:**
-- Public routes: `/`, `/privacy` (exclude admin, `/callback`, `/login`)
-- FastAPI serves XML using `BASE_URL`
-- Nginx proxies `/sitemap.xml` and `/robots.txt` to API in prod
+- `[ ]` **Instructor** — Structured LLM outputs via Pydantic; cleaner than `complete_json`. Prefer over LangChain/LlamaIndex for this codebase size.
+  - [`server/app/services/llm_json.py`](server/app/services/llm_json.py)
+  - [`server/app/services/task_intake.py`](server/app/services/task_intake.py)
 
-**Key files:** `server/app/routers/seo.py`, `server/app/main.py`, `nginx/nginx.conf`, `nginx/nginx.prod.conf`
+- `[ ]` **Anthropic Claude API** — Compare with OpenAI for tool use and structured output (educational; OpenAI is wired today).
+  - [`server/app/services/ai_chat.py`](server/app/services/ai_chat.py)
 
-**Acceptance:** `curl /sitemap.xml` returns valid XML with absolute URLs.
+### Frontend
 
-**Notes:** Shipped — `GET /sitemap.xml` and `GET /robots.txt` via API; nginx proxies in dev/prod.
+- `[ ]` **Pinia Colada** — Replace hand-rolled cached fetching; vue-router 5 lists it as an optional peer dependency.
+  - [`client/src/composables/useCachedApi.ts`](client/src/composables/useCachedApi.ts)
+  - `client/package-lock.json` (optional peer `@pinia/colada`)
+
+- `[ ]` **VueUse** — Replace custom composables and manual click-outside handling.
+  - [`client/src/composables/useClipboard.ts`](client/src/composables/useClipboard.ts)
+  - [`client/src/composables/useWeatherCity.ts`](client/src/composables/useWeatherCity.ts)
+  - [`client/src/components/weather/WeatherCard.vue`](client/src/components/weather/WeatherCard.vue)
+
+- `[ ]` **Storybook** — Document UI kit in isolation.
+  - [`client/src/components/ui/BaseCard.vue`](client/src/components/ui/BaseCard.vue)
+  - [`client/src/components/ui/BaseButton.vue`](client/src/components/ui/BaseButton.vue)
+  - [`client/src/components/ui/BaseInput.vue`](client/src/components/ui/BaseInput.vue)
+  - [`client/src/components/ui/BaseModal.vue`](client/src/components/ui/BaseModal.vue)
+  - [`client/src/components/ui/BaseTextarea.vue`](client/src/components/ui/BaseTextarea.vue)
+
+- `[ ]` **TanStack Table** — Headless table for sorting, pagination, filtering on the expenses grid.
+  - [`client/src/pages/admin/tools/ExpensesTool.vue`](client/src/pages/admin/tools/ExpensesTool.vue)
+
+### Observability
+
+- `[ ]` **OpenTelemetry** — Complement Loguru + Sentry with distributed traces (API → ARQ worker → Telegram bot); do not replace structured logging.
+  - [`docs/platform.md`](docs/platform.md)
+  - [`server/app/main.py`](server/app/main.py)
+
+- `[ ]` **Prometheus + Grafana** — `/metrics` via prometheus-fastapi-instrumentator; dashboards for task queue, sync failures, expense totals.
+  - [`server/app/workers/tasks.py`](server/app/workers/tasks.py)
+
+- `[ ]` **Loki** — Ship structured JSON logs into Grafana for querying alongside metrics.
+
+### Database and storage
+
+- `[ ]` **Alembic autogenerate review** — Write migrations by hand first, compare with autogenerate; manual wins for ENUM/bootstrap cases.
+  - [`server/app/db/migrations/versions/c4e8f2a91b3d_add_todobot_tables.py`](server/app/db/migrations/versions/c4e8f2a91b3d_add_todobot_tables.py)
+  - [docs/database.md](docs/database.md)
+
+- `[ ]` **MinIO** — S3-compatible storage instead of local disk for file share.
+  - [`server/app/services/fileshare.py`](server/app/services/fileshare.py)
+  - [`server/app/settings.py`](server/app/settings.py) (`MEDIA_DIR`, default `/app/media`)
+
+- `[ ]` **pgAdmin or TablePlus** — GUI for indexes, explain plans, schema inspection (host port `5433` in dev per [docs/database.md](docs/database.md)).
+
+- `[ ]` **Redis Insight** — Inspect rate-limit keys, token blacklist, weather cache in real time.
+
+### Dependencies
+
+- `[ ]` **uv** (or Rye) — Lockfile and faster installs; migrate from flat requirements used by Docker and pip-audit CI.
+  - [`server/requirements.txt`](server/requirements.txt)
+  - [`server/Dockerfile`](server/Dockerfile)
+
+### Platform-specific (built features)
+
+- `[ ]` **Jira sync (phase 2)** — Model stub exists; dual-write with Calendar sync queue when ready.
+  - [`server/app/db/models/jira_sync_queue.py`](server/app/db/models/jira_sync_queue.py)
+  - [`server/app/db/models/task.py`](server/app/db/models/task.py) (`jira_issue_key`)
 
 ---
 
-## Deferred infrastructure
+## Tier C — Exploratory / compare-and-contrast
 
-**Status:** backlog
+Learning goals; pick one topic per exploration sprint. ARQ/nginx/Postgres FTS are sufficient at current scale.
 
-**Goal:** Heavy or hosting-dependent optimizations deferred until they justify the cost.
+### Task queues and workflows
 
-**Later (not in dev compose today):**
-- Elasticsearch/OpenSearch for unified admin search (~512MB+ steady RAM)
-- CDN / edge cache (Cloudflare, HTTP/3, brotli at edge)
-- Optional slim dev API image without `ffmpeg`/`yt-dlp` for frontend-only work
-- Lighthouse CI, self-hosted fonts (public site perf, not dev RAM)
-- Public portfolio search (resume is static JSON until content is DB-backed)
+- `[ ]` **Celery** — Compare with ARQ; Flower dashboard for visibility. [`server/app/workers/pool.py`](server/app/workers/pool.py)
+- `[ ]` **Dramatiq** — Middle ground between ARQ and Celery complexity.
+- `[ ]` **FastStream** — Event-driven messaging (Kafka/RabbitMQ); natural follow-on after ARQ.
+- `[ ]` **Temporal** — Durable workflows vs manual retry in worker tasks (`Retry(defer=60 * job_try)`, `MAX_JOB_TRIES = 3`).
+  - [`server/app/workers/tasks.py`](server/app/workers/tasks.py)
+  - [`server/app/db/models/google_sync_queue.py`](server/app/db/models/google_sync_queue.py)
 
-**Shipped locally instead:**
-- Compose profiles: worker and todobot off by default (`make dev`)
-- `make dev-lite`: db + redis + API only; Vite on host
-- Dev memory caps on Postgres/Redis; Sentry profiling disabled in development
-- Postgres full-text search for recipes (title, ingredients, steps, notes)
+### Telegram bot
+
+- `[ ]` **aiogram-dialog** — Widget system for complex FSM; could simplify large handler modules.
+  - [`server/app/todobot/handlers/task_create.py`](server/app/todobot/handlers/task_create.py)
+
+### Search and API styles
+
+- `[ ]` **Typesense or Meilisearch** — Dedicated search vs PostgreSQL FTS.
+  - [`server/app/db/recipe_search.py`](server/app/db/recipe_search.py)
+  - [`server/app/services/recipe.py`](server/app/services/recipe.py)
+
+- `[ ]` **Strawberry GraphQL** — GraphQL alongside REST; schema design practice.
+- `[ ]` **SQLModel** — FastAPI author’s merge of SQLAlchemy + Pydantic; compare with separate [`server/app/db/models/`](server/app/db/models/) + [`server/app/schemas/`](server/app/schemas/).
+- `[ ]` **Litestar** — Alternative ASGI framework; understand what FastAPI abstracts.
+
+### Infrastructure
+
+- `[ ]` **Traefik** — Automatic HTTPS and dynamic routing vs nginx (high migration cost; nginx is wired in [`nginx/`](nginx/) and prod compose).
+- `[ ]` **Coolify or Dokku** — Self-hosted PaaS over Docker Compose.
+
+### Database (if curious)
+
+- `[ ]` **TimescaleDB** — Time-series for expenses/tasks; only if you want analytics beyond current charts.
+- `[ ]` **pgBadger** — PostgreSQL query log analysis once tables have real volume.
+
+### AI (if curious)
+
+- `[ ]` **LangChain or LlamaIndex** — Broader abstractions; study what to adopt vs avoid given manual prompts in task intake.
+  - [`server/app/services/task_intake.py`](server/app/services/task_intake.py)
+- `[ ]` **Weights & Biases** — Experiment tracking for `TASK_INTAKE_CONFIDENCE_THRESHOLD` tuning (heavy for a single env var; consider only if expanding NLP experiments).
+  - [`server/app/settings.py`](server/app/settings.py)
+  - [`.env.example`](.env.example)
