@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     command: postgres -c shared_buffers=128MB -c max_connections=50
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     deploy:
       resources:
         limits:
@@ -67,7 +67,7 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir app --forwarded-allow-ips="*"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir app --forwarded-allow-ips="127.0.0.1"
     restart: unless-stopped
     volumes:
       - ./server:/app

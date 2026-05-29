@@ -1,9 +1,10 @@
 from datetime import UTC, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, Response
 
 from app.core.deps import CurrentUser, DbSession, oauth2_scheme
+from app.core.exceptions import UnauthorizedError
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_auth
 from app.core.redis import blacklist_token
@@ -29,9 +30,51 @@ from app.services.auth import (
     verify_user_email,
 )
 from app.services.user import get_user_by_public_id
+from app.settings import get_settings
 from app.workers.pool import enqueue_job
 
 router = APIRouter()
+
+_ACCESS_COOKIE = "access_token"
+_REFRESH_COOKIE = "refresh_token"
+
+
+def _cookie_flags() -> dict[str, object]:
+    settings = get_settings()
+    secure = settings.APP_ENV == "production"
+    return {
+        "httponly": True,
+        "secure": secure,
+        "samesite": "lax",
+        "path": "/",
+    }
+
+
+def _set_auth_cookies(
+    response: Response, *, access_token: str, refresh_token: str
+) -> None:
+    settings = get_settings()
+    access_max_age = settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    refresh_max_age = settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+    flags = _cookie_flags()
+
+    response.set_cookie(
+        _ACCESS_COOKIE,
+        access_token,
+        max_age=access_max_age,
+        **flags,
+    )
+    response.set_cookie(
+        _REFRESH_COOKIE,
+        refresh_token,
+        max_age=refresh_max_age,
+        **flags,
+    )
+
+
+def _clear_auth_cookies(response: Response) -> None:
+    response.delete_cookie(_ACCESS_COOKIE, path="/")
+    response.delete_cookie(_REFRESH_COOKIE, path="/")
 
 
 @router.post(
@@ -55,8 +98,13 @@ async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
     response_model=TokenResponse,
     dependencies=[Depends(rate_limit_auth)],
 )
-async def login(data: LoginRequest, db: DbSession) -> TokenResponse:
+async def login(data: LoginRequest, db: DbSession, response: Response) -> TokenResponse:
     access_token, refresh_token = await login_user(db, data.email, data.password)
+    _set_auth_cookies(
+        response,
+        access_token=access_token,
+        refresh_token=refresh_token,
+    )
     return TokenResponse(access_token=access_token, refresh_token=refresh_token)
 
 
@@ -75,11 +123,27 @@ async def verify(token: str, db: DbSession) -> MessageResponse:
     response_model=TokenResponse,
     dependencies=[Depends(rate_limit_auth)],
 )
-async def refresh(data: RefreshRequest, db: DbSession) -> TokenResponse:
-    access_token, refresh_token = await refresh_access_token(db, data.refresh_token)
+async def refresh(
+    db: DbSession,
+    response: Response,
+    request: Request,
+    data: RefreshRequest | None = None,
+) -> TokenResponse:
+    refresh_token = (data.refresh_token if data else None) or request.cookies.get(
+        _REFRESH_COOKIE
+    )
+    if not refresh_token:
+        raise UnauthorizedError("Missing refresh token")
+
+    access_token, new_refresh_token = await refresh_access_token(db, refresh_token)
+    _set_auth_cookies(
+        response,
+        access_token=access_token,
+        refresh_token=new_refresh_token,
+    )
     return TokenResponse(
         access_token=access_token,
-        refresh_token=refresh_token,
+        refresh_token=new_refresh_token,
     )
 
 
@@ -90,11 +154,20 @@ async def refresh(data: RefreshRequest, db: DbSession) -> TokenResponse:
 )
 async def logout(
     db: DbSession,
+    response: Response,
+    request: Request,
     data: LogoutRequest | None = None,
     token: Annotated[str | None, Depends(oauth2_scheme)] = None,
 ) -> MessageResponse:
     user_id: int | None = None
-    for raw_token in [token, data.refresh_token if data else None]:
+    _clear_auth_cookies(response)
+
+    for raw_token in [
+        token,
+        data.refresh_token if data else None,
+        request.cookies.get(_ACCESS_COOKIE),
+        request.cookies.get(_REFRESH_COOKIE),
+    ]:
         if not raw_token:
             continue
         try:

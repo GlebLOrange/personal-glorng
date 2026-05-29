@@ -59,6 +59,16 @@ def create_reset_token(email: str) -> str:
     return _create_token(email, "reset", timedelta(hours=1))
 
 
+def create_oauth_state_token(subject: str, expires_delta: timedelta | None = None) -> str:
+    delta = expires_delta or timedelta(minutes=10)
+    return _create_token(
+        subject,
+        "oauth_state",
+        delta,
+        include_jti=False,
+    )
+
+
 def decode_token(token: str) -> dict:
     settings = get_settings()
     try:
