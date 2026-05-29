@@ -7,11 +7,11 @@ import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import { getApiErrorMessageFromBlob } from "@/types/api";
 
 const url = ref("");
 const format = ref("best");
 const audioOnly = ref(false);
-const extraArgs = ref("");
 const loading = ref(false);
 const guideOpen = ref(false);
 const { toast } = useNotify();
@@ -34,7 +34,6 @@ async function download(): Promise<void> {
         url: url.value,
         format: format.value,
         audio_only: audioOnly.value,
-        extra_args: extraArgs.value || null,
       },
       { responseType: "blob" },
     );
@@ -51,18 +50,8 @@ async function download(): Promise<void> {
     URL.revokeObjectURL(link.href);
 
     toast("Download complete", "success");
-  } catch (err: any) {
-    let msg = "Download failed";
-    if (err.response?.data) {
-      try {
-        const text = await err.response.data.text();
-        const json = JSON.parse(text);
-        msg = json.detail ?? msg;
-      } catch (err) {
-        console.error(err);
-        // blob couldn't be parsed
-      }
-    }
+  } catch (err) {
+    const msg = await getApiErrorMessageFromBlob(err, "Download failed");
     toast(msg, "error");
   } finally {
     loading.value = false;
@@ -105,12 +94,6 @@ async function download(): Promise<void> {
         Audio only (extract as MP3)
       </label>
 
-      <BaseInput
-        v-model="extraArgs"
-        placeholder="--sub-langs en --write-thumbnail ..."
-        label="Extra arguments (optional)"
-      />
-
       <BaseButton variant="primary" :disabled="loading || !url.trim()">
         {{ loading ? "Downloading..." : "Download" }}
       </BaseButton>
@@ -139,17 +122,6 @@ async function download(): Promise<void> {
         </div>
 
         <div>
-          <h3 class="text-accent-blue font-bold mb-2">Useful extra arguments</h3>
-          <ul class="list-disc list-inside text-surface-mid space-y-1 ml-2">
-            <li><code class="text-surface-light">--sub-langs en</code> -- embed English subtitles</li>
-            <li><code class="text-surface-light">--write-thumbnail</code> -- save thumbnail alongside video</li>
-            <li><code class="text-surface-light">--playlist-items 1-5</code> -- download first 5 items from a playlist</li>
-            <li><code class="text-surface-light">--limit-rate 5M</code> -- limit download speed to 5 MB/s</li>
-            <li><code class="text-surface-light">--sponsorblock-remove all</code> -- strip sponsor segments</li>
-          </ul>
-        </div>
-
-        <div>
           <h3 class="text-accent-blue font-bold mb-2">Supported sites</h3>
           <p class="text-surface-mid">
             yt-dlp supports 1800+ sites including YouTube, Twitter/X, Instagram, TikTok,
@@ -168,13 +140,10 @@ async function download(): Promise<void> {
         </div>
 
         <div>
-          <h3 class="text-accent-blue font-bold mb-2">Security notes</h3>
+          <h3 class="text-accent-blue font-bold mb-2">Limits</h3>
           <p class="text-surface-mid">
-            Some arguments are blocked for security: <code class="text-surface-light">-o</code>,
-            <code class="text-surface-light">--exec</code>,
-            <code class="text-surface-light">--batch-file</code>,
-            <code class="text-surface-light">--cookies</code>, and similar flags
-            that could affect the server filesystem. Downloads are limited to 2 minutes.
+            Downloads are limited to 500 MB and 2 minutes per request.
+            At most 2 concurrent downloads run on the server.
           </p>
         </div>
 

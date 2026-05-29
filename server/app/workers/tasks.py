@@ -18,6 +18,7 @@ from app.core.email import (
     render_verification_email,
 )
 from app.core.logging import logger
+from app.core.utils import format_scheduled_at
 from app.db.models.google_sync_queue import SyncStatus
 from app.db.models.reminder import Reminder
 from app.db.models.task import TaskStatus
@@ -148,7 +149,8 @@ async def send_reminder(ctx: dict[str, Any], reminder_id: int) -> None:
 
         bot = Bot(token=settings.TELEGRAM_BOT_TO_DO_TOKEN)
         try:
-            text = f"Reminder: *{task.title}*\nScheduled: {task.scheduled_at[:16]}"
+            scheduled = format_scheduled_at(task.scheduled_at)
+            text = f"Reminder: *{task.title}*\nScheduled: {scheduled}"
             if task.location:
                 text += f"\nLocation: {task.location}"
 

@@ -148,7 +148,11 @@ router.beforeEach(async (to, _from, next) => {
   }
   const auth = useAuthStore();
   if (!auth.sessionResolved) {
-    await auth.resolveSession();
+    try {
+      await auth.resolveSession();
+    } catch {
+      // sessionError retained; guards proceed with isAuthenticated
+    }
   }
   if (to.name === "login" && auth.isAuthenticated) {
     const redirect = to.query.redirect;

@@ -7,7 +7,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ApiError, NotFoundError
-from app.core.utils import generate_short_code, utc_now
+from app.core.utils import as_utc, generate_short_code, utc_now
 from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.shared_file import SharedFile
 from app.services.audit import AuditRecord, AuditService
@@ -141,7 +141,7 @@ async def get_by_code(db: AsyncSession, *, code: str) -> tuple[SharedFile, Path]
     if not shared:
         raise NotFoundError("File not found")
 
-    if utc_now() > shared.expires_at.replace(tzinfo=utc_now().tzinfo):
+    if utc_now() > as_utc(shared.expires_at):
         raise ApiError(410, "This file has expired")
 
     disk_path = _shares_dir() / shared.file_path

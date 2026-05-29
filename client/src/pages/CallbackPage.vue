@@ -3,7 +3,7 @@ import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { api } from "@/composables/useApi";
-import { useNotify } from "@/composables/useNotify";
+import { getApiErrorMessage } from "@/types/api";
 
 const route = useRoute();
 const router = useRouter();
@@ -33,8 +33,7 @@ onMounted(async () => {
     setTimeout(() => router.push("/admin"), 2000);
   } catch (err: unknown) {
     status.value = "error";
-    const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-    message.value = msg || "Failed to link GitHub account.";
+    message.value = getApiErrorMessage(err, "Failed to link GitHub account.");
     toast(message.value, "error");
   }
 });

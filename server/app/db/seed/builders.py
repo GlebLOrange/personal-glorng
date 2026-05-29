@@ -89,14 +89,13 @@ def build_tasks_for_today(
     for _ in range(count):
         offset = rng.randint(0, max(span_seconds, 1))
         scheduled = start + timedelta(seconds=offset)
-        scheduled_utc = scheduled.astimezone(UTC).replace(tzinfo=None)
         rows.append(
             Task(
                 telegram_user_id=telegram_user_id,
                 title=rng.choice(TASK_TITLES),
                 description=None,
                 location=None,
-                scheduled_at=scheduled_utc.isoformat(timespec="seconds"),
+                scheduled_at=scheduled.astimezone(UTC),
                 status=rng.choice(statuses),
             ),
         )

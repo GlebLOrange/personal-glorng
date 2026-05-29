@@ -6,15 +6,9 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import logger
+from app.core.utils import as_utc
 from app.db.models.reminder import Reminder
 from app.workers.pool import abort_job, enqueue_job
-
-
-def _as_utc(value: datetime) -> datetime:
-    """Normalize DB datetimes to UTC-aware for comparisons."""
-    if value.tzinfo is None:
-        return value.replace(tzinfo=UTC)
-    return value.astimezone(UTC)
 
 
 async def supersede_unsent_reminders(
@@ -36,7 +30,7 @@ async def supersede_unsent_reminders(
     reminders = [
         reminder
         for reminder in result.scalars().all()
-        if _as_utc(reminder.remind_at) > now
+        if as_utc(reminder.remind_at) > now
     ]
     for reminder in reminders:
         if reminder.arq_job_id:
@@ -57,7 +51,7 @@ async def supersede_unsent_reminders(
 async def schedule_reminder(db: AsyncSession, reminder: Reminder) -> Reminder:
     """Enqueue send_reminder for a DB reminder row."""
     now = datetime.now(UTC)
-    remind_at = _as_utc(reminder.remind_at)
+    remind_at = as_utc(reminder.remind_at)
     if reminder.sent or remind_at <= now:
         return reminder
 

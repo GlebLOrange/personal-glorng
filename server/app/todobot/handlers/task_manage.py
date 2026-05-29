@@ -5,6 +5,7 @@ from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.utils import format_scheduled_at
 from app.db.models.audit_event import AuditActorType, AuditSource
 from app.db.models.task import TaskStatus
 from app.services.task import get_pending_tasks, get_task, update_task_status
@@ -27,7 +28,7 @@ async def cmd_tasks(message: Message, db: AsyncSession) -> None:
 
     lines = ["*Your pending tasks:*\n"]
     for i, task in enumerate(tasks, 1):
-        scheduled = task.scheduled_at[:16] if task.scheduled_at else "—"
+        scheduled = format_scheduled_at(task.scheduled_at) if task.scheduled_at else "—"
         loc = f" ({task.location})" if task.location else ""
         lines.append(f"{i}. {task.title} — {scheduled}{loc}")
 

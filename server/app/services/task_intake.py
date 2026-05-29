@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.feature_flags import is_task_intake_ai_enabled
+from app.core.utils import as_utc
 from app.db.models.google_sync_queue import SyncAction
 from app.db.models.task import Task
 from app.db.models.task_intake import IntakeStatus, TaskIntake
@@ -237,10 +238,10 @@ class TaskIntakeService:
             return TaskDraft()
         return TaskDraft.model_validate(intake.draft_json)
 
-    def scheduled_at_from_draft(self, draft: TaskDraft) -> str:
+    def scheduled_at_from_draft(self, draft: TaskDraft) -> datetime:
         task_date = draft.scheduled_date or date.today().isoformat()
         task_time = draft.scheduled_time or "12:00"
-        return f"{task_date}T{task_time}:00"
+        return datetime.fromisoformat(f"{task_date}T{task_time}:00").replace(tzinfo=UTC)
 
     async def confirm_intake(
         self,
@@ -282,7 +283,7 @@ class TaskIntakeService:
         await self.db.flush()
 
         if mins:
-            scheduled_dt = datetime.fromisoformat(scheduled_at).replace(tzinfo=UTC)
+            scheduled_dt = as_utc(scheduled_at)
             remind_at = scheduled_dt - timedelta(minutes=int(mins))
             if remind_at > datetime.now(UTC):
                 from app.workers.scheduling import schedule_reminder

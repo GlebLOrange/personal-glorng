@@ -3,7 +3,7 @@ from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import ColumnElement, func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ValidationError
@@ -54,15 +54,6 @@ class ToolExpenseService(CRUDService[ToolExpense]):
             start, end = ToolExpenseService.month_date_bounds(month)
             return start, end
         return date_from, date_to
-
-    def _month_period_expr(self) -> ColumnElement[str]:
-        dialect = self.db.get_bind().dialect.name
-        if dialect == "postgresql":
-            return func.to_char(
-                func.date_trunc("month", ToolExpense.expense_date),
-                "YYYY-MM",
-            )
-        return func.strftime("%Y-%m", ToolExpense.expense_date)
 
     @staticmethod
     def _to_response(expense: ToolExpense) -> ToolExpenseResponse:

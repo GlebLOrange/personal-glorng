@@ -66,3 +66,35 @@ def test_parse_groceries_keyword(fixed_date: date) -> None:
     assert parsed.is_valid
     assert parsed.category == "Groceries"
     assert parsed.amount == Decimal("45.00")
+
+
+def test_parse_empty_message(fixed_date: date) -> None:
+    parsed = expense_nlp.parse_expense_text("", expense_date=fixed_date)
+    assert not parsed.is_valid
+
+
+def test_parse_zero_amount(fixed_date: date) -> None:
+    parsed = expense_nlp.parse_expense_text("0 food", expense_date=fixed_date)
+    assert not parsed.is_valid
+
+
+def test_parse_home_category(fixed_date: date) -> None:
+    parsed = expense_nlp.parse_expense_text("500 rent", expense_date=fixed_date)
+    assert parsed.is_valid
+    assert parsed.category == "Home"
+
+
+def test_parse_usd_currency(fixed_date: date) -> None:
+    parsed = expense_nlp.parse_expense_text("12 USD coffee", expense_date=fixed_date)
+    assert parsed.is_valid
+    assert parsed.currency == "USD"
+
+
+def test_parse_default_currency_override(fixed_date: date) -> None:
+    parsed = expense_nlp.parse_expense_text(
+        "20 lunch",
+        expense_date=fixed_date,
+        default_currency="EUR",
+    )
+    assert parsed.is_valid
+    assert parsed.currency == "EUR"

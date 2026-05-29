@@ -1,6 +1,5 @@
 import asyncio
 import mimetypes
-import shlex
 import shutil
 import tempfile
 from collections.abc import Generator
@@ -22,41 +21,11 @@ router = APIRouter(
     ],
 )
 
-BLOCKED_FLAGS = frozenset(
-    {
-        "-o",
-        "--output",
-        "--exec",
-        "--exec-before-dl",
-        "--config-location",
-        "--config-locations",
-        "--batch-file",
-        "--batch-urls",
-        "--download-archive",
-        "--cookies",
-        "--cookies-from-browser",
-        "--paths",
-        "-P",
-        "--print-to-file",
-    }
-)
-
 DOWNLOAD_TIMEOUT = 120
 MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 MB
 MAX_CONCURRENT_DOWNLOADS = 2
 
 _download_semaphore = asyncio.Semaphore(MAX_CONCURRENT_DOWNLOADS)
-
-
-def _sanitize_extra_args(raw: str) -> list[str]:
-    tokens = shlex.split(raw)
-    safe: list[str] = []
-    for token in tokens:
-        flag = token.split("=", 1)[0]
-        if flag in BLOCKED_FLAGS:
-            raise ApiError(400, f"Argument '{flag}' is not allowed")
-        safe.append(token)
-    return safe
 
 
 def _build_command(data: VidDownloadRequest, tmp_dir: str) -> list[str]:
@@ -75,8 +44,6 @@ def _build_command(data: VidDownloadRequest, tmp_dir: str) -> list[str]:
     ]
     if data.audio_only:
         cmd += ["-x", "--audio-format", "mp3"]
-    if data.extra_args:
-        cmd += _sanitize_extra_args(data.extra_args)
     cmd.append(str(data.url))
     return cmd
 

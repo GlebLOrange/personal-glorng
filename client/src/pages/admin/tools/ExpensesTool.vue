@@ -8,32 +8,91 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import { useCategoryManager } from "@/composables/useCategoryManager";
+import {
+  EXPENSE_CURRENCIES,
+  EXPENSE_CURRENCY_STORAGE_KEY,
+  useExpenseFilters,
+  type CurrencyCode,
+  type MonthPreset,
+} from "@/composables/useExpenseFilters";
+import { useExpenseSummary } from "@/composables/useExpenseSummary";
 import { api } from "@/composables/useApi";
+import { useLocalStorageString } from "@/composables/useLocalStorage";
 import { useNotify } from "@/composables/useNotify";
-import type { ExchangeRates, ExpenseCategory, ToolExpense, ToolExpenseSummary } from "@/types";
+import { getApiErrorMessage } from "@/types/api";
+import type { ToolExpense } from "@/types";
 
-type MonthPreset = "this_month" | "last_month" | "custom";
-type CurrencyCode = "USD" | "EUR" | "PLN" | "BYN";
-
-const CURRENCY_STORAGE_KEY = "expense_default_currency";
-const currencies: CurrencyCode[] = ["USD", "EUR", "PLN", "BYN"];
-
-const expenses = ref<ToolExpense[]>([]);
-const summary = ref<ToolExpenseSummary | null>(null);
-const expenseCategories = ref<ExpenseCategory[]>([]);
-const showCategoryManager = ref(false);
-const newCategoryName = ref("");
-const editingCategoryId = ref<number | null>(null);
-const editingCategoryName = ref("");
-const monthPreset = ref<MonthPreset>("this_month");
-const selectedMonth = ref("");
-const productFilter = ref("");
-const categoryFilter = ref<string | null>(null);
 const loading = ref(false);
 const showForm = ref(false);
 const editingId = ref<number | null>(null);
 const showCharts = ref(false);
-const exchangeRates = ref<ExchangeRates | null>(null);
+
+const { value: displayCurrency, set: setDisplayCurrency } = useLocalStorageString(
+  EXPENSE_CURRENCY_STORAGE_KEY,
+  "PLN",
+);
+
+let filters!: ReturnType<typeof useExpenseFilters>;
+
+const summaryHook = useExpenseSummary(
+  () => filters.queryParams(),
+  () => filters.summaryParams(),
+);
+
+const {
+  expenses,
+  summary,
+  exchangeRates,
+  lineChart,
+  barChart,
+  doughnutChart,
+  hasChartData,
+  convertAmount,
+  formatMoney,
+  formatExpenseDate,
+  loadExpenses,
+  loadRates,
+  loadSummary,
+  reloadListAndSummary,
+} = summaryHook;
+
+async function reloadAfterMutation(): Promise<void> {
+  await Promise.all([loadExpenses(), loadSummary(), loadCategories()]);
+}
+
+const categoryManager = useCategoryManager(reloadAfterMutation);
+
+const {
+  expenseCategories,
+  showCategoryManager,
+  newCategoryName,
+  editingCategoryId,
+  editingCategoryName,
+  categoryOptions,
+  defaultCategoryName,
+  loadCategories,
+  addCategory,
+  startEditCategory,
+  cancelEditCategory,
+  saveCategoryRename,
+  removeCategory,
+} = categoryManager;
+
+filters = useExpenseFilters(
+  displayCurrency as typeof displayCurrency & { value: CurrencyCode },
+  reloadListAndSummary,
+  loadExpenses,
+);
+
+const {
+  monthPreset,
+  selectedMonth,
+  productFilter,
+  categoryFilter,
+  monthLabel,
+  applyMonthPreset,
+} = filters;
 
 const quickAdd = ref({
   price: "",
@@ -41,35 +100,10 @@ const quickAdd = ref({
   product: "",
 });
 
-const categoryOptions = computed(() =>
-  expenseCategories.value.map((category) => category.name),
-);
-
-const defaultCategoryName = computed(
-  () => categoryOptions.value.find((name) => name === "Groceries") ?? categoryOptions.value[0] ?? "Groceries",
-);
-
-const selectClass =
-  "bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light font-mono text-sm "
-  + "focus:outline-none focus:border-accent-blue transition-colors h-[42px]";
-const selectClassCompact =
-  "bg-surface-dark border border-surface-border rounded-lg px-2 py-1.5 text-surface-light font-mono text-xs "
-  + "focus:outline-none focus:border-accent-blue transition-colors h-[34px] min-w-[7.5rem]";
-
-function loadDefaultCurrency(): CurrencyCode {
-  const stored = localStorage.getItem(CURRENCY_STORAGE_KEY);
-  if (stored && currencies.includes(stored as CurrencyCode)) {
-    return stored as CurrencyCode;
-  }
-  return "PLN";
-}
-
-const displayCurrency = ref<CurrencyCode>(loadDefaultCurrency());
-
 const form = ref({
   tool_name: "",
   amount: "",
-  currency: loadDefaultCurrency(),
+  currency: "PLN" as CurrencyCode,
   expense_date: new Date().toISOString().slice(0, 10),
   category: "",
   notes: "",
@@ -78,142 +112,27 @@ const form = ref({
 const { toast } = useNotify();
 
 const formTitle = computed(() => (editingId.value ? "edit expense" : "new expense"));
+const quickAddCurrency = computed(() => displayCurrency.value as CurrencyCode);
 
-const monthLabel = computed(() => {
-  if (!selectedMonth.value) return "";
-  const [year, month] = selectedMonth.value.split("-").map(Number);
-  return new Date(year, month - 1, 1).toLocaleDateString("en-GB", {
-    month: "long",
-    year: "numeric",
-  });
-});
+const selectClass =
+  "bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light font-mono text-sm "
+  + "focus:outline-none focus:border-accent-blue transition-colors h-[42px]";
+const selectClassCompact =
+  "bg-surface-dark border border-surface-border rounded-lg px-2 py-1.5 text-surface-light font-mono text-xs "
+  + "focus:outline-none focus:border-accent-blue transition-colors h-[34px] min-w-[7.5rem]";
 
-function currentMonthValue(d = new Date()): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  return `${year}-${month}`;
+function defaultCurrency(): CurrencyCode {
+  const value = displayCurrency.value;
+  return EXPENSE_CURRENCIES.includes(value as CurrencyCode)
+    ? (value as CurrencyCode)
+    : "PLN";
 }
-
-function applyMonthPreset(preset: MonthPreset): void {
-  monthPreset.value = preset;
-  if (preset === "custom") return;
-
-  const today = new Date();
-  if (preset === "this_month") {
-    selectedMonth.value = currentMonthValue(today);
-    return;
-  }
-
-  const prev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-  selectedMonth.value = currentMonthValue(prev);
-}
-
-function queryParams(): Record<string, string> {
-  const params: Record<string, string> = {};
-  if (selectedMonth.value) params.month = selectedMonth.value;
-  if (productFilter.value.trim()) {
-    params.tool_name = productFilter.value.trim();
-  }
-  if (categoryFilter.value) params.category = categoryFilter.value;
-  return params;
-}
-
-function summaryParams(): Record<string, string> {
-  return { ...queryParams(), display_currency: displayCurrency.value };
-}
-
-function convertAmount(amount: string, from: CurrencyCode, to: CurrencyCode): number {
-  if (from === to || !exchangeRates.value) return parseFloat(amount);
-  const rates = exchangeRates.value.rates;
-  const usd = parseFloat(amount) / parseFloat(rates[from]);
-  return usd * parseFloat(rates[to]);
-}
-
-function formatMoney(amount: string | number, currency: string): string {
-  const value = typeof amount === "string" ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatExpenseDate(iso: string): string {
-  return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function topCategoryChart(
-  summaryData: ToolExpenseSummary,
-): { labels: string[]; values: number[] } {
-  const items = summaryData.by_category.map((c) => ({
-    label: c.category,
-    value: parseFloat(c.total),
-  }));
-  if (items.length <= 8) {
-    return { labels: items.map((i) => i.label), values: items.map((i) => i.value) };
-  }
-  const top = items.slice(0, 7);
-  const other = items.slice(7).reduce((sum, i) => sum + i.value, 0);
-  return {
-    labels: [...top.map((i) => i.label), "Other"],
-    values: [...top.map((i) => i.value), other],
-  };
-}
-
-function topDescriptionChart(
-  summaryData: ToolExpenseSummary,
-): { labels: string[]; values: number[] } {
-  const items = summaryData.by_tool.map((t) => ({
-    label: t.tool_name,
-    value: parseFloat(t.total),
-  }));
-  if (items.length <= 6) {
-    return { labels: items.map((i) => i.label), values: items.map((i) => i.value) };
-  }
-  const top = items.slice(0, 5);
-  const other = items.slice(5).reduce((sum, i) => sum + i.value, 0);
-  return {
-    labels: [...top.map((i) => i.label), "Other"],
-    values: [...top.map((i) => i.value), other],
-  };
-}
-
-const lineChart = computed(() => {
-  if (!summary.value) return { labels: [] as string[], values: [] as number[] };
-  return {
-    labels: summary.value.by_month.map((m) => m.period),
-    values: summary.value.by_month.map((m) => parseFloat(m.total)),
-  };
-});
-
-const barChart = computed(() => {
-  if (!summary.value) return { labels: [] as string[], values: [] as number[] };
-  return topCategoryChart(summary.value);
-});
-
-const doughnutChart = computed(() => {
-  if (!summary.value) return { labels: [] as string[], values: [] as number[] };
-  return topDescriptionChart(summary.value);
-});
-
-const hasChartData = computed(
-  () =>
-  (summary.value?.by_month.length ?? 0) > 0
-    || (summary.value?.by_tool.length ?? 0) > 0
-    || (summary.value?.by_category.length ?? 0) > 0,
-);
-
-const quickAddCurrency = computed(() => loadDefaultCurrency());
 
 function resetForm(): void {
   form.value = {
     tool_name: "",
     amount: "",
-    currency: loadDefaultCurrency(),
+    currency: defaultCurrency(),
     expense_date: new Date().toISOString().slice(0, 10),
     category: defaultCategoryName.value,
     notes: "",
@@ -227,115 +146,6 @@ function resetQuickAdd(): void {
     category: defaultCategoryName.value,
     product: "",
   };
-}
-
-async function loadExpenses(): Promise<void> {
-  try {
-    const { data } = await api.get<ToolExpense[]>("/tools/expenses", { params: queryParams() });
-    expenses.value = data;
-  } catch (err) {
-    console.error(err);
-    toast("Failed to load expenses", "error");
-  }
-}
-
-async function loadRates(): Promise<void> {
-  try {
-    const { data } = await api.get<ExchangeRates>("/tools/expenses/rates");
-    exchangeRates.value = data;
-  } catch (err) {
-    console.error(err);
-    toast("Failed to load exchange rates", "error");
-  }
-}
-
-async function loadSummary(): Promise<void> {
-  try {
-    const { data } = await api.get<ToolExpenseSummary>("/tools/expenses/summary", {
-      params: summaryParams(),
-    });
-    summary.value = data;
-  } catch (err) {
-    console.error(err);
-    toast("Failed to load summary", "error");
-  }
-}
-
-async function loadCategories(): Promise<void> {
-  try {
-    const { data } = await api.get<ExpenseCategory[]>("/tools/expenses/categories");
-    expenseCategories.value = data;
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-async function addCategory(): Promise<void> {
-  const name = newCategoryName.value.trim();
-  if (!name) {
-    toast("Category name is required", "error");
-    return;
-  }
-
-  try {
-    await api.post("/tools/expenses/categories", { name });
-    newCategoryName.value = "";
-    toast("Category added", "success");
-    await loadCategories();
-  } catch (err) {
-    console.error(err);
-    toast("Failed to add category", "error");
-  }
-}
-
-function startEditCategory(category: ExpenseCategory): void {
-  editingCategoryId.value = category.id;
-  editingCategoryName.value = category.name;
-}
-
-function cancelEditCategory(): void {
-  editingCategoryId.value = null;
-  editingCategoryName.value = "";
-}
-
-async function saveCategoryRename(): Promise<void> {
-  if (editingCategoryId.value === null) return;
-  const name = editingCategoryName.value.trim();
-  if (!name) {
-    toast("Category name is required", "error");
-    return;
-  }
-
-  try {
-    await api.put(`/tools/expenses/categories/${editingCategoryId.value}`, { name });
-    cancelEditCategory();
-    toast("Category updated", "success");
-    await Promise.all([loadCategories(), loadExpenses(), loadSummary()]);
-  } catch (err) {
-    console.error(err);
-    toast("Failed to update category", "error");
-  }
-}
-
-async function removeCategory(category: ExpenseCategory): Promise<void> {
-  if (!confirm(`Delete category "${category.name}"?`)) return;
-
-  try {
-    await api.delete(`/tools/expenses/categories/${category.id}`);
-    toast("Category deleted", "success");
-    await loadCategories();
-  } catch (err) {
-    console.error(err);
-    toast("Cannot delete a category that is used by expenses", "error");
-  }
-}
-
-async function reloadAfterMutation(): Promise<void> {
-  await Promise.all([loadExpenses(), loadSummary(), loadCategories()]);
-}
-
-async function reloadOnMonthChange(): Promise<void> {
-  await Promise.all([loadExpenses(), loadSummary()]);
 }
 
 async function postExpense(payload: {
@@ -353,7 +163,7 @@ async function postExpense(payload: {
     await api.post("/tools/expenses", payload);
     toast("Expense created", "success");
   }
-  localStorage.setItem(CURRENCY_STORAGE_KEY, payload.currency);
+  setDisplayCurrency(payload.currency);
 }
 
 async function saveExpense(): Promise<void> {
@@ -371,11 +181,9 @@ async function saveExpense(): Promise<void> {
     return;
   }
 
-  const toolName = form.value.tool_name.trim();
-
   loading.value = true;
   const payload = {
-    tool_name: toolName,
+    tool_name: form.value.tool_name.trim(),
     amount: amount.toFixed(2),
     currency: form.value.currency,
     expense_date: form.value.expense_date,
@@ -390,7 +198,7 @@ async function saveExpense(): Promise<void> {
     await reloadAfterMutation();
   } catch (err) {
     console.error(err);
-    toast("Failed to save expense", "error");
+    toast(getApiErrorMessage(err, "Failed to save expense"), "error");
   } finally {
     loading.value = false;
   }
@@ -409,25 +217,21 @@ async function quickSaveExpense(): Promise<void> {
     return;
   }
 
-  const currency = loadDefaultCurrency();
-  const toolName = product;
-  const payload = {
-    tool_name: toolName,
-    amount: amount.toFixed(2),
-    currency,
-    expense_date: new Date().toISOString().slice(0, 10),
-    category: quickAdd.value.category,
-    notes: null,
-  };
-
   loading.value = true;
   try {
-    await postExpense(payload);
+    await postExpense({
+      tool_name: product,
+      amount: amount.toFixed(2),
+      currency: defaultCurrency(),
+      expense_date: new Date().toISOString().slice(0, 10),
+      category: quickAdd.value.category,
+      notes: null,
+    });
     resetQuickAdd();
     await reloadAfterMutation();
   } catch (err) {
     console.error(err);
-    toast("Failed to save expense", "error");
+    toast(getApiErrorMessage(err, "Failed to save expense"), "error");
   } finally {
     loading.value = false;
   }
@@ -461,30 +265,17 @@ async function deleteExpense(id: number): Promise<void> {
     await reloadAfterMutation();
   } catch (err) {
     console.error(err);
-    toast("Failed to delete expense", "error");
+    toast(getApiErrorMessage(err, "Failed to delete expense"), "error");
   }
 }
 
-let debounceTimer: ReturnType<typeof setTimeout>;
-watch(productFilter, () => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(loadExpenses, 300);
-});
-
-watch([selectedMonth, categoryFilter], reloadOnMonthChange);
-watch(displayCurrency, (value) => {
-  localStorage.setItem(CURRENCY_STORAGE_KEY, value);
-  loadSummary();
-});
-
-watch(selectedMonth, () => {
-  if (monthPreset.value !== "custom") return;
+watch(displayCurrency, () => {
+  void loadSummary();
 });
 
 onMounted(() => {
   applyMonthPreset("this_month");
-  displayCurrency.value = loadDefaultCurrency();
-  void Promise.all([loadRates(), reloadOnMonthChange(), loadCategories()]);
+  void Promise.all([loadRates(), reloadListAndSummary(), loadCategories()]);
 });
 </script>
 
@@ -530,7 +321,7 @@ onMounted(() => {
             class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
                    focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
           >
-            <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
+            <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
           </select>
         </div>
       </div>
@@ -539,7 +330,7 @@ onMounted(() => {
         class="flex flex-wrap gap-3 text-xs font-mono text-surface-mid border-t border-surface-border pt-3"
       >
         <span class="text-surface-light">1 USD =</span>
-        <span v-for="c in currencies.filter((code) => code !== 'USD')" :key="c">
+        <span v-for="c in EXPENSE_CURRENCIES.filter((code) => code !== 'USD')" :key="c">
           {{ parseFloat(exchangeRates.rates[c]).toFixed(4) }} {{ c }}
         </span>
       </div>
@@ -713,7 +504,7 @@ onMounted(() => {
               <div>
                 <label class="text-sm text-surface-mid font-mono block mb-1">Currency</label>
                 <select v-model="form.currency" :class="[selectClass, 'w-full']">
-                  <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
+                  <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
                 </select>
               </div>
             </div>
@@ -772,7 +563,7 @@ onMounted(() => {
               class="text-[10px] text-surface-mid"
             >
               ≈ {{ formatMoney(
-                convertAmount(expense.amount, expense.currency as CurrencyCode, displayCurrency),
+                convertAmount(expense.amount, expense.currency as CurrencyCode, displayCurrency as CurrencyCode),
                 displayCurrency,
               ) }}
             </div>
