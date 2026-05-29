@@ -1,4 +1,4 @@
-"""OpenAI-compatible JSON completion helper."""
+"""OpenAI JSON completion helper."""
 
 import json
 from typing import Any
@@ -13,7 +13,8 @@ from openai import (
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
-from app.services.ai_chat import PROVIDERS, sanitize_content
+from app.services.ai_chat import sanitize_content
+from app.settings import get_settings
 
 
 async def complete_json(
@@ -22,11 +23,10 @@ async def complete_json(
     model: str,
     system_prompt: str,
     user_content: str,
-    base_url: str | None = None,
     temperature: float = 0.0,
 ) -> dict[str, Any]:
-    """Return parsed JSON object from a chat completion."""
-    client = AsyncOpenAI(api_key=api_key, base_url=base_url, timeout=45.0)
+    """Return parsed JSON object from an OpenAI chat completion."""
+    client = AsyncOpenAI(api_key=api_key, timeout=45.0)
     cleaned = sanitize_content(user_content)
 
     try:
@@ -65,9 +65,7 @@ async def complete_json(
     return parsed
 
 
-def groq_api_key() -> str | None:
-    key = PROVIDERS["groq"]
-    from app.settings import get_settings
-
-    value = getattr(get_settings(), key.settings_key, "")
+def openai_api_key() -> str | None:
+    """Return configured OpenAI API key, or None if unset."""
+    value = get_settings().OPENAI_API_KEY
     return value or None

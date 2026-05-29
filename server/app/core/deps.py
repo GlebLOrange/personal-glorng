@@ -7,12 +7,12 @@ from redis.asyncio import Redis
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ForbiddenError, UnauthorizedError
+from app.core.exceptions import ApiError, ForbiddenError, UnauthorizedError
 from app.core.redis import get_redis_client, is_token_blacklisted
 from app.core.security import decode_token
 from app.db.models.user import User
 from app.db.session import get_db
-from app.services.ai_chat import AIProviderRegistry, build_api_keys
+from app.services.ai_chat import OpenAIService
 from app.settings import Settings, get_settings
 from app.workers.pool import get_arq_pool
 
@@ -75,11 +75,17 @@ async def require_admin(user: CurrentUser) -> User:
 AdminUser = Annotated[User, Depends(require_admin)]
 
 
-def get_ai_registry(settings: AppSettings) -> AIProviderRegistry:
-    return AIProviderRegistry(api_keys=build_api_keys(settings))
+def get_openai_chat_service(settings: AppSettings) -> OpenAIService:
+    """Build OpenAI chat service or raise when the API key is missing."""
+    if not settings.OPENAI_API_KEY:
+        raise ApiError(503, "OpenAI API key is not configured")
+    return OpenAIService(
+        api_key=settings.OPENAI_API_KEY,
+        model=settings.OPENAI_CHAT_MODEL,
+    )
 
 
-AIRegistry = Annotated[AIProviderRegistry, Depends(get_ai_registry)]
+OpenAIChatService = Annotated[OpenAIService, Depends(get_openai_chat_service)]
 
 
 def get_arq_pool_dep() -> ArqRedis:
