@@ -16,7 +16,7 @@ from app.workers.pool import close_arq_pool, init_arq_pool
 def _init_sentry() -> None:
     """Initialize Sentry before the FastAPI app is created."""
     settings = get_settings()
-    if not settings.SERVER_SENTRY_DSN:
+    if not settings.sentry_enabled():
         return
 
     sentry_sdk.init(
@@ -25,7 +25,7 @@ def _init_sentry() -> None:
         release=settings.SERVER_SENTRY_RELEASE or None,
         send_default_pii=False,
         traces_sample_rate=0.2,
-        profile_session_sample_rate=1.0,
+        profile_session_sample_rate=0.2 if settings.APP_ENV == "production" else 0.0,
         profile_lifecycle="trace",
         enable_logs=True,
     )

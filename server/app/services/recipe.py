@@ -1,13 +1,53 @@
 import json
 
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.elements import ColumnElement
+from sqlalchemy.sql.selectable import Select
 
 from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.recipe import Recipe
 from app.schemas.recipe import RecipeCreate, RecipeResponse, RecipeUpdate
 from app.services.audit import AuditRecord, AuditService
 from app.services.base import CRUDService
+
+RECIPE_SEARCH_CONFIG = "english"
+
+
+def _recipe_search_vector() -> ColumnElement:
+    return func.to_tsvector(
+        RECIPE_SEARCH_CONFIG,
+        func.concat(
+            Recipe.title,
+            " ",
+            Recipe.ingredients,
+            " ",
+            Recipe.steps,
+            " ",
+            func.coalesce(Recipe.notes, ""),
+        ),
+    )
+
+
+def _apply_recipe_search(
+    query: Select[tuple[Recipe]],
+    search: str,
+    dialect_name: str,
+) -> Select[tuple[Recipe]]:
+    """Use Postgres FTS in production; ILIKE fallback for SQLite tests."""
+    if dialect_name == "postgresql":
+        ts_query = func.plainto_tsquery(RECIPE_SEARCH_CONFIG, search)
+        return query.where(_recipe_search_vector().bool_op("@@")(ts_query))
+
+    pattern = f"%{search}%"
+    return query.where(
+        or_(
+            Recipe.title.ilike(pattern),
+            Recipe.ingredients.ilike(pattern),
+            Recipe.steps.ilike(pattern),
+            Recipe.notes.ilike(pattern),
+        )
+    )
 
 
 class RecipeService(CRUDService[Recipe]):
@@ -32,17 +72,19 @@ class RecipeService(CRUDService[Recipe]):
         )
 
     async def create_recipe(self, data: RecipeCreate) -> RecipeResponse:
-        recipe = await self.create({
-            "title": data.title,
-            "ingredients": json.dumps(data.ingredients),
-            "steps": json.dumps(data.steps),
-            "notes": data.notes,
-            "tags": json.dumps(data.tags),
-            "image_url": data.image_url,
-            "prep_time": data.prep_time,
-            "cook_time": data.cook_time,
-            "servings": data.servings,
-        })
+        recipe = await self.create(
+            {
+                "title": data.title,
+                "ingredients": json.dumps(data.ingredients),
+                "steps": json.dumps(data.steps),
+                "notes": data.notes,
+                "tags": json.dumps(data.tags),
+                "image_url": data.image_url,
+                "prep_time": data.prep_time,
+                "cook_time": data.cook_time,
+                "servings": data.servings,
+            }
+        )
         await AuditService(self.db).record(
             AuditRecord(
                 category=AuditCategory.DOMAIN,
@@ -102,7 +144,8 @@ class RecipeService(CRUDService[Recipe]):
         query = select(Recipe).order_by(Recipe.created_at.desc())
 
         if search:
-            query = query.where(Recipe.title.ilike(f"%{search}%"))
+            dialect_name = self.db.get_bind().dialect.name
+            query = _apply_recipe_search(query, search, dialect_name)
         if tag:
             query = query.where(Recipe.tags.ilike(f'%"{tag}"%'))
 

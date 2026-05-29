@@ -34,7 +34,7 @@ MAX_JOB_TRIES = 3
 
 def _init_worker_sentry() -> None:
     settings = get_settings()
-    if not settings.SERVER_SENTRY_DSN:
+    if not settings.sentry_enabled():
         return
     sentry_sdk.init(
         dsn=settings.SERVER_SENTRY_DSN,

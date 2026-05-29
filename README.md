@@ -17,7 +17,11 @@ Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + Postg
 # Copy env file and edit values
 cp .env.example .env
 
-# Start all services (dev)
+# Recommended for daily work (3 containers + Vite on host — lowest RAM)
+make dev-lite
+cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev
+
+# Or: full UI through nginx without worker/bot (5 containers)
 make dev
 
 # Run migrations
@@ -27,7 +31,17 @@ make migrate
 make seed
 ```
 
-Open [http://localhost](http://localhost) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in lite mode, or [http://localhost](http://localhost) with `make dev`.
+
+### Dev modes
+
+| Command | Containers | Use when |
+|---------|------------|----------|
+| `make dev-lite` + host `npm run dev` | db, redis, server | Daily UI/API work (lowest resource use) |
+| `make dev` | + client, nginx | Full stack through nginx; no background jobs |
+| `make dev-worker` | + ARQ worker | Testing reminders, calendar sync, email jobs |
+| `make dev-bot` | + Telegram todobot | Bot development (`TELEGRAM_BOT_TO_DO_TOKEN` required) |
+| `make dev-full` | All 7 | Same as old default — worker + bot + nginx stack |
 
 ## Project Structure
 
@@ -47,10 +61,14 @@ nginx/     Reverse proxy config (:80)
 
 ## Available Commands
 
-| Command        | Description                          |
-|----------------|--------------------------------------|
-| `make dev`     | Start dev environment                |
-| `make prod`    | Start production environment         |
+| Command            | Description                                      |
+|--------------------|--------------------------------------------------|
+| `make dev-lite`    | Minimal stack (db, redis, API); run Vite on host |
+| `make dev`         | Core dev stack (nginx + client; no worker/bot)   |
+| `make dev-worker`  | Core stack + ARQ worker                          |
+| `make dev-bot`     | Core stack + Telegram todobot                    |
+| `make dev-full`    | All dev services (worker + bot)                  |
+| `make prod`        | Start production environment                     |
 | `make down`    | Stop all containers                  |
 | `make test`    | Run backend tests                    |
 | `make lint`    | Lint and format Python code          |
