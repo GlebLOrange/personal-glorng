@@ -1,15 +1,17 @@
-"""Conversational + NL hybrid task creation flow."""
+"""AI intake and guided task creation flows."""
 
 from datetime import UTC, date, datetime, timedelta
 
 from aiogram import F, Router
-from aiogram.filters import Command
+from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.google_sync_queue import SyncAction
+from app.schemas.task_intake import TaskDraft
 from app.services.task import create_reminder, create_task, enqueue_calendar_sync
+from app.services.task_intake import TaskIntakeService
 from app.todobot.keyboards.menu import main_menu
 from app.todobot.keyboards.task import (
     confirmation,
@@ -24,12 +26,14 @@ from app.workers.scheduling import schedule_reminder
 
 router = Router()
 
-
-# --- Message tracking helpers ---
+AI_PROMPT = (
+    "Send your task in one message.\n\n"
+    'Example: "Tomorrow at 18:00 gym near city center"'
+)
+GUIDED_PROMPT = "What would you like me to remind you about?"
 
 
 async def _track_msg(state: FSMContext, msg_id: int) -> None:
-    """Append a message ID for post-flow cleanup."""
     data = await state.get_data()
     ids = data.get("_msg_ids", [])
     ids.append(msg_id)
@@ -37,7 +41,6 @@ async def _track_msg(state: FSMContext, msg_id: int) -> None:
 
 
 async def _cleanup_messages(bot, chat_id: int, state: FSMContext) -> None:
-    """Delete tracked flow messages, ignoring failures."""
     data = await state.get_data()
     for msg_id in data.get("_msg_ids", []):
         try:
@@ -46,11 +49,7 @@ async def _cleanup_messages(bot, chat_id: int, state: FSMContext) -> None:
             pass
 
 
-# --- Helpers ---
-
-
 def _extract_parsed_fields(text: str) -> dict[str, str | None]:
-    """Parse NLP input and return extracted field dict."""
     parsed = parse_task_input(text)
     data: dict[str, str | None] = {}
     if parsed.title:
@@ -77,15 +76,123 @@ def _format_summary(data: dict[str, str | None]) -> str:
     return "\n".join(lines)
 
 
-# --- Entry points ---
+def _draft_to_fsm_data(draft: TaskDraft) -> dict[str, str | None]:
+    return {
+        "title": draft.title,
+        "date": draft.scheduled_date,
+        "time": draft.scheduled_time,
+        "location": draft.location,
+        "notes": draft.description,
+    }
 
 
-@router.message(Command("new"))
-async def cmd_new_task(message: Message, state: FSMContext) -> None:
+async def _start_guided(message: Message, state: FSMContext) -> None:
     await state.clear()
     await _track_msg(state, message.message_id)
     await state.set_state(TaskCreation.waiting_for_title)
-    sent = await message.answer("What would you like me to remind you about?")
+    sent = await message.answer(GUIDED_PROMPT)
+    await _track_msg(state, sent.message_id)
+
+
+async def _start_ai_intake(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    await _track_msg(state, message.message_id)
+    await state.set_state(TaskCreation.waiting_for_input)
+    sent = await message.answer(AI_PROMPT)
+    await _track_msg(state, sent.message_id)
+
+
+@router.message(Command("new"))
+async def cmd_new_task(
+    message: Message,
+    state: FSMContext,
+    command: CommandObject,
+) -> None:
+    if command.args and command.args.strip().lower() == "guided":
+        await _start_guided(message, state)
+    else:
+        await _start_ai_intake(message, state)
+
+
+async def _process_intake_message(
+    message: Message,
+    state: FSMContext,
+    db: AsyncSession,
+    text: str,
+) -> None:
+    if not message.from_user:
+        return
+
+    svc = TaskIntakeService(db)
+    inbound = await svc.store_inbound_message(
+        telegram_user_id=message.from_user.id,
+        telegram_message_id=message.message_id,
+        chat_id=message.chat.id,
+        text=text,
+        metadata={"chat_type": message.chat.type},
+    )
+    intake = await svc.create_intake_from_message(inbound)
+    await state.update_data(intake_id=intake.id)
+
+    try:
+        result = await svc.run_extraction(intake)
+    except Exception:
+        sent = await message.answer(
+            "I couldn't parse that right now. Try /new guided for step-by-step.",
+            reply_markup=main_menu(),
+        )
+        await _track_msg(state, sent.message_id)
+        await state.clear()
+        return
+
+    question = svc.next_clarification_question(result)
+    if question:
+        await state.set_state(TaskCreation.clarifying)
+        sent = await message.answer(question.question)
+        await _track_msg(state, sent.message_id)
+        return
+
+    await _prompt_reminder_or_confirm(message, state, svc, intake.id)
+
+
+async def _prompt_reminder_or_confirm(
+    target: Message,
+    state: FSMContext,
+    svc: TaskIntakeService,
+    intake_id: int,
+) -> None:
+    intake = await svc.get_intake(intake_id)
+    draft = svc.draft_from_intake(intake)
+    await state.update_data(intake_id=intake_id, **_draft_to_fsm_data(draft))
+
+    if draft.reminder_minutes is None:
+        await state.set_state(TaskCreation.waiting_for_reminder)
+        sent = await target.answer(
+            "How early should I remind you?",
+            reply_markup=reminder_presets(),
+        )
+        await _track_msg(state, sent.message_id)
+        return
+
+    await state.update_data(reminder_minutes=draft.reminder_minutes)
+    await _show_intake_confirmation(target, state, svc, intake_id)
+
+
+async def _show_intake_confirmation(
+    target: Message,
+    state: FSMContext,
+    svc: TaskIntakeService,
+    intake_id: int,
+) -> None:
+    intake = await svc.get_intake(intake_id)
+    draft = svc.draft_from_intake(intake)
+    summary = svc.build_confirmation_summary(draft)
+    await state.set_state(TaskCreation.confirming)
+    sent = await target.answer(
+        f"{summary}\n\nConfirm this task?",
+        reply_markup=confirmation(),
+        parse_mode="Markdown",
+    )
     await _track_msg(state, sent.message_id)
 
 
@@ -93,18 +200,50 @@ async def cmd_new_task(message: Message, state: FSMContext) -> None:
 async def handle_natural_input(
     message: Message,
     state: FSMContext,
+    db: AsyncSession,
 ) -> None:
     if not message.text:
         await message.answer("Please send a text message.")
         return
 
     await _track_msg(state, message.message_id)
-    data = _extract_parsed_fields(message.text)
-    await state.update_data(**data)
-    await _advance_to_next_missing(message, state)
+    await _process_intake_message(message, state, db, message.text.strip())
 
 
-# --- Step handlers ---
+@router.message(TaskCreation.clarifying)
+async def handle_clarification(
+    message: Message,
+    state: FSMContext,
+    db: AsyncSession,
+) -> None:
+    if not message.text:
+        await message.answer("Please send a text reply.")
+        return
+
+    await _track_msg(state, message.message_id)
+    data = await state.get_data()
+    intake_id = data.get("intake_id")
+    if not intake_id:
+        await message.answer("Session expired. Use /new to start again.")
+        await state.clear()
+        return
+
+    svc = TaskIntakeService(db)
+    try:
+        result = await svc.apply_clarification(int(intake_id), message.text.strip())
+    except Exception:
+        sent = await message.answer("I couldn't update that. Please try again.")
+        await _track_msg(state, sent.message_id)
+        return
+
+    question = svc.next_clarification_question(result)
+    if question:
+        await state.set_state(TaskCreation.clarifying)
+        sent = await message.answer(question.question)
+        await _track_msg(state, sent.message_id)
+        return
+
+    await _prompt_reminder_or_confirm(message, state, svc, int(intake_id))
 
 
 @router.message(TaskCreation.waiting_for_title)
@@ -250,6 +389,7 @@ async def skip_notes(callback: CallbackQuery, state: FSMContext) -> None:
 async def handle_reminder_choice(
     callback: CallbackQuery,
     state: FSMContext,
+    db: AsyncSession,
 ) -> None:
     if not callback.data or not callback.message:
         return
@@ -262,6 +402,12 @@ async def handle_reminder_choice(
         await state.update_data(reminder_minutes=int(value))
 
     data = await state.get_data()
+    intake_id = data.get("intake_id")
+    if intake_id:
+        svc = TaskIntakeService(db)
+        await _show_intake_confirmation(callback.message, state, svc, int(intake_id))
+        return
+
     await state.set_state(TaskCreation.confirming)
     summary = _format_summary(data)
     sent = await callback.message.answer(
@@ -272,19 +418,47 @@ async def handle_reminder_choice(
     await _track_msg(state, sent.message_id)
 
 
-# --- Confirmation ---
-
-
 @router.callback_query(F.data == "confirm:yes")
 async def confirm_task(
     callback: CallbackQuery,
     state: FSMContext,
     db: AsyncSession,
 ) -> None:
-    if not callback.message:
+    if not callback.message or not callback.from_user:
         return
     await callback.answer()
     data = await state.get_data()
+    intake_id = data.get("intake_id")
+
+    if intake_id:
+        svc = TaskIntakeService(db)
+        reminder_minutes = data.get("reminder_minutes")
+        try:
+            task = await svc.confirm_intake(
+                int(intake_id),
+                telegram_user_id=callback.from_user.id,
+                reminder_minutes=reminder_minutes,
+            )
+        except Exception:
+            await callback.message.answer(
+                "Could not save the task. Try /new again.",
+                reply_markup=main_menu(),
+            )
+            await state.clear()
+            return
+
+        if callback.bot:
+            await _cleanup_messages(
+                callback.bot,
+                callback.message.chat.id,
+                state,
+            )
+        await state.clear()
+        await callback.message.answer(
+            f'✅ Task saved! I\'ll remind you about "{task.title}".',
+            reply_markup=main_menu(),
+        )
+        return
 
     task_date = data.get("date", date.today().isoformat())
     task_time = data.get("time", "12:00")
@@ -301,9 +475,7 @@ async def confirm_task(
 
     reminder_minutes = data.get("reminder_minutes")
     if reminder_minutes:
-        scheduled_dt = datetime.fromisoformat(scheduled_str).replace(
-            tzinfo=UTC,
-        )
+        scheduled_dt = datetime.fromisoformat(scheduled_str).replace(tzinfo=UTC)
         remind_at = scheduled_dt - timedelta(minutes=int(reminder_minutes))
         if remind_at > datetime.now(UTC):
             reminder = await create_reminder(db, task_id=task.id, remind_at=remind_at)
@@ -327,6 +499,11 @@ async def edit_task(callback: CallbackQuery, state: FSMContext) -> None:
         return
     await callback.answer()
 
+    data = await state.get_data()
+    if data.get("intake_id"):
+        await _start_ai_intake(callback.message, state)
+        return
+
     if callback.bot:
         await _cleanup_messages(callback.bot, callback.message.chat.id, state)
 
@@ -339,10 +516,19 @@ async def edit_task(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 @router.callback_query(F.data == "confirm:cancel")
-async def cancel_task(callback: CallbackQuery, state: FSMContext) -> None:
+async def cancel_task(
+    callback: CallbackQuery,
+    state: FSMContext,
+    db: AsyncSession,
+) -> None:
     if not callback.message:
         return
     await callback.answer()
+
+    data = await state.get_data()
+    intake_id = data.get("intake_id")
+    if intake_id:
+        await TaskIntakeService(db).cancel_intake(int(intake_id))
 
     if callback.bot:
         await _cleanup_messages(callback.bot, callback.message.chat.id, state)
@@ -351,16 +537,12 @@ async def cancel_task(callback: CallbackQuery, state: FSMContext) -> None:
     await callback.message.answer("Task cancelled.", reply_markup=main_menu())
 
 
-# --- Flow logic ---
-
-
 async def _advance_to_next_missing(
     target: Message,
     state: FSMContext,
     *,
     skip: str | None = None,
 ) -> None:
-    """Move to the next missing field in the flow."""
     full_data = await state.get_data()
 
     if skip:

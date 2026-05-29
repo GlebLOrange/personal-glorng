@@ -152,6 +152,19 @@ export interface TaskStats {
   failed_syncs: number;
 }
 
+export interface TaskIntakeItem {
+  id: number;
+  status: string;
+  draft_json: Record<string, unknown> | null;
+  confidence_json: Record<string, unknown> | null;
+  clarification_turns_json: Array<Record<string, string>> | null;
+  clarification_rounds: number;
+  task_id: number | null;
+  inbound_text: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Recipe {
   id: number;
   title: string;

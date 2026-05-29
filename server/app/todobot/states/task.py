@@ -2,9 +2,10 @@ from aiogram.fsm.state import State, StatesGroup
 
 
 class TaskCreation(StatesGroup):
-    """FSM states for guided / hybrid task creation."""
+    """FSM states for AI intake and guided task creation."""
 
     waiting_for_input = State()
+    clarifying = State()
     waiting_for_title = State()
     waiting_for_date = State()
     waiting_for_time = State()

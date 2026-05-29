@@ -36,6 +36,7 @@ class TaskService:
         scheduled_at: str,
         description: str | None = None,
         location: str | None = None,
+        intake_id: int | None = None,
         source: AuditSource = AuditSource.TODOBOT,
         actor_type: AuditActorType = AuditActorType.TELEGRAM,
         actor_id: int | None = None,
@@ -47,6 +48,7 @@ class TaskService:
             location=location,
             scheduled_at=scheduled_at,
             status=TaskStatus.PENDING,
+            intake_id=intake_id,
         )
         self.db.add(task)
         await self.db.flush()

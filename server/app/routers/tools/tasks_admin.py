@@ -14,7 +14,9 @@ from app.schemas.task import (
     TaskResponse,
     TaskStatsResponse,
 )
+from app.schemas.task_intake import TaskIntakeResponse
 from app.services.task import TaskService
+from app.services.task_intake import TaskIntakeService
 from app.settings import get_settings
 
 router = APIRouter(
@@ -70,6 +72,16 @@ async def task_stats(
     user: AdminUser,  # noqa: ARG001
 ) -> TaskStatsResponse:
     return await TaskService(db).task_stats()
+
+
+@router.get("/intakes", response_model=list[TaskIntakeResponse])
+async def list_intakes(
+    db: DbSession,
+    user: AdminUser,  # noqa: ARG001
+    page: int = 1,
+    per_page: int = 20,
+) -> list[TaskIntakeResponse]:
+    return await TaskIntakeService(db).list_intakes(page=page, per_page=per_page)
 
 
 @router.get("/sync-queue", response_model=list[SyncQueueResponse])
