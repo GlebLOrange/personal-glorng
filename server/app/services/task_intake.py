@@ -24,8 +24,7 @@ from app.schemas.task_intake import (
     TaskDraft,
     TaskIntakeResponse,
 )
-from app.services.ai_chat import PROVIDERS
-from app.services.llm_json import complete_json, groq_api_key
+from app.services.llm_json import complete_json, openai_api_key
 from app.services.task import TaskService
 from app.settings import get_settings
 from app.todobot.utils.nlp import parse_task_input
@@ -63,8 +62,6 @@ Rules:
 - Keep questions short and conversational.
 """
 
-FAST_MODEL = "llama-3.1-8b-instant"
-STRONG_MODEL = "llama-3.3-70b-versatile"
 MAX_CLARIFICATION_ROUNDS = 3
 REQUIRED_FIELDS = ("title", "scheduled_date", "scheduled_time")
 
@@ -153,23 +150,17 @@ class TaskIntakeService:
             hints["description"] = parsed.notes
         return hints
 
-    async def run_extraction(
-        self,
-        intake: TaskIntake,
-        *,
-        use_strong_model: bool = False,
-    ) -> ExtractionResult:
+    async def run_extraction(self, intake: TaskIntake) -> ExtractionResult:
         inbound = await self._load_inbound(intake)
         text = inbound.text
         hints = self.nlp_hints(text)
         turns = intake.clarification_turns_json or []
 
-        if is_task_intake_ai_enabled() and groq_api_key():
+        if is_task_intake_ai_enabled() and openai_api_key():
             result = await self._extract_with_llm(
                 text=text,
                 hints=hints,
                 turns=turns,
-                use_strong_model=use_strong_model,
             )
         else:
             result = self._extract_from_nlp(text, hints)
@@ -207,8 +198,7 @@ class TaskIntakeService:
         self.db.add(intake)
         await self.db.flush()
 
-        use_strong = intake.clarification_rounds >= 2
-        result = await self.run_extraction(intake, use_strong_model=use_strong)
+        result = await self.run_extraction(intake)
 
         if result.questions and intake.clarification_rounds >= MAX_CLARIFICATION_ROUNDS:
             result = self._force_ready(result)
@@ -370,7 +360,6 @@ class TaskIntakeService:
         text: str,
         hints: dict[str, Any],
         turns: list[dict[str, str]],
-        use_strong_model: bool,
     ) -> ExtractionResult:
         today = datetime.now(UTC).date().isoformat()
         user_payload = {
@@ -380,14 +369,11 @@ class TaskIntakeService:
             "rule_based_hints": hints,
             "clarification_history": turns,
         }
-        model = STRONG_MODEL if use_strong_model else FAST_MODEL
-        cfg = PROVIDERS["groq"]
         raw = await complete_json(
-            api_key=groq_api_key() or "",
-            model=model,
+            api_key=openai_api_key() or "",
+            model=self.settings.OPENAI_CHAT_MODEL,
             system_prompt=EXTRACTION_SYSTEM_PROMPT,
             user_content=json.dumps(user_payload),
-            base_url=cfg.base_url,
         )
         return self._parse_extraction_payload(raw)
 

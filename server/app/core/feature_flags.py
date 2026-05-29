@@ -9,7 +9,7 @@ def is_ai_chat_enabled() -> bool:
 
 def is_task_intake_ai_enabled() -> bool:
     settings = get_settings()
-    return settings.TASK_INTAKE_AI_ENABLED and bool(settings.GROQ_API_KEY)
+    return settings.TASK_INTAKE_AI_ENABLED and bool(settings.OPENAI_API_KEY)
 
 
 def is_service_enabled(slug: str) -> bool:

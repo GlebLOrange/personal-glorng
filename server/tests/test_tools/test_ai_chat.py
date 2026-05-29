@@ -1,22 +1,17 @@
-from unittest.mock import AsyncMock, patch
+from collections.abc import AsyncIterator
+from unittest.mock import patch
 
 import pytest
 from httpx import AsyncClient
 
-from app.core.deps import get_ai_registry
+from app.core.deps import get_openai_chat_service
 from app.main import app
-from app.services.ai_chat import AIProviderRegistry
+from app.services.ai_chat import OpenAIService
 from app.settings import get_settings
 
 CHAT_URL = "/api/tools/ai-chat"
-PROVIDERS_URL = "/api/tools/ai-chat/providers"
-
-GROQ_REGISTRY = AIProviderRegistry({"groq": "test-key"})
-EMPTY_REGISTRY = AIProviderRegistry({})
 
 CHAT_PAYLOAD = {
-    "provider": "groq",
-    "model": "llama-3.3-70b-versatile",
     "messages": [{"role": "user", "content": "Hello"}],
 }
 
@@ -24,21 +19,29 @@ CHAT_PAYLOAD = {
 @pytest.fixture(autouse=True)
 def enable_ai_chat(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("AI_CHAT_ENABLED", "true")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     get_settings.cache_clear()
 
 
 @pytest.fixture
-def groq_registry() -> None:
-    app.dependency_overrides[get_ai_registry] = lambda: GROQ_REGISTRY
+def openai_service() -> None:
+    service = OpenAIService(api_key="test-key", model="gpt-4.1")
+    app.dependency_overrides[get_openai_chat_service] = lambda: service
     yield
-    app.dependency_overrides.pop(get_ai_registry, None)
+    app.dependency_overrides.pop(get_openai_chat_service, None)
 
 
 @pytest.fixture
-def empty_registry() -> None:
-    app.dependency_overrides[get_ai_registry] = lambda: EMPTY_REGISTRY
+def missing_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "")
+    get_settings.cache_clear()
     yield
-    app.dependency_overrides.pop(get_ai_registry, None)
+    get_settings.cache_clear()
+
+
+async def _mock_stream(*_args: object, **_kwargs: object) -> AsyncIterator[str]:
+    for part in ("Hi ", "there"):
+        yield part
 
 
 @pytest.mark.asyncio
@@ -49,7 +52,8 @@ async def test_ai_chat_unauthenticated(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_ai_chat_no_api_key(
-    auth_client: AsyncClient, empty_registry: None
+    auth_client: AsyncClient,
+    missing_api_key: None,
 ) -> None:
     resp = await auth_client.post(CHAT_URL, json=CHAT_PAYLOAD)
     assert resp.status_code == 503
@@ -57,20 +61,9 @@ async def test_ai_chat_no_api_key(
 
 
 @pytest.mark.asyncio
-async def test_ai_chat_invalid_model(
-    auth_client: AsyncClient, groq_registry: None
-) -> None:
-    resp = await auth_client.post(
-        CHAT_URL,
-        json={**CHAT_PAYLOAD, "model": "not-a-real-model"},
-    )
-    assert resp.status_code == 400
-    assert "Unknown model" in resp.json()["detail"]
-
-
-@pytest.mark.asyncio
 async def test_ai_chat_rejects_system_role(
-    auth_client: AsyncClient, groq_registry: None
+    auth_client: AsyncClient,
+    openai_service: None,
 ) -> None:
     resp = await auth_client.post(
         CHAT_URL,
@@ -84,7 +77,8 @@ async def test_ai_chat_rejects_system_role(
 
 @pytest.mark.asyncio
 async def test_ai_chat_rejects_empty_content(
-    auth_client: AsyncClient, groq_registry: None
+    auth_client: AsyncClient,
+    openai_service: None,
 ) -> None:
     resp = await auth_client.post(
         CHAT_URL,
@@ -97,32 +91,9 @@ async def test_ai_chat_rejects_empty_content(
 
 
 @pytest.mark.asyncio
-async def test_ai_chat_rejects_non_groq_provider(
-    auth_client: AsyncClient, groq_registry: None
-) -> None:
-    resp = await auth_client.post(
-        CHAT_URL,
-        json={**CHAT_PAYLOAD, "provider": "openai"},
-    )
-    assert resp.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_list_providers_returns_groq_only(
-    auth_client: AsyncClient, groq_registry: None
-) -> None:
-    resp = await auth_client.get(PROVIDERS_URL)
-    assert resp.status_code == 200
-    data = resp.json()
-    assert len(data) == 1
-    assert data[0]["id"] == "groq"
-    assert "llama-3.3-70b-versatile" in data[0]["models"]
-
-
-@pytest.mark.asyncio
 async def test_ai_chat_disabled_when_flag_off(
     auth_client: AsyncClient,
-    groq_registry: None,
+    openai_service: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("AI_CHAT_ENABLED", "false")
@@ -130,30 +101,21 @@ async def test_ai_chat_disabled_when_flag_off(
     resp = await auth_client.post(CHAT_URL, json=CHAT_PAYLOAD)
     assert resp.status_code == 503
     assert "disabled" in resp.json()["detail"].lower()
-    providers = await auth_client.get(PROVIDERS_URL)
-    assert providers.status_code == 503
 
 
 @pytest.mark.asyncio
-async def test_ai_chat_success(auth_client: AsyncClient, groq_registry: None) -> None:
-    mock_result = {
-        "reply": "Hi there",
-        "model": "llama-3.3-70b-versatile",
-        "usage": {
-            "prompt_tokens": 10,
-            "completion_tokens": 5,
-            "total_tokens": 15,
-        },
-    }
-    with patch(
-        "app.services.ai_chat.OpenAIService.complete",
-        new_callable=AsyncMock,
-        return_value=mock_result,
-    ):
+async def test_ai_chat_streams_sse(
+    auth_client: AsyncClient,
+    openai_service: None,
+) -> None:
+    with patch.object(OpenAIService, "stream", side_effect=_mock_stream):
         resp = await auth_client.post(CHAT_URL, json=CHAT_PAYLOAD)
 
     assert resp.status_code == 200
-    body = resp.json()
-    assert body["reply"] == "Hi there"
-    assert body["model"] == "llama-3.3-70b-versatile"
-    assert body["usage"]["total_tokens"] == 15
+    assert resp.headers["content-type"].startswith("text/event-stream")
+
+    body = resp.text
+    assert 'data: {"delta": "Hi "}' in body
+    assert 'data: {"delta": "there"}' in body
+    assert '"done": true' in body
+    assert '"model": "gpt-4.1"' in body

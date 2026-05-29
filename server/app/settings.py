@@ -111,8 +111,9 @@ class Settings(BaseSettings):
     SPOTIFY_REFRESH_TOKEN: str = ""
 
     # AI provider API keys
-    GROQ_API_KEY: str = ""
-    AI_CHAT_ENABLED: bool = False
+    OPENAI_API_KEY: str = ""
+    OPENAI_CHAT_MODEL: str = "gpt-4.1"
+    AI_CHAT_ENABLED: bool = True
 
     # Task intake (Telegram AI)
     TASK_INTAKE_AI_ENABLED: bool = True

@@ -1,9 +1,14 @@
-from fastapi import APIRouter, Depends
+import json
+from collections.abc import AsyncIterator
 
-from app.core.deps import AIRegistry, require_admin
+from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
+
+from app.core.deps import OpenAIChatService, require_admin
 from app.core.exceptions import ApiError
 from app.core.feature_flags import is_ai_chat_enabled
-from app.schemas.ai_chat import ChatRequest, ChatResponse, ProviderInfo
+from app.schemas.ai_chat import ChatRequest
+from app.services.ai_chat import OpenAIService
 
 router = APIRouter(prefix="/ai-chat", dependencies=[Depends(require_admin)])
 
@@ -13,17 +18,23 @@ def _require_ai_chat_enabled() -> None:
         raise ApiError(503, "AI chat is disabled")
 
 
-@router.get("/providers", response_model=list[ProviderInfo])
-async def list_providers(registry: AIRegistry) -> list[ProviderInfo]:
-    _require_ai_chat_enabled()
-    """Return providers that have an API key configured."""
-    return [ProviderInfo(**p) for p in registry.available_providers()]
+async def _sse_events(
+    service: OpenAIService,
+    messages: list[dict[str, str]],
+) -> AsyncIterator[str]:
+    try:
+        async for delta in service.stream(messages):
+            yield f"data: {json.dumps({'delta': delta})}\n\n"
+        yield f"data: {json.dumps({'done': True, 'model': service.model})}\n\n"
+    except ApiError as exc:
+        yield f"data: {json.dumps({'error': exc.message})}\n\n"
 
 
-@router.post("", response_model=ChatResponse)
-async def chat(body: ChatRequest, registry: AIRegistry) -> ChatResponse:
+@router.post("")
+async def chat(body: ChatRequest, service: OpenAIChatService) -> StreamingResponse:
     _require_ai_chat_enabled()
-    service = registry.build_service(body.provider, body.model)
     messages = [m.model_dump() for m in body.messages]
-    result = await service.complete(messages)
-    return ChatResponse(**result)
+    return StreamingResponse(
+        _sse_events(service, messages),
+        media_type="text/event-stream",
+    )
