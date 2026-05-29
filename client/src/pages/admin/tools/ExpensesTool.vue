@@ -10,28 +10,66 @@ import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
-import type { ExchangeRates, ToolExpense, ToolExpenseSummary } from "@/types";
+import type { ExchangeRates, ExpenseCategory, ToolExpense, ToolExpenseSummary } from "@/types";
 
 type MonthPreset = "this_month" | "last_month" | "custom";
 type CurrencyCode = "USD" | "EUR" | "PLN" | "BYN";
 
+const CURRENCY_STORAGE_KEY = "expense_default_currency";
+const currencies: CurrencyCode[] = ["USD", "EUR", "PLN", "BYN"];
+
 const expenses = ref<ToolExpense[]>([]);
 const summary = ref<ToolExpenseSummary | null>(null);
-const categories = ref<string[]>([]);
+const expenseCategories = ref<ExpenseCategory[]>([]);
+const showCategoryManager = ref(false);
+const newCategoryName = ref("");
+const editingCategoryId = ref<number | null>(null);
+const editingCategoryName = ref("");
 const monthPreset = ref<MonthPreset>("this_month");
 const selectedMonth = ref("");
-const descriptionFilter = ref("");
+const productFilter = ref("");
 const categoryFilter = ref<string | null>(null);
 const loading = ref(false);
 const showForm = ref(false);
 const editingId = ref<number | null>(null);
-const displayCurrency = ref<CurrencyCode>("USD");
+const showCharts = ref(false);
 const exchangeRates = ref<ExchangeRates | null>(null);
+
+const quickAdd = ref({
+  price: "",
+  category: "Groceries",
+  product: "",
+});
+
+const categoryOptions = computed(() =>
+  expenseCategories.value.map((category) => category.name),
+);
+
+const defaultCategoryName = computed(
+  () => categoryOptions.value.find((name) => name === "Groceries") ?? categoryOptions.value[0] ?? "Groceries",
+);
+
+const selectClass =
+  "bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light font-mono text-sm "
+  + "focus:outline-none focus:border-accent-blue transition-colors h-[42px]";
+const selectClassCompact =
+  "bg-surface-dark border border-surface-border rounded-lg px-2 py-1.5 text-surface-light font-mono text-xs "
+  + "focus:outline-none focus:border-accent-blue transition-colors h-[34px] min-w-[7.5rem]";
+
+function loadDefaultCurrency(): CurrencyCode {
+  const stored = localStorage.getItem(CURRENCY_STORAGE_KEY);
+  if (stored && currencies.includes(stored as CurrencyCode)) {
+    return stored as CurrencyCode;
+  }
+  return "PLN";
+}
+
+const displayCurrency = ref<CurrencyCode>(loadDefaultCurrency());
 
 const form = ref({
   tool_name: "",
   amount: "",
-  currency: "USD" as CurrencyCode,
+  currency: loadDefaultCurrency(),
   expense_date: new Date().toISOString().slice(0, 10),
   category: "",
   notes: "",
@@ -49,8 +87,6 @@ const monthLabel = computed(() => {
     year: "numeric",
   });
 });
-
-const currencies: CurrencyCode[] = ["USD", "EUR", "PLN", "BYN"];
 
 function currentMonthValue(d = new Date()): string {
   const year = d.getFullYear();
@@ -75,8 +111,8 @@ function applyMonthPreset(preset: MonthPreset): void {
 function queryParams(): Record<string, string> {
   const params: Record<string, string> = {};
   if (selectedMonth.value) params.month = selectedMonth.value;
-  if (descriptionFilter.value.trim()) {
-    params.tool_name = descriptionFilter.value.trim();
+  if (productFilter.value.trim()) {
+    params.tool_name = productFilter.value.trim();
   }
   if (categoryFilter.value) params.category = categoryFilter.value;
   return params;
@@ -171,16 +207,26 @@ const hasChartData = computed(
     || (summary.value?.by_category.length ?? 0) > 0,
 );
 
+const quickAddCurrency = computed(() => loadDefaultCurrency());
+
 function resetForm(): void {
   form.value = {
     tool_name: "",
     amount: "",
-    currency: "USD" as CurrencyCode,
+    currency: loadDefaultCurrency(),
     expense_date: new Date().toISOString().slice(0, 10),
-    category: "",
+    category: defaultCategoryName.value,
     notes: "",
   };
   editingId.value = null;
+}
+
+function resetQuickAdd(): void {
+  quickAdd.value = {
+    price: "",
+    category: defaultCategoryName.value,
+    product: "",
+  };
 }
 
 async function loadExpenses(): Promise<void> {
@@ -217,36 +263,119 @@ async function loadSummary(): Promise<void> {
 
 async function loadCategories(): Promise<void> {
   try {
-    const { data } = await api.get<string[]>("/tools/expenses/categories");
-    categories.value = data;
+    const { data } = await api.get<ExpenseCategory[]>("/tools/expenses/categories");
+    expenseCategories.value = data;
   } catch (err) {
     console.error(err);
   }
 }
 
-async function reloadAll(): Promise<void> {
-  await Promise.all([loadExpenses(), loadSummary(), loadCategories(), loadRates()]);
+async function addCategory(): Promise<void> {
+  const name = newCategoryName.value.trim();
+  if (!name) {
+    toast("Category name is required", "error");
+    return;
+  }
+
+  try {
+    await api.post("/tools/expenses/categories", { name });
+    newCategoryName.value = "";
+    toast("Category added", "success");
+    await loadCategories();
+  } catch (err) {
+    console.error(err);
+    toast("Failed to add category", "error");
+  }
+}
+
+function startEditCategory(category: ExpenseCategory): void {
+  editingCategoryId.value = category.id;
+  editingCategoryName.value = category.name;
+}
+
+function cancelEditCategory(): void {
+  editingCategoryId.value = null;
+  editingCategoryName.value = "";
+}
+
+async function saveCategoryRename(): Promise<void> {
+  if (editingCategoryId.value === null) return;
+  const name = editingCategoryName.value.trim();
+  if (!name) {
+    toast("Category name is required", "error");
+    return;
+  }
+
+  try {
+    await api.put(`/tools/expenses/categories/${editingCategoryId.value}`, { name });
+    cancelEditCategory();
+    toast("Category updated", "success");
+    await Promise.all([loadCategories(), loadExpenses(), loadSummary()]);
+  } catch (err) {
+    console.error(err);
+    toast("Failed to update category", "error");
+  }
+}
+
+async function removeCategory(category: ExpenseCategory): Promise<void> {
+  if (!confirm(`Delete category "${category.name}"?`)) return;
+
+  try {
+    await api.delete(`/tools/expenses/categories/${category.id}`);
+    toast("Category deleted", "success");
+    await loadCategories();
+  } catch (err) {
+    console.error(err);
+    toast("Cannot delete a category that is used by expenses", "error");
+  }
+}
+
+async function reloadAfterMutation(): Promise<void> {
+  await Promise.all([loadExpenses(), loadSummary(), loadCategories()]);
+}
+
+async function reloadOnMonthChange(): Promise<void> {
+  await Promise.all([loadExpenses(), loadSummary()]);
+}
+
+async function postExpense(payload: {
+  tool_name: string;
+  amount: string;
+  currency: CurrencyCode;
+  expense_date: string;
+  category: string | null;
+  notes: string | null;
+}): Promise<void> {
+  if (editingId.value) {
+    await api.put(`/tools/expenses/${editingId.value}`, payload);
+    toast("Expense updated", "success");
+  } else {
+    await api.post("/tools/expenses", payload);
+    toast("Expense created", "success");
+  }
+  localStorage.setItem(CURRENCY_STORAGE_KEY, payload.currency);
 }
 
 async function saveExpense(): Promise<void> {
-  if (
-    !form.value.tool_name.trim()
-    || !form.value.category.trim()
-    || !form.value.amount
-    || !form.value.expense_date
-  ) {
-    toast("Description, category, amount, and date are required", "error");
+  if (!form.value.tool_name.trim()) {
+    toast("Product is required", "error");
+    return;
+  }
+  if (!form.value.amount || !form.value.expense_date) {
+    toast("Price and date are required", "error");
     return;
   }
   const amount = parseFloat(form.value.amount);
   if (Number.isNaN(amount) || amount <= 0) {
-    toast("Amount must be greater than zero", "error");
+    toast("Price must be greater than zero", "error");
     return;
   }
 
+  const toolName = form.value.tool_name.trim();
+
   loading.value = true;
   const payload = {
-    tool_name: form.value.tool_name.trim(),
+    tool_name: toolName,
     amount: amount.toFixed(2),
     currency: form.value.currency,
     expense_date: form.value.expense_date,
@@ -255,16 +384,47 @@ async function saveExpense(): Promise<void> {
   };
 
   try {
-    if (editingId.value) {
-      await api.put(`/tools/expenses/${editingId.value}`, payload);
-      toast("Expense updated", "success");
-    } else {
-      await api.post("/tools/expenses", payload);
-      toast("Expense created", "success");
-    }
+    await postExpense(payload);
     showForm.value = false;
     resetForm();
-    await reloadAll();
+    await reloadAfterMutation();
+  } catch (err) {
+    console.error(err);
+    toast("Failed to save expense", "error");
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function quickSaveExpense(): Promise<void> {
+  const product = quickAdd.value.product.trim();
+  if (!product) {
+    toast("Product is required", "error");
+    return;
+  }
+
+  const amount = parseFloat(quickAdd.value.price);
+  if (Number.isNaN(amount) || amount <= 0) {
+    toast("Enter a valid price", "error");
+    return;
+  }
+
+  const currency = loadDefaultCurrency();
+  const toolName = product;
+  const payload = {
+    tool_name: toolName,
+    amount: amount.toFixed(2),
+    currency,
+    expense_date: new Date().toISOString().slice(0, 10),
+    category: quickAdd.value.category,
+    notes: null,
+  };
+
+  loading.value = true;
+  try {
+    await postExpense(payload);
+    resetQuickAdd();
+    await reloadAfterMutation();
   } catch (err) {
     console.error(err);
     toast("Failed to save expense", "error");
@@ -288,14 +448,17 @@ function openEdit(expense: ToolExpense): void {
 
 function openCreate(): void {
   resetForm();
+  form.value.category = defaultCategoryName.value;
   showForm.value = true;
 }
 
 async function deleteExpense(id: number): Promise<void> {
+  if (!confirm("Delete this expense?")) return;
+
   try {
     await api.delete(`/tools/expenses/${id}`);
     toast("Expense deleted", "success");
-    await reloadAll();
+    await reloadAfterMutation();
   } catch (err) {
     console.error(err);
     toast("Failed to delete expense", "error");
@@ -303,13 +466,14 @@ async function deleteExpense(id: number): Promise<void> {
 }
 
 let debounceTimer: ReturnType<typeof setTimeout>;
-watch(descriptionFilter, () => {
+watch(productFilter, () => {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(reloadAll, 300);
+  debounceTimer = setTimeout(loadExpenses, 300);
 });
 
-watch([selectedMonth, categoryFilter], reloadAll);
-watch(displayCurrency, () => {
+watch([selectedMonth, categoryFilter], reloadOnMonthChange);
+watch(displayCurrency, (value) => {
+  localStorage.setItem(CURRENCY_STORAGE_KEY, value);
   loadSummary();
 });
 
@@ -319,7 +483,8 @@ watch(selectedMonth, () => {
 
 onMounted(() => {
   applyMonthPreset("this_month");
-  reloadAll();
+  displayCurrency.value = loadDefaultCurrency();
+  void Promise.all([loadRates(), reloadOnMonthChange(), loadCategories()]);
 });
 </script>
 
@@ -381,8 +546,98 @@ onMounted(() => {
     </BaseCard>
   </div>
 
+  <!-- Quick add -->
+  <BaseCard class="sticky top-4 z-10 mb-6">
+    <p class="text-xs text-surface-mid font-mono uppercase tracking-wider mb-3">Quick add</p>
+    <form class="flex flex-col gap-2" @submit.prevent="quickSaveExpense">
+      <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+        <div>
+          <label class="text-[10px] text-surface-mid font-mono uppercase tracking-wider block mb-1">
+            Category
+          </label>
+          <select v-model="quickAdd.category" :class="selectClassCompact">
+            <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <BaseInput v-model="quickAdd.product" label="Product" placeholder="Milk, fuel, rent..." />
+        </div>
+        <div class="sm:w-28">
+          <BaseInput
+            v-model="quickAdd.price"
+            label="Price"
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder="0.00"
+          />
+        </div>
+        <BaseButton variant="primary" type="submit" :disabled="loading" class="sm:mb-0.5">
+          {{ loading ? "Saving..." : "Save" }}
+        </BaseButton>
+      </div>
+      <p class="text-[10px] text-surface-mid font-mono">
+        {{ quickAddCurrency }} · today · full form for date, currency, notes
+      </p>
+    </form>
+  </BaseCard>
+
+  <!-- Category manager -->
+  <BaseCard class="mb-6">
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <p class="text-xs text-surface-mid font-mono uppercase tracking-wider">Categories</p>
+      <BaseButton variant="ghost" size="sm" @click="showCategoryManager = !showCategoryManager">
+        {{ showCategoryManager ? "Hide" : "Edit" }}
+      </BaseButton>
+    </div>
+
+    <div v-if="showCategoryManager" class="flex flex-col gap-3">
+      <ul class="divide-y divide-surface-border rounded-lg border border-surface-border">
+        <li
+          v-for="category in expenseCategories"
+          :key="category.id"
+          class="flex flex-wrap items-center gap-2 px-3 py-2"
+        >
+          <template v-if="editingCategoryId === category.id">
+            <input
+              v-model="editingCategoryName"
+              class="flex-1 min-w-[8rem] bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5
+                     text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue"
+              @keyup.enter="saveCategoryRename"
+            >
+            <BaseButton variant="primary" size="sm" @click="saveCategoryRename">Save</BaseButton>
+            <BaseButton variant="ghost" size="sm" @click="cancelEditCategory">Cancel</BaseButton>
+          </template>
+          <template v-else>
+            <span class="flex-1 text-surface-light font-mono text-sm">{{ category.name }}</span>
+            <BaseButton variant="ghost" size="sm" @click="startEditCategory(category)">Rename</BaseButton>
+            <BaseButton variant="ghost" size="sm" @click="removeCategory(category)">Delete</BaseButton>
+          </template>
+        </li>
+      </ul>
+
+      <form class="flex flex-col sm:flex-row gap-2" @submit.prevent="addCategory">
+        <input
+          v-model="newCategoryName"
+          placeholder="New category name"
+          class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light
+                 font-mono text-sm focus:outline-none focus:border-accent-blue h-[42px]"
+        >
+        <BaseButton variant="primary" type="submit">Add category</BaseButton>
+      </form>
+      <p class="text-[10px] text-surface-mid font-mono">
+        Renaming updates all expenses in that category. Delete only works when unused.
+      </p>
+    </div>
+  </BaseCard>
+
   <!-- Charts -->
-  <div v-if="hasChartData" class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+  <div v-if="hasChartData" class="mb-4">
+    <BaseButton variant="ghost" size="sm" @click="showCharts = !showCharts">
+      {{ showCharts ? "Hide charts" : "Show charts" }}
+    </BaseButton>
+  </div>
+  <div v-if="hasChartData && showCharts" class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
     <BaseCard>
       <h3 class="text-xs font-mono text-surface-mid uppercase tracking-wider mb-3">Monthly trend</h3>
       <ExpenseLineChart :labels="lineChart.labels" :values="lineChart.values" />
@@ -392,7 +647,7 @@ onMounted(() => {
       <ExpenseBarChart :labels="barChart.labels" :values="barChart.values" />
     </BaseCard>
     <BaseCard>
-      <h3 class="text-xs font-mono text-surface-mid uppercase tracking-wider mb-3">By description</h3>
+      <h3 class="text-xs font-mono text-surface-mid uppercase tracking-wider mb-3">By product</h3>
       <ExpenseDoughnutChart :labels="doughnutChart.labels" :values="doughnutChart.values" />
     </BaseCard>
   </div>
@@ -400,7 +655,7 @@ onMounted(() => {
   <!-- Filters -->
   <div class="flex flex-col sm:flex-row gap-3 mb-6">
     <div class="flex-1">
-      <BaseInput v-model="descriptionFilter" placeholder="Filter by description..." />
+      <BaseInput v-model="productFilter" placeholder="Filter by product..." />
     </div>
     <div class="flex gap-2 items-end">
       <select
@@ -409,7 +664,7 @@ onMounted(() => {
                focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
       >
         <option :value="null">All categories</option>
-        <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+        <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </select>
       <BaseButton variant="primary" @click="openCreate">+ Add</BaseButton>
     </div>
@@ -429,44 +684,39 @@ onMounted(() => {
           </h2>
 
           <form class="space-y-4" @submit.prevent="saveExpense">
-            <BaseInput
-              v-model="form.tool_name"
-              label="Description"
-              placeholder="Groceries, rent, fuel..."
-            />
+            <div>
+              <label class="text-sm text-surface-mid font-mono block mb-1">Category</label>
+              <select v-model="form.category" :class="[selectClass, 'w-full']">
+                <option value="">—</option>
+                <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
+              </select>
+            </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <BaseInput
+                v-model="form.tool_name"
+                label="Product"
+                placeholder="Milk, dinner, Shell..."
+              />
               <BaseInput
                 v-model="form.amount"
-                label="Amount"
+                label="Price"
                 type="number"
                 step="0.01"
                 min="0.01"
                 placeholder="20.00"
               />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <BaseInput v-model="form.expense_date" label="Date" type="date" />
               <div>
                 <label class="text-sm text-surface-mid font-mono block mb-1">Currency</label>
-                <select
-                  v-model="form.currency"
-                  class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
-                         focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
-                >
+                <select v-model="form.currency" :class="[selectClass, 'w-full']">
                   <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
                 </select>
               </div>
             </div>
-
-            <BaseInput v-model="form.expense_date" label="Date" type="date" />
-
-            <BaseInput
-              v-model="form.category"
-              label="Category"
-              placeholder="Food, Housing, Transport..."
-              list="expense-categories"
-            />
-            <datalist id="expense-categories">
-              <option v-for="cat in categories" :key="cat" :value="cat" />
-            </datalist>
 
             <div>
               <label class="text-sm text-surface-mid font-mono block mb-1">Notes</label>
@@ -499,9 +749,9 @@ onMounted(() => {
       <thead>
         <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card">
           <th class="px-4 py-3">Date</th>
-          <th class="px-4 py-3">Description</th>
           <th class="px-4 py-3">Category</th>
-          <th class="px-4 py-3 text-right">Amount</th>
+          <th class="px-4 py-3">Product</th>
+          <th class="px-4 py-3 text-right">Price</th>
           <th class="px-4 py-3">Notes</th>
           <th class="px-4 py-3 text-right">Actions</th>
         </tr>
@@ -513,8 +763,8 @@ onMounted(() => {
           class="border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50"
         >
           <td class="px-4 py-3 whitespace-nowrap">{{ formatExpenseDate(expense.expense_date) }}</td>
-          <td class="px-4 py-3">{{ expense.tool_name }}</td>
           <td class="px-4 py-3 text-surface-mid">{{ expense.category ?? "—" }}</td>
+          <td class="px-4 py-3">{{ expense.tool_name }}</td>
           <td class="px-4 py-3 text-right whitespace-nowrap">
             <div>{{ formatMoney(expense.amount, expense.currency) }}</div>
             <div

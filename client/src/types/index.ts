@@ -180,6 +180,14 @@ export interface Recipe {
   updated_at: string;
 }
 
+export interface ExpenseCategory {
+  id: number;
+  name: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ToolExpense {
   id: number;
   tool_name: string;

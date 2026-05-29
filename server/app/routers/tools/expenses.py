@@ -11,8 +11,14 @@ from app.schemas.tool_expense import (
     ToolExpenseSummary,
     ToolExpenseUpdate,
 )
+from app.schemas.tool_expense_category import (
+    ExpenseCategoryCreate,
+    ExpenseCategoryResponse,
+    ExpenseCategoryUpdate,
+)
 from app.services.currency import CurrencyService
 from app.services.tool_expense import ToolExpenseService
+from app.services.tool_expense_category import ToolExpenseCategoryService
 
 router = APIRouter(
     prefix="/expenses",
@@ -20,13 +26,57 @@ router = APIRouter(
 )
 
 
-@router.get("/categories", response_model=list[str])
+@router.get("/categories", response_model=list[ExpenseCategoryResponse])
 async def list_categories(
     db: DbSession,
     user: AuthorizedUser,  # noqa: ARG001
-) -> list[str]:
-    svc = ToolExpenseService(db)
-    return await svc.get_all_categories()
+) -> list[ExpenseCategoryResponse]:
+    svc = ToolExpenseCategoryService(db)
+    return await svc.list_categories()
+
+
+@router.post(
+    "/categories",
+    response_model=ExpenseCategoryResponse,
+    dependencies=[Depends(require_capability("expenses", "write"))],
+)
+async def create_category(
+    data: ExpenseCategoryCreate,
+    db: DbSession,
+    user: AuthorizedUser,  # noqa: ARG001
+) -> ExpenseCategoryResponse:
+    svc = ToolExpenseCategoryService(db)
+    return await svc.create_category(data)
+
+
+@router.put(
+    "/categories/{category_id}",
+    response_model=ExpenseCategoryResponse,
+    dependencies=[Depends(require_capability("expenses", "write"))],
+)
+async def update_category(
+    category_id: int,
+    data: ExpenseCategoryUpdate,
+    db: DbSession,
+    user: AuthorizedUser,  # noqa: ARG001
+) -> ExpenseCategoryResponse:
+    svc = ToolExpenseCategoryService(db)
+    return await svc.update_category(category_id, data)
+
+
+@router.delete(
+    "/categories/{category_id}",
+    response_model=MessageResponse,
+    dependencies=[Depends(require_capability("expenses", "write"))],
+)
+async def delete_category(
+    category_id: int,
+    db: DbSession,
+    user: AuthorizedUser,  # noqa: ARG001
+) -> MessageResponse:
+    svc = ToolExpenseCategoryService(db)
+    await svc.delete_category(category_id)
+    return MessageResponse(message="Category deleted")
 
 
 @router.get("/rates", response_model=ExchangeRatesResponse)

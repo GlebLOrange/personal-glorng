@@ -4,11 +4,19 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 LABEL_NEW_TASK = "New Task"
 LABEL_MY_TASKS = "My Tasks"
+LABEL_LOG_EXPENSE = "Log expense"
 LABEL_CALENDAR = "Calendar"
 LABEL_HELP = "Help"
 LABEL_RESTART = "🔄 Restart"
 
-ALL_LABELS = {LABEL_NEW_TASK, LABEL_MY_TASKS, LABEL_CALENDAR, LABEL_HELP, LABEL_RESTART}
+ALL_LABELS = {
+    LABEL_NEW_TASK,
+    LABEL_MY_TASKS,
+    LABEL_LOG_EXPENSE,
+    LABEL_CALENDAR,
+    LABEL_HELP,
+    LABEL_RESTART,
+}
 
 
 def main_menu() -> ReplyKeyboardMarkup:
@@ -16,8 +24,8 @@ def main_menu() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text=LABEL_NEW_TASK), KeyboardButton(text=LABEL_MY_TASKS)],
-            [KeyboardButton(text=LABEL_CALENDAR), KeyboardButton(text=LABEL_HELP)],
-            [KeyboardButton(text=LABEL_RESTART)],
+            [KeyboardButton(text=LABEL_LOG_EXPENSE), KeyboardButton(text=LABEL_CALENDAR)],
+            [KeyboardButton(text=LABEL_HELP), KeyboardButton(text=LABEL_RESTART)],
         ],
         resize_keyboard=True,
         is_persistent=True,

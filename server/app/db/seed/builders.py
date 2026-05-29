@@ -18,7 +18,16 @@ EXPENSE_TOOLS = (
     "Cloudflare",
     "Hetzner",
 )
-EXPENSE_CATEGORIES = ("AI", "Hosting", "SaaS", "Domain", "DevTools")
+EXPENSE_CATEGORIES = ("Groceries", "Home", "Transport")
+EXPENSE_PRODUCTS = (
+    "Groceries run",
+    "Rent",
+    "Bus ticket",
+    "Fuel",
+    "Utilities",
+    "Biedronka",
+    "Pharmacy",
+)
 EXPENSE_CURRENCIES = ("USD", "EUR", "PLN", "BYN")
 TASK_TITLES = (
     "Review PR",
@@ -43,7 +52,7 @@ def build_random_expenses(count: int, *, seed: int = 42) -> list[ToolExpense]:
         days_ago = rng.randint(0, 90)
         rows.append(
             ToolExpense(
-                tool_name=rng.choice(EXPENSE_TOOLS),
+                tool_name=rng.choice(EXPENSE_PRODUCTS),
                 amount=Decimal(str(rng.randint(500, 20000) / 100)).quantize(
                     Decimal("0.01"),
                 ),

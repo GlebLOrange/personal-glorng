@@ -12,6 +12,7 @@ from app.db.models.task_intake import TaskIntake
 from app.db.models.task_status_history import TaskStatusHistory
 from app.db.models.telegram_inbound_message import TelegramInboundMessage
 from app.db.models.tool_expense import ToolExpense
+from app.db.models.tool_expense_category import ToolExpenseCategory
 from app.db.models.url import ShortenedUrl
 from app.db.models.user import User
 
@@ -31,5 +32,6 @@ __all__ = [
     "TaskStatusHistory",
     "TelegramInboundMessage",
     "ToolExpense",
+    "ToolExpenseCategory",
     "User",
 ]

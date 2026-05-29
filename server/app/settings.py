@@ -87,6 +87,7 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_CHAT_TOKEN: str = ""
     TELEGRAM_ALLOWED_USER_ID: int = 0
     TIMEZONE: str = "Europe/Amsterdam"
+    EXPENSE_DEFAULT_CURRENCY: str = "PLN"
 
     # Google Calendar
     GOOGLE_CLIENT_ID: str = ""
