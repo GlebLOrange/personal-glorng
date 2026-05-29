@@ -2,7 +2,15 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class TaskCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=255)
+    scheduled_at: str = Field(min_length=1, max_length=50)
+    description: str | None = None
+    location: str | None = Field(None, max_length=255)
+    telegram_user_id: int | None = None
 
 
 class TaskResponse(BaseModel):

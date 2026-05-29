@@ -6,6 +6,7 @@ from httpx import AsyncClient
 from app.core.deps import get_ai_registry
 from app.main import app
 from app.services.ai_chat import AIProviderRegistry
+from app.settings import get_settings
 
 CHAT_URL = "/api/tools/ai-chat"
 PROVIDERS_URL = "/api/tools/ai-chat/providers"
@@ -18,6 +19,12 @@ CHAT_PAYLOAD = {
     "model": "llama-3.3-70b-versatile",
     "messages": [{"role": "user", "content": "Hello"}],
 }
+
+
+@pytest.fixture(autouse=True)
+def enable_ai_chat(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AI_CHAT_ENABLED", "true")
+    get_settings.cache_clear()
 
 
 @pytest.fixture
@@ -110,6 +117,21 @@ async def test_list_providers_returns_groq_only(
     assert len(data) == 1
     assert data[0]["id"] == "groq"
     assert "llama-3.3-70b-versatile" in data[0]["models"]
+
+
+@pytest.mark.asyncio
+async def test_ai_chat_disabled_when_flag_off(
+    auth_client: AsyncClient,
+    groq_registry: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("AI_CHAT_ENABLED", "false")
+    get_settings.cache_clear()
+    resp = await auth_client.post(CHAT_URL, json=CHAT_PAYLOAD)
+    assert resp.status_code == 503
+    assert "disabled" in resp.json()["detail"].lower()
+    providers = await auth_client.get(PROVIDERS_URL)
+    assert providers.status_code == 503
 
 
 @pytest.mark.asyncio

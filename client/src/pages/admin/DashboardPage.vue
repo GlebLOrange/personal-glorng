@@ -33,7 +33,10 @@ onMounted(async () => {
         external: boolean;
       }>;
     }>("/platform/services");
-    services.value = data.services.map((s) => ({
+    const enabled = data.services.filter(
+      (s) => s.slug !== "ai-chat" || import.meta.env.VITE_AI_CHAT_ENABLED === "true",
+    );
+    services.value = enabled.map((s) => ({
       slug: s.slug,
       name: s.name,
       category: s.category,

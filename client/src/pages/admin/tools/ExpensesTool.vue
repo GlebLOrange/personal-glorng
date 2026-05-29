@@ -12,16 +12,15 @@ import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import type { ExchangeRates, ToolExpense, ToolExpenseSummary } from "@/types";
 
-type DatePreset = "30d" | "ytd" | "12m" | "all";
+type MonthPreset = "this_month" | "last_month" | "custom";
 type CurrencyCode = "USD" | "EUR" | "PLN" | "BYN";
 
 const expenses = ref<ToolExpense[]>([]);
 const summary = ref<ToolExpenseSummary | null>(null);
 const categories = ref<string[]>([]);
-const datePreset = ref<DatePreset>("12m");
-const dateFrom = ref("");
-const dateTo = ref("");
-const toolFilter = ref("");
+const monthPreset = ref<MonthPreset>("this_month");
+const selectedMonth = ref("");
+const descriptionFilter = ref("");
 const categoryFilter = ref<string | null>(null);
 const loading = ref(false);
 const showForm = ref(false);
@@ -42,42 +41,43 @@ const { toast } = useNotify();
 
 const formTitle = computed(() => (editingId.value ? "edit expense" : "new expense"));
 
+const monthLabel = computed(() => {
+  if (!selectedMonth.value) return "";
+  const [year, month] = selectedMonth.value.split("-").map(Number);
+  return new Date(year, month - 1, 1).toLocaleDateString("en-GB", {
+    month: "long",
+    year: "numeric",
+  });
+});
+
 const currencies: CurrencyCode[] = ["USD", "EUR", "PLN", "BYN"];
 
-function toIsoDate(d: Date): string {
-  return d.toISOString().slice(0, 10);
+function currentMonthValue(d = new Date()): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
 }
 
-function applyPreset(preset: DatePreset): void {
-  datePreset.value = preset;
-  const today = new Date();
-  const end = toIsoDate(today);
+function applyMonthPreset(preset: MonthPreset): void {
+  monthPreset.value = preset;
+  if (preset === "custom") return;
 
-  if (preset === "all") {
-    dateFrom.value = "";
-    dateTo.value = "";
+  const today = new Date();
+  if (preset === "this_month") {
+    selectedMonth.value = currentMonthValue(today);
     return;
   }
 
-  dateTo.value = end;
-  const start = new Date(today);
-
-  if (preset === "30d") {
-    start.setDate(start.getDate() - 30);
-  } else if (preset === "ytd") {
-    start.setMonth(0, 1);
-  } else {
-    start.setFullYear(start.getFullYear() - 1);
-  }
-
-  dateFrom.value = toIsoDate(start);
+  const prev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  selectedMonth.value = currentMonthValue(prev);
 }
 
 function queryParams(): Record<string, string> {
   const params: Record<string, string> = {};
-  if (dateFrom.value) params.date_from = dateFrom.value;
-  if (dateTo.value) params.date_to = dateTo.value;
-  if (toolFilter.value.trim()) params.tool_name = toolFilter.value.trim();
+  if (selectedMonth.value) params.month = selectedMonth.value;
+  if (descriptionFilter.value.trim()) {
+    params.tool_name = descriptionFilter.value.trim();
+  }
   if (categoryFilter.value) params.category = categoryFilter.value;
   return params;
 }
@@ -110,16 +110,36 @@ function formatExpenseDate(iso: string): string {
   });
 }
 
-function topToolChart(summaryData: ToolExpenseSummary): { labels: string[]; values: number[] } {
-  const items = summaryData.by_tool.map((t) => ({
-    label: t.tool_name,
-    value: parseFloat(t.total),
+function topCategoryChart(
+  summaryData: ToolExpenseSummary,
+): { labels: string[]; values: number[] } {
+  const items = summaryData.by_category.map((c) => ({
+    label: c.category,
+    value: parseFloat(c.total),
   }));
   if (items.length <= 8) {
     return { labels: items.map((i) => i.label), values: items.map((i) => i.value) };
   }
   const top = items.slice(0, 7);
   const other = items.slice(7).reduce((sum, i) => sum + i.value, 0);
+  return {
+    labels: [...top.map((i) => i.label), "Other"],
+    values: [...top.map((i) => i.value), other],
+  };
+}
+
+function topDescriptionChart(
+  summaryData: ToolExpenseSummary,
+): { labels: string[]; values: number[] } {
+  const items = summaryData.by_tool.map((t) => ({
+    label: t.tool_name,
+    value: parseFloat(t.total),
+  }));
+  if (items.length <= 6) {
+    return { labels: items.map((i) => i.label), values: items.map((i) => i.value) };
+  }
+  const top = items.slice(0, 5);
+  const other = items.slice(5).reduce((sum, i) => sum + i.value, 0);
   return {
     labels: [...top.map((i) => i.label), "Other"],
     values: [...top.map((i) => i.value), other],
@@ -136,15 +156,12 @@ const lineChart = computed(() => {
 
 const barChart = computed(() => {
   if (!summary.value) return { labels: [] as string[], values: [] as number[] };
-  return topToolChart(summary.value);
+  return topCategoryChart(summary.value);
 });
 
 const doughnutChart = computed(() => {
   if (!summary.value) return { labels: [] as string[], values: [] as number[] };
-  return {
-    labels: summary.value.by_category.map((c) => c.category),
-    values: summary.value.by_category.map((c) => parseFloat(c.total)),
-  };
+  return topDescriptionChart(summary.value);
 });
 
 const hasChartData = computed(
@@ -212,7 +229,15 @@ async function reloadAll(): Promise<void> {
 }
 
 async function saveExpense(): Promise<void> {
-  if (!form.value.tool_name.trim() || !form.value.amount || !form.value.expense_date) return;
+  if (
+    !form.value.tool_name.trim()
+    || !form.value.category.trim()
+    || !form.value.amount
+    || !form.value.expense_date
+  ) {
+    toast("Description, category, amount, and date are required", "error");
+    return;
+  }
   const amount = parseFloat(form.value.amount);
   if (Number.isNaN(amount) || amount <= 0) {
     toast("Amount must be greater than zero", "error");
@@ -278,42 +303,54 @@ async function deleteExpense(id: number): Promise<void> {
 }
 
 let debounceTimer: ReturnType<typeof setTimeout>;
-watch(toolFilter, () => {
+watch(descriptionFilter, () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(reloadAll, 300);
 });
 
-watch([dateFrom, dateTo, categoryFilter], reloadAll);
+watch([selectedMonth, categoryFilter], reloadAll);
 watch(displayCurrency, () => {
   loadSummary();
 });
 
+watch(selectedMonth, () => {
+  if (monthPreset.value !== "custom") return;
+});
+
 onMounted(() => {
-  applyPreset("12m");
+  applyMonthPreset("this_month");
   reloadAll();
 });
 </script>
 
 <template>
-  <AdminPageLayout title="tool expenses" max-width="xl">
-  <!-- Date presets & summary -->
+  <AdminPageLayout title="monthly expenses" max-width="xl">
   <div class="flex flex-col gap-4 mb-6">
-    <div class="flex flex-wrap gap-2">
+    <div class="flex flex-wrap gap-2 items-center">
       <BaseButton
-        v-for="preset in (['30d', 'ytd', '12m', 'all'] as DatePreset[])"
+        v-for="preset in (['this_month', 'last_month', 'custom'] as MonthPreset[])"
         :key="preset"
-        :variant="datePreset === preset ? 'primary' : 'ghost'"
+        :variant="monthPreset === preset ? 'primary' : 'ghost'"
         size="sm"
-        @click="applyPreset(preset)"
+        @click="applyMonthPreset(preset)"
       >
-        {{ preset === "30d" ? "Last 30 days" : preset === "ytd" ? "YTD" : preset === "12m" ? "Last 12 months" : "All time" }}
+        {{ preset === "this_month" ? "This month" : preset === "last_month" ? "Last month" : "Custom" }}
       </BaseButton>
+      <input
+        v-model="selectedMonth"
+        type="month"
+        class="bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light font-mono text-sm
+               focus:outline-none focus:border-accent-blue h-[34px]"
+        @change="monthPreset = 'custom'"
+      >
     </div>
 
     <BaseCard class="flex flex-col gap-4">
       <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <p class="text-xs text-surface-mid font-mono uppercase tracking-wider">Total spending</p>
+          <p class="text-xs text-surface-mid font-mono uppercase tracking-wider">
+            Total for {{ monthLabel }}
+          </p>
           <p v-if="summary" class="text-2xl font-bold text-surface-light">
             {{ formatMoney(summary.total, summary.currency) }}
           </p>
@@ -351,11 +388,11 @@ onMounted(() => {
       <ExpenseLineChart :labels="lineChart.labels" :values="lineChart.values" />
     </BaseCard>
     <BaseCard>
-      <h3 class="text-xs font-mono text-surface-mid uppercase tracking-wider mb-3">By tool</h3>
+      <h3 class="text-xs font-mono text-surface-mid uppercase tracking-wider mb-3">By category</h3>
       <ExpenseBarChart :labels="barChart.labels" :values="barChart.values" />
     </BaseCard>
     <BaseCard>
-      <h3 class="text-xs font-mono text-surface-mid uppercase tracking-wider mb-3">By category</h3>
+      <h3 class="text-xs font-mono text-surface-mid uppercase tracking-wider mb-3">By description</h3>
       <ExpenseDoughnutChart :labels="doughnutChart.labels" :values="doughnutChart.values" />
     </BaseCard>
   </div>
@@ -363,7 +400,7 @@ onMounted(() => {
   <!-- Filters -->
   <div class="flex flex-col sm:flex-row gap-3 mb-6">
     <div class="flex-1">
-      <BaseInput v-model="toolFilter" placeholder="Filter by tool name..." />
+      <BaseInput v-model="descriptionFilter" placeholder="Filter by description..." />
     </div>
     <div class="flex gap-2 items-end">
       <select
@@ -392,7 +429,11 @@ onMounted(() => {
           </h2>
 
           <form class="space-y-4" @submit.prevent="saveExpense">
-            <BaseInput v-model="form.tool_name" label="Tool / vendor" placeholder="Cursor, Vercel..." />
+            <BaseInput
+              v-model="form.tool_name"
+              label="Description"
+              placeholder="Groceries, rent, fuel..."
+            />
 
             <div class="grid grid-cols-2 gap-3">
               <BaseInput
@@ -420,7 +461,7 @@ onMounted(() => {
             <BaseInput
               v-model="form.category"
               label="Category"
-              placeholder="AI, Hosting, APIs..."
+              placeholder="Food, Housing, Transport..."
               list="expense-categories"
             />
             <datalist id="expense-categories">
@@ -458,7 +499,7 @@ onMounted(() => {
       <thead>
         <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card">
           <th class="px-4 py-3">Date</th>
-          <th class="px-4 py-3">Tool</th>
+          <th class="px-4 py-3">Description</th>
           <th class="px-4 py-3">Category</th>
           <th class="px-4 py-3 text-right">Amount</th>
           <th class="px-4 py-3">Notes</th>

@@ -113,6 +113,29 @@ class TestToolExpensesCRUD:
         assert len(data["by_tool"]) == 2
         assert len(data["by_category"]) == 2
 
+    async def test_filter_by_month(self, auth_client: AsyncClient):
+        await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
+        await auth_client.post(
+            "/api/tools/expenses",
+            json={**EXPENSE_DATA, "expense_date": "2025-06-01", "amount": "50.00"},
+        )
+        resp = await auth_client.get("/api/tools/expenses", params={"month": "2025-03"})
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+
+    async def test_summary_month_param(self, auth_client: AsyncClient):
+        await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
+        await auth_client.post(
+            "/api/tools/expenses",
+            json={**EXPENSE_DATA, "expense_date": "2025-06-01", "amount": "50.00"},
+        )
+        resp = await auth_client.get(
+            "/api/tools/expenses/summary",
+            params={"month": "2025-06"},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["total"] == "50.00"
+
     async def test_summary_date_filter(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
         await auth_client.post(

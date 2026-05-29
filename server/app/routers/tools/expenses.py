@@ -38,14 +38,20 @@ async def get_exchange_rates(
 async def get_summary(
     db: DbSession,
     user: AdminUser,  # noqa: ARG001
+    month: str | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
     display_currency: str = "USD",
 ) -> ToolExpenseSummary:
     svc = ToolExpenseService(db)
-    return await svc.get_summary(
+    resolved_from, resolved_to = svc.resolve_date_range(
+        month=month,
         date_from=date_from,
         date_to=date_to,
+    )
+    return await svc.get_summary(
+        date_from=resolved_from,
+        date_to=resolved_to,
         display_currency=display_currency,
     )
 
@@ -54,15 +60,21 @@ async def get_summary(
 async def list_expenses(
     db: DbSession,
     user: AdminUser,  # noqa: ARG001
+    month: str | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
     tool_name: str | None = None,
     category: str | None = None,
 ) -> list[ToolExpenseResponse]:
     svc = ToolExpenseService(db)
-    return await svc.list_expenses(
+    resolved_from, resolved_to = svc.resolve_date_range(
+        month=month,
         date_from=date_from,
         date_to=date_to,
+    )
+    return await svc.list_expenses(
+        date_from=resolved_from,
+        date_to=resolved_to,
         tool_name=tool_name,
         category=category,
     )
