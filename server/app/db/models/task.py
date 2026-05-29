@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import BigInteger, Enum, String, Text
+from sqlalchemy import BigInteger, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, BaseModelMixin
@@ -29,5 +29,14 @@ class Task(BaseModelMixin, Base):
     )
     google_event_id: Mapped[str | None] = mapped_column(
         String(255),
+        nullable=True,
+    )
+    intake_id: Mapped[int | None] = mapped_column(
+        ForeignKey("task_intakes.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    jira_issue_key: Mapped[str | None] = mapped_column(
+        String(50),
         nullable=True,
     )

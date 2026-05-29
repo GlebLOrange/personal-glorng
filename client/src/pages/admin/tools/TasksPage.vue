@@ -11,16 +11,18 @@ import { formatDate } from "@/utils/format";
 import type {
   SyncQueueItem,
   TaskDetail,
+  TaskIntakeItem,
   TaskItem,
   TaskStats,
 } from "@/types";
 
-type Tab = "tasks" | "sync" | "stats";
+type Tab = "tasks" | "sync" | "stats" | "intakes";
 
 const activeTab = ref<Tab>("tasks");
 const tasks = ref<TaskItem[]>([]);
 const stats = ref<TaskStats | null>(null);
 const syncQueue = ref<SyncQueueItem[]>([]);
+const intakes = ref<TaskIntakeItem[]>([]);
 const selectedTask = ref<TaskDetail | null>(null);
 const filterStatus = ref("");
 const loading = ref(false);
@@ -68,6 +70,16 @@ async function loadStats(): Promise<void> {
   } catch (err) {
     console.error(err);
     toast("Failed to load stats", "error");
+  }
+}
+
+async function loadIntakes(): Promise<void> {
+  try {
+    const { data } = await api.get<TaskIntakeItem[]>("/tools/tasks/intakes");
+    intakes.value = data;
+  } catch (err) {
+    console.error(err);
+    toast("Failed to load intakes", "error");
   }
 }
 
@@ -150,6 +162,7 @@ function switchTab(tab: Tab): void {
   activeTab.value = tab;
   if (tab === "stats") loadStats();
   if (tab === "sync") loadSyncQueue();
+  if (tab === "intakes") loadIntakes();
 }
 
 onMounted(() => {
@@ -163,7 +176,7 @@ onMounted(() => {
     <!-- Tab navigation -->
     <div class="flex gap-2 mb-6 border-b border-surface-border pb-2">
       <button
-        v-for="tab in (['tasks', 'sync', 'stats'] as Tab[])"
+        v-for="tab in (['tasks', 'intakes', 'sync', 'stats'] as Tab[])"
         :key="tab"
         :class="[
           'px-3 py-1.5 text-xs font-mono rounded-lg transition-colors',
@@ -273,6 +286,57 @@ onMounted(() => {
           class="text-surface-mid text-sm text-center py-8"
         >
           No tasks found.
+        </p>
+      </div>
+    </div>
+
+    <!-- Task intakes (AI pipeline) -->
+    <div v-if="activeTab === 'intakes'">
+      <div class="space-y-3">
+        <BaseCard v-for="item in intakes" :key="item.id">
+          <div class="flex justify-between items-start gap-4">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-surface-light font-bold text-sm">
+                  Intake #{{ item.id }}
+                </span>
+                <span
+                  :class="[
+                    'text-[10px] px-2 py-0.5 rounded-full border',
+                    statusColors[item.status] ?? 'text-surface-mid',
+                  ]"
+                >
+                  {{ item.status }}
+                </span>
+                <span
+                  v-if="item.task_id"
+                  class="text-xs text-accent-blue"
+                >
+                  → Task #{{ item.task_id }}
+                </span>
+              </div>
+              <p
+                v-if="item.inbound_text"
+                class="text-xs text-surface-mid mb-2 truncate"
+              >
+                {{ item.inbound_text }}
+              </p>
+              <pre
+                v-if="item.draft_json"
+                class="text-[10px] text-surface-mid bg-surface-dark/50 rounded p-2 overflow-x-auto"
+              >{{ JSON.stringify(item.draft_json, null, 2) }}</pre>
+            </div>
+            <span class="text-[10px] text-surface-mid shrink-0">
+              {{ formatDate(item.created_at) }}
+            </span>
+          </div>
+        </BaseCard>
+
+        <p
+          v-if="intakes.length === 0"
+          class="text-surface-mid text-sm text-center py-8"
+        >
+          No task intakes yet.
         </p>
       </div>
     </div>

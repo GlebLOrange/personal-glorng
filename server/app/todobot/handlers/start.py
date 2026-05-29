@@ -20,8 +20,8 @@ router = Router()
 WELCOME_TEXT = (
     "Hey! I'm your personal reminder assistant.\n\n"
     "You can create tasks in two ways:\n"
-    '1. Just type naturally: "Tomorrow at 18:00 gym near city center"\n'
-    "2. Tap *New Task* for a guided step-by-step flow\n\n"
+    '1. /new — send one message: "Tomorrow at 18:00 gym near city center"\n'
+    "2. /new guided — step-by-step flow\n\n"
     "Use the menu buttons below to navigate."
 )
 

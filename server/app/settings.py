@@ -105,6 +105,10 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = ""
     AI_CHAT_ENABLED: bool = False
 
+    # Task intake (Telegram AI)
+    TASK_INTAKE_AI_ENABLED: bool = True
+    TASK_INTAKE_CONFIDENCE_THRESHOLD: float = 0.7
+
     # CORS
     CORS_ORIGINS: Annotated[list[str], NoDecode] = [
         "http://localhost",
