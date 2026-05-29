@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 
 import { useAuthStore } from "@/stores/auth";
+import { isAiChatEnabled } from "@/utils/featureFlags";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -123,10 +124,8 @@ const router = createRouter({
   },
 });
 
-const aiChatEnabled = import.meta.env.VITE_AI_CHAT_ENABLED === "true";
-
 router.beforeEach((to, _from, next) => {
-  if (to.name === "tool-ai-chat" && !aiChatEnabled) {
+  if (to.name === "tool-ai-chat" && !isAiChatEnabled()) {
     next({ name: "admin" });
     return;
   }

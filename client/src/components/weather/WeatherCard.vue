@@ -45,15 +45,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="root" class="absolute top-0 right-0 z-10 w-64 sm:w-72" @click.stop>
+  <div ref="root" class="h-full w-full" @click.stop>
     <BaseCard
       hoverable
-      :class="[
-        expanded ? 'p-4' : 'p-3 cursor-pointer',
-      ]"
+      class="h-full cursor-pointer"
       @click="!expanded && open()"
     >
-      <div v-if="expanded" class="space-y-3" @click.stop>
+      <div class="text-2xl mb-3">☁</div>
+      <h3 class="text-surface-light font-bold mb-1">weather</h3>
+
+      <div v-if="expanded" class="space-y-3 mt-3" @click.stop>
         <form class="flex flex-col gap-2" @submit.prevent="applyCity">
           <BaseInput v-model="draftCity" placeholder="City name" />
           <BaseButton type="submit" variant="primary" size="sm" class="w-full">
@@ -62,7 +63,7 @@ onUnmounted(() => {
         </form>
         <WeatherWidget :city="weatherCity" compact />
       </div>
-      <div v-else>
+      <div v-else class="mt-1">
         <WeatherWidget :city="weatherCity" compact />
       </div>
     </BaseCard>

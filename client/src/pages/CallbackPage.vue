@@ -51,7 +51,7 @@ onMounted(async () => {
       <div v-else-if="status === 'success'" class="space-y-4">
         <p class="text-2xl">&#10003;</p>
         <p class="text-surface-light font-medium">{{ message }}</p>
-        <p class="text-xs text-surface-mid">Redirecting to dashboard...</p>
+        <p class="text-xs text-surface-mid">Redirecting to tools...</p>
       </div>
 
       <div v-else class="space-y-4">
@@ -59,7 +59,7 @@ onMounted(async () => {
         <p class="text-surface-light font-medium">{{ message }}</p>
         <p class="text-xs text-surface-mid">
           <RouterLink to="/admin" class="hover:text-accent-blue transition-colors">
-            &larr; Back to dashboard
+            &larr; Back to tools
           </RouterLink>
         </p>
       </div>

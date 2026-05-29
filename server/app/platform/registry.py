@@ -19,7 +19,7 @@ class PlatformService:
 PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     PlatformService(
         slug="tasks",
-        name="Tasks",
+        name="tasks",
         category="productivity",
         description="Manage todobot tasks and reminders",
         api_prefix="/tasks",
@@ -29,7 +29,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="email",
-        name="Email",
+        name="email",
         category="productivity",
         description="Send styled emails",
         api_prefix="/email",
@@ -39,7 +39,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="expenses",
-        name="Expenses",
+        name="expenses",
         category="productivity",
         description="Monthly personal spending ledger with charts",
         api_prefix="/expenses",
@@ -49,7 +49,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="recipes",
-        name="Recipes",
+        name="recipes",
         category="content",
         description="Personal recipe book and food notes",
         api_prefix="/recipes",
@@ -59,7 +59,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="file-share",
-        name="File Share",
+        name="file share",
         category="content",
         description="Share files between devices",
         api_prefix="/file-share",
@@ -69,7 +69,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="url-shortener",
-        name="URL Shortener",
+        name="url shortener",
         category="content",
         description="Create and manage short URLs",
         api_prefix="/url-shortener",
@@ -79,7 +79,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="calculator",
-        name="Calculator",
+        name="calculator",
         category="utilities",
         description="Quick math calculations",
         api_prefix="/calculator",
@@ -89,7 +89,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="vid-download",
-        name="Video Download",
+        name="video download",
         category="utilities",
         description="Download videos with yt-dlp",
         api_prefix="/vid-download",
@@ -99,7 +99,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="ai-chat",
-        name="AI Chat",
+        name="ai chat",
         category="utilities",
         description="Chat with Groq LLMs from the admin panel",
         api_prefix="/ai-chat",
@@ -109,7 +109,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="currency",
-        name="Currency Converter",
+        name="currency converter",
         category="utilities",
         description="Convert between EUR, USD, PLN, and BYN",
         api_prefix="/currency",
@@ -119,7 +119,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="feedback",
-        name="Feedback",
+        name="feedback",
         category="operations",
         description="Read visitor feedback messages",
         api_prefix="/feedback",
@@ -129,7 +129,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="audit",
-        name="Audit Log",
+        name="audit log",
         category="operations",
         description="Review security and domain change events",
         api_prefix="/audit",
@@ -139,7 +139,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="api-docs",
-        name="API Docs",
+        name="api docs",
         category="operations",
         description="Swagger API documentation",
         api_prefix="/docs",
@@ -151,8 +151,8 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
 )
 
 CATEGORY_LABELS: dict[str, str] = {
-    "productivity": "Productivity",
-    "content": "Content",
-    "utilities": "Utilities",
-    "operations": "Operations",
+    "productivity": "productivity",
+    "content": "content",
+    "utilities": "utilities",
+    "operations": "operations",
 }

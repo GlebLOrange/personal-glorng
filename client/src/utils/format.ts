@@ -2,7 +2,6 @@ export function formatBreadcrumbLabel(title: string): string {
   return title
     .split(/[\s-]+/)
     .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
 
