@@ -33,7 +33,7 @@ api.interceptors.response.use(
     orig._retry = true;
     isRefreshing = true;
     try {
-      await axios.post("/api/auth/refresh", undefined, { withCredentials: true });
+      await api.post("/auth/refresh");
       pendingQueue.forEach((cb) => cb());
       return api(orig);
     } catch {

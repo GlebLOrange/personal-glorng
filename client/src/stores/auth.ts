@@ -7,11 +7,16 @@ import type { UserResponse } from "@/types";
 
 export const useAuthStore = defineStore("auth", () => {
   const user = ref<UserResponse | null>(null);
+  const sessionResolved = ref(false);
 
   const isAuthenticated = computed(() => !!user.value);
 
-  function logout(): void {
+  function clearUser(): void {
     user.value = null;
+  }
+
+  function logout(): void {
+    clearUser();
     void api.post("/auth/logout").catch(() => undefined);
   }
 
@@ -24,22 +29,41 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function fetchUser(): Promise<void> {
+    const { data } = await api.get<UserResponse>("/auth/me");
+    user.value = data;
+  }
+
+  /** Restore session from cookies; try refresh before treating user as logged out. */
+  async function resolveSession(): Promise<void> {
+    sessionResolved.value = false;
+    clearUser();
+
     try {
-      const { data } = await api.get<UserResponse>("/auth/me");
-      user.value = data;
-    } catch (err) {
-      const status = axios.isAxiosError(err) ? err.response?.status : undefined;
-      if (status === 401 || status === 403) {
-        logout();
+      try {
+        await fetchUser();
+      } catch (err) {
+        const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+        if (status !== 401) {
+          throw err;
+        }
+        await api.post("/auth/refresh");
+        await fetchUser();
       }
+    } catch {
+      clearUser();
+    } finally {
+      sessionResolved.value = true;
     }
   }
 
   return {
     user,
+    sessionResolved,
     isAuthenticated,
+    clearUser,
     logout,
     login,
     fetchUser,
+    resolveSession,
   };
 });
