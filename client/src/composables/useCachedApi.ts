@@ -1,4 +1,4 @@
-import { ref, type Ref } from "vue";
+import { ref, toValue, type MaybeRefOrGetter, type Ref } from "vue";
 
 import { api } from "@/composables/useApi";
 
@@ -10,14 +10,15 @@ const DEFAULT_TTL_MS = 5 * 60 * 1000;
  * TTL defaults to 5 minutes.
  */
 export function useCachedApi<T>(
-  url: string,
+  url: MaybeRefOrGetter<string>,
   ttlMs: number = DEFAULT_TTL_MS,
 ): { data: Ref<T | null>; loading: Ref<boolean>; fetch: () => Promise<void> } {
   const data = ref<T | null>(null) as Ref<T | null>;
   const loading = ref(true);
 
   async function load(): Promise<void> {
-    const cached = cache.get(url);
+    const resolved = toValue(url);
+    const cached = cache.get(resolved);
     if (cached && Date.now() - cached.ts < ttlMs) {
       data.value = cached.data as T;
       loading.value = false;
@@ -26,11 +27,11 @@ export function useCachedApi<T>(
 
     loading.value = true;
     try {
-      const res = await api.get<T>(url);
+      const res = await api.get<T>(resolved);
       data.value = res.data;
-      cache.set(url, { data: res.data, ts: Date.now() });
+      cache.set(resolved, { data: res.data, ts: Date.now() });
     } catch (err) {
-      console.error(`[useCachedApi] ${url}`, err);
+      console.error(`[useCachedApi] ${resolved}`, err);
       throw err;
     } finally {
       loading.value = false;
