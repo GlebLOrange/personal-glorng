@@ -69,9 +69,18 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "noreply@glorng.dev"
 
-    # Sentry
+    # Sentry (off in development unless SENTRY_ENABLED=true)
+    SENTRY_ENABLED: bool = False
     SERVER_SENTRY_DSN: str = ""
     SERVER_SENTRY_RELEASE: str = ""
+
+    def sentry_enabled(self) -> bool:
+        """Whether server/worker Sentry should initialize."""
+        if not self.SERVER_SENTRY_DSN:
+            return False
+        if self.SENTRY_ENABLED:
+            return True
+        return self.APP_ENV != "development"
 
     # Telegram Bot
     TELEGRAM_BOT_TO_DO_TOKEN: str = ""

@@ -68,6 +68,19 @@ class TestRecipesCRUD:
         assert len(resp.json()) == 1
         assert resp.json()[0]["title"] == "Pasta Carbonara"
 
+    async def test_search_by_ingredient(self, auth_client: AsyncClient):
+        await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
+        await auth_client.post("/api/tools/recipes", json={
+            **RECIPE_DATA,
+            "title": "Plain Rice",
+            "ingredients": ["rice", "water"],
+            "steps": ["Boil rice"],
+        })
+        resp = await auth_client.get("/api/tools/recipes?search=pancetta")
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+        assert resp.json()[0]["title"] == "Pasta Carbonara"
+
     async def test_filter_by_tag(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
         await auth_client.post("/api/tools/recipes", json={

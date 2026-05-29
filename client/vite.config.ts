@@ -3,6 +3,9 @@ import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 
+const apiProxyTarget = process.env.VITE_API_PROXY_TARGET ?? "http://server:8000";
+const behindNginx = process.env.VITE_BEHIND_NGINX === "true";
+
 export default defineConfig({
   build: {
     sourcemap: "hidden",
@@ -31,13 +34,11 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 3000,
-    // HMR through nginx on :80 (browser must not connect to :3000 directly)
-    hmr: {
-      clientPort: 80,
-    },
+    // HMR through nginx on :80 when the client runs in Docker behind nginx.
+    hmr: behindNginx ? { clientPort: 80 } : undefined,
     proxy: {
       "/api": {
-        target: "http://server:8000",
+        target: apiProxyTarget,
         changeOrigin: true,
       },
     },

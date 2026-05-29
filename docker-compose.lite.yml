@@ -1,0 +1,5 @@
+# Minimal dev stack: db + redis + API only. Run Vite on the host (see `make dev-lite`).
+services:
+  server:
+    ports:
+      - "8000:8000"

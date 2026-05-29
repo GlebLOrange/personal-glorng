@@ -4,13 +4,18 @@ import "vanilla-cookieconsent/dist/cookieconsent.css";
 
 import { initSentry } from "@/instrument";
 import { isAnalyticsEnabled } from "@/constants/analytics";
+import { isSentryEnabled } from "@/constants/sentry";
 import { initAnalytics } from "@/router";
 
 let sentryInitialized = false;
 let analyticsInitialized = false;
 
 function applyConsent(app: App) {
-  if (!sentryInitialized && CookieConsent.acceptedCategory("monitoring")) {
+  if (
+    isSentryEnabled &&
+    !sentryInitialized &&
+    CookieConsent.acceptedCategory("monitoring")
+  ) {
     initSentry(app);
     sentryInitialized = true;
   }
@@ -31,12 +36,15 @@ export function setupCookieConsent(app: App): void {
       enabled: true,
       readOnly: true,
     },
-    monitoring: {
+  };
+
+  if (isSentryEnabled) {
+    categories.monitoring = {
       autoClear: {
         cookies: [{ name: /^sentry/ }],
       },
-    },
-  };
+    };
+  }
 
   if (isAnalyticsEnabled) {
     categories.analytics = {
@@ -82,12 +90,16 @@ export function setupCookieConsent(app: App): void {
           },
         ]
       : []),
-    {
-      title: "Error monitoring",
-      description:
-        "Sentry captures errors and performance data to help us fix issues faster.",
-      linkedCategory: "monitoring",
-    },
+    ...(isSentryEnabled
+      ? [
+          {
+            title: "Error monitoring",
+            description:
+              "Sentry captures errors and performance data to help us fix issues faster.",
+            linkedCategory: "monitoring",
+          },
+        ]
+      : []),
   ];
 
   CookieConsent.run({
@@ -113,9 +125,14 @@ export function setupCookieConsent(app: App): void {
         en: {
           consentModal: {
             title: "Cookie preferences",
-            description: isAnalyticsEnabled
-              ? "This site uses cookies for analytics and error monitoring to improve your experience. You can choose which categories to allow."
-              : "This site uses cookies for error monitoring to improve your experience. You can choose which categories to allow.",
+            description:
+              isAnalyticsEnabled && isSentryEnabled
+                ? "This site uses cookies for analytics and error monitoring to improve your experience. You can choose which categories to allow."
+                : isAnalyticsEnabled
+                  ? "This site uses cookies for analytics to improve your experience. You can choose which categories to allow."
+                  : isSentryEnabled
+                    ? "This site uses cookies for error monitoring to improve your experience. You can choose which categories to allow."
+                    : "This site uses essential cookies only.",
             acceptAllBtn: "Accept all",
             acceptNecessaryBtn: "Reject all",
             showPreferencesBtn: "Manage preferences",

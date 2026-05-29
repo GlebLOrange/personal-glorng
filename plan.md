@@ -104,3 +104,24 @@ Living roadmap. Update **one section** when status changes.
 **Acceptance:** `curl /sitemap.xml` returns valid XML with absolute URLs.
 
 **Notes:** Shipped — `GET /sitemap.xml` and `GET /robots.txt` via API; nginx proxies in dev/prod.
+
+---
+
+## Deferred infrastructure
+
+**Status:** backlog
+
+**Goal:** Heavy or hosting-dependent optimizations deferred until they justify the cost.
+
+**Later (not in dev compose today):**
+- Elasticsearch/OpenSearch for unified admin search (~512MB+ steady RAM)
+- CDN / edge cache (Cloudflare, HTTP/3, brotli at edge)
+- Optional slim dev API image without `ffmpeg`/`yt-dlp` for frontend-only work
+- Lighthouse CI, self-hosted fonts (public site perf, not dev RAM)
+- Public portfolio search (resume is static JSON until content is DB-backed)
+
+**Shipped locally instead:**
+- Compose profiles: worker and todobot off by default (`make dev`)
+- `make dev-lite`: db + redis + API only; Vite on host
+- Dev memory caps on Postgres/Redis; Sentry profiling disabled in development
+- Postgres full-text search for recipes (title, ingredients, steps, notes)

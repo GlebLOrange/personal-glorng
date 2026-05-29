@@ -1,4 +1,8 @@
+import { isSentryEnabled } from "@/constants/sentry";
+
 export async function initSentry(app: ReturnType<typeof import("vue")["createApp"]>) {
+  if (!isSentryEnabled) return;
+
   const dsn = import.meta.env.VITE_CLIENT_SENTRY_DSN;
   if (!dsn) return;
 
