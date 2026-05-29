@@ -6,8 +6,8 @@ Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + Postg
 
 - **Backend**: FastAPI, SQLAlchemy (async), Alembic, ARQ, Redis, Sentry
 - **Frontend**: Vue 3, Vite, TypeScript, Tailwind CSS, SASS, Pinia
-- **Database**: PostgreSQL 16
-- **Cache/Queue**: Redis 7
+- **Database**: PostgreSQL 18
+- **Cache/Queue**: Redis 8
 - **Proxy**: Nginx
 - **Tooling**: Ruff (lint/format), pytest, Docker Compose
 
@@ -24,10 +24,10 @@ cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev
 # Or: full UI through nginx without worker/bot (5 containers)
 make dev
 
-# Run migrations
-make migrate
+# Run migrations (or rely on migrate service on `make dev`)
+make db-init
 
-# Seed admin user
+# Seed admin user (after server is up)
 make seed
 ```
 
@@ -72,7 +72,9 @@ nginx/     Reverse proxy config (:80)
 | `make down`    | Stop all containers                  |
 | `make test`    | Run backend tests                    |
 | `make lint`    | Lint and format Python code          |
-| `make migrate` | Run Alembic migrations               |
+| `make db-init` | Run Alembic migrations (`migrate` service) |
+| `make migrate` | Alias for `db-init`                  |
+| `make db-reset`| Wipe DB volume and re-migrate (destructive) |
 | `make seed`    | Create admin user                    |
 | `make logs`    | Tail container logs                  |
 
@@ -113,7 +115,7 @@ Browser → Nginx (:80)
 FastAPI + Worker + Todobot share PostgreSQL and Redis
 ```
 
-See [docs/platform.md](docs/platform.md) for the service catalog and audit model.
+See [docs/platform.md](docs/platform.md) for the service catalog and audit model. Database setup and migrations: [docs/database.md](docs/database.md).
 
 ## License
 

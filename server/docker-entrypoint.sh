@@ -2,8 +2,7 @@
 set -e
 
 if [ "$RUN_MIGRATIONS" = "true" ]; then
-    echo "Running database migrations..."
-    alembic upgrade head
+    /app/scripts/db_init.sh
 fi
 
 exec "$@"

@@ -9,6 +9,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql
+      - ./server/app/db/init:/docker-entrypoint-initdb.d:ro
     networks:
       - backend
     healthcheck:
@@ -31,6 +32,22 @@ services:
       timeout: 3s
       retries: 5
 
+  migrate:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    entrypoint: ["/bin/sh", "/app/scripts/db_init.sh"]
+    env_file:
+      - .env
+    environment:
+      PYTHONPATH: /app
+    networks:
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
   server:
     build:
       context: ./server
@@ -41,7 +58,7 @@ services:
       - server_media:/app/media
     environment:
       PYTHONPATH: /app
-      RUN_MIGRATIONS: "true"
+      RUN_MIGRATIONS: "false"
     env_file:
       - .env
     networks:
@@ -51,6 +68,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   worker:
     build:
@@ -69,6 +88,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   todobot:
     build:
@@ -87,6 +108,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   client:
     build:
