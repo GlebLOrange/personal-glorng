@@ -9,14 +9,17 @@ from pathlib import Path
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
-from app.core.deps import AdminUser, require_admin
+from app.core.deps import AuthorizedUser, require_capability
 from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
 from app.schemas.viddownload import VidDownloadRequest
 
 router = APIRouter(
     prefix="/vid-download",
-    dependencies=[Depends(require_admin), Depends(rate_limit_api)],
+    dependencies=[
+        Depends(require_capability("vid-download", "read")),
+        Depends(rate_limit_api),
+    ],
 )
 
 BLOCKED_FLAGS = frozenset(
@@ -118,10 +121,13 @@ def _stream_and_cleanup(path: Path, tmp_dir: str) -> Generator[bytes, None, None
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
-@router.post("")
+@router.post(
+    "",
+    dependencies=[Depends(require_capability("vid-download", "write"))],
+)
 async def download_video(
     data: VidDownloadRequest,
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,  # noqa: ARG001
 ) -> StreamingResponse:
     if not _download_semaphore._value:
         raise ApiError(

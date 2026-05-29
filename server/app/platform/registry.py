@@ -108,6 +108,16 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         capabilities=("read", "write"),
     ),
     PlatformService(
+        slug="weather",
+        name="weather",
+        category="utilities",
+        description="Current weather for a city",
+        api_prefix="/weather",
+        admin_route="/admin/tools/weather",
+        icon="☀",
+        capabilities=("read",),
+    ),
+    PlatformService(
         slug="currency",
         name="currency converter",
         category="utilities",

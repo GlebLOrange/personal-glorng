@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 
 import { useAuthStore } from "@/stores/auth";
+import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled } from "@/utils/featureFlags";
 
 const routes: RouteRecordRaw[] = [
@@ -116,6 +117,22 @@ const routes: RouteRecordRaw[] = [
   },
 ];
 
+const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
+  "tool-tasks": "tasks",
+  "tool-expenses": "expenses",
+  "tool-recipes": "recipes",
+  "tool-file-share": "file-share",
+  "tool-url-shortener": "url-shortener",
+  "tool-calculator": "calculator",
+  "tool-currency": "currency",
+  "tool-vid-download": "vid-download",
+  "tool-email": "email",
+  "tool-feedback": "feedback",
+  "tool-ai-chat": "ai-chat",
+  "tool-audit": "audit",
+  "tool-weather": "weather",
+};
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
@@ -137,6 +154,14 @@ router.beforeEach((to, _from, next) => {
       replace: true,
     });
     return;
+  }
+  const toolSlug = typeof to.name === "string" ? TOOL_ROUTE_SLUGS[to.name] : undefined;
+  if (toolSlug && auth.isAuthenticated) {
+    const { can } = usePermissions();
+    if (!can(toolSlug, "read")) {
+      next({ name: "admin" });
+      return;
+    }
   }
   next();
 });

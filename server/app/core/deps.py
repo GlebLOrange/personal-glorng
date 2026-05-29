@@ -1,18 +1,20 @@
+from collections.abc import Callable
 from typing import Annotated
 
 from arq import ArqRedis
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from redis.asyncio import Redis
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ApiError, ForbiddenError, UnauthorizedError
+from app.core.permissions import permission_key, user_has_permission
 from app.core.redis import get_redis_client, is_token_blacklisted
 from app.core.security import decode_token
 from app.db.models.user import User
 from app.db.session import get_db
 from app.services.ai_chat import OpenAIService
+from app.services.user import get_user_by_public_id
 from app.settings import Settings, get_settings
 from app.workers.pool import get_arq_pool
 
@@ -43,18 +45,11 @@ async def get_current_user(
     if await is_token_blacklisted(jti):
         raise UnauthorizedError("Token has been revoked")
 
-    user_id = payload.get("sub")
-    if not user_id:
+    user_sub = payload.get("sub")
+    if not user_sub:
         raise UnauthorizedError("Invalid token payload")
 
-    try:
-        uid = int(user_id)
-    except (ValueError, TypeError):
-        raise UnauthorizedError("Invalid token payload") from None
-
-    result = await db.execute(select(User).where(User.id == uid))
-    user = result.scalar_one_or_none()
-
+    user = await get_user_by_public_id(db, str(user_sub))
     if not user:
         raise UnauthorizedError("User not found")
     if not user.is_verified:
@@ -66,8 +61,25 @@ async def get_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+def require_capability(slug: str, capability: str) -> Callable[..., object]:
+    """FastAPI dependency factory for a platform permission."""
+
+    key = permission_key(slug, capability)
+
+    async def _dep(user: CurrentUser) -> User:
+        if not user_has_permission(user, key):
+            raise ForbiddenError(f"Permission required: {key}")
+        return user
+
+    return _dep
+
+
+AuthorizedUser = CurrentUser
+
+
 async def require_admin(user: CurrentUser) -> User:
-    if not user.is_admin:
+    """Backward-compatible alias: requires platform superuser."""
+    if not user_has_permission(user, "platform:superuser"):
         raise ForbiddenError("Admin access required")
     return user
 

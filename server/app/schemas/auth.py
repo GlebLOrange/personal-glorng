@@ -1,4 +1,5 @@
 import re
+import uuid
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
@@ -56,20 +57,21 @@ class ResetPasswordRequest(BaseModel):
 
 
 class UserResponse(BaseModel):
-    id: int
+    id: uuid.UUID = Field(validation_alias="public_id")
     email: str
     is_verified: bool
-    is_admin: bool
+    permissions: list[str]
     created_at: datetime
 
     model_config = ConfigDict(
         from_attributes=True,
+        populate_by_name=True,
         json_schema_extra={
             "example": {
-                "id": 1,
+                "id": "550e8400-e29b-41d4-a716-446655440000",
                 "email": "admin@glorng.dev",
                 "is_verified": True,
-                "is_admin": True,
+                "permissions": ["platform:superuser"],
                 "created_at": "2026-05-25T03:00:00Z",
             }
         },

@@ -1,21 +1,28 @@
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import RedirectResponse
 
-from app.core.deps import AdminUser, DbSession, require_admin
+from app.core.deps import AuthorizedUser, DbSession, require_capability
 from app.core.rate_limit import rate_limit_api
 from app.core.utils import paginate_params
 from app.schemas.common import MessageResponse
 from app.schemas.url import UrlCreate, UrlResponse
 from app.services.url import UrlService
 
-router = APIRouter(prefix="/url-shortener", dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/url-shortener",
+    dependencies=[Depends(require_capability("url-shortener", "read"))],
+)
 
 
-@router.post("", response_model=UrlResponse)
+@router.post(
+    "",
+    response_model=UrlResponse,
+    dependencies=[Depends(require_capability("url-shortener", "write"))],
+)
 async def create_url(
     data: UrlCreate,
     db: DbSession,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> UrlResponse:
     svc = UrlService(db)
     url = await svc.create_short_url(
@@ -29,7 +36,7 @@ async def create_url(
 @router.get("", response_model=list[UrlResponse])
 async def list_urls(
     db: DbSession,
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,  # noqa: ARG001
     page: int = 1,
     per_page: int = 20,
 ) -> list[UrlResponse]:
@@ -39,11 +46,15 @@ async def list_urls(
     return [UrlResponse.model_validate(u) for u in urls]
 
 
-@router.delete("/{url_id}", response_model=MessageResponse)
+@router.delete(
+    "/{url_id}",
+    response_model=MessageResponse,
+    dependencies=[Depends(require_capability("url-shortener", "write"))],
+)
 async def delete_url(
     url_id: int,
     db: DbSession,
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,  # noqa: ARG001
 ) -> MessageResponse:
     svc = UrlService(db)
     await svc.delete_url(url_id)

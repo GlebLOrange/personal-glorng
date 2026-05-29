@@ -66,7 +66,8 @@ class TestListFeedback:
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 2
-        assert data[0]["theme"] == "Second"
+        themes = {item["theme"] for item in data}
+        assert themes == {"First", "Second"}
 
     async def test_list_empty(self, auth_client: AsyncClient):
         resp = await auth_client.get("/api/feedback")

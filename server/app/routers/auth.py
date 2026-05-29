@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.core.deps import CurrentUser, DbSession, oauth2_scheme
+from app.core.logging import logger
 from app.core.rate_limit import rate_limit_auth
 from app.core.redis import blacklist_token
 from app.core.security import create_verification_token, decode_token
@@ -27,6 +28,7 @@ from app.services.auth import (
     reset_user_password,
     verify_user_email,
 )
+from app.services.user import get_user_by_public_id
 from app.workers.pool import enqueue_job
 
 router = APIRouter()
@@ -98,8 +100,10 @@ async def logout(
         try:
             payload = decode_token(raw_token)
             sub = payload.get("sub")
-            if sub:
-                user_id = int(sub)
+            if sub and user_id is None:
+                user = await get_user_by_public_id(db, str(sub))
+                if user:
+                    user_id = user.id
             jti = payload.get("jti", "")
             exp = payload.get("exp", 0)
             now = int(datetime.now(UTC).timestamp())

@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends
 
-from app.core.deps import AdminUser, DbSession, require_admin
+from app.core.deps import AuthorizedUser, DbSession, require_capability
 from app.core.exceptions import ValidationError
 from app.db.models.audit_event import AuditActorType, AuditSource
 from app.db.models.google_sync_queue import SyncAction
@@ -21,15 +21,19 @@ from app.settings import get_settings
 
 router = APIRouter(
     prefix="/tasks",
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_capability("tasks", "read"))],
 )
 
 
-@router.post("", response_model=TaskResponse)
+@router.post(
+    "",
+    response_model=TaskResponse,
+    dependencies=[Depends(require_capability("tasks", "write"))],
+)
 async def create_task(
     data: TaskCreate,
     db: DbSession,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> TaskResponse:
     settings = get_settings()
     telegram_user_id = data.telegram_user_id or settings.TELEGRAM_ALLOWED_USER_ID
@@ -57,7 +61,7 @@ async def create_task(
 @router.get("", response_model=list[TaskResponse])
 async def list_tasks(
     db: DbSession,
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,  # noqa: ARG001
     page: int = 1,
     per_page: int = 20,
     status: str | None = None,
@@ -69,7 +73,7 @@ async def list_tasks(
 @router.get("/stats", response_model=TaskStatsResponse)
 async def task_stats(
     db: DbSession,
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,  # noqa: ARG001
 ) -> TaskStatsResponse:
     return await TaskService(db).task_stats()
 
@@ -77,7 +81,7 @@ async def task_stats(
 @router.get("/intakes", response_model=list[TaskIntakeResponse])
 async def list_intakes(
     db: DbSession,
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,  # noqa: ARG001
     page: int = 1,
     per_page: int = 20,
 ) -> list[TaskIntakeResponse]:
@@ -87,7 +91,7 @@ async def list_intakes(
 @router.get("/sync-queue", response_model=list[SyncQueueResponse])
 async def list_sync_queue(
     db: DbSession,
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,  # noqa: ARG001
     page: int = 1,
     per_page: int = 20,
 ) -> list[SyncQueueResponse]:
@@ -98,16 +102,20 @@ async def list_sync_queue(
 async def task_detail(
     task_id: int,
     db: DbSession,
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,  # noqa: ARG001
 ) -> TaskDetailResponse:
     return await TaskService(db).task_detail(task_id)
 
 
-@router.post("/{task_id}/retry-sync", response_model=MessageResponse)
+@router.post(
+    "/{task_id}/retry-sync",
+    response_model=MessageResponse,
+    dependencies=[Depends(require_capability("tasks", "write"))],
+)
 async def retry_sync(
     task_id: int,
     db: DbSession,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> MessageResponse:
     count = await TaskService(db).retry_sync(task_id)
     return MessageResponse(message=f"Retrying {count} sync entries")

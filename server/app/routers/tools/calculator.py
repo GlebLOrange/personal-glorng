@@ -3,10 +3,13 @@ from typing import Any
 
 from fastapi import APIRouter, Depends
 
-from app.core.deps import require_admin
+from app.core.deps import require_capability
 from app.core.exceptions import ValidationError
 
-router = APIRouter(prefix="/calculator", dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/calculator",
+    dependencies=[Depends(require_capability("calculator", "read"))],
+)
 
 ALLOWED_OPS = {"+", "-", "*", "/"}
 _MAX_FLOAT = 1e15
