@@ -17,18 +17,18 @@ function handleLogout(): void {
 
       <div class="flex items-center gap-4 text-sm">
         <RouterLink to="/" class="text-surface-mid hover:text-surface-light transition-colors">
-          Portfolio
+          portfolio
         </RouterLink>
 
         <template v-if="auth.isAuthenticated">
           <RouterLink to="/admin" class="text-surface-mid hover:text-accent-blue transition-colors">
-            Dashboard
+            tools
           </RouterLink>
           <button
             class="text-surface-mid hover:text-accent-violet transition-colors"
             @click="handleLogout"
           >
-            Logout
+            logout
           </button>
         </template>
 
@@ -37,7 +37,7 @@ function handleLogout(): void {
           to="/login"
           class="text-surface-mid hover:text-accent-blue transition-colors"
         >
-          Login
+          login
         </RouterLink>
       </div>
     </div>

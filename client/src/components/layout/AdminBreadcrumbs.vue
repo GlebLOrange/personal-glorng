@@ -12,7 +12,7 @@ defineProps<{
           to="/admin"
           class="text-surface-mid hover:text-accent-blue transition-colors"
         >
-          Dashboard
+          tools
         </RouterLink>
       </li>
       <li class="text-surface-muted" aria-hidden="true">/</li>

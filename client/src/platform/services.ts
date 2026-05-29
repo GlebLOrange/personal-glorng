@@ -20,9 +20,9 @@ export interface PlatformCatalog {
 export const PLATFORM_SERVICES: PlatformService[] = [
   {
     slug: "tasks",
-    name: "Tasks",
+    name: "tasks",
     category: "productivity",
-    categoryLabel: "Productivity",
+    categoryLabel: "productivity",
     description: "Manage todobot tasks and reminders",
     apiPrefix: "/tasks",
     adminRoute: "/admin/tools/tasks",
@@ -32,9 +32,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "email",
-    name: "Email",
+    name: "email",
     category: "productivity",
-    categoryLabel: "Productivity",
+    categoryLabel: "productivity",
     description: "Send styled emails",
     apiPrefix: "/email",
     adminRoute: "/admin/tools/email",
@@ -44,9 +44,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "expenses",
-    name: "Expenses",
+    name: "expenses",
     category: "productivity",
-    categoryLabel: "Productivity",
+    categoryLabel: "productivity",
     description: "Monthly personal spending ledger with charts",
     apiPrefix: "/expenses",
     adminRoute: "/admin/tools/expenses",
@@ -56,9 +56,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "recipes",
-    name: "Recipes",
+    name: "recipes",
     category: "content",
-    categoryLabel: "Content",
+    categoryLabel: "content",
     description: "Personal recipe book and food notes",
     apiPrefix: "/recipes",
     adminRoute: "/admin/tools/recipes",
@@ -68,9 +68,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "file-share",
-    name: "File Share",
+    name: "file share",
     category: "content",
-    categoryLabel: "Content",
+    categoryLabel: "content",
     description: "Share files between devices",
     apiPrefix: "/file-share",
     adminRoute: "/admin/tools/file-share",
@@ -80,9 +80,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "url-shortener",
-    name: "URL Shortener",
+    name: "url shortener",
     category: "content",
-    categoryLabel: "Content",
+    categoryLabel: "content",
     description: "Create and manage short URLs",
     apiPrefix: "/url-shortener",
     adminRoute: "/admin/tools/url-shortener",
@@ -92,9 +92,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "calculator",
-    name: "Calculator",
+    name: "calculator",
     category: "utilities",
-    categoryLabel: "Utilities",
+    categoryLabel: "utilities",
     description: "Quick math calculations",
     apiPrefix: "/calculator",
     adminRoute: "/admin/tools/calculator",
@@ -104,9 +104,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "currency",
-    name: "Currency Converter",
+    name: "currency converter",
     category: "utilities",
-    categoryLabel: "Utilities",
+    categoryLabel: "utilities",
     description: "Convert between EUR, USD, PLN, and BYN",
     apiPrefix: "/currency",
     adminRoute: "/admin/tools/currency",
@@ -116,9 +116,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "vid-download",
-    name: "Video Download",
+    name: "video download",
     category: "utilities",
-    categoryLabel: "Utilities",
+    categoryLabel: "utilities",
     description: "Download videos with yt-dlp",
     apiPrefix: "/vid-download",
     adminRoute: "/admin/tools/vid-download",
@@ -128,9 +128,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "ai-chat",
-    name: "AI Chat",
+    name: "ai chat",
     category: "utilities",
-    categoryLabel: "Utilities",
+    categoryLabel: "utilities",
     description: "Chat with Groq LLMs from the admin panel",
     apiPrefix: "/ai-chat",
     adminRoute: "/admin/tools/ai-chat",
@@ -140,9 +140,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "feedback",
-    name: "Feedback",
+    name: "feedback",
     category: "operations",
-    categoryLabel: "Operations",
+    categoryLabel: "operations",
     description: "Read visitor feedback messages",
     apiPrefix: "/feedback",
     adminRoute: "/admin/tools/feedback",
@@ -152,9 +152,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "audit",
-    name: "Audit Log",
+    name: "audit log",
     category: "operations",
-    categoryLabel: "Operations",
+    categoryLabel: "operations",
     description: "Review security and domain change events",
     apiPrefix: "/audit",
     adminRoute: "/admin/tools/audit",
@@ -164,9 +164,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "api-docs",
-    name: "API Docs",
+    name: "api docs",
     category: "operations",
-    categoryLabel: "Operations",
+    categoryLabel: "operations",
     description: "Swagger API documentation",
     apiPrefix: "/docs",
     adminRoute: "/api/docs",
@@ -177,10 +177,10 @@ export const PLATFORM_SERVICES: PlatformService[] = [
 ];
 
 export const PLATFORM_CATEGORIES: Record<string, string> = {
-  productivity: "Productivity",
-  content: "Content",
-  utilities: "Utilities",
-  operations: "Operations",
+  productivity: "productivity",
+  content: "content",
+  utilities: "utilities",
+  operations: "operations",
 };
 
 export function groupServicesByCategory(

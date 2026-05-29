@@ -14,7 +14,7 @@ function readStoredCity(): string {
 
 const weatherCity = ref(readStoredCity());
 
-/** Persisted admin weather city (shared by dashboard widget and weather tool). */
+/** Persisted admin weather city (shared by tools page widget and weather tool). */
 export function useWeatherCity(): {
   weatherCity: Ref<string>;
   setWeatherCity: (city: string) => void;

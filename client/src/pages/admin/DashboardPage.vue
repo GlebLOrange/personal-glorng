@@ -11,9 +11,15 @@ import {
   type PlatformService,
 } from "@/platform/services";
 import { useAuthStore } from "@/stores/auth";
+import { isAiChatEnabled } from "@/utils/featureFlags";
+
+function filterAiChat(services: PlatformService[]): PlatformService[] {
+  if (isAiChatEnabled()) return services;
+  return services.filter((s) => s.slug !== "ai-chat");
+}
 
 const auth = useAuthStore();
-const services = ref<PlatformService[]>(PLATFORM_SERVICES);
+const services = ref<PlatformService[]>(filterAiChat(PLATFORM_SERVICES));
 
 const sections = computed(() => groupServicesByCategory(services.value));
 
@@ -33,10 +39,7 @@ onMounted(async () => {
         external: boolean;
       }>;
     }>("/platform/services");
-    const enabled = data.services.filter(
-      (s) => s.slug !== "ai-chat" || import.meta.env.VITE_AI_CHAT_ENABLED === "true",
-    );
-    services.value = enabled.map((s) => ({
+    services.value = data.services.map((s) => ({
       slug: s.slug,
       name: s.name,
       category: s.category,
@@ -55,10 +58,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <AdminPageLayout title="dashboard" max-width="xl">
-    <div class="relative mb-6 pr-48 sm:pr-72">
-      <WeatherCard />
-      <p class="text-surface-mid text-sm mb-2 -mt-4">
+  <AdminPageLayout title="tools" max-width="xl">
+    <div class="mb-6">
+      <p class="text-surface-mid text-sm mb-2">
         Welcome back, {{ auth.user?.email ?? "admin" }}
       </p>
       <p class="text-surface-muted text-xs">
@@ -69,6 +71,7 @@ onMounted(async () => {
     <section v-for="section in sections" :key="section.category" class="mb-10">
       <h2 class="text-lg font-bold text-surface-light mb-4">{{ section.label }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <WeatherCard v-if="section.category === 'utilities'" />
         <component
           v-for="tool in section.services"
           :key="tool.adminRoute"
