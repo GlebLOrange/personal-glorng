@@ -122,7 +122,7 @@ async def test_me_authenticated(auth_client: AsyncClient) -> None:
     assert resp.status_code == 200
     data = resp.json()
     assert data["email"] == ADMIN_EMAIL
-    assert data["is_admin"] is True
+    assert "platform:superuser" in data["permissions"]
     assert data["is_verified"] is True
 
 

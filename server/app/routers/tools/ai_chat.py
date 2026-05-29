@@ -4,13 +4,16 @@ from collections.abc import AsyncIterator
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
-from app.core.deps import OpenAIChatService, require_admin
+from app.core.deps import OpenAIChatService, require_capability
 from app.core.exceptions import ApiError
 from app.core.feature_flags import is_ai_chat_enabled
 from app.schemas.ai_chat import ChatRequest
 from app.services.ai_chat import OpenAIService
 
-router = APIRouter(prefix="/ai-chat", dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/ai-chat",
+    dependencies=[Depends(require_capability("ai-chat", "read"))],
+)
 
 
 def _require_ai_chat_enabled() -> None:
@@ -30,7 +33,10 @@ async def _sse_events(
         yield f"data: {json.dumps({'error': exc.message})}\n\n"
 
 
-@router.post("")
+@router.post(
+    "",
+    dependencies=[Depends(require_capability("ai-chat", "write"))],
+)
 async def chat(body: ChatRequest, service: OpenAIChatService) -> StreamingResponse:
     _require_ai_chat_enabled()
     messages = [m.model_dump() for m in body.messages]

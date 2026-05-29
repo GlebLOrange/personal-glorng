@@ -4,7 +4,7 @@ from html import escape
 from fastapi import APIRouter, Depends
 from sqlalchemy import select, update
 
-from app.core.deps import AdminUser, DbSession, require_admin
+from app.core.deps import AuthorizedUser, DbSession, require_capability
 from app.core.logging import logger
 from app.core.rate_limit import RateLimiter
 from app.core.telegram import notify_admin
@@ -52,9 +52,9 @@ async def create_feedback(data: FeedbackCreate, db: DbSession) -> Feedback:
 @router.get(
     "",
     response_model=list[FeedbackResponse],
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_capability("feedback", "read"))],
 )
-async def list_feedback(db: DbSession, _user: AdminUser) -> list[Feedback]:
+async def list_feedback(db: DbSession, _user: AuthorizedUser) -> list[Feedback]:
     """Admin endpoint -- list all feedback, newest first."""
     result = await db.execute(
         select(Feedback).order_by(Feedback.created_at.desc())
@@ -65,13 +65,13 @@ async def list_feedback(db: DbSession, _user: AdminUser) -> list[Feedback]:
 @router.patch(
     "/{feedback_id}/status",
     response_model=FeedbackResponse,
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_capability("feedback", "write"))],
 )
 async def update_feedback_status(
     feedback_id: int,
     data: FeedbackStatusUpdate,
     db: DbSession,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> Feedback:
     """Admin endpoint -- mark feedback as read or archived."""
     await db.execute(

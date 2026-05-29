@@ -1,8 +1,8 @@
 export interface UserResponse {
-  id: number;
+  id: string;
   email: string;
   is_verified: boolean;
-  is_admin: boolean;
+  permissions: string[];
   created_at: string;
 }
 

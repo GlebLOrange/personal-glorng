@@ -2,7 +2,6 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import hash_password
 from app.core.utils import generate_short_code
 from app.db.models.feedback import Feedback
 from app.db.models.google_auth import GoogleCredential
@@ -10,6 +9,8 @@ from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction, SyncSta
 from app.db.models.task import Task, TaskStatus
 from app.db.models.url import ShortenedUrl
 from app.db.models.user import User
+from app.services.user import create_user as create_user_record
+from app.services.user import default_owner_permissions
 
 
 async def create_user(
@@ -17,15 +18,15 @@ async def create_user(
     email: str = "test@glorng.dev",
     password: str = "testpass123",
     is_verified: bool = True,
-    is_admin: bool = False,
+    permissions: list[str] | None = None,
 ) -> User:
-    user = User(
+    user = await create_user_record(
+        db,
         email=email,
-        hashed_password=hash_password(password),
+        password=password,
         is_verified=is_verified,
-        is_admin=is_admin,
+        permissions=permissions or default_owner_permissions(),
     )
-    db.add(user)
     await db.commit()
     await db.refresh(user)
     return user

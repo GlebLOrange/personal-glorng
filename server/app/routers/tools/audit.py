@@ -2,21 +2,21 @@ from datetime import date
 
 from fastapi import APIRouter, Depends
 
-from app.core.deps import AdminUser, DbSession, require_admin
+from app.core.deps import AuthorizedUser, DbSession, require_capability
 from app.core.utils import paginate_params
 from app.schemas.audit import AuditEventListResponse, AuditEventResponse
 from app.services.audit import AuditService
 
 router = APIRouter(
     prefix="/audit",
-    dependencies=[Depends(require_admin)],
+    dependencies=[Depends(require_capability("audit", "read"))],
 )
 
 
 @router.get("", response_model=AuditEventListResponse)
 async def list_audit_events(
     db: DbSession,
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,  # noqa: ARG001
     page: int = 1,
     per_page: int = 50,
     category: str | None = None,

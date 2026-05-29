@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.core.deps import AdminUser, require_admin
+from app.core.deps import AuthorizedUser, require_capability
 from app.schemas.currency import (
     CurrencyConvertRequest,
     CurrencyConvertResponse,
@@ -8,12 +8,15 @@ from app.schemas.currency import (
 )
 from app.services.currency import CurrencyService
 
-router = APIRouter(prefix="/currency", dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/currency",
+    dependencies=[Depends(require_capability("currency", "read"))],
+)
 
 
 @router.get("/rates", response_model=CurrencyRatesResponse)
 async def get_rates(
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,  # noqa: ARG001
 ) -> CurrencyRatesResponse:
     meta = await CurrencyService().get_rates_meta()
     return CurrencyRatesResponse(**meta)
@@ -22,7 +25,7 @@ async def get_rates(
 @router.post("/convert", response_model=CurrencyConvertResponse)
 async def convert_currency(
     body: CurrencyConvertRequest,
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,  # noqa: ARG001
 ) -> CurrencyConvertResponse:
     svc = CurrencyService()
     rates = await svc.get_rates()

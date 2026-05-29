@@ -7,10 +7,15 @@ import random
 from sqlalchemy import func, select
 
 from app.core.logging import logger
-from app.core.security import hash_password
+from app.db.models.audit_event import AuditActorType, AuditSource
 from app.db.models.recipe import Recipe
+from app.db.models.task import Task
+from app.db.models.tool_expense import ToolExpense
 from app.db.models.user import User
+from app.db.seed.builders import build_random_expenses, build_tasks_for_today
 from app.db.session import get_session_factory
+from app.services.task import TaskService
+from app.services.user import create_user, default_owner_permissions
 from app.settings import get_settings
 
 WEAK_PASSWORDS = {"changeme", "password", "admin", "123456", "secret"}
@@ -159,24 +164,25 @@ SAMPLE_RECIPES: list[dict] = [
 ]
 
 
-async def _seed_admin(db, settings) -> None:  # noqa: ANN001
+async def _seed_admin(db, settings) -> User | None:  # noqa: ANN001
     """Create admin user if not exists."""
     result = await db.execute(
         select(User).where(User.email == settings.ALLOWED_EMAIL)
     )
-    if result.scalar_one_or_none():
+    existing = result.scalar_one_or_none()
+    if existing:
         logger.info("Admin user already exists", context={"email": settings.ALLOWED_EMAIL})
-        return
+        return existing
 
-    user = User(
+    user = await create_user(
+        db,
         email=settings.ALLOWED_EMAIL,
-        hashed_password=hash_password(settings.SEED_PASSWORD),
+        password=settings.SEED_PASSWORD,
+        permissions=default_owner_permissions(),
         is_verified=True,
-        is_admin=True,
     )
-    db.add(user)
-    await db.flush()
     logger.info("Admin user created", context={"email": settings.ALLOWED_EMAIL})
+    return user
 
 
 async def _seed_recipes(db) -> None:  # noqa: ANN001
@@ -205,14 +211,61 @@ async def _seed_recipes(db) -> None:  # noqa: ANN001
     logger.info("Seeded sample recipes", context={"count": len(recipes)})
 
 
+async def _seed_expenses(db) -> None:  # noqa: ANN001
+    """Insert sample expenses when the table is empty."""
+    count = await db.scalar(select(func.count()).select_from(ToolExpense))
+    if count:
+        logger.info("Expenses already seeded", context={"count": count})
+        return
+
+    for expense in build_random_expenses(25):
+        db.add(expense)
+    await db.flush()
+    logger.info("Seeded sample expenses", context={"count": 25})
+
+
+async def _seed_tasks(db, settings, owner: User | None) -> None:  # noqa: ANN001
+    """Insert sample tasks for today when the table is empty."""
+    count = await db.scalar(select(func.count()).select_from(Task))
+    if count:
+        logger.info("Tasks already seeded", context={"count": count})
+        return
+
+    telegram_user_id = settings.TELEGRAM_ALLOWED_USER_ID
+    if not telegram_user_id:
+        logger.warning("Skipping task seed: TELEGRAM_ALLOWED_USER_ID not set")
+        return
+
+    svc = TaskService(db)
+    actor_id = owner.id if owner else None
+    for task in build_tasks_for_today(
+        25,
+        telegram_user_id=telegram_user_id,
+        timezone=settings.TIMEZONE,
+    ):
+        await svc.create_task(
+            telegram_user_id=task.telegram_user_id,
+            title=task.title,
+            scheduled_at=task.scheduled_at,
+            description=task.description,
+            location=task.location,
+            source=AuditSource.WEB_ADMIN,
+            actor_type=AuditActorType.USER,
+            actor_id=actor_id,
+        )
+    logger.info("Seeded sample tasks", context={"count": 25})
+
+
 async def seed() -> None:
     settings = get_settings()
     if not settings.SEED_PASSWORD or settings.SEED_PASSWORD.lower() in WEAK_PASSWORDS:
         raise RuntimeError("SEED_PASSWORD env var missing or too weak")
 
     async with get_session_factory()() as db:
-        await _seed_admin(db, settings)
+        owner = await _seed_admin(db, settings)
         await _seed_recipes(db)
+        await _seed_expenses(db)
+        await _seed_tasks(db, settings, owner)
         await db.commit()
 
 

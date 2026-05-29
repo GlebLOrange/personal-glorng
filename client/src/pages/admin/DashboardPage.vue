@@ -10,6 +10,7 @@ import {
   PLATFORM_SERVICES,
   type PlatformService,
 } from "@/platform/services";
+import { usePermissions } from "@/composables/usePermissions";
 import { useAuthStore } from "@/stores/auth";
 import { isAiChatEnabled } from "@/utils/featureFlags";
 
@@ -19,9 +20,14 @@ function filterAiChat(services: PlatformService[]): PlatformService[] {
 }
 
 const auth = useAuthStore();
+const { can } = usePermissions();
 const services = ref<PlatformService[]>(filterAiChat(PLATFORM_SERVICES));
 
-const sections = computed(() => groupServicesByCategory(services.value));
+const visibleServices = computed(() =>
+  services.value.filter((s) => can(s.slug, "read")),
+);
+
+const sections = computed(() => groupServicesByCategory(visibleServices.value));
 
 onMounted(async () => {
   try {
