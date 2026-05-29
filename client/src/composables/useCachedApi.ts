@@ -4,6 +4,24 @@ import { api } from "@/composables/useApi";
 
 const cache = new Map<string, { data: unknown; ts: number }>();
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
+const MAX_CACHE_ENTRIES = 64;
+
+function pruneCache(ttlMs: number): void {
+  const now = Date.now();
+  for (const [key, entry] of cache) {
+    if (now - entry.ts >= ttlMs) {
+      cache.delete(key);
+    }
+  }
+  if (cache.size <= MAX_CACHE_ENTRIES) {
+    return;
+  }
+  const sorted = [...cache.entries()].sort((a, b) => a[1].ts - b[1].ts);
+  const excess = cache.size - MAX_CACHE_ENTRIES;
+  for (let i = 0; i < excess; i += 1) {
+    cache.delete(sorted[i][0]);
+  }
+}
 
 /**
  * Returns cached API data if still fresh, otherwise fetches and caches.
@@ -24,12 +42,16 @@ export function useCachedApi<T>(
       loading.value = false;
       return;
     }
+    if (cached) {
+      cache.delete(resolved);
+    }
 
     loading.value = true;
     try {
       const res = await api.get<T>(resolved);
       data.value = res.data;
       cache.set(resolved, { data: res.data, ts: Date.now() });
+      pruneCache(ttlMs);
     } catch (err) {
       console.error(`[useCachedApi] ${resolved}`, err);
       throw err;

@@ -5,13 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 from sqlalchemy.sql.selectable import Select
 
+from app.db.dialect import get_database_dialect
 from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.recipe import Recipe
+from app.db.recipe_search import RECIPE_SEARCH_CONFIG
 from app.schemas.recipe import RecipeCreate, RecipeResponse, RecipeUpdate
 from app.services.audit import AuditRecord, AuditService
 from app.services.base import CRUDService
-
-RECIPE_SEARCH_CONFIG = "english"
 
 
 def _recipe_search_vector() -> ColumnElement:
@@ -144,8 +144,11 @@ class RecipeService(CRUDService[Recipe]):
         query = select(Recipe).order_by(Recipe.created_at.desc())
 
         if search:
-            dialect_name = self.db.get_bind().dialect.name
-            query = _apply_recipe_search(query, search, dialect_name)
+            query = _apply_recipe_search(
+                query,
+                search,
+                get_database_dialect(),
+            )
         if tag:
             query = query.where(Recipe.tags.ilike(f'%"{tag}"%'))
 

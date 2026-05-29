@@ -12,6 +12,7 @@ import app.core.redis as redis_module
 from app.core.security import create_access_token
 from app.db.base import Base
 from app.db.models.user import User
+from app.db.recipe_search import RECIPE_SEARCH_INDEX
 from app.db.session import get_db
 from app.main import app
 from app.services.currency import RATES_CACHE_KEY
@@ -35,17 +36,33 @@ TEST_RATES_PAYLOAD = {
 ADMIN_PASSWORD = "testpass123"
 
 
+class _FakeIncrExpireScript:
+    def __init__(self, redis: "FakeRedis") -> None:
+        self._redis = redis
+
+    async def __call__(self, keys: list[str], args: list[int]) -> int:
+        key = keys[0]
+        window = int(args[0])
+        current = await self._redis.incr(key)
+        if current == 1:
+            await self._redis.expire(key, window)
+        return current
+
+
 class FakeRedis:
     """Minimal in-memory Redis substitute for tests."""
 
     def __init__(self) -> None:
         self._store: dict[str, str] = {}
+        self._expiry: dict[str, int] = {}
 
     async def get(self, key: str) -> str | None:
         return self._store.get(key)
 
     async def set(self, key: str, value: Any, ex: int | None = None) -> None:
         self._store[key] = str(value)
+        if ex is not None:
+            self._expiry[key] = ex
 
     async def incr(self, key: str) -> int:
         val = int(self._store.get(key, "0")) + 1
@@ -53,13 +70,18 @@ class FakeRedis:
         return val
 
     async def expire(self, key: str, seconds: int) -> None:
-        pass
+        self._expiry[key] = seconds
+
+    def register_script(self, _script: str) -> _FakeIncrExpireScript:
+        return _FakeIncrExpireScript(self)
 
     async def delete(self, key: str) -> None:
         self._store.pop(key, None)
+        self._expiry.pop(key, None)
 
     async def aclose(self) -> None:
         self._store.clear()
+        self._expiry.clear()
 
 
 TEST_DB_URL = "sqlite+aiosqlite:///./test.db"
@@ -78,13 +100,33 @@ def disable_ai_chat_by_default(
     get_settings.cache_clear()
 
 
+def _strip_postgres_only_indexes() -> list[tuple[object, object]]:
+    """SQLite tests cannot create Postgres GIN expression indexes."""
+    removed: list[tuple[object, object]] = []
+    for table in Base.metadata.sorted_tables:
+        for idx in list(table.indexes):
+            if idx.name == RECIPE_SEARCH_INDEX:
+                table.indexes.discard(idx)
+                removed.append((table, idx))
+    return removed
+
+
+def _restore_postgres_only_indexes(removed: list[tuple[object, object]]) -> None:
+    for table, idx in removed:
+        table.indexes.add(idx)  # type: ignore[arg-type]
+
+
 @pytest.fixture(autouse=True)
 async def setup_db() -> AsyncGenerator[None, None]:
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+    removed_indexes = _strip_postgres_only_indexes()
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        yield
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
+    finally:
+        _restore_postgres_only_indexes(removed_indexes)
 
 
 @pytest.fixture(autouse=True)

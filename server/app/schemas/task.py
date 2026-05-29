@@ -1,5 +1,3 @@
-"""Pydantic schemas for task admin API."""
-
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -7,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class TaskCreate(BaseModel):
     title: str = Field(min_length=1, max_length=255)
-    scheduled_at: str = Field(min_length=1, max_length=50)
+    scheduled_at: datetime
     description: str | None = None
     location: str | None = Field(None, max_length=255)
     telegram_user_id: int | None = None
@@ -19,7 +17,7 @@ class TaskResponse(BaseModel):
     title: str
     description: str | None
     location: str | None
-    scheduled_at: str
+    scheduled_at: datetime
     status: str
     google_event_id: str | None
     created_at: datetime

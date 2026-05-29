@@ -1,10 +1,18 @@
-"""Redis-backed sliding window rate limiter."""
+"""Redis-backed fixed-window rate limiter."""
 
 from fastapi import Request
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.redis import get_redis_client
+
+_INCR_EXPIRE_LUA = """
+local current = redis.call('INCR', KEYS[1])
+if current == 1 then
+  redis.call('EXPIRE', KEYS[1], ARGV[1])
+end
+return current
+"""
 
 
 class RateLimiter:
@@ -20,10 +28,8 @@ class RateLimiter:
             client_ip = request.client.host if request.client else "unknown"
         key = f"rl:{request.url.path}:{client_ip}"
         redis = get_redis_client()
-
-        current = await redis.incr(key)
-        if current == 1:
-            await redis.expire(key, self.window)
+        script = redis.register_script(_INCR_EXPIRE_LUA)
+        current = int(await script(keys=[key], args=[self.window]))
 
         if current > self.requests:
             logger.warning(

@@ -1,34 +1,17 @@
-import { ref, type Ref } from "vue";
+import { useLocalStorageString } from "@/composables/useLocalStorage";
 
 const STORAGE_KEY = "admin-weather-city";
 const DEFAULT_CITY = "Wroclaw";
 
-function readStoredCity(): string {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)?.trim();
-    return stored || DEFAULT_CITY;
-  } catch {
-    return DEFAULT_CITY;
-  }
-}
-
-const weatherCity = ref(readStoredCity());
+const { value: weatherCity, set: setWeatherCity } = useLocalStorageString(
+  STORAGE_KEY,
+  DEFAULT_CITY,
+);
 
 /** Persisted admin weather city (shared by tools page widget and weather tool). */
 export function useWeatherCity(): {
-  weatherCity: Ref<string>;
+  weatherCity: typeof weatherCity;
   setWeatherCity: (city: string) => void;
 } {
-  function setWeatherCity(city: string): void {
-    const trimmed = city.trim();
-    if (!trimmed) return;
-    weatherCity.value = trimmed;
-    try {
-      localStorage.setItem(STORAGE_KEY, trimmed);
-    } catch {
-      // ignore quota / private mode
-    }
-  }
-
   return { weatherCity, setWeatherCity };
 }

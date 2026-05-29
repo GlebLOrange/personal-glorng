@@ -160,3 +160,34 @@ async def test_build_questions_respects_threshold(db: AsyncSession) -> None:
     conf = FieldConfidence(title=0.5, scheduled_date=1.0, scheduled_time=1.0)
     questions = svc._build_questions(draft, conf, threshold=0.7)
     assert any(q.field == "title" for q in questions)
+
+
+@pytest.mark.asyncio
+async def test_cancel_intake(db: AsyncSession) -> None:
+    svc = TaskIntakeService(db)
+    inbound = await svc.store_inbound_message(
+        telegram_user_id=1,
+        telegram_message_id=3003,
+        chat_id=1,
+        text="Cancel me",
+    )
+    intake = await svc.create_intake_from_message(inbound)
+    await svc.cancel_intake(intake.id)
+    updated = await svc.get_intake(intake.id)
+    assert updated.status == IntakeStatus.CANCELLED
+
+
+@pytest.mark.asyncio
+async def test_run_extraction_nlp_path(db: AsyncSession) -> None:
+    svc = TaskIntakeService(db)
+    inbound = await svc.store_inbound_message(
+        telegram_user_id=1,
+        telegram_message_id=4004,
+        chat_id=1,
+        text="Team standup tomorrow 9am at office",
+    )
+    intake = await svc.create_intake_from_message(inbound)
+    result = await svc.run_extraction(intake)
+    assert result.draft.title
+    assert result.draft.location == "office"
+    assert any(q.field == "scheduled_date" for q in result.questions)

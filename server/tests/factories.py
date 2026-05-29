@@ -54,12 +54,14 @@ async def create_task(
     db: AsyncSession,
     telegram_user_id: int = 123456,
     title: str = "Test task",
-    scheduled_at: str = "2026-06-01T12:00:00",
+    scheduled_at: datetime | None = None,
     description: str | None = None,
     location: str | None = None,
     status: TaskStatus = TaskStatus.PENDING,
     google_event_id: str | None = None,
 ) -> Task:
+    if scheduled_at is None:
+        scheduled_at = datetime(2026, 6, 1, 12, 0, tzinfo=UTC)
     task = Task(
         telegram_user_id=telegram_user_id,
         title=title,

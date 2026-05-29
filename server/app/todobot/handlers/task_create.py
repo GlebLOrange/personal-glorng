@@ -461,21 +461,22 @@ async def confirm_task(
 
     task_date = data.get("date", date.today().isoformat())
     task_time = data.get("time", "12:00")
-    scheduled_str = f"{task_date}T{task_time}:00"
+    scheduled_at = datetime.fromisoformat(f"{task_date}T{task_time}:00").replace(
+        tzinfo=UTC,
+    )
 
     task = await create_task(
         db,
         telegram_user_id=callback.from_user.id,
         title=data.get("title", "Untitled"),
-        scheduled_at=scheduled_str,
+        scheduled_at=scheduled_at,
         description=data.get("notes"),
         location=data.get("location"),
     )
 
     reminder_minutes = data.get("reminder_minutes")
     if reminder_minutes:
-        scheduled_dt = datetime.fromisoformat(scheduled_str).replace(tzinfo=UTC)
-        remind_at = scheduled_dt - timedelta(minutes=int(reminder_minutes))
+        remind_at = scheduled_at - timedelta(minutes=int(reminder_minutes))
         if remind_at > datetime.now(UTC):
             reminder = await create_reminder(db, task_id=task.id, remind_at=remind_at)
             await schedule_reminder(db, reminder)

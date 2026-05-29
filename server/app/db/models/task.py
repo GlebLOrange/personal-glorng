@@ -1,6 +1,7 @@
 import enum
+from datetime import datetime
 
-from sqlalchemy import BigInteger, Enum, ForeignKey, String, Text
+from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, BaseModelMixin
@@ -21,7 +22,7 @@ class Task(BaseModelMixin, Base):
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    scheduled_at: Mapped[str] = mapped_column(String(50))
+    scheduled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     status: Mapped[TaskStatus] = mapped_column(
         Enum(
             TaskStatus,

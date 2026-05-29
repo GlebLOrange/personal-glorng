@@ -33,7 +33,7 @@ class TaskService:
         *,
         telegram_user_id: int,
         title: str,
-        scheduled_at: str,
+        scheduled_at: datetime,
         description: str | None = None,
         location: str | None = None,
         intake_id: int | None = None,
@@ -260,7 +260,7 @@ class TaskService:
         return list(result.scalars().all())
 
     async def get_overdue_pending_tasks(self) -> list[Task]:
-        now = datetime.now(UTC).isoformat()
+        now = datetime.now(UTC)
         result = await self.db.execute(
             select(Task).where(
                 Task.status == TaskStatus.PENDING,
@@ -288,7 +288,7 @@ class TaskService:
         return entry
 
     async def delete_old_tasks(self, *, months: int = 4) -> int:
-        cutoff = (datetime.now(UTC) - timedelta(days=months * 30)).isoformat()
+        cutoff = datetime.now(UTC) - timedelta(days=months * 30)
         result = await self.db.execute(
             select(Task).where(Task.scheduled_at < cutoff),
         )

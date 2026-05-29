@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import logger
+from app.core.utils import calendar_datetime
 from app.db.models.google_auth import GoogleCredential
 from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction
 from app.db.models.task import Task
@@ -31,10 +32,11 @@ def _build_service(cred: GoogleCredential) -> object:
 
 def _build_event_body(task: Task) -> dict[str, object]:
     """Build Google Calendar event body from task."""
+    scheduled = calendar_datetime(task.scheduled_at)
     body: dict[str, object] = {
         "summary": task.title,
-        "start": {"dateTime": task.scheduled_at, "timeZone": "UTC"},
-        "end": {"dateTime": task.scheduled_at, "timeZone": "UTC"},
+        "start": {"dateTime": scheduled, "timeZone": "UTC"},
+        "end": {"dateTime": scheduled, "timeZone": "UTC"},
     }
     if task.description:
         body["description"] = task.description

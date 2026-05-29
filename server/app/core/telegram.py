@@ -1,6 +1,7 @@
 """Lightweight Telegram notification helper (no aiogram dependency)."""
 
 import httpx
+import sentry_sdk
 
 from app.core.logging import logger
 from app.settings import get_settings
@@ -31,3 +32,4 @@ async def notify_admin(text: str) -> None:
             "Telegram notification failed",
             context={"error": str(exc)},
         )
+        sentry_sdk.capture_exception(exc)

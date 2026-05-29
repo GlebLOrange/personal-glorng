@@ -8,6 +8,7 @@ import type { UserResponse } from "@/types";
 export const useAuthStore = defineStore("auth", () => {
   const user = ref<UserResponse | null>(null);
   const sessionResolved = ref(false);
+  const sessionError = ref<string | null>(null);
 
   const isAuthenticated = computed(() => !!user.value);
 
@@ -17,6 +18,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   function logout(): void {
     clearUser();
+    sessionError.value = null;
     void api.post("/auth/logout").catch(() => undefined);
   }
 
@@ -33,9 +35,14 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = data;
   }
 
+  function isUnauthorizedError(err: unknown): boolean {
+    return axios.isAxiosError(err) && err.response?.status === 401;
+  }
+
   /** Restore session from cookies; try refresh before treating user as logged out. */
   async function resolveSession(): Promise<void> {
     sessionResolved.value = false;
+    sessionError.value = null;
     clearUser();
 
     try {
@@ -49,8 +56,15 @@ export const useAuthStore = defineStore("auth", () => {
         await api.post("/auth/refresh");
         await fetchUser();
       }
-    } catch {
-      clearUser();
+    } catch (err) {
+      if (isUnauthorizedError(err)) {
+        clearUser();
+        return;
+      }
+      sessionError.value = axios.isAxiosError(err)
+        ? (err.message || "Unable to restore session")
+        : "Unable to restore session";
+      throw err;
     } finally {
       sessionResolved.value = true;
     }
@@ -59,6 +73,7 @@ export const useAuthStore = defineStore("auth", () => {
   return {
     user,
     sessionResolved,
+    sessionError,
     isAuthenticated,
     clearUser,
     logout,

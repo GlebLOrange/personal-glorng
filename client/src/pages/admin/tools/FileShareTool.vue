@@ -7,6 +7,7 @@ import BaseCard from "@/components/ui/BaseCard.vue";
 import { api } from "@/composables/useApi";
 import { useClipboard } from "@/composables/useClipboard";
 import { useNotify } from "@/composables/useNotify";
+import { getApiErrorMessage } from "@/types/api";
 import type { SharedFile } from "@/types";
 
 const files = ref<SharedFile[]>([]);
@@ -53,9 +54,8 @@ async function upload(): Promise<void> {
     if (fileInputRef.value) fileInputRef.value.value = "";
     toast("File uploaded", "success");
     await loadFiles();
-  } catch (err: any) {
-    const msg = err.response?.data?.detail ?? "Upload failed";
-    toast(msg, "error");
+  } catch (err) {
+    toast(getApiErrorMessage(err, "Upload failed"), "error");
   } finally {
     uploading.value = false;
   }

@@ -3,8 +3,10 @@
 import json
 import logging
 import sys
+import traceback
 from typing import Any
 
+import sentry_sdk
 from loguru import logger as _loguru
 
 
@@ -23,6 +25,13 @@ def _json_sink(message: Any) -> None:  # noqa: ANN401
     if record["exception"]:
         entry["error"] = str(record["exception"].value)
         entry["error_type"] = type(record["exception"].value).__name__
+        entry["traceback"] = "".join(
+            traceback.format_exception(
+                type(record["exception"].value),
+                record["exception"].value,
+                record["exception"].traceback,
+            ),
+        )
     sys.stderr.write(json.dumps(entry, default=str) + "\n")
 
 
@@ -64,6 +73,8 @@ class StructuredLogger:
         if error:
             ctx["error"] = str(error)
             ctx["error_type"] = type(error).__name__
+            ctx["traceback"] = traceback.format_exc()
+            sentry_sdk.capture_exception(error)
         _loguru.opt(exception=error).bind(context=ctx).error(message)
 
     def debug(self, message: str, context: dict[str, Any] | None = None) -> None:

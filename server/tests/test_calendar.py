@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.utils import calendar_datetime
 from app.db.models.google_sync_queue import SyncAction, SyncStatus
 from app.services.calendar import _build_event_body, sync_task_to_google
 from app.services.task import enqueue_calendar_sync
@@ -55,8 +56,9 @@ class TestBuildEventBody:
         assert body["summary"] == "Meeting"
         assert body["description"] == "Discuss roadmap"
         assert body["location"] == "Office"
-        assert body["start"]["dateTime"] == task.scheduled_at
-        assert body["end"]["dateTime"] == task.scheduled_at
+        expected = calendar_datetime(task.scheduled_at)
+        assert body["start"]["dateTime"] == expected
+        assert body["end"]["dateTime"] == expected
 
 
 # --- enqueue_calendar_sync ---
