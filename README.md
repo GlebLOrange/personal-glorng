@@ -130,7 +130,7 @@ Browser → Nginx (:80)
 FastAPI + Worker + Todobot share PostgreSQL and Redis
 ```
 
-See [docs/platform.md](docs/platform.md) for the service catalog and audit model. Database setup and migrations: [docs/database.md](docs/database.md).
+See [docs/platform.md](docs/platform.md) for the service catalog and audit model. Database setup and migrations: [docs/database.md](docs/database.md). Security posture and hardening notes: [docs/security.md](docs/security.md).
 
 ## Backend development (host)
 

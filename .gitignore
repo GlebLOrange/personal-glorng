@@ -15,7 +15,8 @@ __pycache__/
 htmlcov/
 .coverage
 
-# Node
+# Node (lockfile lives in client/ only)
+/package-lock.json
 node_modules/
 client/.vite/
 client/playwright-report/

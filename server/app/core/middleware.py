@@ -4,8 +4,9 @@ import uuid
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import JSONResponse, Response
 
+from app.core.csrf import csrf_origin_rejected
 from app.core.logging import logger
 from app.core.request_context import request_id_var, user_id_var
 from app.core.security import decode_token
@@ -53,6 +54,13 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
             log_ctx["user_id"] = user_id
 
         logger.info("Request started", context=log_ctx)
+
+        if csrf_origin_rejected(request):
+            return JSONResponse(
+                status_code=403,
+                content={"detail": "Origin not allowed"},
+                headers={"X-Request-ID": request_id},
+            )
 
         try:
             response = await call_next(request)

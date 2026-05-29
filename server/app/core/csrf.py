@@ -1,0 +1,43 @@
+"""CSRF helpers for cookie-authenticated API requests."""
+
+from starlette.requests import Request
+
+from app.settings import get_settings
+
+_MUTATING_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+_EXEMPT_PREFIXES = (
+    "/api/auth/login",
+    "/api/auth/register",
+    "/api/auth/refresh",
+    "/api/auth/forgot-password",
+    "/api/auth/reset-password",
+    "/api/auth/verify",
+    "/api/feedback",
+    "/api/auth/github",
+)
+_ACCESS_COOKIE = "access_token"
+
+
+def _origin_allowed(request: Request, allowed_origins: list[str]) -> bool:
+    origin = request.headers.get("origin")
+    if origin and origin in allowed_origins:
+        return True
+    referer = request.headers.get("referer", "")
+    return any(referer.startswith(f"{allowed}/") for allowed in allowed_origins)
+
+
+def csrf_origin_rejected(request: Request) -> bool:
+    """Return True when a cookie-auth mutating request fails origin checks."""
+    settings = get_settings()
+    if settings.APP_ENV != "production":
+        return False
+    if request.method not in _MUTATING_METHODS:
+        return False
+    path = request.url.path
+    if not path.startswith("/api"):
+        return False
+    if any(path.startswith(prefix) for prefix in _EXEMPT_PREFIXES):
+        return False
+    if _ACCESS_COOKIE not in request.cookies:
+        return False
+    return not _origin_allowed(request, settings.CORS_ORIGINS)

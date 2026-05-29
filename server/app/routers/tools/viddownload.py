@@ -11,6 +11,7 @@ from fastapi.responses import StreamingResponse
 from app.core.deps import AuthorizedUser, require_capability
 from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
+from app.core.utils import attachment_content_disposition
 from app.schemas.viddownload import VidDownloadRequest
 
 router = APIRouter(
@@ -118,7 +119,9 @@ async def download_video(
                 _stream_and_cleanup(target, tmp_dir),
                 media_type=mime or "application/octet-stream",
                 headers={
-                    "Content-Disposition": f'attachment; filename="{target.name}"',
+                    "Content-Disposition": attachment_content_disposition(
+                        target.name
+                    ),
                     "Content-Length": str(target.stat().st_size),
                 },
             )

@@ -62,3 +62,6 @@ indent-style = "space"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+markers = [
+    "postgres: integration tests requiring POSTGRES_TEST_URL",
+]

@@ -44,6 +44,11 @@ class Settings(BaseSettings):
         ):
             msg = "JWT_SECRET is too weak for production; use 32+ chars"
             raise ValueError(msg)
+        if self.APP_ENV == "production" and any(
+            origin.strip() == "*" for origin in self.CORS_ORIGINS
+        ):
+            msg = "CORS_ORIGINS cannot include '*' when allow_credentials is enabled"
+            raise ValueError(msg)
         return self
 
     # Database
