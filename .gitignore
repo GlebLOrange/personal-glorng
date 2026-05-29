@@ -17,6 +17,7 @@ htmlcov/
 
 # Node
 node_modules/
+client/.vite/
 dist/
 *.tsbuildinfo
 
