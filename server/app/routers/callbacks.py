@@ -9,6 +9,7 @@ from sqlalchemy import select
 
 from app.core.deps import DbSession
 from app.core.logging import logger
+from app.core.security import decode_token
 from app.db.models.google_auth import GoogleCredential
 from app.settings import get_settings
 
@@ -39,8 +40,11 @@ async def google_oauth_callback(
     settings = get_settings()
 
     try:
-        telegram_user_id = int(state)
-    except (ValueError, TypeError):
+        payload = decode_token(state)
+        if payload.get("type") != "oauth_state":
+            return HTMLResponse(_ERROR_HTML, status_code=400)
+        telegram_user_id = int(payload.get("sub", ""))
+    except (ValueError, TypeError, Exception):
         return HTMLResponse(_ERROR_HTML, status_code=400)
 
     try:

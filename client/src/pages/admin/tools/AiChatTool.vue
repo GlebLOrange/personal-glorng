@@ -54,7 +54,7 @@ async function send(): Promise<void> {
   if (!text || loading.value) return;
 
   const auth = useAuthStore();
-  if (!auth.accessToken) {
+  if (!auth.isAuthenticated) {
     toast("Not authenticated", "error");
     return;
   }
@@ -74,7 +74,6 @@ async function send(): Promise<void> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${auth.accessToken}`,
       },
       body: JSON.stringify({ messages: payload }),
     });

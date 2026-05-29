@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import Annotated
 
 from arq import ArqRedis
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,14 +27,16 @@ RedisClient = Annotated[Redis, Depends(get_redis_client)]
 
 
 async def get_current_user(
+    request: Request,
     db: DbSession,
     token: Annotated[str | None, Depends(oauth2_scheme)] = None,
 ) -> User:
-    if not token:
+    raw_token = token or request.cookies.get("access_token")
+    if not raw_token:
         raise UnauthorizedError("Not authenticated")
 
     try:
-        payload = decode_token(token)
+        payload = decode_token(raw_token)
     except ValueError:
         raise UnauthorizedError("Invalid token") from None
 

@@ -30,6 +30,9 @@ async def cache_get(key: str) -> str | None:
 async def cache_set(key: str, value: str, ttl: int = 300) -> None:
     await get_redis_client().set(key, value, ex=ttl)
 
+async def cache_delete(key: str) -> None:
+    await get_redis_client().delete(key)
+
 
 async def blacklist_token(jti: str, ttl: int) -> None:
     await get_redis_client().set(f"bl:{jti}", "1", ex=ttl)
