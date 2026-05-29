@@ -1,4 +1,3 @@
-
 from httpx import AsyncClient
 
 EXPENSE_DATA = {

@@ -115,7 +115,7 @@ async def task_detail(
 async def retry_sync(
     task_id: int,
     db: DbSession,
-    user: AuthorizedUser,
+    _user: AuthorizedUser,
 ) -> MessageResponse:
     count = await TaskService(db).retry_sync(task_id)
     return MessageResponse(message=f"Retrying {count} sync entries")

@@ -17,12 +17,18 @@ branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
 task_status = ENUM(
-    "pending", "completed", "not_completed", "postponed", "cancelled",
+    "pending",
+    "completed",
+    "not_completed",
+    "postponed",
+    "cancelled",
     name="task_status",
     create_type=False,
 )
 sync_action = ENUM("create", "update", "delete", name="sync_action", create_type=False)
-sync_status = ENUM("pending", "completed", "failed", name="sync_status", create_type=False)
+sync_status = ENUM(
+    "pending", "completed", "failed", name="sync_status", create_type=False
+)
 
 _CREATE_ENUM_SQL = """
 DO $$ BEGIN
@@ -38,7 +44,10 @@ def _create_enum_safe(name: str, values: list[str]) -> None:
 
 
 def upgrade() -> None:
-    _create_enum_safe("task_status", ["pending", "completed", "not_completed", "postponed", "cancelled"])
+    _create_enum_safe(
+        "task_status",
+        ["pending", "completed", "not_completed", "postponed", "cancelled"],
+    )
     _create_enum_safe("sync_action", ["create", "update", "delete"])
     _create_enum_safe("sync_status", ["pending", "completed", "failed"])
 

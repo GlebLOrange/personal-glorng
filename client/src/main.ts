@@ -6,7 +6,7 @@ import BaseImage from "@/components/ui/BaseImage.vue";
 import { setupCookieConsent } from "./composables/useCookieConsent";
 import { restoreAuth } from "./plugins/auth";
 import router from "./router";
-import "./styles/main.scss";
+import "./styles/main.css";
 
 const app = createApp(App);
 

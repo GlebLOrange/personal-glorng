@@ -56,9 +56,7 @@ async def create_feedback(data: FeedbackCreate, db: DbSession) -> Feedback:
 )
 async def list_feedback(db: DbSession, _user: AuthorizedUser) -> list[Feedback]:
     """Admin endpoint -- list all feedback, newest first."""
-    result = await db.execute(
-        select(Feedback).order_by(Feedback.created_at.desc())
-    )
+    result = await db.execute(select(Feedback).order_by(Feedback.created_at.desc()))
     return list(result.scalars().all())
 
 
@@ -75,9 +73,7 @@ async def update_feedback_status(
 ) -> Feedback:
     """Admin endpoint -- mark feedback as read or archived."""
     await db.execute(
-        update(Feedback)
-        .where(Feedback.id == feedback_id)
-        .values(status=data.status)
+        update(Feedback).where(Feedback.id == feedback_id).values(status=data.status)
     )
     await db.flush()
     result = await db.execute(select(Feedback).where(Feedback.id == feedback_id))

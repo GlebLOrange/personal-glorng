@@ -65,9 +65,11 @@ def time_picker(selected_date: str | None = None) -> InlineKeyboardMarkup:
     if row:
         rows.append(row)
 
-    rows.append([
-        InlineKeyboardButton(text="⏰ Custom time...", callback_data="time:custom"),
-    ])
+    rows.append(
+        [
+            InlineKeyboardButton(text="⏰ Custom time...", callback_data="time:custom"),
+        ]
+    )
 
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -82,7 +84,10 @@ def reminder_presets() -> InlineKeyboardMarkup:
             ],
             [
                 InlineKeyboardButton(text="⏰ 3 hours", callback_data="remind:180"),
-                InlineKeyboardButton(text="🔕 No reminder", callback_data="remind:none"),
+                InlineKeyboardButton(
+                    text="🔕 No reminder",
+                    callback_data="remind:none",
+                ),
             ],
         ],
     )
@@ -94,13 +99,16 @@ def confirmation() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="✅ Confirm", callback_data="confirm:yes",
+                    text="✅ Confirm",
+                    callback_data="confirm:yes",
                 ),
                 InlineKeyboardButton(
-                    text="✏️ Edit", callback_data="confirm:edit",
+                    text="✏️ Edit",
+                    callback_data="confirm:edit",
                 ),
                 InlineKeyboardButton(
-                    text="❌ Cancel", callback_data="confirm:cancel",
+                    text="❌ Cancel",
+                    callback_data="confirm:cancel",
                 ),
             ],
         ],

@@ -21,7 +21,9 @@ def upgrade() -> None:
         "tool_expenses",
         sa.Column("tool_name", sa.String(length=255), nullable=False),
         sa.Column("amount", sa.Numeric(precision=12, scale=2), nullable=False),
-        sa.Column("currency", sa.String(length=3), server_default="USD", nullable=False),
+        sa.Column(
+            "currency", sa.String(length=3), server_default="USD", nullable=False
+        ),
         sa.Column("expense_date", sa.Date(), nullable=False),
         sa.Column("category", sa.String(length=64), nullable=True),
         sa.Column("notes", sa.Text(), nullable=True),

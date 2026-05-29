@@ -15,10 +15,22 @@ from app.settings import get_settings
 
 MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100 MB
 EXPIRY_HOURS = 24
-_BLOCKED_EXTENSIONS = frozenset({
-    ".html", ".htm", ".svg", ".exe", ".bat", ".cmd",
-    ".sh", ".js", ".mjs", ".cjs", ".vbs", ".ps1",
-})
+_BLOCKED_EXTENSIONS = frozenset(
+    {
+        ".html",
+        ".htm",
+        ".svg",
+        ".exe",
+        ".bat",
+        ".cmd",
+        ".sh",
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".vbs",
+        ".ps1",
+    }
+)
 
 
 def _shares_dir() -> Path:

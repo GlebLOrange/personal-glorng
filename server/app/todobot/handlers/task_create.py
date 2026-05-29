@@ -1,8 +1,9 @@
 """AI intake and guided task creation flows."""
 
+from contextlib import suppress
 from datetime import UTC, date, datetime, timedelta
 
-from aiogram import F, Router
+from aiogram import Bot, F, Router
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
@@ -40,13 +41,11 @@ async def _track_msg(state: FSMContext, msg_id: int) -> None:
     await state.update_data(_msg_ids=ids)
 
 
-async def _cleanup_messages(bot, chat_id: int, state: FSMContext) -> None:
+async def _cleanup_messages(bot: Bot, chat_id: int, state: FSMContext) -> None:
     data = await state.get_data()
     for msg_id in data.get("_msg_ids", []):
-        try:
+        with suppress(Exception):
             await bot.delete_message(chat_id, msg_id)
-        except Exception:
-            pass
 
 
 def _extract_parsed_fields(text: str) -> dict[str, str | None]:

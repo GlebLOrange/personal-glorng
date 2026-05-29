@@ -26,7 +26,10 @@ async def exchange_code_for_token(code: str) -> str:
         )
 
     if resp.status_code != 200:
-        logger.error("GitHub token exchange failed", context={"status": resp.status_code})
+        logger.error(
+            "GitHub token exchange failed",
+            context={"status": resp.status_code},
+        )
         raise UnauthorizedError("Failed to exchange GitHub authorization code")
 
     data = resp.json()

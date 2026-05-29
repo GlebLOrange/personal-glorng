@@ -23,7 +23,11 @@ class Task(BaseModelMixin, Base):
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)
     scheduled_at: Mapped[str] = mapped_column(String(50))
     status: Mapped[TaskStatus] = mapped_column(
-        Enum(TaskStatus, name="task_status", values_callable=lambda e: [x.value for x in e]),
+        Enum(
+            TaskStatus,
+            name="task_status",
+            values_callable=lambda e: [x.value for x in e],
+        ),
         default=TaskStatus.PENDING,
         server_default="pending",
     )

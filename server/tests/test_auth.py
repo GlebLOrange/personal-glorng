@@ -130,9 +130,7 @@ async def test_me_authenticated(auth_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_refresh_token(
-    client: AsyncClient, login_tokens: dict[str, str]
-) -> None:
+async def test_refresh_token(client: AsyncClient, login_tokens: dict[str, str]) -> None:
     resp = await client.post(
         "/api/auth/refresh",
         json={"refresh_token": login_tokens["refresh_token"]},
