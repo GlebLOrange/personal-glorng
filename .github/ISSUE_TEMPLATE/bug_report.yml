@@ -1,0 +1,53 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Include enough detail to reproduce locally or on production.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What you saw vs what you expected.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - dev-lite (db, redis, API + host Vite)
+        - make dev (full stack, no worker/bot)
+        - make dev-full (worker + bot)
+        - production (Docker / VPS)
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or errors
+      description: Browser console, API response, or `docker compose logs` excerpt (redact secrets).
+      render: shell
+
+  - type: input
+    id: version
+    attributes:
+      label: Commit or deploy ref (optional)
+      placeholder: main @ abc1234
