@@ -27,6 +27,7 @@ from app.services.auth import (
     reset_user_password,
     verify_user_email,
 )
+from app.workers.pool import enqueue_job
 
 router = APIRouter()
 
@@ -39,10 +40,9 @@ router = APIRouter()
 async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
     user = await register_user(db, data.email, data.password)
     _token = create_verification_token(user.email)
-    # TODO: enqueue email via ARQ
-    # await arq_pool.enqueue_job(
-    #     "send_verification_email", user.email, _token,
-    # )
+
+    logger.info("User registered", context={"email": user.email})
+    await enqueue_job("send_verification_email", user.email, _token)
     return MessageResponse(
         message="Registration successful. Check your email to verify your account."
     )
@@ -123,11 +123,11 @@ async def forgot_password(
 ) -> MessageResponse:
     token = await request_password_reset(db, data.email)
     if token:
-        # TODO: enqueue via ARQ
-        # await arq_pool.enqueue_job(
-        #     "send_reset_email", data.email, token,
-        # )
-        pass
+        logger.info(
+            "Password reset requested",
+            context={"email": data.email},
+        )
+        await enqueue_job("send_reset_email", data.email, token)
     return MessageResponse(
         message="If the email exists, a reset link has been sent",
     )

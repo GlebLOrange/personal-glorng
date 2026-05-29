@@ -5,8 +5,6 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
 from aiogram.types import BotCommand
-from arq import create_pool
-from arq.connections import RedisSettings
 
 from app.core.logging import logger
 from app.db.session import get_session_factory
@@ -15,6 +13,8 @@ from app.settings import get_settings
 from app.todobot.handlers import calendar, reminder, start, task_create, task_manage
 from app.todobot.middlewares.auth import AllowedUserMiddleware
 from app.todobot.middlewares.db import DbSessionMiddleware
+from app.workers.pool import close_arq_pool, init_arq_pool
+from app.workers.scheduling import schedule_reminder
 
 
 def _build_dispatcher(redis_url: str) -> Dispatcher:
@@ -41,34 +41,25 @@ def _build_dispatcher(redis_url: str) -> Dispatcher:
 
 async def _recover_reminders() -> None:
     """Re-enqueue unsent future reminders after restart."""
-    settings = get_settings()
     session_factory = get_session_factory()
 
     try:
         async with session_factory() as db:
             reminders = await get_unsent_reminders(db)
-    except Exception as exc:
-        logger.warning("Skipping reminder recovery", context={"error": str(exc)})
-        return
+            if not reminders:
+                return
 
-    if not reminders:
-        return
-
-    redis_settings = RedisSettings.from_dsn(settings.REDIS_URL)
-    pool = await create_pool(redis_settings)
-    try:
-        for rem in reminders:
-            await pool.enqueue_job(
-                "send_reminder",
-                rem.id,
-                _defer_until=rem.remind_at,
-            )
+            for rem in reminders:
+                if rem.arq_job_id:
+                    continue
+                await schedule_reminder(db, rem)
+            await db.commit()
         logger.info(
             "Recovered reminders on startup",
             context={"count": len(reminders)},
         )
-    finally:
-        await pool.aclose()
+    except Exception as exc:
+        logger.warning("Skipping reminder recovery", context={"error": str(exc)})
 
 
 async def main() -> None:
@@ -86,6 +77,7 @@ async def main() -> None:
         context={"allowed_user_id": settings.TELEGRAM_ALLOWED_USER_ID},
     )
 
+    await init_arq_pool()
     await _recover_reminders()
     await bot.set_my_commands(
         [
@@ -100,6 +92,7 @@ async def main() -> None:
         await dp.start_polling(bot)
     finally:
         await bot.session.close()
+        await close_arq_pool()
 
 
 if __name__ == "__main__":

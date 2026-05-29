@@ -1,3 +1,5 @@
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from httpx import AsyncClient
 
@@ -239,6 +241,42 @@ async def test_verify_reuse_prevented(client: AsyncClient) -> None:
 
 
 # --- Forgot / Reset Password ---
+
+
+@pytest.mark.asyncio
+@patch("app.routers.auth.enqueue_job", new_callable=AsyncMock)
+async def test_register_enqueues_verification_email(
+    mock_enqueue: AsyncMock,
+    client: AsyncClient,
+) -> None:
+    mock_enqueue.return_value = "job-verify"
+    settings = get_settings()
+    resp = await client.post(
+        "/api/auth/register",
+        json={"email": settings.ALLOWED_EMAIL, "password": "securepass123"},
+    )
+    assert resp.status_code == 200
+    mock_enqueue.assert_awaited_once()
+    assert mock_enqueue.await_args.args[0] == "send_verification_email"
+    assert mock_enqueue.await_args.args[1] == settings.ALLOWED_EMAIL
+
+
+@pytest.mark.asyncio
+@patch("app.routers.auth.enqueue_job", new_callable=AsyncMock)
+async def test_forgot_password_enqueues_reset_email(
+    mock_enqueue: AsyncMock,
+    client: AsyncClient,
+    admin_user: object,
+) -> None:
+    mock_enqueue.return_value = "job-reset"
+    resp = await client.post(
+        "/api/auth/forgot-password",
+        json={"email": ADMIN_EMAIL},
+    )
+    assert resp.status_code == 200
+    mock_enqueue.assert_awaited_once()
+    assert mock_enqueue.await_args.args[0] == "send_reset_email"
+    assert mock_enqueue.await_args.args[1] == ADMIN_EMAIL
 
 
 @pytest.mark.asyncio
