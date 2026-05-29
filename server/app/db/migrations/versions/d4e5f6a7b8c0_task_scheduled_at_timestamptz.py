@@ -35,7 +35,7 @@ def upgrade() -> None:
         "scheduled_at",
         existing_type=sa.String(length=50),
         type_=sa.DateTime(timezone=True),
-        postgresql_using=sa.text("(scheduled_at::timestamp AT TIME ZONE 'UTC')"),
+        postgresql_using="(scheduled_at::timestamp AT TIME ZONE 'UTC')",
         existing_nullable=False,
     )
 
@@ -46,7 +46,7 @@ def upgrade() -> None:
                 column,
                 existing_type=sa.DateTime(),
                 type_=sa.DateTime(timezone=True),
-                postgresql_using=sa.text(f"({column} AT TIME ZONE 'UTC')"),
+                postgresql_using=f"({column} AT TIME ZONE 'UTC')",
                 existing_nullable=False,
             )
 
@@ -67,6 +67,6 @@ def downgrade() -> None:
         "scheduled_at",
         existing_type=sa.DateTime(timezone=True),
         type_=sa.String(length=50),
-        postgresql_using=sa.text("scheduled_at::text"),
+        postgresql_using="scheduled_at::text",
         existing_nullable=False,
     )
