@@ -1,4 +1,12 @@
+import re
+from urllib.parse import urlparse
+
 from httpx import AsyncClient
+
+_SCRIPT_SRC_RE = re.compile(
+    r'<script[^>]*\ssrc=["\']([^"\']+)["\']',
+    re.IGNORECASE,
+)
 
 
 class TestAmpPage:
@@ -9,6 +17,9 @@ class TestAmpPage:
         body = resp.text
         assert "<html" in body
         assert "⚡" in body
-        assert "cdn.ampproject.org" in body
+        script_hosts = [
+            urlparse(src).hostname for src in _SCRIPT_SRC_RE.findall(body)
+        ]
+        assert "cdn.ampproject.org" in script_hosts
         assert "gLOrng" in body
         assert 'rel="canonical"' in body
