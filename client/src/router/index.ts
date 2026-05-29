@@ -86,6 +86,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/admin/tools/audit",
+    name: "tool-audit",
+    component: () => import("@/pages/admin/tools/AuditPage.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/callback",
     name: "oauth-callback",
     component: () => import("@/pages/CallbackPage.vue"),

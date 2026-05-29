@@ -39,9 +39,12 @@ RESUME_DATA: dict[str, Any] = {
     ],
     "projects": [
         {
-            "name": "Portfolio Site",
-            "description": "This site — FastAPI + Vue 3 + Docker",
-            "tech": ["FastAPI", "Vue 3", "PostgreSQL", "Redis", "Docker"],
+            "name": "gLOrng Platform",
+            "description": (
+                "Personal platform — portfolio, admin services,"
+                " Telegram todobot, and background workers on FastAPI + Vue + Docker"
+            ),
+            "tech": ["FastAPI", "Vue 3", "PostgreSQL", "Redis", "Docker", "Telegram"],
             "url": "",
         },
     ],

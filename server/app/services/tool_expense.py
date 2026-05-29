@@ -6,6 +6,7 @@ from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ValidationError
+from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.tool_expense import ToolExpense
 from app.schemas.tool_expense import (
     ToolExpenseCategoryTotal,
@@ -16,6 +17,7 @@ from app.schemas.tool_expense import (
     ToolExpenseToolTotal,
     ToolExpenseUpdate,
 )
+from app.services.audit import AuditRecord, AuditService
 from app.services.base import CRUDService
 from app.services.currency import ALLOWED_CURRENCIES, CurrencyService
 
@@ -57,6 +59,17 @@ class ToolExpenseService(CRUDService[ToolExpense]):
 
     async def create_expense(self, data: ToolExpenseCreate) -> ToolExpenseResponse:
         expense = await self.create(data.model_dump())
+        await AuditService(self.db).record(
+            AuditRecord(
+                category=AuditCategory.DOMAIN,
+                action="expense.created",
+                actor_type=AuditActorType.USER,
+                source=AuditSource.WEB_ADMIN,
+                resource_type="expense",
+                resource_id=expense.id,
+                metadata={"tool_name": expense.tool_name},
+            ),
+        )
         return self._to_response(expense)
 
     async def update_expense(
@@ -69,7 +82,30 @@ class ToolExpenseService(CRUDService[ToolExpense]):
             setattr(expense, key, value)
         await self.db.flush()
         await self.db.refresh(expense)
+        await AuditService(self.db).record(
+            AuditRecord(
+                category=AuditCategory.DOMAIN,
+                action="expense.updated",
+                actor_type=AuditActorType.USER,
+                source=AuditSource.WEB_ADMIN,
+                resource_type="expense",
+                resource_id=expense.id,
+            ),
+        )
         return self._to_response(expense)
+
+    async def delete_expense(self, expense_id: int) -> None:
+        await self.delete(expense_id)
+        await AuditService(self.db).record(
+            AuditRecord(
+                category=AuditCategory.DOMAIN,
+                action="expense.deleted",
+                actor_type=AuditActorType.USER,
+                source=AuditSource.WEB_ADMIN,
+                resource_type="expense",
+                resource_id=expense_id,
+            ),
+        )
 
     async def list_expenses(
         self,

@@ -1,9 +1,8 @@
 from datetime import date
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from app.core.deps import AdminUser, DbSession
-from app.core.logging import logger
+from app.core.deps import AdminUser, DbSession, require_admin
 from app.schemas.common import MessageResponse
 from app.schemas.tool_expense import (
     ExchangeRatesResponse,
@@ -15,7 +14,7 @@ from app.schemas.tool_expense import (
 from app.services.currency import CurrencyService
 from app.services.tool_expense import ToolExpenseService
 
-router = APIRouter(prefix="/expenses")
+router = APIRouter(prefix="/expenses", dependencies=[Depends(require_admin)])
 
 
 @router.get("/categories", response_model=list[str])
@@ -83,15 +82,10 @@ async def get_expense(
 async def create_expense(
     data: ToolExpenseCreate,
     db: DbSession,
-    user: AdminUser,
+    user: AdminUser,  # noqa: ARG001
 ) -> ToolExpenseResponse:
     svc = ToolExpenseService(db)
-    expense = await svc.create_expense(data)
-    logger.info(
-        "Tool expense created",
-        context={"expense_id": expense.id, "user_id": user.id},
-    )
-    return expense
+    return await svc.create_expense(data)
 
 
 @router.put("/{expense_id}", response_model=ToolExpenseResponse)
@@ -99,27 +93,18 @@ async def update_expense(
     expense_id: int,
     data: ToolExpenseUpdate,
     db: DbSession,
-    user: AdminUser,
+    user: AdminUser,  # noqa: ARG001
 ) -> ToolExpenseResponse:
     svc = ToolExpenseService(db)
-    expense = await svc.update_expense(expense_id, data)
-    logger.info(
-        "Tool expense updated",
-        context={"expense_id": expense_id, "user_id": user.id},
-    )
-    return expense
+    return await svc.update_expense(expense_id, data)
 
 
 @router.delete("/{expense_id}", response_model=MessageResponse)
 async def delete_expense(
     expense_id: int,
     db: DbSession,
-    user: AdminUser,
+    user: AdminUser,  # noqa: ARG001
 ) -> MessageResponse:
     svc = ToolExpenseService(db)
-    await svc.delete(expense_id)
-    logger.info(
-        "Tool expense deleted",
-        context={"expense_id": expense_id, "user_id": user.id},
-    )
+    await svc.delete_expense(expense_id)
     return MessageResponse(message="Expense deleted")

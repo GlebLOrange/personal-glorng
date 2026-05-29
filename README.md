@@ -1,6 +1,6 @@
-# gLOrng — Developer Portfolio
+# gLOrng — Developer Portfolio & Personal Platform
 
-Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + PostgreSQL + Redis, fully containerized with Docker.
+Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + PostgreSQL + Redis, fully containerized with Docker. The same domain services power the public site, admin panel, Telegram todobot, and background workers.
 
 ## Tech Stack
 
@@ -37,6 +37,14 @@ client/    Vue 3 frontend (:3000)
 nginx/     Reverse proxy config (:80)
 ```
 
+## Runtime Entrypoints
+
+| Process | Command | Role |
+|---------|---------|------|
+| API | `uvicorn app.main:app` | HTTP API, admin tools, public routes |
+| Worker | `python -m app.workers.run` | Reminders, calendar sync, cleanup |
+| Todobot | `python -m app.todobot.main` | Telegram task bot |
+
 ## Available Commands
 
 | Command        | Description                          |
@@ -50,26 +58,44 @@ nginx/     Reverse proxy config (:80)
 | `make seed`    | Create admin user                    |
 | `make logs`    | Tail container logs                  |
 
+## Platform Services
+
+Admin tools are grouped into platform pillars:
+
+| Pillar | Services |
+|--------|----------|
+| **Productivity** | Tasks, Email |
+| **Content** | Recipes, File share, URL shortener |
+| **Utilities** | Weather, Calculator, Video download, AI chat |
+| **Operations** | Expenses, Feedback, Audit log |
+
+Each capability follows a module-as-service pattern: business logic in `server/app/services/`, thin HTTP routers in `server/app/routers/tools/`, and a shared registry at `GET /api/platform/services`.
+
 ## Features
 
 - JWT authentication with email verification and password reset
 - Email-restricted registration (single admin user)
 - Redis: token blacklist, response cache, rate limiting, task queue
 - Plugin architecture for admin tools (auto-discovery)
-- Admin tools: Weather, Calculator, URL Shortener
+- Telegram todobot sharing task services with admin and worker
 - Donations: Stripe Payment Link, crypto addresses, Telegram
-- Structured JSON logging + Sentry error tracking
+- Two-stream observability: operational telemetry (JSON logs + Sentry) and persistent audit trail (`audit_events`)
 - Ruff linting with enforced type annotations
 
 ## Architecture
 
 ```
 Browser → Nginx (:80)
-  ├── /           → Vue client (:3000)
-  ├── /api/*      → FastAPI (:8000) → PostgreSQL / Redis
-  ├── /admin/*    → FastAPI (:8000)
-  └── /s/:code    → FastAPI → redirect
+  ├── /              → Vue client (:3000)
+  ├── /admin/*       → Vue client (admin SPA)
+  ├── /api/*         → FastAPI (:8000) → PostgreSQL / Redis
+  ├── /s/:code       → FastAPI → redirect
+  └── /f/:code       → FastAPI → file download
+
+FastAPI + Worker + Todobot share PostgreSQL and Redis
 ```
+
+See [docs/platform.md](docs/platform.md) for the service catalog and audit model.
 
 ## License
 

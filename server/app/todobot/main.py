@@ -8,8 +8,8 @@ from aiogram.types import BotCommand
 from arq import create_pool
 from arq.connections import RedisSettings
 
-from app.db.session import get_session_factory
 from app.core.logging import logger
+from app.db.session import get_session_factory
 from app.services.task import get_unsent_reminders
 from app.settings import get_settings
 from app.todobot.handlers import calendar, reminder, start, task_create, task_manage

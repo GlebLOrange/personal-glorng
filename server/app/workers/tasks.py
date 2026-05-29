@@ -7,7 +7,6 @@ from aiogram import Bot
 from arq import cron
 from arq.connections import RedisSettings
 
-from app.db.session import get_session_factory
 from app.core.email import (
     get_email_backend,
     render_reset_email,
@@ -17,6 +16,7 @@ from app.core.logging import logger
 from app.db.models.google_sync_queue import SyncStatus
 from app.db.models.reminder import Reminder
 from app.db.models.task import TaskStatus
+from app.db.session import get_session_factory
 from app.services.task import (
     delete_old_tasks,
     get_overdue_pending_tasks,

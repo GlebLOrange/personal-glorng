@@ -1,5 +1,6 @@
 from app.db.base import Base, BaseModelMixin
 from app.db.models import (
+    AuditEvent,
     Feedback,
     GitHubCredential,
     GoogleCredential,
@@ -16,6 +17,7 @@ from app.db.models import (
 from app.db.session import get_db, get_engine, get_session_factory
 
 __all__ = [
+    "AuditEvent",
     "Base",
     "BaseModelMixin",
     "Feedback",

@@ -1,54 +1,88 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from "vue";
+
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import WeatherWidget from "@/components/weather/WeatherWidget.vue";
+import { api } from "@/composables/useApi";
+import {
+  groupServicesByCategory,
+  PLATFORM_SERVICES,
+  type PlatformService,
+} from "@/platform/services";
 import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
+const services = ref<PlatformService[]>(PLATFORM_SERVICES);
 
-const tools = [
-  { name: "Weather", description: "Look up weather for any city", route: "/admin/tools/weather", icon: "☀" },
-  { name: "Calculator", description: "Quick math calculations", route: "/admin/tools/calculator", icon: "⊞" },
-  { name: "URL Shortener", description: "Create and manage short URLs", route: "/admin/tools/url-shortener", icon: "⟶" },
-  { name: "Video Download", description: "Download videos with yt-dlp", route: "/admin/tools/vid-download", icon: "▶" },
-  { name: "File Share", description: "Share files between devices", route: "/admin/tools/file-share", icon: "↗" },
-  { name: "Tasks", description: "Manage todobot tasks & reminders", route: "/admin/tools/tasks", icon: "☐" },
-  { name: "Recipes", description: "Personal recipe book & food notes", route: "/admin/tools/recipes", icon: "◉" },
-  { name: "Tool Expenses", description: "Track SaaS charges and spending charts", route: "/admin/tools/expenses", icon: "¤" },
-  { name: "Email", description: "Send styled emails to anyone", route: "/admin/tools/email", icon: "✉" },
-  { name: "Feedback", description: "Read visitor feedback messages", route: "/admin/tools/feedback", icon: "💬" },
-  { name: "AI Chat", description: "Chat with Groq LLMs from the admin panel", route: "/admin/tools/ai-chat", icon: "⊛" },
-  { name: "API Docs", description: "Swagger API documentation", route: "/api/docs", icon: "❴❵", external: true },
-];
+const sections = computed(() => groupServicesByCategory(services.value));
+
+onMounted(async () => {
+  try {
+    const { data } = await api.get<{
+      services: Array<{
+        slug: string;
+        name: string;
+        category: string;
+        category_label: string;
+        description: string;
+        api_prefix: string;
+        admin_route: string;
+        icon: string;
+        capabilities: string[];
+        external: boolean;
+      }>;
+    }>("/platform/services");
+    services.value = data.services.map((s) => ({
+      slug: s.slug,
+      name: s.name,
+      category: s.category,
+      categoryLabel: s.category_label,
+      description: s.description,
+      apiPrefix: s.api_prefix,
+      adminRoute: s.admin_route,
+      icon: s.icon,
+      capabilities: s.capabilities,
+      external: s.external,
+    }));
+  } catch {
+    // Fallback to static registry
+  }
+});
 </script>
 
 <template>
   <AdminPageLayout title="dashboard" max-width="xl">
-    <p class="text-surface-mid text-sm mb-6 -mt-4">
+    <p class="text-surface-mid text-sm mb-2 -mt-4">
       Welcome back, {{ auth.user?.email ?? "admin" }}
+    </p>
+    <p class="text-surface-muted text-xs mb-6">
+      Services shared across web, bot, and workers
     </p>
 
     <div class="mb-10">
       <WeatherWidget city="Wroclaw" />
     </div>
 
-    <h2 class="text-lg font-bold text-surface-light mb-4">Tools</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <component
-        v-for="tool in tools"
-        :key="tool.route"
-        :is="tool.external ? 'a' : 'RouterLink'"
-        :to="tool.external ? undefined : tool.route"
-        :href="tool.external ? tool.route : undefined"
-        :target="tool.external ? '_blank' : undefined"
-        :rel="tool.external ? 'noopener' : undefined"
-      >
-        <BaseCard hoverable class="h-full">
-          <div class="text-2xl mb-3">{{ tool.icon }}</div>
-          <h3 class="text-surface-light font-bold mb-1">{{ tool.name }}</h3>
-          <p class="text-xs text-surface-mid">{{ tool.description }}</p>
-        </BaseCard>
-      </component>
-    </div>
+    <section v-for="section in sections" :key="section.category" class="mb-10">
+      <h2 class="text-lg font-bold text-surface-light mb-4">{{ section.label }}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <component
+          v-for="tool in section.services"
+          :key="tool.adminRoute"
+          :is="tool.external ? 'a' : 'RouterLink'"
+          :to="tool.external ? undefined : tool.adminRoute"
+          :href="tool.external ? tool.adminRoute : undefined"
+          :target="tool.external ? '_blank' : undefined"
+          :rel="tool.external ? 'noopener' : undefined"
+        >
+          <BaseCard hoverable class="h-full">
+            <div class="text-2xl mb-3">{{ tool.icon }}</div>
+            <h3 class="text-surface-light font-bold mb-1">{{ tool.name }}</h3>
+            <p class="text-xs text-surface-mid">{{ tool.description }}</p>
+          </BaseCard>
+        </component>
+      </div>
+    </section>
   </AdminPageLayout>
 </template>

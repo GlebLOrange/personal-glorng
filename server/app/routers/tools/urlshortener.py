@@ -1,15 +1,14 @@
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import RedirectResponse
 
-from app.core.deps import AdminUser, DbSession
-from app.core.logging import logger
+from app.core.deps import AdminUser, DbSession, require_admin
 from app.core.rate_limit import rate_limit_api
 from app.core.utils import paginate_params
 from app.schemas.common import MessageResponse
 from app.schemas.url import UrlCreate, UrlResponse
 from app.services.url import UrlService
 
-router = APIRouter(prefix="/url-shortener")
+router = APIRouter(prefix="/url-shortener", dependencies=[Depends(require_admin)])
 
 
 @router.post("", response_model=UrlResponse)
@@ -23,10 +22,6 @@ async def create_url(
         original_url=str(data.original_url),
         created_by=user.id,
         title=data.title,
-    )
-    logger.info(
-        "Short URL created",
-        context={"code": url.code, "user_id": user.id},
     )
     return UrlResponse.model_validate(url)
 
@@ -48,14 +43,10 @@ async def list_urls(
 async def delete_url(
     url_id: int,
     db: DbSession,
-    user: AdminUser,
+    user: AdminUser,  # noqa: ARG001
 ) -> MessageResponse:
     svc = UrlService(db)
-    await svc.delete(url_id)
-    logger.info(
-        "Short URL deleted",
-        context={"url_id": url_id, "user_id": user.id},
-    )
+    await svc.delete_url(url_id)
     return MessageResponse(message="URL deleted")
 
 

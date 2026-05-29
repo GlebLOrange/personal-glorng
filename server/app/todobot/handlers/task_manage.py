@@ -5,6 +5,7 @@ from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.models.audit_event import AuditActorType, AuditSource
 from app.db.models.task import TaskStatus
 from app.services.task import get_pending_tasks, get_task, update_task_status
 
@@ -64,7 +65,14 @@ async def handle_status_update(
         await callback.message.answer("Task not found.")
         return
 
-    await update_task_status(db, task=task, new_status=new_status)
+    await update_task_status(
+        db,
+        task=task,
+        new_status=new_status,
+        actor_type=AuditActorType.TELEGRAM,
+        actor_id=callback.from_user.id if callback.from_user else None,
+        source=AuditSource.TODOBOT,
+    )
     await callback.message.answer(
         f'Task "{task.title}" marked as {new_status.value}.',
     )

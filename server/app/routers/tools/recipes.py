@@ -1,12 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from app.core.deps import AdminUser, DbSession
-from app.core.logging import logger
+from app.core.deps import AdminUser, DbSession, require_admin
 from app.schemas.common import MessageResponse
 from app.schemas.recipe import RecipeCreate, RecipeResponse, RecipeUpdate
 from app.services.recipe import RecipeService
 
-router = APIRouter(prefix="/recipes")
+router = APIRouter(prefix="/recipes", dependencies=[Depends(require_admin)])
 
 
 @router.get("/tags", response_model=list[str])
@@ -43,15 +42,10 @@ async def get_recipe(
 async def create_recipe(
     data: RecipeCreate,
     db: DbSession,
-    user: AdminUser,
+    user: AdminUser,  # noqa: ARG001
 ) -> RecipeResponse:
     svc = RecipeService(db)
-    recipe = await svc.create_recipe(data)
-    logger.info(
-        "Recipe created",
-        context={"recipe_id": recipe.id, "user_id": user.id},
-    )
-    return recipe
+    return await svc.create_recipe(data)
 
 
 @router.put("/{recipe_id}", response_model=RecipeResponse)
@@ -59,27 +53,18 @@ async def update_recipe(
     recipe_id: int,
     data: RecipeUpdate,
     db: DbSession,
-    user: AdminUser,
+    user: AdminUser,  # noqa: ARG001
 ) -> RecipeResponse:
     svc = RecipeService(db)
-    recipe = await svc.update_recipe(recipe_id, data)
-    logger.info(
-        "Recipe updated",
-        context={"recipe_id": recipe_id, "user_id": user.id},
-    )
-    return recipe
+    return await svc.update_recipe(recipe_id, data)
 
 
 @router.delete("/{recipe_id}", response_model=MessageResponse)
 async def delete_recipe(
     recipe_id: int,
     db: DbSession,
-    user: AdminUser,
+    user: AdminUser,  # noqa: ARG001
 ) -> MessageResponse:
     svc = RecipeService(db)
-    await svc.delete(recipe_id)
-    logger.info(
-        "Recipe deleted",
-        context={"recipe_id": recipe_id, "user_id": user.id},
-    )
+    await svc.delete_recipe(recipe_id)
     return MessageResponse(message="Recipe deleted")

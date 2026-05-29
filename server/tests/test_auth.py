@@ -5,7 +5,6 @@ from app.core.security import create_verification_token
 from app.settings import get_settings
 from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD
 
-
 # --- Registration ---
 
 
