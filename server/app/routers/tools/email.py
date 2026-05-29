@@ -3,10 +3,13 @@ from html import escape
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, EmailStr
 
-from app.core.deps import AdminUser, require_admin
+from app.core.deps import AuthorizedUser, require_capability
 from app.core.email import _wrap_email, get_email_backend
 
-router = APIRouter(prefix="/email", dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/email",
+    dependencies=[Depends(require_capability("email", "write"))],
+)
 
 
 class EmailSend(BaseModel):
@@ -20,7 +23,7 @@ class EmailPreview(BaseModel):
 
 
 @router.post("/send")
-async def send_email(data: EmailSend, _user: AdminUser) -> dict[str, str]:
+async def send_email(data: EmailSend, _user: AuthorizedUser) -> dict[str, str]:
     """Send a freeform email wrapped in the site-styled template."""
     safe_body = escape(data.body).replace("\n", "<br>")
     html = _wrap_email(data.subject, f"<p>{safe_body}</p>")
@@ -30,7 +33,7 @@ async def send_email(data: EmailSend, _user: AdminUser) -> dict[str, str]:
 
 
 @router.post("/preview", response_model=EmailPreview)
-async def preview_email(data: EmailSend, _user: AdminUser) -> EmailPreview:
+async def preview_email(data: EmailSend, _user: AuthorizedUser) -> EmailPreview:
     """Return the rendered HTML without sending."""
     safe_body = escape(data.body).replace("\n", "<br>")
     html = _wrap_email(data.subject, f"<p>{safe_body}</p>")

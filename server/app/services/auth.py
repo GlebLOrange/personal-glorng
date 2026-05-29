@@ -17,6 +17,11 @@ from app.core.security import (
 from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.user import User
 from app.services.audit import AuditRecord, AuditService
+from app.services.user import (
+    create_user,
+    default_owner_permissions,
+    get_user_by_public_id,
+)
 from app.settings import get_settings
 
 
@@ -52,13 +57,8 @@ async def _blacklist_payload(payload: dict[str, object]) -> None:
     await blacklist_token(jti, max(exp - now, 0))
 
 
-async def _get_user_by_id(db: AsyncSession, user_id: str) -> User:
-    try:
-        uid = int(user_id)
-    except (ValueError, TypeError):
-        raise UnauthorizedError("Invalid token payload") from None
-    result = await db.execute(select(User).where(User.id == uid))
-    user = result.scalar_one_or_none()
+async def _get_user_by_sub(db: AsyncSession, subject: str) -> User:
+    user = await get_user_by_public_id(db, subject)
     if not user:
         raise UnauthorizedError("User not found")
     return user
@@ -90,15 +90,13 @@ async def register_user(db: AsyncSession, email: str, password: str) -> User:
     if existing:
         raise ConflictError("User with this email already exists")
 
-    user = User(
+    user = await create_user(
+        db,
         email=email,
-        hashed_password=hash_password(password),
+        password=password,
+        permissions=default_owner_permissions(),
         is_verified=False,
-        is_admin=True,
     )
-    db.add(user)
-    await db.flush()
-    await db.refresh(user)
 
     await audit.record(
         AuditRecord(
@@ -134,8 +132,8 @@ async def login_user(db: AsyncSession, email: str, password: str) -> tuple[str, 
     if not user.is_verified:
         raise ForbiddenError("Email not verified. Check your inbox.")
 
-    access_token = create_access_token(str(user.id))
-    refresh_token = create_refresh_token(str(user.id))
+    access_token = create_access_token(str(user.public_id))
+    refresh_token = create_refresh_token(str(user.public_id))
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -153,9 +151,9 @@ async def login_user(db: AsyncSession, email: str, password: str) -> tuple[str, 
 async def refresh_access_token(db: AsyncSession, refresh_token: str) -> tuple[str, str]:
     payload = await _decode_and_validate(refresh_token, "refresh")
     await _blacklist_payload(payload)
-    user = await _get_user_by_id(db, payload["sub"])
-    new_access = create_access_token(str(user.id))
-    new_refresh = create_refresh_token(str(user.id))
+    user = await _get_user_by_sub(db, str(payload["sub"]))
+    new_access = create_access_token(str(user.public_id))
+    new_refresh = create_refresh_token(str(user.public_id))
 
     audit = AuditService(db)
     await audit.record(

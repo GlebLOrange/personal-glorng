@@ -134,13 +134,13 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture
 async def admin_user(db: AsyncSession) -> User:
     return await create_user(
-        db, email=ADMIN_EMAIL, password=ADMIN_PASSWORD, is_admin=True
+        db, email=ADMIN_EMAIL, password=ADMIN_PASSWORD
     )
 
 
 @pytest.fixture
 def admin_token(admin_user: User) -> str:
-    return create_access_token(str(admin_user.id))
+    return create_access_token(str(admin_user.public_id))
 
 
 @pytest.fixture
