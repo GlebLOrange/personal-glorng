@@ -21,7 +21,7 @@ class ErrorResponse(BaseModel):
     )
 
 
-class PaginatedResponse(BaseModel, Generic[T]):  # noqa: UP046
+class PaginatedResponse(BaseModel, Generic[T]):
     items: list[T]
     total: int
     page: int

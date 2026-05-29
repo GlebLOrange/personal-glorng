@@ -6,6 +6,7 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.models.audit_event import AuditActorType, AuditSource
 from app.db.models.task import TaskStatus
 from app.services.task import create_reminder, get_task, update_task_status
 from app.workers.scheduling import schedule_reminder, supersede_unsent_reminders
@@ -36,7 +37,14 @@ async def handle_reminder_action(
         return
 
     if action == "complete":
-        await update_task_status(db, task=task, new_status=TaskStatus.COMPLETED)
+        await update_task_status(
+            db,
+            task=task,
+            new_status=TaskStatus.COMPLETED,
+            actor_type=AuditActorType.TELEGRAM,
+            actor_id=callback.from_user.id if callback.from_user else None,
+            source=AuditSource.TODOBOT,
+        )
         await callback.message.answer(
             f'Task "{task.title}" completed!',
         )

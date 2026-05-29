@@ -1,12 +1,12 @@
 from html import escape
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, EmailStr
 
-from app.core.deps import AdminUser
+from app.core.deps import AdminUser, require_admin
 from app.core.email import _wrap_email, get_email_backend
 
-router = APIRouter(prefix="/email")
+router = APIRouter(prefix="/email", dependencies=[Depends(require_admin)])
 
 
 class EmailSend(BaseModel):

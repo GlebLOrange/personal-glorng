@@ -4,7 +4,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.core.deps import CurrentUser, DbSession, oauth2_scheme
-from app.core.logging import logger
 from app.core.rate_limit import rate_limit_auth
 from app.core.redis import blacklist_token
 from app.core.security import create_verification_token, decode_token
@@ -21,6 +20,7 @@ from app.schemas.auth import (
 from app.schemas.common import MessageResponse
 from app.services.auth import (
     login_user,
+    record_logout,
     refresh_access_token,
     register_user,
     request_password_reset,
@@ -40,6 +40,7 @@ router = APIRouter()
 async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
     user = await register_user(db, data.email, data.password)
     _token = create_verification_token(user.email)
+
     logger.info("User registered", context={"email": user.email})
     await enqueue_job("send_verification_email", user.email, _token)
     return MessageResponse(
@@ -54,7 +55,6 @@ async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
 )
 async def login(data: LoginRequest, db: DbSession) -> TokenResponse:
     access_token, refresh_token = await login_user(db, data.email, data.password)
-    logger.info("User logged in", context={"email": data.email})
     return TokenResponse(access_token=access_token, refresh_token=refresh_token)
 
 
@@ -87,14 +87,19 @@ async def refresh(data: RefreshRequest, db: DbSession) -> TokenResponse:
     dependencies=[Depends(rate_limit_auth)],
 )
 async def logout(
+    db: DbSession,
     data: LogoutRequest | None = None,
     token: Annotated[str | None, Depends(oauth2_scheme)] = None,
 ) -> MessageResponse:
+    user_id: int | None = None
     for raw_token in [token, data.refresh_token if data else None]:
         if not raw_token:
             continue
         try:
             payload = decode_token(raw_token)
+            sub = payload.get("sub")
+            if sub:
+                user_id = int(sub)
             jti = payload.get("jti", "")
             exp = payload.get("exp", 0)
             now = int(datetime.now(UTC).timestamp())
@@ -102,6 +107,9 @@ async def logout(
             await blacklist_token(jti, ttl)
         except ValueError:
             pass
+
+    await record_logout(db, user_id)
+
     return MessageResponse(message="Logged out successfully")
 
 

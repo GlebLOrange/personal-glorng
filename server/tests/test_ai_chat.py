@@ -19,10 +19,10 @@ from app.core.exceptions import ApiError
 from app.core.security import create_access_token
 from app.main import app
 from app.services.ai_chat import (
-    AIProviderRegistry,
-    OpenAIService,
     PROVIDERS,
     SYSTEM_PROMPT,
+    AIProviderRegistry,
+    OpenAIService,
 )
 from tests.factories import create_user
 

@@ -3,7 +3,6 @@ from fastapi.responses import StreamingResponse
 
 from app.core.deps import AdminUser, DbSession, require_admin
 from app.core.exceptions import ApiError
-from app.core.logging import logger
 from app.core.rate_limit import rate_limit_api
 from app.core.utils import iter_file, paginate_params
 from app.schemas.common import MessageResponse
@@ -33,10 +32,6 @@ async def upload_file(
         content_type=file.content_type or "application/octet-stream",
         user_id=user.id,
     )
-    logger.info(
-        "File uploaded",
-        context={"code": shared.code, "filename": file.filename, "size": len(contents)},
-    )
     return SharedFileResponse.model_validate(shared)
 
 
@@ -59,11 +54,8 @@ async def delete_file(
     user: AdminUser,  # noqa: ARG001
 ) -> MessageResponse:
     await fileshare_svc.delete(db, file_id=file_id)
-    logger.info("File deleted", context={"file_id": file_id})
     return MessageResponse(message="File deleted")
 
-
-# --- Public download route (no auth) ---
 
 download_router = APIRouter()
 

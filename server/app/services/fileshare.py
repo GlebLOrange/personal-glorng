@@ -8,7 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ApiError, NotFoundError
 from app.core.utils import generate_short_code, utc_now
+from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.shared_file import SharedFile
+from app.services.audit import AuditRecord, AuditService
 from app.settings import get_settings
 
 MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100 MB
@@ -63,6 +65,19 @@ async def upload(
     db.add(shared)
     await db.flush()
     await db.refresh(shared)
+
+    await AuditService(db).record(
+        AuditRecord(
+            category=AuditCategory.DOMAIN,
+            action="file.uploaded",
+            actor_type=AuditActorType.USER,
+            actor_id=user_id,
+            source=AuditSource.WEB_ADMIN,
+            resource_type="file",
+            resource_id=shared.id,
+            metadata={"code": shared.code, "filename": filename},
+        ),
+    )
     return shared
 
 
@@ -94,6 +109,17 @@ async def delete(db: AsyncSession, *, file_id: int) -> None:
 
     await db.delete(shared)
     await db.flush()
+
+    await AuditService(db).record(
+        AuditRecord(
+            category=AuditCategory.DOMAIN,
+            action="file.deleted",
+            actor_type=AuditActorType.USER,
+            source=AuditSource.WEB_ADMIN,
+            resource_type="file",
+            resource_id=file_id,
+        ),
+    )
 
 
 async def get_by_code(db: AsyncSession, *, code: str) -> tuple[SharedFile, Path]:

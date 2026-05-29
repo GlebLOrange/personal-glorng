@@ -4,7 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ApiError, NotFoundError
 from app.core.utils import generate_short_code
+from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.url import ShortenedUrl
+from app.services.audit import AuditRecord, AuditService
 from app.services.base import CRUDService
 
 _MAX_CODE_RETRIES = 3
@@ -23,7 +25,7 @@ class UrlService(CRUDService[ShortenedUrl]):
         for attempt in range(_MAX_CODE_RETRIES):
             code = generate_short_code(8)
             try:
-                return await self.create(
+                url = await self.create(
                     {
                         "code": code,
                         "original_url": original_url,
@@ -31,6 +33,19 @@ class UrlService(CRUDService[ShortenedUrl]):
                         "created_by": created_by,
                     }
                 )
+                await AuditService(self.db).record(
+                    AuditRecord(
+                        category=AuditCategory.DOMAIN,
+                        action="url.created",
+                        actor_type=AuditActorType.USER,
+                        actor_id=created_by,
+                        source=AuditSource.WEB_ADMIN,
+                        resource_type="url",
+                        resource_id=url.id,
+                        metadata={"code": url.code},
+                    ),
+                )
+                return url
             except IntegrityError:
                 await self.db.rollback()
                 if attempt == _MAX_CODE_RETRIES - 1:
@@ -55,3 +70,16 @@ class UrlService(CRUDService[ShortenedUrl]):
             .values(clicks=ShortenedUrl.clicks + 1)
         )
         await self.db.flush()
+
+    async def delete_url(self, url_id: int) -> None:
+        await self.delete(url_id)
+        await AuditService(self.db).record(
+            AuditRecord(
+                category=AuditCategory.DOMAIN,
+                action="url.deleted",
+                actor_type=AuditActorType.USER,
+                source=AuditSource.WEB_ADMIN,
+                resource_type="url",
+                resource_id=url_id,
+            ),
+        )

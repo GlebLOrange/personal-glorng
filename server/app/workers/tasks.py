@@ -22,7 +22,10 @@ from app.db.models.google_sync_queue import SyncStatus
 from app.db.models.reminder import Reminder
 from app.db.models.task import TaskStatus
 from app.db.session import get_session_factory
-from app.services.task import delete_old_tasks, get_overdue_pending_tasks
+from app.services.task import (
+    delete_old_tasks,
+    get_overdue_pending_tasks,
+)
 from app.settings import get_settings
 from app.todobot.keyboards.task import completion_options, reminder_actions
 

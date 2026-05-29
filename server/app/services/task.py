@@ -2,166 +2,336 @@
 
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import NotFoundError
 from app.core.logging import logger
+from app.core.utils import paginate_params
+from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction, SyncStatus
 from app.db.models.reminder import Reminder
 from app.db.models.task import Task, TaskStatus
 from app.db.models.task_status_history import TaskStatusHistory
+from app.schemas.task import (
+    ReminderResponse,
+    StatusHistoryResponse,
+    SyncQueueResponse,
+    TaskDetailResponse,
+    TaskResponse,
+    TaskStatsResponse,
+)
+from app.services.audit import AuditRecord, AuditService
 
 
-async def create_task(
-    db: AsyncSession,
-    *,
-    telegram_user_id: int,
-    title: str,
-    scheduled_at: str,
-    description: str | None = None,
-    location: str | None = None,
-) -> Task:
-    task = Task(
-        telegram_user_id=telegram_user_id,
-        title=title,
-        description=description,
-        location=location,
-        scheduled_at=scheduled_at,
-        status=TaskStatus.PENDING,
-    )
-    db.add(task)
-    await db.flush()
-    await db.refresh(task)
-    logger.info("Task created", context={"task_id": task.id, "title": title})
-    return task
+class TaskService:
+    def __init__(self, db: AsyncSession) -> None:
+        self.db = db
+
+    async def create_task(
+        self,
+        *,
+        telegram_user_id: int,
+        title: str,
+        scheduled_at: str,
+        description: str | None = None,
+        location: str | None = None,
+        source: AuditSource = AuditSource.TODOBOT,
+    ) -> Task:
+        task = Task(
+            telegram_user_id=telegram_user_id,
+            title=title,
+            description=description,
+            location=location,
+            scheduled_at=scheduled_at,
+            status=TaskStatus.PENDING,
+        )
+        self.db.add(task)
+        await self.db.flush()
+        await self.db.refresh(task)
+        logger.info("Task created", context={"task_id": task.id, "title": title})
+
+        audit = AuditService(self.db)
+        await audit.record(
+            AuditRecord(
+                category=AuditCategory.DOMAIN,
+                action="task.created",
+                actor_type=AuditActorType.TELEGRAM,
+                actor_id=telegram_user_id,
+                source=source,
+                resource_type="task",
+                resource_id=task.id,
+                metadata={"title": title},
+            ),
+        )
+        return task
+
+    async def create_reminder(
+        self,
+        *,
+        task_id: int,
+        remind_at: datetime,
+        arq_job_id: str | None = None,
+    ) -> Reminder:
+        reminder = Reminder(
+            task_id=task_id,
+            remind_at=remind_at,
+            sent=False,
+            arq_job_id=arq_job_id,
+        )
+        self.db.add(reminder)
+        await self.db.flush()
+        await self.db.refresh(reminder)
+        return reminder
+
+    async def update_task_status(
+        self,
+        *,
+        task: Task,
+        new_status: TaskStatus,
+        actor_type: AuditActorType = AuditActorType.SYSTEM,
+        actor_id: int | None = None,
+        source: AuditSource = AuditSource.WORKER,
+    ) -> Task:
+        """Update status, record history, and emit audit event."""
+        old_status = task.status
+        task.status = new_status
+        self.db.add(task)
+
+        history = TaskStatusHistory(
+            task_id=task.id,
+            old_status=old_status.value,
+            new_status=new_status.value,
+        )
+        self.db.add(history)
+        await self.db.flush()
+
+        logger.debug(
+            "Task status updated",
+            context={
+                "task_id": task.id,
+                "old": old_status.value,
+                "new": new_status.value,
+            },
+        )
+
+        audit = AuditService(self.db)
+        await audit.record(
+            AuditRecord(
+                category=AuditCategory.DOMAIN,
+                action="task.status_changed",
+                actor_type=actor_type,
+                actor_id=actor_id,
+                source=source,
+                resource_type="task",
+                resource_id=task.id,
+                metadata={"old_status": old_status.value, "new_status": new_status.value},
+            ),
+        )
+        return task
+
+    async def get_task(self, *, task_id: int) -> Task | None:
+        result = await self.db.execute(select(Task).where(Task.id == task_id))
+        return result.scalar_one_or_none()
+
+    async def list_tasks(
+        self,
+        *,
+        page: int = 1,
+        per_page: int = 20,
+        status: str | None = None,
+    ) -> list[TaskResponse]:
+        offset, limit = paginate_params(page, per_page)
+        query = select(Task).order_by(Task.created_at.desc())
+        if status:
+            query = query.where(Task.status == status)
+        result = await self.db.execute(query.offset(offset).limit(limit))
+        return [TaskResponse.model_validate(t) for t in result.scalars().all()]
+
+    async def task_stats(self) -> TaskStatsResponse:
+        total = await self._count(Task)
+        pending = await self._count(Task, Task.status == TaskStatus.PENDING)
+        completed = await self._count(Task, Task.status == TaskStatus.COMPLETED)
+        failed_syncs = await self._count(
+            GoogleSyncQueue,
+            GoogleSyncQueue.status == SyncStatus.FAILED,
+        )
+        return TaskStatsResponse(
+            pending=pending,
+            completed=completed,
+            total=total,
+            failed_syncs=failed_syncs,
+        )
+
+    async def list_sync_queue(
+        self,
+        *,
+        page: int = 1,
+        per_page: int = 20,
+    ) -> list[SyncQueueResponse]:
+        offset, limit = paginate_params(page, per_page)
+        result = await self.db.execute(
+            select(GoogleSyncQueue)
+            .order_by(GoogleSyncQueue.created_at.desc())
+            .offset(offset)
+            .limit(limit),
+        )
+        return [SyncQueueResponse.model_validate(q) for q in result.scalars().all()]
+
+    async def task_detail(self, task_id: int) -> TaskDetailResponse:
+        task = await self.get_task(task_id=task_id)
+        if not task:
+            raise NotFoundError("Task not found")
+
+        reminders_result = await self.db.execute(
+            select(Reminder)
+            .where(Reminder.task_id == task_id)
+            .order_by(Reminder.remind_at),
+        )
+        history_result = await self.db.execute(
+            select(TaskStatusHistory)
+            .where(TaskStatusHistory.task_id == task_id)
+            .order_by(TaskStatusHistory.changed_at),
+        )
+
+        return TaskDetailResponse(
+            **TaskResponse.model_validate(task).model_dump(),
+            reminders=[
+                ReminderResponse.model_validate(r) for r in reminders_result.scalars().all()
+            ],
+            status_history=[
+                StatusHistoryResponse.model_validate(h)
+                for h in history_result.scalars().all()
+            ],
+        )
+
+    async def retry_sync(self, task_id: int) -> int:
+        result = await self.db.execute(
+            select(GoogleSyncQueue).where(
+                GoogleSyncQueue.task_id == task_id,
+                GoogleSyncQueue.status == SyncStatus.FAILED,
+            ),
+        )
+        items = list(result.scalars().all())
+        if not items:
+            raise NotFoundError("No failed sync entries for this task")
+
+        for item in items:
+            item.status = SyncStatus.PENDING
+            item.attempts = 0
+            item.next_retry_at = datetime.now(UTC) + timedelta(seconds=5)
+            self.db.add(item)
+
+        await self.db.flush()
+        return len(items)
+
+    async def get_pending_tasks(
+        self,
+        *,
+        telegram_user_id: int,
+        limit: int = 20,
+    ) -> list[Task]:
+        result = await self.db.execute(
+            select(Task)
+            .where(
+                Task.telegram_user_id == telegram_user_id,
+                Task.status == TaskStatus.PENDING,
+            )
+            .order_by(Task.scheduled_at)
+            .limit(limit),
+        )
+        return list(result.scalars().all())
+
+    async def get_unsent_reminders(self) -> list[Reminder]:
+        now = datetime.now(UTC)
+        result = await self.db.execute(
+            select(Reminder)
+            .where(Reminder.sent.is_(False), Reminder.remind_at > now)
+            .order_by(Reminder.remind_at),
+        )
+        return list(result.scalars().all())
+
+    async def get_overdue_pending_tasks(self) -> list[Task]:
+        now = datetime.now(UTC).isoformat()
+        result = await self.db.execute(
+            select(Task).where(
+                Task.status == TaskStatus.PENDING,
+                Task.scheduled_at < now,
+            ),
+        )
+        return list(result.scalars().all())
+
+    async def enqueue_calendar_sync(
+        self,
+        *,
+        task_id: int,
+        action: SyncAction,
+        google_event_id: str | None = None,
+    ) -> GoogleSyncQueue:
+        entry = GoogleSyncQueue(
+            task_id=task_id,
+            action=action,
+            status=SyncStatus.PENDING,
+            next_retry_at=datetime.now(UTC) + timedelta(seconds=5),
+            google_event_id=google_event_id,
+        )
+        self.db.add(entry)
+        await self.db.flush()
+        return entry
+
+    async def delete_old_tasks(self, *, months: int = 4) -> int:
+        cutoff = (datetime.now(UTC) - timedelta(days=months * 30)).isoformat()
+        result = await self.db.execute(
+            select(Task).where(Task.scheduled_at < cutoff),
+        )
+        tasks = list(result.scalars().all())
+        for task in tasks:
+            await self.db.delete(task)
+        await self.db.flush()
+        return len(tasks)
+
+    async def _count(self, model: type, *conditions: object) -> int:
+        query = select(func.count()).select_from(model)
+        for cond in conditions:
+            query = query.where(cond)
+        result = await self.db.execute(query)
+        return result.scalar_one()
 
 
-async def create_reminder(
-    db: AsyncSession,
-    *,
-    task_id: int,
-    remind_at: datetime,
-    arq_job_id: str | None = None,
-) -> Reminder:
-    reminder = Reminder(
-        task_id=task_id,
-        remind_at=remind_at,
-        sent=False,
-        arq_job_id=arq_job_id,
-    )
-    db.add(reminder)
-    await db.flush()
-    await db.refresh(reminder)
-    return reminder
+# Backward-compatible module-level helpers for todobot and workers.
 
 
-async def update_task_status(
-    db: AsyncSession,
-    *,
-    task: Task,
-    new_status: TaskStatus,
-) -> Task:
-    """Update status and record history."""
-    old_status = task.status
-    task.status = new_status
-    db.add(task)
+async def create_task(db: AsyncSession, **kwargs: object) -> Task:
+    return await TaskService(db).create_task(**kwargs)  # type: ignore[arg-type]
 
-    history = TaskStatusHistory(
-        task_id=task.id,
-        old_status=old_status.value,
-        new_status=new_status.value,
-    )
-    db.add(history)
-    await db.flush()
 
-    logger.info(
-        "Task status updated",
-        context={
-            "task_id": task.id,
-            "old": old_status.value,
-            "new": new_status.value,
-        },
-    )
-    return task
+async def create_reminder(db: AsyncSession, **kwargs: object) -> Reminder:
+    return await TaskService(db).create_reminder(**kwargs)  # type: ignore[arg-type]
+
+
+async def update_task_status(db: AsyncSession, **kwargs: object) -> Task:
+    return await TaskService(db).update_task_status(**kwargs)  # type: ignore[arg-type]
 
 
 async def get_task(db: AsyncSession, *, task_id: int) -> Task | None:
-    result = await db.execute(select(Task).where(Task.id == task_id))
-    return result.scalar_one_or_none()
+    return await TaskService(db).get_task(task_id=task_id)
 
 
-async def get_pending_tasks(
-    db: AsyncSession,
-    *,
-    telegram_user_id: int,
-    limit: int = 20,
-) -> list[Task]:
-    result = await db.execute(
-        select(Task)
-        .where(
-            Task.telegram_user_id == telegram_user_id,
-            Task.status == TaskStatus.PENDING,
-        )
-        .order_by(Task.scheduled_at)
-        .limit(limit),
-    )
-    return list(result.scalars().all())
+async def get_pending_tasks(db: AsyncSession, **kwargs: object) -> list[Task]:
+    return await TaskService(db).get_pending_tasks(**kwargs)  # type: ignore[arg-type]
 
 
 async def get_unsent_reminders(db: AsyncSession) -> list[Reminder]:
-    """Get all unsent reminders with future remind_at."""
-    now = datetime.now(UTC)
-    result = await db.execute(
-        select(Reminder)
-        .where(Reminder.sent.is_(False), Reminder.remind_at > now)
-        .order_by(Reminder.remind_at),
-    )
-    return list(result.scalars().all())
+    return await TaskService(db).get_unsent_reminders()
 
 
 async def get_overdue_pending_tasks(db: AsyncSession) -> list[Task]:
-    """Tasks past scheduled time that are still pending."""
-    now = datetime.now(UTC).isoformat()
-    result = await db.execute(
-        select(Task).where(
-            Task.status == TaskStatus.PENDING,
-            Task.scheduled_at < now,
-        ),
-    )
-    return list(result.scalars().all())
+    return await TaskService(db).get_overdue_pending_tasks()
 
 
-async def enqueue_calendar_sync(
-    db: AsyncSession,
-    *,
-    task_id: int,
-    action: SyncAction,
-    google_event_id: str | None = None,
-) -> GoogleSyncQueue:
-    entry = GoogleSyncQueue(
-        task_id=task_id,
-        action=action,
-        status=SyncStatus.PENDING,
-        next_retry_at=datetime.now(UTC) + timedelta(seconds=5),
-        google_event_id=google_event_id,
-    )
-    db.add(entry)
-    await db.flush()
-    return entry
+async def enqueue_calendar_sync(db: AsyncSession, **kwargs: object) -> GoogleSyncQueue:
+    return await TaskService(db).enqueue_calendar_sync(**kwargs)  # type: ignore[arg-type]
 
 
-async def delete_old_tasks(
-    db: AsyncSession,
-    *,
-    months: int = 4,
-) -> int:
-    """Delete tasks older than given months. Returns count deleted."""
-    cutoff = (datetime.now(UTC) - timedelta(days=months * 30)).isoformat()
-    result = await db.execute(
-        select(Task).where(Task.scheduled_at < cutoff),
-    )
-    tasks = list(result.scalars().all())
-    for task in tasks:
-        await db.delete(task)
-    await db.flush()
-    return len(tasks)
+async def delete_old_tasks(db: AsyncSession, **kwargs: object) -> int:
+    return await TaskService(db).delete_old_tasks(**kwargs)  # type: ignore[arg-type]

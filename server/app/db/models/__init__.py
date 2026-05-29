@@ -1,4 +1,5 @@
 from app.db.base import Base
+from app.db.models.audit_event import AuditEvent
 from app.db.models.feedback import Feedback
 from app.db.models.github_credential import GitHubCredential
 from app.db.models.google_auth import GoogleCredential
@@ -13,6 +14,7 @@ from app.db.models.url import ShortenedUrl
 from app.db.models.user import User
 
 __all__ = [
+    "AuditEvent",
     "Base",
     "Feedback",
     "GitHubCredential",

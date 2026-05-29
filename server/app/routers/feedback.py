@@ -4,12 +4,14 @@ from html import escape
 from fastapi import APIRouter, Depends
 from sqlalchemy import select, update
 
-from app.core.deps import AdminUser, DbSession
+from app.core.deps import AdminUser, DbSession, require_admin
 from app.core.logging import logger
 from app.core.rate_limit import RateLimiter
 from app.core.telegram import notify_admin
+from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.feedback import Feedback
 from app.schemas.feedback import FeedbackCreate, FeedbackResponse, FeedbackStatusUpdate
+from app.services.audit import AuditRecord, AuditService
 from app.settings import get_settings
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
@@ -47,7 +49,11 @@ async def create_feedback(data: FeedbackCreate, db: DbSession) -> Feedback:
     return entry
 
 
-@router.get("", response_model=list[FeedbackResponse])
+@router.get(
+    "",
+    response_model=list[FeedbackResponse],
+    dependencies=[Depends(require_admin)],
+)
 async def list_feedback(db: DbSession, _user: AdminUser) -> list[Feedback]:
     """Admin endpoint -- list all feedback, newest first."""
     result = await db.execute(
@@ -56,12 +62,16 @@ async def list_feedback(db: DbSession, _user: AdminUser) -> list[Feedback]:
     return list(result.scalars().all())
 
 
-@router.patch("/{feedback_id}/status", response_model=FeedbackResponse)
+@router.patch(
+    "/{feedback_id}/status",
+    response_model=FeedbackResponse,
+    dependencies=[Depends(require_admin)],
+)
 async def update_feedback_status(
     feedback_id: int,
     data: FeedbackStatusUpdate,
     db: DbSession,
-    _user: AdminUser,
+    user: AdminUser,
 ) -> Feedback:
     """Admin endpoint -- mark feedback as read or archived."""
     await db.execute(
@@ -69,7 +79,20 @@ async def update_feedback_status(
         .where(Feedback.id == feedback_id)
         .values(status=data.status)
     )
-    await db.commit()
+    await db.flush()
     result = await db.execute(select(Feedback).where(Feedback.id == feedback_id))
     entry = result.scalar_one()
+
+    await AuditService(db).record(
+        AuditRecord(
+            category=AuditCategory.DOMAIN,
+            action="feedback.status_changed",
+            actor_type=AuditActorType.USER,
+            actor_id=user.id,
+            source=AuditSource.WEB_ADMIN,
+            resource_type="feedback",
+            resource_id=feedback_id,
+            metadata={"status": data.status},
+        ),
+    )
     return entry

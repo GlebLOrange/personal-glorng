@@ -14,7 +14,9 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.user import User
+from app.services.audit import AuditRecord, AuditService
 from app.settings import get_settings
 
 
@@ -69,9 +71,19 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
 
 async def register_user(db: AsyncSession, email: str, password: str) -> User:
     settings = get_settings()
+    audit = AuditService(db)
 
     if email != settings.ALLOWED_EMAIL:
         logger.warning("Registration denied", context={"email": email})
+        await audit.record(
+            AuditRecord(
+                category=AuditCategory.SECURITY,
+                action="auth.register_denied",
+                actor_type=AuditActorType.USER,
+                source=AuditSource.PUBLIC,
+                metadata={"email": email},
+            ),
+        )
         raise ForbiddenError("Registration is restricted to authorized emails only")
 
     existing = await get_user_by_email(db, email)
@@ -88,21 +100,53 @@ async def register_user(db: AsyncSession, email: str, password: str) -> User:
     await db.flush()
     await db.refresh(user)
 
+    await audit.record(
+        AuditRecord(
+            category=AuditCategory.SECURITY,
+            action="auth.registered",
+            actor_type=AuditActorType.USER,
+            actor_id=user.id,
+            source=AuditSource.PUBLIC,
+            resource_type="user",
+            resource_id=user.id,
+            metadata={"email": email},
+        ),
+    )
     return user
 
 
 async def login_user(db: AsyncSession, email: str, password: str) -> tuple[str, str]:
+    audit = AuditService(db)
     user = await get_user_by_email(db, email)
     if not user or not verify_password(password, user.hashed_password):
         logger.warning("Login failed", context={"email": email})
+        await audit.record(
+            AuditRecord(
+                category=AuditCategory.SECURITY,
+                action="auth.login_failed",
+                actor_type=AuditActorType.USER,
+                source=AuditSource.PUBLIC,
+                metadata={"email": email},
+            ),
+        )
         raise UnauthorizedError("Invalid email or password")
 
     if not user.is_verified:
         raise ForbiddenError("Email not verified. Check your inbox.")
 
-    logger.info("Login successful", context={"user_id": user.id})
     access_token = create_access_token(str(user.id))
     refresh_token = create_refresh_token(str(user.id))
+    await audit.record(
+        AuditRecord(
+            category=AuditCategory.SECURITY,
+            action="auth.login_success",
+            actor_type=AuditActorType.USER,
+            actor_id=user.id,
+            source=AuditSource.PUBLIC,
+            resource_type="user",
+            resource_id=user.id,
+        ),
+    )
     return access_token, refresh_token
 
 
@@ -112,6 +156,19 @@ async def refresh_access_token(db: AsyncSession, refresh_token: str) -> tuple[st
     user = await _get_user_by_id(db, payload["sub"])
     new_access = create_access_token(str(user.id))
     new_refresh = create_refresh_token(str(user.id))
+
+    audit = AuditService(db)
+    await audit.record(
+        AuditRecord(
+            category=AuditCategory.SECURITY,
+            action="auth.token_refreshed",
+            actor_type=AuditActorType.USER,
+            actor_id=user.id,
+            source=AuditSource.PUBLIC,
+            resource_type="user",
+            resource_id=user.id,
+        ),
+    )
     return new_access, new_refresh
 
 
@@ -127,6 +184,18 @@ async def verify_user_email(db: AsyncSession, token: str) -> User:
 
     await _blacklist_payload(payload)
 
+    audit = AuditService(db)
+    await audit.record(
+        AuditRecord(
+            category=AuditCategory.SECURITY,
+            action="auth.email_verified",
+            actor_type=AuditActorType.USER,
+            actor_id=user.id,
+            source=AuditSource.PUBLIC,
+            resource_type="user",
+            resource_id=user.id,
+        ),
+    )
     return user
 
 
@@ -134,6 +203,20 @@ async def request_password_reset(db: AsyncSession, email: str) -> str | None:
     user = await get_user_by_email(db, email)
     if not user:
         return None
+
+    audit = AuditService(db)
+    await audit.record(
+        AuditRecord(
+            category=AuditCategory.SECURITY,
+            action="auth.password_reset_requested",
+            actor_type=AuditActorType.USER,
+            actor_id=user.id,
+            source=AuditSource.PUBLIC,
+            resource_type="user",
+            resource_id=user.id,
+            metadata={"email": email},
+        ),
+    )
     return create_reset_token(email)
 
 
@@ -148,6 +231,32 @@ async def reset_user_password(db: AsyncSession, token: str, new_password: str) -
     await db.refresh(user)
 
     await _blacklist_payload(payload)
-    logger.info("Password reset completed", context={"user_id": user.id})
 
+    audit = AuditService(db)
+    await audit.record(
+        AuditRecord(
+            category=AuditCategory.SECURITY,
+            action="auth.password_reset_completed",
+            actor_type=AuditActorType.USER,
+            actor_id=user.id,
+            source=AuditSource.PUBLIC,
+            resource_type="user",
+            resource_id=user.id,
+        ),
+    )
     return user
+
+
+async def record_logout(db: AsyncSession, user_id: int | None) -> None:
+    audit = AuditService(db)
+    await audit.record(
+        AuditRecord(
+            category=AuditCategory.SECURITY,
+            action="auth.logout",
+            actor_type=AuditActorType.USER,
+            actor_id=user_id,
+            source=AuditSource.PUBLIC,
+            resource_type="user",
+            resource_id=user_id,
+        ),
+    )

@@ -3,8 +3,10 @@ import json
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.recipe import Recipe
 from app.schemas.recipe import RecipeCreate, RecipeResponse, RecipeUpdate
+from app.services.audit import AuditRecord, AuditService
 from app.services.base import CRUDService
 
 
@@ -41,6 +43,17 @@ class RecipeService(CRUDService[Recipe]):
             "cook_time": data.cook_time,
             "servings": data.servings,
         })
+        await AuditService(self.db).record(
+            AuditRecord(
+                category=AuditCategory.DOMAIN,
+                action="recipe.created",
+                actor_type=AuditActorType.USER,
+                source=AuditSource.WEB_ADMIN,
+                resource_type="recipe",
+                resource_id=recipe.id,
+                metadata={"title": recipe.title},
+            ),
+        )
         return self._to_response(recipe)
 
     async def update_recipe(self, recipe_id: int, data: RecipeUpdate) -> RecipeResponse:
@@ -56,7 +69,30 @@ class RecipeService(CRUDService[Recipe]):
 
         await self.db.flush()
         await self.db.refresh(recipe)
+        await AuditService(self.db).record(
+            AuditRecord(
+                category=AuditCategory.DOMAIN,
+                action="recipe.updated",
+                actor_type=AuditActorType.USER,
+                source=AuditSource.WEB_ADMIN,
+                resource_type="recipe",
+                resource_id=recipe.id,
+            ),
+        )
         return self._to_response(recipe)
+
+    async def delete_recipe(self, recipe_id: int) -> None:
+        await self.delete(recipe_id)
+        await AuditService(self.db).record(
+            AuditRecord(
+                category=AuditCategory.DOMAIN,
+                action="recipe.deleted",
+                actor_type=AuditActorType.USER,
+                source=AuditSource.WEB_ADMIN,
+                resource_type="recipe",
+                resource_id=recipe_id,
+            ),
+        )
 
     async def list_recipes(
         self,
