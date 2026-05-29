@@ -80,3 +80,12 @@ make seed
 ## Tests
 
 pytest uses SQLite (`create_all` / `drop_all`) in [`server/tests/conftest.py`](../server/tests/conftest.py), not Postgres. Postgres-only features (e.g. GIN full-text indexes) are not exercised in the default test run.
+
+Optional Postgres integration tests:
+
+```bash
+export POSTGRES_TEST_URL=postgresql+asyncpg://user:pass@localhost:5433/glorng
+cd server && uv run pytest -m postgres -v
+```
+
+Without `POSTGRES_TEST_URL`, `@pytest.mark.postgres` tests are skipped.

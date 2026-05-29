@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, Path, UploadFile
 from fastapi.responses import StreamingResponse
 
 from app.core.deps import AuthorizedUser, DbSession, require_capability
 from app.core.exceptions import ApiError
-from app.core.uploads import read_upload_bounded
 from app.core.rate_limit import rate_limit_api
-from app.core.utils import iter_file, paginate_params
+from app.core.uploads import read_upload_bounded
+from app.core.utils import attachment_content_disposition, iter_file, paginate_params
 from app.schemas.common import MessageResponse
 from app.schemas.fileshare import SharedFileResponse
 from app.services import fileshare as fileshare_svc
@@ -77,14 +77,19 @@ download_router = APIRouter()
     include_in_schema=False,
     dependencies=[Depends(rate_limit_api)],
 )
-async def download_shared_file(code: str, db: DbSession) -> StreamingResponse:
+async def download_shared_file(
+    db: DbSession,
+    code: str = Path(min_length=1, max_length=16, pattern=r"^[a-zA-Z0-9]+$"),
+) -> StreamingResponse:
     shared, disk_path = await fileshare_svc.get_by_code(db, code=code)
 
     return StreamingResponse(
         iter_file(disk_path),
         media_type=shared.content_type,
         headers={
-            "Content-Disposition": f'attachment; filename="{shared.original_filename}"',
+            "Content-Disposition": attachment_content_disposition(
+                shared.original_filename
+            ),
             "Content-Length": str(shared.file_size),
         },
     )

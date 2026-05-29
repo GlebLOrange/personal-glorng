@@ -32,3 +32,8 @@ Two complementary streams:
 2. **Audit trail** — `audit_events` table with `security` and `domain` categories. Reviewable at `/admin/tools/audit`.
 
 Services emit audit events on mutations and auth flows. HTTP middleware correlates `request_id` and `user_id` in logs.
+
+## Related docs
+
+- [Security](security.md) — CSP, auth, CSRF, sanitization, admin-tool risks
+- [Database](database.md) — migrations and test database notes

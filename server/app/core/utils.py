@@ -1,8 +1,12 @@
+import re
 import secrets
 import string
 from collections.abc import Generator
 from datetime import UTC, datetime
 from pathlib import Path
+from urllib.parse import quote
+
+_ASCII_FILENAME_RE = re.compile(r"[^\x20-\x7E]+")
 
 
 def utc_now() -> datetime:
@@ -46,3 +50,12 @@ def iter_file(path: Path, chunk_size: int = 64 * 1024) -> Generator[bytes, None,
     with open(path, "rb") as fh:
         while chunk := fh.read(chunk_size):
             yield chunk
+
+
+def attachment_content_disposition(filename: str) -> str:
+    """Build a safe Content-Disposition header for file downloads."""
+    cleaned = filename.replace('"', "_").replace("\n", "_").replace("\r", "_")
+    ascii_name = _ASCII_FILENAME_RE.sub("_", cleaned).strip() or "download"
+    utf8_name = quote(filename, safe="")
+    # Unquoted filename= avoids Starlette re-encoding embedded quotes.
+    return f"attachment; filename={ascii_name}; filename*=UTF-8''{utf8_name}"

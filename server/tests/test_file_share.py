@@ -66,6 +66,31 @@ async def test_download_not_found(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_download_invalid_code_chars(client: AsyncClient) -> None:
+    resp = await client.get("/f/bad!code")
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_download_sanitized_content_disposition(
+    client: AsyncClient, auth_client: AsyncClient
+) -> None:
+    from app.core.utils import attachment_content_disposition
+
+    upload_resp = await auth_client.post(
+        "/api/tools/file-share",
+        files=_make_file('report "Q1".pdf', b"pdf data", "application/pdf"),
+    )
+    code = upload_resp.json()["code"]
+    filename = upload_resp.json()["original_filename"]
+    expected = attachment_content_disposition(filename)
+
+    resp = await client.get(f"/f/{code}")
+    assert resp.status_code == 200
+    assert resp.headers.get("content-disposition") == expected
+
+
+@pytest.mark.asyncio
 async def test_upload_no_filename(auth_client: AsyncClient) -> None:
     resp = await auth_client.post(
         "/api/tools/file-share",

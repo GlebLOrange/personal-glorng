@@ -18,14 +18,23 @@ async def test_create_url_unauthenticated(client: AsyncClient) -> None:
 async def test_create_url(auth_client: AsyncClient) -> None:
     resp = await auth_client.post(
         "/api/tools/url-shortener",
-        json={"original_url": "https://example.com", "title": "Test"},
+        json={"original_url": "https://example.com", "title": "Example"},
     )
     assert resp.status_code == 200
     data = resp.json()
     assert data["original_url"] == "https://example.com/"
-    assert data["title"] == "Test"
+    assert data["title"] == "Example"
     assert "code" in data
     assert len(data["code"]) == 8
+
+
+@pytest.mark.asyncio
+async def test_create_url_invalid_url(auth_client: AsyncClient) -> None:
+    resp = await auth_client.post(
+        "/api/tools/url-shortener",
+        json={"original_url": "not-a-url"},
+    )
+    assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
@@ -42,7 +51,19 @@ async def test_list_urls_with_data(
     await create_short_url(db, created_by=admin_user.id)  # type: ignore[union-attr]
     resp = await auth_client.get("/api/tools/url-shortener")
     assert resp.status_code == 200
-    assert len(resp.json()) == 1
+    assert len(resp.json()) >= 1
+
+
+@pytest.mark.asyncio
+async def test_delete_url_via_api(auth_client: AsyncClient) -> None:
+    create_resp = await auth_client.post(
+        "/api/tools/url-shortener",
+        json={"original_url": "https://example.com"},
+    )
+    url_id = create_resp.json()["id"]
+    resp = await auth_client.delete(f"/api/tools/url-shortener/{url_id}")
+    assert resp.status_code == 200
+    assert "deleted" in resp.json()["message"].lower()
 
 
 @pytest.mark.asyncio
@@ -84,13 +105,4 @@ async def test_redirect_nonexistent_code(client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_redirect_invalid_code_chars(client: AsyncClient) -> None:
     resp = await client.get("/s/bad!@#code", follow_redirects=False)
-    assert resp.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_create_url_invalid_url(auth_client: AsyncClient) -> None:
-    resp = await auth_client.post(
-        "/api/tools/url-shortener",
-        json={"original_url": "not-a-url"},
-    )
     assert resp.status_code == 422

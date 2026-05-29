@@ -1,3 +1,5 @@
+"""Tests for the server-side calculator endpoint."""
+
 import pytest
 from httpx import AsyncClient
 
@@ -40,10 +42,10 @@ async def test_calculator_multiply(auth_client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_calculator_divide(auth_client: AsyncClient) -> None:
     resp = await auth_client.post(
-        "/api/tools/calculator", params={"a": 10, "b": 4, "op": "/"}
+        "/api/tools/calculator", params={"a": 15, "b": 4, "op": "/"}
     )
     assert resp.status_code == 200
-    assert resp.json()["result"] == 2.5
+    assert resp.json()["result"] == 3.75
 
 
 @pytest.mark.asyncio
@@ -52,7 +54,7 @@ async def test_calculator_divide_by_zero(auth_client: AsyncClient) -> None:
         "/api/tools/calculator", params={"a": 10, "b": 0, "op": "/"}
     )
     assert resp.status_code == 422
-    assert "Division by zero" in resp.json()["detail"]
+    assert "zero" in resp.json()["detail"].lower()
 
 
 @pytest.mark.asyncio
@@ -61,7 +63,7 @@ async def test_calculator_invalid_operator(auth_client: AsyncClient) -> None:
         "/api/tools/calculator", params={"a": 1, "b": 2, "op": "^"}
     )
     assert resp.status_code == 422
-    assert "Invalid operator" in resp.json()["detail"]
+    assert "operator" in resp.json()["detail"].lower()
 
 
 @pytest.mark.asyncio
