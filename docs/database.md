@@ -64,7 +64,7 @@ RUN_SEED=true make db-init
 4. `make db-init`
 5. Run tests: `make test`
 
-Do **not** put application seed data in migrations unless required for constraints. Use [`server/app/db/seed.py`](../server/app/db/seed.py) instead.
+Do **not** put application seed data in migrations unless required for constraints. Use [`server/app/db/seed/run.py`](../server/app/db/seed/run.py) instead.
 
 ## Extensions on existing databases
 

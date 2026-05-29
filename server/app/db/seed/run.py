@@ -1,6 +1,5 @@
 """Seed script to create admin user and sample recipes."""
 
-import asyncio
 import json
 import random
 
@@ -269,5 +268,3 @@ async def seed() -> None:
         await db.commit()
 
 
-if __name__ == "__main__":
-    asyncio.run(seed())
