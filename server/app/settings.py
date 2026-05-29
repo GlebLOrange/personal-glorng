@@ -103,6 +103,7 @@ class Settings(BaseSettings):
 
     # AI provider API keys
     GROQ_API_KEY: str = ""
+    AI_CHAT_ENABLED: bool = False
 
     # CORS
     CORS_ORIGINS: Annotated[list[str], NoDecode] = [

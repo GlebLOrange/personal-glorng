@@ -37,6 +37,8 @@ class TaskService:
         description: str | None = None,
         location: str | None = None,
         source: AuditSource = AuditSource.TODOBOT,
+        actor_type: AuditActorType = AuditActorType.TELEGRAM,
+        actor_id: int | None = None,
     ) -> Task:
         task = Task(
             telegram_user_id=telegram_user_id,
@@ -56,8 +58,8 @@ class TaskService:
             AuditRecord(
                 category=AuditCategory.DOMAIN,
                 action="task.created",
-                actor_type=AuditActorType.TELEGRAM,
-                actor_id=telegram_user_id,
+                actor_type=actor_type,
+                actor_id=actor_id if actor_id is not None else telegram_user_id,
                 source=source,
                 resource_type="task",
                 resource_id=task.id,

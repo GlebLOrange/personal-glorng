@@ -32,6 +32,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/admin/tools/currency",
+    name: "tool-currency",
+    component: () => import("@/pages/admin/tools/CurrencyConverterTool.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/admin/tools/url-shortener",
     name: "tool-url-shortener",
     component: () => import("@/pages/admin/tools/UrlShortenerTool.vue"),
@@ -117,7 +123,13 @@ const router = createRouter({
   },
 });
 
+const aiChatEnabled = import.meta.env.VITE_AI_CHAT_ENABLED === "true";
+
 router.beforeEach((to, _from, next) => {
+  if (to.name === "tool-ai-chat" && !aiChatEnabled) {
+    next({ name: "admin" });
+    return;
+  }
   const auth = useAuthStore();
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     next({

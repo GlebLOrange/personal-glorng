@@ -66,6 +66,16 @@ test_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=
 
 
 @pytest.fixture(autouse=True)
+def disable_ai_chat_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> Generator[None, None, None]:
+    monkeypatch.setenv("AI_CHAT_ENABLED", "false")
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+
+
+@pytest.fixture(autouse=True)
 async def setup_db() -> AsyncGenerator[None, None]:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

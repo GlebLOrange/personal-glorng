@@ -1,3 +1,4 @@
+from calendar import monthrange
 from collections import defaultdict
 from datetime import date
 from decimal import Decimal
@@ -25,6 +26,33 @@ from app.services.currency import ALLOWED_CURRENCIES, CurrencyService
 class ToolExpenseService(CRUDService[ToolExpense]):
     def __init__(self, db: AsyncSession) -> None:
         super().__init__(db, ToolExpense)
+
+    @staticmethod
+    def month_date_bounds(month: str) -> tuple[date, date]:
+        """Return inclusive calendar bounds for YYYY-MM."""
+        parts = month.split("-", 1)
+        if len(parts) != 2:
+            raise ValidationError("month must be YYYY-MM")
+        try:
+            year, mon = int(parts[0]), int(parts[1])
+        except ValueError as exc:
+            raise ValidationError("month must be YYYY-MM") from exc
+        if not 1 <= mon <= 12:
+            raise ValidationError("month must be YYYY-MM")
+        last_day = monthrange(year, mon)[1]
+        return date(year, mon, 1), date(year, mon, last_day)
+
+    @staticmethod
+    def resolve_date_range(
+        *,
+        month: str | None = None,
+        date_from: date | None = None,
+        date_to: date | None = None,
+    ) -> tuple[date | None, date | None]:
+        if month:
+            start, end = ToolExpenseService.month_date_bounds(month)
+            return start, end
+        return date_from, date_to
 
     def _month_period_expr(self) -> ColumnElement[str]:
         dialect = self.db.get_bind().dialect.name

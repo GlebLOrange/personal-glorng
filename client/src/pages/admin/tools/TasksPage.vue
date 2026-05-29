@@ -4,6 +4,7 @@ import { computed, onMounted, ref } from "vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { formatDate } from "@/utils/format";
@@ -23,6 +24,14 @@ const syncQueue = ref<SyncQueueItem[]>([]);
 const selectedTask = ref<TaskDetail | null>(null);
 const filterStatus = ref("");
 const loading = ref(false);
+const showCreateForm = ref(false);
+const saving = ref(false);
+const createForm = ref({
+  title: "",
+  scheduled_at: "",
+  description: "",
+  location: "",
+});
 const { toast } = useNotify();
 
 const statusColors: Record<string, string> = {
@@ -99,6 +108,44 @@ function closeDetail(): void {
   selectedTask.value = null;
 }
 
+function openCreate(): void {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  createForm.value = {
+    title: "",
+    scheduled_at: now.toISOString().slice(0, 16),
+    description: "",
+    location: "",
+  };
+  showCreateForm.value = true;
+}
+
+async function createTask(): Promise<void> {
+  if (!createForm.value.title.trim() || !createForm.value.scheduled_at) {
+    toast("Title and scheduled time are required", "error");
+    return;
+  }
+  saving.value = true;
+  try {
+    const scheduledAt = new Date(createForm.value.scheduled_at).toISOString();
+    await api.post("/tools/tasks", {
+      title: createForm.value.title.trim(),
+      scheduled_at: scheduledAt,
+      description: createForm.value.description.trim() || null,
+      location: createForm.value.location.trim() || null,
+    });
+    toast("Task created", "success");
+    showCreateForm.value = false;
+    await loadTasks();
+    await loadStats();
+  } catch (err) {
+    console.error(err);
+    toast("Failed to create task", "error");
+  } finally {
+    saving.value = false;
+  }
+}
+
 function switchTab(tab: Tab): void {
   activeTab.value = tab;
   if (tab === "stats") loadStats();
@@ -163,7 +210,7 @@ onMounted(() => {
 
     <!-- Tasks list -->
     <div v-if="activeTab === 'tasks'">
-      <div class="flex gap-2 mb-4">
+      <div class="flex gap-2 mb-4 items-center justify-between">
         <select
           v-model="filterStatus"
           class="bg-surface-card border border-surface-border rounded-lg px-3 py-1.5 text-xs font-mono text-surface-light focus:outline-none focus:border-accent-blue"
@@ -175,6 +222,7 @@ onMounted(() => {
           <option value="postponed">Postponed</option>
           <option value="cancelled">Cancelled</option>
         </select>
+        <BaseButton variant="primary" size="sm" @click="openCreate">+ New task</BaseButton>
       </div>
 
       <div class="space-y-3">
@@ -283,6 +331,51 @@ onMounted(() => {
         </p>
       </div>
     </div>
+
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="showCreateForm"
+          class="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4 bg-black/60"
+          @click.self="showCreateForm = false"
+        >
+          <div class="bg-surface-card border border-surface-border rounded-lg p-6 w-full max-w-lg">
+            <h2 class="text-lg font-bold text-surface-light mb-6">New task</h2>
+            <form class="space-y-4" @submit.prevent="createTask">
+              <BaseInput v-model="createForm.title" label="Title" placeholder="What needs doing?" />
+              <BaseInput
+                v-model="createForm.scheduled_at"
+                label="Scheduled at"
+                type="datetime-local"
+              />
+              <BaseInput
+                v-model="createForm.location"
+                label="Location"
+                placeholder="Optional"
+              />
+              <div>
+                <label class="text-sm text-surface-mid font-mono block mb-1">Notes</label>
+                <textarea
+                  v-model="createForm.description"
+                  rows="3"
+                  placeholder="Optional details"
+                  class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm
+                         focus:outline-none focus:border-accent-blue transition-colors resize-none"
+                />
+              </div>
+              <div class="flex gap-3 pt-2">
+                <BaseButton variant="primary" :disabled="saving">
+                  {{ saving ? "Creating..." : "Create" }}
+                </BaseButton>
+                <BaseButton variant="ghost" type="button" @click="showCreateForm = false">
+                  Cancel
+                </BaseButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Task detail drawer -->
     <Teleport to="body">

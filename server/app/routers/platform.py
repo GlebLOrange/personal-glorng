@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.core.feature_flags import is_service_enabled
 from app.platform.registry import CATEGORY_LABELS, PLATFORM_SERVICES
 from app.schemas.platform import PlatformCatalogResponse, PlatformServiceResponse
 
@@ -23,5 +24,6 @@ async def list_platform_services() -> PlatformCatalogResponse:
             external=s.external,
         )
         for s in PLATFORM_SERVICES
+        if is_service_enabled(s.slug)
     ]
     return PlatformCatalogResponse(services=services, categories=CATEGORY_LABELS)
