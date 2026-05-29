@@ -86,19 +86,50 @@ function clear(): void {
   display.value = "0";
   expression.value = "";
 }
+
+const OPERATOR_LABELS: Record<string, string> = {
+  "/": "Divide",
+  "*": "Multiply",
+  "-": "Subtract",
+  "+": "Add",
+  "=": "Equals",
+  ".": "Decimal point",
+};
+
+function buttonAriaLabel(val: string): string | undefined {
+  return OPERATOR_LABELS[val];
+}
 </script>
 
 <template>
   <AdminPageLayout title="calculator" max-width="sm">
     <BaseCard>
-      <div class="bg-surface-dark rounded-lg p-4 mb-4 text-right">
-        <div class="text-xs text-surface-mid h-5">{{ expression || "&nbsp;" }}</div>
-        <div class="text-2xl font-bold text-surface-light">{{ loading ? "..." : display }}</div>
+      <div
+        class="bg-surface-dark rounded-lg p-4 mb-4 text-right"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <div class="text-xs text-surface-mid h-5" aria-hidden="true">
+          {{ expression || "\u00a0" }}
+        </div>
+        <div class="text-2xl font-bold text-surface-light">
+          <span class="sr-only">Result: </span>
+          {{ loading ? "..." : display }}
+        </div>
       </div>
 
-      <div class="grid grid-cols-4 gap-2">
-        <BaseButton variant="ghost" size="sm" class="col-span-2" @click="clear"> AC </BaseButton>
-        <div class="col-span-2" />
+      <div class="tool-grid">
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          class="col-span-2"
+          aria-label="All clear"
+          @click="clear"
+        >
+          AC
+        </BaseButton>
+        <div class="col-span-2" aria-hidden="true" />
 
         <BaseButton
           v-for="btn in buttons"
@@ -106,6 +137,7 @@ function clear(): void {
           :variant="isOperator(btn) || btn === '=' ? 'primary' : 'secondary'"
           size="lg"
           :disabled="loading"
+          :aria-label="buttonAriaLabel(btn)"
           @click="handleInput(btn)"
         >
           {{ btn }}

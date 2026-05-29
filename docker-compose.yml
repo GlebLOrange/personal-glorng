@@ -89,7 +89,9 @@ services:
     develop:
       watch:
         - action: rebuild
-          path: ./server/requirements.txt
+          path: ./server/pyproject.toml
+        - action: rebuild
+          path: ./server/uv.lock
 
   worker:
     profiles:
@@ -117,7 +119,9 @@ services:
     develop:
       watch:
         - action: rebuild
-          path: ./server/requirements.txt
+          path: ./server/pyproject.toml
+        - action: rebuild
+          path: ./server/uv.lock
 
   todobot:
     profiles:
@@ -145,7 +149,9 @@ services:
     develop:
       watch:
         - action: rebuild
-          path: ./server/requirements.txt
+          path: ./server/pyproject.toml
+        - action: rebuild
+          path: ./server/uv.lock
 
   client:
     build: ./client

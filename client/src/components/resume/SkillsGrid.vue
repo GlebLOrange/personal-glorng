@@ -17,7 +17,7 @@ defineProps<{
         <span
           v-for="item in group.items"
           :key="item"
-          class="px-2 py-1 text-xs bg-surface-dark/50 text-surface-light rounded border border-surface-border"
+          class="interactive-surface px-2 py-1 text-xs text-surface-light bg-surface-dark/50"
         >
           {{ item }}
         </span>

@@ -11,7 +11,7 @@ defineProps<{
     :disabled="disabled"
     :class="[
       'font-mono font-medium transition-all duration-200 rounded-lg border',
-      'focus:outline-none focus:ring-2 focus:ring-accent-blue/50',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
       'disabled:opacity-50 disabled:cursor-not-allowed',
       variant === 'primary'
         ? 'bg-gradient-to-r from-accent-blue to-accent-violet text-white border-transparent hover:opacity-90'

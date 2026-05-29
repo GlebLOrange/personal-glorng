@@ -9,7 +9,7 @@ Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + Postg
 - **Database**: PostgreSQL 18
 - **Cache/Queue**: Redis 8
 - **Proxy**: Nginx
-- **Tooling**: Ruff (lint/format), pytest, ESLint, Prettier, Vitest, Playwright, Docker Compose
+- **Tooling**: uv (Python deps), Ruff (lint/format), pytest, ESLint, Prettier, Vitest, Playwright, Docker Compose
 
 ## Quick Start
 
@@ -131,6 +131,19 @@ FastAPI + Worker + Todobot share PostgreSQL and Redis
 ```
 
 See [docs/platform.md](docs/platform.md) for the service catalog and audit model. Database setup and migrations: [docs/database.md](docs/database.md).
+
+## Backend development (host)
+
+With [uv](https://docs.astral.sh/uv/) installed:
+
+```bash
+cd server
+uv sync
+uv run ruff check .
+uv run pytest -v
+```
+
+Locked dependencies live in `server/uv.lock`; Docker and CI use `uv sync --frozen`.
 
 ## Quality checks
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import DonationsBlock from "@/components/donations/DonationsBlock.vue";
 import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
@@ -12,21 +12,24 @@ import SkillsGrid from "@/components/resume/SkillsGrid.vue";
 import CodeBlock from "@/components/ui/CodeBlock.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
 import { contactLinks } from "@/constants/links";
+import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import type { DonationsConfig, ResumeData } from "@/types";
 
-const { data: resume, fetch: fetchResume } = useCachedApi<ResumeData>("/resume");
+const { data: resumeApi, fetch: fetchResume } = useCachedApi<ResumeData>("/resume");
 const { data: donations, fetch: fetchDonations } =
   useCachedApi<DonationsConfig>("/donations/config");
-const error = ref(false);
+const apiError = ref(false);
 const showFeedback = ref(false);
 
+const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
+
 async function loadResume(): Promise<void> {
-  error.value = false;
+  apiError.value = false;
   try {
     await Promise.all([fetchResume(), fetchDonations()]);
   } catch (err) {
     console.error(err);
-    error.value = true;
+    apiError.value = true;
   }
 }
 
@@ -34,7 +37,15 @@ onMounted(loadResume);
 </script>
 
 <template>
-  <div v-if="resume">
+  <div>
+    <p
+      v-if="apiError"
+      class="max-w-5xl mx-auto px-6 pt-4 text-xs text-accent-golden"
+      role="status"
+    >
+      Using cached portfolio data — live sync unavailable.
+    </p>
+
     <div class="max-w-5xl mx-auto px-6 pt-4 flex justify-end">
       <WeatherWidget city="Wroclaw" compact />
     </div>
@@ -76,12 +87,13 @@ onMounted(loadResume);
           :href="link.href"
           target="_blank"
           rel="noopener noreferrer"
-          class="px-4 py-2 text-sm border border-surface-border rounded-lg text-surface-mid hover:border-accent-blue hover:text-accent-blue transition-colors"
+          class="interactive-surface px-4 py-2 text-sm text-surface-mid"
         >
           {{ link.label }}
         </a>
         <button
-          class="px-4 py-2 text-sm border border-surface-border rounded-lg text-surface-mid hover:border-accent-blue hover:text-accent-blue transition-colors"
+          type="button"
+          class="interactive-surface px-4 py-2 text-sm text-surface-mid"
           @click="showFeedback = true"
         >
           Send Feedback
@@ -89,19 +101,5 @@ onMounted(loadResume);
       </div>
       <FeedbackModal v-if="showFeedback" @close="showFeedback = false" />
     </SectionWrapper>
-  </div>
-
-  <div v-else-if="error" class="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-    <p class="text-surface-mid font-mono">Failed to load data.</p>
-    <button
-      class="px-4 py-2 text-sm border border-surface-border rounded-lg text-surface-mid hover:border-accent-blue hover:text-accent-blue transition-colors"
-      @click="loadResume"
-    >
-      Retry
-    </button>
-  </div>
-
-  <div v-else class="flex items-center justify-center min-h-[60vh]">
-    <p class="text-surface-mid font-mono animate-pulse">Loading...</p>
   </div>
 </template>

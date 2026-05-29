@@ -11,9 +11,10 @@ defineProps<{
     <div class="max-w-5xl mx-auto">
       <h2
         v-if="title"
-        class="section-title"
+        class="text-2xl font-bold mb-6"
         :class="dark ? 'text-surface-light' : 'text-surface-dark'"
       >
+        <span aria-hidden="true" class="text-accent-blue">€ </span>
         {{ title }}
       </h2>
       <slot />
