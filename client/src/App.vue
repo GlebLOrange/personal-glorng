@@ -6,8 +6,9 @@ import ToastContainer from "@/components/ui/ToastContainer.vue";
 
 <template>
   <div class="min-h-screen flex flex-col font-mono">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <NavBar />
-    <main class="flex-1">
+    <main id="main-content" class="flex-1" tabindex="-1">
       <RouterView />
     </main>
     <FooterBar />

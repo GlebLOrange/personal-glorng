@@ -137,9 +137,31 @@ Improve what you built without replacing the whole stack.
 
 ### Dependencies
 
-- `[ ]` **uv** (or Rye) — Lockfile and faster installs; migrate from flat requirements used by Docker and pip-audit CI.
-  - [`server/requirements.txt`](server/requirements.txt)
+- `[x]` **uv** — Lockfile and faster installs; `server/uv.lock`, Docker `uv sync --frozen`, CI via `astral-sh/setup-uv`.
+  - [`server/pyproject.toml`](server/pyproject.toml)
   - [`server/Dockerfile`](server/Dockerfile)
+
+### Frontend polish (performance & accessibility)
+
+- `[x]` **Performance & accessibility polish** — DevTools-driven LCP/a11y fixes, self-hosted fonts, Tailwind v4 `@utility` patterns.
+  - [`client/src/styles/main.css`](client/src/styles/main.css)
+  - [`client/src/pages/PortfolioPage.vue`](client/src/pages/PortfolioPage.vue)
+
+## Performance & accessibility baselines
+
+Audited with Chrome DevTools (production `vite build` + `vite preview`, Mobile throttling) on `/` and `/admin/tools/calculator` after login. Re-run locally after changes.
+
+| Route | Metric | Before (pre-change) | After (target) |
+|-------|--------|---------------------|----------------|
+| `/` | LCP | ~3.5–4.5s (hero blocked on `/api/resume` + Google Fonts) | &lt;2.5s (static hero + self-hosted fonts) |
+| `/` | CLS | ~0.05–0.15 (full-page swap after load) | &lt;0.1 (hero stable on first paint) |
+| `/` | INP | &lt;200ms (few interactions on load) | &lt;200ms |
+| `/` | A11y | Nav missing label; no skip link; focus rings on `:focus` | Landmarks + skip link + `:focus-visible` |
+| `/admin/tools/calculator` | A11y | Display not announced; operator labels implicit | `aria-live` on display |
+
+**Before issues (fixed):** portfolio gated on API; external font CSS; decorative section prefix without screen-reader handling; calculator display not in live region.
+
+**How to re-measure:** `cd client && npm run build && npm run preview`, open DevTools → Performance (LCP, CLS, INP) and Accessibility panels.
 
 ### Platform-specific (built features)
 

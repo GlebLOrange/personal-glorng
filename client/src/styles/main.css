@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Roboto Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/roboto-mono-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Roboto Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/roboto-mono-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Roboto Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/roboto-mono-latin-700-normal.woff2") format("woff2");
+}
+
 @theme {
   --font-mono: "Roboto Mono", monospace;
   --color-accent-blue: #7bbde2;
@@ -12,6 +36,72 @@
   --color-surface-dark: #141820;
   --color-surface-card: #1c2230;
   --color-surface-border: #2e3a4e;
+  --radius-interactive: 0.5rem;
+  --spacing-grid-gap: 0.5rem;
+}
+
+@utility tool-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--spacing-grid-gap);
+}
+
+@utility nav-link {
+  @apply text-surface-mid transition-colors;
+  &:hover {
+    @apply text-surface-light;
+  }
+  &:focus-visible {
+    @apply outline-none ring-2 ring-accent-blue/50 rounded;
+  }
+}
+
+@utility nav-link-accent {
+  @apply nav-link;
+  &:hover {
+    @apply text-accent-blue;
+  }
+}
+
+@utility nav-link-violet {
+  @apply nav-link;
+  &:hover {
+    @apply text-accent-violet;
+  }
+}
+
+@utility interactive-surface {
+  @apply bg-surface-card border border-surface-border rounded-lg font-mono;
+  &:hover {
+    @apply border-accent-blue;
+  }
+  &:focus-visible {
+    @apply outline-none ring-2 ring-accent-blue/50;
+  }
+}
+
+@utility cta-primary {
+  @apply px-6 py-2 rounded-lg bg-gradient-to-r from-accent-blue to-accent-violet text-white text-sm font-medium transition-opacity;
+  &:hover {
+    @apply opacity-90;
+  }
+  &:focus-visible {
+    @apply outline-none ring-2 ring-accent-blue/50;
+  }
+}
+
+@utility cta-secondary {
+  @apply px-6 py-2 rounded-lg border border-surface-border text-surface-mid text-sm font-medium transition-colors;
+  &:hover {
+    @apply border-accent-blue text-accent-blue;
+  }
+  &:focus-visible {
+    @apply outline-none ring-2 ring-accent-blue/50;
+  }
+}
+
+@utility skip-link {
+  @apply sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-surface-card focus:text-surface-light focus:border focus:border-accent-blue focus:rounded-lg;
 }
 
 html {
@@ -29,7 +119,7 @@ body {
   font-family: var(--font-mono);
   background: var(--color-surface-card);
   border: 1px solid var(--color-surface-border);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-interactive);
   padding: 1rem;
   color: var(--color-surface-light);
   overflow-x: auto;
@@ -40,17 +130,6 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-@layer components {
-  .section-title {
-    @apply text-2xl font-bold mb-6;
-  }
-
-  .section-title::before {
-    content: "€ ";
-    @apply text-accent-blue;
-  }
 }
 
 .fade-enter-active,

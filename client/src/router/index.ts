@@ -9,6 +9,10 @@ const routes: RouteRecordRaw[] = [
     path: "/",
     name: "portfolio",
     component: () => import("@/pages/PortfolioPage.vue"),
+    beforeEnter: () => {
+      void fetch("/api/resume");
+      return true;
+    },
   },
   {
     path: "/login",
