@@ -3,7 +3,7 @@ uvicorn[standard]==0.34.*
 sqlalchemy[asyncio]==2.0.*
 asyncpg==0.30.*
 alembic==1.15.*
-pydantic-settings==2.7.*
+pydantic-settings==2.14.*
 PyJWT[crypto]==2.9.*
 bcrypt==4.2.*
 redis[hiredis]==5.2.*
