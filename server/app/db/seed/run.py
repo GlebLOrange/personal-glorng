@@ -14,6 +14,7 @@ from app.db.models.user import User
 from app.db.seed.builders import build_random_expenses, build_tasks_for_today
 from app.db.session import get_session_factory
 from app.services.task import TaskService
+from app.services.tool_expense_category import ToolExpenseCategoryService
 from app.services.user import create_user, default_owner_permissions
 from app.settings import get_settings
 
@@ -589,6 +590,14 @@ async def _seed_recipes(db) -> None:  # noqa: ANN001
     logger.info("Seeded sample recipes", context={"count": len(recipes)})
 
 
+async def _seed_expense_categories(db) -> None:  # noqa: ANN001
+    """Ensure default expense categories exist."""
+    svc = ToolExpenseCategoryService(db)
+    await svc.ensure_defaults()
+    names = await svc.list_names()
+    logger.info("Expense categories ready", context={"categories": names})
+
+
 async def _seed_expenses(db) -> None:  # noqa: ANN001
     """Insert sample expenses when the table is empty."""
     count = await db.scalar(select(func.count()).select_from(ToolExpense))
@@ -642,6 +651,7 @@ async def seed() -> None:
     async with get_session_factory()() as db:
         owner = await _seed_admin(db, settings)
         await _seed_recipes(db)
+        await _seed_expense_categories(db)
         await _seed_expenses(db)
         await _seed_tasks(db, settings, owner)
         await db.commit()

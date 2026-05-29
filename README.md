@@ -57,7 +57,19 @@ nginx/     Reverse proxy config (:80)
 |---------|---------|------|
 | API | `uvicorn app.main:app` | HTTP API, admin tools, public routes |
 | Worker | `python -m app.workers.run` | Reminders, calendar sync, cleanup |
-| Todobot | `python -m app.todobot.main` | Telegram task bot |
+| Todobot | `python -m app.todobot.main` | Telegram tasks + expense logging |
+
+### Telegram expense logging
+
+With `make dev-bot` and `TELEGRAM_BOT_TO_DO_TOKEN` set, log spending from the same todobot:
+
+| Command | Example |
+|---------|---------|
+| `/spend <text>` | `/spend 89.50 biedronka` |
+| `/spend` | Guided flow (amount → category → optional place) |
+| `/expenses` | This month's total (PLN) and recent entries |
+
+Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN` in `.env`.
 
 ## Available Commands
 
@@ -97,7 +109,7 @@ Each capability follows a module-as-service pattern: business logic in `server/a
 - Email-restricted registration (single admin user)
 - Redis: token blacklist, response cache, rate limiting, task queue
 - Plugin architecture for admin tools (auto-discovery)
-- Telegram todobot sharing task services with admin and worker
+- Telegram todobot: tasks, reminders, and quick expense logging (`/spend`, `/expenses`)
 - Donations: Stripe Payment Link, crypto addresses, Telegram
 - Two-stream observability: operational telemetry (JSON logs + Sentry) and persistent audit trail (`audit_events`)
 - Ruff linting with enforced type annotations

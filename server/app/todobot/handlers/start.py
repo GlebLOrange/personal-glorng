@@ -24,6 +24,10 @@ WELCOME_TEXT = (
     "You can create tasks in two ways:\n"
     '1. /new — send one message: "Tomorrow at 18:00 gym near city center"\n'
     "2. /new guided — step-by-step flow\n\n"
+    "Log expenses quickly:\n"
+    '• /spend 89.50 biedronka — one message\n'
+    "• /spend — step-by-step\n"
+    "• /expenses — this month's total\n\n"
     "Use the menu buttons below to navigate."
 )
 

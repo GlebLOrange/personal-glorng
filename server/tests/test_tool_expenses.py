@@ -81,7 +81,9 @@ class TestToolExpensesCRUD:
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
         resp = await auth_client.get("/api/tools/expenses/categories")
         assert resp.status_code == 200
-        assert "AI" in resp.json()
+        names = [item["name"] for item in resp.json()]
+        assert "AI" in names
+        assert "Groceries" in names
 
     async def test_summary_aggregation(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)

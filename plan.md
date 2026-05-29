@@ -5,6 +5,7 @@ Living roadmap. Update **one section** when status changes.
 | Section | Status |
 |---------|--------|
 | Expenses calculator | done |
+| Expenses Telegram quick-log | done |
 | Currency converter | done |
 | AI Chat off | done |
 | Admin task create | done |
@@ -27,6 +28,25 @@ Living roadmap. Update **one section** when status changes.
 **Acceptance:** Select a month, add mixed-currency items, see converted total and category charts.
 
 **Notes:** Shipped on `cursor/portfolio-roadmap` — month picker, category-first charts, description labels.
+
+---
+
+## Expenses Telegram quick-log
+
+**Status:** done
+
+**Goal:** Log expenses from Telegram in one message or a short guided flow; default PLN.
+
+**Scope:**
+- `/spend <amount> [category|place]` — rule-based parser (`expense_nlp.py`)
+- `/spend` guided flow with category chips
+- `/expenses` — month total (PLN) + recent rows
+- Main menu **Log expense** button
+- Web quick-add bar + lighter reload on admin page
+
+**Key files:** `server/app/todobot/handlers/expense.py`, `server/app/todobot/utils/expense_nlp.py`, `client/src/pages/admin/tools/ExpensesTool.vue`
+
+**Acceptance:** `/spend 89.50 biedronka` saves Groceries in PLN; `/expenses` shows month total; admin quick-add works without opening modal.
 
 ---
 

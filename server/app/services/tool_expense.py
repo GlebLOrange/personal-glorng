@@ -21,6 +21,7 @@ from app.schemas.tool_expense import (
 from app.services.audit import AuditRecord, AuditService
 from app.services.base import CRUDService
 from app.services.currency import ALLOWED_CURRENCIES, CurrencyService
+from app.services.tool_expense_category import ToolExpenseCategoryService
 
 
 class ToolExpenseService(CRUDService[ToolExpense]):
@@ -85,14 +86,21 @@ class ToolExpenseService(CRUDService[ToolExpense]):
             query = query.where(ToolExpense.category.ilike(f"%{category}%"))
         return query
 
-    async def create_expense(self, data: ToolExpenseCreate) -> ToolExpenseResponse:
+    async def create_expense(
+        self,
+        data: ToolExpenseCreate,
+        *,
+        source: AuditSource = AuditSource.WEB_ADMIN,
+        actor_type: AuditActorType = AuditActorType.USER,
+    ) -> ToolExpenseResponse:
+        await ToolExpenseCategoryService(self.db).ensure_category(data.category)
         expense = await self.create(data.model_dump())
         await AuditService(self.db).record(
             AuditRecord(
                 category=AuditCategory.DOMAIN,
                 action="expense.created",
-                actor_type=AuditActorType.USER,
-                source=AuditSource.WEB_ADMIN,
+                actor_type=actor_type,
+                source=source,
                 resource_type="expense",
                 resource_id=expense.id,
                 metadata={"tool_name": expense.tool_name},
@@ -106,7 +114,10 @@ class ToolExpenseService(CRUDService[ToolExpense]):
         data: ToolExpenseUpdate,
     ) -> ToolExpenseResponse:
         expense = await self.get(expense_id)
-        for key, value in data.model_dump(exclude_unset=True).items():
+        payload = data.model_dump(exclude_unset=True)
+        if "category" in payload:
+            await ToolExpenseCategoryService(self.db).ensure_category(payload["category"])
+        for key, value in payload.items():
             setattr(expense, key, value)
         await self.db.flush()
         await self.db.refresh(expense)
@@ -159,15 +170,6 @@ class ToolExpenseService(CRUDService[ToolExpense]):
     async def get_expense(self, expense_id: int) -> ToolExpenseResponse:
         expense = await self.get(expense_id)
         return self._to_response(expense)
-
-    async def get_all_categories(self) -> list[str]:
-        result = await self.db.execute(
-            select(ToolExpense.category)
-            .where(ToolExpense.category.is_not(None))
-            .distinct()
-            .order_by(ToolExpense.category)
-        )
-        return [row[0] for row in result if row[0]]
 
     async def get_summary(
         self,

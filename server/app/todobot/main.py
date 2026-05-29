@@ -10,7 +10,7 @@ from app.core.logging import logger
 from app.db.session import get_session_factory
 from app.services.task import get_unsent_reminders
 from app.settings import get_settings
-from app.todobot.handlers import calendar, reminder, start, task_create, task_manage
+from app.todobot.handlers import calendar, expense, reminder, start, task_create, task_manage
 from app.todobot.middlewares.auth import AllowedUserMiddleware
 from app.todobot.middlewares.db import DbSessionMiddleware
 from app.workers.pool import close_arq_pool, init_arq_pool
@@ -31,6 +31,7 @@ def _build_dispatcher(redis_url: str) -> Dispatcher:
     dp.message.middleware(AllowedUserMiddleware())
 
     dp.include_router(start.router)
+    dp.include_router(expense.router)
     dp.include_router(task_create.router)
     dp.include_router(task_manage.router)
     dp.include_router(reminder.router)
@@ -83,6 +84,8 @@ async def main() -> None:
         [
             BotCommand(command="new", description="Create a new task"),
             BotCommand(command="tasks", description="View pending tasks"),
+            BotCommand(command="spend", description="Log an expense"),
+            BotCommand(command="expenses", description="This month's expenses"),
             BotCommand(command="connect_calendar", description="Link Google Calendar"),
             BotCommand(command="help", description="Show help & menu"),
         ]
