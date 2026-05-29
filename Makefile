@@ -1,4 +1,6 @@
-.PHONY: dev dev-lite dev-worker dev-bot dev-full prod test lint migrate seed seed-multicooker-recipes down logs bot-logs
+.PHONY: dev dev-lite dev-worker dev-bot dev-full prod test lint migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes down logs bot-logs
+
+msg ?=
 
 dev:
 	docker compose up --build
@@ -33,8 +35,28 @@ test:
 lint:
 	docker compose exec server ruff check --fix . && docker compose exec server ruff format .
 
-migrate:
-	docker compose exec server alembic upgrade head
+db-init:
+	docker compose run --rm --build migrate
+
+migrate: db-init
+
+db-reset:
+	docker compose down -v
+	docker compose up -d db
+	docker compose run --rm --build migrate
+
+db-revision:
+	@test -n "$(msg)" || (echo "Usage: make db-revision msg='description'" && exit 1)
+	docker compose exec server alembic revision --autogenerate -m "$(msg)"
+
+db-current:
+	docker compose exec server alembic current
+
+db-downgrade:
+	docker compose exec server alembic downgrade -1
+
+db-check:
+	docker compose exec server alembic check
 
 seed:
 	docker compose exec server python -m app.db.seed
