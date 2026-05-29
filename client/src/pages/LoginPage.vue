@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -8,8 +8,17 @@ import { useNotify } from "@/composables/useNotify";
 import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
+const route = useRoute();
 const router = useRouter();
 const { toast } = useNotify();
+
+function loginRedirectTarget(): string {
+  const redirect = route.query.redirect;
+  if (typeof redirect !== "string" || !redirect.startsWith("/") || redirect.startsWith("//")) {
+    return "/admin";
+  }
+  return redirect;
+}
 
 const email = ref("");
 const password = ref("");
@@ -20,7 +29,7 @@ async function handleLogin(): Promise<void> {
   try {
     await auth.login(email.value, password.value);
     toast("Logged in successfully", "success");
-    router.push("/admin");
+    router.push(loginRedirectTarget());
   } catch (err) {
     console.error(err);
     toast("Invalid credentials", "error");

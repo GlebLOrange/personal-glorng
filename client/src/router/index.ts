@@ -149,8 +149,8 @@ router.beforeEach((to, _from, next) => {
   const auth = useAuthStore();
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     next({
-      name: "not-found",
-      params: { pathMatch: to.path.split("/").filter(Boolean) },
+      name: "login",
+      query: { redirect: to.fullPath },
       replace: true,
     });
     return;

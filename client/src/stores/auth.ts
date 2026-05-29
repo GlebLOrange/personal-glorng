@@ -1,3 +1,4 @@
+import axios from "axios";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
@@ -26,8 +27,11 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       const { data } = await api.get<UserResponse>("/auth/me");
       user.value = data;
-    } catch {
-      logout();
+    } catch (err) {
+      const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+      if (status === 401 || status === 403) {
+        logout();
+      }
     }
   }
 
