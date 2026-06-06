@@ -1,7 +1,11 @@
 import { nextTick, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useExpenseFilters } from "@/composables/useExpenseFilters";
+import {
+  crossRate,
+  EXPENSE_EXCHANGE_RATE_TARGETS,
+  useExpenseFilters,
+} from "@/composables/useExpenseFilters";
 
 describe("useExpenseFilters", () => {
   const onFiltersChange = vi.fn();
@@ -128,5 +132,24 @@ describe("useExpenseFilters", () => {
     await vi.advanceTimersByTimeAsync(300);
 
     expect(onProductFilterChange).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("expense currency constants", () => {
+  const sampleRates = {
+    USD: "1",
+    EUR: "0.92",
+    PLN: "4.0",
+    BYN: "3.28",
+  };
+
+  it("orders exchange rate targets as EUR, USD, BYN", () => {
+    expect(EXPENSE_EXCHANGE_RATE_TARGETS).toEqual(["EUR", "USD", "BYN"]);
+  });
+
+  it("computes crossRate from USD-base rates", () => {
+    expect(crossRate(sampleRates, "PLN", "EUR")).toBeCloseTo(0.23, 4);
+    expect(crossRate(sampleRates, "PLN", "USD")).toBeCloseTo(0.25, 4);
+    expect(crossRate(sampleRates, "PLN", "BYN")).toBeCloseTo(0.82, 4);
   });
 });
