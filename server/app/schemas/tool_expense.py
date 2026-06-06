@@ -14,6 +14,21 @@ class ExchangeRatesResponse(BaseModel):
     provider: str
 
 
+class ExpenseParseRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=500)
+    default_currency: CurrencyCode | None = None
+
+
+class ExpenseParseResponse(BaseModel):
+    valid: bool
+    amount: Decimal | None = None
+    currency: CurrencyCode | None = None
+    category: str | None = None
+    tool_name: str | None = None
+    expense_date: date | None = None
+    error: str | None = None
+
+
 class ToolExpenseCreate(BaseModel):
     tool_name: str = Field(min_length=1, max_length=255)
     amount: Decimal = Field(gt=0, decimal_places=2)
