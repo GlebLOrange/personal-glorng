@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted } from "vue";
 
+import { useLiveLocalTime } from "@/composables/useLiveLocalTime";
 import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
 import {
-  formatLiveLocalDateTime,
-  formatLiveLocalTime,
   weatherLocationLabel,
   weatherUtcOffsetHours,
 } from "@/utils/weather";
@@ -35,53 +34,19 @@ const locationLabel = computed(() =>
   weather.value ? weatherLocationLabel(weather.value) : "",
 );
 
-const liveTime = ref<string | null>(null);
-let timer: ReturnType<typeof setInterval> | null = null;
-
-function updateLiveTime(): void {
+const utcOffset = computed(() => {
   if (!weather.value || !props.showTime) {
-    liveTime.value = null;
-    return;
+    return null;
   }
-  const offset = weatherUtcOffsetHours(weather.value);
-  if (offset === null) {
-    liveTime.value = null;
-    return;
-  }
-  liveTime.value = props.bar ? formatLiveLocalDateTime(offset) : formatLiveLocalTime(offset);
-}
+  return weatherUtcOffsetHours(weather.value);
+});
+
+const timeFormat = computed(() => (props.bar ? "datetime" : "time") as const);
+const { liveTime } = useLiveLocalTime(utcOffset, timeFormat);
 
 onMounted(async () => {
   await fetchConfig();
-  if (locationRef.value.trim()) {
-    void refresh();
-  }
-  updateLiveTime();
-  timer = setInterval(updateLiveTime, 1_000);
 });
-
-onUnmounted(() => {
-  if (timer) {
-    clearInterval(timer);
-  }
-});
-
-watch(locationRef, () => {
-  if (locationRef.value.trim()) {
-    void refresh();
-  }
-});
-
-watch(weather, () => {
-  updateLiveTime();
-});
-
-watch(
-  () => [props.showTime, props.bar] as const,
-  () => {
-    updateLiveTime();
-  },
-);
 </script>
 
 <template>
@@ -199,5 +164,12 @@ watch(
         </div>
       </div>
     </div>
+  </div>
+
+  <div v-else class="text-sm font-mono text-surface-mid">
+    Weather unavailable.
+    <button type="button" class="ml-2 underline hover:text-surface-light" @click="refresh">
+      Retry
+    </button>
   </div>
 </template>

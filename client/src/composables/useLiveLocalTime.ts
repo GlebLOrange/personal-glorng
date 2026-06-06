@@ -1,13 +1,13 @@
 import { onMounted, onUnmounted, ref, watch, type MaybeRefOrGetter, type Ref, toValue } from "vue";
 
-import { formatLiveLocalDateTime, formatLiveLocalTime } from "@/utils/weather";
+import { formatLiveLocalDateTime, formatLiveLocalTime, formatLiveLocalTimeWithSeconds } from "@/utils/weather";
 
-type LiveTimeFormat = "time" | "datetime";
+type LiveTimeFormat = "time" | "time-seconds" | "datetime";
 
 /** Tick every second with local time for a UTC offset in hours. */
 export function useLiveLocalTime(
   offsetHours: MaybeRefOrGetter<number | null>,
-  format: LiveTimeFormat = "datetime",
+  format: MaybeRefOrGetter<LiveTimeFormat> = "datetime",
 ): { liveTime: Ref<string | null> } {
   const liveTime = ref<string | null>(null);
   let timer: ReturnType<typeof setInterval> | null = null;
@@ -18,8 +18,13 @@ export function useLiveLocalTime(
       liveTime.value = null;
       return;
     }
+    const fmt = toValue(format);
     liveTime.value =
-      format === "datetime" ? formatLiveLocalDateTime(offset) : formatLiveLocalTime(offset);
+      fmt === "datetime"
+        ? formatLiveLocalDateTime(offset)
+        : fmt === "time-seconds"
+          ? formatLiveLocalTimeWithSeconds(offset)
+          : formatLiveLocalTime(offset);
   }
 
   onMounted(() => {
@@ -33,7 +38,7 @@ export function useLiveLocalTime(
     }
   });
 
-  watch(() => toValue(offsetHours), update);
+  watch(() => [toValue(offsetHours), toValue(format)] as const, update);
 
   return { liveTime };
 }
