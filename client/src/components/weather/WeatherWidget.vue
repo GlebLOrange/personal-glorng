@@ -2,7 +2,12 @@
 import { computed, onMounted, watch } from "vue";
 
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
-import { weatherLocationLabel } from "@/utils/weather";
+import { DEFAULT_WEATHER_LOCATION } from "@/constants/weather";
+import {
+  formatLiveLocalTime,
+  weatherLocationLabel,
+  weatherUtcOffsetHours,
+} from "@/utils/weather";
 
 const props = withDefaults(
   defineProps<{
@@ -10,16 +15,28 @@ const props = withDefaults(
     compact?: boolean;
     showTime?: boolean;
   }>(),
-  { location: "", compact: false, showTime: false },
+  {
+    location: "",
+    compact: false,
+    showTime: true,
+  },
 );
 
-const locationRef = computed(() => props.location ?? "");
+const locationRef = computed(() => props.location.trim() || DEFAULT_WEATHER_LOCATION.query);
 
 const { weather, loading, error, refresh } = useWeatherLookup(locationRef);
 
 const locationLabel = computed(() =>
   weather.value ? weatherLocationLabel(weather.value) : "",
 );
+
+const liveTime = computed(() => {
+  if (!weather.value || !props.showTime) {
+    return null;
+  }
+  const offset = weatherUtcOffsetHours(weather.value);
+  return offset !== null ? formatLiveLocalTime(offset) : null;
+});
 
 onMounted(() => {
   if (locationRef.value.trim()) {
@@ -35,11 +52,7 @@ watch(locationRef, () => {
 </script>
 
 <template>
-  <div v-if="!location.trim()" class="text-surface-mid text-sm font-mono">
-    No location selected
-  </div>
-
-  <div v-else-if="loading" class="text-surface-mid text-sm font-mono animate-pulse">
+  <div v-if="loading" class="text-surface-mid text-sm font-mono animate-pulse">
     Loading weather...
   </div>
 
@@ -55,6 +68,10 @@ watch(locationRef, () => {
       <span class="text-surface-light font-bold">
         {{ locationLabel }}
       </span>
+      <template v-if="liveTime">
+        <span class="text-surface-muted">·</span>
+        <span class="text-surface-mid tabular-nums">{{ liveTime }}</span>
+      </template>
       <span class="text-surface-muted">·</span>
       <span class="accent-gradient text-lg font-bold">
         {{ weather.current_condition?.[0]?.temp_C }}°C

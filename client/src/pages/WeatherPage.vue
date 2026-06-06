@@ -1,22 +1,12 @@
 <script setup lang="ts">
-import { computed } from "vue";
-
 import WeatherLocationCard from "@/components/weather/WeatherLocationCard.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
-import { coordsQuery, useGeolocation } from "@/composables/useGeolocation";
+import { DEFAULT_WEATHER_LOCATION } from "@/constants/weather";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
 
-const { status, coords, error: geoError, request: requestGeo } = useGeolocation();
 const { locations, addLocation, removeLocation } = useWeatherLocations();
 const { toast } = useNotify();
-
-const primaryQuery = computed(() => {
-  if (coords.value) {
-    return coordsQuery(coords.value.lat, coords.value.lon);
-  }
-  return "";
-});
 
 async function handleAdd(label: string, query: string): Promise<void> {
   try {
@@ -42,48 +32,25 @@ async function handleRemove(id: number | string): Promise<void> {
 <template>
   <div class="max-w-5xl mx-auto px-6 py-10 font-mono">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold accent-gradient mb-2">weather</h1>
+      <h1 class="text-3xl font-bold accent-gradient mb-2">clocks</h1>
       <p class="text-sm text-surface-mid">
-        Your location and saved cities with local time and conditions.
+        Local time and conditions for Wrocław and your saved cities.
       </p>
     </div>
 
     <section class="mb-10">
-      <h2 class="text-lg font-bold text-surface-light mb-4">your location</h2>
-
-      <div v-if="status === 'pending'" class="text-sm text-surface-mid animate-pulse">
-        Detecting location...
-      </div>
-
-      <div v-else-if="status === 'denied' || status === 'unsupported'" class="space-y-3">
-        <p class="text-sm text-accent-golden">
-          {{
-            geoError ||
-            "Location access unavailable. Add a city below to track weather manually."
-          }}
-        </p>
-        <button
-          v-if="status === 'denied'"
-          type="button"
-          class="text-sm text-surface-mid underline hover:text-surface-light"
-          @click="requestGeo"
-        >
-          Try again
-        </button>
-      </div>
-
+      <h2 class="text-lg font-bold text-surface-light mb-4">home</h2>
       <WeatherLocationCard
-        v-else-if="primaryQuery"
-        label="Your location"
-        :query="primaryQuery"
+        :label="DEFAULT_WEATHER_LOCATION.label"
+        :query="DEFAULT_WEATHER_LOCATION.query"
       />
     </section>
 
     <section class="mb-10">
-      <h2 class="text-lg font-bold text-surface-light mb-4">saved locations</h2>
+      <h2 class="text-lg font-bold text-surface-light mb-4">other cities</h2>
 
       <div v-if="locations.length === 0" class="text-sm text-surface-mid mb-4">
-        No saved locations yet. Add a city to track its weather and local time.
+        No saved cities yet. Add one to track its local time and weather.
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

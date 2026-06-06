@@ -39,9 +39,10 @@ function openPreferences() {
           via Spotify's API. Visitors do not sign in to Spotify.
         </li>
         <li>
-          <strong class="text-surface-light">Weather</strong> — if you allow browser location
-          access, coordinates are sent to this site's API to fetch current conditions (via wttr.in).
-          Saved cities are stored in your browser for guests, or in your account when logged in.
+          <strong class="text-surface-light">Clocks &amp; weather</strong> — city names you save are
+          sent to this site's API to fetch local time and conditions (via wttr.in). Saved cities are
+          stored in your browser for guests, or in your account when logged in. Browser location is
+          never requested automatically.
         </li>
       </ul>
     </section>

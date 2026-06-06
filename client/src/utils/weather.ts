@@ -34,14 +34,38 @@ export function weatherObservedTime(data: WeatherData): string | null {
   return obs;
 }
 
-/** Live local time for a location using UTC offset from weather data. */
-export function formatLiveLocalTime(offsetHours: number): string {
+export interface LocalTimeParts {
+  hours24: number;
+  minutes: number;
+}
+
+export interface ClockHandAngles {
+  hour: number;
+  minute: number;
+}
+
+/** Local time parts for a UTC offset in hours. */
+export function localTimeFromOffset(offsetHours: number): LocalTimeParts {
   const now = new Date();
   const utcMs = now.getTime() + now.getTimezoneOffset() * 60_000;
   const local = new Date(utcMs + offsetHours * 3_600_000);
-  return local.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  return {
+    hours24: local.getHours(),
+    minutes: local.getMinutes(),
+  };
+}
+
+/** Analog clock hand angles in degrees (0 = 12 o'clock, clockwise). */
+export function clockHandAngles(parts: LocalTimeParts): ClockHandAngles {
+  const hour12 = parts.hours24 % 12;
+  return {
+    hour: hour12 * 30 + parts.minutes * 0.5,
+    minute: parts.minutes * 6,
+  };
+}
+
+/** Live local time for a location using UTC offset from weather data. */
+export function formatLiveLocalTime(offsetHours: number): string {
+  const { hours24, minutes } = localTimeFromOffset(offsetHours);
+  return `${String(hours24).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }

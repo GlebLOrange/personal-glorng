@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, watch } from "vue";
 
+import CityAnalogClock from "@/components/weather/CityAnalogClock.vue";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
-import {
-  formatLiveLocalTime,
-  weatherLocationLabel,
-  weatherObservedTime,
-  weatherUtcOffsetHours,
-} from "@/utils/weather";
+import { weatherLocationLabel, weatherUtcOffsetHours } from "@/utils/weather";
 
 const props = defineProps<{
   label: string;
@@ -22,32 +18,18 @@ const emit = defineEmits<{
 const locationRef = computed(() => props.query);
 const { weather, loading, error, refresh } = useWeatherLookup(locationRef);
 
-const liveTime = ref<string | null>(null);
-let timer: ReturnType<typeof setInterval> | null = null;
-
-function updateLiveTime(): void {
-  if (!weather.value) {
-    liveTime.value = null;
-    return;
-  }
-  const offset = weatherUtcOffsetHours(weather.value);
-  liveTime.value = offset !== null ? formatLiveLocalTime(offset) : weatherObservedTime(weather.value);
-}
+const utcOffset = computed(() =>
+  weather.value ? weatherUtcOffsetHours(weather.value) : null,
+);
 
 onMounted(() => {
   void refresh();
-  updateLiveTime();
-  timer = setInterval(updateLiveTime, 30_000);
 });
 
-onUnmounted(() => {
-  if (timer) {
-    clearInterval(timer);
+watch(locationRef, () => {
+  if (locationRef.value.trim()) {
+    void refresh();
   }
-});
-
-watch(weather, () => {
-  updateLiveTime();
 });
 </script>
 
@@ -77,13 +59,8 @@ watch(weather, () => {
       <button type="button" class="text-surface-mid underline" @click="refresh">Retry</button>
     </div>
 
-    <div v-else-if="weather" class="flex items-end justify-between gap-4">
-      <div>
-        <p v-if="liveTime" class="text-3xl font-bold text-surface-light tabular-nums">
-          {{ liveTime }}
-        </p>
-        <p class="text-xs text-surface-mid mt-1">local time</p>
-      </div>
+    <div v-else-if="weather" class="flex items-center justify-between gap-4">
+      <CityAnalogClock :utc-offset-hours="utcOffset" />
       <div class="text-right">
         <p class="text-3xl font-bold accent-gradient">
           {{ weather.current_condition?.[0]?.temp_C }}°C

@@ -1,20 +1,25 @@
-import { onMounted, ref, type Ref } from "vue";
+import { ref, type Ref } from "vue";
 
-export type GeolocationStatus = "pending" | "granted" | "denied" | "unsupported";
+export type GeolocationStatus = "idle" | "pending" | "granted" | "denied" | "unsupported";
 
 export interface GeolocationCoords {
   lat: number;
   lon: number;
 }
 
+export interface UseGeolocationOptions {
+  auto?: boolean;
+}
+
 /** Browser geolocation with permission state tracking. */
-export function useGeolocation(): {
+export function useGeolocation(options: UseGeolocationOptions = {}): {
   status: Ref<GeolocationStatus>;
   coords: Ref<GeolocationCoords | null>;
   error: Ref<string | null>;
   request: () => void;
 } {
-  const status = ref<GeolocationStatus>("pending");
+  const { auto = false } = options;
+  const status = ref<GeolocationStatus>("idle");
   const coords = ref<GeolocationCoords | null>(null);
   const error = ref<string | null>(null);
 
@@ -44,7 +49,9 @@ export function useGeolocation(): {
     );
   }
 
-  onMounted(request);
+  if (auto) {
+    request();
+  }
 
   return { status, coords, error, request };
 }
