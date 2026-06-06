@@ -11,6 +11,7 @@ describe("useExpenseFilters", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 5, 6));
   });
 
   afterEach(() => {
@@ -18,9 +19,6 @@ describe("useExpenseFilters", () => {
   });
 
   it("sets this_month on applyMonthPreset", () => {
-    const now = new Date(2026, 4, 15);
-    vi.setSystemTime(now);
-
     const { selectedMonth, applyMonthPreset } = useExpenseFilters(
       displayCurrency,
       onFiltersChange,
@@ -28,12 +26,10 @@ describe("useExpenseFilters", () => {
     );
     applyMonthPreset("this_month");
 
-    expect(selectedMonth.value).toBe("2026-05");
+    expect(selectedMonth.value).toBe("2026-06");
   });
 
   it("sets last_month on applyMonthPreset", () => {
-    vi.setSystemTime(new Date(2026, 0, 10));
-
     const { selectedMonth, applyMonthPreset } = useExpenseFilters(
       displayCurrency,
       onFiltersChange,
@@ -41,12 +37,10 @@ describe("useExpenseFilters", () => {
     );
     applyMonthPreset("last_month");
 
-    expect(selectedMonth.value).toBe("2025-12");
+    expect(selectedMonth.value).toBe("2026-05");
   });
 
   it("builds queryParams with month, product, and category", () => {
-    vi.setSystemTime(new Date(2026, 4, 1));
-
     const { selectedMonth, productFilter, categoryFilter, queryParams, applyMonthPreset } =
       useExpenseFilters(displayCurrency, onFiltersChange, onProductFilterChange);
 
@@ -61,6 +55,22 @@ describe("useExpenseFilters", () => {
     });
   });
 
+  it("builds queryParams with date range", () => {
+    const { queryParams, applyMonthPreset, dateFilterMode } = useExpenseFilters(
+      displayCurrency,
+      onFiltersChange,
+      onProductFilterChange,
+    );
+
+    applyMonthPreset("range");
+
+    expect(dateFilterMode.value).toBe("range");
+    expect(queryParams()).toEqual({
+      date_from: "2026-06-01",
+      date_to: "2026-06-06",
+    });
+  });
+
   it("includes display_currency in summaryParams", () => {
     const { summaryParams, applyMonthPreset } = useExpenseFilters(
       displayCurrency,
@@ -70,9 +80,23 @@ describe("useExpenseFilters", () => {
     applyMonthPreset("this_month");
 
     expect(summaryParams()).toMatchObject({
-      month: "2026-05",
+      month: "2026-06",
       display_currency: "PLN",
     });
+  });
+
+  it("clears filters back to this month", () => {
+    const { productFilter, categoryFilter, clearFilters, applyMonthPreset, monthPreset } =
+      useExpenseFilters(displayCurrency, onFiltersChange, onProductFilterChange);
+
+    applyMonthPreset("range");
+    productFilter.value = "coffee";
+    categoryFilter.value = "Groceries";
+    clearFilters();
+
+    expect(productFilter.value).toBe("");
+    expect(categoryFilter.value).toBeNull();
+    expect(monthPreset.value).toBe("this_month");
   });
 
   it("debounces product filter changes", async () => {

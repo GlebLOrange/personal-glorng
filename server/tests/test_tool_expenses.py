@@ -164,6 +164,29 @@ class TestToolExpensesCRUD:
         )
         assert resp.status_code == 422
 
+    async def test_parse_expense_text(self, auth_client: AsyncClient):
+        resp = await auth_client.post(
+            "/api/tools/expenses/parse",
+            json={"text": "89,50 biedronka", "default_currency": "PLN"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["valid"] is True
+        assert data["amount"] == "89.50"
+        assert data["currency"] == "PLN"
+        assert data["category"] == "Groceries"
+        assert data["tool_name"] == "Biedronka"
+
+    async def test_parse_expense_invalid(self, auth_client: AsyncClient):
+        resp = await auth_client.post(
+            "/api/tools/expenses/parse",
+            json={"text": "not an expense"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["valid"] is False
+        assert data["error"] is not None
+
     async def test_get_exchange_rates(self, auth_client: AsyncClient):
         resp = await auth_client.get("/api/tools/expenses/rates")
         assert resp.status_code == 200

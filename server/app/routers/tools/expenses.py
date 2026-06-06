@@ -6,6 +6,8 @@ from app.core.deps import AuthorizedUser, DbSession, require_capability
 from app.schemas.common import MessageResponse
 from app.schemas.tool_expense import (
     ExchangeRatesResponse,
+    ExpenseParseRequest,
+    ExpenseParseResponse,
     ToolExpenseCreate,
     ToolExpenseResponse,
     ToolExpenseSummary,
@@ -19,6 +21,7 @@ from app.schemas.tool_expense_category import (
 from app.services.currency import CurrencyService
 from app.services.tool_expense import ToolExpenseService
 from app.services.tool_expense_category import ToolExpenseCategoryService
+from app.todobot.utils.expense_nlp import parse_expense_text
 
 router = APIRouter(
     prefix="/expenses",
@@ -106,6 +109,31 @@ async def get_summary(
         date_from=resolved_from,
         date_to=resolved_to,
         display_currency=display_currency,
+    )
+
+
+@router.post(
+    "/parse",
+    response_model=ExpenseParseResponse,
+    dependencies=[Depends(require_capability("expenses", "read"))],
+)
+async def parse_expense(
+    data: ExpenseParseRequest,
+    user: AuthorizedUser,  # noqa: ARG001
+) -> ExpenseParseResponse:
+    parsed = parse_expense_text(
+        data.text,
+        default_currency=data.default_currency,
+    )
+    if not parsed.is_valid:
+        return ExpenseParseResponse(valid=False, error=parsed.parse_error)
+    return ExpenseParseResponse(
+        valid=True,
+        amount=parsed.amount,
+        currency=parsed.currency,  # type: ignore[arg-type]
+        category=parsed.category,
+        tool_name=parsed.tool_name,
+        expense_date=parsed.expense_date,
     )
 
 

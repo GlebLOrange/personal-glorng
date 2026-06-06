@@ -194,6 +194,16 @@ export interface ExpenseCategory {
   updated_at: string;
 }
 
+export interface ExpenseParseResult {
+  valid: boolean;
+  amount?: string;
+  currency?: string;
+  category?: string;
+  tool_name?: string;
+  expense_date?: string;
+  error?: string;
+}
+
 export interface ToolExpense {
   id: number;
   tool_name: string;
