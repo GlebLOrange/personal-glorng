@@ -142,6 +142,10 @@ class ToolExpenseCategoryService:
                 .values(category=new_name),
             )
 
+        payload = data.model_dump(exclude_unset=True)
+        if "monthly_budget" in payload:
+            row.monthly_budget = payload["monthly_budget"]
+
         await self.db.flush()
         await self.db.refresh(row)
         return ExpenseCategoryResponse.model_validate(row)

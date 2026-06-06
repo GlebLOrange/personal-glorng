@@ -13,6 +13,7 @@ defineProps<{
 const displayCurrency = defineModel<string>("displayCurrency", { required: true });
 const newCategoryName = defineModel<string>("newCategoryName", { required: true });
 const editingCategoryName = defineModel<string>("editingCategoryName", { required: true });
+const editingCategoryBudget = defineModel<string>("editingCategoryBudget", { required: true });
 
 const emit = defineEmits<{
   addCategory: [];
@@ -62,6 +63,14 @@ const selectClass =
               class="flex-1 min-w-[8rem] bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue"
               @keyup.enter="emit('saveCategoryRename')"
             />
+            <input
+              v-model="editingCategoryBudget"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Budget"
+              class="w-28 bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue"
+            />
             <BaseButton variant="primary" size="sm" @click="emit('saveCategoryRename')">
               Save
             </BaseButton>
@@ -70,7 +79,12 @@ const selectClass =
             </BaseButton>
           </template>
           <template v-else>
-            <span class="flex-1 text-surface-light font-mono text-sm">{{ category.name }}</span>
+            <span class="flex-1 text-surface-light font-mono text-sm">
+              {{ category.name }}
+              <span v-if="category.monthly_budget" class="text-surface-mid text-xs ml-2">
+                budget {{ category.monthly_budget }}
+              </span>
+            </span>
             <BaseButton variant="ghost" size="sm" @click="emit('startEditCategory', category)">
               Rename
             </BaseButton>
@@ -90,7 +104,8 @@ const selectClass =
         <BaseButton variant="primary" type="submit">Add category</BaseButton>
       </form>
       <p class="text-[10px] text-surface-mid font-mono mt-3">
-        Renaming updates all expenses in that category. Delete only works when unused.
+        Renaming updates all expenses in that category. Optional monthly budget uses display
+        currency. Delete only works when unused.
       </p>
     </BaseCard>
   </div>

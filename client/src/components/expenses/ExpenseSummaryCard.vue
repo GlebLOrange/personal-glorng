@@ -2,13 +2,24 @@
 import { computed } from "vue";
 
 import BaseCard from "@/components/ui/BaseCard.vue";
-import type { ToolExpenseSummary } from "@/types";
+import type { ExpenseCategory, ToolExpenseSummary } from "@/types";
 
 const props = defineProps<{
   summary: ToolExpenseSummary | null;
   monthLabel: string;
+  expenseCategories: ExpenseCategory[];
   formatMoney: (amount: string | number, currency: string) => string;
 }>();
+
+const budgetByCategory = computed(() => {
+  const map = new Map<string, number>();
+  for (const category of props.expenseCategories) {
+    if (category.monthly_budget) {
+      map.set(category.name, parseFloat(category.monthly_budget));
+    }
+  }
+  return map;
+});
 
 const categoryBreakdown = computed(() => {
   if (!props.summary || props.summary.by_category.length === 0) return [];
@@ -17,10 +28,15 @@ const categoryBreakdown = computed(() => {
 
   return props.summary.by_category.map((item) => {
     const value = parseFloat(String(item.total));
+    const budget = budgetByCategory.value.get(item.category) ?? null;
+    const budgetPercent = budget && budget > 0 ? Math.round((value / budget) * 100) : null;
     return {
       category: item.category,
       total: item.total,
       percent: Math.round((value / total) * 100),
+      budget,
+      budgetPercent,
+      overBudget: budgetPercent !== null && budgetPercent > 100,
     };
   });
 });
@@ -38,24 +54,30 @@ const categoryBreakdown = computed(() => {
       <p v-else class="text-2xl font-bold text-surface-border animate-pulse">—</p>
     </div>
 
-    <div v-if="categoryBreakdown.length > 0" class="flex flex-col gap-2 border-t border-surface-border pt-3">
+    <div
+      v-if="categoryBreakdown.length > 0"
+      class="flex flex-col gap-2 border-t border-surface-border pt-3"
+    >
       <p class="text-[10px] text-surface-mid font-mono uppercase tracking-wider">By category</p>
-      <div
-        v-for="item in categoryBreakdown"
-        :key="item.category"
-        class="flex flex-col gap-1"
-      >
+      <div v-for="item in categoryBreakdown" :key="item.category" class="flex flex-col gap-1">
         <div class="flex justify-between text-xs font-mono">
           <span class="text-surface-light">{{ item.category }}</span>
           <span class="text-surface-mid">
             {{ formatMoney(item.total, summary!.currency) }}
-            <span class="text-surface-mid/70">· {{ item.percent }}%</span>
+            <span v-if="item.budget" class="text-surface-mid/70">
+              · {{ item.budgetPercent }}% of
+              {{ formatMoney(item.budget, summary!.currency) }}
+            </span>
+            <span v-else class="text-surface-mid/70">· {{ item.percent }}%</span>
           </span>
         </div>
         <div class="h-1.5 bg-surface-border rounded-full overflow-hidden">
           <div
-            class="h-full bg-accent-blue rounded-full transition-all"
-            :style="{ width: `${item.percent}%` }"
+            class="h-full rounded-full transition-all"
+            :class="item.overBudget ? 'bg-red-400' : 'bg-accent-blue'"
+            :style="{
+              width: `${Math.min(item.budgetPercent ?? item.percent, 100)}%`,
+            }"
           />
         </div>
       </div>
