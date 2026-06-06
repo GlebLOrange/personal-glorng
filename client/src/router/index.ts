@@ -33,9 +33,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/admin/tools/currency",
-    name: "tool-currency",
-    component: () => import("@/pages/admin/tools/CurrencyConverterTool.vue"),
-    meta: { requiresAuth: true },
+    redirect: { name: "tool-expenses", query: { tab: "converter" } },
   },
   {
     path: "/admin/tools/url-shortener",
@@ -127,7 +125,6 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-file-share": "file-share",
   "tool-url-shortener": "url-shortener",
   "tool-calculator": "calculator",
-  "tool-currency": "currency",
   "tool-vid-download": "vid-download",
   "tool-email": "email",
   "tool-feedback": "feedback",

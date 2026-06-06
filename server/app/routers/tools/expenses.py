@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
 from app.core.deps import AuthorizedUser, DbSession, require_capability
+from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
 from app.schemas.common import MessageResponse
 from app.schemas.tool_expense import (
     ExchangeRatesResponse,
@@ -89,6 +90,29 @@ async def get_exchange_rates(
 ) -> ExchangeRatesResponse:
     meta = await CurrencyService().get_rates_meta()
     return ExchangeRatesResponse(**meta)
+
+
+@router.post("/convert", response_model=CurrencyConvertResponse)
+async def convert_currency(
+    body: CurrencyConvertRequest,
+    user: AuthorizedUser,  # noqa: ARG001
+) -> CurrencyConvertResponse:
+    svc = CurrencyService()
+    rates = await svc.get_rates()
+    meta = await svc.get_rates_meta()
+    converted = svc.convert(
+        body.amount,
+        body.from_currency,
+        body.to_currency,
+        rates,
+    )
+    return CurrencyConvertResponse(
+        amount=body.amount,
+        from_currency=body.from_currency,
+        to_currency=body.to_currency,
+        converted=converted,
+        rates_updated_at=meta.get("updated_at"),
+    )
 
 
 @router.get("/summary", response_model=ToolExpenseSummary)

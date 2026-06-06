@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import ExpenseCategoryChips from "@/components/expenses/ExpenseCategoryChips.vue";
 import ExpenseCategorySettings from "@/components/expenses/ExpenseCategorySettings.vue";
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
+import ExpenseCurrencyConverter from "@/components/expenses/ExpenseCurrencyConverter.vue";
 import ExpenseDateFilters from "@/components/expenses/ExpenseDateFilters.vue";
 import ExpenseFormModal from "@/components/expenses/ExpenseFormModal.vue";
 import ExpenseInsights from "@/components/expenses/ExpenseInsights.vue";
@@ -17,6 +19,7 @@ import { useCategoryManager } from "@/composables/useCategoryManager";
 import {
   EXPENSE_CURRENCIES,
   EXPENSE_CURRENCY_STORAGE_KEY,
+  EXPENSE_DEFAULT_CURRENCY,
   EXPENSE_LAST_CATEGORY_STORAGE_KEY,
   useExpenseFilters,
   type CurrencyCode,
@@ -31,8 +34,12 @@ import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
 import type { ToolExpense } from "@/types";
 
-type ExpenseTab = "transactions" | "insights" | "settings";
+type ExpenseTab = "transactions" | "insights" | "converter" | "settings";
 
+const EXPENSE_TABS: ExpenseTab[] = ["transactions", "insights", "converter", "settings"];
+
+const route = useRoute();
+const router = useRouter();
 const activeTab = ref<ExpenseTab>("transactions");
 const loading = ref(false);
 const showForm = ref(false);
@@ -42,7 +49,7 @@ const deleteCategoryTarget = ref<{ id: number; name: string } | null>(null);
 
 const { value: displayCurrency, set: setDisplayCurrency } = useLocalStorageString(
   EXPENSE_CURRENCY_STORAGE_KEY,
-  "PLN",
+  EXPENSE_DEFAULT_CURRENCY,
 );
 
 const { value: lastCategory, set: setLastCategory } = useLocalStorageString(
@@ -148,7 +155,7 @@ const quickAdd = ref({
 const form = ref({
   tool_name: "",
   amount: "",
-  currency: "PLN" as CurrencyCode,
+  currency: EXPENSE_DEFAULT_CURRENCY as CurrencyCode,
   expense_date: new Date().toISOString().slice(0, 10),
   category: "",
   notes: "",
@@ -171,7 +178,9 @@ function resolvedCategory(name: string): string {
 
 function defaultCurrency(): CurrencyCode {
   const value = displayCurrency.value;
-  return EXPENSE_CURRENCIES.includes(value as CurrencyCode) ? (value as CurrencyCode) : "PLN";
+  return EXPENSE_CURRENCIES.includes(value as CurrencyCode)
+    ? (value as CurrencyCode)
+    : EXPENSE_DEFAULT_CURRENCY;
 }
 
 function resetForm(): void {
@@ -417,8 +426,15 @@ async function confirmDeleteCategory(): Promise<void> {
   }
 }
 
+function parseExpenseTab(value: unknown): ExpenseTab | null {
+  return typeof value === "string" && EXPENSE_TABS.includes(value as ExpenseTab)
+    ? (value as ExpenseTab)
+    : null;
+}
+
 function switchTab(tab: ExpenseTab): void {
   activeTab.value = tab;
+  void router.replace({ query: { ...route.query, tab } });
 }
 
 watch(displayCurrency, () => {
@@ -441,6 +457,8 @@ watch(
 );
 
 onMounted(() => {
+  const tab = parseExpenseTab(route.query.tab);
+  if (tab) activeTab.value = tab;
   applyMonthPreset("this_month");
   quickAdd.value.category = resolvedCategory(lastCategory.value);
   void Promise.all([loadRates(), reloadListAndSummary(), loadCategories()]);
@@ -472,7 +490,7 @@ onMounted(() => {
 
     <div class="flex gap-2 mb-6 border-b border-surface-border pb-2">
       <button
-        v-for="tab in ['transactions', 'insights', 'settings'] as ExpenseTab[]"
+        v-for="tab in EXPENSE_TABS"
         :key="tab"
         :class="[
           'px-3 py-1.5 text-xs rounded-lg transition-colors capitalize',
@@ -541,8 +559,13 @@ onMounted(() => {
       :doughnut-chart="doughnutChart"
     />
 
+    <ExpenseCurrencyConverter
+      v-else-if="activeTab === 'converter'"
+      :exchange-rates="exchangeRates"
+    />
+
     <ExpenseCategorySettings
-      v-else
+      v-else-if="activeTab === 'settings'"
       v-model:display-currency="displayCurrency"
       v-model:new-category-name="newCategoryName"
       v-model:editing-category-name="editingCategoryName"

@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
-import { EXPENSE_CURRENCIES } from "@/composables/useExpenseFilters";
+import {
+  crossRate,
+  EXPENSE_CURRENCIES,
+  EXPENSE_DEFAULT_CURRENCY,
+  EXPENSE_EXCHANGE_RATE_TARGETS,
+} from "@/composables/useExpenseFilters";
 import type { ExchangeRates, ExpenseCategory } from "@/types";
 
 defineProps<{
@@ -41,9 +46,9 @@ const selectClass =
     <BaseCard v-if="exchangeRates">
       <p class="text-xs text-surface-mid uppercase tracking-wider mb-3">Exchange rates</p>
       <div class="flex flex-wrap gap-3 text-xs text-surface-mid">
-        <span class="text-surface-light">1 USD =</span>
-        <span v-for="c in EXPENSE_CURRENCIES.filter((code) => code !== 'USD')" :key="c">
-          {{ parseFloat(exchangeRates.rates[c]).toFixed(4) }} {{ c }}
+        <span class="text-surface-light">1 {{ EXPENSE_DEFAULT_CURRENCY }} =</span>
+        <span v-for="c in EXPENSE_EXCHANGE_RATE_TARGETS" :key="c">
+          {{ crossRate(exchangeRates.rates, EXPENSE_DEFAULT_CURRENCY, c).toFixed(4) }} {{ c }}
         </span>
       </div>
     </BaseCard>

@@ -4,9 +4,20 @@ export type MonthPreset = "this_month" | "last_month" | "custom" | "range";
 export type DateFilterMode = "month" | "range";
 export type CurrencyCode = "USD" | "EUR" | "PLN" | "BYN";
 
-export const EXPENSE_CURRENCIES: CurrencyCode[] = ["USD", "EUR", "PLN", "BYN"];
+export const EXPENSE_DEFAULT_CURRENCY: CurrencyCode = "PLN";
+export const EXPENSE_CURRENCIES: CurrencyCode[] = ["PLN", "EUR", "USD", "BYN"];
+export const EXPENSE_EXCHANGE_RATE_TARGETS: CurrencyCode[] = ["EUR", "USD", "BYN"];
 export const EXPENSE_CURRENCY_STORAGE_KEY = "expense_default_currency";
 export const EXPENSE_LAST_CATEGORY_STORAGE_KEY = "expense_last_category";
+
+/** Cross-rate from USD-base API rates (units of `to` per 1 `from`). */
+export function crossRate(
+  rates: Record<string, string>,
+  from: CurrencyCode,
+  to: CurrencyCode,
+): number {
+  return parseFloat(rates[to]) / parseFloat(rates[from]);
+}
 
 function currentMonthValue(d = new Date()): string {
   const year = d.getFullYear();
