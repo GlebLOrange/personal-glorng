@@ -3,8 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   formatLiveLocalDateTime,
   isoDateTimeFromOffset,
+  isValidWeatherLocationQuery,
   localTimeFromOffset,
 } from "@/utils/weather";
+import { sanitizeGuestWeatherLocations } from "@/utils/guestWeatherLocations";
 
 describe("weather time formatting", () => {
   beforeEach(() => {
@@ -29,5 +31,31 @@ describe("weather time formatting", () => {
 
   it("isoDateTimeFromOffset returns ISO-like datetime", () => {
     expect(isoDateTimeFromOffset(3)).toBe("2025-06-07T15:00:00");
+  });
+});
+
+describe("isValidWeatherLocationQuery", () => {
+  it("accepts city names and coordinates", () => {
+    expect(isValidWeatherLocationQuery("Wroclaw")).toBe(true);
+    expect(isValidWeatherLocationQuery("51.1,17.0")).toBe(true);
+  });
+
+  it("rejects invalid queries", () => {
+    expect(isValidWeatherLocationQuery("Paris123")).toBe(false);
+    expect(isValidWeatherLocationQuery("<script>")).toBe(false);
+  });
+});
+
+describe("sanitizeGuestWeatherLocations", () => {
+  it("caps entries and drops invalid records", () => {
+    const raw = [
+      { id: "1", label: "A", query: "London", sort_order: 0 },
+      { id: "2", label: "Bad", query: "Paris123", sort_order: 1 },
+      { id: "3", label: "B", query: "London", sort_order: 2 },
+      { id: "4", label: "C", query: "Paris", sort_order: 3 },
+    ];
+    const sanitized = sanitizeGuestWeatherLocations(raw);
+    expect(sanitized).toHaveLength(2);
+    expect(sanitized.map((loc) => loc.query)).toEqual(["London", "Paris"]);
   });
 });

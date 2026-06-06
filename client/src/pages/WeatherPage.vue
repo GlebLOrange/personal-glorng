@@ -6,7 +6,7 @@ import { DATE_TIME_LOCATION_SECTION } from "@/constants/timeDateWeatherLocation"
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
 
-const { locations, loading, seeding, isDefaultLocation, addLocation, removeLocation } =
+const { locations, loading, seeding, isDefaultLocation, addLocation, removeLocation, canAddLocation, guestLimitMessage } =
   useWeatherLocations();
 const { toast } = useNotify();
 
@@ -40,7 +40,12 @@ async function handleRemove(id: number | string): Promise<void> {
       <WeatherWidget compact show-time />
     </div>
 
-    <WeatherLocationForm :add-location="handleAdd" class="mb-8" />
+    <WeatherLocationForm
+      :add-location="handleAdd"
+      :disabled="!canAddLocation"
+      :helper-text="guestLimitMessage"
+      class="mb-8"
+    />
 
     <section class="mb-10">
       <h2 class="text-lg font-bold text-surface-light mb-4">cities</h2>

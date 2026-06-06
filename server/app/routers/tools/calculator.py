@@ -3,12 +3,12 @@ from typing import Any
 
 from fastapi import APIRouter, Depends
 
-from app.core.deps import require_capability
 from app.core.exceptions import ValidationError
+from app.core.rate_limit import rate_limit_api
 
 router = APIRouter(
     prefix="/calculator",
-    dependencies=[Depends(require_capability("calculator", "read"))],
+    dependencies=[Depends(rate_limit_api)],
 )
 
 ALLOWED_OPS = {"+", "-", "*", "/"}

@@ -17,3 +17,9 @@ export const DEFAULT_WEATHER_LOCATION = {
 export const SAVED_LOCATIONS_STORAGE_KEY = `${TIME_DATE_WEATHER_LOCATION_SLUG}:saved-locations`;
 
 export const LEGACY_SAVED_LOCATIONS_STORAGE_KEY = "weather:saved-locations";
+
+/** Max saved cities for guests (localStorage) and authenticated users (server). */
+export const MAX_SAVED_WEATHER_LOCATIONS = 8;
+
+export const MAX_WEATHER_LOCATION_LABEL_LENGTH = 100;
+export const MAX_WEATHER_LOCATION_QUERY_LENGTH = 100;

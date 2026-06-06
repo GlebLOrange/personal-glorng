@@ -19,11 +19,19 @@ function handleLogout(): void {
       <div class="flex items-center gap-4 text-sm">
         <RouterLink to="/" class="nav-link"> portfolio </RouterLink>
 
-        <template v-if="auth.isAuthenticated">
-          <RouterLink to="/admin" class="nav-link-accent"> tools </RouterLink>
-          <button type="button" class="nav-link-violet" @click="handleLogout">logout</button>
-        </template>
+        <RouterLink v-if="auth.isAuthenticated" to="/admin" class="nav-link-accent">
+          tools
+        </RouterLink>
+        <RouterLink v-else to="/tools" class="nav-link-accent"> tools </RouterLink>
 
+        <button
+          v-if="auth.isAuthenticated"
+          type="button"
+          class="nav-link-violet"
+          @click="handleLogout"
+        >
+          logout
+        </button>
         <RouterLink v-else to="/login" class="nav-link-accent"> login </RouterLink>
       </div>
     </div>

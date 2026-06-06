@@ -14,6 +14,7 @@ class PlatformService:
     icon: str
     capabilities: tuple[str, ...]
     external: bool = False
+    public: bool = False
 
 
 PLATFORM_SERVICES: tuple[PlatformService, ...] = (
@@ -83,9 +84,10 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         category="utilities",
         description="Quick math calculations",
         api_prefix="/calculator",
-        admin_route="/admin/tools/calculator",
+        admin_route="/calculator",
         icon="⊞",
         capabilities=("read",),
+        public=True,
     ),
     PlatformService(
         slug="vid-download",

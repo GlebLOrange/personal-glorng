@@ -16,6 +16,18 @@ const MONTHS = [
   "Dec",
 ] as const;
 
+const CITY_PATTERN = /^[a-zA-Z\s\-'.]+$/;
+const COORD_PATTERN = /^-?\d{1,3}(\.\d+)?,-?\d{1,3}(\.\d+)?$/;
+
+/** Return true when query is a valid city name or lat,lon pair (matches server rules). */
+export function isValidWeatherLocationQuery(location: string): boolean {
+  const trimmed = location.trim();
+  if (!trimmed) {
+    return false;
+  }
+  return CITY_PATTERN.test(trimmed) || COORD_PATTERN.test(trimmed);
+}
+
 /** Resolved location label from wttr.in payload. */
 export function weatherLocationLabel(data: WeatherData): string {
   const area = data.nearest_area?.[0];

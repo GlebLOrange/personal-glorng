@@ -5,18 +5,36 @@ import { useLocalStorage } from "@/composables/useLocalStorage";
 import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import {
   LEGACY_SAVED_LOCATIONS_STORAGE_KEY,
+  MAX_SAVED_WEATHER_LOCATIONS,
+  MAX_WEATHER_LOCATION_LABEL_LENGTH,
+  MAX_WEATHER_LOCATION_QUERY_LENGTH,
   SAVED_LOCATIONS_STORAGE_KEY,
   TIME_DATE_WEATHER_LOCATION_API_PREFIX,
 } from "@/constants/timeDateWeatherLocation";
 import { useAuthStore } from "@/stores/auth";
 import type { WeatherLocation } from "@/types";
+import {
+  guestLocationLimitMessage,
+  sanitizeGuestWeatherLocations,
+  type GuestWeatherLocation,
+} from "@/utils/guestWeatherLocations";
+import { isValidWeatherLocationQuery } from "@/utils/weather";
 
-export interface GuestWeatherLocation {
-  id: string;
-  label: string;
-  query: string;
-  sort_order: number;
-  is_default?: boolean;
+export type { GuestWeatherLocation };
+
+function readGuestLocations(key: string): GuestWeatherLocation[] {
+  if (typeof localStorage === "undefined") {
+    return [];
+  }
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null) {
+      return [];
+    }
+    return sanitizeGuestWeatherLocations(JSON.parse(raw));
+  } catch {
+    return [];
+  }
 }
 
 function guestId(): string {
@@ -51,10 +69,26 @@ export function useWeatherLocations(): {
   addLocation: (label: string, query: string) => Promise<void>;
   removeLocation: (id: number | string) => Promise<void>;
   refresh: () => Promise<void>;
+  maxLocations: ComputedRef<number>;
+  canAddLocation: ComputedRef<boolean>;
+  guestLimitMessage: ComputedRef<string | null>;
 } {
   const auth = useAuthStore();
   const { fetchConfig, isDefaultQuery } = useWeatherConfig();
-  const guestLocations = useLocalStorage<GuestWeatherLocation[]>(SAVED_LOCATIONS_STORAGE_KEY, []);
+  const guestLocations = useLocalStorage<GuestWeatherLocation[]>(
+    SAVED_LOCATIONS_STORAGE_KEY,
+    [],
+  );
+
+  if (typeof localStorage !== "undefined") {
+    const sanitized = readGuestLocations(SAVED_LOCATIONS_STORAGE_KEY);
+    if (
+      localStorage.getItem(SAVED_LOCATIONS_STORAGE_KEY) !== null &&
+      JSON.stringify(sanitized) !== JSON.stringify(guestLocations.value)
+    ) {
+      guestLocations.value = sanitized;
+    }
+  }
   const serverLocations = ref<WeatherLocation[]>([]);
   const loading = ref(false);
   const seeding = ref(false);
@@ -66,6 +100,18 @@ export function useWeatherLocations(): {
   const locations = computed(() =>
     isAuthenticated.value ? serverLocations.value : guestLocations.value,
   );
+
+  const maxLocations = computed(() => MAX_SAVED_WEATHER_LOCATIONS);
+
+  const canAddLocation = computed(() => locations.value.length < maxLocations.value);
+
+  const guestLimitMessage = computed(() =>
+    isAuthenticated.value ? null : guestLocationLimitMessage(guestLocations.value.length),
+  );
+
+  function persistGuestLocations(next: GuestWeatherLocation[]): void {
+    guestLocations.value = sanitizeGuestWeatherLocations(next);
+  }
 
   function isDefaultLocation(loc: WeatherLocation | GuestWeatherLocation): boolean {
     if ("is_default" in loc && loc.is_default) {
@@ -93,7 +139,7 @@ export function useWeatherLocations(): {
         );
         serverLocations.value = [data];
       } else {
-        guestLocations.value = [
+        persistGuestLocations([
           {
             id: guestId(),
             label,
@@ -101,7 +147,7 @@ export function useWeatherLocations(): {
             sort_order: 0,
             is_default: true,
           },
-        ];
+        ]);
       }
       defaultSeeded.value = true;
     } catch {
@@ -132,10 +178,13 @@ export function useWeatherLocations(): {
   }
 
   async function addLocation(label: string, query: string): Promise<void> {
-    const trimmedQuery = query.trim();
-    const trimmedLabel = label.trim() || trimmedQuery;
+    const trimmedQuery = query.trim().slice(0, MAX_WEATHER_LOCATION_QUERY_LENGTH);
+    const trimmedLabel = (label.trim() || trimmedQuery).slice(0, MAX_WEATHER_LOCATION_LABEL_LENGTH);
     if (!trimmedQuery) {
       return;
+    }
+    if (!isValidWeatherLocationQuery(trimmedQuery)) {
+      throw new Error("Location contains invalid characters");
     }
 
     if (isAuthenticated.value) {
@@ -156,11 +205,11 @@ export function useWeatherLocations(): {
     if (duplicate) {
       throw new Error("Location already saved");
     }
-    if (guestLocations.value.length >= 8) {
-      throw new Error("Maximum 8 locations allowed");
+    if (guestLocations.value.length >= MAX_SAVED_WEATHER_LOCATIONS) {
+      throw new Error(`Maximum ${MAX_SAVED_WEATHER_LOCATIONS} locations allowed`);
     }
 
-    guestLocations.value = [
+    persistGuestLocations([
       ...guestLocations.value,
       {
         id: guestId(),
@@ -168,7 +217,7 @@ export function useWeatherLocations(): {
         query: trimmedQuery,
         sort_order: guestLocations.value.length,
       },
-    ];
+    ]);
   }
 
   async function removeLocation(id: number | string): Promise<void> {
@@ -187,8 +236,22 @@ export function useWeatherLocations(): {
       throw new Error("Default location cannot be removed");
     }
 
-    guestLocations.value = guestLocations.value.filter((loc) => loc.id !== id);
+    persistGuestLocations(guestLocations.value.filter((loc) => loc.id !== id));
   }
+
+  watch(
+    guestLocations,
+    (next) => {
+      if (isAuthenticated.value) {
+        return;
+      }
+      const sanitized = sanitizeGuestWeatherLocations(next);
+      if (JSON.stringify(sanitized) !== JSON.stringify(next)) {
+        guestLocations.value = sanitized;
+      }
+    },
+    { deep: true },
+  );
 
   watch(
     () => auth.isAuthenticated,
@@ -212,6 +275,9 @@ export function useWeatherLocations(): {
     addLocation,
     removeLocation,
     refresh,
+    maxLocations,
+    canAddLocation,
+    guestLimitMessage,
   };
 }
 
@@ -227,7 +293,7 @@ export async function syncGuestWeatherLocations(): Promise<void> {
       localStorage.getItem(SAVED_LOCATIONS_STORAGE_KEY) ??
       localStorage.getItem(LEGACY_SAVED_LOCATIONS_STORAGE_KEY);
     if (raw) {
-      stored = JSON.parse(raw) as GuestWeatherLocation[];
+      stored = sanitizeGuestWeatherLocations(JSON.parse(raw));
     }
   } catch {
     return;

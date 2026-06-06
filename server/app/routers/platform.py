@@ -22,6 +22,7 @@ async def list_platform_services() -> PlatformCatalogResponse:
             icon=s.icon,
             capabilities=list(s.capabilities),
             external=s.external,
+            public=s.public,
         )
         for s in PLATFORM_SERVICES
         if is_service_enabled(s.slug)
