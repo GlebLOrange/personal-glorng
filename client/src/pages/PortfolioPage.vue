@@ -11,6 +11,7 @@ import ProjectsGrid from "@/components/resume/ProjectsGrid.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
 import CodeBlock from "@/components/ui/CodeBlock.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
+import { coordsQuery, useGeolocation } from "@/composables/useGeolocation";
 import { contactLinks } from "@/constants/links";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import type { DonationsConfig, ResumeData } from "@/types";
@@ -20,6 +21,15 @@ const { data: donations, fetch: fetchDonations } =
   useCachedApi<DonationsConfig>("/donations/config");
 const apiError = ref(false);
 const showFeedback = ref(false);
+
+const { status, coords } = useGeolocation();
+
+const weatherLocation = computed(() => {
+  if (coords.value) {
+    return coordsQuery(coords.value.lat, coords.value.lon);
+  }
+  return "";
+});
 
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
 
@@ -47,7 +57,16 @@ onMounted(loadResume);
     </p>
 
     <div class="max-w-5xl mx-auto px-6 pt-4 flex justify-end">
-      <WeatherWidget compact />
+      <RouterLink
+        to="/weather"
+        class="interactive-surface px-3 py-2 rounded-lg hover:border-accent-blue/40 transition-colors"
+      >
+        <WeatherWidget v-if="weatherLocation" compact :location="weatherLocation" />
+        <span v-else-if="status === 'pending'" class="text-sm text-surface-mid animate-pulse">
+          Locating...
+        </span>
+        <span v-else class="text-sm text-surface-mid">weather →</span>
+      </RouterLink>
     </div>
 
     <SectionWrapper>

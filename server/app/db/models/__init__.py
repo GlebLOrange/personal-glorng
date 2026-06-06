@@ -15,6 +15,7 @@ from app.db.models.tool_expense import ToolExpense
 from app.db.models.tool_expense_category import ToolExpenseCategory
 from app.db.models.url import ShortenedUrl
 from app.db.models.user import User
+from app.db.models.weather_location import WeatherLocation
 
 __all__ = [
     "AuditEvent",
@@ -34,4 +35,5 @@ __all__ = [
     "ToolExpense",
     "ToolExpenseCategory",
     "User",
+    "WeatherLocation",
 ]

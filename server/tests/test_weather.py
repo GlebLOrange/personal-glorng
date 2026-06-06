@@ -3,17 +3,22 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from httpx import AsyncClient
 
-from app.services.weather import SITE_CITY_KEY
-from tests.conftest import FakeRedis
-
 WEATHER_PAYLOAD = {
-    "current_condition": [{"temp_C": "20", "humidity": "50", "windspeedKmph": "10"}],
+    "current_condition": [
+        {
+            "temp_C": "20",
+            "humidity": "50",
+            "windspeedKmph": "10",
+            "localObsDateTime": "2026-06-06 01:00 PM",
+        }
+    ],
     "nearest_area": [
         {
             "areaName": [{"value": "London"}],
             "country": [{"value": "United Kingdom"}],
         }
     ],
+    "time_zone": [{"utcOffset": "+1.0"}],
 }
 
 
@@ -30,87 +35,95 @@ def _mock_weather_client(payload: dict | None = None) -> MagicMock:
 
 
 @pytest.mark.asyncio
-async def test_weather_invalid_city(auth_client: AsyncClient) -> None:
-    resp = await auth_client.get("/api/tools/weather/Paris123")
+async def test_weather_lookup_invalid_city(client: AsyncClient) -> None:
+    resp = await client.get("/api/weather/lookup/Paris123")
     assert resp.status_code == 422
     assert "invalid" in resp.json()["detail"].lower()
 
 
 @pytest.mark.asyncio
-async def test_weather_unauthorized(client: AsyncClient) -> None:
-    resp = await client.get("/api/tools/weather/London")
-    assert resp.status_code == 401
-
-
-@pytest.mark.asyncio
-async def test_weather_success(auth_client: AsyncClient) -> None:
+async def test_weather_lookup_public(client: AsyncClient) -> None:
     with patch(
         "app.services.weather.httpx.AsyncClient",
         return_value=_mock_weather_client({"current_condition": [{"temp_C": "20"}]}),
     ):
-        resp = await auth_client.get("/api/tools/weather/London")
+        resp = await client.get("/api/weather/lookup/London")
 
     assert resp.status_code == 200
     assert resp.json()["current_condition"][0]["temp_C"] == "20"
 
 
 @pytest.mark.asyncio
-async def test_weather_config_public_default(client: AsyncClient) -> None:
-    resp = await client.get("/api/weather/config")
-    assert resp.status_code == 200
-    assert resp.json()["city"] == "Wroclaw"
-
-
-@pytest.mark.asyncio
-async def test_weather_current_public(client: AsyncClient) -> None:
+async def test_weather_lookup_coords(client: AsyncClient) -> None:
     with patch(
         "app.services.weather.httpx.AsyncClient",
         return_value=_mock_weather_client(),
-    ):
-        resp = await client.get("/api/weather/current")
+    ) as mock_cls:
+        resp = await client.get("/api/weather/lookup/51.1000,17.0333")
 
     assert resp.status_code == 200
-    assert resp.json()["nearest_area"][0]["areaName"][0]["value"] == "London"
+    mock_cls.return_value.get.assert_awaited_once()
+    call_args = mock_cls.return_value.get.await_args
+    assert "@51.1000,17.0333" in call_args.args[0]
 
 
 @pytest.mark.asyncio
-async def test_set_display_city_requires_auth(client: AsyncClient) -> None:
-    resp = await client.put("/api/tools/weather/city", json={"city": "Krakow"})
+async def test_weather_locations_unauthorized(client: AsyncClient) -> None:
+    resp = await client.get("/api/weather/locations")
     assert resp.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_set_display_city_updates_config(
-    auth_client: AsyncClient,
-    fake_redis: FakeRedis,
-) -> None:
-    try:
-        with patch(
-            "app.services.weather.httpx.AsyncClient",
-            return_value=_mock_weather_client(),
-        ):
-            put_resp = await auth_client.put(
-                "/api/tools/weather/city",
-                json={"city": "Krakow"},
-            )
-            assert put_resp.status_code == 200
-            assert put_resp.json()["city"] == "Krakow"
+async def test_weather_location_crud(auth_client: AsyncClient) -> None:
+    with patch(
+        "app.services.weather.httpx.AsyncClient",
+        return_value=_mock_weather_client(),
+    ):
+        create_resp = await auth_client.post(
+            "/api/weather/locations",
+            json={"label": "Wroclaw", "query": "Wroclaw"},
+        )
+        assert create_resp.status_code == 201
+        created = create_resp.json()
+        assert created["label"] == "Wroclaw"
+        assert created["query"] == "Wroclaw"
 
-            config_resp = await auth_client.get("/api/weather/config")
-            assert config_resp.status_code == 200
-            assert config_resp.json()["city"] == "Krakow"
+        list_resp = await auth_client.get("/api/weather/locations")
+        assert list_resp.status_code == 200
+        assert len(list_resp.json()) == 1
 
-            current_resp = await auth_client.get("/api/weather/current")
-            assert current_resp.status_code == 200
-    finally:
-        await fake_redis.delete(SITE_CITY_KEY)
+        delete_resp = await auth_client.delete(f"/api/weather/locations/{created['id']}")
+        assert delete_resp.status_code == 204
+
+        list_after = await auth_client.get("/api/weather/locations")
+        assert list_after.json() == []
 
 
 @pytest.mark.asyncio
-async def test_set_display_city_invalid(auth_client: AsyncClient) -> None:
-    resp = await auth_client.put(
-        "/api/tools/weather/city",
-        json={"city": "Paris123"},
+async def test_weather_location_duplicate(auth_client: AsyncClient) -> None:
+    with patch(
+        "app.services.weather.httpx.AsyncClient",
+        return_value=_mock_weather_client(),
+    ):
+        first = await auth_client.post(
+            "/api/weather/locations",
+            json={"label": "Minsk", "query": "Minsk"},
+        )
+        assert first.status_code == 201
+
+        second = await auth_client.post(
+            "/api/weather/locations",
+            json={"label": "Minsk", "query": "Minsk"},
+        )
+        assert second.status_code == 422
+        assert "already" in second.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_weather_location_invalid_query(auth_client: AsyncClient) -> None:
+    resp = await auth_client.post(
+        "/api/weather/locations",
+        json={"label": "Bad", "query": "Paris123"},
     )
     assert resp.status_code == 422
     assert "invalid" in resp.json()["detail"].lower()

@@ -93,7 +93,6 @@ class Settings(BaseSettings):
     TELEGRAM_ALLOWED_USER_ID: int = 0
     TIMEZONE: str = "Europe/Amsterdam"
     EXPENSE_DEFAULT_CURRENCY: str = "PLN"
-    WEATHER_DEFAULT_CITY: str = "Wroclaw"
 
     # Google Calendar
     GOOGLE_CLIENT_ID: str = ""

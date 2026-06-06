@@ -103,18 +103,6 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     external: false,
   },
   {
-    slug: "weather",
-    name: "weather",
-    category: "utilities",
-    categoryLabel: "utilities",
-    description: "Current weather for a city",
-    apiPrefix: "/weather",
-    adminRoute: "/admin/tools/weather",
-    icon: "☀",
-    capabilities: ["read", "write"],
-    external: false,
-  },
-  {
     slug: "currency",
     name: "currency converter",
     category: "utilities",

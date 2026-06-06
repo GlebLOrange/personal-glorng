@@ -1,103 +1,56 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, watch } from "vue";
 
-import { useCachedApi } from "@/composables/useCachedApi";
-import { useSiteWeather } from "@/composables/useSiteWeather";
-import type { WeatherData } from "@/types";
+import { useWeatherLookup } from "@/composables/useWeatherLookup";
 import { weatherLocationLabel } from "@/utils/weather";
 
 const props = withDefaults(
   defineProps<{
-    previewCity?: string;
+    location?: string;
     compact?: boolean;
+    showTime?: boolean;
   }>(),
-  { previewCity: undefined, compact: false },
+  { location: "", compact: false, showTime: false },
 );
 
-const siteWeather = useSiteWeather();
-const previewError = ref<string | null>(null);
+const locationRef = computed(() => props.location ?? "");
 
-const previewUrl = computed(() =>
-  props.previewCity
-    ? `/tools/weather/${encodeURIComponent(props.previewCity)}`
-    : "",
-);
-
-const {
-  data: previewWeather,
-  loading: previewLoading,
-  fetch: fetchPreview,
-} = useCachedApi<WeatherData>(previewUrl);
-
-const isPreview = computed(() => Boolean(props.previewCity?.trim()));
-
-const weather = computed(() =>
-  isPreview.value ? previewWeather.value : siteWeather.weather.value,
-);
-
-const loading = computed(() =>
-  isPreview.value ? previewLoading.value : siteWeather.loading.value,
-);
-
-const error = computed(() =>
-  isPreview.value ? previewError.value : siteWeather.error.value,
-);
+const { weather, loading, error, refresh } = useWeatherLookup(locationRef);
 
 const locationLabel = computed(() =>
   weather.value ? weatherLocationLabel(weather.value) : "",
 );
 
-async function loadPreview(): Promise<void> {
-  if (!props.previewCity?.trim()) {
-    return;
-  }
-  previewError.value = null;
-  try {
-    await fetchPreview();
-  } catch {
-    previewError.value = "Couldn't load weather preview";
-  }
-}
-
-async function retry(): Promise<void> {
-  if (isPreview.value) {
-    await loadPreview();
-    return;
-  }
-  await siteWeather.refresh();
-}
-
 onMounted(() => {
-  if (isPreview.value) {
-    void loadPreview();
-    return;
+  if (locationRef.value.trim()) {
+    void refresh();
   }
-  void siteWeather.refresh();
 });
 
-watch(
-  () => props.previewCity,
-  () => {
-    if (isPreview.value) {
-      void loadPreview();
-    }
-  },
-);
+watch(locationRef, () => {
+  if (locationRef.value.trim()) {
+    void refresh();
+  }
+});
 </script>
 
 <template>
-  <div v-if="loading" class="text-surface-mid text-sm animate-pulse">
+  <div v-if="!location.trim()" class="text-surface-mid text-sm font-mono">
+    No location selected
+  </div>
+
+  <div v-else-if="loading" class="text-surface-mid text-sm font-mono animate-pulse">
     Loading weather...
   </div>
 
-  <div v-else-if="error" class="text-sm space-y-2">
+  <div v-else-if="error" class="text-sm font-mono space-y-2">
     <p class="text-accent-golden">{{ error }}</p>
-    <button type="button" class="text-surface-mid hover:text-surface-light underline" @click="retry">
+    <button type="button" class="text-surface-mid hover:text-surface-light underline" @click="refresh">
       Retry
     </button>
   </div>
 
-  <div v-else-if="weather" class="font-data">
+  <div v-else-if="weather" class="font-mono">
     <div v-if="compact" class="flex items-center gap-2 text-sm flex-wrap">
       <span class="text-surface-light font-bold">
         {{ locationLabel }}

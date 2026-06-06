@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
 import { api } from "@/composables/useApi";
+import { syncGuestWeatherLocations } from "@/composables/useWeatherLocations";
 import type { UserResponse } from "@/types";
 
 export const useAuthStore = defineStore("auth", () => {
@@ -33,6 +34,7 @@ export const useAuthStore = defineStore("auth", () => {
   async function fetchUser(): Promise<void> {
     const { data } = await api.get<UserResponse>("/auth/me");
     user.value = data;
+    await syncGuestWeatherLocations();
   }
 
   function isUnauthorizedError(err: unknown): boolean {
