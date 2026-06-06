@@ -111,7 +111,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     apiPrefix: "/weather",
     adminRoute: "/admin/tools/weather",
     icon: "☀",
-    capabilities: ["read"],
+    capabilities: ["read", "write"],
     external: false,
   },
   {

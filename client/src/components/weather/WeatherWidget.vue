@@ -1,27 +1,88 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import { useCachedApi } from "@/composables/useCachedApi";
+import { useSiteWeather } from "@/composables/useSiteWeather";
 import type { WeatherData } from "@/types";
+import { weatherLocationLabel } from "@/utils/weather";
 
 const props = withDefaults(
   defineProps<{
-    city?: string;
+    previewCity?: string;
     compact?: boolean;
   }>(),
-  { city: "Wroclaw", compact: false },
+  { previewCity: undefined, compact: false },
 );
 
-const url = computed(() => `/tools/weather/${encodeURIComponent(props.city)}`);
-const { data: weather, loading, fetch: fetchWeather } = useCachedApi<WeatherData>(url);
+const siteWeather = useSiteWeather();
+const previewError = ref<string | null>(null);
+
+const previewUrl = computed(() =>
+  props.previewCity
+    ? `/tools/weather/${encodeURIComponent(props.previewCity)}`
+    : "",
+);
+
+const {
+  data: previewWeather,
+  loading: previewLoading,
+  fetch: fetchPreview,
+} = useCachedApi<WeatherData>(previewUrl);
+
+const isPreview = computed(() => Boolean(props.previewCity?.trim()));
+
+const weather = computed(() =>
+  isPreview.value ? previewWeather.value : siteWeather.weather.value,
+);
+
+const loading = computed(() =>
+  isPreview.value ? previewLoading.value : siteWeather.loading.value,
+);
+
+const error = computed(() =>
+  isPreview.value ? previewError.value : siteWeather.error.value,
+);
+
+const locationLabel = computed(() =>
+  weather.value ? weatherLocationLabel(weather.value) : "",
+);
+
+async function loadPreview(): Promise<void> {
+  if (!props.previewCity?.trim()) {
+    return;
+  }
+  previewError.value = null;
+  try {
+    await fetchPreview();
+  } catch {
+    previewError.value = "Couldn't load weather preview";
+  }
+}
+
+async function retry(): Promise<void> {
+  if (isPreview.value) {
+    await loadPreview();
+    return;
+  }
+  await siteWeather.refresh();
+}
 
 onMounted(() => {
-  void fetchWeather();
+  if (isPreview.value) {
+    void loadPreview();
+    return;
+  }
+  void siteWeather.refresh();
 });
 
-watch(url, () => {
-  void fetchWeather();
-});
+watch(
+  () => props.previewCity,
+  () => {
+    if (isPreview.value) {
+      void loadPreview();
+    }
+  },
+);
 </script>
 
 <template>
@@ -29,10 +90,17 @@ watch(url, () => {
     Loading weather...
   </div>
 
+  <div v-else-if="error" class="text-sm font-mono space-y-2">
+    <p class="text-accent-golden">{{ error }}</p>
+    <button type="button" class="text-surface-mid hover:text-surface-light underline" @click="retry">
+      Retry
+    </button>
+  </div>
+
   <div v-else-if="weather" class="font-mono">
     <div v-if="compact" class="flex items-center gap-2 text-sm flex-wrap">
       <span class="text-surface-light font-bold">
-        {{ weather.nearest_area?.[0]?.areaName?.[0]?.value }}
+        {{ locationLabel }}
       </span>
       <span class="text-surface-muted">·</span>
       <span class="accent-gradient text-lg font-bold">
@@ -51,8 +119,7 @@ watch(url, () => {
         <div>
           <div class="text-xs text-surface-mid uppercase mb-1">Location</div>
           <div class="text-surface-light font-bold">
-            {{ weather.nearest_area?.[0]?.areaName?.[0]?.value }},
-            {{ weather.nearest_area?.[0]?.country?.[0]?.value }}
+            {{ locationLabel }}
           </div>
         </div>
         <div>

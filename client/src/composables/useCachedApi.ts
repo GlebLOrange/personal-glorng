@@ -62,3 +62,8 @@ export function useCachedApi<T>(
 
   return { data, loading, fetch: load };
 }
+
+/** Drop a cached entry so the next fetch hits the network. */
+export function invalidateCachedApi(url: string): void {
+  cache.delete(url);
+}

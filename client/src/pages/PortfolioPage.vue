@@ -47,7 +47,7 @@ onMounted(loadResume);
     </p>
 
     <div class="max-w-5xl mx-auto px-6 pt-4 flex justify-end">
-      <WeatherWidget city="Wroclaw" compact />
+      <WeatherWidget compact />
     </div>
 
     <SectionWrapper>
