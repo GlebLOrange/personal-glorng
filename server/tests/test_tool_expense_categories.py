@@ -59,6 +59,18 @@ class TestExpenseCategories:
         )
         assert delete_resp.status_code == 422
 
+    async def test_update_category_budget(self, auth_client: AsyncClient):
+        categories = await auth_client.get("/api/tools/expenses/categories")
+        groceries = next(
+            item for item in categories.json() if item["name"] == "Groceries"
+        )
+        resp = await auth_client.put(
+            f"/api/tools/expenses/categories/{groceries['id']}",
+            json={"name": "Groceries", "monthly_budget": "500.00"},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["monthly_budget"] == "500.00"
+
     async def test_rename_updates_expenses(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
         categories = await auth_client.get("/api/tools/expenses/categories")

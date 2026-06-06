@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 
+import ExpenseCategoryChips from "@/components/expenses/ExpenseCategoryChips.vue";
 import ExpenseCategorySettings from "@/components/expenses/ExpenseCategorySettings.vue";
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
+import ExpenseDateFilters from "@/components/expenses/ExpenseDateFilters.vue";
 import ExpenseFormModal from "@/components/expenses/ExpenseFormModal.vue";
 import ExpenseInsights from "@/components/expenses/ExpenseInsights.vue";
 import ExpenseList from "@/components/expenses/ExpenseList.vue";
@@ -20,6 +22,8 @@ import {
   type CurrencyCode,
   type MonthPreset,
 } from "@/composables/useExpenseFilters";
+import { useExpenseParse } from "@/composables/useExpenseParse";
+import { useExpenseSort } from "@/composables/useExpenseSort";
 import { useExpenseSummary } from "@/composables/useExpenseSummary";
 import { api } from "@/composables/useApi";
 import { useLocalStorageString } from "@/composables/useLocalStorage";
@@ -53,11 +57,13 @@ let filters!: ReturnType<typeof useExpenseFilters>;
 const summaryHook = useExpenseSummary(
   () => filters.queryParams(),
   () => filters.summaryParams(),
+  () => filters.previousSummaryParams(),
 );
 
 const {
   expenses,
   summary,
+  periodChange,
   exchangeRates,
   listLoading,
   lineChart,
@@ -70,11 +76,24 @@ const {
   loadExpenses,
   loadRates,
   loadSummary,
+  loadPreviousSummary,
   reloadListAndSummary,
 } = summaryHook;
 
+const { sortedExpenses, toggleSort, sortIndicator } = useExpenseSort(
+  () => expenses.value,
+  () => displayCurrency.value as CurrencyCode,
+  convertAmount,
+);
+
+const quickAddRef = ref<InstanceType<typeof ExpenseQuickAdd> | null>(null);
+
 async function reloadAfterMutation(): Promise<void> {
-  await Promise.all([loadExpenses(), loadSummary(), loadCategories()]);
+  await Promise.all([loadExpenses(), loadSummary(), loadPreviousSummary(), loadCategories()]);
+}
+
+function focusQuickAdd(): void {
+  quickAddRef.value?.focusEntry();
 }
 
 const categoryManager = useCategoryManager(reloadAfterMutation);
@@ -84,6 +103,7 @@ const {
   newCategoryName,
   editingCategoryId,
   editingCategoryName,
+  editingCategoryBudget,
   categoryOptions,
   defaultCategoryName,
   loadCategories,
@@ -100,8 +120,24 @@ filters = useExpenseFilters(
   loadExpenses,
 );
 
-const { monthPreset, selectedMonth, productFilter, categoryFilter, monthLabel, applyMonthPreset } =
-  filters;
+const {
+  monthPreset,
+  dateFilterMode,
+  selectedMonth,
+  dateFrom,
+  dateTo,
+  productFilter,
+  categoryFilter,
+  monthLabel,
+  hasActiveFilters,
+  applyMonthPreset,
+  clearFilters,
+  queryParams,
+} = filters;
+
+const smartText = ref("");
+const quickAddCurrency = computed(() => displayCurrency.value as CurrencyCode);
+const { parsed, parsing } = useExpenseParse(smartText, quickAddCurrency);
 
 const quickAdd = ref({
   price: "",
@@ -121,11 +157,12 @@ const form = ref({
 const { toast } = useNotify();
 
 const formTitle = computed(() => (editingId.value ? "edit expense" : "new expense"));
-const quickAddCurrency = computed(() => displayCurrency.value as CurrencyCode);
 const expenseCountLabel = computed(() => {
   const count = expenses.value.length;
   return `${count} expense${count === 1 ? "" : "s"}`;
 });
+
+const productSuggestions = computed(() => summary.value?.by_tool.map((item) => item.tool_name) ?? []);
 
 function resolvedCategory(name: string): string {
   if (categoryOptions.value.includes(name)) return name;
@@ -150,6 +187,7 @@ function resetForm(): void {
 }
 
 function resetQuickAdd(): void {
+  smartText.value = "";
   quickAdd.value = {
     price: "",
     category: resolvedCategory(lastCategory.value),
@@ -217,9 +255,37 @@ async function saveExpense(): Promise<void> {
 }
 
 async function quickSaveExpense(): Promise<void> {
+  if (smartText.value.trim()) {
+    if (!parsed.value?.valid) {
+      toast(parsed.value?.error ?? "Could not parse expense", "error");
+      return;
+    }
+
+    loading.value = true;
+    try {
+      await postExpense({
+        tool_name: parsed.value.tool_name ?? "",
+        amount: String(parsed.value.amount),
+        currency: (parsed.value.currency as CurrencyCode) ?? defaultCurrency(),
+        expense_date: parsed.value.expense_date ?? new Date().toISOString().slice(0, 10),
+        category: resolvedCategory(parsed.value.category ?? lastCategory.value),
+        notes: null,
+      });
+      resetQuickAdd();
+      await reloadAfterMutation();
+      focusQuickAdd();
+    } catch (err) {
+      console.error(err);
+      toast(getApiErrorMessage(err, "Failed to save expense"), "error");
+    } finally {
+      loading.value = false;
+    }
+    return;
+  }
+
   const product = quickAdd.value.product.trim();
   if (!product) {
-    toast("Product is required", "error");
+    toast("Enter smart text or a product name", "error");
     return;
   }
 
@@ -242,12 +308,17 @@ async function quickSaveExpense(): Promise<void> {
     });
     resetQuickAdd();
     await reloadAfterMutation();
+    focusQuickAdd();
   } catch (err) {
     console.error(err);
     toast(getApiErrorMessage(err, "Failed to save expense"), "error");
   } finally {
     loading.value = false;
   }
+}
+
+function handleDatePreset(preset: MonthPreset): void {
+  applyMonthPreset(preset);
 }
 
 function openEdit(expense: ToolExpense): void {
@@ -266,6 +337,42 @@ function openEdit(expense: ToolExpense): void {
 function openCreate(): void {
   resetForm();
   showForm.value = true;
+}
+
+async function duplicateExpense(expense: ToolExpense): Promise<void> {
+  smartText.value = "";
+  quickAdd.value = {
+    product: expense.tool_name,
+    price: expense.amount,
+    category: resolvedCategory(expense.category ?? lastCategory.value),
+  };
+  activeTab.value = "transactions";
+  toast("Ready to add again — adjust if needed", "success");
+  await nextTick();
+  focusQuickAdd();
+}
+
+async function exportCsv(): Promise<void> {
+  loading.value = true;
+  try {
+    const { data } = await api.get<Blob>("/tools/expenses/export", {
+      params: queryParams(),
+      responseType: "blob",
+    });
+    const slug = monthLabel.value.replace(/\s+/g, "-").toLowerCase() || "export";
+    const url = URL.createObjectURL(data);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `expenses-${slug}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    toast("CSV exported", "success");
+  } catch (err) {
+    console.error(err);
+    toast(getApiErrorMessage(err, "Failed to export CSV"), "error");
+  } finally {
+    loading.value = false;
+  }
 }
 
 function requestDeleteExpense(id: number): void {
@@ -315,7 +422,7 @@ function switchTab(tab: ExpenseTab): void {
 }
 
 watch(displayCurrency, () => {
-  void loadSummary();
+  void Promise.all([loadSummary(), loadPreviousSummary()]);
 });
 
 watch(defaultCategoryName, (name) => {
@@ -343,33 +450,22 @@ onMounted(() => {
 <template>
   <AdminPageLayout title="monthly expenses" max-width="xl">
     <div class="flex flex-col gap-4 mb-6">
-      <div class="flex flex-wrap gap-2 items-center">
-        <BaseButton
-          v-for="preset in ['this_month', 'last_month', 'custom'] as MonthPreset[]"
-          :key="preset"
-          :variant="monthPreset === preset ? 'primary' : 'ghost'"
-          size="sm"
-          @click="applyMonthPreset(preset)"
-        >
-          {{
-            preset === "this_month"
-              ? "This month"
-              : preset === "last_month"
-                ? "Last month"
-                : "Custom"
-          }}
-        </BaseButton>
-        <input
-          v-model="selectedMonth"
-          type="month"
-          class="bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue h-[34px]"
-          @change="monthPreset = 'custom'"
-        />
-      </div>
+      <ExpenseDateFilters
+        v-model:month-preset="monthPreset"
+        v-model:date-filter-mode="dateFilterMode"
+        v-model:selected-month="selectedMonth"
+        v-model:date-from="dateFrom"
+        v-model:date-to="dateTo"
+        :has-active-filters="hasActiveFilters"
+        @apply-preset="handleDatePreset"
+        @clear-filters="clearFilters"
+      />
 
       <ExpenseSummaryCard
         :summary="summary"
         :month-label="monthLabel"
+        :expense-categories="expenseCategories"
+        :period-change="periodChange"
         :format-money="formatMoney"
       />
     </div>
@@ -392,11 +488,16 @@ onMounted(() => {
 
     <div v-if="activeTab === 'transactions'" class="flex flex-col gap-6">
       <ExpenseQuickAdd
+        ref="quickAddRef"
+        v-model:smart-text="smartText"
         v-model:category="quickAdd.category"
         v-model:product="quickAdd.product"
         v-model:price="quickAdd.price"
         :loading="loading"
+        :parsing="parsing"
+        :parsed="parsed"
         :category-options="categoryOptions"
+        :product-suggestions="productSuggestions"
         :currency-label="quickAddCurrency"
         @submit="quickSaveExpense"
       />
@@ -406,22 +507,19 @@ onMounted(() => {
           <BaseInput v-model="productFilter" placeholder="Filter by product..." />
         </div>
         <div class="flex gap-2 items-end">
-          <select
-            v-model="categoryFilter"
-            class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
-          >
-            <option :value="null">All categories</option>
-            <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-          </select>
+          <BaseButton variant="ghost" :disabled="loading" @click="exportCsv">Export CSV</BaseButton>
           <BaseButton variant="primary" @click="openCreate">+ Add</BaseButton>
         </div>
       </div>
 
+      <ExpenseCategoryChips v-model:category-filter="categoryFilter" :category-options="categoryOptions" />
+
       <p class="text-xs text-surface-mid font-mono -mt-3">{{ expenseCountLabel }}</p>
 
       <ExpenseList
-        :expenses="expenses"
+        :expenses="sortedExpenses"
         :loading="listLoading"
+        :sort-indicator="sortIndicator"
         :month-label="monthLabel"
         :display-currency="displayCurrency as CurrencyCode"
         :exchange-rates="exchangeRates"
@@ -430,6 +528,8 @@ onMounted(() => {
         :convert-amount="convertAmount"
         @edit="openEdit"
         @delete="requestDeleteExpense"
+        @duplicate="duplicateExpense"
+        @sort="toggleSort"
       />
     </div>
 
@@ -446,6 +546,7 @@ onMounted(() => {
       v-model:display-currency="displayCurrency"
       v-model:new-category-name="newCategoryName"
       v-model:editing-category-name="editingCategoryName"
+      v-model:editing-category-budget="editingCategoryBudget"
       :expense-categories="expenseCategories"
       :editing-category-id="editingCategoryId"
       :exchange-rates="exchangeRates"

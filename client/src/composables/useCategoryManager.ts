@@ -11,6 +11,7 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
   const newCategoryName = ref("");
   const editingCategoryId = ref<number | null>(null);
   const editingCategoryName = ref("");
+  const editingCategoryBudget = ref("");
   const { toast } = useNotify();
 
   const categoryOptions = computed(() => expenseCategories.value.map((category) => category.name));
@@ -52,11 +53,13 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
   function startEditCategory(category: ExpenseCategory): void {
     editingCategoryId.value = category.id;
     editingCategoryName.value = category.name;
+    editingCategoryBudget.value = category.monthly_budget ?? "";
   }
 
   function cancelEditCategory(): void {
     editingCategoryId.value = null;
     editingCategoryName.value = "";
+    editingCategoryBudget.value = "";
   }
 
   async function saveCategoryRename(): Promise<void> {
@@ -67,8 +70,22 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
       return;
     }
 
+    const budgetRaw = editingCategoryBudget.value.trim();
+    let monthly_budget: string | null = null;
+    if (budgetRaw) {
+      const budgetValue = parseFloat(budgetRaw);
+      if (Number.isNaN(budgetValue) || budgetValue < 0) {
+        toast("Budget must be zero or greater", "error");
+        return;
+      }
+      monthly_budget = budgetValue.toFixed(2);
+    }
+
     try {
-      await api.put(`/tools/expenses/categories/${editingCategoryId.value}`, { name });
+      await api.put(`/tools/expenses/categories/${editingCategoryId.value}`, {
+        name,
+        monthly_budget,
+      });
       cancelEditCategory();
       toast("Category updated", "success");
       await Promise.all([loadCategories(), onCategoriesChanged()]);
@@ -95,6 +112,7 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
     newCategoryName,
     editingCategoryId,
     editingCategoryName,
+    editingCategoryBudget,
     categoryOptions,
     defaultCategoryName,
     loadCategories,

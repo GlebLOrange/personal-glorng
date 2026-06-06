@@ -1,14 +1,21 @@
 <script setup lang="ts">
+import { computed, ref } from "vue";
+
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import type { ExpenseParseResult } from "@/types";
 
-defineProps<{
+const props = defineProps<{
   loading: boolean;
+  parsing: boolean;
   categoryOptions: string[];
+  productSuggestions: string[];
   currencyLabel: string;
+  parsed: ExpenseParseResult | null;
 }>();
 
+const smartText = defineModel<string>("smartText", { required: true });
 const category = defineModel<string>("category", { required: true });
 const product = defineModel<string>("product", { required: true });
 const price = defineModel<string>("price", { required: true });
@@ -18,43 +25,102 @@ const emit = defineEmits<{ submit: [] }>();
 const selectClassCompact =
   "bg-surface-dark border border-surface-border rounded-lg px-2 py-1.5 text-surface-light font-mono text-xs " +
   "focus:outline-none focus:border-accent-blue transition-colors h-[34px] min-w-[7.5rem]";
+
+const parsedPreview = computed(() => {
+  if (!props.parsed?.valid) return null;
+  const parts = [
+    props.parsed.currency,
+    props.parsed.amount,
+    props.parsed.category,
+    props.parsed.tool_name,
+    "today",
+  ].filter(Boolean);
+  return parts.join(" · ");
+});
+
+const smartError = computed(() => {
+  if (!smartText.value.trim() || props.parsing) return null;
+  if (props.parsed?.valid) return null;
+  return props.parsed?.error ?? null;
+});
+
+const smartInputRef = ref<HTMLInputElement | null>(null);
+
+function focusEntry(): void {
+  smartInputRef.value?.focus();
+}
+
+defineExpose({ focusEntry });
 </script>
 
 <template>
   <BaseCard class="sticky top-4 z-10">
     <p class="text-xs text-surface-mid font-mono uppercase tracking-wider mb-3">Quick add</p>
-    <form class="flex flex-col gap-2" @submit.prevent="emit('submit')">
+
+    <form class="flex flex-col gap-4" @submit.prevent="emit('submit')">
       <div class="flex flex-col sm:flex-row sm:items-end gap-3">
-        <div>
-          <label
-            class="text-[10px] text-surface-mid font-mono uppercase tracking-wider block mb-1"
-          >
-            Category
-          </label>
-          <select v-model="category" :class="selectClassCompact">
-            <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-          </select>
-        </div>
         <div class="flex-1">
-          <BaseInput v-model="product" label="Product" placeholder="Milk, fuel, rent..." />
-        </div>
-        <div class="sm:w-28">
-          <BaseInput
-            v-model="price"
-            label="Price"
-            type="number"
-            step="0.01"
-            min="0.01"
-            placeholder="0.00"
+          <label class="text-sm text-surface-mid font-mono block mb-1">Smart add</label>
+          <input
+            ref="smartInputRef"
+            v-model="smartText"
+            placeholder="89.50 biedronka or 12 lunch"
+            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 h-[42px]"
           />
         </div>
         <BaseButton variant="primary" type="submit" :disabled="loading" class="sm:mb-0.5">
           {{ loading ? "Saving..." : "Save" }}
         </BaseButton>
       </div>
-      <p class="text-[10px] text-surface-mid font-mono">
-        {{ currencyLabel }} · today · full form for date, currency, notes
+
+      <p v-if="parsing" class="text-[10px] text-surface-mid font-mono">Parsing...</p>
+      <p v-else-if="parsedPreview" class="text-[10px] text-accent-blue font-mono">
+        {{ parsedPreview }}
       </p>
+      <p v-else-if="smartError" class="text-[10px] text-red-400 font-mono">{{ smartError }}</p>
+
+      <div class="border-t border-surface-border pt-3">
+        <p class="text-[10px] text-surface-mid font-mono uppercase tracking-wider mb-2">
+          Or use fields
+        </p>
+        <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+          <div>
+            <label
+              class="text-[10px] text-surface-mid font-mono uppercase tracking-wider block mb-1"
+            >
+              Category
+            </label>
+            <select v-model="category" :class="selectClassCompact">
+              <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <label class="text-sm text-surface-mid font-mono block mb-1">Product</label>
+            <input
+              v-model="product"
+              list="expense-product-suggestions"
+              placeholder="Milk, fuel, rent..."
+              class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 h-[42px]"
+            />
+            <datalist id="expense-product-suggestions">
+              <option v-for="name in productSuggestions" :key="name" :value="name" />
+            </datalist>
+          </div>
+          <div class="sm:w-28">
+            <BaseInput
+              v-model="price"
+              label="Price"
+              type="number"
+              step="0.01"
+              min="0.01"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+        <p class="text-[10px] text-surface-mid font-mono mt-2">
+          {{ currencyLabel }} · today · full form for date, currency, notes
+        </p>
+      </div>
     </form>
   </BaseCard>
 </template>

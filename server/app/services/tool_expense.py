@@ -1,3 +1,5 @@
+import csv
+import io
 from calendar import monthrange
 from collections import defaultdict
 from datetime import date
@@ -85,7 +87,9 @@ class ToolExpenseService(CRUDService[ToolExpense]):
         actor_type: AuditActorType = AuditActorType.USER,
     ) -> ToolExpenseResponse:
         await ToolExpenseCategoryService(self.db).ensure_category(data.category)
-        expense = await self.create(data.model_dump())
+        payload = data.model_dump()
+        payload["source"] = source.value
+        expense = await self.create(payload)
         await AuditService(self.db).record(
             AuditRecord(
                 category=AuditCategory.DOMAIN,
@@ -161,6 +165,38 @@ class ToolExpenseService(CRUDService[ToolExpense]):
     async def get_expense(self, expense_id: int) -> ToolExpenseResponse:
         expense = await self.get(expense_id)
         return self._to_response(expense)
+
+    async def export_csv(
+        self,
+        date_from: date | None = None,
+        date_to: date | None = None,
+        tool_name: str | None = None,
+        category: str | None = None,
+    ) -> str:
+        expenses = await self.list_expenses(
+            date_from=date_from,
+            date_to=date_to,
+            tool_name=tool_name,
+            category=category,
+        )
+        buffer = io.StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(
+            ["date", "category", "product", "amount", "currency", "notes", "source"],
+        )
+        for expense in expenses:
+            writer.writerow(
+                [
+                    expense.expense_date.isoformat(),
+                    expense.category or "",
+                    expense.tool_name,
+                    expense.amount,
+                    expense.currency,
+                    expense.notes or "",
+                    expense.source,
+                ],
+            )
+        return buffer.getvalue()
 
     async def get_summary(
         self,
