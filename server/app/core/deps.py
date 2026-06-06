@@ -14,6 +14,8 @@ from app.core.security import decode_token
 from app.db.models.user import User
 from app.db.session import get_db
 from app.services.ai_chat import OpenAIService
+from app.services.recipe import RecipeService
+from app.services.tool_expense import ToolExpenseService
 from app.services.user import get_user_by_public_id
 from app.settings import Settings, get_settings
 from app.workers.pool import get_arq_pool
@@ -143,3 +145,17 @@ def get_arq_pool_dep() -> ArqRedis:
 
 
 ArqPool = Annotated[ArqRedis, Depends(get_arq_pool_dep)]
+
+
+def get_recipe_service(db: DbSession) -> RecipeService:
+    return RecipeService(db)
+
+
+RecipeServiceDep = Annotated[RecipeService, Depends(get_recipe_service)]
+
+
+def get_expense_service(db: DbSession) -> ToolExpenseService:
+    return ToolExpenseService(db)
+
+
+ExpenseServiceDep = Annotated[ToolExpenseService, Depends(get_expense_service)]

@@ -8,7 +8,7 @@ const props = defineProps<{
 }>();
 
 const offset = computed(() => props.utcOffsetHours);
-const { liveTime } = useLiveLocalTime(offset, "time-seconds");
+const { liveTime, liveDateTime } = useLiveLocalTime(offset, "time-seconds");
 </script>
 
 <template>
@@ -19,7 +19,7 @@ const { liveTime } = useLiveLocalTime(offset, "time-seconds");
   >
     <time
       v-if="liveTime"
-      :datetime="liveTime"
+      :datetime="liveDateTime ?? undefined"
       class="block text-4xl md:text-5xl font-bold text-surface-light tabular-nums tracking-tight"
     >
       {{ liveTime }}

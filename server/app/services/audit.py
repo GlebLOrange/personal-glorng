@@ -33,6 +33,31 @@ class AuditService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
+    async def record_domain(
+        self,
+        *,
+        action: str,
+        resource_type: str,
+        resource_id: int,
+        actor_id: int | None = None,
+        actor_type: AuditActorType = AuditActorType.USER,
+        source: AuditSource = AuditSource.WEB_ADMIN,
+        metadata: dict[str, Any] | None = None,
+    ) -> AuditEvent:
+        """Record a domain mutation with standard category defaults."""
+        return await self.record(
+            AuditRecord(
+                category=AuditCategory.DOMAIN,
+                action=action,
+                actor_type=actor_type,
+                actor_id=actor_id,
+                source=source,
+                resource_type=resource_type,
+                resource_id=resource_id,
+                metadata=metadata,
+            ),
+        )
+
     async def record(self, event: AuditRecord) -> AuditEvent:
         """Persist one audit event, filling correlation fields from context."""
         actor_id = event.actor_id

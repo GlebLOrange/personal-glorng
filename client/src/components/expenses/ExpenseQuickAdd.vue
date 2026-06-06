@@ -4,6 +4,7 @@ import { computed, ref } from "vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import { FIELD_INPUT_CLASS, SELECT_CLASS_COMPACT } from "@/constants/formClasses";
 import type { ExpenseParseResult } from "@/types";
 
 const props = defineProps<{
@@ -21,10 +22,6 @@ const product = defineModel<string>("product", { required: true });
 const price = defineModel<string>("price", { required: true });
 
 const emit = defineEmits<{ submit: [] }>();
-
-const selectClassCompact =
-  "bg-surface-dark border border-surface-border rounded-lg px-2 py-1.5 text-surface-light text-xs " +
-  "focus:outline-none focus:border-accent-blue transition-colors h-[34px] min-w-[7.5rem]";
 
 const parsedPreview = computed(() => {
   if (!props.parsed?.valid) return null;
@@ -65,7 +62,7 @@ defineExpose({ focusEntry });
             ref="smartInputRef"
             v-model="smartText"
             placeholder="89.50 biedronka or 12 lunch"
-            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 h-[42px]"
+            :class="FIELD_INPUT_CLASS"
           />
         </div>
         <BaseButton variant="primary" type="submit" :disabled="loading" class="sm:mb-0.5">
@@ -90,7 +87,7 @@ defineExpose({ focusEntry });
             >
               Category
             </label>
-            <select v-model="category" :class="selectClassCompact">
+            <select v-model="category" :class="SELECT_CLASS_COMPACT">
               <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
             </select>
           </div>
@@ -100,7 +97,7 @@ defineExpose({ focusEntry });
               v-model="product"
               list="expense-product-suggestions"
               placeholder="Milk, fuel, rent..."
-              class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 h-[42px]"
+              :class="FIELD_INPUT_CLASS"
             />
             <datalist id="expense-product-suggestions">
               <option v-for="name in productSuggestions" :key="name" :value="name" />

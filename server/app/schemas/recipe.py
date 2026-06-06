@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 
 class RecipeCreate(BaseModel):
@@ -9,10 +9,18 @@ class RecipeCreate(BaseModel):
     steps: list[str] = Field(min_length=1)
     notes: str | None = None
     tags: list[str] = Field(default_factory=list)
-    image_url: str | None = Field(None, max_length=512)
+    image_url: HttpUrl | None = None
     prep_time: int | None = Field(None, ge=0)
     cook_time: int | None = Field(None, ge=0)
     servings: int | None = Field(None, ge=1)
+
+    @field_validator("image_url")
+    @classmethod
+    def https_image_only(cls, value: HttpUrl | None) -> HttpUrl | None:
+        if value is not None and value.scheme != "https":
+            msg = "image_url must use https"
+            raise ValueError(msg)
+        return value
 
 
 class RecipeUpdate(BaseModel):
@@ -21,10 +29,18 @@ class RecipeUpdate(BaseModel):
     steps: list[str] | None = None
     notes: str | None = None
     tags: list[str] | None = None
-    image_url: str | None = Field(None, max_length=512)
+    image_url: HttpUrl | None = None
     prep_time: int | None = Field(None, ge=0)
     cook_time: int | None = Field(None, ge=0)
     servings: int | None = Field(None, ge=1)
+
+    @field_validator("image_url")
+    @classmethod
+    def https_image_only(cls, value: HttpUrl | None) -> HttpUrl | None:
+        if value is not None and value.scheme != "https":
+            msg = "image_url must use https"
+            raise ValueError(msg)
+        return value
 
 
 class RecipeResponse(BaseModel):

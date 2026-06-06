@@ -8,9 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ApiError, NotFoundError
 from app.core.utils import as_utc, generate_short_code, utc_now
-from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.shared_file import SharedFile
-from app.services.audit import AuditRecord, AuditService
+from app.services.audit import AuditService
 from app.settings import get_settings
 
 MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100 MB
@@ -19,6 +18,7 @@ _BLOCKED_EXTENSIONS = frozenset(
     {
         ".html",
         ".htm",
+        ".xhtml",
         ".svg",
         ".exe",
         ".bat",
@@ -29,6 +29,20 @@ _BLOCKED_EXTENSIONS = frozenset(
         ".cjs",
         ".vbs",
         ".ps1",
+        ".php",
+        ".aspx",
+    }
+)
+_DOWNLOAD_SAFE_TYPES = frozenset(
+    {
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "text/plain",
+        "application/zip",
+        "application/gzip",
     }
 )
 
@@ -41,24 +55,68 @@ def _sanitize_filename(name: str) -> str:
     return "".join(c if c.isalnum() or c in ".-_" else "_" for c in name)[:100]
 
 
+def _blocked_extension(filename: str) -> str | None:
+    """Return blocked extension if any suffix in the filename is denied."""
+    parts = Path(filename).name.lower().split(".")
+    for suffix in parts[1:]:
+        ext = f".{suffix}"
+        if ext in _BLOCKED_EXTENSIONS:
+            return ext
+    return None
+
+
+def _sniff_content_type(contents: bytes, filename: str) -> str:
+    """Detect MIME from magic bytes; avoid trusting client-supplied types."""
+    if contents.startswith(b"%PDF"):
+        return "application/pdf"
+    if contents.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if contents[:3] == b"\xff\xd8\xff":
+        return "image/jpeg"
+    if contents.startswith(b"GIF87a") or contents.startswith(b"GIF89a"):
+        return "image/gif"
+    if contents.startswith(b"PK\x03\x04"):
+        return "application/zip"
+    ext = Path(filename).suffix.lower()
+    ext_map = {
+        ".txt": "text/plain",
+        ".pdf": "application/pdf",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+        ".zip": "application/zip",
+        ".gz": "application/gzip",
+    }
+    return ext_map.get(ext, "application/octet-stream")
+
+
+def download_media_type(stored_type: str) -> str:
+    """Serve only known-safe MIME types; force octet-stream otherwise."""
+    if stored_type in _DOWNLOAD_SAFE_TYPES:
+        return stored_type
+    return "application/octet-stream"
+
+
 async def upload(
     db: AsyncSession,
     *,
     filename: str,
     contents: bytes,
-    content_type: str,
     user_id: int,
 ) -> SharedFile:
     """Store file on disk and create DB record."""
     if len(contents) > MAX_UPLOAD_SIZE:
         raise ApiError(413, f"File exceeds {MAX_UPLOAD_SIZE // (1024 * 1024)} MB limit")
 
-    ext = Path(filename).suffix.lower()
-    if ext in _BLOCKED_EXTENSIONS:
-        raise ApiError(400, f"File type '{ext}' is not allowed")
+    blocked = _blocked_extension(filename)
+    if blocked:
+        raise ApiError(400, f"File type '{blocked}' is not allowed")
 
     code = generate_short_code(6)
     stored_name = f"{code}_{_sanitize_filename(filename)}"
+    safe_type = _sniff_content_type(contents, filename)
 
     dest = _shares_dir()
     dest.mkdir(parents=True, exist_ok=True)
@@ -69,7 +127,7 @@ async def upload(
         original_filename=filename[:255],
         file_path=stored_name,
         file_size=len(contents),
-        content_type=content_type,
+        content_type=safe_type,
         downloads=0,
         expires_at=utc_now() + timedelta(hours=EXPIRY_HOURS),
         created_by=user_id,
@@ -78,17 +136,12 @@ async def upload(
     await db.flush()
     await db.refresh(shared)
 
-    await AuditService(db).record(
-        AuditRecord(
-            category=AuditCategory.DOMAIN,
-            action="file.uploaded",
-            actor_type=AuditActorType.USER,
-            actor_id=user_id,
-            source=AuditSource.WEB_ADMIN,
-            resource_type="file",
-            resource_id=shared.id,
-            metadata={"code": shared.code, "filename": filename},
-        ),
+    await AuditService(db).record_domain(
+        action="file.uploaded",
+        resource_type="file",
+        resource_id=shared.id,
+        actor_id=user_id,
+        metadata={"code": shared.code, "filename": filename},
     )
     return shared
 
@@ -98,9 +151,11 @@ async def list_files(
     *,
     offset: int = 0,
     limit: int = 20,
+    user_id: int,
 ) -> list[SharedFile]:
     result = await db.execute(
         select(SharedFile)
+        .where(SharedFile.created_by == user_id)
         .order_by(SharedFile.created_at.desc())
         .offset(offset)
         .limit(limit)
@@ -108,11 +163,13 @@ async def list_files(
     return list(result.scalars().all())
 
 
-async def delete(db: AsyncSession, *, file_id: int) -> None:
+async def delete(db: AsyncSession, *, file_id: int, user_id: int) -> None:
     """Remove file from disk and DB."""
     result = await db.execute(select(SharedFile).where(SharedFile.id == file_id))
     shared = result.scalar_one_or_none()
     if not shared:
+        raise NotFoundError("File not found")
+    if shared.created_by != user_id:
         raise NotFoundError("File not found")
 
     disk_path = _shares_dir() / shared.file_path
@@ -122,15 +179,11 @@ async def delete(db: AsyncSession, *, file_id: int) -> None:
     await db.delete(shared)
     await db.flush()
 
-    await AuditService(db).record(
-        AuditRecord(
-            category=AuditCategory.DOMAIN,
-            action="file.deleted",
-            actor_type=AuditActorType.USER,
-            source=AuditSource.WEB_ADMIN,
-            resource_type="file",
-            resource_id=file_id,
-        ),
+    await AuditService(db).record_domain(
+        action="file.deleted",
+        resource_type="file",
+        resource_id=file_id,
+        actor_id=user_id,
     )
 
 

@@ -1,16 +1,25 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
+import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import { datetimeLocalValue } from "@/utils/dates";
 import { formatDate } from "@/utils/format";
 import type { SyncQueueItem, TaskDetail, TaskIntakeItem, TaskItem, TaskStats } from "@/types";
 
 type Tab = "tasks" | "sync" | "stats" | "intakes";
+
+const TASK_TABS: { id: Tab; label: string }[] = [
+  { id: "tasks", label: "tasks" },
+  { id: "intakes", label: "intakes" },
+  { id: "sync", label: "sync" },
+  { id: "stats", label: "stats" },
+];
 
 const activeTab = ref<Tab>("tasks");
 const tasks = ref<TaskItem[]>([]);
@@ -113,11 +122,9 @@ function closeDetail(): void {
 }
 
 function openCreate(): void {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   createForm.value = {
     title: "",
-    scheduled_at: now.toISOString().slice(0, 16),
+    scheduled_at: datetimeLocalValue(),
     description: "",
     location: "",
   };
@@ -150,8 +157,9 @@ async function createTask(): Promise<void> {
   }
 }
 
-function switchTab(tab: Tab): void {
-  activeTab.value = tab;
+function switchTab(tab: string): void {
+  if (!TASK_TABS.some((item) => item.id === tab)) return;
+  activeTab.value = tab as Tab;
   if (tab === "stats") loadStats();
   if (tab === "sync") loadSyncQueue();
   if (tab === "intakes") loadIntakes();
@@ -165,22 +173,7 @@ onMounted(() => {
 
 <template>
   <AdminPageLayout title="tasks" max-width="xl">
-    <!-- Tab navigation -->
-    <div class="flex gap-2 mb-6 border-b border-surface-border pb-2">
-      <button
-        v-for="tab in ['tasks', 'intakes', 'sync', 'stats'] as Tab[]"
-        :key="tab"
-        :class="[
-          'px-3 py-1.5 text-xs rounded-lg transition-colors',
-          activeTab === tab
-            ? 'bg-accent-blue/20 text-accent-blue'
-            : 'text-surface-mid hover:text-surface-light',
-        ]"
-        @click="switchTab(tab)"
-      >
-        {{ tab }}
-      </button>
-    </div>
+    <AdminTabBar :model-value="activeTab" :tabs="TASK_TABS" @update:model-value="switchTab" />
 
     <!-- Stats -->
     <div v-if="activeTab === 'stats' && stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
