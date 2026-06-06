@@ -79,8 +79,6 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
   }
 
   async function removeCategory(category: ExpenseCategory): Promise<void> {
-    if (!confirm(`Delete category "${category.name}"?`)) return;
-
     try {
       await api.delete(`/tools/expenses/categories/${category.id}`);
       toast("Category deleted", "success");

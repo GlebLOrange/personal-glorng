@@ -5,6 +5,7 @@ export type CurrencyCode = "USD" | "EUR" | "PLN" | "BYN";
 
 export const EXPENSE_CURRENCIES: CurrencyCode[] = ["USD", "EUR", "PLN", "BYN"];
 export const EXPENSE_CURRENCY_STORAGE_KEY = "expense_default_currency";
+export const EXPENSE_LAST_CATEGORY_STORAGE_KEY = "expense_last_category";
 
 function currentMonthValue(d = new Date()): string {
   const year = d.getFullYear();
