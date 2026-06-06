@@ -1,6 +1,5 @@
 FROM python:3.14-alpine
 
-
 WORKDIR /app
 
 RUN apk add --no-cache build-base ffmpeg
