@@ -71,6 +71,10 @@ export interface UrlItem {
   created_at: string;
 }
 
+export interface WeatherConfig {
+  city: string;
+}
+
 export interface WeatherData {
   current_condition: Array<{
     temp_C: string;

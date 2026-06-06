@@ -115,7 +115,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         api_prefix="/weather",
         admin_route="/admin/tools/weather",
         icon="☀",
-        capabilities=("read",),
+        capabilities=("read", "write"),
     ),
     PlatformService(
         slug="currency",
