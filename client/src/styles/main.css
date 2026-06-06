@@ -1,31 +1,13 @@
 @import "tailwindcss";
-
-@font-face {
-  font-family: "Roboto Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/roboto-mono-latin-400-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Roboto Mono";
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url("/fonts/roboto-mono-latin-500-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Roboto Mono";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/roboto-mono-latin-700-normal.woff2") format("woff2");
-}
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
 
 @theme {
-  --font-mono: "Roboto Mono", monospace;
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --color-accent-blue: #7bbde2;
   --color-accent-violet: #b8a3c8;
   --color-accent-golden: #d4ce94;
@@ -38,6 +20,11 @@
   --color-surface-border: #2e3a4e;
   --radius-interactive: 0.5rem;
   --spacing-grid-gap: 0.5rem;
+}
+
+@utility font-data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 @utility tool-grid {
@@ -71,7 +58,7 @@
 }
 
 @utility interactive-surface {
-  @apply bg-surface-card border border-surface-border rounded-lg font-mono;
+  @apply bg-surface-card border border-surface-border rounded-lg;
   &:hover {
     @apply border-accent-blue;
   }
@@ -109,7 +96,7 @@ html {
 }
 
 body {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   background: var(--color-surface-dark);
   min-height: 100vh;
   color: var(--color-surface-light);
@@ -165,5 +152,5 @@ body {
   --cc-footer-color: #8a847e;
   --cc-footer-border-color: #2e3a4e;
 
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
 }

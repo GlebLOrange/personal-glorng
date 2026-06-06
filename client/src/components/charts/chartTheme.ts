@@ -17,16 +17,16 @@ export const chartDefaults = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      labels: { color: CHART_TEXT, font: { family: "Roboto Mono, monospace", size: 11 } },
+      labels: { color: CHART_TEXT, font: { family: "IBM Plex Mono, ui-monospace, monospace", size: 11 } },
     },
   },
   scales: {
     x: {
-      ticks: { color: CHART_TEXT, font: { family: "Roboto Mono, monospace", size: 10 } },
+      ticks: { color: CHART_TEXT, font: { family: "IBM Plex Mono, ui-monospace, monospace", size: 10 } },
       grid: { color: CHART_GRID },
     },
     y: {
-      ticks: { color: CHART_TEXT, font: { family: "Roboto Mono, monospace", size: 10 } },
+      ticks: { color: CHART_TEXT, font: { family: "IBM Plex Mono, ui-monospace, monospace", size: 10 } },
       grid: { color: CHART_GRID },
     },
   },

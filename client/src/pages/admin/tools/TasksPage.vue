@@ -171,7 +171,7 @@ onMounted(() => {
         v-for="tab in ['tasks', 'intakes', 'sync', 'stats'] as Tab[]"
         :key="tab"
         :class="[
-          'px-3 py-1.5 text-xs font-mono rounded-lg transition-colors',
+          'px-3 py-1.5 text-xs rounded-lg transition-colors',
           activeTab === tab
             ? 'bg-accent-blue/20 text-accent-blue'
             : 'text-surface-mid hover:text-surface-light',
@@ -215,7 +215,7 @@ onMounted(() => {
       <div class="flex gap-2 mb-4 items-center justify-between">
         <select
           v-model="filterStatus"
-          class="bg-surface-card border border-surface-border rounded-lg px-3 py-1.5 text-xs font-mono text-surface-light focus:outline-none focus:border-accent-blue"
+          class="bg-surface-card border border-surface-border rounded-lg px-3 py-1.5 text-xs text-surface-light focus:outline-none focus:border-accent-blue"
         >
           <option value="">All statuses</option>
           <option value="pending">Pending</option>
@@ -382,12 +382,12 @@ onMounted(() => {
               />
               <BaseInput v-model="createForm.location" label="Location" placeholder="Optional" />
               <div>
-                <label class="text-sm text-surface-mid font-mono block mb-1">Notes</label>
+                <label class="text-sm text-surface-mid block mb-1">Notes</label>
                 <textarea
                   v-model="createForm.description"
                   rows="3"
                   placeholder="Optional details"
-                  class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors resize-none"
+                  class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors resize-none"
                 />
               </div>
               <div class="flex gap-3 pt-2">

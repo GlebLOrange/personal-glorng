@@ -101,7 +101,7 @@ onMounted(load);
           <span class="text-xs px-2 py-0.5 rounded" :class="categoryClass(event.category)">
             {{ event.category }}
           </span>
-          <span class="font-mono text-surface-light">{{ event.action }}</span>
+          <span class="text-surface-light">{{ event.action }}</span>
           <span class="text-xs text-surface-muted ml-auto">
             {{ formatDate(event.occurred_at) }}
           </span>
@@ -116,7 +116,7 @@ onMounted(load);
             Resource: {{ event.resource_type }}
             <span v-if="event.resource_id">#{{ event.resource_id }}</span>
           </p>
-          <p v-if="event.request_id" class="font-mono">Request: {{ event.request_id }}</p>
+          <p v-if="event.request_id" class="font-data text-xs">Request: {{ event.request_id }}</p>
           <pre
             v-if="event.metadata"
             class="mt-2 p-2 bg-surface-dark rounded text-xs overflow-x-auto"

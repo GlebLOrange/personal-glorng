@@ -86,18 +86,18 @@ watch(
 </script>
 
 <template>
-  <div v-if="loading" class="text-surface-mid text-sm font-mono animate-pulse">
+  <div v-if="loading" class="text-surface-mid text-sm animate-pulse">
     Loading weather...
   </div>
 
-  <div v-else-if="error" class="text-sm font-mono space-y-2">
+  <div v-else-if="error" class="text-sm space-y-2">
     <p class="text-accent-golden">{{ error }}</p>
     <button type="button" class="text-surface-mid hover:text-surface-light underline" @click="retry">
       Retry
     </button>
   </div>
 
-  <div v-else-if="weather" class="font-mono">
+  <div v-else-if="weather" class="font-data">
     <div v-if="compact" class="flex items-center gap-2 text-sm flex-wrap">
       <span class="text-surface-light font-bold">
         {{ locationLabel }}

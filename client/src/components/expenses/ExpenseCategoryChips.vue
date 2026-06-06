@@ -7,7 +7,7 @@ const categoryFilter = defineModel<string | null>("categoryFilter", { required: 
 
 const chipClass = (active: boolean) =>
   [
-    "px-2.5 py-1 text-xs font-mono rounded-lg border transition-colors",
+    "px-2.5 py-1 text-xs rounded-lg border transition-colors",
     active
       ? "bg-accent-blue/20 text-accent-blue border-accent-blue/40"
       : "text-surface-mid border-surface-border hover:text-surface-light",

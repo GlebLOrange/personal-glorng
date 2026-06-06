@@ -65,10 +65,10 @@ async function download(): Promise<void> {
       <BaseInput v-model="url" placeholder="https://example.com/video" label="Video URL" />
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm text-surface-mid font-mono">Format</label>
+        <label class="text-sm text-surface-mid">Format</label>
         <select
           v-model="format"
-          class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors"
+          class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors"
         >
           <option v-for="f in formats" :key="f.value" :value="f.value">
             {{ f.label }}
@@ -76,7 +76,7 @@ async function download(): Promise<void> {
         </select>
       </div>
 
-      <label class="flex items-center gap-2 text-sm text-surface-mid font-mono cursor-pointer">
+      <label class="flex items-center gap-2 text-sm text-surface-mid cursor-pointer">
         <input v-model="audioOnly" type="checkbox" class="accent-accent-blue" />
         Audio only (extract as MP3)
       </label>
@@ -87,14 +87,14 @@ async function download(): Promise<void> {
     </form>
 
     <button
-      class="text-sm text-accent-blue hover:text-accent-violet transition-colors mb-4 font-mono"
+      class="text-sm text-accent-blue hover:text-accent-violet transition-colors mb-4"
       @click="guideOpen = !guideOpen"
     >
       {{ guideOpen ? "▾ Hide" : "▸ Show" }} yt-dlp usage guide
     </button>
 
     <BaseCard v-if="guideOpen">
-      <div class="text-surface-light text-sm space-y-4 font-mono">
+      <div class="text-surface-light text-sm space-y-4">
         <div>
           <h3 class="text-accent-blue font-bold mb-2">Format selection</h3>
           <p class="text-surface-mid mb-1">

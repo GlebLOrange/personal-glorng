@@ -30,7 +30,7 @@ const chartOptions = {
   plugins: {
     legend: {
       position: "right" as const,
-      labels: { color: CHART_TEXT, font: { family: "Roboto Mono, monospace", size: 10 } },
+      labels: { color: CHART_TEXT, font: { family: "IBM Plex Mono, ui-monospace, monospace", size: 10 } },
     },
   },
 };

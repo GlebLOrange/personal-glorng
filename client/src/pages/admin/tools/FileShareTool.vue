@@ -109,10 +109,10 @@ onMounted(loadFiles);
       @click="fileInputRef?.click()"
     >
       <input ref="fileInputRef" type="file" class="hidden" @change="onFileSelect" />
-      <p v-if="selectedName" class="text-surface-light text-sm font-mono">
+      <p v-if="selectedName" class="text-surface-light text-sm">
         {{ selectedName }}
       </p>
-      <p v-else class="text-surface-mid text-sm font-mono">Drop a file here or click to browse</p>
+      <p v-else class="text-surface-mid text-sm">Drop a file here or click to browse</p>
     </div>
 
     <BaseButton

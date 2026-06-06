@@ -136,7 +136,7 @@ function clear(): void {
   <AdminPageLayout title="ai chat">
     <BaseCard class="flex flex-col h-[65vh]">
       <div class="flex items-center gap-3 mb-4 pb-4 border-b border-surface-border">
-        <span class="text-surface-mid font-mono text-xs uppercase tracking-wider">openai</span>
+        <span class="text-surface-mid text-xs uppercase tracking-wider">openai</span>
       </div>
 
       <div class="flex-1 overflow-y-auto space-y-4 mb-4 pr-1">
@@ -175,7 +175,7 @@ function clear(): void {
           v-model="input"
           rows="2"
           placeholder="Ask anything..."
-          class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
+          class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
           @keydown.enter.exact.prevent="send"
         />
         <div class="flex flex-col gap-2">
