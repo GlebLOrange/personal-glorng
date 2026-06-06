@@ -1,4 +1,4 @@
-import { computed, ref, type ComputedRef, type Ref } from "vue";
+import { computed, ref, watch, type ComputedRef, type Ref } from "vue";
 
 import { useCachedApi } from "@/composables/useCachedApi";
 import type { WeatherData } from "@/types";
@@ -29,6 +29,7 @@ export function useWeatherLookup(location: ComputedRef<string>): {
 
   async function refresh(): Promise<void> {
     if (!location.value.trim()) {
+      loading.value = false;
       return;
     }
     error.value = null;
@@ -38,6 +39,16 @@ export function useWeatherLookup(location: ComputedRef<string>): {
       error.value = "Couldn't load weather";
     }
   }
+
+  watch(
+    url,
+    (nextUrl) => {
+      if (nextUrl) {
+        void refresh();
+      }
+    },
+    { immediate: true },
+  );
 
   return {
     weather: data,

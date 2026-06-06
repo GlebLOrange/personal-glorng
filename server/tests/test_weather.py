@@ -3,6 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from httpx import AsyncClient
 
+from app.services.weather import enrich_weather_timezone
+
 WEATHER_PAYLOAD = {
     "current_condition": [
         {
@@ -158,3 +160,34 @@ async def test_weather_location_invalid_query(auth_client: AsyncClient) -> None:
     )
     assert resp.status_code == 422
     assert "invalid" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_enrich_weather_timezone_from_coordinates() -> None:
+    payload = {
+        "nearest_area": [{"latitude": "51.100", "longitude": "17.033"}],
+        "current_condition": [{"temp_C": "16"}],
+    }
+    with patch(
+        "app.services.weather._resolve_utc_offset_hours",
+        new=AsyncMock(return_value=2.0),
+    ):
+        result = await enrich_weather_timezone(payload)
+
+    assert result["time_zone"] == [{"utcOffset": "+2.0"}]
+
+
+@pytest.mark.asyncio
+async def test_enrich_weather_timezone_keeps_existing_offset() -> None:
+    payload = {
+        "time_zone": [{"utcOffset": "+1.0"}],
+        "nearest_area": [{"latitude": "51.100", "longitude": "17.033"}],
+    }
+    with patch(
+        "app.services.weather._resolve_utc_offset_hours",
+        new=AsyncMock(return_value=9.0),
+    ) as mock_resolve:
+        result = await enrich_weather_timezone(payload)
+
+    assert result["time_zone"] == [{"utcOffset": "+1.0"}]
+    mock_resolve.assert_not_awaited()
