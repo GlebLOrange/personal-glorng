@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 
-import ExpenseBarChart from "@/components/charts/ExpenseBarChart.vue";
-import ExpenseDoughnutChart from "@/components/charts/ExpenseDoughnutChart.vue";
-import ExpenseLineChart from "@/components/charts/ExpenseLineChart.vue";
+import ExpenseCategorySettings from "@/components/expenses/ExpenseCategorySettings.vue";
+import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
+import ExpenseFormModal from "@/components/expenses/ExpenseFormModal.vue";
+import ExpenseInsights from "@/components/expenses/ExpenseInsights.vue";
+import ExpenseList from "@/components/expenses/ExpenseList.vue";
+import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
+import ExpenseSummaryCard from "@/components/expenses/ExpenseSummaryCard.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { useCategoryManager } from "@/composables/useCategoryManager";
 import {
   EXPENSE_CURRENCIES,
   EXPENSE_CURRENCY_STORAGE_KEY,
+  EXPENSE_LAST_CATEGORY_STORAGE_KEY,
   useExpenseFilters,
   type CurrencyCode,
   type MonthPreset,
@@ -23,14 +27,23 @@ import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
 import type { ToolExpense } from "@/types";
 
+type ExpenseTab = "transactions" | "insights" | "settings";
+
+const activeTab = ref<ExpenseTab>("transactions");
 const loading = ref(false);
 const showForm = ref(false);
 const editingId = ref<number | null>(null);
-const showCharts = ref(false);
+const deleteTargetId = ref<number | null>(null);
+const deleteCategoryTarget = ref<{ id: number; name: string } | null>(null);
 
 const { value: displayCurrency, set: setDisplayCurrency } = useLocalStorageString(
   EXPENSE_CURRENCY_STORAGE_KEY,
   "PLN",
+);
+
+const { value: lastCategory, set: setLastCategory } = useLocalStorageString(
+  EXPENSE_LAST_CATEGORY_STORAGE_KEY,
+  "Groceries",
 );
 
 // Assigned once below after summary/category hooks are wired.
@@ -46,6 +59,7 @@ const {
   expenses,
   summary,
   exchangeRates,
+  listLoading,
   lineChart,
   barChart,
   doughnutChart,
@@ -67,7 +81,6 @@ const categoryManager = useCategoryManager(reloadAfterMutation);
 
 const {
   expenseCategories,
-  showCategoryManager,
   newCategoryName,
   editingCategoryId,
   editingCategoryName,
@@ -78,7 +91,7 @@ const {
   startEditCategory,
   cancelEditCategory,
   saveCategoryRename,
-  removeCategory,
+  removeCategory: removeCategoryRaw,
 } = categoryManager;
 
 filters = useExpenseFilters(
@@ -92,7 +105,7 @@ const { monthPreset, selectedMonth, productFilter, categoryFilter, monthLabel, a
 
 const quickAdd = ref({
   price: "",
-  category: "Groceries",
+  category: lastCategory.value,
   product: "",
 });
 
@@ -109,13 +122,15 @@ const { toast } = useNotify();
 
 const formTitle = computed(() => (editingId.value ? "edit expense" : "new expense"));
 const quickAddCurrency = computed(() => displayCurrency.value as CurrencyCode);
+const expenseCountLabel = computed(() => {
+  const count = expenses.value.length;
+  return `${count} expense${count === 1 ? "" : "s"}`;
+});
 
-const selectClass =
-  "bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light font-mono text-sm " +
-  "focus:outline-none focus:border-accent-blue transition-colors h-[42px]";
-const selectClassCompact =
-  "bg-surface-dark border border-surface-border rounded-lg px-2 py-1.5 text-surface-light font-mono text-xs " +
-  "focus:outline-none focus:border-accent-blue transition-colors h-[34px] min-w-[7.5rem]";
+function resolvedCategory(name: string): string {
+  if (categoryOptions.value.includes(name)) return name;
+  return defaultCategoryName.value;
+}
 
 function defaultCurrency(): CurrencyCode {
   const value = displayCurrency.value;
@@ -128,7 +143,7 @@ function resetForm(): void {
     amount: "",
     currency: defaultCurrency(),
     expense_date: new Date().toISOString().slice(0, 10),
-    category: defaultCategoryName.value,
+    category: resolvedCategory(lastCategory.value),
     notes: "",
   };
   editingId.value = null;
@@ -137,7 +152,7 @@ function resetForm(): void {
 function resetQuickAdd(): void {
   quickAdd.value = {
     price: "",
-    category: defaultCategoryName.value,
+    category: resolvedCategory(lastCategory.value),
     product: "",
   };
 }
@@ -158,6 +173,9 @@ async function postExpense(payload: {
     toast("Expense created", "success");
   }
   setDisplayCurrency(payload.currency);
+  if (payload.category) {
+    setLastCategory(payload.category);
+  }
 }
 
 async function saveExpense(): Promise<void> {
@@ -212,13 +230,14 @@ async function quickSaveExpense(): Promise<void> {
   }
 
   loading.value = true;
+  const category = resolvedCategory(quickAdd.value.category);
   try {
     await postExpense({
       tool_name: product,
       amount: amount.toFixed(2),
       currency: defaultCurrency(),
       expense_date: new Date().toISOString().slice(0, 10),
-      category: quickAdd.value.category,
+      category,
       notes: null,
     });
     resetQuickAdd();
@@ -246,29 +265,77 @@ function openEdit(expense: ToolExpense): void {
 
 function openCreate(): void {
   resetForm();
-  form.value.category = defaultCategoryName.value;
   showForm.value = true;
 }
 
-async function deleteExpense(id: number): Promise<void> {
-  if (!confirm("Delete this expense?")) return;
+function requestDeleteExpense(id: number): void {
+  deleteTargetId.value = id;
+}
 
+async function confirmDeleteExpense(): Promise<void> {
+  if (deleteTargetId.value === null) return;
+
+  loading.value = true;
   try {
-    await api.delete(`/tools/expenses/${id}`);
+    await api.delete(`/tools/expenses/${deleteTargetId.value}`);
     toast("Expense deleted", "success");
+    deleteTargetId.value = null;
     await reloadAfterMutation();
   } catch (err) {
     console.error(err);
     toast(getApiErrorMessage(err, "Failed to delete expense"), "error");
+  } finally {
+    loading.value = false;
   }
+}
+
+function requestDeleteCategory(category: { id: number; name: string }): void {
+  deleteCategoryTarget.value = category;
+}
+
+async function confirmDeleteCategory(): Promise<void> {
+  if (!deleteCategoryTarget.value) return;
+  const category = expenseCategories.value.find((c) => c.id === deleteCategoryTarget.value!.id);
+  if (!category) {
+    deleteCategoryTarget.value = null;
+    return;
+  }
+
+  loading.value = true;
+  try {
+    await removeCategoryRaw(category);
+    deleteCategoryTarget.value = null;
+  } finally {
+    loading.value = false;
+  }
+}
+
+function switchTab(tab: ExpenseTab): void {
+  activeTab.value = tab;
 }
 
 watch(displayCurrency, () => {
   void loadSummary();
 });
 
+watch(defaultCategoryName, (name) => {
+  if (!categoryOptions.value.includes(quickAdd.value.category)) {
+    quickAdd.value.category = name;
+  }
+});
+
+watch(
+  () => quickAdd.value.category,
+  (category) => {
+    if (categoryOptions.value.includes(category)) {
+      setLastCategory(category);
+    }
+  },
+);
+
 onMounted(() => {
   applyMonthPreset("this_month");
+  quickAdd.value.category = resolvedCategory(lastCategory.value);
   void Promise.all([loadRates(), reloadListAndSummary(), loadCategories()]);
 });
 </script>
@@ -300,309 +367,128 @@ onMounted(() => {
         />
       </div>
 
-      <BaseCard class="flex flex-col gap-4">
-        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-          <div>
-            <p class="text-xs text-surface-mid font-mono uppercase tracking-wider">
-              Total for {{ monthLabel }}
-            </p>
-            <p v-if="summary" class="text-2xl font-bold text-surface-light">
-              {{ formatMoney(summary.total, summary.currency) }}
-            </p>
-            <p v-if="summary?.rates_updated_at" class="text-[10px] text-surface-mid font-mono mt-1">
-              FX via Exchange Rate API · {{ summary.rates_updated_at }}
-            </p>
-          </div>
-          <div>
-            <label class="text-sm text-surface-mid font-mono block mb-1">Show totals in</label>
-            <select
-              v-model="displayCurrency"
-              class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
-            >
-              <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
-            </select>
-          </div>
-        </div>
-        <div
-          v-if="exchangeRates"
-          class="flex flex-wrap gap-3 text-xs font-mono text-surface-mid border-t border-surface-border pt-3"
-        >
-          <span class="text-surface-light">1 USD =</span>
-          <span v-for="c in EXPENSE_CURRENCIES.filter((code) => code !== 'USD')" :key="c">
-            {{ parseFloat(exchangeRates.rates[c]).toFixed(4) }} {{ c }}
-          </span>
-        </div>
-      </BaseCard>
+      <ExpenseSummaryCard
+        :summary="summary"
+        :month-label="monthLabel"
+        :format-money="formatMoney"
+      />
     </div>
 
-    <!-- Quick add -->
-    <BaseCard class="sticky top-4 z-10 mb-6">
-      <p class="text-xs text-surface-mid font-mono uppercase tracking-wider mb-3">Quick add</p>
-      <form class="flex flex-col gap-2" @submit.prevent="quickSaveExpense">
-        <div class="flex flex-col sm:flex-row sm:items-end gap-3">
-          <div>
-            <label
-              class="text-[10px] text-surface-mid font-mono uppercase tracking-wider block mb-1"
-            >
-              Category
-            </label>
-            <select v-model="quickAdd.category" :class="selectClassCompact">
-              <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-            </select>
-          </div>
-          <div class="flex-1">
-            <BaseInput
-              v-model="quickAdd.product"
-              label="Product"
-              placeholder="Milk, fuel, rent..."
-            />
-          </div>
-          <div class="sm:w-28">
-            <BaseInput
-              v-model="quickAdd.price"
-              label="Price"
-              type="number"
-              step="0.01"
-              min="0.01"
-              placeholder="0.00"
-            />
-          </div>
-          <BaseButton variant="primary" type="submit" :disabled="loading" class="sm:mb-0.5">
-            {{ loading ? "Saving..." : "Save" }}
-          </BaseButton>
+    <div class="flex gap-2 mb-6 border-b border-surface-border pb-2">
+      <button
+        v-for="tab in ['transactions', 'insights', 'settings'] as ExpenseTab[]"
+        :key="tab"
+        :class="[
+          'px-3 py-1.5 text-xs font-mono rounded-lg transition-colors capitalize',
+          activeTab === tab
+            ? 'bg-accent-blue/20 text-accent-blue'
+            : 'text-surface-mid hover:text-surface-light',
+        ]"
+        @click="switchTab(tab)"
+      >
+        {{ tab }}
+      </button>
+    </div>
+
+    <div v-if="activeTab === 'transactions'" class="flex flex-col gap-6">
+      <ExpenseQuickAdd
+        v-model:category="quickAdd.category"
+        v-model:product="quickAdd.product"
+        v-model:price="quickAdd.price"
+        :loading="loading"
+        :category-options="categoryOptions"
+        :currency-label="quickAddCurrency"
+        @submit="quickSaveExpense"
+      />
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="flex-1">
+          <BaseInput v-model="productFilter" placeholder="Filter by product..." />
         </div>
-        <p class="text-[10px] text-surface-mid font-mono">
-          {{ quickAddCurrency }} · today · full form for date, currency, notes
-        </p>
-      </form>
-    </BaseCard>
-
-    <!-- Category manager -->
-    <BaseCard class="mb-6">
-      <div class="flex items-center justify-between gap-3 mb-3">
-        <p class="text-xs text-surface-mid font-mono uppercase tracking-wider">Categories</p>
-        <BaseButton variant="ghost" size="sm" @click="showCategoryManager = !showCategoryManager">
-          {{ showCategoryManager ? "Hide" : "Edit" }}
-        </BaseButton>
-      </div>
-
-      <div v-if="showCategoryManager" class="flex flex-col gap-3">
-        <ul class="divide-y divide-surface-border rounded-lg border border-surface-border">
-          <li
-            v-for="category in expenseCategories"
-            :key="category.id"
-            class="flex flex-wrap items-center gap-2 px-3 py-2"
+        <div class="flex gap-2 items-end">
+          <select
+            v-model="categoryFilter"
+            class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
           >
-            <template v-if="editingCategoryId === category.id">
-              <input
-                v-model="editingCategoryName"
-                class="flex-1 min-w-[8rem] bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue"
-                @keyup.enter="saveCategoryRename"
-              />
-              <BaseButton variant="primary" size="sm" @click="saveCategoryRename">Save</BaseButton>
-              <BaseButton variant="ghost" size="sm" @click="cancelEditCategory">Cancel</BaseButton>
-            </template>
-            <template v-else>
-              <span class="flex-1 text-surface-light font-mono text-sm">{{ category.name }}</span>
-              <BaseButton variant="ghost" size="sm" @click="startEditCategory(category)"
-                >Rename</BaseButton
-              >
-              <BaseButton variant="ghost" size="sm" @click="removeCategory(category)"
-                >Delete</BaseButton
-              >
-            </template>
-          </li>
-        </ul>
-
-        <form class="flex flex-col sm:flex-row gap-2" @submit.prevent="addCategory">
-          <input
-            v-model="newCategoryName"
-            placeholder="New category name"
-            class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue h-[42px]"
-          />
-          <BaseButton variant="primary" type="submit">Add category</BaseButton>
-        </form>
-        <p class="text-[10px] text-surface-mid font-mono">
-          Renaming updates all expenses in that category. Delete only works when unused.
-        </p>
-      </div>
-    </BaseCard>
-
-    <!-- Charts -->
-    <div v-if="hasChartData" class="mb-4">
-      <BaseButton variant="ghost" size="sm" @click="showCharts = !showCharts">
-        {{ showCharts ? "Hide charts" : "Show charts" }}
-      </BaseButton>
-    </div>
-    <div v-if="hasChartData && showCharts" class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-      <BaseCard>
-        <h3 class="text-xs font-mono text-surface-mid uppercase tracking-wider mb-3">
-          Monthly trend
-        </h3>
-        <ExpenseLineChart :labels="lineChart.labels" :values="lineChart.values" />
-      </BaseCard>
-      <BaseCard>
-        <h3 class="text-xs font-mono text-surface-mid uppercase tracking-wider mb-3">
-          By category
-        </h3>
-        <ExpenseBarChart :labels="barChart.labels" :values="barChart.values" />
-      </BaseCard>
-      <BaseCard>
-        <h3 class="text-xs font-mono text-surface-mid uppercase tracking-wider mb-3">By product</h3>
-        <ExpenseDoughnutChart :labels="doughnutChart.labels" :values="doughnutChart.values" />
-      </BaseCard>
-    </div>
-
-    <!-- Filters -->
-    <div class="flex flex-col sm:flex-row gap-3 mb-6">
-      <div class="flex-1">
-        <BaseInput v-model="productFilter" placeholder="Filter by product..." />
-      </div>
-      <div class="flex gap-2 items-end">
-        <select
-          v-model="categoryFilter"
-          class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
-        >
-          <option :value="null">All categories</option>
-          <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-        </select>
-        <BaseButton variant="primary" @click="openCreate">+ Add</BaseButton>
-      </div>
-    </div>
-
-    <!-- Form modal -->
-    <Teleport to="body">
-      <Transition name="fade">
-        <div
-          v-if="showForm"
-          class="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4 bg-black/60"
-          @click.self="showForm = false"
-        >
-          <div
-            class="bg-surface-card border border-surface-border rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto"
-          >
-            <h2 class="text-lg font-bold text-surface-light mb-6">
-              <span class="accent-gradient">€ {{ formTitle }}</span>
-            </h2>
-
-            <form class="space-y-4" @submit.prevent="saveExpense">
-              <div>
-                <label class="text-sm text-surface-mid font-mono block mb-1">Category</label>
-                <select v-model="form.category" :class="[selectClass, 'w-full']">
-                  <option value="">—</option>
-                  <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-                </select>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <BaseInput
-                  v-model="form.tool_name"
-                  label="Product"
-                  placeholder="Milk, dinner, Shell..."
-                />
-                <BaseInput
-                  v-model="form.amount"
-                  label="Price"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  placeholder="20.00"
-                />
-              </div>
-
-              <div class="grid grid-cols-2 gap-3">
-                <BaseInput v-model="form.expense_date" label="Date" type="date" />
-                <div>
-                  <label class="text-sm text-surface-mid font-mono block mb-1">Currency</label>
-                  <select v-model="form.currency" :class="[selectClass, 'w-full']">
-                    <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label class="text-sm text-surface-mid font-mono block mb-1">Notes</label>
-                <textarea
-                  v-model="form.notes"
-                  rows="3"
-                  placeholder="Invoice ref, billing period..."
-                  class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
-                />
-              </div>
-
-              <div class="flex gap-3 pt-2">
-                <BaseButton variant="primary" :disabled="loading">
-                  {{ loading ? "Saving..." : "Save" }}
-                </BaseButton>
-                <BaseButton variant="ghost" type="button" @click="showForm = false">
-                  Cancel
-                </BaseButton>
-              </div>
-            </form>
-          </div>
+            <option :value="null">All categories</option>
+            <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
+          </select>
+          <BaseButton variant="primary" @click="openCreate">+ Add</BaseButton>
         </div>
-      </Transition>
-    </Teleport>
+      </div>
 
-    <!-- Transaction table -->
-    <div class="overflow-x-auto rounded-lg border border-surface-border">
-      <table class="w-full text-sm font-mono">
-        <thead>
-          <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card">
-            <th class="px-4 py-3">Date</th>
-            <th class="px-4 py-3">Category</th>
-            <th class="px-4 py-3">Product</th>
-            <th class="px-4 py-3 text-right">Price</th>
-            <th class="px-4 py-3">Notes</th>
-            <th class="px-4 py-3 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="expense in expenses"
-            :key="expense.id"
-            class="border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50"
-          >
-            <td class="px-4 py-3 whitespace-nowrap">
-              {{ formatExpenseDate(expense.expense_date) }}
-            </td>
-            <td class="px-4 py-3 text-surface-mid">{{ expense.category ?? "—" }}</td>
-            <td class="px-4 py-3">{{ expense.tool_name }}</td>
-            <td class="px-4 py-3 text-right whitespace-nowrap">
-              <div>{{ formatMoney(expense.amount, expense.currency) }}</div>
-              <div
-                v-if="expense.currency !== displayCurrency && exchangeRates"
-                class="text-[10px] text-surface-mid"
-              >
-                ≈
-                {{
-                  formatMoney(
-                    convertAmount(
-                      expense.amount,
-                      expense.currency as CurrencyCode,
-                      displayCurrency as CurrencyCode,
-                    ),
-                    displayCurrency,
-                  )
-                }}
-              </div>
-            </td>
-            <td class="px-4 py-3 text-surface-mid max-w-[200px] truncate">
-              {{ expense.notes ?? "—" }}
-            </td>
-            <td class="px-4 py-3 text-right whitespace-nowrap">
-              <BaseButton variant="ghost" size="sm" @click="openEdit(expense)">Edit</BaseButton>
-              <BaseButton variant="ghost" size="sm" @click="deleteExpense(expense.id)"
-                >Delete</BaseButton
-              >
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <p class="text-xs text-surface-mid font-mono -mt-3">{{ expenseCountLabel }}</p>
+
+      <ExpenseList
+        :expenses="expenses"
+        :loading="listLoading"
+        :month-label="monthLabel"
+        :display-currency="displayCurrency as CurrencyCode"
+        :exchange-rates="exchangeRates"
+        :format-money="formatMoney"
+        :format-expense-date="formatExpenseDate"
+        :convert-amount="convertAmount"
+        @edit="openEdit"
+        @delete="requestDeleteExpense"
+      />
     </div>
 
-    <p v-if="expenses.length === 0" class="text-surface-mid text-sm text-center py-8">
-      No expenses in this period. Add your first charge above.
-    </p>
+    <ExpenseInsights
+      v-else-if="activeTab === 'insights'"
+      :has-chart-data="hasChartData"
+      :line-chart="lineChart"
+      :bar-chart="barChart"
+      :doughnut-chart="doughnutChart"
+    />
+
+    <ExpenseCategorySettings
+      v-else
+      v-model:display-currency="displayCurrency"
+      v-model:new-category-name="newCategoryName"
+      v-model:editing-category-name="editingCategoryName"
+      :expense-categories="expenseCategories"
+      :editing-category-id="editingCategoryId"
+      :exchange-rates="exchangeRates"
+      @add-category="addCategory"
+      @start-edit-category="startEditCategory"
+      @cancel-edit-category="cancelEditCategory"
+      @save-category-rename="saveCategoryRename"
+      @remove-category="requestDeleteCategory"
+    />
+
+    <ExpenseFormModal
+      v-model:category="form.category"
+      v-model:tool-name="form.tool_name"
+      v-model:amount="form.amount"
+      v-model:currency="form.currency"
+      v-model:expense-date="form.expense_date"
+      v-model:notes="form.notes"
+      :open="showForm"
+      :loading="loading"
+      :title="formTitle"
+      :category-options="categoryOptions"
+      @submit="saveExpense"
+      @close="showForm = false"
+    />
+
+    <ExpenseConfirmDialog
+      :open="deleteTargetId !== null"
+      title="Delete expense"
+      message="This expense will be permanently removed."
+      confirm-label="Delete"
+      :loading="loading"
+      @confirm="confirmDeleteExpense"
+      @cancel="deleteTargetId = null"
+    />
+
+    <ExpenseConfirmDialog
+      :open="deleteCategoryTarget !== null"
+      title="Delete category"
+      :message="deleteCategoryTarget ? `Delete category '${deleteCategoryTarget.name}'?` : ''"
+      confirm-label="Delete"
+      :loading="loading"
+      @confirm="confirmDeleteCategory"
+      @cancel="deleteCategoryTarget = null"
+    />
   </AdminPageLayout>
 </template>

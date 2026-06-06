@@ -49,6 +49,7 @@ export function useExpenseSummary(
   const expenses = ref<ToolExpense[]>([]);
   const summary = ref<ToolExpenseSummary | null>(null);
   const exchangeRates = ref<ExchangeRates | null>(null);
+  const listLoading = ref(false);
   const { toast } = useNotify();
 
   const lineChart = computed(() => {
@@ -101,6 +102,7 @@ export function useExpenseSummary(
   }
 
   async function loadExpenses(): Promise<void> {
+    listLoading.value = true;
     try {
       const { data } = await api.get<ToolExpense[]>("/tools/expenses", {
         params: queryParams(),
@@ -109,6 +111,8 @@ export function useExpenseSummary(
     } catch (err) {
       console.error(err);
       toast(getApiErrorMessage(err, "Failed to load expenses"), "error");
+    } finally {
+      listLoading.value = false;
     }
   }
 
@@ -142,6 +146,7 @@ export function useExpenseSummary(
     expenses,
     summary,
     exchangeRates,
+    listLoading,
     lineChart,
     barChart,
     doughnutChart,
