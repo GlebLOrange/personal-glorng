@@ -14,15 +14,15 @@ from app.services.weather_location import WeatherLocationService
 from app.settings import get_settings
 
 router = APIRouter(
-    prefix="/weather",
-    tags=["weather"],
+    prefix="/time-date-weather-location",
+    tags=["time-date-weather-location"],
     dependencies=[Depends(rate_limit_api)],
 )
 
 
 @router.get("/config")
 async def get_weather_config() -> dict[str, str]:
-    """Public default city config for clocks seeding and fallbacks."""
+    """Public default city config for section seeding and fallbacks."""
     settings = get_settings()
     return {
         "label": settings.WEATHER_DEFAULT_LABEL,

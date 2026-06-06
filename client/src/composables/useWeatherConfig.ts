@@ -1,7 +1,10 @@
 import { ref, type Ref } from "vue";
 
 import { api } from "@/composables/useApi";
-import { DEFAULT_WEATHER_LOCATION } from "@/constants/weather";
+import {
+  DEFAULT_WEATHER_LOCATION,
+  TIME_DATE_WEATHER_LOCATION_API_PREFIX,
+} from "@/constants/timeDateWeatherLocation";
 import type { WeatherConfig } from "@/types";
 
 const config = ref<WeatherConfig>({ ...DEFAULT_WEATHER_LOCATION });
@@ -22,7 +25,9 @@ export function useWeatherConfig(): {
     if (!loadPromise) {
       loadPromise = (async () => {
         try {
-          const { data } = await api.get<WeatherConfig>("/weather/config");
+          const { data } = await api.get<WeatherConfig>(
+            `${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/config`,
+          );
           config.value = data;
         } catch {
           config.value = { ...DEFAULT_WEATHER_LOCATION };

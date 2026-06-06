@@ -3,10 +3,13 @@ import { computed, ref, watch, type ComputedRef, type Ref } from "vue";
 import { api } from "@/composables/useApi";
 import { useLocalStorage } from "@/composables/useLocalStorage";
 import { useWeatherConfig } from "@/composables/useWeatherConfig";
+import {
+  LEGACY_SAVED_LOCATIONS_STORAGE_KEY,
+  SAVED_LOCATIONS_STORAGE_KEY,
+  TIME_DATE_WEATHER_LOCATION_API_PREFIX,
+} from "@/constants/timeDateWeatherLocation";
 import { useAuthStore } from "@/stores/auth";
 import type { WeatherLocation } from "@/types";
-
-const STORAGE_KEY = "weather:saved-locations";
 
 export interface GuestWeatherLocation {
   id: string;
@@ -19,6 +22,23 @@ export interface GuestWeatherLocation {
 function guestId(): string {
   return crypto.randomUUID();
 }
+
+function migrateLegacyGuestLocations(): void {
+  if (typeof localStorage === "undefined") {
+    return;
+  }
+  if (localStorage.getItem(SAVED_LOCATIONS_STORAGE_KEY)) {
+    return;
+  }
+  const legacy = localStorage.getItem(LEGACY_SAVED_LOCATIONS_STORAGE_KEY);
+  if (!legacy) {
+    return;
+  }
+  localStorage.setItem(SAVED_LOCATIONS_STORAGE_KEY, legacy);
+  localStorage.removeItem(LEGACY_SAVED_LOCATIONS_STORAGE_KEY);
+}
+
+migrateLegacyGuestLocations();
 
 /** Unified saved-location list: server for auth users, localStorage for guests. */
 export function useWeatherLocations(): {
@@ -34,7 +54,7 @@ export function useWeatherLocations(): {
 } {
   const auth = useAuthStore();
   const { fetchConfig, isDefaultQuery } = useWeatherConfig();
-  const guestLocations = useLocalStorage<GuestWeatherLocation[]>(STORAGE_KEY, []);
+  const guestLocations = useLocalStorage<GuestWeatherLocation[]>(SAVED_LOCATIONS_STORAGE_KEY, []);
   const serverLocations = ref<WeatherLocation[]>([]);
   const loading = ref(false);
   const seeding = ref(false);
@@ -64,10 +84,13 @@ export function useWeatherLocations(): {
       const { label, query } = await fetchConfig();
 
       if (isAuthenticated.value) {
-        const { data } = await api.post<WeatherLocation>("/weather/locations", {
-          label,
-          query,
-        });
+        const { data } = await api.post<WeatherLocation>(
+          `${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/locations`,
+          {
+            label,
+            query,
+          },
+        );
         serverLocations.value = [data];
       } else {
         guestLocations.value = [
@@ -96,7 +119,9 @@ export function useWeatherLocations(): {
     loading.value = true;
     error.value = null;
     try {
-      const { data } = await api.get<WeatherLocation[]>("/weather/locations");
+      const { data } = await api.get<WeatherLocation[]>(
+        `${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/locations`,
+      );
       serverLocations.value = data;
       await ensureDefaultLocation();
     } catch {
@@ -114,10 +139,13 @@ export function useWeatherLocations(): {
     }
 
     if (isAuthenticated.value) {
-      const { data } = await api.post<WeatherLocation>("/weather/locations", {
-        label: trimmedLabel,
-        query: trimmedQuery,
-      });
+      const { data } = await api.post<WeatherLocation>(
+        `${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/locations`,
+        {
+          label: trimmedLabel,
+          query: trimmedQuery,
+        },
+      );
       serverLocations.value = [...serverLocations.value, data];
       return;
     }
@@ -149,7 +177,7 @@ export function useWeatherLocations(): {
       if (target && isDefaultLocation(target)) {
         throw new Error("Default location cannot be removed");
       }
-      await api.delete(`/weather/locations/${id}`);
+      await api.delete(`${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/locations/${id}`);
       serverLocations.value = serverLocations.value.filter((loc) => loc.id !== id);
       return;
     }
@@ -195,7 +223,9 @@ export async function syncGuestWeatherLocations(): Promise<void> {
 
   let stored: GuestWeatherLocation[] = [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw =
+      localStorage.getItem(SAVED_LOCATIONS_STORAGE_KEY) ??
+      localStorage.getItem(LEGACY_SAVED_LOCATIONS_STORAGE_KEY);
     if (raw) {
       stored = JSON.parse(raw) as GuestWeatherLocation[];
     }
@@ -209,7 +239,7 @@ export async function syncGuestWeatherLocations(): Promise<void> {
 
   for (const loc of stored) {
     try {
-      await api.post("/weather/locations", {
+      await api.post(`${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/locations`, {
         label: loc.label,
         query: loc.query,
       });
@@ -218,5 +248,6 @@ export async function syncGuestWeatherLocations(): Promise<void> {
     }
   }
 
-  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(SAVED_LOCATIONS_STORAGE_KEY);
+  localStorage.removeItem(LEGACY_SAVED_LOCATIONS_STORAGE_KEY);
 }

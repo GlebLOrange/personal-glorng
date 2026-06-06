@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 
+import { TIME_DATE_WEATHER_LOCATION_ROUTE_NAME } from "@/constants/timeDateWeatherLocation";
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled } from "@/utils/featureFlags";
@@ -102,13 +103,17 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/clocks",
-    name: "clocks",
+    path: "/time-date-weather-location",
+    name: TIME_DATE_WEATHER_LOCATION_ROUTE_NAME,
     component: () => import("@/pages/WeatherPage.vue"),
   },
   {
+    path: "/clocks",
+    redirect: { name: TIME_DATE_WEATHER_LOCATION_ROUTE_NAME },
+  },
+  {
     path: "/weather",
-    redirect: { name: "clocks" },
+    redirect: { name: TIME_DATE_WEATHER_LOCATION_ROUTE_NAME },
   },
   {
     path: "/privacy",
