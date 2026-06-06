@@ -23,7 +23,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         class="relative w-full max-w-lg bg-surface-card border border-surface-border rounded-xl shadow-2xl"
       >
         <div class="flex items-center justify-between px-6 pt-5 pb-3">
-          <h2 v-if="title" class="text-lg font-bold text-surface-light font-mono">
+          <h2 v-if="title" class="text-lg font-bold text-surface-light">
             {{ title }}
           </h2>
           <button

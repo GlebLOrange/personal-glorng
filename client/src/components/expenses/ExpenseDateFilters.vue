@@ -18,7 +18,7 @@ const emit = defineEmits<{
 }>();
 
 const monthInputClass =
-  "bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue h-[34px]";
+  "bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light text-sm focus:outline-none focus:border-accent-blue h-[34px]";
 </script>
 
 <template>
@@ -52,7 +52,7 @@ const monthInputClass =
 
       <template v-else>
         <input v-model="dateFrom" type="date" :class="monthInputClass" aria-label="From date" />
-        <span class="text-surface-mid font-mono text-xs">to</span>
+        <span class="text-surface-mid text-xs">to</span>
         <input v-model="dateTo" type="date" :class="monthInputClass" aria-label="To date" />
       </template>
 

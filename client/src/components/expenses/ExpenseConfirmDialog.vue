@@ -18,7 +18,7 @@ const emit = defineEmits<{
 
 <template>
   <BaseModal v-if="open" :title="title" @close="emit('cancel')">
-    <p class="text-sm text-surface-mid font-mono mb-6">{{ message }}</p>
+    <p class="text-sm text-surface-mid mb-6">{{ message }}</p>
     <div class="flex gap-3">
       <BaseButton variant="primary" :disabled="loading" @click="emit('confirm')">
         {{ loading ? "Working..." : (confirmLabel ?? "Confirm") }}

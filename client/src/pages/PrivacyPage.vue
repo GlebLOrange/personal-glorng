@@ -10,7 +10,7 @@ function openPreferences() {
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto px-6 py-16 font-mono text-surface-light">
+  <div class="max-w-3xl mx-auto px-6 py-16 text-surface-light">
     <h1 class="text-3xl font-bold mb-2 accent-gradient">Privacy Policy</h1>
     <p class="text-surface-muted text-sm mb-10">Last updated: May 26, 2026</p>
 

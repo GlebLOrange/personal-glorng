@@ -26,7 +26,7 @@ const progressPercent = computed(() => {
     class="block group"
   >
     <BaseCard hoverable class="!p-0 overflow-hidden">
-      <div class="px-4 pt-3 pb-1 text-xs uppercase tracking-wider text-surface-mid font-mono">
+      <div class="px-4 pt-3 pb-1 text-xs uppercase tracking-wider text-surface-mid">
         spotify --now
       </div>
 

@@ -5,7 +5,7 @@ import ToastContainer from "@/components/ui/ToastContainer.vue";
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col font-mono">
+  <div class="min-h-screen flex flex-col font-sans">
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <NavBar />
     <main id="main-content" class="flex-1" tabindex="-1">

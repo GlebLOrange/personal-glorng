@@ -7,7 +7,7 @@ defineProps<{
 <template>
   <div
     :class="[
-      'bg-surface-card border border-surface-border rounded-lg p-6 font-mono',
+      'bg-surface-card border border-surface-border rounded-lg p-6',
       hoverable && 'hover:border-accent-blue transition-colors duration-200',
     ]"
   >

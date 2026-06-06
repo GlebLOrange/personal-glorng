@@ -83,7 +83,7 @@ onMounted(loadRates);
 <template>
   <AdminPageLayout title="currency converter" max-width="md">
     <BaseCard class="space-y-4">
-      <p class="text-xs text-surface-mid font-mono">
+      <p class="text-xs text-surface-mid">
         Convert between EUR, USD, PLN, and BYN using live rates.
       </p>
 
@@ -98,19 +98,19 @@ onMounted(loadRates);
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="text-sm text-surface-mid font-mono block mb-1">From</label>
+          <label class="text-sm text-surface-mid block mb-1">From</label>
           <select
             v-model="fromCurrency"
-            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
+            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
           >
             <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
           </select>
         </div>
         <div>
-          <label class="text-sm text-surface-mid font-mono block mb-1">To</label>
+          <label class="text-sm text-surface-mid block mb-1">To</label>
           <select
             v-model="toCurrency"
-            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
+            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
           >
             <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
           </select>
@@ -141,23 +141,23 @@ onMounted(loadRates);
       </div>
 
       <div v-if="result" class="border-t border-surface-border pt-4">
-        <p class="text-xs text-surface-mid font-mono uppercase tracking-wider mb-2">Result</p>
+        <p class="text-xs text-surface-mid uppercase tracking-wider mb-2">Result</p>
         <p class="text-2xl font-bold text-surface-light">
           {{ formatMoney(result.converted, result.to_currency) }}
         </p>
-        <p class="text-sm text-surface-mid mt-1 font-mono">
+        <p class="text-sm text-surface-mid mt-1">
           {{ formatMoney(result.amount, result.from_currency) }}
           →
           {{ result.to_currency }}
         </p>
-        <p v-if="result.rates_updated_at" class="text-[10px] text-surface-mid font-mono mt-2">
+        <p v-if="result.rates_updated_at" class="text-[10px] text-surface-mid mt-2">
           Rates updated {{ result.rates_updated_at }}
         </p>
       </div>
 
       <div
         v-if="rates"
-        class="flex flex-wrap gap-3 text-xs font-mono text-surface-mid border-t border-surface-border pt-3"
+        class="flex flex-wrap gap-3 text-xs text-surface-mid border-t border-surface-border pt-3"
       >
         <span class="text-surface-light">1 USD =</span>
         <span v-for="c in currencies.filter((code) => code !== 'USD')" :key="c">

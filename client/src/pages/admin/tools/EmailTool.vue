@@ -85,7 +85,7 @@ async function preview(): Promise<void> {
     </form>
 
     <div v-if="previewHtml" class="space-y-2">
-      <h3 class="text-sm text-surface-mid font-mono">Preview</h3>
+      <h3 class="text-sm text-surface-mid">Preview</h3>
       <!-- eslint-disable-next-line vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
       <div
         class="border border-surface-border rounded-lg p-4 bg-white"

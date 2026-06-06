@@ -18,7 +18,7 @@ const typeBorderClass: Record<Toast["type"], string> = {
       v-for="t in toasts"
       :key="t.id"
       :class="[
-        'font-mono bg-surface-card border rounded-lg p-4 text-surface-light min-w-[280px] cursor-pointer animate-[slide-in_0.3s_ease-out]',
+        'bg-surface-card border rounded-lg p-4 text-surface-light min-w-[280px] cursor-pointer animate-[slide-in_0.3s_ease-out]',
         typeBorderClass[t.type] || 'border-surface-border',
       ]"
       @click="dismiss(t.id)"

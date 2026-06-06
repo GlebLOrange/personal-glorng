@@ -475,7 +475,7 @@ onMounted(() => {
         v-for="tab in ['transactions', 'insights', 'settings'] as ExpenseTab[]"
         :key="tab"
         :class="[
-          'px-3 py-1.5 text-xs font-mono rounded-lg transition-colors capitalize',
+          'px-3 py-1.5 text-xs rounded-lg transition-colors capitalize',
           activeTab === tab
             ? 'bg-accent-blue/20 text-accent-blue'
             : 'text-surface-mid hover:text-surface-light',
@@ -514,7 +514,7 @@ onMounted(() => {
 
       <ExpenseCategoryChips v-model:category-filter="categoryFilter" :category-options="categoryOptions" />
 
-      <p class="text-xs text-surface-mid font-mono -mt-3">{{ expenseCountLabel }}</p>
+      <p class="text-xs text-surface-mid -mt-3">{{ expenseCountLabel }}</p>
 
       <ExpenseList
         :expenses="sortedExpenses"

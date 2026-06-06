@@ -10,7 +10,7 @@ defineProps<{
   <button
     :disabled="disabled"
     :class="[
-      'font-mono font-medium transition-all duration-200 rounded-lg border',
+      'font-medium transition-all duration-200 rounded-lg border',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
       'disabled:opacity-50 disabled:cursor-not-allowed',
       variant === 'primary'

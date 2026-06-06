@@ -64,7 +64,7 @@ def get_email_backend() -> EmailBackend:
 def _wrap_email(title: str, body: str) -> str:
     """Shared HTML email wrapper -- single source for layout."""
     return (
-        "<div style=\"font-family:'Roboto Mono',monospace;max-width:480px;"
+        "<div style=\"font-family:'IBM Plex Mono',monospace;max-width:480px;"
         "margin:0 auto;padding:24px;background:#1a1a1a;color:#f5f5f5;"
         'border-radius:8px;">'
         f'<h2 style="color:#f97316;">{escape(title)}</h2>'
