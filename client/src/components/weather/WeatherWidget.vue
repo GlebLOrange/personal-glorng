@@ -1,19 +1,33 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
+import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
-import { weatherLocationLabel } from "@/utils/weather";
+import {
+  formatLiveLocalDateTime,
+  formatLiveLocalTime,
+  weatherLocationLabel,
+  weatherUtcOffsetHours,
+} from "@/utils/weather";
 
 const props = withDefaults(
   defineProps<{
     location?: string;
     compact?: boolean;
+    bar?: boolean;
     showTime?: boolean;
   }>(),
-  { location: "", compact: false, showTime: false },
+  {
+    location: "",
+    compact: false,
+    bar: false,
+    showTime: true,
+  },
 );
 
-const locationRef = computed(() => props.location ?? "");
+const { config, fetchConfig } = useWeatherConfig();
+
+const locationRef = computed(() => props.location.trim() || config.value.query);
 
 const { weather, loading, error, refresh } = useWeatherLookup(locationRef);
 
@@ -21,9 +35,34 @@ const locationLabel = computed(() =>
   weather.value ? weatherLocationLabel(weather.value) : "",
 );
 
-onMounted(() => {
+const liveTime = ref<string | null>(null);
+let timer: ReturnType<typeof setInterval> | null = null;
+
+function updateLiveTime(): void {
+  if (!weather.value || !props.showTime) {
+    liveTime.value = null;
+    return;
+  }
+  const offset = weatherUtcOffsetHours(weather.value);
+  if (offset === null) {
+    liveTime.value = null;
+    return;
+  }
+  liveTime.value = props.bar ? formatLiveLocalDateTime(offset) : formatLiveLocalTime(offset);
+}
+
+onMounted(async () => {
+  await fetchConfig();
   if (locationRef.value.trim()) {
     void refresh();
+  }
+  updateLiveTime();
+  timer = setInterval(updateLiveTime, 1_000);
+});
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer);
   }
 });
 
@@ -32,14 +71,21 @@ watch(locationRef, () => {
     void refresh();
   }
 });
+
+watch(weather, () => {
+  updateLiveTime();
+});
+
+watch(
+  () => [props.showTime, props.bar] as const,
+  () => {
+    updateLiveTime();
+  },
+);
 </script>
 
 <template>
-  <div v-if="!location.trim()" class="text-surface-mid text-sm font-mono">
-    No location selected
-  </div>
-
-  <div v-else-if="loading" class="text-surface-mid text-sm font-mono animate-pulse">
+  <div v-if="loading" class="text-surface-mid text-sm font-mono animate-pulse">
     Loading weather...
   </div>
 
@@ -51,18 +97,75 @@ watch(locationRef, () => {
   </div>
 
   <div v-else-if="weather" class="font-mono">
-    <div v-if="compact" class="flex items-center gap-2 text-sm flex-wrap">
-      <span class="text-surface-light font-bold">
+    <div
+      v-if="compact && bar"
+      class="flex items-center gap-3 flex-wrap min-w-0 text-base"
+    >
+      <span class="text-surface-light font-bold truncate">
         {{ locationLabel }}
       </span>
+      <template v-if="liveTime">
+        <span class="text-surface-muted">·</span>
+        <time
+          :datetime="liveTime"
+          class="shrink-0 text-sm sm:text-base font-bold text-surface-light"
+        >
+          {{ liveTime }}
+        </time>
+      </template>
       <span class="text-surface-muted">·</span>
-      <span class="accent-gradient text-lg font-bold">
+      <span class="font-bold accent-gradient text-xl tabular-nums">
+        {{ weather.current_condition?.[0]?.temp_C }}°C
+      </span>
+      <span class="inline-flex items-center gap-1 text-surface-mid shrink-0">
+        <svg
+          aria-hidden="true"
+          class="w-4 h-4 text-accent-blue"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <path
+            d="M12 2.69c-1.46 2.05-3.62 3.88-3.62 6.31a3.62 3.62 0 0 0 7.24 0c0-2.43-2.16-4.26-3.62-6.31zm0 14.5c-3.31 0-6 2.24-6 5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1c0-2.76-2.69-5-6-5z"
+          />
+        </svg>
+        <span>{{ weather.current_condition?.[0]?.humidity }}%</span>
+      </span>
+      <span class="inline-flex items-center gap-1 text-surface-mid shrink-0">
+        <svg
+          aria-hidden="true"
+          class="w-4 h-4 text-accent-violet"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M3 8c2-2 4-1 6 1s4 2 6 0 4-2 6 1" />
+          <path d="M3 14c2-2 4-1 6 1s4 2 6 0 4-2 6 1" />
+        </svg>
+        <span>{{ weather.current_condition?.[0]?.windspeedKmph }} km/h</span>
+      </span>
+    </div>
+
+    <div
+      v-else-if="compact"
+      class="flex items-center gap-2 flex-wrap min-w-0 text-sm"
+    >
+      <span class="text-surface-light font-bold truncate">
+        {{ locationLabel }}
+      </span>
+      <template v-if="liveTime">
+        <span class="text-surface-muted">·</span>
+        <span class="text-surface-mid tabular-nums shrink-0">{{ liveTime }}</span>
+      </template>
+      <span class="text-surface-muted">·</span>
+      <span class="font-bold accent-gradient text-lg">
         {{ weather.current_condition?.[0]?.temp_C }}°C
       </span>
       <span class="text-surface-muted">·</span>
-      <span class="text-surface-mid"> {{ weather.current_condition?.[0]?.humidity }}% </span>
+      <span class="text-surface-mid">{{ weather.current_condition?.[0]?.humidity }}%</span>
       <span class="text-surface-muted">·</span>
-      <span class="text-surface-mid">
+      <span class="text-surface-mid truncate">
         {{ weather.current_condition?.[0]?.weatherDesc?.[0]?.value }}
       </span>
     </div>

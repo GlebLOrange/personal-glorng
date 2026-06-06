@@ -2,6 +2,7 @@ import { computed, ref, watch, type ComputedRef, type Ref } from "vue";
 
 import { api } from "@/composables/useApi";
 import { useLocalStorage } from "@/composables/useLocalStorage";
+import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import { useAuthStore } from "@/stores/auth";
 import type { WeatherLocation } from "@/types";
 
@@ -12,6 +13,7 @@ export interface GuestWeatherLocation {
   label: string;
   query: string;
   sort_order: number;
+  is_default?: boolean;
 }
 
 function guestId(): string {
@@ -22,17 +24,22 @@ function guestId(): string {
 export function useWeatherLocations(): {
   locations: ComputedRef<Array<WeatherLocation | GuestWeatherLocation>>;
   loading: Ref<boolean>;
+  seeding: Ref<boolean>;
   error: Ref<string | null>;
   isAuthenticated: ComputedRef<boolean>;
+  isDefaultLocation: (loc: WeatherLocation | GuestWeatherLocation) => boolean;
   addLocation: (label: string, query: string) => Promise<void>;
   removeLocation: (id: number | string) => Promise<void>;
   refresh: () => Promise<void>;
 } {
   const auth = useAuthStore();
+  const { fetchConfig, isDefaultQuery } = useWeatherConfig();
   const guestLocations = useLocalStorage<GuestWeatherLocation[]>(STORAGE_KEY, []);
   const serverLocations = ref<WeatherLocation[]>([]);
   const loading = ref(false);
+  const seeding = ref(false);
   const error = ref<string | null>(null);
+  const defaultSeeded = ref(false);
 
   const isAuthenticated = computed(() => auth.isAuthenticated);
 
@@ -40,8 +47,50 @@ export function useWeatherLocations(): {
     isAuthenticated.value ? serverLocations.value : guestLocations.value,
   );
 
+  function isDefaultLocation(loc: WeatherLocation | GuestWeatherLocation): boolean {
+    if ("is_default" in loc && loc.is_default) {
+      return true;
+    }
+    return isDefaultQuery(loc.query);
+  }
+
+  async function ensureDefaultLocation(): Promise<void> {
+    if (defaultSeeded.value || locations.value.length > 0) {
+      return;
+    }
+
+    seeding.value = true;
+    try {
+      const { label, query } = await fetchConfig();
+
+      if (isAuthenticated.value) {
+        const { data } = await api.post<WeatherLocation>("/weather/locations", {
+          label,
+          query,
+        });
+        serverLocations.value = [data];
+      } else {
+        guestLocations.value = [
+          {
+            id: guestId(),
+            label,
+            query,
+            sort_order: 0,
+            is_default: true,
+          },
+        ];
+      }
+      defaultSeeded.value = true;
+    } catch {
+      error.value = "Couldn't initialize default city";
+    } finally {
+      seeding.value = false;
+    }
+  }
+
   async function refresh(): Promise<void> {
     if (!isAuthenticated.value) {
+      await ensureDefaultLocation();
       return;
     }
     loading.value = true;
@@ -49,6 +98,7 @@ export function useWeatherLocations(): {
     try {
       const { data } = await api.get<WeatherLocation[]>("/weather/locations");
       serverLocations.value = data;
+      await ensureDefaultLocation();
     } catch {
       error.value = "Couldn't load saved locations";
     } finally {
@@ -95,9 +145,18 @@ export function useWeatherLocations(): {
 
   async function removeLocation(id: number | string): Promise<void> {
     if (isAuthenticated.value) {
+      const target = serverLocations.value.find((loc) => loc.id === id);
+      if (target && isDefaultLocation(target)) {
+        throw new Error("Default location cannot be removed");
+      }
       await api.delete(`/weather/locations/${id}`);
       serverLocations.value = serverLocations.value.filter((loc) => loc.id !== id);
       return;
+    }
+
+    const target = guestLocations.value.find((loc) => loc.id === id);
+    if (target && isDefaultLocation(target)) {
+      throw new Error("Default location cannot be removed");
     }
 
     guestLocations.value = guestLocations.value.filter((loc) => loc.id !== id);
@@ -108,6 +167,8 @@ export function useWeatherLocations(): {
     (authenticated) => {
       if (authenticated) {
         void refresh();
+      } else {
+        void ensureDefaultLocation();
       }
     },
     { immediate: true },
@@ -116,8 +177,10 @@ export function useWeatherLocations(): {
   return {
     locations,
     loading,
+    seeding,
     error,
     isAuthenticated,
+    isDefaultLocation,
     addLocation,
     removeLocation,
     refresh,

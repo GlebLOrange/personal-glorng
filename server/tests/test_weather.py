@@ -74,6 +74,15 @@ async def test_weather_locations_unauthorized(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_weather_config(client: AsyncClient) -> None:
+    resp = await client.get("/api/weather/config")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["label"] == "Wrocław"
+    assert data["query"] == "Wroclaw"
+
+
+@pytest.mark.asyncio
 async def test_weather_location_crud(auth_client: AsyncClient) -> None:
     with patch(
         "app.services.weather.httpx.AsyncClient",
@@ -81,12 +90,12 @@ async def test_weather_location_crud(auth_client: AsyncClient) -> None:
     ):
         create_resp = await auth_client.post(
             "/api/weather/locations",
-            json={"label": "Wroclaw", "query": "Wroclaw"},
+            json={"label": "London", "query": "London"},
         )
         assert create_resp.status_code == 201
         created = create_resp.json()
-        assert created["label"] == "Wroclaw"
-        assert created["query"] == "Wroclaw"
+        assert created["label"] == "London"
+        assert created["query"] == "London"
 
         list_resp = await auth_client.get("/api/weather/locations")
         assert list_resp.status_code == 200
@@ -97,6 +106,28 @@ async def test_weather_location_crud(auth_client: AsyncClient) -> None:
 
         list_after = await auth_client.get("/api/weather/locations")
         assert list_after.json() == []
+
+
+@pytest.mark.asyncio
+async def test_weather_location_cannot_delete_default(auth_client: AsyncClient) -> None:
+    with patch(
+        "app.services.weather.httpx.AsyncClient",
+        return_value=_mock_weather_client(),
+    ):
+        create_resp = await auth_client.post(
+            "/api/weather/locations",
+            json={"label": "Wrocław", "query": "Wroclaw"},
+        )
+        assert create_resp.status_code == 201
+        created = create_resp.json()
+
+        delete_resp = await auth_client.delete(f"/api/weather/locations/{created['id']}")
+        assert delete_resp.status_code == 422
+        assert "default" in delete_resp.json()["detail"].lower()
+
+        list_resp = await auth_client.get("/api/weather/locations")
+        assert len(list_resp.json()) == 1
+        assert list_resp.json()[0]["id"] == created["id"]
 
 
 @pytest.mark.asyncio

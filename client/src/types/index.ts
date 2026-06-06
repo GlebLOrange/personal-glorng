@@ -78,6 +78,11 @@ export interface WeatherLocation {
   sort_order: number;
 }
 
+export interface WeatherConfig {
+  label: string;
+  query: string;
+}
+
 export interface WeatherData {
   current_condition: Array<{
     temp_C: string;
