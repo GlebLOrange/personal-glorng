@@ -2,8 +2,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.security import create_access_token
 from app.services.weather import enrich_weather_timezone
+from tests.factories import create_user
 
 WEATHER_PAYLOAD = {
     "current_condition": [
@@ -73,6 +76,24 @@ async def test_weather_lookup_coords(client: AsyncClient) -> None:
 async def test_weather_locations_unauthorized(client: AsyncClient) -> None:
     resp = await client.get("/api/time-date-weather-location/locations")
     assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_weather_location_mutations_unauthorized(client: AsyncClient) -> None:
+    create_resp = await client.post(
+        "/api/time-date-weather-location/locations",
+        json={"label": "London", "query": "London"},
+    )
+    assert create_resp.status_code == 401
+
+    delete_resp = await client.delete("/api/time-date-weather-location/locations/1")
+    assert delete_resp.status_code == 401
+
+    reorder_resp = await client.put(
+        "/api/time-date-weather-location/locations/reorder",
+        json={"ordered_ids": [1]},
+    )
+    assert reorder_resp.status_code == 401
 
 
 @pytest.mark.asyncio
@@ -160,6 +181,37 @@ async def test_weather_location_invalid_query(auth_client: AsyncClient) -> None:
     )
     assert resp.status_code == 422
     assert "invalid" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_weather_location_delete_other_user_forbidden(
+    client: AsyncClient,
+    db: AsyncSession,
+) -> None:
+    owner = await create_user(db, email="owner@example.com", password="pass12345")
+    other = await create_user(db, email="other@example.com", password="pass12345")
+    await db.commit()
+
+    owner_token = create_access_token(str(owner.public_id))
+    other_token = create_access_token(str(other.public_id))
+
+    with patch(
+        "app.services.weather.httpx.AsyncClient",
+        return_value=_mock_weather_client(),
+    ):
+        create_resp = await client.post(
+            "/api/time-date-weather-location/locations",
+            json={"label": "London", "query": "London"},
+            headers={"Authorization": f"Bearer {owner_token}"},
+        )
+        assert create_resp.status_code == 201
+        location_id = create_resp.json()["id"]
+
+        delete_resp = await client.delete(
+            f"/api/time-date-weather-location/locations/{location_id}",
+            headers={"Authorization": f"Bearer {other_token}"},
+        )
+        assert delete_resp.status_code == 404
 
 
 @pytest.mark.asyncio

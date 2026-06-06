@@ -12,6 +12,7 @@ class PlatformServiceResponse(BaseModel):
     icon: str
     capabilities: list[str]
     external: bool
+    public: bool = False
 
 
 class PlatformCatalogResponse(BaseModel):

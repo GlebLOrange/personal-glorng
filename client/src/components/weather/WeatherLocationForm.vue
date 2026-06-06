@@ -6,6 +6,8 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 
 const props = defineProps<{
   addLocation: (label: string, query: string) => Promise<void>;
+  disabled?: boolean;
+  helperText?: string | null;
 }>();
 
 const city = ref("");
@@ -42,9 +44,14 @@ async function submit(): Promise<void> {
       aria-label="Search city to add"
     />
     <BaseInput v-model="label" placeholder="Label (optional)" class="sm:max-w-48" />
-    <BaseButton type="submit" variant="primary" :disabled="saving || !city.trim()">
+    <BaseButton
+      type="submit"
+      variant="primary"
+      :disabled="saving || !city.trim() || props.disabled"
+    >
       {{ saving ? "..." : "Add" }}
     </BaseButton>
   </form>
+  <p v-if="props.helperText" class="text-xs text-surface-mid mt-2">{{ props.helperText }}</p>
   <p v-if="error" class="text-xs text-accent-golden mt-2">{{ error }}</p>
 </template>

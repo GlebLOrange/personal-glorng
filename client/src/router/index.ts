@@ -27,10 +27,18 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/admin/tools/calculator",
-    name: "tool-calculator",
+    path: "/tools",
+    name: "tools",
+    component: () => import("@/pages/ToolsPage.vue"),
+  },
+  {
+    path: "/calculator",
+    name: "calculator",
     component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
-    meta: { requiresAuth: true },
+  },
+  {
+    path: "/admin/tools/calculator",
+    redirect: { name: "calculator" },
   },
   {
     path: "/admin/tools/currency",
@@ -133,7 +141,6 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-recipes": "recipes",
   "tool-file-share": "file-share",
   "tool-url-shortener": "url-shortener",
-  "tool-calculator": "calculator",
   "tool-vid-download": "vid-download",
   "tool-email": "email",
   "tool-feedback": "feedback",
