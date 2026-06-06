@@ -190,6 +190,7 @@ export interface ExpenseCategory {
   id: number;
   name: string;
   sort_order: number;
+  monthly_budget: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -212,6 +213,7 @@ export interface ToolExpense {
   expense_date: string;
   category: string | null;
   notes: string | null;
+  source: string;
   created_at: string;
   updated_at: string;
 }

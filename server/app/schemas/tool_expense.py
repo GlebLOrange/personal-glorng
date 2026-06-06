@@ -55,6 +55,7 @@ class ToolExpenseResponse(BaseModel):
     expense_date: date
     category: str | None
     notes: str | None
+    source: str
     created_at: datetime
     updated_at: datetime
 

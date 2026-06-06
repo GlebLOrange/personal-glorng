@@ -1,6 +1,7 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import Response
 
 from app.core.deps import AuthorizedUser, DbSession, require_capability
 from app.schemas.common import MessageResponse
@@ -158,6 +159,35 @@ async def list_expenses(
         date_to=resolved_to,
         tool_name=tool_name,
         category=category,
+    )
+
+
+@router.get("/export")
+async def export_expenses(
+    db: DbSession,
+    user: AuthorizedUser,  # noqa: ARG001
+    month: str | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    tool_name: str | None = None,
+    category: str | None = None,
+) -> Response:
+    svc = ToolExpenseService(db)
+    resolved_from, resolved_to = svc.resolve_date_range(
+        month=month,
+        date_from=date_from,
+        date_to=date_to,
+    )
+    csv_content = await svc.export_csv(
+        date_from=resolved_from,
+        date_to=resolved_to,
+        tool_name=tool_name,
+        category=category,
+    )
+    return Response(
+        content=csv_content,
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="expenses.csv"'},
     )
 
 

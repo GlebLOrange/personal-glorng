@@ -22,6 +22,7 @@ class TestToolExpensesCRUD:
         assert data["tool_name"] == "Cursor"
         assert data["amount"] == "20.00"
         assert data["category"] == "AI"
+        assert data["source"] == "web_admin"
 
     async def test_list_expenses(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
@@ -176,6 +177,16 @@ class TestToolExpensesCRUD:
         assert data["currency"] == "PLN"
         assert data["category"] == "Groceries"
         assert data["tool_name"] == "Biedronka"
+
+    async def test_export_expenses_csv(self, auth_client: AsyncClient):
+        await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
+        resp = await auth_client.get("/api/tools/expenses/export")
+        assert resp.status_code == 200
+        assert "text/csv" in resp.headers["content-type"]
+        body = resp.text
+        assert "date,category,product,amount,currency,notes,source" in body
+        assert "Cursor" in body
+        assert "web_admin" in body
 
     async def test_parse_expense_invalid(self, auth_client: AsyncClient):
         resp = await auth_client.post(

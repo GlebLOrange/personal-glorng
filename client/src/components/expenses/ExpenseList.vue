@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
 import type { ExchangeRates, ToolExpense } from "@/types";
+import { expenseSourceLabel } from "@/utils/expenseSource";
 
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 
@@ -18,6 +19,7 @@ defineProps<{
 const emit = defineEmits<{
   edit: [expense: ToolExpense];
   delete: [id: number];
+  duplicate: [expense: ToolExpense];
 }>();
 
 const skeletonRows = 5;
@@ -49,6 +51,9 @@ const skeletonRows = 5;
           <span class="text-xs font-mono text-surface-mid">
             {{ expense.category ?? "Uncategorized" }} · {{ formatExpenseDate(expense.expense_date) }}
           </span>
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface-border text-surface-mid">
+            {{ expenseSourceLabel(expense.source) }}
+          </span>
         </div>
         <p class="text-surface-light font-mono text-sm mb-2">{{ expense.tool_name }}</p>
         <div class="text-right font-mono text-sm text-surface-light mb-3">
@@ -73,7 +78,10 @@ const skeletonRows = 5;
         <p v-if="expense.notes" class="text-xs text-surface-mid font-mono mb-3 truncate">
           {{ expense.notes }}
         </p>
-        <div class="flex gap-2 justify-end">
+        <div class="flex gap-2 justify-end flex-wrap">
+          <BaseButton variant="ghost" size="sm" @click="emit('duplicate', expense)">
+            Again
+          </BaseButton>
           <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">Edit</BaseButton>
           <BaseButton variant="ghost" size="sm" @click="emit('delete', expense.id)">
             Delete
@@ -91,6 +99,7 @@ const skeletonRows = 5;
             <th class="px-4 py-3">Category</th>
             <th class="px-4 py-3">Product</th>
             <th class="px-4 py-3 text-right">Price</th>
+            <th class="px-4 py-3">Source</th>
             <th class="px-4 py-3">Notes</th>
             <th class="px-4 py-3 text-right">Actions</th>
           </tr>
@@ -125,10 +134,16 @@ const skeletonRows = 5;
                 }}
               </div>
             </td>
+            <td class="px-4 py-3 text-surface-mid text-xs">
+              {{ expenseSourceLabel(expense.source) }}
+            </td>
             <td class="px-4 py-3 text-surface-mid max-w-[200px] truncate">
               {{ expense.notes ?? "—" }}
             </td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
+              <BaseButton variant="ghost" size="sm" @click="emit('duplicate', expense)">
+                Again
+              </BaseButton>
               <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">
                 Edit
               </BaseButton>

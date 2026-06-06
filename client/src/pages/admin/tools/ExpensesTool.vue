@@ -86,6 +86,7 @@ const {
   newCategoryName,
   editingCategoryId,
   editingCategoryName,
+  editingCategoryBudget,
   categoryOptions,
   defaultCategoryName,
   loadCategories,
@@ -114,6 +115,7 @@ const {
   hasActiveFilters,
   applyMonthPreset,
   clearFilters,
+  queryParams,
 } = filters;
 
 const smartText = ref("");
@@ -318,6 +320,40 @@ function openCreate(): void {
   showForm.value = true;
 }
 
+function duplicateExpense(expense: ToolExpense): void {
+  smartText.value = "";
+  quickAdd.value = {
+    product: expense.tool_name,
+    price: expense.amount,
+    category: resolvedCategory(expense.category ?? lastCategory.value),
+  };
+  activeTab.value = "transactions";
+  toast("Ready to add again — adjust if needed", "success");
+}
+
+async function exportCsv(): Promise<void> {
+  loading.value = true;
+  try {
+    const { data } = await api.get<Blob>("/tools/expenses/export", {
+      params: queryParams(),
+      responseType: "blob",
+    });
+    const slug = monthLabel.value.replace(/\s+/g, "-").toLowerCase() || "export";
+    const url = URL.createObjectURL(data);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `expenses-${slug}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    toast("CSV exported", "success");
+  } catch (err) {
+    console.error(err);
+    toast(getApiErrorMessage(err, "Failed to export CSV"), "error");
+  } finally {
+    loading.value = false;
+  }
+}
+
 function requestDeleteExpense(id: number): void {
   deleteTargetId.value = id;
 }
@@ -407,6 +443,7 @@ onMounted(() => {
       <ExpenseSummaryCard
         :summary="summary"
         :month-label="monthLabel"
+        :expense-categories="expenseCategories"
         :format-money="formatMoney"
       />
     </div>
@@ -454,6 +491,7 @@ onMounted(() => {
             <option :value="null">All categories</option>
             <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
           </select>
+          <BaseButton variant="ghost" :disabled="loading" @click="exportCsv">Export CSV</BaseButton>
           <BaseButton variant="primary" @click="openCreate">+ Add</BaseButton>
         </div>
       </div>
@@ -471,6 +509,7 @@ onMounted(() => {
         :convert-amount="convertAmount"
         @edit="openEdit"
         @delete="requestDeleteExpense"
+        @duplicate="duplicateExpense"
       />
     </div>
 
@@ -487,6 +526,7 @@ onMounted(() => {
       v-model:display-currency="displayCurrency"
       v-model:new-category-name="newCategoryName"
       v-model:editing-category-name="editingCategoryName"
+      v-model:editing-category-budget="editingCategoryBudget"
       :expense-categories="expenseCategories"
       :editing-category-id="editingCategoryId"
       :exchange-rates="exchangeRates"

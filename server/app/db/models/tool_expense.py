@@ -16,3 +16,4 @@ class ToolExpense(BaseModelMixin, Base):
     expense_date: Mapped[date] = mapped_column(Date)
     category: Mapped[str | None] = mapped_column(String(64), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source: Mapped[str] = mapped_column(String(16), server_default="web_admin")
