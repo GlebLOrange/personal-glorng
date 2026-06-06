@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
@@ -43,6 +43,14 @@ const smartError = computed(() => {
   if (props.parsed?.valid) return null;
   return props.parsed?.error ?? null;
 });
+
+const smartInputRef = ref<HTMLInputElement | null>(null);
+
+function focusEntry(): void {
+  smartInputRef.value?.focus();
+}
+
+defineExpose({ focusEntry });
 </script>
 
 <template>
@@ -52,10 +60,12 @@ const smartError = computed(() => {
     <form class="flex flex-col gap-4" @submit.prevent="emit('submit')">
       <div class="flex flex-col sm:flex-row sm:items-end gap-3">
         <div class="flex-1">
-          <BaseInput
+          <label class="text-sm text-surface-mid font-mono block mb-1">Smart add</label>
+          <input
+            ref="smartInputRef"
             v-model="smartText"
-            label="Smart add"
             placeholder="89.50 biedronka or 12 lunch"
+            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 h-[42px]"
           />
         </div>
         <BaseButton variant="primary" type="submit" :disabled="loading" class="sm:mb-0.5">

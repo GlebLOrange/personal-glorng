@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 
+import ExpenseCategoryChips from "@/components/expenses/ExpenseCategoryChips.vue";
 import ExpenseCategorySettings from "@/components/expenses/ExpenseCategorySettings.vue";
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
 import ExpenseDateFilters from "@/components/expenses/ExpenseDateFilters.vue";
@@ -22,6 +23,7 @@ import {
   type MonthPreset,
 } from "@/composables/useExpenseFilters";
 import { useExpenseParse } from "@/composables/useExpenseParse";
+import { useExpenseSort } from "@/composables/useExpenseSort";
 import { useExpenseSummary } from "@/composables/useExpenseSummary";
 import { api } from "@/composables/useApi";
 import { useLocalStorageString } from "@/composables/useLocalStorage";
@@ -55,11 +57,13 @@ let filters!: ReturnType<typeof useExpenseFilters>;
 const summaryHook = useExpenseSummary(
   () => filters.queryParams(),
   () => filters.summaryParams(),
+  () => filters.previousSummaryParams(),
 );
 
 const {
   expenses,
   summary,
+  periodChange,
   exchangeRates,
   listLoading,
   lineChart,
@@ -72,11 +76,24 @@ const {
   loadExpenses,
   loadRates,
   loadSummary,
+  loadPreviousSummary,
   reloadListAndSummary,
 } = summaryHook;
 
+const { sortedExpenses, toggleSort, sortIndicator } = useExpenseSort(
+  () => expenses.value,
+  () => displayCurrency.value as CurrencyCode,
+  convertAmount,
+);
+
+const quickAddRef = ref<InstanceType<typeof ExpenseQuickAdd> | null>(null);
+
 async function reloadAfterMutation(): Promise<void> {
-  await Promise.all([loadExpenses(), loadSummary(), loadCategories()]);
+  await Promise.all([loadExpenses(), loadSummary(), loadPreviousSummary(), loadCategories()]);
+}
+
+function focusQuickAdd(): void {
+  quickAddRef.value?.focusEntry();
 }
 
 const categoryManager = useCategoryManager(reloadAfterMutation);
@@ -256,6 +273,7 @@ async function quickSaveExpense(): Promise<void> {
       });
       resetQuickAdd();
       await reloadAfterMutation();
+      focusQuickAdd();
     } catch (err) {
       console.error(err);
       toast(getApiErrorMessage(err, "Failed to save expense"), "error");
@@ -290,6 +308,7 @@ async function quickSaveExpense(): Promise<void> {
     });
     resetQuickAdd();
     await reloadAfterMutation();
+    focusQuickAdd();
   } catch (err) {
     console.error(err);
     toast(getApiErrorMessage(err, "Failed to save expense"), "error");
@@ -320,7 +339,7 @@ function openCreate(): void {
   showForm.value = true;
 }
 
-function duplicateExpense(expense: ToolExpense): void {
+async function duplicateExpense(expense: ToolExpense): Promise<void> {
   smartText.value = "";
   quickAdd.value = {
     product: expense.tool_name,
@@ -329,6 +348,8 @@ function duplicateExpense(expense: ToolExpense): void {
   };
   activeTab.value = "transactions";
   toast("Ready to add again — adjust if needed", "success");
+  await nextTick();
+  focusQuickAdd();
 }
 
 async function exportCsv(): Promise<void> {
@@ -401,7 +422,7 @@ function switchTab(tab: ExpenseTab): void {
 }
 
 watch(displayCurrency, () => {
-  void loadSummary();
+  void Promise.all([loadSummary(), loadPreviousSummary()]);
 });
 
 watch(defaultCategoryName, (name) => {
@@ -444,6 +465,7 @@ onMounted(() => {
         :summary="summary"
         :month-label="monthLabel"
         :expense-categories="expenseCategories"
+        :period-change="periodChange"
         :format-money="formatMoney"
       />
     </div>
@@ -466,6 +488,7 @@ onMounted(() => {
 
     <div v-if="activeTab === 'transactions'" class="flex flex-col gap-6">
       <ExpenseQuickAdd
+        ref="quickAddRef"
         v-model:smart-text="smartText"
         v-model:category="quickAdd.category"
         v-model:product="quickAdd.product"
@@ -484,23 +507,19 @@ onMounted(() => {
           <BaseInput v-model="productFilter" placeholder="Filter by product..." />
         </div>
         <div class="flex gap-2 items-end">
-          <select
-            v-model="categoryFilter"
-            class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
-          >
-            <option :value="null">All categories</option>
-            <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-          </select>
           <BaseButton variant="ghost" :disabled="loading" @click="exportCsv">Export CSV</BaseButton>
           <BaseButton variant="primary" @click="openCreate">+ Add</BaseButton>
         </div>
       </div>
 
+      <ExpenseCategoryChips v-model:category-filter="categoryFilter" :category-options="categoryOptions" />
+
       <p class="text-xs text-surface-mid font-mono -mt-3">{{ expenseCountLabel }}</p>
 
       <ExpenseList
-        :expenses="expenses"
+        :expenses="sortedExpenses"
         :loading="listLoading"
+        :sort-indicator="sortIndicator"
         :month-label="monthLabel"
         :display-currency="displayCurrency as CurrencyCode"
         :exchange-rates="exchangeRates"
@@ -510,6 +529,7 @@ onMounted(() => {
         @edit="openEdit"
         @delete="requestDeleteExpense"
         @duplicate="duplicateExpense"
+        @sort="toggleSort"
       />
     </div>
 

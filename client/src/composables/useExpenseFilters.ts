@@ -15,7 +15,10 @@ function currentMonthValue(d = new Date()): string {
 }
 
 function isoDate(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function monthBounds(month: string): { from: string; to: string } {
@@ -115,6 +118,37 @@ export function useExpenseFilters(
     return { ...queryParams(), display_currency: displayCurrency.value };
   }
 
+  /** Prior period with the same span (for month-over-month comparison). */
+  function previousSummaryParams(): Record<string, string> {
+    const params: Record<string, string> = {
+      display_currency: displayCurrency.value,
+    };
+
+    if (dateFilterMode.value === "range" && dateFrom.value && dateTo.value) {
+      const from = new Date(dateFrom.value + "T00:00:00");
+      const to = new Date(dateTo.value + "T00:00:00");
+      const spanDays = Math.max(
+        0,
+        Math.round((to.getTime() - from.getTime()) / 86_400_000),
+      );
+      const prevEnd = new Date(from);
+      prevEnd.setDate(prevEnd.getDate() - 1);
+      const prevStart = new Date(prevEnd);
+      prevStart.setDate(prevStart.getDate() - spanDays);
+      params.date_from = isoDate(prevStart);
+      params.date_to = isoDate(prevEnd);
+      return params;
+    }
+
+    if (selectedMonth.value) {
+      const [year, month] = selectedMonth.value.split("-").map(Number);
+      const prev = new Date(year, month - 2, 1);
+      params.month = currentMonthValue(prev);
+    }
+
+    return params;
+  }
+
   let debounceTimer: ReturnType<typeof setTimeout>;
   watch(productFilter, () => {
     clearTimeout(debounceTimer);
@@ -144,5 +178,6 @@ export function useExpenseFilters(
     clearFilters,
     queryParams,
     summaryParams,
+    previousSummaryParams,
   };
 }

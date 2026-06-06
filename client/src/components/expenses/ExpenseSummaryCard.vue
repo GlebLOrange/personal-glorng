@@ -8,6 +8,7 @@ const props = defineProps<{
   summary: ToolExpenseSummary | null;
   monthLabel: string;
   expenseCategories: ExpenseCategory[];
+  periodChange: { delta: number; increased: boolean } | null;
   formatMoney: (amount: string | number, currency: string) => string;
 }>();
 
@@ -52,6 +53,13 @@ const categoryBreakdown = computed(() => {
         {{ formatMoney(summary.total, summary.currency) }}
       </p>
       <p v-else class="text-2xl font-bold text-surface-border animate-pulse">—</p>
+      <p
+        v-if="periodChange"
+        class="text-xs font-mono mt-1"
+        :class="periodChange.increased ? 'text-red-400' : 'text-green-400'"
+      >
+        {{ periodChange.increased ? "+" : "" }}{{ periodChange.delta }}% vs previous period
+      </p>
     </div>
 
     <div

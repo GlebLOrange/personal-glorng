@@ -85,6 +85,21 @@ describe("useExpenseFilters", () => {
     });
   });
 
+  it("builds previousSummaryParams for prior month", () => {
+    const { applyMonthPreset, previousSummaryParams } = useExpenseFilters(
+      displayCurrency,
+      onFiltersChange,
+      onProductFilterChange,
+    );
+
+    applyMonthPreset("this_month");
+
+    expect(previousSummaryParams()).toEqual({
+      month: "2026-05",
+      display_currency: "PLN",
+    });
+  });
+
   it("clears filters back to this month", () => {
     const { productFilter, categoryFilter, clearFilters, applyMonthPreset, monthPreset } =
       useExpenseFilters(displayCurrency, onFiltersChange, onProductFilterChange);

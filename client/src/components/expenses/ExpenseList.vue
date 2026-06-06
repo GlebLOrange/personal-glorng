@@ -4,6 +4,7 @@ import type { ExchangeRates, ToolExpense } from "@/types";
 import { expenseSourceLabel } from "@/utils/expenseSource";
 
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
+import type { ExpenseSortKey } from "@/composables/useExpenseSort";
 
 defineProps<{
   expenses: ToolExpense[];
@@ -14,13 +15,18 @@ defineProps<{
   formatMoney: (amount: string | number, currency: string) => string;
   formatExpenseDate: (iso: string) => string;
   convertAmount: (amount: string, from: CurrencyCode, to: CurrencyCode) => number;
+  sortIndicator: (key: ExpenseSortKey) => string;
 }>();
 
 const emit = defineEmits<{
   edit: [expense: ToolExpense];
   delete: [id: number];
   duplicate: [expense: ToolExpense];
+  sort: [key: ExpenseSortKey];
 }>();
+
+const sortButtonClass =
+  "text-left hover:text-surface-light transition-colors uppercase tracking-wider text-xs";
 
 const skeletonRows = 5;
 </script>
@@ -95,10 +101,30 @@ const skeletonRows = 5;
       <table class="w-full text-sm font-mono">
         <thead>
           <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card">
-            <th class="px-4 py-3">Date</th>
-            <th class="px-4 py-3">Category</th>
-            <th class="px-4 py-3">Product</th>
-            <th class="px-4 py-3 text-right">Price</th>
+            <th class="px-4 py-3">
+              <button type="button" :class="sortButtonClass" @click="emit('sort', 'date')">
+                Date{{ sortIndicator("date") }}
+              </button>
+            </th>
+            <th class="px-4 py-3">
+              <button type="button" :class="sortButtonClass" @click="emit('sort', 'category')">
+                Category{{ sortIndicator("category") }}
+              </button>
+            </th>
+            <th class="px-4 py-3">
+              <button type="button" :class="sortButtonClass" @click="emit('sort', 'product')">
+                Product{{ sortIndicator("product") }}
+              </button>
+            </th>
+            <th class="px-4 py-3 text-right">
+              <button
+                type="button"
+                :class="[sortButtonClass, 'w-full text-right']"
+                @click="emit('sort', 'amount')"
+              >
+                Price{{ sortIndicator("amount") }}
+              </button>
+            </th>
             <th class="px-4 py-3">Source</th>
             <th class="px-4 py-3">Notes</th>
             <th class="px-4 py-3 text-right">Actions</th>

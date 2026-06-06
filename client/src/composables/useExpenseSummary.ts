@@ -45,12 +45,23 @@ function topDescriptionChart(summaryData: ToolExpenseSummary): {
 export function useExpenseSummary(
   queryParams: () => Record<string, string>,
   summaryParams: () => Record<string, string>,
+  previousSummaryParams: () => Record<string, string>,
 ) {
   const expenses = ref<ToolExpense[]>([]);
   const summary = ref<ToolExpenseSummary | null>(null);
+  const previousSummary = ref<ToolExpenseSummary | null>(null);
   const exchangeRates = ref<ExchangeRates | null>(null);
   const listLoading = ref(false);
   const { toast } = useNotify();
+
+  const periodChange = computed(() => {
+    if (!summary.value || !previousSummary.value) return null;
+    const current = parseFloat(String(summary.value.total));
+    const previous = parseFloat(String(previousSummary.value.total));
+    if (previous <= 0) return null;
+    const delta = Math.round(((current - previous) / previous) * 100);
+    return { delta, increased: delta > 0 };
+  });
 
   const lineChart = computed(() => {
     if (!summary.value) return { labels: [] as string[], values: [] as number[] };
@@ -138,13 +149,32 @@ export function useExpenseSummary(
     }
   }
 
+  async function loadPreviousSummary(): Promise<void> {
+    const params = previousSummaryParams();
+    if (!params.month && !params.date_from) {
+      previousSummary.value = null;
+      return;
+    }
+
+    try {
+      const { data } = await api.get<ToolExpenseSummary>("/tools/expenses/summary", {
+        params,
+      });
+      previousSummary.value = data;
+    } catch {
+      previousSummary.value = null;
+    }
+  }
+
   async function reloadListAndSummary(): Promise<void> {
-    await Promise.all([loadExpenses(), loadSummary()]);
+    await Promise.all([loadExpenses(), loadSummary(), loadPreviousSummary()]);
   }
 
   return {
     expenses,
     summary,
+    previousSummary,
+    periodChange,
     exchangeRates,
     listLoading,
     lineChart,
@@ -157,6 +187,7 @@ export function useExpenseSummary(
     loadExpenses,
     loadRates,
     loadSummary,
+    loadPreviousSummary,
     reloadListAndSummary,
   };
 }
