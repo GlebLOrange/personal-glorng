@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_api
+from app.core.cache_json import safe_cache_json_loads
 from app.core.redis import cache_get, cache_set
 from app.schemas.spotify import SpotifyNowPlayingResponse
 from app.services.spotify import fetch_playback_state, is_spotify_enabled
@@ -22,8 +23,9 @@ async def now_playing() -> SpotifyNowPlayingResponse:
 
     cached = await cache_get(_NOW_PLAYING_CACHE_KEY)
     if cached:
-        payload = json.loads(cached)
-        return SpotifyNowPlayingResponse(enabled=True, **payload)
+        payload = safe_cache_json_loads(cached)
+        if isinstance(payload, dict):
+            return SpotifyNowPlayingResponse(enabled=True, **payload)
 
     try:
         state = await fetch_playback_state()

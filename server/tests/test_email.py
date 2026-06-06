@@ -28,6 +28,19 @@ async def test_email_preview_unauthorized(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_email_subject_rejects_crlf(auth_client: AsyncClient) -> None:
+    resp = await auth_client.post(
+        "/api/tools/email/preview",
+        json={
+            "to": "user@example.com",
+            "subject": "Hi\r\nBcc: evil@example.com",
+            "body": "Hello",
+        },
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
 async def test_email_body_max_length(auth_client: AsyncClient) -> None:
     resp = await auth_client.post(
         "/api/tools/email/preview",

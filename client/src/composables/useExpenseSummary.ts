@@ -161,8 +161,10 @@ export function useExpenseSummary(
         params,
       });
       previousSummary.value = data;
-    } catch {
+    } catch (err) {
+      console.error(err);
       previousSummary.value = null;
+      toast(getApiErrorMessage(err, "Failed to load period comparison"), "error");
     }
   }
 

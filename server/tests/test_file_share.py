@@ -156,6 +156,39 @@ async def test_download_expired_file(client: AsyncClient, db: AsyncSession) -> N
 
 
 @pytest.mark.asyncio
+async def test_upload_blocked_double_extension(auth_client: AsyncClient) -> None:
+    resp = await auth_client.post(
+        "/api/tools/file-share",
+        files=_make_file("payload.html.txt", b"hello", "text/plain"),
+    )
+    assert resp.status_code == 400
+    assert ".html" in resp.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_delete_file_other_user_forbidden(
+    auth_client: AsyncClient,
+    db: AsyncSession,
+) -> None:
+    upload_resp = await auth_client.post(
+        "/api/tools/file-share",
+        files=_make_file("private.txt", b"secret"),
+    )
+    file_id = upload_resp.json()["id"]
+
+    other = await create_user(db, email="other@example.com")
+
+    from app.core.auth import create_access_token
+
+    token = create_access_token(str(other.public_id))
+    resp = await auth_client.delete(
+        f"/api/tools/file-share/{file_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_delete_file(auth_client: AsyncClient) -> None:
     upload_resp = await auth_client.post(
         "/api/tools/file-share",

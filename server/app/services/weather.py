@@ -8,6 +8,7 @@ import httpx
 
 from app.core.exceptions import ApiError, ValidationError
 from app.core.logging import logger
+from app.core.cache_json import safe_cache_json_loads
 from app.core.redis import cache_get, cache_set
 
 WEATHER_API_URL = "https://wttr.in"
@@ -140,11 +141,12 @@ class WeatherService:
         cached = await cache_get(cache_key)
         if cached:
             logger.debug("Weather cache hit", context={"location": normalized})
-            data: dict[str, Any] = json.loads(cached)
-            if not _has_utc_offset(data):
-                data = await enrich_weather_timezone(data)
-                await cache_set(cache_key, json.dumps(data), ttl=600)
-            return data
+            data = safe_cache_json_loads(cached)
+            if isinstance(data, dict):
+                if not _has_utc_offset(data):
+                    data = await enrich_weather_timezone(data)
+                    await cache_set(cache_key, json.dumps(data), ttl=600)
+                return data
 
         try:
             async with httpx.AsyncClient() as client:

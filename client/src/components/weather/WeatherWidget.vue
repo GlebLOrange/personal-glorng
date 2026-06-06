@@ -41,8 +41,8 @@ const utcOffset = computed(() => {
   return weatherUtcOffsetHours(weather.value);
 });
 
-const timeFormat = computed(() => (props.bar ? "datetime" : "time") as const);
-const { liveTime } = useLiveLocalTime(utcOffset, timeFormat);
+const timeFormat = computed((): "time" | "datetime" => (props.bar ? "datetime" : "time"));
+const { liveTime, liveDateTime } = useLiveLocalTime(utcOffset, timeFormat);
 
 onMounted(async () => {
   await fetchConfig();
@@ -72,7 +72,7 @@ onMounted(async () => {
       <template v-if="liveTime">
         <span class="text-surface-muted">·</span>
         <time
-          :datetime="liveTime"
+          :datetime="liveDateTime ?? undefined"
           class="shrink-0 text-sm sm:text-base font-bold text-surface-light"
         >
           {{ liveTime }}

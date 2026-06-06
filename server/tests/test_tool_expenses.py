@@ -188,6 +188,21 @@ class TestToolExpensesCRUD:
         assert "Cursor" in body
         assert "web_admin" in body
 
+    async def test_export_csv_escapes_formula_prefix(self, auth_client: AsyncClient):
+        await auth_client.post(
+            "/api/tools/expenses",
+            json={
+                **EXPENSE_DATA,
+                "tool_name": "=1+1",
+                "notes": "+evil",
+            },
+        )
+        resp = await auth_client.get("/api/tools/expenses/export")
+        assert resp.status_code == 200
+        body = resp.text
+        assert "'=1+1" in body
+        assert "'+evil" in body
+
     async def test_parse_expense_invalid(self, auth_client: AsyncClient):
         resp = await auth_client.post(
             "/api/tools/expenses/parse",

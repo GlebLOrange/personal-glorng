@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ValidationError
-from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
+from app.db.models.audit_event import AuditActorType, AuditSource
 from app.db.models.tool_expense import ToolExpense
 from app.schemas.tool_expense import (
     ToolExpenseCategoryTotal,
@@ -20,10 +20,19 @@ from app.schemas.tool_expense import (
     ToolExpenseToolTotal,
     ToolExpenseUpdate,
 )
-from app.services.audit import AuditRecord, AuditService
+from app.services.audit import AuditService
 from app.services.base import CRUDService
 from app.services.currency import ALLOWED_CURRENCIES, CurrencyService
 from app.services.tool_expense_category import ToolExpenseCategoryService
+
+_CSV_FORMULA_PREFIXES = frozenset("=+-@\t\r")
+
+
+def _csv_cell(value: str) -> str:
+    """Prefix spreadsheet formula triggers to prevent CSV injection."""
+    if value and value[0] in _CSV_FORMULA_PREFIXES:
+        return f"'{value}"
+    return value
 
 
 class ToolExpenseService(CRUDService[ToolExpense]):
@@ -90,16 +99,13 @@ class ToolExpenseService(CRUDService[ToolExpense]):
         payload = data.model_dump()
         payload["source"] = source.value
         expense = await self.create(payload)
-        await AuditService(self.db).record(
-            AuditRecord(
-                category=AuditCategory.DOMAIN,
-                action="expense.created",
-                actor_type=actor_type,
-                source=source,
-                resource_type="expense",
-                resource_id=expense.id,
-                metadata={"tool_name": expense.tool_name},
-            ),
+        await AuditService(self.db).record_domain(
+            action="expense.created",
+            resource_type="expense",
+            resource_id=expense.id,
+            actor_type=actor_type,
+            source=source,
+            metadata={"tool_name": expense.tool_name},
         )
         return self._to_response(expense)
 
@@ -116,29 +122,19 @@ class ToolExpenseService(CRUDService[ToolExpense]):
             setattr(expense, key, value)
         await self.db.flush()
         await self.db.refresh(expense)
-        await AuditService(self.db).record(
-            AuditRecord(
-                category=AuditCategory.DOMAIN,
-                action="expense.updated",
-                actor_type=AuditActorType.USER,
-                source=AuditSource.WEB_ADMIN,
-                resource_type="expense",
-                resource_id=expense.id,
-            ),
+        await AuditService(self.db).record_domain(
+            action="expense.updated",
+            resource_type="expense",
+            resource_id=expense.id,
         )
         return self._to_response(expense)
 
     async def delete_expense(self, expense_id: int) -> None:
         await self.delete(expense_id)
-        await AuditService(self.db).record(
-            AuditRecord(
-                category=AuditCategory.DOMAIN,
-                action="expense.deleted",
-                actor_type=AuditActorType.USER,
-                source=AuditSource.WEB_ADMIN,
-                resource_type="expense",
-                resource_id=expense_id,
-            ),
+        await AuditService(self.db).record_domain(
+            action="expense.deleted",
+            resource_type="expense",
+            resource_id=expense_id,
         )
 
     async def list_expenses(
@@ -188,11 +184,11 @@ class ToolExpenseService(CRUDService[ToolExpense]):
             writer.writerow(
                 [
                     expense.expense_date.isoformat(),
-                    expense.category or "",
-                    expense.tool_name,
+                    _csv_cell(expense.category or ""),
+                    _csv_cell(expense.tool_name),
                     expense.amount,
                     expense.currency,
-                    expense.notes or "",
+                    _csv_cell(expense.notes or ""),
                     expense.source,
                 ],
             )

@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
 
-defineProps<{ title?: string }>();
+defineProps<{ title?: string; maxWidth?: "md" | "lg" | "2xl" }>();
+
+const widthClass: Record<string, string> = {
+  md: "max-w-md",
+  lg: "max-w-lg",
+  "2xl": "max-w-2xl",
+};
 const emit = defineEmits<{ close: [] }>();
 
 function onKeydown(e: KeyboardEvent) {
@@ -20,7 +26,10 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
     >
       <div class="absolute inset-0 bg-surface-dark/80 backdrop-blur-sm" />
       <div
-        class="relative w-full max-w-lg bg-surface-card border border-surface-border rounded-xl shadow-2xl"
+        :class="[
+          'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-2xl',
+          widthClass[maxWidth ?? 'lg'],
+        ]"
       >
         <div class="flex items-center justify-between px-6 pt-5 pb-3">
           <h2 v-if="title" class="text-lg font-bold text-surface-light">

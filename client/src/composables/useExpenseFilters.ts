@@ -1,5 +1,7 @@
 import { computed, ref, watch, type Ref } from "vue";
 
+import { isoDateLocal } from "@/utils/dates";
+
 export type MonthPreset = "this_month" | "last_month" | "custom" | "range";
 export type DateFilterMode = "month" | "range";
 export type CurrencyCode = "USD" | "EUR" | "PLN" | "BYN";
@@ -16,20 +18,18 @@ export function crossRate(
   from: CurrencyCode,
   to: CurrencyCode,
 ): number {
-  return parseFloat(rates[to]) / parseFloat(rates[from]);
+  const toRate = parseFloat(rates[to]);
+  const fromRate = parseFloat(rates[from]);
+  if (!Number.isFinite(toRate) || !Number.isFinite(fromRate) || fromRate === 0) {
+    return Number.NaN;
+  }
+  return toRate / fromRate;
 }
 
 function currentMonthValue(d = new Date()): string {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");
   return `${year}-${month}`;
-}
-
-function isoDate(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }
 
 function monthBounds(month: string): { from: string; to: string } {
@@ -85,8 +85,8 @@ export function useExpenseFilters(
     if (preset === "range") {
       dateFilterMode.value = "range";
       const start = new Date(today.getFullYear(), today.getMonth(), 1);
-      dateFrom.value = isoDate(start);
-      dateTo.value = isoDate(today);
+      dateFrom.value = isoDateLocal(start);
+      dateTo.value = isoDateLocal(today);
       return;
     }
 
@@ -146,8 +146,8 @@ export function useExpenseFilters(
       prevEnd.setDate(prevEnd.getDate() - 1);
       const prevStart = new Date(prevEnd);
       prevStart.setDate(prevStart.getDate() - spanDays);
-      params.date_from = isoDate(prevStart);
-      params.date_to = isoDate(prevEnd);
+      params.date_from = isoDateLocal(prevStart);
+      params.date_to = isoDateLocal(prevEnd);
       return params;
     }
 
