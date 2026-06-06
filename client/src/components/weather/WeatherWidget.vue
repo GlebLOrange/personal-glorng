@@ -13,11 +13,13 @@ const props = withDefaults(
   defineProps<{
     location?: string;
     compact?: boolean;
+    bar?: boolean;
     showTime?: boolean;
   }>(),
   {
     location: "",
     compact: false,
+    bar: false,
     showTime: true,
   },
 );
@@ -67,8 +69,14 @@ watch(locationRef, () => {
   </div>
 
   <div v-else-if="weather" class="font-mono">
-    <div v-if="compact" class="flex items-center gap-2 text-sm flex-wrap">
-      <span class="text-surface-light font-bold">
+    <div
+      v-if="compact"
+      :class="[
+        'flex items-center gap-2 flex-wrap min-w-0 font-mono',
+        bar ? 'text-base' : 'text-sm',
+      ]"
+    >
+      <span class="text-surface-light font-bold truncate">
         {{ locationLabel }}
       </span>
       <template v-if="liveTime">
@@ -76,13 +84,13 @@ watch(locationRef, () => {
         <span class="text-surface-mid tabular-nums">{{ liveTime }}</span>
       </template>
       <span class="text-surface-muted">·</span>
-      <span class="accent-gradient text-lg font-bold">
+      <span :class="['font-bold accent-gradient', bar ? 'text-xl' : 'text-lg']">
         {{ weather.current_condition?.[0]?.temp_C }}°C
       </span>
       <span class="text-surface-muted">·</span>
-      <span class="text-surface-mid"> {{ weather.current_condition?.[0]?.humidity }}% </span>
+      <span class="text-surface-mid">{{ weather.current_condition?.[0]?.humidity }}%</span>
       <span class="text-surface-muted">·</span>
-      <span class="text-surface-mid">
+      <span class="text-surface-mid truncate">
         {{ weather.current_condition?.[0]?.weatherDesc?.[0]?.value }}
       </span>
     </div>

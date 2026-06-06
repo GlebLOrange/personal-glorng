@@ -4,7 +4,6 @@ import { computed, onMounted, ref } from "vue";
 import DonationsBlock from "@/components/donations/DonationsBlock.vue";
 import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
-import WeatherWidget from "@/components/weather/WeatherWidget.vue";
 import ExperienceList from "@/components/resume/ExperienceList.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
 import ProjectsGrid from "@/components/resume/ProjectsGrid.vue";
@@ -45,15 +44,6 @@ onMounted(loadResume);
     >
       Using cached portfolio data — live sync unavailable.
     </p>
-
-    <div class="max-w-5xl mx-auto px-6 pt-4 flex justify-end">
-      <RouterLink
-        to="/clocks"
-        class="interactive-surface px-3 py-2 rounded-lg hover:border-accent-blue/40 transition-colors"
-      >
-        <WeatherWidget compact />
-      </RouterLink>
-    </div>
 
     <SectionWrapper>
       <HeroBlock :name="resume.name" :title="resume.title" :bio="resume.bio" />

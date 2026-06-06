@@ -8,7 +8,7 @@ const props = withDefaults(
     utcOffsetHours: number | null;
     size?: number;
   }>(),
-  { size: 96 },
+  { size: 120 },
 );
 
 const handAngles = ref({ hour: 0, minute: 0, second: 0 });
@@ -108,7 +108,7 @@ watch(
         text-anchor="middle"
         dominant-baseline="central"
         class="fill-surface-mid font-mono"
-        font-size="6"
+        font-size="7"
       >
         {{ numeral.label }}
       </text>

@@ -31,7 +31,7 @@ async function handleRemove(id: number | string): Promise<void> {
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto px-6 py-10 font-mono">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 font-mono">
     <div class="mb-8">
       <h1 class="text-3xl font-bold accent-gradient mb-2">clocks</h1>
       <p class="text-sm text-surface-mid">Local time and conditions for your cities.</p>
@@ -48,7 +48,7 @@ async function handleRemove(id: number | string): Promise<void> {
         No cities yet. Add one to track its local time and weather.
       </div>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <WeatherLocationCard
           v-for="loc in locations"
           :key="loc.id"
