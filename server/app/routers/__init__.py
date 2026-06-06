@@ -9,12 +9,14 @@ from app.routers.platform import router as platform_router
 from app.routers.resume import router as resume_router
 from app.routers.spotify import router as spotify_router
 from app.routers.tools import tools_router
+from app.routers.weather import router as weather_router
 
 api_router = APIRouter()
 
 api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 api_router.include_router(github_router, prefix="/auth/github", tags=["github"])
 api_router.include_router(resume_router, prefix="/resume", tags=["resume"])
+api_router.include_router(weather_router)
 api_router.include_router(
     donations_router,
     prefix="/donations",

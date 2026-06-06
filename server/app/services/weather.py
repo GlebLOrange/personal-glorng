@@ -8,13 +8,32 @@ import httpx
 
 from app.core.exceptions import ApiError, ValidationError
 from app.core.logging import logger
-from app.core.redis import cache_get, cache_set
+from app.core.redis import cache_get, cache_set, get_redis_client
+from app.settings import get_settings
 
 WEATHER_API_URL = "https://wttr.in"
+SITE_CITY_KEY = "site:weather:city"
 _CITY_PATTERN = re.compile(r"^[a-zA-Z\s\-'.]+$")
 
 
 class WeatherService:
+    async def get_display_city(self) -> str:
+        stored = await cache_get(SITE_CITY_KEY)
+        if stored:
+            return stored
+        return get_settings().WEATHER_DEFAULT_CITY
+
+    async def set_display_city(self, city: str) -> str:
+        trimmed = city.strip()
+        if not trimmed or not _CITY_PATTERN.match(trimmed):
+            raise ValidationError("City name contains invalid characters")
+        await get_redis_client().set(SITE_CITY_KEY, trimmed)
+        logger.info("Display weather city updated", context={"city": trimmed})
+        return trimmed
+
+    async def get_display_weather(self) -> dict[str, Any]:
+        return await self.get_weather(await self.get_display_city())
+
     async def get_weather(self, city: str) -> dict[str, Any]:
         if not _CITY_PATTERN.match(city):
             raise ValidationError("City name contains invalid characters")

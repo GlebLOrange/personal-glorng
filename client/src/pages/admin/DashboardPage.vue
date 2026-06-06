@@ -73,7 +73,7 @@ onMounted(async () => {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <WeatherCard v-if="section.category === 'utilities'" />
         <component
-          v-for="tool in section.services"
+          v-for="tool in section.services.filter((s) => s.slug !== 'weather')"
           :key="tool.adminRoute"
           :is="tool.external ? 'a' : 'RouterLink'"
           :to="tool.external ? undefined : tool.adminRoute"
