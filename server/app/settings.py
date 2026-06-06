@@ -140,6 +140,10 @@ class Settings(BaseSettings):
     BASE_URL: str = "http://localhost"
     MEDIA_DIR: str = "/app/media"
 
+    # Weather
+    WEATHER_DEFAULT_LABEL: str = "Wrocław"
+    WEATHER_DEFAULT_QUERY: str = "Wroclaw"
+
 
 @lru_cache
 def get_settings() -> Settings:

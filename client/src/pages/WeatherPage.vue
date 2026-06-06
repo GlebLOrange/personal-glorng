@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import WeatherLocationCard from "@/components/weather/WeatherLocationCard.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
-import { DEFAULT_WEATHER_LOCATION } from "@/constants/weather";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
 
-const { locations, addLocation, removeLocation } = useWeatherLocations();
+const { locations, loading, seeding, isDefaultLocation, addLocation, removeLocation } =
+  useWeatherLocations();
 const { toast } = useNotify();
 
 async function handleAdd(label: string, query: string): Promise<void> {
@@ -23,8 +23,9 @@ async function handleRemove(id: number | string): Promise<void> {
   try {
     await removeLocation(id);
     toast("Location removed", "success");
-  } catch {
-    toast("Failed to remove location", "error");
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to remove location";
+    toast(message, "error");
   }
 }
 </script>
@@ -33,24 +34,18 @@ async function handleRemove(id: number | string): Promise<void> {
   <div class="max-w-5xl mx-auto px-6 py-10 font-mono">
     <div class="mb-8">
       <h1 class="text-3xl font-bold accent-gradient mb-2">clocks</h1>
-      <p class="text-sm text-surface-mid">
-        Local time and conditions for Wrocław and your saved cities.
-      </p>
+      <p class="text-sm text-surface-mid">Local time and conditions for your cities.</p>
     </div>
 
     <section class="mb-10">
-      <h2 class="text-lg font-bold text-surface-light mb-4">home</h2>
-      <WeatherLocationCard
-        :label="DEFAULT_WEATHER_LOCATION.label"
-        :query="DEFAULT_WEATHER_LOCATION.query"
-      />
-    </section>
+      <h2 class="text-lg font-bold text-surface-light mb-4">cities</h2>
 
-    <section class="mb-10">
-      <h2 class="text-lg font-bold text-surface-light mb-4">other cities</h2>
+      <div v-if="loading || seeding" class="text-sm text-surface-mid animate-pulse mb-4">
+        Loading cities...
+      </div>
 
-      <div v-if="locations.length === 0" class="text-sm text-surface-mid mb-4">
-        No saved cities yet. Add one to track its local time and weather.
+      <div v-else-if="locations.length === 0" class="text-sm text-surface-mid mb-4">
+        No cities yet. Add one to track its local time and weather.
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -59,7 +54,7 @@ async function handleRemove(id: number | string): Promise<void> {
           :key="loc.id"
           :label="loc.label"
           :query="loc.query"
-          removable
+          :removable="!isDefaultLocation(loc)"
           @remove="handleRemove(loc.id)"
         />
       </div>

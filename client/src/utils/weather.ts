@@ -37,11 +37,13 @@ export function weatherObservedTime(data: WeatherData): string | null {
 export interface LocalTimeParts {
   hours24: number;
   minutes: number;
+  seconds: number;
 }
 
 export interface ClockHandAngles {
   hour: number;
   minute: number;
+  second: number;
 }
 
 /** Local time parts for a UTC offset in hours. */
@@ -52,6 +54,7 @@ export function localTimeFromOffset(offsetHours: number): LocalTimeParts {
   return {
     hours24: local.getHours(),
     minutes: local.getMinutes(),
+    seconds: local.getSeconds(),
   };
 }
 
@@ -61,6 +64,7 @@ export function clockHandAngles(parts: LocalTimeParts): ClockHandAngles {
   return {
     hour: hour12 * 30 + parts.minutes * 0.5,
     minute: parts.minutes * 6,
+    second: parts.seconds * 6,
   };
 }
 

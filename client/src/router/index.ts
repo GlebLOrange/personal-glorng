@@ -102,9 +102,13 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/weather",
-    name: "weather",
+    path: "/clocks",
+    name: "clocks",
     component: () => import("@/pages/WeatherPage.vue"),
+  },
+  {
+    path: "/weather",
+    redirect: { name: "clocks" },
   },
   {
     path: "/privacy",

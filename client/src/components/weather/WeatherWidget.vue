@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from "vue";
 
+import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
-import { DEFAULT_WEATHER_LOCATION } from "@/constants/weather";
 import {
   formatLiveLocalTime,
   weatherLocationLabel,
@@ -22,7 +22,9 @@ const props = withDefaults(
   },
 );
 
-const locationRef = computed(() => props.location.trim() || DEFAULT_WEATHER_LOCATION.query);
+const { config, fetchConfig } = useWeatherConfig();
+
+const locationRef = computed(() => props.location.trim() || config.value.query);
 
 const { weather, loading, error, refresh } = useWeatherLookup(locationRef);
 
@@ -38,7 +40,8 @@ const liveTime = computed(() => {
   return offset !== null ? formatLiveLocalTime(offset) : null;
 });
 
-onMounted(() => {
+onMounted(async () => {
+  await fetchConfig();
   if (locationRef.value.trim()) {
     void refresh();
   }

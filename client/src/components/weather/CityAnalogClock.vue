@@ -11,7 +11,7 @@ const props = withDefaults(
   { size: 96 },
 );
 
-const handAngles = ref({ hour: 0, minute: 0 });
+const handAngles = ref({ hour: 0, minute: 0, second: 0 });
 let timer: ReturnType<typeof setInterval> | null = null;
 
 const numerals = [
@@ -54,10 +54,13 @@ const hourTransform = computed(
 const minuteTransform = computed(
   () => `rotate(${handAngles.value.minute} ${center} ${center})`,
 );
+const secondTransform = computed(
+  () => `rotate(${handAngles.value.second} ${center} ${center})`,
+);
 
 onMounted(() => {
   updateHands();
-  timer = setInterval(updateHands, 60_000);
+  timer = setInterval(updateHands, 1_000);
 });
 
 onUnmounted(() => {
@@ -131,6 +134,17 @@ watch(
         stroke-linecap="round"
         class="text-accent-blue"
         :transform="minuteTransform"
+      />
+      <line
+        :x1="center"
+        :y1="center"
+        :x2="center"
+        :y2="center - 34"
+        stroke="currentColor"
+        stroke-width="1"
+        stroke-linecap="round"
+        class="text-accent-golden"
+        :transform="secondTransform"
       />
       <circle :cx="center" :cy="center" r="2.5" class="fill-surface-light" />
     </svg>

@@ -6,8 +6,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import ApiError, ValidationError
 from app.db.models.weather_location import WeatherLocation
 from app.services.weather import is_valid_location
+from app.settings import get_settings
 
 MAX_LOCATIONS_PER_USER = 8
+
+
+def _is_default_query(query: str) -> bool:
+    settings = get_settings()
+    return query.strip().lower() == settings.WEATHER_DEFAULT_QUERY.lower()
 
 
 class WeatherLocationService:
@@ -62,6 +68,8 @@ class WeatherLocationService:
         location_id: int,
     ) -> None:
         location = await self._get_owned_location(db, user_id, location_id)
+        if _is_default_query(location.query):
+            raise ValidationError("Default location cannot be removed")
         await db.delete(location)
         await db.commit()
 
