@@ -15,7 +15,7 @@ dependencies = [
     "arq==0.28.*",
     "sentry-sdk[fastapi]==2.61.*",
     "httpx==0.28.*",
-    "openai>=2,<3",
+    "openai>=2.41.0,<3",
     "loguru==0.7.*",
     "python-multipart==0.0.*",
     "aiogram==3.28.*",
