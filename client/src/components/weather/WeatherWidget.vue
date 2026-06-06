@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
 import {
+  formatLiveLocalDateTime,
   formatLiveLocalTime,
   weatherLocationLabel,
   weatherUtcOffsetHours,
@@ -34,18 +35,34 @@ const locationLabel = computed(() =>
   weather.value ? weatherLocationLabel(weather.value) : "",
 );
 
-const liveTime = computed(() => {
+const liveTime = ref<string | null>(null);
+let timer: ReturnType<typeof setInterval> | null = null;
+
+function updateLiveTime(): void {
   if (!weather.value || !props.showTime) {
-    return null;
+    liveTime.value = null;
+    return;
   }
   const offset = weatherUtcOffsetHours(weather.value);
-  return offset !== null ? formatLiveLocalTime(offset) : null;
-});
+  if (offset === null) {
+    liveTime.value = null;
+    return;
+  }
+  liveTime.value = props.bar ? formatLiveLocalDateTime(offset) : formatLiveLocalTime(offset);
+}
 
 onMounted(async () => {
   await fetchConfig();
   if (locationRef.value.trim()) {
     void refresh();
+  }
+  updateLiveTime();
+  timer = setInterval(updateLiveTime, 1_000);
+});
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer);
   }
 });
 
@@ -54,6 +71,17 @@ watch(locationRef, () => {
     void refresh();
   }
 });
+
+watch(weather, () => {
+  updateLiveTime();
+});
+
+watch(
+  () => [props.showTime, props.bar] as const,
+  () => {
+    updateLiveTime();
+  },
+);
 </script>
 
 <template>
@@ -70,21 +98,68 @@ watch(locationRef, () => {
 
   <div v-else-if="weather" class="font-mono">
     <div
-      v-if="compact"
-      :class="[
-        'flex items-center gap-2 flex-wrap min-w-0 font-mono',
-        bar ? 'text-base' : 'text-sm',
-      ]"
+      v-if="compact && bar"
+      class="flex items-center gap-3 flex-wrap min-w-0 text-base"
     >
       <span class="text-surface-light font-bold truncate">
         {{ locationLabel }}
       </span>
       <template v-if="liveTime">
         <span class="text-surface-muted">·</span>
-        <span class="text-surface-mid tabular-nums">{{ liveTime }}</span>
+        <time
+          :datetime="liveTime"
+          class="shrink-0 text-sm sm:text-base font-bold text-surface-light"
+        >
+          {{ liveTime }}
+        </time>
       </template>
       <span class="text-surface-muted">·</span>
-      <span :class="['font-bold accent-gradient', bar ? 'text-xl' : 'text-lg']">
+      <span class="font-bold accent-gradient text-xl tabular-nums">
+        {{ weather.current_condition?.[0]?.temp_C }}°C
+      </span>
+      <span class="inline-flex items-center gap-1 text-surface-mid shrink-0">
+        <svg
+          aria-hidden="true"
+          class="w-4 h-4 text-accent-blue"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <path
+            d="M12 2.69c-1.46 2.05-3.62 3.88-3.62 6.31a3.62 3.62 0 0 0 7.24 0c0-2.43-2.16-4.26-3.62-6.31zm0 14.5c-3.31 0-6 2.24-6 5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1c0-2.76-2.69-5-6-5z"
+          />
+        </svg>
+        <span>{{ weather.current_condition?.[0]?.humidity }}%</span>
+      </span>
+      <span class="inline-flex items-center gap-1 text-surface-mid shrink-0">
+        <svg
+          aria-hidden="true"
+          class="w-4 h-4 text-accent-violet"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M3 8c2-2 4-1 6 1s4 2 6 0 4-2 6 1" />
+          <path d="M3 14c2-2 4-1 6 1s4 2 6 0 4-2 6 1" />
+        </svg>
+        <span>{{ weather.current_condition?.[0]?.windspeedKmph }} km/h</span>
+      </span>
+    </div>
+
+    <div
+      v-else-if="compact"
+      class="flex items-center gap-2 flex-wrap min-w-0 text-sm"
+    >
+      <span class="text-surface-light font-bold truncate">
+        {{ locationLabel }}
+      </span>
+      <template v-if="liveTime">
+        <span class="text-surface-muted">·</span>
+        <span class="text-surface-mid tabular-nums shrink-0">{{ liveTime }}</span>
+      </template>
+      <span class="text-surface-muted">·</span>
+      <span class="font-bold accent-gradient text-lg">
         {{ weather.current_condition?.[0]?.temp_C }}°C
       </span>
       <span class="text-surface-muted">·</span>

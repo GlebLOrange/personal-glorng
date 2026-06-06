@@ -39,7 +39,7 @@ function openPreferences() {
           via Spotify's API. Visitors do not sign in to Spotify.
         </li>
         <li>
-          <strong class="text-surface-light">Clocks &amp; weather</strong> — city names you save are
+          <strong class="text-surface-light">Date &amp; time &amp; location</strong> — city names you save are
           sent to this site's API to fetch local time and conditions (via wttr.in). Saved cities are
           stored in your browser for guests, or in your account when logged in. Browser location is
           never requested automatically.

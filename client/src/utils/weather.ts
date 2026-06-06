@@ -46,11 +46,16 @@ export interface ClockHandAngles {
   second: number;
 }
 
-/** Local time parts for a UTC offset in hours. */
-export function localTimeFromOffset(offsetHours: number): LocalTimeParts {
+/** Local Date for a UTC offset in hours. */
+export function localDateFromOffset(offsetHours: number): Date {
   const now = new Date();
   const utcMs = now.getTime() + now.getTimezoneOffset() * 60_000;
-  const local = new Date(utcMs + offsetHours * 3_600_000);
+  return new Date(utcMs + offsetHours * 3_600_000);
+}
+
+/** Local time parts for a UTC offset in hours. */
+export function localTimeFromOffset(offsetHours: number): LocalTimeParts {
+  const local = localDateFromOffset(offsetHours);
   return {
     hours24: local.getHours(),
     minutes: local.getMinutes(),
@@ -72,4 +77,16 @@ export function clockHandAngles(parts: LocalTimeParts): ClockHandAngles {
 export function formatLiveLocalTime(offsetHours: number): string {
   const { hours24, minutes } = localTimeFromOffset(offsetHours);
   return `${String(hours24).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+/** Live local date and time, e.g. "Sun Jun 7 12:55 am". */
+export function formatLiveLocalDateTime(offsetHours: number): string {
+  const local = localDateFromOffset(offsetHours);
+  const weekday = local.toLocaleDateString("en-US", { weekday: "short" });
+  const month = local.toLocaleDateString("en-US", { month: "short" });
+  const day = local.getDate();
+  const time = local
+    .toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+    .toLowerCase();
+  return `${weekday} ${month} ${day} ${time}`;
 }

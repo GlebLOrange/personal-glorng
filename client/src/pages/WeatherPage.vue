@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import WeatherLocationCard from "@/components/weather/WeatherLocationCard.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
+import { DATE_TIME_LOCATION_SECTION } from "@/constants/weather";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
 
@@ -33,7 +34,7 @@ async function handleRemove(id: number | string): Promise<void> {
 <template>
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 font-mono">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold accent-gradient mb-2">clocks</h1>
+      <h1 class="text-3xl font-bold accent-gradient mb-2">{{ DATE_TIME_LOCATION_SECTION }}</h1>
       <p class="text-sm text-surface-mid">Local time and conditions for your cities.</p>
     </div>
 
