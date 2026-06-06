@@ -3,11 +3,15 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 
 import WeatherWidget from "@/components/weather/WeatherWidget.vue";
-import { DATE_TIME_LOCATION_SECTION } from "@/constants/weather";
+import {
+  DATE_TIME_LOCATION_SECTION,
+  TIME_DATE_WEATHER_LOCATION_PATH,
+  TIME_DATE_WEATHER_LOCATION_ROUTE_NAME,
+} from "@/constants/timeDateWeatherLocation";
 
 const route = useRoute();
 
-const visible = computed(() => route.name !== "clocks");
+const visible = computed(() => route.name !== TIME_DATE_WEATHER_LOCATION_ROUTE_NAME);
 </script>
 
 <template>
@@ -17,7 +21,7 @@ const visible = computed(() => route.name !== "clocks");
     class="w-full border-b border-surface-border"
   >
     <RouterLink
-      to="/clocks"
+      :to="TIME_DATE_WEATHER_LOCATION_PATH"
       class="interactive-surface block w-full px-4 py-3.5 rounded-none border-0 hover:border-accent-blue/40 transition-colors"
     >
       <div class="max-w-5xl mx-auto flex items-center justify-between gap-4 min-w-0">

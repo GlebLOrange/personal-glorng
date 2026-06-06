@@ -2,6 +2,7 @@
 import { computed, onMounted, watch } from "vue";
 
 import CityAnalogClock from "@/components/weather/CityAnalogClock.vue";
+import { useLiveLocalTime } from "@/composables/useLiveLocalTime";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
 import { weatherLocationLabel, weatherUtcOffsetHours } from "@/utils/weather";
 
@@ -22,6 +23,8 @@ const utcOffset = computed(() =>
   weather.value ? weatherUtcOffsetHours(weather.value) : null,
 );
 
+const { liveTime } = useLiveLocalTime(utcOffset);
+
 onMounted(() => {
   void refresh();
 });
@@ -41,6 +44,13 @@ watch(locationRef, () => {
         <p v-if="weather" class="text-sm text-surface-mid mt-1">
           {{ weatherLocationLabel(weather) }}
         </p>
+        <time
+          v-if="liveTime"
+          :datetime="liveTime"
+          class="block text-base font-bold text-surface-light tabular-nums mt-2"
+        >
+          {{ liveTime }}
+        </time>
       </div>
       <button
         v-if="removable"

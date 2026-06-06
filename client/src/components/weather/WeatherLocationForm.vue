@@ -34,7 +34,13 @@ async function submit(): Promise<void> {
 
 <template>
   <form class="flex flex-col sm:flex-row gap-3" @submit.prevent="submit">
-    <BaseInput v-model="city" placeholder="City name (e.g. Wroclaw)" class="flex-1" required />
+    <BaseInput
+      v-model="city"
+      placeholder="Search city (e.g. Wroclaw)"
+      class="flex-1"
+      required
+      aria-label="Search city to add"
+    />
     <BaseInput v-model="label" placeholder="Label (optional)" class="sm:max-w-48" />
     <BaseButton type="submit" variant="primary" :disabled="saving || !city.trim()">
       {{ saving ? "..." : "Add" }}
