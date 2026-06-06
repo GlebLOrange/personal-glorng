@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
-import WeatherCard from "@/components/weather/WeatherCard.vue";
 import { api } from "@/composables/useApi";
 import {
   groupServicesByCategory,
@@ -71,9 +70,8 @@ onMounted(async () => {
     <section v-for="section in sections" :key="section.category" class="mb-10">
       <h2 class="text-lg font-bold text-surface-light mb-4">{{ section.label }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <WeatherCard v-if="section.category === 'utilities'" />
         <component
-          v-for="tool in section.services.filter((s) => s.slug !== 'weather')"
+          v-for="tool in section.services"
           :key="tool.adminRoute"
           :is="tool.external ? 'a' : 'RouterLink'"
           :to="tool.external ? undefined : tool.adminRoute"

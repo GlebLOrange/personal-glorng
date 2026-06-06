@@ -38,6 +38,11 @@ function openPreferences() {
           portfolio may show the site owner's currently playing track title, artist, and album art
           via Spotify's API. Visitors do not sign in to Spotify.
         </li>
+        <li>
+          <strong class="text-surface-light">Weather</strong> — if you allow browser location
+          access, coordinates are sent to this site's API to fetch current conditions (via wttr.in).
+          Saved cities are stored in your browser for guests, or in your account when logged in.
+        </li>
       </ul>
     </section>
 

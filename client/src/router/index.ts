@@ -26,12 +26,6 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/admin/tools/weather",
-    name: "tool-weather",
-    component: () => import("@/pages/admin/tools/WeatherTool.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
     path: "/admin/tools/calculator",
     name: "tool-calculator",
     component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
@@ -110,6 +104,11 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/weather",
+    name: "weather",
+    component: () => import("@/pages/WeatherPage.vue"),
+  },
+  {
     path: "/privacy",
     name: "privacy",
     component: () => import("@/pages/PrivacyPage.vue"),
@@ -134,7 +133,6 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-feedback": "feedback",
   "tool-ai-chat": "ai-chat",
   "tool-audit": "audit",
-  "tool-weather": "weather",
 };
 
 const router = createRouter({

@@ -63,6 +63,42 @@ async def get_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+async def get_optional_current_user(
+    request: Request,
+    db: DbSession,
+    token: Annotated[str | None, Depends(oauth2_scheme)] = None,
+) -> User | None:
+    """Return the authenticated user when a valid session exists."""
+    raw_token = token or request.cookies.get("access_token")
+    if not raw_token:
+        return None
+
+    try:
+        payload = decode_token(raw_token)
+    except ValueError:
+        return None
+
+    if payload.get("type") != "access":
+        return None
+
+    jti = payload.get("jti", "")
+    if await is_token_blacklisted(jti):
+        return None
+
+    user_sub = payload.get("sub")
+    if not user_sub:
+        return None
+
+    user = await get_user_by_public_id(db, str(user_sub))
+    if not user or not user.is_verified:
+        return None
+
+    return user
+
+
+OptionalUser = Annotated[User | None, Depends(get_optional_current_user)]
+
+
 def require_capability(slug: str, capability: str) -> Callable[..., object]:
     """FastAPI dependency factory for a platform permission."""
 
