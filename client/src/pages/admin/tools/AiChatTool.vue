@@ -10,6 +10,7 @@ import { useNotify } from "@/composables/useNotify";
 import { useSearchChat } from "@/composables/useSearchChat";
 import { useAuthStore } from "@/stores/auth";
 import { getApiErrorMessage } from "@/types/api";
+import { isExternalHref, safeNavigationHref } from "@/utils/safeUrl";
 
 type AiChatTab = "chat" | "settings";
 
@@ -67,6 +68,20 @@ const modelLabel = computed(
 const isReady = computed(
   () => Boolean(chatConfig.value?.enabled && chatConfig.value?.configured),
 );
+
+
+interface SourceLink {
+  href: string;
+  external: boolean;
+}
+
+function sourceLink(url: string): SourceLink | null {
+  const href = safeNavigationHref(url);
+  if (!href) {
+    return null;
+  }
+  return { href, external: isExternalHref(href) };
+}
 
 function scrollToBottom(): void {
   nextTick(() => chatEnd.value?.scrollIntoView({ behavior: "smooth" }));
@@ -164,16 +179,27 @@ onMounted(() => {
             <p class="text-[10px] uppercase tracking-wider text-surface-mid">
               Searching your indexed content
             </p>
-            <a
-              v-for="source in msg.sources"
-              :key="source.id"
-              :href="source.url"
-              class="block rounded-md border border-surface-border bg-surface-card/60 px-3 py-2 hover:border-accent-violet/40 transition-colors"
-            >
-              <span class="text-xs text-accent-violet font-medium">{{ source.title }}</span>
-              <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
-              <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
-            </a>
+            <template v-for="source in msg.sources" :key="source.id">
+              <a
+                v-if="sourceLink(source.url)"
+                :href="sourceLink(source.url)!.href"
+                :rel="sourceLink(source.url)!.external ? 'noopener noreferrer' : undefined"
+                :target="sourceLink(source.url)!.external ? '_blank' : undefined"
+                class="block rounded-md border border-surface-border/80 bg-surface-card/60 px-3 py-2 hover:border-accent-violet/40 transition-colors"
+              >
+                <span class="text-xs text-accent-violet font-medium">{{ source.title }}</span>
+                <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
+                <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
+              </a>
+              <div
+                v-else
+                class="block rounded-md border border-surface-border/80 bg-surface-card/60 px-3 py-2"
+              >
+                <span class="text-xs text-accent-violet font-medium">{{ source.title }}</span>
+                <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
+                <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
+              </div>
+            </template>
           </div>
 
           <p

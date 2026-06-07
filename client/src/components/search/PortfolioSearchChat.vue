@@ -7,6 +7,7 @@ import { useSearchChat } from "@/composables/useSearchChat";
 import { useNotify } from "@/composables/useNotify";
 import { isAiSearchEnabled } from "@/utils/featureFlags";
 import { getApiErrorMessage } from "@/types/api";
+import { isExternalHref, safeNavigationHref } from "@/utils/safeUrl";
 
 interface SearchConfig {
   enabled: boolean;
@@ -52,6 +53,20 @@ async function handleSend(): Promise<void> {
   } catch {
     // toast handled in composable
   }
+}
+
+
+interface SourceLink {
+  href: string;
+  external: boolean;
+}
+
+function sourceLink(url: string): SourceLink | null {
+  const href = safeNavigationHref(url);
+  if (!href) {
+    return null;
+  }
+  return { href, external: isExternalHref(href) };
 }
 
 function toggle(): void {
@@ -106,16 +121,27 @@ onMounted(() => {
             class="mt-3 pt-2 border-t border-surface-border/60 space-y-2"
           >
             <p class="text-[10px] uppercase tracking-wider text-surface-mid">Sources</p>
-            <a
-              v-for="source in msg.sources"
-              :key="source.id"
-              :href="source.url"
-              class="block rounded-md border border-surface-border/80 bg-surface-dark/80 px-2 py-1.5 hover:border-accent-blue/40 transition-colors"
-            >
-              <span class="text-xs text-accent-blue font-medium">{{ source.title }}</span>
-              <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
-              <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
-            </a>
+            <template v-for="source in msg.sources" :key="source.id">
+              <a
+                v-if="sourceLink(source.url)"
+                :href="sourceLink(source.url)!.href"
+                :rel="sourceLink(source.url)!.external ? 'noopener noreferrer' : undefined"
+                :target="sourceLink(source.url)!.external ? '_blank' : undefined"
+                class="block rounded-md border border-surface-border/80 bg-surface-dark/80 px-2 py-1.5 hover:border-accent-blue/40 transition-colors"
+              >
+                <span class="text-xs text-accent-blue font-medium">{{ source.title }}</span>
+                <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
+                <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
+              </a>
+              <div
+                v-else
+                class="block rounded-md border border-surface-border/80 bg-surface-dark/80 px-2 py-1.5"
+              >
+                <span class="text-xs text-accent-blue font-medium">{{ source.title }}</span>
+                <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
+                <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
+              </div>
+            </template>
           </div>
 
           <p
