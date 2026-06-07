@@ -1,11 +1,27 @@
 import json
 from functools import lru_cache
+from pathlib import Path
 from typing import Annotated, Any
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+from sqlalchemy.engine import make_url
 
 _WEAK_SECRET_MARKERS = ("do-not-use", "changeme", "replace-with", "secret")
+_COMPOSE_DB_HOST = "db"
+_COMPOSE_DB_PORT = 5432
+_HOST_DB_HOST = "127.0.0.1"
+_HOST_DB_PORT = 5433
+
+
+def _resolve_database_url(url: str) -> str:
+    """Map Docker Compose DB host to localhost when running on the host."""
+    if Path("/.dockerenv").exists():
+        return url
+    parsed = make_url(url)
+    if parsed.host == _COMPOSE_DB_HOST and (parsed.port or _COMPOSE_DB_PORT) == _COMPOSE_DB_PORT:
+        parsed = parsed.set(host=_HOST_DB_HOST, port=_HOST_DB_PORT)
+    return parsed.render_as_string(hide_password=False)
 
 
 def _parse_env_list(value: Any) -> list[str]:
@@ -51,8 +67,36 @@ class Settings(BaseSettings):
             raise ValueError(msg)
         return self
 
+    # Postgres (source of truth for compose-backed DATABASE_URL)
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+
     # Database
     DATABASE_URL: str
+
+    @model_validator(mode="after")
+    def _normalize_database_url(self) -> "Settings":
+        url = self.DATABASE_URL
+        for token, value in {
+            "${POSTGRES_USER}": self.POSTGRES_USER,
+            "${POSTGRES_PASSWORD}": self.POSTGRES_PASSWORD,
+            "${POSTGRES_DB}": self.POSTGRES_DB,
+        }.items():
+            url = url.replace(token, value)
+
+        parsed = make_url(url)
+        if parsed.host in {_COMPOSE_DB_HOST, _HOST_DB_HOST, "localhost"}:
+            parsed = parsed.set(
+                username=self.POSTGRES_USER,
+                password=self.POSTGRES_PASSWORD,
+                database=self.POSTGRES_DB,
+            )
+
+        self.DATABASE_URL = _resolve_database_url(
+            parsed.render_as_string(hide_password=False)
+        )
+        return self
 
     # Redis
     REDIS_URL: str
