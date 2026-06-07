@@ -38,16 +38,16 @@ const { copy } = useClipboard();
       class="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
       <BaseCard v-if="config.crypto.btc" hoverable>
-        <div class="text-xs text-accent-blue uppercase tracking-wider mb-2">BTC</div>
-        <code class="text-xs text-surface-light break-all">{{ config.crypto.btc }}</code>
+        <div class="text-label text-accent-blue mb-2">BTC</div>
+        <code class="text-sm font-data text-surface-light break-all">{{ config.crypto.btc }}</code>
         <BaseButton variant="ghost" size="sm" class="mt-3" @click="copy(config.crypto.btc)">
           Copy Address
         </BaseButton>
       </BaseCard>
 
       <BaseCard v-if="config.crypto.eth" hoverable>
-        <div class="text-xs text-accent-blue uppercase tracking-wider mb-2">ETH</div>
-        <code class="text-xs text-surface-light break-all">{{ config.crypto.eth }}</code>
+        <div class="text-label text-accent-blue mb-2">ETH</div>
+        <code class="text-sm font-data text-surface-light break-all">{{ config.crypto.eth }}</code>
         <BaseButton variant="ghost" size="sm" class="mt-3" @click="copy(config.crypto.eth)">
           Copy Address
         </BaseButton>
