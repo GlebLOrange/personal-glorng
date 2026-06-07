@@ -32,20 +32,6 @@ export function crossRate(
   return toRate / fromRate;
 }
 
-function isoDate(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
-function monthBounds(month: string): { from: string; to: string } {
-  const [year, mon] = month.split("-").map(Number);
-  const lastDay = new Date(year, mon, 0).getDate();
-  const mm = String(mon).padStart(2, "0");
-  return {
-    from: `${year}-${mm}-01`,
-    to: `${year}-${mm}-${String(lastDay).padStart(2, "0")}`,
-  };
-}
-
 export function useExpenseFilters(
   displayCurrency: Ref<CurrencyCode>,
   onFiltersChange: () => void | Promise<void>,
@@ -117,12 +103,6 @@ export function useExpenseFilters(
 
     const prev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
     selectedMonth.value = monthValueLocal(prev);
-  }
-
-  function clearFilters(): void {
-    productFilter.value = "";
-    categoryFilter.value = null;
-    applyMonthPreset("this_month");
   }
 
   function clearFilters(): void {
