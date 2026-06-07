@@ -24,6 +24,20 @@ class TestToolExpensesCRUD:
         assert data["category"] == "AI"
         assert data["source"] == "web_admin"
 
+    async def test_create_expense_sanitizes_tool_name_and_notes(
+        self, auth_client: AsyncClient
+    ):
+        payload = {
+            **EXPENSE_DATA,
+            "tool_name": "  Cur\x00sor  ",
+            "notes": "  Pro\x00 subscription  ",
+        }
+        resp = await auth_client.post("/api/tools/expenses", json=payload)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["tool_name"] == "Cursor"
+        assert data["notes"] == "Pro subscription"
+
     async def test_list_expenses(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
         resp = await auth_client.get("/api/tools/expenses")

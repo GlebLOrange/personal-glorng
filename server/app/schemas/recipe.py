@@ -4,6 +4,11 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 from app.schemas.common import PaginatedResponse
+from app.schemas.validators import (
+    validate_clean_optional,
+    validate_clean_required,
+    validate_clean_string_list,
+)
 
 RecipeSort = Literal[
     "updated_desc",
@@ -25,6 +30,28 @@ class RecipeCreate(BaseModel):
     cook_time: int | None = Field(None, ge=0)
     servings: int | None = Field(None, ge=1)
 
+    @field_validator("title")
+    @classmethod
+    def clean_title(cls, value: str) -> str:
+        return validate_clean_required(value, max_length=255, field_name="Title")
+
+    @field_validator("ingredients", "steps")
+    @classmethod
+    def clean_list_fields(cls, value: list[str]) -> list[str]:
+        return validate_clean_string_list(value, field_name="Item")
+
+    @field_validator("notes")
+    @classmethod
+    def clean_notes(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value)
+
+    @field_validator("tags")
+    @classmethod
+    def clean_tags(cls, value: list[str]) -> list[str]:
+        if not value:
+            return value
+        return validate_clean_string_list(value, item_max_length=64, field_name="Tag")
+
     @field_validator("image_url")
     @classmethod
     def https_image_only(cls, value: HttpUrl | None) -> HttpUrl | None:
@@ -44,6 +71,34 @@ class RecipeUpdate(BaseModel):
     prep_time: int | None = Field(None, ge=0)
     cook_time: int | None = Field(None, ge=0)
     servings: int | None = Field(None, ge=1)
+
+    @field_validator("title")
+    @classmethod
+    def clean_title(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return validate_clean_required(value, max_length=255, field_name="Title")
+
+    @field_validator("ingredients", "steps")
+    @classmethod
+    def clean_list_fields(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        return validate_clean_string_list(value, field_name="Item")
+
+    @field_validator("notes")
+    @classmethod
+    def clean_notes(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value)
+
+    @field_validator("tags")
+    @classmethod
+    def clean_tags(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        if not value:
+            return value
+        return validate_clean_string_list(value, item_max_length=64, field_name="Tag")
 
     @field_validator("image_url")
     @classmethod

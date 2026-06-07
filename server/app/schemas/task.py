@@ -2,9 +2,12 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.core.text import sanitize_optional_text, sanitize_text
 from app.db.documents.task import TaskStatus
-from app.schemas.validators import UtcDatetime
+from app.schemas.validators import (
+    UtcDatetime,
+    validate_clean_optional,
+    validate_clean_required,
+)
 
 
 class TaskTextFields(BaseModel):
@@ -17,21 +20,17 @@ class TaskTextFields(BaseModel):
     @field_validator("title")
     @classmethod
     def clean_title(cls, value: str) -> str:
-        cleaned = sanitize_text(value, max_length=255)
-        if not cleaned:
-            msg = "Title must not be empty"
-            raise ValueError(msg)
-        return cleaned
+        return validate_clean_required(value, max_length=255, field_name="Title")
 
     @field_validator("description")
     @classmethod
     def clean_description(cls, value: str | None) -> str | None:
-        return sanitize_optional_text(value)
+        return validate_clean_optional(value)
 
     @field_validator("location")
     @classmethod
     def clean_location(cls, value: str | None) -> str | None:
-        return sanitize_optional_text(value, max_length=255)
+        return validate_clean_optional(value, max_length=255)
 
 
 class TaskCreate(TaskTextFields):

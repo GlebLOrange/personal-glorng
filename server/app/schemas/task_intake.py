@@ -2,7 +2,9 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.schemas.validators import validate_clean_optional, validate_clean_required
 
 
 class TaskDraft(BaseModel):
@@ -19,6 +21,16 @@ class TaskDraft(BaseModel):
     location: str | None = None
     reminder_minutes: int | None = None
     assignee_hint: str | None = None
+
+    @field_validator("title")
+    @classmethod
+    def clean_title(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=255)
+
+    @field_validator("description", "location", "assignee_hint")
+    @classmethod
+    def clean_optional_text(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=255)
 
 
 class FieldConfidence(BaseModel):
@@ -45,6 +57,11 @@ class ClarificationTurn(BaseModel):
     field: str
     question: str
     answer: str
+
+    @field_validator("answer")
+    @classmethod
+    def clean_answer(cls, value: str) -> str:
+        return validate_clean_required(value, max_length=5000, field_name="Answer")
 
 
 class TaskIntakeResponse(BaseModel):

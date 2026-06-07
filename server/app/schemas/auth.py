@@ -13,6 +13,7 @@ from pydantic import (
 )
 
 from app.core.password_policy import validate_password_strength
+from app.schemas.validators import validate_clean_optional
 
 _TIMEZONE_ERROR = "Invalid IANA timezone"
 
@@ -78,11 +79,8 @@ class RegisterRequest(BaseModel):
 
     @field_validator("display_name")
     @classmethod
-    def strip_display_name(cls, value: str | None) -> str | None:
-        if value is None:
-            return None
-        trimmed = value.strip()
-        return trimmed or None
+    def clean_display_name(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=100)
 
     @model_validator(mode="after")
     def passwords_match(self) -> RegisterRequest:
@@ -158,11 +156,8 @@ class UpdateProfileRequest(BaseModel):
 
     @field_validator("display_name")
     @classmethod
-    def strip_display_name(cls, value: str | None) -> str | None:
-        if value is None:
-            return None
-        trimmed = value.strip()
-        return trimmed or None
+    def clean_display_name(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=100)
 
     @field_validator("timezone")
     @classmethod

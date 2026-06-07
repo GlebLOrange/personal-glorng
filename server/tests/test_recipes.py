@@ -34,6 +34,20 @@ class TestRecipesCRUD:
         assert data["tags"] == ["italian", "quick"]
         assert data["servings"] == 2
 
+    async def test_create_recipe_sanitizes_title_and_ingredients(
+        self, auth_client: AsyncClient
+    ):
+        payload = {
+            **RECIPE_DATA,
+            "title": "  Pasta\x00 Carbonara  ",
+            "ingredients": ["  eggs\x00  ", "pasta"],
+        }
+        resp = await auth_client.post("/api/tools/recipes", json=payload)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["title"] == "Pasta Carbonara"
+        assert data["ingredients"] == ["eggs", "pasta"]
+
     async def test_list_recipes(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
         resp = await auth_client.get("/api/tools/recipes")

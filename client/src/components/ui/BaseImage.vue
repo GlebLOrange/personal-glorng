@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 
 import { IMAGE_PLACEHOLDER_SRC } from "@/constants/images";
+import { safeImageSrc } from "@/utils/safeImageSrc";
 
 const props = withDefaults(
   defineProps<{
@@ -16,6 +17,8 @@ const props = withDefaults(
   },
 );
 
+const safeSrc = computed(() => safeImageSrc(props.src));
+
 const imgRef = ref<HTMLImageElement | null>(null);
 const loaded = ref(false);
 const failed = ref(false);
@@ -29,7 +32,7 @@ async function syncLoadState(): Promise<void> {
 }
 
 watch(
-  () => props.src,
+  safeSrc,
   (src) => {
     loaded.value = false;
     failed.value = false;
@@ -59,9 +62,9 @@ function onError(): void {
       class="absolute inset-0 h-full w-full object-cover"
     />
     <img
-      v-if="src && !failed"
+      v-if="safeSrc && !failed"
       ref="imgRef"
-      :src="src"
+      :src="safeSrc"
       :alt="alt"
       :loading="lazy ? 'lazy' : 'eager'"
       decoding="async"
