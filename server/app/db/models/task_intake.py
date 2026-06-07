@@ -1,11 +1,11 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, func
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
+from app.db.types import JSONDocument
 
 
 class IntakeStatus(enum.StrEnum):
@@ -33,12 +33,12 @@ class TaskIntake(Base):
         default=IntakeStatus.PARSING,
         server_default="parsing",
     )
-    draft_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    confidence_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    draft_json: Mapped[dict | None] = mapped_column(JSONDocument, nullable=True)
+    confidence_json: Mapped[dict | None] = mapped_column(JSONDocument, nullable=True)
     clarification_turns_json: Mapped[list | None] = mapped_column(
-        JSONB,
+        JSONDocument,
         nullable=True,
-        server_default="[]",
+        server_default=text("'[]'::json"),
     )
     clarification_rounds: Mapped[int] = mapped_column(
         Integer,
