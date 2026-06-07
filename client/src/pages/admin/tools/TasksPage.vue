@@ -11,9 +11,12 @@ import TaskList from "@/components/tasks/TaskList.vue";
 import TaskPagination from "@/components/tasks/TaskPagination.vue";
 import TaskSummaryBar from "@/components/tasks/TaskSummaryBar.vue";
 import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
+import { usePermissions } from "@/composables/usePermissions";
 import { useTasks } from "@/composables/useTasks";
 
 type Tab = "queue" | "intakes" | "sync";
+
+const { isSuperuser } = usePermissions();
 
 const TASK_TABS: { id: Tab; label: string }[] = [
   { id: "queue", label: "queue" },
@@ -39,6 +42,7 @@ const {
   syncLoading,
   detailLoading,
   saving,
+  statusUpdating,
   hasNextPage,
   taskCountLabel,
   loadTasks,
@@ -48,6 +52,7 @@ const {
   openDetail,
   closeDetail,
   retrySync,
+  updateTaskStatus,
   openCreate,
   createTask,
   goToPage,
@@ -76,6 +81,7 @@ onMounted(() => {
       <TaskFilters
         v-model:filter-status="filterStatus"
         :task-count-label="taskCountLabel"
+        :can-mutate="isSuperuser"
         @create="openCreate"
       />
       <TaskList
@@ -102,10 +108,12 @@ onMounted(() => {
       v-else-if="activeTab === 'sync'"
       :items="syncQueue"
       :loading="syncLoading"
+      :can-mutate="isSuperuser"
       @retry="retrySync"
     />
 
     <TaskCreateModal
+      v-if="isSuperuser"
       v-model:form="createForm"
       :open="showCreateForm"
       :saving="saving"
@@ -117,8 +125,11 @@ onMounted(() => {
       v-if="selectedTask"
       :task="selectedTask"
       :loading="detailLoading"
+      :can-mutate="isSuperuser"
+      :status-updating="statusUpdating"
       @close="closeDetail"
       @retry-sync="retrySync"
+      @update-status="updateTaskStatus(selectedTask.id, $event)"
     />
   </AdminPageLayout>
 </template>

@@ -23,12 +23,9 @@ from app.db.models.google_sync_queue import SyncStatus
 from app.db.models.reminder import Reminder
 from app.db.models.task import TaskStatus
 from app.db.session import get_session_factory
-from app.services.task import (
-    delete_old_tasks,
-    get_overdue_pending_tasks,
-)
+from app.services.task import complete_past_due_tasks, delete_old_tasks
 from app.settings import get_settings
-from app.todobot.keyboards.task import completion_options, reminder_actions
+from app.todobot.keyboards.task import reminder_actions
 
 MAX_JOB_TRIES = 3
 
@@ -177,32 +174,16 @@ async def send_reminder(ctx: dict[str, Any], reminder_id: int) -> None:
 
 
 async def check_overdue_tasks(ctx: dict[str, Any]) -> None:
-    """Send follow-up for tasks past their scheduled time."""
-    settings = get_settings()
-    if not settings.TELEGRAM_BOT_TO_DO_TOKEN:
-        return
-
+    """Auto-complete pending tasks past their scheduled time."""
     session_factory = get_session_factory()
     async with session_factory() as db:
-        tasks = await get_overdue_pending_tasks(db)
-        if not tasks:
-            return
-
-        bot = Bot(token=settings.TELEGRAM_BOT_TO_DO_TOKEN)
-        try:
-            for task in tasks:
-                await bot.send_message(
-                    chat_id=task.telegram_user_id,
-                    text=f"What happened with *{task.title}*?",
-                    reply_markup=completion_options(task.id),
-                    parse_mode="Markdown",
-                )
+        count = await complete_past_due_tasks(db)
+        if count:
+            await db.commit()
             logger.info(
-                "Overdue check complete",
-                context={"count": len(tasks)},
+                "Past-due tasks auto-completed",
+                context={"count": count},
             )
-        finally:
-            await bot.session.close()
 
 
 async def cleanup_old_tasks(ctx: dict[str, Any]) -> None:

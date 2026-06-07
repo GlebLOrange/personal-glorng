@@ -8,6 +8,7 @@ import type { SyncQueueItem } from "@/types";
 defineProps<{
   items: SyncQueueItem[];
   loading: boolean;
+  canMutate?: boolean;
 }>();
 
 const emit = defineEmits<{ retry: [taskId: number] }>();
@@ -54,7 +55,7 @@ const skeletonRows = 3;
           </div>
         </div>
         <BaseButton
-          v-if="item.status === 'failed'"
+          v-if="canMutate && item.status === 'failed'"
           variant="ghost"
           size="sm"
           @click="emit('retry', item.task_id)"

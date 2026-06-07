@@ -393,6 +393,25 @@ class TaskService:
         )
         return list(result.scalars().all())
 
+    async def complete_past_due_tasks(
+        self,
+        *,
+        actor_type: AuditActorType = AuditActorType.SYSTEM,
+        actor_id: int | None = None,
+        source: AuditSource = AuditSource.WORKER,
+    ) -> int:
+        """Mark pending tasks past scheduled_at as completed."""
+        tasks = await self.get_overdue_pending_tasks()
+        for task in tasks:
+            await self.update_task_status(
+                task=task,
+                new_status=TaskStatus.COMPLETED,
+                actor_type=actor_type,
+                actor_id=actor_id,
+                source=source,
+            )
+        return len(tasks)
+
     async def enqueue_calendar_sync(
         self,
         *,
@@ -471,6 +490,10 @@ async def get_unsent_reminders(db: AsyncSession) -> list[Reminder]:
 
 async def get_overdue_pending_tasks(db: AsyncSession) -> list[Task]:
     return await TaskService(db).get_overdue_pending_tasks()
+
+
+async def complete_past_due_tasks(db: AsyncSession, **kwargs: object) -> int:
+    return await TaskService(db).complete_past_due_tasks(**kwargs)  # type: ignore[arg-type]
 
 
 async def enqueue_calendar_sync(db: AsyncSession, **kwargs: object) -> GoogleSyncQueue:

@@ -5,6 +5,7 @@ import { SELECT_CLASS_COMPACT } from "@/constants/formClasses";
 
 defineProps<{
   taskCountLabel: string;
+  canMutate?: boolean;
 }>();
 
 const filterStatus = defineModel<string>("filterStatus", { required: true });
@@ -23,6 +24,13 @@ const emit = defineEmits<{ create: [] }>();
       </select>
       <span class="text-xs text-surface-mid">{{ taskCountLabel }}</span>
     </div>
-    <BaseButton variant="primary" size="sm" @click="emit('create')">+ New task</BaseButton>
+    <BaseButton
+      v-if="canMutate"
+      variant="primary"
+      size="sm"
+      @click="emit('create')"
+    >
+      + New task
+    </BaseButton>
   </div>
 </template>
