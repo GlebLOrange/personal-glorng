@@ -1,8 +1,10 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 from httpx import AsyncClient
 
+from app.core.deps import get_job_queue_dep
+from app.main import app
 from app.services.user import default_owner_permissions
 from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, STRONG_PASSWORD
 from tests.factories import create_user
@@ -54,21 +56,24 @@ async def test_change_password_wrong_current(auth_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-@patch("app.routers.account.enqueue_job", new_callable=AsyncMock)
 async def test_change_email_requires_reverify(
-    mock_enqueue: AsyncMock,
     auth_client: AsyncClient,
 ) -> None:
-    mock_enqueue.return_value = "job-verify"
-    resp = await auth_client.patch(
-        "/api/auth/me/email",
-        json={
-            "email": "renamed@glorng.dev",
-            "current_password": ADMIN_PASSWORD,
-        },
-    )
-    assert resp.status_code == 200
-    mock_enqueue.assert_awaited_once()
+    mock_queue = AsyncMock()
+    mock_queue.enqueue = AsyncMock(return_value="job-verify")
+    app.dependency_overrides[get_job_queue_dep] = lambda: mock_queue
+    try:
+        resp = await auth_client.patch(
+            "/api/auth/me/email",
+            json={
+                "email": "renamed@glorng.dev",
+                "current_password": ADMIN_PASSWORD,
+            },
+        )
+        assert resp.status_code == 200
+        mock_queue.enqueue.assert_awaited_once()
+    finally:
+        app.dependency_overrides.pop(get_job_queue_dep, None)
 
     me = await auth_client.get("/api/auth/me")
     assert me.status_code == 403

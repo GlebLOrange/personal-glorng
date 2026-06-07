@@ -11,7 +11,7 @@ from app.core.logging import logger
 from app.core.redis import close_redis, init_redis
 from app.openapi import configure_openapi
 from app.settings import get_settings
-from app.workers.pool import close_arq_pool, init_arq_pool
+from app.workers.queue import close_job_queue, init_job_queue
 
 
 def _init_sentry() -> None:
@@ -40,11 +40,11 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     await init_redis(settings.REDIS_URL)
     logger.info("Redis connected")
 
-    await init_arq_pool()
+    init_job_queue()
 
     yield
 
-    await close_arq_pool()
+    await close_job_queue()
     await close_redis()
     logger.info("Shutdown complete")
 

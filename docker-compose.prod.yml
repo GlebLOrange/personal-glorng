@@ -18,6 +18,23 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq/celery-compat.conf:/etc/rabbitmq/conf.d/10-celery-compat.conf:ro
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
     image: redis:8-alpine
     restart: unless-stopped
@@ -68,6 +85,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
       migrate:
         condition: service_completed_successfully
 
@@ -75,7 +94,7 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    command: python -m app.workers.run app.workers.WorkerSettings
+    command: celery -A app.workers.celery_app worker --loglevel=info
     restart: unless-stopped
     environment:
       PYTHONPATH: /app
@@ -87,6 +106,30 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  beat:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    command: celery -A app.workers.celery_app beat --loglevel=info
+    restart: unless-stopped
+    environment:
+      PYTHONPATH: /app
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
@@ -107,6 +150,8 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
@@ -142,6 +187,7 @@ services:
 
 volumes:
   pgdata:
+  rabbitmq_data:
   redis_data:
   server_media:
   client_dist:

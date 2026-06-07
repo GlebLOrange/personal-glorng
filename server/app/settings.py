@@ -65,6 +65,12 @@ class Settings(BaseSettings):
         ):
             msg = "CORS_ORIGINS cannot include '*' when allow_credentials is enabled"
             raise ValueError(msg)
+        if self.APP_ENV == "production" and (
+            len(self.RABBITMQ_PASSWORD) < 16
+            or any(m in self.RABBITMQ_PASSWORD.lower() for m in _WEAK_SECRET_MARKERS)
+        ):
+            msg = "RABBITMQ_PASSWORD is too weak for production; use 16+ chars"
+            raise ValueError(msg)
         return self
 
     # Postgres (source of truth for compose-backed DATABASE_URL)
@@ -100,6 +106,11 @@ class Settings(BaseSettings):
 
     # Redis
     REDIS_URL: str
+
+    # RabbitMQ / Celery
+    RABBITMQ_USER: str
+    RABBITMQ_PASSWORD: str
+    CELERY_BROKER_URL: str
 
     # JWT
     JWT_SECRET: str

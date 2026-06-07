@@ -10,7 +10,7 @@ maintenance tasks. It is an audit report only; no product code was changed.
 
 ## Stack summary
 
-- Backend: FastAPI, SQLAlchemy async, Redis, ARQ workers, aiogram Telegram bot.
+- Backend: FastAPI, SQLAlchemy async, Redis, Celery + RabbitMQ workers, aiogram Telegram bot.
 - Frontend: Vue 3, Vite, TypeScript, Pinia, Vitest, Playwright.
 - Infra: nginx, Docker Compose, PostgreSQL, Redis, GitHub Actions, CodeQL,
   Dependabot, gitleaks, pip-audit, npm audit.

@@ -17,6 +17,7 @@ from app.db.session import get_db
 from app.main import app
 from app.services.currency import RATES_CACHE_KEY
 from app.settings import get_settings
+from app.workers.queue import init_job_queue
 from tests.factories import create_user
 
 ADMIN_EMAIL = "admin@glorng.dev"
@@ -38,7 +39,7 @@ ADMIN_PASSWORD = STRONG_PASSWORD
 
 
 class _FakeIncrExpireScript:
-    def __init__(self, redis: "FakeRedis") -> None:
+    def __init__(self, redis: FakeRedis) -> None:
         self._redis = redis
 
     async def __call__(self, keys: list[str], args: list[int]) -> int:
@@ -94,8 +95,14 @@ test_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=
 @pytest.fixture(autouse=True)
 def disable_ai_chat_by_default(
     monkeypatch: pytest.MonkeyPatch,
-) -> Generator[None, None, None]:
+) -> Generator[None]:
     monkeypatch.setenv("AI_CHAT_ENABLED", "false")
+    monkeypatch.setenv("RABBITMQ_USER", "glorng")
+    monkeypatch.setenv("RABBITMQ_PASSWORD", "test-rabbitmq-password")
+    monkeypatch.setenv(
+        "CELERY_BROKER_URL",
+        "amqp://glorng:test-rabbitmq-password@localhost:5672//",
+    )
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()
@@ -118,7 +125,7 @@ def _restore_postgres_only_indexes(removed: list[tuple[object, object]]) -> None
 
 
 @pytest.fixture(autouse=True)
-async def setup_db() -> AsyncGenerator[None, None]:
+async def setup_db() -> AsyncGenerator[None]:
     removed_indexes = _strip_postgres_only_indexes()
     try:
         async with engine.begin() as conn:
@@ -143,7 +150,7 @@ async def seed_currency_rates(fake_redis: FakeRedis) -> None:
 
 
 @pytest.fixture(autouse=True)
-def temp_media_dir(tmp_path: Path) -> Generator[None, None, None]:
+def temp_media_dir(tmp_path: Path) -> Generator[None]:
     settings = get_settings()
     original = settings.MEDIA_DIR
     settings.MEDIA_DIR = str(tmp_path / "media")
@@ -151,7 +158,7 @@ def temp_media_dir(tmp_path: Path) -> Generator[None, None, None]:
     settings.MEDIA_DIR = original
 
 
-async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
+async def override_get_db() -> AsyncGenerator[AsyncSession]:
     async with test_session() as session:
         try:
             yield session
@@ -162,17 +169,18 @@ async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 app.dependency_overrides[get_db] = override_get_db
+init_job_queue()
 
 
 @pytest.fixture
-async def client() -> AsyncGenerator[AsyncClient, None]:
+async def client() -> AsyncGenerator[AsyncClient]:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
 
 @pytest.fixture
-async def db() -> AsyncGenerator[AsyncSession, None]:
+async def db() -> AsyncGenerator[AsyncSession]:
     async with test_session() as session:
         yield session
 
@@ -195,7 +203,7 @@ def admin_token(admin_user: User) -> str:
 @pytest.fixture
 async def auth_client(
     client: AsyncClient, admin_token: str
-) -> AsyncGenerator[AsyncClient, None]:
+) -> AsyncGenerator[AsyncClient]:
     client.headers["Authorization"] = f"Bearer {admin_token}"
     return client
 

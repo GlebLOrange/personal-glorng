@@ -27,7 +27,7 @@ flowchart TD
 1. **Postgres** starts with an empty database (or existing `pgdata` volume).
 2. **First volume only:** [`server/app/db/init/01_extensions.sql`](../server/app/db/init/01_extensions.sql) installs extensions (e.g. `pg_trgm`).
 3. **`migrate` service** runs [`server/scripts/db_init.sh`](../server/scripts/db_init.sh): wait for Postgres, then `alembic upgrade head`.
-4. **App services** (`server`, `worker`, `todobot`) start after `migrate` completes successfully.
+4. **App services** (`server`, `worker`, `beat`, `todobot`) start after `migrate` completes successfully.
 
 ### Dev vs production
 

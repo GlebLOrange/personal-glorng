@@ -15,6 +15,6 @@ class Reminder(BaseModelMixin, Base):
     )
     remind_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     sent: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
-    arq_job_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    job_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     task: Mapped["Task"] = relationship(lazy="selectin")  # noqa: F821

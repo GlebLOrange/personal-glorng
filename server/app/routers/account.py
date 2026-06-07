@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response
 
-from app.core.deps import CurrentUser, DbSession
+from app.core.deps import CurrentUser, DbSession, JobQueueDep
 from app.core.logging import logger
 from app.schemas.auth import (
     ChangeEmailRequest,
@@ -20,7 +20,7 @@ from app.services.account import (
     update_preferences,
     update_profile,
 )
-from app.workers.pool import enqueue_job
+from app.workers.job_names import JobName
 
 router = APIRouter()
 
@@ -55,6 +55,7 @@ async def patch_email(
     data: ChangeEmailRequest,
     user: CurrentUser,
     db: DbSession,
+    job_queue: JobQueueDep,
 ) -> MessageResponse:
     updated, token = await change_email(
         db,
@@ -62,7 +63,7 @@ async def patch_email(
         new_email=str(data.email),
         current_password=data.current_password,
     )
-    await enqueue_job("send_verification_email", updated.email, token)
+    await job_queue.enqueue(JobName.SEND_VERIFICATION_EMAIL, updated.email, token)
     logger.info("Verification email queued after email change", context={"user_id": user.id})
     return MessageResponse(
         message="Email updated. Check your inbox to verify the new address.",

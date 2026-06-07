@@ -167,7 +167,7 @@ export interface TaskReminder {
   task_id: number;
   remind_at: string;
   sent: boolean;
-  arq_job_id: string | null;
+  job_id: string | null;
   created_at: string;
 }
 

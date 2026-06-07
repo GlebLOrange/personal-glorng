@@ -4,7 +4,7 @@ Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + Postg
 
 ## Tech Stack
 
-- **Backend**: FastAPI, SQLAlchemy (async), Alembic, ARQ, Redis, Sentry
+- **Backend**: FastAPI, SQLAlchemy (async), Alembic, Celery, RabbitMQ, Redis, Sentry
 - **Frontend**: Vue 3, Vite, TypeScript, Tailwind CSS, SASS, Pinia
 - **Database**: PostgreSQL 18
 - **Cache/Queue**: Redis 8
@@ -41,7 +41,7 @@ API docs (dev only): [http://localhost:8000/api/docs](http://localhost:8000/api/
 |---------|------------|----------|
 | `make dev-lite` + host `npm run dev` | db, redis, server | Daily UI/API work (lowest resource use) |
 | `make dev` | + client, nginx | Full stack through nginx; no background jobs |
-| `make dev-worker` | + ARQ worker | Testing reminders, calendar sync, email jobs |
+| `make dev-worker` | + Celery worker + beat + RabbitMQ | Testing reminders, calendar sync, email jobs |
 | `make dev-bot` | + Telegram todobot | Bot development (`TELEGRAM_BOT_TO_DO_TOKEN` required) |
 | `make dev-full` | All 7 | Same as old default — worker + bot + nginx stack |
 
@@ -58,7 +58,8 @@ nginx/     Reverse proxy config (:80)
 | Process | Command | Role |
 |---------|---------|------|
 | API | `uvicorn app.main:app` | HTTP API, admin tools, public routes |
-| Worker | `python -m app.workers.run` | Reminders, calendar sync, cleanup |
+| Worker | `celery -A app.workers.celery_app worker` | Reminders, calendar sync, cleanup |
+| Beat | `celery -A app.workers.celery_app beat` | Cron schedules for worker tasks |
 | Todobot | `python -m app.todobot.main` | Telegram tasks + expense logging |
 
 ### Telegram expense logging
@@ -79,7 +80,7 @@ Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN` in `.env`.
 |--------------------|--------------------------------------------------|
 | `make dev-lite`    | Minimal stack (db, redis, API); run Vite on host |
 | `make dev`         | Core dev stack (nginx + client; no worker/bot)   |
-| `make dev-worker`  | Core stack + ARQ worker                          |
+| `make dev-worker`  | Core stack + RabbitMQ + Celery worker + beat   |
 | `make dev-bot`     | Core stack + Telegram todobot                    |
 | `make dev-full`    | All dev services (worker + bot)                  |
 | `make prod`        | Start production environment                     |

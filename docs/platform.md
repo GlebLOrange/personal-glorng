@@ -1,6 +1,6 @@
 # gLOrng Platform
 
-gLOrng is a **personal platform** where the same domain services power the public portfolio, admin panel, Telegram todobot, and ARQ background workers.
+gLOrng is a **personal platform** where the same domain services power the public portfolio, admin panel, Telegram todobot, and Celery background workers.
 
 ## Channels
 
@@ -9,7 +9,8 @@ gLOrng is a **personal platform** where the same domain services power the publi
 | Public web | `/` | Resume, donations, feedback |
 | Admin panel | `/admin` | Platform services via `/api/tools/*` |
 | Telegram bot | `app.todobot.main` | Task creation and reminders |
-| Worker | `app.workers.run` | Reminders, calendar sync, cleanup |
+| Worker | `celery -A app.workers.celery_app worker` | Reminders, calendar sync, cleanup |
+| Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks |
 
 ## Service Catalog
 

@@ -24,7 +24,7 @@ RESUME_DATA: dict[str, Any] = {
                 "Alembic",
                 "PostgreSQL",
                 "Redis",
-                "ARQ",
+                "Celery",
             ],
         },
         {
@@ -58,7 +58,7 @@ RESUME_DATA: dict[str, Any] = {
                 "SQLAlchemy",
                 "Redis",
                 "Docker",
-                "ARQ",
+                "Celery",
                 "Telegram",
             ],
             "url": "",
