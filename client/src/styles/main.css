@@ -9,17 +9,26 @@
 @theme {
   --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --text-xs: 0.8125rem;
+  --text-xs: 0.875rem;
   --text-xs--line-height: 1.5;
-  --text-sm: 0.9375rem;
+  --text-sm: 1rem;
   --text-sm--line-height: 1.55;
+  --text-base: 1.0625rem;
   --text-base--line-height: 1.65;
+  --text-lg: 1.1875rem;
+  --text-lg--line-height: 1.6;
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.45;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 1.35;
+  --text-3xl: 2.125rem;
+  --text-3xl--line-height: 1.25;
   --color-accent-blue: #7bbde2;
   --color-accent-violet: #b8a3c8;
   --color-accent-golden: #d4ce94;
   --color-surface-light: #f5f2ec;
   --color-surface-sage: #d5dcd3;
-  --color-surface-mid: #c9bfb4;
+  --color-surface-mid: #d4cdc6;
   --color-surface-muted: #a39d97;
   --color-surface-dark: #141820;
   --color-surface-card: #1c2230;
@@ -73,8 +82,32 @@
   }
 }
 
+@utility skip-link {
+  @apply sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-surface-card focus:text-surface-light focus:border focus:border-accent-blue focus:rounded-lg;
+}
+
+@utility text-body {
+  @apply text-base text-surface-sage leading-relaxed;
+}
+
+@utility text-meta {
+  @apply text-sm text-surface-mid;
+}
+
+@utility text-label {
+  @apply text-xs font-medium;
+}
+
+@utility section-title {
+  @apply text-3xl font-bold tracking-tight text-surface-light;
+}
+
+@utility card-title {
+  @apply text-lg font-semibold text-surface-light;
+}
+
 @utility cta-primary {
-  @apply px-6 py-2 rounded-lg bg-gradient-to-r from-accent-blue to-accent-violet text-white text-sm font-medium transition-opacity;
+  @apply px-6 py-3 min-h-11 rounded-lg bg-gradient-to-r from-accent-blue to-accent-violet text-white text-base font-medium transition-opacity inline-flex items-center justify-center;
   &:hover {
     @apply opacity-90;
   }
@@ -84,7 +117,7 @@
 }
 
 @utility cta-secondary {
-  @apply px-6 py-2 rounded-lg border border-surface-border text-surface-mid text-sm font-medium transition-colors;
+  @apply px-6 py-3 min-h-11 rounded-lg border border-surface-border text-surface-mid text-base font-medium transition-colors inline-flex items-center justify-center;
   &:hover {
     @apply border-accent-blue text-accent-blue;
   }
@@ -93,13 +126,9 @@
   }
 }
 
-@utility skip-link {
-  @apply sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-surface-card focus:text-surface-light focus:border focus:border-accent-blue focus:rounded-lg;
-}
-
 html {
   scroll-behavior: smooth;
-  font-size: 106.25%;
+  font-size: 112.5%;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }

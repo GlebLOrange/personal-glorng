@@ -9,9 +9,9 @@ import PortfolioSearchChat from "@/components/search/PortfolioSearchChat.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import ExperienceList from "@/components/resume/ExperienceList.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
+import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
 import ProjectsGrid from "@/components/resume/ProjectsGrid.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
-import CodeBlock from "@/components/ui/CodeBlock.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
@@ -42,7 +42,7 @@ onMounted(loadResume);
 
 <template>
   <div>
-    <p v-if="apiError" class="max-w-5xl mx-auto px-6 pt-4 text-xs text-accent-golden" role="status">
+    <p v-if="apiError" class="max-w-5xl mx-auto px-6 pt-4 text-label text-accent-golden" role="status">
       Using cached portfolio data — live sync unavailable.
     </p>
 
@@ -52,15 +52,15 @@ onMounted(loadResume);
 
     <!-- Spotify now-playing disabled until Premium subscription is available -->
 
-    <SectionWrapper id="about" title="about" dark>
-      <CodeBlock title="whoami">{{ resume.bio }}</CodeBlock>
+    <SectionWrapper id="about" title="about" dark alternate>
+      <PortfolioGlance :resume="resume" />
     </SectionWrapper>
 
     <SectionWrapper id="skills" title="skills" dark>
       <SkillsGrid :skills="resume.skills" />
     </SectionWrapper>
 
-    <SectionWrapper id="experience" title="experience" dark>
+    <SectionWrapper id="experience" title="experience" dark alternate>
       <ExperienceList :experience="resume.experience" />
     </SectionWrapper>
 
@@ -68,8 +68,8 @@ onMounted(loadResume);
       <ProjectsGrid :projects="resume.projects" />
     </SectionWrapper>
 
-    <SectionWrapper id="support" title="support" dark>
-      <p class="text-surface-mid mb-6 text-sm">
+    <SectionWrapper id="support" title="support" dark alternate>
+      <p class="text-body mb-6">
         If you find my work useful, consider supporting me.
       </p>
       <DonationsBlock v-if="donations" :config="donations" />
@@ -80,7 +80,7 @@ onMounted(loadResume);
         <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
         <button
           type="button"
-          class="interactive-surface inline-flex items-center gap-2 px-4 py-2 text-sm text-surface-mid"
+          class="interactive-surface inline-flex items-center gap-2 px-5 py-3 text-base text-surface-sage min-h-11"
           @click="showFeedback = true"
         >
           <ContactIcon id="feedback" class="size-4 shrink-0" />

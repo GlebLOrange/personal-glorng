@@ -10,14 +10,14 @@ defineProps<{
 <template>
   <div class="space-y-4">
     <BaseCard v-for="(exp, i) in experience" :key="i" hoverable>
-      <div class="flex justify-between items-start mb-2">
+      <div class="flex justify-between items-start mb-2 gap-4">
         <div>
-          <h3 class="text-surface-light font-bold">{{ exp.role }}</h3>
-          <p class="text-accent-blue text-sm">{{ exp.company }}</p>
+          <h3 class="card-title">{{ exp.role }}</h3>
+          <p class="text-base text-accent-blue">{{ exp.company }}</p>
         </div>
-        <span class="text-xs text-surface-mid">{{ exp.period }}</span>
+        <span class="text-meta shrink-0">{{ exp.period }}</span>
       </div>
-      <p class="text-sm text-surface-mid leading-relaxed">{{ exp.description }}</p>
+      <p class="text-body">{{ exp.description }}</p>
     </BaseCard>
   </div>
 </template>
