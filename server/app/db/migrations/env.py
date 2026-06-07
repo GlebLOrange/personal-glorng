@@ -14,7 +14,23 @@ if str(_server_root) not in sys.path:
     sys.path.insert(0, str(_server_root))
 
 from app.db.models import Base
+from app.db.recipe_search import RECIPE_SEARCH_INDEX
+from app.db.search_index import SEARCH_INDEX_NAME
 from app.settings import get_settings
+
+_FTS_INDEX_NAMES = frozenset({RECIPE_SEARCH_INDEX, SEARCH_INDEX_NAME})
+
+
+def include_object(
+    _object: object,
+    name: str | None,
+    type_: str,
+    _reflected: bool,
+    _compare_to: object | None,
+) -> bool:
+    """Skip GIN FTS indexes; Postgres normalizes expressions and causes false drift."""
+    return not (type_ == "index" and name in _FTS_INDEX_NAMES)
+
 
 config = context.config
 
@@ -57,6 +73,7 @@ def run_migrations_offline() -> None:
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
         compare_server_default=compare_server_default,
+        include_object=include_object,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -68,6 +85,7 @@ def do_run_migrations(connection):  # type: ignore[no-untyped-def]
         target_metadata=target_metadata,
         compare_type=True,
         compare_server_default=compare_server_default,
+        include_object=include_object,
     )
     with context.begin_transaction():
         context.run_migrations()
