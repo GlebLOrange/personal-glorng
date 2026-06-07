@@ -3,7 +3,7 @@ import os
 import time
 import uuid
 from collections.abc import AsyncGenerator, Generator
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -58,7 +58,7 @@ _test_registry = DatabaseRegistry(mongo_client=_mongo_client, mongo_db=_mongo_db
 
 
 class _FakeIncrExpireScript:
-    def __init__(self, redis: "FakeRedis") -> None:
+    def __init__(self, redis: FakeRedis) -> None:
         self._redis = redis
 
     async def __call__(self, keys: list[str], args: list[int]) -> int:
@@ -137,10 +137,6 @@ if USE_SQLITE_TESTS:
         create_async_engine,
     )
 
-    from app.db.base import Base
-    from app.db.recipe_search import RECIPE_SEARCH_INDEX
-    from app.db.search_index import SEARCH_INDEX_NAME
-
     TEST_DB_URL = "sqlite+aiosqlite:///./test.db"
     _pg_engine = create_async_engine(TEST_DB_URL, echo=False)
     _pg_session_factory = async_sessionmaker(
@@ -159,18 +155,18 @@ def mongomock_compat(monkeypatch: pytest.MonkeyPatch) -> Generator[None]:
 
     original_to_dict = repo_base.document_to_dict
 
-    def _mongomock_safe_to_dict(doc: Any, *, exclude_none: bool = False) -> dict[str, Any]:
+    def _mongomock_safe_to_dict(
+        doc: Any, *, exclude_none: bool = False
+    ) -> dict[str, Any]:
         data = original_to_dict(doc, exclude_none=exclude_none)
         safe: dict[str, Any] = {}
         for key, value in data.items():
-            if isinstance(value, uuid.UUID):
-                safe[key] = str(value)
-            elif isinstance(value, Decimal):
+            if isinstance(value, uuid.UUID) or isinstance(value, Decimal):
                 safe[key] = str(value)
             elif isinstance(value, datetime):
                 safe[key] = value
-            elif isinstance(value, date):
-                safe[key] = value.isoformat()
+            elif isinstance(value, date) and not isinstance(value, datetime):
+                safe[key] = datetime.combine(value, datetime.min.time(), tzinfo=UTC)
             else:
                 safe[key] = value
         return safe
@@ -212,14 +208,38 @@ def mongomock_compat(monkeypatch: pytest.MonkeyPatch) -> Generator[None]:
             return None
         return repo_base._parse_doc(User, data)
 
+    def _serialize_field(value: Any) -> Any:
+        if isinstance(value, uuid.UUID):
+            return str(value)
+        if isinstance(value, Decimal):
+            return str(value)
+        if isinstance(value, date) and not isinstance(value, datetime):
+            return datetime.combine(value, datetime.min.time(), tzinfo=UTC)
+        return value
+
+    original_update_fields = repo_base.MongoRepository.update_fields
+
+    async def _mongomock_update_fields(
+        self: repo_base.MongoRepository,
+        doc_id: int,
+        **fields: Any,
+    ) -> Any:
+        safe_fields = {key: _serialize_field(value) for key, value in fields.items()}
+        return await original_update_fields(self, doc_id, **safe_fields)
+
     monkeypatch.setattr(repo_base, "document_to_dict", _mongomock_safe_to_dict)
+    monkeypatch.setattr(
+        repo_base.MongoRepository,
+        "update_fields",
+        _mongomock_update_fields,
+    )
     monkeypatch.setattr(SearchRepository, "search_text", _search_text_regex)
     monkeypatch.setattr(
         UserRepository,
         "get_by_public_id",
         _get_user_by_public_id_str,
     )
-    yield
+    return
 
 
 @pytest.fixture(autouse=True)

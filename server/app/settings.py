@@ -176,7 +176,10 @@ class Settings(BaseSettings):
                 msg = "DATABASE_URL is required when ENABLE_POSTGRES is true"
                 raise ValueError(msg)
             if not self.POSTGRES_USER or not self.POSTGRES_DB:
-                msg = "POSTGRES_USER and POSTGRES_DB are required when ENABLE_POSTGRES is true"
+                msg = (
+                    "POSTGRES_USER and POSTGRES_DB required "
+                    "when ENABLE_POSTGRES is true"
+                )
                 raise ValueError(msg)
         if self.DATABASE_URL.startswith("sqlite") and self.APP_ENV not in {
             "development",

@@ -3,8 +3,7 @@
 from datetime import UTC, datetime
 from typing import Any, TypeVar
 
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from pydantic import BaseModel
+from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from app.core.exceptions import NotFoundError
 from app.db.documents.base import TimestampedDocument, document_to_dict, utc_now
@@ -35,7 +34,7 @@ class MongoRepository[DocT: TimestampedDocument]:
         self.model = model
         self.counter_name = counter_name or collection
 
-    def _col(self):
+    def _col(self) -> AsyncIOMotorCollection:
         return self.db[self.collection]
 
     async def next_id(self) -> int:

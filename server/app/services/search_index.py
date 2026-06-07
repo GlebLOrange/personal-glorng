@@ -275,7 +275,6 @@ class SearchIndexService:
         limit: int,
         source_types: list[str] | None,
     ) -> list[SearchResult]:
-        from app.db.models.search_document import SearchDocument as PgSearchDocument
 
         if self.postgres_db is None:
             return []

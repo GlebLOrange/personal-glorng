@@ -23,6 +23,13 @@ def test_production_requires_strong_postgres_password(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("ENABLE_POSTGRES", "true")
+    monkeypatch.setenv("ENABLE_MONGODB", "true")
+    monkeypatch.setenv("MONGODB_URL", "mongodb://localhost:27017")
+    monkeypatch.setenv("MONGODB_PASSWORD", "production-mongo-password-ok")
+    monkeypatch.setenv("DATABASE_URL", "postgresql+asyncpg://u:p@localhost/db")
+    monkeypatch.setenv("POSTGRES_USER", "glorng")
+    monkeypatch.setenv("POSTGRES_DB", "glorng")
     monkeypatch.setenv("JWT_SECRET", "production-jwt-key-with-32-characters-minimum")
     monkeypatch.setenv("RABBITMQ_PASSWORD", "production-rabbitmq-password-ok")
     monkeypatch.setenv("POSTGRES_PASSWORD", "glorng")

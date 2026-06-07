@@ -10,14 +10,16 @@ permissions:
   contents: read
 
 env:
-  POSTGRES_USER: glorng
-  POSTGRES_PASSWORD: glorng_ci
-  POSTGRES_DB: glorng
-  DATABASE_URL: postgresql+asyncpg://glorng:glorng_ci@db:5432/glorng
+  ENABLE_MONGODB: "true"
+  ENABLE_POSTGRES: "false"
   MONGODB_USER: glorng
   MONGODB_PASSWORD: glorng_ci_mongodb_123
   MONGODB_DB: glorng
   MONGODB_URL: mongodb://glorng:glorng_ci_mongodb_123@mongodb:27017/glorng?authSource=admin
+  POSTGRES_USER: glorng
+  POSTGRES_PASSWORD: glorng_ci
+  POSTGRES_DB: glorng
+  DATABASE_URL: postgresql+asyncpg://glorng:glorng_ci@db:5432/glorng
   REDIS_PASSWORD: glorng_ci_redis
   REDIS_URL: redis://:glorng_ci_redis@redis:6379/0
   RABBITMQ_USER: glorng
@@ -48,7 +50,11 @@ jobs:
         run: uv run ruff format --check .
       - name: Pytest
         env:
-          DATABASE_URL: sqlite+aiosqlite:///./test.db
+          APP_ENV: test
+          ENABLE_MONGODB: "true"
+          ENABLE_POSTGRES: "false"
+          MONGODB_URL: mongodb://127.0.0.1:27017
+          MONGODB_DB: test_glorng
           REDIS_URL: redis://:local@127.0.0.1:6379/0
           JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
         run: uv run pytest -v
@@ -111,10 +117,8 @@ jobs:
       - name: Write CI env file
         run: |
           cat > .env <<'EOF'
-          POSTGRES_USER=glorng
-          POSTGRES_PASSWORD=glorng_ci
-          POSTGRES_DB=glorng
-          DATABASE_URL=postgresql+asyncpg://glorng:glorng_ci@db:5432/glorng
+          ENABLE_MONGODB=true
+          ENABLE_POSTGRES=false
           MONGODB_USER=glorng
           MONGODB_PASSWORD=glorng_ci_mongodb_123
           MONGODB_DB=glorng
@@ -132,11 +136,8 @@ jobs:
           EOF
       - name: Start database and migrate
         run: |
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d db redis mongodb
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d redis mongodb
           docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm --build migrate
-      - name: Alembic check
-        run: |
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm --no-deps server alembic check
 
   e2e:
     runs-on: ubuntu-latest
@@ -146,10 +147,8 @@ jobs:
       - name: Write CI env file
         run: |
           cat > .env <<'EOF'
-          POSTGRES_USER=glorng
-          POSTGRES_PASSWORD=glorng_ci
-          POSTGRES_DB=glorng
-          DATABASE_URL=postgresql+asyncpg://glorng:glorng_ci@db:5432/glorng
+          ENABLE_MONGODB=true
+          ENABLE_POSTGRES=false
           MONGODB_USER=glorng
           MONGODB_PASSWORD=glorng_ci_mongodb_123
           MONGODB_DB=glorng
@@ -167,7 +166,7 @@ jobs:
           EOF
       - name: Start API stack
         run: |
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d db redis mongodb
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d redis mongodb
           docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm --build -e RUN_SEED=true migrate
           docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build server
       - uses: actions/setup-node@v4

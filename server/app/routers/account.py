@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Response
 
 from app.core.deps import CurrentUser, JobQueueDep
-from app.db.deps import DbRegistry
 from app.core.logging import logger
+from app.db.deps import DbRegistry
 from app.schemas.auth import (
     ChangeEmailRequest,
     ChangePasswordRequest,

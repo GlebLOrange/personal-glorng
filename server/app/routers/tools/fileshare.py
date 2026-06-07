@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, Path, UploadFile
 from fastapi.responses import StreamingResponse
 
 from app.core.deps import AuthorizedUser, require_capability
-from app.db.deps import DbRegistry
 from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
 from app.core.uploads import read_upload_bounded
 from app.core.utils import attachment_content_disposition, iter_file, paginate_params
+from app.db.deps import DbRegistry
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.fileshare import SharedFileResponse

@@ -2,9 +2,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import AsyncClient
-from app.db.registry import DatabaseRegistry
 
 from app.core.security import create_access_token
+from app.db.registry import DatabaseRegistry
 from app.services.weather import TimezoneInfo, enrich_weather_timezone
 from app.services.world_time import WorldTimePayload
 from tests.factories import create_user

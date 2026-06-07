@@ -311,9 +311,7 @@ class TaskService:
         return TaskDetailResponse(
             **TaskResponse.model_validate(task).model_dump(),
             reminders=[ReminderResponse.model_validate(r) for r in reminders],
-            status_history=[
-                StatusHistoryResponse.model_validate(h) for h in history
-            ],
+            status_history=[StatusHistoryResponse.model_validate(h) for h in history],
         )
 
     async def retry_sync(self, task_id: int) -> int:

@@ -42,7 +42,9 @@ async def _seed_recipes_with_registry(
     candidates: list[dict[str, object]],
 ) -> None:
     assert registry.recipes is not None
-    existing_titles = {recipe.title for recipe in await registry.recipes.list(limit=10_000)}
+    existing_titles = {
+        recipe.title for recipe in await registry.recipes.list(limit=10_000)
+    }
     for data in candidates:
         if data["title"] in existing_titles:
             continue

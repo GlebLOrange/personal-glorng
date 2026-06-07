@@ -1,8 +1,8 @@
 import pytest
 from httpx import AsyncClient
-from app.db.registry import DatabaseRegistry
 
 from app.core.security import create_access_token
+from app.db.registry import DatabaseRegistry
 from tests.factories import create_short_url, create_user
 
 

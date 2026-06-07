@@ -2,7 +2,6 @@ import json
 from math import ceil
 from typing import Any
 
-from app.core.exceptions import NotFoundError
 from app.core.json_lists import parse_json_string_list
 from app.core.logging import logger
 from app.core.utils import paginate_params
@@ -165,7 +164,9 @@ class RecipeService:
             )
             recipe_ids = [hit.source_id for hit in results]
 
-        all_recipes = await self._recipes().list(limit=10_000, sort=[("updated_at", -1)])
+        all_recipes = await self._recipes().list(
+            limit=10_000, sort=[("updated_at", -1)]
+        )
 
         if recipe_ids is not None:
             id_set = set(recipe_ids)
@@ -215,7 +216,9 @@ class RecipeService:
             case "total_time_asc":
                 return sorted(
                     recipes,
-                    key=lambda recipe: (recipe.prep_time or 0) + (recipe.cook_time or 0),
+                    key=lambda recipe: (
+                        (recipe.prep_time or 0) + (recipe.cook_time or 0)
+                    ),
                 )
             case _:
                 return sorted(

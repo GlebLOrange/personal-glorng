@@ -51,7 +51,9 @@ class GitHubStatusResponse(BaseModel):
     response_model=GitHubStatusResponse,
     summary="GitHub link status",
 )
-async def github_status(user: CurrentUser, registry: DbRegistry) -> GitHubStatusResponse:
+async def github_status(
+    user: CurrentUser, registry: DbRegistry
+) -> GitHubStatusResponse:
     if registry.credentials is None:
         msg = "Credential repository is not initialized"
         raise RuntimeError(msg)
@@ -69,7 +71,9 @@ async def github_status(user: CurrentUser, registry: DbRegistry) -> GitHubStatus
     "",
     summary="Unlink GitHub account",
 )
-async def github_unlink(user: CurrentUser, registry: DbRegistry) -> GitHubStatusResponse:
+async def github_unlink(
+    user: CurrentUser, registry: DbRegistry
+) -> GitHubStatusResponse:
     if registry.credentials is None:
         msg = "Credential repository is not initialized"
         raise RuntimeError(msg)

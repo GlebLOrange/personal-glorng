@@ -2,6 +2,8 @@
 services:
   db:
     image: postgres:18.4-alpine
+    profiles:
+      - postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -35,6 +37,22 @@ services:
       timeout: 5s
       retries: 5
 
+  mongodb:
+    image: mongo:8.0.9
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   redis:
     image: redis:8.2.3-alpine
     restart: unless-stopped
@@ -61,7 +79,7 @@ services:
     networks:
       - backend
     depends_on:
-      db:
+      mongodb:
         condition: service_healthy
     restart: "no"
 
@@ -81,7 +99,7 @@ services:
     networks:
       - backend
     depends_on:
-      db:
+      mongodb:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -103,7 +121,7 @@ services:
     networks:
       - backend
     depends_on:
-      db:
+      mongodb:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -125,7 +143,7 @@ services:
     networks:
       - backend
     depends_on:
-      db:
+      mongodb:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -147,7 +165,7 @@ services:
     networks:
       - backend
     depends_on:
-      db:
+      mongodb:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -188,6 +206,7 @@ services:
 
 volumes:
   pgdata:
+  mongo_data:
   rabbitmq_data:
   redis_data:
   server_media:

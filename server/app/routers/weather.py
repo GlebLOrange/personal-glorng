@@ -3,9 +3,9 @@ from typing import Any
 from fastapi import APIRouter, Depends, Path
 
 from app.core.deps import AppSettings, CurrentUser
-from app.db.deps import DbRegistry
 from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
+from app.db.deps import DbRegistry
 from app.schemas.weather import (
     WeatherLocationCreate,
     WeatherLocationReorder,

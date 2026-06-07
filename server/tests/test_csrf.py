@@ -6,6 +6,10 @@ from app.settings import get_settings
 
 _PRODUCTION_ENV = {
     "APP_ENV": "production",
+    "ENABLE_MONGODB": "true",
+    "MONGODB_URL": "mongodb://localhost:27017",
+    "MONGODB_DB": "test_glorng",
+    "MONGODB_PASSWORD": "production-mongo-password-ok",
     "POSTGRES_USER": "glorng",
     "POSTGRES_PASSWORD": "prod-test-password-16",
     "POSTGRES_DB": "glorng",

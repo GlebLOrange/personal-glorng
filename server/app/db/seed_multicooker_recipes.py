@@ -4,21 +4,30 @@ import argparse
 import asyncio
 import json
 
-from sqlalchemy import select
-
 from app.core.logging import logger
-from app.db.models.recipe import Recipe
-from app.db.session import get_session_factory
+from app.db.documents.recipe import Recipe
+from app.db.init_service import DatabaseInitService
+from app.db.registry import DatabaseRegistry
 from app.services.themealdb import ThemealDBClient
+from app.settings import get_settings
 
 
 async def seed_multicooker_recipes(count: int = 25) -> None:
-    """Fetch recipes from TheMealDB and insert new ones into the database."""
+    """Fetch recipes from TheMealDB and insert new ones into MongoDB."""
     client = ThemealDBClient()
     candidates = await client.fetch_multicooker_candidates(limit=count)
 
-    async with get_session_factory()() as db:
-        existing_titles = set(await db.scalars(select(Recipe.title)))
+    settings = get_settings()
+    registry = DatabaseRegistry()
+    init_svc = DatabaseInitService(registry, settings)
+    try:
+        await init_svc.startup()
+        if registry.recipes is None:
+            msg = "Recipes repository is not initialized"
+            raise RuntimeError(msg)
+
+        existing = await registry.recipes.list(limit=10_000)
+        existing_titles = {recipe.title for recipe in existing}
         inserted = 0
         skipped = 0
 
@@ -27,7 +36,7 @@ async def seed_multicooker_recipes(count: int = 25) -> None:
                 skipped += 1
                 continue
 
-            db.add(
+            await registry.recipes.insert(
                 Recipe(
                     title=data["title"],
                     ingredients=json.dumps(data["ingredients"]),
@@ -38,46 +47,22 @@ async def seed_multicooker_recipes(count: int = 25) -> None:
                     prep_time=data.get("prep_time"),
                     cook_time=data.get("cook_time"),
                     servings=data.get("servings"),
-                )
+                ),
             )
-            existing_titles.add(data["title"])
             inserted += 1
 
-        await db.commit()
-
-    logger.info(
-        "Seeded multicooker recipes",
-        context={
-            "inserted": inserted,
-            "skipped": skipped,
-            "requested": count,
-            "fetched": len(candidates),
-        },
-    )
-
-
-def parse_args() -> argparse.Namespace:
-    """Parse CLI arguments."""
-    parser = argparse.ArgumentParser(
-        description=(
-            "Fetch easy multicooker recipes from TheMealDB "
-            "and insert them into the database."
-        ),
-    )
-    parser.add_argument(
-        "--count",
-        type=int,
-        default=25,
-        help="Number of recipes to fetch and attempt to insert (default: 25).",
-    )
-    return parser.parse_args()
+        logger.info(
+            "Multicooker recipe seed complete",
+            context={"inserted": inserted, "skipped": skipped},
+        )
+    finally:
+        await init_svc.shutdown()
 
 
 def main() -> None:
-    """CLI entrypoint."""
-    args = parse_args()
-    if args.count < 1:
-        raise SystemExit("--count must be at least 1")
+    parser = argparse.ArgumentParser(description="Seed multicooker recipes from TheMealDB")
+    parser.add_argument("--count", type=int, default=25, help="Max recipes to fetch")
+    args = parser.parse_args()
     asyncio.run(seed_multicooker_recipes(count=args.count))
 
 
