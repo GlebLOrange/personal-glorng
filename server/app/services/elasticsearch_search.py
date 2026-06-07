@@ -6,7 +6,7 @@ from elasticsearch import AsyncElasticsearch, NotFoundError
 from app.core.elasticsearch import get_elasticsearch_client, is_elasticsearch_enabled
 from app.core.logging import logger
 from app.db.models.search_document import SearchDocument, SearchVisibility
-from app.services.search_index import SearchResult
+from app.services.search_types import SearchResult
 from app.settings import get_settings
 
 INDEX_MAPPINGS: dict[str, Any] = {
