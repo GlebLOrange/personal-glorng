@@ -19,3 +19,11 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: list[ChatMessage] = Field(min_length=1, max_length=50)
+
+
+class ChatConfigResponse(BaseModel):
+    enabled: bool
+    configured: bool
+    model: str
+    provider: str
+    base_url: str | None = None

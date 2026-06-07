@@ -181,9 +181,10 @@ class Settings(BaseSettings):
     SPOTIFY_CLIENT_SECRET: str = ""
     SPOTIFY_REFRESH_TOKEN: str = ""
 
-    # AI provider API keys
+    # AI provider API keys (OpenAI-compatible APIs via LLM_BASE_URL)
     OPENAI_API_KEY: str = ""
     OPENAI_CHAT_MODEL: str = "gpt-4.1"
+    LLM_BASE_URL: str = ""
     AI_CHAT_ENABLED: bool = True
 
     # Task intake (Telegram AI)

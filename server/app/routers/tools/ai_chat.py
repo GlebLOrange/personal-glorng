@@ -6,12 +6,12 @@ from collections.abc import AsyncIterator
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
-from app.core.deps import OpenAIChatService, require_capability
+from app.core.deps import AppSettings, OpenAIChatService, require_capability
 from app.core.exceptions import ApiError
 from app.core.feature_flags import is_ai_chat_enabled
 from app.openapi import requires_capability
-from app.schemas.ai_chat import ChatRequest
-from app.services.ai_chat import OpenAIService
+from app.schemas.ai_chat import ChatConfigResponse, ChatRequest
+from app.services.ai_chat import OpenAIService, detect_llm_provider
 
 router = APIRouter(
     prefix="/ai-chat",
@@ -23,6 +23,23 @@ router = APIRouter(
 def _require_ai_chat_enabled() -> None:
     if not is_ai_chat_enabled():
         raise ApiError(503, "AI chat is disabled")
+
+
+@router.get(
+    "/config",
+    response_model=ChatConfigResponse,
+    summary="Read AI chat configuration",
+    description=requires_capability("ai-chat", "read"),
+)
+async def chat_config(settings: AppSettings) -> ChatConfigResponse:
+    base_url = settings.LLM_BASE_URL.strip()
+    return ChatConfigResponse(
+        enabled=is_ai_chat_enabled(),
+        configured=bool(settings.OPENAI_API_KEY),
+        model=settings.OPENAI_CHAT_MODEL,
+        provider=detect_llm_provider(base_url),
+        base_url=base_url or None,
+    )
 
 
 async def _sse_events(
