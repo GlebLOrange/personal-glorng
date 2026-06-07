@@ -54,7 +54,17 @@ async function handleLogin(): Promise<void> {
         </BaseButton>
       </form>
 
-      <p class="text-center text-xs text-surface-mid mt-6">
+      <p class="text-center text-xs text-surface-mid mt-4 space-x-3">
+        <RouterLink to="/register" class="hover:text-accent-blue transition-colors">
+          Create account
+        </RouterLink>
+        <span>·</span>
+        <RouterLink to="/forgot-password" class="hover:text-accent-blue transition-colors">
+          Forgot password?
+        </RouterLink>
+      </p>
+
+      <p class="text-center text-xs text-surface-mid mt-4">
         <RouterLink to="/" class="hover:text-accent-blue transition-colors">
           &larr; Back to portfolio
         </RouterLink>

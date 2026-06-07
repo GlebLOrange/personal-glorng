@@ -26,6 +26,16 @@ async def get_user_by_public_id(
     return result.scalar_one_or_none()
 
 
+def default_user_permissions() -> list[str]:
+    """No tool access until a superuser grants capabilities."""
+    return []
+
+
+def default_display_name(email: str) -> str:
+    """Derive a friendly label from the email local-part."""
+    return email.split("@", maxsplit=1)[0]
+
+
 async def create_user(
     db: AsyncSession,
     *,
@@ -33,14 +43,20 @@ async def create_user(
     password: str,
     permissions: list[str] | None = None,
     is_verified: bool = False,
+    display_name: str | None = None,
+    timezone: str = "UTC",
+    preferences: dict[str, object] | None = None,
 ) -> User:
     """Create a user with hashed password and validated permissions."""
     perms = validate_permissions(permissions or [])
     user = User(
-        email=email,
+        email=email.strip().lower(),
         hashed_password=hash_password(password),
         is_verified=is_verified,
         permissions=perms,
+        display_name=display_name or default_display_name(email),
+        timezone=timezone,
+        preferences=preferences or {},
     )
     db.add(user)
     await db.flush()

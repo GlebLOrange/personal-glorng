@@ -87,7 +87,13 @@ def _clear_auth_cookies(response: Response) -> None:
     dependencies=[Depends(rate_limit_auth)],
 )
 async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
-    user = await register_user(db, data.email, data.password)
+    user = await register_user(
+        db,
+        data.email,
+        data.password,
+        display_name=data.display_name,
+        timezone=data.timezone,
+    )
     _token = create_verification_token(user.email)
 
     logger.info("User registered", context={"email": user.email})

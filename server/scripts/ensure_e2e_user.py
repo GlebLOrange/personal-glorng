@@ -11,7 +11,7 @@ from app.db.session import get_session_factory
 from app.services.user import create_user, default_owner_permissions
 
 E2E_EMAIL = os.environ.get("E2E_EMAIL", "admin@glorng.dev")
-E2E_PASSWORD = os.environ.get("E2E_PASSWORD", "testpass123")
+E2E_PASSWORD = os.environ.get("E2E_PASSWORD", "MyTestPass123!")
 
 
 async def ensure_e2e_user() -> None:

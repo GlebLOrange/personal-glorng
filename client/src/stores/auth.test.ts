@@ -25,6 +25,9 @@ describe("useAuthStore", () => {
       email: "a@b.c",
       permissions: [],
       is_verified: true,
+      display_name: "User",
+      timezone: "UTC",
+      preferences: {},
       created_at: "2026-01-01T00:00:00Z",
     };
     auth.clearUser();
@@ -40,16 +43,19 @@ describe("useAuthStore", () => {
         email: "admin@glorng.dev",
         permissions: ["*"],
         is_verified: true,
+        display_name: "Admin",
+        timezone: "UTC",
+        preferences: {},
         created_at: "2026-01-01T00:00:00Z",
       },
     });
 
     const auth = useAuthStore();
-    await auth.login("admin@glorng.dev", "testpass123");
+    await auth.login("admin@glorng.dev", "MyTestPass123!");
 
     expect(api.post).toHaveBeenCalledWith("/auth/login", {
       email: "admin@glorng.dev",
-      password: "testpass123",
+      password: "MyTestPass123!",
     });
     expect(auth.user?.email).toBe("admin@glorng.dev");
     expect(auth.isAuthenticated).toBe(true);

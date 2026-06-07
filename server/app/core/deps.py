@@ -210,3 +210,10 @@ def get_task_intake_service(db: DbSession) -> TaskIntakeService:
 
 
 TaskIntakeServiceDep = Annotated[TaskIntakeService, Depends(get_task_intake_service)]
+
+
+def get_recipe_service(db: DbSession) -> RecipeService:
+    return RecipeService(db)
+
+
+RecipeServiceDep = Annotated[RecipeService, Depends(get_recipe_service)]

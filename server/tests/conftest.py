@@ -33,7 +33,8 @@ TEST_RATES_PAYLOAD = {
         "BYN": 2.76,
     },
 }
-ADMIN_PASSWORD = "testpass123"
+STRONG_PASSWORD = "MyTestPass123!"
+ADMIN_PASSWORD = STRONG_PASSWORD
 
 
 class _FakeIncrExpireScript:

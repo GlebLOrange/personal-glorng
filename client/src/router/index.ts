@@ -21,10 +21,42 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/pages/LoginPage.vue"),
   },
   {
+    path: "/register",
+    name: "register",
+    component: () => import("@/pages/RegisterPage.vue"),
+  },
+  {
+    path: "/verify-email",
+    name: "verify-email",
+    component: () => import("@/pages/VerifyEmailPage.vue"),
+  },
+  {
+    path: "/forgot-password",
+    name: "forgot-password",
+    component: () => import("@/pages/ForgotPasswordPage.vue"),
+  },
+  {
+    path: "/reset-password",
+    name: "reset-password",
+    component: () => import("@/pages/ResetPasswordPage.vue"),
+  },
+  {
+    path: "/settings",
+    name: "settings",
+    component: () => import("@/pages/SettingsPage.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/admin",
     name: "admin",
     component: () => import("@/pages/admin/DashboardPage.vue"),
     meta: { requiresAuth: true },
+  },
+  {
+    path: "/admin/users",
+    name: "admin-users",
+    component: () => import("@/pages/admin/AdminUsersPage.vue"),
+    meta: { requiresAuth: true, requiresSuperuser: true },
   },
   {
     path: "/tools",
@@ -185,6 +217,13 @@ router.beforeEach(async (to, _from, next) => {
       replace: true,
     });
     return;
+  }
+  if (to.meta.requiresSuperuser && auth.isAuthenticated) {
+    const { isSuperuser } = usePermissions();
+    if (!isSuperuser.value) {
+      next({ name: "admin" });
+      return;
+    }
   }
   const toolSlug = typeof to.name === "string" ? TOOL_ROUTE_SLUGS[to.name] : undefined;
   if (toolSlug && auth.isAuthenticated) {

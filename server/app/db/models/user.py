@@ -19,3 +19,6 @@ class User(BaseModelMixin, Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
     is_verified: Mapped[bool] = mapped_column(default=False)
     permissions: Mapped[list[str]] = mapped_column(JSON, default=list)
+    display_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    timezone: Mapped[str] = mapped_column(String(64), default="UTC", server_default="UTC")
+    preferences: Mapped[dict[str, object]] = mapped_column(JSON, default=dict)

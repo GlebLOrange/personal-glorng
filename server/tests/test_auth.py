@@ -2,59 +2,106 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
 
 from app.core.security import create_verification_token
-from app.settings import get_settings
-from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD
+from app.db.models.user import User
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, STRONG_PASSWORD
 
 # --- Registration ---
 
 
 @pytest.mark.asyncio
-async def test_register_allowed_email(client: AsyncClient) -> None:
-    settings = get_settings()
+async def test_register_open_email(client: AsyncClient, db: AsyncSession) -> None:
     resp = await client.post(
         "/api/auth/register",
-        json={"email": settings.ALLOWED_EMAIL, "password": "securepass123"},
+        json={
+            "email": "new.user@glorng.dev",
+            "password": STRONG_PASSWORD,
+            "password_confirm": STRONG_PASSWORD,
+            "accept_terms": True,
+        },
     )
     assert resp.status_code == 200
     assert "Registration successful" in resp.json()["message"]
 
+    result = await db.execute(select(User).where(User.email == "new.user@glorng.dev"))
+    user = result.scalar_one()
+    assert user.permissions == []
+    assert user.is_verified is False
+
 
 @pytest.mark.asyncio
-async def test_register_forbidden_email(client: AsyncClient) -> None:
+async def test_register_normalizes_email(client: AsyncClient, db: AsyncSession) -> None:
     resp = await client.post(
         "/api/auth/register",
-        json={"email": "hacker@evil.com", "password": "hackerpass1"},
+        json={
+            "email": "  MixedCase@Glorng.dev ",
+            "password": STRONG_PASSWORD,
+            "password_confirm": STRONG_PASSWORD,
+            "accept_terms": True,
+        },
     )
-    assert resp.status_code == 403
+    assert resp.status_code == 200
+
+    result = await db.execute(select(User).where(User.email == "mixedcase@glorng.dev"))
+    assert result.scalar_one_or_none() is not None
 
 
 @pytest.mark.asyncio
 async def test_register_duplicate(client: AsyncClient, admin_user: object) -> None:
     resp = await client.post(
         "/api/auth/register",
-        json={"email": ADMIN_EMAIL, "password": "securepass123"},
+        json={
+            "email": ADMIN_EMAIL,
+            "password": STRONG_PASSWORD,
+            "password_confirm": STRONG_PASSWORD,
+            "accept_terms": True,
+        },
     )
     assert resp.status_code == 409
 
 
 @pytest.mark.asyncio
 async def test_register_weak_password(client: AsyncClient) -> None:
-    settings = get_settings()
     resp = await client.post(
         "/api/auth/register",
-        json={"email": settings.ALLOWED_EMAIL, "password": "short"},
+        json={
+            "email": "weak@glorng.dev",
+            "password": "short",
+            "password_confirm": "short",
+            "accept_terms": True,
+        },
     )
     assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_register_no_digit_password(client: AsyncClient) -> None:
-    settings = get_settings()
+async def test_register_common_password(client: AsyncClient) -> None:
     resp = await client.post(
         "/api/auth/register",
-        json={"email": settings.ALLOWED_EMAIL, "password": "nopdigithere"},
+        json={
+            "email": "common@glorng.dev",
+            "password": "MyCommonPass1!",
+            "password_confirm": "MyCommonPass1!",
+            "accept_terms": True,
+        },
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_register_requires_terms(client: AsyncClient) -> None:
+    resp = await client.post(
+        "/api/auth/register",
+        json={
+            "email": "terms@glorng.dev",
+            "password": STRONG_PASSWORD,
+            "password_confirm": STRONG_PASSWORD,
+            "accept_terms": False,
+        },
     )
     assert resp.status_code == 422
 
@@ -64,14 +111,18 @@ async def test_register_no_digit_password(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_login_unverified(client: AsyncClient) -> None:
-    settings = get_settings()
     await client.post(
         "/api/auth/register",
-        json={"email": settings.ALLOWED_EMAIL, "password": "securepass123"},
+        json={
+            "email": "unverified@glorng.dev",
+            "password": STRONG_PASSWORD,
+            "password_confirm": STRONG_PASSWORD,
+            "accept_terms": True,
+        },
     )
     resp = await client.post(
         "/api/auth/login",
-        json={"email": settings.ALLOWED_EMAIL, "password": "securepass123"},
+        json={"email": "unverified@glorng.dev", "password": STRONG_PASSWORD},
     )
     assert resp.status_code == 403
 
@@ -93,7 +144,7 @@ async def test_login_verified(client: AsyncClient, admin_user: object) -> None:
 async def test_login_wrong_password(client: AsyncClient, admin_user: object) -> None:
     resp = await client.post(
         "/api/auth/login",
-        json={"email": ADMIN_EMAIL, "password": "wrongpassword1"},
+        json={"email": ADMIN_EMAIL, "password": "WrongPass123!"},
     )
     assert resp.status_code == 401
 
@@ -102,7 +153,7 @@ async def test_login_wrong_password(client: AsyncClient, admin_user: object) -> 
 async def test_login_nonexistent_user(client: AsyncClient) -> None:
     resp = await client.post(
         "/api/auth/login",
-        json={"email": "nobody@glorng.dev", "password": "somepass123"},
+        json={"email": "nobody@glorng.dev", "password": STRONG_PASSWORD},
     )
     assert resp.status_code == 401
 
@@ -124,6 +175,8 @@ async def test_me_authenticated(auth_client: AsyncClient) -> None:
     assert data["email"] == ADMIN_EMAIL
     assert "platform:superuser" in data["permissions"]
     assert data["is_verified"] is True
+    assert "timezone" in data
+    assert "preferences" in data
 
 
 # --- Token Refresh ---
@@ -207,12 +260,17 @@ async def test_access_after_logout(
 
 @pytest.mark.asyncio
 async def test_verify_email(client: AsyncClient) -> None:
-    settings = get_settings()
+    email = "verify-me@glorng.dev"
     await client.post(
         "/api/auth/register",
-        json={"email": settings.ALLOWED_EMAIL, "password": "securepass123"},
+        json={
+            "email": email,
+            "password": STRONG_PASSWORD,
+            "password_confirm": STRONG_PASSWORD,
+            "accept_terms": True,
+        },
     )
-    token = create_verification_token(settings.ALLOWED_EMAIL)
+    token = create_verification_token(email)
     resp = await client.get(f"/api/auth/verify?token={token}")
     assert resp.status_code == 200
     assert "verified" in resp.json()["message"].lower()
@@ -227,12 +285,17 @@ async def test_verify_invalid_token(client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_verify_reuse_prevented(client: AsyncClient) -> None:
     """Verification token should be single-use."""
-    settings = get_settings()
+    email = "verify-once@glorng.dev"
     await client.post(
         "/api/auth/register",
-        json={"email": settings.ALLOWED_EMAIL, "password": "securepass123"},
+        json={
+            "email": email,
+            "password": STRONG_PASSWORD,
+            "password_confirm": STRONG_PASSWORD,
+            "accept_terms": True,
+        },
     )
-    token = create_verification_token(settings.ALLOWED_EMAIL)
+    token = create_verification_token(email)
     await client.get(f"/api/auth/verify?token={token}")
     resp = await client.get(f"/api/auth/verify?token={token}")
     assert resp.status_code == 401
@@ -248,15 +311,20 @@ async def test_register_enqueues_verification_email(
     client: AsyncClient,
 ) -> None:
     mock_enqueue.return_value = "job-verify"
-    settings = get_settings()
+    email = "enqueue@glorng.dev"
     resp = await client.post(
         "/api/auth/register",
-        json={"email": settings.ALLOWED_EMAIL, "password": "securepass123"},
+        json={
+            "email": email,
+            "password": STRONG_PASSWORD,
+            "password_confirm": STRONG_PASSWORD,
+            "accept_terms": True,
+        },
     )
     assert resp.status_code == 200
     mock_enqueue.assert_awaited_once()
     assert mock_enqueue.await_args.args[0] == "send_verification_email"
-    assert mock_enqueue.await_args.args[1] == settings.ALLOWED_EMAIL
+    assert mock_enqueue.await_args.args[1] == email
 
 
 @pytest.mark.asyncio
@@ -303,6 +371,10 @@ async def test_forgot_password_nonexistent(client: AsyncClient) -> None:
 async def test_reset_password_invalid_token(client: AsyncClient) -> None:
     resp = await client.post(
         "/api/auth/reset-password",
-        json={"token": "badtoken", "new_password": "newstrong1pass"},
+        json={
+            "token": "badtoken",
+            "new_password": STRONG_PASSWORD,
+            "password_confirm": STRONG_PASSWORD,
+        },
     )
     assert resp.status_code == 401
