@@ -20,11 +20,12 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
 <template>
   <Teleport to="body">
-    <div
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
-      @click.self="$emit('close')"
-    >
-      <div class="absolute inset-0 bg-surface-dark/80 backdrop-blur-sm" />
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        class="absolute inset-0 bg-surface-dark/80 backdrop-blur-sm"
+        aria-hidden="true"
+        @click="$emit('close')"
+      />
       <div
         :class="[
           'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-2xl',

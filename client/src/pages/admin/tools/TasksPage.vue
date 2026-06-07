@@ -4,7 +4,7 @@ import { onMounted, ref } from "vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import TaskCreateModal from "@/components/tasks/TaskCreateModal.vue";
-import TaskDetailDrawer from "@/components/tasks/TaskDetailDrawer.vue";
+import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
 import TaskFilters from "@/components/tasks/TaskFilters.vue";
 import TaskIntakeList from "@/components/tasks/TaskIntakeList.vue";
 import TaskList from "@/components/tasks/TaskList.vue";
@@ -121,7 +121,7 @@ onMounted(() => {
       @close="showCreateForm = false"
     />
 
-    <TaskDetailDrawer
+    <TaskDetailModal
       v-if="selectedTask"
       :task="selectedTask"
       :loading="detailLoading"
