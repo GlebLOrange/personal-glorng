@@ -63,6 +63,23 @@ class TestCreateFeedback:
         )
         assert resp.status_code == 422
 
+    async def test_create_feedback_sanitizes_theme_and_message(
+        self, client: AsyncClient, mock_notify: AsyncMock
+    ):
+        resp = await client.post(
+            "/api/feedback",
+            json={
+                "email": "test@example.com",
+                "theme": "  Hello\x00 world  ",
+                "message": "  Great\x00 site!  ",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["theme"] == "Hello world"
+        assert data["message"] == "Great site!"
+        mock_notify.assert_called_once()
+
 
 class TestListFeedback:
     async def test_list_requires_auth(self, client: AsyncClient):

@@ -26,7 +26,10 @@ function writeStorage<T>(key: string, value: T): void {
   }
 }
 
-/** Reactive localStorage-backed ref with JSON serialization. */
+/**
+ * Reactive localStorage-backed ref with JSON serialization.
+ * Callers must validate parsed data before use (see sanitizeGuestWeatherLocations).
+ */
 export function useLocalStorage<T>(key: string, defaultValue: T): Ref<T> {
   const stored = ref(readStorage(key, defaultValue)) as Ref<T>;
 

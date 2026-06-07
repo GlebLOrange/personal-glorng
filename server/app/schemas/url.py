@@ -3,11 +3,17 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 from app.core.url_safety import validate_redirect_url
+from app.schemas.validators import validate_clean_optional
 
 
 class UrlCreate(BaseModel):
     original_url: HttpUrl
     title: str | None = Field(None, max_length=255)
+
+    @field_validator("title")
+    @classmethod
+    def clean_title(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=255)
 
     @field_validator("original_url")
     @classmethod

@@ -87,11 +87,20 @@ Client-side `VITE_*` flags hide UI only; server flags and auth are authoritative
 | Email console backend | Logs metadata only (`to`, `subject`, byte sizes) — no HTML/token previews |
 | AI chat / search | `sanitize_required_text` in [`core/text.py`](../server/app/core/text.py) + message caps |
 | Search source links (client) | [`safeUrl.ts`](../client/src/utils/safeUrl.ts) blocks `javascript:` / `data:` hrefs |
-| Tasks (admin + todobot) | Shared `TaskTextFields` validators |
+| Image URLs (client) | [`safeImageSrc.ts`](../client/src/utils/safeImageSrc.ts) — https + same-origin paths only in [`BaseImage.vue`](../client/src/components/ui/BaseImage.vue) |
+| Tasks (admin + todobot) | Shared `TaskTextFields` validators via [`schemas/validators.py`](../server/app/schemas/validators.py) |
+| Task intake (todobot) | `TaskDraft` / `ClarificationTurn` text fields sanitized at schema layer |
+| Feedback (public) | `theme` + `message` via shared validators |
+| Recipes | `title`, `ingredients`, `steps`, `notes`, `tags` via shared validators |
+| Expenses | `tool_name`, `category`, `notes`, parse `text` via shared validators |
+| Expense categories | `name` via shared validators |
+| Profile display name | `display_name` on register/profile update via shared validators |
+| Weather saved locations | `label` + `query` at schema layer; format validated in service |
+| URL shortener titles | Optional `title` via shared validators |
 | File share uploads | Extension denylist; sanitized stored filenames; daily expired-share cleanup |
 | Downloads | Safe `Content-Disposition` via [`attachment_content_disposition`](../server/app/core/utils.py) |
 | Vid download | YouTube host allowlist; yt-dlp `format` character allowlist; public with rate/concurrency limits |
-| URL shortener | `HttpUrl` validation; private/localhost host blocklist on create |
+| URL shortener URLs | `HttpUrl` validation; private/localhost host blocklist on create |
 
 ## Public tools
 

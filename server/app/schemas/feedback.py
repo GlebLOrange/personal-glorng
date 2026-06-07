@@ -1,12 +1,24 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+from app.schemas.validators import validate_clean_required
 
 
 class FeedbackCreate(BaseModel):
     email: EmailStr
     theme: str = Field(min_length=1, max_length=255)
     message: str = Field(min_length=1, max_length=5000)
+
+    @field_validator("theme")
+    @classmethod
+    def clean_theme(cls, value: str) -> str:
+        return validate_clean_required(value, max_length=255, field_name="Theme")
+
+    @field_validator("message")
+    @classmethod
+    def clean_message(cls, value: str) -> str:
+        return validate_clean_required(value, max_length=5000, field_name="Message")
 
 
 class FeedbackStatusUpdate(BaseModel):

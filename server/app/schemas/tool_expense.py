@@ -1,9 +1,10 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.catalogs import DEFAULT_EXPENSE_CURRENCY, CurrencyCode
+from app.schemas.validators import validate_clean_optional, validate_clean_required
 
 
 class ExpenseCatalogResponse(BaseModel):
@@ -25,6 +26,11 @@ class ExpenseParseRequest(BaseModel):
     text: str = Field(min_length=1, max_length=500)
     default_currency: CurrencyCode | None = None
 
+    @field_validator("text")
+    @classmethod
+    def clean_text(cls, value: str) -> str:
+        return validate_clean_required(value, max_length=500, field_name="Text")
+
 
 class ExpenseParseResponse(BaseModel):
     valid: bool
@@ -42,7 +48,22 @@ class ToolExpenseCreate(BaseModel):
     currency: CurrencyCode = DEFAULT_EXPENSE_CURRENCY
     expense_date: date = Field(description="Expense date (YYYY-MM-DD).")
     category: str | None = Field(None, max_length=64)
-    notes: str | None = None
+    notes: str | None = Field(None, max_length=5000)
+
+    @field_validator("tool_name")
+    @classmethod
+    def clean_tool_name(cls, value: str) -> str:
+        return validate_clean_required(value, max_length=255, field_name="Tool name")
+
+    @field_validator("category")
+    @classmethod
+    def clean_category(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=64)
+
+    @field_validator("notes")
+    @classmethod
+    def clean_notes(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=5000)
 
 
 class ToolExpenseUpdate(BaseModel):
@@ -54,7 +75,24 @@ class ToolExpenseUpdate(BaseModel):
         description="Expense date (YYYY-MM-DD).",
     )
     category: str | None = Field(None, max_length=64)
-    notes: str | None = None
+    notes: str | None = Field(None, max_length=5000)
+
+    @field_validator("tool_name")
+    @classmethod
+    def clean_tool_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return validate_clean_required(value, max_length=255, field_name="Tool name")
+
+    @field_validator("category")
+    @classmethod
+    def clean_category(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=64)
+
+    @field_validator("notes")
+    @classmethod
+    def clean_notes(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=5000)
 
 
 class ToolExpenseResponse(BaseModel):
