@@ -10,6 +10,7 @@ from app.core.deps import (
     ExpenseServiceDep,
     require_capability,
 )
+from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
 from app.schemas.date_filters import ExpenseDateFilter, expense_date_filter

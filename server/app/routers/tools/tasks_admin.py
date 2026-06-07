@@ -13,6 +13,7 @@ from app.core.deps import (
 )
 from app.core.exceptions import ValidationError
 from app.db.models.audit_event import AuditActorType, AuditSource
+from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.task import (
     ReminderResponse,
