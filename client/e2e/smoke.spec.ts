@@ -28,7 +28,7 @@ test.describe("public pages", () => {
     await expect(page.getByRole("link", { name: /recipes/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /url shortener/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /video download/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /date & time & location/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /◷ date & time & location/i })).toBeVisible();
   });
 
   test("guest sees clocks bar on portfolio", async ({ page }) => {

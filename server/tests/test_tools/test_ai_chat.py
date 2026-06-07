@@ -1,5 +1,5 @@
 from collections.abc import AsyncIterator
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import AsyncClient
@@ -28,7 +28,8 @@ def enable_ai_chat(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture
 def ai_search_service() -> None:
-    search_svc = SearchIndexService.__new__(SearchIndexService)
+    search_svc = MagicMock(spec=SearchIndexService)
+    search_svc.search = AsyncMock(return_value=[])
 
     def _service() -> AiSearchService:
         return AiSearchService(search_svc, get_settings())
