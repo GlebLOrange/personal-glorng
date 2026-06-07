@@ -11,7 +11,7 @@ dependencies = [
     "pydantic-settings==2.14.*",
     "PyJWT[crypto]==2.13.*",
     "bcrypt==5.0.*",
-    "redis[hiredis]==5.3.*",
+    "redis[hiredis]==8.0.*",
     "celery==5.5.*",
     "sentry-sdk[fastapi]==2.61.*",
     "httpx==0.28.*",
