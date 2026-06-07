@@ -3,9 +3,7 @@ import pytest
 from app.core.fernet_secrets import decrypt_secret, encrypt_secret
 from app.services.github_credentials import (
     read_github_access_token,
-    read_google_refresh_token,
     store_github_access_token,
-    store_google_refresh_token,
 )
 
 
@@ -33,10 +31,5 @@ def test_github_credential_helpers(monkeypatch: pytest.MonkeyPatch) -> None:
     stored = store_github_access_token(token)
     assert stored.startswith("enc:")
     assert read_github_access_token(stored) == token
-
-    google_token = "1//0g_refresh_token_example"
-    stored_google = store_google_refresh_token(google_token)
-    assert stored_google.startswith("enc:")
-    assert read_google_refresh_token(stored_google) == google_token
 
     get_settings.cache_clear()

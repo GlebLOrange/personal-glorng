@@ -76,6 +76,20 @@ function sourceLink(url: string): SourceLink | null {
   return { href, external: isExternalHref(href) };
 }
 
+
+interface SourceLink {
+  href: string;
+  external: boolean;
+}
+
+function sourceLink(url: string): SourceLink | null {
+  const href = safeNavigationHref(url);
+  if (!href) {
+    return null;
+  }
+  return { href, external: isExternalHref(href) };
+}
+
 function scrollToBottom(): void {
   nextTick(() => chatEnd.value?.scrollIntoView({ behavior: "smooth" }));
 }
