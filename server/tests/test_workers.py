@@ -76,3 +76,4 @@ async def test_supersede_unsent_reminders_aborts_and_deletes(
     remaining = await db.get(Reminder, keep.id)
     assert remaining is not None
     assert await db.get(Reminder, old.id) is None
+

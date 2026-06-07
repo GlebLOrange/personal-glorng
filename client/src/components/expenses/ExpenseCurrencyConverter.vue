@@ -12,8 +12,7 @@ import {
   type CurrencyCode,
 } from "@/composables/useExpenseFilters";
 import { api } from "@/composables/useApi";
-import { useNotify } from "@/composables/useNotify";
-import { getApiErrorMessage } from "@/types/api";
+import { useApiAction } from "@/composables/useApiAction";
 import type { ExchangeRates } from "@/types";
 
 interface ConvertResult {
@@ -32,8 +31,7 @@ const amount = ref("100");
 const fromCurrency = ref<CurrencyCode>("EUR");
 const toCurrency = ref<CurrencyCode>(EXPENSE_DEFAULT_CURRENCY);
 const result = ref<ConvertResult | null>(null);
-const loading = ref(false);
-const { toast } = useNotify();
+const { loading, run } = useApiAction();
 
 const canConvert = computed(() => {
   const value = parseFloat(amount.value);
@@ -51,20 +49,18 @@ function formatMoney(value: string | number, currency: string): string {
 
 async function convert(): Promise<void> {
   if (!canConvert.value) return;
-  loading.value = true;
-  try {
-    const { data } = await api.post<ConvertResult>("/tools/expenses/convert", {
-      amount: parseFloat(amount.value).toFixed(2),
-      from_currency: fromCurrency.value,
-      to_currency: toCurrency.value,
-    });
-    result.value = data;
-  } catch (err) {
-    console.error(err);
-    toast(getApiErrorMessage(err, "Conversion failed"), "error");
-  } finally {
-    loading.value = false;
-  }
+  const data = await run(
+    async () => {
+      const response = await api.post<ConvertResult>("/tools/expenses/convert", {
+        amount: parseFloat(amount.value).toFixed(2),
+        from_currency: fromCurrency.value,
+        to_currency: toCurrency.value,
+      });
+      return response.data;
+    },
+    { errorMessage: "Conversion failed" },
+  );
+  if (data) result.value = data;
 }
 
 function swapCurrencies(): void {

@@ -7,13 +7,7 @@ from app.schemas.platform import PlatformCatalogResponse, PlatformServiceRespons
 router = APIRouter(prefix="/platform", tags=["platform"])
 
 
-@router.get(
-    "/services",
-    response_model=PlatformCatalogResponse,
-    summary="List platform services",
-    description="Return the admin service catalog with capabilities and routes.",
-)
-async def list_platform_services() -> PlatformCatalogResponse:
+async def _platform_catalog() -> PlatformCatalogResponse:
     services = [
         PlatformServiceResponse(
             slug=s.slug,
@@ -32,3 +26,23 @@ async def list_platform_services() -> PlatformCatalogResponse:
         if is_service_enabled(s.slug)
     ]
     return PlatformCatalogResponse(services=services, categories=CATEGORY_LABELS)
+
+
+@router.get(
+    "/services",
+    response_model=PlatformCatalogResponse,
+    summary="List platform services",
+    description="Return the admin service catalog with capabilities and routes.",
+)
+async def list_platform_services() -> PlatformCatalogResponse:
+    return await _platform_catalog()
+
+
+@router.get(
+    "/catalog",
+    response_model=PlatformCatalogResponse,
+    summary="Platform catalog",
+    description="Alias for /platform/services.",
+)
+async def platform_catalog() -> PlatformCatalogResponse:
+    return await _platform_catalog()

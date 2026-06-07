@@ -18,7 +18,7 @@ EXPENSE_TOOLS = (
     "Cloudflare",
     "Hetzner",
 )
-EXPENSE_CATEGORIES = ("Groceries", "Home", "Transport")
+EXPENSE_CATEGORIES = DEFAULT_EXPENSE_CATEGORY_NAMES
 EXPENSE_PRODUCTS = (
     "Groceries run",
     "Rent",
@@ -28,7 +28,12 @@ EXPENSE_PRODUCTS = (
     "Biedronka",
     "Pharmacy",
 )
-EXPENSE_CURRENCIES = ("USD", "EUR", "PLN", "BYN")
+from app.core.catalogs import (
+    ALLOWED_CURRENCIES,
+    DEFAULT_EXPENSE_CATEGORY_NAMES,
+)
+
+EXPENSE_CURRENCIES = ALLOWED_CURRENCIES
 TASK_TITLES = (
     "Review PR",
     "Call dentist",

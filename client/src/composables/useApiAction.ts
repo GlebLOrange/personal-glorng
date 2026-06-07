@@ -1,46 +1,47 @@
-import { ref } from "vue";
+import { ref, type Ref } from "vue";
 
+import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
+import type { Toast } from "@/types";
 
-import { useNotify } from "./useNotify";
-
-export interface ApiActionOptions {
+type ApiActionOptions = {
+  errorMessage?: string;
+  /** Alias for errorMessage used by some admin tools. */
   errorFallback?: string;
   successMessage?: string;
-  silent?: boolean;
-  logContext?: string;
-}
+  successType?: Toast["type"];
+  logErrors?: boolean;
+};
 
-/** Wrap async API calls with shared loading and error toast handling. */
-export function useApiAction() {
+/** Run async API work with loading state and consistent error toasts. */
+export function useApiAction(defaultOptions: ApiActionOptions = {}) {
   const loading = ref(false);
-  const lastError = ref<string | null>(null);
   const { toast } = useNotify();
 
   async function run<T>(
     action: () => Promise<T>,
     options: ApiActionOptions = {},
-  ): Promise<T | null> {
+  ): Promise<T | undefined> {
+    const merged = { ...defaultOptions, ...options };
     loading.value = true;
     try {
       const result = await action();
-      lastError.value = null;
-      if (options.successMessage) {
-        toast(options.successMessage, "success");
+      if (merged.successMessage) {
+        toast(merged.successMessage, merged.successType ?? "success");
       }
       return result;
     } catch (err) {
-      const message = getApiErrorMessage(err, options.errorFallback ?? "Request failed");
-      lastError.value = message;
-      console.error(options.logContext ?? "api", err);
-      if (!options.silent) {
-        toast(message, "error");
+      if (merged.logErrors !== false && import.meta.env.DEV) {
+        console.error(err);
       }
-      return null;
+      const fallback = merged.errorMessage ?? merged.errorFallback ?? "Request failed";
+      const message = getApiErrorMessage(err, fallback);
+      toast(message, "error");
+      return undefined;
     } finally {
       loading.value = false;
     }
   }
 
-  return { loading, lastError, run };
+  return { loading, run } as { loading: Ref<boolean>; run: typeof run };
 }

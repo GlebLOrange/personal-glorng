@@ -50,8 +50,8 @@ class ConsoleBackend:
             context={
                 "to": to,
                 "subject": subject,
-                "body_preview": html[:200],
-                "plain_preview": (plain or "")[:200],
+                "html_bytes": len(html.encode("utf-8")),
+                "plain_bytes": len((plain or "").encode("utf-8")),
             },
         )
 

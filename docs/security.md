@@ -39,10 +39,12 @@ Redis fixed-window limits on auth, feedback, and general API traffic — [`serve
 
 | Surface | Mitigation |
 |---------|------------|
-| Email tool (server) | `html.escape` on body; length limits on subject/body |
+| Email tool (server) | `html.escape` on body; `sanitize_email_subject` blocks CRLF injection |
 | Email preview (client) | DOMPurify via [`sanitizeEmailHtml.ts`](../client/src/utils/sanitizeEmailHtml.ts) |
-| AI chat | `sanitize_content` + message caps |
-| File share uploads | Extension denylist; sanitized stored filenames |
+| Email console backend | Logs metadata only (`to`, `subject`, byte sizes) — no HTML/token previews |
+| AI chat | `sanitize_required_text` in [`core/text.py`](../server/app/core/text.py) + message caps |
+| Tasks (admin + todobot) | Shared `TaskTextFields` validators |
+| File share uploads | Extension denylist; sanitized stored filenames; daily expired-share cleanup |
 | Downloads | Safe `Content-Disposition` via [`attachment_content_disposition`](../server/app/core/utils.py) |
 | Vid download | YouTube host allowlist; yt-dlp `format` character allowlist; public with rate/concurrency limits |
 | URL shortener | `HttpUrl` validation; private/localhost host blocklist on create |

@@ -12,7 +12,7 @@ class ToolExpense(BaseModelMixin, Base):
 
     tool_name: Mapped[str] = mapped_column(String(255))
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
-    currency: Mapped[str] = mapped_column(String(3), server_default="USD")
+    currency: Mapped[str] = mapped_column(String(3), server_default="PLN")
     expense_date: Mapped[date] = mapped_column(Date)
     category: Mapped[str | None] = mapped_column(String(64), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)

@@ -39,6 +39,40 @@ async def test_create_task_sanitizes_title(auth_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_create_task_sanitizes_description_and_location(
+    auth_client: AsyncClient,
+) -> None:
+    resp = await auth_client.post(
+        "/api/tools/tasks",
+        json={
+            "title": "Errand",
+            "scheduled_at": "2026-06-01T10:00:00",
+            "description": "  pick\x00 up  ",
+            "location": f"  shop\x00 {'x' * 240}",
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["description"] == "pick up"
+    assert data["location"].startswith("shop ")
+    assert len(data["location"]) <= 255
+
+
+@pytest.mark.asyncio
+async def test_create_task_rejects_empty_title_after_sanitize(
+    auth_client: AsyncClient,
+) -> None:
+    resp = await auth_client.post(
+        "/api/tools/tasks",
+        json={
+            "title": "   \x00  ",
+            "scheduled_at": "2026-06-01T10:00:00",
+        },
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
 async def test_create_task(auth_client: AsyncClient) -> None:
     resp = await auth_client.post(
         "/api/tools/tasks",

@@ -7,9 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import logger
-from app.core.text import sanitize_optional_text, sanitize_text
 from app.core.utils import as_utc, paginate_params
-from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
+from app.db.models.audit_event import AuditActorType, AuditSource
 from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction, SyncStatus
 from app.db.models.reminder import Reminder
 from app.db.models.task import Task, TaskStatus
@@ -21,8 +20,9 @@ from app.schemas.task import (
     TaskDetailResponse,
     TaskResponse,
     TaskStatsResponse,
+    TaskTextFields,
 )
-from app.services.audit import AuditRecord, AuditService
+from app.services.audit import AuditService, domain_event
 
 
 class TaskService:
@@ -48,15 +48,20 @@ class TaskService:
         actor_type: AuditActorType = AuditActorType.TELEGRAM,
         actor_id: int | None = None,
     ) -> Task:
-        clean_title = sanitize_text(title, max_length=255)
-        if not clean_title:
-            raise ValidationError("Task title is required")
+        try:
+            fields = TaskTextFields(
+                title=title,
+                description=description,
+                location=location,
+            )
+        except ValueError as exc:
+            raise ValidationError(str(exc)) from exc
 
         task = Task(
             telegram_user_id=telegram_user_id,
-            title=clean_title,
-            description=sanitize_optional_text(description),
-            location=sanitize_optional_text(location, max_length=255),
+            title=fields.title,
+            description=fields.description,
+            location=fields.location,
             scheduled_at=as_utc(scheduled_at),
             status=TaskStatus.PENDING,
             intake_id=intake_id,
@@ -64,19 +69,17 @@ class TaskService:
         self.db.add(task)
         await self.db.flush()
         await self.db.refresh(task)
-        logger.info("Task created", context={"task_id": task.id, "title": clean_title})
+        logger.info("Task created", context={"task_id": task.id, "title": fields.title})
 
-        audit = AuditService(self.db)
-        await audit.record(
-            AuditRecord(
-                category=AuditCategory.DOMAIN,
+        await AuditService(self.db).record(
+            domain_event(
                 action="task.created",
                 actor_type=actor_type,
                 actor_id=actor_id if actor_id is not None else telegram_user_id,
                 source=source,
                 resource_type="task",
                 resource_id=task.id,
-                metadata={"title": clean_title},
+                metadata={"title": fields.title},
             ),
         )
         return task
@@ -131,10 +134,8 @@ class TaskService:
             },
         )
 
-        audit = AuditService(self.db)
-        await audit.record(
-            AuditRecord(
-                category=AuditCategory.DOMAIN,
+        await AuditService(self.db).record(
+            domain_event(
                 action="task.status_changed",
                 actor_type=actor_type,
                 actor_id=actor_id,
@@ -184,10 +185,8 @@ class TaskService:
         await self.db.flush()
         await self.db.refresh(task)
 
-        audit = AuditService(self.db)
-        await audit.record(
-            AuditRecord(
-                category=AuditCategory.DOMAIN,
+        await AuditService(self.db).record(
+            domain_event(
                 action="task.rescheduled",
                 actor_type=actor_type,
                 actor_id=actor_id,
