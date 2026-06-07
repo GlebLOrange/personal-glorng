@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
@@ -10,7 +10,11 @@ import RecipeDetailDrawer from "@/components/recipes/RecipeDetailDrawer.vue";
 import RecipeFilters from "@/components/recipes/RecipeFilters.vue";
 import RecipeFormModal from "@/components/recipes/RecipeFormModal.vue";
 import TaskPagination from "@/components/tasks/TaskPagination.vue";
+import { usePermissions } from "@/composables/usePermissions";
 import { useRecipes } from "@/composables/useRecipes";
+
+const { can } = usePermissions();
+const canWrite = computed(() => can("recipes", "write"));
 
 const {
   recipes,
@@ -66,6 +70,7 @@ onMounted(async () => {
       :active-tag="activeTag"
       :all-tags="allTags"
       :recipe-count-label="recipeCountLabel"
+      :can-write="canWrite"
       @set-tag="setTag"
       @create="openCreate"
     />
@@ -106,7 +111,7 @@ onMounted(async () => {
         }}
       </p>
       <button
-        v-if="!hasFilters"
+        v-if="!hasFilters && canWrite"
         type="button"
         class="text-accent-blue text-sm hover:underline"
         @click="openCreate"
@@ -124,6 +129,7 @@ onMounted(async () => {
     />
 
     <RecipeFormModal
+      v-if="canWrite"
       :open="showForm"
       :form="form"
       :form-title="formTitle"
@@ -150,6 +156,7 @@ onMounted(async () => {
     />
 
     <ExpenseConfirmDialog
+      v-if="canWrite"
       :open="showDeleteConfirm"
       title="Delete recipe"
       :message="deleteConfirmMessage"

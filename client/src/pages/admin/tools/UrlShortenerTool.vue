@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import ShareableListItem from "@/components/admin/ShareableListItem.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
@@ -9,18 +9,23 @@ import EmptyState from "@/components/ui/EmptyState.vue";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
+import { usePermissions } from "@/composables/usePermissions";
 import type { UrlItem } from "@/types";
 import { publicUrl } from "@/utils/publicLinks";
 
 const urls = ref<UrlItem[]>([]);
 const newUrl = ref("");
 const newTitle = ref("");
+const lastCreatedLink = ref<string | null>(null);
 const { copy } = useClipboard();
+const { can } = usePermissions();
+const canManage = computed(() => can("url-shortener", "read"));
 const { run: runList } = useApiAction();
 const { loading, run: runCreate } = useApiAction();
 const { run: runDelete } = useApiAction();
 
 async function loadUrls(): Promise<void> {
+  if (!canManage.value) return;
   const data = await runList(() => api.get<UrlItem[]>("/tools/url-shortener"), {
     errorFallback: "Failed to load URLs",
   });
@@ -40,9 +45,13 @@ async function createUrl(): Promise<void> {
     { successMessage: "URL created", errorFallback: "Failed to create URL" },
   );
   if (result) {
+    const code = result.data.code as string;
+    lastCreatedLink.value = publicUrl("s", code);
     newUrl.value = "";
     newTitle.value = "";
-    await loadUrls();
+    if (canManage.value) {
+      await loadUrls();
+    }
   }
 }
 
@@ -69,7 +78,22 @@ onMounted(loadUrls);
       </BaseButton>
     </form>
 
-    <div class="space-y-3">
+    <div v-if="lastCreatedLink" class="mb-10 rounded-lg border border-surface-border bg-surface-card p-4">
+      <p class="text-sm text-surface-mid mb-2">Your short link</p>
+      <div class="flex flex-wrap items-center gap-3">
+        <a
+          :href="lastCreatedLink"
+          class="text-accent-blue text-sm break-all hover:underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ lastCreatedLink }}
+        </a>
+        <BaseButton variant="ghost" size="sm" @click="copy(lastCreatedLink)">Copy</BaseButton>
+      </div>
+    </div>
+
+    <div v-if="canManage" class="space-y-3">
       <ShareableListItem
         v-for="url in urls"
         :key="url.id"

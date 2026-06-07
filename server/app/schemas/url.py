@@ -1,11 +1,19 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
+
+from app.core.url_safety import validate_redirect_url
 
 
 class UrlCreate(BaseModel):
     original_url: HttpUrl
     title: str | None = Field(None, max_length=255)
+
+    @field_validator("original_url")
+    @classmethod
+    def validate_safe_url(cls, value: HttpUrl) -> HttpUrl:
+        validate_redirect_url(str(value))
+        return value
 
     model_config = ConfigDict(
         json_schema_extra={

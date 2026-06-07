@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
+import { usePermissions } from "@/composables/usePermissions";
 import { formatRecipeTime } from "@/utils/recipe";
 import type { Recipe } from "@/types";
 
@@ -9,6 +12,9 @@ defineProps<{
   recipe: Recipe | null;
   loading: boolean;
 }>();
+
+const { can } = usePermissions();
+const canWrite = computed(() => can("recipes", "write"));
 
 const emit = defineEmits<{
   close: [];
@@ -125,8 +131,22 @@ const emit = defineEmits<{
 
             <div class="flex flex-wrap gap-2 border-t border-surface-border pt-4">
               <BaseButton variant="primary" size="sm" @click="emit('cook')">Cook</BaseButton>
-              <BaseButton variant="ghost" size="sm" @click="emit('edit', recipe)">Edit</BaseButton>
-              <BaseButton variant="ghost" size="sm" @click="emit('delete')">Delete</BaseButton>
+              <BaseButton
+                v-if="canWrite"
+                variant="ghost"
+                size="sm"
+                @click="emit('edit', recipe)"
+              >
+                Edit
+              </BaseButton>
+              <BaseButton
+                v-if="canWrite"
+                variant="ghost"
+                size="sm"
+                @click="emit('delete')"
+              >
+                Delete
+              </BaseButton>
             </div>
           </div>
         </div>

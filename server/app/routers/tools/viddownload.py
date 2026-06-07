@@ -1,36 +1,84 @@
-"""YouTube download tool. Default: `vid-download:read`; writes: `vid-download:write`."""
+"""YouTube download tool. Public endpoint with strict rate and concurrency limits."""
 
 import asyncio
 import mimetypes
 import shutil
 import tempfile
+import time
+from collections import defaultdict
 from collections.abc import Generator
 from pathlib import Path
+from urllib.parse import urlparse
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 
-from app.core.deps import AuthorizedUser, require_capability
+from app.core.deps import OptionalUser
 from app.core.exceptions import ApiError
-from app.core.rate_limit import rate_limit_api
+from app.core.logging import logger
+from app.core.permissions import permission_key, user_has_permission
+from app.core.rate_limit import rate_limit_api, rate_limit_vid_download
 from app.core.utils import attachment_content_disposition
-from app.openapi import requires_capability
 from app.schemas.viddownload import VidDownloadRequest
 
 router = APIRouter(
     prefix="/vid-download",
     tags=["vid-download"],
-    dependencies=[
-        Depends(require_capability("vid-download", "read")),
-        Depends(rate_limit_api),
-    ],
+    dependencies=[Depends(rate_limit_api)],
 )
 
 DOWNLOAD_TIMEOUT = 120
 MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 MB
 MAX_CONCURRENT_DOWNLOADS = 2
+MAX_CONCURRENT_PER_IP = 1
 
-_download_semaphore = asyncio.Semaphore(MAX_CONCURRENT_DOWNLOADS)
+_active_downloads = 0
+_download_lock = asyncio.Lock()
+_ip_active_downloads: defaultdict[str, int] = defaultdict(int)
+_ip_lock = asyncio.Lock()
+
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+async def _acquire_ip_slot(client_ip: str) -> None:
+    async with _ip_lock:
+        if _ip_active_downloads[client_ip] >= MAX_CONCURRENT_PER_IP:
+            raise ApiError(
+                503,
+                "Too many concurrent downloads from your IP, try again later",
+            )
+        _ip_active_downloads[client_ip] += 1
+
+
+async def _release_ip_slot(client_ip: str) -> None:
+    async with _ip_lock:
+        current = _ip_active_downloads.get(client_ip, 0)
+        if current <= 1:
+            _ip_active_downloads.pop(client_ip, None)
+        else:
+            _ip_active_downloads[client_ip] = current - 1
+
+
+async def _acquire_global_slot() -> None:
+    global _active_downloads
+    async with _download_lock:
+        if _active_downloads >= MAX_CONCURRENT_DOWNLOADS:
+            raise ApiError(
+                503,
+                "Server busy — too many concurrent downloads, try again later",
+            )
+        _active_downloads += 1
+
+
+async def _release_global_slot() -> None:
+    global _active_downloads
+    async with _download_lock:
+        _active_downloads = max(0, _active_downloads - 1)
 
 
 def _build_command(data: VidDownloadRequest, tmp_dir: str) -> list[str]:
@@ -96,19 +144,25 @@ def _stream_and_cleanup(path: Path, tmp_dir: str) -> Generator[bytes]:
 @router.post(
     "",
     summary="Download video via yt-dlp",
-    description=requires_capability("vid-download", "write"),
-    dependencies=[Depends(require_capability("vid-download", "write"))],
+    description="Public YouTube download (rate limited).",
+    dependencies=[Depends(rate_limit_vid_download)],
 )
 async def download_video(
     data: VidDownloadRequest,
-    user: AuthorizedUser,  # noqa: ARG001
+    request: Request,
+    user: OptionalUser,
 ) -> StreamingResponse:
-    if not _download_semaphore._value:
-        raise ApiError(
-            503, "Server busy — too many concurrent downloads, try again later"
-        )
+    client_ip = _client_ip(request)
+    url_host = urlparse(str(data.url)).hostname or "unknown"
+    privileged = user is not None and user_has_permission(
+        user, permission_key("vid-download", "write")
+    )
 
-    async with _download_semaphore:
+    await _acquire_ip_slot(client_ip)
+    await _acquire_global_slot()
+    started = time.monotonic()
+
+    try:
         tmp_dir = tempfile.mkdtemp(prefix="ytdlp_")
         try:
             cmd = _build_command(data, tmp_dir)
@@ -120,15 +174,32 @@ async def download_video(
 
             target = _find_output_file(tmp_dir)
             mime, _ = mimetypes.guess_type(target.name)
+            file_size = target.stat().st_size
+
+            logger.info(
+                "Video download completed",
+                context={
+                    "ip": client_ip,
+                    "url_host": url_host,
+                    "file_size": file_size,
+                    "duration_s": round(time.monotonic() - started, 2),
+                    "privileged": privileged,
+                },
+            )
 
             return StreamingResponse(
                 _stream_and_cleanup(target, tmp_dir),
                 media_type=mime or "application/octet-stream",
                 headers={
-                    "Content-Disposition": attachment_content_disposition(target.name),
-                    "Content-Length": str(target.stat().st_size),
+                    "Content-Disposition": attachment_content_disposition(
+                        target.name
+                    ),
+                    "Content-Length": str(file_size),
                 },
             )
         except Exception:
             shutil.rmtree(tmp_dir, ignore_errors=True)
             raise
+    finally:
+        await _release_global_slot()
+        await _release_ip_slot(client_ip)

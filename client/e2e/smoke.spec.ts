@@ -25,6 +25,9 @@ test.describe("public pages", () => {
     await expect(page).toHaveURL(/\/tools$/);
     await expect(page.getByRole("heading", { name: /^tools$/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /^calculator$/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^recipes$/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /url shortener/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /video download/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /date & time & location/i })).toBeVisible();
   });
 
@@ -42,6 +45,34 @@ test.describe("public pages", () => {
   test("old calculator admin URL redirects to public route", async ({ page }) => {
     await page.goto("/admin/tools/calculator");
     await expect(page).toHaveURL(/\/calculator$/);
+  });
+
+  test("guest can open public recipes page", async ({ page }) => {
+    await page.goto("/recipes");
+    await expect(page.getByRole("heading", { name: /^recipes$/i })).toBeVisible();
+  });
+
+  test("guest can open public shortener page", async ({ page }) => {
+    await page.goto("/shortener");
+    await expect(page.getByRole("heading", { name: /url-shortener/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /shorten/i })).toBeVisible();
+  });
+
+  test("guest can open public video download page", async ({ page }) => {
+    await page.goto("/vid-download");
+    await expect(page.getByRole("heading", { name: /vid-download/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /download/i })).toBeVisible();
+  });
+
+  test("old admin tool URLs redirect to public routes", async ({ page }) => {
+    await page.goto("/admin/tools/recipes");
+    await expect(page).toHaveURL(/\/recipes$/);
+
+    await page.goto("/admin/tools/url-shortener");
+    await expect(page).toHaveURL(/\/shortener$/);
+
+    await page.goto("/admin/tools/vid-download");
+    await expect(page).toHaveURL(/\/vid-download$/);
   });
 
   test("guest can add a city on date-time page", async ({ page }) => {

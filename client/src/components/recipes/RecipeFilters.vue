@@ -10,6 +10,7 @@ defineProps<{
   sort: RecipeSort;
   allTags: string[];
   recipeCountLabel: string;
+  canWrite?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -48,7 +49,7 @@ const sortOptions: { value: RecipeSort; label: string }[] = [
             {{ option.label }}
           </option>
         </select>
-        <BaseButton variant="primary" @click="emit('create')">+ Add</BaseButton>
+        <BaseButton v-if="canWrite" variant="primary" @click="emit('create')">+ Add</BaseButton>
       </div>
     </div>
 

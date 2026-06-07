@@ -46,3 +46,5 @@ class RateLimiter:
 
 rate_limit_auth = RateLimiter(requests=5, window=60)
 rate_limit_api = RateLimiter(requests=30, window=60)
+rate_limit_shortener_create = RateLimiter(requests=10, window=3600)
+rate_limit_vid_download = RateLimiter(requests=5, window=3600)
