@@ -6,8 +6,13 @@ from app.settings import get_settings
 
 _PRODUCTION_ENV = {
     "APP_ENV": "production",
+    "POSTGRES_USER": "glorng",
     "POSTGRES_PASSWORD": "prod-test-password-16",
+    "POSTGRES_DB": "glorng",
     "REDIS_URL": "redis://:prod-test-redis-password@127.0.0.1:6379/0",
+    "RABBITMQ_USER": "glorng",
+    "RABBITMQ_PASSWORD": "prod-test-rabbitmq-password",
+    "CELERY_BROKER_URL": "amqp://glorng:prod-test-rabbitmq-password@localhost:5672//",
     "JWT_SECRET": "ci-jwt-secret-at-least-32-characters-long",
 }
 

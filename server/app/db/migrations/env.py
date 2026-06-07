@@ -4,8 +4,10 @@ from logging.config import fileConfig
 from pathlib import Path
 
 from alembic import context
-from sqlalchemy import pool
+from sqlalchemy import JSON, pool
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.sql.schema import Column
 
 _server_root = Path(__file__).resolve().parents[3]
 if str(_server_root) not in sys.path:
@@ -25,6 +27,27 @@ settings = get_settings()
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 
+def _is_json_column(column_type: object) -> bool:
+    if isinstance(column_type, (JSON, JSONB)):
+        return True
+    impl = getattr(column_type, "impl", None)
+    return isinstance(impl, (JSON, JSONB))
+
+
+def compare_server_default(
+    _context: object,
+    _inspected_column: object,
+    metadata_column: Column[object],
+    _inspected_default: object | None,
+    _metadata_default: object | None,
+    _rendered_metadata_default: str | None,
+) -> bool | None:
+    """Skip JSON default compares that Postgres cannot evaluate (`json = unknown`)."""
+    if _is_json_column(metadata_column.type):
+        return False
+    return None
+
+
 def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -33,7 +56,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
-        compare_server_default=True,
+        compare_server_default=compare_server_default,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -44,7 +67,7 @@ def do_run_migrations(connection):  # type: ignore[no-untyped-def]
         connection=connection,
         target_metadata=target_metadata,
         compare_type=True,
-        compare_server_default=True,
+        compare_server_default=compare_server_default,
     )
     with context.begin_transaction():
         context.run_migrations()

@@ -29,8 +29,11 @@ def enable_ai_chat(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.fixture
 def ai_search_service() -> None:
     search_svc = SearchIndexService.__new__(SearchIndexService)
-    service = AiSearchService(search_svc, get_settings())
-    app.dependency_overrides[get_ai_search_service] = lambda: service
+
+    def _service() -> AiSearchService:
+        return AiSearchService(search_svc, get_settings())
+
+    app.dependency_overrides[get_ai_search_service] = _service
     yield
     app.dependency_overrides.pop(get_ai_search_service, None)
 

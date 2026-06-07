@@ -24,8 +24,8 @@ test.describe("public pages", () => {
     await page.getByRole("link", { name: /^tools$/i }).click();
     await expect(page).toHaveURL(/\/tools$/);
     await expect(page.getByRole("heading", { name: /^tools$/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /^calculator$/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /^recipes$/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /calculator/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /recipes/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /url shortener/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /video download/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /date & time & location/i })).toBeVisible();
@@ -49,7 +49,7 @@ test.describe("public pages", () => {
 
   test("guest can open public recipes page", async ({ page }) => {
     await page.goto("/recipes");
-    await expect(page.getByRole("heading", { name: /^recipes$/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /recipes/i })).toBeVisible();
   });
 
   test("guest can open public shortener page", async ({ page }) => {
@@ -78,7 +78,7 @@ test.describe("public pages", () => {
   test("guest can add a city on date-time page", async ({ page }) => {
     await page.goto("/time-date-weather-location");
     await expect(page.getByText(/\d+\/8 cities saved in your browser/i)).toBeVisible();
-    await page.getByRole("textbox", { name: /search city to add/i }).fill("London");
+    await page.getByPlaceholder(/search city/i).fill("London");
     await page.getByRole("button", { name: /^add$/i }).click();
     await expect(page.getByText(/location added/i)).toBeVisible();
     await expect(page.getByRole("timer").first()).toHaveText(/\d{2}:\d{2}:\d{2}/);

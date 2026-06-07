@@ -80,5 +80,8 @@ class StructuredLogger:
     def debug(self, message: str, context: dict[str, Any] | None = None) -> None:
         _loguru.bind(context=context or {}).debug(message)
 
+    def exception(self, message: str, context: dict[str, Any] | None = None) -> None:
+        _loguru.bind(context=context or {}).exception(message)
+
 
 logger = StructuredLogger()
