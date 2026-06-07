@@ -13,7 +13,7 @@ from app.core.utils import calendar_datetime
 from app.db.models.google_auth import GoogleCredential
 from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction
 from app.db.models.task import Task
-from app.services.github_credentials import read_google_refresh_token
+from app.services.google_credentials import read_google_refresh_token
 from app.settings import get_settings
 
 

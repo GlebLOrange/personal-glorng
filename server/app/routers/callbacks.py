@@ -77,7 +77,7 @@ async def google_oauth_callback(
         )
         existing = result.scalar_one_or_none()
 
-        from app.services.github_credentials import store_google_refresh_token
+        from app.services.google_credentials import store_google_refresh_token
 
         encrypted_token = store_google_refresh_token(credentials.refresh_token)
         if existing:
