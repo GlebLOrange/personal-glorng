@@ -1,24 +1,21 @@
 """Public portfolio search — keyword lookup and grounded AI chat."""
 
-import json
-from collections.abc import AsyncIterator
-
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 
 from app.core.deps import AiSearchServiceDep, AppSettings, SearchIndexServiceDep
 from app.core.exceptions import ApiError
 from app.core.feature_flags import is_ai_search_enabled
-from app.core.logging import logger
 from app.core.rate_limit import RateLimiter
 from app.db.models.search_document import SearchVisibility
+from app.routers.sse import stream_search_sse
 from app.schemas.search import (
     SearchChatRequest,
     SearchConfigResponse,
     SearchHit,
     SearchQueryResponse,
 )
-from app.services.ai_search import AiSearchService, SearchScope
+from app.services.ai_search import SearchScope
 from app.services.search_index import SearchIndexService
 
 router = APIRouter(prefix="/search", tags=["search"])
@@ -72,20 +69,6 @@ async def search_documents(
     return SearchQueryResponse(query=q, hits=hits)
 
 
-async def _sse_events(
-    service: AiSearchService,
-    messages: list[dict[str, str]],
-) -> AsyncIterator[str]:
-    try:
-        async for event in service.stream_events(messages, scope=SearchScope.PUBLIC):
-            yield f"data: {json.dumps(event)}\n\n"
-    except ApiError as exc:
-        yield f"data: {json.dumps({'error': exc.message})}\n\n"
-    except Exception:
-        logger.exception("Public search chat stream failed")
-        yield f"data: {json.dumps({'error': 'Search chat failed'})}\n\n"
-
-
 @router.post(
     "/chat",
     summary="Stream grounded public search chat",
@@ -99,6 +82,11 @@ async def search_chat(
     _require_ai_search_enabled()
     messages = [m.model_dump() for m in body.messages]
     return StreamingResponse(
-        _sse_events(service, messages),
+        stream_search_sse(
+            service,
+            messages,
+            scope=SearchScope.PUBLIC,
+            error_context="Public search chat stream failed",
+        ),
         media_type="text/event-stream",
     )

@@ -2,15 +2,16 @@ import json
 from math import ceil
 from typing import Any
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
-from app.core.exceptions import ApiError, NotFoundError
+from app.core.exceptions import NotFoundError
+from app.core.json_lists import parse_json_string_list
 from app.core.logging import logger
 from app.core.utils import paginate_params
 from app.db.models.recipe import Recipe
-from app.db.recipe_search import RECIPE_SEARCH_CONFIG
+from app.db.models.search_document import SearchVisibility
 from app.schemas.recipe import (
     RecipeCreate,
     RecipeListResponse,
@@ -20,40 +21,16 @@ from app.schemas.recipe import (
 )
 from app.services.audit import AuditService
 from app.services.base import CRUDService
-from app.services.search_indexers.recipe import index_recipe, remove_recipe
-
-
-def _recipe_search_vector() -> ColumnElement:
-    return func.to_tsvector(
-        RECIPE_SEARCH_CONFIG,
-        func.concat(
-            Recipe.title,
-            " ",
-            Recipe.ingredients,
-            " ",
-            Recipe.steps,
-            " ",
-            func.coalesce(Recipe.notes, ""),
-        ),
-    )
+from app.services.search_index import SearchIndexService
+from app.services.search_indexers.recipe import (
+    RECIPE_SOURCE_TYPE,
+    index_recipe,
+    remove_recipe,
+)
 
 
 def _loads_json_list(field: str, raw: str) -> list[str]:
-    try:
-        value = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        raise ApiError(
-            500,
-            f"Recipe {field} data is corrupted",
-            is_operational=False,
-        ) from exc
-    if not isinstance(value, list):
-        raise ApiError(
-            500,
-            f"Recipe {field} data is corrupted",
-            is_operational=False,
-        )
-    return value
+    return parse_json_string_list(raw, strict=True, field=field)
 
 
 def _dumps_json_list(value: list[str]) -> str:
@@ -173,25 +150,15 @@ class RecipeService(CRUDService[Recipe]):
 
     def _recipe_list_filters(
         self,
-        search: str | None,
+        recipe_ids: list[int] | None,
         tag: str | None,
     ) -> list[ColumnElement[bool]]:
         filters: list[ColumnElement[bool]] = []
-        if search:
-            dialect_name = self.db.get_bind().dialect.name
-            if dialect_name == "postgresql":
-                ts_query = func.plainto_tsquery(RECIPE_SEARCH_CONFIG, search)
-                filters.append(_recipe_search_vector().bool_op("@@")(ts_query))
+        if recipe_ids is not None:
+            if not recipe_ids:
+                filters.append(Recipe.id == -1)
             else:
-                pattern = f"%{search}%"
-                filters.append(
-                    or_(
-                        Recipe.title.ilike(pattern),
-                        Recipe.ingredients.ilike(pattern),
-                        Recipe.steps.ilike(pattern),
-                        Recipe.notes.ilike(pattern),
-                    )
-                )
+                filters.append(Recipe.id.in_(recipe_ids))
         if tag:
             filters.append(Recipe.tags.ilike(f'%"{tag}"%'))
         return filters
@@ -222,7 +189,17 @@ class RecipeService(CRUDService[Recipe]):
         per_page: int = 24,
     ) -> RecipeListResponse:
         offset, limit = paginate_params(page, per_page)
-        filters = self._recipe_list_filters(search=search, tag=tag)
+        recipe_ids: list[int] | None = None
+        if search:
+            results = await SearchIndexService(self.db).search(
+                search,
+                visibilities=[SearchVisibility.PUBLIC],
+                source_types=[RECIPE_SOURCE_TYPE],
+                limit=500,
+            )
+            recipe_ids = [hit.source_id for hit in results]
+
+        filters = self._recipe_list_filters(recipe_ids=recipe_ids, tag=tag)
 
         count_query = select(func.count()).select_from(Recipe)
         for clause in filters:

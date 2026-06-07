@@ -1,28 +1,22 @@
-import json
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.json_lists import parse_json_string_list
 from app.db.models.recipe import Recipe
 from app.db.models.search_document import SearchVisibility
-from app.services.search_index import SearchDocumentInput, SearchIndexService
+from app.services.search_index import (
+    SearchDocumentInput,
+    remove_by_source,
+    upsert_document,
+)
+from app.services.search_source_types import SearchSourceType
 
-RECIPE_SOURCE_TYPE = "recipe"
-
-
-def _loads_list(raw: str) -> list[str]:
-    try:
-        value = json.loads(raw)
-    except json.JSONDecodeError:
-        return []
-    if not isinstance(value, list):
-        return []
-    return [str(item) for item in value]
+RECIPE_SOURCE_TYPE = SearchSourceType.RECIPE
 
 
 def _recipe_document(recipe: Recipe) -> SearchDocumentInput:
-    ingredients = ", ".join(_loads_list(recipe.ingredients))
-    steps = " ".join(_loads_list(recipe.steps))
-    tags = ", ".join(_loads_list(recipe.tags))
+    ingredients = ", ".join(parse_json_string_list(recipe.ingredients))
+    steps = " ".join(parse_json_string_list(recipe.steps))
+    tags = ", ".join(parse_json_string_list(recipe.tags))
     body_parts = [ingredients, steps]
     if recipe.notes:
         body_parts.append(recipe.notes)
@@ -40,8 +34,8 @@ def _recipe_document(recipe: Recipe) -> SearchDocumentInput:
 
 
 async def index_recipe(db: AsyncSession, recipe: Recipe) -> None:
-    await SearchIndexService(db).upsert(_recipe_document(recipe))
+    await upsert_document(db, _recipe_document(recipe))
 
 
 async def remove_recipe(db: AsyncSession, recipe_id: int) -> None:
-    await SearchIndexService(db).delete_by_source(RECIPE_SOURCE_TYPE, recipe_id)
+    await remove_by_source(db, RECIPE_SOURCE_TYPE, recipe_id)

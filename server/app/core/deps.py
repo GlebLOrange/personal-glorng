@@ -158,9 +158,9 @@ SearchIndexServiceDep = Annotated[SearchIndexService, Depends(get_search_index_s
 
 def get_ai_search_service(
     search_svc: SearchIndexServiceDep,
-    llm_svc: OpenAIChatService,
+    settings: AppSettings,
 ) -> AiSearchService:
-    return AiSearchService(search_svc, llm_svc)
+    return AiSearchService(search_svc, settings)
 
 
 AiSearchServiceDep = Annotated[AiSearchService, Depends(get_ai_search_service)]

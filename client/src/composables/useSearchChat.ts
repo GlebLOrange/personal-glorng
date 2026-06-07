@@ -1,26 +1,9 @@
-import { ref } from "vue";
+import { onUnmounted, ref } from "vue";
 
-export interface SearchSource {
-  id: number;
-  title: string;
-  url: string;
-  source_type: string;
-  snippet: string;
-}
+import { streamingPost, userSafeStreamError } from "@/composables/streamingPost";
+import type { ChatMessage, SearchSource } from "@/types/search";
 
-export interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  sources?: SearchSource[];
-}
-
-let messageCounter = 0;
-
-function nextMessageId(): string {
-  messageCounter += 1;
-  return `msg-${messageCounter}-${Date.now()}`;
-}
+export type { ChatMessage, SearchSource };
 
 interface StreamEvent {
   sources?: SearchSource[];
@@ -48,51 +31,76 @@ export function parseSseEvents(buffer: string): { events: StreamEvent[]; rest: s
   return { events, rest };
 }
 
+function applyStreamEvents(messages: ChatMessage[], events: StreamEvent[]): void {
+  for (const event of events) {
+    if (event.error) {
+      throw new Error(event.error);
+    }
+    const last = messages.at(-1);
+    if (!last || last.role !== "assistant") continue;
+    if (event.sources) {
+      last.sources = event.sources;
+    }
+    if (event.delta) {
+      last.content += event.delta;
+    }
+  }
+}
+
 interface UseSearchChatOptions {
   endpoint: string;
   onError?: (message: string) => void;
+  beforeSend?: () => boolean | Promise<boolean>;
 }
 
 export function useSearchChat(options: UseSearchChatOptions) {
   const messages = ref<ChatMessage[]>([]);
   const input = ref("");
   const loading = ref(false);
+  const abortController = ref<AbortController | null>(null);
+
+  onUnmounted(() => {
+    abortController.value?.abort();
+  });
 
   async function send(): Promise<void> {
     const text = input.value.trim();
     if (!text || loading.value) return;
 
-    messages.value.push({ id: nextMessageId(), role: "user", content: text });
+    if (options.beforeSend) {
+      const allowed = await options.beforeSend();
+      if (!allowed) return;
+    }
+
+    messages.value.push({ role: "user", content: text });
     input.value = "";
     loading.value = true;
-    messages.value.push({
-      id: nextMessageId(),
-      role: "assistant",
-      content: "",
-      sources: [],
-    });
+    messages.value.push({ role: "assistant", content: "", sources: [] });
+
+    abortController.value?.abort();
+    const controller = new AbortController();
+    abortController.value = controller;
 
     try {
       const payload = messages.value
         .slice(0, -1)
         .map((message) => ({ role: message.role, content: message.content }));
 
-      const response = await fetch(options.endpoint, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: payload }),
-      });
+      const response = await streamingPost(
+        options.endpoint,
+        { messages: payload },
+        { signal: controller.signal },
+      );
 
       if (!response.ok) {
-        let detail = "Failed to get AI response";
+        let detail: string | undefined;
         try {
           const body = (await response.json()) as { detail?: string };
-          detail = body.detail ?? detail;
+          detail = body.detail;
         } catch {
           // ignore non-JSON error bodies
         }
-        throw new Error(detail);
+        throw new Error(userSafeStreamError(response.status, detail));
       }
 
       const reader = response.body?.getReader();
@@ -110,39 +118,17 @@ export function useSearchChat(options: UseSearchChatOptions) {
         buffer += decoder.decode(value, { stream: true });
         const { events, rest } = parseSseEvents(buffer);
         buffer = rest;
-
-        for (const event of events) {
-          if (event.error) {
-            throw new Error(event.error);
-          }
-          const last = messages.value.at(-1);
-          if (!last || last.role !== "assistant") continue;
-          if (event.sources) {
-            last.sources = event.sources;
-          }
-          if (event.delta) {
-            last.content += event.delta;
-          }
-        }
+        applyStreamEvents(messages.value, events);
       }
 
       if (buffer.trim()) {
         const { events } = parseSseEvents(`${buffer}\n\n`);
-        for (const event of events) {
-          if (event.error) {
-            throw new Error(event.error);
-          }
-          const last = messages.value.at(-1);
-          if (!last || last.role !== "assistant") continue;
-          if (event.sources) {
-            last.sources = event.sources;
-          }
-          if (event.delta) {
-            last.content += event.delta;
-          }
-        }
+        applyStreamEvents(messages.value, events);
       }
     } catch (err) {
+      if (controller.signal.aborted) {
+        return;
+      }
       const msg = err instanceof Error ? err.message : "Failed to get AI response";
       options.onError?.(msg);
       messages.value.pop();
@@ -152,10 +138,14 @@ export function useSearchChat(options: UseSearchChatOptions) {
       throw err;
     } finally {
       loading.value = false;
+      if (abortController.value === controller) {
+        abortController.value = null;
+      }
     }
   }
 
   function clear(): void {
+    abortController.value?.abort();
     messages.value = [];
   }
 
@@ -167,3 +157,6 @@ export function useSearchChat(options: UseSearchChatOptions) {
     clear,
   };
 }
+
+/** Alias for streaming chat composable used by public and admin surfaces. */
+export const useSseChat = useSearchChat;

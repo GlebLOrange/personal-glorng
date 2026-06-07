@@ -6,8 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.content.resume_data import RESUME_DATA
 from app.db.models.search_document import SearchVisibility
 from app.services.search_index import SearchDocumentInput, SearchIndexService
+from app.services.search_source_types import SearchSourceType
 
-RESUME_SOURCE_TYPE = "resume"
+RESUME_SOURCE_TYPE = SearchSourceType.RESUME
 RESUME_PROFILE_SOURCE_ID = 1
 
 
@@ -85,9 +86,11 @@ def _resume_documents() -> list[SearchDocumentInput]:
 
 
 async def index_resume(db: AsyncSession) -> int:
-    """Upsert all resume chunks. Returns number of documents indexed."""
+    """Upsert all resume chunks and remove stale rows. Returns document count."""
     svc = SearchIndexService(db)
     documents = _resume_documents()
+    keep_ids = {document.source_id for document in documents}
+    await svc.delete_stale_by_source(RESUME_SOURCE_TYPE, keep_ids)
     for document in documents:
         await svc.upsert(document)
     return len(documents)
