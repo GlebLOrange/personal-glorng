@@ -121,7 +121,7 @@ Admin tools are grouped into platform pillars:
 | **Utilities** | Calculator, Video download, AI chat |
 | **Operations** | Feedback, Audit log |
 
-Each capability follows a module-as-service pattern: business logic in `server/app/services/`, thin HTTP routers in `server/app/routers/tools/`, and a shared registry at `GET /api/platform/services`.
+Each capability follows a module-as-service pattern: business logic in `server/app/services/`, thin HTTP routers in `server/app/routers/tools/`, and a shared registry at `GET /api/platform/services`. See [docs/api-tools.md](docs/api-tools.md) for public vs admin endpoints and capability keys.
 
 ## Features
 
@@ -147,7 +147,7 @@ Browser → Nginx (:80)
 FastAPI + Worker + Todobot share PostgreSQL and Redis
 ```
 
-See [docs/platform.md](docs/platform.md) for the service catalog and audit model. Database setup and migrations: [docs/database.md](docs/database.md). Security posture and hardening notes: [docs/security.md](docs/security.md).
+See [docs/platform.md](docs/platform.md) for the service catalog and audit model. API tool reference: [docs/api-tools.md](docs/api-tools.md). Database setup and migrations: [docs/database.md](docs/database.md). Security posture and hardening notes: [docs/security.md](docs/security.md).
 
 ## Backend development (host)
 
