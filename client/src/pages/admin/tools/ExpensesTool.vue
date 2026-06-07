@@ -60,6 +60,11 @@ const { value: lastCategory, set: setLastCategory } = useLocalStorageString(
   "Groceries",
 );
 
+const { value: lastCategory, set: setLastCategory } = useLocalStorageString(
+  EXPENSE_LAST_CATEGORY_STORAGE_KEY,
+  "Groceries",
+);
+
 // Assigned once below after summary/category hooks are wired.
 // eslint-disable-next-line prefer-const
 let filters!: ReturnType<typeof useExpenseFilters>;
