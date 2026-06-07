@@ -1,4 +1,4 @@
-.PHONY: dev dev-lite dev-worker dev-bot dev-full prod test lint lint-check check check-symlinks migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes down logs bot-logs
+.PHONY: dev dev-lite dev-worker dev-bot dev-full prod test lint lint-check check check-symlinks migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes backup backup-install db-pull-prod down logs bot-logs
 
 msg ?=
 CHECK_DB ?= 1
@@ -76,3 +76,12 @@ seed:
 
 seed-multicooker-recipes:
 	docker compose exec server python -m app.db.seed_multicooker_recipes
+
+backup:
+	bash scripts/db_maintenance.sh
+
+backup-install:
+	bash scripts/install_backup_cron.sh
+
+db-pull-prod:
+	bash scripts/pull_prod_db.sh

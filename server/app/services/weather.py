@@ -2,20 +2,28 @@
 
 import json
 import re
+from dataclasses import dataclass
 from typing import Any
 
 import httpx
 
+from app.core.cache_json import safe_cache_json_loads
 from app.core.exceptions import ApiError, ValidationError
 from app.core.logging import logger
-from app.core.cache_json import safe_cache_json_loads
 from app.core.redis import cache_get, cache_set
+from app.services.world_time import WorldTimePayload, WorldTimeService
 
 WEATHER_API_URL = "https://wttr.in"
 OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
-TZ_OFFSET_CACHE_TTL = 86_400
+TZ_INFO_CACHE_TTL = 86_400
 _CITY_PATTERN = re.compile(r"^[a-zA-Z\s\-'.]+$")
 _COORD_PATTERN = re.compile(r"^-?\d{1,3}(\.\d+)?,-?\d{1,3}(\.\d+)?$")
+
+
+@dataclass(frozen=True)
+class TimezoneInfo:
+    iana: str
+    offset_hours: float
 
 
 def is_valid_location(location: str) -> bool:
@@ -65,19 +73,71 @@ def _format_utc_offset(hours: float) -> str:
     return f"{hours:.1f}"
 
 
-def _has_utc_offset(data: dict[str, Any]) -> bool:
+def _parse_utc_offset_hours(value: str) -> float | None:
+    """Parse wttr-style or World Time API UTC offset strings to hours."""
+    if ":" in value:
+        sign = 1
+        cleaned = value
+        if cleaned.startswith("-"):
+            sign = -1
+            cleaned = cleaned[1:]
+        elif cleaned.startswith("+"):
+            cleaned = cleaned[1:]
+        parts = cleaned.split(":", 1)
+        try:
+            hours = int(parts[0])
+            minutes = int(parts[1]) if len(parts) > 1 else 0
+            return sign * (hours + minutes / 60)
+        except ValueError:
+            return None
+    try:
+        return float(value)
+    except ValueError:
+        return None
+
+
+def _utc_offset_hours_from_world_time(payload: WorldTimePayload) -> float | None:
+    return _parse_utc_offset_hours(payload.utc_offset)
+
+
+def _world_time_zone_entry(payload: WorldTimePayload) -> dict[str, Any]:
+    offset_hours = _utc_offset_hours_from_world_time(payload)
+    utc_offset = (
+        _format_utc_offset(offset_hours)
+        if offset_hours is not None
+        else payload.utc_offset
+    )
+    return {
+        "utcOffset": utc_offset,
+        "timezone": payload.timezone,
+        "datetime": payload.datetime,
+        "utc_datetime": payload.utc_datetime,
+        "unixtime": payload.unixtime,
+        "dst": payload.dst,
+        "abbreviation": payload.abbreviation,
+    }
+
+
+def _needs_time_enrichment(data: dict[str, Any]) -> bool:
     zones = data.get("time_zone") or []
-    return bool(zones and zones[0].get("utcOffset"))
+    if not zones:
+        return True
+    return zones[0].get("unixtime") is None
 
 
-async def _resolve_utc_offset_hours(lat: float, lon: float) -> float | None:
-    """Resolve DST-aware UTC offset for coordinates via Open-Meteo."""
-    cache_key = f"tz_offset:{lat:.2f},{lon:.2f}"
+async def _resolve_timezone_info(lat: float, lon: float) -> TimezoneInfo | None:
+    """Resolve IANA timezone and UTC offset for coordinates via Open-Meteo."""
+    cache_key = f"tz_info:{lat:.2f},{lon:.2f}"
     cached = await cache_get(cache_key)
     if cached is not None:
         try:
-            return float(cached)
-        except ValueError:
+            payload = json.loads(cached)
+            if isinstance(payload, dict):
+                iana = payload.get("iana")
+                offset_hours = payload.get("offset_hours")
+                if isinstance(iana, str) and isinstance(offset_hours, int | float):
+                    return TimezoneInfo(iana=iana, offset_hours=float(offset_hours))
+        except (TypeError, ValueError, json.JSONDecodeError):
             pass
 
     try:
@@ -104,29 +164,51 @@ async def _resolve_utc_offset_hours(lat: float, lon: float) -> float | None:
         return None
 
     payload = resp.json()
+    iana = payload.get("timezone")
     offset_seconds = payload.get("utc_offset_seconds")
+    if not isinstance(iana, str) or not iana or "/" not in iana:
+        return None
     if not isinstance(offset_seconds, int | float):
         return None
 
-    hours = offset_seconds / 3600
-    await cache_set(cache_key, str(hours), ttl=TZ_OFFSET_CACHE_TTL)
-    return hours
+    info = TimezoneInfo(iana=iana, offset_hours=float(offset_seconds) / 3600)
+    await cache_set(
+        cache_key,
+        json.dumps({"iana": info.iana, "offset_hours": info.offset_hours}),
+        ttl=TZ_INFO_CACHE_TTL,
+    )
+    return info
+
+
+async def _resolve_utc_offset_hours(lat: float, lon: float) -> float | None:
+    """Backward-compatible offset resolver for tests and fallbacks."""
+    info = await _resolve_timezone_info(lat, lon)
+    return info.offset_hours if info else None
 
 
 async def enrich_weather_timezone(data: dict[str, Any]) -> dict[str, Any]:
-    """Backfill utcOffset when wttr.in omits time_zone from j1 payloads."""
-    if _has_utc_offset(data):
+    """Backfill timezone metadata and World Time API clock data."""
+    if not _needs_time_enrichment(data):
         return data
 
     coords = _extract_coordinates(data)
     if coords is None:
         return data
 
-    offset_hours = await _resolve_utc_offset_hours(*coords)
-    if offset_hours is None:
+    tz_info = await _resolve_timezone_info(*coords)
+    if tz_info is None:
         return data
 
-    data["time_zone"] = [{"utcOffset": _format_utc_offset(offset_hours)}]
+    world_time = await WorldTimeService().fetch_timezone_time(tz_info.iana)
+    if world_time is not None:
+        data["time_zone"] = [_world_time_zone_entry(world_time)]
+        return data
+
+    zones = data.get("time_zone") or []
+    if zones and zones[0].get("utcOffset"):
+        return data
+
+    data["time_zone"] = [{"utcOffset": _format_utc_offset(tz_info.offset_hours)}]
     return data
 
 
@@ -143,7 +225,7 @@ class WeatherService:
             logger.debug("Weather cache hit", context={"location": normalized})
             data = safe_cache_json_loads(cached)
             if isinstance(data, dict):
-                if not _has_utc_offset(data):
+                if _needs_time_enrichment(data):
                     data = await enrich_weather_timezone(data)
                     await cache_set(cache_key, json.dumps(data), ttl=600)
                 return data

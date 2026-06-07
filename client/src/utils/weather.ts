@@ -39,14 +39,38 @@ export function weatherLocationLabel(data: WeatherData): string {
   return name ?? country ?? "Unknown location";
 }
 
-/** UTC offset in hours from wttr.in payload. */
+function parseUtcOffsetHours(value: string): number | null {
+  if (value.includes(":")) {
+    const sign = value.startsWith("-") ? -1 : 1;
+    const cleaned = value.replace(/^[+-]/, "");
+    const [hoursPart, minutesPart = "0"] = cleaned.split(":");
+    const hours = Number.parseInt(hoursPart, 10);
+    const minutes = Number.parseInt(minutesPart, 10);
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+      return null;
+    }
+    return sign * (hours + minutes / 60);
+  }
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/** UTC offset in hours from weather payload. */
 export function weatherUtcOffsetHours(data: WeatherData): number | null {
   const offset = data.time_zone?.[0]?.utcOffset;
   if (!offset) {
     return null;
   }
-  const parsed = Number.parseFloat(offset);
-  return Number.isFinite(parsed) ? parsed : null;
+  return parseUtcOffsetHours(offset);
+}
+
+/** World Time API unix anchor from weather payload. */
+export function weatherAnchorUnixtime(data: WeatherData): number | null {
+  const unixtime = data.time_zone?.[0]?.unixtime;
+  if (typeof unixtime !== "number" || !Number.isFinite(unixtime)) {
+    return null;
+  }
+  return unixtime;
 }
 
 /** Static local time string from wttr observation timestamp. */
@@ -85,6 +109,19 @@ export function localTimeFromOffset(offsetHours: number): LocalTimeParts {
   };
 }
 
+/** Local time parts from a unix anchor and UTC offset in hours. */
+export function localTimePartsFromUnix(
+  unixtime: number,
+  offsetHours: number,
+): LocalTimeParts {
+  const local = new Date(unixtime * 1000 + offsetHours * 3_600_000);
+  return {
+    hours24: local.getUTCHours(),
+    minutes: local.getUTCMinutes(),
+    seconds: local.getUTCSeconds(),
+  };
+}
+
 function pad2(value: number): string {
   return String(value).padStart(2, "0");
 }
@@ -98,9 +135,27 @@ export function isoDateTimeFromOffset(offsetHours: number): string {
   );
 }
 
+/** ISO-like datetime from unix anchor and offset. */
+export function isoDateTimeFromUnix(unixtime: number, offsetHours: number): string {
+  const { hours24, minutes, seconds } = localTimePartsFromUnix(unixtime, offsetHours);
+  const local = new Date(unixtime * 1000 + offsetHours * 3_600_000);
+  return (
+    `${local.getUTCFullYear()}-${pad2(local.getUTCMonth() + 1)}-${pad2(local.getUTCDate())}` +
+    `T${pad2(hours24)}:${pad2(minutes)}:${pad2(seconds)}`
+  );
+}
+
 /** Live local time with seconds, e.g. "23:16:42". */
 export function formatLiveLocalTimeWithSeconds(offsetHours: number): string {
   const { hours24, minutes, seconds } = localTimeFromOffset(offsetHours);
+  return `${pad2(hours24)}:${pad2(minutes)}:${pad2(seconds)}`;
+}
+
+export function formatLiveLocalTimeWithSecondsFromUnix(
+  unixtime: number,
+  offsetHours: number,
+): string {
+  const { hours24, minutes, seconds } = localTimePartsFromUnix(unixtime, offsetHours);
   return `${pad2(hours24)}:${pad2(minutes)}:${pad2(seconds)}`;
 }
 
@@ -110,9 +165,29 @@ export function formatLiveLocalTime(offsetHours: number): string {
   return `${pad2(hours24)}:${pad2(minutes)}`;
 }
 
+export function formatLiveLocalTimeFromUnix(unixtime: number, offsetHours: number): string {
+  const { hours24, minutes } = localTimePartsFromUnix(unixtime, offsetHours);
+  return `${pad2(hours24)}:${pad2(minutes)}`;
+}
+
 /** Live local date and time, e.g. "Sun Jun 7 12:55 am". */
 export function formatLiveLocalDateTime(offsetHours: number): string {
   const local = localDateFromOffset(offsetHours);
+  const weekday = WEEKDAYS[local.getUTCDay()];
+  const month = MONTHS[local.getUTCMonth()];
+  const day = local.getUTCDate();
+  const hours24 = local.getUTCHours();
+  const minutes = local.getUTCMinutes();
+  const ampm = hours24 >= 12 ? "pm" : "am";
+  const hour12 = hours24 % 12 || 12;
+  return `${weekday} ${month} ${day} ${hour12}:${pad2(minutes)} ${ampm}`;
+}
+
+export function formatLiveLocalDateTimeFromUnix(
+  unixtime: number,
+  offsetHours: number,
+): string {
+  const local = new Date(unixtime * 1000 + offsetHours * 3_600_000);
   const weekday = WEEKDAYS[local.getUTCDay()];
   const month = MONTHS[local.getUTCMonth()];
   const day = local.getUTCDate();

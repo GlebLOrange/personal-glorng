@@ -29,9 +29,14 @@ dist/
 .idea/
 *.swp
 *.swo
+*.cursorrules
+*howitworks.md
+
 
 # Docker
 *.log
+backups/
+logs/backup.log
 
 # Media uploads
 media/

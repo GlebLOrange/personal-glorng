@@ -99,6 +99,12 @@ export interface WeatherData {
   }>;
   time_zone?: Array<{
     utcOffset: string;
+    timezone?: string;
+    datetime?: string;
+    utc_datetime?: string;
+    unixtime?: number;
+    dst?: boolean;
+    abbreviation?: string;
   }>;
 }
 

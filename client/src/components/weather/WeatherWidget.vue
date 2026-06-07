@@ -5,6 +5,7 @@ import { useLiveLocalTime } from "@/composables/useLiveLocalTime";
 import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
 import {
+  weatherAnchorUnixtime,
   weatherLocationLabel,
   weatherUtcOffsetHours,
 } from "@/utils/weather";
@@ -41,8 +42,15 @@ const utcOffset = computed(() => {
   return weatherUtcOffsetHours(weather.value);
 });
 
+const anchorUnixtime = computed(() => {
+  if (!weather.value || !props.showTime) {
+    return null;
+  }
+  return weatherAnchorUnixtime(weather.value);
+});
+
 const timeFormat = computed((): "time" | "datetime" => (props.bar ? "datetime" : "time"));
-const { liveTime, liveDateTime } = useLiveLocalTime(utcOffset, timeFormat);
+const { liveTime, liveDateTime } = useLiveLocalTime(utcOffset, timeFormat, anchorUnixtime);
 
 onMounted(async () => {
   await fetchConfig();
