@@ -525,6 +525,38 @@ wheels = [
 ]
 
 [[package]]
+name = "elastic-transport"
+version = "8.17.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6a/54/d498a766ac8fa475f931da85a154666cc81a70f8eb4a780bc8e4e934e9ac/elastic_transport-8.17.1.tar.gz", hash = "sha256:5edef32ac864dca8e2f0a613ef63491ee8d6b8cfb52881fa7313ba9290cac6d2", size = 73425, upload-time = "2025-03-13T07:28:30.776Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cf/cd/b71d5bc74cde7fc6fd9b2ff9389890f45d9762cbbbf81dc5e51fd7588c4a/elastic_transport-8.17.1-py3-none-any.whl", hash = "sha256:192718f498f1d10c5e9aa8b9cf32aed405e469a7f0e9d6a8923431dbb2c59fb8", size = 64969, upload-time = "2025-03-13T07:28:29.031Z" },
+]
+
+[[package]]
+name = "elasticsearch"
+version = "9.0.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "elastic-transport" },
+    { name = "python-dateutil" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ee/78/6f4358428ddcd2d66d5aebad899fc5a8fe163310b4ed49fe83fb4fa67c0d/elasticsearch-9.0.5.tar.gz", hash = "sha256:b03bee797fb55725a4ec6e498007f262e46d30ae14d5678ec56d9347234935bd", size = 847935, upload-time = "2026-01-05T12:41:10.716Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ed/1f/ebf94a7965ab94786c719a3b9af8de33c59d64e043e27b9e7d7360679cce/elasticsearch-9.0.5-py3-none-any.whl", hash = "sha256:96b4b2f8264fbc276c410e04948ee8442c5a75df8b04d25ab0fa1578c1d6e512", size = 927627, upload-time = "2026-01-05T12:41:07.352Z" },
+]
+
+[package.optional-dependencies]
+async = [
+    { name = "aiohttp" },
+]
+
+[[package]]
 name = "email-validator"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -698,6 +730,7 @@ dependencies = [
     { name = "bcrypt" },
     { name = "celery" },
     { name = "dateparser" },
+    { name = "elasticsearch", extra = ["async"] },
     { name = "fastapi", extra = ["standard"] },
     { name = "google-api-python-client" },
     { name = "google-auth" },
@@ -731,6 +764,7 @@ requires-dist = [
     { name = "bcrypt", specifier = "==5.0.*" },
     { name = "celery", specifier = "==5.6.*" },
     { name = "dateparser", specifier = "==1.4.*" },
+    { name = "elasticsearch", extras = ["async"], specifier = "==9.0.*" },
     { name = "fastapi", extras = ["standard"], specifier = "==0.136.*" },
     { name = "google-api-python-client", specifier = "==2.197.*" },
     { name = "google-auth", specifier = "==2.53.*" },

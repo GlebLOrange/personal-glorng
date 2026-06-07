@@ -23,6 +23,10 @@ _COMPOSE_DB_HOST = "db"
 _COMPOSE_DB_PORT = 5432
 _HOST_DB_HOST = "127.0.0.1"
 _HOST_DB_PORT = 5433
+_COMPOSE_ES_HOST = "elasticsearch"
+_COMPOSE_ES_PORT = 9200
+_HOST_ES_HOST = "127.0.0.1"
+_HOST_ES_PORT = 9200
 
 
 def _resolve_database_url(url: str) -> str:
@@ -34,6 +38,17 @@ def _resolve_database_url(url: str) -> str:
     if parsed.host == _COMPOSE_DB_HOST and compose_port == _COMPOSE_DB_PORT:
         parsed = parsed.set(host=_HOST_DB_HOST, port=_HOST_DB_PORT)
     return parsed.render_as_string(hide_password=False)
+
+
+def _resolve_elasticsearch_url(url: str) -> str:
+    """Map Docker Compose Elasticsearch host to localhost when running on the host."""
+    if Path("/.dockerenv").exists():
+        return url
+    parsed = urlparse(url)
+    port = parsed.port or _COMPOSE_ES_PORT
+    if parsed.hostname == _COMPOSE_ES_HOST and port == _COMPOSE_ES_PORT:
+        return parsed._replace(netloc=f"{_HOST_ES_HOST}:{_HOST_ES_PORT}").geturl()
+    return url
 
 
 def _parse_env_list(value: Any) -> list[str]:
@@ -136,6 +151,19 @@ class Settings(BaseSettings):
             parsed.render_as_string(hide_password=False)
         )
         return self
+
+    # Elasticsearch (optional; empty disables the external search backend)
+    ELASTICSEARCH_URL: str = ""
+    ELASTICSEARCH_INDEX: str = "search_documents"
+
+    @model_validator(mode="after")
+    def _normalize_elasticsearch_url(self) -> Settings:
+        if self.ELASTICSEARCH_URL:
+            self.ELASTICSEARCH_URL = _resolve_elasticsearch_url(self.ELASTICSEARCH_URL)
+        return self
+
+    def elasticsearch_enabled(self) -> bool:
+        return bool(self.ELASTICSEARCH_URL.strip())
 
     # Redis
     REDIS_URL: str
