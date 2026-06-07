@@ -5,7 +5,8 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import create_access_token
-from app.services.weather import enrich_weather_timezone
+from app.services.weather import TimezoneInfo, enrich_weather_timezone
+from app.services.world_time import WorldTimePayload
 from tests.factories import create_user
 
 WEATHER_PAYLOAD = {
@@ -215,14 +216,57 @@ async def test_weather_location_delete_other_user_forbidden(
 
 
 @pytest.mark.asyncio
-async def test_enrich_weather_timezone_from_coordinates() -> None:
+async def test_enrich_weather_timezone_adds_world_time_fields() -> None:
     payload = {
         "nearest_area": [{"latitude": "51.100", "longitude": "17.033"}],
         "current_condition": [{"temp_C": "16"}],
     }
-    with patch(
-        "app.services.weather._resolve_utc_offset_hours",
-        new=AsyncMock(return_value=2.0),
+    world_time = WorldTimePayload(
+        timezone="Europe/Warsaw",
+        datetime="2026-06-07T14:00:00+02:00",
+        utc_datetime="2026-06-07T12:00:00+00:00",
+        utc_offset="+02:00",
+        unixtime=1_780_833_600,
+        dst=True,
+        abbreviation="CEST",
+    )
+    with (
+        patch(
+            "app.services.weather._resolve_timezone_info",
+            new=AsyncMock(
+                return_value=TimezoneInfo(iana="Europe/Warsaw", offset_hours=2.0),
+            ),
+        ),
+        patch(
+            "app.services.weather.WorldTimeService.fetch_timezone_time",
+            new=AsyncMock(return_value=world_time),
+        ),
+    ):
+        result = await enrich_weather_timezone(payload)
+
+    zone = result["time_zone"][0]
+    assert zone["utcOffset"] == "+2.0"
+    assert zone["timezone"] == "Europe/Warsaw"
+    assert zone["unixtime"] == 1_780_833_600
+
+
+@pytest.mark.asyncio
+async def test_enrich_weather_timezone_fallback_when_world_time_fails() -> None:
+    payload = {
+        "nearest_area": [{"latitude": "51.100", "longitude": "17.033"}],
+        "current_condition": [{"temp_C": "16"}],
+    }
+    with (
+        patch(
+            "app.services.weather._resolve_timezone_info",
+            new=AsyncMock(
+                return_value=TimezoneInfo(iana="Europe/Warsaw", offset_hours=2.0),
+            ),
+        ),
+        patch(
+            "app.services.weather.WorldTimeService.fetch_timezone_time",
+            new=AsyncMock(return_value=None),
+        ),
     ):
         result = await enrich_weather_timezone(payload)
 
@@ -230,16 +274,18 @@ async def test_enrich_weather_timezone_from_coordinates() -> None:
 
 
 @pytest.mark.asyncio
-async def test_enrich_weather_timezone_keeps_existing_offset() -> None:
+async def test_enrich_weather_timezone_skips_when_unixtime_present() -> None:
     payload = {
-        "time_zone": [{"utcOffset": "+1.0"}],
+        "time_zone": [{"utcOffset": "+1.0", "unixtime": 1_749_300_000}],
         "nearest_area": [{"latitude": "51.100", "longitude": "17.033"}],
     }
     with patch(
-        "app.services.weather._resolve_utc_offset_hours",
-        new=AsyncMock(return_value=9.0),
+        "app.services.weather._resolve_timezone_info",
+        new=AsyncMock(
+            return_value=TimezoneInfo(iana="Europe/Warsaw", offset_hours=9.0),
+        ),
     ) as mock_resolve:
         result = await enrich_weather_timezone(payload)
 
-    assert result["time_zone"] == [{"utcOffset": "+1.0"}]
+    assert result["time_zone"][0]["unixtime"] == 1_749_300_000
     mock_resolve.assert_not_awaited()

@@ -13,3 +13,9 @@ class TaskCreation(StatesGroup):
     waiting_for_notes = State()
     waiting_for_reminder = State()
     confirming = State()
+
+
+class TaskPostpone(StatesGroup):
+    """FSM state for rescheduling a task from a reminder action."""
+
+    waiting_for_datetime = State()

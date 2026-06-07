@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 
-from app.core.deps import CurrentUser, DbSession, oauth2_scheme
+from app.core.deps import AppSettings, CurrentUser, DbSession, oauth2_scheme
 from app.core.exceptions import UnauthorizedError
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_auth
@@ -30,7 +30,7 @@ from app.services.auth import (
     verify_user_email,
 )
 from app.services.user import get_user_by_public_id
-from app.settings import get_settings
+from app.settings import Settings
 from app.workers.pool import enqueue_job
 
 router = APIRouter()
@@ -39,8 +39,7 @@ _ACCESS_COOKIE = "access_token"
 _REFRESH_COOKIE = "refresh_token"
 
 
-def _cookie_flags() -> dict[str, object]:
-    settings = get_settings()
+def _cookie_flags(settings: Settings) -> dict[str, object]:
     secure = settings.APP_ENV == "production"
     return {
         "httponly": True,
@@ -51,12 +50,15 @@ def _cookie_flags() -> dict[str, object]:
 
 
 def _set_auth_cookies(
-    response: Response, *, access_token: str, refresh_token: str
+    response: Response,
+    *,
+    access_token: str,
+    refresh_token: str,
+    settings: Settings,
 ) -> None:
-    settings = get_settings()
     access_max_age = settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
     refresh_max_age = settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
-    flags = _cookie_flags()
+    flags = _cookie_flags(settings)
 
     response.set_cookie(
         _ACCESS_COOKIE,
@@ -105,12 +107,18 @@ async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
     ),
     dependencies=[Depends(rate_limit_auth)],
 )
-async def login(data: LoginRequest, db: DbSession, response: Response) -> TokenResponse:
+async def login(
+    data: LoginRequest,
+    db: DbSession,
+    response: Response,
+    settings: AppSettings,
+) -> TokenResponse:
     access_token, refresh_token = await login_user(db, data.email, data.password)
     _set_auth_cookies(
         response,
         access_token=access_token,
         refresh_token=refresh_token,
+        settings=settings,
     )
     return TokenResponse(access_token=access_token, refresh_token=refresh_token)
 
@@ -140,6 +148,7 @@ async def refresh(
     db: DbSession,
     response: Response,
     request: Request,
+    settings: AppSettings,
     data: RefreshRequest | None = None,
 ) -> TokenResponse:
     refresh_token = (data.refresh_token if data else None) or request.cookies.get(
@@ -153,6 +162,7 @@ async def refresh(
         response,
         access_token=access_token,
         refresh_token=new_refresh_token,
+        settings=settings,
     )
     return TokenResponse(
         access_token=access_token,
