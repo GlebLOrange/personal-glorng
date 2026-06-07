@@ -12,5 +12,5 @@ async def test_ready_returns_dependency_checks(client: AsyncClient) -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "ok"
-    assert body["checks"]["database"] == "ok"
+    assert body["checks"]["mongodb"] == "ok"
     assert body["checks"]["redis"] == "ok"
