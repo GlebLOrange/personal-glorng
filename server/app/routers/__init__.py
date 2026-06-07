@@ -7,6 +7,7 @@ from app.routers.callbacks import router as callbacks_router
 from app.routers.donations import router as donations_router
 from app.routers.feedback import router as feedback_router
 from app.routers.github import router as github_router
+from app.routers.health import router as health_router
 from app.routers.platform import router as platform_router
 from app.routers.resume import router as resume_router
 from app.routers.spotify import router as spotify_router
@@ -15,6 +16,7 @@ from app.routers.weather import router as weather_router
 
 api_router = APIRouter()
 
+api_router.include_router(health_router)
 api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 api_router.include_router(account_router, prefix="/auth", tags=["auth"])
 api_router.include_router(

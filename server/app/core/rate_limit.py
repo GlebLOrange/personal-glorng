@@ -6,6 +6,17 @@ from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.redis import get_redis_client
 
+
+def _client_ip(request: Request) -> str:
+    """Prefer nginx-set X-Real-IP; avoid spoofable X-Forwarded-For in dev-lite."""
+    real_ip = request.headers.get("x-real-ip")
+    if real_ip:
+        return real_ip.strip()
+    if request.client:
+        return request.client.host
+    return "unknown"
+
+
 _INCR_EXPIRE_LUA = """
 local current = redis.call('INCR', KEYS[1])
 if current == 1 then
@@ -21,11 +32,7 @@ class RateLimiter:
         self.window = window
 
     async def __call__(self, request: Request) -> None:
-        forwarded = request.headers.get("x-forwarded-for")
-        if forwarded:
-            client_ip = forwarded.split(",")[0].strip()
-        else:
-            client_ip = request.client.host if request.client else "unknown"
+        client_ip = _client_ip(request)
         key = f"rl:{request.url.path}:{client_ip}"
         redis = get_redis_client()
         script = redis.register_script(_INCR_EXPIRE_LUA)
