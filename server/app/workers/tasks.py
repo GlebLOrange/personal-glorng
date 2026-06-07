@@ -1,16 +1,13 @@
-"""ARQ worker tasks: emails, reminders, sync queue, cleanup."""
+"""Celery worker tasks: emails, reminders, sync queue, cleanup."""
 
 import smtplib
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
-from typing import Any
 
 import sentry_sdk
 from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
-from arq import cron
-from arq.connections import RedisSettings
-from arq.worker import Retry
+from celery import Task
 
 from app.core.email import (
     get_email_backend,
@@ -28,25 +25,15 @@ from app.db.session import get_session_factory
 from app.services.task import complete_past_due_tasks, delete_old_tasks
 from app.settings import get_settings
 from app.todobot.keyboards.task import reminder_actions
+from app.workers.async_runner import run_async
+from app.workers.celery_app import celery_app
+from app.workers.job_names import JobName
 
 MAX_JOB_TRIES = 3
 
 
-def _init_worker_sentry() -> None:
-    settings = get_settings()
-    if not settings.sentry_enabled():
-        return
-    sentry_sdk.init(
-        dsn=settings.SERVER_SENTRY_DSN,
-        environment=settings.APP_ENV,
-        release=settings.SERVER_SENTRY_RELEASE or None,
-        send_default_pii=False,
-    )
-
-
-def log_job_failure(job_name: str, ctx: dict[str, Any], exc: BaseException) -> None:
+def log_job_failure(job_name: str, job_try: int, exc: BaseException) -> None:
     """Log job failure; report to Sentry on the final attempt."""
-    job_try = ctx.get("job_try", 1)
     logger.error(
         "Background job failed",
         error=exc,
@@ -56,21 +43,16 @@ def log_job_failure(job_name: str, ctx: dict[str, Any], exc: BaseException) -> N
         sentry_sdk.capture_exception(exc)
 
 
-def _raise_retry_or_fail(ctx: dict[str, Any], job_name: str, exc: Exception) -> None:
-    job_try = ctx.get("job_try", 1)
+def _retry_or_fail(task: Task, job_name: str, exc: Exception) -> None:
+    job_try = task.request.retries + 1
     if job_try >= MAX_JOB_TRIES:
-        log_job_failure(job_name, ctx, exc)
+        log_job_failure(job_name, job_try, exc)
         raise
     logger.warning(
         "Retrying background job",
         context={"job": job_name, "job_try": job_try, "defer_seconds": 60 * job_try},
     )
-    raise Retry(defer=60 * job_try) from exc
-
-
-async def worker_startup(ctx: dict[str, Any]) -> None:
-    _init_worker_sentry()
-    logger.info("ARQ worker started", context={"env": get_settings().APP_ENV})
+    raise task.retry(exc=exc, countdown=60 * job_try) from exc
 
 
 # --- Email tasks ---
@@ -91,44 +73,56 @@ async def _send_email(
     logger.info("Email sent", context={"to": email, "subject": subject})
 
 
-async def send_verification_email(
-    ctx: dict[str, Any],
-    email: str,
-    token: str,
-) -> None:
-    try:
-        await _send_email(
-            email,
-            token,
-            "Verify your email - gLOrng",
-            render_verification_email,
-            render_verification_email_plain,
-        )
-    except (smtplib.SMTPException, OSError) as exc:
-        _raise_retry_or_fail(ctx, "send_verification_email", exc)
+async def send_verification_email(email: str, token: str) -> None:
+    await _send_email(
+        email,
+        token,
+        "Verify your email - gLOrng",
+        render_verification_email,
+        render_verification_email_plain,
+    )
 
 
-async def send_reset_email(
-    ctx: dict[str, Any],
-    email: str,
-    token: str,
-) -> None:
+async def send_reset_email(email: str, token: str) -> None:
+    await _send_email(
+        email,
+        token,
+        "Password reset - gLOrng",
+        render_reset_email,
+        render_reset_email_plain,
+    )
+
+
+@celery_app.task(
+    bind=True,
+    name=JobName.SEND_VERIFICATION_EMAIL,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def send_verification_email_task(self: Task, email: str, token: str) -> None:
     try:
-        await _send_email(
-            email,
-            token,
-            "Password reset - gLOrng",
-            render_reset_email,
-            render_reset_email_plain,
-        )
+        run_async(send_verification_email(email, token))
     except (smtplib.SMTPException, OSError) as exc:
-        _raise_retry_or_fail(ctx, "send_reset_email", exc)
+        _retry_or_fail(self, JobName.SEND_VERIFICATION_EMAIL, exc)
+
+
+@celery_app.task(
+    bind=True,
+    name=JobName.SEND_RESET_EMAIL,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def send_reset_email_task(self: Task, email: str, token: str) -> None:
+    try:
+        run_async(send_reset_email(email, token))
+    except (smtplib.SMTPException, OSError) as exc:
+        _retry_or_fail(self, JobName.SEND_RESET_EMAIL, exc)
 
 
 # --- Reminder tasks ---
 
 
-async def send_reminder(ctx: dict[str, Any], reminder_id: int) -> None:
+async def send_reminder(reminder_id: int) -> None:
     """Send a Telegram reminder message for a scheduled reminder."""
     settings = get_settings()
     if not settings.TELEGRAM_BOT_TO_DO_TOKEN:
@@ -170,16 +164,27 @@ async def send_reminder(ctx: dict[str, Any], reminder_id: int) -> None:
                 "Reminder sent",
                 context={"reminder_id": rem.id, "task_id": task.id},
             )
-        except TelegramAPIError as exc:
-            _raise_retry_or_fail(ctx, "send_reminder", exc)
         finally:
             await bot.session.close()
+
+
+@celery_app.task(
+    bind=True,
+    name=JobName.SEND_REMINDER,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def send_reminder_task(self: Task, reminder_id: int) -> None:
+    try:
+        run_async(send_reminder(reminder_id))
+    except TelegramAPIError as exc:
+        _retry_or_fail(self, JobName.SEND_REMINDER, exc)
 
 
 # --- Periodic tasks ---
 
 
-async def check_overdue_tasks(ctx: dict[str, Any]) -> None:
+async def check_overdue_tasks() -> None:
     """Auto-complete pending tasks past their scheduled time."""
     session_factory = get_session_factory()
     async with session_factory() as db:
@@ -192,7 +197,7 @@ async def check_overdue_tasks(ctx: dict[str, Any]) -> None:
             )
 
 
-async def cleanup_old_tasks(ctx: dict[str, Any]) -> None:
+async def cleanup_old_tasks() -> None:
     """Delete tasks older than 4 months."""
     session_factory = get_session_factory()
     async with session_factory() as db:
@@ -202,7 +207,7 @@ async def cleanup_old_tasks(ctx: dict[str, Any]) -> None:
             logger.info("Old tasks cleaned up", context={"deleted": deleted})
 
 
-async def cleanup_expired_shares(ctx: dict[str, Any]) -> None:
+async def cleanup_expired_shares() -> None:
     """Delete expired file-share rows and disk files."""
     from app.services import fileshare as fileshare_svc
 
@@ -214,7 +219,7 @@ async def cleanup_expired_shares(ctx: dict[str, Any]) -> None:
             logger.info("Expired file shares cleaned up", context=stats)
 
 
-async def process_sync_queue(ctx: dict[str, Any]) -> None:
+async def process_sync_queue() -> None:
     """Process pending Google Calendar sync items."""
     from sqlalchemy import select
 
@@ -260,20 +265,21 @@ async def process_sync_queue(ctx: dict[str, Any]) -> None:
         await db.commit()
 
 
-class WorkerSettings:
-    functions = [
-        send_verification_email,
-        send_reset_email,
-        send_reminder,
-    ]
-    on_startup = worker_startup
-    max_tries = MAX_JOB_TRIES
-    _every_5_min = set(range(0, 60, 5))
-    _every_2_min = set(range(0, 60, 2))
-    cron_jobs = [
-        cron(check_overdue_tasks, minute=_every_5_min),
-        cron(cleanup_old_tasks, hour=3, minute=0),
-        cron(cleanup_expired_shares, hour=3, minute=30),
-        cron(process_sync_queue, minute=_every_2_min),
-    ]
-    redis_settings = RedisSettings.from_dsn(get_settings().REDIS_URL)
+@celery_app.task(name=JobName.CHECK_OVERDUE_TASKS, ignore_result=True)
+def check_overdue_tasks_task() -> None:
+    run_async(check_overdue_tasks())
+
+
+@celery_app.task(name=JobName.CLEANUP_OLD_TASKS, ignore_result=True)
+def cleanup_old_tasks_task() -> None:
+    run_async(cleanup_old_tasks())
+
+
+@celery_app.task(name=JobName.CLEANUP_EXPIRED_SHARES, ignore_result=True)
+def cleanup_expired_shares_task() -> None:
+    run_async(cleanup_expired_shares())
+
+
+@celery_app.task(name=JobName.PROCESS_SYNC_QUEUE, ignore_result=True)
+def process_sync_queue_task() -> None:
+    run_async(process_sync_queue())

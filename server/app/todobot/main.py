@@ -13,7 +13,7 @@ from app.settings import get_settings
 from app.todobot.handlers import calendar, expense, reminder, start, task_create, task_manage
 from app.todobot.middlewares.auth import AllowedUserMiddleware
 from app.todobot.middlewares.db import DbSessionMiddleware
-from app.workers.pool import close_arq_pool, init_arq_pool
+from app.workers.queue import close_job_queue, init_job_queue
 from app.workers.scheduling import schedule_reminder
 
 
@@ -51,7 +51,7 @@ async def _recover_reminders() -> None:
                 return
 
             for rem in reminders:
-                if rem.arq_job_id:
+                if rem.job_id:
                     continue
                 await schedule_reminder(db, rem)
             await db.commit()
@@ -78,7 +78,7 @@ async def main() -> None:
         context={"allowed_user_id": settings.TELEGRAM_ALLOWED_USER_ID},
     )
 
-    await init_arq_pool()
+    init_job_queue()
     await _recover_reminders()
     await bot.set_my_commands(
         [
@@ -95,7 +95,7 @@ async def main() -> None:
         await dp.start_polling(bot)
     finally:
         await bot.session.close()
-        await close_arq_pool()
+        await close_job_queue()
 
 
 if __name__ == "__main__":

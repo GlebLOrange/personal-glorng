@@ -1,4 +1,4 @@
-"""Enqueue and supersede ARQ reminder jobs."""
+"""Enqueue and supersede reminder jobs."""
 
 from datetime import UTC, datetime
 
@@ -8,7 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logging import logger
 from app.core.utils import as_utc
 from app.db.models.reminder import Reminder
-from app.workers.pool import abort_job, enqueue_job
+from app.workers.job_names import JobName
+from app.workers.queue import get_job_queue
 
 
 async def supersede_unsent_reminders(
@@ -32,9 +33,10 @@ async def supersede_unsent_reminders(
         for reminder in result.scalars().all()
         if as_utc(reminder.remind_at) > now
     ]
+    queue = get_job_queue()
     for reminder in reminders:
-        if reminder.arq_job_id:
-            await abort_job(reminder.arq_job_id)
+        if reminder.job_id:
+            await queue.revoke(reminder.job_id)
 
     if not reminders:
         return
@@ -52,16 +54,17 @@ async def schedule_reminder(db: AsyncSession, reminder: Reminder) -> Reminder:
     """Enqueue send_reminder for a DB reminder row."""
     now = datetime.now(UTC)
     remind_at = as_utc(reminder.remind_at)
-    if reminder.sent or remind_at <= now:
+    if reminder.sent or remind_at <= now or reminder.job_id:
         return reminder
 
-    job_id = await enqueue_job(
-        "send_reminder",
+    queue = get_job_queue()
+    job_id = await queue.enqueue(
+        JobName.SEND_REMINDER,
         reminder.id,
-        _defer_until=remind_at,
+        eta=remind_at,
     )
     if job_id:
-        reminder.arq_job_id = job_id
+        reminder.job_id = job_id
         db.add(reminder)
         await db.flush()
         logger.info(

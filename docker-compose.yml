@@ -25,6 +25,27 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq/celery-compat.conf:/etc/rabbitmq/conf.d/10-celery-compat.conf:ro
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
     image: redis:8-alpine
     restart: unless-stopped
@@ -67,6 +88,7 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+      target: dev
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir app --forwarded-allow-ips="127.0.0.1"
     restart: unless-stopped
     volumes:
@@ -85,6 +107,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
       migrate:
         condition: service_completed_successfully
     develop:
@@ -100,7 +124,8 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    command: python -m app.workers.run app.workers.WorkerSettings
+      target: dev
+    command: celery -A app.workers.celery_app worker --loglevel=info
     restart: unless-stopped
     volumes:
       - ./server:/app
@@ -115,6 +140,42 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    develop:
+      watch:
+        - action: rebuild
+          path: ./server/pyproject.toml
+        - action: rebuild
+          path: ./server/uv.lock
+
+  beat:
+    profiles:
+      - worker
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: dev
+    command: celery -A app.workers.celery_app beat --loglevel=info
+    restart: unless-stopped
+    volumes:
+      - ./server:/app
+      - server_venv:/app/.venv
+    environment:
+      PYTHONPATH: /app
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
@@ -131,6 +192,7 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+      target: dev
     command: python -m app.todobot.main
     restart: unless-stopped
     volumes:
@@ -146,6 +208,8 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
@@ -200,6 +264,7 @@ services:
 
 volumes:
   pgdata:
+  rabbitmq_data:
   redis_data:
   server_venv:
   server_media:

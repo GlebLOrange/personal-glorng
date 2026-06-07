@@ -1,10 +1,12 @@
-from app.workers.pool import close_arq_pool, enqueue_job, get_arq_pool, init_arq_pool
-from app.workers.tasks import WorkerSettings
+from app.workers.celery_app import celery_app
+from app.workers.queue import close_job_queue, get_job_queue, init_job_queue
+from app.workers.scheduling import schedule_reminder, supersede_unsent_reminders
 
 __all__ = [
-    "WorkerSettings",
-    "close_arq_pool",
-    "enqueue_job",
-    "get_arq_pool",
-    "init_arq_pool",
+    "celery_app",
+    "close_job_queue",
+    "get_job_queue",
+    "init_job_queue",
+    "schedule_reminder",
+    "supersede_unsent_reminders",
 ]

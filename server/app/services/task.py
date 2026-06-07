@@ -89,13 +89,13 @@ class TaskService:
         *,
         task_id: int,
         remind_at: datetime,
-        arq_job_id: str | None = None,
+        job_id: str | None = None,
     ) -> Reminder:
         reminder = Reminder(
             task_id=task_id,
             remind_at=remind_at,
             sent=False,
-            arq_job_id=arq_job_id,
+            job_id=job_id,
         )
         self.db.add(reminder)
         await self.db.flush()

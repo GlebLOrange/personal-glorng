@@ -20,7 +20,7 @@ export const RESUME_FALLBACK: ResumeData = {
         "Alembic",
         "PostgreSQL",
         "Redis",
-        "ARQ",
+        "Celery",
       ],
     },
     {
@@ -53,7 +53,7 @@ export const RESUME_FALLBACK: ResumeData = {
         "SQLAlchemy",
         "Redis",
         "Docker",
-        "ARQ",
+        "Celery",
         "Telegram",
       ],
       url: "",

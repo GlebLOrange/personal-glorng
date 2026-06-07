@@ -1,7 +1,6 @@
 from collections.abc import Callable
 from typing import Annotated
 
-from arq import ArqRedis
 from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from redis.asyncio import Redis
@@ -23,7 +22,7 @@ from app.services.tool_expense import ToolExpenseService
 from app.services.tool_expense_category import ToolExpenseCategoryService
 from app.services.user import get_user_by_public_id
 from app.settings import Settings, get_settings
-from app.workers.pool import get_arq_pool
+from app.workers.queue import JobQueue, get_job_queue
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
 AppSettings = Annotated[Settings, Depends(get_settings)]
@@ -147,11 +146,11 @@ def get_openai_chat_service(settings: AppSettings) -> OpenAIService:
 OpenAIChatService = Annotated[OpenAIService, Depends(get_openai_chat_service)]
 
 
-def get_arq_pool_dep() -> ArqRedis:
-    return get_arq_pool()
+def get_job_queue_dep() -> JobQueue:
+    return get_job_queue()
 
 
-ArqPool = Annotated[ArqRedis, Depends(get_arq_pool_dep)]
+JobQueueDep = Annotated[JobQueue, Depends(get_job_queue_dep)]
 
 
 def get_currency_service() -> CurrencyService:

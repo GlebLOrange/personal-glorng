@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 
-from app.core.deps import AppSettings, CurrentUser, DbSession, oauth2_scheme
+from app.core.deps import AppSettings, CurrentUser, DbSession, JobQueueDep, oauth2_scheme
 from app.core.exceptions import UnauthorizedError
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_auth
@@ -31,7 +31,7 @@ from app.services.auth import (
 )
 from app.services.user import get_user_by_public_id
 from app.settings import Settings
-from app.workers.pool import enqueue_job
+from app.workers.job_names import JobName
 
 router = APIRouter()
 
@@ -86,7 +86,11 @@ def _clear_auth_cookies(response: Response) -> None:
     description="Create a user account and send a verification email.",
     dependencies=[Depends(rate_limit_auth)],
 )
-async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
+async def register(
+    data: RegisterRequest,
+    db: DbSession,
+    job_queue: JobQueueDep,
+) -> MessageResponse:
     user = await register_user(
         db,
         data.email,
@@ -97,7 +101,7 @@ async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
     _token = create_verification_token(user.email)
 
     logger.info("User registered", context={"email": user.email})
-    await enqueue_job("send_verification_email", user.email, _token)
+    await job_queue.enqueue(JobName.SEND_VERIFICATION_EMAIL, user.email, _token)
     return MessageResponse(
         message="Registration successful. Check your email to verify your account."
     )
@@ -229,7 +233,9 @@ async def logout(
     dependencies=[Depends(rate_limit_auth)],
 )
 async def forgot_password(
-    data: ForgotPasswordRequest, db: DbSession
+    data: ForgotPasswordRequest,
+    db: DbSession,
+    job_queue: JobQueueDep,
 ) -> MessageResponse:
     token = await request_password_reset(db, data.email)
     if token:
@@ -237,7 +243,7 @@ async def forgot_password(
             "Password reset requested",
             context={"email": data.email},
         )
-        await enqueue_job("send_reset_email", data.email, token)
+        await job_queue.enqueue(JobName.SEND_RESET_EMAIL, data.email, token)
     return MessageResponse(
         message="If the email exists, a reset link has been sent",
     )

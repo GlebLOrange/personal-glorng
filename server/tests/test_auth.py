@@ -1,13 +1,15 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
-
-from app.core.security import create_verification_token
-from app.db.models.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.deps import get_job_queue_dep
+from app.core.security import create_verification_token
+from app.db.models.user import User
+from app.main import app
+from app.workers.job_names import JobName
 from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, STRONG_PASSWORD
 
 # --- Registration ---
@@ -305,44 +307,50 @@ async def test_verify_reuse_prevented(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-@patch("app.routers.auth.enqueue_job", new_callable=AsyncMock)
 async def test_register_enqueues_verification_email(
-    mock_enqueue: AsyncMock,
     client: AsyncClient,
 ) -> None:
-    mock_enqueue.return_value = "job-verify"
+    mock_queue = AsyncMock()
+    mock_queue.enqueue = AsyncMock(return_value="job-verify")
+    app.dependency_overrides[get_job_queue_dep] = lambda: mock_queue
     email = "enqueue@glorng.dev"
-    resp = await client.post(
-        "/api/auth/register",
-        json={
-            "email": email,
-            "password": STRONG_PASSWORD,
-            "password_confirm": STRONG_PASSWORD,
-            "accept_terms": True,
-        },
-    )
-    assert resp.status_code == 200
-    mock_enqueue.assert_awaited_once()
-    assert mock_enqueue.await_args.args[0] == "send_verification_email"
-    assert mock_enqueue.await_args.args[1] == email
+    try:
+        resp = await client.post(
+            "/api/auth/register",
+            json={
+                "email": email,
+                "password": STRONG_PASSWORD,
+                "password_confirm": STRONG_PASSWORD,
+                "accept_terms": True,
+            },
+        )
+        assert resp.status_code == 200
+        mock_queue.enqueue.assert_awaited_once()
+        assert mock_queue.enqueue.await_args.args[0] == JobName.SEND_VERIFICATION_EMAIL
+        assert mock_queue.enqueue.await_args.args[1] == email
+    finally:
+        app.dependency_overrides.pop(get_job_queue_dep, None)
 
 
 @pytest.mark.asyncio
-@patch("app.routers.auth.enqueue_job", new_callable=AsyncMock)
 async def test_forgot_password_enqueues_reset_email(
-    mock_enqueue: AsyncMock,
     client: AsyncClient,
     admin_user: object,
 ) -> None:
-    mock_enqueue.return_value = "job-reset"
-    resp = await client.post(
-        "/api/auth/forgot-password",
-        json={"email": ADMIN_EMAIL},
-    )
-    assert resp.status_code == 200
-    mock_enqueue.assert_awaited_once()
-    assert mock_enqueue.await_args.args[0] == "send_reset_email"
-    assert mock_enqueue.await_args.args[1] == ADMIN_EMAIL
+    mock_queue = AsyncMock()
+    mock_queue.enqueue = AsyncMock(return_value="job-reset")
+    app.dependency_overrides[get_job_queue_dep] = lambda: mock_queue
+    try:
+        resp = await client.post(
+            "/api/auth/forgot-password",
+            json={"email": ADMIN_EMAIL},
+        )
+        assert resp.status_code == 200
+        mock_queue.enqueue.assert_awaited_once()
+        assert mock_queue.enqueue.await_args.args[0] == JobName.SEND_RESET_EMAIL
+        assert mock_queue.enqueue.await_args.args[1] == ADMIN_EMAIL
+    finally:
+        app.dependency_overrides.pop(get_job_queue_dep, None)
 
 
 @pytest.mark.asyncio

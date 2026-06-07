@@ -193,7 +193,7 @@ class TestProcessSyncQueue:
         mock_service_fn.return_value = mock_service
         mock_factory.return_value = _session_ctx(db)
 
-        await process_sync_queue({})
+        await process_sync_queue()
 
         await db.refresh(item)
         assert item.status == SyncStatus.COMPLETED
@@ -217,7 +217,7 @@ class TestProcessSyncQueue:
         mock_service_fn.return_value = mock_service
         mock_factory.return_value = _session_ctx(db)
 
-        await process_sync_queue({})
+        await process_sync_queue()
 
         await db.refresh(item)
         assert item.status == SyncStatus.PENDING
@@ -248,7 +248,7 @@ class TestProcessSyncQueue:
         mock_service_fn.return_value = mock_service
         mock_factory.return_value = _session_ctx(db)
 
-        await process_sync_queue({})
+        await process_sync_queue()
 
         await db.refresh(item)
         assert item.status == SyncStatus.FAILED
@@ -270,7 +270,7 @@ class TestProcessSyncQueue:
 
         mock_factory.return_value = _session_ctx(db)
 
-        await process_sync_queue({})
+        await process_sync_queue()
 
         await db.refresh(item)
         assert item.status == SyncStatus.PENDING

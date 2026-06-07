@@ -76,7 +76,7 @@ class ReminderResponse(BaseModel):
     task_id: int
     remind_at: datetime
     sent: bool
-    arq_job_id: str | None
+    job_id: str | None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

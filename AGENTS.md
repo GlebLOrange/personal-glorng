@@ -51,4 +51,4 @@ See `README.md` for canonical commands. Cloud-specific notes:
 ### Optional services
 
 - `make dev` — adds nginx + client containers (port 80).
-- `make dev-worker` / `make dev-bot` — ARQ worker and Telegram bot (need tokens).
+- `make dev-worker` / `make dev-bot` — Celery worker + beat (RabbitMQ) and Telegram bot (need tokens).
