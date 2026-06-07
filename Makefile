@@ -1,4 +1,4 @@
-.PHONY: dev dev-lite dev-search dev-mongo dev-worker dev-bot dev-full prod test lint lint-check check check-symlinks migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
+.PHONY: dev dev-lite dev-search dev-postgres dev-mongo dev-worker dev-bot dev-full prod test lint lint-check check check-symlinks migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
 
 msg ?=
 CHECK_DB ?= 1
@@ -7,13 +7,15 @@ dev:
 	docker compose up --build
 
 dev-lite:
-	docker compose -f docker-compose.yml -f docker-compose.lite.yml up --build db redis server
+	docker compose -f docker-compose.yml -f docker-compose.lite.yml up --build mongodb redis server
 
 dev-search:
-	docker compose -f docker-compose.yml -f docker-compose.lite.yml --profile search up --build db redis elasticsearch server
+	docker compose -f docker-compose.yml -f docker-compose.lite.yml --profile search up --build mongodb redis elasticsearch server
 
-dev-mongo:
-	docker compose -f docker-compose.yml -f docker-compose.lite.yml --profile mongo up --build db redis mongodb server
+dev-postgres:
+	docker compose -f docker-compose.yml -f docker-compose.lite.yml --profile postgres up --build mongodb redis db server
+
+dev-mongo: dev-lite
 
 dev-worker:
 	docker compose --profile worker up --build

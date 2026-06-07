@@ -2,7 +2,7 @@ from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.db.documents.search import SearchDocument, SearchVisibility
+from app.db.documents.search import SearchDocument
 from app.db.repositories.base import MongoRepository, _parse_doc
 
 

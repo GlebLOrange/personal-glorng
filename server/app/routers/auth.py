@@ -9,12 +9,12 @@ from app.core.deps import (
     JobQueueDep,
     oauth2_scheme,
 )
-from app.db.deps import DbRegistry
 from app.core.exceptions import UnauthorizedError
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_auth
 from app.core.redis import blacklist_token
 from app.core.security import create_verification_token, decode_token
+from app.db.deps import DbRegistry
 from app.schemas.auth import (
     ForgotPasswordRequest,
     LoginRequest,
@@ -173,7 +173,9 @@ async def refresh(
     if not refresh_token:
         raise UnauthorizedError("Missing refresh token")
 
-    access_token, new_refresh_token = await refresh_access_token(registry, refresh_token)
+    access_token, new_refresh_token = await refresh_access_token(
+        registry, refresh_token
+    )
     _set_auth_cookies(
         response,
         access_token=access_token,

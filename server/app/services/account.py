@@ -12,7 +12,11 @@ from app.db.documents.audit import AuditActorType, AuditCategory, AuditSource
 from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
 from app.services.audit import AuditRecord, AuditService
-from app.services.user import default_display_name, ensure_user_mutable, get_user_by_email
+from app.services.user import (
+    default_display_name,
+    ensure_user_mutable,
+    get_user_by_email,
+)
 
 ALLOWED_PREFERENCE_KEYS = frozenset({"display_currency"})
 
@@ -161,7 +165,9 @@ async def update_preferences(
         ),
     )
     logger.info("Preferences updated", context={"user_id": user.id})
-    return get_preferences(user)
+    return {
+        key: current[key] for key in ALLOWED_PREFERENCE_KEYS if key in current
+    }
 
 
 async def delete_account(

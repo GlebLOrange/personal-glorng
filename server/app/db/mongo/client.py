@@ -5,7 +5,10 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from app.core.logging import logger
 
 
-async def connect_mongodb(url: str, database_name: str) -> tuple[AsyncIOMotorClient, AsyncIOMotorDatabase]:
+async def connect_mongodb(
+    url: str,
+    database_name: str,
+) -> tuple[AsyncIOMotorClient, AsyncIOMotorDatabase]:
     """Open a Motor client and verify connectivity."""
     client = AsyncIOMotorClient(url)
     database = client[database_name]

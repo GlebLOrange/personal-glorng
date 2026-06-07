@@ -1,3 +1,9 @@
+"""SQLAlchemy models.
+
+Legacy tables remain for Alembic history and optional Postgres secondary storage
+(search_documents, audit_events). Core application data lives in MongoDB documents.
+"""
+
 from app.db.base import Base
 from app.db.models.audit_event import AuditEvent
 from app.db.models.feedback import Feedback

@@ -1,8 +1,6 @@
 from datetime import datetime
 from enum import StrEnum
 
-from pydantic import Field
-
 from app.db.documents.base import TimestampedDocument, utc_now
 
 

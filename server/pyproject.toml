@@ -50,8 +50,8 @@ ignore = []
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
-  "ANN001", "ANN201", "ANN401", "S101", "S105", "S106", "S107",
-  "ARG001", "ARG002", "E501",
+  "ANN001", "ANN201", "ANN202", "ANN401", "S101", "S105", "S106", "S107",
+  "ARG001", "ARG002", "E501", "N806", "SIM101",
 ]
 "app/db/migrations/**/*.py" = ["E402", "E501", "ANN"]
 "app/routers/**/*.py" = ["B008"]
@@ -59,6 +59,13 @@ ignore = []
 "app/db/seed/**/*.py" = ["E501"]
 "app/services/amp_page.py" = ["E501"]
 "app/settings.py" = ["ANN401"]
+"app/db/init_service.py" = ["S607"]
+"app/db/documents/base.py" = ["ANN401"]
+"app/db/repositories/**/*.py" = ["ANN401", "E501", "UP047"]
+"app/db/seed_multicooker_recipes.py" = ["E501"]
+"app/services/**/*.py" = ["ANN202", "E501"]
+"app/todobot/main.py" = ["ANN001"]
+"scripts/**/*.py" = ["ANN401", "ANN001"]
 "app/services/github.py" = ["S105"]
 "app/workers/**/*.py" = ["ARG001", "RUF012"]
 "app/todobot/middlewares/**/*.py" = ["ANN401"]

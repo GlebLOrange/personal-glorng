@@ -9,7 +9,7 @@ _PRODUCTION_ENV = {
     "ENABLE_MONGODB": "true",
     "MONGODB_URL": "mongodb://localhost:27017",
     "MONGODB_DB": "test_glorng",
-    "MONGODB_PASSWORD": "prod-test-mongo-password",
+    "MONGODB_PASSWORD": "production-mongo-password-ok",
     "POSTGRES_USER": "glorng",
     "POSTGRES_PASSWORD": "prod-test-password-16",
     "POSTGRES_DB": "glorng",

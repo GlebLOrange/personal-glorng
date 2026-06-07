@@ -18,7 +18,11 @@ class UserRepository(MongoRepository[User]):
 
     async def get_by_public_id(self, public_id: str | uuid.UUID) -> User | None:
         try:
-            uid = public_id if isinstance(public_id, uuid.UUID) else uuid.UUID(str(public_id))
+            uid = (
+                public_id
+                if isinstance(public_id, uuid.UUID)
+                else uuid.UUID(str(public_id))
+            )
         except ValueError:
             return None
         data = await self._col().find_one({"public_id": uid})

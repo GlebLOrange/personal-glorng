@@ -64,7 +64,7 @@ class DatabaseInitService:
                     async with engine.connect() as conn:
                         await conn.execute(text("SELECT 1"))
                     return
-                except (OSError, Exception):
+                except OSError, Exception:
                     await asyncio.sleep(1)
             msg = "PostgreSQL not ready after retries"
             raise RuntimeError(msg)

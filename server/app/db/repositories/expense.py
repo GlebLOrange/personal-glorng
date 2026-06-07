@@ -1,5 +1,5 @@
 import re
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -11,7 +11,9 @@ from app.db.repositories.base import MongoRepository, _parse_doc
 class ExpenseRepository:
     def __init__(self, db: AsyncIOMotorDatabase) -> None:
         self.expenses = MongoRepository(db, "tool_expenses", ToolExpense)
-        self.categories = MongoRepository(db, "tool_expense_categories", ToolExpenseCategory)
+        self.categories = MongoRepository(
+            db, "tool_expense_categories", ToolExpenseCategory
+        )
 
     async def find_category_by_name(self, name: str) -> ToolExpenseCategory | None:
         data = await self.categories._col().find_one(
@@ -32,7 +34,9 @@ class ExpenseRepository:
         return int(doc.get("sort_order", -1)) + 1
 
     async def list_category_names(self) -> list[str]:
-        rows = await self.categories.list(limit=500, sort=[("sort_order", 1), ("name", 1)])
+        rows = await self.categories.list(
+            limit=500, sort=[("sort_order", 1), ("name", 1)]
+        )
         return [row.name for row in rows]
 
     async def count_expenses_in_category(self, category_name: str) -> int:
@@ -43,6 +47,11 @@ class ExpenseRepository:
             {"category": old_name},
             {"$set": {"category": new_name}},
         )
+
+    @staticmethod
+    def _date_bound(value: date, *, end_of_day: bool = False) -> datetime:
+        when = datetime.combine(value, datetime.max.time() if end_of_day else datetime.min.time())
+        return when.replace(tzinfo=UTC)
 
     def _expense_query(
         self,
@@ -56,9 +65,9 @@ class ExpenseRepository:
         if date_from is not None or date_to is not None:
             date_filter: dict[str, Any] = {}
             if date_from is not None:
-                date_filter["$gte"] = date_from
+                date_filter["$gte"] = self._date_bound(date_from)
             if date_to is not None:
-                date_filter["$lte"] = date_to
+                date_filter["$lte"] = self._date_bound(date_to, end_of_day=True)
             query["expense_date"] = date_filter
         if tool_name:
             query["tool_name"] = {"$regex": re.escape(tool_name), "$options": "i"}

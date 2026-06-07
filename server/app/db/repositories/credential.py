@@ -2,8 +2,8 @@ from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.db.documents.credential import GitHubCredential, GoogleCredential
 from app.db.documents.base import document_to_dict, utc_now
+from app.db.documents.credential import GitHubCredential, GoogleCredential
 from app.db.mongo.counter import next_sequence_id
 from app.db.repositories.base import MongoRepository, _parse_doc
 

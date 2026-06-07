@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, Path
 from fastapi.responses import RedirectResponse
 
 from app.core.deps import AuthorizedUser, OptionalUser, require_capability
-from app.db.deps import DbRegistry
 from app.core.permissions import (
     SUPERUSER_PERMISSION,
     permission_key,
@@ -15,6 +14,7 @@ from app.core.permissions import (
 )
 from app.core.rate_limit import rate_limit_api, rate_limit_shortener_create
 from app.core.utils import paginate_params
+from app.db.deps import DbRegistry
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.url import UrlCreate, UrlResponse

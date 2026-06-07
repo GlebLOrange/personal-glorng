@@ -3,6 +3,7 @@ from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.db.documents.base import utc_now
 from app.db.documents.task import (
     GoogleSyncQueue,
     IntakeStatus,
@@ -15,7 +16,6 @@ from app.db.documents.task import (
     TaskStatusHistory,
 )
 from app.db.mongo.counter import next_sequence_id
-from app.db.documents.base import utc_now
 from app.db.repositories.base import MongoRepository, _parse_doc
 
 
@@ -80,7 +80,9 @@ class TaskRepository(MongoRepository[Task]):
         query: dict[str, Any] = {"telegram_user_id": telegram_user_id}
         if status is not None:
             query["status"] = status.value
-        cursor = self._col().find(query).skip(offset).limit(limit).sort("scheduled_at", 1)
+        cursor = (
+            self._col().find(query).skip(offset).limit(limit).sort("scheduled_at", 1)
+        )
         return [_parse_doc(Task, row) async for row in cursor]
 
     async def add_status_history(
@@ -109,7 +111,9 @@ class TaskRepository(MongoRepository[Task]):
         return entry
 
     async def list_status_history(self, task_id: int) -> list[TaskStatusHistory]:
-        cursor = self.db.task_status_history.find({"task_id": task_id}).sort("changed_at", 1)
+        cursor = self.db.task_status_history.find({"task_id": task_id}).sort(
+            "changed_at", 1
+        )
         return [_history_from_doc(row) async for row in cursor]
 
     async def create_reminder(
@@ -316,7 +320,9 @@ class TaskRepository(MongoRepository[Task]):
         return [_parse_doc(Task, row) async for row in cursor]
 
     async def list_unsent_future_reminders(self, *, now: datetime) -> list[Reminder]:
-        cursor = self.db.reminders.find({"sent": False, "remind_at": {"$gt": now}}).sort(
+        cursor = self.db.reminders.find(
+            {"sent": False, "remind_at": {"$gt": now}}
+        ).sort(
             "remind_at",
             1,
         )
@@ -329,7 +335,11 @@ class TaskRepository(MongoRepository[Task]):
         now: datetime,
         exclude_id: int | None = None,
     ) -> list[Reminder]:
-        query: dict[str, Any] = {"task_id": task_id, "sent": False, "remind_at": {"$gt": now}}
+        query: dict[str, Any] = {
+            "task_id": task_id,
+            "sent": False,
+            "remind_at": {"$gt": now},
+        }
         if exclude_id is not None:
             query["id"] = {"$ne": exclude_id}
         cursor = self.db.reminders.find(query)
@@ -346,10 +356,7 @@ class TaskRepository(MongoRepository[Task]):
         limit: int = 20,
     ) -> list[tuple[TaskIntake, str | None]]:
         cursor = (
-            self.db.task_intakes.find()
-            .sort("created_at", -1)
-            .skip(offset)
-            .limit(limit)
+            self.db.task_intakes.find().sort("created_at", -1).skip(offset).limit(limit)
         )
         rows: list[tuple[TaskIntake, str | None]] = []
         async for intake_doc in cursor:

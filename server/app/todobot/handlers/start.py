@@ -6,8 +6,8 @@ from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from app.db.registry import DatabaseRegistry
 
+from app.db.registry import DatabaseRegistry
 from app.todobot.keyboards.menu import (
     LABEL_CALENDAR,
     LABEL_HELP,
