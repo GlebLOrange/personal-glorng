@@ -37,7 +37,9 @@ Default E2E credentials: `admin@glorng.dev` / `MyTestPass123!`
 
 ### Lint / test / build
 
-See `README.md` for canonical commands. Cloud-specific notes:
+See `README.md` for canonical commands. **Agents skip test execution in dev by default** — see [`.cursor/rules/skip-tests-in-dev.mdc`](.cursor/rules/skip-tests-in-dev.mdc). CI runs the full suite on pull requests; use the commands below manually when you want local verification.
+
+Cloud-specific notes:
 
 - **Backend lint/tests (host, matches CI backend job):** use an isolated venv because Docker mounts `server/.venv`:
   ```bash
@@ -51,7 +53,7 @@ See `README.md` for canonical commands. Cloud-specific notes:
     uv run pytest -v
   ```
 - **Backend via Docker:** `docker compose … exec server` uses the production image (no `pytest`/`ruff` in PATH). Prefer host `uv` for backend checks.
-- **Frontend:** `cd client && npm run lint && npm run test && npm run build` (Node 24 recommended per CI; Node 22 works with engine warnings).
+- **Frontend:** `cd client && npm run lint && npm run test && npm run build` (Node 24 recommended per CI; Node 22 works with engine warnings). Agents may run lint and build without test unless asked.
 
 ### Optional services
 
