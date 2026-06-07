@@ -34,9 +34,22 @@ const STATUS_BADGE_CLASS: Record<string, string> = {
   confirmed: "text-green-400 bg-green-400/10 border-green-400/30",
 };
 
+const STATUS_ACTION_LABELS: Record<TaskStatus, string> = {
+  pending: "Reopen",
+  completed: "Mark complete",
+  not_completed: "Didn't finish",
+  postponed: "Postpone",
+  cancelled: "Cancel task",
+};
+
 /** Human-readable label for a task or intake status. */
 export function statusLabel(status: string): string {
   return STATUS_LABELS[status] ?? status.replaceAll("_", " ");
+}
+
+/** Verb-based label for status change actions. */
+export function statusActionLabel(status: TaskStatus): string {
+  return STATUS_ACTION_LABELS[status];
 }
 
 /** Tailwind classes for a status badge. */

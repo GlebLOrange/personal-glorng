@@ -1,4 +1,4 @@
-"""Admin API for viewing and managing todobot tasks."""
+"""Todobot task admin API. Default: `tasks:read`; writes: `tasks:write`."""
 
 from fastapi import APIRouter, Depends
 
@@ -13,6 +13,7 @@ from app.core.deps import (
 )
 from app.core.exceptions import ValidationError
 from app.db.models.audit_event import AuditActorType, AuditSource
+from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.task import (
     ReminderResponse,
@@ -30,6 +31,7 @@ from app.settings import Settings
 
 router = APIRouter(
     prefix="/tasks",
+    tags=["tasks"],
     dependencies=[Depends(require_capability("tasks", "read"))],
 )
 
@@ -66,7 +68,12 @@ async def create_task(
     return TaskResponse.model_validate(task)
 
 
-@router.get("", response_model=list[TaskResponse])
+@router.get(
+    "",
+    response_model=list[TaskResponse],
+    summary="List tasks",
+    description=requires_capability("tasks", "read"),
+)
 async def list_tasks(
     svc: TaskServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
@@ -77,7 +84,12 @@ async def list_tasks(
     return await svc.list_tasks(page=page, per_page=per_page, status=status)
 
 
-@router.get("/stats", response_model=TaskStatsResponse)
+@router.get(
+    "/stats",
+    response_model=TaskStatsResponse,
+    summary="Get task statistics",
+    description=requires_capability("tasks", "read"),
+)
 async def task_stats(
     svc: TaskServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
@@ -85,7 +97,12 @@ async def task_stats(
     return await svc.task_stats()
 
 
-@router.get("/intakes", response_model=list[TaskIntakeResponse])
+@router.get(
+    "/intakes",
+    response_model=list[TaskIntakeResponse],
+    summary="List task intakes",
+    description=requires_capability("tasks", "read"),
+)
 async def list_intakes(
     svc: TaskIntakeServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
@@ -95,7 +112,12 @@ async def list_intakes(
     return await svc.list_intakes(page=page, per_page=per_page)
 
 
-@router.get("/sync-queue", response_model=list[SyncQueueResponse])
+@router.get(
+    "/sync-queue",
+    response_model=list[SyncQueueResponse],
+    summary="List calendar sync queue",
+    description=requires_capability("tasks", "read"),
+)
 async def list_sync_queue(
     svc: TaskServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
@@ -105,7 +127,12 @@ async def list_sync_queue(
     return await svc.list_sync_queue(page=page, per_page=per_page)
 
 
-@router.get("/{task_id}", response_model=TaskDetailResponse)
+@router.get(
+    "/{task_id}",
+    response_model=TaskDetailResponse,
+    summary="Get task detail",
+    description=requires_capability("tasks", "read"),
+)
 async def task_detail(
     task_id: int,
     svc: TaskServiceDep,

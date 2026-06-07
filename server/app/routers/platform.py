@@ -7,9 +7,13 @@ from app.schemas.platform import PlatformCatalogResponse, PlatformServiceRespons
 router = APIRouter(prefix="/platform", tags=["platform"])
 
 
-@router.get("/services", response_model=PlatformCatalogResponse)
+@router.get(
+    "/services",
+    response_model=PlatformCatalogResponse,
+    summary="List platform services",
+    description="Return the admin service catalog with capabilities and routes.",
+)
 async def list_platform_services() -> PlatformCatalogResponse:
-    """Return the platform service catalog for admin UI and tooling."""
     services = [
         PlatformServiceResponse(
             slug=s.slug,

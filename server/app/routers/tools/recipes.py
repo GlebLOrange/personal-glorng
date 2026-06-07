@@ -1,18 +1,25 @@
-from typing import Annotated
+"""Recipe book API. Default: `recipes:read`; writes: `recipes:write`."""
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 
 from app.core.deps import AuthorizedUser, RecipeServiceDep, require_capability
+from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.recipe import RecipeCreate, RecipeListResponse, RecipeResponse, RecipeSort, RecipeUpdate
 
 router = APIRouter(
     prefix="/recipes",
+    tags=["recipes"],
     dependencies=[Depends(require_capability("recipes", "read"))],
 )
 
 
-@router.get("/tags", response_model=list[str])
+@router.get(
+    "/tags",
+    response_model=list[str],
+    summary="List recipe tags",
+    description=requires_capability("recipes", "read"),
+)
 async def list_tags(
     svc: RecipeServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
@@ -20,7 +27,12 @@ async def list_tags(
     return await svc.get_all_tags()
 
 
-@router.get("", response_model=RecipeListResponse)
+@router.get(
+    "",
+    response_model=list[RecipeResponse],
+    summary="List recipes",
+    description=requires_capability("recipes", "read"),
+)
 async def list_recipes(
     svc: RecipeServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
@@ -39,7 +51,12 @@ async def list_recipes(
     )
 
 
-@router.get("/{recipe_id}", response_model=RecipeResponse)
+@router.get(
+    "/{recipe_id}",
+    response_model=RecipeResponse,
+    summary="Get recipe by ID",
+    description=requires_capability("recipes", "read"),
+)
 async def get_recipe(
     recipe_id: int,
     svc: RecipeServiceDep,
@@ -51,6 +68,8 @@ async def get_recipe(
 @router.post(
     "",
     response_model=RecipeResponse,
+    summary="Create recipe",
+    description=requires_capability("recipes", "write"),
     dependencies=[Depends(require_capability("recipes", "write"))],
 )
 async def create_recipe(
@@ -64,6 +83,8 @@ async def create_recipe(
 @router.put(
     "/{recipe_id}",
     response_model=RecipeResponse,
+    summary="Update recipe",
+    description=requires_capability("recipes", "write"),
     dependencies=[Depends(require_capability("recipes", "write"))],
 )
 async def update_recipe(
@@ -78,6 +99,8 @@ async def update_recipe(
 @router.delete(
     "/{recipe_id}",
     response_model=MessageResponse,
+    summary="Delete recipe",
+    description=requires_capability("recipes", "write"),
     dependencies=[Depends(require_capability("recipes", "write"))],
 )
 async def delete_recipe(
