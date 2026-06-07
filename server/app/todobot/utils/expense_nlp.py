@@ -8,6 +8,7 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from zoneinfo import ZoneInfo
 
+from app.core.catalogs import DEFAULT_EXPENSE_CATEGORY
 from app.services.currency import ALLOWED_CURRENCIES
 from app.settings import get_settings
 
@@ -66,7 +67,7 @@ _CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
     ),
 }
 
-DEFAULT_CATEGORY = "Groceries"
+DEFAULT_CATEGORY = DEFAULT_EXPENSE_CATEGORY
 
 
 @dataclass(frozen=True)

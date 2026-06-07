@@ -1,6 +1,7 @@
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.catalogs import DEFAULT_EXPENSE_CATEGORY, DEFAULT_EXPENSE_CATEGORY_NAMES
 from app.core.exceptions import NotFoundError, ValidationError
 from app.db.models.tool_expense import ToolExpense
 from app.db.models.tool_expense_category import ToolExpenseCategory
@@ -10,9 +11,9 @@ from app.schemas.tool_expense_category import (
     ExpenseCategoryUpdate,
 )
 
-DEFAULT_CATEGORY = "Groceries"
-DEFAULT_CATEGORY_NAMES: tuple[str, ...] = ("Groceries", "Home", "Transport")
-_DEFAULT_CATEGORY_NAMES = DEFAULT_CATEGORY_NAMES
+DEFAULT_CATEGORY = DEFAULT_EXPENSE_CATEGORY
+DEFAULT_CATEGORY_NAMES = DEFAULT_EXPENSE_CATEGORY_NAMES
+_DEFAULT_CATEGORY_NAMES = DEFAULT_EXPENSE_CATEGORY_NAMES
 
 
 class ToolExpenseCategoryService:

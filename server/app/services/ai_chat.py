@@ -10,22 +10,12 @@ from openai import (
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
-from app.core.text import sanitize_text
 
 SYSTEM_PROMPT = (
     "You are a concise, helpful assistant embedded in a developer"
     " portfolio admin panel. Keep responses short and technical"
     " unless asked otherwise."
 )
-
-
-def sanitize_content(text: str) -> str:
-    """Strip, remove control chars, and reject empty message content."""
-    cleaned = sanitize_text(text)
-    if not cleaned:
-        msg = "Message content must not be empty"
-        raise ValueError(msg)
-    return cleaned
 
 
 class OpenAIService:

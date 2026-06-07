@@ -3,6 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
+from app.core.catalogs import (
+    ALLOWED_CURRENCIES,
+    DEFAULT_EXPENSE_CATEGORY,
+    DEFAULT_EXPENSE_CATEGORY_NAMES,
+    DEFAULT_EXPENSE_CURRENCY,
+    EXCHANGE_RATE_TARGETS,
+)
 from app.core.deps import (
     AuthorizedUser,
     CurrencyServiceDep,
@@ -16,6 +23,7 @@ from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
 from app.schemas.date_filters import ExpenseDateFilter, expense_date_filter
 from app.schemas.tool_expense import (
     ExchangeRatesResponse,
+    ExpenseCatalogResponse,
     ExpenseParseRequest,
     ExpenseParseResponse,
     ToolExpenseCreate,
@@ -35,6 +43,24 @@ router = APIRouter(
     tags=["expenses"],
     dependencies=[Depends(require_capability("expenses", "read"))],
 )
+
+
+@router.get(
+    "/catalog",
+    response_model=ExpenseCatalogResponse,
+    summary="Expense currency catalog",
+    description=requires_capability("expenses", "read"),
+)
+async def expense_catalog(
+    _user: AuthorizedUser,
+) -> ExpenseCatalogResponse:
+    return ExpenseCatalogResponse(
+        currencies=list(ALLOWED_CURRENCIES),
+        default_currency=DEFAULT_EXPENSE_CURRENCY,
+        exchange_rate_targets=list(EXCHANGE_RATE_TARGETS),
+        categories=list(DEFAULT_EXPENSE_CATEGORY_NAMES),
+        default_category=DEFAULT_EXPENSE_CATEGORY,
+    )
 
 
 @router.get(
@@ -148,7 +174,7 @@ async def get_summary(
     svc: ExpenseServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
     filters: Annotated[ExpenseDateFilter, Depends(expense_date_filter)],
-    display_currency: str = "USD",
+    display_currency: str = DEFAULT_EXPENSE_CURRENCY,
 ) -> ToolExpenseSummary:
     resolved_from, resolved_to = filters.resolved_bounds()
     return await svc.get_summary(

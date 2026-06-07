@@ -1,10 +1,17 @@
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-CurrencyCode = Literal["USD", "EUR", "PLN", "BYN"]
+from app.core.catalogs import DEFAULT_EXPENSE_CURRENCY, CurrencyCode
+
+
+class ExpenseCatalogResponse(BaseModel):
+    currencies: list[str]
+    default_currency: str
+    exchange_rate_targets: list[str]
+    categories: list[str]
+    default_category: str
 
 
 class ExchangeRatesResponse(BaseModel):
@@ -32,7 +39,7 @@ class ExpenseParseResponse(BaseModel):
 class ToolExpenseCreate(BaseModel):
     tool_name: str = Field(min_length=1, max_length=255)
     amount: Decimal = Field(gt=0, decimal_places=2)
-    currency: CurrencyCode = "USD"
+    currency: CurrencyCode = DEFAULT_EXPENSE_CURRENCY
     expense_date: date = Field(description="Expense date (YYYY-MM-DD).")
     category: str | None = Field(None, max_length=64)
     notes: str | None = None

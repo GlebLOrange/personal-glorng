@@ -1,6 +1,8 @@
 import pytest
 from httpx import AsyncClient
 
+from app.core.email import ConsoleBackend, render_verification_email, render_verification_email_plain
+
 
 @pytest.mark.asyncio
 async def test_email_preview_escapes_html(auth_client: AsyncClient) -> None:
@@ -38,6 +40,33 @@ async def test_email_subject_rejects_crlf(auth_client: AsyncClient) -> None:
         },
     )
     assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_console_backend_logs_metadata_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    logged: list[dict[str, object]] = []
+
+    def capture_info(_message: str, *, context: dict[str, object] | None = None) -> None:
+        logged.append(context or {})
+
+    monkeypatch.setattr("app.core.email.logger.info", capture_info)
+
+    token = "super-secret-token"
+    html = render_verification_email(token, "https://example.com")
+    plain = render_verification_email_plain(token, "https://example.com")
+    await ConsoleBackend().send("user@example.com", "Verify your email", html, plain)
+
+    assert len(logged) == 1
+    context = logged[0]
+    assert context["to"] == "user@example.com"
+    assert context["subject"] == "Verify your email"
+    assert "html_bytes" in context
+    assert "plain_bytes" in context
+    assert "body_preview" not in context
+    assert "plain_preview" not in context
+    assert token not in str(context)
 
 
 @pytest.mark.asyncio

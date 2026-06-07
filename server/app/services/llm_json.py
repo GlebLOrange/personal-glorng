@@ -13,7 +13,7 @@ from openai import (
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
-from app.services.ai_chat import sanitize_content
+from app.core.text import sanitize_required_text
 from app.settings import get_settings
 
 
@@ -27,7 +27,7 @@ async def complete_json(
 ) -> dict[str, Any]:
     """Return parsed JSON object from an OpenAI chat completion."""
     client = AsyncOpenAI(api_key=api_key, timeout=45.0)
-    cleaned = sanitize_content(user_content)
+    cleaned = sanitize_required_text(user_content)
 
     try:
         response = await client.chat.completions.create(

@@ -7,7 +7,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { api } from "@/composables/useApi";
-import { useNotify } from "@/composables/useNotify";
+import { useApiAction } from "@/composables/useApiAction";
 import { sanitizeEmailHtml } from "@/utils/sanitizeEmailHtml";
 
 const route = useRoute();
@@ -20,9 +20,8 @@ onMounted(() => {
   if (route.query.subject) subject.value = String(route.query.subject);
   if (route.query.body) body.value = String(route.query.body);
 });
-const loading = ref(false);
 const previewHtml = ref("");
-const { toast } = useNotify();
+const { loading, run } = useApiAction();
 
 const canSend = computed(() => to.value.trim() && subject.value.trim() && body.value.trim());
 
@@ -32,39 +31,38 @@ const sanitizedPreviewHtml = computed(() =>
 
 async function send(): Promise<void> {
   if (!canSend.value) return;
-  loading.value = true;
-  try {
-    await api.post("/tools/email/send", {
-      to: to.value,
-      subject: subject.value,
-      body: body.value,
-    });
-    toast("Email sent", "success");
-    to.value = "";
-    subject.value = "";
-    body.value = "";
-    previewHtml.value = "";
-  } catch (err) {
-    console.error(err);
-    toast("Failed to send email", "error");
-  } finally {
-    loading.value = false;
-  }
+  const ok = await run(
+    async () => {
+      await api.post("/tools/email/send", {
+        to: to.value,
+        subject: subject.value,
+        body: body.value,
+      });
+      return true;
+    },
+    { successMessage: "Email sent", errorMessage: "Failed to send email" },
+  );
+  if (!ok) return;
+  to.value = "";
+  subject.value = "";
+  body.value = "";
+  previewHtml.value = "";
 }
 
 async function preview(): Promise<void> {
   if (!subject.value.trim() || !body.value.trim()) return;
-  try {
-    const { data } = await api.post<{ html: string }>("/tools/email/preview", {
-      to: to.value || "preview@example.com",
-      subject: subject.value,
-      body: body.value,
-    });
-    previewHtml.value = data.html;
-  } catch (err) {
-    console.error(err);
-    toast("Failed to generate preview", "error");
-  }
+  const data = await run(
+    async () => {
+      const response = await api.post<{ html: string }>("/tools/email/preview", {
+        to: to.value || "preview@example.com",
+        subject: subject.value,
+        body: body.value,
+      });
+      return response.data;
+    },
+    { errorMessage: "Failed to generate preview", logErrors: false },
+  );
+  if (data) previewHtml.value = data.html;
 }
 </script>
 

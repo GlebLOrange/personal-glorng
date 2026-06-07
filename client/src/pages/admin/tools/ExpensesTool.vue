@@ -16,6 +16,7 @@ import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import { DEFAULT_EXPENSE_CATEGORY } from "@/constants/expenseCategories";
 import { useCategoryManager } from "@/composables/useCategoryManager";
 import {
   EXPENSE_CURRENCIES,
@@ -54,7 +55,7 @@ const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPrefere
 
 const { value: lastCategory, set: setLastCategory } = useLocalStorageString(
   EXPENSE_LAST_CATEGORY_STORAGE_KEY,
-  "Groceries",
+  DEFAULT_EXPENSE_CATEGORY,
 );
 
 // Assigned once below after summary/category hooks are wired.

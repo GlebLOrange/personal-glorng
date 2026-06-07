@@ -1,0 +1,7 @@
+{
+  "currencies": ["PLN", "EUR", "USD", "BYN"],
+  "default_currency": "PLN",
+  "exchange_rate_targets": ["EUR", "USD", "BYN"],
+  "categories": ["Groceries", "Home", "Transport"],
+  "default_category": "Groceries"
+}

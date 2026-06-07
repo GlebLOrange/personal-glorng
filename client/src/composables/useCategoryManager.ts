@@ -1,6 +1,8 @@
 import { computed, ref } from "vue";
 
 import { api } from "@/composables/useApi";
+import { useApiAction } from "@/composables/useApiAction";
+import { DEFAULT_EXPENSE_CATEGORY } from "@/constants/expenseCategories";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
 import type { ExpenseCategory } from "@/types";
@@ -13,23 +15,26 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
   const editingCategoryName = ref("");
   const editingCategoryBudget = ref("");
   const { toast } = useNotify();
+  const { run: runApi } = useApiAction({ logErrors: false });
 
   const categoryOptions = computed(() => expenseCategories.value.map((category) => category.name));
 
   const defaultCategoryName = computed(
     () =>
-      categoryOptions.value.find((name) => name === "Groceries") ??
+      categoryOptions.value.find((name) => name === DEFAULT_EXPENSE_CATEGORY) ??
       categoryOptions.value[0] ??
-      "Groceries",
+      DEFAULT_EXPENSE_CATEGORY,
   );
 
   async function loadCategories(): Promise<void> {
-    try {
-      const { data } = await api.get<ExpenseCategory[]>("/tools/expenses/categories");
-      expenseCategories.value = data;
-    } catch (err) {
-      console.error(err);
-    }
+    const data = await runApi(
+      async () => {
+        const response = await api.get<ExpenseCategory[]>("/tools/expenses/categories");
+        return response.data;
+      },
+      { errorMessage: "Failed to load categories" },
+    );
+    if (data) expenseCategories.value = data;
   }
 
   async function addCategory(): Promise<void> {

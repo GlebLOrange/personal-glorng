@@ -202,6 +202,18 @@ async def cleanup_old_tasks(ctx: dict[str, Any]) -> None:
             logger.info("Old tasks cleaned up", context={"deleted": deleted})
 
 
+async def cleanup_expired_shares(ctx: dict[str, Any]) -> None:
+    """Delete expired file-share rows and disk files."""
+    from app.services import fileshare as fileshare_svc
+
+    session_factory = get_session_factory()
+    async with session_factory() as db:
+        stats = await fileshare_svc.cleanup_expired(db)
+        await db.commit()
+        if stats["deleted_rows"] or stats["errors"]:
+            logger.info("Expired file shares cleaned up", context=stats)
+
+
 async def process_sync_queue(ctx: dict[str, Any]) -> None:
     """Process pending Google Calendar sync items."""
     from sqlalchemy import select
@@ -261,6 +273,7 @@ class WorkerSettings:
     cron_jobs = [
         cron(check_overdue_tasks, minute=_every_5_min),
         cron(cleanup_old_tasks, hour=3, minute=0),
+        cron(cleanup_expired_shares, hour=3, minute=30),
         cron(process_sync_queue, minute=_every_2_min),
     ]
     redis_settings = RedisSettings.from_dsn(get_settings().REDIS_URL)

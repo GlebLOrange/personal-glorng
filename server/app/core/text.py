@@ -28,3 +28,20 @@ def sanitize_optional_text(
         return None
     cleaned = sanitize_text(text, max_length=max_length)
     return cleaned or None
+
+
+def sanitize_required_text(text: str, *, max_length: int | None = None) -> str:
+    """Sanitize text and reject empty result."""
+    cleaned = sanitize_text(text, max_length=max_length)
+    if not cleaned:
+        msg = "Text must not be empty"
+        raise ValueError(msg)
+    return cleaned
+
+
+def sanitize_email_subject(subject: str) -> str:
+    """Sanitize email subject; reject line breaks to prevent header injection."""
+    if "\r" in subject or "\n" in subject:
+        msg = "Subject must not contain line breaks"
+        raise ValueError(msg)
+    return sanitize_required_text(subject)

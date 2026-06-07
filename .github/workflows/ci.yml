@@ -64,6 +64,39 @@ jobs:
       - run: npm run test
       - run: npm run build
 
+  postgres-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: glorng
+          POSTGRES_PASSWORD: glorng_ci
+          POSTGRES_DB: glorng
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U glorng -d glorng"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.14"
+      - name: Install dependencies
+        run: uv sync --frozen
+      - name: Postgres integration tests
+        env:
+          POSTGRES_TEST_URL: postgresql+asyncpg://glorng:glorng_ci@localhost:5432/glorng
+          REDIS_URL: redis://:local@127.0.0.1:6379/0
+          JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
+        run: uv run pytest -m postgres -v
+
   database:
     runs-on: ubuntu-latest
     steps:

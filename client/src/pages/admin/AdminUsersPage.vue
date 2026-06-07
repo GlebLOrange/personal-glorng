@@ -6,23 +6,14 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
-import {
-  PLATFORM_SERVICES,
-  type PlatformService,
-} from "@/platform/services";
+import { usePlatformCatalog } from "@/composables/usePlatformCatalog";
 import { getApiErrorMessage } from "@/types/api";
 import type { AdminUserSummary } from "@/types";
-import { isAiChatEnabled } from "@/utils/featureFlags";
 import { SUPERUSER_PERMISSION } from "@/utils/permissions";
-
-function filterAiChat(services: PlatformService[]): PlatformService[] {
-  if (isAiChatEnabled()) return services;
-  return services.filter((s) => s.slug !== "ai-chat");
-}
 
 const { toast } = useNotify();
 const users = ref<AdminUserSummary[]>([]);
-const services = ref<PlatformService[]>(filterAiChat(PLATFORM_SERVICES));
+const { services, load: loadPlatformCatalog } = usePlatformCatalog();
 const loading = ref(false);
 const savingId = ref<string | null>(null);
 const draftPermissions = ref<Record<string, string[]>>({});
@@ -37,41 +28,6 @@ function isLastSuperuser(user: AdminUserSummary): boolean {
 
 function setDraftPermissions(userId: string, permissions: string[]): void {
   draftPermissions.value[userId] = permissions;
-}
-
-async function loadPlatformServices(): Promise<void> {
-  try {
-    const { data } = await api.get<{
-      services: Array<{
-        slug: string;
-        name: string;
-        category: string;
-        category_label: string;
-        description: string;
-        api_prefix: string;
-        admin_route: string;
-        icon: string;
-        capabilities: string[];
-        external: boolean;
-      }>;
-    }>("/platform/services");
-    services.value = filterAiChat(
-      data.services.map((s) => ({
-        slug: s.slug,
-        name: s.name,
-        category: s.category,
-        categoryLabel: s.category_label,
-        description: s.description,
-        apiPrefix: s.api_prefix,
-        adminRoute: s.admin_route,
-        icon: s.icon,
-        capabilities: s.capabilities,
-        external: s.external,
-      })),
-    );
-  } catch {
-    // Fallback to static registry
-  }
 }
 
 async function loadUsers(): Promise<void> {
@@ -111,7 +67,7 @@ async function savePermissions(user: AdminUserSummary): Promise<void> {
 }
 
 onMounted(() => {
-  void Promise.all([loadUsers(), loadPlatformServices()]);
+  void Promise.all([loadUsers(), loadPlatformCatalog()]);
 });
 </script>
 

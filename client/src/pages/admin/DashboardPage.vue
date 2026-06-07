@@ -1,63 +1,22 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
-import { api } from "@/composables/useApi";
-import {
-  groupServicesByCategory,
-  PLATFORM_SERVICES,
-  type PlatformService,
-} from "@/platform/services";
+import { usePlatformCatalog } from "@/composables/usePlatformCatalog";
+import { groupServicesByCategory } from "@/platform/services";
 import { usePermissions } from "@/composables/usePermissions";
 import { useAuthStore } from "@/stores/auth";
-import { isAiChatEnabled } from "@/utils/featureFlags";
-
-function filterAiChat(services: PlatformService[]): PlatformService[] {
-  if (isAiChatEnabled()) return services;
-  return services.filter((s) => s.slug !== "ai-chat");
-}
 
 const auth = useAuthStore();
 const { can, isSuperuser } = usePermissions();
-const services = ref<PlatformService[]>(filterAiChat(PLATFORM_SERVICES));
+const { services, load } = usePlatformCatalog();
 
 const visibleServices = computed(() => services.value.filter((s) => can(s.slug, "read")));
 
 const sections = computed(() => groupServicesByCategory(visibleServices.value));
 
-onMounted(async () => {
-  try {
-    const { data } = await api.get<{
-      services: Array<{
-        slug: string;
-        name: string;
-        category: string;
-        category_label: string;
-        description: string;
-        api_prefix: string;
-        admin_route: string;
-        icon: string;
-        capabilities: string[];
-        external: boolean;
-      }>;
-    }>("/platform/services");
-    services.value = data.services.map((s) => ({
-      slug: s.slug,
-      name: s.name,
-      category: s.category,
-      categoryLabel: s.category_label,
-      description: s.description,
-      apiPrefix: s.api_prefix,
-      adminRoute: s.admin_route,
-      icon: s.icon,
-      capabilities: s.capabilities,
-      external: s.external,
-    }));
-  } catch {
-    // Fallback to static registry
-  }
-});
+onMounted(() => load());
 </script>
 
 <template>

@@ -22,7 +22,8 @@ from app.schemas.tool_expense import (
 )
 from app.services.audit import AuditService
 from app.services.base import CRUDService
-from app.services.currency import ALLOWED_CURRENCIES, CurrencyService
+from app.core.catalogs import ALLOWED_CURRENCIES, DEFAULT_EXPENSE_CURRENCY
+from app.services.currency import CurrencyService
 from app.services.tool_expense_category import ToolExpenseCategoryService
 
 _CSV_FORMULA_PREFIXES = frozenset("=+-@\t\r")
@@ -192,7 +193,7 @@ class ToolExpenseService(CRUDService[ToolExpense]):
         self,
         date_from: date | None = None,
         date_to: date | None = None,
-        display_currency: str = "USD",
+        display_currency: str = DEFAULT_EXPENSE_CURRENCY,
     ) -> ToolExpenseSummary:
         if display_currency not in ALLOWED_CURRENCIES:
             raise ValidationError(

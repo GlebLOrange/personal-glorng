@@ -7,6 +7,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ApiError, NotFoundError
+from app.core.logging import logger
 from app.core.utils import as_utc, generate_short_code, utc_now
 from app.db.models.shared_file import SharedFile
 from app.services.audit import AuditService
@@ -209,3 +210,40 @@ async def get_by_code(db: AsyncSession, *, code: str) -> tuple[SharedFile, Path]
     await db.flush()
 
     return shared, disk_path
+
+
+async def cleanup_expired(db: AsyncSession) -> dict[str, int]:
+    """Remove expired shared files from disk and database."""
+    now = utc_now()
+    result = await db.execute(select(SharedFile).where(SharedFile.expires_at < now))
+    expired = list(result.scalars().all())
+
+    deleted_rows = 0
+    deleted_files = 0
+    errors = 0
+    shares_dir = _shares_dir()
+
+    for shared in expired:
+        disk_path = shares_dir / shared.file_path
+        try:
+            if disk_path.exists():
+                disk_path.unlink()
+                deleted_files += 1
+        except OSError as exc:
+            errors += 1
+            logger.error(
+                "Failed to delete expired share file",
+                error=exc,
+                context={"file_id": shared.id, "path": str(disk_path)},
+            )
+        await db.delete(shared)
+        deleted_rows += 1
+
+    if deleted_rows:
+        await db.flush()
+
+    return {
+        "deleted_rows": deleted_rows,
+        "deleted_files": deleted_files,
+        "errors": errors,
+    }

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 
-from app.services.ai_chat import sanitize_content
+from app.core.text import sanitize_required_text
 
 
 class ChatMessage(BaseModel):
@@ -10,7 +10,11 @@ class ChatMessage(BaseModel):
     @field_validator("content")
     @classmethod
     def validate_content(cls, value: str) -> str:
-        return sanitize_content(value)
+        try:
+            return sanitize_required_text(value)
+        except ValueError as exc:
+            msg = "Message content must not be empty"
+            raise ValueError(msg) from exc
 
 
 class ChatRequest(BaseModel):

@@ -1,5 +1,5 @@
 import io
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from httpx import AsyncClient
@@ -201,3 +201,45 @@ async def test_delete_file(auth_client: AsyncClient) -> None:
     list_resp = await auth_client.get("/api/tools/file-share")
     ids = [f["id"] for f in list_resp.json()]
     assert file_id not in ids
+
+
+@pytest.mark.asyncio
+async def test_cleanup_expired_removes_row_and_disk_file(db: AsyncSession) -> None:
+    user = await create_user(db)
+    shares_dir = fileshare_svc._shares_dir()
+    shares_dir.mkdir(parents=True, exist_ok=True)
+    disk_name = "exp002_old.txt"
+    (shares_dir / disk_name).write_bytes(b"stale")
+
+    expired = SharedFile(
+        code="exp002",
+        original_filename="old.txt",
+        file_path=disk_name,
+        file_size=5,
+        content_type="text/plain",
+        downloads=0,
+        expires_at=datetime(2020, 1, 1, tzinfo=UTC),
+        created_by=user.id,
+    )
+    active = SharedFile(
+        code="act002",
+        original_filename="new.txt",
+        file_path="act002_new.txt",
+        file_size=3,
+        content_type="text/plain",
+        downloads=0,
+        expires_at=datetime.now(UTC) + timedelta(hours=1),
+        created_by=user.id,
+    )
+    db.add_all([expired, active])
+    await db.commit()
+
+    stats = await fileshare_svc.cleanup_expired(db)
+    await db.commit()
+
+    assert stats == {"deleted_rows": 1, "deleted_files": 1, "errors": 0}
+    assert not (shares_dir / disk_name).exists()
+
+    result = await db.get(SharedFile, expired.id)
+    assert result is None
+    assert await db.get(SharedFile, active.id) is not None

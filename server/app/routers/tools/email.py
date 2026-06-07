@@ -1,6 +1,5 @@
 """Outbound email tool. All routes require `email:write`."""
 
-import re
 from html import escape
 
 from fastapi import APIRouter, Depends
@@ -8,9 +7,8 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.core.deps import AuthorizedUser, require_capability
 from app.core.email import _wrap_email, get_email_backend
+from app.core.text import sanitize_email_subject
 from app.openapi import requires_capability
-
-_CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
 
 router = APIRouter(
     prefix="/email",
@@ -31,14 +29,7 @@ class EmailSend(BaseModel):
     @field_validator("subject")
     @classmethod
     def validate_subject(cls, value: str) -> str:
-        if "\r" in value or "\n" in value:
-            msg = "Subject must not contain line breaks"
-            raise ValueError(msg)
-        cleaned = _CONTROL_CHARS.sub("", value).strip()
-        if not cleaned:
-            msg = "Subject must not be empty"
-            raise ValueError(msg)
-        return cleaned
+        return sanitize_email_subject(value)
 
 
 class EmailPreview(BaseModel):

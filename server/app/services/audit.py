@@ -29,6 +29,29 @@ class AuditRecord:
     request_id: str | None = None
 
 
+def domain_event(
+    *,
+    action: str,
+    resource_type: str,
+    resource_id: int,
+    actor_id: int | None = None,
+    actor_type: AuditActorType = AuditActorType.USER,
+    source: AuditSource = AuditSource.WEB_ADMIN,
+    metadata: dict[str, Any] | None = None,
+) -> AuditRecord:
+    """Build a standard domain audit record."""
+    return AuditRecord(
+        category=AuditCategory.DOMAIN,
+        action=action,
+        actor_type=actor_type,
+        actor_id=actor_id,
+        source=source,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        metadata=metadata,
+    )
+
+
 class AuditService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
@@ -46,14 +69,13 @@ class AuditService:
     ) -> AuditEvent:
         """Record a domain mutation with standard category defaults."""
         return await self.record(
-            AuditRecord(
-                category=AuditCategory.DOMAIN,
+            domain_event(
                 action=action,
+                resource_type=resource_type,
+                resource_id=resource_id,
                 actor_type=actor_type,
                 actor_id=actor_id,
                 source=source,
-                resource_type=resource_type,
-                resource_id=resource_id,
                 metadata=metadata,
             ),
         )
