@@ -178,9 +178,9 @@ async def test_delete_file_other_user_forbidden(
 
     other = await create_user(db, email="other@example.com")
 
-    from app.core.auth import create_access_token
+    from app.core.security import create_access_token
 
-    token = create_access_token(str(other.public_id))
+    token = create_access_token(str(other.public_id), user_id=other.id)
     resp = await auth_client.delete(
         f"/api/tools/file-share/{file_id}",
         headers={"Authorization": f"Bearer {token}"},

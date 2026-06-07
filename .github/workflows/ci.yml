@@ -133,9 +133,6 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     needs: [frontend]
-    defaults:
-      run:
-        working-directory: client
     steps:
       - uses: actions/checkout@v4
       - name: Write CI env file
@@ -167,10 +164,17 @@ jobs:
           node-version: "24"
           cache: npm
           cache-dependency-path: client/package-lock.json
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run build
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+      - name: Install Playwright
+        working-directory: client
+        run: npx playwright install --with-deps chromium
+      - name: Build client
+        working-directory: client
+        run: npm run build
       - name: Playwright smoke tests
+        working-directory: client
         env:
           PLAYWRIGHT_SKIP_WEBSERVER: "1"
           E2E_BASE_URL: http://127.0.0.1:4173

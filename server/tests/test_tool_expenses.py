@@ -107,7 +107,10 @@ class TestToolExpensesCRUD:
                 "expense_date": "2025-04-10",
             },
         )
-        resp = await auth_client.get("/api/tools/expenses/summary")
+        resp = await auth_client.get(
+            "/api/tools/expenses/summary",
+            params={"display_currency": "USD"},
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["total"] == "35.00"
@@ -133,7 +136,7 @@ class TestToolExpensesCRUD:
         )
         resp = await auth_client.get(
             "/api/tools/expenses/summary",
-            params={"month": "2025-06"},
+            params={"month": "2025-06", "display_currency": "USD"},
         )
         assert resp.status_code == 200
         assert resp.json()["total"] == "50.00"
@@ -146,7 +149,11 @@ class TestToolExpensesCRUD:
         )
         resp = await auth_client.get(
             "/api/tools/expenses/summary",
-            params={"date_from": "2025-06-01", "date_to": "2025-06-30"},
+            params={
+                "date_from": "2025-06-01",
+                "date_to": "2025-06-30",
+                "display_currency": "USD",
+            },
         )
         assert resp.status_code == 200
         assert resp.json()["total"] == "50.00"

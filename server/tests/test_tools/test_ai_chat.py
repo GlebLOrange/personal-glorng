@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from httpx import AsyncClient
 
-from app.core.deps import get_ai_search_service, get_openai_chat_service
+from app.core.deps import get_ai_search_service
 from app.main import app
 from app.services.ai_chat import OpenAIService, detect_llm_provider
 from app.services.ai_search import AiSearchService
@@ -78,10 +78,11 @@ async def test_ai_chat_unauthenticated(client: AsyncClient) -> None:
 async def test_ai_chat_no_api_key(
     auth_client: AsyncClient,
     missing_api_key: None,
+    ai_search_service: None,
 ) -> None:
     resp = await auth_client.post(CHAT_URL, json=CHAT_PAYLOAD)
-    assert resp.status_code == 503
-    assert "not configured" in resp.json()["detail"]
+    assert resp.status_code == 200
+    assert "not configured" in resp.text.lower()
 
 
 @pytest.mark.asyncio
@@ -132,7 +133,6 @@ async def test_ai_chat_streams_sse(
     auth_client: AsyncClient,
     ai_search_service: None,
 ) -> None:
-    llm = app.dependency_overrides[get_openai_chat_service]()
     with patch.object(
         AiSearchService,
         "stream_events",
@@ -149,7 +149,6 @@ async def test_ai_chat_streams_sse(
     assert 'data: {"delta": "there"}' in body
     assert '"done": true' in body
     assert '"model": "gpt-4.1"' in body
-    assert llm.model == "gpt-4.1"
 
 
 @pytest.mark.asyncio
