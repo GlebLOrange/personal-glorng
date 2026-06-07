@@ -5,9 +5,10 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import logger
-from app.core.utils import paginate_params
+from app.core.text import sanitize_optional_text, sanitize_text
+from app.core.utils import as_utc, paginate_params
 from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction, SyncStatus
 from app.db.models.reminder import Reminder
@@ -28,6 +29,12 @@ class TaskService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
+    async def require_task(self, *, task_id: int) -> Task:
+        task = await self.get_task(task_id=task_id)
+        if not task:
+            raise NotFoundError("Task not found")
+        return task
+
     async def create_task(
         self,
         *,
@@ -41,19 +48,23 @@ class TaskService:
         actor_type: AuditActorType = AuditActorType.TELEGRAM,
         actor_id: int | None = None,
     ) -> Task:
+        clean_title = sanitize_text(title, max_length=255)
+        if not clean_title:
+            raise ValidationError("Task title is required")
+
         task = Task(
             telegram_user_id=telegram_user_id,
-            title=title,
-            description=description,
-            location=location,
-            scheduled_at=scheduled_at,
+            title=clean_title,
+            description=sanitize_optional_text(description),
+            location=sanitize_optional_text(location, max_length=255),
+            scheduled_at=as_utc(scheduled_at),
             status=TaskStatus.PENDING,
             intake_id=intake_id,
         )
         self.db.add(task)
         await self.db.flush()
         await self.db.refresh(task)
-        logger.info("Task created", context={"task_id": task.id, "title": title})
+        logger.info("Task created", context={"task_id": task.id, "title": clean_title})
 
         audit = AuditService(self.db)
         await audit.record(
@@ -65,7 +76,7 @@ class TaskService:
                 source=source,
                 resource_type="task",
                 resource_id=task.id,
-                metadata={"title": title},
+                metadata={"title": clean_title},
             ),
         )
         return task
@@ -109,6 +120,7 @@ class TaskService:
         )
         self.db.add(history)
         await self.db.flush()
+        await self.db.refresh(task)
 
         logger.debug(
             "Task status updated",
@@ -137,6 +149,114 @@ class TaskService:
         )
         return task
 
+    async def change_status(
+        self,
+        *,
+        task_id: int,
+        new_status: TaskStatus,
+        actor_type: AuditActorType = AuditActorType.SYSTEM,
+        actor_id: int | None = None,
+        source: AuditSource = AuditSource.WORKER,
+    ) -> Task:
+        task = await self.require_task(task_id=task_id)
+        return await self.update_task_status(
+            task=task,
+            new_status=new_status,
+            actor_type=actor_type,
+            actor_id=actor_id,
+            source=source,
+        )
+
+    async def reschedule_task(
+        self,
+        *,
+        task_id: int,
+        scheduled_at: datetime,
+        actor_type: AuditActorType = AuditActorType.SYSTEM,
+        actor_id: int | None = None,
+        source: AuditSource = AuditSource.WORKER,
+    ) -> Task:
+        task = await self.require_task(task_id=task_id)
+        task.scheduled_at = as_utc(scheduled_at)
+        if task.status == TaskStatus.POSTPONED:
+            task.status = TaskStatus.PENDING
+        self.db.add(task)
+        await self.db.flush()
+        await self.db.refresh(task)
+
+        audit = AuditService(self.db)
+        await audit.record(
+            AuditRecord(
+                category=AuditCategory.DOMAIN,
+                action="task.rescheduled",
+                actor_type=actor_type,
+                actor_id=actor_id,
+                source=source,
+                resource_type="task",
+                resource_id=task.id,
+                metadata={"scheduled_at": task.scheduled_at.isoformat()},
+            ),
+        )
+
+        if task.google_event_id:
+            await self.enqueue_calendar_sync(
+                task_id=task.id,
+                action=SyncAction.UPDATE,
+                google_event_id=task.google_event_id,
+            )
+        return task
+
+    async def schedule_reminder_minutes_before(
+        self,
+        *,
+        task_id: int,
+        scheduled_at: datetime,
+        minutes_before: int,
+    ) -> Reminder | None:
+        from app.workers.scheduling import schedule_reminder
+
+        remind_at = as_utc(scheduled_at) - timedelta(minutes=minutes_before)
+        if remind_at <= datetime.now(UTC):
+            return None
+
+        reminder = await self.create_reminder(task_id=task_id, remind_at=remind_at)
+        await schedule_reminder(self.db, reminder)
+        return reminder
+
+    async def create_with_sync(
+        self,
+        *,
+        telegram_user_id: int,
+        title: str,
+        scheduled_at: datetime,
+        description: str | None = None,
+        location: str | None = None,
+        reminder_minutes: int | None = None,
+        intake_id: int | None = None,
+        source: AuditSource = AuditSource.TODOBOT,
+        actor_type: AuditActorType = AuditActorType.TELEGRAM,
+        actor_id: int | None = None,
+    ) -> Task:
+        task = await self.create_task(
+            telegram_user_id=telegram_user_id,
+            title=title,
+            scheduled_at=scheduled_at,
+            description=description,
+            location=location,
+            intake_id=intake_id,
+            source=source,
+            actor_type=actor_type,
+            actor_id=actor_id,
+        )
+        if reminder_minutes:
+            await self.schedule_reminder_minutes_before(
+                task_id=task.id,
+                scheduled_at=scheduled_at,
+                minutes_before=reminder_minutes,
+            )
+        await self.enqueue_calendar_sync(task_id=task.id, action=SyncAction.CREATE)
+        return task
+
     async def get_task(self, *, task_id: int) -> Task | None:
         result = await self.db.execute(select(Task).where(Task.id == task_id))
         return result.scalar_one_or_none()
@@ -151,6 +271,10 @@ class TaskService:
         offset, limit = paginate_params(page, per_page)
         query = select(Task).order_by(Task.created_at.desc())
         if status:
+            try:
+                TaskStatus(status)
+            except ValueError as exc:
+                raise ValidationError(f"Invalid task status: {status}") from exc
             query = query.where(Task.status == status)
         result = await self.db.execute(query.offset(offset).limit(limit))
         return [TaskResponse.model_validate(t) for t in result.scalars().all()]
@@ -319,6 +443,18 @@ async def create_reminder(db: AsyncSession, **kwargs: object) -> Reminder:
 
 async def update_task_status(db: AsyncSession, **kwargs: object) -> Task:
     return await TaskService(db).update_task_status(**kwargs)  # type: ignore[arg-type]
+
+
+async def change_status(db: AsyncSession, **kwargs: object) -> Task:
+    return await TaskService(db).change_status(**kwargs)  # type: ignore[arg-type]
+
+
+async def reschedule_task(db: AsyncSession, **kwargs: object) -> Task:
+    return await TaskService(db).reschedule_task(**kwargs)  # type: ignore[arg-type]
+
+
+async def create_with_sync(db: AsyncSession, **kwargs: object) -> Task:
+    return await TaskService(db).create_with_sync(**kwargs)  # type: ignore[arg-type]
 
 
 async def get_task(db: AsyncSession, *, task_id: int) -> Task | None:

@@ -112,3 +112,9 @@ def parse_task_input(text: str) -> ParsedTask:
         result.title = title
 
     return result
+
+
+def parse_datetime_text(text: str) -> datetime | None:
+    """Parse a date/time phrase from user text."""
+    parsed_dt, _ = _extract_datetime(text.strip())
+    return parsed_dt

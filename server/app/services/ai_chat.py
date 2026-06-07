@@ -1,4 +1,3 @@
-import re
 from collections.abc import AsyncIterator
 
 from openai import (
@@ -11,6 +10,7 @@ from openai import (
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
+from app.core.text import sanitize_text
 
 SYSTEM_PROMPT = (
     "You are a concise, helpful assistant embedded in a developer"
@@ -18,12 +18,10 @@ SYSTEM_PROMPT = (
     " unless asked otherwise."
 )
 
-_CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
-
 
 def sanitize_content(text: str) -> str:
     """Strip, remove control chars, and reject empty message content."""
-    cleaned = _CONTROL_CHAR_RE.sub("", text.strip())
+    cleaned = sanitize_text(text)
     if not cleaned:
         msg = "Message content must not be empty"
         raise ValueError(msg)
