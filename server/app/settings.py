@@ -2,12 +2,23 @@ import json
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Any
+from urllib.parse import urlparse
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 from sqlalchemy.engine import make_url
 
 _WEAK_SECRET_MARKERS = ("do-not-use", "changeme", "replace-with", "secret")
+
+
+def _validate_production_password(name: str, value: str, *, min_len: int) -> None:
+    if len(value) < min_len or any(m in value.lower() for m in _WEAK_SECRET_MARKERS):
+        msg = f"{name} is too weak for production; use {min_len}+ chars"
+        raise ValueError(msg)
+
+
+def _password_from_redis_url(url: str) -> str:
+    return urlparse(url).password or ""
 _COMPOSE_DB_HOST = "db"
 _COMPOSE_DB_PORT = 5432
 _HOST_DB_HOST = "127.0.0.1"
@@ -82,6 +93,17 @@ class Settings(BaseSettings):
                 "TELEGRAM_BOT_TO_DO_TOKEN is configured in production"
             )
             raise ValueError(msg)
+        if self.APP_ENV == "production":
+            _validate_production_password(
+                "POSTGRES_PASSWORD",
+                self.POSTGRES_PASSWORD,
+                min_len=16,
+            )
+            _validate_production_password(
+                "REDIS_PASSWORD",
+                _password_from_redis_url(self.REDIS_URL),
+                min_len=16,
+            )
         return self
 
     # Postgres (source of truth for compose-backed DATABASE_URL)
