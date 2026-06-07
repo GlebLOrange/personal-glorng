@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import JSON, String, Uuid, text
+from sqlalchemy import JSON, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, BaseModelMixin
@@ -21,7 +21,7 @@ class User(BaseModelMixin, Base):
     is_protected: Mapped[bool] = mapped_column(default=False, server_default="false")
     permissions: Mapped[list[str]] = mapped_column(
         JSON,
-        server_default=text("'[]'::json"),
+        server_default="[]",
         nullable=False,
     )
     display_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
@@ -30,6 +30,6 @@ class User(BaseModelMixin, Base):
     )
     preferences: Mapped[dict[str, object]] = mapped_column(
         JSON,
-        server_default=text("'{}'::json"),
+        server_default="{}",
         nullable=False,
     )

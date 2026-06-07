@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, func, text
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -38,7 +38,7 @@ class TaskIntake(Base):
     clarification_turns_json: Mapped[list | None] = mapped_column(
         JSONDocument,
         nullable=True,
-        server_default=text("'[]'::json"),
+        server_default="[]",
     )
     clarification_rounds: Mapped[int] = mapped_column(
         Integer,
