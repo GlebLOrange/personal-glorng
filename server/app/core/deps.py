@@ -140,6 +140,7 @@ def get_openai_chat_service(settings: AppSettings) -> OpenAIService:
     return OpenAIService(
         api_key=settings.OPENAI_API_KEY,
         model=settings.OPENAI_CHAT_MODEL,
+        base_url=settings.LLM_BASE_URL,
     )
 
 

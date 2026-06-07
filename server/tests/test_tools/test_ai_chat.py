@@ -1,15 +1,16 @@
 from collections.abc import AsyncIterator
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from httpx import AsyncClient
 
 from app.core.deps import get_openai_chat_service
 from app.main import app
-from app.services.ai_chat import OpenAIService
+from app.services.ai_chat import OpenAIService, detect_llm_provider
 from app.settings import get_settings
 
 CHAT_URL = "/api/tools/ai-chat"
+CONFIG_URL = "/api/tools/ai-chat/config"
 
 CHAT_PAYLOAD = {
     "messages": [{"role": "user", "content": "Hello"}],
@@ -119,3 +120,78 @@ async def test_ai_chat_streams_sse(
     assert 'data: {"delta": "there"}' in body
     assert '"done": true' in body
     assert '"model": "gpt-4.1"' in body
+
+
+@pytest.mark.asyncio
+async def test_ai_chat_config_unauthenticated(client: AsyncClient) -> None:
+    resp = await client.get(CONFIG_URL)
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_ai_chat_config_returns_status_without_secret(
+    auth_client: AsyncClient,
+) -> None:
+    resp = await auth_client.get(CONFIG_URL)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["enabled"] is True
+    assert body["configured"] is True
+    assert body["model"] == "gpt-4.1"
+    assert body["provider"] == "openai"
+    assert body["base_url"] is None
+    assert "api_key" not in body
+    assert "test-key" not in resp.text
+
+
+@pytest.mark.asyncio
+async def test_ai_chat_config_not_configured_without_key(
+    auth_client: AsyncClient,
+    missing_api_key: None,
+) -> None:
+    resp = await auth_client.get(CONFIG_URL)
+    assert resp.status_code == 200
+    assert resp.json()["configured"] is False
+
+
+@pytest.mark.asyncio
+async def test_ai_chat_config_detects_groq_provider(
+    auth_client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
+    monkeypatch.setenv("OPENAI_CHAT_MODEL", "llama-3.3-70b-versatile")
+    get_settings.cache_clear()
+
+    resp = await auth_client.get(CONFIG_URL)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["provider"] == "groq"
+    assert body["base_url"] == "https://api.groq.com/openai/v1"
+    assert body["model"] == "llama-3.3-70b-versatile"
+
+
+def test_detect_llm_provider_labels() -> None:
+    assert detect_llm_provider("") == "openai"
+    assert detect_llm_provider("https://api.groq.com/openai/v1") == "groq"
+    assert detect_llm_provider("http://host.docker.internal:11434/v1") == "ollama"
+    assert detect_llm_provider("https://openrouter.ai/api/v1") == "openrouter"
+    assert detect_llm_provider("https://example.com/v1") == "custom"
+
+
+def test_openai_service_passes_base_url_to_client() -> None:
+    with patch("app.services.ai_chat.AsyncOpenAI") as mock_client:
+        mock_client.return_value = MagicMock()
+        service = OpenAIService(
+            api_key="test-key",
+            model="llama3.2",
+            base_url="http://host.docker.internal:11434/v1",
+        )
+
+    mock_client.assert_called_once_with(
+        api_key="test-key",
+        base_url="http://host.docker.internal:11434/v1",
+        timeout=30.0,
+    )
+    assert service.provider == "ollama"
+    assert service.model == "llama3.2"

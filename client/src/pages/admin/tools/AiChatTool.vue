@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
+import { computed, nextTick, onMounted, ref } from "vue";
 
+import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
+import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { useAuthStore } from "@/stores/auth";
+import { getApiErrorMessage } from "@/types/api";
+
+type AiChatTab = "chat" | "settings";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,11 +24,58 @@ interface StreamEvent {
   error?: string;
 }
 
+interface ChatConfig {
+  enabled: boolean;
+  configured: boolean;
+  model: string;
+  provider: string;
+  base_url: string | null;
+}
+
+const AI_CHAT_TABS = [
+  { id: "chat", label: "chat" },
+  { id: "settings", label: "settings" },
+] as const;
+
+const PROVIDER_EXAMPLES = [
+  {
+    name: "Groq (free tier)",
+    env: `OPENAI_API_KEY=gsk_...
+LLM_BASE_URL=https://api.groq.com/openai/v1
+OPENAI_CHAT_MODEL=llama-3.3-70b-versatile`,
+  },
+  {
+    name: "Ollama (local, free)",
+    env: `OPENAI_API_KEY=ollama
+LLM_BASE_URL=http://host.docker.internal:11434/v1
+OPENAI_CHAT_MODEL=llama3.2`,
+  },
+  {
+    name: "OpenRouter (some free models)",
+    env: `OPENAI_API_KEY=sk-or-...
+LLM_BASE_URL=https://openrouter.ai/api/v1
+OPENAI_CHAT_MODEL=google/gemma-2-9b-it:free`,
+  },
+] as const;
+
+const activeTab = ref<AiChatTab>("chat");
+const chatConfig = ref<ChatConfig | null>(null);
+const configLoading = ref(true);
 const messages = ref<Message[]>([]);
 const input = ref("");
 const loading = ref(false);
 const chatEnd = ref<HTMLElement | null>(null);
 const { toast } = useNotify();
+
+const providerLabel = computed(
+  () => chatConfig.value?.provider ?? "…",
+);
+const modelLabel = computed(
+  () => chatConfig.value?.model ?? "…",
+);
+const isReady = computed(
+  () => Boolean(chatConfig.value?.enabled && chatConfig.value?.configured),
+);
 
 function scrollToBottom(): void {
   nextTick(() => chatEnd.value?.scrollIntoView({ behavior: "smooth" }));
@@ -47,6 +99,18 @@ function parseSseEvents(buffer: string): { events: StreamEvent[]; rest: string }
   return { events, rest };
 }
 
+async function loadConfig(): Promise<void> {
+  configLoading.value = true;
+  try {
+    const { data } = await api.get<ChatConfig>("/tools/ai-chat/config");
+    chatConfig.value = data;
+  } catch (err) {
+    toast(getApiErrorMessage(err, "Failed to load AI chat config"), "error");
+  } finally {
+    configLoading.value = false;
+  }
+}
+
 async function send(): Promise<void> {
   const text = input.value.trim();
   if (!text || loading.value) return;
@@ -54,6 +118,12 @@ async function send(): Promise<void> {
   const auth = useAuthStore();
   if (!auth.isAuthenticated) {
     toast("Not authenticated", "error");
+    return;
+  }
+
+  if (!isReady.value) {
+    toast("AI chat is not configured — check Settings", "error");
+    activeTab.value = "settings";
     return;
   }
 
@@ -130,13 +200,29 @@ async function send(): Promise<void> {
 function clear(): void {
   messages.value = [];
 }
+
+onMounted(() => {
+  void loadConfig();
+});
 </script>
 
 <template>
   <AdminPageLayout title="ai chat">
-    <BaseCard class="flex flex-col h-[65vh]">
+    <AdminTabBar v-model="activeTab" :tabs="[...AI_CHAT_TABS]" />
+
+    <BaseCard v-if="activeTab === 'chat'" class="flex flex-col h-[65vh]">
       <div class="flex items-center gap-3 mb-4 pb-4 border-b border-surface-border">
-        <span class="text-surface-mid text-xs uppercase tracking-wider">openai</span>
+        <span class="text-surface-mid text-xs uppercase tracking-wider">
+          {{ providerLabel }}
+        </span>
+        <span class="text-surface-mid/60 text-xs">·</span>
+        <span class="text-surface-mid text-xs">{{ modelLabel }}</span>
+        <span
+          v-if="!configLoading && !isReady"
+          class="ml-auto text-xs text-amber-400/90"
+        >
+          not configured
+        </span>
       </div>
 
       <div class="flex-1 overflow-y-auto space-y-4 mb-4 pr-1">
@@ -179,7 +265,7 @@ function clear(): void {
           @keydown.enter.exact.prevent="send"
         />
         <div class="flex flex-col gap-2">
-          <BaseButton variant="primary" :disabled="loading || !input.trim()">
+          <BaseButton variant="primary" :disabled="loading || !input.trim() || !isReady">
             {{ loading ? "..." : "Send" }}
           </BaseButton>
           <BaseButton variant="ghost" size="sm" type="button" :disabled="loading" @click="clear">
@@ -187,6 +273,79 @@ function clear(): void {
           </BaseButton>
         </div>
       </form>
+    </BaseCard>
+
+    <BaseCard v-else class="space-y-8">
+      <section class="space-y-3">
+        <h2 class="text-sm font-semibold text-surface-light uppercase tracking-wider">
+          Current setup
+        </h2>
+        <p v-if="configLoading" class="text-surface-mid text-sm">Loading…</p>
+        <dl v-else-if="chatConfig" class="grid gap-2 text-sm">
+          <div class="flex gap-2">
+            <dt class="text-surface-mid w-28 shrink-0">Provider</dt>
+            <dd class="text-surface-light">{{ chatConfig.provider }}</dd>
+          </div>
+          <div class="flex gap-2">
+            <dt class="text-surface-mid w-28 shrink-0">Model</dt>
+            <dd class="text-surface-light font-mono text-xs">{{ chatConfig.model }}</dd>
+          </div>
+          <div class="flex gap-2">
+            <dt class="text-surface-mid w-28 shrink-0">Base URL</dt>
+            <dd class="text-surface-light font-mono text-xs break-all">
+              {{ chatConfig.base_url ?? "OpenAI default" }}
+            </dd>
+          </div>
+          <div class="flex gap-2">
+            <dt class="text-surface-mid w-28 shrink-0">API key</dt>
+            <dd :class="chatConfig.configured ? 'text-emerald-400' : 'text-amber-400'">
+              {{ chatConfig.configured ? "configured" : "missing" }}
+            </dd>
+          </div>
+          <div class="flex gap-2">
+            <dt class="text-surface-mid w-28 shrink-0">Enabled</dt>
+            <dd class="text-surface-light">{{ chatConfig.enabled ? "yes" : "no" }}</dd>
+          </div>
+        </dl>
+        <BaseButton variant="ghost" size="sm" :disabled="configLoading" @click="loadConfig">
+          Refresh
+        </BaseButton>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-sm font-semibold text-surface-light uppercase tracking-wider">
+          How it works
+        </h2>
+        <p class="text-surface-mid text-sm leading-relaxed">
+          AI chat uses any provider with an OpenAI-compatible API. Set
+          <code class="text-surface-sage">OPENAI_API_KEY</code>,
+          optional <code class="text-surface-sage">LLM_BASE_URL</code>, and
+          <code class="text-surface-sage">OPENAI_CHAT_MODEL</code> in your server
+          <code class="text-surface-sage">.env</code>, then restart the backend
+          (<code class="text-surface-sage">make dev-lite</code> or Docker Compose) and refresh
+          this page. Set <code class="text-surface-sage">AI_CHAT_ENABLED=false</code> to hide this
+          tool entirely.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="text-sm font-semibold text-surface-light uppercase tracking-wider">
+          Example .env snippets
+        </h2>
+        <div
+          v-for="example in PROVIDER_EXAMPLES"
+          :key="example.name"
+          class="rounded-lg border border-surface-border bg-surface-dark p-4 space-y-2"
+        >
+          <p class="text-sm text-surface-light font-medium">{{ example.name }}</p>
+          <pre class="text-xs text-surface-sage whitespace-pre-wrap font-mono">{{ example.env }}</pre>
+        </div>
+        <p class="text-surface-mid text-xs">
+          For Ollama in Docker: run <code class="text-surface-sage">ollama pull &lt;model&gt;</code>
+          on the host and use <code class="text-surface-sage">host.docker.internal</code> as shown
+          above.
+        </p>
+      </section>
     </BaseCard>
   </AdminPageLayout>
 </template>
