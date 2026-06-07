@@ -1,11 +1,12 @@
-from datetime import date
+from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
 from app.core.deps import AuthorizedUser, DbSession, require_capability
-from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
 from app.schemas.common import MessageResponse
+from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
+from app.schemas.date_filters import ExpenseDateFilter, expense_date_filter
 from app.schemas.tool_expense import (
     ExchangeRatesResponse,
     ExpenseParseRequest,
@@ -115,21 +116,19 @@ async def convert_currency(
     )
 
 
-@router.get("/summary", response_model=ToolExpenseSummary)
+@router.get(
+    "/summary",
+    response_model=ToolExpenseSummary,
+    description="Filter by month (YYYY-MM) or inclusive date range.",
+)
 async def get_summary(
     db: DbSession,
     user: AuthorizedUser,  # noqa: ARG001
-    month: str | None = None,
-    date_from: date | None = None,
-    date_to: date | None = None,
+    filters: Annotated[ExpenseDateFilter, Depends(expense_date_filter)],
     display_currency: str = "USD",
 ) -> ToolExpenseSummary:
     svc = ToolExpenseService(db)
-    resolved_from, resolved_to = svc.resolve_date_range(
-        month=month,
-        date_from=date_from,
-        date_to=date_to,
-    )
+    resolved_from, resolved_to = filters.resolved_bounds()
     return await svc.get_summary(
         date_from=resolved_from,
         date_to=resolved_to,
@@ -162,22 +161,20 @@ async def parse_expense(
     )
 
 
-@router.get("", response_model=list[ToolExpenseResponse])
+@router.get(
+    "",
+    response_model=list[ToolExpenseResponse],
+    description="Filter by month (YYYY-MM) or inclusive date range.",
+)
 async def list_expenses(
     db: DbSession,
     user: AuthorizedUser,  # noqa: ARG001
-    month: str | None = None,
-    date_from: date | None = None,
-    date_to: date | None = None,
+    filters: Annotated[ExpenseDateFilter, Depends(expense_date_filter)],
     tool_name: str | None = None,
     category: str | None = None,
 ) -> list[ToolExpenseResponse]:
     svc = ToolExpenseService(db)
-    resolved_from, resolved_to = svc.resolve_date_range(
-        month=month,
-        date_from=date_from,
-        date_to=date_to,
-    )
+    resolved_from, resolved_to = filters.resolved_bounds()
     return await svc.list_expenses(
         date_from=resolved_from,
         date_to=resolved_to,
@@ -186,22 +183,19 @@ async def list_expenses(
     )
 
 
-@router.get("/export")
+@router.get(
+    "/export",
+    description="Filter by month (YYYY-MM) or inclusive date range.",
+)
 async def export_expenses(
     db: DbSession,
     user: AuthorizedUser,  # noqa: ARG001
-    month: str | None = None,
-    date_from: date | None = None,
-    date_to: date | None = None,
+    filters: Annotated[ExpenseDateFilter, Depends(expense_date_filter)],
     tool_name: str | None = None,
     category: str | None = None,
 ) -> Response:
     svc = ToolExpenseService(db)
-    resolved_from, resolved_to = svc.resolve_date_range(
-        month=month,
-        date_from=date_from,
-        date_to=date_to,
-    )
+    resolved_from, resolved_to = filters.resolved_bounds()
     csv_content = await svc.export_csv(
         date_from=resolved_from,
         date_to=resolved_to,

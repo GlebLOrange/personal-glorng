@@ -59,6 +59,21 @@ describe("useExpenseFilters", () => {
     });
   });
 
+  it("omits inverted date range from queryParams and sets rangeError", () => {
+    const { dateFrom, dateTo, queryParams, rangeError, applyMonthPreset } = useExpenseFilters(
+      displayCurrency,
+      onFiltersChange,
+      onProductFilterChange,
+    );
+
+    applyMonthPreset("range");
+    dateFrom.value = "2026-06-10";
+    dateTo.value = "2026-06-01";
+
+    expect(rangeError.value).toBe("End date must be on or after start date");
+    expect(queryParams()).toEqual({});
+  });
+
   it("builds queryParams with date range", () => {
     const { queryParams, applyMonthPreset, dateFilterMode } = useExpenseFilters(
       displayCurrency,

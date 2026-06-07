@@ -8,7 +8,7 @@ import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
-import { datetimeLocalValue } from "@/utils/dates";
+import { datetimeLocalValue, parseDatetimeLocalToIso } from "@/utils/dates";
 import { formatDate } from "@/utils/format";
 import type { SyncQueueItem, TaskDetail, TaskIntakeItem, TaskItem, TaskStats } from "@/types";
 
@@ -136,9 +136,14 @@ async function createTask(): Promise<void> {
     toast("Title and scheduled time are required", "error");
     return;
   }
+  const scheduledAt = parseDatetimeLocalToIso(createForm.value.scheduled_at);
+  if (!scheduledAt) {
+    toast("Scheduled time is invalid", "error");
+    return;
+  }
+
   saving.value = true;
   try {
-    const scheduledAt = new Date(createForm.value.scheduled_at).toISOString();
     await api.post("/tools/tasks", {
       title: createForm.value.title.trim(),
       scheduled_at: scheduledAt,
