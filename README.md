@@ -94,7 +94,21 @@ Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN` in `.env`.
 | `make migrate` | Alias for `db-init`                  |
 | `make db-reset`| Wipe DB volume and re-migrate (destructive) |
 | `make seed`    | Create admin user                    |
+| `make reindex-search` | Rebuild FTS search index from all sources |
 | `make logs`    | Tail container logs                  |
+
+## AI search deploy
+
+After migrations on a fresh database, backfill the unified search index:
+
+```bash
+make db-init
+make reindex-search
+```
+
+Resume content is upserted automatically on API startup when `AI_SEARCH_ENABLED=true`. Recipes, tasks, expenses, and other sources are indexed on create/update; run `make reindex-search` after deploy to backfill existing rows.
+
+Set `AI_SEARCH_ENABLED`, `OPENAI_API_KEY`, and `VITE_AI_SEARCH_ENABLED` in `.env` (see `.env.example`).
 
 ## Platform Services
 

@@ -148,6 +148,62 @@ async def test_public_search_chat_streams_sources(
 
 
 @pytest.mark.asyncio
+async def test_search_config_enabled(client: AsyncClient) -> None:
+    resp = await client.get(SEARCH_CONFIG_URL)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["enabled"] is True
+    assert body["configured"] is True
+
+
+@pytest.mark.asyncio
+async def test_search_config_disabled_without_key(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "")
+    get_settings.cache_clear()
+    resp = await client.get(SEARCH_CONFIG_URL)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["enabled"] is False
+    assert body["configured"] is False
+
+
+@pytest.mark.asyncio
+async def test_task_status_change_reindexes(db: AsyncSession) -> None:
+    from datetime import UTC, datetime
+
+    from app.db.models.task import Task, TaskStatus
+    from app.services.search_index import SearchIndexService
+    from app.services.task import TaskService
+
+    task = Task(
+        telegram_user_id=1,
+        title="Buy groceries",
+        scheduled_at=datetime.now(UTC),
+        status=TaskStatus.PENDING,
+    )
+    db.add(task)
+    await db.flush()
+    await db.refresh(task)
+    await TaskService(db).update_task_status(
+        task=task,
+        new_status=TaskStatus.COMPLETED,
+    )
+    await db.commit()
+
+    hits = await SearchIndexService(db).search(
+        "groceries",
+        visibilities=[SearchVisibility.ADMIN],
+    )
+    assert len(hits) == 1
+    assert hits[0].source_type == "task"
+    assert hits[0].title == "Buy groceries"
+    assert "completed" in hits[0].body.lower()
+
+
+@pytest.mark.asyncio
 async def test_public_search_disabled(
     client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,

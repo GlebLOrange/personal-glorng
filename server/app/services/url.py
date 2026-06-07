@@ -60,12 +60,15 @@ class UrlService(CRUDService[ShortenedUrl]):
         return url
 
     async def increment_clicks(self, code: str) -> None:
+        url = await self.get_by_code(code)
         await self.db.execute(
             update(ShortenedUrl)
             .where(ShortenedUrl.code == code)
             .values(clicks=ShortenedUrl.clicks + 1)
         )
         await self.db.flush()
+        await self.db.refresh(url)
+        await index_url(self.db, url)
 
     async def list_by_owner(
         self,

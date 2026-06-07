@@ -225,6 +225,7 @@ services:
     restart: unless-stopped
     environment:
       VITE_BEHIND_NGINX: "true"
+      VITE_AI_SEARCH_ENABLED: ${VITE_AI_SEARCH_ENABLED:-true}
     volumes:
       - ./client:/app
       - client_node_modules:/app/node_modules
@@ -247,6 +248,7 @@ services:
       - ./nginx/http_common.conf:/etc/nginx/http_common.conf:ro
       - ./nginx/security_headers.conf:/etc/nginx/security_headers.conf:ro
       - ./nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
+      - ./nginx/proxy_sse_params.conf:/etc/nginx/proxy_sse_params.conf:ro
       - server_media:/app/media:ro
     networks:
       - frontend

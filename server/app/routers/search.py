@@ -9,6 +9,7 @@ from fastapi.responses import StreamingResponse
 from app.core.deps import AiSearchServiceDep, AppSettings, SearchIndexServiceDep
 from app.core.exceptions import ApiError
 from app.core.feature_flags import is_ai_search_enabled
+from app.core.logging import logger
 from app.core.rate_limit import RateLimiter
 from app.db.models.search_document import SearchVisibility
 from app.schemas.search import (
@@ -80,6 +81,9 @@ async def _sse_events(
             yield f"data: {json.dumps(event)}\n\n"
     except ApiError as exc:
         yield f"data: {json.dumps({'error': exc.message})}\n\n"
+    except Exception:
+        logger.exception("Public search chat stream failed")
+        yield f"data: {json.dumps({'error': 'Search chat failed'})}\n\n"
 
 
 @router.post(

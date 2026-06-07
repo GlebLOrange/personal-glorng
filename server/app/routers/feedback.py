@@ -85,6 +85,7 @@ async def update_feedback_status(
     await db.flush()
     result = await db.execute(select(Feedback).where(Feedback.id == feedback_id))
     entry = result.scalar_one()
+    await index_feedback(db, entry)
 
     await AuditService(db).record(
         AuditRecord(

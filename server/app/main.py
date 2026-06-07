@@ -9,7 +9,9 @@ from fastapi.responses import JSONResponse
 from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.redis import close_redis, init_redis
+from app.db.session import get_session_factory
 from app.openapi import configure_openapi
+from app.services.search_bootstrap import bootstrap_resume_index
 from app.settings import get_settings
 from app.workers.queue import close_job_queue, init_job_queue
 
@@ -41,6 +43,10 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     logger.info("Redis connected")
 
     init_job_queue()
+
+    factory = get_session_factory()
+    async with factory() as db:
+        await bootstrap_resume_index(db)
 
     yield
 
