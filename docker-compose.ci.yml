@@ -1,5 +1,8 @@
 # CI overrides: expose API port and skip dev-only reload.
 services:
+  migrate:
+    environment:
+      RUN_SEED: "false"
   server:
     ports:
       - "127.0.0.1:8000:8000"

@@ -1,8 +1,42 @@
 #!/bin/sh
-# Wait for Postgres, run Alembic migrations, optionally seed. Used by migrate service and server entrypoint.
+# Wait for enabled databases, run migrations, optionally seed.
 set -e
 
-wait_for_db() {
+wait_for_mongo() {
+    python - <<'PY'
+import asyncio
+import sys
+
+from motor.motor_asyncio import AsyncIOMotorClient
+
+from app.settings import get_settings
+
+MAX_ATTEMPTS = 30
+
+
+async def main() -> None:
+    settings = get_settings()
+    if not settings.enable_mongodb():
+        return
+    client = AsyncIOMotorClient(settings.MONGODB_URL)
+    try:
+        for _ in range(MAX_ATTEMPTS):
+            try:
+                await client.admin.command("ping")
+                return
+            except (OSError, Exception):
+                await asyncio.sleep(1)
+        print("mongodb not ready after retries", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        client.close()
+
+
+asyncio.run(main())
+PY
+}
+
+wait_for_postgres() {
     python - <<'PY'
 import asyncio
 import sys
@@ -16,7 +50,10 @@ MAX_ATTEMPTS = 30
 
 
 async def main() -> None:
-    engine = create_async_engine(get_settings().DATABASE_URL, pool_pre_ping=True)
+    settings = get_settings()
+    if not settings.enable_postgres():
+        return
+    engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
     try:
         for _ in range(MAX_ATTEMPTS):
             try:
@@ -25,7 +62,7 @@ async def main() -> None:
                 return
             except (OSError, Exception):
                 await asyncio.sleep(1)
-        print("database not ready after retries", file=sys.stderr)
+        print("postgres not ready after retries", file=sys.stderr)
         sys.exit(1)
     finally:
         await engine.dispose()
@@ -35,13 +72,27 @@ asyncio.run(main())
 PY
 }
 
-echo "Waiting for database..."
-wait_for_db
+echo "Waiting for MongoDB..."
+wait_for_mongo
 
-echo "Running database migrations..."
-alembic upgrade head
+echo "Running MongoDB schema setup..."
+python -m app.db.mongo.migrate
+
+if [ "$(python - <<'PY'
+from app.settings import get_settings
+print("true" if get_settings().enable_postgres() else "false")
+PY
+)" = "true" ]; then
+    echo "Waiting for PostgreSQL..."
+    wait_for_postgres
+    echo "Running PostgreSQL migrations..."
+    alembic upgrade head
+fi
 
 if [ "$RUN_SEED" = "true" ]; then
-    echo "Running database seed..."
-    python -m app.db.seed
+    echo "Running demo database seed..."
+    python -m app.db.seed_demo \
+        --count "${SEED_DEMO_COUNT:-50}" \
+        --no-reset \
+        --skip-if-populated
 fi

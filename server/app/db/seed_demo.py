@@ -25,6 +25,11 @@ def parse_args() -> argparse.Namespace:
             "Wipe tool tables before seeding (default: true). Use --no-reset to append."
         ),
     )
+    parser.add_argument(
+        "--skip-if-populated",
+        action="store_true",
+        help="Skip tool seeding when recipes already exist (still ensures demo users).",
+    )
     return parser.parse_args()
 
 
@@ -33,7 +38,13 @@ def main() -> None:
     args = parse_args()
     if args.count < 1:
         raise SystemExit("--count must be at least 1")
-    asyncio.run(seed_demo(count=args.count, reset=args.reset))
+    asyncio.run(
+        seed_demo(
+            count=args.count,
+            reset=args.reset,
+            skip_if_populated=args.skip_if_populated,
+        )
+    )
 
 
 if __name__ == "__main__":

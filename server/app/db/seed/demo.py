@@ -1,19 +1,11 @@
 """Demo seed: bulk random data for each platform tool."""
 
-from sqlalchemy import delete, select, update
-
 from app.core.logging import logger
-from app.db.models.audit_event import AuditActorType, AuditSource
-from app.db.models.feedback import Feedback
-from app.db.models.google_sync_queue import GoogleSyncQueue
-from app.db.models.recipe import Recipe
-from app.db.models.reminder import Reminder
-from app.db.models.task import Task, TaskStatus
-from app.db.models.task_intake import TaskIntake
-from app.db.models.task_status_history import TaskStatusHistory
-from app.db.models.tool_expense import ToolExpense
-from app.db.models.url import ShortenedUrl
-from app.db.models.user import User
+from app.db.documents.audit import AuditActorType, AuditSource
+from app.db.documents.task import TaskStatus
+from app.db.documents.user import User
+from app.db.init_service import DatabaseInitService
+from app.db.registry import DatabaseRegistry
 from app.db.seed.builders import build_random_expenses
 from app.db.seed.demo_builders import (
     DEMO_READER_EMAIL,
@@ -27,51 +19,62 @@ from app.db.seed.demo_builders import (
     demo_writer_permissions,
 )
 from app.db.seed.run import WEAK_PASSWORDS, _seed_admin
-from app.db.session import get_session_factory
 from app.services.task import TaskService
 from app.services.tool_expense_category import ToolExpenseCategoryService
 from app.services.url import UrlService
-from app.services.user import create_user
-from app.settings import get_settings
+from app.services.user import create_user, get_user_by_email
+from app.settings import Settings, get_settings
 
 DEMO_TELEGRAM_USER_ID = 123456789
 DEMO_USER_EMAILS = (DEMO_READER_EMAIL, DEMO_WRITER_EMAIL)
 
+_TASK_COLLECTIONS = (
+    "reminders",
+    "task_status_history",
+    "google_sync_queue",
+    "task_intakes",
+    "tasks",
+)
 
-async def _reset_tool_tables(db) -> None:  # noqa: ANN001
-    """Remove demo tool rows in FK-safe order."""
-    for model in (
-        Reminder,
-        TaskStatusHistory,
-        GoogleSyncQueue,
-        TaskIntake,
-        Task,
-        ShortenedUrl,
-        Feedback,
-        ToolExpense,
-        Recipe,
-    ):
-        await db.execute(delete(model))
-    await db.execute(delete(User).where(User.email.in_(DEMO_USER_EMAILS)))
-    await db.flush()
+
+async def _reset_tool_tables(registry: DatabaseRegistry) -> None:
+    """Remove demo tool rows in dependency-safe order."""
+    mongo = registry.require_mongo()
+    for name in _TASK_COLLECTIONS:
+        await mongo[name].delete_many({})
+
+    if registry.urls is not None:
+        await registry.urls._col().delete_many({})
+    if registry.feedback is not None:
+        await registry.feedback._col().delete_many({})
+    if registry.expenses is not None:
+        await registry.expenses.expenses._col().delete_many({})
+    if registry.recipes is not None:
+        await registry.recipes._col().delete_many({})
+
+    if registry.users is not None:
+        for email in DEMO_USER_EMAILS:
+            user = await get_user_by_email(registry, email)
+            if user is not None:
+                await registry.users.delete(user.id)
+
     logger.info("Demo tool tables reset")
 
 
 async def _ensure_demo_user(
-    db,  # noqa: ANN001
+    registry: DatabaseRegistry,
     *,
     email: str,
     password: str,
     permissions: list[str],
 ) -> User:
     """Create a demo user when missing."""
-    result = await db.execute(select(User).where(User.email == email))
-    existing = result.scalar_one_or_none()
+    existing = await get_user_by_email(registry, email)
     if existing:
         logger.info("Demo user already exists", context={"email": email})
         return existing
     user = await create_user(
-        db,
+        registry,
         email=email,
         password=password,
         permissions=permissions,
@@ -82,20 +85,23 @@ async def _ensure_demo_user(
     return user
 
 
-async def _seed_demo_users(db, settings) -> tuple[User, User, User]:  # noqa: ANN001
+async def _seed_demo_users(
+    registry: DatabaseRegistry,
+    settings: Settings,
+) -> tuple[User, User, User]:
     """Ensure admin plus two capability-based demo users."""
-    admin = await _seed_admin(db, settings)
+    admin = await _seed_admin(registry, settings)
     if admin is None:
         msg = "Failed to seed admin user"
         raise RuntimeError(msg)
     reader = await _ensure_demo_user(
-        db,
+        registry,
         email=DEMO_READER_EMAIL,
         password=settings.SEED_PASSWORD,
         permissions=demo_reader_permissions(),
     )
     writer = await _ensure_demo_user(
-        db,
+        registry,
         email=DEMO_WRITER_EMAIL,
         password=settings.SEED_PASSWORD,
         permissions=demo_writer_permissions(),
@@ -103,29 +109,35 @@ async def _seed_demo_users(db, settings) -> tuple[User, User, User]:  # noqa: AN
     return admin, reader, writer
 
 
-async def _seed_recipes(db, count: int) -> int:  # noqa: ANN001
+async def _seed_recipes(registry: DatabaseRegistry, count: int) -> int:
     """Insert procedurally generated recipes."""
+    if registry.recipes is None:
+        msg = "Recipes repository is not initialized"
+        raise RuntimeError(msg)
+
     tag_pool = build_recipe_tag_pool(count)
     recipes = build_random_recipes(count, tag_pool)
     for recipe in recipes:
-        db.add(recipe)
-    await db.flush()
+        await registry.recipes.insert(recipe)
     return len(recipes)
 
 
-async def _seed_expenses(db, count: int) -> int:  # noqa: ANN001
+async def _seed_expenses(registry: DatabaseRegistry, count: int) -> int:
     """Insert random expenses and ensure default categories."""
-    svc = ToolExpenseCategoryService(db)
+    if registry.expenses is None:
+        msg = "Expense repository is not initialized"
+        raise RuntimeError(msg)
+
+    svc = ToolExpenseCategoryService(registry)
     await svc.ensure_defaults()
     expenses = build_random_expenses(count, seed=99)
     for expense in expenses:
-        db.add(expense)
-    await db.flush()
+        await registry.expenses.expenses.insert(expense)
     return len(expenses)
 
 
 async def _seed_tasks(
-    db,  # noqa: ANN001
+    registry: DatabaseRegistry,
     count: int,
     *,
     telegram_user_id: int,
@@ -133,7 +145,7 @@ async def _seed_tasks(
     actor_id: int | None,
 ) -> int:
     """Insert tasks via TaskService for audit coverage."""
-    svc = TaskService(db)
+    svc = TaskService(registry)
     created = 0
     for built in build_random_tasks(
         count,
@@ -152,28 +164,40 @@ async def _seed_tasks(
             actor_id=actor_id,
         )
         if built.status != TaskStatus.PENDING:
-            task.status = built.status
-            await db.flush()
+            await svc.update_task_status(
+                task=task,
+                new_status=built.status,
+                actor_type=AuditActorType.USER,
+                actor_id=actor_id,
+                source=AuditSource.WEB_ADMIN,
+            )
         created += 1
     return created
 
 
-async def _seed_feedback(db, count: int) -> int:  # noqa: ANN001
+async def _seed_feedback(registry: DatabaseRegistry, count: int) -> int:
     """Insert random feedback rows."""
+    if registry.feedback is None:
+        msg = "Feedback repository is not initialized"
+        raise RuntimeError(msg)
+
     rows = build_random_feedback(count, seed=99)
     for row in rows:
-        db.add(row)
-    await db.flush()
+        await registry.feedback.insert(row)
     return len(rows)
 
 
 async def _seed_short_urls(
-    db,  # noqa: ANN001
+    registry: DatabaseRegistry,
     count: int,
     owners: list[User],
 ) -> int:
     """Insert short URLs owned round-robin across demo users."""
-    svc = UrlService(db)
+    if registry.urls is None:
+        msg = "URL repository is not initialized"
+        raise RuntimeError(msg)
+
+    svc = UrlService(registry)
     created = 0
     for index, seed in enumerate(build_short_url_seeds(count, seed=99)):
         owner = owners[index % len(owners)]
@@ -183,17 +207,17 @@ async def _seed_short_urls(
             title=seed.title,
         )
         if seed.clicks:
-            await db.execute(
-                update(ShortenedUrl)
-                .where(ShortenedUrl.id == url.id)
-                .values(clicks=seed.clicks),
-            )
+            await registry.urls.update_fields(url.id, clicks=seed.clicks)
         created += 1
-    await db.flush()
     return created
 
 
-async def seed_demo(*, count: int = 50, reset: bool = True) -> None:
+async def seed_demo(
+    *,
+    count: int = 50,
+    reset: bool = True,
+    skip_if_populated: bool = False,
+) -> None:
     """Fill the database with random demo data for each tool."""
     settings = get_settings()
     if not settings.SEED_PASSWORD or settings.SEED_PASSWORD.lower() in WEAK_PASSWORDS:
@@ -206,26 +230,39 @@ async def seed_demo(*, count: int = 50, reset: bool = True) -> None:
             context={"telegram_user_id": telegram_user_id},
         )
 
-    async with get_session_factory()() as db:
-        if reset:
-            await _reset_tool_tables(db)
+    registry = DatabaseRegistry()
+    init_svc = DatabaseInitService(registry, settings)
+    try:
+        await init_svc.startup()
+        if skip_if_populated and registry.recipes is not None:
+            existing = await registry.recipes.count()
+            if existing > 0:
+                await _seed_demo_users(registry, settings)
+                logger.info(
+                    "Demo seed skipped: tool data already present",
+                    context={"recipes": existing},
+                )
+                return
 
-        admin, reader, writer = await _seed_demo_users(db, settings)
+        if reset:
+            await _reset_tool_tables(registry)
+
+        admin, reader, writer = await _seed_demo_users(registry, settings)
         owners = [admin, reader, writer]
 
-        recipe_count = await _seed_recipes(db, count)
-        expense_count = await _seed_expenses(db, count)
+        recipe_count = await _seed_recipes(registry, count)
+        expense_count = await _seed_expenses(registry, count)
         task_count = await _seed_tasks(
-            db,
+            registry,
             count,
             telegram_user_id=telegram_user_id,
             timezone=settings.TIMEZONE,
             actor_id=admin.id,
         )
-        feedback_count = await _seed_feedback(db, count)
-        url_count = await _seed_short_urls(db, count, owners)
-
-        await db.commit()
+        feedback_count = await _seed_feedback(registry, count)
+        url_count = await _seed_short_urls(registry, count, owners)
+    finally:
+        await init_svc.shutdown()
 
     logger.info(
         "Demo seed complete",

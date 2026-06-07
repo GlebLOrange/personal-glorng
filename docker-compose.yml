@@ -2,6 +2,8 @@
 services:
   db:
     image: postgres:18.4-alpine
+    profiles:
+      - postgres
     restart: unless-stopped
     command: postgres -c shared_buffers=128MB -c max_connections=50
     ports:
@@ -73,8 +75,6 @@ services:
 
   mongodb:
     image: mongo:8.0.9
-    profiles:
-      - mongo
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
@@ -126,10 +126,11 @@ services:
       - .env
     environment:
       PYTHONPATH: /app
+      RUN_SEED: "true"
     networks:
       - backend
     depends_on:
-      db:
+      mongodb:
         condition: service_healthy
     restart: "no"
 
@@ -152,7 +153,7 @@ services:
     networks:
       - backend
     depends_on:
-      db:
+      mongodb:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -186,7 +187,7 @@ services:
     networks:
       - backend
     depends_on:
-      db:
+      mongodb:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -220,7 +221,7 @@ services:
     networks:
       - backend
     depends_on:
-      db:
+      mongodb:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -254,7 +255,7 @@ services:
     networks:
       - backend
     depends_on:
-      db:
+      mongodb:
         condition: service_healthy
       redis:
         condition: service_healthy
