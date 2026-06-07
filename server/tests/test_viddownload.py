@@ -31,15 +31,22 @@ async def test_viddownload_rejects_invalid_format(auth_client: AsyncClient) -> N
 
 
 @pytest.mark.asyncio
-async def test_viddownload_unauthorized(client: AsyncClient) -> None:
-    resp = await client.post(
-        "/api/tools/vid-download",
-        json={
-            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-            "format": "best",
-        },
-    )
-    assert resp.status_code == 401
+async def test_viddownload_public_access(client: AsyncClient) -> None:
+    with patch(
+        "app.routers.tools.viddownload._run_download",
+        new_callable=AsyncMock,
+        return_value=(b"", b"mock failure", 1),
+    ):
+        resp = await client.post(
+            "/api/tools/vid-download",
+            json={
+                "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                "format": "best",
+            },
+        )
+
+    assert resp.status_code == 502
+    assert "yt-dlp failed" in resp.json()["detail"]
 
 
 @pytest.mark.asyncio

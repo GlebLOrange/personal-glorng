@@ -44,13 +44,16 @@ Redis fixed-window limits on auth, feedback, and general API traffic — [`serve
 | AI chat | `sanitize_content` + message caps |
 | File share uploads | Extension denylist; sanitized stored filenames |
 | Downloads | Safe `Content-Disposition` via [`attachment_content_disposition`](../server/app/core/utils.py) |
-| Vid download | YouTube host allowlist; yt-dlp `format` character allowlist; capability-gated |
+| Vid download | YouTube host allowlist; yt-dlp `format` character allowlist; public with rate/concurrency limits |
+| URL shortener | `HttpUrl` validation; private/localhost host blocklist on create |
 
-## Admin tools and SSRF
+## Public tools
 
-**URL shortener:** Creating links requires auth. Public `/s/{code}` redirects to stored URLs — treat compromised admin accounts as a phishing risk.
+**Recipes:** Read endpoints (list, tags, detail) are public and rate limited. Create, update, and delete require the `recipes:write` capability.
 
-**Vid download:** yt-dlp runs server-side only for users with the `vid-download` capability. URLs are restricted to known YouTube hosts.
+**URL shortener:** Creating short links is public (10 creates/hour/IP) with URL safety checks that block localhost and private-network targets. Public `/s/{code}` redirects to stored URLs — open redirects are an accepted risk for shorteners; your domain lends trust to destination sites.
+
+**Vid download:** The download endpoint is public with strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). yt-dlp runs server-side; URLs are restricted to known YouTube hosts only.
 
 ## Secrets and CI
 

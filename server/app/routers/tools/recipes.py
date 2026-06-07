@@ -1,41 +1,38 @@
-"""Recipe book API. Default: `recipes:read`; writes: `recipes:write`."""
+"""Recipe book API. Public reads; writes require `recipes:write`."""
 
-from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import AuthorizedUser, RecipeServiceDep, require_capability
+from app.core.rate_limit import rate_limit_api
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.recipe import RecipeCreate, RecipeListResponse, RecipeResponse, RecipeSort, RecipeUpdate
 
-router = APIRouter(
-    prefix="/recipes",
-    tags=["recipes"],
-    dependencies=[Depends(require_capability("recipes", "read"))],
-)
+router = APIRouter(prefix="/recipes", tags=["recipes"])
 
 
 @router.get(
     "/tags",
     response_model=list[str],
     summary="List recipe tags",
-    description=requires_capability("recipes", "read"),
+    description="Public recipe tags (rate limited).",
+    dependencies=[Depends(rate_limit_api)],
 )
-async def list_tags(
-    svc: RecipeServiceDep,
-    user: AuthorizedUser,  # noqa: ARG001
-) -> list[str]:
+async def list_tags(svc: RecipeServiceDep) -> list[str]:
     return await svc.get_all_tags()
 
 
 @router.get(
     "",
-    response_model=list[RecipeResponse],
+    response_model=RecipeListResponse,
     summary="List recipes",
-    description=requires_capability("recipes", "read"),
+    description="Public recipe list (rate limited).",
+    dependencies=[Depends(rate_limit_api)],
 )
 async def list_recipes(
     svc: RecipeServiceDep,
-    user: AuthorizedUser,  # noqa: ARG001
     search: Annotated[str | None, Query(max_length=200)] = None,
     tag: str | None = None,
     sort: RecipeSort = "updated_desc",
@@ -55,13 +52,10 @@ async def list_recipes(
     "/{recipe_id}",
     response_model=RecipeResponse,
     summary="Get recipe by ID",
-    description=requires_capability("recipes", "read"),
+    description="Public recipe detail (rate limited).",
+    dependencies=[Depends(rate_limit_api)],
 )
-async def get_recipe(
-    recipe_id: int,
-    svc: RecipeServiceDep,
-    user: AuthorizedUser,  # noqa: ARG001
-) -> RecipeResponse:
+async def get_recipe(recipe_id: int, svc: RecipeServiceDep) -> RecipeResponse:
     return await svc.get_recipe(recipe_id)
 
 

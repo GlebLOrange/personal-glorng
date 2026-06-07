@@ -39,7 +39,7 @@ async def create_user(
 async def create_short_url(
     db: AsyncSession,
     original_url: str = "https://example.com",
-    created_by: int = 1,
+    created_by: int | None = 1,
     title: str | None = None,
 ) -> ShortenedUrl:
     url = ShortenedUrl(

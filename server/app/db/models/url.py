@@ -11,4 +11,6 @@ class ShortenedUrl(BaseModelMixin, Base):
     original_url: Mapped[str] = mapped_column(Text)
     title: Mapped[str | None] = mapped_column(String(255), nullable=True)
     clicks: Mapped[int] = mapped_column(default=0)
-    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    created_by: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )

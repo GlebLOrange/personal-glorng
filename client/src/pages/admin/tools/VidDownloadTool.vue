@@ -62,7 +62,11 @@ async function download(): Promise<void> {
 <template>
   <AdminPageLayout title="vid-download">
     <form class="space-y-4 mb-8" @submit.prevent="download">
-      <BaseInput v-model="url" placeholder="https://example.com/video" label="Video URL" />
+      <BaseInput
+        v-model="url"
+        placeholder="https://www.youtube.com/watch?v=..."
+        label="YouTube URL"
+      />
 
       <div class="flex flex-col gap-1">
         <label class="text-sm text-surface-mid">Format</label>
@@ -117,9 +121,8 @@ async function download(): Promise<void> {
         <div>
           <h3 class="text-accent-blue font-bold mb-2">Supported sites</h3>
           <p class="text-surface-mid">
-            yt-dlp supports 1800+ sites including YouTube, Twitter/X, Instagram, TikTok, Reddit,
-            Twitch, Vimeo, SoundCloud, and many more. Paste any video/audio URL and it will attempt
-            to extract the media.
+            This public tool accepts YouTube URLs only (youtube.com, youtu.be, m.youtube.com, and
+            music.youtube.com). Other hosts are rejected for security and abuse prevention.
           </p>
         </div>
 
@@ -135,8 +138,9 @@ async function download(): Promise<void> {
         <div>
           <h3 class="text-accent-blue font-bold mb-2">Limits</h3>
           <p class="text-surface-mid">
-            Downloads are limited to 500 MB and 2 minutes per request. At most 2 concurrent
-            downloads run on the server.
+            Downloads are limited to 500 MB and 2 minutes per request. Each IP may run one download
+            at a time, with at most two concurrent downloads across the server. Public use is also
+            rate limited to five downloads per hour per IP.
           </p>
         </div>
 

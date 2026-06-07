@@ -73,20 +73,35 @@ const routes: RouteRecordRaw[] = [
     redirect: { name: "calculator" },
   },
   {
-    path: "/admin/tools/currency",
-    redirect: { name: "tool-expenses", query: { tab: "converter" } },
+    path: "/recipes",
+    name: "recipes",
+    component: () => import("@/pages/admin/tools/RecipesPage.vue"),
+  },
+  {
+    path: "/admin/tools/recipes",
+    redirect: { name: "recipes" },
+  },
+  {
+    path: "/shortener",
+    name: "shortener",
+    component: () => import("@/pages/admin/tools/UrlShortenerTool.vue"),
   },
   {
     path: "/admin/tools/url-shortener",
-    name: "tool-url-shortener",
-    component: () => import("@/pages/admin/tools/UrlShortenerTool.vue"),
-    meta: { requiresAuth: true },
+    redirect: { name: "shortener" },
+  },
+  {
+    path: "/vid-download",
+    name: "vid-download",
+    component: () => import("@/pages/admin/tools/VidDownloadTool.vue"),
   },
   {
     path: "/admin/tools/vid-download",
-    name: "tool-vid-download",
-    component: () => import("@/pages/admin/tools/VidDownloadTool.vue"),
-    meta: { requiresAuth: true },
+    redirect: { name: "vid-download" },
+  },
+  {
+    path: "/admin/tools/currency",
+    redirect: { name: "tool-expenses", query: { tab: "converter" } },
   },
   {
     path: "/admin/tools/file-share",
@@ -98,12 +113,6 @@ const routes: RouteRecordRaw[] = [
     path: "/admin/tools/tasks",
     name: "tool-tasks",
     component: () => import("@/pages/admin/tools/TasksPage.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/admin/tools/recipes",
-    name: "tool-recipes",
-    component: () => import("@/pages/admin/tools/RecipesPage.vue"),
     meta: { requiresAuth: true },
   },
   {
@@ -170,10 +179,7 @@ const routes: RouteRecordRaw[] = [
 const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-tasks": "tasks",
   "tool-expenses": "expenses",
-  "tool-recipes": "recipes",
   "tool-file-share": "file-share",
-  "tool-url-shortener": "url-shortener",
-  "tool-vid-download": "vid-download",
   "tool-email": "email",
   "tool-feedback": "feedback",
   "tool-ai-chat": "ai-chat",

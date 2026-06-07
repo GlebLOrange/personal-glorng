@@ -18,7 +18,7 @@ class UrlService(CRUDService[ShortenedUrl]):
     async def create_short_url(
         self,
         original_url: str,
-        created_by: int,
+        created_by: int | None,
         title: str | None = None,
     ) -> ShortenedUrl:
         for attempt in range(_MAX_CODE_RETRIES):
@@ -65,10 +65,30 @@ class UrlService(CRUDService[ShortenedUrl]):
         )
         await self.db.flush()
 
-    async def delete_url(self, url_id: int) -> None:
+    async def list_by_owner(
+        self,
+        created_by: int,
+        offset: int = 0,
+        limit: int = 20,
+    ) -> list[ShortenedUrl]:
+        return await self.list(offset=offset, limit=limit, created_by=created_by)
+
+    async def delete_url(
+        self,
+        url_id: int,
+        actor_id: int,
+        *,
+        is_superuser: bool = False,
+    ) -> None:
+        url = await self.get(url_id)
+        if not is_superuser and (
+            url.created_by is None or url.created_by != actor_id
+        ):
+            raise ApiError(403, "You do not have permission to delete this URL")
         await self.delete(url_id)
         await AuditService(self.db).record_domain(
             action="url.deleted",
             resource_type="url",
             resource_id=url_id,
+            actor_id=actor_id,
         )

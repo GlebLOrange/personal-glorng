@@ -17,8 +17,15 @@ RECIPE_DATA = {
 
 
 class TestRecipesCRUD:
-    async def test_requires_auth(self, client: AsyncClient):
+    async def test_public_read_list(self, client: AsyncClient):
         resp = await client.get("/api/tools/recipes")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["items"] == []
+        assert data["total"] == 0
+
+    async def test_create_requires_auth(self, client: AsyncClient):
+        resp = await client.post("/api/tools/recipes", json=RECIPE_DATA)
         assert resp.status_code == 401
 
     async def test_create_recipe(self, auth_client: AsyncClient):

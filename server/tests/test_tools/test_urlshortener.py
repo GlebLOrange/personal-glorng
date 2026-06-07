@@ -2,7 +2,8 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tests.factories import create_short_url
+from app.core.security import create_access_token
+from tests.factories import create_short_url, create_user
 
 
 @pytest.mark.asyncio
@@ -11,7 +12,20 @@ async def test_create_url_unauthenticated(client: AsyncClient) -> None:
         "/api/tools/url-shortener",
         json={"original_url": "https://example.com"},
     )
-    assert resp.status_code == 401
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["original_url"] == "https://example.com/"
+    assert "code" in data
+    assert len(data["code"]) == 8
+
+
+@pytest.mark.asyncio
+async def test_create_url_blocks_private_host(client: AsyncClient) -> None:
+    resp = await client.post(
+        "/api/tools/url-shortener",
+        json={"original_url": "http://127.0.0.1/internal"},
+    )
+    assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
@@ -38,6 +52,12 @@ async def test_create_url_invalid_url(auth_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_list_urls_unauthenticated(client: AsyncClient) -> None:
+    resp = await client.get("/api/tools/url-shortener")
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_list_urls_empty(auth_client: AsyncClient) -> None:
     resp = await auth_client.get("/api/tools/url-shortener")
     assert resp.status_code == 200
@@ -45,13 +65,28 @@ async def test_list_urls_empty(auth_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_list_urls_with_data(
-    auth_client: AsyncClient, db: AsyncSession, admin_user: object
+async def test_list_urls_scoped_to_owner(
+    client: AsyncClient,
+    db: AsyncSession,
+    admin_user: object,
 ) -> None:
-    await create_short_url(db, created_by=admin_user.id)  # type: ignore[union-attr]
-    resp = await auth_client.get("/api/tools/url-shortener")
+    other_user = await create_user(
+        db,
+        email="other@glorng.dev",
+        permissions=["url-shortener:read", "url-shortener:write"],
+    )
+    await create_short_url(db, created_by=admin_user.id, title="Admin link")  # type: ignore[union-attr]
+    await create_short_url(db, created_by=other_user.id, title="Other link")
+
+    other_token = create_access_token(str(other_user.public_id), user_id=other_user.id)
+    resp = await client.get(
+        "/api/tools/url-shortener",
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
     assert resp.status_code == 200
-    assert len(resp.json()) >= 1
+    data = resp.json()
+    assert len(data) == 1
+    assert data[0]["title"] == "Other link"
 
 
 @pytest.mark.asyncio
@@ -74,6 +109,26 @@ async def test_delete_url(
     resp = await auth_client.delete(f"/api/tools/url-shortener/{url.id}")
     assert resp.status_code == 200
     assert "deleted" in resp.json()["message"].lower()
+
+
+@pytest.mark.asyncio
+async def test_delete_other_users_url_forbidden(
+    client: AsyncClient,
+    db: AsyncSession,
+    admin_user: object,
+) -> None:
+    url = await create_short_url(db, created_by=admin_user.id)  # type: ignore[union-attr]
+    other_user = await create_user(
+        db,
+        email="deleter@glorng.dev",
+        permissions=["url-shortener:read", "url-shortener:write"],
+    )
+    other_token = create_access_token(str(other_user.public_id), user_id=other_user.id)
+    resp = await client.delete(
+        f"/api/tools/url-shortener/{url.id}",
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+    assert resp.status_code == 403
 
 
 @pytest.mark.asyncio
