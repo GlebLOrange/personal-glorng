@@ -1,29 +1,27 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from "vue";
 
+import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import { api } from "@/composables/useApi";
+import { useChatConfig } from "@/composables/useChatConfig";
 import { useSearchChat } from "@/composables/useSearchChat";
 import { useNotify } from "@/composables/useNotify";
 import { isAiSearchEnabled } from "@/utils/featureFlags";
-import { getApiErrorMessage } from "@/types/api";
-import { isExternalHref, safeNavigationHref } from "@/utils/safeUrl";
-
-interface SearchConfig {
-  enabled: boolean;
-  configured: boolean;
-}
+import type { SearchConfig } from "@/types/search";
 
 const open = ref(false);
 const chatEnd = ref<HTMLElement | null>(null);
-const searchConfig = ref<SearchConfig | null>(null);
-const configLoading = ref(true);
 const { toast } = useNotify();
 
-const isAvailable = computed(
-  () =>
-    isAiSearchEnabled() && Boolean(searchConfig.value?.enabled && searchConfig.value?.configured),
-);
+const showWidget = computed(() => isAiSearchEnabled());
+
+const { config: searchConfig, loading: configLoading, loadConfig, isReady } =
+  useChatConfig<SearchConfig>({
+    path: "/search/config",
+    fallback: { enabled: false, configured: false },
+  });
+
+const isAvailable = computed(() => showWidget.value && isReady.value);
 
 const { messages, input, loading, send, clear } = useSearchChat({
   endpoint: "/api/search/chat",
@@ -32,19 +30,6 @@ const { messages, input, loading, send, clear } = useSearchChat({
 
 function scrollToBottom(): void {
   nextTick(() => chatEnd.value?.scrollIntoView({ behavior: "smooth" }));
-}
-
-async function loadConfig(): Promise<void> {
-  configLoading.value = true;
-  try {
-    const { data } = await api.get<SearchConfig>("/search/config");
-    searchConfig.value = data;
-  } catch (err) {
-    searchConfig.value = { enabled: false, configured: false };
-    console.error(getApiErrorMessage(err, "Failed to load search config"));
-  } finally {
-    configLoading.value = false;
-  }
 }
 
 async function handleSend(): Promise<void> {
@@ -56,20 +41,6 @@ async function handleSend(): Promise<void> {
   }
 }
 
-
-interface SourceLink {
-  href: string;
-  external: boolean;
-}
-
-function sourceLink(url: string): SourceLink | null {
-  const href = safeNavigationHref(url);
-  if (!href) {
-    return null;
-  }
-  return { href, external: isExternalHref(href) };
-}
-
 function toggle(): void {
   open.value = !open.value;
   if (open.value) {
@@ -78,12 +49,14 @@ function toggle(): void {
 }
 
 onMounted(() => {
-  void loadConfig();
+  if (showWidget.value) {
+    void loadConfig();
+  }
 });
 </script>
 
 <template>
-  <div v-if="isAiSearchEnabled()" class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+  <div v-if="showWidget" class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
     <div
       v-if="open"
       class="w-[min(24rem,calc(100vw-3rem))] rounded-xl border border-surface-border bg-surface-dark shadow-2xl flex flex-col max-h-[70vh]"
@@ -96,63 +69,16 @@ onMounted(() => {
         <BaseButton variant="ghost" size="sm" type="button" @click="toggle">Close</BaseButton>
       </div>
 
-      <div class="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-        <p v-if="!messages.length" class="text-surface-mid text-sm text-center py-6">
-          Search the portfolio with natural language.
-        </p>
-
-        <div
-          v-for="msg in messages"
-          :key="msg.id"
-          :class="[
-            'rounded-lg px-3 py-2 text-sm whitespace-pre-wrap',
-            msg.role === 'user'
-              ? 'bg-accent-blue/10 border border-accent-blue/20 text-surface-light ml-6'
-              : 'bg-surface-card border border-surface-border text-surface-sage mr-6',
-          ]"
+      <div class="flex-1 overflow-y-auto px-4 py-3">
+        <SearchChatMessages
+          :messages="messages"
+          :loading="loading"
+          empty-message="Search the portfolio with natural language."
         >
-          {{ msg.content }}
-          <span
-            v-if="loading && msg.role === 'assistant' && i === messages.length - 1"
-            class="inline-block w-2 h-4 ml-0.5 bg-accent-violet/60 animate-pulse align-middle"
-          />
-
-          <div
-            v-if="msg.role === 'assistant' && msg.sources?.length"
-            class="mt-3 pt-2 border-t border-surface-border/60 space-y-2"
-          >
-            <p class="text-[10px] uppercase tracking-wider text-surface-mid">Sources</p>
-            <template v-for="source in msg.sources" :key="source.id">
-              <a
-                v-if="sourceLink(source.url)"
-                :href="sourceLink(source.url)!.href"
-                :rel="sourceLink(source.url)!.external ? 'noopener noreferrer' : undefined"
-                :target="sourceLink(source.url)!.external ? '_blank' : undefined"
-                class="block rounded-md border border-surface-border/80 bg-surface-dark/80 px-2 py-1.5 hover:border-accent-blue/40 transition-colors"
-              >
-                <span class="text-xs text-accent-blue font-medium">{{ source.title }}</span>
-                <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
-                <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
-              </a>
-              <div
-                v-else
-                class="block rounded-md border border-surface-border/80 bg-surface-dark/80 px-2 py-1.5"
-              >
-                <span class="text-xs text-accent-blue font-medium">{{ source.title }}</span>
-                <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
-                <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
-              </div>
-            </template>
-          </div>
-
-          <p
-            v-else-if="msg.role === 'assistant' && !loading && !msg.sources?.length && msg.content"
-            class="mt-2 text-[11px] text-amber-400/90"
-          >
-            No matching documents — answer may be limited.
-          </p>
-        </div>
-        <div ref="chatEnd" />
+          <template #end>
+            <div ref="chatEnd" />
+          </template>
+        </SearchChatMessages>
       </div>
 
       <form class="flex gap-2 border-t border-surface-border p-3" @submit.prevent="handleSend">

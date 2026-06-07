@@ -2,4 +2,6 @@
 
 SEARCH_INDEX_CONFIG = "english"
 SEARCH_INDEX_NAME = "ix_search_documents_search_vector"
-SEARCH_FTS_EXPRESSION = "to_tsvector('english', title || ' ' || body)"
+SEARCH_FTS_EXPRESSION = (
+    f"to_tsvector('{SEARCH_INDEX_CONFIG}', title || ' ' || body)"
+)

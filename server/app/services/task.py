@@ -187,6 +187,7 @@ class TaskService:
         self.db.add(task)
         await self.db.flush()
         await self.db.refresh(task)
+        await index_task(self.db, task)
 
         await AuditService(self.db).record(
             domain_event(

@@ -3,24 +3,16 @@ import { computed, nextTick, onMounted, ref } from "vue";
 
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
-import { api } from "@/composables/useApi";
+import { useChatConfig } from "@/composables/useChatConfig";
 import { useNotify } from "@/composables/useNotify";
 import { useSearchChat } from "@/composables/useSearchChat";
 import { useAuthStore } from "@/stores/auth";
-import { getApiErrorMessage } from "@/types/api";
-import { isExternalHref, safeNavigationHref } from "@/utils/safeUrl";
+import type { AdminChatConfig } from "@/types/search";
 
 type AiChatTab = "chat" | "settings";
-
-interface ChatConfig {
-  enabled: boolean;
-  configured: boolean;
-  model: string;
-  provider: string;
-  base_url: string | null;
-}
 
 const AI_CHAT_TABS = [
   { id: "chat", label: "chat" },
@@ -49,76 +41,52 @@ OPENAI_CHAT_MODEL=google/gemma-2-9b-it:free`,
 ] as const;
 
 const activeTab = ref<AiChatTab>("chat");
-const chatConfig = ref<ChatConfig | null>(null);
-const configLoading = ref(true);
 const chatEnd = ref<HTMLElement | null>(null);
 const { toast } = useNotify();
+
+const {
+  config: chatConfig,
+  loading: configLoading,
+  loadConfig,
+  isReady,
+} = useChatConfig<AdminChatConfig>({
+  path: "/tools/ai-chat/config",
+  fallback: {
+    enabled: false,
+    configured: false,
+    model: "",
+    provider: "",
+    base_url: null,
+  },
+  onError: (message) => toast(message, "error"),
+});
 
 const { messages, input, loading, send, clear } = useSearchChat({
   endpoint: "/api/tools/ai-chat",
   onError: (message) => toast(message, "error"),
+  beforeSend: async () => {
+    const auth = useAuthStore();
+    if (!auth.isAuthenticated) {
+      toast("Not authenticated", "error");
+      return false;
+    }
+    if (!isReady.value) {
+      toast("AI chat is not configured — check Settings", "error");
+      activeTab.value = "settings";
+      return false;
+    }
+    return true;
+  },
 });
 
 const providerLabel = computed(() => chatConfig.value?.provider ?? "…");
 const modelLabel = computed(() => chatConfig.value?.model ?? "…");
-const isReady = computed(() => Boolean(chatConfig.value?.enabled && chatConfig.value?.configured));
-
-interface SourceLink {
-  href: string;
-  external: boolean;
-}
-
-function sourceLink(url: string): SourceLink | null {
-  const href = safeNavigationHref(url);
-  if (!href) {
-    return null;
-  }
-  return { href, external: isExternalHref(href) };
-}
-
-
-interface SourceLink {
-  href: string;
-  external: boolean;
-}
-
-function sourceLink(url: string): SourceLink | null {
-  const href = safeNavigationHref(url);
-  if (!href) {
-    return null;
-  }
-  return { href, external: isExternalHref(href) };
-}
 
 function scrollToBottom(): void {
   nextTick(() => chatEnd.value?.scrollIntoView({ behavior: "smooth" }));
 }
 
-async function loadConfig(): Promise<void> {
-  configLoading.value = true;
-  try {
-    const { data } = await api.get<ChatConfig>("/tools/ai-chat/config");
-    chatConfig.value = data;
-  } catch (err) {
-    toast(getApiErrorMessage(err, "Failed to load AI chat config"), "error");
-  } finally {
-    configLoading.value = false;
-  }
-}
-
 async function handleSend(): Promise<void> {
-  const auth = useAuthStore();
-  if (!auth.isAuthenticated) {
-    toast("Not authenticated", "error");
-    return;
-  }
-
-  if (!isReady.value) {
-    toast("AI chat is not configured — check Settings", "error");
-    activeTab.value = "settings";
-    return;
-  }
-
   try {
     await send();
     scrollToBottom();
@@ -149,72 +117,22 @@ onMounted(() => {
         </span>
       </div>
 
-      <div class="flex-1 overflow-y-auto space-y-4 mb-4 pr-1">
-        <p v-if="!messages.length" class="text-surface-mid text-sm text-center mt-8">
-          Search your indexed content — tasks, recipes, expenses, and more.
-        </p>
-
-        <div
-          v-for="(msg, i) in messages"
-          :key="i"
-          :class="[
-            'px-4 py-3 rounded-lg text-sm whitespace-pre-wrap leading-relaxed',
-            msg.role === 'user'
-              ? 'bg-accent-blue/10 border border-accent-blue/20 text-surface-light ml-8'
-              : 'bg-surface-dark border border-surface-border text-surface-sage mr-8',
-          ]"
+      <div class="flex-1 overflow-y-auto mb-4 pr-1">
+        <SearchChatMessages
+          :messages="messages"
+          :loading="loading"
+          show-role-labels
+          empty-message="Search your indexed content — tasks, recipes, expenses, and more."
+          sources-label="Searching your indexed content"
+          user-class="bg-accent-blue/10 border border-accent-blue/20 text-surface-light ml-8"
+          assistant-class="bg-surface-dark border border-surface-border text-surface-sage mr-8"
+          source-link-class="block rounded-md border border-surface-border/80 bg-surface-card/60 px-3 py-2 hover:border-accent-violet/40 transition-colors"
+          source-title-class="text-xs text-accent-violet font-medium"
         >
-          <span
-            class="text-[10px] uppercase tracking-wider block mb-1"
-            :class="msg.role === 'user' ? 'text-accent-blue' : 'text-accent-violet'"
-          >
-            {{ msg.role }}
-          </span>
-          {{ msg.content
-          }}<span
-            v-if="loading && msg.role === 'assistant' && i === messages.length - 1"
-            class="inline-block w-2 h-4 ml-0.5 bg-accent-violet/60 animate-pulse align-middle"
-          />
-
-          <div
-            v-if="msg.role === 'assistant' && msg.sources?.length"
-            class="mt-3 pt-3 border-t border-surface-border/70 space-y-2"
-          >
-            <p class="text-[10px] uppercase tracking-wider text-surface-mid">
-              Searching your indexed content
-            </p>
-            <template v-for="source in msg.sources" :key="source.id">
-              <a
-                v-if="sourceLink(source.url)"
-                :href="sourceLink(source.url)!.href"
-                :rel="sourceLink(source.url)!.external ? 'noopener noreferrer' : undefined"
-                :target="sourceLink(source.url)!.external ? '_blank' : undefined"
-                class="block rounded-md border border-surface-border/80 bg-surface-card/60 px-3 py-2 hover:border-accent-violet/40 transition-colors"
-              >
-                <span class="text-xs text-accent-violet font-medium">{{ source.title }}</span>
-                <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
-                <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
-              </a>
-              <div
-                v-else
-                class="block rounded-md border border-surface-border/80 bg-surface-card/60 px-3 py-2"
-              >
-                <span class="text-xs text-accent-violet font-medium">{{ source.title }}</span>
-                <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
-                <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
-              </div>
-            </template>
-          </div>
-
-          <p
-            v-else-if="msg.role === 'assistant' && !loading && !msg.sources?.length && msg.content"
-            class="mt-2 text-[11px] text-amber-400/90"
-          >
-            No matching documents — answer may be limited.
-          </p>
-        </div>
-
-        <div ref="chatEnd" />
+          <template #end>
+            <div ref="chatEnd" />
+          </template>
+        </SearchChatMessages>
       </div>
 
       <form class="flex gap-3 border-t border-surface-border pt-4" @submit.prevent="handleSend">

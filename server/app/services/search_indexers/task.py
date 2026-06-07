@@ -2,9 +2,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.search_document import SearchVisibility
 from app.db.models.task import Task
-from app.services.search_index import SearchDocumentInput, SearchIndexService
+from app.services.search_index import (
+    SearchDocumentInput,
+    remove_by_source,
+    upsert_document,
+)
+from app.services.search_source_types import SearchSourceType
 
-TASK_SOURCE_TYPE = "task"
+TASK_SOURCE_TYPE = SearchSourceType.TASK
 
 
 def _task_document(task: Task) -> SearchDocumentInput:
@@ -26,8 +31,8 @@ def _task_document(task: Task) -> SearchDocumentInput:
 
 
 async def index_task(db: AsyncSession, task: Task) -> None:
-    await SearchIndexService(db).upsert(_task_document(task))
+    await upsert_document(db, _task_document(task))
 
 
 async def remove_task(db: AsyncSession, task_id: int) -> None:
-    await SearchIndexService(db).delete_by_source(TASK_SOURCE_TYPE, task_id)
+    await remove_by_source(db, TASK_SOURCE_TYPE, task_id)

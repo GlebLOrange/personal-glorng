@@ -5,10 +5,9 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.deps import get_ai_search_service, get_openai_chat_service
+from app.core.deps import get_ai_search_service
 from app.db.models.search_document import SearchVisibility
 from app.main import app
-from app.services.ai_chat import OpenAIService
 from app.services.ai_search import AiSearchService
 from app.services.search_index import SearchDocumentInput, SearchIndexService
 from app.settings import get_settings
@@ -122,10 +121,8 @@ async def test_public_search_query(
 async def test_public_search_chat_streams_sources(
     client: AsyncClient,
 ) -> None:
-    llm = OpenAIService(api_key="test-key", model="gpt-4.1")
     search_svc = SearchIndexService.__new__(SearchIndexService)
-    ai_search = AiSearchService(search_svc, llm)
-    app.dependency_overrides[get_openai_chat_service] = lambda: llm
+    ai_search = AiSearchService(search_svc, get_settings())
     app.dependency_overrides[get_ai_search_service] = lambda: ai_search
 
     with patch.object(
@@ -138,7 +135,6 @@ async def test_public_search_chat_streams_sources(
             json={"messages": [{"role": "user", "content": "What stack?"}]},
         )
 
-    app.dependency_overrides.pop(get_openai_chat_service, None)
     app.dependency_overrides.pop(get_ai_search_service, None)
 
     assert resp.status_code == 200
