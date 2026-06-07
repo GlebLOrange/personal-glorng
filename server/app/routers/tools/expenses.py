@@ -1,11 +1,14 @@
+"""Expense ledger API. Default: `expenses:read`; writes: `expenses:write`."""
+
 from datetime import date
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
 from app.core.deps import AuthorizedUser, DbSession, require_capability
-from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
+from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
+from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
 from app.schemas.tool_expense import (
     ExchangeRatesResponse,
     ExpenseParseRequest,
@@ -27,11 +30,17 @@ from app.todobot.utils.expense_nlp import parse_expense_text
 
 router = APIRouter(
     prefix="/expenses",
+    tags=["expenses"],
     dependencies=[Depends(require_capability("expenses", "read"))],
 )
 
 
-@router.get("/categories", response_model=list[ExpenseCategoryResponse])
+@router.get(
+    "/categories",
+    response_model=list[ExpenseCategoryResponse],
+    summary="List expense categories",
+    description=requires_capability("expenses", "read"),
+)
 async def list_categories(
     db: DbSession,
     user: AuthorizedUser,  # noqa: ARG001
@@ -43,6 +52,8 @@ async def list_categories(
 @router.post(
     "/categories",
     response_model=ExpenseCategoryResponse,
+    summary="Create expense category",
+    description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
 )
 async def create_category(
@@ -57,6 +68,8 @@ async def create_category(
 @router.put(
     "/categories/{category_id}",
     response_model=ExpenseCategoryResponse,
+    summary="Update expense category",
+    description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
 )
 async def update_category(
@@ -72,6 +85,8 @@ async def update_category(
 @router.delete(
     "/categories/{category_id}",
     response_model=MessageResponse,
+    summary="Delete expense category",
+    description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
 )
 async def delete_category(
@@ -84,7 +99,12 @@ async def delete_category(
     return MessageResponse(message="Category deleted")
 
 
-@router.get("/rates", response_model=ExchangeRatesResponse)
+@router.get(
+    "/rates",
+    response_model=ExchangeRatesResponse,
+    summary="Get exchange rates",
+    description=requires_capability("expenses", "read"),
+)
 async def get_exchange_rates(
     user: AuthorizedUser,  # noqa: ARG001
 ) -> ExchangeRatesResponse:
@@ -92,7 +112,12 @@ async def get_exchange_rates(
     return ExchangeRatesResponse(**meta)
 
 
-@router.post("/convert", response_model=CurrencyConvertResponse)
+@router.post(
+    "/convert",
+    response_model=CurrencyConvertResponse,
+    summary="Convert currency amount",
+    description=requires_capability("expenses", "read"),
+)
 async def convert_currency(
     body: CurrencyConvertRequest,
     user: AuthorizedUser,  # noqa: ARG001
@@ -115,7 +140,12 @@ async def convert_currency(
     )
 
 
-@router.get("/summary", response_model=ToolExpenseSummary)
+@router.get(
+    "/summary",
+    response_model=ToolExpenseSummary,
+    summary="Get expense summary",
+    description=requires_capability("expenses", "read"),
+)
 async def get_summary(
     db: DbSession,
     user: AuthorizedUser,  # noqa: ARG001
@@ -140,6 +170,8 @@ async def get_summary(
 @router.post(
     "/parse",
     response_model=ExpenseParseResponse,
+    summary="Parse expense from free text",
+    description=requires_capability("expenses", "read"),
     dependencies=[Depends(require_capability("expenses", "read"))],
 )
 async def parse_expense(
@@ -162,7 +194,12 @@ async def parse_expense(
     )
 
 
-@router.get("", response_model=list[ToolExpenseResponse])
+@router.get(
+    "",
+    response_model=list[ToolExpenseResponse],
+    summary="List expenses",
+    description=requires_capability("expenses", "read"),
+)
 async def list_expenses(
     db: DbSession,
     user: AuthorizedUser,  # noqa: ARG001
@@ -186,7 +223,11 @@ async def list_expenses(
     )
 
 
-@router.get("/export")
+@router.get(
+    "/export",
+    summary="Export expenses as CSV",
+    description=requires_capability("expenses", "read"),
+)
 async def export_expenses(
     db: DbSession,
     user: AuthorizedUser,  # noqa: ARG001
@@ -215,7 +256,12 @@ async def export_expenses(
     )
 
 
-@router.get("/{expense_id}", response_model=ToolExpenseResponse)
+@router.get(
+    "/{expense_id}",
+    response_model=ToolExpenseResponse,
+    summary="Get expense by ID",
+    description=requires_capability("expenses", "read"),
+)
 async def get_expense(
     expense_id: int,
     db: DbSession,
@@ -228,6 +274,8 @@ async def get_expense(
 @router.post(
     "",
     response_model=ToolExpenseResponse,
+    summary="Create expense",
+    description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
 )
 async def create_expense(
@@ -242,6 +290,8 @@ async def create_expense(
 @router.put(
     "/{expense_id}",
     response_model=ToolExpenseResponse,
+    summary="Update expense",
+    description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
 )
 async def update_expense(
@@ -257,6 +307,8 @@ async def update_expense(
 @router.delete(
     "/{expense_id}",
     response_model=MessageResponse,
+    summary="Delete expense",
+    description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
 )
 async def delete_expense(

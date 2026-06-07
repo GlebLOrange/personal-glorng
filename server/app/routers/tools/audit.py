@@ -1,19 +1,28 @@
+"""Audit event log. All routes require `audit:read`."""
+
 from datetime import date
 
 from fastapi import APIRouter, Depends
 
 from app.core.deps import AuthorizedUser, DbSession, require_capability
 from app.core.utils import paginate_params
+from app.openapi import requires_capability
 from app.schemas.audit import AuditEventListResponse, AuditEventResponse
 from app.services.audit import AuditService
 
 router = APIRouter(
     prefix="/audit",
+    tags=["audit"],
     dependencies=[Depends(require_capability("audit", "read"))],
 )
 
 
-@router.get("", response_model=AuditEventListResponse)
+@router.get(
+    "",
+    response_model=AuditEventListResponse,
+    summary="List audit events",
+    description=requires_capability("audit", "read"),
+)
 async def list_audit_events(
     db: DbSession,
     user: AuthorizedUser,  # noqa: ARG001

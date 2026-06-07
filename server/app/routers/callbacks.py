@@ -30,7 +30,11 @@ _ERROR_HTML = """
 """
 
 
-@router.get("/google")
+@router.get(
+    "/google",
+    summary="Google OAuth callback",
+    description="Exchange Google Calendar OAuth code and store refresh token.",
+)
 async def google_oauth_callback(
     code: str,
     state: str,
@@ -44,7 +48,7 @@ async def google_oauth_callback(
         if payload.get("type") != "oauth_state":
             return HTMLResponse(_ERROR_HTML, status_code=400)
         telegram_user_id = int(payload.get("sub", ""))
-    except (ValueError, TypeError, Exception):
+    except ValueError, TypeError, Exception:
         return HTMLResponse(_ERROR_HTML, status_code=400)
 
     try:

@@ -40,9 +40,12 @@ class GitHubCallbackResponse(BaseModel):
     message: str
 
 
-@router.get("/authorize")
+@router.get(
+    "/authorize",
+    summary="Start GitHub OAuth",
+    description="Redirect the authenticated user to GitHub OAuth consent screen.",
+)
 async def github_authorize(user: CurrentUser) -> RedirectResponse:
-    """Redirect the authenticated user to GitHub OAuth consent screen."""
     settings = get_settings()
     state = secrets.token_urlsafe(32)
     await cache_set(
@@ -67,13 +70,17 @@ async def github_authorize(user: CurrentUser) -> RedirectResponse:
     return RedirectResponse(url=url, status_code=302)
 
 
-@router.post("/callback", response_model=GitHubCallbackResponse)
+@router.post(
+    "/callback",
+    response_model=GitHubCallbackResponse,
+    summary="Complete GitHub OAuth",
+    description="Exchange OAuth code for access token and store credential.",
+)
 async def github_callback(
     body: GitHubCallbackRequest,
     user: CurrentUser,
     db: DbSession,
 ) -> GitHubCallbackResponse:
-    """Exchange OAuth code for access token and store credential."""
     state_key = _github_oauth_state_key(user_public_id=str(user.public_id))
     expected_state = await cache_get(state_key)
     if not expected_state or expected_state != body.state:

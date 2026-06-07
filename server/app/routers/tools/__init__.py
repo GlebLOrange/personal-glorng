@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-tools_router = APIRouter(prefix="/tools", tags=["tools"])
+tools_router = APIRouter(prefix="/tools")
 
 for module_file in Path(__file__).parent.glob("*.py"):
     if module_file.name.startswith("_"):
