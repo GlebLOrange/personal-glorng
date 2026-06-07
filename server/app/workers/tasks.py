@@ -15,7 +15,9 @@ from arq.worker import Retry
 from app.core.email import (
     get_email_backend,
     render_reset_email,
+    render_reset_email_plain,
     render_verification_email,
+    render_verification_email_plain,
 )
 from app.core.logging import logger
 from app.core.utils import format_scheduled_at
@@ -78,12 +80,14 @@ async def _send_email(
     email: str,
     token: str,
     subject: str,
-    render_fn: Callable[[str, str], str],
+    render_html_fn: Callable[[str, str], str],
+    render_plain_fn: Callable[[str, str], str],
 ) -> None:
     settings = get_settings()
     backend = get_email_backend()
-    html = render_fn(token, settings.BASE_URL)
-    await backend.send(email, subject, html)
+    html = render_html_fn(token, settings.BASE_URL)
+    plain = render_plain_fn(token, settings.BASE_URL)
+    await backend.send(email, subject, html, plain)
     logger.info("Email sent", context={"to": email, "subject": subject})
 
 
@@ -98,6 +102,7 @@ async def send_verification_email(
             token,
             "Verify your email - gLOrng",
             render_verification_email,
+            render_verification_email_plain,
         )
     except (smtplib.SMTPException, OSError) as exc:
         _raise_retry_or_fail(ctx, "send_verification_email", exc)
@@ -114,6 +119,7 @@ async def send_reset_email(
             token,
             "Password reset - gLOrng",
             render_reset_email,
+            render_reset_email_plain,
         )
     except (smtplib.SMTPException, OSError) as exc:
         _raise_retry_or_fail(ctx, "send_reset_email", exc)
