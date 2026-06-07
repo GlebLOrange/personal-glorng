@@ -206,6 +206,21 @@ export interface Recipe {
   updated_at: string;
 }
 
+export type RecipeSort =
+  | "updated_desc"
+  | "title_asc"
+  | "title_desc"
+  | "prep_asc"
+  | "total_time_asc";
+
+export interface PaginatedRecipes {
+  items: Recipe[];
+  total: number;
+  page: number;
+  per_page: number;
+  pages: number;
+}
+
 export interface ExpenseCategory {
   id: number;
   name: string;

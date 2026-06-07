@@ -183,7 +183,7 @@ async def admin_user(db: AsyncSession) -> User:
 
 @pytest.fixture
 def admin_token(admin_user: User) -> str:
-    return create_access_token(str(admin_user.public_id))
+    return create_access_token(str(admin_user.public_id), user_id=admin_user.id)
 
 
 @pytest.fixture

@@ -8,11 +8,13 @@ export interface ApiActionOptions {
   errorFallback?: string;
   successMessage?: string;
   silent?: boolean;
+  logContext?: string;
 }
 
 /** Wrap async API calls with shared loading and error toast handling. */
 export function useApiAction() {
   const loading = ref(false);
+  const lastError = ref<string | null>(null);
   const { toast } = useNotify();
 
   async function run<T>(
@@ -22,14 +24,17 @@ export function useApiAction() {
     loading.value = true;
     try {
       const result = await action();
+      lastError.value = null;
       if (options.successMessage) {
         toast(options.successMessage, "success");
       }
       return result;
     } catch (err) {
-      console.error(err);
+      const message = getApiErrorMessage(err, options.errorFallback ?? "Request failed");
+      lastError.value = message;
+      console.error(options.logContext ?? "api", err);
       if (!options.silent) {
-        toast(getApiErrorMessage(err, options.errorFallback ?? "Request failed"), "error");
+        toast(message, "error");
       }
       return null;
     } finally {
@@ -37,5 +42,5 @@ export function useApiAction() {
     }
   }
 
-  return { loading, run };
+  return { loading, lastError, run };
 }

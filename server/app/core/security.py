@@ -38,10 +38,57 @@ def _create_token(
 def create_access_token(
     subject: str,
     expires_delta: timedelta | None = None,
+    *,
+    user_id: int | None = None,
 ) -> str:
     settings = get_settings()
     delta = expires_delta or timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
-    return _create_token(subject, "access", delta)
+    token = _create_token(subject, "access", delta)
+    if user_id is None:
+        return token
+    payload = decode_token(token)
+    payload["uid"] = user_id
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+
+
+def user_id_from_access_token(raw: str) -> int | None:
+    """Return the authenticated user's DB id from an access token, if present."""
+    try:
+        payload = decode_token(raw)
+    except ValueError:
+        return None
+    if payload.get("type") != "access":
+        return None
+    uid = payload.get("uid")
+    if uid is not None:
+        try:
+            return int(uid)
+        except (ValueError, TypeError):
+            return None
+    sub = payload.get("sub")
+    if sub is None:
+        return None
+    try:
+        return int(sub)
+    except (ValueError, TypeError):
+        return None
+
+
+def access_token_from_request(request: object) -> str | None:
+    """Extract a bearer or cookie access token from a Starlette request."""
+    headers = getattr(request, "headers", None)
+    cookies = getattr(request, "cookies", None)
+    if headers is not None:
+        auth = headers.get("authorization", "")
+        if auth.lower().startswith("bearer "):
+            token = auth[7:].strip()
+            if token:
+                return token
+    if cookies is not None:
+        cookie_token = cookies.get("access_token")
+        if cookie_token:
+            return cookie_token
+    return None
 
 
 def create_refresh_token(subject: str) -> str:

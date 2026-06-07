@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import AuthorizedUser, RecipeServiceDep, require_capability
 from app.schemas.common import MessageResponse
-from app.schemas.recipe import RecipeCreate, RecipeResponse, RecipeUpdate
+from app.schemas.recipe import RecipeCreate, RecipeListResponse, RecipeResponse, RecipeSort, RecipeUpdate
 
 router = APIRouter(
     prefix="/recipes",
@@ -18,14 +20,23 @@ async def list_tags(
     return await svc.get_all_tags()
 
 
-@router.get("", response_model=list[RecipeResponse])
+@router.get("", response_model=RecipeListResponse)
 async def list_recipes(
     svc: RecipeServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
-    search: str | None = None,
+    search: Annotated[str | None, Query(max_length=200)] = None,
     tag: str | None = None,
-) -> list[RecipeResponse]:
-    return await svc.list_recipes(search=search, tag=tag)
+    sort: RecipeSort = "updated_desc",
+    page: int = 1,
+    per_page: int = 24,
+) -> RecipeListResponse:
+    return await svc.list_recipes(
+        search=search,
+        tag=tag,
+        sort=sort,
+        page=page,
+        per_page=per_page,
+    )
 
 
 @router.get("/{recipe_id}", response_model=RecipeResponse)
@@ -45,9 +56,9 @@ async def get_recipe(
 async def create_recipe(
     data: RecipeCreate,
     svc: RecipeServiceDep,
-    user: AuthorizedUser,  # noqa: ARG001
+    user: AuthorizedUser,
 ) -> RecipeResponse:
-    return await svc.create_recipe(data)
+    return await svc.create_recipe(data, actor_id=user.id)
 
 
 @router.put(
@@ -59,9 +70,9 @@ async def update_recipe(
     recipe_id: int,
     data: RecipeUpdate,
     svc: RecipeServiceDep,
-    user: AuthorizedUser,  # noqa: ARG001
+    user: AuthorizedUser,
 ) -> RecipeResponse:
-    return await svc.update_recipe(recipe_id, data)
+    return await svc.update_recipe(recipe_id, data, actor_id=user.id)
 
 
 @router.delete(
@@ -72,7 +83,7 @@ async def update_recipe(
 async def delete_recipe(
     recipe_id: int,
     svc: RecipeServiceDep,
-    user: AuthorizedUser,  # noqa: ARG001
+    user: AuthorizedUser,
 ) -> MessageResponse:
-    await svc.delete_recipe(recipe_id)
+    await svc.delete_recipe(recipe_id, actor_id=user.id)
     return MessageResponse(message="Recipe deleted")
