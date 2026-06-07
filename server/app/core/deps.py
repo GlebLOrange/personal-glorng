@@ -14,8 +14,13 @@ from app.core.security import decode_token
 from app.db.models.user import User
 from app.db.session import get_db
 from app.services.ai_chat import OpenAIService
+from app.services.audit import AuditService
+from app.services.currency import CurrencyService
 from app.services.recipe import RecipeService
+from app.services.task import TaskService
+from app.services.task_intake import TaskIntakeService
 from app.services.tool_expense import ToolExpenseService
+from app.services.tool_expense_category import ToolExpenseCategoryService
 from app.services.user import get_user_by_public_id
 from app.settings import Settings, get_settings
 from app.workers.pool import get_arq_pool
@@ -28,6 +33,49 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=Fals
 RedisClient = Annotated[Redis, Depends(get_redis_client)]
 
 
+async def _resolve_user_from_token(
+    raw_token: str,
+    db: AsyncSession,
+    *,
+    strict: bool = False,
+) -> User | None:
+    try:
+        payload = decode_token(raw_token)
+    except ValueError:
+        if strict:
+            raise UnauthorizedError("Invalid token") from None
+        return None
+
+    if payload.get("type") != "access":
+        if strict:
+            raise UnauthorizedError("Invalid token type")
+        return None
+
+    jti = payload.get("jti", "")
+    if await is_token_blacklisted(jti):
+        if strict:
+            raise UnauthorizedError("Token has been revoked")
+        return None
+
+    user_sub = payload.get("sub")
+    if not user_sub:
+        if strict:
+            raise UnauthorizedError("Invalid token payload")
+        return None
+
+    user = await get_user_by_public_id(db, str(user_sub))
+    if not user:
+        if strict:
+            raise UnauthorizedError("User not found")
+        return None
+    if not user.is_verified:
+        if strict:
+            raise ForbiddenError("Email not verified")
+        return None
+
+    return user
+
+
 async def get_current_user(
     request: Request,
     db: DbSession,
@@ -37,29 +85,8 @@ async def get_current_user(
     if not raw_token:
         raise UnauthorizedError("Not authenticated")
 
-    try:
-        payload = decode_token(raw_token)
-    except ValueError:
-        raise UnauthorizedError("Invalid token") from None
-
-    if payload.get("type") != "access":
-        raise UnauthorizedError("Invalid token type")
-
-    jti = payload.get("jti", "")
-    if await is_token_blacklisted(jti):
-        raise UnauthorizedError("Token has been revoked")
-
-    user_sub = payload.get("sub")
-    if not user_sub:
-        raise UnauthorizedError("Invalid token payload")
-
-    user = await get_user_by_public_id(db, str(user_sub))
-    if not user:
-        raise UnauthorizedError("User not found")
-    if not user.is_verified:
-        raise ForbiddenError("Email not verified")
-
-    return user
+    user = await _resolve_user_from_token(raw_token, db, strict=True)
+    return user  # strict=True raises before returning None
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
@@ -75,27 +102,7 @@ async def get_optional_current_user(
     if not raw_token:
         return None
 
-    try:
-        payload = decode_token(raw_token)
-    except ValueError:
-        return None
-
-    if payload.get("type") != "access":
-        return None
-
-    jti = payload.get("jti", "")
-    if await is_token_blacklisted(jti):
-        return None
-
-    user_sub = payload.get("sub")
-    if not user_sub:
-        return None
-
-    user = await get_user_by_public_id(db, str(user_sub))
-    if not user or not user.is_verified:
-        return None
-
-    return user
+    return await _resolve_user_from_token(raw_token, db)
 
 
 OptionalUser = Annotated[User | None, Depends(get_optional_current_user)]
@@ -154,8 +161,49 @@ def get_recipe_service(db: DbSession) -> RecipeService:
 RecipeServiceDep = Annotated[RecipeService, Depends(get_recipe_service)]
 
 
-def get_expense_service(db: DbSession) -> ToolExpenseService:
-    return ToolExpenseService(db)
+def get_currency_service() -> CurrencyService:
+    return CurrencyService()
+
+
+CurrencyServiceDep = Annotated[CurrencyService, Depends(get_currency_service)]
+
+
+def get_expense_category_service(db: DbSession) -> ToolExpenseCategoryService:
+    return ToolExpenseCategoryService(db)
+
+
+ExpenseCategoryServiceDep = Annotated[
+    ToolExpenseCategoryService,
+    Depends(get_expense_category_service),
+]
+
+
+def get_expense_service(
+    db: DbSession,
+    currency_svc: CurrencyServiceDep,
+) -> ToolExpenseService:
+    return ToolExpenseService(db, currency_svc=currency_svc)
 
 
 ExpenseServiceDep = Annotated[ToolExpenseService, Depends(get_expense_service)]
+
+
+def get_audit_service(db: DbSession) -> AuditService:
+    return AuditService(db)
+
+
+AuditServiceDep = Annotated[AuditService, Depends(get_audit_service)]
+
+
+def get_task_service(db: DbSession) -> TaskService:
+    return TaskService(db)
+
+
+TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]
+
+
+def get_task_intake_service(db: DbSession) -> TaskIntakeService:
+    return TaskIntakeService(db)
+
+
+TaskIntakeServiceDep = Annotated[TaskIntakeService, Depends(get_task_intake_service)]
