@@ -212,31 +212,7 @@ def mongomock_compat(monkeypatch: pytest.MonkeyPatch) -> Generator[None]:
             return None
         return repo_base._parse_doc(User, data)
 
-    def _serialize_field(value: Any) -> Any:
-        if isinstance(value, uuid.UUID):
-            return str(value)
-        if isinstance(value, Decimal):
-            return str(value)
-        if isinstance(value, date) and not isinstance(value, datetime):
-            return value.isoformat()
-        return value
-
-    original_update_fields = repo_base.MongoRepository.update_fields
-
-    async def _mongomock_update_fields(
-        self: repo_base.MongoRepository,
-        doc_id: int,
-        **fields: Any,
-    ) -> Any:
-        safe_fields = {key: _serialize_field(value) for key, value in fields.items()}
-        return await original_update_fields(self, doc_id, **safe_fields)
-
     monkeypatch.setattr(repo_base, "document_to_dict", _mongomock_safe_to_dict)
-    monkeypatch.setattr(
-        repo_base.MongoRepository,
-        "update_fields",
-        _mongomock_update_fields,
-    )
     monkeypatch.setattr(SearchRepository, "search_text", _search_text_regex)
     monkeypatch.setattr(
         UserRepository,
