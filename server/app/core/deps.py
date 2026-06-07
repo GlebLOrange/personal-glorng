@@ -164,16 +164,6 @@ CurrencyServiceDep = Annotated[CurrencyService, Depends(get_currency_service)]
 def get_expense_category_service(db: DbSession) -> ToolExpenseCategoryService:
     return ToolExpenseCategoryService(db)
 
-def get_currency_service() -> CurrencyService:
-    return CurrencyService()
-
-
-CurrencyServiceDep = Annotated[CurrencyService, Depends(get_currency_service)]
-
-
-def get_expense_category_service(db: DbSession) -> ToolExpenseCategoryService:
-    return ToolExpenseCategoryService(db)
-
 
 ExpenseCategoryServiceDep = Annotated[
     ToolExpenseCategoryService,
@@ -212,8 +202,11 @@ def get_task_intake_service(db: DbSession) -> TaskIntakeService:
 TaskIntakeServiceDep = Annotated[TaskIntakeService, Depends(get_task_intake_service)]
 
 
-def get_recipe_service(db: DbSession) -> RecipeService:
-    return RecipeService(db)
+def get_recipe_service(
+    db: DbSession,
+    audit_svc: AuditServiceDep,
+) -> RecipeService:
+    return RecipeService(db, audit_svc)
 
 
 RecipeServiceDep = Annotated[RecipeService, Depends(get_recipe_service)]
