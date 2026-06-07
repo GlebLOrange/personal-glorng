@@ -1,7 +1,7 @@
 """AI intake and guided task creation flows."""
 
 from contextlib import suppress
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime
 
 from aiogram import Bot, F, Router
 from aiogram.filters import Command, CommandObject
@@ -9,9 +9,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.google_sync_queue import SyncAction
 from app.schemas.task_intake import TaskDraft
-from app.services.task import create_reminder, create_task, enqueue_calendar_sync
+from app.services.task import create_with_sync
 from app.services.task_intake import TaskIntakeService
 from app.todobot.keyboards.menu import main_menu
 from app.todobot.keyboards.task import (
@@ -23,7 +22,6 @@ from app.todobot.keyboards.task import (
 )
 from app.todobot.states.task import TaskCreation
 from app.todobot.utils.nlp import parse_task_input
-from app.workers.scheduling import schedule_reminder
 
 router = Router()
 
@@ -464,24 +462,17 @@ async def confirm_task(
     scheduled_at = datetime.fromisoformat(f"{task_date}T{task_time}:00").replace(
         tzinfo=UTC,
     )
+    reminder_minutes = data.get("reminder_minutes")
 
-    task = await create_task(
+    task = await create_with_sync(
         db,
         telegram_user_id=callback.from_user.id,
         title=data.get("title", "Untitled"),
         scheduled_at=scheduled_at,
         description=data.get("notes"),
         location=data.get("location"),
+        reminder_minutes=int(reminder_minutes) if reminder_minutes else None,
     )
-
-    reminder_minutes = data.get("reminder_minutes")
-    if reminder_minutes:
-        remind_at = scheduled_at - timedelta(minutes=int(reminder_minutes))
-        if remind_at > datetime.now(UTC):
-            reminder = await create_reminder(db, task_id=task.id, remind_at=remind_at)
-            await schedule_reminder(db, reminder)
-
-    await enqueue_calendar_sync(db, task_id=task.id, action=SyncAction.CREATE)
 
     if callback.bot:
         await _cleanup_messages(callback.bot, callback.message.chat.id, state)

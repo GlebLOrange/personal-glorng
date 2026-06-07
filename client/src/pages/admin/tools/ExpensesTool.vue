@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
+import ExpenseCategoryChips from "@/components/expenses/ExpenseCategoryChips.vue";
 import ExpenseCategorySettings from "@/components/expenses/ExpenseCategorySettings.vue";
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
+import ExpenseCurrencyConverter from "@/components/expenses/ExpenseCurrencyConverter.vue";
 import ExpenseDateFilters from "@/components/expenses/ExpenseDateFilters.vue";
 import ExpenseFormModal from "@/components/expenses/ExpenseFormModal.vue";
 import ExpenseInsights from "@/components/expenses/ExpenseInsights.vue";
 import ExpenseList from "@/components/expenses/ExpenseList.vue";
 import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
 import ExpenseSummaryCard from "@/components/expenses/ExpenseSummaryCard.vue";
+import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -16,21 +20,29 @@ import { useCategoryManager } from "@/composables/useCategoryManager";
 import {
   EXPENSE_CURRENCIES,
   EXPENSE_CURRENCY_STORAGE_KEY,
+  EXPENSE_DEFAULT_CURRENCY,
   EXPENSE_LAST_CATEGORY_STORAGE_KEY,
   useExpenseFilters,
   type CurrencyCode,
   type MonthPreset,
 } from "@/composables/useExpenseFilters";
 import { useExpenseParse } from "@/composables/useExpenseParse";
+import { useExpenseSort } from "@/composables/useExpenseSort";
 import { useExpenseSummary } from "@/composables/useExpenseSummary";
 import { api } from "@/composables/useApi";
 import { useLocalStorageString } from "@/composables/useLocalStorage";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
+import { isoDateLocal } from "@/utils/dates";
 import type { ToolExpense } from "@/types";
 
-type ExpenseTab = "transactions" | "insights" | "settings";
+type ExpenseTab = "transactions" | "insights" | "converter" | "settings";
 
+const EXPENSE_TABS: ExpenseTab[] = ["transactions", "insights", "converter", "settings"];
+const expenseTabItems = EXPENSE_TABS.map((tab) => ({ id: tab, label: tab }));
+
+const route = useRoute();
+const router = useRouter();
 const activeTab = ref<ExpenseTab>("transactions");
 const loading = ref(false);
 const showForm = ref(false);
@@ -40,7 +52,12 @@ const deleteCategoryTarget = ref<{ id: number; name: string } | null>(null);
 
 const { value: displayCurrency, set: setDisplayCurrency } = useLocalStorageString(
   EXPENSE_CURRENCY_STORAGE_KEY,
-  "PLN",
+  EXPENSE_DEFAULT_CURRENCY,
+);
+
+const { value: lastCategory, set: setLastCategory } = useLocalStorageString(
+  EXPENSE_LAST_CATEGORY_STORAGE_KEY,
+  "Groceries",
 );
 
 const { value: lastCategory, set: setLastCategory } = useLocalStorageString(
@@ -55,11 +72,13 @@ let filters!: ReturnType<typeof useExpenseFilters>;
 const summaryHook = useExpenseSummary(
   () => filters.queryParams(),
   () => filters.summaryParams(),
+  () => filters.previousSummaryParams(),
 );
 
 const {
   expenses,
   summary,
+  periodChange,
   exchangeRates,
   listLoading,
   lineChart,
@@ -72,11 +91,24 @@ const {
   loadExpenses,
   loadRates,
   loadSummary,
+  loadPreviousSummary,
   reloadListAndSummary,
 } = summaryHook;
 
+const { sortedExpenses, toggleSort, sortIndicator } = useExpenseSort(
+  () => expenses.value,
+  () => displayCurrency.value as CurrencyCode,
+  convertAmount,
+);
+
+const quickAddRef = ref<InstanceType<typeof ExpenseQuickAdd> | null>(null);
+
 async function reloadAfterMutation(): Promise<void> {
-  await Promise.all([loadExpenses(), loadSummary(), loadCategories()]);
+  await Promise.all([loadExpenses(), loadSummary(), loadPreviousSummary(), loadCategories()]);
+}
+
+function focusQuickAdd(): void {
+  quickAddRef.value?.focusEntry();
 }
 
 const categoryManager = useCategoryManager(reloadAfterMutation);
@@ -131,8 +163,8 @@ const quickAdd = ref({
 const form = ref({
   tool_name: "",
   amount: "",
-  currency: "PLN" as CurrencyCode,
-  expense_date: new Date().toISOString().slice(0, 10),
+  currency: EXPENSE_DEFAULT_CURRENCY as CurrencyCode,
+  expense_date: isoDateLocal(),
   category: "",
   notes: "",
 });
@@ -154,7 +186,9 @@ function resolvedCategory(name: string): string {
 
 function defaultCurrency(): CurrencyCode {
   const value = displayCurrency.value;
-  return EXPENSE_CURRENCIES.includes(value as CurrencyCode) ? (value as CurrencyCode) : "PLN";
+  return EXPENSE_CURRENCIES.includes(value as CurrencyCode)
+    ? (value as CurrencyCode)
+    : EXPENSE_DEFAULT_CURRENCY;
 }
 
 function resetForm(): void {
@@ -162,7 +196,7 @@ function resetForm(): void {
     tool_name: "",
     amount: "",
     currency: defaultCurrency(),
-    expense_date: new Date().toISOString().slice(0, 10),
+    expense_date: isoDateLocal(),
     category: resolvedCategory(lastCategory.value),
     notes: "",
   };
@@ -250,12 +284,13 @@ async function quickSaveExpense(): Promise<void> {
         tool_name: parsed.value.tool_name ?? "",
         amount: String(parsed.value.amount),
         currency: (parsed.value.currency as CurrencyCode) ?? defaultCurrency(),
-        expense_date: parsed.value.expense_date ?? new Date().toISOString().slice(0, 10),
+        expense_date: parsed.value.expense_date ?? isoDateLocal(),
         category: resolvedCategory(parsed.value.category ?? lastCategory.value),
         notes: null,
       });
       resetQuickAdd();
       await reloadAfterMutation();
+      focusQuickAdd();
     } catch (err) {
       console.error(err);
       toast(getApiErrorMessage(err, "Failed to save expense"), "error");
@@ -284,12 +319,13 @@ async function quickSaveExpense(): Promise<void> {
       tool_name: product,
       amount: amount.toFixed(2),
       currency: defaultCurrency(),
-      expense_date: new Date().toISOString().slice(0, 10),
+      expense_date: isoDateLocal(),
       category,
       notes: null,
     });
     resetQuickAdd();
     await reloadAfterMutation();
+    focusQuickAdd();
   } catch (err) {
     console.error(err);
     toast(getApiErrorMessage(err, "Failed to save expense"), "error");
@@ -320,7 +356,7 @@ function openCreate(): void {
   showForm.value = true;
 }
 
-function duplicateExpense(expense: ToolExpense): void {
+async function duplicateExpense(expense: ToolExpense): Promise<void> {
   smartText.value = "";
   quickAdd.value = {
     product: expense.tool_name,
@@ -329,6 +365,8 @@ function duplicateExpense(expense: ToolExpense): void {
   };
   activeTab.value = "transactions";
   toast("Ready to add again — adjust if needed", "success");
+  await nextTick();
+  focusQuickAdd();
 }
 
 async function exportCsv(): Promise<void> {
@@ -396,12 +434,20 @@ async function confirmDeleteCategory(): Promise<void> {
   }
 }
 
-function switchTab(tab: ExpenseTab): void {
-  activeTab.value = tab;
+function parseExpenseTab(value: unknown): ExpenseTab | null {
+  return typeof value === "string" && EXPENSE_TABS.includes(value as ExpenseTab)
+    ? (value as ExpenseTab)
+    : null;
+}
+
+function switchTab(tab: string): void {
+  if (!EXPENSE_TABS.includes(tab as ExpenseTab)) return;
+  activeTab.value = tab as ExpenseTab;
+  void router.replace({ query: { ...route.query, tab } });
 }
 
 watch(displayCurrency, () => {
-  void loadSummary();
+  void Promise.all([loadSummary(), loadPreviousSummary()]);
 });
 
 watch(defaultCategoryName, (name) => {
@@ -420,6 +466,8 @@ watch(
 );
 
 onMounted(() => {
+  const tab = parseExpenseTab(route.query.tab);
+  if (tab) activeTab.value = tab;
   applyMonthPreset("this_month");
   quickAdd.value.category = resolvedCategory(lastCategory.value);
   void Promise.all([loadRates(), reloadListAndSummary(), loadCategories()]);
@@ -444,28 +492,16 @@ onMounted(() => {
         :summary="summary"
         :month-label="monthLabel"
         :expense-categories="expenseCategories"
+        :period-change="periodChange"
         :format-money="formatMoney"
       />
     </div>
 
-    <div class="flex gap-2 mb-6 border-b border-surface-border pb-2">
-      <button
-        v-for="tab in ['transactions', 'insights', 'settings'] as ExpenseTab[]"
-        :key="tab"
-        :class="[
-          'px-3 py-1.5 text-xs font-mono rounded-lg transition-colors capitalize',
-          activeTab === tab
-            ? 'bg-accent-blue/20 text-accent-blue'
-            : 'text-surface-mid hover:text-surface-light',
-        ]"
-        @click="switchTab(tab)"
-      >
-        {{ tab }}
-      </button>
-    </div>
+    <AdminTabBar :model-value="activeTab" :tabs="expenseTabItems" @update:model-value="switchTab" />
 
     <div v-if="activeTab === 'transactions'" class="flex flex-col gap-6">
       <ExpenseQuickAdd
+        ref="quickAddRef"
         v-model:smart-text="smartText"
         v-model:category="quickAdd.category"
         v-model:product="quickAdd.product"
@@ -484,23 +520,19 @@ onMounted(() => {
           <BaseInput v-model="productFilter" placeholder="Filter by product..." />
         </div>
         <div class="flex gap-2 items-end">
-          <select
-            v-model="categoryFilter"
-            class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
-          >
-            <option :value="null">All categories</option>
-            <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-          </select>
           <BaseButton variant="ghost" :disabled="loading" @click="exportCsv">Export CSV</BaseButton>
           <BaseButton variant="primary" @click="openCreate">+ Add</BaseButton>
         </div>
       </div>
 
-      <p class="text-xs text-surface-mid font-mono -mt-3">{{ expenseCountLabel }}</p>
+      <ExpenseCategoryChips v-model:category-filter="categoryFilter" :category-options="categoryOptions" />
+
+      <p class="text-xs text-surface-mid -mt-3">{{ expenseCountLabel }}</p>
 
       <ExpenseList
-        :expenses="expenses"
+        :expenses="sortedExpenses"
         :loading="listLoading"
+        :sort-indicator="sortIndicator"
         :month-label="monthLabel"
         :display-currency="displayCurrency as CurrencyCode"
         :exchange-rates="exchangeRates"
@@ -510,6 +542,7 @@ onMounted(() => {
         @edit="openEdit"
         @delete="requestDeleteExpense"
         @duplicate="duplicateExpense"
+        @sort="toggleSort"
       />
     </div>
 
@@ -521,8 +554,13 @@ onMounted(() => {
       :doughnut-chart="doughnutChart"
     />
 
+    <ExpenseCurrencyConverter
+      v-else-if="activeTab === 'converter'"
+      :exchange-rates="exchangeRates"
+    />
+
     <ExpenseCategorySettings
-      v-else
+      v-else-if="activeTab === 'settings'"
       v-model:display-currency="displayCurrency"
       v-model:new-category-name="newCategoryName"
       v-model:editing-category-name="editingCategoryName"

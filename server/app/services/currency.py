@@ -7,6 +7,7 @@ import httpx
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
+from app.core.cache_json import safe_cache_json_loads
 from app.core.redis import cache_get, cache_set
 
 CurrencyCode = Literal["USD", "EUR", "PLN", "BYN"]
@@ -22,7 +23,9 @@ class CurrencyService:
     async def get_rates(self) -> dict[str, Decimal]:
         cached = await cache_get(RATES_CACHE_KEY)
         if cached:
-            return self._parse_rates(json.loads(cached))
+            payload = safe_cache_json_loads(cached)
+            if isinstance(payload, dict):
+                return self._parse_rates(payload)
 
         try:
             async with httpx.AsyncClient() as client:
@@ -63,11 +66,14 @@ class CurrencyService:
     async def get_rates_meta(self) -> dict:
         cached = await cache_get(RATES_CACHE_KEY)
         if cached:
-            payload = json.loads(cached)
+            payload = safe_cache_json_loads(cached)
+            if not isinstance(payload, dict):
+                payload = {}
         else:
             await self.get_rates()
             cached = await cache_get(RATES_CACHE_KEY)
-            payload = json.loads(cached) if cached else {}
+            raw = safe_cache_json_loads(cached) if cached else None
+            payload = raw if isinstance(raw, dict) else {}
 
         rates = self._parse_rates(payload) if payload else await self.get_rates()
         return {

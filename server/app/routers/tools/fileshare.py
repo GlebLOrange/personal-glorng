@@ -1,3 +1,5 @@
+"""Temporary file sharing. Default: `file-share:read`; writes: `file-share:write`."""
+
 from fastapi import APIRouter, Depends, Path, UploadFile
 from fastapi.responses import StreamingResponse
 
@@ -6,12 +8,14 @@ from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
 from app.core.uploads import read_upload_bounded
 from app.core.utils import attachment_content_disposition, iter_file, paginate_params
+from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.fileshare import SharedFileResponse
 from app.services import fileshare as fileshare_svc
 
 router = APIRouter(
     prefix="/file-share",
+    tags=["file-share"],
     dependencies=[
         Depends(require_capability("file-share", "read")),
         Depends(rate_limit_api),
@@ -22,6 +26,8 @@ router = APIRouter(
 @router.post(
     "",
     response_model=SharedFileResponse,
+    summary="Upload shared file",
+    description=requires_capability("file-share", "write"),
     dependencies=[Depends(require_capability("file-share", "write"))],
 )
 async def upload_file(
@@ -37,35 +43,43 @@ async def upload_file(
         db,
         filename=file.filename,
         contents=contents,
-        content_type=file.content_type or "application/octet-stream",
         user_id=user.id,
     )
     return SharedFileResponse.model_validate(shared)
 
 
-@router.get("", response_model=list[SharedFileResponse])
+@router.get(
+    "",
+    response_model=list[SharedFileResponse],
+    summary="List shared files",
+    description=requires_capability("file-share", "read"),
+)
 async def list_files(
     db: DbSession,
-    user: AuthorizedUser,  # noqa: ARG001
+    user: AuthorizedUser,
     page: int = 1,
     per_page: int = 20,
 ) -> list[SharedFileResponse]:
     offset, limit = paginate_params(page, per_page)
-    files = await fileshare_svc.list_files(db, offset=offset, limit=limit)
+    files = await fileshare_svc.list_files(
+        db, offset=offset, limit=limit, user_id=user.id
+    )
     return [SharedFileResponse.model_validate(f) for f in files]
 
 
 @router.delete(
     "/{file_id}",
     response_model=MessageResponse,
+    summary="Delete shared file",
+    description=requires_capability("file-share", "write"),
     dependencies=[Depends(require_capability("file-share", "write"))],
 )
 async def delete_file(
     file_id: int,
     db: DbSession,
-    user: AuthorizedUser,  # noqa: ARG001
+    user: AuthorizedUser,
 ) -> MessageResponse:
-    await fileshare_svc.delete(db, file_id=file_id)
+    await fileshare_svc.delete(db, file_id=file_id, user_id=user.id)
     return MessageResponse(message="File deleted")
 
 
@@ -85,7 +99,7 @@ async def download_shared_file(
 
     return StreamingResponse(
         iter_file(disk_path),
-        media_type=shared.content_type,
+        media_type=fileshare_svc.download_media_type(shared.content_type),
         headers={
             "Content-Disposition": attachment_content_disposition(
                 shared.original_filename

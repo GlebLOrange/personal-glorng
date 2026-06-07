@@ -1,3 +1,5 @@
+"""AI chat completions. Default: `ai-chat:read`; streaming: `ai-chat:write`."""
+
 import json
 from collections.abc import AsyncIterator
 
@@ -7,11 +9,13 @@ from fastapi.responses import StreamingResponse
 from app.core.deps import OpenAIChatService, require_capability
 from app.core.exceptions import ApiError
 from app.core.feature_flags import is_ai_chat_enabled
+from app.openapi import requires_capability
 from app.schemas.ai_chat import ChatRequest
 from app.services.ai_chat import OpenAIService
 
 router = APIRouter(
     prefix="/ai-chat",
+    tags=["ai-chat"],
     dependencies=[Depends(require_capability("ai-chat", "read"))],
 )
 
@@ -35,6 +39,8 @@ async def _sse_events(
 
 @router.post(
     "",
+    summary="Stream chat completion",
+    description=requires_capability("ai-chat", "write"),
     dependencies=[Depends(require_capability("ai-chat", "write"))],
 )
 async def chat(body: ChatRequest, service: OpenAIChatService) -> StreamingResponse:

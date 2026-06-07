@@ -93,7 +93,6 @@ class Settings(BaseSettings):
     TELEGRAM_ALLOWED_USER_ID: int = 0
     TIMEZONE: str = "Europe/Amsterdam"
     EXPENSE_DEFAULT_CURRENCY: str = "PLN"
-    WEATHER_DEFAULT_CITY: str = "Wroclaw"
 
     # Google Calendar
     GOOGLE_CLIENT_ID: str = ""
@@ -140,6 +139,11 @@ class Settings(BaseSettings):
     APP_NAME: str = "gLOrng"
     BASE_URL: str = "http://localhost"
     MEDIA_DIR: str = "/app/media"
+
+    # Weather
+    WEATHER_DEFAULT_LABEL: str = "Wrocław"
+    WEATHER_DEFAULT_QUERY: str = "Wroclaw"
+    WORLD_TIME_API_BASE: str = "https://timeapi.world/api"
 
 
 @lru_cache

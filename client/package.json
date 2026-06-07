@@ -18,6 +18,8 @@
     "e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.2.7",
+    "@fontsource/ibm-plex-sans": "^5.2.8",
     "@sentry/vue": "^10.56.0",
     "axios": "^1.17.0",
     "chart.js": "^4.5.1",
@@ -41,6 +43,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.5.0",
     "happy-dom": "^20.10.1",
+    "jsdom": "^29.1.1",
     "postcss": "^8.5.15",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.3.0",

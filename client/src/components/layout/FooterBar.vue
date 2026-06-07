@@ -3,7 +3,7 @@ const year = new Date().getFullYear();
 </script>
 
 <template>
-  <footer class="border-t border-surface-border py-8 font-mono">
+  <footer class="border-t border-surface-border py-8">
     <div class="flex justify-center mb-4">
       <router-link
         to="/privacy"

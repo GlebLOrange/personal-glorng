@@ -71,8 +71,16 @@ export interface UrlItem {
   created_at: string;
 }
 
+export interface WeatherLocation {
+  id: number;
+  label: string;
+  query: string;
+  sort_order: number;
+}
+
 export interface WeatherConfig {
-  city: string;
+  label: string;
+  query: string;
 }
 
 export interface WeatherData {
@@ -81,10 +89,22 @@ export interface WeatherData {
     weatherDesc: Array<{ value: string }>;
     humidity: string;
     windspeedKmph: string;
+    localObsDateTime?: string;
   }>;
   nearest_area: Array<{
     areaName: Array<{ value: string }>;
     country: Array<{ value: string }>;
+    latitude?: string;
+    longitude?: string;
+  }>;
+  time_zone?: Array<{
+    utcOffset: string;
+    timezone?: string;
+    datetime?: string;
+    utc_datetime?: string;
+    unixtime?: number;
+    dst?: boolean;
+    abbreviation?: string;
   }>;
 }
 

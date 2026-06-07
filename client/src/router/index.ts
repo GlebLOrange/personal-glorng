@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 
+import { TIME_DATE_WEATHER_LOCATION_ROUTE_NAME } from "@/constants/timeDateWeatherLocation";
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled } from "@/utils/featureFlags";
@@ -26,22 +27,22 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/admin/tools/weather",
-    name: "tool-weather",
-    component: () => import("@/pages/admin/tools/WeatherTool.vue"),
-    meta: { requiresAuth: true },
+    path: "/tools",
+    name: "tools",
+    component: () => import("@/pages/ToolsPage.vue"),
+  },
+  {
+    path: "/calculator",
+    name: "calculator",
+    component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
   },
   {
     path: "/admin/tools/calculator",
-    name: "tool-calculator",
-    component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
-    meta: { requiresAuth: true },
+    redirect: { name: "calculator" },
   },
   {
     path: "/admin/tools/currency",
-    name: "tool-currency",
-    component: () => import("@/pages/admin/tools/CurrencyConverterTool.vue"),
-    meta: { requiresAuth: true },
+    redirect: { name: "tool-expenses", query: { tab: "converter" } },
   },
   {
     path: "/admin/tools/url-shortener",
@@ -110,6 +111,19 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/time-date-weather-location",
+    name: TIME_DATE_WEATHER_LOCATION_ROUTE_NAME,
+    component: () => import("@/pages/WeatherPage.vue"),
+  },
+  {
+    path: "/clocks",
+    redirect: { name: TIME_DATE_WEATHER_LOCATION_ROUTE_NAME },
+  },
+  {
+    path: "/weather",
+    redirect: { name: TIME_DATE_WEATHER_LOCATION_ROUTE_NAME },
+  },
+  {
     path: "/privacy",
     name: "privacy",
     component: () => import("@/pages/PrivacyPage.vue"),
@@ -127,14 +141,11 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-recipes": "recipes",
   "tool-file-share": "file-share",
   "tool-url-shortener": "url-shortener",
-  "tool-calculator": "calculator",
-  "tool-currency": "currency",
   "tool-vid-download": "vid-download",
   "tool-email": "email",
   "tool-feedback": "feedback",
   "tool-ai-chat": "ai-chat",
   "tool-audit": "audit",
-  "tool-weather": "weather",
 };
 
 const router = createRouter({

@@ -33,6 +33,8 @@ make seed
 
 Open [http://localhost:3000](http://localhost:3000) in lite mode, or [http://localhost](http://localhost) with `make dev`.
 
+API docs (dev only): [http://localhost:8000/api/docs](http://localhost:8000/api/docs) with `make dev-lite`, or `/api/docs` through nginx with `make dev`. Authorize with Bearer token from `POST /api/auth/login`.
+
 ### Dev modes
 
 | Command | Containers | Use when |

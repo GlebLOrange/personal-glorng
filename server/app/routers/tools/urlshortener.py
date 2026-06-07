@@ -1,15 +1,19 @@
+"""URL shortener API. Default: `url-shortener:read`; writes: `url-shortener:write`."""
+
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import RedirectResponse
 
 from app.core.deps import AuthorizedUser, DbSession, require_capability
 from app.core.rate_limit import rate_limit_api
 from app.core.utils import paginate_params
+from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.url import UrlCreate, UrlResponse
 from app.services.url import UrlService
 
 router = APIRouter(
     prefix="/url-shortener",
+    tags=["url-shortener"],
     dependencies=[Depends(require_capability("url-shortener", "read"))],
 )
 
@@ -17,6 +21,8 @@ router = APIRouter(
 @router.post(
     "",
     response_model=UrlResponse,
+    summary="Create short URL",
+    description=requires_capability("url-shortener", "write"),
     dependencies=[Depends(require_capability("url-shortener", "write"))],
 )
 async def create_url(
@@ -33,7 +39,12 @@ async def create_url(
     return UrlResponse.model_validate(url)
 
 
-@router.get("", response_model=list[UrlResponse])
+@router.get(
+    "",
+    response_model=list[UrlResponse],
+    summary="List short URLs",
+    description=requires_capability("url-shortener", "read"),
+)
 async def list_urls(
     db: DbSession,
     user: AuthorizedUser,  # noqa: ARG001
@@ -49,6 +60,8 @@ async def list_urls(
 @router.delete(
     "/{url_id}",
     response_model=MessageResponse,
+    summary="Delete short URL",
+    description=requires_capability("url-shortener", "write"),
     dependencies=[Depends(require_capability("url-shortener", "write"))],
 )
 async def delete_url(

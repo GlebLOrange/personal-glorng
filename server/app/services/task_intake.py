@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime
 from typing import Any
 
 from sqlalchemy import select
@@ -11,9 +11,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError, ValidationError
-from app.core.feature_flags import is_task_intake_ai_enabled
 from app.core.utils import as_utc
-from app.db.models.google_sync_queue import SyncAction
+from app.core.feature_flags import is_task_intake_ai_enabled
 from app.db.models.task import Task
 from app.db.models.task_intake import IntakeStatus, TaskIntake
 from app.db.models.telegram_inbound_message import TelegramInboundMessage
@@ -241,7 +240,7 @@ class TaskIntakeService:
     def scheduled_at_from_draft(self, draft: TaskDraft) -> datetime:
         task_date = draft.scheduled_date or date.today().isoformat()
         task_time = draft.scheduled_time or "12:00"
-        return datetime.fromisoformat(f"{task_date}T{task_time}:00").replace(tzinfo=UTC)
+        return as_utc(datetime.fromisoformat(f"{task_date}T{task_time}:00"))
 
     async def confirm_intake(
         self,
@@ -268,36 +267,19 @@ class TaskIntakeService:
         )
 
         task_svc = TaskService(self.db)
-        task = await task_svc.create_task(
+        task = await task_svc.create_with_sync(
             telegram_user_id=telegram_user_id,
             title=draft.title,
             scheduled_at=scheduled_at,
             description=draft.description,
             location=draft.location,
+            reminder_minutes=int(mins) if mins else None,
             intake_id=intake.id,
         )
 
         intake.status = IntakeStatus.CONFIRMED
         intake.task_id = task.id
         self.db.add(intake)
-        await self.db.flush()
-
-        if mins:
-            scheduled_dt = as_utc(scheduled_at)
-            remind_at = scheduled_dt - timedelta(minutes=int(mins))
-            if remind_at > datetime.now(UTC):
-                from app.workers.scheduling import schedule_reminder
-
-                reminder = await task_svc.create_reminder(
-                    task_id=task.id,
-                    remind_at=remind_at,
-                )
-                await schedule_reminder(self.db, reminder)
-
-        await task_svc.enqueue_calendar_sync(
-            task_id=task.id,
-            action=SyncAction.CREATE,
-        )
         await self.db.flush()
         return task
 

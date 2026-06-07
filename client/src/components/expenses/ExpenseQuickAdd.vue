@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import { FIELD_INPUT_CLASS, SELECT_CLASS_COMPACT } from "@/constants/formClasses";
 import type { ExpenseParseResult } from "@/types";
 
 const props = defineProps<{
@@ -22,10 +23,6 @@ const price = defineModel<string>("price", { required: true });
 
 const emit = defineEmits<{ submit: [] }>();
 
-const selectClassCompact =
-  "bg-surface-dark border border-surface-border rounded-lg px-2 py-1.5 text-surface-light font-mono text-xs " +
-  "focus:outline-none focus:border-accent-blue transition-colors h-[34px] min-w-[7.5rem]";
-
 const parsedPreview = computed(() => {
   if (!props.parsed?.valid) return null;
   const parts = [
@@ -43,19 +40,29 @@ const smartError = computed(() => {
   if (props.parsed?.valid) return null;
   return props.parsed?.error ?? null;
 });
+
+const smartInputRef = ref<HTMLInputElement | null>(null);
+
+function focusEntry(): void {
+  smartInputRef.value?.focus();
+}
+
+defineExpose({ focusEntry });
 </script>
 
 <template>
   <BaseCard class="sticky top-4 z-10">
-    <p class="text-xs text-surface-mid font-mono uppercase tracking-wider mb-3">Quick add</p>
+    <p class="text-xs text-surface-mid uppercase tracking-wider mb-3">Quick add</p>
 
     <form class="flex flex-col gap-4" @submit.prevent="emit('submit')">
       <div class="flex flex-col sm:flex-row sm:items-end gap-3">
         <div class="flex-1">
-          <BaseInput
+          <label class="text-sm text-surface-mid block mb-1">Smart add</label>
+          <input
+            ref="smartInputRef"
             v-model="smartText"
-            label="Smart add"
             placeholder="89.50 biedronka or 12 lunch"
+            :class="FIELD_INPUT_CLASS"
           />
         </div>
         <BaseButton variant="primary" type="submit" :disabled="loading" class="sm:mb-0.5">
@@ -63,34 +70,34 @@ const smartError = computed(() => {
         </BaseButton>
       </div>
 
-      <p v-if="parsing" class="text-[10px] text-surface-mid font-mono">Parsing...</p>
-      <p v-else-if="parsedPreview" class="text-[10px] text-accent-blue font-mono">
+      <p v-if="parsing" class="text-xs text-surface-mid">Parsing...</p>
+      <p v-else-if="parsedPreview" class="text-xs text-accent-blue font-data">
         {{ parsedPreview }}
       </p>
-      <p v-else-if="smartError" class="text-[10px] text-red-400 font-mono">{{ smartError }}</p>
+      <p v-else-if="smartError" class="text-xs text-red-400">{{ smartError }}</p>
 
       <div class="border-t border-surface-border pt-3">
-        <p class="text-[10px] text-surface-mid font-mono uppercase tracking-wider mb-2">
+        <p class="text-xs text-surface-mid uppercase tracking-wider mb-2">
           Or use fields
         </p>
         <div class="flex flex-col sm:flex-row sm:items-end gap-3">
           <div>
             <label
-              class="text-[10px] text-surface-mid font-mono uppercase tracking-wider block mb-1"
+              class="text-xs text-surface-mid uppercase tracking-wider block mb-1"
             >
               Category
             </label>
-            <select v-model="category" :class="selectClassCompact">
+            <select v-model="category" :class="SELECT_CLASS_COMPACT">
               <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
             </select>
           </div>
           <div class="flex-1">
-            <label class="text-sm text-surface-mid font-mono block mb-1">Product</label>
+            <label class="text-sm text-surface-mid block mb-1">Product</label>
             <input
               v-model="product"
               list="expense-product-suggestions"
               placeholder="Milk, fuel, rent..."
-              class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 h-[42px]"
+              :class="FIELD_INPUT_CLASS"
             />
             <datalist id="expense-product-suggestions">
               <option v-for="name in productSuggestions" :key="name" :value="name" />
@@ -107,7 +114,7 @@ const smartError = computed(() => {
             />
           </div>
         </div>
-        <p class="text-[10px] text-surface-mid font-mono mt-2">
+        <p class="text-xs text-surface-mid mt-2">
           {{ currencyLabel }} · today · full form for date, currency, notes
         </p>
       </div>

@@ -10,7 +10,7 @@ function openPreferences() {
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto px-6 py-16 font-mono text-surface-light">
+  <div class="max-w-3xl mx-auto px-6 py-16 text-surface-light">
     <h1 class="text-3xl font-bold mb-2 accent-gradient">Privacy Policy</h1>
     <p class="text-surface-muted text-sm mb-10">Last updated: May 26, 2026</p>
 
@@ -37,6 +37,12 @@ function openPreferences() {
           <strong class="text-surface-light">Spotify now playing</strong> — when enabled, the
           portfolio may show the site owner's currently playing track title, artist, and album art
           via Spotify's API. Visitors do not sign in to Spotify.
+        </li>
+        <li>
+          <strong class="text-surface-light">Date &amp; time &amp; location</strong> — city names you save are
+          sent to this site's API to fetch local time and conditions (via wttr.in). Saved cities are
+          stored in your browser for guests, or in your account when logged in. Browser location is
+          never requested automatically.
         </li>
       </ul>
     </section>

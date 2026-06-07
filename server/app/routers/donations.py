@@ -7,7 +7,11 @@ from app.settings import get_settings
 router = APIRouter()
 
 
-@router.get("/config")
+@router.get(
+    "/config",
+    summary="Get donation config",
+    description="Public donation links and crypto addresses.",
+)
 async def get_donations_config() -> dict[str, Any]:
     settings = get_settings()
     return {

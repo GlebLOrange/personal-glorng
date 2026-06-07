@@ -20,7 +20,7 @@ const notes = defineModel<string>("notes", { required: true });
 const emit = defineEmits<{ submit: []; close: [] }>();
 
 const selectClass =
-  "bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light font-mono text-sm " +
+  "bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light text-sm " +
   "focus:outline-none focus:border-accent-blue transition-colors h-[42px]";
 </script>
 
@@ -41,7 +41,7 @@ const selectClass =
 
           <form class="space-y-4" @submit.prevent="emit('submit')">
             <div>
-              <label class="text-sm text-surface-mid font-mono block mb-1">Category</label>
+              <label class="text-sm text-surface-mid block mb-1">Category</label>
               <select v-model="category" :class="[selectClass, 'w-full']">
                 <option value="">—</option>
                 <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
@@ -63,7 +63,7 @@ const selectClass =
             <div class="grid grid-cols-2 gap-3">
               <BaseInput v-model="expenseDate" label="Date" type="date" />
               <div>
-                <label class="text-sm text-surface-mid font-mono block mb-1">Currency</label>
+                <label class="text-sm text-surface-mid block mb-1">Currency</label>
                 <select v-model="currency" :class="[selectClass, 'w-full']">
                   <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
                 </select>
@@ -71,12 +71,12 @@ const selectClass =
             </div>
 
             <div>
-              <label class="text-sm text-surface-mid font-mono block mb-1">Notes</label>
+              <label class="text-sm text-surface-mid block mb-1">Notes</label>
               <textarea
                 v-model="notes"
                 rows="3"
                 placeholder="Invoice ref, billing period..."
-                class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
+                class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
               />
             </div>
 

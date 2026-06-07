@@ -1,33 +1,35 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
+import ShareableListItem from "@/components/admin/ShareableListItem.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
 import { api } from "@/composables/useApi";
+import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
-import { useNotify } from "@/composables/useNotify";
-import { getApiErrorMessage } from "@/types/api";
 import type { SharedFile } from "@/types";
+import { formatBytes, formatTimeRemaining } from "@/utils/format";
+import { publicUrl } from "@/utils/publicLinks";
 
 const files = ref<SharedFile[]>([]);
 const selectedFile = ref<File | null>(null);
-const uploading = ref(false);
 const dragOver = ref(false);
-const { toast } = useNotify();
 const { copy } = useClipboard();
+const { loading: listLoading, run: runList } = useApiAction();
+const { loading: uploading, run: runUpload } = useApiAction();
+const { run: runDelete } = useApiAction();
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
 const selectedName = computed(() => selectedFile.value?.name ?? "");
 
 async function loadFiles(): Promise<void> {
-  try {
-    const { data } = await api.get<SharedFile[]>("/tools/file-share");
-    files.value = data;
-  } catch (err) {
-    console.error(err);
-    toast("Failed to load files", "error");
+  const data = await runList(() => api.get<SharedFile[]>("/tools/file-share"), {
+    errorFallback: "Failed to load files",
+  });
+  if (data) {
+    files.value = data.data;
   }
 }
 
@@ -43,52 +45,37 @@ function onDrop(e: DragEvent): void {
 
 async function upload(): Promise<void> {
   if (!selectedFile.value) return;
-  uploading.value = true;
-  try {
-    const form = new FormData();
-    form.append("file", selectedFile.value);
-    await api.post("/tools/file-share", form, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+  const file = selectedFile.value;
+  const result = await runUpload(
+    () => {
+      const form = new FormData();
+      form.append("file", file);
+      return api.post("/tools/file-share", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    },
+    { successMessage: "File uploaded", errorFallback: "Upload failed" },
+  );
+  if (result) {
     selectedFile.value = null;
     if (fileInputRef.value) fileInputRef.value.value = "";
-    toast("File uploaded", "success");
     await loadFiles();
-  } catch (err) {
-    toast(getApiErrorMessage(err, "Upload failed"), "error");
-  } finally {
-    uploading.value = false;
   }
 }
 
 async function deleteFile(id: number): Promise<void> {
-  try {
-    await api.delete(`/tools/file-share/${id}`);
-    toast("File deleted", "success");
+  const result = await runDelete(() => api.delete(`/tools/file-share/${id}`), {
+    successMessage: "File deleted",
+    errorFallback: "Failed to delete file",
+  });
+  if (result) {
     await loadFiles();
-  } catch (err) {
-    console.error(err);
-    toast("Failed to delete file", "error");
   }
 }
 
-function getDownloadUrl(code: string): string {
-  return `${window.location.origin}/f/${code}`;
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function formatExpiry(iso: string): string {
-  const diff = new Date(iso).getTime() - Date.now();
-  if (diff <= 0) return "Expired";
-  const hours = Math.floor(diff / 3600000);
-  const mins = Math.floor((diff % 3600000) / 60000);
-  if (hours > 0) return `${hours}h ${mins}m left`;
-  return `${mins}m left`;
+function fileMeta(file: SharedFile): string {
+  const expiry = formatTimeRemaining(file.expires_at);
+  return `${formatBytes(file.file_size)} · ${file.downloads} downloads · ${expiry}`;
 }
 
 onMounted(loadFiles);
@@ -109,10 +96,10 @@ onMounted(loadFiles);
       @click="fileInputRef?.click()"
     >
       <input ref="fileInputRef" type="file" class="hidden" @change="onFileSelect" />
-      <p v-if="selectedName" class="text-surface-light text-sm font-mono">
+      <p v-if="selectedName" class="text-surface-light text-sm">
         {{ selectedName }}
       </p>
-      <p v-else class="text-surface-mid text-sm font-mono">Drop a file here or click to browse</p>
+      <p v-else class="text-surface-mid text-sm">Drop a file here or click to browse</p>
     </div>
 
     <BaseButton
@@ -125,33 +112,19 @@ onMounted(loadFiles);
     </BaseButton>
 
     <div class="space-y-3">
-      <BaseCard v-for="f in files" :key="f.id" hoverable>
-        <div class="flex justify-between items-start">
-          <div class="flex-1 min-w-0">
-            <div class="text-surface-light font-bold text-sm truncate">
-              {{ f.original_filename }}
-            </div>
-            <div class="flex items-center gap-3 mt-1 text-xs text-surface-mid">
-              <span>{{ formatSize(f.file_size) }}</span>
-              <span>{{ f.downloads }} downloads</span>
-              <span>{{ formatExpiry(f.expires_at) }}</span>
-            </div>
-            <code class="text-xs text-accent-blue mt-2 block truncate">
-              {{ getDownloadUrl(f.code) }}
-            </code>
-          </div>
-          <div class="flex gap-2 ml-4">
-            <BaseButton variant="ghost" size="sm" @click="copy(getDownloadUrl(f.code))">
-              Copy
-            </BaseButton>
-            <BaseButton variant="ghost" size="sm" @click="deleteFile(f.id)"> Delete </BaseButton>
-          </div>
-        </div>
-      </BaseCard>
+      <ShareableListItem
+        v-for="f in files"
+        :key="f.id"
+        :title="f.original_filename"
+        :link="publicUrl('f', f.code)"
+        :meta="fileMeta(f)"
+        @copy="copy(publicUrl('f', f.code))"
+        @delete="deleteFile(f.id)"
+      />
 
-      <p v-if="files.length === 0" class="text-surface-mid text-sm text-center py-8">
+      <EmptyState v-if="files.length === 0 && !listLoading">
         No shared files yet. Upload one above.
-      </p>
+      </EmptyState>
     </div>
   </AdminPageLayout>
 </template>

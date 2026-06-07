@@ -1,17 +1,35 @@
 import { computed, ref, watch, type Ref } from "vue";
 
+import {
+  isValidDateRange,
+  isValidMonthValue,
+  isoDateLocal,
+  monthDateBounds,
+  monthValueLocal,
+} from "@/utils/dates";
+
 export type MonthPreset = "this_month" | "last_month" | "custom" | "range";
 export type DateFilterMode = "month" | "range";
 export type CurrencyCode = "USD" | "EUR" | "PLN" | "BYN";
 
-export const EXPENSE_CURRENCIES: CurrencyCode[] = ["USD", "EUR", "PLN", "BYN"];
+export const EXPENSE_DEFAULT_CURRENCY: CurrencyCode = "PLN";
+export const EXPENSE_CURRENCIES: CurrencyCode[] = ["PLN", "EUR", "USD", "BYN"];
+export const EXPENSE_EXCHANGE_RATE_TARGETS: CurrencyCode[] = ["EUR", "USD", "BYN"];
 export const EXPENSE_CURRENCY_STORAGE_KEY = "expense_default_currency";
 export const EXPENSE_LAST_CATEGORY_STORAGE_KEY = "expense_last_category";
 
-function currentMonthValue(d = new Date()): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  return `${year}-${month}`;
+/** Cross-rate from USD-base API rates (units of `to` per 1 `from`). */
+export function crossRate(
+  rates: Record<string, string>,
+  from: CurrencyCode,
+  to: CurrencyCode,
+): number {
+  const toRate = parseFloat(rates[to]);
+  const fromRate = parseFloat(rates[from]);
+  if (!Number.isFinite(toRate) || !Number.isFinite(fromRate) || fromRate === 0) {
+    return Number.NaN;
+  }
+  return toRate / fromRate;
 }
 
 function isoDate(d: Date): string {
@@ -64,6 +82,19 @@ export function useExpenseFilters(
       dateFilterMode.value === "range",
   );
 
+  const rangeError = computed(() => {
+    if (dateFilterMode.value !== "range") {
+      return null;
+    }
+    if (!dateFrom.value || !dateTo.value) {
+      return null;
+    }
+    if (!isValidDateRange(dateFrom.value, dateTo.value)) {
+      return "End date must be on or after start date";
+    }
+    return null;
+  });
+
   function applyMonthPreset(preset: MonthPreset): void {
     monthPreset.value = preset;
     const today = new Date();
@@ -71,8 +102,8 @@ export function useExpenseFilters(
     if (preset === "range") {
       dateFilterMode.value = "range";
       const start = new Date(today.getFullYear(), today.getMonth(), 1);
-      dateFrom.value = isoDate(start);
-      dateTo.value = isoDate(today);
+      dateFrom.value = isoDateLocal(start);
+      dateTo.value = isoDateLocal(today);
       return;
     }
 
@@ -80,12 +111,18 @@ export function useExpenseFilters(
     if (preset === "custom") return;
 
     if (preset === "this_month") {
-      selectedMonth.value = currentMonthValue(today);
+      selectedMonth.value = monthValueLocal(today);
       return;
     }
 
     const prev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    selectedMonth.value = currentMonthValue(prev);
+    selectedMonth.value = monthValueLocal(prev);
+  }
+
+  function clearFilters(): void {
+    productFilter.value = "";
+    categoryFilter.value = null;
+    applyMonthPreset("this_month");
   }
 
   function clearFilters(): void {
@@ -98,9 +135,11 @@ export function useExpenseFilters(
     const params: Record<string, string> = {};
 
     if (dateFilterMode.value === "range") {
-      if (dateFrom.value) params.date_from = dateFrom.value;
-      if (dateTo.value) params.date_to = dateTo.value;
-    } else if (selectedMonth.value) {
+      if (dateFrom.value && dateTo.value && isValidDateRange(dateFrom.value, dateTo.value)) {
+        params.date_from = dateFrom.value;
+        params.date_to = dateTo.value;
+      }
+    } else if (selectedMonth.value && isValidMonthValue(selectedMonth.value)) {
       params.month = selectedMonth.value;
     }
 
@@ -115,6 +154,37 @@ export function useExpenseFilters(
     return { ...queryParams(), display_currency: displayCurrency.value };
   }
 
+  /** Prior period with the same span (for month-over-month comparison). */
+  function previousSummaryParams(): Record<string, string> {
+    const params: Record<string, string> = {
+      display_currency: displayCurrency.value,
+    };
+
+    if (dateFilterMode.value === "range" && dateFrom.value && dateTo.value) {
+      const from = new Date(dateFrom.value + "T00:00:00");
+      const to = new Date(dateTo.value + "T00:00:00");
+      const spanDays = Math.max(
+        0,
+        Math.round((to.getTime() - from.getTime()) / 86_400_000),
+      );
+      const prevEnd = new Date(from);
+      prevEnd.setDate(prevEnd.getDate() - 1);
+      const prevStart = new Date(prevEnd);
+      prevStart.setDate(prevStart.getDate() - spanDays);
+      params.date_from = isoDateLocal(prevStart);
+      params.date_to = isoDateLocal(prevEnd);
+      return params;
+    }
+
+    if (selectedMonth.value) {
+      const [year, month] = selectedMonth.value.split("-").map(Number);
+      const prev = new Date(year, month - 2, 1);
+      params.month = monthValueLocal(prev);
+    }
+
+    return params;
+  }
+
   let debounceTimer: ReturnType<typeof setTimeout>;
   watch(productFilter, () => {
     clearTimeout(debounceTimer);
@@ -125,7 +195,8 @@ export function useExpenseFilters(
 
   watch(selectedMonth, (month) => {
     if (!month || dateFilterMode.value !== "month") return;
-    const bounds = monthBounds(month);
+    const bounds = monthDateBounds(month);
+    if (!bounds) return;
     dateFrom.value = bounds.from;
     dateTo.value = bounds.to;
   });
@@ -140,9 +211,11 @@ export function useExpenseFilters(
     categoryFilter,
     monthLabel,
     hasActiveFilters,
+    rangeError,
     applyMonthPreset,
     clearFilters,
     queryParams,
     summaryParams,
+    previousSummaryParams,
   };
 }

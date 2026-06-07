@@ -183,7 +183,7 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
       <div class="flex gap-2 items-end">
         <select
           v-model="activeTag"
-          class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
+          class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
         >
           <option :value="null">All tags</option>
           <option v-for="tag in allTags" :key="tag" :value="tag">{{ tag }}</option>
@@ -232,12 +232,12 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
 
               <!-- Ingredients -->
               <div>
-                <label class="text-sm text-surface-mid font-mono block mb-1">Ingredients</label>
+                <label class="text-sm text-surface-mid block mb-1">Ingredients</label>
                 <div class="space-y-2">
                   <div v-for="(_, idx) in form.ingredients" :key="idx" class="flex gap-2">
                     <input
                       v-model="form.ingredients[idx]"
-                      class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50"
+                      class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50"
                       :placeholder="`Ingredient ${idx + 1}`"
                     />
                     <BaseButton
@@ -263,16 +263,16 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
 
               <!-- Steps -->
               <div>
-                <label class="text-sm text-surface-mid font-mono block mb-1">Steps</label>
+                <label class="text-sm text-surface-mid block mb-1">Steps</label>
                 <div class="space-y-2">
                   <div v-for="(_, idx) in form.steps" :key="idx" class="flex gap-2">
-                    <div class="text-surface-mid text-sm font-mono pt-2 w-6 text-right shrink-0">
+                    <div class="text-surface-mid text-sm pt-2 w-6 text-right shrink-0">
                       {{ idx + 1 }}.
                     </div>
                     <textarea
                       v-model="form.steps[idx]"
                       rows="2"
-                      class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
+                      class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
                       :placeholder="`Step ${idx + 1}`"
                     />
                     <BaseButton
@@ -298,12 +298,12 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
 
               <!-- Notes -->
               <div>
-                <label class="text-sm text-surface-mid font-mono block mb-1">Notes</label>
+                <label class="text-sm text-surface-mid block mb-1">Notes</label>
                 <textarea
                   v-model="form.notes"
                   rows="3"
                   placeholder="Tips, variations, source link..."
-                  class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light font-mono text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
+                  class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
                 />
               </div>
 
@@ -345,7 +345,7 @@ onMounted(() => Promise.all([loadRecipes(), loadTags()]));
           <span
             v-for="tag in recipe.tags"
             :key="tag"
-            class="text-[10px] font-mono px-2 py-0.5 rounded-full border border-accent-blue/40 text-accent-blue"
+            class="text-[10px] px-2 py-0.5 rounded-full border border-accent-blue/40 text-accent-blue"
           >
             {{ tag }}
           </span>

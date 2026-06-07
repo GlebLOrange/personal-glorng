@@ -1,36 +1,40 @@
-from datetime import date
+from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from app.core.deps import AuthorizedUser, DbSession, require_capability
+from app.core.deps import AuditServiceDep, AuthorizedUser, require_capability
 from app.core.utils import paginate_params
+from app.openapi import requires_capability
 from app.schemas.audit import AuditEventListResponse, AuditEventResponse
-from app.services.audit import AuditService
+from app.schemas.date_filters import AuditDateFilter, audit_date_filter
 
 router = APIRouter(
     prefix="/audit",
+    tags=["audit"],
     dependencies=[Depends(require_capability("audit", "read"))],
 )
 
 
-@router.get("", response_model=AuditEventListResponse)
+@router.get(
+    "",
+    response_model=AuditEventListResponse,
+    description="Filter by inclusive date range (date_from, date_to).",
+)
 async def list_audit_events(
-    db: DbSession,
+    svc: AuditServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
+    filters: Annotated[AuditDateFilter, Depends(audit_date_filter)],
     page: int = 1,
     per_page: int = 50,
     category: str | None = None,
     action: str | None = None,
-    date_from: date | None = None,
-    date_to: date | None = None,
 ) -> AuditEventListResponse:
     offset, limit = paginate_params(page, per_page)
-    svc = AuditService(db)
     items, total = await svc.list_events(
         category=category,
         action=action,
-        date_from=date_from,
-        date_to=date_to,
+        date_from=filters.date_from,
+        date_to=filters.date_to,
         offset=offset,
         limit=limit,
     )

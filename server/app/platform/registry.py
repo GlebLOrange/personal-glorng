@@ -14,6 +14,7 @@ class PlatformService:
     icon: str
     capabilities: tuple[str, ...]
     external: bool = False
+    public: bool = False
 
 
 PLATFORM_SERVICES: tuple[PlatformService, ...] = (
@@ -41,7 +42,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         slug="expenses",
         name="expenses",
         category="productivity",
-        description="Monthly personal spending ledger with charts",
+        description="Monthly personal spending ledger, charts, and currency converter",
         api_prefix="/expenses",
         admin_route="/admin/tools/expenses",
         icon="¤",
@@ -83,9 +84,10 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         category="utilities",
         description="Quick math calculations",
         api_prefix="/calculator",
-        admin_route="/admin/tools/calculator",
+        admin_route="/calculator",
         icon="⊞",
         capabilities=("read",),
+        public=True,
     ),
     PlatformService(
         slug="vid-download",
@@ -106,26 +108,6 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         admin_route="/admin/tools/ai-chat",
         icon="⊛",
         capabilities=("read", "write"),
-    ),
-    PlatformService(
-        slug="weather",
-        name="weather",
-        category="utilities",
-        description="Current weather for a city",
-        api_prefix="/weather",
-        admin_route="/admin/tools/weather",
-        icon="☀",
-        capabilities=("read", "write"),
-    ),
-    PlatformService(
-        slug="currency",
-        name="currency converter",
-        category="utilities",
-        description="Convert between EUR, USD, PLN, and BYN",
-        api_prefix="/currency",
-        admin_route="/admin/tools/currency",
-        icon="⇄",
-        capabilities=("read",),
     ),
     PlatformService(
         slug="feedback",

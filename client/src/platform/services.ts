@@ -1,3 +1,8 @@
+import {
+  DATE_TIME_LOCATION_SECTION,
+  TIME_DATE_WEATHER_LOCATION_PATH,
+} from "@/constants/timeDateWeatherLocation";
+
 export interface PlatformService {
   slug: string;
   name: string;
@@ -9,11 +14,7 @@ export interface PlatformService {
   icon: string;
   capabilities: string[];
   external: boolean;
-}
-
-export interface PlatformCatalog {
-  services: PlatformService[];
-  categories: Record<string, string>;
+  public?: boolean;
 }
 
 /** Static fallback when API is unavailable; kept in sync with server registry. */
@@ -47,7 +48,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     name: "expenses",
     category: "productivity",
     categoryLabel: "productivity",
-    description: "Monthly personal spending ledger with charts",
+    description: "Monthly personal spending ledger, charts, and currency converter",
     apiPrefix: "/expenses",
     adminRoute: "/admin/tools/expenses",
     icon: "¤",
@@ -97,34 +98,11 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "utilities",
     description: "Quick math calculations",
     apiPrefix: "/calculator",
-    adminRoute: "/admin/tools/calculator",
+    adminRoute: "/calculator",
     icon: "⊞",
     capabilities: ["read"],
     external: false,
-  },
-  {
-    slug: "weather",
-    name: "weather",
-    category: "utilities",
-    categoryLabel: "utilities",
-    description: "Current weather for a city",
-    apiPrefix: "/weather",
-    adminRoute: "/admin/tools/weather",
-    icon: "☀",
-    capabilities: ["read", "write"],
-    external: false,
-  },
-  {
-    slug: "currency",
-    name: "currency converter",
-    category: "utilities",
-    categoryLabel: "utilities",
-    description: "Convert between EUR, USD, PLN, and BYN",
-    apiPrefix: "/currency",
-    adminRoute: "/admin/tools/currency",
-    icon: "⇄",
-    capabilities: ["read"],
-    external: false,
+    public: true,
   },
   {
     slug: "vid-download",
@@ -187,6 +165,34 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     external: true,
   },
 ];
+
+export interface PlatformCatalog {
+  services: PlatformService[];
+  categories: Record<string, string>;
+}
+
+/** Public tools shown on /tools for guests (includes non-registry entries). */
+export const PUBLIC_TOOLS: PlatformService[] = [
+  ...PLATFORM_SERVICES.filter((s) => s.public),
+  {
+    slug: "time-date-weather-location",
+    name: DATE_TIME_LOCATION_SECTION,
+    category: "utilities",
+    categoryLabel: "utilities",
+    description: "Search cities, view local time and weather",
+    apiPrefix: TIME_DATE_WEATHER_LOCATION_PATH,
+    adminRoute: TIME_DATE_WEATHER_LOCATION_PATH,
+    icon: "◷",
+    capabilities: ["read"],
+    external: false,
+    public: true,
+  },
+];
+
+/** Map public tools for reuse with groupServicesByCategory. */
+export function publicToolsAsServices(): PlatformService[] {
+  return PUBLIC_TOOLS;
+}
 
 export const PLATFORM_CATEGORIES: Record<string, string> = {
   productivity: "productivity",
