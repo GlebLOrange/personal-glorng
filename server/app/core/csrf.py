@@ -23,7 +23,10 @@ def _origin_allowed(request: Request, allowed_origins: list[str]) -> bool:
     if origin and origin in allowed_origins:
         return True
     referer = request.headers.get("referer", "")
-    return any(referer.startswith(f"{allowed}/") for allowed in allowed_origins)
+    for allowed in allowed_origins:
+        if referer == allowed or referer.startswith(f"{allowed}/"):
+            return True
+    return False
 
 
 def csrf_origin_rejected(request: Request) -> bool:

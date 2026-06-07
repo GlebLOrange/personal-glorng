@@ -62,6 +62,20 @@ def test_csrf_allows_cookie_post_with_matching_origin(
     get_settings.cache_clear()
 
 
+def test_csrf_allows_cookie_post_with_exact_referer_origin(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("APP_ENV", "production")
+    get_settings.cache_clear()
+    origin = get_settings().CORS_ORIGINS[0]
+    request = _build_request(
+        cookies={"access_token": "token"},
+        headers={"referer": origin},
+    )
+    assert csrf_origin_rejected(request) is False
+    get_settings.cache_clear()
+
+
 def test_csrf_skipped_in_development(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("APP_ENV", "development")
     get_settings.cache_clear()

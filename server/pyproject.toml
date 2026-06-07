@@ -59,6 +59,9 @@ ignore = []
 quote-style = "double"
 indent-style = "space"
 
+[tool.uv]
+override-dependencies = ["aiohttp>=3.14.0"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]

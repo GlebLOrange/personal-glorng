@@ -81,6 +81,9 @@ class FakeRedis:
         self._store.pop(key, None)
         self._expiry.pop(key, None)
 
+    async def ping(self) -> bool:
+        return True
+
     async def aclose(self) -> None:
         self._store.clear()
         self._expiry.clear()

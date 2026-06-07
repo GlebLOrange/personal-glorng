@@ -53,7 +53,7 @@ class Settings(BaseSettings):
         return _parse_env_list(value)
 
     @model_validator(mode="after")
-    def _check_production_secrets(self) -> "Settings":
+    def _check_production_secrets(self) -> Settings:
         if self.APP_ENV == "production" and (
             len(self.JWT_SECRET) < 32
             or any(m in self.JWT_SECRET.lower() for m in _WEAK_SECRET_MARKERS)
@@ -71,6 +71,16 @@ class Settings(BaseSettings):
         ):
             msg = "RABBITMQ_PASSWORD is too weak for production; use 16+ chars"
             raise ValueError(msg)
+        if (
+            self.APP_ENV == "production"
+            and self.TELEGRAM_BOT_TO_DO_TOKEN
+            and not self.TELEGRAM_ALLOWED_USER_ID
+        ):
+            msg = (
+                "TELEGRAM_ALLOWED_USER_ID must be set when "
+                "TELEGRAM_BOT_TO_DO_TOKEN is configured in production"
+            )
+            raise ValueError(msg)
         return self
 
     # Postgres (source of truth for compose-backed DATABASE_URL)
@@ -82,7 +92,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
 
     @model_validator(mode="after")
-    def _normalize_database_url(self) -> "Settings":
+    def _normalize_database_url(self) -> Settings:
         url = self.DATABASE_URL
         for token, value in {
             "${POSTGRES_USER}": self.POSTGRES_USER,
