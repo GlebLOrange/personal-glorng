@@ -38,7 +38,6 @@ class TaskIntake(Base):
     clarification_turns_json: Mapped[list | None] = mapped_column(
         JSONDocument,
         nullable=True,
-        server_default="[]",
     )
     clarification_rounds: Mapped[int] = mapped_column(
         Integer,
