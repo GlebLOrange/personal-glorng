@@ -42,7 +42,11 @@ onMounted(loadResume);
 
 <template>
   <div>
-    <p v-if="apiError" class="max-w-5xl mx-auto px-6 pt-4 text-label text-accent-golden" role="status">
+    <p
+      v-if="apiError"
+      class="max-w-5xl mx-auto px-6 pt-4 text-label text-accent-golden"
+      role="status"
+    >
       Using cached portfolio data — live sync unavailable.
     </p>
 
@@ -69,9 +73,7 @@ onMounted(loadResume);
     </SectionWrapper>
 
     <SectionWrapper id="support" title="support" dark alternate>
-      <p class="text-body mb-6">
-        If you find my work useful, consider supporting me.
-      </p>
+      <p class="text-body mb-6">If you find my work useful, consider supporting me.</p>
       <DonationsBlock v-if="donations" :config="donations" />
     </SectionWrapper>
 

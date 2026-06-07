@@ -24,8 +24,7 @@ async def health() -> dict[str, str]:
     "/ready",
     summary="Readiness check",
     description=(
-        "Readiness probe; verifies database, Redis, "
-        "and optional MongoDB connectivity."
+        "Readiness probe; verifies database, Redis, and optional MongoDB connectivity."
     ),
 )
 async def ready(db: AsyncSession = Depends(get_db)) -> JSONResponse:

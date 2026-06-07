@@ -15,7 +15,7 @@ SEARCH_SYSTEM_PROMPT = (
     " Answer only using facts from the numbered context blocks."
     " Cite sources as [1], [2], etc. matching those numbers."
     " If the context is empty or does not contain the answer, say:"
-    " \"I couldn't find that in your indexed content.\""
+    ' "I couldn\'t find that in your indexed content."'
     " Do not invent projects, recipes, tasks, expenses, or other facts."
     " Keep answers concise and technical unless asked otherwise."
 )
@@ -50,12 +50,7 @@ def _extract_retrieval_query(messages: list[dict[str, str]]) -> str:
 
 
 def _build_system_prompt(context_block: str) -> str:
-    return (
-        f"{SEARCH_SYSTEM_PROMPT}\n\n"
-        "<context>\n"
-        f"{context_block}\n"
-        "</context>"
-    )
+    return f"{SEARCH_SYSTEM_PROMPT}\n\n<context>\n{context_block}\n</context>"
 
 
 class AiSearchService:

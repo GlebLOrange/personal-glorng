@@ -26,8 +26,7 @@ const visible = computed(() => route.name !== TIME_DATE_WEATHER_LOCATION_ROUTE_N
     >
       <div class="max-w-5xl mx-auto flex items-center justify-between gap-4 min-w-0">
         <WeatherWidget compact bar show-time class="min-w-0 flex-1" />
-        <span class="text-base text-surface-sage shrink-0">{{ DATE_TIME_LOCATION_SECTION }} →</span
-        >
+        <span class="text-base text-surface-sage shrink-0">{{ DATE_TIME_LOCATION_SECTION }} →</span>
       </div>
     </RouterLink>
   </aside>
