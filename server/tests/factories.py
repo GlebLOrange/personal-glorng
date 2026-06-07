@@ -16,7 +16,7 @@ from app.services.user import default_owner_permissions
 async def create_user(
     db: AsyncSession,
     email: str = "test@glorng.dev",
-    password: str = "testpass123",
+    password: str = "MyTestPass123!",
     is_verified: bool = True,
     permissions: list[str] | None = None,
 ) -> User:
@@ -25,7 +25,9 @@ async def create_user(
         email=email,
         password=password,
         is_verified=is_verified,
-        permissions=permissions or default_owner_permissions(),
+        permissions=permissions
+        if permissions is not None
+        else default_owner_permissions(),
     )
     await db.commit()
     await db.refresh(user)

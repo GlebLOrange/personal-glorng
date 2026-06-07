@@ -19,11 +19,9 @@ from app.db.models.user import User
 from app.services.audit import AuditRecord, AuditService
 from app.services.user import (
     create_user,
-    default_owner_permissions,
+    default_user_permissions,
     get_user_by_public_id,
 )
-from app.settings import get_settings
-
 
 async def _decode_and_validate(token: str, expected_type: str) -> dict[str, object]:
     """Decode a JWT and verify its type claim, raising UnauthorizedError on failure."""
@@ -69,33 +67,29 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-async def register_user(db: AsyncSession, email: str, password: str) -> User:
-    settings = get_settings()
+async def register_user(
+    db: AsyncSession,
+    email: str,
+    password: str,
+    *,
+    display_name: str | None = None,
+    timezone: str = "UTC",
+) -> User:
     audit = AuditService(db)
+    normalized_email = email.strip().lower()
 
-    if email != settings.ALLOWED_EMAIL:
-        logger.warning("Registration denied", context={"email": email})
-        await audit.record(
-            AuditRecord(
-                category=AuditCategory.SECURITY,
-                action="auth.register_denied",
-                actor_type=AuditActorType.USER,
-                source=AuditSource.PUBLIC,
-                metadata={"email": email},
-            ),
-        )
-        raise ForbiddenError("Registration is restricted to authorized emails only")
-
-    existing = await get_user_by_email(db, email)
+    existing = await get_user_by_email(db, normalized_email)
     if existing:
         raise ConflictError("User with this email already exists")
 
     user = await create_user(
         db,
-        email=email,
+        email=normalized_email,
         password=password,
-        permissions=default_owner_permissions(),
+        permissions=default_user_permissions(),
         is_verified=False,
+        display_name=display_name,
+        timezone=timezone,
     )
 
     await audit.record(
@@ -107,7 +101,7 @@ async def register_user(db: AsyncSession, email: str, password: str) -> User:
             source=AuditSource.PUBLIC,
             resource_type="user",
             resource_id=user.id,
-            metadata={"email": email},
+            metadata={"email": normalized_email},
         ),
     )
     return user
@@ -115,7 +109,7 @@ async def register_user(db: AsyncSession, email: str, password: str) -> User:
 
 async def login_user(db: AsyncSession, email: str, password: str) -> tuple[str, str]:
     audit = AuditService(db)
-    user = await get_user_by_email(db, email)
+    user = await get_user_by_email(db, email.strip().lower())
     if not user or not verify_password(password, user.hashed_password):
         logger.warning("Login failed", context={"email": email})
         await audit.record(
@@ -198,7 +192,7 @@ async def verify_user_email(db: AsyncSession, token: str) -> User:
 
 
 async def request_password_reset(db: AsyncSession, email: str) -> str | None:
-    user = await get_user_by_email(db, email)
+    user = await get_user_by_email(db, email.strip().lower())
     if not user:
         return None
 

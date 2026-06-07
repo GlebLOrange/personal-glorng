@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const adminEmail = process.env.E2E_EMAIL ?? "admin@glorng.dev";
-const adminPassword = process.env.E2E_PASSWORD ?? "testpass123";
+const adminPassword = process.env.E2E_PASSWORD ?? "MyTestPass123!";
 
 test.describe("public pages", () => {
   test("portfolio page loads", async ({ page }) => {

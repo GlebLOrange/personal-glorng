@@ -19,13 +19,13 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import { useCategoryManager } from "@/composables/useCategoryManager";
 import {
   EXPENSE_CURRENCIES,
-  EXPENSE_CURRENCY_STORAGE_KEY,
   EXPENSE_DEFAULT_CURRENCY,
   EXPENSE_LAST_CATEGORY_STORAGE_KEY,
   useExpenseFilters,
   type CurrencyCode,
   type MonthPreset,
 } from "@/composables/useExpenseFilters";
+import { useUserPreferences } from "@/composables/useUserPreferences";
 import { useExpenseParse } from "@/composables/useExpenseParse";
 import { useExpenseSort } from "@/composables/useExpenseSort";
 import { useExpenseSummary } from "@/composables/useExpenseSummary";
@@ -50,15 +50,7 @@ const editingId = ref<number | null>(null);
 const deleteTargetId = ref<number | null>(null);
 const deleteCategoryTarget = ref<{ id: number; name: string } | null>(null);
 
-const { value: displayCurrency, set: setDisplayCurrency } = useLocalStorageString(
-  EXPENSE_CURRENCY_STORAGE_KEY,
-  EXPENSE_DEFAULT_CURRENCY,
-);
-
-const { value: lastCategory, set: setLastCategory } = useLocalStorageString(
-  EXPENSE_LAST_CATEGORY_STORAGE_KEY,
-  "Groceries",
-);
+const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPreferences();
 
 const { value: lastCategory, set: setLastCategory } = useLocalStorageString(
   EXPENSE_LAST_CATEGORY_STORAGE_KEY,
@@ -227,7 +219,7 @@ async function postExpense(payload: {
     await api.post("/tools/expenses", payload);
     toast("Expense created", "success");
   }
-  setDisplayCurrency(payload.currency);
+  void saveDisplayCurrency(payload.currency);
   if (payload.category) {
     setLastCategory(payload.category);
   }
@@ -446,7 +438,8 @@ function switchTab(tab: string): void {
   void router.replace({ query: { ...route.query, tab } });
 }
 
-watch(displayCurrency, () => {
+watch(displayCurrency, (currency) => {
+  void saveDisplayCurrency(currency);
   void Promise.all([loadSummary(), loadPreviousSummary()]);
 });
 
@@ -470,7 +463,12 @@ onMounted(() => {
   if (tab) activeTab.value = tab;
   applyMonthPreset("this_month");
   quickAdd.value.category = resolvedCategory(lastCategory.value);
-  void Promise.all([loadRates(), reloadListAndSummary(), loadCategories()]);
+  void Promise.all([
+    loadPreferences(),
+    loadRates(),
+    reloadListAndSummary(),
+    loadCategories(),
+  ]);
 });
 </script>
 

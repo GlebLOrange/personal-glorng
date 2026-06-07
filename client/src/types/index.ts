@@ -5,7 +5,28 @@ export interface UserResponse {
   email: string;
   is_verified: boolean;
   permissions: string[];
+  display_name: string | null;
+  timezone: string;
+  preferences: Record<string, unknown>;
   created_at: string;
+}
+
+export interface UserPreferences {
+  display_currency: string | null;
+}
+
+export interface AdminUserSummary {
+  id: string;
+  email: string;
+  display_name: string | null;
+  is_verified: boolean;
+  permissions: string[];
+  created_at: string;
+}
+
+export interface GitHubStatus {
+  linked: boolean;
+  github_username: string | null;
 }
 
 export interface TokenResponse {

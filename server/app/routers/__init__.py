@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 
+from app.routers.account import router as account_router
+from app.routers.admin.users import router as admin_users_router
 from app.routers.auth import router as auth_router
 from app.routers.callbacks import router as callbacks_router
 from app.routers.donations import router as donations_router
@@ -14,6 +16,12 @@ from app.routers.weather import router as weather_router
 api_router = APIRouter()
 
 api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
+api_router.include_router(account_router, prefix="/auth", tags=["auth"])
+api_router.include_router(
+    admin_users_router,
+    prefix="/admin/users",
+    tags=["admin"],
+)
 api_router.include_router(github_router, prefix="/auth/github", tags=["github"])
 api_router.include_router(resume_router, prefix="/resume", tags=["resume"])
 api_router.include_router(weather_router)

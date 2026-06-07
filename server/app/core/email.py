@@ -76,7 +76,7 @@ def _wrap_email(title: str, body: str) -> str:
 
 
 def render_verification_email(token: str, base_url: str) -> str:
-    url = f"{escape(base_url)}/api/auth/verify?token={escape(token)}"
+    url = f"{escape(base_url)}/verify-email?token={escape(token)}"
     return _wrap_email(
         "Verify your email",
         f"<p>Click the link below to verify your account:</p>"

@@ -17,7 +17,10 @@ CSP currently allows `'unsafe-inline'` for scripts and styles so Vite dev HMR, G
 - JWT access/refresh tokens (HS256) with bcrypt passwords
 - HttpOnly cookies in production (`secure`, `SameSite=Lax`) plus optional Bearer header
 - Refresh rotation and Redis token blacklist on logout
-- Registration limited to `ALLOWED_EMAIL`; GitHub OAuth uses `GITHUB_ALLOWED_USERS`
+- Open self-service registration with email verification; new users start with no tool permissions
+- Password policy: 12+ chars, upper, lower, digit, special; common passwords rejected
+- `ALLOWED_EMAIL` is seed-only for the bootstrap superuser; GitHub OAuth uses `GITHUB_ALLOWED_USERS`
+- Users manage profile, password, email, and preferences via `/settings`; permissions are admin-only
 
 ## CSRF and CORS
 

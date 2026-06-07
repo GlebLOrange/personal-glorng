@@ -18,7 +18,7 @@ env:
   REDIS_URL: redis://:glorng_ci_redis@redis:6379/0
   JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
   ALLOWED_EMAIL: admin@glorng.dev
-  SEED_PASSWORD: testpass123
+  SEED_PASSWORD: MyTestPass123!
   APP_ENV: development
   EMAIL_BACKEND: console
 
@@ -79,7 +79,7 @@ jobs:
           REDIS_URL=redis://:glorng_ci_redis@redis:6379/0
           JWT_SECRET=ci-jwt-secret-at-least-32-characters-long
           ALLOWED_EMAIL=admin@glorng.dev
-          SEED_PASSWORD=testpass123
+          SEED_PASSWORD=MyTestPass123!
           APP_ENV=development
           EMAIL_BACKEND=console
           EOF
@@ -110,7 +110,7 @@ jobs:
           REDIS_URL=redis://:glorng_ci_redis@redis:6379/0
           JWT_SECRET=ci-jwt-secret-at-least-32-characters-long
           ALLOWED_EMAIL=admin@glorng.dev
-          SEED_PASSWORD=testpass123
+          SEED_PASSWORD=MyTestPass123!
           APP_ENV=development
           EMAIL_BACKEND=console
           EOF
@@ -134,7 +134,7 @@ jobs:
           E2E_BASE_URL: http://127.0.0.1:4173
           E2E_API_URL: http://127.0.0.1:8000
           E2E_EMAIL: admin@glorng.dev
-          E2E_PASSWORD: testpass123
+          E2E_PASSWORD: MyTestPass123!
         run: |
           VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run preview &
           PREVIEW_PID=$!

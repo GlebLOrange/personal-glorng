@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from app.core.deps import CurrentUser, DbSession
 from app.core.exceptions import UnauthorizedError
@@ -38,6 +38,42 @@ class GitHubCallbackRequest(BaseModel):
 class GitHubCallbackResponse(BaseModel):
     github_username: str
     message: str
+
+
+class GitHubStatusResponse(BaseModel):
+    linked: bool
+    github_username: str | None = None
+
+
+@router.get(
+    "/status",
+    response_model=GitHubStatusResponse,
+    summary="GitHub link status",
+)
+async def github_status(user: CurrentUser, db: DbSession) -> GitHubStatusResponse:
+    result = await db.execute(
+        select(GitHubCredential).where(GitHubCredential.user_id == user.id),
+    )
+    credential = result.scalar_one_or_none()
+    if not credential:
+        return GitHubStatusResponse(linked=False)
+    return GitHubStatusResponse(
+        linked=True,
+        github_username=credential.github_username,
+    )
+
+
+@router.delete(
+    "",
+    summary="Unlink GitHub account",
+)
+async def github_unlink(user: CurrentUser, db: DbSession) -> GitHubStatusResponse:
+    await db.execute(
+        delete(GitHubCredential).where(GitHubCredential.user_id == user.id),
+    )
+    await db.flush()
+    logger.info("GitHub account unlinked", context={"user_id": user.id})
+    return GitHubStatusResponse(linked=False)
 
 
 @router.get(

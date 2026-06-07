@@ -24,6 +24,10 @@ function handleLogout(): void {
         </RouterLink>
         <RouterLink v-else to="/tools" class="nav-link-accent"> tools </RouterLink>
 
+        <RouterLink v-if="auth.isAuthenticated" to="/settings" class="nav-link">
+          settings
+        </RouterLink>
+
         <button
           v-if="auth.isAuthenticated"
           type="button"
