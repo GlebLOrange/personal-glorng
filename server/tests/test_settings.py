@@ -52,3 +52,24 @@ def test_production_requires_strong_redis_password(
         Settings()
 
     get_settings.cache_clear()
+
+
+def test_production_rejects_placeholder_openai_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("JWT_SECRET", "production-jwt-key-with-32-characters-minimum")
+    monkeypatch.setenv("RABBITMQ_PASSWORD", "production-rabbitmq-password-ok")
+    monkeypatch.setenv("POSTGRES_PASSWORD", "production-postgres-password-ok")
+    monkeypatch.setenv(
+        "REDIS_URL",
+        "redis://:production-redis-password-ok@redis:6379/0",
+    )
+    monkeypatch.setenv("AI_SEARCH_ENABLED", "true")
+    monkeypatch.setenv("OPENAI_API_KEY", "replace-with-openai-key")
+    get_settings.cache_clear()
+
+    with pytest.raises(ValueError, match="OPENAI_API_KEY"):
+        Settings()
+
+    get_settings.cache_clear()

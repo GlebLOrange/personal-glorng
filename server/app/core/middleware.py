@@ -10,6 +10,7 @@ from app.core.csrf import csrf_origin_rejected
 from app.core.logging import logger
 from app.core.request_context import request_id_var, user_id_var
 from app.core.security import access_token_from_request, user_id_from_access_token
+from app.settings import get_settings
 
 
 def _optional_user_id(request: Request) -> int | None:
@@ -38,7 +39,8 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
         if user_id is not None:
             log_ctx["user_id"] = user_id
 
-        logger.info("Request started", context=log_ctx)
+        if get_settings().LOG_REQUESTS:
+            logger.info("Request started", context=log_ctx)
 
         if csrf_origin_rejected(request):
             return JSONResponse(
@@ -64,6 +66,7 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
         if user_id is not None:
             completed_ctx["user_id"] = user_id
 
-        logger.info("Request completed", context=completed_ctx)
+        if get_settings().LOG_REQUESTS:
+            logger.info("Request completed", context=completed_ctx)
 
         return response

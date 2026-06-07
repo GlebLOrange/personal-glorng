@@ -25,7 +25,7 @@ HTTPS termination is expected upstream of compose nginx (port 80 in-repo); `secu
 - Password policy: 12+ chars, upper, lower, digit, special; common passwords rejected
 - `ALLOWED_EMAIL` is seed-only for the bootstrap superuser; GitHub OAuth uses `GITHUB_ALLOWED_USERS`
 - Users manage profile, password, email, and preferences via `/settings`; permissions are admin-only
-- GitHub OAuth access tokens are **encrypted at rest** (Fernet, key derived from `JWT_SECRET`) — see [`core/fernet_secrets.py`](../server/app/core/fernet_secrets.py)
+- GitHub OAuth access tokens and Google Calendar refresh tokens are **encrypted at rest** (Fernet, key derived from `JWT_SECRET`) — see [`core/fernet_secrets.py`](../server/app/core/fernet_secrets.py)
 
 ## CSRF and CORS
 

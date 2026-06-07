@@ -13,6 +13,7 @@ from app.core.utils import calendar_datetime
 from app.db.models.google_auth import GoogleCredential
 from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction
 from app.db.models.task import Task
+from app.services.github_credentials import read_google_refresh_token
 from app.settings import get_settings
 
 
@@ -21,7 +22,7 @@ def _build_service(cred: GoogleCredential) -> object:
     settings = get_settings()
     credentials = Credentials(
         token=None,
-        refresh_token=cred.refresh_token,
+        refresh_token=read_google_refresh_token(cred.refresh_token),
         token_uri="https://oauth2.googleapis.com/token",  # noqa: S106
         client_id=settings.GOOGLE_CLIENT_ID,
         client_secret=settings.GOOGLE_CLIENT_SECRET,

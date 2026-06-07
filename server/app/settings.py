@@ -19,6 +19,8 @@ def _validate_production_password(name: str, value: str, *, min_len: int) -> Non
 
 def _password_from_redis_url(url: str) -> str:
     return urlparse(url).password or ""
+
+
 _COMPOSE_DB_HOST = "db"
 _COMPOSE_DB_PORT = 5432
 _HOST_DB_HOST = "127.0.0.1"
@@ -104,6 +106,16 @@ class Settings(BaseSettings):
                 _password_from_redis_url(self.REDIS_URL),
                 min_len=16,
             )
+            if self.AI_CHAT_ENABLED or self.AI_SEARCH_ENABLED:
+                api_key = self.OPENAI_API_KEY.strip()
+                if not api_key or any(
+                    marker in api_key.lower() for marker in _WEAK_SECRET_MARKERS
+                ):
+                    msg = (
+                        "OPENAI_API_KEY must be set to a real key when AI features "
+                        "are enabled in production"
+                    )
+                    raise ValueError(msg)
         return self
 
     # Postgres (source of truth for compose-backed DATABASE_URL)
@@ -226,6 +238,7 @@ class Settings(BaseSettings):
 
     # App
     APP_ENV: str = "development"
+    LOG_REQUESTS: bool = True
     APP_NAME: str = "gLOrng"
     BASE_URL: str = "http://localhost"
     MEDIA_DIR: str = "/app/media"
