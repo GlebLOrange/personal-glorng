@@ -95,6 +95,25 @@ def _parse_env_list(value: Any) -> list[str]:
     return [str(value).strip()]
 
 
+def _parse_env_dict(value: Any) -> dict[str, str]:
+    """Parse dict settings from env: JSON object only."""
+    if value is None or value == "":
+        return {}
+    if isinstance(value, dict):
+        return {str(k): str(v) for k, v in value.items()}
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return {}
+        parsed = json.loads(stripped)
+        if not isinstance(parsed, dict):
+            msg = "Expected a JSON object"
+            raise TypeError(msg)
+        return {str(k): str(v) for k, v in parsed.items()}
+    msg = "Expected a JSON object or dict"
+    raise TypeError(msg)
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore")
 
@@ -102,6 +121,11 @@ class Settings(BaseSettings):
     @classmethod
     def _parse_list_fields(cls, value: Any) -> list[str]:
         return _parse_env_list(value)
+
+    @field_validator("WEBHOOK_SECRETS", mode="before")
+    @classmethod
+    def _parse_webhook_secrets(cls, value: Any) -> dict[str, str]:
+        return _parse_env_dict(value)
 
     @model_validator(mode="after")
     def _check_production_secrets(self) -> Settings:
@@ -317,12 +341,22 @@ class Settings(BaseSettings):
     GITHUB_CLIENT_SECRET: str = ""
     GITHUB_REDIRECT_URI: str = ""
     GITHUB_ALLOWED_USERS: Annotated[list[str], NoDecode] = []
+    GITHUB_PUBLIC_USERNAME: str = ""
 
     # Donations
     STRIPE_LINK: str = ""
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_DONATION_AMOUNT_CENTS: int = 500
+    STRIPE_DONATION_CURRENCY: str = "usd"
+    STRIPE_CHECKOUT_SUCCESS_URL: str = ""
+    STRIPE_CHECKOUT_CANCEL_URL: str = ""
     TELEGRAM_LINK: str = ""
     CRYPTO_BTC_ADDRESS: str = ""
     CRYPTO_ETH_ADDRESS: str = ""
+
+    # Inbound webhooks (slug → HMAC secret)
+    WEBHOOK_SECRETS: Annotated[dict[str, str], NoDecode] = {}
 
     # Spotify
     SPOTIFY_CLIENT_ID: str = ""
@@ -360,6 +394,22 @@ class Settings(BaseSettings):
     WEATHER_DEFAULT_LABEL: str = "Wrocław"
     WEATHER_DEFAULT_QUERY: str = "Wroclaw"
     WORLD_TIME_API_BASE: str = "https://timeapi.world/api"
+
+    def stripe_checkout_enabled(self) -> bool:
+        """Whether Stripe Checkout sessions can be created."""
+        return bool(self.STRIPE_SECRET_KEY)
+
+    def stripe_webhook_enabled(self) -> bool:
+        """Whether Stripe webhook signature verification is configured."""
+        return bool(self.STRIPE_WEBHOOK_SECRET)
+
+    def github_public_username(self) -> str | None:
+        """Public GitHub username for portfolio repo listing."""
+        if self.GITHUB_PUBLIC_USERNAME.strip():
+            return self.GITHUB_PUBLIC_USERNAME.strip()
+        if self.GITHUB_ALLOWED_USERS:
+            return self.GITHUB_ALLOWED_USERS[0]
+        return None
 
 
 @lru_cache

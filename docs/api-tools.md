@@ -48,6 +48,9 @@ These appear on **`/tools`** in the UI ([`client/src/pages/ToolsPage.vue`](../cl
 | **Public AI search chat** | `GET /api/search/config`, `POST /api/search/chat` (SSE) — needs `AI_SEARCH_ENABLED=true` + `OPENAI_API_KEY` |
 | **Feedback** | `POST /api/feedback` (5/5min) |
 | **Donations config** | `GET /api/donations` |
+| **Donations Checkout** | `POST /api/donations/checkout` — needs `STRIPE_SECRET_KEY` |
+| **GitHub public repos** | `GET /api/github/repos` — needs `GITHUB_PUBLIC_USERNAME` |
+| **Inbound webhooks** | `POST /api/webhooks/{slug}` — HMAC; see [integration-automation.md](integration-automation.md) |
 | **Spotify widget** | `GET /api/spotify/now-playing` |
 | **Health** | `GET /api/health`, `GET /api/ready` |
 | **Service catalog** | `GET /api/platform/services` |
@@ -103,7 +106,12 @@ curl -s https://your-domain/api/platform/services | jq '.services[].slug'
 
 Compare with [`.env.example`](../.env.example) for feature flags (`AI_SEARCH_ENABLED`, `AI_CHAT_ENABLED`, etc.).
 
+## Inbound webhooks and automation
+
+Signed webhooks (`POST /api/webhooks/{slug}`), Stripe Checkout, and script/n8n examples: [integration-automation.md](integration-automation.md).
+
 ## Related docs
 
+- [Integration automation](integration-automation.md) — JWT scripts, webhooks, n8n, Stripe
 - [Platform overview](platform.md) — channels, module-as-service pattern, observability
 - [Security](security.md) — auth, rate limits, public-tool risks, AI scope

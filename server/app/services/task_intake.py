@@ -344,6 +344,7 @@ class TaskIntakeService:
             model=self.settings.OPENAI_CHAT_MODEL,
             system_prompt=EXTRACTION_SYSTEM_PROMPT,
             user_content=json.dumps(user_payload),
+            base_url=self.settings.LLM_BASE_URL or None,
         )
         return self._parse_extraction_payload(raw)
 
