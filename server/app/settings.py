@@ -27,6 +27,10 @@ _COMPOSE_ES_HOST = "elasticsearch"
 _COMPOSE_ES_PORT = 9200
 _HOST_ES_HOST = "127.0.0.1"
 _HOST_ES_PORT = 9200
+_COMPOSE_MONGO_HOST = "mongodb"
+_COMPOSE_MONGO_PORT = 27017
+_HOST_MONGO_HOST = "127.0.0.1"
+_HOST_MONGO_PORT = 27017
 
 
 def _resolve_database_url(url: str) -> str:
@@ -48,6 +52,24 @@ def _resolve_elasticsearch_url(url: str) -> str:
     port = parsed.port or _COMPOSE_ES_PORT
     if parsed.hostname == _COMPOSE_ES_HOST and port == _COMPOSE_ES_PORT:
         return parsed._replace(netloc=f"{_HOST_ES_HOST}:{_HOST_ES_PORT}").geturl()
+    return url
+
+
+def _resolve_mongodb_url(url: str) -> str:
+    """Map Docker Compose MongoDB host to localhost when running on the host."""
+    if Path("/.dockerenv").exists():
+        return url
+    parsed = urlparse(url)
+    port = parsed.port or _COMPOSE_MONGO_PORT
+    if parsed.hostname == _COMPOSE_MONGO_HOST and port == _COMPOSE_MONGO_PORT:
+        auth = ""
+        if parsed.username:
+            auth = parsed.username
+            if parsed.password is not None:
+                auth = f"{auth}:{parsed.password}"
+            auth = f"{auth}@"
+        netloc = f"{auth}{_HOST_MONGO_HOST}:{_HOST_MONGO_PORT}"
+        return parsed._replace(netloc=netloc).geturl()
     return url
 
 
@@ -119,6 +141,12 @@ class Settings(BaseSettings):
                 _password_from_redis_url(self.REDIS_URL),
                 min_len=16,
             )
+            if self.mongodb_enabled():
+                _validate_production_password(
+                    "MONGODB_PASSWORD",
+                    self.MONGODB_PASSWORD,
+                    min_len=16,
+                )
         return self
 
     # Postgres (source of truth for compose-backed DATABASE_URL)
@@ -164,6 +192,31 @@ class Settings(BaseSettings):
 
     def elasticsearch_enabled(self) -> bool:
         return bool(self.ELASTICSEARCH_URL.strip())
+
+    # MongoDB (optional secondary document store)
+    MONGODB_USER: str = ""
+    MONGODB_PASSWORD: str = ""
+    MONGODB_DB: str = "glorng"
+    MONGODB_URL: str = ""
+
+    @model_validator(mode="after")
+    def _normalize_mongodb_url(self) -> Settings:
+        if not self.MONGODB_URL:
+            return self
+
+        url = self.MONGODB_URL
+        for token, value in {
+            "${MONGODB_USER}": self.MONGODB_USER,
+            "${MONGODB_PASSWORD}": self.MONGODB_PASSWORD,
+            "${MONGODB_DB}": self.MONGODB_DB,
+        }.items():
+            url = url.replace(token, value)
+
+        self.MONGODB_URL = _resolve_mongodb_url(url)
+        return self
+
+    def mongodb_enabled(self) -> bool:
+        return bool(self.MONGODB_URL.strip())
 
     # Redis
     REDIS_URL: str

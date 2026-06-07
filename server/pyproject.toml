@@ -25,6 +25,7 @@ dependencies = [
     "google-api-python-client==2.197.*",
     "yt-dlp>=2026.3.17",
     "elasticsearch[async]==9.0.*",
+    "motor==3.7.*",
 ]
 
 [dependency-groups]
