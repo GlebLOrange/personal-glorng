@@ -1,0 +1,21 @@
+# Cloud VM overlay: nested Docker cannot apply cgroup memory limits (threaded cgroupv2).
+# Use: docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.cloud-vm.yml up
+services:
+  db:
+    cgroup: host
+    deploy: !reset null
+  redis:
+    cgroup: host
+    deploy: !reset null
+  migrate:
+    cgroup: host
+  server:
+    cgroup: host
+  worker:
+    cgroup: host
+  todobot:
+    cgroup: host
+  client:
+    cgroup: host
+  nginx:
+    cgroup: host
