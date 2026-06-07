@@ -63,7 +63,6 @@ const providerLabel = computed(() => chatConfig.value?.provider ?? "…");
 const modelLabel = computed(() => chatConfig.value?.model ?? "…");
 const isReady = computed(() => Boolean(chatConfig.value?.enabled && chatConfig.value?.configured));
 
-
 interface SourceLink {
   href: string;
   external: boolean;

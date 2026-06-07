@@ -4,8 +4,7 @@ import { parseSseEvents } from "./useSearchChat";
 
 describe("parseSseEvents", () => {
   it("parses complete SSE frames", () => {
-    const buffer =
-      'data: {"delta":"Hi"}\n\n' + 'data: {"done":true}\n\n';
+    const buffer = 'data: {"delta":"Hi"}\n\n' + 'data: {"done":true}\n\n';
     const { events, rest } = parseSseEvents(buffer);
     expect(events).toEqual([{ delta: "Hi" }, { done: true }]);
     expect(rest).toBe("");
