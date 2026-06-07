@@ -170,7 +170,6 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d db redis mongodb
           docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm --build -e RUN_SEED=true migrate
           docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build server
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml exec -T server uv run python scripts/ensure_e2e_user.py
       - uses: actions/setup-node@v4
         with:
           node-version: "24"

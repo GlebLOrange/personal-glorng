@@ -3,6 +3,8 @@ import os
 import time
 import uuid
 from collections.abc import AsyncGenerator, Generator
+from datetime import date, datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -157,12 +159,21 @@ def mongomock_compat(monkeypatch: pytest.MonkeyPatch) -> Generator[None]:
 
     original_to_dict = repo_base.document_to_dict
 
-    def _uuid_safe_to_dict(doc: Any, *, exclude_none: bool = False) -> dict[str, Any]:
+    def _mongomock_safe_to_dict(doc: Any, *, exclude_none: bool = False) -> dict[str, Any]:
         data = original_to_dict(doc, exclude_none=exclude_none)
-        return {
-            key: str(value) if isinstance(value, uuid.UUID) else value
-            for key, value in data.items()
-        }
+        safe: dict[str, Any] = {}
+        for key, value in data.items():
+            if isinstance(value, uuid.UUID):
+                safe[key] = str(value)
+            elif isinstance(value, Decimal):
+                safe[key] = str(value)
+            elif isinstance(value, datetime):
+                safe[key] = value
+            elif isinstance(value, date):
+                safe[key] = value.isoformat()
+            else:
+                safe[key] = value
+        return safe
 
     async def _search_text_regex(
         self: SearchRepository,
@@ -201,7 +212,7 @@ def mongomock_compat(monkeypatch: pytest.MonkeyPatch) -> Generator[None]:
             return None
         return repo_base._parse_doc(User, data)
 
-    monkeypatch.setattr(repo_base, "document_to_dict", _uuid_safe_to_dict)
+    monkeypatch.setattr(repo_base, "document_to_dict", _mongomock_safe_to_dict)
     monkeypatch.setattr(SearchRepository, "search_text", _search_text_regex)
     monkeypatch.setattr(
         UserRepository,

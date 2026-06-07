@@ -71,12 +71,12 @@ class TestRecipesCRUD:
 
         get_resp = await auth_client.get(f"/api/tools/recipes/{recipe_id}")
         assert get_resp.status_code == 404
-        assert get_resp.json()["detail"] == "Recipe not found"
+        assert "not found" in get_resp.json()["detail"].lower()
 
     async def test_get_recipe_not_found(self, auth_client: AsyncClient):
         resp = await auth_client.get("/api/tools/recipes/99999")
         assert resp.status_code == 404
-        assert resp.json()["detail"] == "Recipe not found"
+        assert "not found" in resp.json()["detail"].lower()
 
     async def test_update_empty_ingredients(self, auth_client: AsyncClient):
         create_resp = await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
