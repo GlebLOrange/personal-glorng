@@ -1,21 +1,28 @@
+"""Public calculator tool (rate limited, no capability gate)."""
+
 import math
 from typing import Any
 
 from fastapi import APIRouter, Depends
 
-from app.core.deps import require_capability
 from app.core.exceptions import ValidationError
+from app.core.rate_limit import rate_limit_api
 
 router = APIRouter(
     prefix="/calculator",
-    dependencies=[Depends(require_capability("calculator", "read"))],
+    tags=["calculator"],
+    dependencies=[Depends(rate_limit_api)],
 )
 
 ALLOWED_OPS = {"+", "-", "*", "/"}
 _MAX_FLOAT = 1e15
 
 
-@router.post("")
+@router.post(
+    "",
+    summary="Evaluate arithmetic expression",
+    description="Public calculator endpoint (rate limited).",
+)
 async def calculate(
     a: float,
     b: float,

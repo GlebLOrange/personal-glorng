@@ -1,3 +1,5 @@
+"""YouTube download tool. Default: `vid-download:read`; writes: `vid-download:write`."""
+
 import asyncio
 import mimetypes
 import shutil
@@ -12,10 +14,12 @@ from app.core.deps import AuthorizedUser, require_capability
 from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
 from app.core.utils import attachment_content_disposition
+from app.openapi import requires_capability
 from app.schemas.viddownload import VidDownloadRequest
 
 router = APIRouter(
     prefix="/vid-download",
+    tags=["vid-download"],
     dependencies=[
         Depends(require_capability("vid-download", "read")),
         Depends(rate_limit_api),
@@ -80,7 +84,7 @@ def _find_output_file(tmp_dir: str) -> Path:
     return target
 
 
-def _stream_and_cleanup(path: Path, tmp_dir: str) -> Generator[bytes, None, None]:
+def _stream_and_cleanup(path: Path, tmp_dir: str) -> Generator[bytes]:
     try:
         with open(path, "rb") as fh:
             while chunk := fh.read(64 * 1024):
@@ -91,6 +95,8 @@ def _stream_and_cleanup(path: Path, tmp_dir: str) -> Generator[bytes, None, None
 
 @router.post(
     "",
+    summary="Download video via yt-dlp",
+    description=requires_capability("vid-download", "write"),
     dependencies=[Depends(require_capability("vid-download", "write"))],
 )
 async def download_video(
@@ -119,9 +125,7 @@ async def download_video(
                 _stream_and_cleanup(target, tmp_dir),
                 media_type=mime or "application/octet-stream",
                 headers={
-                    "Content-Disposition": attachment_content_disposition(
-                        target.name
-                    ),
+                    "Content-Disposition": attachment_content_disposition(target.name),
                     "Content-Length": str(target.stat().st_size),
                 },
             )

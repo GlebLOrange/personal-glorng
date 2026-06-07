@@ -9,7 +9,8 @@ async def test_calculator_unauthenticated(client: AsyncClient) -> None:
     resp = await client.post(
         "/api/tools/calculator", params={"a": 1, "b": 2, "op": "+"}
     )
-    assert resp.status_code == 401
+    assert resp.status_code == 200
+    assert resp.json()["result"] == 3
 
 
 @pytest.mark.asyncio

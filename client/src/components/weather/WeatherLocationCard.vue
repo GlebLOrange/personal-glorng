@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
+import { computed } from "vue";
 
-import CityAnalogClock from "@/components/weather/CityAnalogClock.vue";
+import CityDigitalClock from "@/components/weather/CityDigitalClock.vue";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
-import { weatherLocationLabel, weatherUtcOffsetHours } from "@/utils/weather";
+import {
+  weatherAnchorUnixtime,
+  weatherLocationLabel,
+  weatherUtcOffsetHours,
+} from "@/utils/weather";
 
 const props = defineProps<{
   label: string;
@@ -22,15 +26,9 @@ const utcOffset = computed(() =>
   weather.value ? weatherUtcOffsetHours(weather.value) : null,
 );
 
-onMounted(() => {
-  void refresh();
-});
-
-watch(locationRef, () => {
-  if (locationRef.value.trim()) {
-    void refresh();
-  }
-});
+const anchorUnixtime = computed(() =>
+  weather.value ? weatherAnchorUnixtime(weather.value) : null,
+);
 </script>
 
 <template>
@@ -60,7 +58,7 @@ watch(locationRef, () => {
     </div>
 
     <div v-else-if="weather" class="flex items-center justify-between gap-6">
-      <CityAnalogClock :utc-offset-hours="utcOffset" :size="128" />
+      <CityDigitalClock :utc-offset-hours="utcOffset" :anchor-unixtime="anchorUnixtime" />
       <div class="text-right">
         <p class="text-4xl md:text-5xl font-bold accent-gradient tabular-nums">
           {{ weather.current_condition?.[0]?.temp_C }}°C

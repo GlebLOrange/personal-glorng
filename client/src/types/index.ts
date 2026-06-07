@@ -94,9 +94,17 @@ export interface WeatherData {
   nearest_area: Array<{
     areaName: Array<{ value: string }>;
     country: Array<{ value: string }>;
+    latitude?: string;
+    longitude?: string;
   }>;
   time_zone?: Array<{
     utcOffset: string;
+    timezone?: string;
+    datetime?: string;
+    utc_datetime?: string;
+    unixtime?: number;
+    dst?: boolean;
+    abbreviation?: string;
   }>;
 }
 

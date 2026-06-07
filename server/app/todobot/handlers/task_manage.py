@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.utils import format_scheduled_at
 from app.db.models.audit_event import AuditActorType, AuditSource
 from app.db.models.task import TaskStatus
-from app.services.task import get_pending_tasks, get_task, update_task_status
+from app.services.task import change_status, get_pending_tasks, get_task
 
 router = Router()
 
@@ -66,9 +66,9 @@ async def handle_status_update(
         await callback.message.answer("Task not found.")
         return
 
-    await update_task_status(
+    task = await change_status(
         db,
-        task=task,
+        task_id=task_id,
         new_status=new_status,
         actor_type=AuditActorType.TELEGRAM,
         actor_id=callback.from_user.id if callback.from_user else None,

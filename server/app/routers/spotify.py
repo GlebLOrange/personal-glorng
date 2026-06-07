@@ -3,6 +3,7 @@ import json
 import httpx
 from fastapi import APIRouter, Depends
 
+from app.core.cache_json import safe_cache_json_loads
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_api
 from app.core.redis import cache_get, cache_set
@@ -15,15 +16,21 @@ _NOW_PLAYING_CACHE_KEY = "spotify:now-playing"
 _NOW_PLAYING_CACHE_TTL = 30
 
 
-@router.get("/now-playing", response_model=SpotifyNowPlayingResponse)
+@router.get(
+    "/now-playing",
+    response_model=SpotifyNowPlayingResponse,
+    summary="Get now playing",
+    description="Public Spotify playback state for the portfolio widget.",
+)
 async def now_playing() -> SpotifyNowPlayingResponse:
     if not is_spotify_enabled():
         return SpotifyNowPlayingResponse(enabled=False, is_playing=False)
 
     cached = await cache_get(_NOW_PLAYING_CACHE_KEY)
     if cached:
-        payload = json.loads(cached)
-        return SpotifyNowPlayingResponse(enabled=True, **payload)
+        payload = safe_cache_json_loads(cached)
+        if isinstance(payload, dict):
+            return SpotifyNowPlayingResponse(enabled=True, **payload)
 
     try:
         state = await fetch_playback_state()

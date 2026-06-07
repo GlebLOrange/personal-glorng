@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import WeatherLocationCard from "@/components/weather/WeatherLocationCard.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
-import { DATE_TIME_LOCATION_SECTION } from "@/constants/weather";
+import WeatherWidget from "@/components/weather/WeatherWidget.vue";
+import { DATE_TIME_LOCATION_SECTION } from "@/constants/timeDateWeatherLocation";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
 
-const { locations, loading, seeding, isDefaultLocation, addLocation, removeLocation } =
+const { locations, loading, seeding, isDefaultLocation, addLocation, removeLocation, canAddLocation, guestLimitMessage } =
   useWeatherLocations();
 const { toast } = useNotify();
 
@@ -35,8 +36,16 @@ async function handleRemove(id: number | string): Promise<void> {
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 font-mono">
     <div class="mb-8">
       <h1 class="text-3xl font-bold accent-gradient mb-2">{{ DATE_TIME_LOCATION_SECTION }}</h1>
-      <p class="text-sm text-surface-mid">Local time and conditions for your cities.</p>
+      <p class="text-sm text-surface-mid mb-4">Local time and conditions for your cities.</p>
+      <WeatherWidget compact show-time />
     </div>
+
+    <WeatherLocationForm
+      :add-location="handleAdd"
+      :disabled="!canAddLocation"
+      :helper-text="guestLimitMessage"
+      class="mb-8"
+    />
 
     <section class="mb-10">
       <h2 class="text-lg font-bold text-surface-light mb-4">cities</h2>
@@ -59,8 +68,6 @@ async function handleRemove(id: number | string): Promise<void> {
           @remove="handleRemove(loc.id)"
         />
       </div>
-
-      <WeatherLocationForm :add-location="handleAdd" />
     </section>
   </div>
 </template>

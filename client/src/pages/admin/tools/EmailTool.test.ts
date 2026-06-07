@@ -1,3 +1,6 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
@@ -35,12 +38,16 @@ describe("EmailTool", () => {
     const wrapper = mount(EmailTool);
     await wrapper.find('input[placeholder="Email subject"]').setValue("Subject");
     await wrapper.find("textarea").setValue("Body text");
-    await wrapper
-      .findAll("button")
-      .find((b) => b.text() === "Preview")!
-      .trigger("click");
-    await vi.waitFor(() => expect(wrapper.html()).toContain("Safe"));
 
+    const previewBtn = wrapper.findAll("button").find((b) => b.text().trim() === "Preview");
+    expect(previewBtn).toBeDefined();
+    await previewBtn!.trigger("click");
+
+    expect(postMock).toHaveBeenCalledWith(
+      "/tools/email/preview",
+      expect.objectContaining({ subject: "Subject", body: "Body text" }),
+    );
+    await vi.waitFor(() => expect(wrapper.html()).toContain("Safe"));
     expect(wrapper.html()).not.toContain("<script");
   });
 });

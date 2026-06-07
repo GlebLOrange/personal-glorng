@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 
+import { TIME_DATE_WEATHER_LOCATION_ROUTE_NAME } from "@/constants/timeDateWeatherLocation";
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled } from "@/utils/featureFlags";
@@ -26,10 +27,18 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/admin/tools/calculator",
-    name: "tool-calculator",
+    path: "/tools",
+    name: "tools",
+    component: () => import("@/pages/ToolsPage.vue"),
+  },
+  {
+    path: "/calculator",
+    name: "calculator",
     component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
-    meta: { requiresAuth: true },
+  },
+  {
+    path: "/admin/tools/calculator",
+    redirect: { name: "calculator" },
   },
   {
     path: "/admin/tools/currency",
@@ -102,13 +111,17 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/clocks",
-    name: "clocks",
+    path: "/time-date-weather-location",
+    name: TIME_DATE_WEATHER_LOCATION_ROUTE_NAME,
     component: () => import("@/pages/WeatherPage.vue"),
   },
   {
+    path: "/clocks",
+    redirect: { name: TIME_DATE_WEATHER_LOCATION_ROUTE_NAME },
+  },
+  {
     path: "/weather",
-    redirect: { name: "clocks" },
+    redirect: { name: TIME_DATE_WEATHER_LOCATION_ROUTE_NAME },
   },
   {
     path: "/privacy",
@@ -128,7 +141,6 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-recipes": "recipes",
   "tool-file-share": "file-share",
   "tool-url-shortener": "url-shortener",
-  "tool-calculator": "calculator",
   "tool-vid-download": "vid-download",
   "tool-email": "email",
   "tool-feedback": "feedback",

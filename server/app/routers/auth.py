@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 
-from app.core.deps import CurrentUser, DbSession, oauth2_scheme
+from app.core.deps import AppSettings, CurrentUser, DbSession, oauth2_scheme
 from app.core.exceptions import UnauthorizedError
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_auth
@@ -30,7 +30,7 @@ from app.services.auth import (
     verify_user_email,
 )
 from app.services.user import get_user_by_public_id
-from app.settings import get_settings
+from app.settings import Settings
 from app.workers.pool import enqueue_job
 
 router = APIRouter()
@@ -39,8 +39,7 @@ _ACCESS_COOKIE = "access_token"
 _REFRESH_COOKIE = "refresh_token"
 
 
-def _cookie_flags() -> dict[str, object]:
-    settings = get_settings()
+def _cookie_flags(settings: Settings) -> dict[str, object]:
     secure = settings.APP_ENV == "production"
     return {
         "httponly": True,
@@ -51,12 +50,15 @@ def _cookie_flags() -> dict[str, object]:
 
 
 def _set_auth_cookies(
-    response: Response, *, access_token: str, refresh_token: str
+    response: Response,
+    *,
+    access_token: str,
+    refresh_token: str,
+    settings: Settings,
 ) -> None:
-    settings = get_settings()
     access_max_age = settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
     refresh_max_age = settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
-    flags = _cookie_flags()
+    flags = _cookie_flags(settings)
 
     response.set_cookie(
         _ACCESS_COOKIE,
@@ -80,6 +82,8 @@ def _clear_auth_cookies(response: Response) -> None:
 @router.post(
     "/register",
     response_model=MessageResponse,
+    summary="Register new account",
+    description="Create a user account and send a verification email.",
     dependencies=[Depends(rate_limit_auth)],
 )
 async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
@@ -96,14 +100,25 @@ async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
 @router.post(
     "/login",
     response_model=TokenResponse,
+    summary="Log in",
+    description=(
+        "Authenticate with email and password. Returns JWT tokens and sets "
+        "HttpOnly cookies. Use `access_token` as Bearer in Swagger."
+    ),
     dependencies=[Depends(rate_limit_auth)],
 )
-async def login(data: LoginRequest, db: DbSession, response: Response) -> TokenResponse:
+async def login(
+    data: LoginRequest,
+    db: DbSession,
+    response: Response,
+    settings: AppSettings,
+) -> TokenResponse:
     access_token, refresh_token = await login_user(db, data.email, data.password)
     _set_auth_cookies(
         response,
         access_token=access_token,
         refresh_token=refresh_token,
+        settings=settings,
     )
     return TokenResponse(access_token=access_token, refresh_token=refresh_token)
 
@@ -111,6 +126,8 @@ async def login(data: LoginRequest, db: DbSession, response: Response) -> TokenR
 @router.get(
     "/verify",
     response_model=MessageResponse,
+    summary="Verify email",
+    description="Confirm account email using the token from the verification link.",
     dependencies=[Depends(rate_limit_auth)],
 )
 async def verify(token: str, db: DbSession) -> MessageResponse:
@@ -121,12 +138,17 @@ async def verify(token: str, db: DbSession) -> MessageResponse:
 @router.post(
     "/refresh",
     response_model=TokenResponse,
+    summary="Refresh access token",
+    description=(
+        "Exchange a refresh token (body or cookie) for new access and refresh tokens."
+    ),
     dependencies=[Depends(rate_limit_auth)],
 )
 async def refresh(
     db: DbSession,
     response: Response,
     request: Request,
+    settings: AppSettings,
     data: RefreshRequest | None = None,
 ) -> TokenResponse:
     refresh_token = (data.refresh_token if data else None) or request.cookies.get(
@@ -140,6 +162,7 @@ async def refresh(
         response,
         access_token=access_token,
         refresh_token=new_refresh_token,
+        settings=settings,
     )
     return TokenResponse(
         access_token=access_token,
@@ -150,6 +173,8 @@ async def refresh(
 @router.post(
     "/logout",
     response_model=MessageResponse,
+    summary="Log out",
+    description="Blacklist tokens and clear auth cookies.",
     dependencies=[Depends(rate_limit_auth)],
 )
 async def logout(
@@ -193,6 +218,8 @@ async def logout(
 @router.post(
     "/forgot-password",
     response_model=MessageResponse,
+    summary="Request password reset",
+    description="Send a password reset email if the account exists.",
     dependencies=[Depends(rate_limit_auth)],
 )
 async def forgot_password(
@@ -213,6 +240,8 @@ async def forgot_password(
 @router.post(
     "/reset-password",
     response_model=MessageResponse,
+    summary="Reset password",
+    description="Set a new password using the token from the reset email.",
     dependencies=[Depends(rate_limit_auth)],
 )
 async def reset_password(data: ResetPasswordRequest, db: DbSession) -> MessageResponse:
@@ -220,6 +249,11 @@ async def reset_password(data: ResetPasswordRequest, db: DbSession) -> MessageRe
     return MessageResponse(message="Password reset successfully")
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    summary="Get current user",
+    description="Return the authenticated user's profile and capabilities.",
+)
 async def me(user: CurrentUser) -> UserResponse:
     return UserResponse.model_validate(user)

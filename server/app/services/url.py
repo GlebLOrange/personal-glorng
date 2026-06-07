@@ -4,9 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ApiError, NotFoundError
 from app.core.utils import generate_short_code
-from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.url import ShortenedUrl
-from app.services.audit import AuditRecord, AuditService
+from app.services.audit import AuditService
 from app.services.base import CRUDService
 
 _MAX_CODE_RETRIES = 3
@@ -33,17 +32,12 @@ class UrlService(CRUDService[ShortenedUrl]):
                         "created_by": created_by,
                     }
                 )
-                await AuditService(self.db).record(
-                    AuditRecord(
-                        category=AuditCategory.DOMAIN,
-                        action="url.created",
-                        actor_type=AuditActorType.USER,
-                        actor_id=created_by,
-                        source=AuditSource.WEB_ADMIN,
-                        resource_type="url",
-                        resource_id=url.id,
-                        metadata={"code": url.code},
-                    ),
+                await AuditService(self.db).record_domain(
+                    action="url.created",
+                    resource_type="url",
+                    resource_id=url.id,
+                    actor_id=created_by,
+                    metadata={"code": url.code},
                 )
                 return url
             except IntegrityError:
@@ -73,13 +67,8 @@ class UrlService(CRUDService[ShortenedUrl]):
 
     async def delete_url(self, url_id: int) -> None:
         await self.delete(url_id)
-        await AuditService(self.db).record(
-            AuditRecord(
-                category=AuditCategory.DOMAIN,
-                action="url.deleted",
-                actor_type=AuditActorType.USER,
-                source=AuditSource.WEB_ADMIN,
-                resource_type="url",
-                resource_id=url_id,
-            ),
+        await AuditService(self.db).record_domain(
+            action="url.deleted",
+            resource_type="url",
+            resource_id=url_id,
         )

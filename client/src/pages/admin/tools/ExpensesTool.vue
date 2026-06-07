@@ -12,6 +12,7 @@ import ExpenseInsights from "@/components/expenses/ExpenseInsights.vue";
 import ExpenseList from "@/components/expenses/ExpenseList.vue";
 import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
 import ExpenseSummaryCard from "@/components/expenses/ExpenseSummaryCard.vue";
+import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -32,11 +33,13 @@ import { api } from "@/composables/useApi";
 import { useLocalStorageString } from "@/composables/useLocalStorage";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
+import { isoDateLocal } from "@/utils/dates";
 import type { ToolExpense } from "@/types";
 
 type ExpenseTab = "transactions" | "insights" | "converter" | "settings";
 
 const EXPENSE_TABS: ExpenseTab[] = ["transactions", "insights", "converter", "settings"];
+const expenseTabItems = EXPENSE_TABS.map((tab) => ({ id: tab, label: tab }));
 
 const route = useRoute();
 const router = useRouter();
@@ -156,7 +159,7 @@ const form = ref({
   tool_name: "",
   amount: "",
   currency: EXPENSE_DEFAULT_CURRENCY as CurrencyCode,
-  expense_date: new Date().toISOString().slice(0, 10),
+  expense_date: isoDateLocal(),
   category: "",
   notes: "",
 });
@@ -188,7 +191,7 @@ function resetForm(): void {
     tool_name: "",
     amount: "",
     currency: defaultCurrency(),
-    expense_date: new Date().toISOString().slice(0, 10),
+    expense_date: isoDateLocal(),
     category: resolvedCategory(lastCategory.value),
     notes: "",
   };
@@ -276,7 +279,7 @@ async function quickSaveExpense(): Promise<void> {
         tool_name: parsed.value.tool_name ?? "",
         amount: String(parsed.value.amount),
         currency: (parsed.value.currency as CurrencyCode) ?? defaultCurrency(),
-        expense_date: parsed.value.expense_date ?? new Date().toISOString().slice(0, 10),
+        expense_date: parsed.value.expense_date ?? isoDateLocal(),
         category: resolvedCategory(parsed.value.category ?? lastCategory.value),
         notes: null,
       });
@@ -311,7 +314,7 @@ async function quickSaveExpense(): Promise<void> {
       tool_name: product,
       amount: amount.toFixed(2),
       currency: defaultCurrency(),
-      expense_date: new Date().toISOString().slice(0, 10),
+      expense_date: isoDateLocal(),
       category,
       notes: null,
     });
@@ -432,8 +435,9 @@ function parseExpenseTab(value: unknown): ExpenseTab | null {
     : null;
 }
 
-function switchTab(tab: ExpenseTab): void {
-  activeTab.value = tab;
+function switchTab(tab: string): void {
+  if (!EXPENSE_TABS.includes(tab as ExpenseTab)) return;
+  activeTab.value = tab as ExpenseTab;
   void router.replace({ query: { ...route.query, tab } });
 }
 
@@ -488,21 +492,7 @@ onMounted(() => {
       />
     </div>
 
-    <div class="flex gap-2 mb-6 border-b border-surface-border pb-2">
-      <button
-        v-for="tab in EXPENSE_TABS"
-        :key="tab"
-        :class="[
-          'px-3 py-1.5 text-xs rounded-lg transition-colors capitalize',
-          activeTab === tab
-            ? 'bg-accent-blue/20 text-accent-blue'
-            : 'text-surface-mid hover:text-surface-light',
-        ]"
-        @click="switchTab(tab)"
-      >
-        {{ tab }}
-      </button>
-    </div>
+    <AdminTabBar :model-value="activeTab" :tabs="expenseTabItems" @update:model-value="switchTab" />
 
     <div v-if="activeTab === 'transactions'" class="flex flex-col gap-6">
       <ExpenseQuickAdd

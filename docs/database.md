@@ -89,3 +89,41 @@ cd server && uv run pytest -m postgres -v
 ```
 
 Without `POSTGRES_TEST_URL`, `@pytest.mark.postgres` tests are skipped.
+
+## Backups and daily maintenance
+
+Production stack: migrate schema, then dump Postgres, Redis, and media. Scheduled daily at **04:20** (`Europe/Warsaw` by default).
+
+| Command | Description |
+|---------|-------------|
+| `make backup` | Run [`scripts/db_maintenance.sh`](../scripts/db_maintenance.sh) once |
+| `make backup-install` | Install host cron via [`scripts/install_backup_cron.sh`](../scripts/install_backup_cron.sh) |
+| `make db-pull-prod` | Restore prod dump into local dev (requires `CONFIRM_PROD_PULL=1`) |
+
+Configure in `.env`: `BACKUP_DIR`, `BACKUP_RETENTION_DAYS`, `BACKUP_RETENTION_WEEKS`, `BACKUP_COMPOSE_FILE`, `BACKUP_NOTIFY`, `BACKUP_TIMEZONE`.
+
+**What the maintenance script does:**
+
+1. Acquire lock (skip if already running)
+2. `alembic upgrade head` via the `migrate` service
+3. `pg_dump` custom format → `backups/postgres/glorng_YYYY-MM-DD_HHMM.dump.gz`
+4. Redis `SAVE` → `backups/redis/`
+5. `server_media` volume tarball → `backups/media/`
+6. Rotate old files (keep daily + Sunday weekly copies)
+7. `pg_restore --list` integrity check
+8. Optional Telegram alert via [`notify_admin`](../server/app/core/telegram.py)
+
+**Restore Postgres from latest backup:**
+
+```bash
+gunzip -c backups/postgres/glorng_latest.dump.gz | \
+  docker compose -f docker-compose.prod.yml exec -T db pg_restore \
+  -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --no-owner
+```
+
+**Pull prod into local dev** (manual, destructive to local data):
+
+```bash
+CONFIRM_PROD_PULL=1 PROD_SSH_HOST=user@prod make db-pull-prod
+# or: CONFIRM_PROD_PULL=1 PROD_BACKUP_PATH=/path/to/glorng_latest.dump.gz make db-pull-prod
+```

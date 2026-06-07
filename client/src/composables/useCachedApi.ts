@@ -33,13 +33,18 @@ export function useCachedApi<T>(
 ): { data: Ref<T | null>; loading: Ref<boolean>; fetch: () => Promise<void> } {
   const data = ref<T | null>(null) as Ref<T | null>;
   const loading = ref(true);
+  let generation = 0;
 
   async function load(): Promise<void> {
     const resolved = toValue(url);
+    const requestGen = ++generation;
+
     const cached = cache.get(resolved);
     if (cached && Date.now() - cached.ts < ttlMs) {
-      data.value = cached.data as T;
-      loading.value = false;
+      if (requestGen === generation) {
+        data.value = cached.data as T;
+        loading.value = false;
+      }
       return;
     }
     if (cached) {
@@ -49,14 +54,22 @@ export function useCachedApi<T>(
     loading.value = true;
     try {
       const res = await api.get<T>(resolved);
+      if (requestGen !== generation) {
+        return;
+      }
       data.value = res.data;
       cache.set(resolved, { data: res.data, ts: Date.now() });
       pruneCache(ttlMs);
     } catch (err) {
+      if (requestGen !== generation) {
+        return;
+      }
       console.error(`[useCachedApi] ${resolved}`, err);
       throw err;
     } finally {
-      loading.value = false;
+      if (requestGen === generation) {
+        loading.value = false;
+      }
     }
   }
 

@@ -7,7 +7,11 @@ export const api = axios.create({
 });
 
 let isRefreshing = false;
-let pendingQueue: Array<() => void> = [];
+type QueueEntry = {
+  resolve: () => void;
+  reject: (error: unknown) => void;
+};
+let pendingQueue: QueueEntry[] = [];
 
 function isAuthRefreshRequest(url: string | undefined): boolean {
   return typeof url === "string" && url.includes("/auth/refresh");
@@ -25,8 +29,11 @@ api.interceptors.response.use(
     }
 
     if (isRefreshing) {
-      return new Promise((resolve) => {
-        pendingQueue.push(() => resolve(api(orig)));
+      return new Promise((resolve, reject) => {
+        pendingQueue.push({
+          resolve: () => resolve(api(orig)),
+          reject,
+        });
       });
     }
 
@@ -34,10 +41,11 @@ api.interceptors.response.use(
     isRefreshing = true;
     try {
       await api.post("/auth/refresh");
-      pendingQueue.forEach((cb) => cb());
+      pendingQueue.forEach(({ resolve }) => resolve());
       return api(orig);
-    } catch {
-      return Promise.reject(error);
+    } catch (refreshError) {
+      pendingQueue.forEach(({ reject }) => reject(refreshError));
+      return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
       pendingQueue = [];

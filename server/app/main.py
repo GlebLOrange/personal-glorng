@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.redis import close_redis, init_redis
+from app.openapi import configure_openapi
 from app.settings import get_settings
 from app.workers.pool import close_arq_pool, init_arq_pool
 
@@ -113,6 +114,8 @@ def create_app() -> FastAPI:
     application.include_router(amp_router)
     application.include_router(redirect_router)
     application.include_router(file_download_router)
+
+    configure_openapi(application)
 
     return application
 

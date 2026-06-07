@@ -1,11 +1,15 @@
-import { computed, ref, type ComputedRef, type Ref } from "vue";
+import { computed, ref, watch, type ComputedRef, type Ref } from "vue";
 
 import { useCachedApi } from "@/composables/useCachedApi";
 import type { WeatherData } from "@/types";
 
-/** Build the public weather lookup API path for a city or lat,lon pair. */
+import {
+  TIME_DATE_WEATHER_LOCATION_API_PREFIX,
+} from "@/constants/timeDateWeatherLocation";
+
+/** Build the public lookup API path for a city or lat,lon pair. */
 export function weatherLookupUrl(location: string): string {
-  return `/weather/lookup/${encodeURIComponent(location.trim())}`;
+  return `${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/lookup/${encodeURIComponent(location.trim())}`;
 }
 
 /** Fetch weather for a single city or coordinate pair. */
@@ -25,6 +29,7 @@ export function useWeatherLookup(location: ComputedRef<string>): {
 
   async function refresh(): Promise<void> {
     if (!location.value.trim()) {
+      loading.value = false;
       return;
     }
     error.value = null;
@@ -34,6 +39,16 @@ export function useWeatherLookup(location: ComputedRef<string>): {
       error.value = "Couldn't load weather";
     }
   }
+
+  watch(
+    url,
+    (nextUrl) => {
+      if (nextUrl) {
+        void refresh();
+      }
+    },
+    { immediate: true },
+  );
 
   return {
     weather: data,

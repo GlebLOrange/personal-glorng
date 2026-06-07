@@ -1,65 +1,59 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 
+import ShareableListItem from "@/components/admin/ShareableListItem.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
 import { api } from "@/composables/useApi";
+import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
-import { useNotify } from "@/composables/useNotify";
 import type { UrlItem } from "@/types";
+import { publicUrl } from "@/utils/publicLinks";
 
 const urls = ref<UrlItem[]>([]);
 const newUrl = ref("");
 const newTitle = ref("");
-const loading = ref(false);
-const { toast } = useNotify();
 const { copy } = useClipboard();
+const { run: runList } = useApiAction();
+const { loading, run: runCreate } = useApiAction();
+const { run: runDelete } = useApiAction();
 
 async function loadUrls(): Promise<void> {
-  try {
-    const { data } = await api.get<UrlItem[]>("/tools/url-shortener");
-    urls.value = data;
-  } catch (err) {
-    console.error(err);
-    toast("Failed to load URLs", "error");
+  const data = await runList(() => api.get<UrlItem[]>("/tools/url-shortener"), {
+    errorFallback: "Failed to load URLs",
+  });
+  if (data) {
+    urls.value = data.data;
   }
 }
 
 async function createUrl(): Promise<void> {
   if (!newUrl.value.trim()) return;
-  loading.value = true;
-  try {
-    await api.post("/tools/url-shortener", {
-      original_url: newUrl.value,
-      title: newTitle.value || null,
-    });
+  const result = await runCreate(
+    () =>
+      api.post("/tools/url-shortener", {
+        original_url: newUrl.value,
+        title: newTitle.value || null,
+      }),
+    { successMessage: "URL created", errorFallback: "Failed to create URL" },
+  );
+  if (result) {
     newUrl.value = "";
     newTitle.value = "";
-    toast("URL created", "success");
     await loadUrls();
-  } catch (err) {
-    console.error(err);
-    toast("Failed to create URL", "error");
-  } finally {
-    loading.value = false;
   }
 }
 
 async function deleteUrl(id: number): Promise<void> {
-  try {
-    await api.delete(`/tools/url-shortener/${id}`);
-    toast("URL deleted", "success");
+  const result = await runDelete(() => api.delete(`/tools/url-shortener/${id}`), {
+    successMessage: "URL deleted",
+    errorFallback: "Failed to delete URL",
+  });
+  if (result) {
     await loadUrls();
-  } catch (err) {
-    console.error(err);
-    toast("Failed to delete URL", "error");
   }
-}
-
-function getShortUrl(code: string): string {
-  return `${window.location.origin}/s/${code}`;
 }
 
 onMounted(loadUrls);
@@ -76,32 +70,18 @@ onMounted(loadUrls);
     </form>
 
     <div class="space-y-3">
-      <BaseCard v-for="url in urls" :key="url.id" hoverable>
-        <div class="flex justify-between items-start">
-          <div class="flex-1 min-w-0">
-            <div class="text-surface-light font-bold text-sm truncate">
-              {{ url.title || url.original_url }}
-            </div>
-            <div class="text-xs text-surface-mid truncate mt-1">
-              {{ url.original_url }}
-            </div>
-            <div class="flex items-center gap-3 mt-2">
-              <code class="text-xs text-accent-blue">{{ getShortUrl(url.code) }}</code>
-              <span class="text-xs text-surface-mid">{{ url.clicks }} clicks</span>
-            </div>
-          </div>
-          <div class="flex gap-2 ml-4">
-            <BaseButton variant="ghost" size="sm" @click="copy(getShortUrl(url.code))">
-              Copy
-            </BaseButton>
-            <BaseButton variant="ghost" size="sm" @click="deleteUrl(url.id)"> Delete </BaseButton>
-          </div>
-        </div>
-      </BaseCard>
+      <ShareableListItem
+        v-for="url in urls"
+        :key="url.id"
+        :title="url.title || url.original_url"
+        :subtitle="url.original_url"
+        :link="publicUrl('s', url.code)"
+        :meta="`${url.clicks} clicks`"
+        @copy="copy(publicUrl('s', url.code))"
+        @delete="deleteUrl(url.id)"
+      />
 
-      <p v-if="urls.length === 0" class="text-surface-mid text-sm text-center py-8">
-        No shortened URLs yet. Create one above.
-      </p>
+      <EmptyState v-if="urls.length === 0">No shortened URLs yet. Create one above.</EmptyState>
     </div>
   </AdminPageLayout>
 </template>

@@ -16,6 +16,42 @@ test.describe("public pages", () => {
     await expect(page.getByPlaceholder("admin@glorng.dev")).toBeVisible();
     await expect(page.getByRole("button", { name: /login/i })).toBeVisible();
   });
+
+  test("guest sees tools nav and public tools catalog", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("link", { name: /^tools$/i })).toBeVisible();
+
+    await page.getByRole("link", { name: /^tools$/i }).click();
+    await expect(page).toHaveURL(/\/tools$/);
+    await expect(page.getByRole("heading", { name: /^tools$/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^calculator$/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /date & time & location/i })).toBeVisible();
+  });
+
+  test("guest sees clocks bar on portfolio", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("complementary", { name: /date & time & location/i })).toBeVisible();
+  });
+
+  test("guest can use public calculator", async ({ page }) => {
+    await page.goto("/calculator");
+    await expect(page.getByRole("heading", { name: /^calculator$/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: "7" })).toBeVisible();
+  });
+
+  test("old calculator admin URL redirects to public route", async ({ page }) => {
+    await page.goto("/admin/tools/calculator");
+    await expect(page).toHaveURL(/\/calculator$/);
+  });
+
+  test("guest can add a city on date-time page", async ({ page }) => {
+    await page.goto("/time-date-weather-location");
+    await expect(page.getByText(/\d+\/8 cities saved in your browser/i)).toBeVisible();
+    await page.getByRole("textbox", { name: /search city to add/i }).fill("London");
+    await page.getByRole("button", { name: /^add$/i }).click();
+    await expect(page.getByText(/location added/i)).toBeVisible();
+    await expect(page.getByRole("timer").first()).toHaveText(/\d{2}:\d{2}:\d{2}/);
+  });
 });
 
 test.describe("auth guards", () => {
@@ -33,8 +69,8 @@ test.describe("authenticated admin", () => {
     await page.getByPlaceholder("••••••••").fill(adminPassword);
     await page.getByRole("button", { name: /^login$/i }).click();
 
-    await page.goto("/admin/tools/calculator");
-    await expect(page.getByText("calculator", { exact: true })).toBeVisible();
+    await page.goto("/calculator");
+    await expect(page.getByRole("heading", { name: /^calculator$/i })).toBeVisible();
     await expect(page.getByRole("button", { name: "7" })).toBeVisible();
   });
 });

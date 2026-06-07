@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import { api } from "@/composables/useApi";
@@ -102,7 +101,8 @@ function buttonAriaLabel(val: string): string | undefined {
 </script>
 
 <template>
-  <AdminPageLayout title="calculator" max-width="sm">
+  <div class="max-w-sm mx-auto px-6 py-10">
+    <h1 class="text-3xl font-bold accent-gradient mb-8">calculator</h1>
     <BaseCard>
       <div
         class="bg-surface-dark rounded-lg p-4 mb-4 text-right"
@@ -144,5 +144,5 @@ function buttonAriaLabel(val: string): string | undefined {
         </BaseButton>
       </div>
     </BaseCard>
-  </AdminPageLayout>
+  </div>
 </template>
