@@ -255,7 +255,7 @@ class Settings(BaseSettings):
     # App
     APP_ENV: str = "development"
     LOG_REQUESTS: bool = True
-    APP_NAME: str = "gLOrng"
+    APP_NAME: str = "Gleb Y."
     BASE_URL: str = "http://localhost"
     MEDIA_DIR: str = "/app/media"
 

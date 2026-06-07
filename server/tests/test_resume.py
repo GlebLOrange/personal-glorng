@@ -39,4 +39,4 @@ async def test_resume_links(client: AsyncClient) -> None:
 async def test_resume_name(client: AsyncClient) -> None:
     resp = await client.get("/api/resume")
     assert resp.status_code == 200
-    assert resp.json()["name"] == "gLOrng"
+    assert resp.json()["name"] == "Gleb Y."

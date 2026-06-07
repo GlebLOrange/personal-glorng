@@ -19,5 +19,5 @@ class TestAmpPage:
         assert "⚡" in body
         script_hosts = [urlparse(src).hostname for src in _SCRIPT_SRC_RE.findall(body)]
         assert "cdn.ampproject.org" in script_hosts
-        assert "gLOrng" in body
+        assert "Gleb Y." in body
         assert 'rel="canonical"' in body

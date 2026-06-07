@@ -49,7 +49,7 @@ def _render_email_html(data: EmailSend) -> str:
 )
 async def send_email(data: EmailSend, _user: AuthorizedUser) -> dict[str, str]:
     html = _render_email_html(data)
-    plain = f"{data.subject}\n\n{data.body}\n\n— gLOrng\n"
+    plain = f"{data.subject}\n\n{data.body}\n\n— Gleb Y.\n"
     backend = get_email_backend()
     await backend.send(data.to, data.subject, html, plain)
     return {"detail": "Email sent"}

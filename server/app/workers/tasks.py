@@ -77,7 +77,7 @@ async def send_verification_email(email: str, token: str) -> None:
     await _send_email(
         email,
         token,
-        "Verify your email - gLOrng",
+        "Verify your email - Gleb Y.",
         render_verification_email,
         render_verification_email_plain,
     )
@@ -87,7 +87,7 @@ async def send_reset_email(email: str, token: str) -> None:
     await _send_email(
         email,
         token,
-        "Password reset - gLOrng",
+        "Password reset - Gleb Y.",
         render_reset_email,
         render_reset_email_plain,
     )

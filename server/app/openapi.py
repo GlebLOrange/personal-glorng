@@ -44,7 +44,7 @@ OPENAPI_TAGS: list[dict[str, str]] = [
 ]
 
 API_DESCRIPTION = """
-gLOrng HTTP API. All JSON routes are under `/api`.
+Gleb Y. HTTP API. All JSON routes are under `/api`.
 
 **Swagger (development only):** `/api/docs` when `APP_ENV=development`.
 
