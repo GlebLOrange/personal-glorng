@@ -17,7 +17,7 @@ from app.db.models.user import User
 from app.db.models.weather_location import WeatherLocation
 from app.services.audit import AuditRecord, AuditService
 from app.services.auth import get_user_by_email
-from app.services.user import default_display_name
+from app.services.user import default_display_name, ensure_user_mutable
 
 ALLOWED_PREFERENCE_KEYS = frozenset({"display_currency"})
 
@@ -175,6 +175,8 @@ async def delete_account(
     current_password: str,
 ) -> None:
     """Permanently delete the authenticated user's account."""
+    ensure_user_mutable(user)
+
     if SUPERUSER_PERMISSION in (user.permissions or []):
         result = await db.execute(select(User))
         superuser_count = sum(

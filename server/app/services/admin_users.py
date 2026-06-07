@@ -9,7 +9,7 @@ from app.core.exceptions import ConflictError, NotFoundError
 from app.core.logging import logger
 from app.core.permissions import SUPERUSER_PERMISSION, validate_permissions
 from app.db.models.user import User
-from app.services.user import get_user_by_public_id
+from app.services.user import ensure_user_mutable, get_user_by_public_id
 
 
 async def list_users(db: AsyncSession) -> list[User]:
@@ -39,6 +39,7 @@ async def update_user_permissions(
     permissions: list[str],
 ) -> User:
     user = await get_user_detail(db, public_id)
+    ensure_user_mutable(user)
     validated = validate_permissions(permissions)
 
     had_superuser = SUPERUSER_PERMISSION in (user.permissions or [])

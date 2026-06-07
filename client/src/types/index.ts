@@ -20,6 +20,7 @@ export interface AdminUserSummary {
   email: string;
   display_name: string | null;
   is_verified: boolean;
+  is_protected: boolean;
   permissions: string[];
   created_at: string;
 }

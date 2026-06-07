@@ -18,6 +18,7 @@ async def create_user(
     email: str = "test@glorng.dev",
     password: str = "MyTestPass123!",
     is_verified: bool = True,
+    is_protected: bool = False,
     permissions: list[str] | None = None,
 ) -> User:
     user = await create_user_record(
@@ -25,6 +26,7 @@ async def create_user(
         email=email,
         password=password,
         is_verified=is_verified,
+        is_protected=is_protected,
         permissions=permissions
         if permissions is not None
         else default_owner_permissions(),

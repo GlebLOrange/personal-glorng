@@ -78,25 +78,34 @@ onMounted(() => {
             </p>
             <p class="text-xs text-surface-mid">{{ user.email }}</p>
           </div>
-          <span
-            class="text-xs px-2 py-1 rounded"
-            :class="user.is_verified ? 'bg-green-900/40 text-green-300' : 'bg-yellow-900/40 text-yellow-300'"
-          >
-            {{ user.is_verified ? "verified" : "unverified" }}
-          </span>
+          <div class="flex flex-wrap items-center gap-2">
+            <span
+              v-if="user.is_protected"
+              class="text-xs px-2 py-1 rounded bg-blue-900/40 text-blue-300"
+            >
+              protected
+            </span>
+            <span
+              class="text-xs px-2 py-1 rounded"
+              :class="user.is_verified ? 'bg-green-900/40 text-green-300' : 'bg-yellow-900/40 text-yellow-300'"
+            >
+              {{ user.is_verified ? "verified" : "unverified" }}
+            </span>
+          </div>
         </div>
         <label class="block text-xs text-surface-mid">
           Permissions (comma-separated)
           <input
             v-model="draftPermissions[user.id]"
             type="text"
-            class="mt-1 w-full rounded border border-surface-border bg-surface-dark px-3 py-2 text-surface-light text-sm"
+            class="mt-1 w-full rounded border border-surface-border bg-surface-dark px-3 py-2 text-surface-light text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             placeholder="expenses:read, tasks:write"
+            :disabled="user.is_protected"
           />
         </label>
         <BaseButton
           variant="secondary"
-          :disabled="savingId === user.id"
+          :disabled="savingId === user.id || user.is_protected"
           @click="savePermissions(user)"
         >
           {{ savingId === user.id ? "Saving..." : "Save permissions" }}

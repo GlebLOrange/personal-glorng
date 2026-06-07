@@ -548,6 +548,9 @@ async def _seed_admin(db, settings) -> User | None:  # noqa: ANN001
     result = await db.execute(select(User).where(User.email == settings.ALLOWED_EMAIL))
     existing = result.scalar_one_or_none()
     if existing:
+        if not existing.is_protected:
+            existing.is_protected = True
+            await db.flush()
         logger.info(
             "Admin user already exists", context={"email": settings.ALLOWED_EMAIL}
         )
@@ -559,6 +562,7 @@ async def _seed_admin(db, settings) -> User | None:  # noqa: ANN001
         password=settings.SEED_PASSWORD,
         permissions=default_owner_permissions(),
         is_verified=True,
+        is_protected=True,
     )
     logger.info("Admin user created", context={"email": settings.ALLOWED_EMAIL})
     return user

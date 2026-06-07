@@ -19,7 +19,11 @@ async def ensure_e2e_user() -> None:
     factory = get_session_factory()
     async with factory() as db:
         result = await db.execute(select(User).where(User.email == E2E_EMAIL))
-        if result.scalar_one_or_none():
+        existing = result.scalar_one_or_none()
+        if existing:
+            if not existing.is_protected:
+                existing.is_protected = True
+                await db.commit()
             return
         await create_user(
             db,
@@ -27,6 +31,7 @@ async def ensure_e2e_user() -> None:
             password=E2E_PASSWORD,
             permissions=default_owner_permissions(),
             is_verified=True,
+            is_protected=True,
         )
         await db.commit()
 

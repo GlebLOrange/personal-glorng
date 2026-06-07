@@ -5,6 +5,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import ConflictError
 from app.core.permissions import SUPERUSER_PERMISSION, validate_permissions
 from app.core.security import hash_password
 from app.db.models.user import User
@@ -36,6 +37,12 @@ def default_display_name(email: str) -> str:
     return email.split("@", maxsplit=1)[0]
 
 
+def ensure_user_mutable(user: User) -> None:
+    """Raise when a protected account must not be modified."""
+    if user.is_protected:
+        raise ConflictError("This account is protected and cannot be modified")
+
+
 async def create_user(
     db: AsyncSession,
     *,
@@ -43,6 +50,7 @@ async def create_user(
     password: str,
     permissions: list[str] | None = None,
     is_verified: bool = False,
+    is_protected: bool = False,
     display_name: str | None = None,
     timezone: str = "UTC",
     preferences: dict[str, object] | None = None,
@@ -53,6 +61,7 @@ async def create_user(
         email=email.strip().lower(),
         hashed_password=hash_password(password),
         is_verified=is_verified,
+        is_protected=is_protected,
         permissions=perms,
         display_name=display_name or default_display_name(email),
         timezone=timezone,

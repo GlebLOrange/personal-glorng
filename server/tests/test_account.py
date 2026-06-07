@@ -3,7 +3,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import AsyncClient
 
-from tests.conftest import ADMIN_PASSWORD, STRONG_PASSWORD
+from app.services.user import default_owner_permissions
+from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, STRONG_PASSWORD
 from tests.factories import create_user
 
 
@@ -112,3 +113,33 @@ async def test_delete_regular_user(client: AsyncClient, db) -> None:
 
     me = await client.get("/api/auth/me")
     assert me.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_cannot_delete_protected_account(
+    client: AsyncClient,
+    admin_user: object,
+    db,
+) -> None:
+    await create_user(
+        db,
+        email="other-super@glorng.dev",
+        password=STRONG_PASSWORD,
+        permissions=default_owner_permissions(),
+        is_protected=False,
+    )
+    login = await client.post(
+        "/api/auth/login",
+        json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
+    )
+    assert login.status_code == 200
+    token = login.json()["access_token"]
+
+    delete = await client.request(
+        "DELETE",
+        "/api/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"current_password": ADMIN_PASSWORD, "confirm": True},
+    )
+    assert delete.status_code == 409
+    assert "protected" in delete.json()["detail"].lower()

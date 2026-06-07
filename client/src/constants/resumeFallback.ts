@@ -10,19 +10,26 @@ export const RESUME_FALLBACK: ResumeData = {
   skills: [
     {
       category: "Languages",
-      items: ["Python", "TypeScript", "JavaScript", "Go"],
+      items: ["Python", "TypeScript", "JavaScript"],
     },
     {
       category: "Backend",
-      items: ["FastAPI", "Django", "Node.js", "PostgreSQL", "Redis"],
+      items: [
+        "FastAPI",
+        "SQLAlchemy",
+        "Alembic",
+        "PostgreSQL",
+        "Redis",
+        "ARQ",
+      ],
     },
     {
       category: "Frontend",
-      items: ["Vue 3", "React", "Tailwind CSS", "SASS"],
+      items: ["Vue 3", "Vite", "Tailwind CSS", "Pinia", "Vitest", "Playwright"],
     },
     {
       category: "DevOps",
-      items: ["Docker", "Nginx", "CI/CD", "Linux"],
+      items: ["Docker", "Nginx", "Docker Compose", "GitHub Actions", "Linux"],
     },
   ],
   experience: [
@@ -39,7 +46,16 @@ export const RESUME_FALLBACK: ResumeData = {
       description:
         "Personal platform — portfolio, admin services," +
         " Telegram todobot, and background workers on FastAPI + Vue + Docker",
-      tech: ["FastAPI", "Vue 3", "PostgreSQL", "Redis", "Docker", "Telegram"],
+      tech: [
+        "FastAPI",
+        "Vue 3",
+        "PostgreSQL",
+        "SQLAlchemy",
+        "Redis",
+        "Docker",
+        "ARQ",
+        "Telegram",
+      ],
       url: "",
     },
   ],

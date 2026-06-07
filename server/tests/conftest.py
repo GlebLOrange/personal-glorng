@@ -179,7 +179,12 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
 
 @pytest.fixture
 async def admin_user(db: AsyncSession) -> User:
-    return await create_user(db, email=ADMIN_EMAIL, password=ADMIN_PASSWORD)
+    return await create_user(
+        db,
+        email=ADMIN_EMAIL,
+        password=ADMIN_PASSWORD,
+        is_protected=True,
+    )
 
 
 @pytest.fixture

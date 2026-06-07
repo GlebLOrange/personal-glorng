@@ -11,6 +11,7 @@ class AdminUserSummary(BaseModel):
     email: str
     display_name: str | None = None
     is_verified: bool
+    is_protected: bool
     permissions: list[str]
     created_at: datetime
 
