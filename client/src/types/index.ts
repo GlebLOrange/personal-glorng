@@ -1,5 +1,7 @@
 export * from "./api";
 
+import type { ContactLinkId } from "@/constants/contactMeta";
+
 export interface UserResponse {
   id: string;
   email: string;
@@ -43,7 +45,7 @@ export interface ResumeData {
   skills: SkillGroup[];
   experience: Experience[];
   projects: Project[];
-  links: Record<string, string>;
+  links: Partial<Record<ContactLinkId, string>>;
 }
 
 export interface SkillGroup {

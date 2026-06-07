@@ -6,6 +6,21 @@ def _esc(value: str) -> str:
     return html.escape(value, quote=True)
 
 
+CONTACT_ORDER = ("email", "telegram", "linkedin", "github")
+CONTACT_LABELS = {
+    "email": "Email",
+    "telegram": "Telegram",
+    "linkedin": "LinkedIn",
+    "github": "GitHub",
+}
+
+
+def _contact_href(link_id: str, raw: str) -> str:
+    if link_id == "email":
+        return f"mailto:{raw}"
+    return raw
+
+
 def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
     """Render a valid AMP HTML page for the public portfolio."""
     name = _esc(resume["name"])
@@ -47,16 +62,14 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
           <p class="meta">{tech}</p>
         </section>"""
 
-    contact_links = [
-        ("Email", f"mailto:{resume['links'].get('email', '')}"),
-        ("GitHub", resume["links"].get("github", "")),
-        ("Telegram", resume["links"].get("telegram", "") or "https://t.me/glorange"),
-        ("LinkedIn", "https://www.linkedin.com/in/glorange"),
-    ]
     contact_html = ""
-    for label, href in contact_links:
-        if not href:
+    resume_links = resume.get("links", {})
+    for link_id in CONTACT_ORDER:
+        raw = (resume_links.get(link_id) or "").strip()
+        if not raw:
             continue
+        href = _contact_href(link_id, raw)
+        label = CONTACT_LABELS[link_id]
         contact_html += f'<a class="chip" href="{_esc(href)}">{_esc(label)}</a>'
 
     return f"""<!doctype html>

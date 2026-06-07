@@ -65,9 +65,10 @@ RESUME_DATA: dict[str, Any] = {
         },
     ],
     "links": {
-        "github": "https://github.com/glorng",
-        "telegram": "",
-        "email": "admin@glorng.dev",
+        "email": "glorange@gmail.com",
+        "telegram": "https://t.me/glorange",
+        "linkedin": "https://www.linkedin.com/in/glorange",
+        "github": "https://github.com/glorange",
     },
 }
 
