@@ -4,6 +4,19 @@ from starlette.requests import Request
 from app.core.csrf import csrf_origin_rejected
 from app.settings import get_settings
 
+_PRODUCTION_ENV = {
+    "APP_ENV": "production",
+    "POSTGRES_PASSWORD": "prod-test-password-16",
+    "REDIS_URL": "redis://:prod-test-redis-password@127.0.0.1:6379/0",
+    "JWT_SECRET": "ci-jwt-secret-at-least-32-characters-long",
+}
+
+
+def _enable_production(monkeypatch: pytest.MonkeyPatch) -> None:
+    for key, value in _PRODUCTION_ENV.items():
+        monkeypatch.setenv(key, value)
+    get_settings.cache_clear()
+
 
 def _build_request(
     *,
@@ -41,8 +54,7 @@ def _build_request(
 def test_csrf_rejects_cookie_post_without_origin(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("APP_ENV", "production")
-    get_settings.cache_clear()
+    _enable_production(monkeypatch)
     request = _build_request(cookies={"access_token": "token"})
     assert csrf_origin_rejected(request) is True
     get_settings.cache_clear()
@@ -51,8 +63,7 @@ def test_csrf_rejects_cookie_post_without_origin(
 def test_csrf_allows_cookie_post_with_matching_origin(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("APP_ENV", "production")
-    get_settings.cache_clear()
+    _enable_production(monkeypatch)
     origin = get_settings().CORS_ORIGINS[0]
     request = _build_request(
         cookies={"access_token": "token"},
@@ -65,8 +76,7 @@ def test_csrf_allows_cookie_post_with_matching_origin(
 def test_csrf_allows_cookie_post_with_exact_referer_origin(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("APP_ENV", "production")
-    get_settings.cache_clear()
+    _enable_production(monkeypatch)
     origin = get_settings().CORS_ORIGINS[0]
     request = _build_request(
         cookies={"access_token": "token"},

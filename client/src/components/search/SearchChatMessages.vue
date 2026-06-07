@@ -25,10 +25,8 @@ withDefaults(
     showRoleLabels: false,
     emptyMessage: "Search with natural language.",
     sourcesLabel: "Sources",
-    userClass:
-      "bg-accent-blue/10 border border-accent-blue/20 text-surface-light ml-6",
-    assistantClass:
-      "bg-surface-card border border-surface-border text-surface-sage mr-6",
+    userClass: "bg-accent-blue/10 border border-accent-blue/20 text-surface-light ml-6",
+    assistantClass: "bg-surface-card border border-surface-border text-surface-sage mr-6",
     roleUserClass: "text-accent-blue",
     roleAssistantClass: "text-accent-violet",
     sourceLinkClass:

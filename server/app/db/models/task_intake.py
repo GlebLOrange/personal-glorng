@@ -1,7 +1,8 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, Enum, ForeignKey, Integer, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -32,10 +33,10 @@ class TaskIntake(Base):
         default=IntakeStatus.PARSING,
         server_default="parsing",
     )
-    draft_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    confidence_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    draft_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    confidence_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     clarification_turns_json: Mapped[list | None] = mapped_column(
-        JSON,
+        JSONB,
         nullable=True,
         server_default="[]",
     )

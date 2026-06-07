@@ -19,6 +19,8 @@ def _validate_production_password(name: str, value: str, *, min_len: int) -> Non
 
 def _password_from_redis_url(url: str) -> str:
     return urlparse(url).password or ""
+
+
 _COMPOSE_DB_HOST = "db"
 _COMPOSE_DB_PORT = 5432
 _HOST_DB_HOST = "127.0.0.1"

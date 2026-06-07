@@ -280,14 +280,17 @@ class TestProcessSyncQueue:
 
 
 class TestGoogleOAuthCallback:
+    @patch("app.routers.callbacks.decode_token")
     @patch("app.routers.callbacks.Flow")
     @patch("app.routers.callbacks.Bot")
     async def test_stores_credential(
         self,
         mock_bot_cls: MagicMock,
         mock_flow_cls: MagicMock,
+        mock_decode_token: MagicMock,
         client: AsyncClient,
     ) -> None:
+        mock_decode_token.return_value = {"type": "oauth_state", "sub": "123456"}
         mock_creds = MagicMock()
         mock_creds.refresh_token = "new-refresh-token"
 

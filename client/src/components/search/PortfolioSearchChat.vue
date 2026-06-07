@@ -15,10 +15,14 @@ const { toast } = useNotify();
 
 const showWidget = computed(() => isAiSearchEnabled());
 
-const { loading: configLoading, loadConfig, isReady } = useChatConfig<SearchConfig>({
-    path: "/search/config",
-    fallback: { enabled: false, configured: false },
-  });
+const {
+  loading: configLoading,
+  loadConfig,
+  isReady,
+} = useChatConfig<SearchConfig>({
+  path: "/search/config",
+  fallback: { enabled: false, configured: false },
+});
 
 const isAvailable = computed(() => showWidget.value && isReady.value);
 
@@ -95,9 +99,7 @@ onMounted(() => {
 
       <div class="px-3 pb-3 flex justify-between items-center">
         <span v-if="configLoading" class="text-xs text-surface-mid">Loading…</span>
-        <span v-else-if="!isAvailable" class="text-xs text-amber-400/90"
-          >Search unavailable</span
-        >
+        <span v-else-if="!isAvailable" class="text-xs text-amber-400/90">Search unavailable</span>
         <span v-else class="text-xs text-surface-mid">Indexed public content only</span>
         <BaseButton variant="ghost" size="sm" type="button" :disabled="loading" @click="clear">
           Clear

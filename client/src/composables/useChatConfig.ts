@@ -27,9 +27,7 @@ export function useChatConfig<T extends BaseChatConfig>(options: UseChatConfigOp
     }
   }
 
-  const isReady = computed(
-    () => Boolean(config.value?.enabled && config.value?.configured),
-  );
+  const isReady = computed(() => Boolean(config.value?.enabled && config.value?.configured));
 
   return {
     config,

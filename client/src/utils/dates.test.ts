@@ -15,7 +15,7 @@ import {
 describe("dates", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2025-06-07T23:30:00+02:00"));
+    vi.setSystemTime(new Date(2025, 5, 7, 23, 30, 0));
   });
 
   afterEach(() => {
