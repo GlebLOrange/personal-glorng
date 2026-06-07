@@ -5,8 +5,12 @@ export const RESUME_FALLBACK: ResumeData = {
   name: "gLOrng",
   title: "Full-Stack Developer",
   bio:
-    "Building things with code. Passionate about" +
-    " clean architecture, developer tools, and open source.",
+    "Full-stack developer building web applications, APIs, and the" +
+    " tooling around them. I work across backend services, frontends," +
+    " and deployment — with a focus on code that is clear and systems" +
+    " that are straightforward to maintain. This site is my personal" +
+    " platform: portfolio, admin tools, and a few side projects I use" +
+    " day to day.",
   skills: [
     {
       category: "Languages",
