@@ -5,6 +5,10 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
+from app.core.catalogs import (
+    ALLOWED_CURRENCIES,
+    DEFAULT_EXPENSE_CATEGORY_NAMES,
+)
 from app.db.models.task import Task, TaskStatus
 from app.db.models.tool_expense import ToolExpense
 
@@ -28,11 +32,6 @@ EXPENSE_PRODUCTS = (
     "Biedronka",
     "Pharmacy",
 )
-from app.core.catalogs import (
-    ALLOWED_CURRENCIES,
-    DEFAULT_EXPENSE_CATEGORY_NAMES,
-)
-
 EXPENSE_CURRENCIES = ALLOWED_CURRENCIES
 TASK_TITLES = (
     "Review PR",
