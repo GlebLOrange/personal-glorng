@@ -18,6 +18,8 @@ Registry source of truth: [`server/app/platform/registry.py`](../server/app/plat
 
 Exposed via `GET /api/platform/services` for the admin dashboard.
 
+Full endpoint reference (public vs admin, capabilities, UI routes): [api-tools.md](api-tools.md).
+
 ## Module-as-Service Pattern
 
 ```
@@ -36,5 +38,6 @@ Services emit audit events on mutations and auth flows. HTTP middleware correlat
 
 ## Related docs
 
+- [API tools](api-tools.md) — public and admin endpoints, capabilities, programmatic access
 - [Security](security.md) — CSP, auth, CSRF, sanitization, admin-tool risks
 - [Database](database.md) — migrations and test database notes
