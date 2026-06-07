@@ -143,6 +143,7 @@ class Settings(BaseSettings):
     # Weather
     WEATHER_DEFAULT_LABEL: str = "Wrocław"
     WEATHER_DEFAULT_QUERY: str = "Wroclaw"
+    WORLD_TIME_API_BASE: str = "https://timeapi.world/api"
 
 
 @lru_cache

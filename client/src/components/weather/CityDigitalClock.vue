@@ -5,10 +5,12 @@ import { useLiveLocalTime } from "@/composables/useLiveLocalTime";
 
 const props = defineProps<{
   utcOffsetHours: number | null;
+  anchorUnixtime?: number | null;
 }>();
 
 const offset = computed(() => props.utcOffsetHours);
-const { liveTime, liveDateTime } = useLiveLocalTime(offset, "time-seconds");
+const anchor = computed(() => props.anchorUnixtime ?? null);
+const { liveTime, liveDateTime } = useLiveLocalTime(offset, "time-seconds", anchor);
 </script>
 
 <template>

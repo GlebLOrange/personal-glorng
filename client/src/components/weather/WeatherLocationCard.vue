@@ -3,7 +3,11 @@ import { computed } from "vue";
 
 import CityDigitalClock from "@/components/weather/CityDigitalClock.vue";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
-import { weatherLocationLabel, weatherUtcOffsetHours } from "@/utils/weather";
+import {
+  weatherAnchorUnixtime,
+  weatherLocationLabel,
+  weatherUtcOffsetHours,
+} from "@/utils/weather";
 
 const props = defineProps<{
   label: string;
@@ -20,6 +24,10 @@ const { weather, loading, error, refresh } = useWeatherLookup(locationRef);
 
 const utcOffset = computed(() =>
   weather.value ? weatherUtcOffsetHours(weather.value) : null,
+);
+
+const anchorUnixtime = computed(() =>
+  weather.value ? weatherAnchorUnixtime(weather.value) : null,
 );
 </script>
 
@@ -50,7 +58,7 @@ const utcOffset = computed(() =>
     </div>
 
     <div v-else-if="weather" class="flex items-center justify-between gap-6">
-      <CityDigitalClock :utc-offset-hours="utcOffset" />
+      <CityDigitalClock :utc-offset-hours="utcOffset" :anchor-unixtime="anchorUnixtime" />
       <div class="text-right">
         <p class="text-4xl md:text-5xl font-bold accent-gradient tabular-nums">
           {{ weather.current_condition?.[0]?.temp_C }}°C

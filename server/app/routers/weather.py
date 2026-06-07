@@ -3,12 +3,14 @@ from typing import Any
 from fastapi import APIRouter, Depends, Path
 
 from app.core.deps import CurrentUser, DbSession
+from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
 from app.schemas.weather import (
     WeatherLocationCreate,
     WeatherLocationReorder,
     WeatherLocationResponse,
 )
+from app.schemas.world_time import WorldTimeResponse
 from app.services.weather import WeatherService
 from app.services.weather_location import WeatherLocationService
 from app.settings import get_settings
@@ -34,6 +36,38 @@ async def get_weather_config() -> dict[str, str]:
 async def lookup_weather(location: str = Path(max_length=100)) -> dict[str, Any]:
     """Public weather lookup for a city name or lat,lon coordinate pair."""
     return await WeatherService().get_weather(location)
+
+
+def _world_time_from_weather(data: dict[str, Any]) -> WorldTimeResponse:
+    zones = data.get("time_zone") or []
+    if not zones:
+        raise ApiError(502, "Time data unavailable for this location")
+    zone = zones[0]
+    timezone = zone.get("timezone")
+    datetime_value = zone.get("datetime")
+    unixtime = zone.get("unixtime")
+    if not isinstance(timezone, str) or not isinstance(datetime_value, str):
+        raise ApiError(502, "Time data unavailable for this location")
+    if not isinstance(unixtime, int | float):
+        raise ApiError(502, "Time data unavailable for this location")
+    utc_offset = zone.get("utcOffset", "")
+    abbreviation = zone.get("abbreviation", "")
+    return WorldTimeResponse(
+        timezone=timezone,
+        datetime=datetime_value,
+        utc_datetime=zone.get("utc_datetime", datetime_value),
+        utc_offset=str(utc_offset) if utc_offset else "+00:00",
+        unixtime=int(unixtime),
+        dst=bool(zone.get("dst")),
+        abbreviation=str(abbreviation) if abbreviation else "",
+    )
+
+
+@router.get("/time/{location:path}", response_model=WorldTimeResponse)
+async def lookup_world_time(location: str = Path(max_length=100)) -> WorldTimeResponse:
+    """Public world clock for a city name or lat,lon coordinate pair."""
+    data = await WeatherService().get_weather(location)
+    return _world_time_from_weather(data)
 
 
 @router.get("/locations", response_model=list[WeatherLocationResponse])
