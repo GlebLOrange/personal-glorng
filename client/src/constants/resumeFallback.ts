@@ -2,7 +2,7 @@ import type { ResumeData } from "@/types";
 
 /** Static resume mirror of server/app/routers/resume.py RESUME_DATA — keep in sync. */
 export const RESUME_FALLBACK: ResumeData = {
-  name: "gLOrng",
+  name: "Gleb Y.",
   title: "Full-Stack Developer",
   bio:
     "Full-stack developer building web applications, APIs, and the" +
@@ -39,7 +39,7 @@ export const RESUME_FALLBACK: ResumeData = {
   ],
   projects: [
     {
-      name: "gLOrng Platform",
+      name: "Gleb Y. Platform",
       description:
         "Personal platform — portfolio, admin services," +
         " Telegram todobot, and background workers on FastAPI + Vue + Docker",

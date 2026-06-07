@@ -1,7 +1,7 @@
 from typing import Any
 
 RESUME_DATA: dict[str, Any] = {
-    "name": "gLOrng",
+    "name": "Gleb Y.",
     "title": "Full-Stack Developer",
     "bio": (
         "Full-stack developer building web applications, APIs, and the"
@@ -46,7 +46,7 @@ RESUME_DATA: dict[str, Any] = {
     ],
     "projects": [
         {
-            "name": "gLOrng Platform",
+            "name": "Gleb Y. Platform",
             "description": (
                 "Personal platform — portfolio, admin services,"
                 " Telegram todobot, and background workers on FastAPI + Vue + Docker"

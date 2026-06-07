@@ -22,7 +22,7 @@ EMAIL_COLORS = {
 }
 
 FONT_STACK = "'IBM Plex Sans', system-ui, sans-serif"
-SITE_NAME = "gLOrng"
+SITE_NAME = "Gleb Y."
 
 
 class EmailBackend(Protocol):
@@ -206,7 +206,7 @@ def render_verification_email(token: str, base_url: str) -> str:
     url = _verification_url(token, base_url)
     body = (
         f'<p style="{_body_text_style()}">'
-        "Welcome to gLOrng! Verify your email to activate your account."
+        "Welcome to Gleb Y.! Verify your email to activate your account."
         "</p>"
         f"{_cta_button(url, 'Verify email')}"
         f"{_fallback_link(url)}"
@@ -220,7 +220,7 @@ def render_verification_email_plain(token: str, base_url: str) -> str:
     return render_plain_text(
         "Verify your email",
         [
-            "Welcome to gLOrng!",
+            "Welcome to Gleb Y.!",
             "Verify your email to activate your account.",
             "",
             url,
