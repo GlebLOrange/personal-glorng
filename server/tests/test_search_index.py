@@ -1,0 +1,161 @@
+from collections.abc import AsyncIterator
+from unittest.mock import patch
+
+import pytest
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.deps import get_ai_search_service, get_openai_chat_service
+from app.db.models.search_document import SearchVisibility
+from app.main import app
+from app.services.ai_chat import OpenAIService
+from app.services.ai_search import AiSearchService
+from app.services.search_index import SearchDocumentInput, SearchIndexService
+from app.settings import get_settings
+
+SEARCH_CHAT_URL = "/api/search/chat"
+SEARCH_QUERY_URL = "/api/search"
+SEARCH_CONFIG_URL = "/api/search/config"
+
+
+@pytest.fixture(autouse=True)
+def enable_ai_search(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AI_SEARCH_ENABLED", "true")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    get_settings.cache_clear()
+
+
+async def _mock_stream(*_args: object, **_kwargs: object) -> AsyncIterator[str]:
+    for part in ("Found ", "it"):
+        yield part
+
+
+async def _mock_search_events(
+    *_args: object,
+    **_kwargs: object,
+) -> AsyncIterator[dict[str, object]]:
+    yield {
+        "sources": [
+            {
+                "id": 1,
+                "title": "Test",
+                "url": "/",
+                "source_type": "resume",
+                "snippet": "bio",
+            },
+        ],
+    }
+    async for delta in _mock_stream():
+        yield {"delta": delta}
+    yield {"done": True, "model": "gpt-4.1"}
+
+
+@pytest.mark.asyncio
+async def test_search_index_upsert_and_search(db: AsyncSession) -> None:
+    svc = SearchIndexService(db)
+    await svc.upsert(
+        SearchDocumentInput(
+            source_type="resume",
+            source_id=1,
+            title="gLOrng Platform",
+            body="FastAPI Vue PostgreSQL portfolio",
+            url="/",
+            visibility=SearchVisibility.PUBLIC,
+        ),
+    )
+    await db.commit()
+
+    hits = await svc.search("FastAPI", visibilities=[SearchVisibility.PUBLIC])
+    assert len(hits) == 1
+    assert hits[0].title == "gLOrng Platform"
+
+
+@pytest.mark.asyncio
+async def test_search_index_visibility_filter(db: AsyncSession) -> None:
+    svc = SearchIndexService(db)
+    await svc.upsert(
+        SearchDocumentInput(
+            source_type="task",
+            source_id=1,
+            title="Private task",
+            body="buy milk",
+            url="/admin/tools/tasks",
+            visibility=SearchVisibility.ADMIN,
+        ),
+    )
+    await db.commit()
+
+    public_hits = await svc.search("milk", visibilities=[SearchVisibility.PUBLIC])
+    admin_hits = await svc.search(
+        "milk",
+        visibilities=[SearchVisibility.PUBLIC, SearchVisibility.ADMIN],
+    )
+    assert public_hits == []
+    assert len(admin_hits) == 1
+
+
+@pytest.mark.asyncio
+async def test_public_search_query(
+    client: AsyncClient,
+    auth_client: AsyncClient,
+) -> None:
+    create_resp = await auth_client.post(
+        "/api/tools/recipes",
+        json={
+            "title": "Vue Weeknight Bowl",
+            "ingredients": ["rice", "vegetables"],
+            "steps": ["Cook rice", "Stir fry vegetables"],
+            "tags": ["quick"],
+        },
+    )
+    assert create_resp.status_code == 200
+
+    resp = await client.get(SEARCH_QUERY_URL, params={"q": "Vue"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["query"] == "Vue"
+    assert len(body["hits"]) == 1
+    assert body["hits"][0]["title"] == "Vue Weeknight Bowl"
+
+
+@pytest.mark.asyncio
+async def test_public_search_chat_streams_sources(
+    client: AsyncClient,
+) -> None:
+    llm = OpenAIService(api_key="test-key", model="gpt-4.1")
+    search_svc = SearchIndexService.__new__(SearchIndexService)
+    ai_search = AiSearchService(search_svc, llm)
+    app.dependency_overrides[get_openai_chat_service] = lambda: llm
+    app.dependency_overrides[get_ai_search_service] = lambda: ai_search
+
+    with patch.object(
+        AiSearchService,
+        "stream_events",
+        side_effect=_mock_search_events,
+    ):
+        resp = await client.post(
+            SEARCH_CHAT_URL,
+            json={"messages": [{"role": "user", "content": "What stack?"}]},
+        )
+
+    app.dependency_overrides.pop(get_openai_chat_service, None)
+    app.dependency_overrides.pop(get_ai_search_service, None)
+
+    assert resp.status_code == 200
+    assert '"sources"' in resp.text
+    assert '"delta": "Found "' in resp.text
+    assert '"done": true' in resp.text
+
+
+@pytest.mark.asyncio
+async def test_public_search_disabled(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("AI_SEARCH_ENABLED", "false")
+    get_settings.cache_clear()
+    resp = await client.post(
+        SEARCH_CHAT_URL,
+        json={"messages": [{"role": "user", "content": "hello"}]},
+    )
+    assert resp.status_code == 503

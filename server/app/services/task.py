@@ -23,6 +23,7 @@ from app.schemas.task import (
     TaskTextFields,
 )
 from app.services.audit import AuditService, domain_event
+from app.services.search_indexers.task import index_task
 
 
 class TaskService:
@@ -69,6 +70,7 @@ class TaskService:
         self.db.add(task)
         await self.db.flush()
         await self.db.refresh(task)
+        await index_task(self.db, task)
         logger.info("Task created", context={"task_id": task.id, "title": fields.title})
 
         await AuditService(self.db).record(

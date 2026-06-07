@@ -7,6 +7,11 @@ def is_ai_chat_enabled() -> bool:
     return get_settings().AI_CHAT_ENABLED
 
 
+def is_ai_search_enabled() -> bool:
+    settings = get_settings()
+    return settings.AI_SEARCH_ENABLED and bool(settings.OPENAI_API_KEY)
+
+
 def is_task_intake_ai_enabled() -> bool:
     settings = get_settings()
     return settings.TASK_INTAKE_AI_ENABLED and bool(settings.OPENAI_API_KEY)

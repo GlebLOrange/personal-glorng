@@ -25,7 +25,8 @@ OPENAPI_TAGS: list[dict[str, str]] = [
         "name": "vid-download",
         "description": "YouTube video metadata and download helpers.",
     },
-    {"name": "ai-chat", "description": "OpenAI-compatible LLM chat for admin."},
+    {"name": "ai-chat", "description": "Grounded personal search chat for admin."},
+    {"name": "search", "description": "Public portfolio keyword search and AI chat."},
     {"name": "audit", "description": "Security and domain audit event log."},
     {"name": "feedback", "description": "Visitor feedback inbox (admin read)."},
     {

@@ -6,12 +6,13 @@ from collections.abc import AsyncIterator
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
-from app.core.deps import AppSettings, OpenAIChatService, require_capability
+from app.core.deps import AiSearchServiceDep, AppSettings, require_capability
 from app.core.exceptions import ApiError
 from app.core.feature_flags import is_ai_chat_enabled
 from app.openapi import requires_capability
 from app.schemas.ai_chat import ChatConfigResponse, ChatRequest
-from app.services.ai_chat import OpenAIService, detect_llm_provider
+from app.services.ai_chat import detect_llm_provider
+from app.services.ai_search import AiSearchService, SearchScope
 
 router = APIRouter(
     prefix="/ai-chat",
@@ -43,24 +44,23 @@ async def chat_config(settings: AppSettings) -> ChatConfigResponse:
 
 
 async def _sse_events(
-    service: OpenAIService,
+    service: AiSearchService,
     messages: list[dict[str, str]],
 ) -> AsyncIterator[str]:
     try:
-        async for delta in service.stream(messages):
-            yield f"data: {json.dumps({'delta': delta})}\n\n"
-        yield f"data: {json.dumps({'done': True, 'model': service.model})}\n\n"
+        async for event in service.stream_events(messages, scope=SearchScope.PERSONAL):
+            yield f"data: {json.dumps(event)}\n\n"
     except ApiError as exc:
         yield f"data: {json.dumps({'error': exc.message})}\n\n"
 
 
 @router.post(
     "",
-    summary="Stream chat completion",
+    summary="Stream personal search chat",
     description=requires_capability("ai-chat", "write"),
     dependencies=[Depends(require_capability("ai-chat", "write"))],
 )
-async def chat(body: ChatRequest, service: OpenAIChatService) -> StreamingResponse:
+async def chat(body: ChatRequest, service: AiSearchServiceDep) -> StreamingResponse:
     _require_ai_chat_enabled()
     messages = [m.model_dump() for m in body.messages]
     return StreamingResponse(

@@ -13,6 +13,8 @@ from app.core.security import decode_token
 from app.db.models.user import User
 from app.db.session import get_db
 from app.services.ai_chat import OpenAIService
+from app.services.ai_search import AiSearchService
+from app.services.search_index import SearchIndexService
 from app.services.audit import AuditService
 from app.services.currency import CurrencyService
 from app.services.recipe import RecipeService
@@ -145,6 +147,23 @@ def get_openai_chat_service(settings: AppSettings) -> OpenAIService:
 
 
 OpenAIChatService = Annotated[OpenAIService, Depends(get_openai_chat_service)]
+
+
+def get_search_index_service(db: DbSession) -> SearchIndexService:
+    return SearchIndexService(db)
+
+
+SearchIndexServiceDep = Annotated[SearchIndexService, Depends(get_search_index_service)]
+
+
+def get_ai_search_service(
+    search_svc: SearchIndexServiceDep,
+    llm_svc: OpenAIChatService,
+) -> AiSearchService:
+    return AiSearchService(search_svc, llm_svc)
+
+
+AiSearchServiceDep = Annotated[AiSearchService, Depends(get_ai_search_service)]
 
 
 def get_job_queue_dep() -> JobQueue:

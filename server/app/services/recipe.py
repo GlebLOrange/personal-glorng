@@ -14,6 +14,7 @@ from app.db.recipe_search import RECIPE_SEARCH_CONFIG
 from app.schemas.recipe import RecipeCreate, RecipeListResponse, RecipeResponse, RecipeSort, RecipeUpdate
 from app.services.audit import AuditService
 from app.services.base import CRUDService
+from app.services.search_indexers.recipe import index_recipe, remove_recipe
 
 
 def _recipe_search_vector() -> ColumnElement:
@@ -117,6 +118,7 @@ class RecipeService(CRUDService[Recipe]):
         actor_id: int | None = None,
     ) -> RecipeResponse:
         recipe = await self.create(_recipe_payload_from_create(data))
+        await index_recipe(self.db, recipe)
         await self._audit.record_domain(
             action="recipe.created",
             resource_type="recipe",
@@ -138,6 +140,7 @@ class RecipeService(CRUDService[Recipe]):
 
         await self.db.flush()
         await self.db.refresh(recipe)
+        await index_recipe(self.db, recipe)
         await self._audit.record_domain(
             action="recipe.updated",
             resource_type="recipe",
@@ -154,6 +157,7 @@ class RecipeService(CRUDService[Recipe]):
     ) -> None:
         await self.require_recipe(recipe_id)
         await self.delete(recipe_id)
+        await remove_recipe(self.db, recipe_id)
         await self._audit.record_domain(
             action="recipe.deleted",
             resource_type="recipe",

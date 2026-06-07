@@ -186,6 +186,7 @@ class Settings(BaseSettings):
     OPENAI_CHAT_MODEL: str = "gpt-4.1"
     LLM_BASE_URL: str = ""
     AI_CHAT_ENABLED: bool = True
+    AI_SEARCH_ENABLED: bool = True
 
     # Task intake (Telegram AI)
     TASK_INTAKE_AI_ENABLED: bool = True

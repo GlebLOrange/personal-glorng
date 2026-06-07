@@ -7,6 +7,7 @@ from app.core.utils import generate_short_code
 from app.db.models.url import ShortenedUrl
 from app.services.audit import AuditService
 from app.services.base import CRUDService
+from app.services.search_indexers.url import index_url, remove_url
 
 _MAX_CODE_RETRIES = 3
 
@@ -32,6 +33,7 @@ class UrlService(CRUDService[ShortenedUrl]):
                         "created_by": created_by,
                     }
                 )
+                await index_url(self.db, url)
                 await AuditService(self.db).record_domain(
                     action="url.created",
                     resource_type="url",
@@ -86,6 +88,7 @@ class UrlService(CRUDService[ShortenedUrl]):
         ):
             raise ApiError(403, "You do not have permission to delete this URL")
         await self.delete(url_id)
+        await remove_url(self.db, url_id)
         await AuditService(self.db).record_domain(
             action="url.deleted",
             resource_type="url",
