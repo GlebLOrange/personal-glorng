@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends
 
-from app.core.deps import AuthorizedUser, DbSession, require_capability
+from app.core.deps import AdminUser, AuthorizedUser, DbSession, require_capability
 from app.core.exceptions import ValidationError
 from app.db.models.audit_event import AuditActorType, AuditSource
 from app.schemas.common import MessageResponse
@@ -38,15 +38,11 @@ def _resolve_telegram_user_id(data: TaskCreate) -> int:
     return telegram_user_id
 
 
-@router.post(
-    "",
-    response_model=TaskResponse,
-    dependencies=[Depends(require_capability("tasks", "write"))],
-)
+@router.post("", response_model=TaskResponse)
 async def create_task(
     data: TaskCreate,
     db: DbSession,
-    user: AuthorizedUser,
+    user: AdminUser,
 ) -> TaskResponse:
     svc = TaskService(db)
     task = await svc.create_with_sync(
@@ -112,16 +108,12 @@ async def task_detail(
     return await TaskService(db).task_detail(task_id)
 
 
-@router.patch(
-    "/{task_id}/status",
-    response_model=TaskResponse,
-    dependencies=[Depends(require_capability("tasks", "write"))],
-)
+@router.patch("/{task_id}/status", response_model=TaskResponse)
 async def update_task_status(
     task_id: int,
     data: TaskStatusUpdate,
     db: DbSession,
-    user: AuthorizedUser,
+    user: AdminUser,
 ) -> TaskResponse:
     task = await TaskService(db).change_status(
         task_id=task_id,
@@ -134,16 +126,12 @@ async def update_task_status(
     return TaskResponse.model_validate(task)
 
 
-@router.patch(
-    "/{task_id}",
-    response_model=TaskResponse,
-    dependencies=[Depends(require_capability("tasks", "write"))],
-)
+@router.patch("/{task_id}", response_model=TaskResponse)
 async def reschedule_task(
     task_id: int,
     data: TaskReschedule,
     db: DbSession,
-    user: AuthorizedUser,
+    user: AdminUser,
 ) -> TaskResponse:
     task = await TaskService(db).reschedule_task(
         task_id=task_id,
@@ -156,16 +144,12 @@ async def reschedule_task(
     return TaskResponse.model_validate(task)
 
 
-@router.post(
-    "/{task_id}/reminders",
-    response_model=ReminderResponse,
-    dependencies=[Depends(require_capability("tasks", "write"))],
-)
+@router.post("/{task_id}/reminders", response_model=ReminderResponse)
 async def add_task_reminder(
     task_id: int,
     data: TaskReminderCreate,
     db: DbSession,
-    user: AuthorizedUser,  # noqa: ARG001
+    _user: AdminUser,
 ) -> ReminderResponse:
     svc = TaskService(db)
     task = await svc.require_task(task_id=task_id)
@@ -180,15 +164,11 @@ async def add_task_reminder(
     return ReminderResponse.model_validate(reminder)
 
 
-@router.post(
-    "/{task_id}/retry-sync",
-    response_model=MessageResponse,
-    dependencies=[Depends(require_capability("tasks", "write"))],
-)
+@router.post("/{task_id}/retry-sync", response_model=MessageResponse)
 async def retry_sync(
     task_id: int,
     db: DbSession,
-    _user: AuthorizedUser,
+    _user: AdminUser,
 ) -> MessageResponse:
     count = await TaskService(db).retry_sync(task_id)
     await db.commit()

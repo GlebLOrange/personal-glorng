@@ -1,15 +1,27 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import BaseButton from "@/components/ui/BaseButton.vue";
-import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
+import { statusBadgeClass, statusLabel, TASK_STATUSES, type TaskStatus } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/format";
 import type { TaskDetail } from "@/types";
 
-defineProps<{
+const props = defineProps<{
   task: TaskDetail;
   loading: boolean;
+  canMutate?: boolean;
+  statusUpdating?: boolean;
 }>();
 
-const emit = defineEmits<{ close: []; retrySync: [taskId: number] }>();
+const emit = defineEmits<{
+  close: [];
+  retrySync: [taskId: number];
+  updateStatus: [status: TaskStatus];
+}>();
+
+const availableStatuses = computed(() =>
+  TASK_STATUSES.filter((status) => status !== props.task.status),
+);
 </script>
 
 <template>
@@ -94,16 +106,27 @@ const emit = defineEmits<{ close: []; retrySync: [taskId: number] }>();
               </div>
             </div>
 
-            <div class="border-t border-surface-border pt-4 space-y-3">
+            <div v-if="canMutate" class="border-t border-surface-border pt-4 space-y-3">
               <h3 class="text-sm font-bold text-surface-light">Sync</h3>
               <BaseButton variant="ghost" size="sm" @click="emit('retrySync', task.id)">
                 Retry calendar sync
               </BaseButton>
             </div>
 
-            <div class="border-t border-surface-border pt-4">
+            <div v-if="canMutate" class="border-t border-surface-border pt-4">
               <h3 class="text-sm font-bold text-surface-light mb-2">Actions</h3>
-              <p class="text-xs text-surface-mid">Status changes coming soon.</p>
+              <div class="flex flex-wrap gap-2">
+                <BaseButton
+                  v-for="status in availableStatuses"
+                  :key="status"
+                  variant="ghost"
+                  size="sm"
+                  :disabled="statusUpdating"
+                  @click="emit('updateStatus', status)"
+                >
+                  Set {{ statusLabel(status) }}
+                </BaseButton>
+              </div>
             </div>
           </div>
         </div>

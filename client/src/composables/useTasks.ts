@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 import { useApiAction } from "@/composables/useApiAction";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import { statusLabel, type TaskStatus } from "@/constants/taskStatus";
 import { datetimeLocalValue, parseDatetimeLocalToIso } from "@/utils/dates";
 import type { SyncQueueItem, TaskDetail, TaskIntakeItem, TaskItem, TaskStats } from "@/types";
 
@@ -37,6 +38,7 @@ export function useTasks() {
   const { loading: syncLoading, run: runSync } = useApiAction();
   const { loading: detailLoading, run: runDetail } = useApiAction();
   const { loading: saving, run: runSave } = useApiAction();
+  const { loading: statusUpdating, run: runStatusUpdate } = useApiAction();
   const { run: runRetry } = useApiAction();
   const { toast } = useNotify();
 
@@ -134,6 +136,24 @@ export function useTasks() {
     await loadSyncQueue();
   }
 
+  async function updateTaskStatus(taskId: number, status: TaskStatus): Promise<void> {
+    const result = await runStatusUpdate(
+      async () => {
+        await api.patch(`/tools/tasks/${taskId}/status`, { status });
+      },
+      {
+        successMessage: `Status set to ${statusLabel(status)}`,
+        errorFallback: "Failed to update status",
+      },
+    );
+    if (result === null) return;
+
+    if (selectedTask.value?.id === taskId) {
+      await openDetail(taskId);
+    }
+    await Promise.all([loadTasks(), loadStats()]);
+  }
+
   function openCreate(): void {
     createForm.value = {
       title: "",
@@ -203,6 +223,7 @@ export function useTasks() {
     syncLoading,
     detailLoading,
     saving,
+    statusUpdating,
     hasNextPage,
     taskCountLabel,
     loadTasks,
@@ -212,6 +233,7 @@ export function useTasks() {
     openDetail,
     closeDetail,
     retrySync,
+    updateTaskStatus,
     openCreate,
     createTask,
     goToPage,
