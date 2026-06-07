@@ -2,9 +2,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.search_document import SearchVisibility
 from app.db.models.tool_expense import ToolExpense
-from app.services.search_index import SearchDocumentInput, SearchIndexService
+from app.services.search_index import (
+    SearchDocumentInput,
+    remove_by_source,
+    upsert_document,
+)
+from app.services.search_source_types import SearchSourceType
 
-EXPENSE_SOURCE_TYPE = "expense"
+EXPENSE_SOURCE_TYPE = SearchSourceType.EXPENSE
 
 
 def _expense_document(expense: ToolExpense) -> SearchDocumentInput:
@@ -29,8 +34,8 @@ def _expense_document(expense: ToolExpense) -> SearchDocumentInput:
 
 
 async def index_expense(db: AsyncSession, expense: ToolExpense) -> None:
-    await SearchIndexService(db).upsert(_expense_document(expense))
+    await upsert_document(db, _expense_document(expense))
 
 
 async def remove_expense(db: AsyncSession, expense_id: int) -> None:
-    await SearchIndexService(db).delete_by_source(EXPENSE_SOURCE_TYPE, expense_id)
+    await remove_by_source(db, EXPENSE_SOURCE_TYPE, expense_id)

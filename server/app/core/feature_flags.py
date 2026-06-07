@@ -1,4 +1,8 @@
-"""Feature toggles shared by API and platform catalog."""
+"""Feature toggles shared by API and platform catalog.
+
+Public portfolio search (``AI_SEARCH_ENABLED``) and admin AI chat
+(``AI_CHAT_ENABLED``) are intentionally independent toggles.
+"""
 
 from app.settings import get_settings
 

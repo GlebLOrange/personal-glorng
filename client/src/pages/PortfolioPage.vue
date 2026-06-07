@@ -16,6 +16,7 @@ import { useCachedApi } from "@/composables/useCachedApi";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import type { DonationsConfig, ResumeData } from "@/types";
+import { isAiSearchEnabled } from "@/utils/featureFlags";
 
 const { data: resumeApi, fetch: fetchResume } = useCachedApi<ResumeData>("/resume");
 const { data: donations, fetch: fetchDonations } =
@@ -89,6 +90,6 @@ onMounted(loadResume);
       <FeedbackModal v-if="showFeedback" @close="showFeedback = false" />
     </SectionWrapper>
 
-    <PortfolioSearchChat />
+    <PortfolioSearchChat v-if="isAiSearchEnabled()" />
   </div>
 </template>
