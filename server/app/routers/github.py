@@ -13,12 +13,18 @@ from app.core.logging import logger
 from app.core.redis import cache_delete, cache_get, cache_set
 from app.db.deps import DbRegistry
 from app.db.documents.credential import GitHubCredential
+from app.schemas.github import GitHubIssueResponse, GitHubRepoResponse
 from app.services.github import (
     exchange_code_for_token,
     get_github_user,
+    list_assigned_issues,
+    list_user_repos,
     validate_allowed_user,
 )
-from app.services.github_credentials import store_github_access_token
+from app.services.github_credentials import (
+    read_github_access_token,
+    store_github_access_token,
+)
 from app.settings import get_settings
 
 router = APIRouter()
@@ -170,3 +176,44 @@ async def github_callback(
         github_username=username,
         message="GitHub account linked successfully",
     )
+
+
+async def _require_github_token(
+    user: CurrentUser,
+    registry: DbRegistry,
+) -> str:
+    if registry.credentials is None:
+        msg = "Credential repository is not initialized"
+        raise RuntimeError(msg)
+
+    credential = await registry.credentials.get_github_for_user(user.id)
+    if not credential:
+        raise UnauthorizedError("GitHub account is not linked")
+
+    return read_github_access_token(credential.access_token)
+
+
+@router.get(
+    "/repos",
+    response_model=list[GitHubRepoResponse],
+    summary="List linked GitHub repositories",
+)
+async def github_repos(
+    user: CurrentUser,
+    registry: DbRegistry,
+) -> list[GitHubRepoResponse]:
+    token = await _require_github_token(user, registry)
+    return await list_user_repos(token)
+
+
+@router.get(
+    "/issues",
+    response_model=list[GitHubIssueResponse],
+    summary="List open GitHub issues assigned to you",
+)
+async def github_issues(
+    user: CurrentUser,
+    registry: DbRegistry,
+) -> list[GitHubIssueResponse]:
+    token = await _require_github_token(user, registry)
+    return await list_assigned_issues(token)

@@ -24,9 +24,13 @@ async def complete_json(
     system_prompt: str,
     user_content: str,
     temperature: float = 0.0,
+    base_url: str | None = None,
 ) -> dict[str, Any]:
     """Return parsed JSON object from an OpenAI chat completion."""
-    client = AsyncOpenAI(api_key=api_key, timeout=45.0)
+    client_kwargs: dict[str, Any] = {"api_key": api_key, "timeout": 45.0}
+    if base_url:
+        client_kwargs["base_url"] = base_url
+    client = AsyncOpenAI(**client_kwargs)
     cleaned = sanitize_required_text(user_content)
 
     try:
