@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
+import ContactIcon from "@/components/contact/ContactIcon.vue";
+import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import DonationsBlock from "@/components/donations/DonationsBlock.vue";
 import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
@@ -10,7 +12,7 @@ import ProjectsGrid from "@/components/resume/ProjectsGrid.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
 import CodeBlock from "@/components/ui/CodeBlock.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
-import { contactLinks } from "@/constants/links";
+import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import type { DonationsConfig, ResumeData } from "@/types";
 
@@ -21,6 +23,7 @@ const apiError = ref(false);
 const showFeedback = ref(false);
 
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
+const contactLinks = computed(() => buildContactLinks(resume.value.links));
 
 async function loadResume(): Promise<void> {
   apiError.value = false;
@@ -76,21 +79,13 @@ onMounted(loadResume);
 
     <SectionWrapper id="contact" title="contact" dark>
       <div class="flex flex-wrap gap-4">
-        <a
-          v-for="link in contactLinks"
-          :key="link.label"
-          :href="link.href"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="interactive-surface px-4 py-2 text-sm text-surface-mid"
-        >
-          {{ link.label }}
-        </a>
+        <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
         <button
           type="button"
-          class="interactive-surface px-4 py-2 text-sm text-surface-mid"
+          class="interactive-surface inline-flex items-center gap-2 px-4 py-2 text-sm text-surface-mid"
           @click="showFeedback = true"
         >
+          <ContactIcon id="feedback" class="size-4 shrink-0" />
           Send Feedback
         </button>
       </div>

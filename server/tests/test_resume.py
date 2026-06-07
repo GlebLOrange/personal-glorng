@@ -27,6 +27,15 @@ async def test_resume_skills_structure(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_resume_links(client: AsyncClient) -> None:
+    resp = await client.get("/api/resume")
+    links = resp.json()["links"]
+    for key in ("email", "telegram", "linkedin", "github"):
+        assert key in links
+        assert links[key].strip()
+
+
+@pytest.mark.asyncio
 async def test_resume_name(client: AsyncClient) -> None:
     resp = await client.get("/api/resume")
     assert resp.status_code == 200

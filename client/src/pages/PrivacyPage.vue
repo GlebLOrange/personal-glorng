@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import * as CookieConsent from "vanilla-cookieconsent";
 
-import { contactLinks } from "@/constants/links";
+import { buildContactLinks } from "@/constants/contactMeta";
+import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import { isAnalyticsEnabled } from "@/constants/analytics";
+
+const contactLinks = buildContactLinks(RESUME_FALLBACK.links);
 
 function openPreferences() {
   CookieConsent.showPreferences();
@@ -132,7 +135,7 @@ function openPreferences() {
         Questions about this policy? Reach out through any of these:
       </p>
       <ul class="list-disc list-inside text-surface-sage space-y-1.5 ml-2">
-        <li v-for="link in contactLinks" :key="link.label">
+        <li v-for="link in contactLinks" :key="link.id">
           <a
             :href="link.href"
             target="_blank"
