@@ -25,7 +25,7 @@ class UserRepository(MongoRepository[User]):
             )
         except ValueError:
             return None
-        data = await self._col().find_one({"public_id": uid})
+        data = await self._col().find_one({"public_id": str(uid)})
         if data is None:
             return None
         return _parse_doc(User, data)

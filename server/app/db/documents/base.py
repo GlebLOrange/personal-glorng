@@ -1,5 +1,6 @@
 """Base document types for MongoDB-backed domain models."""
 
+import uuid
 from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Any
@@ -22,6 +23,8 @@ class TimestampedDocument(BaseModel):
 
 
 def _mongo_value(value: Any) -> Any:
+    if isinstance(value, uuid.UUID):
+        return str(value)
     if isinstance(value, date) and not isinstance(value, datetime):
         return datetime.combine(value, datetime.min.time(), tzinfo=UTC)
     if isinstance(value, Decimal):
