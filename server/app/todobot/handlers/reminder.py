@@ -5,11 +5,10 @@ from datetime import UTC, datetime, timedelta
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.utils import format_scheduled_at
-from app.db.models.audit_event import AuditActorType, AuditSource
-from app.db.models.task import TaskStatus
+from app.db.documents.audit import AuditActorType, AuditSource
+from app.db.documents.task import TaskStatus
+from app.db.registry import DatabaseRegistry
 from app.services.task import (
     change_status,
     create_reminder,
@@ -27,7 +26,7 @@ router = Router()
 async def handle_reminder_action(
     callback: CallbackQuery,
     state: FSMContext,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     if not callback.data or not callback.message:
         return
@@ -41,14 +40,14 @@ async def handle_reminder_action(
 
     await callback.answer()
 
-    task = await get_task(db, task_id=task_id)
+    task = await get_task(registry, task_id=task_id)
     if not task:
         await callback.message.answer("Task not found.")
         return
 
     if action == "complete":
         task = await change_status(
-            db,
+            registry,
             task_id=task.id,
             new_status=TaskStatus.COMPLETED,
             actor_type=AuditActorType.TELEGRAM,
@@ -63,9 +62,9 @@ async def handle_reminder_action(
     if action == "snooze" and len(parts) == 4:
         minutes = int(parts[3])
         remind_at = datetime.now(UTC) + timedelta(minutes=minutes)
-        await supersede_unsent_reminders(db, task.id)
-        reminder = await create_reminder(db, task_id=task.id, remind_at=remind_at)
-        await schedule_reminder(db, reminder)
+        await supersede_unsent_reminders(registry, task.id)
+        reminder = await create_reminder(registry, task_id=task.id, remind_at=remind_at)
+        await schedule_reminder(registry, reminder)
         await callback.message.answer(
             f'Snoozed! I\'ll remind you about "{task.title}" in {minutes} minutes.',
         )
@@ -84,7 +83,7 @@ async def handle_reminder_action(
 async def handle_postpone_datetime(
     message: Message,
     state: FSMContext,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     if not message.text:
         await message.answer("Please send a date and time, e.g. tomorrow 3pm.")
@@ -105,7 +104,7 @@ async def handle_postpone_datetime(
         return
 
     task = await reschedule_task(
-        db,
+        registry,
         task_id=int(task_id),
         scheduled_at=parsed,
         actor_type=AuditActorType.TELEGRAM,

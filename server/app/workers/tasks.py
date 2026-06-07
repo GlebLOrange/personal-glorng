@@ -18,10 +18,8 @@ from app.core.email import (
 )
 from app.core.logging import logger
 from app.core.utils import format_scheduled_at
-from app.db.models.google_sync_queue import SyncStatus
-from app.db.models.reminder import Reminder
-from app.db.models.task import TaskStatus
-from app.db.session import get_session_factory
+from app.db.documents.task import SyncStatus, TaskStatus
+from app.db.worker_registry import get_worker_registry
 from app.services.task import complete_past_due_tasks, delete_old_tasks
 from app.settings import get_settings
 from app.todobot.keyboards.task import reminder_actions
@@ -129,43 +127,39 @@ async def send_reminder(reminder_id: int) -> None:
         logger.warning("No bot token, skipping reminder")
         return
 
-    session_factory = get_session_factory()
-    async with session_factory() as db:
-        from sqlalchemy import select
+    registry = await get_worker_registry()
+    if registry.tasks is None:
+        logger.warning("Tasks repository unavailable, skipping reminder")
+        return
 
-        result = await db.execute(
-            select(Reminder).where(Reminder.id == reminder_id),
+    rem = await registry.tasks.get_reminder(reminder_id)
+    if not rem or rem.sent:
+        return
+
+    task = await registry.tasks.get_or_none(rem.task_id)
+    if not task or task.status != TaskStatus.PENDING:
+        return
+
+    bot = Bot(token=settings.TELEGRAM_BOT_TO_DO_TOKEN)
+    try:
+        scheduled = format_scheduled_at(task.scheduled_at)
+        text = f"Reminder: *{task.title}*\nScheduled: {scheduled}"
+        if task.location:
+            text += f"\nLocation: {task.location}"
+
+        await bot.send_message(
+            chat_id=task.telegram_user_id,
+            text=text,
+            reply_markup=reminder_actions(task.id),
+            parse_mode="Markdown",
         )
-        rem = result.scalar_one_or_none()
-        if not rem or rem.sent:
-            return
-
-        task = rem.task
-        if not task or task.status != TaskStatus.PENDING:
-            return
-
-        bot = Bot(token=settings.TELEGRAM_BOT_TO_DO_TOKEN)
-        try:
-            scheduled = format_scheduled_at(task.scheduled_at)
-            text = f"Reminder: *{task.title}*\nScheduled: {scheduled}"
-            if task.location:
-                text += f"\nLocation: {task.location}"
-
-            await bot.send_message(
-                chat_id=task.telegram_user_id,
-                text=text,
-                reply_markup=reminder_actions(task.id),
-                parse_mode="Markdown",
-            )
-            rem.sent = True
-            db.add(rem)
-            await db.commit()
-            logger.info(
-                "Reminder sent",
-                context={"reminder_id": rem.id, "task_id": task.id},
-            )
-        finally:
-            await bot.session.close()
+        await registry.tasks.update_reminder(rem.id, sent=True)
+        logger.info(
+            "Reminder sent",
+            context={"reminder_id": rem.id, "task_id": task.id},
+        )
+    finally:
+        await bot.session.close()
 
 
 @celery_app.task(
@@ -186,83 +180,65 @@ def send_reminder_task(self: Task, reminder_id: int) -> None:
 
 async def check_overdue_tasks() -> None:
     """Auto-complete pending tasks past their scheduled time."""
-    session_factory = get_session_factory()
-    async with session_factory() as db:
-        count = await complete_past_due_tasks(db)
-        if count:
-            await db.commit()
-            logger.info(
-                "Past-due tasks auto-completed",
-                context={"count": count},
-            )
+    registry = await get_worker_registry()
+    count = await complete_past_due_tasks(registry)
+    if count:
+        logger.info(
+            "Past-due tasks auto-completed",
+            context={"count": count},
+        )
 
 
 async def cleanup_old_tasks() -> None:
     """Delete tasks older than 4 months."""
-    session_factory = get_session_factory()
-    async with session_factory() as db:
-        deleted = await delete_old_tasks(db, months=4)
-        await db.commit()
-        if deleted:
-            logger.info("Old tasks cleaned up", context={"deleted": deleted})
+    registry = await get_worker_registry()
+    deleted = await delete_old_tasks(registry, months=4)
+    if deleted:
+        logger.info("Old tasks cleaned up", context={"deleted": deleted})
 
 
 async def cleanup_expired_shares() -> None:
     """Delete expired file-share rows and disk files."""
     from app.services import fileshare as fileshare_svc
 
-    session_factory = get_session_factory()
-    async with session_factory() as db:
-        stats = await fileshare_svc.cleanup_expired(db)
-        await db.commit()
-        if stats["deleted_rows"] or stats["errors"]:
-            logger.info("Expired file shares cleaned up", context=stats)
+    registry = await get_worker_registry()
+    stats = await fileshare_svc.cleanup_expired(registry)
+    if stats["deleted_rows"] or stats["errors"]:
+        logger.info("Expired file shares cleaned up", context=stats)
 
 
 async def process_sync_queue() -> None:
     """Process pending Google Calendar sync items."""
-    from sqlalchemy import select
+    registry = await get_worker_registry()
+    if registry.tasks is None:
+        return
 
-    from app.db.models.google_sync_queue import GoogleSyncQueue
+    now = datetime.now(UTC)
+    items = await registry.tasks.list_pending_sync_due(now=now, limit=10)
 
-    session_factory = get_session_factory()
-    async with session_factory() as db:
-        now = datetime.now(UTC)
-        result = await db.execute(
-            select(GoogleSyncQueue)
-            .where(
-                GoogleSyncQueue.status == SyncStatus.PENDING,
-                GoogleSyncQueue.next_retry_at <= now,
-            )
-            .limit(10),
-        )
-        items = list(result.scalars().all())
+    for item in items:
+        try:
+            from app.services.calendar import sync_task_to_google
 
-        for item in items:
-            try:
-                from app.services.calendar import sync_task_to_google
-
-                await sync_task_to_google(db, item)
-                item.status = SyncStatus.COMPLETED
-            except Exception as exc:
-                item.attempts += 1
-                item.last_error = str(exc)[:500]
-                if item.attempts >= 5:
-                    item.status = SyncStatus.FAILED
-                    logger.error(
-                        "Sync permanently failed",
-                        context={
-                            "queue_id": item.id,
-                            "error": str(exc)[:200],
-                        },
-                    )
-                else:
-                    backoff = [60, 300, 900, 3600]
-                    delay = backoff[min(item.attempts - 1, len(backoff) - 1)]
-                    item.next_retry_at = now + timedelta(seconds=delay)
-            db.add(item)
-
-        await db.commit()
+            await sync_task_to_google(registry, item)
+            item.status = SyncStatus.COMPLETED
+        except Exception as exc:
+            item.attempts += 1
+            item.last_error = str(exc)[:500]
+            if item.attempts >= 5:
+                item.status = SyncStatus.FAILED
+                logger.error(
+                    "Sync permanently failed",
+                    context={
+                        "queue_id": item.id,
+                        "error": str(exc)[:200],
+                    },
+                )
+            else:
+                backoff = [60, 300, 900, 3600]
+                delay = backoff[min(item.attempts - 1, len(backoff) - 1)]
+                item.next_retry_at = now + timedelta(seconds=delay)
+        await registry.tasks.update_sync(item)
 
 
 @celery_app.task(name=JobName.CHECK_OVERDUE_TASKS, ignore_result=True)

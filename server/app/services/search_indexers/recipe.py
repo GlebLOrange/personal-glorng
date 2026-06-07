@@ -1,8 +1,7 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.json_lists import parse_json_string_list
-from app.db.models.recipe import Recipe
-from app.db.models.search_document import SearchVisibility
+from app.db.documents.recipe import Recipe
+from app.db.documents.search import SearchVisibility
+from app.db.registry import DatabaseRegistry
 from app.services.search_index import (
     SearchDocumentInput,
     remove_by_source,
@@ -33,9 +32,9 @@ def _recipe_document(recipe: Recipe) -> SearchDocumentInput:
     )
 
 
-async def index_recipe(db: AsyncSession, recipe: Recipe) -> None:
-    await upsert_document(db, _recipe_document(recipe))
+async def index_recipe(registry: DatabaseRegistry, recipe: Recipe) -> None:
+    await upsert_document(registry, _recipe_document(recipe))
 
 
-async def remove_recipe(db: AsyncSession, recipe_id: int) -> None:
-    await remove_by_source(db, RECIPE_SOURCE_TYPE, recipe_id)
+async def remove_recipe(registry: DatabaseRegistry, recipe_id: int) -> None:
+    await remove_by_source(registry, RECIPE_SOURCE_TYPE, recipe_id)

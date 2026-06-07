@@ -3,13 +3,11 @@
 from datetime import timedelta
 from pathlib import Path
 
-from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.exceptions import ApiError, NotFoundError
 from app.core.logging import logger
 from app.core.utils import as_utc, generate_short_code, utc_now
-from app.db.models.shared_file import SharedFile
+from app.db.documents.fileshare import SharedFile
+from app.db.registry import DatabaseRegistry
 from app.services.audit import AuditService
 from app.settings import get_settings
 
@@ -46,6 +44,13 @@ _DOWNLOAD_SAFE_TYPES = frozenset(
         "application/gzip",
     }
 )
+
+
+def _files(registry: DatabaseRegistry):
+    if registry.files is None:
+        msg = "File share repository is not initialized"
+        raise RuntimeError(msg)
+    return registry.files
 
 
 def _shares_dir() -> Path:
@@ -101,7 +106,7 @@ def download_media_type(stored_type: str) -> str:
 
 
 async def upload(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     *,
     filename: str,
     contents: bytes,
@@ -133,11 +138,9 @@ async def upload(
         expires_at=utc_now() + timedelta(hours=EXPIRY_HOURS),
         created_by=user_id,
     )
-    db.add(shared)
-    await db.flush()
-    await db.refresh(shared)
+    shared = await _files(registry).insert(shared)
 
-    await AuditService(db).record_domain(
+    await AuditService(registry).record_domain(
         action="file.uploaded",
         resource_type="file",
         resource_id=shared.id,
@@ -148,39 +151,33 @@ async def upload(
 
 
 async def list_files(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     *,
     offset: int = 0,
     limit: int = 20,
     user_id: int,
 ) -> list[SharedFile]:
-    result = await db.execute(
-        select(SharedFile)
-        .where(SharedFile.created_by == user_id)
-        .order_by(SharedFile.created_at.desc())
-        .offset(offset)
-        .limit(limit)
+    return await _files(registry).list(
+        offset=offset,
+        limit=limit,
+        created_by=user_id,
+        sort=[("created_at", -1)],
     )
-    return list(result.scalars().all())
 
 
-async def delete(db: AsyncSession, *, file_id: int, user_id: int) -> None:
+async def delete(registry: DatabaseRegistry, *, file_id: int, user_id: int) -> None:
     """Remove file from disk and DB."""
-    result = await db.execute(select(SharedFile).where(SharedFile.id == file_id))
-    shared = result.scalar_one_or_none()
-    if not shared:
-        raise NotFoundError("File not found")
-    if shared.created_by != user_id:
+    shared = await _files(registry).get_or_none(file_id)
+    if not shared or shared.created_by != user_id:
         raise NotFoundError("File not found")
 
     disk_path = _shares_dir() / shared.file_path
     if disk_path.exists():
         disk_path.unlink()
 
-    await db.delete(shared)
-    await db.flush()
+    await _files(registry).delete(file_id)
 
-    await AuditService(db).record_domain(
+    await AuditService(registry).record_domain(
         action="file.deleted",
         resource_type="file",
         resource_id=file_id,
@@ -188,10 +185,13 @@ async def delete(db: AsyncSession, *, file_id: int, user_id: int) -> None:
     )
 
 
-async def get_by_code(db: AsyncSession, *, code: str) -> tuple[SharedFile, Path]:
+async def get_by_code(
+    registry: DatabaseRegistry,
+    *,
+    code: str,
+) -> tuple[SharedFile, Path]:
     """Look up shared file by code, validate expiry, increment downloads."""
-    result = await db.execute(select(SharedFile).where(SharedFile.code == code))
-    shared = result.scalar_one_or_none()
+    shared = await _files(registry).get_by_code(code)
     if not shared:
         raise NotFoundError("File not found")
 
@@ -202,21 +202,16 @@ async def get_by_code(db: AsyncSession, *, code: str) -> tuple[SharedFile, Path]
     if not disk_path.exists():
         raise NotFoundError("File not found on disk")
 
-    await db.execute(
-        update(SharedFile)
-        .where(SharedFile.id == shared.id)
-        .values(downloads=SharedFile.downloads + 1)
-    )
-    await db.flush()
+    await _files(registry).update_fields(shared.id, downloads=shared.downloads + 1)
 
     return shared, disk_path
 
 
-async def cleanup_expired(db: AsyncSession) -> dict[str, int]:
+async def cleanup_expired(registry: DatabaseRegistry) -> dict[str, int]:
     """Remove expired shared files from disk and database."""
     now = utc_now()
-    result = await db.execute(select(SharedFile).where(SharedFile.expires_at < now))
-    expired = list(result.scalars().all())
+    all_files = await _files(registry).list(limit=10_000)
+    expired = [shared for shared in all_files if as_utc(shared.expires_at) < now]
 
     deleted_rows = 0
     deleted_files = 0
@@ -236,11 +231,8 @@ async def cleanup_expired(db: AsyncSession) -> dict[str, int]:
                 error=exc,
                 context={"file_id": shared.id, "path": str(disk_path)},
             )
-        await db.delete(shared)
+        await _files(registry).delete(shared.id)
         deleted_rows += 1
-
-    if deleted_rows:
-        await db.flush()
 
     return {
         "deleted_rows": deleted_rows,

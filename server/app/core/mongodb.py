@@ -1,50 +1,40 @@
+"""Backward-compatible MongoDB accessors (prefer DatabaseRegistry)."""
+
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
-from app.core.logging import logger
-
-_client: AsyncIOMotorClient | None = None
-_database: AsyncIOMotorDatabase | None = None
-_enabled = False
+_registry_db: AsyncIOMotorDatabase | None = None
+_registry_client: AsyncIOMotorClient | None = None
 
 
-async def init_mongodb(url: str, database_name: str) -> None:
-    """Connect to MongoDB when a URL is configured."""
-    global _client, _database, _enabled
-    if not url.strip():
-        return
-
-    _client = AsyncIOMotorClient(url)
-    _database = _client[database_name]
-    await _client.admin.command("ping")
-    _enabled = True
-    logger.info(
-        "MongoDB connected",
-        context={"database": database_name},
-    )
+def bind_mongodb(
+    client: AsyncIOMotorClient,
+    database: AsyncIOMotorDatabase,
+) -> None:
+    """Register the active MongoDB connection for legacy helpers."""
+    global _registry_client, _registry_db
+    _registry_client = client
+    _registry_db = database
 
 
-async def close_mongodb() -> None:
-    global _client, _database, _enabled
-    if _client is not None:
-        _client.close()
-        _client = None
-    _database = None
-    _enabled = False
+def clear_mongodb() -> None:
+    global _registry_client, _registry_db
+    _registry_client = None
+    _registry_db = None
 
 
 def is_mongodb_enabled() -> bool:
-    return _enabled and _client is not None and _database is not None
+    return _registry_db is not None and _registry_client is not None
 
 
 def get_mongodb_client() -> AsyncIOMotorClient:
-    if _client is None:
-        msg = "MongoDB not initialized. Call init_mongodb() first."
+    if _registry_client is None:
+        msg = "MongoDB not initialized"
         raise RuntimeError(msg)
-    return _client
+    return _registry_client
 
 
 def get_mongodb_database() -> AsyncIOMotorDatabase:
-    if _database is None:
-        msg = "MongoDB not initialized. Call init_mongodb() first."
+    if _registry_db is None:
+        msg = "MongoDB not initialized"
         raise RuntimeError(msg)
-    return _database
+    return _registry_db

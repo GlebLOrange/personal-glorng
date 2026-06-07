@@ -3,7 +3,7 @@ from enum import StrEnum
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
-from app.db.models.search_document import SearchVisibility
+from app.db.documents.search import SearchVisibility
 from app.services.ai_chat import OpenAIService
 from app.services.search_index import SearchIndexService
 from app.settings import Settings

@@ -2,14 +2,14 @@ import asyncio
 from html import escape
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import select, update
 
-from app.core.deps import AuthorizedUser, DbSession, require_capability
+from app.core.deps import AuthorizedUser, require_capability
 from app.core.logging import logger
 from app.core.rate_limit import RateLimiter
 from app.core.telegram import notify_admin
-from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
-from app.db.models.feedback import Feedback
+from app.db.deps import DbRegistry
+from app.db.documents.audit import AuditActorType, AuditCategory, AuditSource
+from app.db.documents.feedback import Feedback
 from app.openapi import requires_capability
 from app.schemas.feedback import FeedbackCreate, FeedbackResponse, FeedbackStatusUpdate
 from app.services.audit import AuditRecord, AuditService
@@ -28,13 +28,14 @@ rate_limit_feedback = RateLimiter(requests=5, window=300)
     description="Public endpoint — visitors can submit feedback.",
     dependencies=[Depends(rate_limit_feedback)],
 )
-async def create_feedback(data: FeedbackCreate, db: DbSession) -> Feedback:
+async def create_feedback(data: FeedbackCreate, registry: DbRegistry) -> Feedback:
+    if registry.feedback is None:
+        msg = "Feedback repository is not initialized"
+        raise RuntimeError(msg)
+
     entry = Feedback(email=data.email, theme=data.theme, message=data.message)
-    db.add(entry)
-    await db.flush()
-    await db.refresh(entry)
-    await index_feedback(db, entry)
-    await db.commit()
+    entry = await registry.feedback.insert(entry)
+    await index_feedback(registry, entry)
     logger.info(
         "Feedback created",
         context={"id": entry.id, "email": data.email},
@@ -61,9 +62,14 @@ async def create_feedback(data: FeedbackCreate, db: DbSession) -> Feedback:
     description=requires_capability("feedback", "read"),
     dependencies=[Depends(require_capability("feedback", "read"))],
 )
-async def list_feedback(db: DbSession, _user: AuthorizedUser) -> list[Feedback]:
-    result = await db.execute(select(Feedback).order_by(Feedback.created_at.desc()))
-    return list(result.scalars().all())
+async def list_feedback(
+    registry: DbRegistry,
+    _user: AuthorizedUser,
+) -> list[Feedback]:
+    if registry.feedback is None:
+        msg = "Feedback repository is not initialized"
+        raise RuntimeError(msg)
+    return await registry.feedback.list(limit=500, sort=[("created_at", -1)])
 
 
 @router.patch(
@@ -76,18 +82,17 @@ async def list_feedback(db: DbSession, _user: AuthorizedUser) -> list[Feedback]:
 async def update_feedback_status(
     feedback_id: int,
     data: FeedbackStatusUpdate,
-    db: DbSession,
+    registry: DbRegistry,
     user: AuthorizedUser,
 ) -> Feedback:
-    await db.execute(
-        update(Feedback).where(Feedback.id == feedback_id).values(status=data.status)
-    )
-    await db.flush()
-    result = await db.execute(select(Feedback).where(Feedback.id == feedback_id))
-    entry = result.scalar_one()
-    await index_feedback(db, entry)
+    if registry.feedback is None:
+        msg = "Feedback repository is not initialized"
+        raise RuntimeError(msg)
 
-    await AuditService(db).record(
+    entry = await registry.feedback.update_fields(feedback_id, status=data.status)
+    await index_feedback(registry, entry)
+
+    await AuditService(registry).record(
         AuditRecord(
             category=AuditCategory.DOMAIN,
             action="feedback.status_changed",

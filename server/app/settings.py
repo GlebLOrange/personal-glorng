@@ -1,7 +1,7 @@
 import json
 from functools import lru_cache
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from urllib.parse import urlparse
 
 from pydantic import field_validator, model_validator
@@ -134,16 +134,17 @@ class Settings(BaseSettings):
             raise ValueError(msg)
         if self.APP_ENV == "production":
             _validate_production_password(
-                "POSTGRES_PASSWORD",
-                self.POSTGRES_PASSWORD,
-                min_len=16,
-            )
-            _validate_production_password(
                 "REDIS_PASSWORD",
                 _password_from_redis_url(self.REDIS_URL),
                 min_len=16,
             )
-            if self.mongodb_enabled():
+            if self.enable_postgres():
+                _validate_production_password(
+                    "POSTGRES_PASSWORD",
+                    self.POSTGRES_PASSWORD,
+                    min_len=16,
+                )
+            if self.enable_mongodb():
                 _validate_production_password(
                     "MONGODB_PASSWORD",
                     self.MONGODB_PASSWORD,
@@ -151,16 +152,47 @@ class Settings(BaseSettings):
                 )
         return self
 
-    # Postgres (source of truth for compose-backed DATABASE_URL)
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
+    # Database backends
+    ENABLE_MONGODB: bool = True
+    ENABLE_POSTGRES: bool = False
+    PRIMARY_DATABASE: Literal["mongodb"] = "mongodb"
+    RUN_MIGRATIONS: bool = False
 
-    # Database
-    DATABASE_URL: str
+    # Postgres (optional secondary store)
+    POSTGRES_USER: str = ""
+    POSTGRES_PASSWORD: str = ""
+    POSTGRES_DB: str = ""
+
+    # Database URL (required when ENABLE_POSTGRES; sqlite allowed only in dev/test)
+    DATABASE_URL: str = ""
+
+    @model_validator(mode="after")
+    def _validate_database_backends(self) -> Settings:
+        if self.enable_mongodb() and not self.MONGODB_URL.strip():
+            msg = "MONGODB_URL is required when ENABLE_MONGODB is true"
+            raise ValueError(msg)
+        if self.enable_postgres():
+            if not self.DATABASE_URL.strip():
+                msg = "DATABASE_URL is required when ENABLE_POSTGRES is true"
+                raise ValueError(msg)
+            if not self.POSTGRES_USER or not self.POSTGRES_DB:
+                msg = "POSTGRES_USER and POSTGRES_DB are required when ENABLE_POSTGRES is true"
+                raise ValueError(msg)
+        if self.DATABASE_URL.startswith("sqlite") and self.APP_ENV not in {
+            "development",
+            "test",
+        }:
+            msg = "SQLite is only allowed when APP_ENV is development or test"
+            raise ValueError(msg)
+        if self.APP_ENV in {"production", "staging"} and not self.enable_mongodb():
+            msg = "MongoDB must be enabled in production and staging"
+            raise ValueError(msg)
+        return self
 
     @model_validator(mode="after")
     def _normalize_database_url(self) -> Settings:
+        if not self.DATABASE_URL.strip():
+            return self
         url = self.DATABASE_URL
         for token, value in {
             "${POSTGRES_USER}": self.POSTGRES_USER,
@@ -182,6 +214,12 @@ class Settings(BaseSettings):
         )
         return self
 
+    def enable_mongodb(self) -> bool:
+        return self.ENABLE_MONGODB
+
+    def enable_postgres(self) -> bool:
+        return self.ENABLE_POSTGRES
+
     # Elasticsearch (optional; empty disables the external search backend)
     ELASTICSEARCH_URL: str = ""
     ELASTICSEARCH_INDEX: str = "search_documents"
@@ -195,7 +233,7 @@ class Settings(BaseSettings):
     def elasticsearch_enabled(self) -> bool:
         return bool(self.ELASTICSEARCH_URL.strip())
 
-    # MongoDB (optional secondary document store)
+    # MongoDB (primary document store)
     MONGODB_USER: str = ""
     MONGODB_PASSWORD: str = ""
     MONGODB_DB: str = "glorng"
@@ -218,6 +256,7 @@ class Settings(BaseSettings):
         return self
 
     def mongodb_enabled(self) -> bool:
+        """Whether a MongoDB URL is configured."""
         return bool(self.MONGODB_URL.strip())
 
     # Redis

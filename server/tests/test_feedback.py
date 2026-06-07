@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.registry import DatabaseRegistry
 
 from tests.factories import create_feedback
 
@@ -69,9 +69,9 @@ class TestListFeedback:
         resp = await client.get("/api/feedback")
         assert resp.status_code == 401
 
-    async def test_list_feedback(self, auth_client: AsyncClient, db: AsyncSession):
-        await create_feedback(db, theme="First")
-        await create_feedback(db, theme="Second")
+    async def test_list_feedback(self, auth_client: AsyncClient, registry: DatabaseRegistry):
+        await create_feedback(registry, theme="First")
+        await create_feedback(registry, theme="Second")
         resp = await auth_client.get("/api/feedback")
         assert resp.status_code == 200
         data = resp.json()
@@ -90,24 +90,24 @@ class TestUpdateFeedbackStatus:
         resp = await client.patch("/api/feedback/1/status", json={"status": "read"})
         assert resp.status_code == 401
 
-    async def test_mark_as_read(self, auth_client: AsyncClient, db: AsyncSession):
-        fb = await create_feedback(db)
+    async def test_mark_as_read(self, auth_client: AsyncClient, registry: DatabaseRegistry):
+        fb = await create_feedback(registry)
         resp = await auth_client.patch(
             f"/api/feedback/{fb.id}/status", json={"status": "read"}
         )
         assert resp.status_code == 200
         assert resp.json()["status"] == "read"
 
-    async def test_mark_as_archived(self, auth_client: AsyncClient, db: AsyncSession):
-        fb = await create_feedback(db)
+    async def test_mark_as_archived(self, auth_client: AsyncClient, registry: DatabaseRegistry):
+        fb = await create_feedback(registry)
         resp = await auth_client.patch(
             f"/api/feedback/{fb.id}/status", json={"status": "archived"}
         )
         assert resp.status_code == 200
         assert resp.json()["status"] == "archived"
 
-    async def test_invalid_status(self, auth_client: AsyncClient, db: AsyncSession):
-        fb = await create_feedback(db)
+    async def test_invalid_status(self, auth_client: AsyncClient, registry: DatabaseRegistry):
+        fb = await create_feedback(registry)
         resp = await auth_client.patch(
             f"/api/feedback/{fb.id}/status", json={"status": "deleted"}
         )

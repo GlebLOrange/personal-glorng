@@ -3,23 +3,22 @@
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.utils import format_scheduled_at
-from app.db.models.audit_event import AuditActorType, AuditSource
-from app.db.models.task import TaskStatus
+from app.db.documents.audit import AuditActorType, AuditSource
+from app.db.documents.task import TaskStatus
+from app.db.registry import DatabaseRegistry
 from app.services.task import change_status, get_pending_tasks, get_task
 
 router = Router()
 
 
 @router.message(Command("tasks"))
-async def cmd_tasks(message: Message, db: AsyncSession) -> None:
+async def cmd_tasks(message: Message, registry: DatabaseRegistry) -> None:
     if not message.from_user:
         return
 
     tasks = await get_pending_tasks(
-        db,
+        registry,
         telegram_user_id=message.from_user.id,
     )
     if not tasks:
@@ -45,7 +44,7 @@ _STATUS_MAP = {
 @router.callback_query(F.data.startswith("status:"))
 async def handle_status_update(
     callback: CallbackQuery,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     if not callback.data or not callback.message:
         return
@@ -61,13 +60,13 @@ async def handle_status_update(
 
     await callback.answer()
 
-    task = await get_task(db, task_id=task_id)
+    task = await get_task(registry, task_id=task_id)
     if not task:
         await callback.message.answer("Task not found.")
         return
 
     task = await change_status(
-        db,
+        registry,
         task_id=task_id,
         new_status=new_status,
         actor_type=AuditActorType.TELEGRAM,

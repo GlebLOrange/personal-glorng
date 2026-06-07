@@ -5,13 +5,11 @@ from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.catalogs import ALLOWED_CURRENCIES, DEFAULT_EXPENSE_CURRENCY
 from app.core.exceptions import ValidationError
-from app.db.models.audit_event import AuditActorType, AuditSource
-from app.db.models.tool_expense import ToolExpense
+from app.db.documents.audit import AuditActorType, AuditSource
+from app.db.documents.expense import ToolExpense
+from app.db.registry import DatabaseRegistry
 from app.schemas.tool_expense import (
     ToolExpenseCategoryTotal,
     ToolExpenseCreate,
@@ -22,7 +20,6 @@ from app.schemas.tool_expense import (
     ToolExpenseUpdate,
 )
 from app.services.audit import AuditService
-from app.services.base import CRUDService
 from app.services.currency import CurrencyService
 from app.services.search_indexers.expense import index_expense, remove_expense
 from app.services.tool_expense_category import ToolExpenseCategoryService
@@ -37,15 +34,21 @@ def _csv_cell(value: str) -> str:
     return value
 
 
-class ToolExpenseService(CRUDService[ToolExpense]):
+class ToolExpenseService:
     def __init__(
         self,
-        db: AsyncSession,
+        registry: DatabaseRegistry,
         *,
         currency_svc: CurrencyService | None = None,
     ) -> None:
-        super().__init__(db, ToolExpense)
+        self.registry = registry
         self._currency_svc = currency_svc or CurrencyService()
+
+    def _expenses(self):
+        if self.registry.expenses is None:
+            msg = "Expense repository is not initialized"
+            raise RuntimeError(msg)
+        return self.registry.expenses
 
     @staticmethod
     def month_date_bounds(month: str) -> tuple[date, date]:
@@ -66,24 +69,6 @@ class ToolExpenseService(CRUDService[ToolExpense]):
     def _to_response(expense: ToolExpense) -> ToolExpenseResponse:
         return ToolExpenseResponse.model_validate(expense)
 
-    def _apply_filters(
-        self,
-        query: select,
-        date_from: date | None = None,
-        date_to: date | None = None,
-        tool_name: str | None = None,
-        category: str | None = None,
-    ) -> select:
-        if date_from is not None:
-            query = query.where(ToolExpense.expense_date >= date_from)
-        if date_to is not None:
-            query = query.where(ToolExpense.expense_date <= date_to)
-        if tool_name:
-            query = query.where(ToolExpense.tool_name.ilike(f"%{tool_name}%"))
-        if category:
-            query = query.where(ToolExpense.category.ilike(f"%{category}%"))
-        return query
-
     async def create_expense(
         self,
         data: ToolExpenseCreate,
@@ -91,12 +76,13 @@ class ToolExpenseService(CRUDService[ToolExpense]):
         source: AuditSource = AuditSource.WEB_ADMIN,
         actor_type: AuditActorType = AuditActorType.USER,
     ) -> ToolExpenseResponse:
-        await ToolExpenseCategoryService(self.db).ensure_category(data.category)
+        await ToolExpenseCategoryService(self.registry).ensure_category(data.category)
         payload = data.model_dump()
         payload["source"] = source.value
-        expense = await self.create(payload)
-        await index_expense(self.db, expense)
-        await AuditService(self.db).record_domain(
+        expense = ToolExpense.model_validate(payload)
+        expense = await self._expenses().expenses.insert(expense)
+        await index_expense(self.registry, expense)
+        await AuditService(self.registry).record_domain(
             action="expense.created",
             resource_type="expense",
             resource_id=expense.id,
@@ -111,18 +97,15 @@ class ToolExpenseService(CRUDService[ToolExpense]):
         expense_id: int,
         data: ToolExpenseUpdate,
     ) -> ToolExpenseResponse:
-        expense = await self.get(expense_id)
+        expense = await self._expenses().expenses.get(expense_id)
         payload = data.model_dump(exclude_unset=True)
         if "category" in payload:
-            await ToolExpenseCategoryService(self.db).ensure_category(
-                payload["category"]
+            await ToolExpenseCategoryService(self.registry).ensure_category(
+                payload["category"],
             )
-        for key, value in payload.items():
-            setattr(expense, key, value)
-        await self.db.flush()
-        await self.db.refresh(expense)
-        await index_expense(self.db, expense)
-        await AuditService(self.db).record_domain(
+        expense = await self._expenses().expenses.update_fields(expense_id, **payload)
+        await index_expense(self.registry, expense)
+        await AuditService(self.registry).record_domain(
             action="expense.updated",
             resource_type="expense",
             resource_id=expense.id,
@@ -130,9 +113,9 @@ class ToolExpenseService(CRUDService[ToolExpense]):
         return self._to_response(expense)
 
     async def delete_expense(self, expense_id: int) -> None:
-        await self.delete(expense_id)
-        await remove_expense(self.db, expense_id)
-        await AuditService(self.db).record_domain(
+        await self._expenses().expenses.delete(expense_id)
+        await remove_expense(self.registry, expense_id)
+        await AuditService(self.registry).record_domain(
             action="expense.deleted",
             resource_type="expense",
             resource_id=expense_id,
@@ -145,22 +128,16 @@ class ToolExpenseService(CRUDService[ToolExpense]):
         tool_name: str | None = None,
         category: str | None = None,
     ) -> list[ToolExpenseResponse]:
-        query = self._apply_filters(
-            select(ToolExpense),
-            date_from,
-            date_to,
-            tool_name,
-            category,
+        expenses = await self._expenses().list_expenses(
+            date_from=date_from,
+            date_to=date_to,
+            tool_name=tool_name,
+            category=category,
         )
-        query = query.order_by(
-            ToolExpense.expense_date.desc(),
-            ToolExpense.created_at.desc(),
-        )
-        result = await self.db.execute(query)
-        return [self._to_response(e) for e in result.scalars().all()]
+        return [self._to_response(e) for e in expenses]
 
     async def get_expense(self, expense_id: int) -> ToolExpenseResponse:
-        expense = await self.get(expense_id)
+        expense = await self._expenses().expenses.get(expense_id)
         return self._to_response(expense)
 
     async def export_csv(
@@ -206,9 +183,10 @@ class ToolExpenseService(CRUDService[ToolExpense]):
                 f"display_currency must be one of: {', '.join(ALLOWED_CURRENCIES)}"
             )
 
-        query = self._apply_filters(select(ToolExpense), date_from, date_to)
-        result = await self.db.execute(query)
-        expenses = list(result.scalars().all())
+        expenses = await self._expenses().list_expenses(
+            date_from=date_from,
+            date_to=date_to,
+        )
 
         rates = await self._currency_svc.get_rates()
         rates_meta = await self._currency_svc.get_rates_meta()

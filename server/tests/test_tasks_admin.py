@@ -1,9 +1,9 @@
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import create_access_token
-from app.db.models.task import TaskStatus
+from app.db.documents.task import TaskStatus
+from app.db.registry import DatabaseRegistry
 from app.services.task import complete_past_due_tasks
 from app.settings import get_settings
 from tests.factories import create_task, create_user
@@ -131,9 +131,11 @@ async def test_reschedule_task(auth_client: AsyncClient) -> None:
 
 
 @pytest.fixture
-async def tasks_reader_client(client: AsyncClient, db: AsyncSession) -> AsyncClient:
+async def tasks_reader_client(
+    client: AsyncClient, registry: DatabaseRegistry
+) -> AsyncClient:
     user = await create_user(
-        db,
+        registry,
         email="reader@example.com",
         permissions=["tasks:read", "tasks:write"],
     )
@@ -145,9 +147,9 @@ async def tasks_reader_client(client: AsyncClient, db: AsyncSession) -> AsyncCli
 @pytest.mark.asyncio
 async def test_task_mutations_require_superuser(
     tasks_reader_client: AsyncClient,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
-    task = await create_task(db)
+    task = await create_task(registry)
 
     create_resp = await tasks_reader_client.post(
         "/api/tools/tasks",
@@ -181,34 +183,34 @@ async def test_task_mutations_require_superuser(
 
 @pytest.mark.asyncio
 async def test_tasks_reader_can_list(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     tasks_reader_client: AsyncClient,
 ) -> None:
-    await create_task(db, title="Visible task")
+    await create_task(registry, title="Visible task")
     resp = await tasks_reader_client.get("/api/tools/tasks")
     assert resp.status_code == 200
     assert any(t["title"] == "Visible task" for t in resp.json())
 
 
 @pytest.mark.asyncio
-async def test_complete_past_due_tasks(db: AsyncSession) -> None:
+async def test_complete_past_due_tasks(registry: DatabaseRegistry) -> None:
     from datetime import UTC, datetime, timedelta
 
     future = await create_task(
-        db,
+        registry,
         title="Future",
         scheduled_at=datetime.now(UTC) + timedelta(hours=1),
     )
     past = await create_task(
-        db,
+        registry,
         title="Past",
         scheduled_at=datetime.now(UTC) - timedelta(minutes=5),
     )
 
-    count = await complete_past_due_tasks(db)
-    await db.commit()
-    await db.refresh(past)
-    await db.refresh(future)
+    count = await complete_past_due_tasks(registry)
+    assert registry.tasks is not None
+    past = await registry.tasks.get(past.id)
+    future = await registry.tasks.get(future.id)
 
     assert count == 1
     assert past.status == TaskStatus.COMPLETED

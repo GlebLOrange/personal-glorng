@@ -1,19 +1,18 @@
-from collections.abc import Callable
+from collections.abc import AsyncGenerator, Callable
 from typing import Annotated
 
 from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ApiError, ForbiddenError, UnauthorizedError
-from app.core.mongodb import get_mongodb_database, is_mongodb_enabled
+from app.core.exceptions import ForbiddenError, UnauthorizedError
 from app.core.permissions import permission_key, user_has_permission
 from app.core.redis import get_redis_client, is_token_blacklisted
 from app.core.security import decode_token
-from app.db.models.user import User
-from app.db.session import get_db
+from app.db.deps import DbRegistry, get_postgres_db
+from app.db.documents.user import User
+from app.db.registry import DatabaseRegistry
 from app.services.ai_chat import OpenAIService
 from app.services.ai_search import AiSearchService
 from app.services.audit import AuditService
@@ -28,7 +27,6 @@ from app.services.user import get_user_by_public_id
 from app.settings import Settings, get_settings
 from app.workers.queue import JobQueue, get_job_queue
 
-DbSession = Annotated[AsyncSession, Depends(get_db)]
 AppSettings = Annotated[Settings, Depends(get_settings)]
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
@@ -36,18 +34,26 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=Fals
 RedisClient = Annotated[Redis, Depends(get_redis_client)]
 
 
-def get_mongo_database() -> AsyncIOMotorDatabase:
-    if not is_mongodb_enabled():
-        raise ApiError(503, "MongoDB is not configured")
-    return get_mongodb_database()
+async def _optional_postgres_session(
+    registry: DbRegistry,
+    settings: AppSettings,
+) -> AsyncGenerator[AsyncSession | None]:
+    if not settings.enable_postgres():
+        yield None
+        return
+    async for session in get_postgres_db(registry, settings):
+        yield session
 
 
-MongoDatabaseDep = Annotated[AsyncIOMotorDatabase, Depends(get_mongo_database)]
+OptionalPostgresSession = Annotated[
+    AsyncSession | None,
+    Depends(_optional_postgres_session),
+]
 
 
 async def _resolve_user_from_token(
+    registry: DatabaseRegistry,
     raw_token: str,
-    db: AsyncSession,
     *,
     strict: bool = False,
 ) -> User | None:
@@ -75,7 +81,7 @@ async def _resolve_user_from_token(
             raise UnauthorizedError("Invalid token payload")
         return None
 
-    user = await get_user_by_public_id(db, str(user_sub))
+    user = await get_user_by_public_id(registry, str(user_sub))
     if not user:
         if strict:
             raise UnauthorizedError("User not found")
@@ -90,14 +96,14 @@ async def _resolve_user_from_token(
 
 async def get_current_user(
     request: Request,
-    db: DbSession,
+    registry: DbRegistry,
     token: Annotated[str | None, Depends(oauth2_scheme)] = None,
 ) -> User:
     raw_token = token or request.cookies.get("access_token")
     if not raw_token:
         raise UnauthorizedError("Not authenticated")
 
-    user = await _resolve_user_from_token(raw_token, db, strict=True)
+    user = await _resolve_user_from_token(registry, raw_token, strict=True)
     return user  # strict=True raises before returning None
 
 
@@ -106,7 +112,7 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 async def get_optional_current_user(
     request: Request,
-    db: DbSession,
+    registry: DbRegistry,
     token: Annotated[str | None, Depends(oauth2_scheme)] = None,
 ) -> User | None:
     """Return the authenticated user when a valid session exists."""
@@ -114,7 +120,7 @@ async def get_optional_current_user(
     if not raw_token:
         return None
 
-    return await _resolve_user_from_token(raw_token, db)
+    return await _resolve_user_from_token(registry, raw_token)
 
 
 OptionalUser = Annotated[User | None, Depends(get_optional_current_user)]
@@ -149,6 +155,8 @@ AdminUser = Annotated[User, Depends(require_admin)]
 def get_openai_chat_service(settings: AppSettings) -> OpenAIService:
     """Build OpenAI chat service or raise when the API key is missing."""
     if not settings.OPENAI_API_KEY:
+        from app.core.exceptions import ApiError
+
         raise ApiError(503, "OpenAI API key is not configured")
     return OpenAIService(
         api_key=settings.OPENAI_API_KEY,
@@ -160,8 +168,11 @@ def get_openai_chat_service(settings: AppSettings) -> OpenAIService:
 OpenAIChatService = Annotated[OpenAIService, Depends(get_openai_chat_service)]
 
 
-def get_search_index_service(db: DbSession) -> SearchIndexService:
-    return SearchIndexService(db)
+def get_search_index_service(
+    registry: DbRegistry,
+    postgres_db: OptionalPostgresSession,
+) -> SearchIndexService:
+    return SearchIndexService(registry, postgres_db=postgres_db)
 
 
 SearchIndexServiceDep = Annotated[SearchIndexService, Depends(get_search_index_service)]
@@ -191,8 +202,8 @@ def get_currency_service() -> CurrencyService:
 CurrencyServiceDep = Annotated[CurrencyService, Depends(get_currency_service)]
 
 
-def get_expense_category_service(db: DbSession) -> ToolExpenseCategoryService:
-    return ToolExpenseCategoryService(db)
+def get_expense_category_service(registry: DbRegistry) -> ToolExpenseCategoryService:
+    return ToolExpenseCategoryService(registry)
 
 
 ExpenseCategoryServiceDep = Annotated[
@@ -202,41 +213,44 @@ ExpenseCategoryServiceDep = Annotated[
 
 
 def get_expense_service(
-    db: DbSession,
+    registry: DbRegistry,
     currency_svc: CurrencyServiceDep,
 ) -> ToolExpenseService:
-    return ToolExpenseService(db, currency_svc=currency_svc)
+    return ToolExpenseService(registry, currency_svc=currency_svc)
 
 
 ExpenseServiceDep = Annotated[ToolExpenseService, Depends(get_expense_service)]
 
 
-def get_audit_service(db: DbSession) -> AuditService:
-    return AuditService(db)
+def get_audit_service(
+    registry: DbRegistry,
+    postgres_db: OptionalPostgresSession,
+) -> AuditService:
+    return AuditService(registry, postgres_db=postgres_db)
 
 
 AuditServiceDep = Annotated[AuditService, Depends(get_audit_service)]
 
 
-def get_task_service(db: DbSession) -> TaskService:
-    return TaskService(db)
+def get_task_service(registry: DbRegistry) -> TaskService:
+    return TaskService(registry)
 
 
 TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]
 
 
-def get_task_intake_service(db: DbSession) -> TaskIntakeService:
-    return TaskIntakeService(db)
+def get_task_intake_service(registry: DbRegistry) -> TaskIntakeService:
+    return TaskIntakeService(registry)
 
 
 TaskIntakeServiceDep = Annotated[TaskIntakeService, Depends(get_task_intake_service)]
 
 
 def get_recipe_service(
-    db: DbSession,
+    registry: DbRegistry,
     audit_svc: AuditServiceDep,
 ) -> RecipeService:
-    return RecipeService(db, audit_svc)
+    return RecipeService(registry, audit_svc)
 
 
 RecipeServiceDep = Annotated[RecipeService, Depends(get_recipe_service)]

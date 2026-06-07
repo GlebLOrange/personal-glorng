@@ -7,7 +7,7 @@ from aiogram import Bot, F, Router
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.registry import DatabaseRegistry
 
 from app.schemas.task_intake import TaskDraft
 from app.services.task import create_with_sync
@@ -114,13 +114,13 @@ async def cmd_new_task(
 async def _process_intake_message(
     message: Message,
     state: FSMContext,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     text: str,
 ) -> None:
     if not message.from_user:
         return
 
-    svc = TaskIntakeService(db)
+    svc = TaskIntakeService(registry)
     inbound = await svc.store_inbound_message(
         telegram_user_id=message.from_user.id,
         telegram_message_id=message.message_id,
@@ -197,21 +197,21 @@ async def _show_intake_confirmation(
 async def handle_natural_input(
     message: Message,
     state: FSMContext,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     if not message.text:
         await message.answer("Please send a text message.")
         return
 
     await _track_msg(state, message.message_id)
-    await _process_intake_message(message, state, db, message.text.strip())
+    await _process_intake_message(message, state, registry, message.text.strip())
 
 
 @router.message(TaskCreation.clarifying)
 async def handle_clarification(
     message: Message,
     state: FSMContext,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     if not message.text:
         await message.answer("Please send a text reply.")
@@ -225,7 +225,7 @@ async def handle_clarification(
         await state.clear()
         return
 
-    svc = TaskIntakeService(db)
+    svc = TaskIntakeService(registry)
     try:
         result = await svc.apply_clarification(int(intake_id), message.text.strip())
     except Exception:
@@ -386,7 +386,7 @@ async def skip_notes(callback: CallbackQuery, state: FSMContext) -> None:
 async def handle_reminder_choice(
     callback: CallbackQuery,
     state: FSMContext,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     if not callback.data or not callback.message:
         return
@@ -401,7 +401,7 @@ async def handle_reminder_choice(
     data = await state.get_data()
     intake_id = data.get("intake_id")
     if intake_id:
-        svc = TaskIntakeService(db)
+        svc = TaskIntakeService(registry)
         await _show_intake_confirmation(callback.message, state, svc, int(intake_id))
         return
 
@@ -419,7 +419,7 @@ async def handle_reminder_choice(
 async def confirm_task(
     callback: CallbackQuery,
     state: FSMContext,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     if not callback.message or not callback.from_user:
         return
@@ -428,7 +428,7 @@ async def confirm_task(
     intake_id = data.get("intake_id")
 
     if intake_id:
-        svc = TaskIntakeService(db)
+        svc = TaskIntakeService(registry)
         reminder_minutes = data.get("reminder_minutes")
         try:
             task = await svc.confirm_intake(
@@ -465,7 +465,7 @@ async def confirm_task(
     reminder_minutes = data.get("reminder_minutes")
 
     task = await create_with_sync(
-        db,
+        registry,
         telegram_user_id=callback.from_user.id,
         title=data.get("title", "Untitled"),
         scheduled_at=scheduled_at,
@@ -510,7 +510,7 @@ async def edit_task(callback: CallbackQuery, state: FSMContext) -> None:
 async def cancel_task(
     callback: CallbackQuery,
     state: FSMContext,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     if not callback.message:
         return
@@ -519,7 +519,7 @@ async def cancel_task(
     data = await state.get_data()
     intake_id = data.get("intake_id")
     if intake_id:
-        await TaskIntakeService(db).cancel_intake(int(intake_id))
+        await TaskIntakeService(registry).cancel_intake(int(intake_id))
 
     if callback.bot:
         await _cleanup_messages(callback.bot, callback.message.chat.id, state)

@@ -7,7 +7,7 @@ from app.core.permissions import (
     permission_key,
     user_has_permission,
 )
-from app.db.models.user import User
+from app.db.documents.user import User
 
 
 def test_superuser_implies_all() -> None:

@@ -2,37 +2,31 @@
 
 from datetime import UTC, datetime
 
-from sqlalchemy import delete, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.logging import logger
 from app.core.utils import as_utc
-from app.db.models.reminder import Reminder
+from app.db.documents.task import Reminder
+from app.db.registry import DatabaseRegistry
 from app.workers.job_names import JobName
 from app.workers.queue import get_job_queue
 
 
 async def supersede_unsent_reminders(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     task_id: int,
     *,
     exclude_id: int | None = None,
 ) -> None:
     """Abort and delete unsent future reminders for a task."""
-    now = datetime.now(UTC)
-    query = select(Reminder).where(
-        Reminder.task_id == task_id,
-        Reminder.sent.is_(False),
-    )
-    if exclude_id is not None:
-        query = query.where(Reminder.id != exclude_id)
+    if registry.tasks is None:
+        msg = "Tasks repository is not initialized"
+        raise RuntimeError(msg)
 
-    result = await db.execute(query)
-    reminders = [
-        reminder
-        for reminder in result.scalars().all()
-        if as_utc(reminder.remind_at) > now
-    ]
+    now = datetime.now(UTC)
+    reminders = await registry.tasks.delete_unsent_reminders(
+        task_id,
+        now=now,
+        exclude_id=exclude_id,
+    )
     queue = get_job_queue()
     for reminder in reminders:
         if reminder.job_id:
@@ -41,17 +35,21 @@ async def supersede_unsent_reminders(
     if not reminders:
         return
 
-    reminder_ids = [reminder.id for reminder in reminders]
-    await db.execute(delete(Reminder).where(Reminder.id.in_(reminder_ids)))
-    await db.flush()
     logger.info(
         "Superseded unsent reminders",
-        context={"task_id": task_id, "count": len(reminder_ids)},
+        context={"task_id": task_id, "count": len(reminders)},
     )
 
 
-async def schedule_reminder(db: AsyncSession, reminder: Reminder) -> Reminder:
+async def schedule_reminder(
+    registry: DatabaseRegistry,
+    reminder: Reminder,
+) -> Reminder:
     """Enqueue send_reminder for a DB reminder row."""
+    if registry.tasks is None:
+        msg = "Tasks repository is not initialized"
+        raise RuntimeError(msg)
+
     now = datetime.now(UTC)
     remind_at = as_utc(reminder.remind_at)
     if reminder.sent or remind_at <= now or reminder.job_id:
@@ -64,9 +62,7 @@ async def schedule_reminder(db: AsyncSession, reminder: Reminder) -> Reminder:
         eta=remind_at,
     )
     if job_id:
-        reminder.job_id = job_id
-        db.add(reminder)
-        await db.flush()
+        reminder = await registry.tasks.update_reminder(reminder.id, job_id=job_id)
         logger.info(
             "Reminder scheduled",
             context={"reminder_id": reminder.id, "job_id": job_id},
