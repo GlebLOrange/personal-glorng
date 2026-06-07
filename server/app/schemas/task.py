@@ -1,11 +1,20 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.core.utils import as_utc
 
 
 class TaskCreate(BaseModel):
     title: str = Field(min_length=1, max_length=255)
-    scheduled_at: datetime
+    scheduled_at: datetime = Field(
+        description="Task start time (ISO 8601). Naive values are treated as UTC.",
+    )
+
+    @field_validator("scheduled_at")
+    @classmethod
+    def normalize_scheduled_at(cls, value: datetime) -> datetime:
+        return as_utc(value)
     description: str | None = None
     location: str | None = Field(None, max_length=255)
     telegram_user_id: int | None = None

@@ -1,6 +1,6 @@
 import { computed, ref, watch, type Ref } from "vue";
 
-import { isoDateLocal } from "@/utils/dates";
+import { isValidDateRange, isValidMonthValue, isoDateLocal } from "@/utils/dates";
 
 export type MonthPreset = "this_month" | "last_month" | "custom" | "range";
 export type DateFilterMode = "month" | "range";
@@ -78,6 +78,19 @@ export function useExpenseFilters(
       dateFilterMode.value === "range",
   );
 
+  const rangeError = computed(() => {
+    if (dateFilterMode.value !== "range") {
+      return null;
+    }
+    if (!dateFrom.value || !dateTo.value) {
+      return null;
+    }
+    if (!isValidDateRange(dateFrom.value, dateTo.value)) {
+      return "End date must be on or after start date";
+    }
+    return null;
+  });
+
   function applyMonthPreset(preset: MonthPreset): void {
     monthPreset.value = preset;
     const today = new Date();
@@ -112,9 +125,11 @@ export function useExpenseFilters(
     const params: Record<string, string> = {};
 
     if (dateFilterMode.value === "range") {
-      if (dateFrom.value) params.date_from = dateFrom.value;
-      if (dateTo.value) params.date_to = dateTo.value;
-    } else if (selectedMonth.value) {
+      if (dateFrom.value && dateTo.value && isValidDateRange(dateFrom.value, dateTo.value)) {
+        params.date_from = dateFrom.value;
+        params.date_to = dateTo.value;
+      }
+    } else if (selectedMonth.value && isValidMonthValue(selectedMonth.value)) {
       params.month = selectedMonth.value;
     }
 
@@ -185,6 +200,7 @@ export function useExpenseFilters(
     categoryFilter,
     monthLabel,
     hasActiveFilters,
+    rangeError,
     applyMonthPreset,
     clearFilters,
     queryParams,

@@ -50,6 +50,7 @@ test.describe("public pages", () => {
     await page.getByRole("textbox", { name: /search city to add/i }).fill("London");
     await page.getByRole("button", { name: /^add$/i }).click();
     await expect(page.getByText(/location added/i)).toBeVisible();
+    await expect(page.getByRole("timer").first()).toHaveText(/\d{2}:\d{2}:\d{2}/);
   });
 });
 
