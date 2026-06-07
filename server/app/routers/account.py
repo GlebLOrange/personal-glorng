@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Response
 
-from app.core.deps import CurrentUser, DbSession, JobQueueDep
+from app.core.deps import CurrentUser, JobQueueDep
+from app.db.deps import DbRegistry
 from app.core.logging import logger
 from app.schemas.auth import (
     ChangeEmailRequest,
@@ -34,10 +35,10 @@ router = APIRouter()
 async def patch_me(
     data: UpdateProfileRequest,
     user: CurrentUser,
-    db: DbSession,
+    registry: DbRegistry,
 ) -> UserResponse:
     updated = await update_profile(
-        db,
+        registry,
         user,
         display_name=data.display_name,
         timezone=data.timezone,
@@ -54,11 +55,11 @@ async def patch_me(
 async def patch_email(
     data: ChangeEmailRequest,
     user: CurrentUser,
-    db: DbSession,
+    registry: DbRegistry,
     job_queue: JobQueueDep,
 ) -> MessageResponse:
     updated, token = await change_email(
-        db,
+        registry,
         user,
         new_email=str(data.email),
         current_password=data.current_password,
@@ -82,10 +83,10 @@ async def patch_email(
 async def post_change_password(
     data: ChangePasswordRequest,
     user: CurrentUser,
-    db: DbSession,
+    registry: DbRegistry,
 ) -> MessageResponse:
     await change_password(
-        db,
+        registry,
         user,
         current_password=data.current_password,
         new_password=data.new_password,
@@ -113,10 +114,10 @@ async def get_me_preferences(user: CurrentUser) -> UserPreferencesResponse:
 async def patch_me_preferences(
     data: UpdatePreferencesRequest,
     user: CurrentUser,
-    db: DbSession,
+    registry: DbRegistry,
 ) -> UserPreferencesResponse:
     updates = data.model_dump(exclude_unset=True)
-    prefs = await update_preferences(db, user, updates)
+    prefs = await update_preferences(registry, user, updates)
     return UserPreferencesResponse(
         display_currency=prefs.get("display_currency"),  # type: ignore[arg-type]
     )
@@ -131,10 +132,10 @@ async def patch_me_preferences(
 async def delete_me(
     data: DeleteAccountRequest,
     user: CurrentUser,
-    db: DbSession,
+    registry: DbRegistry,
     response: Response,
 ) -> MessageResponse:
-    await delete_account(db, user, current_password=data.current_password)
+    await delete_account(registry, user, current_password=data.current_password)
     response.delete_cookie("access_token", path="/")
     response.delete_cookie("refresh_token", path="/")
     return MessageResponse(message="Account deleted successfully")

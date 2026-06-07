@@ -14,6 +14,10 @@ env:
   POSTGRES_PASSWORD: glorng_ci
   POSTGRES_DB: glorng
   DATABASE_URL: postgresql+asyncpg://glorng:glorng_ci@db:5432/glorng
+  MONGODB_USER: glorng
+  MONGODB_PASSWORD: glorng_ci_mongodb_123
+  MONGODB_DB: glorng
+  MONGODB_URL: mongodb://glorng:glorng_ci_mongodb_123@mongodb:27017/glorng?authSource=admin
   REDIS_PASSWORD: glorng_ci_redis
   REDIS_URL: redis://:glorng_ci_redis@redis:6379/0
   RABBITMQ_USER: glorng
@@ -111,6 +115,10 @@ jobs:
           POSTGRES_PASSWORD=glorng_ci
           POSTGRES_DB=glorng
           DATABASE_URL=postgresql+asyncpg://glorng:glorng_ci@db:5432/glorng
+          MONGODB_USER=glorng
+          MONGODB_PASSWORD=glorng_ci_mongodb_123
+          MONGODB_DB=glorng
+          MONGODB_URL=mongodb://glorng:glorng_ci_mongodb_123@mongodb:27017/glorng?authSource=admin
           REDIS_PASSWORD=glorng_ci_redis
           REDIS_URL=redis://:glorng_ci_redis@redis:6379/0
           RABBITMQ_USER=glorng
@@ -124,7 +132,7 @@ jobs:
           EOF
       - name: Start database and migrate
         run: |
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d db redis
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d db redis mongodb
           docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm --build migrate
       - name: Alembic check
         run: |
@@ -142,6 +150,10 @@ jobs:
           POSTGRES_PASSWORD=glorng_ci
           POSTGRES_DB=glorng
           DATABASE_URL=postgresql+asyncpg://glorng:glorng_ci@db:5432/glorng
+          MONGODB_USER=glorng
+          MONGODB_PASSWORD=glorng_ci_mongodb_123
+          MONGODB_DB=glorng
+          MONGODB_URL=mongodb://glorng:glorng_ci_mongodb_123@mongodb:27017/glorng?authSource=admin
           REDIS_PASSWORD=glorng_ci_redis
           REDIS_URL=redis://:glorng_ci_redis@redis:6379/0
           RABBITMQ_USER=glorng
@@ -155,10 +167,9 @@ jobs:
           EOF
       - name: Start API stack
         run: |
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d db redis
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm --build migrate
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d db redis mongodb
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm --build -e RUN_SEED=true migrate
           docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build server
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml exec -T server uv run python scripts/ensure_e2e_user.py
       - uses: actions/setup-node@v4
         with:
           node-version: "24"

@@ -1,7 +1,6 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.db.models.search_document import SearchVisibility
-from app.db.models.url import ShortenedUrl
+from app.db.documents.search import SearchVisibility
+from app.db.documents.url import ShortenedUrl
+from app.db.registry import DatabaseRegistry
 from app.services.search_index import (
     SearchDocumentInput,
     remove_by_source,
@@ -25,9 +24,9 @@ def _url_document(url: ShortenedUrl) -> SearchDocumentInput:
     )
 
 
-async def index_url(db: AsyncSession, url: ShortenedUrl) -> None:
-    await upsert_document(db, _url_document(url))
+async def index_url(registry: DatabaseRegistry, url: ShortenedUrl) -> None:
+    await upsert_document(registry, _url_document(url))
 
 
-async def remove_url(db: AsyncSession, url_id: int) -> None:
-    await remove_by_source(db, URL_SOURCE_TYPE, url_id)
+async def remove_url(registry: DatabaseRegistry, url_id: int) -> None:
+    await remove_by_source(registry, URL_SOURCE_TYPE, url_id)

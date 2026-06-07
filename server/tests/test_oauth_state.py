@@ -5,11 +5,9 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import create_access_token, create_oauth_state_token
-from app.db.models.github_credential import GitHubCredential
+from app.db.registry import DatabaseRegistry
 
 
 @pytest.mark.asyncio
@@ -33,7 +31,7 @@ async def test_github_oauth_rejects_state_mismatch(auth_client: AsyncClient) -> 
 @pytest.mark.asyncio
 async def test_github_oauth_state_is_one_time_use(
     auth_client: AsyncClient,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     from app.routers import github as github_router
@@ -72,9 +70,11 @@ async def test_github_oauth_state_is_one_time_use(
     )
     assert first.status_code == 200
 
-    result = await db.execute(select(GitHubCredential))
-    credential = result.scalar_one()
-    assert credential.access_token.startswith("enc:")
+    credential = await registry.mongo_db.github_credentials.find_one(
+        {"github_username": "allowed-user"},
+    )
+    assert credential is not None
+    assert credential["access_token"].startswith("enc:")
 
     second = await auth_client.post(
         "/api/auth/github/callback",

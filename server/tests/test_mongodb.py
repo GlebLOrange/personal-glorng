@@ -1,12 +1,12 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
 from app.core.mongodb import (
-    close_mongodb,
+    bind_mongodb,
+    clear_mongodb,
     get_mongodb_client,
     get_mongodb_database,
-    init_mongodb,
     is_mongodb_enabled,
 )
 from app.settings import get_settings
@@ -15,39 +15,27 @@ from app.settings import get_settings
 @pytest.fixture(autouse=True)
 def _reset_mongodb_module() -> None:
     yield
-    import app.core.mongodb as mongodb_module
-
-    mongodb_module._client = None
-    mongodb_module._database = None
-    mongodb_module._enabled = False
+    clear_mongodb()
 
 
-async def test_init_mongodb_skips_empty_url() -> None:
-    await init_mongodb("", "glorng")
-    assert not is_mongodb_enabled()
-
-
-async def test_init_mongodb_connects_and_pings() -> None:
+def test_bind_mongodb_registers_client_and_database() -> None:
     mock_client = MagicMock()
-    mock_client.admin.command = AsyncMock(return_value={"ok": 1})
     mock_db = MagicMock()
 
-    with patch(
-        "app.core.mongodb.AsyncIOMotorClient",
-        return_value=mock_client,
-    ) as client_ctor:
-        mock_client.__getitem__.return_value = mock_db
-        await init_mongodb("mongodb://localhost:27017/glorng", "glorng")
+    bind_mongodb(mock_client, mock_db)
 
-    client_ctor.assert_called_once_with("mongodb://localhost:27017/glorng")
-    mock_client.admin.command.assert_awaited_once_with("ping")
-    mock_client.__getitem__.assert_called_once_with("glorng")
     assert is_mongodb_enabled()
     assert get_mongodb_client() is mock_client
     assert get_mongodb_database() is mock_db
 
-    await close_mongodb()
-    mock_client.close.assert_called_once()
+
+def test_clear_mongodb_unregisters_helpers() -> None:
+    mock_client = MagicMock()
+    mock_db = MagicMock()
+    bind_mongodb(mock_client, mock_db)
+
+    clear_mongodb()
+
     assert not is_mongodb_enabled()
 
 

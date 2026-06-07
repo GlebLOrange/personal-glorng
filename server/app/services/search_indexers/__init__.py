@@ -2,14 +2,7 @@
 
 from collections.abc import Awaitable, Callable
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.db.models.feedback import Feedback
-from app.db.models.recipe import Recipe
-from app.db.models.task import Task
-from app.db.models.tool_expense import ToolExpense
-from app.db.models.url import ShortenedUrl
+from app.db.registry import DatabaseRegistry
 from app.services.search_index import remove_by_source, upsert_document
 from app.services.search_indexers.expense import index_expense
 from app.services.search_indexers.feedback import index_feedback
@@ -19,41 +12,51 @@ from app.services.search_indexers.task import index_task
 from app.services.search_indexers.url import index_url
 from app.services.search_source_types import SearchSourceType
 
-ReindexFn = Callable[[AsyncSession], Awaitable[int]]
+ReindexFn = Callable[[DatabaseRegistry], Awaitable[int]]
 
 
-async def _reindex_recipes(db: AsyncSession) -> int:
-    recipes = (await db.execute(select(Recipe))).scalars().all()
+async def _reindex_recipes(registry: DatabaseRegistry) -> int:
+    if registry.recipes is None:
+        return 0
+    recipes = await registry.recipes.list(limit=10_000)
     for recipe in recipes:
-        await index_recipe(db, recipe)
+        await index_recipe(registry, recipe)
     return len(recipes)
 
 
-async def _reindex_tasks(db: AsyncSession) -> int:
-    tasks = (await db.execute(select(Task))).scalars().all()
+async def _reindex_tasks(registry: DatabaseRegistry) -> int:
+    if registry.tasks is None:
+        return 0
+    tasks = await registry.tasks.list(limit=10_000)
     for task in tasks:
-        await index_task(db, task)
+        await index_task(registry, task)
     return len(tasks)
 
 
-async def _reindex_expenses(db: AsyncSession) -> int:
-    expenses = (await db.execute(select(ToolExpense))).scalars().all()
+async def _reindex_expenses(registry: DatabaseRegistry) -> int:
+    if registry.expenses is None:
+        return 0
+    expenses = await registry.expenses.expenses.list(limit=10_000)
     for expense in expenses:
-        await index_expense(db, expense)
+        await index_expense(registry, expense)
     return len(expenses)
 
 
-async def _reindex_feedback(db: AsyncSession) -> int:
-    entries = (await db.execute(select(Feedback))).scalars().all()
+async def _reindex_feedback(registry: DatabaseRegistry) -> int:
+    if registry.feedback is None:
+        return 0
+    entries = await registry.feedback.list(limit=10_000)
     for entry in entries:
-        await index_feedback(db, entry)
+        await index_feedback(registry, entry)
     return len(entries)
 
 
-async def _reindex_urls(db: AsyncSession) -> int:
-    urls = (await db.execute(select(ShortenedUrl))).scalars().all()
+async def _reindex_urls(registry: DatabaseRegistry) -> int:
+    if registry.urls is None:
+        return 0
+    urls = await registry.urls.list(limit=10_000)
     for url in urls:
-        await index_url(db, url)
+        await index_url(registry, url)
     return len(urls)
 
 

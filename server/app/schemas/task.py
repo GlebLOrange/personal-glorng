@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.text import sanitize_optional_text, sanitize_text
-from app.db.models.task import TaskStatus
+from app.db.documents.task import TaskStatus
 from app.schemas.validators import UtcDatetime
 
 

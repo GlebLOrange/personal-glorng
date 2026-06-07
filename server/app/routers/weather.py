@@ -2,7 +2,8 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, Path
 
-from app.core.deps import AppSettings, CurrentUser, DbSession
+from app.core.deps import AppSettings, CurrentUser
+from app.db.deps import DbRegistry
 from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
 from app.schemas.weather import (
@@ -73,10 +74,10 @@ async def lookup_world_time(location: str = Path(max_length=100)) -> WorldTimeRe
 
 @router.get("/locations", response_model=list[WeatherLocationResponse])
 async def list_weather_locations(
-    db: DbSession,
+    registry: DbRegistry,
     user: CurrentUser,
 ) -> list[WeatherLocationResponse]:
-    locations = await WeatherLocationService().list_locations(db, user.id)
+    locations = await WeatherLocationService(registry).list_locations(user.id)
     return [WeatherLocationResponse.model_validate(loc) for loc in locations]
 
 
@@ -89,11 +90,10 @@ async def list_weather_locations(
 )
 async def add_weather_location(
     body: WeatherLocationCreate,
-    db: DbSession,
+    registry: DbRegistry,
     user: CurrentUser,
 ) -> WeatherLocationResponse:
-    location = await WeatherLocationService().add_location(
-        db,
+    location = await WeatherLocationService(registry).add_location(
         user.id,
         label=body.label,
         query=body.query,
@@ -109,10 +109,10 @@ async def add_weather_location(
 )
 async def remove_weather_location(
     location_id: int,
-    db: DbSession,
+    registry: DbRegistry,
     user: CurrentUser,
 ) -> None:
-    await WeatherLocationService().remove_location(db, user.id, location_id)
+    await WeatherLocationService(registry).remove_location(user.id, location_id)
 
 
 @router.put(
@@ -123,11 +123,10 @@ async def remove_weather_location(
 )
 async def reorder_weather_locations(
     body: WeatherLocationReorder,
-    db: DbSession,
+    registry: DbRegistry,
     user: CurrentUser,
 ) -> list[WeatherLocationResponse]:
-    locations = await WeatherLocationService().reorder_locations(
-        db,
+    locations = await WeatherLocationService(registry).reorder_locations(
         user.id,
         body.ordered_ids,
     )

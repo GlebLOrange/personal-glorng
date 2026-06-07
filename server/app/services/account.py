@@ -1,8 +1,5 @@
 """Self-service account profile, security, and preferences."""
 
-from sqlalchemy import delete, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.exceptions import ConflictError, UnauthorizedError
 from app.core.logging import logger
 from app.core.permissions import SUPERUSER_PERMISSION
@@ -11,34 +8,33 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
-from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
-from app.db.models.github_credential import GitHubCredential
-from app.db.models.user import User
-from app.db.models.weather_location import WeatherLocation
+from app.db.documents.audit import AuditActorType, AuditCategory, AuditSource
+from app.db.documents.user import User
+from app.db.registry import DatabaseRegistry
 from app.services.audit import AuditRecord, AuditService
-from app.services.auth import get_user_by_email
-from app.services.user import default_display_name, ensure_user_mutable
+from app.services.user import default_display_name, ensure_user_mutable, get_user_by_email
 
 ALLOWED_PREFERENCE_KEYS = frozenset({"display_currency"})
 
 
 async def update_profile(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     user: User,
     *,
     display_name: str | None = None,
     timezone: str | None = None,
 ) -> User:
     """Update editable profile fields."""
+    fields: dict[str, object] = {}
     if display_name is not None:
-        user.display_name = display_name or default_display_name(user.email)
+        fields["display_name"] = display_name or default_display_name(user.email)
     if timezone is not None:
-        user.timezone = timezone
+        fields["timezone"] = timezone
 
-    await db.flush()
-    await db.refresh(user)
+    if fields:
+        user = await registry.users.update_fields(user.id, **fields)  # type: ignore[union-attr]
 
-    audit = AuditService(db)
+    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -55,7 +51,7 @@ async def update_profile(
 
 
 async def change_email(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     user: User,
     *,
     new_email: str,
@@ -69,16 +65,17 @@ async def change_email(
     if normalized == user.email:
         return user, create_verification_token(normalized)
 
-    existing = await get_user_by_email(db, normalized)
+    existing = await get_user_by_email(registry, normalized)
     if existing:
         raise ConflictError("Email is already in use")
 
-    user.email = normalized
-    user.is_verified = False
-    await db.flush()
-    await db.refresh(user)
+    user = await registry.users.update_fields(  # type: ignore[union-attr]
+        user.id,
+        email=normalized,
+        is_verified=False,
+    )
 
-    audit = AuditService(db)
+    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -96,7 +93,7 @@ async def change_email(
 
 
 async def change_password(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     user: User,
     *,
     current_password: str,
@@ -106,11 +103,12 @@ async def change_password(
     if not verify_password(current_password, user.hashed_password):
         raise UnauthorizedError("Current password is incorrect")
 
-    user.hashed_password = hash_password(new_password)
-    await db.flush()
-    await db.refresh(user)
+    user = await registry.users.update_fields(  # type: ignore[union-attr]
+        user.id,
+        hashed_password=hash_password(new_password),
+    )
 
-    audit = AuditService(db)
+    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -133,7 +131,7 @@ def get_preferences(user: User) -> dict[str, object]:
 
 
 async def update_preferences(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     user: User,
     updates: dict[str, object],
 ) -> dict[str, object]:
@@ -147,11 +145,9 @@ async def update_preferences(
         else:
             current[key] = value
 
-    user.preferences = current
-    await db.flush()
-    await db.refresh(user)
+    await registry.users.update_fields(user.id, preferences=current)  # type: ignore[union-attr]
 
-    audit = AuditService(db)
+    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -169,7 +165,7 @@ async def update_preferences(
 
 
 async def delete_account(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     user: User,
     *,
     current_password: str,
@@ -178,12 +174,7 @@ async def delete_account(
     ensure_user_mutable(user)
 
     if SUPERUSER_PERMISSION in (user.permissions or []):
-        result = await db.execute(select(User))
-        superuser_count = sum(
-            1
-            for row in result.scalars().all()
-            if SUPERUSER_PERMISSION in (row.permissions or [])
-        )
+        superuser_count = await registry.users.count_superusers(SUPERUSER_PERMISSION)  # type: ignore[union-attr]
         if superuser_count <= 1:
             raise ConflictError("Cannot delete the last superuser account")
 
@@ -191,14 +182,15 @@ async def delete_account(
         raise UnauthorizedError("Current password is incorrect")
 
     user_id = user.id
-    await db.execute(delete(WeatherLocation).where(WeatherLocation.user_id == user_id))
-    await db.execute(
-        delete(GitHubCredential).where(GitHubCredential.user_id == user_id)
-    )
-    await db.delete(user)
-    await db.flush()
+    if registry.weather is not None:
+        locations = await registry.weather.list_for_user(user_id)
+        for location in locations:
+            await registry.weather.delete(location.id)
+    if registry.credentials is not None:
+        await registry.credentials.delete_github_for_user(user_id)
+    await registry.users.delete(user_id)  # type: ignore[union-attr]
 
-    audit = AuditService(db)
+    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,

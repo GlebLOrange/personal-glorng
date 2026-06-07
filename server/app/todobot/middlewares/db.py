@@ -1,16 +1,17 @@
-"""Inject async DB session into handler data."""
+"""Inject database registry into handler data."""
 
 from collections.abc import Awaitable, Callable
 from typing import Any
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
+from app.db.registry import DatabaseRegistry
 
 
-class DbSessionMiddleware(BaseMiddleware):
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
-        self._session_factory = session_factory
+class MongoRegistryMiddleware(BaseMiddleware):
+    def __init__(self, registry: DatabaseRegistry) -> None:
+        self._registry = registry
 
     async def __call__(
         self,
@@ -18,13 +19,5 @@ class DbSessionMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: dict[str, Any],
     ) -> Any:
-        async with self._session_factory() as session:
-            data["db"] = session
-            try:
-                result = await handler(event, data)
-                await session.commit()
-            except Exception:
-                await session.rollback()
-                raise
-            else:
-                return result
+        data["registry"] = self._registry
+        return await handler(event, data)

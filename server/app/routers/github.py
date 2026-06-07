@@ -6,13 +6,13 @@ from urllib.parse import urlencode
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
-from sqlalchemy import delete, select
 
-from app.core.deps import CurrentUser, DbSession
+from app.core.deps import CurrentUser
 from app.core.exceptions import UnauthorizedError
 from app.core.logging import logger
 from app.core.redis import cache_delete, cache_get, cache_set
-from app.db.models.github_credential import GitHubCredential
+from app.db.deps import DbRegistry
+from app.db.documents.credential import GitHubCredential
 from app.services.github import (
     exchange_code_for_token,
     get_github_user,
@@ -51,11 +51,12 @@ class GitHubStatusResponse(BaseModel):
     response_model=GitHubStatusResponse,
     summary="GitHub link status",
 )
-async def github_status(user: CurrentUser, db: DbSession) -> GitHubStatusResponse:
-    result = await db.execute(
-        select(GitHubCredential).where(GitHubCredential.user_id == user.id),
-    )
-    credential = result.scalar_one_or_none()
+async def github_status(user: CurrentUser, registry: DbRegistry) -> GitHubStatusResponse:
+    if registry.credentials is None:
+        msg = "Credential repository is not initialized"
+        raise RuntimeError(msg)
+
+    credential = await registry.credentials.get_github_for_user(user.id)
     if not credential:
         return GitHubStatusResponse(linked=False)
     return GitHubStatusResponse(
@@ -68,11 +69,12 @@ async def github_status(user: CurrentUser, db: DbSession) -> GitHubStatusRespons
     "",
     summary="Unlink GitHub account",
 )
-async def github_unlink(user: CurrentUser, db: DbSession) -> GitHubStatusResponse:
-    await db.execute(
-        delete(GitHubCredential).where(GitHubCredential.user_id == user.id),
-    )
-    await db.flush()
+async def github_unlink(user: CurrentUser, registry: DbRegistry) -> GitHubStatusResponse:
+    if registry.credentials is None:
+        msg = "Credential repository is not initialized"
+        raise RuntimeError(msg)
+
+    await registry.credentials.delete_github_for_user(user.id)
     logger.info("GitHub account unlinked", context={"user_id": user.id})
     return GitHubStatusResponse(linked=False)
 
@@ -116,8 +118,12 @@ async def github_authorize(user: CurrentUser) -> RedirectResponse:
 async def github_callback(
     body: GitHubCallbackRequest,
     user: CurrentUser,
-    db: DbSession,
+    registry: DbRegistry,
 ) -> GitHubCallbackResponse:
+    if registry.credentials is None:
+        msg = "Credential repository is not initialized"
+        raise RuntimeError(msg)
+
     state_key = _github_oauth_state_key(user_public_id=str(user.public_id))
     expected_state = await cache_get(state_key)
     if not expected_state or expected_state != body.state:
@@ -134,31 +140,26 @@ async def github_callback(
 
     validate_allowed_user(username)
 
-    result = await db.execute(
-        select(GitHubCredential).where(GitHubCredential.user_id == user.id),
-    )
-    existing = result.scalar_one_or_none()
-
+    existing = await registry.credentials.get_github_for_user(user.id)
     encrypted_token = store_github_access_token(access_token)
 
     if existing:
         existing.access_token = encrypted_token
         existing.github_user_id = github_user_id
         existing.github_username = username
+        cred = await registry.credentials.upsert_github(existing)
     else:
-        credential = GitHubCredential(
+        cred = GitHubCredential(
             user_id=user.id,
             github_user_id=github_user_id,
             github_username=username,
             access_token=encrypted_token,
         )
-        db.add(credential)
-
-    await db.flush()
+        cred = await registry.credentials.upsert_github(cred)
 
     logger.info(
         "GitHub account linked",
-        context={"user_id": user.id, "github_username": username},
+        context={"user_id": user.id, "github_username": cred.github_username},
     )
 
     return GitHubCallbackResponse(

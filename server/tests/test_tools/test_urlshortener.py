@@ -1,6 +1,6 @@
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.registry import DatabaseRegistry
 
 from app.core.security import create_access_token
 from tests.factories import create_short_url, create_user
@@ -67,16 +67,16 @@ async def test_list_urls_empty(auth_client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_list_urls_scoped_to_owner(
     client: AsyncClient,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     admin_user: object,
 ) -> None:
     other_user = await create_user(
-        db,
+        registry,
         email="other@glorng.dev",
         permissions=["url-shortener:read", "url-shortener:write"],
     )
-    await create_short_url(db, created_by=admin_user.id, title="Admin link")  # type: ignore[union-attr]
-    await create_short_url(db, created_by=other_user.id, title="Other link")
+    await create_short_url(registry, created_by=admin_user.id, title="Admin link")  # type: ignore[union-attr]
+    await create_short_url(registry, created_by=other_user.id, title="Other link")
 
     other_token = create_access_token(str(other_user.public_id), user_id=other_user.id)
     resp = await client.get(
@@ -103,9 +103,9 @@ async def test_delete_url_via_api(auth_client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_delete_url(
-    auth_client: AsyncClient, db: AsyncSession, admin_user: object
+    auth_client: AsyncClient, registry: DatabaseRegistry, admin_user: object
 ) -> None:
-    url = await create_short_url(db, created_by=admin_user.id)  # type: ignore[union-attr]
+    url = await create_short_url(registry, created_by=admin_user.id)  # type: ignore[union-attr]
     resp = await auth_client.delete(f"/api/tools/url-shortener/{url.id}")
     assert resp.status_code == 200
     assert "deleted" in resp.json()["message"].lower()
@@ -114,12 +114,12 @@ async def test_delete_url(
 @pytest.mark.asyncio
 async def test_delete_other_users_url_forbidden(
     client: AsyncClient,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     admin_user: object,
 ) -> None:
-    url = await create_short_url(db, created_by=admin_user.id)  # type: ignore[union-attr]
+    url = await create_short_url(registry, created_by=admin_user.id)  # type: ignore[union-attr]
     other_user = await create_user(
-        db,
+        registry,
         email="deleter@glorng.dev",
         permissions=["url-shortener:read", "url-shortener:write"],
     )
@@ -139,10 +139,10 @@ async def test_delete_nonexistent_url(auth_client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_redirect_short_url(
-    client: AsyncClient, db: AsyncSession, admin_user: object
+    client: AsyncClient, registry: DatabaseRegistry, admin_user: object
 ) -> None:
     url = await create_short_url(
-        db,
+        registry,
         original_url="https://example.com",
         created_by=admin_user.id,  # type: ignore[union-attr]
     )

@@ -1,7 +1,6 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.db.models.feedback import Feedback
-from app.db.models.search_document import SearchVisibility
+from app.db.documents.feedback import Feedback
+from app.db.documents.search import SearchVisibility
+from app.db.registry import DatabaseRegistry
 from app.services.search_index import (
     SearchDocumentInput,
     remove_by_source,
@@ -23,9 +22,9 @@ def _feedback_document(feedback: Feedback) -> SearchDocumentInput:
     )
 
 
-async def index_feedback(db: AsyncSession, feedback: Feedback) -> None:
-    await upsert_document(db, _feedback_document(feedback))
+async def index_feedback(registry: DatabaseRegistry, feedback: Feedback) -> None:
+    await upsert_document(registry, _feedback_document(feedback))
 
 
-async def remove_feedback(db: AsyncSession, feedback_id: int) -> None:
-    await remove_by_source(db, FEEDBACK_SOURCE_TYPE, feedback_id)
+async def remove_feedback(registry: DatabaseRegistry, feedback_id: int) -> None:
+    await remove_by_source(registry, FEEDBACK_SOURCE_TYPE, feedback_id)

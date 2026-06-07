@@ -2,29 +2,26 @@
 
 import uuid
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.exceptions import ConflictError
 from app.core.permissions import SUPERUSER_PERMISSION, validate_permissions
 from app.core.security import hash_password
-from app.db.models.user import User
+from app.db.documents.user import User
+from app.db.registry import DatabaseRegistry
+
+
+def _users(registry: DatabaseRegistry):
+    if registry.users is None:
+        msg = "Users repository is not initialized"
+        raise RuntimeError(msg)
+    return registry.users
 
 
 async def get_user_by_public_id(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     public_id: str | uuid.UUID,
 ) -> User | None:
     """Load a user by public UUID."""
-    try:
-        if isinstance(public_id, uuid.UUID):
-            uid = public_id
-        else:
-            uid = uuid.UUID(str(public_id))
-    except ValueError:
-        return None
-    result = await db.execute(select(User).where(User.public_id == uid))
-    return result.scalar_one_or_none()
+    return await _users(registry).get_by_public_id(public_id)
 
 
 def default_user_permissions() -> list[str]:
@@ -43,8 +40,12 @@ def ensure_user_mutable(user: User) -> None:
         raise ConflictError("This account is protected and cannot be modified")
 
 
+async def get_user_by_email(registry: DatabaseRegistry, email: str) -> User | None:
+    return await _users(registry).get_by_email(email)
+
+
 async def create_user(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     *,
     email: str,
     password: str,
@@ -67,10 +68,7 @@ async def create_user(
         timezone=timezone,
         preferences=preferences or {},
     )
-    db.add(user)
-    await db.flush()
-    await db.refresh(user)
-    return user
+    return await _users(registry).insert(user)
 
 
 def default_owner_permissions() -> list[str]:

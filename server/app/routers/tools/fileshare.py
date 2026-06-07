@@ -3,7 +3,8 @@
 from fastapi import APIRouter, Depends, Path, UploadFile
 from fastapi.responses import StreamingResponse
 
-from app.core.deps import AuthorizedUser, DbSession, require_capability
+from app.core.deps import AuthorizedUser, require_capability
+from app.db.deps import DbRegistry
 from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
 from app.core.uploads import read_upload_bounded
@@ -32,7 +33,7 @@ router = APIRouter(
 )
 async def upload_file(
     file: UploadFile,
-    db: DbSession,
+    registry: DbRegistry,
     user: AuthorizedUser,
 ) -> SharedFileResponse:
     if not file.filename:
@@ -40,7 +41,7 @@ async def upload_file(
 
     contents = await read_upload_bounded(file, fileshare_svc.MAX_UPLOAD_SIZE)
     shared = await fileshare_svc.upload(
-        db,
+        registry,
         filename=file.filename,
         contents=contents,
         user_id=user.id,
@@ -55,14 +56,14 @@ async def upload_file(
     description=requires_capability("file-share", "read"),
 )
 async def list_files(
-    db: DbSession,
+    registry: DbRegistry,
     user: AuthorizedUser,
     page: int = 1,
     per_page: int = 20,
 ) -> list[SharedFileResponse]:
     offset, limit = paginate_params(page, per_page)
     files = await fileshare_svc.list_files(
-        db, offset=offset, limit=limit, user_id=user.id
+        registry, offset=offset, limit=limit, user_id=user.id
     )
     return [SharedFileResponse.model_validate(f) for f in files]
 
@@ -76,10 +77,10 @@ async def list_files(
 )
 async def delete_file(
     file_id: int,
-    db: DbSession,
+    registry: DbRegistry,
     user: AuthorizedUser,
 ) -> MessageResponse:
-    await fileshare_svc.delete(db, file_id=file_id, user_id=user.id)
+    await fileshare_svc.delete(registry, file_id=file_id, user_id=user.id)
     return MessageResponse(message="File deleted")
 
 
@@ -92,10 +93,10 @@ download_router = APIRouter()
     dependencies=[Depends(rate_limit_api)],
 )
 async def download_shared_file(
-    db: DbSession,
+    registry: DbRegistry,
     code: str = Path(min_length=1, max_length=16, pattern=r"^[a-zA-Z0-9]+$"),
 ) -> StreamingResponse:
-    shared, disk_path = await fileshare_svc.get_by_code(db, code=code)
+    shared, disk_path = await fileshare_svc.get_by_code(registry, code=code)
 
     return StreamingResponse(
         iter_file(disk_path),

@@ -1,15 +1,13 @@
 from datetime import UTC, datetime
 
 import pytest
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.audit_event import (
+from app.db.documents.audit import (
     AuditActorType,
     AuditCategory,
-    AuditEvent,
     AuditSource,
 )
+from app.db.registry import DatabaseRegistry
 from app.services.audit import domain_event
 from app.services.task import TaskService
 
@@ -31,22 +29,21 @@ def test_domain_event_builds_domain_record() -> None:
 
 
 @pytest.mark.asyncio
-async def test_create_task_records_domain_audit(db: AsyncSession) -> None:
-    svc = TaskService(db)
+async def test_create_task_records_domain_audit(registry: DatabaseRegistry) -> None:
+    svc = TaskService(registry)
     task = await svc.create_task(
         telegram_user_id=123456789,
         title="Audit test",
         scheduled_at=datetime(2026, 6, 1, 10, 0, tzinfo=UTC),
     )
-    await db.commit()
 
-    result = await db.execute(
-        select(AuditEvent).where(
-            AuditEvent.resource_type == "task",
-            AuditEvent.resource_id == task.id,
-            AuditEvent.action == "task.created",
-        ),
+    row = await registry.mongo_db.audit_events.find_one(
+        {
+            "resource_type": "task",
+            "resource_id": task.id,
+            "action": "task.created",
+        },
     )
-    event = result.scalar_one()
-    assert event.category == AuditCategory.DOMAIN.value
-    assert event.actor_type == AuditActorType.TELEGRAM.value
+    assert row is not None
+    assert row["category"] == AuditCategory.DOMAIN.value
+    assert row["actor_type"] == AuditActorType.TELEGRAM.value

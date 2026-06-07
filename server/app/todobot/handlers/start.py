@@ -6,7 +6,7 @@ from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.registry import DatabaseRegistry
 
 from app.todobot.keyboards.menu import (
     LABEL_CALENDAR,
@@ -53,11 +53,15 @@ async def menu_new_task(message: Message, state: FSMContext) -> None:
 
 
 @router.message(F.text == LABEL_MY_TASKS)
-async def menu_my_tasks(message: Message, state: FSMContext, db: AsyncSession) -> None:
+async def menu_my_tasks(
+    message: Message,
+    state: FSMContext,
+    registry: DatabaseRegistry,
+) -> None:
     await state.clear()
     from app.todobot.handlers.task_manage import cmd_tasks
 
-    await cmd_tasks(message, db)
+    await cmd_tasks(message, registry)
 
 
 @router.message(F.text == LABEL_CALENDAR)

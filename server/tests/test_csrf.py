@@ -13,7 +13,7 @@ _PRODUCTION_ENV = {
     "RABBITMQ_USER": "glorng",
     "RABBITMQ_PASSWORD": "prod-test-rabbitmq-password",
     "CELERY_BROKER_URL": "amqp://glorng:prod-test-rabbitmq-password@localhost:5672//",
-    "JWT_SECRET": "ci-jwt-secret-at-least-32-characters-long",
+    "JWT_SECRET": "production-jwt-signing-key-for-csrf-tests-only-32chars",
 }
 
 

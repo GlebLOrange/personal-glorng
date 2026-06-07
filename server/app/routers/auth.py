@@ -6,10 +6,10 @@ from fastapi import APIRouter, Depends, Request, Response
 from app.core.deps import (
     AppSettings,
     CurrentUser,
-    DbSession,
     JobQueueDep,
     oauth2_scheme,
 )
+from app.db.deps import DbRegistry
 from app.core.exceptions import UnauthorizedError
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_auth
@@ -94,11 +94,11 @@ def _clear_auth_cookies(response: Response) -> None:
 )
 async def register(
     data: RegisterRequest,
-    db: DbSession,
+    registry: DbRegistry,
     job_queue: JobQueueDep,
 ) -> MessageResponse:
     user = await register_user(
-        db,
+        registry,
         data.email,
         data.password,
         display_name=data.display_name,
@@ -125,11 +125,11 @@ async def register(
 )
 async def login(
     data: LoginRequest,
-    db: DbSession,
+    registry: DbRegistry,
     response: Response,
     settings: AppSettings,
 ) -> TokenResponse:
-    access_token, refresh_token = await login_user(db, data.email, data.password)
+    access_token, refresh_token = await login_user(registry, data.email, data.password)
     _set_auth_cookies(
         response,
         access_token=access_token,
@@ -146,8 +146,8 @@ async def login(
     description="Confirm account email using the token from the verification link.",
     dependencies=[Depends(rate_limit_auth)],
 )
-async def verify(token: str, db: DbSession) -> MessageResponse:
-    await verify_user_email(db, token)
+async def verify(token: str, registry: DbRegistry) -> MessageResponse:
+    await verify_user_email(registry, token)
     return MessageResponse(message="Email verified successfully")
 
 
@@ -161,7 +161,7 @@ async def verify(token: str, db: DbSession) -> MessageResponse:
     dependencies=[Depends(rate_limit_auth)],
 )
 async def refresh(
-    db: DbSession,
+    registry: DbRegistry,
     response: Response,
     request: Request,
     settings: AppSettings,
@@ -173,7 +173,7 @@ async def refresh(
     if not refresh_token:
         raise UnauthorizedError("Missing refresh token")
 
-    access_token, new_refresh_token = await refresh_access_token(db, refresh_token)
+    access_token, new_refresh_token = await refresh_access_token(registry, refresh_token)
     _set_auth_cookies(
         response,
         access_token=access_token,
@@ -194,7 +194,7 @@ async def refresh(
     dependencies=[Depends(rate_limit_auth)],
 )
 async def logout(
-    db: DbSession,
+    registry: DbRegistry,
     response: Response,
     request: Request,
     data: LogoutRequest | None = None,
@@ -215,7 +215,7 @@ async def logout(
             payload = decode_token(raw_token)
             sub = payload.get("sub")
             if sub and user_id is None:
-                user = await get_user_by_public_id(db, str(sub))
+                user = await get_user_by_public_id(registry, str(sub))
                 if user:
                     user_id = user.id
             jti = payload.get("jti", "")
@@ -226,7 +226,7 @@ async def logout(
         except ValueError:
             pass
 
-    await record_logout(db, user_id)
+    await record_logout(registry, user_id)
 
     return MessageResponse(message="Logged out successfully")
 
@@ -240,10 +240,10 @@ async def logout(
 )
 async def forgot_password(
     data: ForgotPasswordRequest,
-    db: DbSession,
+    registry: DbRegistry,
     job_queue: JobQueueDep,
 ) -> MessageResponse:
-    token = await request_password_reset(db, data.email)
+    token = await request_password_reset(registry, data.email)
     if token:
         logger.info(
             "Password reset requested",
@@ -262,8 +262,11 @@ async def forgot_password(
     description="Set a new password using the token from the reset email.",
     dependencies=[Depends(rate_limit_auth)],
 )
-async def reset_password(data: ResetPasswordRequest, db: DbSession) -> MessageResponse:
-    await reset_user_password(db, data.token, data.new_password)
+async def reset_password(
+    data: ResetPasswordRequest,
+    registry: DbRegistry,
+) -> MessageResponse:
+    await reset_user_password(registry, data.token, data.new_password)
     return MessageResponse(message="Password reset successfully")
 
 

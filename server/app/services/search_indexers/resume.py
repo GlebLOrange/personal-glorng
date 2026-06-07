@@ -1,10 +1,9 @@
 import json
 from typing import Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.content.resume_data import RESUME_DATA
-from app.db.models.search_document import SearchVisibility
+from app.db.documents.search import SearchVisibility
+from app.db.registry import DatabaseRegistry
 from app.services.search_index import SearchDocumentInput, SearchIndexService
 from app.services.search_source_types import SearchSourceType
 
@@ -85,9 +84,9 @@ def _resume_documents() -> list[SearchDocumentInput]:
     return documents
 
 
-async def index_resume(db: AsyncSession) -> int:
+async def index_resume(registry: DatabaseRegistry) -> int:
     """Upsert all resume chunks and remove stale rows. Returns document count."""
-    svc = SearchIndexService(db)
+    svc = SearchIndexService(registry)
     documents = _resume_documents()
     keep_ids = {document.source_id for document in documents}
     await svc.delete_stale_by_source(RESUME_SOURCE_TYPE, keep_ids)

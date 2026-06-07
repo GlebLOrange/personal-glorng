@@ -9,8 +9,8 @@ from app.core.catalogs import (
     ALLOWED_CURRENCIES,
     DEFAULT_EXPENSE_CATEGORY_NAMES,
 )
-from app.db.models.task import Task, TaskStatus
-from app.db.models.tool_expense import ToolExpense
+from app.db.documents.expense import ToolExpense
+from app.db.documents.task import Task, TaskStatus
 
 EXPENSE_TOOLS = (
     "Cursor",

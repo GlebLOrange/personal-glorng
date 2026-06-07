@@ -2,16 +2,13 @@ import json
 from math import ceil
 from typing import Any
 
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.elements import ColumnElement
-
 from app.core.exceptions import NotFoundError
 from app.core.json_lists import parse_json_string_list
 from app.core.logging import logger
 from app.core.utils import paginate_params
-from app.db.models.recipe import Recipe
-from app.db.models.search_document import SearchVisibility
+from app.db.documents.recipe import Recipe
+from app.db.documents.search import SearchVisibility
+from app.db.registry import DatabaseRegistry
 from app.schemas.recipe import (
     RecipeCreate,
     RecipeListResponse,
@@ -20,7 +17,6 @@ from app.schemas.recipe import (
     RecipeUpdate,
 )
 from app.services.audit import AuditService
-from app.services.base import CRUDService
 from app.services.search_index import SearchIndexService
 from app.services.search_indexers.recipe import (
     RECIPE_SOURCE_TYPE,
@@ -51,7 +47,7 @@ def _recipe_payload_from_create(data: RecipeCreate) -> dict[str, Any]:
     }
 
 
-def _apply_recipe_updates(recipe: Recipe, data: RecipeUpdate) -> None:
+def _apply_recipe_updates(recipe: Recipe, data: RecipeUpdate) -> Recipe:
     updates = data.model_dump(exclude_unset=True)
 
     for field in ("ingredients", "steps", "tags"):
@@ -61,14 +57,21 @@ def _apply_recipe_updates(recipe: Recipe, data: RecipeUpdate) -> None:
     if "image_url" in updates and updates["image_url"] is not None:
         updates["image_url"] = str(updates["image_url"])
 
-    for key, value in updates.items():
-        setattr(recipe, key, value)
+    merged = recipe.model_dump()
+    merged.update(updates)
+    return Recipe.model_validate(merged)
 
 
-class RecipeService(CRUDService[Recipe]):
-    def __init__(self, db: AsyncSession, audit_svc: AuditService) -> None:
-        super().__init__(db, Recipe)
+class RecipeService:
+    def __init__(self, registry: DatabaseRegistry, audit_svc: AuditService) -> None:
+        self.registry = registry
         self._audit = audit_svc
+
+    def _recipes(self):
+        if self.registry.recipes is None:
+            msg = "Recipes repository is not initialized"
+            raise RuntimeError(msg)
+        return self.registry.recipes
 
     @staticmethod
     def _to_response(recipe: Recipe) -> RecipeResponse:
@@ -88,11 +91,7 @@ class RecipeService(CRUDService[Recipe]):
         )
 
     async def require_recipe(self, recipe_id: int) -> Recipe:
-        result = await self.db.execute(select(Recipe).where(Recipe.id == recipe_id))
-        recipe = result.scalar_one_or_none()
-        if not recipe:
-            raise NotFoundError("Recipe not found")
-        return recipe
+        return await self._recipes().get(recipe_id)
 
     async def create_recipe(
         self,
@@ -100,8 +99,9 @@ class RecipeService(CRUDService[Recipe]):
         *,
         actor_id: int | None = None,
     ) -> RecipeResponse:
-        recipe = await self.create(_recipe_payload_from_create(data))
-        await index_recipe(self.db, recipe)
+        recipe = Recipe.model_validate(_recipe_payload_from_create(data))
+        recipe = await self._recipes().insert(recipe)
+        await index_recipe(self.registry, recipe)
         await self._audit.record_domain(
             action="recipe.created",
             resource_type="recipe",
@@ -119,11 +119,9 @@ class RecipeService(CRUDService[Recipe]):
         actor_id: int | None = None,
     ) -> RecipeResponse:
         recipe = await self.require_recipe(recipe_id)
-        _apply_recipe_updates(recipe, data)
-
-        await self.db.flush()
-        await self.db.refresh(recipe)
-        await index_recipe(self.db, recipe)
+        updated = _apply_recipe_updates(recipe, data)
+        recipe = await self._recipes().replace(updated)
+        await index_recipe(self.registry, recipe)
         await self._audit.record_domain(
             action="recipe.updated",
             resource_type="recipe",
@@ -139,46 +137,14 @@ class RecipeService(CRUDService[Recipe]):
         actor_id: int | None = None,
     ) -> None:
         await self.require_recipe(recipe_id)
-        await self.delete(recipe_id)
-        await remove_recipe(self.db, recipe_id)
+        await self._recipes().delete(recipe_id)
+        await remove_recipe(self.registry, recipe_id)
         await self._audit.record_domain(
             action="recipe.deleted",
             resource_type="recipe",
             resource_id=recipe_id,
             actor_id=actor_id,
         )
-
-    def _recipe_list_filters(
-        self,
-        recipe_ids: list[int] | None,
-        tag: str | None,
-    ) -> list[ColumnElement[bool]]:
-        filters: list[ColumnElement[bool]] = []
-        if recipe_ids is not None:
-            if not recipe_ids:
-                filters.append(Recipe.id == -1)
-            else:
-                filters.append(Recipe.id.in_(recipe_ids))
-        if tag:
-            filters.append(Recipe.tags.ilike(f'%"{tag}"%'))
-        return filters
-
-    @staticmethod
-    def _recipe_sort_clause(sort: RecipeSort) -> ColumnElement:
-        total_time = func.coalesce(Recipe.prep_time, 0) + func.coalesce(
-            Recipe.cook_time, 0
-        )
-        match sort:
-            case "title_asc":
-                return Recipe.title.asc()
-            case "title_desc":
-                return Recipe.title.desc()
-            case "prep_asc":
-                return Recipe.prep_time.asc().nulls_last()
-            case "total_time_asc":
-                return total_time.asc().nulls_last()
-            case _:
-                return Recipe.updated_at.desc()
 
     async def list_recipes(
         self,
@@ -191,7 +157,7 @@ class RecipeService(CRUDService[Recipe]):
         offset, limit = paginate_params(page, per_page)
         recipe_ids: list[int] | None = None
         if search:
-            results = await SearchIndexService(self.db).search(
+            results = await SearchIndexService(self.registry).search(
                 search,
                 visibilities=[SearchVisibility.PUBLIC],
                 source_types=[RECIPE_SOURCE_TYPE],
@@ -199,52 +165,85 @@ class RecipeService(CRUDService[Recipe]):
             )
             recipe_ids = [hit.source_id for hit in results]
 
-        filters = self._recipe_list_filters(recipe_ids=recipe_ids, tag=tag)
+        all_recipes = await self._recipes().list(limit=10_000, sort=[("updated_at", -1)])
 
-        count_query = select(func.count()).select_from(Recipe)
-        for clause in filters:
-            count_query = count_query.where(clause)
-        total = int((await self.db.execute(count_query)).scalar_one())
+        if recipe_ids is not None:
+            id_set = set(recipe_ids)
+            if not id_set:
+                filtered: list[Recipe] = []
+            else:
+                filtered = [recipe for recipe in all_recipes if recipe.id in id_set]
+        else:
+            filtered = all_recipes
 
-        query = select(Recipe)
-        for clause in filters:
-            query = query.where(clause)
-        query = (
-            query.order_by(self._recipe_sort_clause(sort)).offset(offset).limit(limit)
-        )
+        if tag:
+            filtered = [
+                recipe
+                for recipe in filtered
+                if tag in _loads_json_list("tags", recipe.tags)
+            ]
 
-        result = await self.db.execute(query)
-        items = [self._to_response(r) for r in result.scalars().all()]
+        total = len(filtered)
+        sorted_items = self._sort_recipes(filtered, sort)
+        items = sorted_items[offset : offset + limit]
         pages = ceil(total / limit) if total > 0 else 0
 
         return RecipeListResponse(
-            items=items,
+            items=[self._to_response(r) for r in items],
             total=total,
             page=page,
             per_page=limit,
             pages=pages,
         )
 
+    @staticmethod
+    def _sort_recipes(recipes: list[Recipe], sort: RecipeSort) -> list[Recipe]:
+        match sort:
+            case "title_asc":
+                return sorted(recipes, key=lambda recipe: recipe.title.lower())
+            case "title_desc":
+                return sorted(
+                    recipes,
+                    key=lambda recipe: recipe.title.lower(),
+                    reverse=True,
+                )
+            case "prep_asc":
+                return sorted(
+                    recipes,
+                    key=lambda recipe: recipe.prep_time or 10**9,
+                )
+            case "total_time_asc":
+                return sorted(
+                    recipes,
+                    key=lambda recipe: (recipe.prep_time or 0) + (recipe.cook_time or 0),
+                )
+            case _:
+                return sorted(
+                    recipes,
+                    key=lambda recipe: recipe.updated_at,
+                    reverse=True,
+                )
+
     async def get_recipe(self, recipe_id: int) -> RecipeResponse:
         recipe = await self.require_recipe(recipe_id)
         return self._to_response(recipe)
 
     async def get_all_tags(self) -> list[str]:
-        result = await self.db.execute(select(Recipe.tags))
+        all_recipes = await self._recipes().list(limit=10_000)
         all_tags: set[str] = set()
-        for (tags_json,) in result:
+        for recipe in all_recipes:
             try:
-                tags = json.loads(tags_json)
+                tags = json.loads(recipe.tags)
             except json.JSONDecodeError:
                 logger.warning(
                     "Skipping recipe row with corrupted tags JSON",
-                    context={"tags_json": tags_json},
+                    context={"tags_json": recipe.tags},
                 )
                 continue
             if not isinstance(tags, list):
                 logger.warning(
                     "Skipping recipe row with invalid tags JSON shape",
-                    context={"tags_json": tags_json},
+                    context={"tags_json": recipe.tags},
                 )
                 continue
             for tag in tags:
