@@ -4,6 +4,7 @@ interface ImportMetaEnv {
   readonly VITE_GA_ENABLED?: string;
   readonly VITE_GA_ID?: string;
   readonly VITE_AI_CHAT_ENABLED?: string;
+  readonly VITE_AI_SEARCH_ENABLED?: string;
 }
 
 interface ImportMeta {

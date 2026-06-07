@@ -24,6 +24,7 @@ from app.services.audit import AuditService
 from app.services.base import CRUDService
 from app.core.catalogs import ALLOWED_CURRENCIES, DEFAULT_EXPENSE_CURRENCY
 from app.services.currency import CurrencyService
+from app.services.search_indexers.expense import index_expense, remove_expense
 from app.services.tool_expense_category import ToolExpenseCategoryService
 
 _CSV_FORMULA_PREFIXES = frozenset("=+-@\t\r")
@@ -94,6 +95,7 @@ class ToolExpenseService(CRUDService[ToolExpense]):
         payload = data.model_dump()
         payload["source"] = source.value
         expense = await self.create(payload)
+        await index_expense(self.db, expense)
         await AuditService(self.db).record_domain(
             action="expense.created",
             resource_type="expense",
@@ -117,6 +119,7 @@ class ToolExpenseService(CRUDService[ToolExpense]):
             setattr(expense, key, value)
         await self.db.flush()
         await self.db.refresh(expense)
+        await index_expense(self.db, expense)
         await AuditService(self.db).record_domain(
             action="expense.updated",
             resource_type="expense",
@@ -126,6 +129,7 @@ class ToolExpenseService(CRUDService[ToolExpense]):
 
     async def delete_expense(self, expense_id: int) -> None:
         await self.delete(expense_id)
+        await remove_expense(self.db, expense_id)
         await AuditService(self.db).record_domain(
             action="expense.deleted",
             resource_type="expense",

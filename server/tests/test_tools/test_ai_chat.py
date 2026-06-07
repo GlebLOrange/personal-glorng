@@ -4,9 +4,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 from httpx import AsyncClient
 
-from app.core.deps import get_openai_chat_service
+from app.core.deps import get_ai_search_service, get_openai_chat_service
 from app.main import app
 from app.services.ai_chat import OpenAIService, detect_llm_provider
+from app.services.ai_search import AiSearchService
+from app.services.search_index import SearchIndexService
 from app.settings import get_settings
 
 CHAT_URL = "/api/tools/ai-chat"
@@ -25,11 +27,15 @@ def enable_ai_chat(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture
-def openai_service() -> None:
-    service = OpenAIService(api_key="test-key", model="gpt-4.1")
-    app.dependency_overrides[get_openai_chat_service] = lambda: service
+def ai_search_service() -> None:
+    llm = OpenAIService(api_key="test-key", model="gpt-4.1")
+    search_svc = SearchIndexService.__new__(SearchIndexService)
+    service = AiSearchService(search_svc, llm)
+    app.dependency_overrides[get_openai_chat_service] = lambda: llm
+    app.dependency_overrides[get_ai_search_service] = lambda: service
     yield
     app.dependency_overrides.pop(get_openai_chat_service, None)
+    app.dependency_overrides.pop(get_ai_search_service, None)
 
 
 @pytest.fixture
@@ -43,6 +49,26 @@ def missing_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
 async def _mock_stream(*_args: object, **_kwargs: object) -> AsyncIterator[str]:
     for part in ("Hi ", "there"):
         yield part
+
+
+async def _mock_search_events(
+    *_args: object,
+    **_kwargs: object,
+) -> AsyncIterator[dict[str, object]]:
+    yield {
+        "sources": [
+            {
+                "id": 1,
+                "title": "Task",
+                "url": "/admin/tools/tasks",
+                "source_type": "task",
+                "snippet": "demo",
+            },
+        ],
+    }
+    async for delta in _mock_stream():
+        yield {"delta": delta}
+    yield {"done": True, "model": "gpt-4.1"}
 
 
 @pytest.mark.asyncio
@@ -64,7 +90,7 @@ async def test_ai_chat_no_api_key(
 @pytest.mark.asyncio
 async def test_ai_chat_rejects_system_role(
     auth_client: AsyncClient,
-    openai_service: None,
+    ai_search_service: None,
 ) -> None:
     resp = await auth_client.post(
         CHAT_URL,
@@ -79,7 +105,7 @@ async def test_ai_chat_rejects_system_role(
 @pytest.mark.asyncio
 async def test_ai_chat_rejects_empty_content(
     auth_client: AsyncClient,
-    openai_service: None,
+    ai_search_service: None,
 ) -> None:
     resp = await auth_client.post(
         CHAT_URL,
@@ -94,7 +120,7 @@ async def test_ai_chat_rejects_empty_content(
 @pytest.mark.asyncio
 async def test_ai_chat_disabled_when_flag_off(
     auth_client: AsyncClient,
-    openai_service: None,
+    ai_search_service: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("AI_CHAT_ENABLED", "false")
@@ -107,19 +133,26 @@ async def test_ai_chat_disabled_when_flag_off(
 @pytest.mark.asyncio
 async def test_ai_chat_streams_sse(
     auth_client: AsyncClient,
-    openai_service: None,
+    ai_search_service: None,
 ) -> None:
-    with patch.object(OpenAIService, "stream", side_effect=_mock_stream):
+    llm = app.dependency_overrides[get_openai_chat_service]()
+    with patch.object(
+        AiSearchService,
+        "stream_events",
+        side_effect=_mock_search_events,
+    ):
         resp = await auth_client.post(CHAT_URL, json=CHAT_PAYLOAD)
 
     assert resp.status_code == 200
     assert resp.headers["content-type"].startswith("text/event-stream")
 
     body = resp.text
+    assert '"sources"' in body
     assert 'data: {"delta": "Hi "}' in body
     assert 'data: {"delta": "there"}' in body
     assert '"done": true' in body
     assert '"model": "gpt-4.1"' in body
+    assert llm.model == "gpt-4.1"
 
 
 @pytest.mark.asyncio

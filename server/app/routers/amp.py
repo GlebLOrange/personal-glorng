@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from app.routers.resume import RESUME_DATA
+from app.content.resume_data import RESUME_DATA
 from app.services.amp_page import render_portfolio_amp
 from app.settings import get_settings
 

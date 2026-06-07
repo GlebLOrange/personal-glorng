@@ -66,11 +66,17 @@ class OpenAIService:
     def provider(self) -> str:
         return detect_llm_provider(self._base_url)
 
-    async def stream(self, messages: list[dict[str, str]]) -> AsyncIterator[str]:
+    async def stream(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        system_prompt: str | None = None,
+        temperature: float = 0.7,
+    ) -> AsyncIterator[str]:
         """Yield text deltas from a streaming chat completion."""
         user_messages = [m for m in messages if m.get("role") != "system"]
         full_messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt or SYSTEM_PROMPT},
             *user_messages,
         ]
 
@@ -79,7 +85,7 @@ class OpenAIService:
                 model=self._model,
                 messages=full_messages,
                 max_tokens=2048,
-                temperature=0.7,
+                temperature=temperature,
                 stream=True,
             )
         except AuthenticationError:

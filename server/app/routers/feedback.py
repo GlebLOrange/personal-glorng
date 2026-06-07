@@ -13,6 +13,7 @@ from app.db.models.feedback import Feedback
 from app.openapi import requires_capability
 from app.schemas.feedback import FeedbackCreate, FeedbackResponse, FeedbackStatusUpdate
 from app.services.audit import AuditRecord, AuditService
+from app.services.search_indexers.feedback import index_feedback
 from app.settings import get_settings
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
@@ -30,8 +31,10 @@ rate_limit_feedback = RateLimiter(requests=5, window=300)
 async def create_feedback(data: FeedbackCreate, db: DbSession) -> Feedback:
     entry = Feedback(email=data.email, theme=data.theme, message=data.message)
     db.add(entry)
-    await db.commit()
+    await db.flush()
     await db.refresh(entry)
+    await index_feedback(db, entry)
+    await db.commit()
     logger.info(
         "Feedback created",
         context={"id": entry.id, "email": data.email},

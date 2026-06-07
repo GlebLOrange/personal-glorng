@@ -13,6 +13,7 @@ from app.core.security import create_access_token
 from app.db.base import Base
 from app.db.models.user import User
 from app.db.recipe_search import RECIPE_SEARCH_INDEX
+from app.db.search_index import SEARCH_INDEX_NAME
 from app.db.session import get_db
 from app.main import app
 from app.services.currency import RATES_CACHE_KEY
@@ -116,7 +117,7 @@ def _strip_postgres_only_indexes() -> list[tuple[object, object]]:
     removed: list[tuple[object, object]] = []
     for table in Base.metadata.sorted_tables:
         for idx in list(table.indexes):
-            if idx.name == RECIPE_SEARCH_INDEX:
+            if idx.name in {RECIPE_SEARCH_INDEX, SEARCH_INDEX_NAME}:
                 table.indexes.discard(idx)
                 removed.append((table, idx))
     return removed

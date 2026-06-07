@@ -5,6 +5,7 @@ import ContactIcon from "@/components/contact/ContactIcon.vue";
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import DonationsBlock from "@/components/donations/DonationsBlock.vue";
 import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
+import PortfolioSearchChat from "@/components/search/PortfolioSearchChat.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import ExperienceList from "@/components/resume/ExperienceList.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
@@ -91,5 +92,7 @@ onMounted(loadResume);
       </div>
       <FeedbackModal v-if="showFeedback" @close="showFeedback = false" />
     </SectionWrapper>
+
+    <PortfolioSearchChat />
   </div>
 </template>

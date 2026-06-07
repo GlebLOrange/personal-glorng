@@ -7,22 +7,11 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import { useSearchChat } from "@/composables/useSearchChat";
 import { useAuthStore } from "@/stores/auth";
 import { getApiErrorMessage } from "@/types/api";
 
 type AiChatTab = "chat" | "settings";
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
-
-interface StreamEvent {
-  delta?: string;
-  done?: boolean;
-  model?: string;
-  error?: string;
-}
 
 interface ChatConfig {
   enabled: boolean;
@@ -61,11 +50,13 @@ OPENAI_CHAT_MODEL=google/gemma-2-9b-it:free`,
 const activeTab = ref<AiChatTab>("chat");
 const chatConfig = ref<ChatConfig | null>(null);
 const configLoading = ref(true);
-const messages = ref<Message[]>([]);
-const input = ref("");
-const loading = ref(false);
 const chatEnd = ref<HTMLElement | null>(null);
 const { toast } = useNotify();
+
+const { messages, input, loading, send, clear } = useSearchChat({
+  endpoint: "/api/tools/ai-chat",
+  onError: (message) => toast(message, "error"),
+});
 
 const providerLabel = computed(
   () => chatConfig.value?.provider ?? "…",
@@ -81,24 +72,6 @@ function scrollToBottom(): void {
   nextTick(() => chatEnd.value?.scrollIntoView({ behavior: "smooth" }));
 }
 
-function parseSseEvents(buffer: string): { events: StreamEvent[]; rest: string } {
-  const events: StreamEvent[] = [];
-  const parts = buffer.split("\n\n");
-  const rest = parts.pop() ?? "";
-
-  for (const part of parts) {
-    const line = part.split("\n").find((entry) => entry.startsWith("data: "));
-    if (!line) continue;
-    try {
-      events.push(JSON.parse(line.slice(6)) as StreamEvent);
-    } catch {
-      // ignore malformed chunks
-    }
-  }
-
-  return { events, rest };
-}
-
 async function loadConfig(): Promise<void> {
   configLoading.value = true;
   try {
@@ -111,10 +84,7 @@ async function loadConfig(): Promise<void> {
   }
 }
 
-async function send(): Promise<void> {
-  const text = input.value.trim();
-  if (!text || loading.value) return;
-
+async function handleSend(): Promise<void> {
   const auth = useAuthStore();
   if (!auth.isAuthenticated) {
     toast("Not authenticated", "error");
@@ -127,78 +97,12 @@ async function send(): Promise<void> {
     return;
   }
 
-  messages.value.push({ role: "user", content: text });
-  input.value = "";
-  loading.value = true;
-  messages.value.push({ role: "assistant", content: "" });
-  scrollToBottom();
-
   try {
-    const payload = messages.value.slice(0, -1).map((m) => ({ role: m.role, content: m.content }));
-
-    const response = await fetch("/api/tools/ai-chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ messages: payload }),
-    });
-
-    if (!response.ok) {
-      let detail = "Failed to get AI response";
-      try {
-        const body = (await response.json()) as { detail?: string };
-        detail = body.detail ?? detail;
-      } catch {
-        // ignore non-JSON error bodies
-      }
-      throw new Error(detail);
-    }
-
-    const reader = response.body?.getReader();
-    if (!reader) {
-      throw new Error("Streaming not supported");
-    }
-
-    const decoder = new TextDecoder();
-    let buffer = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const { events, rest } = parseSseEvents(buffer);
-      buffer = rest;
-
-      for (const event of events) {
-        if (event.error) {
-          throw new Error(event.error);
-        }
-        if (event.delta) {
-          const last = messages.value.at(-1);
-          if (last?.role === "assistant") {
-            last.content += event.delta;
-          }
-        }
-      }
-      scrollToBottom();
-    }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "Failed to get AI response";
-    toast(msg, "error");
-    messages.value.pop();
-    if (messages.value.at(-1)?.role === "user") {
-      messages.value.pop();
-    }
-  } finally {
-    loading.value = false;
+    await send();
     scrollToBottom();
+  } catch {
+    // toast handled in composable
   }
-}
-
-function clear(): void {
-  messages.value = [];
 }
 
 onMounted(() => {
@@ -217,6 +121,7 @@ onMounted(() => {
         </span>
         <span class="text-surface-mid/60 text-xs">·</span>
         <span class="text-surface-mid text-xs">{{ modelLabel }}</span>
+        <span class="text-surface-mid/60 text-xs">· personal search</span>
         <span
           v-if="!configLoading && !isReady"
           class="ml-auto text-xs text-amber-400/90"
@@ -227,7 +132,7 @@ onMounted(() => {
 
       <div class="flex-1 overflow-y-auto space-y-4 mb-4 pr-1">
         <p v-if="!messages.length" class="text-surface-mid text-sm text-center mt-8">
-          Start a conversation.
+          Search your indexed content — tasks, recipes, expenses, and more.
         </p>
 
         <div
@@ -251,18 +156,44 @@ onMounted(() => {
             v-if="loading && msg.role === 'assistant' && i === messages.length - 1"
             class="inline-block w-2 h-4 ml-0.5 bg-accent-violet/60 animate-pulse align-middle"
           />
+
+          <div
+            v-if="msg.role === 'assistant' && msg.sources?.length"
+            class="mt-3 pt-3 border-t border-surface-border/70 space-y-2"
+          >
+            <p class="text-[10px] uppercase tracking-wider text-surface-mid">
+              Searching your indexed content
+            </p>
+            <a
+              v-for="source in msg.sources"
+              :key="source.id"
+              :href="source.url"
+              class="block rounded-md border border-surface-border bg-surface-card/60 px-3 py-2 hover:border-accent-violet/40 transition-colors"
+            >
+              <span class="text-xs text-accent-violet font-medium">{{ source.title }}</span>
+              <span class="text-[10px] text-surface-mid block">{{ source.source_type }}</span>
+              <span class="text-[11px] text-surface-mid line-clamp-2">{{ source.snippet }}</span>
+            </a>
+          </div>
+
+          <p
+            v-else-if="msg.role === 'assistant' && !loading && !msg.sources?.length && msg.content"
+            class="mt-2 text-[11px] text-amber-400/90"
+          >
+            No matching documents — answer may be limited.
+          </p>
         </div>
 
         <div ref="chatEnd" />
       </div>
 
-      <form class="flex gap-3 border-t border-surface-border pt-4" @submit.prevent="send">
+      <form class="flex gap-3 border-t border-surface-border pt-4" @submit.prevent="handleSend">
         <textarea
           v-model="input"
           rows="2"
-          placeholder="Ask anything..."
+          placeholder="Search tasks, recipes, projects..."
           class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
-          @keydown.enter.exact.prevent="send"
+          @keydown.enter.exact.prevent="handleSend"
         />
         <div class="flex flex-col gap-2">
           <BaseButton variant="primary" :disabled="loading || !input.trim() || !isReady">
@@ -317,14 +248,15 @@ onMounted(() => {
           How it works
         </h2>
         <p class="text-surface-mid text-sm leading-relaxed">
-          AI chat uses any provider with an OpenAI-compatible API. Set
+          AI chat searches your indexed content first (portfolio, recipes, tasks, expenses, and
+          more), then streams a grounded answer with citations. Set
           <code class="text-surface-sage">OPENAI_API_KEY</code>,
           optional <code class="text-surface-sage">LLM_BASE_URL</code>, and
           <code class="text-surface-sage">OPENAI_CHAT_MODEL</code> in your server
-          <code class="text-surface-sage">.env</code>, then restart the backend
-          (<code class="text-surface-sage">make dev-lite</code> or Docker Compose) and refresh
-          this page. Set <code class="text-surface-sage">AI_CHAT_ENABLED=false</code> to hide this
-          tool entirely.
+          <code class="text-surface-sage">.env</code>, run
+          <code class="text-surface-sage">python scripts/reindex_search.py</code> after deploy,
+          then restart the backend. Set <code class="text-surface-sage">AI_CHAT_ENABLED=false</code>
+          to hide this tool entirely.
         </p>
       </section>
 

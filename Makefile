@@ -77,6 +77,12 @@ seed:
 seed-multicooker-recipes:
 	docker compose exec server python -m app.db.seed_multicooker_recipes
 
+seed-demo:
+	docker compose exec server python -m app.db.seed_demo --count 50 --reset
+
+seed-demo-add:
+	docker compose exec server python -m app.db.seed_demo --count 50 --no-reset
+
 backup:
 	bash scripts/db_maintenance.sh
 
