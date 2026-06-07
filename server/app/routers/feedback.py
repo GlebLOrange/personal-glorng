@@ -10,6 +10,7 @@ from app.core.rate_limit import RateLimiter
 from app.core.telegram import notify_admin
 from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
 from app.db.models.feedback import Feedback
+from app.openapi import requires_capability
 from app.schemas.feedback import FeedbackCreate, FeedbackResponse, FeedbackStatusUpdate
 from app.services.audit import AuditRecord, AuditService
 from app.settings import get_settings
@@ -22,10 +23,11 @@ rate_limit_feedback = RateLimiter(requests=5, window=300)
 @router.post(
     "",
     response_model=FeedbackResponse,
+    summary="Submit feedback",
+    description="Public endpoint — visitors can submit feedback.",
     dependencies=[Depends(rate_limit_feedback)],
 )
 async def create_feedback(data: FeedbackCreate, db: DbSession) -> Feedback:
-    """Public endpoint -- visitors can submit feedback."""
     entry = Feedback(email=data.email, theme=data.theme, message=data.message)
     db.add(entry)
     await db.commit()
@@ -52,10 +54,11 @@ async def create_feedback(data: FeedbackCreate, db: DbSession) -> Feedback:
 @router.get(
     "",
     response_model=list[FeedbackResponse],
+    summary="List feedback",
+    description=requires_capability("feedback", "read"),
     dependencies=[Depends(require_capability("feedback", "read"))],
 )
 async def list_feedback(db: DbSession, _user: AuthorizedUser) -> list[Feedback]:
-    """Admin endpoint -- list all feedback, newest first."""
     result = await db.execute(select(Feedback).order_by(Feedback.created_at.desc()))
     return list(result.scalars().all())
 
@@ -63,6 +66,8 @@ async def list_feedback(db: DbSession, _user: AuthorizedUser) -> list[Feedback]:
 @router.patch(
     "/{feedback_id}/status",
     response_model=FeedbackResponse,
+    summary="Update feedback status",
+    description=requires_capability("feedback", "write"),
     dependencies=[Depends(require_capability("feedback", "write"))],
 )
 async def update_feedback_status(
@@ -71,7 +76,6 @@ async def update_feedback_status(
     db: DbSession,
     user: AuthorizedUser,
 ) -> Feedback:
-    """Admin endpoint -- mark feedback as read or archived."""
     await db.execute(
         update(Feedback).where(Feedback.id == feedback_id).values(status=data.status)
     )

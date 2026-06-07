@@ -56,6 +56,10 @@ RESUME_DATA: dict[str, Any] = {
 }
 
 
-@router.get("")
+@router.get(
+    "",
+    summary="Get resume data",
+    description="Public portfolio resume content (skills, experience, projects).",
+)
 async def get_resume() -> dict[str, Any]:
     return RESUME_DATA

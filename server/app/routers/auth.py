@@ -82,6 +82,8 @@ def _clear_auth_cookies(response: Response) -> None:
 @router.post(
     "/register",
     response_model=MessageResponse,
+    summary="Register new account",
+    description="Create a user account and send a verification email.",
     dependencies=[Depends(rate_limit_auth)],
 )
 async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
@@ -98,6 +100,11 @@ async def register(data: RegisterRequest, db: DbSession) -> MessageResponse:
 @router.post(
     "/login",
     response_model=TokenResponse,
+    summary="Log in",
+    description=(
+        "Authenticate with email and password. Returns JWT tokens and sets "
+        "HttpOnly cookies. Use `access_token` as Bearer in Swagger."
+    ),
     dependencies=[Depends(rate_limit_auth)],
 )
 async def login(
@@ -119,6 +126,8 @@ async def login(
 @router.get(
     "/verify",
     response_model=MessageResponse,
+    summary="Verify email",
+    description="Confirm account email using the token from the verification link.",
     dependencies=[Depends(rate_limit_auth)],
 )
 async def verify(token: str, db: DbSession) -> MessageResponse:
@@ -129,6 +138,10 @@ async def verify(token: str, db: DbSession) -> MessageResponse:
 @router.post(
     "/refresh",
     response_model=TokenResponse,
+    summary="Refresh access token",
+    description=(
+        "Exchange a refresh token (body or cookie) for new access and refresh tokens."
+    ),
     dependencies=[Depends(rate_limit_auth)],
 )
 async def refresh(
@@ -160,6 +173,8 @@ async def refresh(
 @router.post(
     "/logout",
     response_model=MessageResponse,
+    summary="Log out",
+    description="Blacklist tokens and clear auth cookies.",
     dependencies=[Depends(rate_limit_auth)],
 )
 async def logout(
@@ -203,6 +218,8 @@ async def logout(
 @router.post(
     "/forgot-password",
     response_model=MessageResponse,
+    summary="Request password reset",
+    description="Send a password reset email if the account exists.",
     dependencies=[Depends(rate_limit_auth)],
 )
 async def forgot_password(
@@ -223,6 +240,8 @@ async def forgot_password(
 @router.post(
     "/reset-password",
     response_model=MessageResponse,
+    summary="Reset password",
+    description="Set a new password using the token from the reset email.",
     dependencies=[Depends(rate_limit_auth)],
 )
 async def reset_password(data: ResetPasswordRequest, db: DbSession) -> MessageResponse:
@@ -230,6 +249,11 @@ async def reset_password(data: ResetPasswordRequest, db: DbSession) -> MessageRe
     return MessageResponse(message="Password reset successfully")
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    summary="Get current user",
+    description="Return the authenticated user's profile and capabilities.",
+)
 async def me(user: CurrentUser) -> UserResponse:
     return UserResponse.model_validate(user)

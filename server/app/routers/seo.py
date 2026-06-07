@@ -13,7 +13,12 @@ _PUBLIC_PATHS: tuple[tuple[str, str], ...] = (
 )
 
 
-@router.get("/sitemap.xml", response_class=Response)
+@router.get(
+    "/sitemap.xml",
+    response_class=Response,
+    summary="Get sitemap",
+    description="Public XML sitemap for search engines.",
+)
 async def sitemap_xml() -> Response:
     base = get_settings().BASE_URL.rstrip("/")
     urls = "\n".join(
@@ -32,7 +37,12 @@ async def sitemap_xml() -> Response:
     return Response(content=body, media_type="application/xml")
 
 
-@router.get("/robots.txt", response_class=PlainTextResponse)
+@router.get(
+    "/robots.txt",
+    response_class=PlainTextResponse,
+    summary="Get robots.txt",
+    description="Public robots.txt for crawlers.",
+)
 async def robots_txt() -> PlainTextResponse:
     base = get_settings().BASE_URL.rstrip("/")
     lines = [
