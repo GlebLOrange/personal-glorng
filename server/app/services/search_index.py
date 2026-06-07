@@ -4,9 +4,11 @@ from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
+from app.core.elasticsearch import is_elasticsearch_enabled
 from app.core.logging import logger
 from app.db.models.search_document import SearchDocument, SearchVisibility
 from app.db.search_index import SEARCH_INDEX_CONFIG
+from app.services import elasticsearch_search
 
 SNIPPET_MAX_LEN = 600
 DEFAULT_SEARCH_LIMIT = 6
@@ -101,6 +103,18 @@ class SearchIndexService:
                 "source_id": document.source_id,
             },
         )
+        if is_elasticsearch_enabled():
+            try:
+                await elasticsearch_search.index_document(row)
+            except Exception as exc:
+                logger.error(
+                    "Elasticsearch index sync failed",
+                    error=exc,
+                    context={
+                        "source_type": document.source_type,
+                        "source_id": document.source_id,
+                    },
+                )
         return row
 
     async def delete_by_source(self, source_type: str, source_id: int) -> None:
@@ -111,6 +125,15 @@ class SearchIndexService:
             ),
         )
         await self.db.flush()
+        if is_elasticsearch_enabled():
+            try:
+                await elasticsearch_search.delete_document(source_type, source_id)
+            except Exception as exc:
+                logger.error(
+                    "Elasticsearch delete sync failed",
+                    error=exc,
+                    context={"source_type": source_type, "source_id": source_id},
+                )
 
     async def delete_stale_by_source(
         self,
@@ -122,6 +145,18 @@ class SearchIndexService:
             stmt = stmt.where(SearchDocument.source_id.not_in(keep_source_ids))
         await self.db.execute(stmt)
         await self.db.flush()
+        if is_elasticsearch_enabled():
+            try:
+                await elasticsearch_search.delete_stale_by_source(
+                    source_type,
+                    keep_source_ids,
+                )
+            except Exception as exc:
+                logger.error(
+                    "Elasticsearch stale delete sync failed",
+                    error=exc,
+                    context={"source_type": source_type},
+                )
 
     async def search(
         self,
@@ -136,6 +171,20 @@ class SearchIndexService:
             return []
 
         visibility_values = [v.value for v in visibilities]
+        if is_elasticsearch_enabled():
+            try:
+                return await elasticsearch_search.search(
+                    cleaned,
+                    visibilities=visibilities,
+                    limit=limit,
+                    source_types=source_types,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Elasticsearch search failed, falling back to database",
+                    error=exc,
+                )
+
         dialect_name = self.db.get_bind().dialect.name
 
         if dialect_name == "postgresql":

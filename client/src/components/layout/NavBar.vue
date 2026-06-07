@@ -28,7 +28,7 @@ function closeMobileMenu(): void {
     >
       <div class="max-w-5xl mx-auto px-6 py-4 md:py-5 flex items-center justify-between">
         <RouterLink to="/" class="text-xl font-bold text-surface-light" @click="closeMobileMenu">
-          Gleb Y.
+          gLOrng
         </RouterLink>
 
         <div class="hidden md:flex items-center gap-5 text-base">

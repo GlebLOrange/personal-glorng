@@ -6,11 +6,13 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.core.elasticsearch import close_elasticsearch, init_elasticsearch
 from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.redis import close_redis, init_redis
 from app.db.session import get_session_factory
 from app.openapi import configure_openapi
+from app.services.elasticsearch_search import ensure_index
 from app.services.search_bootstrap import bootstrap_resume_index
 from app.settings import get_settings
 from app.workers.queue import close_job_queue, init_job_queue
@@ -42,6 +44,10 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     await init_redis(settings.REDIS_URL)
     logger.info("Redis connected")
 
+    if settings.elasticsearch_enabled():
+        await init_elasticsearch(settings.ELASTICSEARCH_URL)
+        await ensure_index()
+
     init_job_queue()
 
     factory = get_session_factory()
@@ -51,6 +57,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     yield
 
     await close_job_queue()
+    await close_elasticsearch()
     await close_redis()
     logger.info("Shutdown complete")
 
