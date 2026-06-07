@@ -15,8 +15,7 @@ const { toast } = useNotify();
 
 const showWidget = computed(() => isAiSearchEnabled());
 
-const { config: searchConfig, loading: configLoading, loadConfig, isReady } =
-  useChatConfig<SearchConfig>({
+const { loading: configLoading, loadConfig, isReady } = useChatConfig<SearchConfig>({
     path: "/search/config",
     fallback: { enabled: false, configured: false },
   });

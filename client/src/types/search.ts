@@ -17,7 +17,7 @@ export interface BaseChatConfig {
   configured: boolean;
 }
 
-export interface SearchConfig extends BaseChatConfig {}
+export type SearchConfig = BaseChatConfig;
 
 export interface AdminChatConfig extends BaseChatConfig {
   model: string;
