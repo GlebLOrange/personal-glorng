@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
@@ -9,30 +7,10 @@ from app.core.logging import logger
 from app.db.models.search_document import SearchDocument, SearchVisibility
 from app.db.search_index import SEARCH_INDEX_CONFIG
 from app.services import elasticsearch_search
+from app.services.search_types import SearchDocumentInput, SearchResult
 
 SNIPPET_MAX_LEN = 600
 DEFAULT_SEARCH_LIMIT = 6
-
-
-@dataclass(frozen=True)
-class SearchDocumentInput:
-    source_type: str
-    source_id: int
-    title: str
-    body: str
-    url: str
-    visibility: SearchVisibility
-
-
-@dataclass(frozen=True)
-class SearchResult:
-    id: int
-    title: str
-    body: str
-    url: str
-    source_type: str
-    visibility: str
-    source_id: int
 
 
 def _search_vector() -> ColumnElement:
