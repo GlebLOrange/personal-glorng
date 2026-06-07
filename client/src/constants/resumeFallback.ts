@@ -14,14 +14,7 @@ export const RESUME_FALLBACK: ResumeData = {
     },
     {
       category: "Backend",
-      items: [
-        "FastAPI",
-        "SQLAlchemy",
-        "Alembic",
-        "PostgreSQL",
-        "Redis",
-        "Celery",
-      ],
+      items: ["FastAPI", "SQLAlchemy", "Alembic", "PostgreSQL", "Redis", "Celery"],
     },
     {
       category: "Frontend",

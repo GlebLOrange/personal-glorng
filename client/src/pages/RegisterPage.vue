@@ -54,8 +54,8 @@ async function handleRegister(): Promise<void> {
 
       <div v-if="submitted" class="text-center space-y-4">
         <p class="text-surface-mid text-sm">
-          We sent a verification link to <strong class="text-surface-light">{{ email }}</strong>.
-          Open it to activate your account, then log in.
+          We sent a verification link to <strong class="text-surface-light">{{ email }}</strong
+          >. Open it to activate your account, then log in.
         </p>
         <BaseButton variant="primary" class="w-full" @click="router.push('/login')">
           Go to login
@@ -63,7 +63,13 @@ async function handleRegister(): Promise<void> {
       </div>
 
       <form v-else class="space-y-4" @submit.prevent="handleRegister">
-        <BaseInput v-model="email" type="email" label="Email" placeholder="you@example.com" required />
+        <BaseInput
+          v-model="email"
+          type="email"
+          label="Email"
+          placeholder="you@example.com"
+          required
+        />
         <BaseInput
           v-model="displayName"
           type="text"
@@ -92,7 +98,9 @@ async function handleRegister(): Promise<void> {
           <input v-model="acceptTerms" type="checkbox" class="mt-0.5" required />
           <span>
             I accept the
-            <RouterLink to="/privacy" class="text-accent-blue hover:underline">privacy policy</RouterLink>
+            <RouterLink to="/privacy" class="text-accent-blue hover:underline"
+              >privacy policy</RouterLink
+            >
           </span>
         </label>
         <BaseButton variant="primary" class="w-full" :disabled="loading || !strength.valid">

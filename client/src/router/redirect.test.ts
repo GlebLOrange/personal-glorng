@@ -2,18 +2,14 @@ import { describe, expect, it } from "vitest";
 
 /** Mirror login redirect guard in router/index.ts */
 function loginRedirectTarget(redirect: unknown): string {
-  return typeof redirect === "string" &&
-    redirect.startsWith("/") &&
-    !redirect.startsWith("//")
+  return typeof redirect === "string" && redirect.startsWith("/") && !redirect.startsWith("//")
     ? redirect
     : "/admin";
 }
 
 describe("loginRedirectTarget", () => {
   it("allows relative in-app paths", () => {
-    expect(loginRedirectTarget("/admin/tools/expenses")).toBe(
-      "/admin/tools/expenses",
-    );
+    expect(loginRedirectTarget("/admin/tools/expenses")).toBe("/admin/tools/expenses");
   });
 
   it("rejects protocol-relative open redirects", () => {

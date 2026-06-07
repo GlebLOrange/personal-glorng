@@ -4,7 +4,12 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource, AuditEvent
+from app.db.models.audit_event import (
+    AuditActorType,
+    AuditCategory,
+    AuditEvent,
+    AuditSource,
+)
 from app.services.audit import domain_event
 from app.services.task import TaskService
 

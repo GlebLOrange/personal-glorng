@@ -74,8 +74,8 @@ onMounted(() => {
 <template>
   <AdminPageLayout title="users" max-width="xl">
     <p class="text-sm text-surface-mid mb-6">
-      Manage tool permissions and promote users to platform superuser. Users cannot change
-      these themselves.
+      Manage tool permissions and promote users to platform superuser. Users cannot change these
+      themselves.
     </p>
 
     <p v-if="loading" class="text-surface-mid text-sm">Loading users...</p>
@@ -102,7 +102,11 @@ onMounted(() => {
             </span>
             <span
               class="text-xs px-2 py-1 rounded"
-              :class="user.is_verified ? 'bg-green-900/40 text-green-300' : 'bg-yellow-900/40 text-yellow-300'"
+              :class="
+                user.is_verified
+                  ? 'bg-green-900/40 text-green-300'
+                  : 'bg-yellow-900/40 text-yellow-300'
+              "
             >
               {{ user.is_verified ? "verified" : "unverified" }}
             </span>

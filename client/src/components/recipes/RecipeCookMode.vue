@@ -90,16 +90,11 @@ onUnmounted(() => {
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div
-        v-if="open && recipe"
-        class="fixed inset-0 z-[60] bg-surface-dark flex flex-col"
-      >
+      <div v-if="open && recipe" class="fixed inset-0 z-[60] bg-surface-dark flex flex-col">
         <header class="flex items-center justify-between px-4 py-3 border-b border-surface-border">
           <div class="min-w-0">
             <p class="text-xs text-surface-mid truncate">{{ recipe.title }}</p>
-            <p class="text-sm text-accent-blue">
-              Step {{ stepIndex + 1 }} of {{ totalSteps }}
-            </p>
+            <p class="text-sm text-accent-blue">Step {{ stepIndex + 1 }} of {{ totalSteps }}</p>
           </div>
           <button
             type="button"
@@ -125,8 +120,15 @@ onUnmounted(() => {
           >
             {{ showIngredients ? "Hide" : "Show" }} ingredients ({{ recipe.ingredients.length }})
           </button>
-          <ul v-if="showIngredients" class="mt-2 text-sm text-surface-light space-y-1 max-h-32 overflow-y-auto">
-            <li v-for="(ing, i) in recipe.ingredients" :key="i" class="before:content-['·_'] before:text-accent-blue">
+          <ul
+            v-if="showIngredients"
+            class="mt-2 text-sm text-surface-light space-y-1 max-h-32 overflow-y-auto"
+          >
+            <li
+              v-for="(ing, i) in recipe.ingredients"
+              :key="i"
+              class="before:content-['·_'] before:text-accent-blue"
+            >
               {{ ing }}
             </li>
           </ul>
@@ -139,15 +141,13 @@ onUnmounted(() => {
           </p>
         </main>
 
-        <footer class="flex items-center justify-between gap-4 px-4 py-4 border-t border-surface-border">
+        <footer
+          class="flex items-center justify-between gap-4 px-4 py-4 border-t border-surface-border"
+        >
           <BaseButton variant="ghost" :disabled="stepIndex === 0" @click="goPrev">
             Previous
           </BaseButton>
-          <BaseButton
-            v-if="stepIndex < totalSteps - 1"
-            variant="primary"
-            @click="goNext"
-          >
+          <BaseButton v-if="stepIndex < totalSteps - 1" variant="primary" @click="goNext">
             Next
           </BaseButton>
           <BaseButton v-else variant="primary" @click="emit('close')">Done</BaseButton>

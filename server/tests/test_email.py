@@ -1,7 +1,11 @@
 import pytest
 from httpx import AsyncClient
 
-from app.core.email import ConsoleBackend, render_verification_email, render_verification_email_plain
+from app.core.email import (
+    ConsoleBackend,
+    render_verification_email,
+    render_verification_email_plain,
+)
 
 
 @pytest.mark.asyncio
@@ -48,7 +52,9 @@ async def test_console_backend_logs_metadata_only(
 ) -> None:
     logged: list[dict[str, object]] = []
 
-    def capture_info(_message: str, *, context: dict[str, object] | None = None) -> None:
+    def capture_info(
+        _message: str, *, context: dict[str, object] | None = None
+    ) -> None:
         logged.append(context or {})
 
     monkeypatch.setattr("app.core.email.logger.info", capture_info)

@@ -55,7 +55,8 @@ const skeletonRows = 5;
       >
         <div class="flex justify-between items-start gap-2 mb-1">
           <span class="text-xs text-surface-mid">
-            {{ expense.category ?? "Uncategorized" }} · {{ formatExpenseDate(expense.expense_date) }}
+            {{ expense.category ?? "Uncategorized" }} ·
+            {{ formatExpenseDate(expense.expense_date) }}
           </span>
           <span class="text-xs px-1.5 py-0.5 rounded bg-surface-border text-surface-mid">
             {{ expenseSourceLabel(expense.source) }}
@@ -71,11 +72,7 @@ const skeletonRows = 5;
             ≈
             {{
               formatMoney(
-                convertAmount(
-                  expense.amount,
-                  expense.currency as CurrencyCode,
-                  displayCurrency,
-                ),
+                convertAmount(expense.amount, expense.currency as CurrencyCode, displayCurrency),
                 displayCurrency,
               )
             }}

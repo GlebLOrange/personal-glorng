@@ -34,7 +34,7 @@ def _init_sentry() -> None:
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     settings = get_settings()
 
     await init_redis(settings.REDIS_URL)

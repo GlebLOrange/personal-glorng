@@ -16,7 +16,11 @@ const chipClass = (active: boolean) =>
 
 <template>
   <div class="flex flex-wrap gap-2">
-    <button type="button" :class="chipClass(categoryFilter === null)" @click="categoryFilter = null">
+    <button
+      type="button"
+      :class="chipClass(categoryFilter === null)"
+      @click="categoryFilter = null"
+    >
       All
     </button>
     <button

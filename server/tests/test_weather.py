@@ -65,7 +65,9 @@ async def test_weather_lookup_coords(client: AsyncClient) -> None:
         "app.services.weather.httpx.AsyncClient",
         return_value=_mock_weather_client(),
     ) as mock_cls:
-        resp = await client.get("/api/time-date-weather-location/lookup/51.1000,17.0333")
+        resp = await client.get(
+            "/api/time-date-weather-location/lookup/51.1000,17.0333"
+        )
 
     assert resp.status_code == 200
     mock_cls.return_value.get.assert_awaited_once()
@@ -125,7 +127,9 @@ async def test_weather_location_crud(auth_client: AsyncClient) -> None:
         assert list_resp.status_code == 200
         assert len(list_resp.json()) == 1
 
-        delete_resp = await auth_client.delete(f"/api/time-date-weather-location/locations/{created['id']}")
+        delete_resp = await auth_client.delete(
+            f"/api/time-date-weather-location/locations/{created['id']}"
+        )
         assert delete_resp.status_code == 204
 
         list_after = await auth_client.get("/api/time-date-weather-location/locations")
@@ -145,7 +149,9 @@ async def test_weather_location_cannot_delete_default(auth_client: AsyncClient) 
         assert create_resp.status_code == 201
         created = create_resp.json()
 
-        delete_resp = await auth_client.delete(f"/api/time-date-weather-location/locations/{created['id']}")
+        delete_resp = await auth_client.delete(
+            f"/api/time-date-weather-location/locations/{created['id']}"
+        )
         assert delete_resp.status_code == 422
         assert "default" in delete_resp.json()["detail"].lower()
 

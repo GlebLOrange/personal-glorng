@@ -40,7 +40,12 @@ export function useUserPreferences() {
     loading.value = true;
     try {
       const { data } = await api.get<UserPreferences>("/auth/me/preferences");
-      if (data.display_currency === "USD" || data.display_currency === "EUR" || data.display_currency === "PLN" || data.display_currency === "BYN") {
+      if (
+        data.display_currency === "USD" ||
+        data.display_currency === "EUR" ||
+        data.display_currency === "PLN" ||
+        data.display_currency === "BYN"
+      ) {
         displayCurrency.value = data.display_currency;
         localStorage.setItem(EXPENSE_CURRENCY_STORAGE_KEY, data.display_currency);
       } else {

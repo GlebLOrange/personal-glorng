@@ -27,7 +27,9 @@ def upgrade() -> None:
         sa.Column("title", sa.String(length=512), nullable=False),
         sa.Column("body", sa.Text(), nullable=False),
         sa.Column("url", sa.String(length=512), server_default="/", nullable=False),
-        sa.Column("visibility", sa.String(length=16), server_default="public", nullable=False),
+        sa.Column(
+            "visibility", sa.String(length=16), server_default="public", nullable=False
+        ),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -41,7 +43,9 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("source_type", "source_id", name="uq_search_documents_source"),
+        sa.UniqueConstraint(
+            "source_type", "source_id", name="uq_search_documents_source"
+        ),
     )
     op.create_index(
         "ix_search_documents_source_type",

@@ -1,11 +1,7 @@
 import { ref, type Ref } from "vue";
 
 import { api } from "@/composables/useApi";
-import {
-  PLATFORM_SERVICES,
-  type PlatformCatalog,
-  type PlatformService,
-} from "@/platform/services";
+import { PLATFORM_SERVICES, type PlatformCatalog, type PlatformService } from "@/platform/services";
 import { isAiChatEnabled } from "@/utils/featureFlags";
 
 function filterAiChat(services: PlatformService[]): PlatformService[] {
@@ -13,9 +9,7 @@ function filterAiChat(services: PlatformService[]): PlatformService[] {
   return services.filter((s) => s.slug !== "ai-chat");
 }
 
-function mapApiService(
-  s: PlatformCatalog["services"][number],
-): PlatformService {
+function mapApiService(s: PlatformCatalog["services"][number]): PlatformService {
   return {
     slug: s.slug,
     name: s.name,

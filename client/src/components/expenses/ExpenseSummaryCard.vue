@@ -46,9 +46,7 @@ const categoryBreakdown = computed(() => {
 <template>
   <BaseCard class="flex flex-col gap-4">
     <div>
-      <p class="text-xs text-surface-mid uppercase tracking-wider">
-        Total for {{ monthLabel }}
-      </p>
+      <p class="text-xs text-surface-mid uppercase tracking-wider">Total for {{ monthLabel }}</p>
       <p v-if="summary" class="text-2xl font-bold text-surface-light font-data">
         {{ formatMoney(summary.total, summary.currency) }}
       </p>

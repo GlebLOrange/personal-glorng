@@ -23,6 +23,7 @@ from app.services.user import (
     get_user_by_public_id,
 )
 
+
 async def _decode_and_validate(token: str, expected_type: str) -> dict[str, object]:
     """Decode a JWT and verify its type claim, raising UnauthorizedError on failure."""
     try:

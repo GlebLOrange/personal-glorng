@@ -22,9 +22,7 @@ const emit = defineEmits<{
 const locationRef = computed(() => props.query);
 const { weather, loading, error, refresh } = useWeatherLookup(locationRef);
 
-const utcOffset = computed(() =>
-  weather.value ? weatherUtcOffsetHours(weather.value) : null,
-);
+const utcOffset = computed(() => (weather.value ? weatherUtcOffsetHours(weather.value) : null));
 
 const anchorUnixtime = computed(() =>
   weather.value ? weatherAnchorUnixtime(weather.value) : null,

@@ -83,9 +83,7 @@ class UrlService(CRUDService[ShortenedUrl]):
         is_superuser: bool = False,
     ) -> None:
         url = await self.get(url_id)
-        if not is_superuser and (
-            url.created_by is None or url.created_by != actor_id
-        ):
+        if not is_superuser and (url.created_by is None or url.created_by != actor_id):
             raise ApiError(403, "You do not have permission to delete this URL")
         await self.delete(url_id)
         await remove_url(self.db, url_id)

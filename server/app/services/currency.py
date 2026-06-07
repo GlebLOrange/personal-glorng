@@ -1,13 +1,15 @@
 import json
 import time
 from decimal import Decimal
+
 import httpx
 
-from app.core.catalogs import ALLOWED_CURRENCIES, CurrencyCode
+from app.core.cache_json import safe_cache_json_loads
+from app.core.catalogs import ALLOWED_CURRENCIES
 from app.core.exceptions import ApiError
 from app.core.logging import logger
-from app.core.cache_json import safe_cache_json_loads
 from app.core.redis import cache_get, cache_set
+
 RATES_CACHE_KEY = "currency:rates:USD"
 RATES_API_URL = "https://open.er-api.com/v6/latest/USD"
 

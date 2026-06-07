@@ -5,8 +5,8 @@ from app.db.models.github_credential import GitHubCredential
 from app.db.models.google_auth import GoogleCredential
 from app.db.models.google_sync_queue import GoogleSyncQueue
 from app.db.models.recipe import Recipe
-from app.db.models.search_document import SearchDocument
 from app.db.models.reminder import Reminder
+from app.db.models.search_document import SearchDocument
 from app.db.models.shared_file import SharedFile
 from app.db.models.task import Task
 from app.db.models.task_intake import TaskIntake
@@ -26,8 +26,8 @@ __all__ = [
     "GoogleCredential",
     "GoogleSyncQueue",
     "Recipe",
-    "SearchDocument",
     "Reminder",
+    "SearchDocument",
     "SharedFile",
     "ShortenedUrl",
     "Task",

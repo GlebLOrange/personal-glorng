@@ -208,7 +208,8 @@ async function deleteAccount(): Promise<void> {
       <section class="space-y-4">
         <h2 class="text-lg font-bold text-surface-light">Integrations</h2>
         <p v-if="githubStatus.linked" class="text-sm text-surface-mid">
-          GitHub linked as <strong class="text-surface-light">{{ githubStatus.github_username }}</strong>
+          GitHub linked as
+          <strong class="text-surface-light">{{ githubStatus.github_username }}</strong>
         </p>
         <p v-else class="text-sm text-surface-mid">GitHub is not linked.</p>
         <div class="flex gap-3">

@@ -81,7 +81,9 @@ async function handleSubmit(): Promise<void> {
       <p v-else class="text-red-400 text-sm text-center">Invalid or missing reset link.</p>
 
       <p class="text-center text-xs text-surface-mid mt-6">
-        <RouterLink to="/login" class="text-accent-blue hover:underline">&larr; Back to login</RouterLink>
+        <RouterLink to="/login" class="text-accent-blue hover:underline"
+          >&larr; Back to login</RouterLink
+        >
       </p>
     </div>
   </div>

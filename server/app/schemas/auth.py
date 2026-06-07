@@ -3,7 +3,14 @@ import uuid
 from datetime import datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 from app.core.password_policy import validate_password_strength
 
@@ -78,7 +85,7 @@ class RegisterRequest(BaseModel):
         return trimmed or None
 
     @model_validator(mode="after")
-    def passwords_match(self) -> "RegisterRequest":
+    def passwords_match(self) -> RegisterRequest:
         if self.password != self.password_confirm:
             raise ValueError("Passwords do not match")
         if not self.accept_terms:
@@ -120,7 +127,7 @@ class ResetPasswordRequest(BaseModel):
         return validate_password_strength(value)
 
     @model_validator(mode="after")
-    def passwords_match(self) -> "ResetPasswordRequest":
+    def passwords_match(self) -> ResetPasswordRequest:
         if self.new_password != self.password_confirm:
             raise ValueError("Passwords do not match")
         return self
@@ -137,7 +144,7 @@ class ChangePasswordRequest(BaseModel):
         return validate_password_strength(value)
 
     @model_validator(mode="after")
-    def passwords_match(self) -> "ChangePasswordRequest":
+    def passwords_match(self) -> ChangePasswordRequest:
         if self.new_password != self.password_confirm:
             raise ValueError("Passwords do not match")
         if self.new_password == self.current_password:
@@ -198,7 +205,7 @@ class DeleteAccountRequest(BaseModel):
     confirm: bool = False
 
     @model_validator(mode="after")
-    def confirm_delete(self) -> "DeleteAccountRequest":
+    def confirm_delete(self) -> DeleteAccountRequest:
         if not self.confirm:
             raise ValueError("Account deletion must be confirmed")
         return self

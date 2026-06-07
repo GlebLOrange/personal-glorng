@@ -11,8 +11,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError, ValidationError
-from app.core.utils import as_utc
 from app.core.feature_flags import is_task_intake_ai_enabled
+from app.core.utils import as_utc
 from app.db.models.task import Task
 from app.db.models.task_intake import IntakeStatus, TaskIntake
 from app.db.models.telegram_inbound_message import TelegramInboundMessage

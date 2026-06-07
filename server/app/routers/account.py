@@ -64,7 +64,10 @@ async def patch_email(
         current_password=data.current_password,
     )
     await job_queue.enqueue(JobName.SEND_VERIFICATION_EMAIL, updated.email, token)
-    logger.info("Verification email queued after email change", context={"user_id": user.id})
+    logger.info(
+        "Verification email queued after email change",
+        context={"user_id": user.id},
+    )
     return MessageResponse(
         message="Email updated. Check your inbox to verify the new address.",
     )

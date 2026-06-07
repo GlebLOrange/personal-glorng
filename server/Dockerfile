@@ -6,7 +6,7 @@ FROM base AS builder
 
 RUN apk add --no-cache build-base
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.11.19 /uv /usr/local/bin/uv
 
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
@@ -22,7 +22,7 @@ FROM base AS dev
 
 RUN apk add --no-cache ffmpeg build-base bash libstdc++ wget
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.11.19 /uv /usr/local/bin/uv
 
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \

@@ -8,7 +8,13 @@ from app.core.deps import AuthorizedUser, RecipeServiceDep, require_capability
 from app.core.rate_limit import rate_limit_api
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
-from app.schemas.recipe import RecipeCreate, RecipeListResponse, RecipeResponse, RecipeSort, RecipeUpdate
+from app.schemas.recipe import (
+    RecipeCreate,
+    RecipeListResponse,
+    RecipeResponse,
+    RecipeSort,
+    RecipeUpdate,
+)
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 

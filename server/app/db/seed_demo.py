@@ -9,9 +9,7 @@ from app.db.seed.demo import seed_demo
 def parse_args() -> argparse.Namespace:
     """Parse CLI arguments."""
     parser = argparse.ArgumentParser(
-        description=(
-            "Fill the database with random demo data for each platform tool."
-        ),
+        description=("Fill the database with random demo data for each platform tool."),
     )
     parser.add_argument(
         "--count",
@@ -24,8 +22,7 @@ def parse_args() -> argparse.Namespace:
         action=argparse.BooleanOptionalAction,
         default=True,
         help=(
-            "Wipe tool tables before seeding (default: true). "
-            "Use --no-reset to append."
+            "Wipe tool tables before seeding (default: true). Use --no-reset to append."
         ),
     )
     return parser.parse_args()

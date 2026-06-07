@@ -82,7 +82,7 @@ class WorldTimeService:
                     parsed = self._parse_payload(data)
                     if parsed is not None:
                         return parsed
-            except (TypeError, ValueError, json.JSONDecodeError):
+            except TypeError, ValueError, json.JSONDecodeError:
                 pass
 
         url = self._timezone_url(trimmed)

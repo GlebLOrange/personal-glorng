@@ -28,7 +28,9 @@ async def test_list_users_requires_superuser(client: AsyncClient, db) -> None:
 
 
 @pytest.mark.asyncio
-async def test_list_users_as_superuser(auth_client: AsyncClient, admin_user: object) -> None:
+async def test_list_users_as_superuser(
+    auth_client: AsyncClient, admin_user: object
+) -> None:
     resp = await auth_client.get("/api/admin/users")
     assert resp.status_code == 200
     emails = {row["email"] for row in resp.json()}

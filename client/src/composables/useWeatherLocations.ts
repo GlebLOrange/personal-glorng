@@ -75,10 +75,7 @@ export function useWeatherLocations(): {
 } {
   const auth = useAuthStore();
   const { fetchConfig, isDefaultQuery } = useWeatherConfig();
-  const guestLocations = useLocalStorage<GuestWeatherLocation[]>(
-    SAVED_LOCATIONS_STORAGE_KEY,
-    [],
-  );
+  const guestLocations = useLocalStorage<GuestWeatherLocation[]>(SAVED_LOCATIONS_STORAGE_KEY, []);
 
   if (typeof localStorage !== "undefined") {
     const sanitized = readGuestLocations(SAVED_LOCATIONS_STORAGE_KEY);

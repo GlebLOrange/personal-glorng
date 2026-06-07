@@ -23,7 +23,7 @@ dependencies = [
     "google-auth==2.53.*",
     "google-auth-oauthlib==1.4.*",
     "google-api-python-client==2.197.*",
-    "yt-dlp",
+    "yt-dlp>=2026.3.17",
 ]
 
 [dependency-groups]
@@ -46,8 +46,13 @@ select = [
 ignore = []
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["ANN201", "ANN401", "S101", "S105", "S107", "ARG001", "ARG002"]
-"app/db/migrations/**/*.py" = ["E501", "ANN"]
+"tests/**/*.py" = [
+  "ANN001", "ANN201", "ANN401", "S101", "S105", "S106", "S107",
+  "ARG001", "ARG002", "E501",
+]
+"app/db/migrations/**/*.py" = ["E402", "E501", "ANN"]
+"app/routers/**/*.py" = ["B008"]
+"app/core/password_policy.py" = ["S105"]
 "app/db/seed/**/*.py" = ["E501"]
 "app/services/amp_page.py" = ["E501"]
 "app/settings.py" = ["ANN401"]

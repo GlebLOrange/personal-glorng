@@ -58,15 +58,9 @@ const { messages, input, loading, send, clear } = useSearchChat({
   onError: (message) => toast(message, "error"),
 });
 
-const providerLabel = computed(
-  () => chatConfig.value?.provider ?? "…",
-);
-const modelLabel = computed(
-  () => chatConfig.value?.model ?? "…",
-);
-const isReady = computed(
-  () => Boolean(chatConfig.value?.enabled && chatConfig.value?.configured),
-);
+const providerLabel = computed(() => chatConfig.value?.provider ?? "…");
+const modelLabel = computed(() => chatConfig.value?.model ?? "…");
+const isReady = computed(() => Boolean(chatConfig.value?.enabled && chatConfig.value?.configured));
 
 function scrollToBottom(): void {
   nextTick(() => chatEnd.value?.scrollIntoView({ behavior: "smooth" }));
@@ -122,10 +116,7 @@ onMounted(() => {
         <span class="text-surface-mid/60 text-xs">·</span>
         <span class="text-surface-mid text-xs">{{ modelLabel }}</span>
         <span class="text-surface-mid/60 text-xs">· personal search</span>
-        <span
-          v-if="!configLoading && !isReady"
-          class="ml-auto text-xs text-amber-400/90"
-        >
+        <span v-if="!configLoading && !isReady" class="ml-auto text-xs text-amber-400/90">
           not configured
         </span>
       </div>
@@ -250,12 +241,12 @@ onMounted(() => {
         <p class="text-surface-mid text-sm leading-relaxed">
           AI chat searches your indexed content first (portfolio, recipes, tasks, expenses, and
           more), then streams a grounded answer with citations. Set
-          <code class="text-surface-sage">OPENAI_API_KEY</code>,
-          optional <code class="text-surface-sage">LLM_BASE_URL</code>, and
+          <code class="text-surface-sage">OPENAI_API_KEY</code>, optional
+          <code class="text-surface-sage">LLM_BASE_URL</code>, and
           <code class="text-surface-sage">OPENAI_CHAT_MODEL</code> in your server
           <code class="text-surface-sage">.env</code>, run
-          <code class="text-surface-sage">python scripts/reindex_search.py</code> after deploy,
-          then restart the backend. Set <code class="text-surface-sage">AI_CHAT_ENABLED=false</code>
+          <code class="text-surface-sage">python scripts/reindex_search.py</code> after deploy, then
+          restart the backend. Set <code class="text-surface-sage">AI_CHAT_ENABLED=false</code>
           to hide this tool entirely.
         </p>
       </section>
@@ -270,12 +261,14 @@ onMounted(() => {
           class="rounded-lg border border-surface-border bg-surface-dark p-4 space-y-2"
         >
           <p class="text-sm text-surface-light font-medium">{{ example.name }}</p>
-          <pre class="text-xs text-surface-sage whitespace-pre-wrap font-mono">{{ example.env }}</pre>
+          <pre class="text-xs text-surface-sage whitespace-pre-wrap font-mono">{{
+            example.env
+          }}</pre>
         </div>
         <p class="text-surface-mid text-xs">
-          For Ollama in Docker: run <code class="text-surface-sage">ollama pull &lt;model&gt;</code>
-          on the host and use <code class="text-surface-sage">host.docker.internal</code> as shown
-          above.
+          For Ollama in Docker: run
+          <code class="text-surface-sage">ollama pull &lt;model&gt;</code> on the host and use
+          <code class="text-surface-sage">host.docker.internal</code> as shown above.
         </p>
       </section>
     </BaseCard>

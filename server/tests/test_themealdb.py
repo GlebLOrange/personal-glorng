@@ -43,7 +43,7 @@ def _session_ctx(db: AsyncSession) -> callable:
     """Build a fake session factory that yields the test db session."""
 
     @asynccontextmanager
-    async def _ctx() -> AsyncGenerator[AsyncSession, None]:
+    async def _ctx() -> AsyncGenerator[AsyncSession]:
         yield db
 
     return _ctx

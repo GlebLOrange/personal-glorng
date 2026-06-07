@@ -77,9 +77,7 @@ const selectClass =
 
 <template>
   <BaseCard class="space-y-4">
-    <p class="text-xs text-surface-mid">
-      Convert between EUR, USD, PLN, and BYN using live rates.
-    </p>
+    <p class="text-xs text-surface-mid">Convert between EUR, USD, PLN, and BYN using live rates.</p>
 
     <BaseInput
       v-model="amount"

@@ -6,8 +6,16 @@ import { DATE_TIME_LOCATION_SECTION } from "@/constants/timeDateWeatherLocation"
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
 
-const { locations, loading, seeding, isDefaultLocation, addLocation, removeLocation, canAddLocation, guestLimitMessage } =
-  useWeatherLocations();
+const {
+  locations,
+  loading,
+  seeding,
+  isDefaultLocation,
+  addLocation,
+  removeLocation,
+  canAddLocation,
+  guestLimitMessage,
+} = useWeatherLocations();
 const { toast } = useNotify();
 
 async function handleAdd(label: string, query: string): Promise<void> {

@@ -63,14 +63,14 @@ def user_id_from_access_token(raw: str) -> int | None:
     if uid is not None:
         try:
             return int(uid)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
     sub = payload.get("sub")
     if sub is None:
         return None
     try:
         return int(sub)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
 
 
@@ -106,7 +106,10 @@ def create_reset_token(email: str) -> str:
     return _create_token(email, "reset", timedelta(hours=1))
 
 
-def create_oauth_state_token(subject: str, expires_delta: timedelta | None = None) -> str:
+def create_oauth_state_token(
+    subject: str,
+    expires_delta: timedelta | None = None,
+) -> str:
     delta = expires_delta or timedelta(minutes=10)
     return _create_token(
         subject,

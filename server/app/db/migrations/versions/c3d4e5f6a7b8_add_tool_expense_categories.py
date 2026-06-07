@@ -47,7 +47,10 @@ def upgrade() -> None:
     )
     op.bulk_insert(
         table,
-        [{"name": name, "sort_order": index} for index, name in enumerate(_DEFAULT_CATEGORIES)],
+        [
+            {"name": name, "sort_order": index}
+            for index, name in enumerate(_DEFAULT_CATEGORIES)
+        ],
     )
 
     conn = op.get_bind()
