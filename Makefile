@@ -1,4 +1,4 @@
-.PHONY: dev dev-lite dev-worker dev-bot dev-full prod test lint lint-check check check-symlinks migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes backup backup-install db-pull-prod down logs bot-logs
+.PHONY: dev dev-lite dev-worker dev-bot dev-full prod test lint lint-check check check-symlinks migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
 
 msg ?=
 CHECK_DB ?= 1
@@ -82,6 +82,9 @@ seed-demo:
 
 seed-demo-add:
 	docker compose exec server python -m app.db.seed_demo --count 50 --no-reset
+
+reindex-search:
+	docker compose exec server python scripts/reindex_search.py
 
 backup:
 	bash scripts/db_maintenance.sh

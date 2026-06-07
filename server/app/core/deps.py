@@ -14,10 +14,10 @@ from app.db.models.user import User
 from app.db.session import get_db
 from app.services.ai_chat import OpenAIService
 from app.services.ai_search import AiSearchService
-from app.services.search_index import SearchIndexService
 from app.services.audit import AuditService
 from app.services.currency import CurrencyService
 from app.services.recipe import RecipeService
+from app.services.search_index import SearchIndexService
 from app.services.task import TaskService
 from app.services.task_intake import TaskIntakeService
 from app.services.tool_expense import ToolExpenseService

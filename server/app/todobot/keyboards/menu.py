@@ -24,7 +24,10 @@ def main_menu() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text=LABEL_NEW_TASK), KeyboardButton(text=LABEL_MY_TASKS)],
-            [KeyboardButton(text=LABEL_LOG_EXPENSE), KeyboardButton(text=LABEL_CALENDAR)],
+            [
+                KeyboardButton(text=LABEL_LOG_EXPENSE),
+                KeyboardButton(text=LABEL_CALENDAR),
+            ],
             [KeyboardButton(text=LABEL_HELP), KeyboardButton(text=LABEL_RESTART)],
         ],
         resize_keyboard=True,

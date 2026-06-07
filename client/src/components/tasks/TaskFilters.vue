@@ -24,12 +24,7 @@ const emit = defineEmits<{ create: [] }>();
       </select>
       <span class="text-xs text-surface-mid">{{ taskCountLabel }}</span>
     </div>
-    <BaseButton
-      v-if="canMutate"
-      variant="primary"
-      size="sm"
-      @click="emit('create')"
-    >
+    <BaseButton v-if="canMutate" variant="primary" size="sm" @click="emit('create')">
       + New task
     </BaseButton>
   </div>

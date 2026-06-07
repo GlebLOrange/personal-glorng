@@ -77,13 +77,16 @@ async def google_oauth_callback(
         )
         existing = result.scalar_one_or_none()
 
+        from app.services.github_credentials import store_google_refresh_token
+
+        encrypted_token = store_google_refresh_token(credentials.refresh_token)
         if existing:
-            existing.refresh_token = credentials.refresh_token
+            existing.refresh_token = encrypted_token
             db.add(existing)
         else:
             cred = GoogleCredential(
                 telegram_user_id=telegram_user_id,
-                refresh_token=credentials.refresh_token,
+                refresh_token=encrypted_token,
             )
             db.add(cred)
 

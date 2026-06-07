@@ -46,9 +46,7 @@ function togglePermission(key: string, checked: boolean): void {
 
 <template>
   <div class="space-y-4">
-    <div
-      class="rounded border border-surface-border bg-surface-dark/80 px-3 py-3 space-y-1"
-    >
+    <div class="rounded border border-surface-border bg-surface-dark/80 px-3 py-3 space-y-1">
       <label
         class="flex items-start gap-2 text-sm text-surface-light cursor-pointer"
         :class="{ 'opacity-50 cursor-not-allowed': disabled || lockSuperuser }"
@@ -78,11 +76,7 @@ function togglePermission(key: string, checked: boolean): void {
         <span v-if="isSuperuser" class="text-surface-muted">— included via superuser</span>
       </p>
 
-      <section
-        v-for="section in sections"
-        :key="section.category"
-        class="space-y-2"
-      >
+      <section v-for="section in sections" :key="section.category" class="space-y-2">
         <h3 class="text-xs font-medium text-surface-light uppercase tracking-wide">
           {{ section.label }}
         </h3>

@@ -1,4 +1,7 @@
-"""URL shortener API. Public create; list/delete require `url-shortener` capabilities."""
+"""URL shortener API.
+
+Public create; list/delete require `url-shortener` capabilities.
+"""
 
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import RedirectResponse

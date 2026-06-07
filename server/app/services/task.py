@@ -23,7 +23,7 @@ from app.schemas.task import (
     TaskTextFields,
 )
 from app.services.audit import AuditService, domain_event
-from app.services.search_indexers.task import index_task
+from app.services.search_indexers.task import index_task, remove_task
 
 
 class TaskService:
@@ -126,6 +126,7 @@ class TaskService:
         self.db.add(history)
         await self.db.flush()
         await self.db.refresh(task)
+        await index_task(self.db, task)
 
         logger.debug(
             "Task status updated",
@@ -438,6 +439,7 @@ class TaskService:
         )
         tasks = list(result.scalars().all())
         for task in tasks:
+            await remove_task(self.db, task.id)
             await self.db.delete(task)
         await self.db.flush()
         return len(tasks)

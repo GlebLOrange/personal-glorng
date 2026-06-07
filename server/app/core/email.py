@@ -117,7 +117,7 @@ def _cta_button(href: str, label: str) -> str:
         f'style="border-radius:8px;background:{colors["accent_blue"]};">'
         f'<a href="{safe_href}" target="_blank" '
         f'style="display:inline-block;padding:12px 24px;font-family:{FONT_STACK};'
-        f'font-size:14px;font-weight:600;color:{colors["surface_dark"]};'
+        f"font-size:14px;font-weight:600;color:{colors['surface_dark']};"
         'text-decoration:none;border-radius:8px;">'
         f"{safe_label}</a></td></tr></table>"
     )
@@ -155,7 +155,7 @@ def _wrap_email(title: str, body: str, *, site_url: str | None = None) -> str:
         f'background:{colors["surface_dark"]};">'
         '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" '
         f'border="0" style="background:{colors["surface_dark"]};padding:32px 16px;">'
-        "<tr><td align=\"center\">"
+        '<tr><td align="center">'
         '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" '
         'border="0" style="max-width:560px;">'
         "<tr><td "

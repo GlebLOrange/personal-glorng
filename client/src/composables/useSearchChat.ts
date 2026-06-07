@@ -9,9 +9,17 @@ export interface SearchSource {
 }
 
 export interface ChatMessage {
+  id: string;
   role: "user" | "assistant";
   content: string;
   sources?: SearchSource[];
+}
+
+let messageCounter = 0;
+
+function nextMessageId(): string {
+  messageCounter += 1;
+  return `msg-${messageCounter}-${Date.now()}`;
 }
 
 interface StreamEvent {
@@ -54,10 +62,15 @@ export function useSearchChat(options: UseSearchChatOptions) {
     const text = input.value.trim();
     if (!text || loading.value) return;
 
-    messages.value.push({ role: "user", content: text });
+    messages.value.push({ id: nextMessageId(), role: "user", content: text });
     input.value = "";
     loading.value = true;
-    messages.value.push({ role: "assistant", content: "", sources: [] });
+    messages.value.push({
+      id: nextMessageId(),
+      role: "assistant",
+      content: "",
+      sources: [],
+    });
 
     try {
       const payload = messages.value
@@ -98,6 +111,23 @@ export function useSearchChat(options: UseSearchChatOptions) {
         const { events, rest } = parseSseEvents(buffer);
         buffer = rest;
 
+        for (const event of events) {
+          if (event.error) {
+            throw new Error(event.error);
+          }
+          const last = messages.value.at(-1);
+          if (!last || last.role !== "assistant") continue;
+          if (event.sources) {
+            last.sources = event.sources;
+          }
+          if (event.delta) {
+            last.content += event.delta;
+          }
+        }
+      }
+
+      if (buffer.trim()) {
+        const { events } = parseSseEvents(`${buffer}\n\n`);
         for (const event of events) {
           if (event.error) {
             throw new Error(event.error);

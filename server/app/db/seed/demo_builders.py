@@ -86,7 +86,16 @@ TAG_PROTEINS = (
 
 RECIPE_ADJECTIVES = ("Classic", "Homestyle", "Rustic", "Spicy", "Creamy", "Fresh")
 RECIPE_PROTEINS = ("Chicken", "Beef", "Salmon", "Tofu", "Shrimp", "Pork", "Lamb")
-RECIPE_STYLES = ("Stir-Fry", "Curry", "Soup", "Salad", "Pasta", "Bowl", "Tacos", "Skillet")
+RECIPE_STYLES = (
+    "Stir-Fry",
+    "Curry",
+    "Soup",
+    "Salad",
+    "Pasta",
+    "Bowl",
+    "Tacos",
+    "Skillet",
+)
 INGREDIENTS = (
     "onion",
     "garlic",

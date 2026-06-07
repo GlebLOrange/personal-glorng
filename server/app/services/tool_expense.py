@@ -8,6 +8,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.catalogs import ALLOWED_CURRENCIES, DEFAULT_EXPENSE_CURRENCY
 from app.core.exceptions import ValidationError
 from app.db.models.audit_event import AuditActorType, AuditSource
 from app.db.models.tool_expense import ToolExpense
@@ -22,7 +23,6 @@ from app.schemas.tool_expense import (
 )
 from app.services.audit import AuditService
 from app.services.base import CRUDService
-from app.core.catalogs import ALLOWED_CURRENCIES, DEFAULT_EXPENSE_CURRENCY
 from app.services.currency import CurrencyService
 from app.services.search_indexers.expense import index_expense, remove_expense
 from app.services.tool_expense_category import ToolExpenseCategoryService
@@ -114,7 +114,9 @@ class ToolExpenseService(CRUDService[ToolExpense]):
         expense = await self.get(expense_id)
         payload = data.model_dump(exclude_unset=True)
         if "category" in payload:
-            await ToolExpenseCategoryService(self.db).ensure_category(payload["category"])
+            await ToolExpenseCategoryService(self.db).ensure_category(
+                payload["category"]
+            )
         for key, value in payload.items():
             setattr(expense, key, value)
         await self.db.flush()

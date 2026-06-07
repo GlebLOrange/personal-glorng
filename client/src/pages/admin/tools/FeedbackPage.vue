@@ -102,10 +102,7 @@ onMounted(load);
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-1">
               <span class="text-surface-light font-bold text-sm truncate">{{ item.theme }}</span>
-              <span
-                class="text-[10px] px-1.5 py-0.5 rounded"
-                :class="statusColors[item.status]"
-              >
+              <span class="text-[10px] px-1.5 py-0.5 rounded" :class="statusColors[item.status]">
                 {{ item.status }}
               </span>
             </div>

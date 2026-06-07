@@ -85,7 +85,9 @@ export const useAuthStore = defineStore("auth", () => {
     return data;
   }
 
-  async function updatePreferences(preferences: Partial<UserPreferences>): Promise<UserPreferences> {
+  async function updatePreferences(
+    preferences: Partial<UserPreferences>,
+  ): Promise<UserPreferences> {
     const { data } = await api.patch<UserPreferences>("/auth/me/preferences", preferences);
     if (user.value) {
       user.value = {

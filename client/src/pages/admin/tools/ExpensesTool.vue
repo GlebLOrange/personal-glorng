@@ -170,7 +170,9 @@ const expenseCountLabel = computed(() => {
   return `${count} expense${count === 1 ? "" : "s"}`;
 });
 
-const productSuggestions = computed(() => summary.value?.by_tool.map((item) => item.tool_name) ?? []);
+const productSuggestions = computed(
+  () => summary.value?.by_tool.map((item) => item.tool_name) ?? [],
+);
 
 function resolvedCategory(name: string): string {
   if (categoryOptions.value.includes(name)) return name;
@@ -464,12 +466,7 @@ onMounted(() => {
   if (tab) activeTab.value = tab;
   applyMonthPreset("this_month");
   quickAdd.value.category = resolvedCategory(lastCategory.value);
-  void Promise.all([
-    loadPreferences(),
-    loadRates(),
-    reloadListAndSummary(),
-    loadCategories(),
-  ]);
+  void Promise.all([loadPreferences(), loadRates(), reloadListAndSummary(), loadCategories()]);
 });
 </script>
 
@@ -524,7 +521,10 @@ onMounted(() => {
         </div>
       </div>
 
-      <ExpenseCategoryChips v-model:category-filter="categoryFilter" :category-options="categoryOptions" />
+      <ExpenseCategoryChips
+        v-model:category-filter="categoryFilter"
+        :category-options="categoryOptions"
+      />
 
       <p class="text-xs text-surface-mid -mt-3">{{ expenseCountLabel }}</p>
 

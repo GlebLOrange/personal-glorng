@@ -21,5 +21,7 @@ class User(BaseModelMixin, Base):
     is_protected: Mapped[bool] = mapped_column(default=False, server_default="false")
     permissions: Mapped[list[str]] = mapped_column(JSON, default=list)
     display_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    timezone: Mapped[str] = mapped_column(String(64), default="UTC", server_default="UTC")
+    timezone: Mapped[str] = mapped_column(
+        String(64), default="UTC", server_default="UTC"
+    )
     preferences: Mapped[dict[str, object]] = mapped_column(JSON, default=dict)

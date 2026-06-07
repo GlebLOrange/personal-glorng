@@ -150,11 +150,7 @@ onMounted(async () => {
       @cook="openCookMode"
     />
 
-    <RecipeCookMode
-      :recipe="selectedRecipe"
-      :open="showCookMode"
-      @close="closeCookMode"
-    />
+    <RecipeCookMode :recipe="selectedRecipe" :open="showCookMode" @close="closeCookMode" />
 
     <ExpenseConfirmDialog
       v-if="canWrite"

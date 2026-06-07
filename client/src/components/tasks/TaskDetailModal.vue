@@ -51,7 +51,10 @@ function actionVariant(status: TaskStatus): "primary" | "ghost" {
 
     <div v-else class="space-y-5 max-h-[70vh] overflow-y-auto">
       <span
-        :class="['text-xs px-2 py-1 rounded-full border inline-block', statusBadgeClass(task.status)]"
+        :class="[
+          'text-xs px-2 py-1 rounded-full border inline-block',
+          statusBadgeClass(task.status),
+        ]"
       >
         {{ statusLabel(task.status) }}
       </span>
@@ -100,11 +103,7 @@ function actionVariant(status: TaskStatus): "primary" | "ghost" {
       <section v-if="task.status_history.length" class="border-t border-surface-border pt-4">
         <h3 class="text-sm font-medium text-surface-mid mb-2">What changed</h3>
         <ul class="space-y-2">
-          <li
-            v-for="entry in task.status_history"
-            :key="entry.id"
-            class="text-sm text-surface-mid"
-          >
+          <li v-for="entry in task.status_history" :key="entry.id" class="text-sm text-surface-mid">
             <span class="text-surface-light">{{ statusLabel(entry.old_status) }}</span>
             <span class="mx-1">&rarr;</span>
             <span class="text-surface-light">{{ statusLabel(entry.new_status) }}</span>
@@ -140,7 +139,10 @@ function actionVariant(status: TaskStatus): "primary" | "ghost" {
         </div>
       </section>
 
-      <details v-if="canMutate" class="border-t border-surface-border pt-4 text-sm text-surface-mid">
+      <details
+        v-if="canMutate"
+        class="border-t border-surface-border pt-4 text-sm text-surface-mid"
+      >
         <summary class="cursor-pointer hover:text-surface-light select-none">
           Technical details
         </summary>

@@ -12,7 +12,9 @@ defineProps<{
       <span class="accent-gradient">{{ name }}</span>
     </h1>
     <p class="text-xl md:text-2xl text-surface-mid mb-6">{{ title }}</p>
-    <p class="text-sm md:text-base text-surface-mid/80 max-w-2xl mx-auto leading-relaxed text-pretty">
+    <p
+      class="text-sm md:text-base text-surface-mid/80 max-w-2xl mx-auto leading-relaxed text-pretty"
+    >
       {{ bio }}
     </p>
     <div class="mt-8 flex justify-center gap-4">

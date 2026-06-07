@@ -21,7 +21,8 @@ Equivalent to `make dev-lite` with the overlay. Docker daemon on this VM also us
 1. Copy env: `cp .env.example .env` and set at minimum `JWT_SECRET` (32+ chars), `REDIS_PASSWORD`, and `SEED_PASSWORD`.
 2. Start backend: command above (or `make dev-lite` plus the cloud overlay file).
 3. Seed admin: `docker compose … exec server python scripts/ensure_e2e_user.py` (or `make seed` with `SEED_PASSWORD` set).
-4. Frontend: `cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev` → http://localhost:3000
+4. Backfill search index (first deploy or after schema changes): `make reindex-search`
+5. Frontend: `cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev` → http://localhost:3000
 
 Default E2E credentials: `admin@glorng.dev` / `MyTestPass123!`
 

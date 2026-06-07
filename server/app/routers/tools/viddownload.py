@@ -191,9 +191,7 @@ async def download_video(
                 _stream_and_cleanup(target, tmp_dir),
                 media_type=mime or "application/octet-stream",
                 headers={
-                    "Content-Disposition": attachment_content_disposition(
-                        target.name
-                    ),
+                    "Content-Disposition": attachment_content_disposition(target.name),
                     "Content-Length": str(file_size),
                 },
             )

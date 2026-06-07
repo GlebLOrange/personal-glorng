@@ -12,8 +12,15 @@ async def index_feedback(db: AsyncSession, feedback: Feedback) -> None:
         source_type=FEEDBACK_SOURCE_TYPE,
         source_id=feedback.id,
         title=f"Feedback: {feedback.theme}",
-        body=f"{feedback.email}\n{feedback.message}",
+        body=f"Status: {feedback.status}\n{feedback.message}",
         url="/admin/tools/feedback",
         visibility=SearchVisibility.ADMIN,
     )
     await SearchIndexService(db).upsert(document)
+
+
+async def remove_feedback(db: AsyncSession, feedback_id: int) -> None:
+    await SearchIndexService(db).delete_by_source(
+        FEEDBACK_SOURCE_TYPE,
+        feedback_id,
+    )

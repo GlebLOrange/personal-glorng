@@ -28,7 +28,11 @@ async def get_users(_admin: AdminUser, db: DbSession) -> list[AdminUserSummary]:
     response_model=AdminUserSummary,
     summary="Get user",
 )
-async def get_user(public_id: uuid.UUID, _admin: AdminUser, db: DbSession) -> AdminUserSummary:
+async def get_user(
+    public_id: uuid.UUID,
+    _admin: AdminUser,
+    db: DbSession,
+) -> AdminUserSummary:
     user = await get_user_detail(db, public_id)
     return AdminUserSummary.model_validate(user)
 

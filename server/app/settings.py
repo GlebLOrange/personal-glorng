@@ -30,7 +30,8 @@ def _resolve_database_url(url: str) -> str:
     if Path("/.dockerenv").exists():
         return url
     parsed = make_url(url)
-    if parsed.host == _COMPOSE_DB_HOST and (parsed.port or _COMPOSE_DB_PORT) == _COMPOSE_DB_PORT:
+    compose_port = parsed.port or _COMPOSE_DB_PORT
+    if parsed.host == _COMPOSE_DB_HOST and compose_port == _COMPOSE_DB_PORT:
         parsed = parsed.set(host=_HOST_DB_HOST, port=_HOST_DB_PORT)
     return parsed.render_as_string(hide_password=False)
 
@@ -225,6 +226,7 @@ class Settings(BaseSettings):
 
     # App
     APP_ENV: str = "development"
+    LOG_REQUESTS: bool = True
     APP_NAME: str = "gLOrng"
     BASE_URL: str = "http://localhost"
     MEDIA_DIR: str = "/app/media"

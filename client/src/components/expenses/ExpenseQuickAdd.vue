@@ -77,14 +77,10 @@ defineExpose({ focusEntry });
       <p v-else-if="smartError" class="text-xs text-red-400">{{ smartError }}</p>
 
       <div class="border-t border-surface-border pt-3">
-        <p class="text-xs text-surface-mid uppercase tracking-wider mb-2">
-          Or use fields
-        </p>
+        <p class="text-xs text-surface-mid uppercase tracking-wider mb-2">Or use fields</p>
         <div class="flex flex-col sm:flex-row sm:items-end gap-3">
           <div>
-            <label
-              class="text-xs text-surface-mid uppercase tracking-wider block mb-1"
-            >
+            <label class="text-xs text-surface-mid uppercase tracking-wider block mb-1">
               Category
             </label>
             <select v-model="category" :class="SELECT_CLASS_COMPACT">

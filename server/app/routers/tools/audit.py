@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends
 
 from app.core.deps import AuditServiceDep, AuthorizedUser, require_capability
 from app.core.pagination import PaginationParams, audit_pagination_params
-from app.openapi import requires_capability
 from app.schemas.audit import AuditEventListResponse, AuditEventResponse
 from app.schemas.date_filters import AuditDateFilter, audit_date_filter
 

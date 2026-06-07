@@ -60,12 +60,15 @@ class UrlService(CRUDService[ShortenedUrl]):
         return url
 
     async def increment_clicks(self, code: str) -> None:
+        url = await self.get_by_code(code)
         await self.db.execute(
             update(ShortenedUrl)
             .where(ShortenedUrl.code == code)
             .values(clicks=ShortenedUrl.clicks + 1)
         )
         await self.db.flush()
+        await self.db.refresh(url)
+        await index_url(self.db, url)
 
     async def list_by_owner(
         self,
@@ -83,9 +86,7 @@ class UrlService(CRUDService[ShortenedUrl]):
         is_superuser: bool = False,
     ) -> None:
         url = await self.get(url_id)
-        if not is_superuser and (
-            url.created_by is None or url.created_by != actor_id
-        ):
+        if not is_superuser and (url.created_by is None or url.created_by != actor_id):
             raise ApiError(403, "You do not have permission to delete this URL")
         await self.delete(url_id)
         await remove_url(self.db, url_id)

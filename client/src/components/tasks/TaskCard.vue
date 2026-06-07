@@ -21,7 +21,10 @@ const emit = defineEmits<{ select: [id: number] }>();
         <div class="flex items-center gap-2 mb-1 flex-wrap">
           <span class="text-surface-light font-bold text-sm truncate">{{ task.title }}</span>
           <span
-            :class="['text-[10px] px-2 py-0.5 rounded-full border shrink-0', statusBadgeClass(task.status)]"
+            :class="[
+              'text-[10px] px-2 py-0.5 rounded-full border shrink-0',
+              statusBadgeClass(task.status),
+            ]"
           >
             {{ statusLabel(task.status) }}
           </span>

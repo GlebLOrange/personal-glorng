@@ -59,7 +59,7 @@ def _extract_coordinates(data: dict[str, Any]) -> tuple[float, float] | None:
     try:
         lat = float(area["latitude"])
         lon = float(area["longitude"])
-    except (KeyError, TypeError, ValueError):
+    except KeyError, TypeError, ValueError:
         return None
     if not (-90 <= lat <= 90 and -180 <= lon <= 180):
         return None
@@ -137,7 +137,7 @@ async def _resolve_timezone_info(lat: float, lon: float) -> TimezoneInfo | None:
                 offset_hours = payload.get("offset_hours")
                 if isinstance(iana, str) and isinstance(offset_hours, int | float):
                     return TimezoneInfo(iana=iana, offset_hours=float(offset_hours))
-        except (TypeError, ValueError, json.JSONDecodeError):
+        except TypeError, ValueError, json.JSONDecodeError:
             pass
 
     try:

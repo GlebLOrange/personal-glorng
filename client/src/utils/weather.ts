@@ -110,10 +110,7 @@ export function localTimeFromOffset(offsetHours: number): LocalTimeParts {
 }
 
 /** Local time parts from a unix anchor and UTC offset in hours. */
-export function localTimePartsFromUnix(
-  unixtime: number,
-  offsetHours: number,
-): LocalTimeParts {
+export function localTimePartsFromUnix(unixtime: number, offsetHours: number): LocalTimeParts {
   const local = new Date(unixtime * 1000 + offsetHours * 3_600_000);
   return {
     hours24: local.getUTCHours(),
@@ -183,10 +180,7 @@ export function formatLiveLocalDateTime(offsetHours: number): string {
   return `${weekday} ${month} ${day} ${hour12}:${pad2(minutes)} ${ampm}`;
 }
 
-export function formatLiveLocalDateTimeFromUnix(
-  unixtime: number,
-  offsetHours: number,
-): string {
+export function formatLiveLocalDateTimeFromUnix(unixtime: number, offsetHours: number): string {
   const local = new Date(unixtime * 1000 + offsetHours * 3_600_000);
   const weekday = WEEKDAYS[local.getUTCDay()];
   const month = MONTHS[local.getUTCMonth()];

@@ -3,7 +3,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 
-from app.core.deps import AppSettings, CurrentUser, DbSession, JobQueueDep, oauth2_scheme
+from app.core.deps import (
+    AppSettings,
+    CurrentUser,
+    DbSession,
+    JobQueueDep,
+    oauth2_scheme,
+)
 from app.core.exceptions import UnauthorizedError
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_auth

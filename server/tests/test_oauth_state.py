@@ -50,9 +50,13 @@ async def test_github_oauth_state_is_one_time_use(
         # The allowlist is config-driven; keep this test isolated from env.
         assert username
 
-    monkeypatch.setattr(github_router, "exchange_code_for_token", fake_exchange_code_for_token)
+    monkeypatch.setattr(
+        github_router, "exchange_code_for_token", fake_exchange_code_for_token
+    )
     monkeypatch.setattr(github_router, "get_github_user", fake_get_github_user)
-    monkeypatch.setattr(github_router, "validate_allowed_user", fake_validate_allowed_user)
+    monkeypatch.setattr(
+        github_router, "validate_allowed_user", fake_validate_allowed_user
+    )
 
     resp = await auth_client.get("/api/auth/github/authorize", follow_redirects=False)
     assert resp.status_code in {302, 307}
@@ -97,4 +101,3 @@ async def test_google_oauth_rejects_expired_state_token(client: AsyncClient) -> 
         params={"code": "dummy", "state": expired},
     )
     assert resp.status_code == 400
-

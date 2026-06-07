@@ -15,9 +15,7 @@ export interface ContactLink {
   href: string;
 }
 
-export function buildContactLinks(
-  links: Partial<Record<ContactLinkId, string>>,
-): ContactLink[] {
+export function buildContactLinks(links: Partial<Record<ContactLinkId, string>>): ContactLink[] {
   return CONTACT_ORDER.flatMap((id) => {
     const raw = links[id]?.trim();
     if (!raw) {

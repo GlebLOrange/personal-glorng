@@ -10,7 +10,14 @@ from app.core.logging import logger
 from app.db.session import get_session_factory
 from app.services.task import get_unsent_reminders
 from app.settings import get_settings
-from app.todobot.handlers import calendar, expense, reminder, start, task_create, task_manage
+from app.todobot.handlers import (
+    calendar,
+    expense,
+    reminder,
+    start,
+    task_create,
+    task_manage,
+)
 from app.todobot.middlewares.auth import AllowedUserMiddleware
 from app.todobot.middlewares.db import DbSessionMiddleware
 from app.workers.queue import close_job_queue, init_job_queue

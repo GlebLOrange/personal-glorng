@@ -143,10 +143,7 @@ export function useExpenseFilters(
     if (dateFilterMode.value === "range" && dateFrom.value && dateTo.value) {
       const from = new Date(dateFrom.value + "T00:00:00");
       const to = new Date(dateTo.value + "T00:00:00");
-      const spanDays = Math.max(
-        0,
-        Math.round((to.getTime() - from.getTime()) / 86_400_000),
-      );
+      const spanDays = Math.max(0, Math.round((to.getTime() - from.getTime()) / 86_400_000));
       const prevEnd = new Date(from);
       prevEnd.setDate(prevEnd.getDate() - 1);
       const prevStart = new Date(prevEnd);

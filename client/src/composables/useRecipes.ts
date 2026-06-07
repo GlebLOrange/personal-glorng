@@ -64,11 +64,7 @@ export function useRecipes() {
   const form = ref<RecipeFormData>(emptyForm());
   let loadGeneration = 0;
 
-  const {
-    loading: listLoading,
-    lastError: listError,
-    run: runList,
-  } = useApiAction();
+  const { loading: listLoading, lastError: listError, run: runList } = useApiAction();
   const { loading: detailLoading, run: runDetail } = useApiAction();
   const { loading: saving, run: runSave } = useApiAction();
   const { loading: deleting, run: runDelete } = useApiAction();
@@ -78,9 +74,7 @@ export function useRecipes() {
     () => selectedRecipeId.value !== null || selectedRecipe.value !== null,
   );
   const hasNextPage = computed(() => page.value < totalPages.value);
-  const hasFilters = computed(
-    () => Boolean(search.value.trim() || activeTag.value),
-  );
+  const hasFilters = computed(() => Boolean(search.value.trim() || activeTag.value));
   const recipeCountLabel = computed(() => {
     const n = total.value;
     const parts = [`${n} recipe${n === 1 ? "" : "s"}`];

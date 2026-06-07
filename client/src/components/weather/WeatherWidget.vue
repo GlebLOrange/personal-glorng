@@ -31,9 +31,7 @@ const locationRef = computed(() => props.location.trim() || config.value.query);
 
 const { weather, loading, error, refresh } = useWeatherLookup(locationRef);
 
-const locationLabel = computed(() =>
-  weather.value ? weatherLocationLabel(weather.value) : "",
-);
+const locationLabel = computed(() => (weather.value ? weatherLocationLabel(weather.value) : ""));
 
 const utcOffset = computed(() => {
   if (!weather.value || !props.showTime) {
@@ -64,16 +62,17 @@ onMounted(async () => {
 
   <div v-else-if="error" class="text-sm font-mono space-y-2">
     <p class="text-accent-golden">{{ error }}</p>
-    <button type="button" class="text-surface-mid hover:text-surface-light underline" @click="refresh">
+    <button
+      type="button"
+      class="text-surface-mid hover:text-surface-light underline"
+      @click="refresh"
+    >
       Retry
     </button>
   </div>
 
   <div v-else-if="weather" class="font-mono">
-    <div
-      v-if="compact && bar"
-      class="flex items-center gap-3 flex-wrap min-w-0 text-base"
-    >
+    <div v-if="compact && bar" class="flex items-center gap-3 flex-wrap min-w-0 text-base">
       <span class="text-surface-light font-bold truncate">
         {{ locationLabel }}
       </span>
@@ -120,10 +119,7 @@ onMounted(async () => {
       </span>
     </div>
 
-    <div
-      v-else-if="compact"
-      class="flex items-center gap-2 flex-wrap min-w-0 text-sm"
-    >
+    <div v-else-if="compact" class="flex items-center gap-2 flex-wrap min-w-0 text-sm">
       <span class="text-surface-light font-bold truncate">
         {{ locationLabel }}
       </span>

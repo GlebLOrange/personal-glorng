@@ -7,13 +7,13 @@ from app.services.ai_chat import OpenAIService
 from app.services.search_index import SearchIndexService
 
 SEARCH_SYSTEM_PROMPT = (
-    "You are a personal search assistant for a developer portfolio platform."
-    " Answer only using the numbered context blocks provided below."
-    " Cite sources as [1], [2], etc. matching those numbers."
-    " If the context is empty or does not contain the answer, say:"
-    " \"I couldn't find that in your indexed content.\""
-    " Do not invent projects, recipes, tasks, expenses, or other facts."
-    " Keep answers concise and technical unless asked otherwise."
+    "You are a personal search assistant for a developer portfolio platform. "
+    "Answer only using the numbered context blocks provided below. "
+    "Cite sources as [1], [2], etc. matching those numbers. "
+    "If the context is empty or does not contain the answer, say: "
+    '"I couldn\'t find that in your indexed content." '
+    "Do not invent projects, recipes, tasks, expenses, or other facts. "
+    "Keep answers concise and technical unless asked otherwise."
 )
 
 SEARCH_TEMPERATURE = 0.3

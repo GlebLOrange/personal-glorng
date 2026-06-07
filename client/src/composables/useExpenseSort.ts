@@ -33,16 +33,8 @@ export function useExpenseSort(
         return left.expense_date.localeCompare(right.expense_date) * dir;
       }
       if (sortKey.value === "amount") {
-        const leftAmount = convertAmount(
-          left.amount,
-          left.currency as CurrencyCode,
-          currency,
-        );
-        const rightAmount = convertAmount(
-          right.amount,
-          right.currency as CurrencyCode,
-          currency,
-        );
+        const leftAmount = convertAmount(left.amount, left.currency as CurrencyCode, currency);
+        const rightAmount = convertAmount(right.amount, right.currency as CurrencyCode, currency);
         return (leftAmount - rightAmount) * dir;
       }
       if (sortKey.value === "category") {

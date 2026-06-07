@@ -13,7 +13,7 @@ from app.db.models.user import User
 def test_superuser_implies_all() -> None:
     user = User(
         email="a@b.c",
-        hashed_password="x",  # noqa: S106
+        hashed_password="x",
         permissions=[SUPERUSER_PERMISSION],
     )
     assert user_has_permission(user, permission_key("tasks", "write"))
@@ -22,7 +22,7 @@ def test_superuser_implies_all() -> None:
 def test_explicit_permission() -> None:
     user = User(
         email="a@b.c",
-        hashed_password="x",  # noqa: S106
+        hashed_password="x",
         permissions=[permission_key("tasks", "read")],
     )
     assert user_has_permission(user, permission_key("tasks", "read"))

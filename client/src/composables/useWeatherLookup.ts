@@ -3,9 +3,7 @@ import { computed, ref, watch, type ComputedRef, type Ref } from "vue";
 import { useCachedApi } from "@/composables/useCachedApi";
 import type { WeatherData } from "@/types";
 
-import {
-  TIME_DATE_WEATHER_LOCATION_API_PREFIX,
-} from "@/constants/timeDateWeatherLocation";
+import { TIME_DATE_WEATHER_LOCATION_API_PREFIX } from "@/constants/timeDateWeatherLocation";
 
 /** Build the public lookup API path for a city or lat,lon pair. */
 export function weatherLookupUrl(location: string): string {

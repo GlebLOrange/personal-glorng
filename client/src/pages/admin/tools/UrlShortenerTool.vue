@@ -78,7 +78,10 @@ onMounted(loadUrls);
       </BaseButton>
     </form>
 
-    <div v-if="lastCreatedLink" class="mb-10 rounded-lg border border-surface-border bg-surface-card p-4">
+    <div
+      v-if="lastCreatedLink"
+      class="mb-10 rounded-lg border border-surface-border bg-surface-card p-4"
+    >
       <p class="text-sm text-surface-mid mb-2">Your short link</p>
       <div class="flex flex-wrap items-center gap-3">
         <a

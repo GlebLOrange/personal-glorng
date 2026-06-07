@@ -17,11 +17,7 @@ const sections = computed(() => groupServicesByCategory(publicToolsAsServices())
     <section v-for="section in sections" :key="section.category" class="mb-10">
       <h2 class="text-lg font-bold text-surface-light mb-4">{{ section.label }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <RouterLink
-          v-for="tool in section.services"
-          :key="tool.adminRoute"
-          :to="tool.adminRoute"
-        >
+        <RouterLink v-for="tool in section.services" :key="tool.adminRoute" :to="tool.adminRoute">
           <BaseCard hoverable class="h-full">
             <div class="text-2xl mb-3">{{ tool.icon }}</div>
             <h3 class="text-surface-light font-bold mb-1">{{ tool.name }}</h3>

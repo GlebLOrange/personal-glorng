@@ -68,9 +68,7 @@ async def test_supersede_unsent_reminders_aborts_and_deletes(
     old_at = datetime.now(UTC) + timedelta(hours=2)
     new_at = datetime.now(UTC) + timedelta(hours=3)
 
-    old = await create_reminder(
-        db, task_id=task.id, remind_at=old_at, job_id="job-old"
-    )
+    old = await create_reminder(db, task_id=task.id, remind_at=old_at, job_id="job-old")
     keep = await create_reminder(db, task_id=task.id, remind_at=new_at)
 
     await supersede_unsent_reminders(db, task.id, exclude_id=keep.id)

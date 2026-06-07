@@ -11,12 +11,7 @@ describe("buildContactLinks", () => {
       linkedin: "https://www.linkedin.com/in/glorange",
     });
 
-    expect(result.map((link) => link.id)).toEqual([
-      "email",
-      "telegram",
-      "linkedin",
-      "github",
-    ]);
+    expect(result.map((link) => link.id)).toEqual(["email", "telegram", "linkedin", "github"]);
     expect(result[0]).toEqual({
       id: "email",
       label: "Email",

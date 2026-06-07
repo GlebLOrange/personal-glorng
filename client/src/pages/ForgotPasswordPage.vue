@@ -39,14 +39,22 @@ async function handleSubmit(): Promise<void> {
       </p>
 
       <form v-else class="space-y-4" @submit.prevent="handleSubmit">
-        <BaseInput v-model="email" type="email" label="Email" placeholder="you@example.com" required />
+        <BaseInput
+          v-model="email"
+          type="email"
+          label="Email"
+          placeholder="you@example.com"
+          required
+        />
         <BaseButton variant="primary" class="w-full" :disabled="loading">
           {{ loading ? "Sending..." : "Send reset link" }}
         </BaseButton>
       </form>
 
       <p class="text-center text-xs text-surface-mid mt-6">
-        <RouterLink to="/login" class="text-accent-blue hover:underline">&larr; Back to login</RouterLink>
+        <RouterLink to="/login" class="text-accent-blue hover:underline"
+          >&larr; Back to login</RouterLink
+        >
       </p>
     </div>
   </div>

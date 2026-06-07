@@ -9,6 +9,7 @@ from fastapi.responses import StreamingResponse
 from app.core.deps import AiSearchServiceDep, AppSettings, require_capability
 from app.core.exceptions import ApiError
 from app.core.feature_flags import is_ai_chat_enabled
+from app.core.logging import logger
 from app.openapi import requires_capability
 from app.schemas.ai_chat import ChatConfigResponse, ChatRequest
 from app.services.ai_chat import detect_llm_provider
@@ -52,6 +53,9 @@ async def _sse_events(
             yield f"data: {json.dumps(event)}\n\n"
     except ApiError as exc:
         yield f"data: {json.dumps({'error': exc.message})}\n\n"
+    except Exception:
+        logger.exception("Admin search chat stream failed")
+        yield f"data: {json.dumps({'error': 'Search chat failed'})}\n\n"
 
 
 @router.post(

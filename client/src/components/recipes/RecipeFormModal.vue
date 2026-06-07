@@ -259,9 +259,7 @@ const inputClass =
         <h3 class="text-sm font-medium text-surface-mid">Steps</h3>
         <div class="space-y-2">
           <div v-for="(_, idx) in form.steps" :key="idx" class="flex gap-2 items-start">
-            <div class="text-surface-mid text-sm pt-2 w-6 text-right shrink-0">
-              {{ idx + 1 }}.
-            </div>
+            <div class="text-surface-mid text-sm pt-2 w-6 text-right shrink-0">{{ idx + 1 }}.</div>
             <div class="flex-1 min-w-0">
               <BaseTextarea
                 :model-value="form.steps[idx]"
@@ -303,9 +301,7 @@ const inputClass =
               &times;
             </BaseButton>
           </div>
-          <BaseButton variant="ghost" size="sm" type="button" @click="addStep">
-            + step
-          </BaseButton>
+          <BaseButton variant="ghost" size="sm" type="button" @click="addStep"> + step </BaseButton>
         </div>
       </section>
 

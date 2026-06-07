@@ -244,12 +244,8 @@ async def guided_category(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(category=category)
     await state.set_state(ExpenseCreation.waiting_for_place)
     if callback.message:
-        await callback.message.edit_text(
-            f"Category: {category}\nWhat product?"
-        )
-        await callback.message.answer(
-            "Product name:", reply_markup=skip_place_button()
-        )
+        await callback.message.edit_text(f"Category: {category}\nWhat product?")
+        await callback.message.answer("Product name:", reply_markup=skip_place_button())
     await callback.answer()
 
 
@@ -304,7 +300,7 @@ async def guided_confirm(
     data = await state.get_data()
     try:
         amount = Decimal(str(data["amount"])).quantize(Decimal("0.01"))
-    except (InvalidOperation, KeyError):
+    except InvalidOperation, KeyError:
         await state.clear()
         if callback.message:
             await callback.message.answer("Invalid amount. Start again with /spend")

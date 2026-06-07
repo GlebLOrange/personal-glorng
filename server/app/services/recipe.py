@@ -11,7 +11,13 @@ from app.core.logging import logger
 from app.core.utils import paginate_params
 from app.db.models.recipe import Recipe
 from app.db.recipe_search import RECIPE_SEARCH_CONFIG
-from app.schemas.recipe import RecipeCreate, RecipeListResponse, RecipeResponse, RecipeSort, RecipeUpdate
+from app.schemas.recipe import (
+    RecipeCreate,
+    RecipeListResponse,
+    RecipeResponse,
+    RecipeSort,
+    RecipeUpdate,
+)
 from app.services.audit import AuditService
 from app.services.base import CRUDService
 from app.services.search_indexers.recipe import index_recipe, remove_recipe
@@ -192,7 +198,9 @@ class RecipeService(CRUDService[Recipe]):
 
     @staticmethod
     def _recipe_sort_clause(sort: RecipeSort) -> ColumnElement:
-        total_time = func.coalesce(Recipe.prep_time, 0) + func.coalesce(Recipe.cook_time, 0)
+        total_time = func.coalesce(Recipe.prep_time, 0) + func.coalesce(
+            Recipe.cook_time, 0
+        )
         match sort:
             case "title_asc":
                 return Recipe.title.asc()
@@ -224,7 +232,9 @@ class RecipeService(CRUDService[Recipe]):
         query = select(Recipe)
         for clause in filters:
             query = query.where(clause)
-        query = query.order_by(self._recipe_sort_clause(sort)).offset(offset).limit(limit)
+        query = (
+            query.order_by(self._recipe_sort_clause(sort)).offset(offset).limit(limit)
+        )
 
         result = await self.db.execute(query)
         items = [self._to_response(r) for r in result.scalars().all()]

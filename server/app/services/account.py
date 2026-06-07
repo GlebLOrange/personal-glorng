@@ -192,7 +192,9 @@ async def delete_account(
 
     user_id = user.id
     await db.execute(delete(WeatherLocation).where(WeatherLocation.user_id == user_id))
-    await db.execute(delete(GitHubCredential).where(GitHubCredential.user_id == user_id))
+    await db.execute(
+        delete(GitHubCredential).where(GitHubCredential.user_id == user_id)
+    )
     await db.delete(user)
     await db.flush()
 

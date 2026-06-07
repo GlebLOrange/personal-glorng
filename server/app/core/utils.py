@@ -45,7 +45,7 @@ def paginate_params(
     return offset, per_page
 
 
-def iter_file(path: Path, chunk_size: int = 64 * 1024) -> Generator[bytes, None, None]:
+def iter_file(path: Path, chunk_size: int = 64 * 1024) -> Generator[bytes]:
     """Yield file contents in chunks for streaming responses."""
     with open(path, "rb") as fh:
         while chunk := fh.read(chunk_size):

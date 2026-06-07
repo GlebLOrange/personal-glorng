@@ -37,8 +37,6 @@ describe("ExpenseCurrencyConverter", () => {
     const convertBtn = wrapper.find("button");
     await convertBtn.trigger("click");
 
-    await vi.waitFor(() =>
-      expect(toastMock).toHaveBeenCalledWith("rate unavailable", "error"),
-    );
+    await vi.waitFor(() => expect(toastMock).toHaveBeenCalledWith("rate unavailable", "error"));
   });
 });

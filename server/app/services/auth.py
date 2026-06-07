@@ -22,6 +22,18 @@ from app.services.user import (
     default_user_permissions,
     get_user_by_public_id,
 )
+from app.settings import get_settings
+
+
+def _auth_log_email(email: str) -> str:
+    """Redact email in production auth logs."""
+    if get_settings().APP_ENV != "production":
+        return email
+    local, _, domain = email.partition("@")
+    if not local:
+        return "***"
+    return f"{local[0]}***@{domain}" if domain else "***"
+
 
 async def _decode_and_validate(token: str, expected_type: str) -> dict[str, object]:
     """Decode a JWT and verify its type claim, raising UnauthorizedError on failure."""
@@ -111,7 +123,7 @@ async def login_user(db: AsyncSession, email: str, password: str) -> tuple[str, 
     audit = AuditService(db)
     user = await get_user_by_email(db, email.strip().lower())
     if not user or not verify_password(password, user.hashed_password):
-        logger.warning("Login failed", context={"email": email})
+        logger.warning("Login failed", context={"email": _auth_log_email(email)})
         await audit.record(
             AuditRecord(
                 category=AuditCategory.SECURITY,
