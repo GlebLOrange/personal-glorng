@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from app.core.elasticsearch import close_elasticsearch, init_elasticsearch
 from app.core.exceptions import ApiError
 from app.core.logging import logger
+from app.core.mongodb import close_mongodb, init_mongodb
 from app.core.redis import close_redis, init_redis
 from app.db.session import get_session_factory
 from app.openapi import configure_openapi
@@ -48,6 +49,9 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
         await init_elasticsearch(settings.ELASTICSEARCH_URL)
         await ensure_index()
 
+    if settings.mongodb_enabled():
+        await init_mongodb(settings.MONGODB_URL, settings.MONGODB_DB)
+
     init_job_queue()
 
     factory = get_session_factory()
@@ -57,6 +61,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     yield
 
     await close_job_queue()
+    await close_mongodb()
     await close_elasticsearch()
     await close_redis()
     logger.info("Shutdown complete")

@@ -3,10 +3,12 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ApiError, ForbiddenError, UnauthorizedError
+from app.core.mongodb import get_mongodb_database, is_mongodb_enabled
 from app.core.permissions import permission_key, user_has_permission
 from app.core.redis import get_redis_client, is_token_blacklisted
 from app.core.security import decode_token
@@ -32,6 +34,15 @@ AppSettings = Annotated[Settings, Depends(get_settings)]
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
 RedisClient = Annotated[Redis, Depends(get_redis_client)]
+
+
+def get_mongo_database() -> AsyncIOMotorDatabase:
+    if not is_mongodb_enabled():
+        raise ApiError(503, "MongoDB is not configured")
+    return get_mongodb_database()
+
+
+MongoDatabaseDep = Annotated[AsyncIOMotorDatabase, Depends(get_mongo_database)]
 
 
 async def _resolve_user_from_token(
