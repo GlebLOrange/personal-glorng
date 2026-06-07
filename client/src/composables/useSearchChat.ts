@@ -66,6 +66,7 @@ export function useSearchChat(options: UseSearchChatOptions) {
 
       const response = await fetch(options.endpoint, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: payload }),
       });

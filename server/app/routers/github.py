@@ -18,6 +18,7 @@ from app.services.github import (
     get_github_user,
     validate_allowed_user,
 )
+from app.services.github_credentials import store_github_access_token
 from app.settings import get_settings
 
 router = APIRouter()
@@ -138,8 +139,10 @@ async def github_callback(
     )
     existing = result.scalar_one_or_none()
 
+    encrypted_token = store_github_access_token(access_token)
+
     if existing:
-        existing.access_token = access_token
+        existing.access_token = encrypted_token
         existing.github_user_id = github_user_id
         existing.github_username = username
     else:
@@ -147,7 +150,7 @@ async def github_callback(
             user_id=user.id,
             github_user_id=github_user_id,
             github_username=username,
-            access_token=access_token,
+            access_token=encrypted_token,
         )
         db.add(credential)
 
