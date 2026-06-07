@@ -7,6 +7,8 @@ import {
   isValidIsoDate,
   isValidMonthValue,
   isoDateLocal,
+  monthDateBounds,
+  monthValueLocal,
   parseDatetimeLocalToIso,
 } from "@/utils/dates";
 
@@ -26,6 +28,10 @@ describe("dates", () => {
 
   it("datetimeLocalValue uses local wall clock", () => {
     expect(datetimeLocalValue()).toBe("2025-06-07T23:30");
+  });
+
+  it("monthValueLocal uses local calendar month", () => {
+    expect(monthValueLocal()).toBe("2025-06");
   });
 });
 
@@ -58,5 +64,11 @@ describe("date validation helpers", () => {
   it("isValidDateRange enforces inclusive order", () => {
     expect(isValidDateRange("2025-06-01", "2025-06-30")).toBe(true);
     expect(isValidDateRange("2025-06-30", "2025-06-01")).toBe(false);
+  });
+
+  it("monthDateBounds returns inclusive bounds or null", () => {
+    expect(monthDateBounds("2025-06")).toEqual({ from: "2025-06-01", to: "2025-06-30" });
+    expect(monthDateBounds("2025-02")).toEqual({ from: "2025-02-01", to: "2025-02-28" });
+    expect(monthDateBounds("2025-13")).toBeNull();
   });
 });
