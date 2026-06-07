@@ -146,6 +146,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/admin/tools/app-logs",
+    name: "tool-app-logs",
+    component: () => import("@/pages/admin/tools/AppLogsPage.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/callback",
     name: "oauth-callback",
     component: () => import("@/pages/CallbackPage.vue"),
@@ -184,6 +190,7 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-feedback": "feedback",
   "tool-ai-chat": "ai-chat",
   "tool-audit": "audit",
+  "tool-app-logs": "app-logs",
 };
 
 const router = createRouter({

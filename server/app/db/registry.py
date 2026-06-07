@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.db.repositories.app_log import AppLogRepository
 from app.db.repositories.audit import AuditRepository
 from app.db.repositories.credential import CredentialRepository
 from app.db.repositories.expense import ExpenseRepository
@@ -38,6 +39,7 @@ class DatabaseRegistry:
     telegram: TelegramRepository | None = None
     search: SearchRepository | None = None
     audit: AuditRepository | None = None
+    app_logs: AppLogRepository | None = None
     _repos_initialized: bool = field(default=False, repr=False)
 
     def require_mongo(self) -> AsyncIOMotorDatabase:
@@ -72,4 +74,5 @@ class DatabaseRegistry:
         self.telegram = TelegramRepository(mongo)
         self.search = SearchRepository(mongo)
         self.audit = AuditRepository(mongo)
+        self.app_logs = AppLogRepository(mongo)
         self._repos_initialized = True

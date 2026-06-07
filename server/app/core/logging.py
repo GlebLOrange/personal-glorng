@@ -10,9 +10,8 @@ import sentry_sdk
 from loguru import logger as _loguru
 
 
-def _json_sink(message: Any) -> None:  # noqa: ANN401
-    """Serialize each log record as a single JSON line."""
-    record = message.record
+def _build_log_entry(record: dict[str, Any]) -> dict[str, Any]:
+    """Build a structured log dict from a Loguru record."""
     entry: dict[str, Any] = {
         "timestamp": record["time"].isoformat(),
         "level": record["level"].name.lower(),
@@ -32,11 +31,25 @@ def _json_sink(message: Any) -> None:  # noqa: ANN401
                 record["exception"].traceback,
             ),
         )
+    return entry
+
+
+def _json_sink(message: Any) -> None:  # noqa: ANN401
+    """Serialize each log record as a single JSON line."""
+    entry = _build_log_entry(message.record)
     sys.stderr.write(json.dumps(entry, default=str) + "\n")
+
+
+def _persist_sink(message: Any) -> None:  # noqa: ANN401
+    """Enqueue log records for MongoDB persistence."""
+    from app.core.app_log_persist import enqueue_log_entry
+
+    enqueue_log_entry(_build_log_entry(message.record))
 
 
 _loguru.remove()
 _loguru.add(_json_sink, level="DEBUG", serialize=False)
+_loguru.add(_persist_sink, level="DEBUG", serialize=False)
 
 
 class _InterceptHandler(logging.Handler):
