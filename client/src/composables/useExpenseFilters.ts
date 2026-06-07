@@ -1,6 +1,12 @@
 import { computed, ref, watch, type Ref } from "vue";
 
-import { isValidDateRange, isValidMonthValue, isoDateLocal } from "@/utils/dates";
+import {
+  isValidDateRange,
+  isValidMonthValue,
+  isoDateLocal,
+  monthDateBounds,
+  monthValueLocal,
+} from "@/utils/dates";
 
 export type MonthPreset = "this_month" | "last_month" | "custom" | "range";
 export type DateFilterMode = "month" | "range";
@@ -24,22 +30,6 @@ export function crossRate(
     return Number.NaN;
   }
   return toRate / fromRate;
-}
-
-function currentMonthValue(d = new Date()): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  return `${year}-${month}`;
-}
-
-function monthBounds(month: string): { from: string; to: string } {
-  const [year, mon] = month.split("-").map(Number);
-  const lastDay = new Date(year, mon, 0).getDate();
-  const mm = String(mon).padStart(2, "0");
-  return {
-    from: `${year}-${mm}-01`,
-    to: `${year}-${mm}-${String(lastDay).padStart(2, "0")}`,
-  };
 }
 
 export function useExpenseFilters(
@@ -107,12 +97,12 @@ export function useExpenseFilters(
     if (preset === "custom") return;
 
     if (preset === "this_month") {
-      selectedMonth.value = currentMonthValue(today);
+      selectedMonth.value = monthValueLocal(today);
       return;
     }
 
     const prev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    selectedMonth.value = currentMonthValue(prev);
+    selectedMonth.value = monthValueLocal(prev);
   }
 
   function clearFilters(): void {
@@ -169,7 +159,7 @@ export function useExpenseFilters(
     if (selectedMonth.value) {
       const [year, month] = selectedMonth.value.split("-").map(Number);
       const prev = new Date(year, month - 2, 1);
-      params.month = currentMonthValue(prev);
+      params.month = monthValueLocal(prev);
     }
 
     return params;
@@ -185,7 +175,8 @@ export function useExpenseFilters(
 
   watch(selectedMonth, (month) => {
     if (!month || dateFilterMode.value !== "month") return;
-    const bounds = monthBounds(month);
+    const bounds = monthDateBounds(month);
+    if (!bounds) return;
     dateFrom.value = bounds.from;
     dateTo.value = bounds.to;
   });

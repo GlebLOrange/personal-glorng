@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError, ValidationError
+from app.core.utils import as_utc
 from app.core.feature_flags import is_task_intake_ai_enabled
 from app.db.models.task import Task
 from app.db.models.task_intake import IntakeStatus, TaskIntake
@@ -239,7 +240,7 @@ class TaskIntakeService:
     def scheduled_at_from_draft(self, draft: TaskDraft) -> datetime:
         task_date = draft.scheduled_date or date.today().isoformat()
         task_time = draft.scheduled_time or "12:00"
-        return datetime.fromisoformat(f"{task_date}T{task_time}:00").replace(tzinfo=UTC)
+        return as_utc(datetime.fromisoformat(f"{task_date}T{task_time}:00"))
 
     async def confirm_intake(
         self,

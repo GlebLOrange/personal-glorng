@@ -1,9 +1,20 @@
-/** Local calendar date as YYYY-MM-DD. */
-export function isoDateLocal(d: Date = new Date()): string {
+function localYearMonth(d: Date): { year: number; month: string } {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");
+  return { year, month };
+}
+
+/** Local calendar date as YYYY-MM-DD. */
+export function isoDateLocal(d: Date = new Date()): string {
+  const { year, month } = localYearMonth(d);
   const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+/** Local calendar month as YYYY-MM (HTML month input value). */
+export function monthValueLocal(d: Date = new Date()): string {
+  const { year, month } = localYearMonth(d);
+  return `${year}-${month}`;
 }
 
 /** Value for HTML datetime-local inputs (local time, no timezone suffix). */
@@ -60,4 +71,18 @@ export function isValidDateRange(from: string, to: string): boolean {
     return false;
   }
   return from <= to;
+}
+
+/** Inclusive calendar bounds for a YYYY-MM month, or null when invalid. */
+export function monthDateBounds(month: string): { from: string; to: string } | null {
+  if (!isValidMonthValue(month)) {
+    return null;
+  }
+  const [year, mon] = month.split("-").map(Number);
+  const lastDay = new Date(year, mon, 0).getDate();
+  const mm = String(mon).padStart(2, "0");
+  return {
+    from: `${year}-${mm}-01`,
+    to: `${year}-${mm}-${String(lastDay).padStart(2, "0")}`,
+  };
 }
