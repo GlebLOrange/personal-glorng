@@ -1,4 +1,4 @@
-.PHONY: dev dev-lite dev-worker dev-bot dev-full prod test lint lint-check check migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes down logs bot-logs
+.PHONY: dev dev-lite dev-worker dev-bot dev-full prod test lint lint-check check check-symlinks migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes down logs bot-logs
 
 msg ?=
 CHECK_DB ?= 1
@@ -38,6 +38,9 @@ lint:
 
 lint-check:
 	docker compose exec server ruff check . && docker compose exec server ruff format --check .
+
+check-symlinks:
+	bash scripts/check_symlinks.sh
 
 check: lint-check test
 ifeq ($(CHECK_DB),1)
