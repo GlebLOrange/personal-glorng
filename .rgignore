@@ -1,0 +1,21 @@
+# Dependencies (symlink-heavy)
+node_modules
+server/.venv
+.venv
+
+# Build / cache / artifacts
+client/.vite
+dist
+__pycache__
+.mypy_cache
+.ruff_cache
+.pytest_cache
+htmlcov
+*.tsbuildinfo
+
+# Secrets / local data (also gitignored)
+env
+.env
+media
+client/playwright-report
+client/test-results
