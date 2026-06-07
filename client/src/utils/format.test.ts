@@ -30,9 +30,9 @@ describe("formatScheduleDate", () => {
     expect(result.detail).toContain("6 Jun 2025");
   });
 
-  it("returns In N hours for near future same day", () => {
+  it("returns Today at time for near future same day", () => {
     const result = formatScheduleDate("2025-06-07T13:00:00");
-    expect(result.headline).toBe("In 1 hour");
+    expect(result.headline).toBe("Today at 1:00 pm");
   });
 
   it("returns N days ago for recent past", () => {

@@ -11,11 +11,16 @@ type ApiActionOptions = {
   successMessage?: string;
   successType?: Toast["type"];
   logErrors?: boolean;
+  /** Skip error toast (caller handles or failure is non-critical). */
+  silent?: boolean;
+  /** DEV-only context label for console.error. */
+  logContext?: string;
 };
 
 /** Run async API work with loading state and consistent error toasts. */
 export function useApiAction(defaultOptions: ApiActionOptions = {}) {
   const loading = ref(false);
+  const lastError = ref<string | null>(null);
   const { toast } = useNotify();
 
   async function run<T>(
@@ -26,22 +31,31 @@ export function useApiAction(defaultOptions: ApiActionOptions = {}) {
     loading.value = true;
     try {
       const result = await action();
+      lastError.value = null;
       if (merged.successMessage) {
         toast(merged.successMessage, merged.successType ?? "success");
       }
       return result;
     } catch (err) {
-      if (merged.logErrors !== false && import.meta.env.DEV) {
-        console.error(err);
-      }
       const fallback = merged.errorMessage ?? merged.errorFallback ?? "Request failed";
       const message = getApiErrorMessage(err, fallback);
-      toast(message, "error");
+      lastError.value = message;
+      if (merged.logErrors !== false && import.meta.env.DEV) {
+        const prefix = merged.logContext ? `[${merged.logContext}] ` : "";
+        console.error(`${prefix}${message}`, err);
+      }
+      if (!merged.silent) {
+        toast(message, "error");
+      }
       return undefined;
     } finally {
       loading.value = false;
     }
   }
 
-  return { loading, run } as { loading: Ref<boolean>; run: typeof run };
+  return { loading, lastError, run } as {
+    loading: Ref<boolean>;
+    lastError: Ref<string | null>;
+    run: typeof run;
+  };
 }

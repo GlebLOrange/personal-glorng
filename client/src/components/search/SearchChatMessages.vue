@@ -7,7 +7,7 @@ interface SourceLink {
   external: boolean;
 }
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     messages: ChatMessage[];
     loading: boolean;
