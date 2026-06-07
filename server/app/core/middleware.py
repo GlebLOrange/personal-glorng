@@ -9,29 +9,14 @@ from starlette.responses import JSONResponse, Response
 from app.core.csrf import csrf_origin_rejected
 from app.core.logging import logger
 from app.core.request_context import request_id_var, user_id_var
-from app.core.security import decode_token
+from app.core.security import access_token_from_request, user_id_from_access_token
 
 
 def _optional_user_id(request: Request) -> int | None:
-    auth = request.headers.get("authorization", "")
-    if not auth.lower().startswith("bearer "):
+    raw_token = access_token_from_request(request)
+    if not raw_token:
         return None
-    token = auth[7:].strip()
-    if not token:
-        return None
-    try:
-        payload = decode_token(token)
-    except ValueError:
-        return None
-    if payload.get("type") != "access":
-        return None
-    sub = payload.get("sub")
-    if not sub:
-        return None
-    try:
-        return int(sub)
-    except (ValueError, TypeError):
-        return None
+    return user_id_from_access_token(raw_token)
 
 
 class RequestIdMiddleware(BaseHTTPMiddleware):

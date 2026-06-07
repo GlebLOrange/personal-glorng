@@ -154,12 +154,15 @@ def get_arq_pool_dep() -> ArqRedis:
 ArqPool = Annotated[ArqRedis, Depends(get_arq_pool_dep)]
 
 
-def get_recipe_service(db: DbSession) -> RecipeService:
-    return RecipeService(db)
+def get_currency_service() -> CurrencyService:
+    return CurrencyService()
 
 
-RecipeServiceDep = Annotated[RecipeService, Depends(get_recipe_service)]
+CurrencyServiceDep = Annotated[CurrencyService, Depends(get_currency_service)]
 
+
+def get_expense_category_service(db: DbSession) -> ToolExpenseCategoryService:
+    return ToolExpenseCategoryService(db)
 
 def get_currency_service() -> CurrencyService:
     return CurrencyService()

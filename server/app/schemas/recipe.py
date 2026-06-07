@@ -1,6 +1,17 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
+
+from app.schemas.common import PaginatedResponse
+
+RecipeSort = Literal[
+    "updated_desc",
+    "title_asc",
+    "title_desc",
+    "prep_asc",
+    "total_time_asc",
+]
 
 
 class RecipeCreate(BaseModel):
@@ -25,8 +36,8 @@ class RecipeCreate(BaseModel):
 
 class RecipeUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=255)
-    ingredients: list[str] | None = None
-    steps: list[str] | None = None
+    ingredients: list[str] | None = Field(None, min_length=1)
+    steps: list[str] | None = Field(None, min_length=1)
     notes: str | None = None
     tags: list[str] | None = None
     image_url: HttpUrl | None = None
@@ -58,3 +69,7 @@ class RecipeResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class RecipeListResponse(PaginatedResponse[RecipeResponse]):
+    pass

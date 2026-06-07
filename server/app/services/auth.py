@@ -132,7 +132,7 @@ async def login_user(db: AsyncSession, email: str, password: str) -> tuple[str, 
     if not user.is_verified:
         raise ForbiddenError("Email not verified. Check your inbox.")
 
-    access_token = create_access_token(str(user.public_id))
+    access_token = create_access_token(str(user.public_id), user_id=user.id)
     refresh_token = create_refresh_token(str(user.public_id))
     await audit.record(
         AuditRecord(
@@ -152,7 +152,7 @@ async def refresh_access_token(db: AsyncSession, refresh_token: str) -> tuple[st
     payload = await _decode_and_validate(refresh_token, "refresh")
     await _blacklist_payload(payload)
     user = await _get_user_by_sub(db, str(payload["sub"]))
-    new_access = create_access_token(str(user.public_id))
+    new_access = create_access_token(str(user.public_id), user_id=user.id)
     new_refresh = create_refresh_token(str(user.public_id))
 
     audit = AuditService(db)
