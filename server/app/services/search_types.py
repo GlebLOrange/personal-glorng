@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from app.db.models.search_document import SearchVisibility
+from app.db.documents.search import SearchVisibility
 
 
 @dataclass(frozen=True)

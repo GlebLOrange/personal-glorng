@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.registry import DatabaseRegistry
 
 from app.core.security import create_access_token
 from app.services.weather import TimezoneInfo, enrich_weather_timezone
@@ -193,11 +193,10 @@ async def test_weather_location_invalid_query(auth_client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_weather_location_delete_other_user_forbidden(
     client: AsyncClient,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
-    owner = await create_user(db, email="owner@example.com", password="pass12345")
-    other = await create_user(db, email="other@example.com", password="pass12345")
-    await db.commit()
+    owner = await create_user(registry, email="owner@example.com", password="pass12345")
+    other = await create_user(registry, email="other@example.com", password="pass12345")
 
     owner_token = create_access_token(str(owner.public_id))
     other_token = create_access_token(str(other.public_id))

@@ -7,7 +7,7 @@ from app.core.deps import AiSearchServiceDep, AppSettings, SearchIndexServiceDep
 from app.core.exceptions import ApiError
 from app.core.feature_flags import is_ai_search_enabled
 from app.core.rate_limit import RateLimiter
-from app.db.models.search_document import SearchVisibility
+from app.db.documents.search import SearchVisibility
 from app.routers.sse import stream_search_sse
 from app.schemas.search import (
     SearchChatRequest,

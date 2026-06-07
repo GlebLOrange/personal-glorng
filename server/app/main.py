@@ -9,9 +9,10 @@ from fastapi.responses import JSONResponse
 from app.core.elasticsearch import close_elasticsearch, init_elasticsearch
 from app.core.exceptions import ApiError
 from app.core.logging import logger
-from app.core.mongodb import close_mongodb, init_mongodb
+from app.core.mongodb import bind_mongodb, clear_mongodb
 from app.core.redis import close_redis, init_redis
-from app.db.session import get_session_factory
+from app.db.init_service import DatabaseInitService
+from app.db.registry import DatabaseRegistry
 from app.openapi import configure_openapi
 from app.services.elasticsearch_search import ensure_index
 from app.services.search_bootstrap import bootstrap_resume_index
@@ -49,19 +50,23 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
         await init_elasticsearch(settings.ELASTICSEARCH_URL)
         await ensure_index()
 
-    if settings.mongodb_enabled():
-        await init_mongodb(settings.MONGODB_URL, settings.MONGODB_DB)
+    registry = DatabaseRegistry()
+    init_svc = DatabaseInitService(registry, settings)
+    await init_svc.startup()
+    _app.state.db_registry = registry
+    if registry.mongo_client is not None and registry.mongo_db is not None:
+        bind_mongodb(registry.mongo_client, registry.mongo_db)
 
     init_job_queue()
 
-    factory = get_session_factory()
-    async with factory() as db:
-        await bootstrap_resume_index(db)
+    if registry.mongo_db is not None and registry.search is not None:
+        await bootstrap_resume_index(registry)
 
     yield
 
     await close_job_queue()
-    await close_mongodb()
+    await init_svc.shutdown()
+    clear_mongodb()
     await close_elasticsearch()
     await close_redis()
     logger.info("Shutdown complete")

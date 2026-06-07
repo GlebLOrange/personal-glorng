@@ -7,7 +7,7 @@ from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
 from aiogram.types import BotCommand
 
 from app.core.logging import logger
-from app.db.session import get_session_factory
+from app.db.worker_registry import get_worker_registry
 from app.services.task import get_unsent_reminders
 from app.settings import get_settings
 from app.todobot.handlers import (
@@ -19,21 +19,21 @@ from app.todobot.handlers import (
     task_manage,
 )
 from app.todobot.middlewares.auth import AllowedUserMiddleware
-from app.todobot.middlewares.db import DbSessionMiddleware
+from app.todobot.middlewares.db import MongoRegistryMiddleware
 from app.workers.queue import close_job_queue, init_job_queue
 from app.workers.scheduling import schedule_reminder
 
 
-def _build_dispatcher(redis_url: str) -> Dispatcher:
+def _build_dispatcher(registry) -> Dispatcher:
+    settings = get_settings()
     storage = RedisStorage.from_url(
-        redis_url,
+        settings.REDIS_URL,
         key_builder=DefaultKeyBuilder(prefix="todobot_fsm"),
     )
     dp = Dispatcher(storage=storage)
 
-    session_factory = get_session_factory()
-    dp.message.middleware(DbSessionMiddleware(session_factory))
-    dp.callback_query.middleware(DbSessionMiddleware(session_factory))
+    dp.message.middleware(MongoRegistryMiddleware(registry))
+    dp.callback_query.middleware(MongoRegistryMiddleware(registry))
 
     dp.message.middleware(AllowedUserMiddleware())
 
@@ -47,21 +47,17 @@ def _build_dispatcher(redis_url: str) -> Dispatcher:
     return dp
 
 
-async def _recover_reminders() -> None:
+async def _recover_reminders(registry) -> None:
     """Re-enqueue unsent future reminders after restart."""
-    session_factory = get_session_factory()
-
     try:
-        async with session_factory() as db:
-            reminders = await get_unsent_reminders(db)
-            if not reminders:
-                return
+        reminders = await get_unsent_reminders(registry)
+        if not reminders:
+            return
 
-            for rem in reminders:
-                if rem.job_id:
-                    continue
-                await schedule_reminder(db, rem)
-            await db.commit()
+        for rem in reminders:
+            if rem.job_id:
+                continue
+            await schedule_reminder(registry, rem)
         logger.info(
             "Recovered reminders on startup",
             context={"count": len(reminders)},
@@ -77,8 +73,9 @@ async def main() -> None:
         logger.error("TELEGRAM_BOT_TO_DO_TOKEN is not set")
         return
 
+    registry = await get_worker_registry()
     bot = Bot(token=settings.TELEGRAM_BOT_TO_DO_TOKEN)
-    dp = _build_dispatcher(settings.REDIS_URL)
+    dp = _build_dispatcher(registry)
 
     logger.info(
         "Starting todobot",
@@ -86,7 +83,7 @@ async def main() -> None:
     )
 
     init_job_queue()
-    await _recover_reminders()
+    await _recover_reminders(registry)
     await bot.set_my_commands(
         [
             BotCommand(command="new", description="Create a new task"),

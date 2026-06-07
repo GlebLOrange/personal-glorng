@@ -1,6 +1,6 @@
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.registry import DatabaseRegistry
 from app.services.tool_expense_category import ToolExpenseCategoryService
 
 EXPENSE_DATA = {
@@ -84,9 +84,8 @@ class TestExpenseCategories:
         expenses = await auth_client.get("/api/tools/expenses")
         assert expenses.json()[0]["category"] == "Shopping"
 
-    async def test_ensure_category_on_expense_create(self, db: AsyncSession):
-        svc = ToolExpenseCategoryService(db)
+    async def test_ensure_category_on_expense_create(self, registry: DatabaseRegistry):
+        svc = ToolExpenseCategoryService(registry)
         await svc.ensure_category("Custom")
-        await db.commit()
         names = await svc.list_names()
         assert "Custom" in names

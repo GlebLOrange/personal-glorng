@@ -5,12 +5,11 @@ from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
-from sqlalchemy import select
 
-from app.core.deps import DbSession
 from app.core.logging import logger
 from app.core.security import decode_token
-from app.db.models.google_auth import GoogleCredential
+from app.db.deps import DbRegistry
+from app.db.documents.credential import GoogleCredential
 from app.settings import get_settings
 
 router = APIRouter()
@@ -38,10 +37,13 @@ _ERROR_HTML = """
 async def google_oauth_callback(
     code: str,
     state: str,
-    db: DbSession,
+    registry: DbRegistry,
 ) -> HTMLResponse:
     """Exchange OAuth code for refresh token and store it."""
     settings = get_settings()
+
+    if registry.credentials is None:
+        return HTMLResponse(_ERROR_HTML, status_code=500)
 
     try:
         payload = decode_token(state)
@@ -70,27 +72,23 @@ async def google_oauth_callback(
         if not credentials.refresh_token:
             return HTMLResponse(_ERROR_HTML, status_code=400)
 
-        result = await db.execute(
-            select(GoogleCredential).where(
-                GoogleCredential.telegram_user_id == telegram_user_id,
-            ),
-        )
-        existing = result.scalar_one_or_none()
-
         from app.services.google_credentials import store_google_refresh_token
 
         encrypted_token = store_google_refresh_token(credentials.refresh_token)
+        existing = await registry.credentials.get_google_for_telegram_user(
+            telegram_user_id,
+        )
+
         if existing:
             existing.refresh_token = encrypted_token
-            db.add(existing)
+            await registry.credentials.upsert_google(existing)
         else:
             cred = GoogleCredential(
+                id=0,
                 telegram_user_id=telegram_user_id,
                 refresh_token=encrypted_token,
             )
-            db.add(cred)
-
-        await db.flush()
+            await registry.credentials.upsert_google(cred)
 
         if settings.TELEGRAM_BOT_TO_DO_TOKEN:
             bot = Bot(token=settings.TELEGRAM_BOT_TO_DO_TOKEN)

@@ -6,7 +6,8 @@ Public create; list/delete require `url-shortener` capabilities.
 from fastapi import APIRouter, Depends, Path
 from fastapi.responses import RedirectResponse
 
-from app.core.deps import AuthorizedUser, DbSession, OptionalUser, require_capability
+from app.core.deps import AuthorizedUser, OptionalUser, require_capability
+from app.db.deps import DbRegistry
 from app.core.permissions import (
     SUPERUSER_PERMISSION,
     permission_key,
@@ -34,7 +35,7 @@ router = APIRouter(prefix="/url-shortener", tags=["url-shortener"])
 )
 async def create_url(
     data: UrlCreate,
-    db: DbSession,
+    registry: DbRegistry,
     user: OptionalUser,
 ) -> UrlResponse:
     created_by = (
@@ -43,7 +44,7 @@ async def create_url(
         and user_has_permission(user, permission_key("url-shortener", "write"))
         else None
     )
-    svc = UrlService(db)
+    svc = UrlService(registry)
     url = await svc.create_short_url(
         original_url=str(data.original_url),
         created_by=created_by,
@@ -60,13 +61,13 @@ async def create_url(
     dependencies=[Depends(require_capability("url-shortener", "read"))],
 )
 async def list_urls(
-    db: DbSession,
+    registry: DbRegistry,
     user: AuthorizedUser,
     page: int = 1,
     per_page: int = 20,
 ) -> list[UrlResponse]:
     offset, limit = paginate_params(page, per_page)
-    svc = UrlService(db)
+    svc = UrlService(registry)
     urls = await svc.list_by_owner(created_by=user.id, offset=offset, limit=limit)
     return [UrlResponse.model_validate(u) for u in urls]
 
@@ -80,10 +81,10 @@ async def list_urls(
 )
 async def delete_url(
     url_id: int,
-    db: DbSession,
+    registry: DbRegistry,
     user: AuthorizedUser,
 ) -> MessageResponse:
-    svc = UrlService(db)
+    svc = UrlService(registry)
     await svc.delete_url(
         url_id,
         actor_id=user.id,
@@ -101,10 +102,10 @@ redirect_router = APIRouter()
     dependencies=[Depends(rate_limit_api)],
 )
 async def redirect_short_url(
-    db: DbSession,
+    registry: DbRegistry,
     code: str = Path(min_length=1, max_length=16, pattern=r"^[a-zA-Z0-9]+$"),
 ) -> RedirectResponse:
-    svc = UrlService(db)
+    svc = UrlService(registry)
     url = await svc.get_by_code(code)
     await svc.increment_clicks(code)
     return RedirectResponse(url=url.original_url, status_code=307)

@@ -6,16 +6,12 @@ import json
 from datetime import UTC, date, datetime
 from typing import Any
 
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.feature_flags import is_task_intake_ai_enabled
-from app.core.utils import as_utc
-from app.db.models.task import Task
-from app.db.models.task_intake import IntakeStatus, TaskIntake
-from app.db.models.telegram_inbound_message import TelegramInboundMessage
+from app.core.utils import as_utc, paginate_params
+from app.db.documents.task import IntakeStatus, Task, TaskIntake
+from app.db.documents.telegram import TelegramInboundMessage
+from app.db.registry import DatabaseRegistry
 from app.schemas.task_intake import (
     ClarificationQuestion,
     ClarificationTurn,
@@ -67,9 +63,21 @@ REQUIRED_FIELDS = ("title", "scheduled_date", "scheduled_time")
 
 
 class TaskIntakeService:
-    def __init__(self, db: AsyncSession) -> None:
-        self.db = db
+    def __init__(self, registry: DatabaseRegistry) -> None:
+        self.registry = registry
         self.settings = get_settings()
+
+    def _tasks(self):
+        if self.registry.tasks is None:
+            msg = "Tasks repository is not initialized"
+            raise RuntimeError(msg)
+        return self.registry.tasks
+
+    def _telegram(self):
+        if self.registry.telegram is None:
+            msg = "Telegram repository is not initialized"
+            raise RuntimeError(msg)
+        return self.registry.telegram
 
     async def store_inbound_message(
         self,
@@ -80,56 +88,44 @@ class TaskIntakeService:
         text: str,
         metadata: dict[str, Any] | None = None,
     ) -> TelegramInboundMessage:
-        existing = await self.db.execute(
-            select(TelegramInboundMessage).where(
-                TelegramInboundMessage.telegram_message_id == telegram_message_id,
-            ),
+        existing = await self._telegram().get_by_telegram_message_id(
+            telegram_message_id,
         )
-        found = existing.scalar_one_or_none()
-        if found:
+        if found := existing:
             return found
 
         msg = TelegramInboundMessage(
+            id=0,
             telegram_user_id=telegram_user_id,
             telegram_message_id=telegram_message_id,
             chat_id=chat_id,
             text=text,
             metadata_json=metadata,
         )
-        self.db.add(msg)
         try:
-            await self.db.flush()
-        except IntegrityError:
-            await self.db.rollback()
-            result = await self.db.execute(
-                select(TelegramInboundMessage).where(
-                    TelegramInboundMessage.telegram_message_id == telegram_message_id,
-                ),
+            return await self._telegram().create(msg)
+        except Exception:
+            row = await self._telegram().get_by_telegram_message_id(
+                telegram_message_id,
             )
-            row = result.scalar_one()
-            return row
-        await self.db.refresh(msg)
-        return msg
+            if row:
+                return row
+            raise
 
     async def create_intake_from_message(
         self,
         inbound: TelegramInboundMessage,
     ) -> TaskIntake:
         intake = TaskIntake(
+            id=0,
             inbound_message_id=inbound.id,
             status=IntakeStatus.PARSING,
             clarification_turns_json=[],
         )
-        self.db.add(intake)
-        await self.db.flush()
-        await self.db.refresh(intake)
-        return intake
+        return await self._tasks().create_intake(intake)
 
     async def get_intake(self, intake_id: int) -> TaskIntake:
-        result = await self.db.execute(
-            select(TaskIntake).where(TaskIntake.id == intake_id),
-        )
-        intake = result.scalar_one_or_none()
+        intake = await self._tasks().get_intake(intake_id)
         if not intake:
             raise NotFoundError("Task intake not found")
         return intake
@@ -170,8 +166,7 @@ class TaskIntakeService:
         intake.status = (
             IntakeStatus.CLARIFYING if result.questions else IntakeStatus.READY
         )
-        self.db.add(intake)
-        await self.db.flush()
+        await self._tasks().update_intake(intake)
         return result
 
     async def apply_clarification(
@@ -195,8 +190,7 @@ class TaskIntakeService:
             )
         intake.clarification_turns_json = turns
         intake.clarification_rounds = (intake.clarification_rounds or 0) + 1
-        self.db.add(intake)
-        await self.db.flush()
+        await self._tasks().update_intake(intake)
 
         result = await self.run_extraction(intake)
 
@@ -205,8 +199,7 @@ class TaskIntakeService:
             intake.draft_json = result.draft.model_dump()
             intake.confidence_json = result.confidence.model_dump()
             intake.status = IntakeStatus.READY
-            self.db.add(intake)
-            await self.db.flush()
+            await self._tasks().update_intake(intake)
 
         return result
 
@@ -251,7 +244,7 @@ class TaskIntakeService:
     ) -> Task:
         intake = await self.get_intake(intake_id)
         if intake.status == IntakeStatus.CONFIRMED and intake.task_id:
-            task = await TaskService(self.db).get_task(task_id=intake.task_id)
+            task = await TaskService(self.registry).get_task(task_id=intake.task_id)
             if task:
                 return task
 
@@ -266,7 +259,7 @@ class TaskIntakeService:
             reminder_minutes if reminder_minutes is not None else draft.reminder_minutes
         )
 
-        task_svc = TaskService(self.db)
+        task_svc = TaskService(self.registry)
         task = await task_svc.create_with_sync(
             telegram_user_id=telegram_user_id,
             title=draft.title,
@@ -279,15 +272,13 @@ class TaskIntakeService:
 
         intake.status = IntakeStatus.CONFIRMED
         intake.task_id = task.id
-        self.db.add(intake)
-        await self.db.flush()
+        await self._tasks().update_intake(intake)
         return task
 
     async def cancel_intake(self, intake_id: int) -> None:
         intake = await self.get_intake(intake_id)
         intake.status = IntakeStatus.CANCELLED
-        self.db.add(intake)
-        await self.db.flush()
+        await self._tasks().update_intake(intake)
 
     async def list_intakes(
         self,
@@ -295,32 +286,28 @@ class TaskIntakeService:
         page: int = 1,
         per_page: int = 20,
     ) -> list[TaskIntakeResponse]:
-        from app.core.utils import paginate_params
-
         offset, limit = paginate_params(page, per_page)
-        result = await self.db.execute(
-            select(TaskIntake, TelegramInboundMessage.text)
-            .join(
-                TelegramInboundMessage,
-                TaskIntake.inbound_message_id == TelegramInboundMessage.id,
+        rows = await self._tasks().list_intakes_with_text(offset=offset, limit=limit)
+        responses: list[TaskIntakeResponse] = []
+        for intake, inbound_text in rows:
+            responses.append(
+                TaskIntakeResponse(
+                    id=intake.id,
+                    status=intake.status.value,
+                    draft_json=intake.draft_json,
+                    confidence_json=intake.confidence_json,
+                    clarification_turns_json=intake.clarification_turns_json,
+                    clarification_rounds=intake.clarification_rounds,
+                    task_id=intake.task_id,
+                    inbound_text=inbound_text,
+                    created_at=intake.created_at,
+                    updated_at=intake.updated_at,
+                ),
             )
-            .order_by(TaskIntake.created_at.desc())
-            .offset(offset)
-            .limit(limit),
-        )
-        rows = []
-        for intake, inbound_text in result.all():
-            resp = TaskIntakeResponse.model_validate(intake)
-            rows.append(resp.model_copy(update={"inbound_text": inbound_text}))
-        return rows
+        return responses
 
     async def _load_inbound(self, intake: TaskIntake) -> TelegramInboundMessage:
-        result = await self.db.execute(
-            select(TelegramInboundMessage).where(
-                TelegramInboundMessage.id == intake.inbound_message_id,
-            ),
-        )
-        inbound = result.scalar_one_or_none()
+        inbound = await self._telegram().get(intake.inbound_message_id)
         if not inbound:
             raise NotFoundError("Inbound message not found")
         return inbound

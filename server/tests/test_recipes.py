@@ -1,9 +1,7 @@
 from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.audit_event import AuditEvent
-from app.db.models.user import User
+from app.db.documents.user import User
+from app.db.registry import DatabaseRegistry
 
 RECIPE_DATA = {
     "title": "Pasta Carbonara",
@@ -92,26 +90,23 @@ class TestRecipesCRUD:
     async def test_create_records_audit_actor(
         self,
         auth_client: AsyncClient,
-        db: AsyncSession,
+        registry: DatabaseRegistry,
         admin_user: User,
     ):
         resp = await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
         assert resp.status_code == 200
         recipe_id = resp.json()["id"]
 
-        result = await db.execute(
-            select(AuditEvent).where(
-                AuditEvent.action == "recipe.created",
-                AuditEvent.resource_id == recipe_id,
-            ),
+        row = await registry.mongo_db.audit_events.find_one(
+            {"action": "recipe.created", "resource_id": recipe_id},
         )
-        event = result.scalar_one()
-        assert event.actor_id == admin_user.id
+        assert row is not None
+        assert row["actor_id"] == admin_user.id
 
     async def test_delete_records_audit_actor(
         self,
         auth_client: AsyncClient,
-        db: AsyncSession,
+        registry: DatabaseRegistry,
         admin_user: User,
     ):
         create_resp = await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
@@ -119,14 +114,11 @@ class TestRecipesCRUD:
         resp = await auth_client.delete(f"/api/tools/recipes/{recipe_id}")
         assert resp.status_code == 200
 
-        result = await db.execute(
-            select(AuditEvent).where(
-                AuditEvent.action == "recipe.deleted",
-                AuditEvent.resource_id == recipe_id,
-            ),
+        row = await registry.mongo_db.audit_events.find_one(
+            {"action": "recipe.deleted", "resource_id": recipe_id},
         )
-        event = result.scalar_one()
-        assert event.actor_id == admin_user.id
+        assert row is not None
+        assert row["actor_id"] == admin_user.id
 
     async def test_search_by_title(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)

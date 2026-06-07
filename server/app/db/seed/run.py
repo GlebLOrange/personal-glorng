@@ -3,20 +3,17 @@
 import json
 import random
 
-from sqlalchemy import func, select
-
 from app.core.logging import logger
-from app.db.models.audit_event import AuditActorType, AuditSource
-from app.db.models.recipe import Recipe
-from app.db.models.task import Task
-from app.db.models.tool_expense import ToolExpense
-from app.db.models.user import User
+from app.db.documents.audit import AuditActorType, AuditSource
+from app.db.documents.recipe import Recipe
+from app.db.documents.user import User
+from app.db.init_service import DatabaseInitService
+from app.db.registry import DatabaseRegistry
 from app.db.seed.builders import build_random_expenses, build_tasks_for_today
-from app.db.session import get_session_factory
 from app.services.task import TaskService
 from app.services.tool_expense_category import ToolExpenseCategoryService
-from app.services.user import create_user, default_owner_permissions
-from app.settings import get_settings
+from app.services.user import create_user, default_owner_permissions, get_user_by_email
+from app.settings import Settings, get_settings
 
 WEAK_PASSWORDS = {"changeme", "password", "admin", "123456", "secret"}
 
@@ -543,21 +540,26 @@ SAMPLE_RECIPES: list[dict] = [
 ]
 
 
-async def _seed_admin(db, settings) -> User | None:  # noqa: ANN001
+def _require_repos(registry: DatabaseRegistry) -> None:
+    if registry.users is None or registry.recipes is None or registry.expenses is None:
+        msg = "Database repositories are not initialized"
+        raise RuntimeError(msg)
+
+
+async def _seed_admin(registry: DatabaseRegistry, settings: Settings) -> User | None:
     """Create admin user if not exists."""
-    result = await db.execute(select(User).where(User.email == settings.ALLOWED_EMAIL))
-    existing = result.scalar_one_or_none()
+    _require_repos(registry)
+    existing = await get_user_by_email(registry, settings.ALLOWED_EMAIL)
     if existing:
         if not existing.is_protected:
-            existing.is_protected = True
-            await db.flush()
+            await registry.users.update_fields(existing.id, is_protected=True)
         logger.info(
             "Admin user already exists", context={"email": settings.ALLOWED_EMAIL}
         )
         return existing
 
     user = await create_user(
-        db,
+        registry,
         email=settings.ALLOWED_EMAIL,
         password=settings.SEED_PASSWORD,
         permissions=default_owner_permissions(),
@@ -568,9 +570,10 @@ async def _seed_admin(db, settings) -> User | None:  # noqa: ANN001
     return user
 
 
-async def _seed_recipes(db) -> None:  # noqa: ANN001
-    """Insert 20 sample recipes if the table is empty."""
-    count = await db.scalar(select(func.count()).select_from(Recipe))
+async def _seed_recipes(registry: DatabaseRegistry) -> None:
+    """Insert 20 sample recipes if the collection is empty."""
+    _require_repos(registry)
+    count = await registry.recipes.count()
     if count:
         logger.info("Recipes already seeded", context={"count": count})
         return
@@ -588,36 +591,43 @@ async def _seed_recipes(db) -> None:  # noqa: ANN001
             cook_time=data.get("cook_time"),
             servings=data.get("servings"),
         )
-        db.add(recipe)
+        await registry.recipes.insert(recipe)
 
-    await db.flush()
     logger.info("Seeded sample recipes", context={"count": len(recipes)})
 
 
-async def _seed_expense_categories(db) -> None:  # noqa: ANN001
+async def _seed_expense_categories(registry: DatabaseRegistry) -> None:
     """Ensure default expense categories exist."""
-    svc = ToolExpenseCategoryService(db)
+    svc = ToolExpenseCategoryService(registry)
     await svc.ensure_defaults()
     names = await svc.list_names()
     logger.info("Expense categories ready", context={"categories": names})
 
 
-async def _seed_expenses(db) -> None:  # noqa: ANN001
-    """Insert sample expenses when the table is empty."""
-    count = await db.scalar(select(func.count()).select_from(ToolExpense))
+async def _seed_expenses(registry: DatabaseRegistry) -> None:
+    """Insert sample expenses when the collection is empty."""
+    _require_repos(registry)
+    count = await registry.expenses.expenses.count()
     if count:
         logger.info("Expenses already seeded", context={"count": count})
         return
 
     for expense in build_random_expenses(25):
-        db.add(expense)
-    await db.flush()
+        await registry.expenses.expenses.insert(expense)
     logger.info("Seeded sample expenses", context={"count": 25})
 
 
-async def _seed_tasks(db, settings, owner: User | None) -> None:  # noqa: ANN001
-    """Insert sample tasks for today when the table is empty."""
-    count = await db.scalar(select(func.count()).select_from(Task))
+async def _seed_tasks(
+    registry: DatabaseRegistry,
+    settings: Settings,
+    owner: User | None,
+) -> None:
+    """Insert sample tasks for today when the collection is empty."""
+    if registry.tasks is None:
+        msg = "Tasks repository is not initialized"
+        raise RuntimeError(msg)
+
+    count = await registry.tasks.count()
     if count:
         logger.info("Tasks already seeded", context={"count": count})
         return
@@ -627,7 +637,7 @@ async def _seed_tasks(db, settings, owner: User | None) -> None:  # noqa: ANN001
         logger.warning("Skipping task seed: TELEGRAM_ALLOWED_USER_ID not set")
         return
 
-    svc = TaskService(db)
+    svc = TaskService(registry)
     actor_id = owner.id if owner else None
     for task in build_tasks_for_today(
         25,
@@ -652,10 +662,14 @@ async def seed() -> None:
     if not settings.SEED_PASSWORD or settings.SEED_PASSWORD.lower() in WEAK_PASSWORDS:
         raise RuntimeError("SEED_PASSWORD env var missing or too weak")
 
-    async with get_session_factory()() as db:
-        owner = await _seed_admin(db, settings)
-        await _seed_recipes(db)
-        await _seed_expense_categories(db)
-        await _seed_expenses(db)
-        await _seed_tasks(db, settings, owner)
-        await db.commit()
+    registry = DatabaseRegistry()
+    init_svc = DatabaseInitService(registry, settings)
+    try:
+        await init_svc.startup()
+        owner = await _seed_admin(registry, settings)
+        await _seed_recipes(registry)
+        await _seed_expense_categories(registry)
+        await _seed_expenses(registry)
+        await _seed_tasks(registry, settings, owner)
+    finally:
+        await init_svc.shutdown()

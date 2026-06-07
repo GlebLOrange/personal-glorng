@@ -5,14 +5,12 @@ import asyncio
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import logger
 from app.core.utils import calendar_datetime
-from app.db.models.google_auth import GoogleCredential
-from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction
-from app.db.models.task import Task
+from app.db.documents.credential import GoogleCredential
+from app.db.documents.task import GoogleSyncQueue, SyncAction, Task
+from app.db.registry import DatabaseRegistry
 from app.services.google_credentials import read_google_refresh_token
 from app.settings import get_settings
 
@@ -84,14 +82,15 @@ def _delete_event_sync(
 
 
 async def sync_task_to_google(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     queue_item: GoogleSyncQueue,
 ) -> None:
     """Process a single sync queue item."""
-    result = await db.execute(
-        select(Task).where(Task.id == queue_item.task_id),
-    )
-    task = result.scalar_one_or_none()
+    if registry.tasks is None or registry.credentials is None:
+        msg = "Task or credential repository is not initialized"
+        raise RuntimeError(msg)
+
+    task = await registry.tasks.get_or_none(queue_item.task_id)
     if not task:
         logger.warning(
             "Sync: task not found",
@@ -99,12 +98,9 @@ async def sync_task_to_google(
         )
         return
 
-    cred_result = await db.execute(
-        select(GoogleCredential).where(
-            GoogleCredential.telegram_user_id == task.telegram_user_id,
-        ),
+    cred = await registry.credentials.get_google_for_telegram_user(
+        task.telegram_user_id,
     )
-    cred = cred_result.scalar_one_or_none()
     if not cred:
         logger.info(
             "Sync: no Google credentials",
@@ -118,8 +114,7 @@ async def sync_task_to_google(
             cred,
             task,
         )
-        task.google_event_id = event_id
-        db.add(task)
+        await registry.tasks.update_fields(task.id, google_event_id=event_id)
         logger.info(
             "Calendar event created",
             context={"task_id": task.id, "event_id": event_id},

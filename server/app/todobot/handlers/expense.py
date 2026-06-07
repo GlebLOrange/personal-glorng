@@ -9,9 +9,8 @@ from aiogram import F, Router
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.db.models.audit_event import AuditActorType, AuditSource
+from app.db.documents.audit import AuditActorType, AuditSource
+from app.db.registry import DatabaseRegistry
 from app.schemas.tool_expense import ToolExpenseCreate
 from app.services.tool_expense import ToolExpenseService
 from app.services.tool_expense_category import ToolExpenseCategoryService
@@ -73,10 +72,10 @@ def _format_expense_line(
     return f"Logged: {_format_money(amount, currency)} · {category} · {tool_name}"
 
 
-async def _month_summary_pln(db: AsyncSession) -> tuple[Decimal, str]:
+async def _month_summary_pln(registry: DatabaseRegistry) -> tuple[Decimal, str]:
     month = _current_month_value()
     date_from, date_to = ToolExpenseService.month_date_bounds(month)
-    svc = ToolExpenseService(db)
+    svc = ToolExpenseService(registry)
     summary = await svc.get_summary(
         date_from=date_from,
         date_to=date_to,
@@ -86,7 +85,7 @@ async def _month_summary_pln(db: AsyncSession) -> tuple[Decimal, str]:
 
 
 async def _save_parsed(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     *,
     amount: Decimal,
     currency: str,
@@ -95,7 +94,7 @@ async def _save_parsed(
     expense_date: date,
     notes: str | None = None,
 ) -> str:
-    svc = ToolExpenseService(db)
+    svc = ToolExpenseService(registry)
     await svc.create_expense(
         ToolExpenseCreate(
             tool_name=tool_name,
@@ -108,8 +107,7 @@ async def _save_parsed(
         source=AuditSource.TODOBOT,
         actor_type=AuditActorType.TELEGRAM,
     )
-    await db.flush()
-    month_total, display_currency = await _month_summary_pln(db)
+    month_total, display_currency = await _month_summary_pln(registry)
     logged = _format_expense_line(
         amount=amount,
         currency=currency,
@@ -142,7 +140,7 @@ async def cmd_spend(
     message: Message,
     state: FSMContext,
     command: CommandObject,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     args = (command.args or "").strip()
     if not args:
@@ -159,7 +157,7 @@ async def cmd_spend(
 
     try:
         reply = await _save_parsed(
-            db,
+            registry,
             amount=parsed.amount,
             currency=parsed.currency,
             category=parsed.category,
@@ -177,10 +175,10 @@ async def cmd_spend(
 
 
 @router.message(Command("expenses"))
-async def cmd_expenses(message: Message, db: AsyncSession) -> None:
+async def cmd_expenses(message: Message, registry: DatabaseRegistry) -> None:
     month = _current_month_value()
     date_from, date_to = ToolExpenseService.month_date_bounds(month)
-    svc = ToolExpenseService(db)
+    svc = ToolExpenseService(registry)
     summary = await svc.get_summary(
         date_from=date_from,
         date_to=date_to,
@@ -214,7 +212,7 @@ async def menu_log_expense(message: Message, state: FSMContext) -> None:
 async def guided_amount(
     message: Message,
     state: FSMContext,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     if not message.text:
         await message.answer("Send a number, e.g. 45 or 89.50")
@@ -231,7 +229,7 @@ async def guided_amount(
         currency=parsed.currency or settings.EXPENSE_DEFAULT_CURRENCY,
     )
     await state.set_state(ExpenseCreation.waiting_for_category)
-    cat_svc = ToolExpenseCategoryService(db)
+    cat_svc = ToolExpenseCategoryService(registry)
     names = await cat_svc.list_names()
     await message.answer("Pick a category:", reply_markup=category_picker(names))
 
@@ -295,7 +293,7 @@ async def guided_cancel(callback: CallbackQuery, state: FSMContext) -> None:
 async def guided_confirm(
     callback: CallbackQuery,
     state: FSMContext,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     data = await state.get_data()
     try:
@@ -313,7 +311,7 @@ async def guided_confirm(
 
     try:
         reply = await _save_parsed(
-            db,
+            registry,
             amount=amount,
             currency=currency,
             category=category,

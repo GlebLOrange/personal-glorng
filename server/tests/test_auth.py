@@ -2,13 +2,12 @@ from unittest.mock import AsyncMock
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_job_queue_dep
 from app.core.security import create_verification_token
-from app.db.models.user import User
+from app.db.registry import DatabaseRegistry
 from app.main import app
+from app.services.user import get_user_by_email
 from app.workers.job_names import JobName
 from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, STRONG_PASSWORD
 
@@ -16,7 +15,9 @@ from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, STRONG_PASSWORD
 
 
 @pytest.mark.asyncio
-async def test_register_open_email(client: AsyncClient, db: AsyncSession) -> None:
+async def test_register_open_email(
+    client: AsyncClient, registry: DatabaseRegistry
+) -> None:
     resp = await client.post(
         "/api/auth/register",
         json={
@@ -29,14 +30,16 @@ async def test_register_open_email(client: AsyncClient, db: AsyncSession) -> Non
     assert resp.status_code == 200
     assert "Registration successful" in resp.json()["message"]
 
-    result = await db.execute(select(User).where(User.email == "new.user@glorng.dev"))
-    user = result.scalar_one()
+    user = await get_user_by_email(registry, "new.user@glorng.dev")
+    assert user is not None
     assert user.permissions == []
     assert user.is_verified is False
 
 
 @pytest.mark.asyncio
-async def test_register_normalizes_email(client: AsyncClient, db: AsyncSession) -> None:
+async def test_register_normalizes_email(
+    client: AsyncClient, registry: DatabaseRegistry
+) -> None:
     resp = await client.post(
         "/api/auth/register",
         json={
@@ -48,8 +51,8 @@ async def test_register_normalizes_email(client: AsyncClient, db: AsyncSession) 
     )
     assert resp.status_code == 200
 
-    result = await db.execute(select(User).where(User.email == "mixedcase@glorng.dev"))
-    assert result.scalar_one_or_none() is not None
+    user = await get_user_by_email(registry, "mixedcase@glorng.dev")
+    assert user is not None
 
 
 @pytest.mark.asyncio

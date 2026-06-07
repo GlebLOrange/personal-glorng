@@ -6,13 +6,12 @@ from app.core.deps import (
     AdminUser,
     AppSettings,
     AuthorizedUser,
-    DbSession,
     TaskIntakeServiceDep,
     TaskServiceDep,
     require_capability,
 )
 from app.core.exceptions import ValidationError
-from app.db.models.audit_event import AuditActorType, AuditSource
+from app.db.documents.audit import AuditActorType, AuditSource
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.task import (
@@ -48,7 +47,6 @@ def _resolve_telegram_user_id(data: TaskCreate, settings: Settings) -> int:
 @router.post("", response_model=TaskResponse)
 async def create_task(
     data: TaskCreate,
-    db: DbSession,
     user: AdminUser,
     settings: AppSettings,
     svc: TaskServiceDep,
@@ -64,7 +62,6 @@ async def create_task(
         actor_type=AuditActorType.USER,
         actor_id=user.id,
     )
-    await db.commit()
     return TaskResponse.model_validate(task)
 
 
@@ -145,7 +142,6 @@ async def task_detail(
 async def update_task_status(
     task_id: int,
     data: TaskStatusUpdate,
-    db: DbSession,
     user: AdminUser,
     svc: TaskServiceDep,
 ) -> TaskResponse:
@@ -156,7 +152,6 @@ async def update_task_status(
         actor_type=AuditActorType.USER,
         actor_id=user.id,
     )
-    await db.commit()
     return TaskResponse.model_validate(task)
 
 
@@ -164,7 +159,6 @@ async def update_task_status(
 async def reschedule_task(
     task_id: int,
     data: TaskReschedule,
-    db: DbSession,
     user: AdminUser,
     svc: TaskServiceDep,
 ) -> TaskResponse:
@@ -175,7 +169,6 @@ async def reschedule_task(
         actor_type=AuditActorType.USER,
         actor_id=user.id,
     )
-    await db.commit()
     return TaskResponse.model_validate(task)
 
 
@@ -183,7 +176,6 @@ async def reschedule_task(
 async def add_task_reminder(
     task_id: int,
     data: TaskReminderCreate,
-    db: DbSession,
     _user: AdminUser,
     svc: TaskServiceDep,
 ) -> ReminderResponse:
@@ -195,17 +187,14 @@ async def add_task_reminder(
     )
     if not reminder:
         raise ValidationError("Reminder time must be in the future")
-    await db.commit()
     return ReminderResponse.model_validate(reminder)
 
 
 @router.post("/{task_id}/retry-sync", response_model=MessageResponse)
 async def retry_sync(
     task_id: int,
-    db: DbSession,
     _user: AdminUser,
     svc: TaskServiceDep,
 ) -> MessageResponse:
     count = await svc.retry_sync(task_id)
-    await db.commit()
     return MessageResponse(message=f"Retrying {count} sync entries")

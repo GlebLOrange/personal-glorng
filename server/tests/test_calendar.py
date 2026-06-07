@@ -1,15 +1,13 @@
 """Tests for Google Calendar integration: sync service, queue, callback, worker."""
 
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.utils import calendar_datetime
-from app.db.models.google_sync_queue import SyncAction, SyncStatus
+from app.db.documents.task import SyncAction, SyncStatus
+from app.db.registry import DatabaseRegistry
 from app.services.calendar import _build_event_body, sync_task_to_google
 from app.services.task import enqueue_calendar_sync
 from app.workers.tasks import process_sync_queue
@@ -20,33 +18,36 @@ from tests.factories import (
 )
 
 
-def _session_ctx(
-    db: AsyncSession,
-) -> callable:
-    """Build a fake session factory that yields the test db session."""
+async def _reload_sync_item(registry: DatabaseRegistry, item_id: int):
+    assert registry.tasks is not None
+    items = await registry.tasks.list_pending_sync(limit=100)
+    for entry in items:
+        if entry.id == item_id:
+            return entry
+    cursor = registry.mongo_db.google_sync_queue.find({"id": item_id})
+    doc = await cursor.to_list(length=1)
+    if not doc:
+        return None
+    from app.db.repositories.task import _sync_from_doc
 
-    @asynccontextmanager
-    async def _ctx() -> AsyncGenerator[AsyncSession]:
-        yield db
-
-    return _ctx
+    return _sync_from_doc(doc[0])
 
 
 # --- _build_event_body ---
 
 
 class TestBuildEventBody:
-    async def test_minimal_fields(self, db: AsyncSession) -> None:
-        task = await create_task(db, title="Dentist")
+    async def test_minimal_fields(self, registry: DatabaseRegistry) -> None:
+        task = await create_task(registry, title="Dentist")
         body = _build_event_body(task)
 
         assert body["summary"] == "Dentist"
         assert "description" not in body
         assert "location" not in body
 
-    async def test_all_fields(self, db: AsyncSession) -> None:
+    async def test_all_fields(self, registry: DatabaseRegistry) -> None:
         task = await create_task(
-            db,
+            registry,
             title="Meeting",
             description="Discuss roadmap",
             location="Office",
@@ -65,27 +66,25 @@ class TestBuildEventBody:
 
 
 class TestEnqueueCalendarSync:
-    async def test_creates_pending_entry(self, db: AsyncSession) -> None:
-        task = await create_task(db)
+    async def test_creates_pending_entry(self, registry: DatabaseRegistry) -> None:
+        task = await create_task(registry)
         entry = await enqueue_calendar_sync(
-            db, task_id=task.id, action=SyncAction.CREATE
+            registry, task_id=task.id, action=SyncAction.CREATE
         )
-        await db.commit()
 
         assert entry.task_id == task.id
         assert entry.action == SyncAction.CREATE
         assert entry.status == SyncStatus.PENDING
         assert entry.next_retry_at is not None
 
-    async def test_preserves_google_event_id(self, db: AsyncSession) -> None:
-        task = await create_task(db)
+    async def test_preserves_google_event_id(self, registry: DatabaseRegistry) -> None:
+        task = await create_task(registry)
         entry = await enqueue_calendar_sync(
-            db,
+            registry,
             task_id=task.id,
             action=SyncAction.DELETE,
             google_event_id="evt_abc",
         )
-        await db.commit()
 
         assert entry.google_event_id == "evt_abc"
         assert entry.action == SyncAction.DELETE
@@ -97,77 +96,78 @@ class TestEnqueueCalendarSync:
 class TestSyncTaskToGoogle:
     @patch("app.services.calendar._build_service")
     async def test_create_sets_event_id(
-        self, mock_service_fn: MagicMock, db: AsyncSession
+        self, mock_service_fn: MagicMock, registry: DatabaseRegistry
     ) -> None:
-        task = await create_task(db)
-        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
+        task = await create_task(registry)
+        await create_google_credential(registry, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
-            db, task_id=task.id, action=SyncAction.CREATE
+            registry, task_id=task.id, action=SyncAction.CREATE
         )
 
         mock_service = MagicMock()
         mock_service.events().insert().execute.return_value = {"id": "gcal_123"}
         mock_service_fn.return_value = mock_service
 
-        await sync_task_to_google(db, item)
-        await db.commit()
+        await sync_task_to_google(registry, item)
 
-        await db.refresh(task)
-        assert task.google_event_id == "gcal_123"
+        assert registry.tasks is not None
+        updated = await registry.tasks.get(task.id)
+        assert updated.google_event_id == "gcal_123"
 
     @patch("app.services.calendar._build_service")
     async def test_update_calls_api(
-        self, mock_service_fn: MagicMock, db: AsyncSession
+        self, mock_service_fn: MagicMock, registry: DatabaseRegistry
     ) -> None:
-        task = await create_task(db, google_event_id="gcal_existing")
-        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
+        task = await create_task(registry, google_event_id="gcal_existing")
+        await create_google_credential(registry, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
-            db, task_id=task.id, action=SyncAction.UPDATE
+            registry, task_id=task.id, action=SyncAction.UPDATE
         )
 
         mock_service = MagicMock()
         mock_service_fn.return_value = mock_service
 
-        await sync_task_to_google(db, item)
+        await sync_task_to_google(registry, item)
 
         mock_service.events().update.assert_called_once()
 
     @patch("app.services.calendar._build_service")
     async def test_delete_calls_api(
-        self, mock_service_fn: MagicMock, db: AsyncSession
+        self, mock_service_fn: MagicMock, registry: DatabaseRegistry
     ) -> None:
-        task = await create_task(db, google_event_id="gcal_to_delete")
-        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
+        task = await create_task(registry, google_event_id="gcal_to_delete")
+        await create_google_credential(registry, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
-            db, task_id=task.id, action=SyncAction.DELETE
+            registry, task_id=task.id, action=SyncAction.DELETE
         )
 
         mock_service = MagicMock()
         mock_service_fn.return_value = mock_service
 
-        await sync_task_to_google(db, item)
+        await sync_task_to_google(registry, item)
 
         mock_service.events().delete.assert_called_once()
 
-    async def test_skips_when_no_credentials(self, db: AsyncSession) -> None:
-        task = await create_task(db, telegram_user_id=999999)
+    async def test_skips_when_no_credentials(self, registry: DatabaseRegistry) -> None:
+        task = await create_task(registry, telegram_user_id=999999)
         item = await create_sync_queue_item(
-            db, task_id=task.id, action=SyncAction.CREATE
+            registry, task_id=task.id, action=SyncAction.CREATE
         )
 
-        await sync_task_to_google(db, item)
-        await db.refresh(task)
-        assert task.google_event_id is None
+        await sync_task_to_google(registry, item)
+        assert registry.tasks is not None
+        updated = await registry.tasks.get(task.id)
+        assert updated.google_event_id is None
 
-    async def test_skips_when_task_deleted(self, db: AsyncSession) -> None:
-        task = await create_task(db)
+    async def test_skips_when_task_deleted(self, registry: DatabaseRegistry) -> None:
+        task = await create_task(registry)
         item = await create_sync_queue_item(
-            db, task_id=task.id, action=SyncAction.CREATE
+            registry, task_id=task.id, action=SyncAction.CREATE
         )
-        await db.delete(task)
-        await db.commit()
+        assert registry.tasks is not None
+        await registry.tasks.delete(task.id)
 
-        await sync_task_to_google(db, item)
+        await sync_task_to_google(registry, item)
 
 
 # --- process_sync_queue ---
@@ -175,67 +175,78 @@ class TestSyncTaskToGoogle:
 
 class TestProcessSyncQueue:
     @patch("app.services.calendar._build_service")
-    @patch("app.workers.tasks.get_session_factory")
+    @patch(
+        "app.workers.tasks.get_worker_registry",
+        new_callable=AsyncMock,
+    )
     async def test_processes_pending_items(
         self,
-        mock_factory: MagicMock,
+        mock_registry_fn: AsyncMock,
         mock_service_fn: MagicMock,
-        db: AsyncSession,
+        registry: DatabaseRegistry,
     ) -> None:
-        task = await create_task(db)
-        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
+        task = await create_task(registry)
+        await create_google_credential(registry, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
-            db, task_id=task.id, action=SyncAction.CREATE
+            registry, task_id=task.id, action=SyncAction.CREATE
         )
 
         mock_service = MagicMock()
         mock_service.events().insert().execute.return_value = {"id": "gcal_worker"}
         mock_service_fn.return_value = mock_service
-        mock_factory.return_value = _session_ctx(db)
+        mock_registry_fn.return_value = registry
 
         await process_sync_queue()
 
-        await db.refresh(item)
-        assert item.status == SyncStatus.COMPLETED
+        updated = await _reload_sync_item(registry, item.id)
+        assert updated is not None
+        assert updated.status == SyncStatus.COMPLETED
 
     @patch("app.services.calendar._build_service")
-    @patch("app.workers.tasks.get_session_factory")
+    @patch(
+        "app.workers.tasks.get_worker_registry",
+        new_callable=AsyncMock,
+    )
     async def test_retries_on_failure(
         self,
-        mock_factory: MagicMock,
+        mock_registry_fn: AsyncMock,
         mock_service_fn: MagicMock,
-        db: AsyncSession,
+        registry: DatabaseRegistry,
     ) -> None:
-        task = await create_task(db)
-        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
+        task = await create_task(registry)
+        await create_google_credential(registry, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
-            db, task_id=task.id, action=SyncAction.CREATE
+            registry, task_id=task.id, action=SyncAction.CREATE
         )
 
         mock_service = MagicMock()
         mock_service.events().insert().execute.side_effect = RuntimeError("API down")
         mock_service_fn.return_value = mock_service
-        mock_factory.return_value = _session_ctx(db)
+        mock_registry_fn.return_value = registry
 
         await process_sync_queue()
 
-        await db.refresh(item)
-        assert item.status == SyncStatus.PENDING
-        assert item.attempts == 1
-        assert "API down" in item.last_error
+        updated = await _reload_sync_item(registry, item.id)
+        assert updated is not None
+        assert updated.status == SyncStatus.PENDING
+        assert updated.attempts == 1
+        assert "API down" in (updated.last_error or "")
 
     @patch("app.services.calendar._build_service")
-    @patch("app.workers.tasks.get_session_factory")
+    @patch(
+        "app.workers.tasks.get_worker_registry",
+        new_callable=AsyncMock,
+    )
     async def test_marks_failed_after_max_attempts(
         self,
-        mock_factory: MagicMock,
+        mock_registry_fn: AsyncMock,
         mock_service_fn: MagicMock,
-        db: AsyncSession,
+        registry: DatabaseRegistry,
     ) -> None:
-        task = await create_task(db)
-        await create_google_credential(db, telegram_user_id=task.telegram_user_id)
+        task = await create_task(registry)
+        await create_google_credential(registry, telegram_user_id=task.telegram_user_id)
         item = await create_sync_queue_item(
-            db,
+            registry,
             task_id=task.id,
             action=SyncAction.CREATE,
             attempts=4,
@@ -246,34 +257,39 @@ class TestProcessSyncQueue:
             "still broken"
         )
         mock_service_fn.return_value = mock_service
-        mock_factory.return_value = _session_ctx(db)
+        mock_registry_fn.return_value = registry
 
         await process_sync_queue()
 
-        await db.refresh(item)
-        assert item.status == SyncStatus.FAILED
-        assert item.attempts == 5
+        updated = await _reload_sync_item(registry, item.id)
+        assert updated is not None
+        assert updated.status == SyncStatus.FAILED
+        assert updated.attempts == 5
 
-    @patch("app.workers.tasks.get_session_factory")
+    @patch(
+        "app.workers.tasks.get_worker_registry",
+        new_callable=AsyncMock,
+    )
     async def test_skips_future_retry_items(
         self,
-        mock_factory: MagicMock,
-        db: AsyncSession,
+        mock_registry_fn: AsyncMock,
+        registry: DatabaseRegistry,
     ) -> None:
-        task = await create_task(db)
+        task = await create_task(registry)
         item = await create_sync_queue_item(
-            db, task_id=task.id, action=SyncAction.CREATE
+            registry, task_id=task.id, action=SyncAction.CREATE
         )
         item.next_retry_at = datetime.now(UTC) + timedelta(hours=1)
-        db.add(item)
-        await db.commit()
+        assert registry.tasks is not None
+        await registry.tasks.update_sync(item)
 
-        mock_factory.return_value = _session_ctx(db)
+        mock_registry_fn.return_value = registry
 
         await process_sync_queue()
 
-        await db.refresh(item)
-        assert item.status == SyncStatus.PENDING
+        updated = await _reload_sync_item(registry, item.id)
+        assert updated is not None
+        assert updated.status == SyncStatus.PENDING
 
 
 # --- OAuth callback ---

@@ -3,9 +3,9 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.shared_file import SharedFile
+from app.db.documents.fileshare import SharedFile
+from app.db.registry import DatabaseRegistry
 from app.services import fileshare as fileshare_svc
 from tests.factories import create_user
 
@@ -132,8 +132,10 @@ async def test_upload_exceeds_size_limit(
 
 
 @pytest.mark.asyncio
-async def test_download_expired_file(client: AsyncClient, db: AsyncSession) -> None:
-    user = await create_user(db)
+async def test_download_expired_file(
+    client: AsyncClient, registry: DatabaseRegistry
+) -> None:
+    user = await create_user(registry)
     shared = SharedFile(
         code="exp001",
         original_filename="old.txt",
@@ -144,8 +146,8 @@ async def test_download_expired_file(client: AsyncClient, db: AsyncSession) -> N
         expires_at=datetime(2020, 1, 1, 0, 0, 0),
         created_by=user.id,
     )
-    db.add(shared)
-    await db.commit()
+    assert registry.files is not None
+    shared = await registry.files.insert(shared)
 
     shares_dir = fileshare_svc._shares_dir()
     shares_dir.mkdir(parents=True, exist_ok=True)
@@ -168,7 +170,7 @@ async def test_upload_blocked_double_extension(auth_client: AsyncClient) -> None
 @pytest.mark.asyncio
 async def test_delete_file_other_user_forbidden(
     auth_client: AsyncClient,
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
     upload_resp = await auth_client.post(
         "/api/tools/file-share",
@@ -176,7 +178,7 @@ async def test_delete_file_other_user_forbidden(
     )
     file_id = upload_resp.json()["id"]
 
-    other = await create_user(db, email="other@example.com")
+    other = await create_user(registry, email="other@example.com")
 
     from app.core.security import create_access_token
 
@@ -204,8 +206,10 @@ async def test_delete_file(auth_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_cleanup_expired_removes_row_and_disk_file(db: AsyncSession) -> None:
-    user = await create_user(db)
+async def test_cleanup_expired_removes_row_and_disk_file(
+    registry: DatabaseRegistry,
+) -> None:
+    user = await create_user(registry)
     shares_dir = fileshare_svc._shares_dir()
     shares_dir.mkdir(parents=True, exist_ok=True)
     disk_name = "exp002_old.txt"
@@ -231,15 +235,14 @@ async def test_cleanup_expired_removes_row_and_disk_file(db: AsyncSession) -> No
         expires_at=datetime.now(UTC) + timedelta(hours=1),
         created_by=user.id,
     )
-    db.add_all([expired, active])
-    await db.commit()
+    assert registry.files is not None
+    expired = await registry.files.insert(expired)
+    active = await registry.files.insert(active)
 
-    stats = await fileshare_svc.cleanup_expired(db)
-    await db.commit()
+    stats = await fileshare_svc.cleanup_expired(registry)
 
     assert stats == {"deleted_rows": 1, "deleted_files": 1, "errors": 0}
     assert not (shares_dir / disk_name).exists()
 
-    result = await db.get(SharedFile, expired.id)
-    assert result is None
-    assert await db.get(SharedFile, active.id) is not None
+    assert await registry.files.get_or_none(expired.id) is None
+    assert await registry.files.get_or_none(active.id) is not None

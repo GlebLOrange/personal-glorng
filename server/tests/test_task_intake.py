@@ -4,11 +4,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.google_sync_queue import GoogleSyncQueue, SyncStatus
-from app.db.models.task_intake import IntakeStatus
+from app.db.documents.task import IntakeStatus, SyncStatus
+from app.db.registry import DatabaseRegistry
 from app.schemas.task_intake import ExtractionResult, FieldConfidence, TaskDraft
 from app.services.task_intake import TaskIntakeService
 from app.settings import get_settings
@@ -23,25 +21,25 @@ def disable_task_intake_ai(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_nlp_hints_from_message(db: AsyncSession) -> None:
-    svc = TaskIntakeService(db)
+async def test_nlp_hints_from_message(registry: DatabaseRegistry) -> None:
+    svc = TaskIntakeService(registry)
     hints = svc.nlp_hints("Tomorrow at 18:00 gym")
     assert hints.get("title") or hints.get("scheduled_date")
 
 
 @pytest.mark.asyncio
 async def test_nlp_extraction_builds_questions_for_missing_fields(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
-    svc = TaskIntakeService(db)
+    svc = TaskIntakeService(registry)
     result = svc._extract_from_nlp("do something important", {})
     assert result.draft.title
     assert any(q.field == "scheduled_date" for q in result.questions)
 
 
 @pytest.mark.asyncio
-async def test_store_inbound_idempotent(db: AsyncSession) -> None:
-    svc = TaskIntakeService(db)
+async def test_store_inbound_idempotent(registry: DatabaseRegistry) -> None:
+    svc = TaskIntakeService(registry)
     first = await svc.store_inbound_message(
         telegram_user_id=1,
         telegram_message_id=999,
@@ -59,9 +57,9 @@ async def test_store_inbound_idempotent(db: AsyncSession) -> None:
 
 @pytest.mark.asyncio
 async def test_confirm_intake_creates_task_and_sync_queue(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
 ) -> None:
-    svc = TaskIntakeService(db)
+    svc = TaskIntakeService(registry)
     inbound = await svc.store_inbound_message(
         telegram_user_id=123,
         telegram_message_id=1001,
@@ -80,24 +78,23 @@ async def test_confirm_intake_creates_task_and_sync_queue(
         scheduled_time=1.0,
     ).model_dump()
     intake.status = IntakeStatus.READY
-    db.add(intake)
-    await db.flush()
+    assert registry.tasks is not None
+    await registry.tasks.update_intake(intake)
 
     task = await svc.confirm_intake(
         intake.id,
         telegram_user_id=123,
         reminder_minutes=None,
     )
-    await db.commit()
 
     assert task.title == "Buy milk"
     assert task.intake_id == intake.id
 
-    sync_result = await db.execute(
-        select(GoogleSyncQueue).where(GoogleSyncQueue.task_id == task.id),
+    sync_doc = await registry.mongo_db.google_sync_queue.find_one(
+        {"task_id": task.id},
     )
-    sync_item = sync_result.scalar_one()
-    assert sync_item.status == SyncStatus.PENDING
+    assert sync_doc is not None
+    assert sync_doc["status"] == SyncStatus.PENDING.value
 
     refreshed = await svc.get_intake(intake.id)
     assert refreshed.status == IntakeStatus.CONFIRMED
@@ -105,8 +102,8 @@ async def test_confirm_intake_creates_task_and_sync_queue(
 
 
 @pytest.mark.asyncio
-async def test_apply_clarification_appends_turn(db: AsyncSession) -> None:
-    svc = TaskIntakeService(db)
+async def test_apply_clarification_appends_turn(registry: DatabaseRegistry) -> None:
+    svc = TaskIntakeService(registry)
     inbound = await svc.store_inbound_message(
         telegram_user_id=1,
         telegram_message_id=2002,
@@ -117,8 +114,8 @@ async def test_apply_clarification_appends_turn(db: AsyncSession) -> None:
     intake.draft_json = TaskDraft(title="Call mom").model_dump()
     intake.confidence_json = FieldConfidence(title=0.9).model_dump()
     intake.status = IntakeStatus.CLARIFYING
-    db.add(intake)
-    await db.flush()
+    assert registry.tasks is not None
+    await registry.tasks.update_intake(intake)
 
     with patch.object(
         TaskIntakeService,
@@ -154,8 +151,8 @@ async def test_list_intakes_admin(auth_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_build_questions_respects_threshold(db: AsyncSession) -> None:
-    svc = TaskIntakeService(db)
+async def test_build_questions_respects_threshold(registry: DatabaseRegistry) -> None:
+    svc = TaskIntakeService(registry)
     draft = TaskDraft(title="Test", scheduled_date="2026-06-01", scheduled_time="10:00")
     conf = FieldConfidence(title=0.5, scheduled_date=1.0, scheduled_time=1.0)
     questions = svc._build_questions(draft, conf, threshold=0.7)
@@ -163,8 +160,8 @@ async def test_build_questions_respects_threshold(db: AsyncSession) -> None:
 
 
 @pytest.mark.asyncio
-async def test_cancel_intake(db: AsyncSession) -> None:
-    svc = TaskIntakeService(db)
+async def test_cancel_intake(registry: DatabaseRegistry) -> None:
+    svc = TaskIntakeService(registry)
     inbound = await svc.store_inbound_message(
         telegram_user_id=1,
         telegram_message_id=3003,
@@ -178,8 +175,8 @@ async def test_cancel_intake(db: AsyncSession) -> None:
 
 
 @pytest.mark.asyncio
-async def test_run_extraction_nlp_path(db: AsyncSession) -> None:
-    svc = TaskIntakeService(db)
+async def test_run_extraction_nlp_path(registry: DatabaseRegistry) -> None:
+    svc = TaskIntakeService(registry)
     inbound = await svc.store_inbound_message(
         telegram_user_id=1,
         telegram_message_id=4004,

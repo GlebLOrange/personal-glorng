@@ -2,17 +2,19 @@
 
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import logger
 from app.core.utils import as_utc, paginate_params
-from app.db.models.audit_event import AuditActorType, AuditSource
-from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction, SyncStatus
-from app.db.models.reminder import Reminder
-from app.db.models.task import Task, TaskStatus
-from app.db.models.task_status_history import TaskStatusHistory
+from app.db.documents.audit import AuditActorType, AuditSource
+from app.db.documents.task import (
+    GoogleSyncQueue,
+    Reminder,
+    SyncAction,
+    SyncStatus,
+    Task,
+    TaskStatus,
+)
+from app.db.registry import DatabaseRegistry
 from app.schemas.task import (
     ReminderResponse,
     StatusHistoryResponse,
@@ -27,8 +29,14 @@ from app.services.search_indexers.task import index_task, remove_task
 
 
 class TaskService:
-    def __init__(self, db: AsyncSession) -> None:
-        self.db = db
+    def __init__(self, registry: DatabaseRegistry) -> None:
+        self.registry = registry
+
+    def _tasks(self):
+        if self.registry.tasks is None:
+            msg = "Tasks repository is not initialized"
+            raise RuntimeError(msg)
+        return self.registry.tasks
 
     async def require_task(self, *, task_id: int) -> Task:
         task = await self.get_task(task_id=task_id)
@@ -67,13 +75,11 @@ class TaskService:
             status=TaskStatus.PENDING,
             intake_id=intake_id,
         )
-        self.db.add(task)
-        await self.db.flush()
-        await self.db.refresh(task)
-        await index_task(self.db, task)
+        task = await self._tasks().insert(task)
+        await index_task(self.registry, task)
         logger.info("Task created", context={"task_id": task.id, "title": fields.title})
 
-        await AuditService(self.db).record(
+        await AuditService(self.registry).record(
             domain_event(
                 action="task.created",
                 actor_type=actor_type,
@@ -93,16 +99,11 @@ class TaskService:
         remind_at: datetime,
         job_id: str | None = None,
     ) -> Reminder:
-        reminder = Reminder(
+        return await self._tasks().create_reminder(
             task_id=task_id,
             remind_at=remind_at,
-            sent=False,
             job_id=job_id,
         )
-        self.db.add(reminder)
-        await self.db.flush()
-        await self.db.refresh(reminder)
-        return reminder
 
     async def update_task_status(
         self,
@@ -116,17 +117,13 @@ class TaskService:
         """Update status, record history, and emit audit event."""
         old_status = task.status
         task.status = new_status
-        self.db.add(task)
-
-        history = TaskStatusHistory(
+        task = await self._tasks().replace(task)
+        await self._tasks().add_status_history(
             task_id=task.id,
             old_status=old_status.value,
             new_status=new_status.value,
         )
-        self.db.add(history)
-        await self.db.flush()
-        await self.db.refresh(task)
-        await index_task(self.db, task)
+        await index_task(self.registry, task)
 
         logger.debug(
             "Task status updated",
@@ -137,7 +134,7 @@ class TaskService:
             },
         )
 
-        await AuditService(self.db).record(
+        await AuditService(self.registry).record(
             domain_event(
                 action="task.status_changed",
                 actor_type=actor_type,
@@ -181,15 +178,13 @@ class TaskService:
         source: AuditSource = AuditSource.WORKER,
     ) -> Task:
         task = await self.require_task(task_id=task_id)
-        task.scheduled_at = as_utc(scheduled_at)
+        fields: dict[str, object] = {"scheduled_at": as_utc(scheduled_at)}
         if task.status == TaskStatus.POSTPONED:
-            task.status = TaskStatus.PENDING
-        self.db.add(task)
-        await self.db.flush()
-        await self.db.refresh(task)
-        await index_task(self.db, task)
+            fields["status"] = TaskStatus.PENDING.value
+        task = await self._tasks().update_fields(task_id, **fields)
+        await index_task(self.registry, task)
 
-        await AuditService(self.db).record(
+        await AuditService(self.registry).record(
             domain_event(
                 action="task.rescheduled",
                 actor_type=actor_type,
@@ -223,7 +218,7 @@ class TaskService:
             return None
 
         reminder = await self.create_reminder(task_id=task_id, remind_at=remind_at)
-        await schedule_reminder(self.db, reminder)
+        await schedule_reminder(self.registry, reminder)
         return reminder
 
     async def create_with_sync(
@@ -261,8 +256,7 @@ class TaskService:
         return task
 
     async def get_task(self, *, task_id: int) -> Task | None:
-        result = await self.db.execute(select(Task).where(Task.id == task_id))
-        return result.scalar_one_or_none()
+        return await self._tasks().get_or_none(task_id)
 
     async def list_tasks(
         self,
@@ -272,24 +266,23 @@ class TaskService:
         status: str | None = None,
     ) -> list[TaskResponse]:
         offset, limit = paginate_params(page, per_page)
-        query = select(Task).order_by(Task.created_at.desc())
         if status:
             try:
                 TaskStatus(status)
             except ValueError as exc:
                 raise ValidationError(f"Invalid task status: {status}") from exc
-            query = query.where(Task.status == status)
-        result = await self.db.execute(query.offset(offset).limit(limit))
-        return [TaskResponse.model_validate(t) for t in result.scalars().all()]
+        tasks = await self._tasks().list_admin(
+            offset=offset,
+            limit=limit,
+            status=status,
+        )
+        return [TaskResponse.model_validate(t) for t in tasks]
 
     async def task_stats(self) -> TaskStatsResponse:
-        total = await self._count(Task)
-        pending = await self._count(Task, Task.status == TaskStatus.PENDING)
-        completed = await self._count(Task, Task.status == TaskStatus.COMPLETED)
-        failed_syncs = await self._count(
-            GoogleSyncQueue,
-            GoogleSyncQueue.status == SyncStatus.FAILED,
-        )
+        total = await self._tasks().count_all()
+        pending = await self._tasks().count_all(status=TaskStatus.PENDING.value)
+        completed = await self._tasks().count_all(status=TaskStatus.COMPLETED.value)
+        failed_syncs = await self._tasks().count_sync_by_status(SyncStatus.FAILED)
         return TaskStatsResponse(
             pending=pending,
             completed=completed,
@@ -304,50 +297,27 @@ class TaskService:
         per_page: int = 20,
     ) -> list[SyncQueueResponse]:
         offset, limit = paginate_params(page, per_page)
-        result = await self.db.execute(
-            select(GoogleSyncQueue)
-            .order_by(GoogleSyncQueue.created_at.desc())
-            .offset(offset)
-            .limit(limit),
-        )
-        return [SyncQueueResponse.model_validate(q) for q in result.scalars().all()]
+        items = await self._tasks().list_sync_queue(offset=offset, limit=limit)
+        return [SyncQueueResponse.model_validate(q) for q in items]
 
     async def task_detail(self, task_id: int) -> TaskDetailResponse:
         task = await self.get_task(task_id=task_id)
         if not task:
             raise NotFoundError("Task not found")
 
-        reminders_result = await self.db.execute(
-            select(Reminder)
-            .where(Reminder.task_id == task_id)
-            .order_by(Reminder.remind_at),
-        )
-        history_result = await self.db.execute(
-            select(TaskStatusHistory)
-            .where(TaskStatusHistory.task_id == task_id)
-            .order_by(TaskStatusHistory.changed_at),
-        )
+        reminders = await self._tasks().list_reminders_for_task(task_id)
+        history = await self._tasks().list_status_history(task_id)
 
         return TaskDetailResponse(
             **TaskResponse.model_validate(task).model_dump(),
-            reminders=[
-                ReminderResponse.model_validate(r)
-                for r in reminders_result.scalars().all()
-            ],
+            reminders=[ReminderResponse.model_validate(r) for r in reminders],
             status_history=[
-                StatusHistoryResponse.model_validate(h)
-                for h in history_result.scalars().all()
+                StatusHistoryResponse.model_validate(h) for h in history
             ],
         )
 
     async def retry_sync(self, task_id: int) -> int:
-        result = await self.db.execute(
-            select(GoogleSyncQueue).where(
-                GoogleSyncQueue.task_id == task_id,
-                GoogleSyncQueue.status == SyncStatus.FAILED,
-            ),
-        )
-        items = list(result.scalars().all())
+        items = await self._tasks().list_failed_sync_for_task(task_id)
         if not items:
             raise NotFoundError("No failed sync entries for this task")
 
@@ -355,9 +325,8 @@ class TaskService:
             item.status = SyncStatus.PENDING
             item.attempts = 0
             item.next_retry_at = datetime.now(UTC) + timedelta(seconds=5)
-            self.db.add(item)
+            await self._tasks().update_sync(item)
 
-        await self.db.flush()
         return len(items)
 
     async def get_pending_tasks(
@@ -366,35 +335,17 @@ class TaskService:
         telegram_user_id: int,
         limit: int = 20,
     ) -> list[Task]:
-        result = await self.db.execute(
-            select(Task)
-            .where(
-                Task.telegram_user_id == telegram_user_id,
-                Task.status == TaskStatus.PENDING,
-            )
-            .order_by(Task.scheduled_at)
-            .limit(limit),
+        return await self._tasks().list_for_user(
+            telegram_user_id,
+            limit=limit,
+            status=TaskStatus.PENDING,
         )
-        return list(result.scalars().all())
 
     async def get_unsent_reminders(self) -> list[Reminder]:
-        now = datetime.now(UTC)
-        result = await self.db.execute(
-            select(Reminder)
-            .where(Reminder.sent.is_(False), Reminder.remind_at > now)
-            .order_by(Reminder.remind_at),
-        )
-        return list(result.scalars().all())
+        return await self._tasks().list_unsent_future_reminders(now=datetime.now(UTC))
 
     async def get_overdue_pending_tasks(self) -> list[Task]:
-        now = datetime.now(UTC)
-        result = await self.db.execute(
-            select(Task).where(
-                Task.status == TaskStatus.PENDING,
-                Task.scheduled_at < now,
-            ),
-        )
-        return list(result.scalars().all())
+        return await self._tasks().list_overdue_pending(now=datetime.now(UTC))
 
     async def complete_past_due_tasks(
         self,
@@ -423,86 +374,77 @@ class TaskService:
         google_event_id: str | None = None,
     ) -> GoogleSyncQueue:
         entry = GoogleSyncQueue(
+            id=0,
             task_id=task_id,
             action=action,
             status=SyncStatus.PENDING,
             next_retry_at=datetime.now(UTC) + timedelta(seconds=5),
             google_event_id=google_event_id,
         )
-        self.db.add(entry)
-        await self.db.flush()
-        return entry
+        return await self._tasks().enqueue_sync(entry)
 
     async def delete_old_tasks(self, *, months: int = 4) -> int:
         cutoff = datetime.now(UTC) - timedelta(days=months * 30)
-        result = await self.db.execute(
-            select(Task).where(Task.scheduled_at < cutoff),
-        )
-        tasks = list(result.scalars().all())
+        tasks = await self._tasks().list_older_than(cutoff=cutoff)
         for task in tasks:
-            await remove_task(self.db, task.id)
-            await self.db.delete(task)
-        await self.db.flush()
+            await remove_task(self.registry, task.id)
+            await self._tasks().delete(task.id)
         return len(tasks)
-
-    async def _count(self, model: type, *conditions: object) -> int:
-        query = select(func.count()).select_from(model)
-        for cond in conditions:
-            query = query.where(cond)
-        result = await self.db.execute(query)
-        return result.scalar_one()
 
 
 # Backward-compatible module-level helpers for todobot and workers.
 
 
-async def create_task(db: AsyncSession, **kwargs: object) -> Task:
-    return await TaskService(db).create_task(**kwargs)  # type: ignore[arg-type]
+async def create_task(registry: DatabaseRegistry, **kwargs: object) -> Task:
+    return await TaskService(registry).create_task(**kwargs)  # type: ignore[arg-type]
 
 
-async def create_reminder(db: AsyncSession, **kwargs: object) -> Reminder:
-    return await TaskService(db).create_reminder(**kwargs)  # type: ignore[arg-type]
+async def create_reminder(registry: DatabaseRegistry, **kwargs: object) -> Reminder:
+    return await TaskService(registry).create_reminder(**kwargs)  # type: ignore[arg-type]
 
 
-async def update_task_status(db: AsyncSession, **kwargs: object) -> Task:
-    return await TaskService(db).update_task_status(**kwargs)  # type: ignore[arg-type]
+async def update_task_status(registry: DatabaseRegistry, **kwargs: object) -> Task:
+    return await TaskService(registry).update_task_status(**kwargs)  # type: ignore[arg-type]
 
 
-async def change_status(db: AsyncSession, **kwargs: object) -> Task:
-    return await TaskService(db).change_status(**kwargs)  # type: ignore[arg-type]
+async def change_status(registry: DatabaseRegistry, **kwargs: object) -> Task:
+    return await TaskService(registry).change_status(**kwargs)  # type: ignore[arg-type]
 
 
-async def reschedule_task(db: AsyncSession, **kwargs: object) -> Task:
-    return await TaskService(db).reschedule_task(**kwargs)  # type: ignore[arg-type]
+async def reschedule_task(registry: DatabaseRegistry, **kwargs: object) -> Task:
+    return await TaskService(registry).reschedule_task(**kwargs)  # type: ignore[arg-type]
 
 
-async def create_with_sync(db: AsyncSession, **kwargs: object) -> Task:
-    return await TaskService(db).create_with_sync(**kwargs)  # type: ignore[arg-type]
+async def create_with_sync(registry: DatabaseRegistry, **kwargs: object) -> Task:
+    return await TaskService(registry).create_with_sync(**kwargs)  # type: ignore[arg-type]
 
 
-async def get_task(db: AsyncSession, *, task_id: int) -> Task | None:
-    return await TaskService(db).get_task(task_id=task_id)
+async def get_task(registry: DatabaseRegistry, *, task_id: int) -> Task | None:
+    return await TaskService(registry).get_task(task_id=task_id)
 
 
-async def get_pending_tasks(db: AsyncSession, **kwargs: object) -> list[Task]:
-    return await TaskService(db).get_pending_tasks(**kwargs)  # type: ignore[arg-type]
+async def get_pending_tasks(registry: DatabaseRegistry, **kwargs: object) -> list[Task]:
+    return await TaskService(registry).get_pending_tasks(**kwargs)  # type: ignore[arg-type]
 
 
-async def get_unsent_reminders(db: AsyncSession) -> list[Reminder]:
-    return await TaskService(db).get_unsent_reminders()
+async def get_unsent_reminders(registry: DatabaseRegistry) -> list[Reminder]:
+    return await TaskService(registry).get_unsent_reminders()
 
 
-async def get_overdue_pending_tasks(db: AsyncSession) -> list[Task]:
-    return await TaskService(db).get_overdue_pending_tasks()
+async def get_overdue_pending_tasks(registry: DatabaseRegistry) -> list[Task]:
+    return await TaskService(registry).get_overdue_pending_tasks()
 
 
-async def complete_past_due_tasks(db: AsyncSession, **kwargs: object) -> int:
-    return await TaskService(db).complete_past_due_tasks(**kwargs)  # type: ignore[arg-type]
+async def complete_past_due_tasks(registry: DatabaseRegistry, **kwargs: object) -> int:
+    return await TaskService(registry).complete_past_due_tasks(**kwargs)  # type: ignore[arg-type]
 
 
-async def enqueue_calendar_sync(db: AsyncSession, **kwargs: object) -> GoogleSyncQueue:
-    return await TaskService(db).enqueue_calendar_sync(**kwargs)  # type: ignore[arg-type]
+async def enqueue_calendar_sync(
+    registry: DatabaseRegistry,
+    **kwargs: object,
+) -> GoogleSyncQueue:
+    return await TaskService(registry).enqueue_calendar_sync(**kwargs)  # type: ignore[arg-type]
 
 
-async def delete_old_tasks(db: AsyncSession, **kwargs: object) -> int:
-    return await TaskService(db).delete_old_tasks(**kwargs)  # type: ignore[arg-type]
+async def delete_old_tasks(registry: DatabaseRegistry, **kwargs: object) -> int:
+    return await TaskService(registry).delete_old_tasks(**kwargs)  # type: ignore[arg-type]

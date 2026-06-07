@@ -7,9 +7,9 @@ from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from app.core.permissions import permission_key
-from app.db.models.feedback import Feedback
-from app.db.models.recipe import Recipe
-from app.db.models.task import Task, TaskStatus
+from app.db.documents.feedback import Feedback
+from app.db.documents.recipe import Recipe
+from app.db.documents.task import Task, TaskStatus
 from app.platform.registry import PLATFORM_SERVICES
 
 DEMO_READER_EMAIL = "demo.reader@glorng.dev"

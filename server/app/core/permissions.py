@@ -1,6 +1,6 @@
 """Permission checks aligned with platform service registry."""
 
-from app.db.models.user import User
+from app.db.documents.user import User
 from app.platform.registry import PLATFORM_SERVICES
 
 SUPERUSER_PERMISSION = "platform:superuser"

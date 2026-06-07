@@ -1,28 +1,40 @@
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.utils import generate_short_code
-from app.db.models.feedback import Feedback
-from app.db.models.google_auth import GoogleCredential
-from app.db.models.google_sync_queue import GoogleSyncQueue, SyncAction, SyncStatus
-from app.db.models.task import Task, TaskStatus
-from app.db.models.url import ShortenedUrl
-from app.db.models.user import User
+from app.db.documents.credential import GoogleCredential
+from app.db.documents.feedback import Feedback
+from app.db.documents.task import (
+    GoogleSyncQueue,
+    SyncAction,
+    SyncStatus,
+    Task,
+    TaskStatus,
+)
+from app.db.documents.url import ShortenedUrl
+from app.db.documents.user import User
+from app.db.registry import DatabaseRegistry
 from app.services.user import create_user as create_user_record
 from app.services.user import default_owner_permissions
 
 
+def _require(registry: DatabaseRegistry, attr: str):
+    repo = getattr(registry, attr)
+    if repo is None:
+        msg = f"{attr} repository is not initialized"
+        raise RuntimeError(msg)
+    return repo
+
+
 async def create_user(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     email: str = "test@glorng.dev",
     password: str = "MyTestPass123!",
     is_verified: bool = True,
     is_protected: bool = False,
     permissions: list[str] | None = None,
 ) -> User:
-    user = await create_user_record(
-        db,
+    return await create_user_record(
+        registry,
         email=email,
         password=password,
         is_verified=is_verified,
@@ -31,13 +43,10 @@ async def create_user(
         if permissions is not None
         else default_owner_permissions(),
     )
-    await db.commit()
-    await db.refresh(user)
-    return user
 
 
 async def create_short_url(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     original_url: str = "https://example.com",
     created_by: int | None = 1,
     title: str | None = None,
@@ -48,14 +57,11 @@ async def create_short_url(
         title=title,
         created_by=created_by,
     )
-    db.add(url)
-    await db.commit()
-    await db.refresh(url)
-    return url
+    return await _require(registry, "urls").insert(url)
 
 
 async def create_task(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     telegram_user_id: int = 123456,
     title: str = "Test task",
     scheduled_at: datetime | None = None,
@@ -75,31 +81,26 @@ async def create_task(
         status=status,
         google_event_id=google_event_id,
     )
-    db.add(task)
-    await db.commit()
-    await db.refresh(task)
-    return task
+    return await _require(registry, "tasks").insert(task)
 
 
 async def create_google_credential(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     telegram_user_id: int = 123456,
     refresh_token: str = "fake-refresh-token",
     calendar_id: str = "primary",
 ) -> GoogleCredential:
     cred = GoogleCredential(
+        id=0,
         telegram_user_id=telegram_user_id,
         refresh_token=refresh_token,
         calendar_id=calendar_id,
     )
-    db.add(cred)
-    await db.commit()
-    await db.refresh(cred)
-    return cred
+    return await _require(registry, "credentials").upsert_google(cred)
 
 
 async def create_sync_queue_item(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     task_id: int,
     action: SyncAction = SyncAction.CREATE,
     status: SyncStatus = SyncStatus.PENDING,
@@ -107,6 +108,7 @@ async def create_sync_queue_item(
     attempts: int = 0,
 ) -> GoogleSyncQueue:
     item = GoogleSyncQueue(
+        id=0,
         task_id=task_id,
         action=action,
         status=status,
@@ -114,21 +116,15 @@ async def create_sync_queue_item(
         attempts=attempts,
         next_retry_at=datetime.now(UTC) - timedelta(seconds=1),
     )
-    db.add(item)
-    await db.commit()
-    await db.refresh(item)
-    return item
+    return await _require(registry, "tasks").enqueue_sync(item)
 
 
 async def create_feedback(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     email: str = "visitor@example.com",
     theme: str = "Bug report",
     message: str = "Found a bug on the home page.",
     status: str = "unread",
 ) -> Feedback:
     entry = Feedback(email=email, theme=theme, message=message, status=status)
-    db.add(entry)
-    await db.commit()
-    await db.refresh(entry)
-    return entry
+    return await _require(registry, "feedback").insert(entry)

@@ -1,8 +1,5 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.exceptions import ConflictError, ForbiddenError, UnauthorizedError
 from app.core.logging import logger
 from app.core.redis import blacklist_token, is_token_blacklisted
@@ -14,12 +11,14 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
-from app.db.models.audit_event import AuditActorType, AuditCategory, AuditSource
-from app.db.models.user import User
+from app.db.documents.audit import AuditActorType, AuditCategory, AuditSource
+from app.db.documents.user import User
+from app.db.registry import DatabaseRegistry
 from app.services.audit import AuditRecord, AuditService
 from app.services.user import (
     create_user,
     default_user_permissions,
+    get_user_by_email,
     get_user_by_public_id,
 )
 from app.settings import get_settings
@@ -67,35 +66,30 @@ async def _blacklist_payload(payload: dict[str, object]) -> None:
     await blacklist_token(jti, max(exp - now, 0))
 
 
-async def _get_user_by_sub(db: AsyncSession, subject: str) -> User:
-    user = await get_user_by_public_id(db, subject)
+async def _get_user_by_sub(registry: DatabaseRegistry, subject: str) -> User:
+    user = await get_user_by_public_id(registry, subject)
     if not user:
         raise UnauthorizedError("User not found")
     return user
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
-    result = await db.execute(select(User).where(User.email == email))
-    return result.scalar_one_or_none()
-
-
 async def register_user(
-    db: AsyncSession,
+    registry: DatabaseRegistry,
     email: str,
     password: str,
     *,
     display_name: str | None = None,
     timezone: str = "UTC",
 ) -> User:
-    audit = AuditService(db)
+    audit = AuditService(registry)
     normalized_email = email.strip().lower()
 
-    existing = await get_user_by_email(db, normalized_email)
+    existing = await get_user_by_email(registry, normalized_email)
     if existing:
         raise ConflictError("User with this email already exists")
 
     user = await create_user(
-        db,
+        registry,
         email=normalized_email,
         password=password,
         permissions=default_user_permissions(),
@@ -119,9 +113,13 @@ async def register_user(
     return user
 
 
-async def login_user(db: AsyncSession, email: str, password: str) -> tuple[str, str]:
-    audit = AuditService(db)
-    user = await get_user_by_email(db, email.strip().lower())
+async def login_user(
+    registry: DatabaseRegistry,
+    email: str,
+    password: str,
+) -> tuple[str, str]:
+    audit = AuditService(registry)
+    user = await get_user_by_email(registry, email.strip().lower())
     if not user or not verify_password(password, user.hashed_password):
         logger.warning("Login failed", context={"email": _auth_log_email(email)})
         await audit.record(
@@ -154,14 +152,17 @@ async def login_user(db: AsyncSession, email: str, password: str) -> tuple[str, 
     return access_token, refresh_token
 
 
-async def refresh_access_token(db: AsyncSession, refresh_token: str) -> tuple[str, str]:
+async def refresh_access_token(
+    registry: DatabaseRegistry,
+    refresh_token: str,
+) -> tuple[str, str]:
     payload = await _decode_and_validate(refresh_token, "refresh")
     await _blacklist_payload(payload)
-    user = await _get_user_by_sub(db, str(payload["sub"]))
+    user = await _get_user_by_sub(registry, str(payload["sub"]))
     new_access = create_access_token(str(user.public_id), user_id=user.id)
     new_refresh = create_refresh_token(str(user.public_id))
 
-    audit = AuditService(db)
+    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -176,19 +177,20 @@ async def refresh_access_token(db: AsyncSession, refresh_token: str) -> tuple[st
     return new_access, new_refresh
 
 
-async def verify_user_email(db: AsyncSession, token: str) -> User:
+async def verify_user_email(registry: DatabaseRegistry, token: str) -> User:
     payload = await _decode_and_validate(token, "verify")
-    user = await get_user_by_email(db, payload["sub"])
+    user = await get_user_by_email(registry, str(payload["sub"]))
     if not user:
         raise UnauthorizedError("User not found")
 
-    user.is_verified = True
-    await db.flush()
-    await db.refresh(user)
+    await registry.users.update_fields(user.id, is_verified=True)  # type: ignore[union-attr]
+    user = await get_user_by_email(registry, str(payload["sub"]))
+    if not user:
+        raise UnauthorizedError("User not found")
 
     await _blacklist_payload(payload)
 
-    audit = AuditService(db)
+    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -203,12 +205,12 @@ async def verify_user_email(db: AsyncSession, token: str) -> User:
     return user
 
 
-async def request_password_reset(db: AsyncSession, email: str) -> str | None:
-    user = await get_user_by_email(db, email.strip().lower())
+async def request_password_reset(registry: DatabaseRegistry, email: str) -> str | None:
+    user = await get_user_by_email(registry, email.strip().lower())
     if not user:
         return None
 
-    audit = AuditService(db)
+    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -224,19 +226,24 @@ async def request_password_reset(db: AsyncSession, email: str) -> str | None:
     return create_reset_token(email)
 
 
-async def reset_user_password(db: AsyncSession, token: str, new_password: str) -> User:
+async def reset_user_password(
+    registry: DatabaseRegistry,
+    token: str,
+    new_password: str,
+) -> User:
     payload = await _decode_and_validate(token, "reset")
-    user = await get_user_by_email(db, payload["sub"])
+    user = await get_user_by_email(registry, str(payload["sub"]))
     if not user:
         raise UnauthorizedError("User not found")
 
-    user.hashed_password = hash_password(new_password)
-    await db.flush()
-    await db.refresh(user)
+    user = await registry.users.update_fields(  # type: ignore[union-attr]
+        user.id,
+        hashed_password=hash_password(new_password),
+    )
 
     await _blacklist_payload(payload)
 
-    audit = AuditService(db)
+    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -251,8 +258,8 @@ async def reset_user_password(db: AsyncSession, token: str, new_password: str) -
     return user
 
 
-async def record_logout(db: AsyncSession, user_id: int | None) -> None:
-    audit = AuditService(db)
+async def record_logout(registry: DatabaseRegistry, user_id: int | None) -> None:
+    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
