@@ -10,31 +10,70 @@ from typing import Protocol
 from app.core.logging import logger
 from app.settings import Settings, get_settings
 
+EMAIL_COLORS = {
+    "surface_dark": "#141820",
+    "surface_card": "#1c2230",
+    "surface_border": "#2e3a4e",
+    "surface_light": "#f5f2ec",
+    "surface_mid": "#c4b8ac",
+    "surface_muted": "#8a847e",
+    "accent_blue": "#7bbde2",
+    "accent_violet": "#b8a3c8",
+}
+
+FONT_STACK = "'IBM Plex Sans', system-ui, sans-serif"
+SITE_NAME = "gLOrng"
+
 
 class EmailBackend(Protocol):
-    async def send(self, to: str, subject: str, html: str) -> None: ...
+    async def send(
+        self,
+        to: str,
+        subject: str,
+        html: str,
+        plain: str | None = None,
+    ) -> None: ...
 
 
 class ConsoleBackend:
     """Prints emails to stdout -- used in development."""
 
-    async def send(self, to: str, subject: str, html: str) -> None:
+    async def send(
+        self,
+        to: str,
+        subject: str,
+        html: str,
+        plain: str | None = None,
+    ) -> None:
         logger.info(
             "Email sent (console)",
-            context={"to": to, "subject": subject, "body_preview": html[:200]},
+            context={
+                "to": to,
+                "subject": subject,
+                "body_preview": html[:200],
+                "plain_preview": (plain or "")[:200],
+            },
         )
 
 
 class SMTPBackend:
     """Generic SMTP backend."""
 
-    async def send(self, to: str, subject: str, html: str) -> None:
+    async def send(
+        self,
+        to: str,
+        subject: str,
+        html: str,
+        plain: str | None = None,
+    ) -> None:
         settings = get_settings()
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
         msg["From"] = settings.SMTP_FROM
         msg["To"] = to
-        msg.attach(MIMEText(html, "html"))
+        if plain:
+            msg.attach(MIMEText(plain, "plain", "utf-8"))
+        msg.attach(MIMEText(html, "html", "utf-8"))
 
         try:
             await asyncio.to_thread(self._send_sync, settings, to, msg)
@@ -61,35 +100,160 @@ def get_email_backend() -> EmailBackend:
     return ConsoleBackend()
 
 
-def _wrap_email(title: str, body: str) -> str:
-    """Shared HTML email wrapper -- single source for layout."""
+def render_plain_text(title: str, body_lines: list[str]) -> str:
+    """Plain-text email body for multipart messages."""
+    body = "\n".join(body_lines)
+    return f"{title}\n\n{body}\n\n— {SITE_NAME}\n"
+
+
+def _cta_button(href: str, label: str) -> str:
+    colors = EMAIL_COLORS
+    safe_href = escape(href, quote=True)
+    safe_label = escape(label)
     return (
-        "<div style=\"font-family:'IBM Plex Mono',monospace;max-width:480px;"
-        "margin:0 auto;padding:24px;background:#1a1a1a;color:#f5f5f5;"
-        'border-radius:8px;">'
-        f'<h2 style="color:#f97316;">{escape(title)}</h2>'
+        '<table role="presentation" cellspacing="0" cellpadding="0" border="0" '
+        'style="margin:24px 0;">'
+        "<tr><td "
+        f'style="border-radius:8px;background:{colors["accent_blue"]};">'
+        f'<a href="{safe_href}" target="_blank" '
+        f'style="display:inline-block;padding:12px 24px;font-family:{FONT_STACK};'
+        f'font-size:14px;font-weight:600;color:{colors["surface_dark"]};'
+        'text-decoration:none;border-radius:8px;">'
+        f"{safe_label}</a></td></tr></table>"
+    )
+
+
+def _fallback_link(url: str) -> str:
+    colors = EMAIL_COLORS
+    safe_href = escape(url, quote=True)
+    safe_display = escape(url)
+    link_style = "margin:0;font-family:monospace;font-size:12px;word-break:break-all;"
+    return (
+        f'<p style="margin:16px 0 4px;font-family:{FONT_STACK};font-size:13px;'
+        f'color:{colors["surface_mid"]};">Or copy this link:</p>'
+        f'<p style="{link_style}">'
+        f'<a href="{safe_href}" style="color:{colors["accent_blue"]};">'
+        f"{safe_display}</a></p>"
+    )
+
+
+def _wrap_email(title: str, body: str, *, site_url: str | None = None) -> str:
+    """Shared HTML email wrapper -- single source for layout."""
+    colors = EMAIL_COLORS
+    safe_title = escape(title)
+    footer_url = ""
+    if site_url:
+        safe_site = escape(site_url.rstrip("/"))
+        footer_url = (
+            f'<p style="margin:4px 0 0;font-family:{FONT_STACK};font-size:11px;">'
+            f'<a href="{escape(site_url.rstrip("/"), quote=True)}" '
+            f'style="color:{colors["accent_blue"]};text-decoration:none;">'
+            f"{safe_site}</a></p>"
+        )
+    return (
+        f'<!DOCTYPE html><html><body style="margin:0;padding:0;'
+        f'background:{colors["surface_dark"]};">'
+        '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" '
+        f'border="0" style="background:{colors["surface_dark"]};padding:32px 16px;">'
+        "<tr><td align=\"center\">"
+        '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" '
+        'border="0" style="max-width:560px;">'
+        "<tr><td "
+        f'style="background:{colors["surface_card"]};border:1px solid '
+        f'{colors["surface_border"]};border-radius:8px;padding:32px;">'
+        f'<p style="margin:0 0 8px;font-family:{FONT_STACK};font-size:18px;'
+        f'font-weight:700;color:{colors["accent_blue"]};">{SITE_NAME}</p>'
+        f'<div style="width:48px;height:3px;background:{colors["accent_blue"]};'
+        f'margin-bottom:24px;border-radius:2px;"></div>'
+        f'<h1 style="margin:0 0 16px;font-family:{FONT_STACK};font-size:22px;'
+        f'font-weight:600;color:{colors["surface_light"]};">{safe_title}</h1>'
         f"{body}"
-        '<hr style="border-color:#3a3a3a;margin-top:24px;">'
-        '<p style="font-size:12px;color:#a3a3a3;">— gLOrng</p>'
-        "</div>"
+        f'<hr style="border:none;border-top:1px solid {colors["surface_border"]};'
+        'margin:32px 0 16px;">'
+        f'<p style="margin:0;font-family:{FONT_STACK};font-size:12px;'
+        f'color:{colors["surface_muted"]};">— {SITE_NAME}</p>'
+        f"{footer_url}"
+        "</td></tr></table></td></tr></table></body></html>"
+    )
+
+
+def _verification_url(token: str, base_url: str) -> str:
+    return f"{base_url.rstrip('/')}/verify-email?token={token}"
+
+
+def _reset_url(token: str, base_url: str) -> str:
+    return f"{base_url.rstrip('/')}/reset-password?token={token}"
+
+
+def _body_text_style() -> str:
+    colors = EMAIL_COLORS
+    return (
+        f"margin:0 0 16px;font-family:{FONT_STACK};font-size:15px;"
+        f"line-height:1.5;color:{colors['surface_mid']};"
+    )
+
+
+def _expiry_note(hours: int) -> str:
+    colors = EMAIL_COLORS
+    label = "1 hour" if hours == 1 else f"{hours} hours"
+    return (
+        f'<p style="margin:24px 0 0;font-family:{FONT_STACK};font-size:12px;'
+        f'color:{colors["surface_muted"]};">Link expires in {label}.</p>'
     )
 
 
 def render_verification_email(token: str, base_url: str) -> str:
-    url = f"{escape(base_url)}/verify-email?token={escape(token)}"
-    return _wrap_email(
+    url = _verification_url(token, base_url)
+    body = (
+        f'<p style="{_body_text_style()}">'
+        "Welcome to gLOrng! Verify your email to activate your account."
+        "</p>"
+        f"{_cta_button(url, 'Verify email')}"
+        f"{_fallback_link(url)}"
+        f"{_expiry_note(24)}"
+    )
+    return _wrap_email("Verify your email", body, site_url=base_url)
+
+
+def render_verification_email_plain(token: str, base_url: str) -> str:
+    url = _verification_url(token, base_url)
+    return render_plain_text(
         "Verify your email",
-        f"<p>Click the link below to verify your account:</p>"
-        f'<a href="{url}" style="color:#f97316;">{url}</a>'
-        f'<p style="color:#a3a3a3;font-size:12px;">Expires in 24 hours.</p>',
+        [
+            "Welcome to gLOrng!",
+            "Verify your email to activate your account.",
+            "",
+            url,
+            "",
+            "Link expires in 24 hours.",
+        ],
     )
 
 
 def render_reset_email(token: str, base_url: str) -> str:
-    url = f"{escape(base_url)}/reset-password?token={escape(token)}"
-    return _wrap_email(
+    url = _reset_url(token, base_url)
+    body = (
+        f'<p style="{_body_text_style()}">'
+        "We received a request to reset your password. "
+        "Click the button below to choose a new one."
+        "</p>"
+        f"{_cta_button(url, 'Reset password')}"
+        f"{_fallback_link(url)}"
+        f"{_expiry_note(1)}"
+    )
+    return _wrap_email("Reset your password", body, site_url=base_url)
+
+
+def render_reset_email_plain(token: str, base_url: str) -> str:
+    url = _reset_url(token, base_url)
+    return render_plain_text(
         "Reset your password",
-        f"<p>Click the link below to reset your password:</p>"
-        f'<a href="{url}" style="color:#f97316;">{url}</a>'
-        f'<p style="color:#a3a3a3;font-size:12px;">Expires in 1 hour.</p>',
+        [
+            "We received a request to reset your password.",
+            "Use the link below to choose a new one.",
+            "",
+            url,
+            "",
+            "Link expires in 1 hour.",
+        ],
     )

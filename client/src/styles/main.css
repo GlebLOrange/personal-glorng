@@ -128,6 +128,15 @@ body {
   opacity: 0;
 }
 
+.drawer-slide-enter-active .drawer-panel,
+.drawer-slide-leave-active .drawer-panel {
+  transition: transform 0.2s ease;
+}
+.drawer-slide-enter-from .drawer-panel,
+.drawer-slide-leave-to .drawer-panel {
+  transform: translateX(100%);
+}
+
 #cc-main {
   --cc-bg: #1c2230;
   --cc-primary-color: #f5f2ec;

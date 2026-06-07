@@ -134,6 +134,7 @@ onMounted(async () => {
       :form="form"
       :form-title="formTitle"
       :loading="saving"
+      :all-tags="allTags"
       @update:form="form = $event"
       @close="showForm = false"
       @save="saveRecipe"
