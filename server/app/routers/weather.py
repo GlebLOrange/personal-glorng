@@ -2,7 +2,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, Path
 
-from app.core.deps import CurrentUser, DbSession
+from app.core.deps import AppSettings, CurrentUser, DbSession
 from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
 from app.schemas.weather import (
@@ -13,7 +13,6 @@ from app.schemas.weather import (
 from app.schemas.world_time import WorldTimeResponse
 from app.services.weather import WeatherService
 from app.services.weather_location import WeatherLocationService
-from app.settings import get_settings
 
 router = APIRouter(
     prefix="/time-date-weather-location",
@@ -23,9 +22,8 @@ router = APIRouter(
 
 
 @router.get("/config")
-async def get_weather_config() -> dict[str, str]:
+async def get_weather_config(settings: AppSettings) -> dict[str, str]:
     """Public default city config for section seeding and fallbacks."""
-    settings = get_settings()
     return {
         "label": settings.WEATHER_DEFAULT_LABEL,
         "query": settings.WEATHER_DEFAULT_QUERY,

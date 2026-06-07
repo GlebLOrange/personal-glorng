@@ -2,11 +2,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from app.core.deps import AuthorizedUser, DbSession, require_capability
+from app.core.deps import AuditServiceDep, AuthorizedUser, require_capability
 from app.core.utils import paginate_params
 from app.schemas.audit import AuditEventListResponse, AuditEventResponse
 from app.schemas.date_filters import AuditDateFilter, audit_date_filter
-from app.services.audit import AuditService
 
 router = APIRouter(
     prefix="/audit",
@@ -20,7 +19,7 @@ router = APIRouter(
     description="Filter by inclusive date range (date_from, date_to).",
 )
 async def list_audit_events(
-    db: DbSession,
+    svc: AuditServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
     filters: Annotated[AuditDateFilter, Depends(audit_date_filter)],
     page: int = 1,
@@ -29,7 +28,6 @@ async def list_audit_events(
     action: str | None = None,
 ) -> AuditEventListResponse:
     offset, limit = paginate_params(page, per_page)
-    svc = AuditService(db)
     items, total = await svc.list_events(
         category=category,
         action=action,

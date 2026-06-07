@@ -2,7 +2,15 @@
 
 from fastapi import APIRouter, Depends
 
-from app.core.deps import AdminUser, AuthorizedUser, DbSession, require_capability
+from app.core.deps import (
+    AdminUser,
+    AppSettings,
+    AuthorizedUser,
+    DbSession,
+    TaskIntakeServiceDep,
+    TaskServiceDep,
+    require_capability,
+)
 from app.core.exceptions import ValidationError
 from app.db.models.audit_event import AuditActorType, AuditSource
 from app.schemas.common import MessageResponse
@@ -18,9 +26,7 @@ from app.schemas.task import (
     TaskStatusUpdate,
 )
 from app.schemas.task_intake import TaskIntakeResponse
-from app.services.task import TaskService
-from app.services.task_intake import TaskIntakeService
-from app.settings import get_settings
+from app.settings import Settings
 
 router = APIRouter(
     prefix="/tasks",
@@ -28,8 +34,7 @@ router = APIRouter(
 )
 
 
-def _resolve_telegram_user_id(data: TaskCreate) -> int:
-    settings = get_settings()
+def _resolve_telegram_user_id(data: TaskCreate, settings: Settings) -> int:
     telegram_user_id = data.telegram_user_id or settings.TELEGRAM_ALLOWED_USER_ID
     if not telegram_user_id:
         raise ValidationError(
@@ -43,10 +48,11 @@ async def create_task(
     data: TaskCreate,
     db: DbSession,
     user: AdminUser,
+    settings: AppSettings,
+    svc: TaskServiceDep,
 ) -> TaskResponse:
-    svc = TaskService(db)
     task = await svc.create_with_sync(
-        telegram_user_id=_resolve_telegram_user_id(data),
+        telegram_user_id=_resolve_telegram_user_id(data, settings),
         title=data.title,
         scheduled_at=data.scheduled_at,
         description=data.description,
@@ -62,50 +68,50 @@ async def create_task(
 
 @router.get("", response_model=list[TaskResponse])
 async def list_tasks(
-    db: DbSession,
+    svc: TaskServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
     page: int = 1,
     per_page: int = 20,
     status: str | None = None,
 ) -> list[TaskResponse]:
-    return await TaskService(db).list_tasks(page=page, per_page=per_page, status=status)
+    return await svc.list_tasks(page=page, per_page=per_page, status=status)
 
 
 @router.get("/stats", response_model=TaskStatsResponse)
 async def task_stats(
-    db: DbSession,
+    svc: TaskServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
 ) -> TaskStatsResponse:
-    return await TaskService(db).task_stats()
+    return await svc.task_stats()
 
 
 @router.get("/intakes", response_model=list[TaskIntakeResponse])
 async def list_intakes(
-    db: DbSession,
+    svc: TaskIntakeServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
     page: int = 1,
     per_page: int = 20,
 ) -> list[TaskIntakeResponse]:
-    return await TaskIntakeService(db).list_intakes(page=page, per_page=per_page)
+    return await svc.list_intakes(page=page, per_page=per_page)
 
 
 @router.get("/sync-queue", response_model=list[SyncQueueResponse])
 async def list_sync_queue(
-    db: DbSession,
+    svc: TaskServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
     page: int = 1,
     per_page: int = 20,
 ) -> list[SyncQueueResponse]:
-    return await TaskService(db).list_sync_queue(page=page, per_page=per_page)
+    return await svc.list_sync_queue(page=page, per_page=per_page)
 
 
 @router.get("/{task_id}", response_model=TaskDetailResponse)
 async def task_detail(
     task_id: int,
-    db: DbSession,
+    svc: TaskServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
 ) -> TaskDetailResponse:
-    return await TaskService(db).task_detail(task_id)
+    return await svc.task_detail(task_id)
 
 
 @router.patch("/{task_id}/status", response_model=TaskResponse)
@@ -114,8 +120,9 @@ async def update_task_status(
     data: TaskStatusUpdate,
     db: DbSession,
     user: AdminUser,
+    svc: TaskServiceDep,
 ) -> TaskResponse:
-    task = await TaskService(db).change_status(
+    task = await svc.change_status(
         task_id=task_id,
         new_status=data.status,
         source=AuditSource.WEB_ADMIN,
@@ -132,8 +139,9 @@ async def reschedule_task(
     data: TaskReschedule,
     db: DbSession,
     user: AdminUser,
+    svc: TaskServiceDep,
 ) -> TaskResponse:
-    task = await TaskService(db).reschedule_task(
+    task = await svc.reschedule_task(
         task_id=task_id,
         scheduled_at=data.scheduled_at,
         source=AuditSource.WEB_ADMIN,
@@ -150,8 +158,8 @@ async def add_task_reminder(
     data: TaskReminderCreate,
     db: DbSession,
     _user: AdminUser,
+    svc: TaskServiceDep,
 ) -> ReminderResponse:
-    svc = TaskService(db)
     task = await svc.require_task(task_id=task_id)
     reminder = await svc.schedule_reminder_minutes_before(
         task_id=task.id,
@@ -169,7 +177,8 @@ async def retry_sync(
     task_id: int,
     db: DbSession,
     _user: AdminUser,
+    svc: TaskServiceDep,
 ) -> MessageResponse:
-    count = await TaskService(db).retry_sync(task_id)
+    count = await svc.retry_sync(task_id)
     await db.commit()
     return MessageResponse(message=f"Retrying {count} sync entries")

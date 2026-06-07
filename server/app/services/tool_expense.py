@@ -36,8 +36,14 @@ def _csv_cell(value: str) -> str:
 
 
 class ToolExpenseService(CRUDService[ToolExpense]):
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(
+        self,
+        db: AsyncSession,
+        *,
+        currency_svc: CurrencyService | None = None,
+    ) -> None:
         super().__init__(db, ToolExpense)
+        self._currency_svc = currency_svc or CurrencyService()
 
     @staticmethod
     def month_date_bounds(month: str) -> tuple[date, date]:
@@ -53,18 +59,6 @@ class ToolExpenseService(CRUDService[ToolExpense]):
             raise ValidationError("month must be YYYY-MM")
         last_day = monthrange(year, mon)[1]
         return date(year, mon, 1), date(year, mon, last_day)
-
-    @staticmethod
-    def resolve_date_range(
-        *,
-        month: str | None = None,
-        date_from: date | None = None,
-        date_to: date | None = None,
-    ) -> tuple[date | None, date | None]:
-        if month:
-            start, end = ToolExpenseService.month_date_bounds(month)
-            return start, end
-        return date_from, date_to
 
     @staticmethod
     def _to_response(expense: ToolExpense) -> ToolExpenseResponse:
@@ -209,9 +203,8 @@ class ToolExpenseService(CRUDService[ToolExpense]):
         result = await self.db.execute(query)
         expenses = list(result.scalars().all())
 
-        currency_svc = CurrencyService()
-        rates = await currency_svc.get_rates()
-        rates_meta = await currency_svc.get_rates_meta()
+        rates = await self._currency_svc.get_rates()
+        rates_meta = await self._currency_svc.get_rates_meta()
 
         total = Decimal("0")
         month_totals: dict[str, Decimal] = defaultdict(Decimal)
@@ -220,7 +213,7 @@ class ToolExpenseService(CRUDService[ToolExpense]):
 
         for expense in expenses:
             amount = Decimal(str(expense.amount))
-            converted = currency_svc.convert(
+            converted = self._currency_svc.convert(
                 amount,
                 expense.currency,
                 display_currency,
