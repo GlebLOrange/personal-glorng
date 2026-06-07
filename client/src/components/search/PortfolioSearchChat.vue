@@ -64,7 +64,7 @@ onMounted(() => {
       <div class="flex items-center justify-between px-4 py-3 border-b border-surface-border">
         <div>
           <p class="text-sm font-medium text-surface-light">Portfolio search</p>
-          <p class="text-[11px] text-surface-mid">Ask about skills, projects, and recipes</p>
+          <p class="text-xs text-surface-mid">Ask about skills, projects, and recipes</p>
         </div>
         <BaseButton variant="ghost" size="sm" type="button" @click="toggle">Close</BaseButton>
       </div>
@@ -95,11 +95,11 @@ onMounted(() => {
       </form>
 
       <div class="px-3 pb-3 flex justify-between items-center">
-        <span v-if="configLoading" class="text-[11px] text-surface-mid">Loading…</span>
-        <span v-else-if="!isAvailable" class="text-[11px] text-amber-400/90"
+        <span v-if="configLoading" class="text-xs text-surface-mid">Loading…</span>
+        <span v-else-if="!isAvailable" class="text-xs text-amber-400/90"
           >Search unavailable</span
         >
-        <span v-else class="text-[11px] text-surface-mid">Indexed public content only</span>
+        <span v-else class="text-xs text-surface-mid">Indexed public content only</span>
         <BaseButton variant="ghost" size="sm" type="button" :disabled="loading" @click="clear">
           Clear
         </BaseButton>

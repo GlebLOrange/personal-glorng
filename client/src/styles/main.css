@@ -2,19 +2,25 @@
 @import "@fontsource/ibm-plex-sans/latin-400.css";
 @import "@fontsource/ibm-plex-sans/latin-500.css";
 @import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-sans/latin-700.css";
 @import "@fontsource/ibm-plex-mono/latin-400.css";
 @import "@fontsource/ibm-plex-mono/latin-500.css";
 
 @theme {
-  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.55;
+  --text-base--line-height: 1.65;
   --color-accent-blue: #7bbde2;
   --color-accent-violet: #b8a3c8;
   --color-accent-golden: #d4ce94;
   --color-surface-light: #f5f2ec;
   --color-surface-sage: #d5dcd3;
-  --color-surface-mid: #c4b8ac;
-  --color-surface-muted: #8a847e;
+  --color-surface-mid: #c9bfb4;
+  --color-surface-muted: #a39d97;
   --color-surface-dark: #141820;
   --color-surface-card: #1c2230;
   --color-surface-border: #2e3a4e;
@@ -93,6 +99,9 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 106.25%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -100,6 +109,12 @@ body {
   background: var(--color-surface-dark);
   min-height: 100vh;
   color: var(--color-surface-light);
+  line-height: 1.65;
+  letter-spacing: 0.012em;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .code-block {
@@ -109,6 +124,7 @@ body {
   border-radius: var(--radius-interactive);
   padding: 1rem;
   color: var(--color-surface-light);
+  line-height: 1.6;
   overflow-x: auto;
 }
 
@@ -158,7 +174,7 @@ body {
   --cc-toggle-readonly-bg: #3a4760;
   --cc-section-border: #2e3a4e;
   --cc-footer-bg: #141820;
-  --cc-footer-color: #8a847e;
+  --cc-footer-color: #a39d97;
   --cc-footer-border-color: #2e3a4e;
 
   font-family: var(--font-sans);
