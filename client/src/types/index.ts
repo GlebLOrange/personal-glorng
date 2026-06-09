@@ -1,4 +1,5 @@
 export * from "./api";
+export * from "./dataExtract";
 
 import type { ContactLinkId } from "@/constants/contactMeta";
 
