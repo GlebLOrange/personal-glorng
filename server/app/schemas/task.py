@@ -40,6 +40,18 @@ class TaskCreate(TaskTextFields):
     telegram_user_id: int | None = None
     reminder_minutes: int | None = Field(None, ge=1, le=1440)
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "title": "Team standup",
+                "description": "Daily sync",
+                "location": "Zoom",
+                "scheduled_at": "2026-06-09T09:00:00Z",
+                "reminder_minutes": 15,
+            }
+        }
+    )
+
 
 class TaskStatusUpdate(BaseModel):
     status: TaskStatus

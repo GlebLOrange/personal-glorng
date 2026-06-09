@@ -31,9 +31,7 @@ async function evaluate(expr: string): Promise<number | null> {
   const b = Number(match[3]);
   if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
 
-  const { data } = await api.post("/tools/calculator", null, {
-    params: { a, b, op },
-  });
+  const { data } = await api.post("/tools/calculator", { a, b, op });
   return data.result;
 }
 

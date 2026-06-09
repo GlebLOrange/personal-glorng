@@ -3,8 +3,8 @@
 import smtplib
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
-import sentry_sdk
 from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
 from celery import Task
@@ -31,14 +31,12 @@ MAX_JOB_TRIES = 3
 
 
 def log_job_failure(job_name: str, job_try: int, exc: BaseException) -> None:
-    """Log job failure; report to Sentry on the final attempt."""
+    """Log job failure on the final attempt (Sentry via StructuredLogger)."""
     logger.error(
         "Background job failed",
         error=exc,
         context={"job": job_name, "job_try": job_try, "max_tries": MAX_JOB_TRIES},
     )
-    if job_try >= MAX_JOB_TRIES:
-        sentry_sdk.capture_exception(exc)
 
 
 def _retry_or_fail(task: Task, job_name: str, exc: Exception) -> None:
@@ -241,21 +239,48 @@ async def process_sync_queue() -> None:
         await registry.tasks.update_sync(item)
 
 
-@celery_app.task(name=JobName.CHECK_OVERDUE_TASKS, ignore_result=True)
-def check_overdue_tasks_task() -> None:
-    run_async(check_overdue_tasks())
+def _run_periodic_task(task: Task, job_name: str, coro_fn: Callable[[], Any]) -> None:
+    try:
+        run_async(coro_fn())
+    except Exception as exc:
+        _retry_or_fail(task, job_name, exc)
 
 
-@celery_app.task(name=JobName.CLEANUP_OLD_TASKS, ignore_result=True)
-def cleanup_old_tasks_task() -> None:
-    run_async(cleanup_old_tasks())
+@celery_app.task(
+    bind=True,
+    name=JobName.CHECK_OVERDUE_TASKS,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def check_overdue_tasks_task(self: Task) -> None:
+    _run_periodic_task(self, JobName.CHECK_OVERDUE_TASKS, check_overdue_tasks)
 
 
-@celery_app.task(name=JobName.CLEANUP_EXPIRED_SHARES, ignore_result=True)
-def cleanup_expired_shares_task() -> None:
-    run_async(cleanup_expired_shares())
+@celery_app.task(
+    bind=True,
+    name=JobName.CLEANUP_OLD_TASKS,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def cleanup_old_tasks_task(self: Task) -> None:
+    _run_periodic_task(self, JobName.CLEANUP_OLD_TASKS, cleanup_old_tasks)
 
 
-@celery_app.task(name=JobName.PROCESS_SYNC_QUEUE, ignore_result=True)
-def process_sync_queue_task() -> None:
-    run_async(process_sync_queue())
+@celery_app.task(
+    bind=True,
+    name=JobName.CLEANUP_EXPIRED_SHARES,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def cleanup_expired_shares_task(self: Task) -> None:
+    _run_periodic_task(self, JobName.CLEANUP_EXPIRED_SHARES, cleanup_expired_shares)
+
+
+@celery_app.task(
+    bind=True,
+    name=JobName.PROCESS_SYNC_QUEUE,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def process_sync_queue_task(self: Task) -> None:
+    _run_periodic_task(self, JobName.PROCESS_SYNC_QUEUE, process_sync_queue)

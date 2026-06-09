@@ -133,12 +133,14 @@ user preference says not to run tests unless explicitly asked.
    - Recommendation: log metadata only; never include HTML previews containing
      tokens.
 
-8. **Rate limiting trusts spoofable `X-Forwarded-For`.**
-   - Location: `server/app/core/rate_limit.py:23-29`.
-   - If the API is exposed directly in dev-lite or through a proxy that appends
-     client-supplied XFF, clients can rotate the first IP and bypass buckets.
-   - Recommendation: trust forwarded headers only behind known proxies; prefer
-     trusted `X-Real-IP` or proxy middleware configured by environment.
+8. **Client IP handling is mostly hardened; one outlier remains documented.**
+   - Rate limiting prefers nginx-set `X-Real-IP` in
+     `server/app/core/rate_limit.py` (shared `client_ip()` helper).
+   - Nginx sets `X-Forwarded-For` and `X-Forwarded-Proto` on all API proxy
+     paths; uvicorn uses `--forwarded-allow-ips=127.0.0.1`.
+   - Video download concurrency limits now use the same `client_ip()` helper
+     (no longer trust client-supplied XFF first).
+   - Dev-lite without nginx still falls back to `request.client.host`.
 
 9. **Telegram allowlist is disabled by default.**
    - Location: `server/app/settings.py:90-94`.

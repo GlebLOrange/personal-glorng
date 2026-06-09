@@ -386,9 +386,15 @@ class Settings(BaseSettings):
     # App
     APP_ENV: str = "development"
     LOG_REQUESTS: bool = True
+    LOG_REQUEST_BODIES: bool = False
     APP_LOG_PERSIST_ENABLED: bool = True
     APP_LOG_PERSIST_MIN_LEVEL: str = "INFO"
     APP_LOG_RETENTION_DAYS: int = 30
+    APP_LOG_MAX_MESSAGE_CHARS: int = 4096
+    APP_LOG_MAX_TRACEBACK_CHARS: int = 8192
+    APP_LOG_MAX_CONTEXT_CHARS: int = 8192
+    APP_SERVICE_NAME: str = "api"
+    CELERY_TASK_ALWAYS_EAGER: bool = False
     APP_NAME: str = "Gleb Y."
     BASE_URL: str = "http://localhost"
     MEDIA_DIR: str = "/app/media"

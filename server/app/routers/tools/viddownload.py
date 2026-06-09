@@ -17,7 +17,7 @@ from app.core.deps import OptionalUser
 from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.permissions import permission_key, user_has_permission
-from app.core.rate_limit import rate_limit_api, rate_limit_vid_download
+from app.core.rate_limit import client_ip, rate_limit_api, rate_limit_vid_download
 from app.core.utils import attachment_content_disposition
 from app.schemas.viddownload import VidDownloadRequest
 
@@ -38,21 +38,14 @@ _ip_active_downloads: defaultdict[str, int] = defaultdict(int)
 _ip_lock = asyncio.Lock()
 
 
-def _client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
-
-
-async def _acquire_ip_slot(client_ip: str) -> None:
+async def _acquire_ip_slot(ip_address: str) -> None:
     async with _ip_lock:
-        if _ip_active_downloads[client_ip] >= MAX_CONCURRENT_PER_IP:
+        if _ip_active_downloads[ip_address] >= MAX_CONCURRENT_PER_IP:
             raise ApiError(
                 503,
                 "Too many concurrent downloads from your IP, try again later",
             )
-        _ip_active_downloads[client_ip] += 1
+        _ip_active_downloads[ip_address] += 1
 
 
 async def _release_ip_slot(client_ip: str) -> None:
@@ -152,13 +145,13 @@ async def download_video(
     request: Request,
     user: OptionalUser,
 ) -> StreamingResponse:
-    client_ip = _client_ip(request)
+    request_ip = client_ip(request)
     url_host = urlparse(str(data.url)).hostname or "unknown"
     privileged = user is not None and user_has_permission(
         user, permission_key("vid-download", "write")
     )
 
-    await _acquire_ip_slot(client_ip)
+    await _acquire_ip_slot(request_ip)
     await _acquire_global_slot()
     started = time.monotonic()
 
@@ -179,7 +172,7 @@ async def download_video(
             logger.info(
                 "Video download completed",
                 context={
-                    "ip": client_ip,
+                    "ip": request_ip,
                     "url_host": url_host,
                     "file_size": file_size,
                     "duration_s": round(time.monotonic() - started, 2),
@@ -200,4 +193,4 @@ async def download_video(
             raise
     finally:
         await _release_global_slot()
-        await _release_ip_slot(client_ip)
+        await _release_ip_slot(request_ip)

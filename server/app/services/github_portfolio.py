@@ -2,6 +2,7 @@
 
 import json
 
+from app.core.cache_json import safe_cache_json_loads
 from app.core.logging import logger
 from app.core.redis import cache_get, cache_set
 from app.db.registry import DatabaseRegistry
@@ -28,8 +29,9 @@ async def get_public_github_repos(
     cache_key = f"{_CACHE_PREFIX}{username.lower()}"
     cached = await cache_get(cache_key)
     if cached:
-        raw = json.loads(cached)
-        return username, [GitHubRepoResponse.model_validate(item) for item in raw]
+        raw = safe_cache_json_loads(cached)
+        if isinstance(raw, list):
+            return username, [GitHubRepoResponse.model_validate(item) for item in raw]
 
     repos = await list_public_repos(username)
     await cache_set(

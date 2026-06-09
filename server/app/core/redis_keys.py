@@ -1,0 +1,12 @@
+"""Canonical Redis key prefixes used across the application."""
+
+RATE_LIMIT_PREFIX = "rl:"
+BLACKLIST_PREFIX = "bl:"
+CURRENCY_RATES_KEY = "currency:rates:USD"
+WEATHER_PREFIX = "weather:"
+TIMEZONE_PREFIX = "tz_info:"
+WORLD_TIME_PREFIX = "world_time:"
+SPOTIFY_ACCESS_CACHE_KEY = "spotify:access_token"
+SPOTIFY_NOW_PLAYING_KEY = "spotify:now-playing"
+OAUTH_GITHUB_STATE_PREFIX = "oauth:github:state:"
+GITHUB_REPOS_PREFIX = "github:public-repos:"

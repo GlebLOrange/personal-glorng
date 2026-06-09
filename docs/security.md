@@ -36,6 +36,14 @@ The API uses `CORSMiddleware` with `allow_credentials=True`. In **production**:
 
 Public auth and feedback routes are exempt. Bearer-only clients (typical admin SPA with in-memory tokens) are unaffected.
 
+## Redis
+
+Redis uses **`noeviction`** (`--maxmemory-policy noeviction`) so security-sensitive keys (token blacklist `bl:{jti}`, rate limits `rl:{path}:{ip}`) are never silently dropped. Dev compose caps memory at 64mb; production at 256mb. Key prefixes are documented in [`server/app/core/redis_keys.py`](../server/app/core/redis_keys.py).
+
+On Redis failure: rate limiting **fails open** (allows the request); token blacklist checks **fail closed** in production (rejects the token). Cache reads fall through to origin APIs.
+
+`/api/ready` reports Redis memory usage (`used_memory`, `maxmemory`, `maxmemory_policy`) and warns when usage exceeds 85% of `maxmemory`.
+
 ## Rate limiting
 
 Redis fixed-window limits on auth, feedback, general API traffic, and search — [`server/app/core/rate_limit.py`](../server/app/core/rate_limit.py).

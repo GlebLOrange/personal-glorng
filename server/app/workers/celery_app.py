@@ -3,7 +3,7 @@
 import sentry_sdk
 from celery import Celery
 from celery.schedules import crontab
-from celery.signals import worker_init
+from celery.signals import task_failure, worker_init, worker_ready
 
 from app.core.logging import logger
 from app.settings import get_settings
@@ -28,8 +28,42 @@ def _on_worker_init(**_kwargs: object) -> None:
     logger.info("Celery worker started", context={"env": get_settings().APP_ENV})
 
 
+@worker_ready.connect
+def _on_worker_ready(sender: object | None = None, **kwargs: object) -> None:
+    hostname = getattr(sender, "hostname", "unknown")
+    logger.info(
+        "Celery worker ready",
+        context={"hostname": hostname, "broker_connected": True},
+    )
+
+
+@task_failure.connect
+def _on_task_failure(
+    sender: object | None = None,
+    task_id: str | None = None,
+    exception: BaseException | None = None,
+    args: tuple[object, ...] | None = None,
+    kwargs: dict[str, object] | None = None,
+    retries: int = 0,
+    **extra: object,
+) -> None:
+    task_name = getattr(sender, "name", "unknown")
+    logger.error(
+        "Celery task failed",
+        error=exception,
+        context={
+            "task_id": task_id,
+            "task_name": task_name,
+            "retries": retries,
+            "args": str(args)[:500] if args else None,
+            "kwargs": str(kwargs)[:500] if kwargs else None,
+        },
+    )
+
+
 def create_celery_app() -> Celery:
     settings = get_settings()
+    eager = settings.CELERY_TASK_ALWAYS_EAGER or settings.APP_ENV == "test"
     app = Celery("glorng")
     app.conf.update(
         broker_url=settings.CELERY_BROKER_URL,
@@ -37,6 +71,7 @@ def create_celery_app() -> Celery:
         task_ignore_result=True,
         task_acks_late=True,
         worker_prefetch_multiplier=1,
+        task_always_eager=eager,
         timezone="UTC",
         enable_utc=True,
     )

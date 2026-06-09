@@ -6,9 +6,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.core.app_log_persist import start_app_log_worker, stop_app_log_worker
 from app.core.elasticsearch import close_elasticsearch, init_elasticsearch
 from app.core.exceptions import ApiError
-from app.core.app_log_persist import start_app_log_worker, stop_app_log_worker
 from app.core.logging import logger
 from app.core.mongodb import bind_mongodb, clear_mongodb
 from app.core.redis import close_redis, init_redis
