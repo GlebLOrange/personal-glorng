@@ -13,6 +13,7 @@ from app.core.security import decode_token
 from app.db.deps import DbRegistry, get_postgres_db
 from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
+from app.platform.registry import Capability, ServiceSlug
 from app.services.ai_chat import OpenAIService
 from app.services.ai_search import AiSearchService
 from app.services.audit import AuditService
@@ -126,7 +127,10 @@ async def get_optional_current_user(
 OptionalUser = Annotated[User | None, Depends(get_optional_current_user)]
 
 
-def require_capability(slug: str, capability: str) -> Callable[..., object]:
+def require_capability(
+    slug: ServiceSlug,
+    capability: Capability,
+) -> Callable[..., object]:
     """FastAPI dependency factory for a platform permission."""
 
     key = permission_key(slug, capability)

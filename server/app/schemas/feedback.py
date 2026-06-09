@@ -10,6 +10,16 @@ class FeedbackCreate(BaseModel):
     theme: str = Field(min_length=1, max_length=255)
     message: str = Field(min_length=1, max_length=5000)
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "email": "visitor@example.com",
+                "theme": "Portfolio",
+                "message": "Great site — love the search feature.",
+            }
+        }
+    )
+
     @field_validator("theme")
     @classmethod
     def clean_theme(cls, value: str) -> str:

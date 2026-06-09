@@ -102,7 +102,7 @@ services:
       redis-server
       --requirepass ${REDIS_PASSWORD}
       --maxmemory 64mb
-      --maxmemory-policy allkeys-lru
+      --maxmemory-policy noeviction
     deploy:
       resources:
         limits:

@@ -1,6 +1,27 @@
 """Canonical catalog of platform services exposed in admin and API."""
 
 from dataclasses import dataclass
+from typing import Literal
+
+ServiceSlug = Literal[
+    "tasks",
+    "email",
+    "expenses",
+    "recipes",
+    "file-share",
+    "url-shortener",
+    "calculator",
+    "vid-download",
+    "ai-chat",
+    "feedback",
+    "audit",
+    "app-logs",
+    "api-docs",
+]
+
+Capability = Literal["read", "write", "schedule"]
+
+Category = Literal["productivity", "content", "utilities", "operations"]
 
 
 @dataclass(frozen=True)

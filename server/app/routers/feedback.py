@@ -13,6 +13,7 @@ from app.db.documents.feedback import Feedback
 from app.openapi import requires_capability
 from app.schemas.feedback import FeedbackCreate, FeedbackResponse, FeedbackStatusUpdate
 from app.services.audit import AuditRecord, AuditService
+from app.services.auth import _auth_log_email
 from app.services.search_indexers.feedback import index_feedback
 from app.settings import get_settings
 
@@ -38,7 +39,7 @@ async def create_feedback(data: FeedbackCreate, registry: DbRegistry) -> Feedbac
     await index_feedback(registry, entry)
     logger.info(
         "Feedback created",
-        context={"id": entry.id, "email": data.email},
+        context={"id": entry.id, "email": _auth_log_email(str(data.email))},
     )
 
     truncated = data.message[:500] + ("..." if len(data.message) > 500 else "")

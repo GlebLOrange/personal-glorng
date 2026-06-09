@@ -59,7 +59,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="showWidget" class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+  <div
+    v-if="showWidget"
+    class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 print:hidden"
+  >
     <div
       v-if="open"
       class="w-[min(24rem,calc(100vw-3rem))] rounded-xl border border-surface-border bg-surface-dark shadow-2xl flex flex-col max-h-[70vh]"

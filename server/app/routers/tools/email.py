@@ -1,14 +1,12 @@
 """Outbound email tool. All routes require `email:write`."""
 
-from html import escape
-
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.core.deps import AuthorizedUser, require_capability
-from app.core.email import _wrap_email, get_email_backend
-from app.core.text import sanitize_email_subject
+from app.core.email import get_email_backend
 from app.openapi import requires_capability
+from app.schemas.common import MessageResponse
+from app.schemas.email import EmailPreview, EmailSend, render_email_html
 
 router = APIRouter(
     prefix="/email",
@@ -17,42 +15,18 @@ router = APIRouter(
 )
 
 
-class EmailSend(BaseModel):
-    to: EmailStr
-    subject: str = Field(
-        min_length=1,
-        max_length=255,
-        description="Plain-text subject line (no line breaks).",
-    )
-    body: str = Field(min_length=1, max_length=5000)
-
-    @field_validator("subject")
-    @classmethod
-    def validate_subject(cls, value: str) -> str:
-        return sanitize_email_subject(value)
-
-
-class EmailPreview(BaseModel):
-    html: str
-
-
-def _render_email_html(data: EmailSend) -> str:
-    """Escape user body and wrap in the site email template."""
-    safe_body = escape(data.body).replace("\n", "<br>")
-    return _wrap_email(data.subject, f"<p>{safe_body}</p>")
-
-
 @router.post(
     "/send",
+    response_model=MessageResponse,
     summary="Send email",
     description=requires_capability("email", "write"),
 )
-async def send_email(data: EmailSend, _user: AuthorizedUser) -> dict[str, str]:
-    html = _render_email_html(data)
+async def send_email(data: EmailSend, _user: AuthorizedUser) -> MessageResponse:
+    html = render_email_html(data)
     plain = f"{data.subject}\n\n{data.body}\n\n— Gleb Y.\n"
     backend = get_email_backend()
     await backend.send(data.to, data.subject, html, plain)
-    return {"detail": "Email sent"}
+    return MessageResponse(message="Email sent")
 
 
 @router.post(
@@ -62,4 +36,4 @@ async def send_email(data: EmailSend, _user: AuthorizedUser) -> dict[str, str]:
     description=requires_capability("email", "write"),
 )
 async def preview_email(data: EmailSend, _user: AuthorizedUser) -> EmailPreview:
-    return EmailPreview(html=_render_email_html(data))
+    return EmailPreview(html=render_email_html(data))

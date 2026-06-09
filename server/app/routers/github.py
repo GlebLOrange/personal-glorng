@@ -5,7 +5,6 @@ from urllib.parse import urlencode
 
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel
 
 from app.core.deps import CurrentUser
 from app.core.exceptions import UnauthorizedError
@@ -13,7 +12,13 @@ from app.core.logging import logger
 from app.core.redis import cache_delete, cache_get, cache_set
 from app.db.deps import DbRegistry
 from app.db.documents.credential import GitHubCredential
-from app.schemas.github import GitHubIssueResponse, GitHubRepoResponse
+from app.schemas.github import (
+    GitHubCallbackRequest,
+    GitHubCallbackResponse,
+    GitHubIssueResponse,
+    GitHubRepoResponse,
+    GitHubStatusResponse,
+)
 from app.services.github import (
     exchange_code_for_token,
     get_github_user,
@@ -35,21 +40,6 @@ _STATE_TTL_SECONDS = 600
 
 def _github_oauth_state_key(*, user_public_id: str) -> str:
     return f"oauth:github:state:{user_public_id}"
-
-
-class GitHubCallbackRequest(BaseModel):
-    code: str
-    state: str
-
-
-class GitHubCallbackResponse(BaseModel):
-    github_username: str
-    message: str
-
-
-class GitHubStatusResponse(BaseModel):
-    linked: bool
-    github_username: str | None = None
 
 
 @router.get(

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.text import sanitize_required_text
 
@@ -19,6 +19,16 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: list[ChatMessage] = Field(min_length=1, max_length=50)
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "messages": [
+                    {"role": "user", "content": "Summarize my latest tasks."},
+                ]
+            }
+        }
+    )
 
 
 class ChatConfigResponse(BaseModel):

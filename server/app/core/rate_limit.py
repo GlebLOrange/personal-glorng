@@ -1,13 +1,15 @@
 """Redis-backed fixed-window rate limiter."""
 
 from fastapi import Request
+from redis.exceptions import RedisError
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.redis import get_redis_client
+from app.core.redis_keys import RATE_LIMIT_PREFIX
 
 
-def _client_ip(request: Request) -> str:
+def client_ip(request: Request) -> str:
     """Prefer nginx-set X-Real-IP; avoid spoofable X-Forwarded-For in dev-lite."""
     real_ip = request.headers.get("x-real-ip")
     if real_ip:
@@ -32,17 +34,25 @@ class RateLimiter:
         self.window = window
 
     async def __call__(self, request: Request) -> None:
-        client_ip = _client_ip(request)
-        key = f"rl:{request.url.path}:{client_ip}"
-        redis = get_redis_client()
-        script = redis.register_script(_INCR_EXPIRE_LUA)
-        current = int(await script(keys=[key], args=[self.window]))
+        client_addr = client_ip(request)
+        key = f"{RATE_LIMIT_PREFIX}{request.url.path}:{client_addr}"
+        try:
+            redis = get_redis_client()
+            script = redis.register_script(_INCR_EXPIRE_LUA)
+            current = int(await script(keys=[key], args=[self.window]))
+        except RedisError as exc:
+            logger.warning(
+                "Rate limit check failed; allowing request",
+                error=exc,
+                context={"path": str(request.url.path), "ip": client_addr},
+            )
+            return
 
         if current > self.requests:
             logger.warning(
                 "Rate limit exceeded",
                 context={
-                    "ip": client_ip,
+                    "ip": client_addr,
                     "path": str(request.url.path),
                     "count": current,
                     "limit": self.requests,

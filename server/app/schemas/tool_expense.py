@@ -50,6 +50,19 @@ class ToolExpenseCreate(BaseModel):
     category: str | None = Field(None, max_length=64)
     notes: str | None = Field(None, max_length=5000)
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "tool_name": "OpenAI API",
+                "amount": "12.50",
+                "currency": "USD",
+                "expense_date": "2026-06-01",
+                "category": "AI",
+                "notes": "June usage",
+            }
+        }
+    )
+
     @field_validator("tool_name")
     @classmethod
     def clean_tool_name(cls, value: str) -> str:
