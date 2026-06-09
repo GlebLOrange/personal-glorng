@@ -103,6 +103,13 @@ class FakeRedis:
     async def ping(self) -> bool:
         return True
 
+    async def info(self, section: str = "default") -> dict[str, Any]:
+        return {
+            "used_memory": 0,
+            "maxmemory": 0,
+            "maxmemory_policy": "noeviction",
+        }
+
     async def aclose(self) -> None:
         self._store.clear()
         self._expiry.clear()
@@ -280,10 +287,13 @@ def reset_worker_registry() -> Generator[None]:
 
 
 @pytest.fixture(autouse=True)
-def fake_redis() -> FakeRedis:
+def fake_redis(request: pytest.FixtureRequest) -> Generator[FakeRedis | None]:
+    if request.node.get_closest_marker("redis"):
+        yield None
+        return
     fake = FakeRedis()
     redis_module._redis = fake  # type: ignore[assignment]
-    return fake
+    yield fake
 
 
 @pytest.fixture(autouse=True)

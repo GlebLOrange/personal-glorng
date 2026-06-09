@@ -4,7 +4,7 @@ import pytest
 from httpx import AsyncClient
 
 from app.core.deps import get_job_queue_dep
-from app.core.security import create_verification_token
+from app.core.security import create_reset_token, create_verification_token
 from app.db.registry import DatabaseRegistry
 from app.main import app
 from app.services.user import get_user_by_email
@@ -389,3 +389,29 @@ async def test_reset_password_invalid_token(client: AsyncClient) -> None:
         },
     )
     assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_reset_password_success(
+    client: AsyncClient,
+    admin_user: object,
+) -> None:
+    new_password = "ResetTestPass456!"
+    token = create_reset_token(ADMIN_EMAIL)
+    resp = await client.post(
+        "/api/auth/reset-password",
+        json={
+            "token": token,
+            "new_password": new_password,
+            "password_confirm": new_password,
+        },
+    )
+    assert resp.status_code == 200
+    assert "success" in resp.json()["message"].lower()
+
+    login = await client.post(
+        "/api/auth/login",
+        json={"email": ADMIN_EMAIL, "password": new_password},
+    )
+    assert login.status_code == 200
+    assert "access_token" in login.json()

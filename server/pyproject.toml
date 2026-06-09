@@ -13,6 +13,7 @@ dependencies = [
     "bcrypt==5.0.*",
     "redis[hiredis]==8.0.*",
     "celery==5.6.*",
+    "kombu==5.6.*",
     "sentry-sdk[fastapi]==2.61.*",
     "httpx==0.28.*",
     "openai>=2.41.0,<3",
@@ -82,4 +83,7 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 markers = [
     "postgres: integration tests requiring POSTGRES_TEST_URL",
+    "redis: integration tests requiring a real Redis instance at REDIS_URL",
+    "integration: slow multi-service tests excluded from the P0 PR gate",
+    "e2e_api: full HTTP pipeline tests including middleware",
 ]
