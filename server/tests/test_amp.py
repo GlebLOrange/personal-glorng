@@ -20,4 +20,5 @@ class TestAmpPage:
         script_hosts = [urlparse(src).hostname for src in _SCRIPT_SRC_RE.findall(body)]
         assert "cdn.ampproject.org" in script_hosts
         assert "Gleb Y." in body
+        assert "Backend-heavy full-stack" in body
         assert 'rel="canonical"' in body

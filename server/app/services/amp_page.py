@@ -21,12 +21,80 @@ def _contact_href(link_id: str, raw: str) -> str:
     return raw
 
 
+def _meta_description(resume: dict[str, Any]) -> str:
+    tagline = str(resume.get("tagline", "")).strip()
+    if tagline:
+        return tagline
+    return str(resume["bio"])
+
+
+def _header_meta_line(resume: dict[str, Any]) -> str:
+    location = str(resume.get("location", "")).strip()
+    availability = str(resume.get("availability", "")).strip()
+    if not location and not availability:
+        return ""
+    parts = [part for part in (location, availability) if part]
+    return f'<p class="meta">{_esc(" · ".join(parts))}</p>'
+
+
+def _highlights_html(highlights: list[Any]) -> str:
+    items = [_esc(str(item)) for item in highlights if isinstance(item, str) and item]
+    if not items:
+        return ""
+    bullets = "".join(f"<li>{item}</li>" for item in items)
+    return f"<ul class=\"highlights\">{bullets}</ul>"
+
+
+def _experience_html(resume: dict[str, Any]) -> str:
+    blocks: list[str] = []
+    for job in resume.get("experience", []):
+        highlights = _highlights_html(job.get("highlights", []))
+        blocks.append(
+            f"""
+        <section class="block card">
+          <h3>{_esc(job["role"])}</h3>
+          <p class="meta">{_esc(job["company"])} · {_esc(job["period"])}</p>
+          <p>{_esc(job["description"])}</p>
+          {highlights}
+        </section>""",
+        )
+    return "".join(blocks)
+
+
+def _education_html(resume: dict[str, Any]) -> str:
+    education = resume.get("education") or []
+    if not education:
+        return ""
+    blocks: list[str] = []
+    for entry in education:
+        description = entry.get("description")
+        description_html = (
+            f"<p>{_esc(str(description))}</p>" if description else ""
+        )
+        blocks.append(
+            f"""
+        <section class="block card">
+          <h3>{_esc(entry["degree"])}</h3>
+          <p class="meta">{_esc(entry["institution"])} · {_esc(entry["period"])}</p>
+          {description_html}
+        </section>""",
+        )
+    return f"""
+    <h2>Education</h2>
+    {"".join(blocks)}"""
+
+
 def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
     """Render a valid AMP HTML page for the public portfolio."""
     name = _esc(resume["name"])
     title = _esc(resume["title"])
+    tagline = str(resume.get("tagline", "")).strip()
     bio = _esc(resume["bio"])
     canonical = _esc(canonical_url)
+    description = _esc(_meta_description(resume))
+    tagline_html = (
+        f'<p class="tagline">{_esc(tagline)}</p>' if tagline else ""
+    )
 
     skills_html = ""
     for group in resume.get("skills", []):
@@ -37,14 +105,8 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
           <p>{items}</p>
         </section>"""
 
-    experience_html = ""
-    for job in resume.get("experience", []):
-        experience_html += f"""
-        <section class="block card">
-          <h3>{_esc(job["role"])}</h3>
-          <p class="meta">{_esc(job["company"])} · {_esc(job["period"])}</p>
-          <p>{_esc(job["description"])}</p>
-        </section>"""
+    experience_html = _experience_html(resume)
+    education_html = _education_html(resume)
 
     projects_html = ""
     for project in resume.get("projects", []):
@@ -80,7 +142,7 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
   <title>{name} — {_esc(title)}</title>
   <link rel="canonical" href="{canonical}" />
   <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1" />
-  <meta name="description" content="{bio}" />
+  <meta name="description" content="{description}" />
   <style amp-boilerplate>body{{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}}@-webkit-keyframes -amp-start{{from{{visibility:hidden}}to{{visibility:visible}}}}@-moz-keyframes -amp-start{{from{{visibility:hidden}}to{{visibility:visible}}}}@-ms-keyframes -amp-start{{from{{visibility:hidden}}to{{visibility:visible}}}}@-o-keyframes -amp-start{{from{{visibility:hidden}}to{{visibility:visible}}}}@keyframes -amp-start{{from{{visibility:hidden}}to{{visibility:visible}}}}</style>
   <noscript><style amp-boilerplate>body{{visibility:visible}}</style></noscript>
   <style amp-custom>
@@ -99,7 +161,8 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }}
-    .subtitle {{ color: #c4b8ac; font-size: 1.125rem; margin: 0 0 1rem; }}
+    .subtitle {{ color: #c4b8ac; font-size: 1.125rem; margin: 0 0 0.5rem; }}
+    .tagline {{ color: #7bbde2; font-size: 1rem; margin: 0 0 0.75rem; }}
     .bio {{ color: #8a847e; font-size: 0.95rem; }}
     h2 {{
       font-size: 0.75rem;
@@ -118,6 +181,7 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
       margin-bottom: 0.75rem;
     }}
     .meta {{ color: #8a847e; font-size: 0.85rem; margin: 0 0 0.5rem; }}
+    .highlights {{ margin: 0.5rem 0 0; padding-left: 1.25rem; color: #c4b8ac; font-size: 0.9rem; }}
     a {{ color: #7bbde2; text-decoration: none; }}
     .chips {{ display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }}
     .chip {{
@@ -142,6 +206,8 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
     <header>
       <h1>{name}</h1>
       <p class="subtitle">{title}</p>
+      {tagline_html}
+      {_header_meta_line(resume)}
       <p class="bio">{bio}</p>
     </header>
 
@@ -153,6 +219,7 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
 
     <h2>Projects</h2>
     {projects_html}
+    {education_html}
 
     <h2>Contact</h2>
     <div class="chips">{contact_html}</div>

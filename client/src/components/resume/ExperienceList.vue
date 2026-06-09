@@ -17,7 +17,17 @@ defineProps<{
         </div>
         <span class="text-meta shrink-0">{{ exp.period }}</span>
       </div>
-      <p class="text-body">{{ exp.description }}</p>
+      <p class="text-body mb-3">{{ exp.description }}</p>
+      <ul v-if="exp.highlights?.length" class="space-y-2">
+        <li
+          v-for="(highlight, j) in exp.highlights"
+          :key="j"
+          class="text-body flex gap-2"
+        >
+          <span class="text-accent-blue shrink-0" aria-hidden="true">▸</span>
+          <span>{{ highlight }}</span>
+        </li>
+      </ul>
     </BaseCard>
   </div>
 </template>

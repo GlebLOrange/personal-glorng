@@ -41,10 +41,14 @@ export interface TokenResponse {
 export interface ResumeData {
   name: string;
   title: string;
+  tagline?: string;
+  location?: string;
+  availability?: string;
   bio: string;
   skills: SkillGroup[];
   experience: Experience[];
   projects: Project[];
+  education?: Education[];
   links: Partial<Record<ContactLinkId, string>>;
 }
 
@@ -58,6 +62,14 @@ export interface Experience {
   company: string;
   period: string;
   description: string;
+  highlights?: string[];
+}
+
+export interface Education {
+  degree: string;
+  institution: string;
+  period: string;
+  description?: string;
 }
 
 export interface Project {

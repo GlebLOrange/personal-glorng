@@ -1,16 +1,17 @@
 import type { ResumeData } from "@/types";
 
-/** Static resume mirror of server/app/routers/resume.py RESUME_DATA — keep in sync. */
+/** Static resume mirror of server/app/content/resume_data.py — keep in sync. */
 export const RESUME_FALLBACK: ResumeData = {
   name: "Gleb Y.",
   title: "Full-Stack Developer",
+  tagline: "Backend-heavy full-stack — APIs, Vue frontends, Docker deployments",
+  location: "Remote · EU",
+  availability: "Open to full-time and contract (remote)",
   bio:
     "Full-stack developer building web applications, APIs, and the" +
     " tooling around them. I work across backend services, frontends," +
     " and deployment — with a focus on code that is clear and systems" +
-    " that are straightforward to maintain. This site is my personal" +
-    " platform: portfolio, admin tools, and a few side projects I use" +
-    " day to day.",
+    " that are straightforward to maintain.",
   skills: [
     {
       category: "Languages",
@@ -34,12 +35,17 @@ export const RESUME_FALLBACK: ResumeData = {
       role: "Full-Stack Developer",
       company: "Freelance",
       period: "2024 - Present",
-      description: "Building web applications, APIs, and developer tools.",
+      description: "End-to-end delivery of web apps, APIs, and automation for clients and personal products.",
+      highlights: [
+        "Built and maintain this portfolio platform (FastAPI, Vue 3, PostgreSQL/MongoDB, Redis, Celery)",
+        "Ship production APIs with auth, rate limiting, search indexing, and Docker-based deploys",
+        "Develop admin tools, Telegram integrations, and background workers for day-to-day workflows",
+      ],
     },
   ],
   projects: [
     {
-      name: "Gleb Y. Platform",
+      name: "gLOrng Platform",
       description:
         "Personal platform — portfolio, admin services," +
         " Telegram todobot, and background workers on FastAPI + Vue + Docker",
@@ -53,9 +59,10 @@ export const RESUME_FALLBACK: ResumeData = {
         "Celery",
         "Telegram",
       ],
-      url: "",
+      url: "https://github.com/glorange",
     },
   ],
+  education: [],
   links: {
     email: "glorange@gmail.com",
     telegram: "https://t.me/glorange",
