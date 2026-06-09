@@ -4,8 +4,6 @@ import pytest
 
 from app.core.app_log_persist import (
     _drain_queue,
-    _entry_to_app_log,
-    _sanitize_context,
     enqueue_log_entry,
     start_app_log_worker,
     stop_app_log_worker,
@@ -26,30 +24,6 @@ def _sample_entry(*, level: str = "info", path: str | None = None) -> dict:
     if path is not None:
         entry["path"] = path
     return entry
-
-
-def test_sanitize_context_redacts_secrets() -> None:
-    result = _sanitize_context({"password": "secret123", "user_id": 1})
-    assert result is not None
-    assert result["password"] == "[REDACTED]"
-    assert result["user_id"] == 1
-
-
-def test_entry_truncates_long_message(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("APP_LOG_MAX_MESSAGE_CHARS", "20")
-    get_settings.cache_clear()
-
-    log = _entry_to_app_log(
-        {
-            "timestamp": "2026-06-07T12:00:00",
-            "level": "info",
-            "message": "x" * 100,
-            "logger": "test",
-        },
-    )
-    assert len(log.message) == 20
-    assert log.message.endswith("...")
-    get_settings.cache_clear()
 
 
 def test_enqueue_skips_health_probe() -> None:

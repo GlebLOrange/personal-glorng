@@ -10,7 +10,6 @@ class AppLogResponse(BaseModel):
     level: str
     message: str
     logger: str
-    service: str = "api"
     context: dict[str, Any] | None = None
     error: str | None = None
     error_type: str | None = None

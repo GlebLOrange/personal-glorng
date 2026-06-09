@@ -59,8 +59,6 @@ async def ensure_mongo_schema(db: AsyncIOMotorDatabase) -> None:
         kwargs = options or {}
         await db[collection].create_index(keys, **kwargs)
 
-    await _ensure_app_logs_validator(db)
-
     settings = get_settings()
     ttl_seconds = settings.APP_LOG_RETENTION_DAYS * 86_400
     await db.app_logs.create_index(
