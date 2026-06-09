@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.core.elasticsearch import close_elasticsearch, init_elasticsearch
 from app.core.exceptions import ApiError
+from app.core.app_log_persist import start_app_log_worker, stop_app_log_worker
 from app.core.logging import logger
 from app.core.mongodb import bind_mongodb, clear_mongodb
 from app.core.redis import close_redis, init_redis
@@ -56,6 +57,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     _app.state.db_registry = registry
     if registry.mongo_client is not None and registry.mongo_db is not None:
         bind_mongodb(registry.mongo_client, registry.mongo_db)
+        await start_app_log_worker()
 
     init_job_queue()
 
@@ -65,6 +67,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     yield
 
     await close_job_queue()
+    await stop_app_log_worker()
     await init_svc.shutdown()
     clear_mongodb()
     await close_elasticsearch()

@@ -156,6 +156,18 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     external: false,
   },
   {
+    slug: "app-logs",
+    name: "app logs",
+    category: "operations",
+    categoryLabel: "operations",
+    description: "Browse persisted application log entries",
+    apiPrefix: "/app-logs",
+    adminRoute: "/admin/tools/app-logs",
+    icon: "≡",
+    capabilities: ["read"],
+    external: false,
+  },
+  {
     slug: "api-docs",
     name: "api docs",
     category: "operations",

@@ -28,6 +28,7 @@ OPENAPI_TAGS: list[dict[str, str]] = [
     {"name": "ai-chat", "description": "Grounded personal search chat for admin."},
     {"name": "search", "description": "Public portfolio keyword search and AI chat."},
     {"name": "audit", "description": "Security and domain audit event log."},
+    {"name": "app-logs", "description": "Persisted structured application logs."},
     {"name": "feedback", "description": "Visitor feedback inbox (admin read)."},
     {
         "name": "time-date-weather-location",
