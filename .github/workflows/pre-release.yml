@@ -1,0 +1,81 @@
+# P2 pre-release tier — worker/nginx smoke (see docs/testing.md).
+name: pre-release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  ENABLE_MONGODB: "true"
+  ENABLE_POSTGRES: "false"
+  MONGODB_USER: glorng
+  MONGODB_PASSWORD: glorng_ci_mongodb_123
+  MONGODB_DB: glorng
+  MONGODB_URL: mongodb://glorng:glorng_ci_mongodb_123@mongodb:27017/glorng?authSource=admin
+  REDIS_PASSWORD: glorng_ci_redis
+  REDIS_URL: redis://:glorng_ci_redis@redis:6379/0
+  RABBITMQ_USER: glorng
+  RABBITMQ_PASSWORD: glorng_ci_rabbitmq
+  CELERY_BROKER_URL: amqp://glorng:glorng_ci_rabbitmq@rabbitmq:5672//
+  JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
+  ALLOWED_EMAIL: admin@glorng.dev
+  SEED_PASSWORD: MyTestPass123!
+  APP_ENV: development
+  EMAIL_BACKEND: console
+
+jobs:
+  celery-schedule-unit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.14"
+      - run: uv sync --frozen
+      - name: Celery beat schedule registry (P2 unit)
+        env:
+          APP_ENV: test
+          JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
+        run: uv run pytest tests/test_celery_schedule.py -v
+
+  stack-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write CI env file
+        run: |
+          cat > .env <<'EOF'
+          ENABLE_MONGODB=true
+          ENABLE_POSTGRES=false
+          MONGODB_USER=glorng
+          MONGODB_PASSWORD=glorng_ci_mongodb_123
+          MONGODB_DB=glorng
+          MONGODB_URL=mongodb://glorng:glorng_ci_mongodb_123@mongodb:27017/glorng?authSource=admin
+          REDIS_PASSWORD=glorng_ci_redis
+          REDIS_URL=redis://:glorng_ci_redis@redis:6379/0
+          RABBITMQ_USER=glorng
+          RABBITMQ_PASSWORD=glorng_ci_rabbitmq
+          CELERY_BROKER_URL=amqp://glorng:glorng_ci_rabbitmq@rabbitmq:5672//
+          JWT_SECRET=ci-jwt-secret-at-least-32-characters-long
+          ALLOWED_EMAIL=admin@glorng.dev
+          SEED_PASSWORD=MyTestPass123!
+          APP_ENV=development
+          EMAIL_BACKEND=console
+          EOF
+      - name: Start API stack (P2 smoke)
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d redis mongodb rabbitmq
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm --build migrate
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build server
+      - name: Health through exposed API port
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8000/api/health && break
+            sleep 2
+          done
+          curl -sf http://127.0.0.1:8000/api/ready | grep -q '"mongodb":"ok"'

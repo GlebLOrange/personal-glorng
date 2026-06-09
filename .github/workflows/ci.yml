@@ -31,6 +31,7 @@ env:
   APP_ENV: development
   EMAIL_BACKEND: console
 
+# P0 PR gate — fast tests on every pull request (see docs/testing.md).
 jobs:
   backend:
     runs-on: ubuntu-latest
@@ -48,7 +49,7 @@ jobs:
         run: uv run ruff check .
       - name: Ruff format check
         run: uv run ruff format --check .
-      - name: Pytest
+      - name: Pytest (P0 — exclude integration tier)
         env:
           APP_ENV: test
           ENABLE_MONGODB: "true"
@@ -57,7 +58,7 @@ jobs:
           MONGODB_DB: test_glorng
           REDIS_URL: redis://:local@127.0.0.1:6379/0
           JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
-        run: uv run pytest -v
+        run: uv run pytest -m "not integration" -v
 
   frontend:
     runs-on: ubuntu-latest
@@ -77,6 +78,7 @@ jobs:
       - run: npm run test
       - run: npm run build
 
+  # P1 postgres paths — audit/search dual-write (see docs/testing.md).
   postgres-tests:
     runs-on: ubuntu-latest
     defaults:
@@ -103,9 +105,17 @@ jobs:
           python-version: "3.14"
       - name: Install dependencies
         run: uv sync --frozen
-      - name: Postgres integration tests
+      - name: Run Alembic migrations
+        env:
+          DATABASE_URL: postgresql+asyncpg://glorng:glorng_ci@localhost:5432/glorng
+          ENABLE_POSTGRES: "true"
+          JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
+        run: uv run alembic upgrade head
+      - name: Postgres integration tests (P1)
         env:
           POSTGRES_TEST_URL: postgresql+asyncpg://glorng:glorng_ci@localhost:5432/glorng
+          DATABASE_URL: postgresql+asyncpg://glorng:glorng_ci@localhost:5432/glorng
+          ENABLE_POSTGRES: "true"
           REDIS_URL: redis://:local@127.0.0.1:6379/0
           JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
         run: uv run pytest -m postgres -v

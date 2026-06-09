@@ -10,6 +10,13 @@ test.describe("public pages", () => {
     await expect(page.locator("body")).toBeVisible();
   });
 
+  test("portfolio shows resume hero content", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: /Gleb Y\./i })).toBeVisible();
+    await expect(page.getByText(/Backend-heavy full-stack/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^experience$/i })).toBeVisible();
+  });
+
   test("login page shows form", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByRole("heading", { name: /login/i })).toBeVisible();
@@ -91,17 +98,36 @@ test.describe("auth guards", () => {
     await expect(page).toHaveURL(/\/login/);
     expect(new URL(page.url()).searchParams.get("redirect")).toBe("/admin");
   });
+
+  test("admin expenses redirects unauthenticated users to login", async ({ page }) => {
+    await page.goto("/admin/tools/expenses");
+    await expect(page).toHaveURL(/\/login/);
+    expect(new URL(page.url()).searchParams.get("redirect")).toBe("/admin/tools/expenses");
+  });
 });
 
 test.describe("authenticated admin", () => {
-  test("calculator tool loads after login", async ({ page }) => {
+  async function loginAsAdmin(page: import("@playwright/test").Page): Promise<void> {
     await page.goto("/login");
     await page.getByPlaceholder("admin@glorng.dev").fill(adminEmail);
     await page.getByPlaceholder("••••••••").fill(adminPassword);
     await page.getByRole("button", { name: /^login$/i }).click();
+  }
+
+  test("calculator tool loads after login", async ({ page }) => {
+    await loginAsAdmin(page);
 
     await page.goto("/calculator");
     await expect(page.getByRole("heading", { name: /^calculator$/i })).toBeVisible();
     await expect(page.getByRole("button", { name: "7" })).toBeVisible();
+  });
+
+  test("admin dashboard shows tool cards after login", async ({ page }) => {
+    await loginAsAdmin(page);
+
+    await page.goto("/admin");
+    await expect(page.getByRole("heading", { name: /^tools$/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /tasks/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /expenses/i }).first()).toBeVisible();
   });
 });

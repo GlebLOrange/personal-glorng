@@ -1,0 +1,83 @@
+# P1 nightly tier — postgres + redis integration (see docs/testing.md).
+name: nightly
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_USER: glorng
+          POSTGRES_PASSWORD: glorng_ci
+          POSTGRES_DB: glorng
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U glorng -d glorng"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.14"
+      - run: uv sync --frozen
+      - name: Run Alembic migrations
+        env:
+          DATABASE_URL: postgresql+asyncpg://glorng:glorng_ci@localhost:5432/glorng
+          ENABLE_POSTGRES: "true"
+          JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
+        run: uv run alembic upgrade head
+      - name: Postgres integration tests (P1)
+        env:
+          POSTGRES_TEST_URL: postgresql+asyncpg://glorng:glorng_ci@localhost:5432/glorng
+          DATABASE_URL: postgresql+asyncpg://glorng:glorng_ci@localhost:5432/glorng
+          ENABLE_POSTGRES: "true"
+          REDIS_URL: redis://:local@127.0.0.1:6379/0
+          JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
+        run: uv run pytest -m postgres -v
+
+  redis-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    services:
+      redis:
+        image: redis:8.2-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.14"
+      - run: uv sync --frozen
+      - name: Redis integration tests (P1)
+        env:
+          APP_ENV: test
+          ENABLE_MONGODB: "true"
+          ENABLE_POSTGRES: "false"
+          MONGODB_URL: mongodb://127.0.0.1:27017
+          MONGODB_DB: test_glorng
+          REDIS_URL: redis://127.0.0.1:6379/0
+          JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
+        run: uv run pytest -m redis -v
