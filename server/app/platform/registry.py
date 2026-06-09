@@ -133,6 +133,16 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         capabilities=("read",),
     ),
     PlatformService(
+        slug="app-logs",
+        name="app logs",
+        category="operations",
+        description="Browse persisted application log entries",
+        api_prefix="/app-logs",
+        admin_route="/admin/tools/app-logs",
+        icon="≡",
+        capabilities=("read",),
+    ),
+    PlatformService(
         slug="api-docs",
         name="api docs",
         category="operations",

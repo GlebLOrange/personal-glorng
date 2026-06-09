@@ -110,6 +110,21 @@ Client-side `VITE_*` flags hide UI only; server flags and auth are authoritative
 
 **Vid download:** The download endpoint is public with strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). yt-dlp runs server-side; URLs are restricted to known YouTube hosts only.
 
+## Application log persistence
+
+Structured API logs (Loguru / [`logging.py`](../server/app/core/logging.py)) are written to **stderr** for Docker (`make logs`) and optionally persisted to MongoDB collection `app_logs` via [`app_log_persist.py`](../server/app/core/app_log_persist.py).
+
+| Control | Detail |
+|---------|--------|
+| Master switch | `APP_LOG_PERSIST_ENABLED` (default `true`) |
+| Min level stored | `APP_LOG_PERSIST_MIN_LEVEL` (default `INFO`; DEBUG stays stderr-only) |
+| Retention | TTL index on `occurred_at` — `APP_LOG_RETENTION_DAYS` (default 30) |
+| Admin access | `GET /api/tools/app-logs` requires `app-logs:read` |
+| Health noise | `/api/health` request logs are not persisted |
+| Failure mode | Queue is bounded; overflow drops oldest entries; DB errors never crash the app |
+
+Audit events ([`audit_events`](server/app/db/repositories/audit.py)) remain a separate, intentional change trail — not general application logs.
+
 ## Secrets and CI
 
 - Never commit `.env` (see [`.env.example`](../.env.example))
