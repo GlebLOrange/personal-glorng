@@ -7,6 +7,7 @@ import DonationsBlock from "@/components/donations/DonationsBlock.vue";
 import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
 import PortfolioSearchChat from "@/components/search/PortfolioSearchChat.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
+import EducationList from "@/components/resume/EducationList.vue";
 import ExperienceList from "@/components/resume/ExperienceList.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
 import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
@@ -26,6 +27,7 @@ const showFeedback = ref(false);
 
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
 const contactLinks = computed(() => buildContactLinks(resume.value.links));
+const education = computed(() => resume.value.education ?? []);
 
 async function loadResume(): Promise<void> {
   apiError.value = false;
@@ -41,20 +43,26 @@ onMounted(loadResume);
 </script>
 
 <template>
-  <div>
+  <div class="portfolio-cv">
     <p
       v-if="apiError"
-      class="max-w-5xl mx-auto px-6 pt-4 text-label text-accent-golden"
+      class="max-w-5xl mx-auto px-6 pt-4 text-label text-accent-golden print:hidden"
       role="status"
     >
       Using cached portfolio data — live sync unavailable.
     </p>
 
     <SectionWrapper>
-      <HeroBlock :name="resume.name" :title="resume.title" :bio="resume.bio" />
+      <HeroBlock
+        :name="resume.name"
+        :title="resume.title"
+        :tagline="resume.tagline"
+        :location="resume.location"
+        :availability="resume.availability"
+        :bio="resume.bio"
+        :contact-links="contactLinks"
+      />
     </SectionWrapper>
-
-    <!-- Spotify now-playing disabled until Premium subscription is available -->
 
     <SectionWrapper id="about" title="about" dark alternate>
       <PortfolioGlance :resume="resume" />
@@ -72,17 +80,22 @@ onMounted(loadResume);
       <ProjectsGrid :projects="resume.projects" />
     </SectionWrapper>
 
-    <SectionWrapper id="support" title="support" dark alternate>
-      <p class="text-body mb-6">If you find my work useful, consider supporting me.</p>
-      <DonationsBlock v-if="donations" :config="donations" />
+    <SectionWrapper
+      v-if="education.length > 0"
+      id="education"
+      title="education"
+      dark
+      alternate
+    >
+      <EducationList :education="education" />
     </SectionWrapper>
 
-    <SectionWrapper id="contact" title="contact" dark>
+    <SectionWrapper id="contact" title="contact" dark :alternate="education.length === 0">
       <div class="flex flex-wrap gap-4">
         <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
         <button
           type="button"
-          class="interactive-surface inline-flex items-center gap-2 px-5 py-3 text-base text-surface-sage min-h-11"
+          class="interactive-surface inline-flex items-center gap-2 px-5 py-3 text-base text-surface-sage min-h-11 print:hidden"
           @click="showFeedback = true"
         >
           <ContactIcon id="feedback" class="size-4 shrink-0" />
@@ -91,6 +104,13 @@ onMounted(loadResume);
       </div>
       <FeedbackModal v-if="showFeedback" @close="showFeedback = false" />
     </SectionWrapper>
+
+    <div class="print:hidden">
+      <SectionWrapper id="support" title="support" dark alternate>
+        <p class="text-body mb-6">If you find my work useful, consider supporting me.</p>
+        <DonationsBlock v-if="donations" :config="donations" />
+      </SectionWrapper>
+    </div>
 
     <PortfolioSearchChat v-if="isAiSearchEnabled()" />
   </div>

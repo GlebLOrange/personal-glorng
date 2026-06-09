@@ -182,6 +182,67 @@ body {
   transform: translateX(100%);
 }
 
+@media print {
+  body {
+    background: #fff;
+    color: #111;
+  }
+
+  nav,
+  footer,
+  aside,
+  .print\:hidden,
+  [class*="print:hidden"],
+  #cc-main,
+  .portfolio-cv ~ * {
+    display: none !important;
+  }
+
+  .portfolio-cv .print\:hidden,
+  .portfolio-cv [class*="print:hidden"] {
+    display: none !important;
+  }
+
+  .portfolio-cv section {
+    break-inside: avoid;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    background: transparent !important;
+  }
+
+  .portfolio-cv .section-title,
+  .portfolio-cv .card-title,
+  .portfolio-cv h1,
+  .portfolio-cv h3 {
+    color: #111 !important;
+  }
+
+  .portfolio-cv .text-body,
+  .portfolio-cv .text-meta,
+  .portfolio-cv .text-surface-sage,
+  .portfolio-cv .text-surface-mid {
+    color: #333 !important;
+  }
+
+  .portfolio-cv .accent-gradient {
+    -webkit-text-fill-color: #111;
+    color: #111;
+    background: none;
+  }
+
+  .portfolio-cv a {
+    color: #111 !important;
+    text-decoration: underline;
+  }
+
+  .portfolio-cv .interactive-surface,
+  .portfolio-cv [class*="bg-surface"] {
+    border-color: #ccc !important;
+    background: #f9f9f9 !important;
+    box-shadow: none !important;
+  }
+}
+
 #cc-main {
   --cc-bg: #1c2230;
   --cc-primary-color: #f5f2ec;
