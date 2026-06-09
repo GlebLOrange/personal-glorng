@@ -29,6 +29,9 @@ def _resume_documents() -> list[SearchDocumentInput]:
             title=f"{RESUME_DATA['name']} — {RESUME_DATA['title']}",
             body="\n".join(
                 [
+                    str(RESUME_DATA.get("tagline", "")),
+                    str(RESUME_DATA.get("location", "")),
+                    str(RESUME_DATA.get("availability", "")),
                     RESUME_DATA["bio"],
                     _skills_text(RESUME_DATA["skills"]),
                     json.dumps(RESUME_DATA.get("links", {})),
@@ -51,9 +54,34 @@ def _resume_documents() -> list[SearchDocumentInput]:
                     [
                         str(entry.get("period", "")),
                         str(entry.get("description", "")),
+                        *[
+                            str(item)
+                            for item in entry.get("highlights", [])
+                            if isinstance(item, str)
+                        ],
                     ],
                 ),
-                url="/#about",
+                url="/#experience",
+                visibility=SearchVisibility.PUBLIC,
+            ),
+        )
+
+    for index, entry in enumerate(RESUME_DATA.get("education", []), start=1):
+        documents.append(
+            SearchDocumentInput(
+                source_type=RESUME_SOURCE_TYPE,
+                source_id=300 + index,
+                title=(
+                    f"{entry.get('degree', 'Education')} —"
+                    f" {entry.get('institution', '')}"
+                ),
+                body="\n".join(
+                    [
+                        str(entry.get("period", "")),
+                        str(entry.get("description", "")),
+                    ],
+                ),
+                url="/#education",
                 visibility=SearchVisibility.PUBLIC,
             ),
         )
