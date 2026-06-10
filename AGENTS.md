@@ -1,5 +1,7 @@
 # AGENTS.md
 
+Coding standards and agent behavior live in [`.cursor/rules/`](.cursor/rules/) (stack conventions, git commit, PR workflow). This file covers environment and bootstrap only.
+
 ## Cursor Cloud specific instructions
 
 ### Product overview

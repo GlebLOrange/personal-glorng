@@ -1,0 +1,12 @@
+---
+description: Deliver complete implementations; no placeholders or stubs
+alwaysApply: true
+---
+
+# Implementation quality
+
+Deliver complete implementations. No placeholders in delivered code.
+
+- No `// TODO`, `# TODO`, or "implement later" stubs.
+- No `pass`, `...`, or `NotImplementedError` left as the final behavior.
+- If scope is too large, ask to narrow scope instead of stubbing.

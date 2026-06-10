@@ -1,0 +1,13 @@
+---
+description: Verify packages exist before adding imports or dependencies
+alwaysApply: true
+---
+
+# Dependencies
+
+Before adding an import or dependency:
+
+1. Check `server/pyproject.toml` or `client/package.json` for an existing entry.
+2. Verify with `uv pip show <pkg>` (Python) or `npm list <pkg>` (Node) when unsure.
+
+Do not invent package names, modules, or APIs.

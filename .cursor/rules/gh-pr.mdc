@@ -1,0 +1,38 @@
+---
+description: Create pull requests with gh when the user explicitly asks
+alwaysApply: true
+---
+
+# Pull request workflow
+
+Use `gh` for all GitHub tasks. Only create a PR when the user explicitly asks.
+
+## Before creating
+
+In parallel:
+
+- `git status`
+- `git diff` (staged and unstaged)
+- Check whether the branch tracks a remote and is up to date
+- `git log` and `git diff [base-branch]...HEAD` for the full branch history
+
+Draft a summary from **all** commits on the branch, not just the latest.
+
+## Create
+
+1. Push if needed: `git push -u origin HEAD` (requires user approval for network).
+2. Open the PR:
+
+```bash
+gh pr create --title "Title" --body "$(cat <<'EOF'
+## Summary
+- …
+
+## Test plan
+- [ ] …
+
+EOF
+)"
+```
+
+3. Return the PR URL to the user.
