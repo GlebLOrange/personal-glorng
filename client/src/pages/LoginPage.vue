@@ -47,8 +47,8 @@ async function handleLogin(): Promise<void> {
       </h1>
 
       <form class="space-y-4" @submit.prevent="handleLogin">
-        <BaseInput v-model="email" type="email" label="Email" placeholder="admin@glorng.dev" />
-        <BaseInput v-model="password" type="password" label="Password" placeholder="••••••••" />
+        <BaseInput v-model="email" type="email" label="Email" placeholder="you@example.com" />
+        <BaseInput v-model="password" type="password" label="Password" placeholder="••••••••••••" />
         <BaseButton variant="primary" class="w-full" :disabled="loading">
           {{ loading ? "Authenticating..." : "Login" }}
         </BaseButton>
