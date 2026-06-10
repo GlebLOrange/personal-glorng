@@ -1,38 +1,11 @@
-"""Factories for deterministic dev seed data."""
+"""Factories for task seed data."""
 
 import random
-from datetime import UTC, date, datetime, timedelta
-from decimal import Decimal
+from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from app.core.catalogs import (
-    ALLOWED_CURRENCIES,
-    DEFAULT_EXPENSE_CATEGORY_NAMES,
-)
-from app.db.documents.expense import ToolExpense
 from app.db.documents.task import Task, TaskStatus
 
-EXPENSE_TOOLS = (
-    "Cursor",
-    "Vercel",
-    "Railway",
-    "OpenAI",
-    "Groq",
-    "GitHub",
-    "Cloudflare",
-    "Hetzner",
-)
-EXPENSE_CATEGORIES = DEFAULT_EXPENSE_CATEGORY_NAMES
-EXPENSE_PRODUCTS = (
-    "Groceries run",
-    "Rent",
-    "Bus ticket",
-    "Fuel",
-    "Utilities",
-    "Biedronka",
-    "Pharmacy",
-)
-EXPENSE_CURRENCIES = ALLOWED_CURRENCIES
 TASK_TITLES = (
     "Review PR",
     "Call dentist",
@@ -45,28 +18,6 @@ TASK_TITLES = (
     "Reply to feedback",
     "Plan sprint",
 )
-
-
-def build_random_expenses(count: int, *, seed: int = 42) -> list[ToolExpense]:
-    """Build expense rows spread over the last three months."""
-    rng = random.Random(seed)  # noqa: S311
-    today = date.today()
-    rows: list[ToolExpense] = []
-    for _ in range(count):
-        days_ago = rng.randint(0, 90)
-        rows.append(
-            ToolExpense(
-                tool_name=rng.choice(EXPENSE_PRODUCTS),
-                amount=Decimal(str(rng.randint(500, 20000) / 100)).quantize(
-                    Decimal("0.01"),
-                ),
-                currency=rng.choice(EXPENSE_CURRENCIES),
-                expense_date=today - timedelta(days=days_ago),
-                category=rng.choice(EXPENSE_CATEGORIES),
-                notes=None,
-            ),
-        )
-    return rows
 
 
 def build_tasks_for_today(

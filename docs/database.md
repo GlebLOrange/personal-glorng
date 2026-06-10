@@ -52,6 +52,26 @@ flowchart TD
 | `make db-init` | Run migrations (`docker compose run --rm migrate`) |
 | `make migrate` | Alias for `db-init` |
 | `make seed` | Idempotent admin + sample data (Mongo) |
+| `make seed-demo` | Bulk random demo data per platform tool (wipe + fill) |
+| `make seed-demo-add` | Append demo data without wiping |
+| `make seed-multicooker-recipes` | Fetch multicooker recipes from TheMealDB |
+
+### Seed package layout
+
+Entrypoints (backward-compatible module paths unchanged):
+
+| Command | Module |
+|---------|--------|
+| `python -m app.db.seed` | Core dev seed — admin, sample recipes, expenses, tasks |
+| `python -m app.db.seed_demo` | Demo bulk seed per tool |
+| `python -m app.db.seed_multicooker_recipes` | External recipe import |
+
+Implementation lives under [`server/app/db/seed/`](../server/app/db/seed/):
+
+- `core/` — admin user, sample recipes (`data/sample_recipes.json`), expenses, tasks
+- `demo/tools/` — per-platform-tool demo seeders (recipes, expenses, tasks, feedback, URLs)
+- `builders/` — deterministic factories (`expense`, `task`, `demo`)
+- `cli/` — argparse wrappers for demo and multicooker scripts
 
 First-time dev with seed:
 
@@ -83,3 +103,11 @@ Preserves integer `id` fields and seeds the Mongo counter collection.
 - [`server/app/db/init_service.py`](../server/app/db/init_service.py) — startup/shutdown orchestration
 - [`server/app/db/repositories/`](../server/app/db/repositories/) — Mongo data access
 - [`server/app/db/documents/`](../server/app/db/documents/) — Pydantic document models
+
+### Expense storage
+
+Mongo collections: `expenses`, `expense_categories` (legacy `tool_*` names are renamed on migrate).
+
+Postgres tables (optional secondary): `expenses`, `expense_categories` — see Alembic revision `o9p0q1r2s3t4`.
+
+Domain types: `Expense`, `ExpenseCategory` in [`documents/expense.py`](../server/app/db/documents/expense.py). The expense field `tool_name` is the vendor/product label (e.g. Cursor, groceries), not a platform-tool slug.

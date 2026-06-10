@@ -6,7 +6,7 @@ from pydantic import field_validator
 from app.db.documents.base import TimestampedDocument
 
 
-class ToolExpense(TimestampedDocument):
+class Expense(TimestampedDocument):
     tool_name: str
     amount: Decimal
     currency: str = "PLN"
@@ -40,7 +40,7 @@ class ToolExpense(TimestampedDocument):
         raise TypeError(msg)
 
 
-class ToolExpenseCategory(TimestampedDocument):
+class ExpenseCategory(TimestampedDocument):
     name: str
     sort_order: int = 0
     monthly_budget: Decimal | None = None

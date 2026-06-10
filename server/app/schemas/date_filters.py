@@ -7,7 +7,7 @@ from fastapi import Query
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
-from app.services.tool_expense import ToolExpenseService
+from app.services.expense import ExpenseService
 
 _MONTH_PATTERN = r"^\d{4}-(0[1-9]|1[0-2])$"
 
@@ -51,7 +51,7 @@ class ExpenseDateFilter(DateRangeFilter):
 
     def resolved_bounds(self) -> tuple[date | None, date | None]:
         if self.month:
-            return ToolExpenseService.month_date_bounds(self.month)
+            return ExpenseService.month_date_bounds(self.month)
         return self.date_from, self.date_to
 
 

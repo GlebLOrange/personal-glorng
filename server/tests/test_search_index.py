@@ -59,7 +59,7 @@ async def test_search_index_upsert_and_search(registry: DatabaseRegistry) -> Non
         SearchDocumentInput(
             source_type="resume",
             source_id=1,
-            title="Gleb Y. Platform",
+            title="Gleb.Y Platform",
             body="FastAPI Vue PostgreSQL portfolio",
             url="/",
             visibility=SearchVisibility.PUBLIC,
@@ -68,7 +68,7 @@ async def test_search_index_upsert_and_search(registry: DatabaseRegistry) -> Non
 
     hits = await svc.search("FastAPI", visibilities=[SearchVisibility.PUBLIC])
     assert len(hits) == 1
-    assert hits[0].title == "Gleb Y. Platform"
+    assert hits[0].title == "Gleb.Y Platform"
 
 
 @pytest.mark.asyncio

@@ -23,7 +23,7 @@ def test_verification_email_contains_verify_url() -> None:
     html = render_verification_email(token, base_url)
     assert f"{base_url}/verify-email?token={token}" in html
     assert "Verify email" in html
-    assert "Welcome to Gleb Y." in html
+    assert "Welcome to Gleb.Y" in html
 
 
 def test_verification_email_escapes_malicious_token() -> None:
@@ -70,4 +70,4 @@ def test_render_plain_text_format() -> None:
     plain = render_plain_text("Hello", ["Line one", "Line two"])
     assert plain.startswith("Hello\n\n")
     assert "Line one" in plain
-    assert plain.endswith("— Gleb Y.\n")
+    assert plain.endswith("— Gleb.Y\n")

@@ -1,7 +1,7 @@
 from httpx import AsyncClient
 
 from app.db.registry import DatabaseRegistry
-from app.services.tool_expense_category import ToolExpenseCategoryService
+from app.services.expense_category import ExpenseCategoryService
 
 EXPENSE_DATA = {
     "tool_name": "Milk",
@@ -85,7 +85,7 @@ class TestExpenseCategories:
         assert expenses.json()[0]["category"] == "Shopping"
 
     async def test_ensure_category_on_expense_create(self, registry: DatabaseRegistry):
-        svc = ToolExpenseCategoryService(registry)
+        svc = ExpenseCategoryService(registry)
         await svc.ensure_category("Custom")
         names = await svc.list_names()
         assert "Custom" in names

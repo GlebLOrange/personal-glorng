@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from app.schemas.tool_expense import ExchangeRatesResponse
+from app.schemas.expense import ExchangeRatesResponse
 
 CurrencyCode = Literal["USD", "EUR", "PLN", "BYN"]
 

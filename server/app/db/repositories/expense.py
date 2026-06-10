@@ -4,24 +4,22 @@ from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.db.documents.expense import ToolExpense, ToolExpenseCategory
+from app.db.documents.expense import Expense, ExpenseCategory
 from app.db.repositories.base import MongoRepository, _parse_doc
 
 
 class ExpenseRepository:
     def __init__(self, db: AsyncIOMotorDatabase) -> None:
-        self.expenses = MongoRepository(db, "tool_expenses", ToolExpense)
-        self.categories = MongoRepository(
-            db, "tool_expense_categories", ToolExpenseCategory
-        )
+        self.expenses = MongoRepository(db, "expenses", Expense)
+        self.categories = MongoRepository(db, "expense_categories", ExpenseCategory)
 
-    async def find_category_by_name(self, name: str) -> ToolExpenseCategory | None:
+    async def find_category_by_name(self, name: str) -> ExpenseCategory | None:
         data = await self.categories._col().find_one(
             {"name": {"$regex": f"^{re.escape(name)}$", "$options": "i"}},
         )
         if data is None:
             return None
-        return _parse_doc(ToolExpenseCategory, data)
+        return _parse_doc(ExpenseCategory, data)
 
     async def next_category_sort_order(self) -> int:
         doc = await self.categories._col().find_one(
@@ -82,7 +80,7 @@ class ExpenseRepository:
         date_to: date | None = None,
         tool_name: str | None = None,
         category: str | None = None,
-    ) -> list[ToolExpense]:
+    ) -> list[Expense]:
         query = self._expense_query(
             date_from=date_from,
             date_to=date_to,
@@ -94,4 +92,4 @@ class ExpenseRepository:
             .find(query)
             .sort([("expense_date", -1), ("created_at", -1)])
         )
-        return [_parse_doc(ToolExpense, row) async for row in cursor]
+        return [_parse_doc(Expense, row) async for row in cursor]

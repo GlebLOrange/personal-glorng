@@ -18,12 +18,12 @@ from app.services.ai_chat import OpenAIService
 from app.services.ai_search import AiSearchService
 from app.services.audit import AuditService
 from app.services.currency import CurrencyService
+from app.services.expense import ExpenseService
+from app.services.expense_category import ExpenseCategoryService
 from app.services.recipe import RecipeService
 from app.services.search_index import SearchIndexService
 from app.services.task import TaskService
 from app.services.task_intake import TaskIntakeService
-from app.services.tool_expense import ToolExpenseService
-from app.services.tool_expense_category import ToolExpenseCategoryService
 from app.services.user import get_user_by_public_id
 from app.settings import Settings, get_settings
 from app.workers.queue import JobQueue, get_job_queue
@@ -206,12 +206,12 @@ def get_currency_service() -> CurrencyService:
 CurrencyServiceDep = Annotated[CurrencyService, Depends(get_currency_service)]
 
 
-def get_expense_category_service(registry: DbRegistry) -> ToolExpenseCategoryService:
-    return ToolExpenseCategoryService(registry)
+def get_expense_category_service(registry: DbRegistry) -> ExpenseCategoryService:
+    return ExpenseCategoryService(registry)
 
 
 ExpenseCategoryServiceDep = Annotated[
-    ToolExpenseCategoryService,
+    ExpenseCategoryService,
     Depends(get_expense_category_service),
 ]
 
@@ -219,11 +219,11 @@ ExpenseCategoryServiceDep = Annotated[
 def get_expense_service(
     registry: DbRegistry,
     currency_svc: CurrencyServiceDep,
-) -> ToolExpenseService:
-    return ToolExpenseService(registry, currency_svc=currency_svc)
+) -> ExpenseService:
+    return ExpenseService(registry, currency_svc=currency_svc)
 
 
-ExpenseServiceDep = Annotated[ToolExpenseService, Depends(get_expense_service)]
+ExpenseServiceDep = Annotated[ExpenseService, Depends(get_expense_service)]
 
 
 def get_audit_service(

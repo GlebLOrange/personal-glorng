@@ -35,7 +35,7 @@ import { useLocalStorageString } from "@/composables/useLocalStorage";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
 import { isoDateLocal } from "@/utils/dates";
-import type { ToolExpense } from "@/types";
+import type { Expense } from "@/types";
 
 type ExpenseTab = "transactions" | "insights" | "converter" | "settings";
 
@@ -333,7 +333,7 @@ function handleDatePreset(preset: MonthPreset): void {
   applyMonthPreset(preset);
 }
 
-function openEdit(expense: ToolExpense): void {
+function openEdit(expense: Expense): void {
   editingId.value = expense.id;
   form.value = {
     tool_name: expense.tool_name,
@@ -351,7 +351,7 @@ function openCreate(): void {
   showForm.value = true;
 }
 
-async function duplicateExpense(expense: ToolExpense): Promise<void> {
+async function duplicateExpense(expense: Expense): Promise<void> {
   smartText.value = "";
   quickAdd.value = {
     product: expense.tool_name,

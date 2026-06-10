@@ -53,8 +53,30 @@ async def _ensure_app_logs_validator(db: AsyncIOMotorDatabase) -> None:
     )
 
 
+_LEGACY_COLLECTION_RENAMES = (
+    ("tool_expenses", "expenses"),
+    ("tool_expense_categories", "expense_categories"),
+)
+
+
+async def _rename_legacy_collections(db: AsyncIOMotorDatabase) -> None:
+    """Rename pre-restructure expense collections (idempotent)."""
+    existing = set(await db.list_collection_names())
+    for old_name, new_name in _LEGACY_COLLECTION_RENAMES:
+        if old_name not in existing or new_name in existing:
+            continue
+        await db[old_name].rename(new_name)
+        existing.discard(old_name)
+        existing.add(new_name)
+        logger.info(
+            "Renamed MongoDB collection",
+            context={"from": old_name, "to": new_name},
+        )
+
+
 async def ensure_mongo_schema(db: AsyncIOMotorDatabase) -> None:
     """Create indexes idempotently and record schema version."""
+    await _rename_legacy_collections(db)
     for collection, keys, options in INDEX_SPECS:
         kwargs = options or {}
         await db[collection].create_index(keys, **kwargs)

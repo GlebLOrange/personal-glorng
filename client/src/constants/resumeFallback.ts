@@ -2,7 +2,7 @@ import type { ResumeData } from "@/types";
 
 /** Static resume mirror of server/app/content/resume_data.py — keep in sync. */
 export const RESUME_FALLBACK: ResumeData = {
-  name: "Gleb Y.",
+  name: "Gleb.Y",
   title: "Full-Stack Developer",
   tagline: "Backend-heavy full-stack — APIs, Vue frontends, Docker deployments",
   location: "Remote · EU",
@@ -15,11 +15,25 @@ export const RESUME_FALLBACK: ResumeData = {
   skills: [
     {
       category: "Languages",
-      items: ["Python", "TypeScript", "JavaScript"],
+      items: ["Python", "TypeScript", "JavaScript", "Lua", "Ruby"],
     },
     {
       category: "Backend",
-      items: ["FastAPI", "SQLAlchemy", "Alembic", "PostgreSQL", "Redis", "Celery"],
+      items: [
+        "FastAPI",
+        "Django",
+        "Django REST Framework",
+        "Pydantic",
+        "SQLAlchemy",
+        "Alembic",
+        "PostgreSQL",
+        "Redis",
+        "Celery",
+      ],
+    },
+    {
+      category: "Python tooling",
+      items: ["uv", "Ruff"],
     },
     {
       category: "Frontend",
@@ -27,20 +41,34 @@ export const RESUME_FALLBACK: ResumeData = {
     },
     {
       category: "DevOps",
-      items: ["Docker", "Nginx", "Docker Compose", "GitHub Actions", "Linux"],
+      items: [
+        "Docker",
+        "Nginx",
+        "Docker Compose",
+        "GitHub Actions",
+        "Linux",
+        "Ansible",
+      ],
     },
   ],
   experience: [
     {
       role: "Full-Stack Developer",
       company: "Freelance",
-      period: "2024 - Present",
+      period: "Present",
       description: "End-to-end delivery of web apps, APIs, and automation for clients and personal products.",
       highlights: [
         "Built and maintain this portfolio platform (FastAPI, Vue 3, PostgreSQL/MongoDB, Redis, Celery)",
         "Ship production APIs with auth, rate limiting, search indexing, and Docker-based deploys",
         "Develop admin tools, Telegram integrations, and background workers for day-to-day workflows",
       ],
+    },
+    {
+      role: "IT Specialist",
+      company: "AppService Agency",
+      period: "2019 - 2020",
+      description:
+        "Working in IT at a digital agency — web applications, client projects, and technical delivery.",
     },
   ],
   projects: [

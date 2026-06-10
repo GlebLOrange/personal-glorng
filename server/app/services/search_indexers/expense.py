@@ -1,4 +1,4 @@
-from app.db.documents.expense import ToolExpense
+from app.db.documents.expense import Expense
 from app.db.documents.search import SearchVisibility
 from app.db.registry import DatabaseRegistry
 from app.services.search_index import (
@@ -11,7 +11,7 @@ from app.services.search_source_types import SearchSourceType
 EXPENSE_SOURCE_TYPE = SearchSourceType.EXPENSE
 
 
-def _expense_document(expense: ToolExpense) -> SearchDocumentInput:
+def _expense_document(expense: Expense) -> SearchDocumentInput:
     body_parts = [
         expense.tool_name,
         f"{expense.amount} {expense.currency}",
@@ -32,7 +32,7 @@ def _expense_document(expense: ToolExpense) -> SearchDocumentInput:
     )
 
 
-async def index_expense(registry: DatabaseRegistry, expense: ToolExpense) -> None:
+async def index_expense(registry: DatabaseRegistry, expense: Expense) -> None:
     await upsert_document(registry, _expense_document(expense))
 
 
