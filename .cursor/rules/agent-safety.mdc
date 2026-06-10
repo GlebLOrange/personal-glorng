@@ -1,0 +1,12 @@
+---
+description: Guardrails for commits, destructive actions, and sensitive files
+alwaysApply: true
+---
+
+# Agent safety
+
+- Never commit unless the user explicitly requests it.
+- Never push to `main` unless the user explicitly requests it.
+- Never run destructive or irreversible git commands (force push, hard reset) unless explicitly requested.
+- Never delete config, migrations, index scripts, or env files without explicit user confirmation.
+- Never commit `.env`, credentials, or other secret-bearing files.

@@ -1,0 +1,15 @@
+---
+description: FastAPI, MongoDB, and Python conventions for the server
+globs: server/**/*.py
+alwaysApply: false
+---
+
+# Backend stack
+
+- **Framework:** FastAPI with Pydantic v2 schemas.
+- **Primary DB:** MongoDB (Pydantic documents, versioned index scripts).
+- **Secondary DB:** PostgreSQL for FTS search and audit (Alembic migrations).
+- **Style:** Ruff; type hints on all functions; async for I/O-bound work.
+- **Functions:** Keep under 88 lines.
+- **Migrations:** Alembic when Postgres models change; Mongo index scripts when collections/indexes are added.
+- **Logging:** Log important actions; never log secrets or tokens.
