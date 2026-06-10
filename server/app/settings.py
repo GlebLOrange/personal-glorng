@@ -386,6 +386,8 @@ class Settings(BaseSettings):
     # App
     APP_ENV: str = "development"
     LOG_REQUESTS: bool = True
+    LOG_REQUEST_BODIES: bool = False
+    CELERY_TASK_ALWAYS_EAGER: bool = False
     APP_LOG_PERSIST_ENABLED: bool = True
     APP_LOG_PERSIST_MIN_LEVEL: str = "INFO"
     APP_LOG_RETENTION_DAYS: int = 30
