@@ -8,6 +8,8 @@ from app.db.documents.credential import GitHubCredential, GoogleCredential
 from app.db.documents.expense import ToolExpense, ToolExpenseCategory
 from app.db.documents.feedback import Feedback
 from app.db.documents.fileshare import SharedFile
+from app.db.documents.import_batch import ImportBatch
+from app.db.documents.import_row import ImportRow
 from app.db.documents.recipe import Recipe
 from app.db.documents.search import SearchDocument, SearchVisibility
 from app.db.documents.task import (
@@ -35,6 +37,8 @@ __all__ = [
     "GitHubCredential",
     "GoogleCredential",
     "GoogleSyncQueue",
+    "ImportBatch",
+    "ImportRow",
     "IntakeStatus",
     "Recipe",
     "Reminder",

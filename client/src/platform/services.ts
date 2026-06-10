@@ -136,11 +136,11 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     name: "data extract",
     category: "utilities",
     categoryLabel: "utilities",
-    description: "Extract structured rows from CSV, JSON, and XML files",
+    description: "Extract structured rows from CSV, JSON, XML, and delimited files",
     apiPrefix: "/data-extract",
     adminRoute: "/admin/tools/data-extract",
     icon: "⎘",
-    capabilities: ["read"],
+    capabilities: ["read", "write"],
     external: false,
   },
   {

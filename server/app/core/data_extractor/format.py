@@ -12,6 +12,8 @@ _EXTENSION_MAP: dict[str, DataFormat] = {
     ".tsv": DataFormat.CSV,
     ".json": DataFormat.JSON,
     ".xml": DataFormat.XML,
+    ".txt": DataFormat.DELIMITED,
+    ".pipe": DataFormat.DELIMITED,
 }
 
 

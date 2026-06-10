@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.db.repositories.app_log import AppLogRepository
 from app.db.repositories.audit import AuditRepository
 from app.db.repositories.credential import CredentialRepository
+from app.db.repositories.data_import import DataImportRepository
 from app.db.repositories.expense import ExpenseRepository
 from app.db.repositories.feedback import FeedbackRepository
 from app.db.repositories.fileshare import FileShareRepository
@@ -40,6 +41,7 @@ class DatabaseRegistry:
     search: SearchRepository | None = None
     audit: AuditRepository | None = None
     app_logs: AppLogRepository | None = None
+    data_imports: DataImportRepository | None = None
     _repos_initialized: bool = field(default=False, repr=False)
 
     def require_mongo(self) -> AsyncIOMotorDatabase:
@@ -75,4 +77,5 @@ class DatabaseRegistry:
         self.search = SearchRepository(mongo)
         self.audit = AuditRepository(mongo)
         self.app_logs = AppLogRepository(mongo)
+        self.data_imports = DataImportRepository(mongo)
         self._repos_initialized = True
