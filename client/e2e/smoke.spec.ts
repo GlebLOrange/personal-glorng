@@ -20,7 +20,7 @@ test.describe("public pages", () => {
   test("login page shows form", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByRole("heading", { name: /login/i })).toBeVisible();
-    await expect(page.getByPlaceholder("admin@glorng.dev")).toBeVisible();
+    await expect(page.getByPlaceholder("you@example.com")).toBeVisible();
     await expect(page.getByRole("button", { name: /login/i })).toBeVisible();
   });
 
@@ -121,8 +121,8 @@ test.describe("auth guards", () => {
 test.describe("authenticated admin", () => {
   async function loginAsAdmin(page: import("@playwright/test").Page): Promise<void> {
     await page.goto("/login");
-    await page.getByPlaceholder("admin@glorng.dev").fill(adminEmail);
-    await page.getByPlaceholder("••••••••").fill(adminPassword);
+    await page.getByPlaceholder("you@example.com").fill(adminEmail);
+    await page.getByPlaceholder("••••••••••••").fill(adminPassword);
     await page.getByRole("button", { name: /^login$/i }).click();
   }
 
