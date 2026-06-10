@@ -1,14 +1,38 @@
 import json
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Any, Literal
 from urllib.parse import quote, urlparse
 
 from pydantic import field_validator, model_validator
-from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    NoDecode,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
+from pydantic_settings.sources import DotEnvSettingsSource
 from sqlalchemy.engine import make_url
 
 _WEAK_SECRET_MARKERS = ("do-not-use", "changeme", "replace-with", "secret")
+
+_override_env_file: Path | None = None
+
+
+def _repo_root() -> Path:
+    """Repository root (parent of server/)."""
+    return Path(__file__).resolve().parents[2]
+
+
+def _env_file_path() -> Path:
+    """Resolve the single .env file used for all Settings fields."""
+    if _override_env_file is not None:
+        return _override_env_file
+    bootstrap = os.environ.get("GLORNG_ENV_FILE")
+    if bootstrap:
+        return Path(bootstrap).resolve()
+    return _repo_root() / ".env"
 
 
 def _validate_production_password(name: str, value: str, *, min_len: int) -> None:
@@ -149,7 +173,27 @@ def _parse_env_dict(value: Any) -> dict[str, str]:
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore")
+    """Application settings loaded exclusively from a .env file."""
+
+    model_config = SettingsConfigDict(extra="ignore")
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        del init_settings, env_settings, dotenv_settings, file_secret_settings
+        return (
+            DotEnvSettingsSource(
+                settings_cls,
+                env_file=_env_file_path(),
+                env_file_encoding="utf-8",
+            ),
+        )
 
     @field_validator("GITHUB_ALLOWED_USERS", "CORS_ORIGINS", mode="before")
     @classmethod
@@ -211,18 +255,20 @@ class Settings(BaseSettings):
         return self
 
     # Database backends
-    ENABLE_MONGODB: bool = True
-    ENABLE_POSTGRES: bool = False
-    PRIMARY_DATABASE: Literal["mongodb"] = "mongodb"
-    RUN_MIGRATIONS: bool = False
+    ENABLE_MONGODB: bool
+    ENABLE_POSTGRES: bool
+    PRIMARY_DATABASE: Literal["mongodb"]
+    RUN_MIGRATIONS: bool
+    RUN_SEED: bool
+    SEED_DEMO_COUNT: int
 
     # Postgres (optional secondary store)
-    POSTGRES_USER: str = ""
-    POSTGRES_PASSWORD: str = ""
-    POSTGRES_DB: str = ""
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
 
     # Database URL (required when ENABLE_POSTGRES; sqlite allowed only in dev/test)
-    DATABASE_URL: str = ""
+    DATABASE_URL: str
 
     @model_validator(mode="after")
     def _validate_database_backends(self) -> Settings:
@@ -291,8 +337,8 @@ class Settings(BaseSettings):
         return self.ENABLE_POSTGRES
 
     # Elasticsearch (optional; empty disables the external search backend)
-    ELASTICSEARCH_URL: str = ""
-    ELASTICSEARCH_INDEX: str = "search_documents"
+    ELASTICSEARCH_URL: str
+    ELASTICSEARCH_INDEX: str
 
     @model_validator(mode="after")
     def _normalize_elasticsearch_url(self) -> Settings:
@@ -304,10 +350,10 @@ class Settings(BaseSettings):
         return bool(self.ELASTICSEARCH_URL.strip())
 
     # MongoDB (primary document store)
-    MONGODB_USER: str = ""
-    MONGODB_PASSWORD: str = ""
-    MONGODB_DB: str = "glorng"
-    MONGODB_URL: str = ""
+    MONGODB_USER: str
+    MONGODB_PASSWORD: str
+    MONGODB_DB: str
+    MONGODB_URL: str
 
     @model_validator(mode="after")
     def _normalize_mongodb_url(self) -> Settings:
@@ -347,25 +393,25 @@ class Settings(BaseSettings):
 
     # JWT
     JWT_SECRET: str
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int
+    JWT_ALGORITHM: str
 
     # Auth
-    ALLOWED_EMAIL: str = "admin@glorng.dev"
+    ALLOWED_EMAIL: str
 
     # Email
-    EMAIL_BACKEND: str = "console"
-    SMTP_HOST: str = "smtp.gmail.com"
-    SMTP_PORT: int = 587
-    SMTP_USER: str = ""
-    SMTP_PASSWORD: str = ""
-    SMTP_FROM: str = "noreply@glorng.dev"
+    EMAIL_BACKEND: str
+    SMTP_HOST: str
+    SMTP_PORT: int
+    SMTP_USER: str
+    SMTP_PASSWORD: str
+    SMTP_FROM: str
 
     # Sentry (off in development unless SENTRY_ENABLED=true)
-    SENTRY_ENABLED: bool = False
-    SERVER_SENTRY_DSN: str = ""
-    SERVER_SENTRY_RELEASE: str = ""
+    SENTRY_ENABLED: bool
+    SERVER_SENTRY_DSN: str
+    SERVER_SENTRY_RELEASE: str
 
     def sentry_enabled(self) -> bool:
         """Whether server/worker Sentry should initialize."""
@@ -376,80 +422,83 @@ class Settings(BaseSettings):
         return self.APP_ENV != "development"
 
     # Telegram Bot
-    TELEGRAM_BOT_TO_DO_TOKEN: str = ""
-    TELEGRAM_BOT_CHAT_TOKEN: str = ""
-    TELEGRAM_ALLOWED_USER_ID: int = 0
-    TIMEZONE: str = "Europe/Amsterdam"
-    EXPENSE_DEFAULT_CURRENCY: str = "PLN"
+    TELEGRAM_BOT_TO_DO_TOKEN: str
+    TELEGRAM_BOT_CHAT_TOKEN: str
+    TELEGRAM_ALLOWED_USER_ID: int
+    TIMEZONE: str
+    EXPENSE_DEFAULT_CURRENCY: str
 
     # Google Calendar
-    GOOGLE_CLIENT_ID: str = ""
-    GOOGLE_CLIENT_SECRET: str = ""
-    GOOGLE_REDIRECT_URI: str = ""
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
+    GOOGLE_REDIRECT_URI: str
 
     # GitHub OAuth
-    GITHUB_CLIENT_ID: str = ""
-    GITHUB_CLIENT_SECRET: str = ""
-    GITHUB_REDIRECT_URI: str = ""
-    GITHUB_ALLOWED_USERS: Annotated[list[str], NoDecode] = []
-    GITHUB_PUBLIC_USERNAME: str = ""
+    GITHUB_CLIENT_ID: str
+    GITHUB_CLIENT_SECRET: str
+    GITHUB_REDIRECT_URI: str
+    GITHUB_ALLOWED_USERS: Annotated[list[str], NoDecode]
+    GITHUB_PUBLIC_USERNAME: str
 
     # Donations
-    STRIPE_LINK: str = ""
-    STRIPE_SECRET_KEY: str = ""
-    STRIPE_WEBHOOK_SECRET: str = ""
-    STRIPE_DONATION_AMOUNT_CENTS: int = 500
-    STRIPE_DONATION_CURRENCY: str = "usd"
-    STRIPE_CHECKOUT_SUCCESS_URL: str = ""
-    STRIPE_CHECKOUT_CANCEL_URL: str = ""
-    TELEGRAM_LINK: str = ""
-    CRYPTO_BTC_ADDRESS: str = ""
-    CRYPTO_ETH_ADDRESS: str = ""
+    STRIPE_LINK: str
+    STRIPE_SECRET_KEY: str
+    STRIPE_WEBHOOK_SECRET: str
+    STRIPE_DONATION_AMOUNT_CENTS: int
+    STRIPE_DONATION_CURRENCY: str
+    STRIPE_CHECKOUT_SUCCESS_URL: str
+    STRIPE_CHECKOUT_CANCEL_URL: str
+    TELEGRAM_LINK: str
+    CRYPTO_BTC_ADDRESS: str
+    CRYPTO_ETH_ADDRESS: str
 
     # Inbound webhooks (slug → HMAC secret)
-    WEBHOOK_SECRETS: Annotated[dict[str, str], NoDecode] = {}
+    WEBHOOK_SECRETS: Annotated[dict[str, str], NoDecode]
 
     # Spotify
-    SPOTIFY_CLIENT_ID: str = ""
-    SPOTIFY_CLIENT_SECRET: str = ""
-    SPOTIFY_REFRESH_TOKEN: str = ""
+    SPOTIFY_CLIENT_ID: str
+    SPOTIFY_CLIENT_SECRET: str
+    SPOTIFY_REFRESH_TOKEN: str
 
     # AI provider API keys (OpenAI-compatible APIs via LLM_BASE_URL)
-    OPENAI_API_KEY: str = ""
-    OPENAI_CHAT_MODEL: str = "gpt-4.1"
-    LLM_BASE_URL: str = ""
-    AI_CHAT_ENABLED: bool = True
-    AI_SEARCH_ENABLED: bool = True
+    OPENAI_API_KEY: str
+    OPENAI_CHAT_MODEL: str
+    LLM_BASE_URL: str
+    AI_CHAT_ENABLED: bool
+    AI_SEARCH_ENABLED: bool
 
     # Task intake (Telegram AI)
-    TASK_INTAKE_AI_ENABLED: bool = True
-    TASK_INTAKE_CONFIDENCE_THRESHOLD: float = 0.7
+    TASK_INTAKE_AI_ENABLED: bool
+    TASK_INTAKE_CONFIDENCE_THRESHOLD: float
 
     # CORS
-    CORS_ORIGINS: Annotated[list[str], NoDecode] = [
-        "http://localhost",
-        "http://localhost:80",
-    ]
+    CORS_ORIGINS: Annotated[list[str], NoDecode]
 
-    # Seed
-    SEED_PASSWORD: str = ""
+    # Seed / E2E
+    SEED_PASSWORD: str
+    E2E_EMAIL: str
+    E2E_PASSWORD: str
+
+    # Test-only helpers (empty/false in production .env)
+    USE_SQLITE_TESTS: bool
+    POSTGRES_TEST_URL: str
 
     # App
-    APP_ENV: str = "development"
-    LOG_REQUESTS: bool = True
-    LOG_REQUEST_BODIES: bool = False
-    CELERY_TASK_ALWAYS_EAGER: bool = False
-    APP_LOG_PERSIST_ENABLED: bool = True
-    APP_LOG_PERSIST_MIN_LEVEL: str = "INFO"
-    APP_LOG_RETENTION_DAYS: int = 30
-    APP_NAME: str = "Gleb.Y"
-    BASE_URL: str = "http://localhost"
-    MEDIA_DIR: str = "/app/media"
+    APP_ENV: str
+    LOG_REQUESTS: bool
+    LOG_REQUEST_BODIES: bool
+    CELERY_TASK_ALWAYS_EAGER: bool
+    APP_LOG_PERSIST_ENABLED: bool
+    APP_LOG_PERSIST_MIN_LEVEL: str
+    APP_LOG_RETENTION_DAYS: int
+    APP_NAME: str
+    BASE_URL: str
+    MEDIA_DIR: str
 
     # Weather
-    WEATHER_DEFAULT_LABEL: str = "Wrocław"
-    WEATHER_DEFAULT_QUERY: str = "Wroclaw"
-    WORLD_TIME_API_BASE: str = "https://timeapi.world/api"
+    WEATHER_DEFAULT_LABEL: str
+    WEATHER_DEFAULT_QUERY: str
+    WORLD_TIME_API_BASE: str
 
     def stripe_checkout_enabled(self) -> bool:
         """Whether Stripe Checkout sessions can be created."""
@@ -466,6 +515,19 @@ class Settings(BaseSettings):
         if self.GITHUB_ALLOWED_USERS:
             return self.GITHUB_ALLOWED_USERS[0]
         return None
+
+
+def load_settings_from(env_file: Path) -> Settings:
+    """Load Settings from a specific .env file (tests and tooling)."""
+    global _override_env_file
+    get_settings.cache_clear()
+    previous = _override_env_file
+    _override_env_file = env_file.resolve()
+    try:
+        return Settings()
+    finally:
+        _override_env_file = previous
+        get_settings.cache_clear()
 
 
 @lru_cache

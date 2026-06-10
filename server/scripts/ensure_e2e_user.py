@@ -1,16 +1,12 @@
 """Create the default E2E admin user when missing (CI smoke tests)."""
 
 import asyncio
-import os
 import sys
 
 from app.db.init_service import DatabaseInitService
 from app.db.registry import DatabaseRegistry
 from app.services.user import create_user, default_owner_permissions, get_user_by_email
 from app.settings import get_settings
-
-E2E_EMAIL = os.environ.get("E2E_EMAIL", "admin@glorng.dev")
-E2E_PASSWORD = os.environ.get("E2E_PASSWORD", "MyTestPass123!")
 
 
 async def ensure_e2e_user() -> None:
@@ -24,7 +20,7 @@ async def ensure_e2e_user() -> None:
             msg = "Users repository is not initialized"
             raise RuntimeError(msg)
 
-        existing = await get_user_by_email(registry, E2E_EMAIL)
+        existing = await get_user_by_email(registry, settings.E2E_EMAIL)
         if existing:
             if not existing.is_protected:
                 await registry.users.update_fields(existing.id, is_protected=True)
@@ -32,8 +28,8 @@ async def ensure_e2e_user() -> None:
 
         await create_user(
             registry,
-            email=E2E_EMAIL,
-            password=E2E_PASSWORD,
+            email=settings.E2E_EMAIL,
+            password=settings.E2E_PASSWORD,
             permissions=default_owner_permissions(),
             is_verified=True,
             is_protected=True,

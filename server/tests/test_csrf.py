@@ -1,30 +1,15 @@
+from pathlib import Path
+
 import pytest
 from starlette.requests import Request
 
 from app.core.csrf import csrf_origin_rejected
 from app.settings import get_settings
-
-_PRODUCTION_ENV = {
-    "APP_ENV": "production",
-    "ENABLE_MONGODB": "true",
-    "MONGODB_URL": "mongodb://localhost:27017",
-    "MONGODB_DB": "test_glorng",
-    "MONGODB_PASSWORD": "production-mongo-password-ok",
-    "POSTGRES_USER": "glorng",
-    "POSTGRES_PASSWORD": "prod-test-password-16",
-    "POSTGRES_DB": "glorng",
-    "REDIS_URL": "redis://:prod-test-redis-password@127.0.0.1:6379/0",
-    "RABBITMQ_USER": "glorng",
-    "RABBITMQ_PASSWORD": "prod-test-rabbitmq-password",
-    "CELERY_BROKER_URL": "amqp://glorng:prod-test-rabbitmq-password@localhost:5672//",
-    "JWT_SECRET": "production-jwt-signing-key-for-csrf-tests-only-32chars",
-}
+from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file, scenario_env
 
 
 def _enable_production(monkeypatch: pytest.MonkeyPatch) -> None:
-    for key, value in _PRODUCTION_ENV.items():
-        monkeypatch.setenv(key, value)
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, ENV_SCENARIOS_DIR / "production-csrf.env")
 
 
 def _build_request(
@@ -95,9 +80,11 @@ def test_csrf_allows_cookie_post_with_exact_referer_origin(
     get_settings.cache_clear()
 
 
-def test_csrf_skipped_in_development(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("APP_ENV", "development")
-    get_settings.cache_clear()
+def test_csrf_skipped_in_development(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    activate_env_file(monkeypatch, scenario_env(tmp_path, APP_ENV="development"))
     request = _build_request(cookies={"access_token": "token"})
     assert csrf_origin_rejected(request) is False
     get_settings.cache_clear()

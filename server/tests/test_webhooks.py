@@ -7,7 +7,7 @@ import json
 import pytest
 from httpx import AsyncClient
 
-from app.settings import get_settings
+from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file
 
 
 def _sign(secret: str, body: bytes) -> str:
@@ -17,18 +17,7 @@ def _sign(secret: str, body: bytes) -> str:
 
 @pytest.fixture(autouse=True)
 def webhook_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv(
-        "WEBHOOK_SECRETS",
-        json.dumps(
-            {
-                "task-create": "task-secret",
-                "feedback": "feedback-secret",
-                "ping": "ping-secret",
-            },
-        ),
-    )
-    monkeypatch.setenv("TELEGRAM_ALLOWED_USER_ID", "123456789")
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, ENV_SCENARIOS_DIR / "webhooks.env")
 
 
 @pytest.mark.asyncio

@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 
 import pytest
 
@@ -11,6 +12,7 @@ from app.core.app_log_persist import (
 from app.db.documents.app_log import AppLog
 from app.db.registry import DatabaseRegistry
 from app.settings import get_settings
+from tests.env_helpers import activate_env_file, scenario_env
 
 
 def _sample_entry(*, level: str = "info", path: str | None = None) -> dict:
@@ -32,9 +34,14 @@ def test_enqueue_skips_health_probe() -> None:
     assert _drain_queue() == []
 
 
-def test_enqueue_respects_min_level(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("APP_LOG_PERSIST_MIN_LEVEL", "WARNING")
-    get_settings.cache_clear()
+def test_enqueue_respects_min_level(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    activate_env_file(
+        monkeypatch,
+        scenario_env(tmp_path, APP_LOG_PERSIST_MIN_LEVEL="WARNING"),
+    )
 
     before = len(_drain_queue())
     enqueue_log_entry(_sample_entry(level="info"))

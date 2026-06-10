@@ -22,10 +22,10 @@ def test_decrypt_legacy_plaintext() -> None:
 
 
 def test_github_credential_helpers(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("JWT_SECRET", "github-helper-test-jwt-secret-key-32chars")
     from app.settings import get_settings
+    from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file
 
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, ENV_SCENARIOS_DIR / "fernet.env")
 
     token = "gho_test_token_value"
     stored = store_github_access_token(token)

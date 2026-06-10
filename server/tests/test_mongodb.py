@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
@@ -10,6 +11,7 @@ from app.core.mongodb import (
     is_mongodb_enabled,
 )
 from app.settings import get_settings
+from tests.env_helpers import activate_env_file, scenario_env
 
 
 @pytest.fixture(autouse=True)
@@ -41,15 +43,18 @@ def test_clear_mongodb_unregisters_helpers() -> None:
 
 def test_resolve_mongodb_url_maps_compose_host_to_localhost(
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv(
-        "MONGODB_URL",
-        "mongodb://user:pass@mongodb:27017/glorng?authSource=admin",
+    activate_env_file(
+        monkeypatch,
+        scenario_env(
+            tmp_path,
+            MONGODB_URL="mongodb://user:pass@mongodb:27017/glorng?authSource=admin",
+            MONGODB_USER="user",
+            MONGODB_PASSWORD="pass",
+            MONGODB_DB="glorng",
+        ),
     )
-    monkeypatch.setenv("MONGODB_USER", "user")
-    monkeypatch.setenv("MONGODB_PASSWORD", "pass")
-    monkeypatch.setenv("MONGODB_DB", "glorng")
-    get_settings.cache_clear()
 
     settings = get_settings()
     assert settings.MONGODB_URL == (

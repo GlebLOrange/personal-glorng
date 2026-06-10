@@ -76,10 +76,11 @@ services:
       context: ./server
       dockerfile: Dockerfile
     entrypoint: ["/bin/sh", "/app/scripts/db_init.sh"]
-    env_file:
-      - .env
+    volumes:
+      - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app
+      GLORNG_ENV_FILE: /run/glorng/.env
     networks:
       - backend
     depends_on:
@@ -95,11 +96,10 @@ services:
     restart: unless-stopped
     volumes:
       - server_media:/app/media
+      - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app
-      RUN_MIGRATIONS: "false"
-    env_file:
-      - .env
+      GLORNG_ENV_FILE: /run/glorng/.env
     networks:
       - backend
     depends_on:
@@ -118,10 +118,11 @@ services:
       dockerfile: Dockerfile
     command: celery -A app.workers.celery_app worker --loglevel=info
     restart: unless-stopped
+    volumes:
+      - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app
-    env_file:
-      - .env
+      GLORNG_ENV_FILE: /run/glorng/.env
     networks:
       - backend
     depends_on:
@@ -140,10 +141,11 @@ services:
       dockerfile: Dockerfile
     command: celery -A app.workers.celery_app beat --loglevel=info
     restart: unless-stopped
+    volumes:
+      - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app
-    env_file:
-      - .env
+      GLORNG_ENV_FILE: /run/glorng/.env
     networks:
       - backend
     depends_on:
@@ -162,10 +164,11 @@ services:
       dockerfile: Dockerfile
     command: python -m app.todobot.main
     restart: unless-stopped
+    volumes:
+      - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app
-    env_file:
-      - .env
+      GLORNG_ENV_FILE: /run/glorng/.env
     networks:
       - backend
     depends_on:
