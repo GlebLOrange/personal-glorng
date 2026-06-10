@@ -10,9 +10,9 @@ function debugLog(
 ): void {
   fetch("http://127.0.0.1:7759/ingest/a59c5ce7-5b46-408d-8a93-dd9a50b51892", {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "555cea" },
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1185dd" },
     body: JSON.stringify({
-      sessionId: "555cea",
+      sessionId: "1185dd",
       runId: "pre-fix",
       hypothesisId,
       location,
@@ -57,5 +57,18 @@ restoreAuth().finally(() => {
     href: window.location.href,
     route: router.currentRoute.value.fullPath,
   });
+  fetch("/api/health")
+    .then(async (res) => {
+      debugLog("C,D", "main.ts:api-health", "API health via Vite proxy", {
+        ok: res.ok,
+        status: res.status,
+        body: await res.text(),
+      });
+    })
+    .catch((err: unknown) => {
+      debugLog("C,D", "main.ts:api-health", "API health fetch failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    });
   // #endregion
 });
