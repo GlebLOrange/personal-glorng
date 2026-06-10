@@ -1,12 +1,12 @@
 # gLOrng — Developer Portfolio & Personal Platform
 
-Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + PostgreSQL + Redis, fully containerized with Docker. The same domain services power the public site, admin panel, Telegram todobot, and background workers.
+Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + MongoDB + Redis, fully containerized with Docker. The same domain services power the public site, admin panel, Telegram todobot, and background workers.
 
 ## Tech Stack
 
-- **Backend**: FastAPI, SQLAlchemy (async), Alembic, Celery, RabbitMQ, Redis, Sentry
+- **Backend**: FastAPI, Motor (MongoDB), SQLAlchemy (async, optional Postgres), Alembic, Celery, RabbitMQ, Redis, Sentry
 - **Frontend**: Vue 3, Vite, TypeScript, Tailwind CSS, SASS, Pinia
-- **Database**: PostgreSQL 18
+- **Database**: MongoDB (primary); PostgreSQL 18 optional (`--profile postgres` for FTS search + audit)
 - **Cache/Queue**: Redis 8
 - **Proxy**: Nginx
 - **Tooling**: uv (Python deps), Ruff (lint/format), pytest, ESLint, Prettier, Vitest, Playwright, Docker Compose
@@ -39,7 +39,7 @@ API docs (dev only): [http://localhost:8000/api/docs](http://localhost:8000/api/
 
 | Command | Containers | Use when |
 |---------|------------|----------|
-| `make dev-lite` + host `npm run dev` | db, redis, server | Daily UI/API work (lowest resource use) |
+| `make dev-lite` + host `npm run dev` | mongodb, redis, server | Daily UI/API work (lowest resource use) |
 | `make dev` | + client, nginx | Full stack through nginx; no background jobs |
 | `make dev-worker` | + Celery worker + beat + RabbitMQ | Testing reminders, calendar sync, email jobs |
 | `make dev-bot` | + Telegram todobot | Bot development (`TELEGRAM_BOT_TO_DO_TOKEN` required) |

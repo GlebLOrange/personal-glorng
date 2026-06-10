@@ -23,7 +23,7 @@ Full endpoint reference (public vs admin, capabilities, UI routes): [api-tools.m
 ## Module-as-Service Pattern
 
 ```
-Router (HTTP/auth) → Service (logic + audit) → PostgreSQL / Redis
+Router (HTTP/auth) → Service (logic + audit) → MongoDB / Redis (+ optional PostgreSQL for search/audit)
 Channel adapter (Vue page, bot handler) → Service
 ```
 
