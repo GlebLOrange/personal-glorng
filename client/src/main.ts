@@ -10,9 +10,9 @@ function debugLog(
 ): void {
   fetch("http://127.0.0.1:7759/ingest/a59c5ce7-5b46-408d-8a93-dd9a50b51892", {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1185dd" },
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e6e0ba" },
     body: JSON.stringify({
-      sessionId: "1185dd",
+      sessionId: "e6e0ba",
       runId: "pre-fix",
       hypothesisId,
       location,
@@ -68,6 +68,22 @@ restoreAuth().finally(() => {
     .catch((err: unknown) => {
       debugLog("C,D", "main.ts:api-health", "API health fetch failed", {
         error: err instanceof Error ? err.message : String(err),
+        errorName: err instanceof Error ? err.name : null,
+      });
+    });
+  fetch("http://127.0.0.1:8000/api/health", { credentials: "include" })
+    .then(async (res) => {
+      debugLog("F", "main.ts:api-health-direct", "Direct API health (CORS test)", {
+        ok: res.ok,
+        status: res.status,
+        acao: res.headers.get("access-control-allow-origin"),
+        body: await res.text(),
+      });
+    })
+    .catch((err: unknown) => {
+      debugLog("F", "main.ts:api-health-direct", "Direct API health failed", {
+        error: err instanceof Error ? err.message : String(err),
+        errorName: err instanceof Error ? err.name : null,
       });
     });
   // #endregion
