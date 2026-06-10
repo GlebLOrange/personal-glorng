@@ -54,7 +54,14 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     if settings.elasticsearch_enabled():
         await init_elasticsearch(settings.ELASTICSEARCH_URL)
         if is_elasticsearch_enabled():
-            await ensure_index()
+            try:
+                await ensure_index()
+            except Exception as exc:
+                logger.error(
+                    "Elasticsearch index setup failed; external search disabled",
+                    error=exc,
+                )
+                await close_elasticsearch()
 
     registry = DatabaseRegistry()
     init_svc = DatabaseInitService(registry, settings)

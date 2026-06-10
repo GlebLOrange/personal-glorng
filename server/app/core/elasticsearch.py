@@ -27,7 +27,8 @@ async def init_elasticsearch(url: str) -> None:
     if not ping_ok:
         await client.close()
         logger.warning(
-            "Elasticsearch unavailable; external search disabled",
+            "Elasticsearch unavailable; external search disabled. "
+            "Clear ELASTICSEARCH_URL in .env or run `make dev-search`.",
             context={"host": parsed.hostname, "error": ping_error or "ping_failed"},
         )
         return

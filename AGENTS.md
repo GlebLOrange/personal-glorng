@@ -18,6 +18,8 @@ docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compos
 
 Equivalent to `make dev-lite` with the overlay. Docker daemon on this VM also uses `fuse-overlayfs` and `default-cgroupns-mode: host` in `/etc/docker/daemon.json`.
 
+For Elasticsearch-backed search, use `make dev-search` (add `-f docker-compose.search.yml` and `--profile search` to the compose command above) and set `ELASTICSEARCH_URL=http://elasticsearch:9200` in `.env`. Leave `ELASTICSEARCH_URL` empty for lite mode.
+
 ### First-time / manual setup
 
 1. Copy env: `cp .env.example .env` and fill in all values (see `.env.example` for the full contract). Minimum secrets: `JWT_SECRET` (32+ chars), `REDIS_PASSWORD`, `MONGODB_PASSWORD`, and `SEED_PASSWORD`. Bootstrap knobs `RUN_MIGRATIONS` / `RUN_SEED` live in `.env` only—not Docker Compose overrides.

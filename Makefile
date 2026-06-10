@@ -10,7 +10,7 @@ dev-lite:
 	docker compose -f docker-compose.yml -f docker-compose.lite.yml up --build mongodb redis server
 
 dev-search:
-	docker compose -f docker-compose.yml -f docker-compose.lite.yml --profile search up --build mongodb redis elasticsearch server
+	docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.search.yml --profile search up --build mongodb redis elasticsearch server
 
 dev-postgres:
 	docker compose -f docker-compose.yml -f docker-compose.lite.yml --profile postgres up --build mongodb redis db server

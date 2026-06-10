@@ -205,7 +205,7 @@ class SearchIndexService:
             except Exception as exc:
                 logger.warning(
                     "Elasticsearch search failed, falling back to database",
-                    error=exc,
+                    context={"error": str(exc), "error_type": type(exc).__name__},
                 )
 
         mongo_hits = await self._search_mongo(
