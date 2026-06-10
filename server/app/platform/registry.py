@@ -138,11 +138,11 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         slug="data-extract",
         name="data extract",
         category="utilities",
-        description="Extract structured rows from CSV, JSON, and XML files",
+        description="Extract structured rows from CSV, JSON, XML, and delimited files",
         api_prefix="/data-extract",
         admin_route="/admin/tools/data-extract",
         icon="⎘",
-        capabilities=("read",),
+        capabilities=("read", "write"),
     ),
     PlatformService(
         slug="feedback",

@@ -10,6 +10,7 @@ from httpx import AsyncClient
 
 from app.core.data_extractor import extract
 from app.core.data_extractor.format import resolve_format, sniff_format
+from app.core.data_extractor.profiles import apply_profile
 from app.core.data_extractor.types import DataFormat, ExtractOptions
 from app.core.exceptions import ValidationError
 
@@ -143,3 +144,140 @@ async def test_extract_api_csv(auth_client: AsyncClient) -> None:
     assert payload["format"] == "csv"
     assert payload["meta"]["row_count"] == 2
     assert payload["records"][0]["name"] == "apple"
+
+
+PIPE_EMBED_LINE = (
+    '<iframe src="https://example.com/embed/abc123"></iframe>|'
+    "https://example.com/thumb.jpg|"
+    "https://example.com/p1.jpg;https://example.com/p2.jpg|"
+    "Sample title|"
+    "tag1;tag2|"
+    "cat1|"
+    "actor1|"
+    "channel|"
+    "120|"
+    "1000|"
+    "80|"
+    "20|"
+    "https://example.com/thumbs/"
+)
+
+
+def test_extract_delimited_pipe_embed_profile() -> None:
+    options = apply_profile("pipe_embed", ExtractOptions())
+    result = extract(
+        PIPE_EMBED_LINE.encode(),
+        "delimited",
+        filename="feed.pipe",
+        options=options,
+    )
+    assert result.format is DataFormat.DELIMITED
+    assert len(result.records) == 1
+    record = result.records[0]
+    assert record["embed_id"] == "abc123"
+    assert record["title"] == "Sample title"
+    assert record["tags"] == ["tag1", "tag2"]
+    assert record["rating_percent"] == 80.0
+
+
+def test_extract_delimited_skips_bad_line_with_profile() -> None:
+    content = f"{PIPE_EMBED_LINE}\nnot-enough-fields\n"
+    options = apply_profile("pipe_embed", ExtractOptions())
+    result = extract(content.encode(), "delimited", filename="feed.pipe", options=options)
+    assert len(result.records) == 1
+    assert result.meta["error_count"] == 1
+
+
+@pytest.mark.asyncio
+async def test_import_api_csv(auth_client: AsyncClient) -> None:
+    response = await auth_client.post(
+        "/api/tools/data-extract/import",
+        files={"file": ("sample.csv", BytesIO(CSV_SAMPLE.encode()), "text/csv")},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["row_count"] == 2
+    assert payload["batch_id"] > 0
+    assert len(payload["preview"]) == 2
+
+
+@pytest.mark.asyncio
+async def test_list_import_batches(auth_client: AsyncClient) -> None:
+    await auth_client.post(
+        "/api/tools/data-extract/import",
+        files={"file": ("sample.csv", BytesIO(CSV_SAMPLE.encode()), "text/csv")},
+    )
+    response = await auth_client.get("/api/tools/data-extract/batches")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["total"] >= 1
+    assert payload["items"][0]["filename"] == "sample.csv"
+
+
+@pytest.mark.asyncio
+async def test_get_import_batch_detail(auth_client: AsyncClient) -> None:
+    created = await auth_client.post(
+        "/api/tools/data-extract/import",
+        files={"file": ("sample.csv", BytesIO(CSV_SAMPLE.encode()), "text/csv")},
+    )
+    batch_id = created.json()["batch_id"]
+    response = await auth_client.get(f"/api/tools/data-extract/batches/{batch_id}")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["batch"]["id"] == batch_id
+    assert len(payload["preview_rows"]) == 2
+
+
+@pytest.mark.asyncio
+async def test_import_batch_ownership_denied(
+    client: AsyncClient,
+    registry: object,
+) -> None:
+    from app.core.security import create_access_token
+    from app.db.registry import DatabaseRegistry
+    from tests.factories import create_user
+
+    db_registry: DatabaseRegistry = registry  # type: ignore[assignment]
+    owner = await create_user(
+        db_registry,
+        email="import-owner@glorng.dev",
+        permissions=["data-extract:read", "data-extract:write"],
+    )
+    other = await create_user(
+        db_registry,
+        email="import-other@glorng.dev",
+        permissions=["data-extract:read", "data-extract:write"],
+    )
+    owner_token = create_access_token(str(owner.public_id), user_id=owner.id)
+    other_token = create_access_token(str(other.public_id), user_id=other.id)
+
+    created = await client.post(
+        "/api/tools/data-extract/import",
+        files={"file": ("owned.csv", BytesIO(CSV_SAMPLE.encode()), "text/csv")},
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    batch_id = created.json()["batch_id"]
+
+    denied = await client.get(
+        f"/api/tools/data-extract/batches/{batch_id}",
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+    assert denied.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_promote_pipe_embed_batch(auth_client: AsyncClient) -> None:
+    created = await auth_client.post(
+        "/api/tools/data-extract/import?profile=pipe_embed&format=delimited",
+        files={"file": ("feed.pipe", BytesIO(PIPE_EMBED_LINE.encode()), "text/plain")},
+    )
+    assert created.status_code == 200
+    batch_id = created.json()["batch_id"]
+
+    promoted = await auth_client.post(
+        f"/api/tools/data-extract/batches/{batch_id}/promote",
+    )
+    assert promoted.status_code == 200
+    payload = promoted.json()
+    assert payload["promoted"] == 1
+    assert payload["skipped"] == 0

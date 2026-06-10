@@ -11,6 +11,7 @@ class DataFormat(StrEnum):
     CSV = "csv"
     JSON = "json"
     XML = "xml"
+    DELIMITED = "delimited"
 
 
 XmlMode = Literal["rows", "tree"]
@@ -22,6 +23,13 @@ class ExtractOptions:
     csv_delimiter: str | None = None
     xml_mode: XmlMode = "rows"
     row_tag: str | None = None
+    profile: str | None = None
+    line_delimiter: str = "\n"
+    field_delimiter: str = "|"
+    list_delimiter: str = ";"
+    field_names: list[str] | None = None
+    list_fields: frozenset[str] = field(default_factory=frozenset)
+    skip_empty_lines: bool = True
 
 
 @dataclass

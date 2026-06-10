@@ -30,4 +30,12 @@ INDEX_SPECS: list[tuple[str, list[tuple[str, int]], dict[str, Any] | None]] = [
     ("app_logs", [("occurred_at", -1)], None),
     ("app_logs", [("level", 1)], None),
     ("app_logs", [("request_id", 1)], None),
+    ("import_batches", [("imported_by", 1), ("created_at", -1)], None),
+    (
+        "import_rows",
+        [("batch_id", 1), ("row_index", 1)],
+        {"unique": True},
+    ),
+    ("embed_items", [("embed_id", 1)], {"unique": True}),
+    ("embed_items", [("source_batch_id", 1)], None),
 ]
