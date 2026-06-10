@@ -2,7 +2,7 @@ import json
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Any, Literal
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -35,6 +35,16 @@ _HOST_MONGO_HOST = "127.0.0.1"
 _HOST_MONGO_PORT = 27017
 
 
+def _scrub_url_credentials(url: str) -> str:
+    """Remove userinfo from a URL so host and port can be parsed safely."""
+    if "://" not in url:
+        return url
+    scheme, rest = url.split("://", 1)
+    if "@" in rest:
+        rest = rest.rsplit("@", 1)[1]
+    return f"{scheme}://{rest}"
+
+
 def _resolve_database_url(url: str) -> str:
     """Map Docker Compose DB host to localhost when running on the host."""
     if Path("/.dockerenv").exists():
@@ -55,6 +65,30 @@ def _resolve_elasticsearch_url(url: str) -> str:
     if parsed.hostname == _COMPOSE_ES_HOST and port == _COMPOSE_ES_PORT:
         return parsed._replace(netloc=f"{_HOST_ES_HOST}:{_HOST_ES_PORT}").geturl()
     return url
+
+
+def _build_mongodb_url(
+    template: str,
+    *,
+    user: str,
+    password: str,
+    database: str,
+) -> str:
+    """Build a MongoDB URI with URL-encoded credentials."""
+    normalized = template
+    for token, placeholder in {
+        "${MONGODB_USER}": "u",
+        "${MONGODB_PASSWORD}": "p",
+        "${MONGODB_DB}": database,
+    }.items():
+        normalized = normalized.replace(token, placeholder)
+
+    parsed = urlparse(_scrub_url_credentials(normalized))
+    host = parsed.hostname or _COMPOSE_MONGO_HOST
+    port = parsed.port or _COMPOSE_MONGO_PORT
+    query = f"?{parsed.query}" if parsed.query else ""
+    auth = f"{quote(user, safe='')}:{quote(password, safe='')}@"
+    return f"mongodb://{auth}{host}:{port}/{database}{query}"
 
 
 def _resolve_mongodb_url(url: str) -> str:
@@ -220,21 +254,30 @@ class Settings(BaseSettings):
     def _normalize_database_url(self) -> Settings:
         if not self.DATABASE_URL.strip():
             return self
-        url = self.DATABASE_URL
-        for token, value in {
-            "${POSTGRES_USER}": self.POSTGRES_USER,
-            "${POSTGRES_PASSWORD}": self.POSTGRES_PASSWORD,
-            "${POSTGRES_DB}": self.POSTGRES_DB,
-        }.items():
-            url = url.replace(token, value)
 
-        parsed = make_url(url)
-        if parsed.host in {_COMPOSE_DB_HOST, _HOST_DB_HOST, "localhost"}:
+        if self.POSTGRES_USER and self.POSTGRES_PASSWORD and self.POSTGRES_DB:
+            normalized = self.DATABASE_URL
+            for token, placeholder in {
+                "${POSTGRES_USER}": "u",
+                "${POSTGRES_PASSWORD}": "p",
+                "${POSTGRES_DB}": self.POSTGRES_DB,
+            }.items():
+                normalized = normalized.replace(token, placeholder)
+            parsed = make_url(_scrub_url_credentials(normalized))
             parsed = parsed.set(
                 username=self.POSTGRES_USER,
                 password=self.POSTGRES_PASSWORD,
                 database=self.POSTGRES_DB,
             )
+        else:
+            url = self.DATABASE_URL
+            for token, value in {
+                "${POSTGRES_USER}": self.POSTGRES_USER,
+                "${POSTGRES_PASSWORD}": quote(self.POSTGRES_PASSWORD, safe=""),
+                "${POSTGRES_DB}": self.POSTGRES_DB,
+            }.items():
+                url = url.replace(token, value)
+            parsed = make_url(url)
 
         self.DATABASE_URL = _resolve_database_url(
             parsed.render_as_string(hide_password=False)
@@ -271,13 +314,21 @@ class Settings(BaseSettings):
         if not self.MONGODB_URL:
             return self
 
-        url = self.MONGODB_URL
-        for token, value in {
-            "${MONGODB_USER}": self.MONGODB_USER,
-            "${MONGODB_PASSWORD}": self.MONGODB_PASSWORD,
-            "${MONGODB_DB}": self.MONGODB_DB,
-        }.items():
-            url = url.replace(token, value)
+        if self.MONGODB_USER and self.MONGODB_PASSWORD:
+            url = _build_mongodb_url(
+                self.MONGODB_URL,
+                user=self.MONGODB_USER,
+                password=self.MONGODB_PASSWORD,
+                database=self.MONGODB_DB,
+            )
+        else:
+            url = self.MONGODB_URL
+            for token, value in {
+                "${MONGODB_USER}": quote(self.MONGODB_USER, safe=""),
+                "${MONGODB_PASSWORD}": quote(self.MONGODB_PASSWORD, safe=""),
+                "${MONGODB_DB}": self.MONGODB_DB,
+            }.items():
+                url = url.replace(token, value)
 
         self.MONGODB_URL = _resolve_mongodb_url(url)
         return self
