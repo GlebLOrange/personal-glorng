@@ -12,9 +12,9 @@ from aiogram.types import CallbackQuery, Message
 
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.db.registry import DatabaseRegistry
-from app.schemas.tool_expense import ToolExpenseCreate
-from app.services.tool_expense import ToolExpenseService
-from app.services.tool_expense_category import ToolExpenseCategoryService
+from app.schemas.expense import ExpenseCreate
+from app.services.expense import ExpenseService
+from app.services.expense_category import ExpenseCategoryService
 from app.settings import get_settings
 from app.todobot.keyboards.expense import (
     category_picker,
@@ -75,8 +75,8 @@ def _format_expense_line(
 
 async def _month_summary_pln(registry: DatabaseRegistry) -> tuple[Decimal, str]:
     month = _current_month_value()
-    date_from, date_to = ToolExpenseService.month_date_bounds(month)
-    svc = ToolExpenseService(registry)
+    date_from, date_to = ExpenseService.month_date_bounds(month)
+    svc = ExpenseService(registry)
     summary = await svc.get_summary(
         date_from=date_from,
         date_to=date_to,
@@ -95,9 +95,9 @@ async def _save_parsed(
     expense_date: date,
     notes: str | None = None,
 ) -> str:
-    svc = ToolExpenseService(registry)
+    svc = ExpenseService(registry)
     await svc.create_expense(
-        ToolExpenseCreate(
+        ExpenseCreate(
             tool_name=tool_name,
             amount=amount,
             currency=currency,  # type: ignore[arg-type]
@@ -178,8 +178,8 @@ async def cmd_spend(
 @router.message(Command("expenses"))
 async def cmd_expenses(message: Message, registry: DatabaseRegistry) -> None:
     month = _current_month_value()
-    date_from, date_to = ToolExpenseService.month_date_bounds(month)
-    svc = ToolExpenseService(registry)
+    date_from, date_to = ExpenseService.month_date_bounds(month)
+    svc = ExpenseService(registry)
     summary = await svc.get_summary(
         date_from=date_from,
         date_to=date_to,
@@ -230,7 +230,7 @@ async def guided_amount(
         currency=parsed.currency or settings.EXPENSE_DEFAULT_CURRENCY,
     )
     await state.set_state(ExpenseCreation.waiting_for_category)
-    cat_svc = ToolExpenseCategoryService(registry)
+    cat_svc = ExpenseCategoryService(registry)
     names = await cat_svc.list_names()
     await message.answer("Pick a category:", reply_markup=category_picker(names))
 

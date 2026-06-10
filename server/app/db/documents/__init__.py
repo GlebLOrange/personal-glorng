@@ -5,7 +5,7 @@ from app.db.documents.audit import (
     AuditSource,
 )
 from app.db.documents.credential import GitHubCredential, GoogleCredential
-from app.db.documents.expense import ToolExpense, ToolExpenseCategory
+from app.db.documents.expense import Expense, ExpenseCategory
 from app.db.documents.feedback import Feedback
 from app.db.documents.fileshare import SharedFile
 from app.db.documents.import_batch import ImportBatch
@@ -33,6 +33,8 @@ __all__ = [
     "AuditCategory",
     "AuditEvent",
     "AuditSource",
+    "Expense",
+    "ExpenseCategory",
     "Feedback",
     "GitHubCredential",
     "GoogleCredential",
@@ -53,8 +55,6 @@ __all__ = [
     "TaskStatus",
     "TaskStatusHistory",
     "TelegramInboundMessage",
-    "ToolExpense",
-    "ToolExpenseCategory",
     "User",
     "WeatherLocation",
 ]

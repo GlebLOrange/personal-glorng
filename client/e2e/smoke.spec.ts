@@ -12,7 +12,7 @@ test.describe("public pages", () => {
 
   test("portfolio shows resume hero content", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: /Gleb Y\./i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Gleb\.Y/i })).toBeVisible();
     await expect(page.getByText(/Backend-heavy full-stack/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: /^experience$/i })).toBeVisible();
   });
@@ -32,6 +32,7 @@ test.describe("public pages", () => {
     await expect(page).toHaveURL(/\/tools$/);
     await expect(page.getByRole("heading", { name: /^tools$/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /calculator/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /password generator/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /recipes/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /url shortener/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /video download/i })).toBeVisible();
@@ -52,6 +53,17 @@ test.describe("public pages", () => {
   test("old calculator admin URL redirects to public route", async ({ page }) => {
     await page.goto("/admin/tools/calculator");
     await expect(page).toHaveURL(/\/calculator$/);
+  });
+
+  test("guest can use public password generator", async ({ page }) => {
+    await page.goto("/password-generator");
+    await expect(page.getByRole("heading", { name: /^password generator$/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^generate$/i })).toBeVisible();
+  });
+
+  test("old password generator admin URL redirects to public route", async ({ page }) => {
+    await page.goto("/admin/tools/password-generator");
+    await expect(page).toHaveURL(/\/password-generator$/);
   });
 
   test("guest can open public recipes page", async ({ page }) => {

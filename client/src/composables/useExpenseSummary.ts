@@ -3,11 +3,11 @@ import { computed, ref } from "vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
-import type { ExchangeRates, ToolExpense, ToolExpenseSummary } from "@/types";
+import type { ExchangeRates, Expense, ExpenseSummary } from "@/types";
 
 import type { CurrencyCode } from "./useExpenseFilters";
 
-function topCategoryChart(summaryData: ToolExpenseSummary): { labels: string[]; values: number[] } {
+function topCategoryChart(summaryData: ExpenseSummary): { labels: string[]; values: number[] } {
   const items = summaryData.by_category.map((c) => ({
     label: c.category,
     value: parseFloat(c.total),
@@ -23,7 +23,7 @@ function topCategoryChart(summaryData: ToolExpenseSummary): { labels: string[]; 
   };
 }
 
-function topDescriptionChart(summaryData: ToolExpenseSummary): {
+function topDescriptionChart(summaryData: ExpenseSummary): {
   labels: string[];
   values: number[];
 } {
@@ -47,9 +47,9 @@ export function useExpenseSummary(
   summaryParams: () => Record<string, string>,
   previousSummaryParams: () => Record<string, string>,
 ) {
-  const expenses = ref<ToolExpense[]>([]);
-  const summary = ref<ToolExpenseSummary | null>(null);
-  const previousSummary = ref<ToolExpenseSummary | null>(null);
+  const expenses = ref<Expense[]>([]);
+  const summary = ref<ExpenseSummary | null>(null);
+  const previousSummary = ref<ExpenseSummary | null>(null);
   const exchangeRates = ref<ExchangeRates | null>(null);
   const listLoading = ref(false);
   const { toast } = useNotify();
@@ -115,7 +115,7 @@ export function useExpenseSummary(
   async function loadExpenses(): Promise<void> {
     listLoading.value = true;
     try {
-      const { data } = await api.get<ToolExpense[]>("/tools/expenses", {
+      const { data } = await api.get<Expense[]>("/tools/expenses", {
         params: queryParams(),
       });
       expenses.value = data;
@@ -139,7 +139,7 @@ export function useExpenseSummary(
 
   async function loadSummary(): Promise<void> {
     try {
-      const { data } = await api.get<ToolExpenseSummary>("/tools/expenses/summary", {
+      const { data } = await api.get<ExpenseSummary>("/tools/expenses/summary", {
         params: summaryParams(),
       });
       summary.value = data;
@@ -157,7 +157,7 @@ export function useExpenseSummary(
     }
 
     try {
-      const { data } = await api.get<ToolExpenseSummary>("/tools/expenses/summary", {
+      const { data } = await api.get<ExpenseSummary>("/tools/expenses/summary", {
         params,
       });
       previousSummary.value = data;

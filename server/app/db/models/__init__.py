@@ -6,6 +6,8 @@ Legacy tables remain for Alembic history and optional Postgres secondary storage
 
 from app.db.base import Base
 from app.db.models.audit_event import AuditEvent
+from app.db.models.expense import Expense
+from app.db.models.expense_category import ExpenseCategory
 from app.db.models.feedback import Feedback
 from app.db.models.github_credential import GitHubCredential
 from app.db.models.google_auth import GoogleCredential
@@ -18,8 +20,6 @@ from app.db.models.task import Task
 from app.db.models.task_intake import TaskIntake
 from app.db.models.task_status_history import TaskStatusHistory
 from app.db.models.telegram_inbound_message import TelegramInboundMessage
-from app.db.models.tool_expense import ToolExpense
-from app.db.models.tool_expense_category import ToolExpenseCategory
 from app.db.models.url import ShortenedUrl
 from app.db.models.user import User
 from app.db.models.weather_location import WeatherLocation
@@ -27,6 +27,8 @@ from app.db.models.weather_location import WeatherLocation
 __all__ = [
     "AuditEvent",
     "Base",
+    "Expense",
+    "ExpenseCategory",
     "Feedback",
     "GitHubCredential",
     "GoogleCredential",
@@ -40,8 +42,6 @@ __all__ = [
     "TaskIntake",
     "TaskStatusHistory",
     "TelegramInboundMessage",
-    "ToolExpense",
-    "ToolExpenseCategory",
     "User",
     "WeatherLocation",
 ]

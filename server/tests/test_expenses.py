@@ -10,7 +10,7 @@ EXPENSE_DATA = {
 }
 
 
-class TestToolExpensesCRUD:
+class TestExpensesCRUD:
     async def test_requires_auth(self, client: AsyncClient):
         resp = await client.get("/api/tools/expenses")
         assert resp.status_code == 401

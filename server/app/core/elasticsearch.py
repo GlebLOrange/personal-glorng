@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 from elasticsearch import AsyncElasticsearch
 
 from app.core.logging import logger
@@ -12,7 +14,25 @@ async def init_elasticsearch(url: str) -> None:
     if not url.strip():
         return
 
-    _client = AsyncElasticsearch(url)
+    parsed = urlparse(url)
+    client = AsyncElasticsearch(url)
+
+    ping_ok = False
+    ping_error: str | None = None
+    try:
+        ping_ok = bool(await client.ping())
+    except Exception as exc:
+        ping_error = type(exc).__name__
+
+    if not ping_ok:
+        await client.close()
+        logger.warning(
+            "Elasticsearch unavailable; external search disabled",
+            context={"host": parsed.hostname, "error": ping_error or "ping_failed"},
+        )
+        return
+
+    _client = client
     _enabled = True
     logger.info("Elasticsearch connected", context={"url": url})
 

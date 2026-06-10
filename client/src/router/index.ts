@@ -73,6 +73,15 @@ const routes: RouteRecordRaw[] = [
     redirect: { name: "calculator" },
   },
   {
+    path: "/password-generator",
+    name: "password-generator",
+    component: () => import("@/pages/admin/tools/PasswordGeneratorTool.vue"),
+  },
+  {
+    path: "/admin/tools/password-generator",
+    redirect: { name: "password-generator" },
+  },
+  {
     path: "/recipes",
     name: "recipes",
     component: () => import("@/pages/admin/tools/RecipesPage.vue"),

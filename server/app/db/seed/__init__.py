@@ -1,3 +1,3 @@
-from app.db.seed.run import seed
+from app.db.seed.core.run import seed
 
 __all__ = ["seed"]

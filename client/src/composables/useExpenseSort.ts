@@ -1,13 +1,13 @@
 import { computed, ref } from "vue";
 
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
-import type { ToolExpense } from "@/types";
+import type { Expense } from "@/types";
 
 export type ExpenseSortKey = "date" | "amount" | "category" | "product";
 export type ExpenseSortDir = "asc" | "desc";
 
 export function useExpenseSort(
-  expenses: () => ToolExpense[],
+  expenses: () => Expense[],
   displayCurrency: () => CurrencyCode,
   convertAmount: (amount: string, from: CurrencyCode, to: CurrencyCode) => number,
 ) {

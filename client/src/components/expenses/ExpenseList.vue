@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
-import type { ExchangeRates, ToolExpense } from "@/types";
+import type { ExchangeRates, Expense } from "@/types";
 import { expenseSourceLabel } from "@/utils/expenseSource";
 
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExpenseSortKey } from "@/composables/useExpenseSort";
 
 defineProps<{
-  expenses: ToolExpense[];
+  expenses: Expense[];
   loading: boolean;
   monthLabel: string;
   displayCurrency: CurrencyCode;
@@ -19,9 +19,9 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  edit: [expense: ToolExpense];
+  edit: [expense: Expense];
   delete: [id: number];
-  duplicate: [expense: ToolExpense];
+  duplicate: [expense: Expense];
   sort: [key: ExpenseSortKey];
 }>();
 

@@ -18,7 +18,7 @@ INDEX_SPECS: list[tuple[str, list[tuple[str, int]], dict[str, Any] | None]] = [
     ("google_credentials", [("telegram_user_id", 1)], {"unique": True}),
     ("telegram_inbound_messages", [("telegram_message_id", 1)], {"unique": True}),
     ("weather_locations", [("user_id", 1), ("query", 1)], {"unique": True}),
-    ("tool_expense_categories", [("name", 1)], {"unique": True}),
+    ("expense_categories", [("name", 1)], {"unique": True}),
     (
         "search_documents",
         [("title", "text"), ("body", "text")],

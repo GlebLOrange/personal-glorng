@@ -21,17 +21,17 @@ from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
 from app.schemas.date_filters import ExpenseDateFilter, expense_date_filter
-from app.schemas.tool_expense import (
+from app.schemas.expense import (
     ExchangeRatesResponse,
     ExpenseCatalogResponse,
+    ExpenseCreate,
     ExpenseParseRequest,
     ExpenseParseResponse,
-    ToolExpenseCreate,
-    ToolExpenseResponse,
-    ToolExpenseSummary,
-    ToolExpenseUpdate,
+    ExpenseResponse,
+    ExpenseSummary,
+    ExpenseUpdate,
 )
-from app.schemas.tool_expense_category import (
+from app.schemas.expense_category import (
     ExpenseCategoryCreate,
     ExpenseCategoryResponse,
     ExpenseCategoryUpdate,
@@ -167,7 +167,7 @@ async def convert_currency(
 
 @router.get(
     "/summary",
-    response_model=ToolExpenseSummary,
+    response_model=ExpenseSummary,
     description="Filter by month (YYYY-MM) or inclusive date range.",
 )
 async def get_summary(
@@ -175,7 +175,7 @@ async def get_summary(
     user: AuthorizedUser,  # noqa: ARG001
     filters: Annotated[ExpenseDateFilter, Depends(expense_date_filter)],
     display_currency: str = DEFAULT_EXPENSE_CURRENCY,
-) -> ToolExpenseSummary:
+) -> ExpenseSummary:
     resolved_from, resolved_to = filters.resolved_bounds()
     return await svc.get_summary(
         date_from=resolved_from,
@@ -213,7 +213,7 @@ async def parse_expense(
 
 @router.get(
     "",
-    response_model=list[ToolExpenseResponse],
+    response_model=list[ExpenseResponse],
     description="Filter by month (YYYY-MM) or inclusive date range.",
 )
 async def list_expenses(
@@ -222,7 +222,7 @@ async def list_expenses(
     filters: Annotated[ExpenseDateFilter, Depends(expense_date_filter)],
     tool_name: str | None = None,
     category: str | None = None,
-) -> list[ToolExpenseResponse]:
+) -> list[ExpenseResponse]:
     resolved_from, resolved_to = filters.resolved_bounds()
     return await svc.list_expenses(
         date_from=resolved_from,
@@ -259,7 +259,7 @@ async def export_expenses(
 
 @router.get(
     "/{expense_id}",
-    response_model=ToolExpenseResponse,
+    response_model=ExpenseResponse,
     summary="Get expense by ID",
     description=requires_capability("expenses", "read"),
 )
@@ -267,38 +267,38 @@ async def get_expense(
     expense_id: int,
     svc: ExpenseServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
-) -> ToolExpenseResponse:
+) -> ExpenseResponse:
     return await svc.get_expense(expense_id)
 
 
 @router.post(
     "",
-    response_model=ToolExpenseResponse,
+    response_model=ExpenseResponse,
     summary="Create expense",
     description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
 )
 async def create_expense(
-    data: ToolExpenseCreate,
+    data: ExpenseCreate,
     svc: ExpenseServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
-) -> ToolExpenseResponse:
+) -> ExpenseResponse:
     return await svc.create_expense(data)
 
 
 @router.put(
     "/{expense_id}",
-    response_model=ToolExpenseResponse,
+    response_model=ExpenseResponse,
     summary="Update expense",
     description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
 )
 async def update_expense(
     expense_id: int,
-    data: ToolExpenseUpdate,
+    data: ExpenseUpdate,
     svc: ExpenseServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
-) -> ToolExpenseResponse:
+) -> ExpenseResponse:
     return await svc.update_expense(expense_id, data)
 
 

@@ -52,31 +52,31 @@ run_migrate() {
 backup_postgres() {
   local stamp="$1"
   local out_dir="$BACKUP_DIR/postgres"
-  local dump_path="$out_dir/glorng_${stamp}.dump.gz"
+  local dump_path="$out_dir/proj_portfolio_${stamp}.dump.gz"
   mkdir -p "$out_dir"
 
   log "Backing up Postgres to $dump_path"
   compose exec -T db pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB" | gzip >"$dump_path"
-  ln -sf "$(basename "$dump_path")" "$out_dir/glorng_latest.dump.gz"
+  ln -sf "$(basename "$dump_path")" "$out_dir/proj_portfolio_latest.dump.gz"
   echo "$dump_path"
 }
 
 backup_redis() {
   local stamp="$1"
   local out_dir="$BACKUP_DIR/redis"
-  local out_path="$out_dir/glorng_redis_${stamp}.rdb"
+  local out_path="$out_dir/proj_portfolio_redis_${stamp}.rdb"
   mkdir -p "$out_dir"
 
   log "Backing up Redis to $out_path"
   compose exec -T redis redis-cli -a "$REDIS_PASSWORD" SAVE >/dev/null
   compose cp "redis:/data/dump.rdb" "$out_path"
-  ln -sf "$(basename "$out_path")" "$out_dir/glorng_redis_latest.rdb"
+  ln -sf "$(basename "$out_path")" "$out_dir/proj_portfolio_redis_latest.rdb"
 }
 
 backup_media() {
   local stamp="$1"
   local out_dir="$BACKUP_DIR/media"
-  local out_path="$out_dir/glorng_media_${stamp}.tar.gz"
+  local out_path="$out_dir/proj_portfolio_media_${stamp}.tar.gz"
   mkdir -p "$out_dir"
 
   log "Backing up media volume to $out_path"
@@ -84,8 +84,8 @@ backup_media() {
     -v server_media:/data:ro \
     -v "$out_dir:/out" \
     alpine:3.21 \
-    sh -c "tar czf /out/glorng_media_${stamp}.tar.gz -C /data ."
-  ln -sf "$(basename "$out_path")" "$out_dir/glorng_media_latest.tar.gz"
+    sh -c "tar czf /out/proj_portfolio_media_${stamp}.tar.gz -C /data ."
+  ln -sf "$(basename "$out_path")" "$out_dir/proj_portfolio_media_latest.tar.gz"
 }
 
 is_weekly_keeper() {
@@ -116,8 +116,8 @@ rotate_backups() {
 
   log "Rotating backups (keep ${keep_days} days, ${keep_weeks} weekly Sunday copies)"
   shopt -s nullglob
-  for file in "$dir"/glorng_*.dump.gz; do
-    [[ "$(basename "$file")" == "glorng_latest.dump.gz" ]] && continue
+  for file in "$dir"/proj_portfolio_*.dump.gz; do
+    [[ "$(basename "$file")" == "proj_portfolio_latest.dump.gz" ]] && continue
     age_days=$(( ( $(date +%s) - $(stat -f %m "$file" 2>/dev/null || stat -c %Y "$file") ) / 86400 ))
     if (( age_days <= keep_days )); then
       continue
@@ -130,8 +130,8 @@ rotate_backups() {
   done
   shopt -u nullglob
 
-  find "$BACKUP_DIR/redis" -name 'glorng_redis_*.rdb' -mtime +"$keep_days" ! -name 'glorng_redis_latest.rdb' -delete 2>/dev/null || true
-  find "$BACKUP_DIR/media" -name 'glorng_media_*.tar.gz' -mtime +"$keep_days" ! -name 'glorng_media_latest.tar.gz' -delete 2>/dev/null || true
+  find "$BACKUP_DIR/redis" -name 'proj_portfolio_redis_*.rdb' -mtime +"$keep_days" ! -name 'proj_portfolio_redis_latest.rdb' -delete 2>/dev/null || true
+  find "$BACKUP_DIR/media" -name 'proj_portfolio_media_*.tar.gz' -mtime +"$keep_days" ! -name 'proj_portfolio_media_latest.tar.gz' -delete 2>/dev/null || true
 }
 
 verify_postgres_backup() {

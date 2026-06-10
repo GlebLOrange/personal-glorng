@@ -1,7 +1,7 @@
 from typing import Any
 
 RESUME_DATA: dict[str, Any] = {
-    "name": "Gleb Y.",
+    "name": "Gleb.Y",
     "title": "Full-Stack Developer",
     "tagline": "Backend-heavy full-stack — APIs, Vue frontends, Docker deployments",
     "location": "Remote · EU",
@@ -15,12 +15,15 @@ RESUME_DATA: dict[str, Any] = {
     "skills": [
         {
             "category": "Languages",
-            "items": ["Python", "TypeScript", "JavaScript"],
+            "items": ["Python", "TypeScript", "JavaScript", "Lua", "Ruby"],
         },
         {
             "category": "Backend",
             "items": [
                 "FastAPI",
+                "Django",
+                "Django REST Framework",
+                "Pydantic",
                 "SQLAlchemy",
                 "Alembic",
                 "PostgreSQL",
@@ -29,19 +32,30 @@ RESUME_DATA: dict[str, Any] = {
             ],
         },
         {
+            "category": "Python tooling",
+            "items": ["uv", "Ruff"],
+        },
+        {
             "category": "Frontend",
             "items": ["Vue 3", "Vite", "Tailwind CSS", "Pinia", "Vitest", "Playwright"],
         },
         {
             "category": "DevOps",
-            "items": ["Docker", "Nginx", "Docker Compose", "GitHub Actions", "Linux"],
+            "items": [
+                "Docker",
+                "Nginx",
+                "Docker Compose",
+                "GitHub Actions",
+                "Linux",
+                "Ansible",
+            ],
         },
     ],
     "experience": [
         {
             "role": "Full-Stack Developer",
             "company": "Freelance",
-            "period": "2024 - Present",
+            "period": "Present",
             "description": (
                 "End-to-end delivery of web apps, APIs, and automation"
                 " for clients and personal products."
@@ -61,12 +75,21 @@ RESUME_DATA: dict[str, Any] = {
                 ),
             ],
         },
+        {
+            "role": "Junior Python Developer",
+            "company": "AppService Agency",
+            "period": "2019 - 2020",
+            "description": (
+                "Working in IT at a digital agency — web applications,"
+                " client projects, and technical delivery."
+            ),
+        },
     ],
     "projects": [
         {
-            "name": "gLOrng Platform",
+            "name": "Gleb.Y-CV —portfolio",
             "description": (
-                "Personal platform — portfolio, admin services,"
+                "Gleb.Y-CV — portfolio, admin services,"
                 " Telegram todobot, and background workers"
                 " on FastAPI + Vue + Docker"
             ),

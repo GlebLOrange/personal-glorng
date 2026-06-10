@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-go/refs/heads/main/schema/compose-spec.json
 services:
-  db:
+  postgres:
     image: postgres:18.4-alpine
     profiles:
       - postgres
@@ -49,7 +49,7 @@ services:
       retries: 5
 
   elasticsearch:
-    image: elasticsearch:9.0.5
+    image: elasticsearch:9.3.5
     profiles:
       - search
     restart: unless-stopped
@@ -74,7 +74,7 @@ services:
       retries: 10
 
   mongodb:
-    image: mongo:8.0.9
+    image: mongo:8.2.9
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}

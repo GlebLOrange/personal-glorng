@@ -36,6 +36,11 @@ Two complementary streams:
 
 Services emit audit events on mutations and auth flows. HTTP middleware correlates `request_id` and `user_id` in logs.
 
+## Terminology
+
+- **Platform tool** — a catalogued feature (slug in `registry.py`, e.g. `expenses`, `tasks`).
+- **Expense `tool_name`** — vendor or product label on a spending row (e.g. Cursor, groceries); unrelated to platform-tool slugs.
+
 ## Related docs
 
 - [API tools](api-tools.md) — public and admin endpoints, capabilities, programmatic access

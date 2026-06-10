@@ -2,10 +2,10 @@
 import { computed } from "vue";
 
 import BaseCard from "@/components/ui/BaseCard.vue";
-import type { ExpenseCategory, ToolExpenseSummary } from "@/types";
+import type { ExpenseCategory, ExpenseSummary } from "@/types";
 
 const props = defineProps<{
-  summary: ToolExpenseSummary | null;
+  summary: ExpenseSummary | null;
   monthLabel: string;
   expenseCategories: ExpenseCategory[];
   periodChange: { delta: number; increased: boolean } | null;

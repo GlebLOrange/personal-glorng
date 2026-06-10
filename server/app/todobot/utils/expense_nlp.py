@@ -72,7 +72,7 @@ DEFAULT_CATEGORY = DEFAULT_EXPENSE_CATEGORY
 
 @dataclass(frozen=True)
 class ParsedExpense:
-    """Parsed expense fields ready for ToolExpenseCreate."""
+    """Parsed expense fields ready for ExpenseCreate."""
 
     amount: Decimal
     currency: str

@@ -277,7 +277,7 @@ export interface ExpenseParseResult {
   error?: string;
 }
 
-export interface ToolExpense {
+export interface Expense {
   id: number;
   tool_name: string;
   amount: string;
@@ -290,29 +290,40 @@ export interface ToolExpense {
   updated_at: string;
 }
 
-export interface ToolExpenseMonthTotal {
+export interface ExpenseMonthTotal {
   period: string;
   total: string;
 }
 
-export interface ToolExpenseToolTotal {
+export interface ExpenseToolTotal {
   tool_name: string;
   total: string;
 }
 
-export interface ToolExpenseCategoryTotal {
+export interface ExpenseCategoryTotal {
   category: string;
   total: string;
 }
 
-export interface ToolExpenseSummary {
+export interface ExpenseSummary {
   total: string;
   currency: string;
   rates_updated_at: string | null;
-  by_month: ToolExpenseMonthTotal[];
-  by_tool: ToolExpenseToolTotal[];
-  by_category: ToolExpenseCategoryTotal[];
+  by_month: ExpenseMonthTotal[];
+  by_tool: ExpenseToolTotal[];
+  by_category: ExpenseCategoryTotal[];
 }
+
+/** @deprecated Use Expense */
+export type ToolExpense = Expense;
+/** @deprecated Use ExpenseMonthTotal */
+export type ToolExpenseMonthTotal = ExpenseMonthTotal;
+/** @deprecated Use ExpenseToolTotal */
+export type ToolExpenseToolTotal = ExpenseToolTotal;
+/** @deprecated Use ExpenseCategoryTotal */
+export type ToolExpenseCategoryTotal = ExpenseCategoryTotal;
+/** @deprecated Use ExpenseSummary */
+export type ToolExpenseSummary = ExpenseSummary;
 
 export interface ExchangeRates {
   base: string;

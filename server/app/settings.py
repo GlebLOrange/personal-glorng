@@ -391,7 +391,7 @@ class Settings(BaseSettings):
     APP_LOG_PERSIST_ENABLED: bool = True
     APP_LOG_PERSIST_MIN_LEVEL: str = "INFO"
     APP_LOG_RETENTION_DAYS: int = 30
-    APP_NAME: str = "Gleb Y."
+    APP_NAME: str = "Gleb.Y"
     BASE_URL: str = "http://localhost"
     MEDIA_DIR: str = "/app/media"
 
