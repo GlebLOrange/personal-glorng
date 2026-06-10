@@ -1,8 +1,6 @@
 ---
-description: Write failing tests before implementation — RED, GREEN, REFACTOR for logic and bug fixes
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Test-Driven Development
 
 ## Relationship to other rules

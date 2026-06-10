@@ -1,8 +1,6 @@
 ---
-description: Deliver multi-file changes in thin vertical slices — implement, test, verify, then expand
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Incremental Implementation
 
 ## Relationship to other rules

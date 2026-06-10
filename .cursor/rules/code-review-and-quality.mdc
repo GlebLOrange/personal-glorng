@@ -1,8 +1,6 @@
 ---
-description: Multi-axis code review before merge — correctness, readability, architecture, security, performance
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Code Review and Quality
 
 ## Relationship to other rules
