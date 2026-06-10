@@ -10,6 +10,6 @@ alwaysApply: false
 - **Primary DB:** MongoDB (Pydantic documents, versioned index scripts).
 - **Secondary DB:** PostgreSQL for FTS search and audit (Alembic migrations).
 - **Style:** Ruff; type hints on all functions; async for I/O-bound work.
-- **Functions:** Keep under 88 lines.
+- **Style (Ruff):** Line length 88 (`server/pyproject.toml`).
 - **Migrations:** Alembic when Postgres models change; Mongo index scripts when collections/indexes are added.
 - **Logging:** Log important actions; never log secrets or tokens.
