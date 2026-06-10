@@ -40,7 +40,7 @@ describe("useAuthStore", () => {
     vi.mocked(api.get).mockResolvedValue({
       data: {
         id: "u1",
-        email: "admin@glorng.dev",
+        email: "admin@admin.admin",
         permissions: ["*"],
         is_verified: true,
         display_name: "Admin",
@@ -51,13 +51,13 @@ describe("useAuthStore", () => {
     });
 
     const auth = useAuthStore();
-    await auth.login("admin@glorng.dev", "MyTestPass123!");
+    await auth.login("admin@admin.admin", "MyTestPass123!");
 
     expect(api.post).toHaveBeenCalledWith("/auth/login", {
-      email: "admin@glorng.dev",
+      email: "admin@admin.admin",
       password: "MyTestPass123!",
     });
-    expect(auth.user?.email).toBe("admin@glorng.dev");
+    expect(auth.user?.email).toBe("admin@admin.admin");
     expect(auth.isAuthenticated).toBe(true);
   });
 

@@ -10,7 +10,7 @@ from app.settings import get_settings
 
 
 async def ensure_e2e_user() -> None:
-    """Ensure admin@glorng.dev exists with known test credentials."""
+    """Ensure admin@admin.admin exists with known test credentials."""
     settings = get_settings()
     registry = DatabaseRegistry()
     init_svc = DatabaseInitService(registry, settings)

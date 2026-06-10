@@ -37,7 +37,7 @@ async def test_change_password(auth_client: AsyncClient, client: AsyncClient) ->
 
     login = await client.post(
         "/api/auth/login",
-        json={"email": "admin@glorng.dev", "password": new_password},
+        json={"email": "admin@admin.admin", "password": new_password},
     )
     assert login.status_code == 200
 
