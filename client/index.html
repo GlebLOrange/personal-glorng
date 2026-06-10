@@ -12,6 +12,62 @@
   </head>
   <body>
     <div id="app"></div>
+    <script>
+      // #region agent log
+      (function () {
+        var inIframe = window.self !== window.top;
+        var parentOrigin = "top-accessible";
+        try {
+          if (inIframe && window.parent.location.origin) {
+            parentOrigin = window.parent.location.origin;
+          }
+        } catch (err) {
+          parentOrigin = "cross-origin-or-chrome-error";
+        }
+        fetch("http://127.0.0.1:7759/ingest/a59c5ce7-5b46-408d-8a93-dd9a50b51892", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "555cea" },
+          body: JSON.stringify({
+            sessionId: "555cea",
+            runId: "pre-fix",
+            hypothesisId: "A,C",
+            location: "index.html:bootstrap",
+            message: "Page bootstrap context",
+            data: {
+              href: window.location.href,
+              origin: window.location.origin,
+              protocol: window.location.protocol,
+              referrer: document.referrer || null,
+              inIframe: inIframe,
+              parentOrigin: parentOrigin,
+            },
+            timestamp: Date.now(),
+          }),
+        }).catch(function () {});
+        window.addEventListener("error", function (event) {
+          if (!String(event.message || "").includes("Unsafe attempt to load URL")) return;
+          fetch("http://127.0.0.1:7759/ingest/a59c5ce7-5b46-408d-8a93-dd9a50b51892", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "555cea" },
+            body: JSON.stringify({
+              sessionId: "555cea",
+              runId: "pre-fix",
+              hypothesisId: "A,C,E",
+              location: "index.html:error",
+              message: "Unsafe frame navigation error",
+              data: {
+                errorMessage: event.message,
+                filename: event.filename || null,
+                href: window.location.href,
+                inIframe: window.self !== window.top,
+              },
+              timestamp: Date.now(),
+            }),
+          }).catch(function () {});
+        });
+      })();
+      // #endregion
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
