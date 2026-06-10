@@ -32,6 +32,11 @@ dist/
 *.cursorrules
 *howitworks.md
 
+# Cursor (local-only; rules and hooks under .cursor/ are tracked)
+.cursor/debug-*.log
+.cursor/settings.json
+.cursor/worktrees.json
+.cursor/setup-worktree-unix.sh
 
 # Celery beat (dev/runtime schedule db)
 celerybeat-schedule*

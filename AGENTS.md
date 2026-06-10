@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Coding standards and agent behavior live in [`.cursor/rules/`](.cursor/rules/) (stack conventions, git commit, PR workflow). This file covers environment and bootstrap only.
+Coding standards and agent behavior live in [`.cursor/rules/`](.cursor/rules/) (stack conventions, git commit, PR workflow). Opt-in rules for specific workflows: `code-review-and-quality`, `incremental-implementation`, `test-driven-development`. This file covers environment and bootstrap only.
 
 ## Cursor Cloud specific instructions
 
