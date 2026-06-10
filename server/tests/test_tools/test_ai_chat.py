@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -10,6 +11,7 @@ from app.services.ai_chat import OpenAIService, detect_llm_provider
 from app.services.ai_search import AiSearchService
 from app.services.search_index import SearchIndexService
 from app.settings import get_settings
+from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file, scenario_env
 
 CHAT_URL = "/api/tools/ai-chat"
 CONFIG_URL = "/api/tools/ai-chat/config"
@@ -21,9 +23,7 @@ CHAT_PAYLOAD = {
 
 @pytest.fixture(autouse=True)
 def enable_ai_chat(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("AI_CHAT_ENABLED", "true")
-    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, ENV_SCENARIOS_DIR / "ai-chat.env")
 
 
 @pytest.fixture
@@ -40,36 +40,17 @@ def ai_search_service() -> None:
 
 
 @pytest.fixture
-def missing_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("OPENAI_API_KEY", "")
-    get_settings.cache_clear()
+def missing_api_key(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    activate_env_file(
+        monkeypatch,
+        scenario_env(
+            tmp_path,
+            base=ENV_SCENARIOS_DIR / "ai-chat.env",
+            OPENAI_API_KEY="",
+        ),
+    )
     yield
     get_settings.cache_clear()
-
-
-async def _mock_stream(*_args: object, **_kwargs: object) -> AsyncIterator[str]:
-    for part in ("Hi ", "there"):
-        yield part
-
-
-async def _mock_search_events(
-    *_args: object,
-    **_kwargs: object,
-) -> AsyncIterator[dict[str, object]]:
-    yield {
-        "sources": [
-            {
-                "id": 1,
-                "title": "Task",
-                "url": "/admin/tools/tasks",
-                "source_type": "task",
-                "snippet": "demo",
-            },
-        ],
-    }
-    async for delta in _mock_stream():
-        yield {"delta": delta}
-    yield {"done": True, "model": "gpt-4.1"}
 
 
 @pytest.mark.asyncio
@@ -124,9 +105,9 @@ async def test_ai_chat_disabled_when_flag_off(
     auth_client: AsyncClient,
     ai_search_service: None,
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("AI_CHAT_ENABLED", "false")
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, scenario_env(tmp_path, AI_CHAT_ENABLED="false"))
     resp = await auth_client.post(CHAT_URL, json=CHAT_PAYLOAD)
     assert resp.status_code == 503
     assert "disabled" in resp.json()["detail"].lower()
@@ -191,10 +172,16 @@ async def test_ai_chat_config_not_configured_without_key(
 async def test_ai_chat_config_detects_groq_provider(
     auth_client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
-    monkeypatch.setenv("OPENAI_CHAT_MODEL", "llama-3.3-70b-versatile")
-    get_settings.cache_clear()
+    activate_env_file(
+        monkeypatch,
+        scenario_env(
+            tmp_path,
+            LLM_BASE_URL="https://api.groq.com/openai/v1",
+            OPENAI_CHAT_MODEL="llama-3.3-70b-versatile",
+        ),
+    )
 
     resp = await auth_client.get(CONFIG_URL)
     assert resp.status_code == 200
@@ -228,3 +215,28 @@ def test_openai_service_passes_base_url_to_client() -> None:
     )
     assert service.provider == "ollama"
     assert service.model == "llama3.2"
+
+
+async def _mock_stream(*_args: object, **_kwargs: object) -> AsyncIterator[str]:
+    for part in ("Hi ", "there"):
+        yield part
+
+
+async def _mock_search_events(
+    *_args: object,
+    **_kwargs: object,
+) -> AsyncIterator[dict[str, object]]:
+    yield {
+        "sources": [
+            {
+                "id": 1,
+                "title": "Task",
+                "url": "/admin/tools/tasks",
+                "source_type": "task",
+                "snippet": "demo",
+            },
+        ],
+    }
+    async for delta in _mock_stream():
+        yield {"delta": delta}
+    yield {"done": True, "model": "gpt-4.1"}

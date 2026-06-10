@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -14,6 +15,7 @@ from app.services.ai_search import AiSearchService
 from app.services.search_index import SearchDocumentInput, SearchIndexService
 from app.services.task import TaskService
 from app.settings import get_settings
+from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file, scenario_env
 
 SEARCH_CHAT_URL = "/api/search/chat"
 SEARCH_QUERY_URL = "/api/search"
@@ -22,9 +24,7 @@ SEARCH_CONFIG_URL = "/api/search/config"
 
 @pytest.fixture(autouse=True)
 def enable_ai_search(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("AI_SEARCH_ENABLED", "true")
-    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, ENV_SCENARIOS_DIR / "ai-search.env")
 
 
 async def _mock_stream(*_args: object, **_kwargs: object) -> AsyncIterator[str]:
@@ -157,9 +157,9 @@ async def test_search_config_enabled(client: AsyncClient) -> None:
 async def test_search_config_disabled_without_key(
     client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("OPENAI_API_KEY", "")
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, scenario_env(tmp_path, OPENAI_API_KEY=""))
     resp = await client.get(SEARCH_CONFIG_URL)
     assert resp.status_code == 200
     body = resp.json()
@@ -195,9 +195,9 @@ async def test_task_status_change_reindexes(registry: DatabaseRegistry) -> None:
 async def test_public_search_disabled(
     client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
-    monkeypatch.setenv("AI_SEARCH_ENABLED", "false")
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, scenario_env(tmp_path, AI_SEARCH_ENABLED="false"))
     resp = await client.post(
         SEARCH_CHAT_URL,
         json={"messages": [{"role": "user", "content": "hello"}]},

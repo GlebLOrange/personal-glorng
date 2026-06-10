@@ -20,7 +20,7 @@ Equivalent to `make dev-lite` with the overlay. Docker daemon on this VM also us
 
 ### First-time / manual setup
 
-1. Copy env: `cp .env.example .env` and set at minimum `JWT_SECRET` (32+ chars), `REDIS_PASSWORD`, `MONGODB_PASSWORD`, and `SEED_PASSWORD`.
+1. Copy env: `cp .env.example .env` and fill in all values (see `.env.example` for the full contract). Minimum secrets: `JWT_SECRET` (32+ chars), `REDIS_PASSWORD`, `MONGODB_PASSWORD`, and `SEED_PASSWORD`. Bootstrap knobs `RUN_MIGRATIONS` / `RUN_SEED` live in `.env` only—not Docker Compose overrides.
 2. Start backend: command above (or `make dev-lite` plus the cloud overlay file).
 3. Seed admin: `docker compose … exec server python scripts/ensure_e2e_user.py` (or `make seed` with `SEED_PASSWORD` set).
 4. Backfill search index (first deploy or after schema changes): `make reindex-search`
@@ -49,10 +49,8 @@ Cloud-specific notes:
   cd server
   UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv sync --frozen
   UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run ruff check .
-  UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv \
-    ENABLE_MONGODB=true MONGODB_URL='mongodb://127.0.0.1:27017' MONGODB_DB=test \
-    REDIS_URL='redis://:local@127.0.0.1:6379/0' JWT_SECRET='…' \
-    uv run pytest -v
+  GLORNG_ENV_FILE=$PWD/tests/.env.test \
+  UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
   ```
 - **Backend via Docker:** `docker compose … exec server` uses the production image (no `pytest`/`ruff` in PATH). Prefer host `uv` for backend checks.
 - **Frontend:** `cd client && npm run lint && npm run test && npm run build` (Node 24 recommended per CI; Node 22 works with engine warnings). Agents may run lint and build without test unless asked.

@@ -5,29 +5,12 @@ from httpx import AsyncClient
 
 from app.core.security import create_access_token
 from app.settings import get_settings
+from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file
 from tests.factories import create_user
-
-_PRODUCTION_ENV = {
-    "APP_ENV": "production",
-    "ENABLE_MONGODB": "true",
-    "MONGODB_URL": "mongodb://localhost:27017",
-    "MONGODB_DB": "test_glorng",
-    "MONGODB_PASSWORD": "production-mongo-password-ok",
-    "POSTGRES_USER": "glorng",
-    "POSTGRES_PASSWORD": "prod-test-password-16",
-    "POSTGRES_DB": "glorng",
-    "REDIS_URL": "redis://:prod-test-redis-password@127.0.0.1:6379/0",
-    "RABBITMQ_USER": "glorng",
-    "RABBITMQ_PASSWORD": "prod-test-rabbitmq-password",
-    "CELERY_BROKER_URL": "amqp://glorng:prod-test-rabbitmq-password@localhost:5672//",
-    "JWT_SECRET": "production-jwt-signing-key-for-csrf-tests-only-32chars",
-}
 
 
 def _enable_production(monkeypatch: pytest.MonkeyPatch) -> None:
-    for key, value in _PRODUCTION_ENV.items():
-        monkeypatch.setenv(key, value)
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, ENV_SCENARIOS_DIR / "production-csrf.env")
 
 
 @pytest.mark.asyncio

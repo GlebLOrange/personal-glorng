@@ -8,7 +8,7 @@ import time
 import pytest
 from httpx import AsyncClient
 
-from app.settings import get_settings
+from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file
 
 
 def _stripe_signature(payload: bytes, secret: str) -> str:
@@ -20,9 +20,7 @@ def _stripe_signature(payload: bytes, secret: str) -> str:
 
 @pytest.fixture(autouse=True)
 def stripe_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("STRIPE_SECRET_KEY", "sk_test_example")
-    monkeypatch.setenv("STRIPE_WEBHOOK_SECRET", "whsec_test")
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, ENV_SCENARIOS_DIR / "stripe.env")
 
 
 @pytest.mark.asyncio

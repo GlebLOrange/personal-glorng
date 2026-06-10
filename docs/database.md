@@ -40,8 +40,8 @@ flowchart TD
 
 | Environment | Migrations |
 |-------------|------------|
-| **Dev** | `migrate` on stack start; `server` has `RUN_MIGRATIONS=true` |
-| **Prod** | Only `migrate` service; `RUN_MIGRATIONS=false` on app containers |
+| **Dev** | `migrate` on stack start; set `RUN_MIGRATIONS=true` and `RUN_SEED=true` in `.env` |
+| **Prod** | Only `migrate` service; set `RUN_MIGRATIONS=false` and `RUN_SEED=false` in `.env` |
 
 ## Make targets
 
@@ -76,7 +76,8 @@ Implementation lives under [`server/app/db/seed/`](../server/app/db/seed/):
 First-time dev with seed:
 
 ```bash
-RUN_SEED=true make db-init
+# Ensure RUN_SEED=true in .env, then:
+make db-init
 ```
 
 ## Migrating existing Postgres data

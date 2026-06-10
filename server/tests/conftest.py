@@ -12,14 +12,8 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from mongomock_motor import AsyncMongoMockClient
 
-# MongoDB-primary test defaults (must be set before app imports).
-os.environ.setdefault("ENABLE_MONGODB", "true")
-os.environ.setdefault("MONGODB_URL", "mongodb://localhost:27017")
-os.environ.setdefault("MONGODB_DB", "test_glorng")
-os.environ.setdefault("ENABLE_POSTGRES", "false")
-os.environ.setdefault("APP_ENV", "test")
-os.environ.setdefault("JWT_SECRET", "test-jwt-secret-with-enough-characters")
-os.environ.setdefault("REDIS_URL", "redis://:local@127.0.0.1:6379/0")
+# Bootstrap: point Settings at the test .env file (must run before app imports).
+os.environ["GLORNG_ENV_FILE"] = str(Path(__file__).resolve().parent / ".env.test")
 
 import app.core.redis as redis_module
 from app.core.mongodb import bind_mongodb, clear_mongodb
@@ -30,9 +24,12 @@ from app.main import app
 from app.services.currency import RATES_CACHE_KEY
 from app.settings import get_settings
 from app.workers.queue import init_job_queue
+from tests.env_helpers import BASE_ENV_FILE
 from tests.factories import create_user
 
-USE_SQLITE_TESTS = os.getenv("USE_SQLITE_TESTS") == "1"
+_TEST_ENV_FILE = str(BASE_ENV_FILE)
+
+USE_SQLITE_TESTS = get_settings().USE_SQLITE_TESTS
 
 ADMIN_EMAIL = "admin@glorng.dev"
 
@@ -51,7 +48,7 @@ TEST_RATES_PAYLOAD = {
 STRONG_PASSWORD = "MyTestPass123!"
 ADMIN_PASSWORD = STRONG_PASSWORD
 
-TEST_MONGO_DB = os.environ["MONGODB_DB"]
+TEST_MONGO_DB = get_settings().MONGODB_DB
 _mongo_client = AsyncMongoMockClient()
 _mongo_db = _mongo_client[TEST_MONGO_DB]
 _test_registry = DatabaseRegistry(mongo_client=_mongo_client, mongo_db=_mongo_db)
@@ -250,18 +247,11 @@ def mongomock_compat(monkeypatch: pytest.MonkeyPatch) -> Generator[None]:
 
 
 @pytest.fixture(autouse=True)
-def disable_ai_chat_by_default(
-    monkeypatch: pytest.MonkeyPatch,
-) -> Generator[None]:
-    monkeypatch.setenv("AI_CHAT_ENABLED", "false")
-    monkeypatch.setenv("RABBITMQ_USER", "glorng")
-    monkeypatch.setenv("RABBITMQ_PASSWORD", "test-rabbitmq-password")
-    monkeypatch.setenv(
-        "CELERY_BROKER_URL",
-        "amqp://glorng:test-rabbitmq-password@localhost:5672//",
-    )
+def _reset_settings_env(monkeypatch: pytest.MonkeyPatch) -> Generator[None]:
+    monkeypatch.setenv("GLORNG_ENV_FILE", _TEST_ENV_FILE)
     get_settings.cache_clear()
     yield
+    monkeypatch.setenv("GLORNG_ENV_FILE", _TEST_ENV_FILE)
     get_settings.cache_clear()
 
 
@@ -297,7 +287,9 @@ def fake_redis(request: pytest.FixtureRequest) -> Generator[FakeRedis | None]:
 
 
 @pytest.fixture(autouse=True)
-async def seed_currency_rates(fake_redis: FakeRedis) -> None:
+async def seed_currency_rates(fake_redis: FakeRedis | None) -> None:
+    if fake_redis is None:
+        return
     await fake_redis.set(RATES_CACHE_KEY, json.dumps(TEST_RATES_PAYLOAD))
 
 

@@ -1,6 +1,6 @@
 """Postgres integration tests (P1 — requires POSTGRES_TEST_URL and migrations)."""
 
-import os
+from pathlib import Path
 
 import pytest
 from sqlalchemy import select, text
@@ -13,10 +13,14 @@ from app.services.audit import AuditRecord, AuditService
 from app.services.search_index import SearchIndexService
 from app.services.search_types import SearchDocumentInput
 from app.settings import get_settings
+from tests.env_helpers import activate_env_file
+
+_POSTGRES_ENV = Path(__file__).resolve().parent / ".env.postgres"
 
 
 def _postgres_url() -> str | None:
-    return os.environ.get("POSTGRES_TEST_URL")
+    url = get_settings().POSTGRES_TEST_URL.strip()
+    return url or None
 
 
 @pytest.fixture
@@ -55,8 +59,7 @@ async def test_audit_dual_write_postgres(
     postgres_session: AsyncSession,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("ENABLE_POSTGRES", "true")
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, _POSTGRES_ENV)
 
     svc = AuditService(registry, postgres_db=postgres_session)
     await svc.record(
@@ -92,8 +95,7 @@ async def test_search_upsert_and_query_postgres(
     postgres_session: AsyncSession,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("ENABLE_POSTGRES", "true")
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, _POSTGRES_ENV)
 
     unique_token = "pgsearchtoken9876"
     svc = SearchIndexService(registry, postgres_db=postgres_session)

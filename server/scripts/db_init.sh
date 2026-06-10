@@ -89,10 +89,23 @@ PY
     alembic upgrade head
 fi
 
-if [ "$RUN_SEED" = "true" ]; then
+if python - <<'PY'
+from app.settings import get_settings
+
+if get_settings().RUN_SEED:
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
+then
     echo "Running demo database seed..."
+    count="$(python - <<'PY'
+from app.settings import get_settings
+
+print(get_settings().SEED_DEMO_COUNT)
+PY
+)"
     python -m app.db.seed_demo \
-        --count "${SEED_DEMO_COUNT:-50}" \
+        --count "$count" \
         --no-reset \
         --skip-if-populated
 fi

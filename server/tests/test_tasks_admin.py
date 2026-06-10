@@ -5,14 +5,7 @@ from app.core.security import create_access_token
 from app.db.documents.task import TaskStatus
 from app.db.registry import DatabaseRegistry
 from app.services.task import complete_past_due_tasks
-from app.settings import get_settings
 from tests.factories import create_task, create_user
-
-
-@pytest.fixture(autouse=True)
-def telegram_user_id(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("TELEGRAM_ALLOWED_USER_ID", "123456789")
-    get_settings.cache_clear()
 
 
 @pytest.mark.asyncio

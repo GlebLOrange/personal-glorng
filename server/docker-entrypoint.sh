@@ -12,7 +12,14 @@ if command -v uv >/dev/null 2>&1 && [ -f /app/pyproject.toml ] && [ -f /app/uv.l
     fi
 fi
 
-if [ "$RUN_MIGRATIONS" = "true" ]; then
+if python - <<'PY'
+from app.settings import get_settings
+
+if get_settings().RUN_MIGRATIONS:
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
+then
     /app/scripts/db_init.sh
 fi
 

@@ -9,15 +9,6 @@ from app.db.documents.task import IntakeStatus, SyncStatus
 from app.db.registry import DatabaseRegistry
 from app.schemas.task_intake import ExtractionResult, FieldConfidence, TaskDraft
 from app.services.task_intake import TaskIntakeService
-from app.settings import get_settings
-
-
-@pytest.fixture(autouse=True)
-def disable_task_intake_ai(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("TASK_INTAKE_AI_ENABLED", "false")
-    get_settings.cache_clear()
-    yield
-    get_settings.cache_clear()
 
 
 @pytest.mark.asyncio

@@ -2,19 +2,13 @@
 
 from unittest.mock import patch
 
-import pytest
-
 from app.core.logging import logger
 from app.settings import get_settings
 
 
-def test_sentry_disabled_without_dsn(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("SERVER_SENTRY_DSN", "")
-    monkeypatch.setenv("SENTRY_ENABLED", "false")
-    get_settings.cache_clear()
+def test_sentry_disabled_without_dsn() -> None:
     settings = get_settings()
     assert settings.sentry_enabled() is False
-    get_settings.cache_clear()
 
 
 def test_logger_capture_exception_on_error() -> None:

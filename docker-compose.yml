@@ -122,11 +122,11 @@ services:
       context: ./server
       dockerfile: Dockerfile
     entrypoint: ["/bin/sh", "/app/scripts/db_init.sh"]
-    env_file:
-      - .env
+    volumes:
+      - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app
-      RUN_SEED: "true"
+      GLORNG_ENV_FILE: /run/glorng/.env
     networks:
       - backend
     depends_on:
@@ -145,11 +145,10 @@ services:
       - ./server:/app
       - server_venv:/app/.venv
       - server_media:/app/media
+      - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app
-      RUN_MIGRATIONS: "true"
-    env_file:
-      - .env
+      GLORNG_ENV_FILE: /run/glorng/.env
     networks:
       - backend
     depends_on:
@@ -180,10 +179,10 @@ services:
     volumes:
       - ./server:/app
       - server_venv:/app/.venv
+      - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app
-    env_file:
-      - .env
+      GLORNG_ENV_FILE: /run/glorng/.env
     networks:
       - backend
     depends_on:
@@ -214,10 +213,10 @@ services:
     volumes:
       - ./server:/app
       - server_venv:/app/.venv
+      - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app
-    env_file:
-      - .env
+      GLORNG_ENV_FILE: /run/glorng/.env
     networks:
       - backend
     depends_on:
@@ -248,10 +247,10 @@ services:
     volumes:
       - ./server:/app
       - server_venv:/app/.venv
+      - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app
-    env_file:
-      - .env
+      GLORNG_ENV_FILE: /run/glorng/.env
     networks:
       - backend
     depends_on:

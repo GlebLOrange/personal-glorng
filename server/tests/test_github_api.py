@@ -9,12 +9,12 @@ from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
 from app.schemas.github import GitHubRepoResponse
 from app.settings import get_settings
+from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file
 
 
 @pytest.fixture(autouse=True)
 def github_public_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("GITHUB_PUBLIC_USERNAME", "octocat")
-    get_settings.cache_clear()
+    activate_env_file(monkeypatch, ENV_SCENARIOS_DIR / "github-public.env")
 
 
 def _sample_repo() -> GitHubRepoResponse:
