@@ -24,7 +24,7 @@ dependencies = [
     "google-auth==2.53.*",
     "google-auth-oauthlib==1.4.*",
     "google-api-python-client==2.197.*",
-    "yt-dlp>=2026.3.17",
+    "yt-dlp>=2026.6.9",
     "elasticsearch[async]==9.0.*",
     "motor==3.7.*",
 ]
