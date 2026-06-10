@@ -1,0 +1,6 @@
+# Search profile overlay: wait for Elasticsearch before API startup.
+services:
+  server:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy

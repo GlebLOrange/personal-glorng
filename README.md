@@ -40,10 +40,13 @@ API docs (dev only): [http://localhost:8000/api/docs](http://localhost:8000/api/
 | Command | Containers | Use when |
 |---------|------------|----------|
 | `make dev-lite` + host `npm run dev` | mongodb, redis, server | Daily UI/API work (lowest resource use) |
+| `make dev-search` | mongodb, redis, elasticsearch, server | Elasticsearch-backed full-text search (`ELASTICSEARCH_URL` required) |
 | `make dev` | + client, nginx | Full stack through nginx; no background jobs |
 | `make dev-worker` | + Celery worker + beat + RabbitMQ | Testing reminders, calendar sync, email jobs |
 | `make dev-bot` | + Telegram todobot | Bot development (`TELEGRAM_BOT_TO_DO_TOKEN` required) |
 | `make dev-full` | All 7 | Same as old default — worker + bot + nginx stack |
+
+Leave `ELASTICSEARCH_URL` empty in `.env` for `make dev-lite` (default). MongoDB text search and optional Postgres FTS cover search without Elasticsearch.
 
 ## Project Structure
 
@@ -79,6 +82,7 @@ Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN` in `.env`.
 | Command            | Description                                      |
 |--------------------|--------------------------------------------------|
 | `make dev-lite`    | Minimal stack (db, redis, API); run Vite on host |
+| `make dev-search`  | Lite stack + Elasticsearch (set `ELASTICSEARCH_URL` in `.env`) |
 | `make dev`         | Core dev stack (nginx + client; no worker/bot)   |
 | `make dev-worker`  | Core stack + RabbitMQ + Celery worker + beat   |
 | `make dev-bot`     | Core stack + Telegram todobot                    |
