@@ -20,7 +20,7 @@ Admin routes under `/api/tools/*` require a Bearer token and capability permissi
 
 ```bash
 BASE=https://your-domain
-EMAIL=admin@glorng.dev
+EMAIL=admin@admin.admin
 PASS='your-password'
 
 TOKENS=$(curl -s -X POST "$BASE/api/auth/login" \

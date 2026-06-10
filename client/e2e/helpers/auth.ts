@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-const adminEmail = process.env.E2E_EMAIL ?? "admin@glorng.dev";
+const adminEmail = process.env.E2E_EMAIL ?? "admin@admin.admin";
 const adminPassword = process.env.E2E_PASSWORD ?? "MyTestPass123!";
 
 export async function loginAsAdmin(page: Page): Promise<void> {

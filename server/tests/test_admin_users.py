@@ -34,7 +34,7 @@ async def test_list_users_as_superuser(
     resp = await auth_client.get("/api/admin/users")
     assert resp.status_code == 200
     emails = {row["email"] for row in resp.json()}
-    assert "admin@glorng.dev" in emails
+    assert "admin@admin.admin" in emails
 
 
 @pytest.mark.asyncio

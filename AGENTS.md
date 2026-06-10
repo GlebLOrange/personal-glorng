@@ -28,7 +28,7 @@ For Elasticsearch-backed search, use `make dev-search` (add `-f docker-compose.s
 4. Backfill search index (first deploy or after schema changes): `make reindex-search`
 5. Frontend: `cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev` → http://localhost:3000
 
-Default E2E credentials: `admin@glorng.dev` / `MyTestPass123!`
+Default E2E credentials: `admin@admin.admin` / `MyTestPass123!`
 
 ### Services and ports
 

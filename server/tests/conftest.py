@@ -31,7 +31,7 @@ _TEST_ENV_FILE = str(BASE_ENV_FILE)
 
 USE_SQLITE_TESTS = get_settings().USE_SQLITE_TESTS
 
-ADMIN_EMAIL = "admin@glorng.dev"
+ADMIN_EMAIL = "admin@admin.admin"
 
 TEST_RATES_PAYLOAD = {
     "result": "success",

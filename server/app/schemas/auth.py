@@ -46,7 +46,7 @@ class CredentialsRequest(BaseModel):
 
     model_config = ConfigDict(
         json_schema_extra={
-            "example": {"email": "admin@glorng.dev", "password": "StrongPass123!"}
+            "example": {"email": "admin@admin.admin", "password": "StrongPass123!"}
         }
     )
 
@@ -222,7 +222,7 @@ class UserResponse(BaseModel):
         json_schema_extra={
             "example": {
                 "id": "550e8400-e29b-41d4-a716-446655440000",
-                "email": "admin@glorng.dev",
+                "email": "admin@admin.admin",
                 "is_verified": True,
                 "permissions": ["platform:superuser"],
                 "display_name": "Admin",

@@ -33,3 +33,18 @@ def test_seed_demo_imports() -> None:
     assert callable(seed_demo)
     assert callable(main)
     assert callable(parse_args)
+
+
+def test_seed_demo_module_invokes_main() -> None:
+    """`python -m app.db.seed_demo` must expose the CLI (db_init RUN_SEED depends on this)."""
+    import subprocess
+    import sys
+
+    result = subprocess.run(
+        [sys.executable, "-m", "app.db.seed_demo", "--help"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--skip-if-populated" in result.stdout

@@ -20,7 +20,7 @@ env:
   RABBITMQ_PASSWORD: glorng_ci_rabbitmq
   CELERY_BROKER_URL: amqp://glorng:glorng_ci_rabbitmq@rabbitmq:5672//
   JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
-  ALLOWED_EMAIL: admin@glorng.dev
+  ALLOWED_EMAIL: admin@admin.admin
   SEED_PASSWORD: MyTestPass123!
   APP_ENV: development
   EMAIL_BACKEND: console
@@ -62,7 +62,7 @@ jobs:
           RABBITMQ_PASSWORD=glorng_ci_rabbitmq
           CELERY_BROKER_URL=amqp://glorng:glorng_ci_rabbitmq@rabbitmq:5672//
           JWT_SECRET=ci-jwt-secret-at-least-32-characters-long
-          ALLOWED_EMAIL=admin@glorng.dev
+          ALLOWED_EMAIL=admin@admin.admin
           SEED_PASSWORD=MyTestPass123!
           APP_ENV=development
           EMAIL_BACKEND=console

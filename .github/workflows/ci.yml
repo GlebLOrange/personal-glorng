@@ -131,7 +131,7 @@ jobs:
           PLAYWRIGHT_SKIP_WEBSERVER: "1"
           E2E_BASE_URL: http://127.0.0.1:4173
           E2E_API_URL: http://127.0.0.1:8000
-          E2E_EMAIL: admin@glorng.dev
+          E2E_EMAIL: admin@admin.admin
           E2E_PASSWORD: MyTestPass123!
         run: |
           VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run preview &
