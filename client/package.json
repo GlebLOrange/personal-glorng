@@ -23,10 +23,10 @@
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.2.7",
     "@fontsource/ibm-plex-sans": "^5.2.8",
-    "@sentry/vue": "^10.56.0",
+    "@sentry/vue": "^10.57.0",
     "axios": "^1.17.0",
     "chart.js": "^4.5.1",
-    "dompurify": "^3.4.8",
+    "dompurify": "^3.4.9",
     "pinia": "^3.0.4",
     "simple-icons": "^16.23.0",
     "vanilla-cookieconsent": "^3.1.0",
