@@ -48,8 +48,13 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
       - run: npm ci
-      - run: npm run lint
-      - run: npm run format:check
+      - name: Lint and format check
+        run: |
+          npm run lint & lint_pid=$!
+          npm run format:check & format_pid=$!
+          wait "$lint_pid"; lint_exit=$?
+          wait "$format_pid"; format_exit=$?
+          exit $((lint_exit || format_exit))
       - run: npm run test
       - run: npm run build:check
       - uses: actions/upload-artifact@v4
@@ -143,6 +148,15 @@ jobs:
       - name: Install client dependencies
         working-directory: client
         run: npm ci
+      - name: Get Playwright version
+        id: playwright-version
+        working-directory: client
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
       - name: Install Playwright
         working-directory: client
         run: npx playwright install --with-deps chromium
