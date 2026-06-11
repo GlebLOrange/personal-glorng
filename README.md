@@ -20,11 +20,11 @@ cp .env.example .env
 # Recommended for daily work (2 Docker containers + host API + host Vite — lowest RAM)
 make dev-ultra-lite-infra    # terminal 1: mongodb + redis
 make dev-ultra-lite-server   # terminal 2: host uvicorn (:8000)
-cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev   # terminal 3: Vite (:3000)
+make dev-lite-client         # terminal 3: Vite (:3000) — open http://localhost:3000
 
 # Or: API in Docker (also starts RabbitMQ via server depends_on)
 make dev-lite                # terminal 1: mongodb, redis, rabbitmq, API (:8000)
-cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev   # terminal 2: Vite (:3000)
+make dev-lite-client         # terminal 2: Vite — open http://localhost (or :3000)
 
 # Or: full UI through nginx without worker/bot (5 containers)
 make dev
@@ -36,7 +36,7 @@ make db-init
 make seed
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in ultra-lite or lite mode, or [http://localhost](http://localhost) with `make dev`.
+Open [http://localhost](http://localhost) with `make dev-lite` + `make dev-lite-client`, or [http://localhost:3000](http://localhost:3000) if you skip nginx. Ultra-lite has no nginx — use :3000 only. `make dev` also serves [http://localhost](http://localhost).
 
 Ultra-lite and dev-lite start the **API only** in the first terminal. Without the `npm run dev` step, [http://localhost:3000](http://localhost:3000) will refuse connections even when the API on :8000 is healthy. If `npm run dev` fails with a missing `@rolldown/binding-*` module (common when `client/node_modules` was installed in a Linux devcontainer), run `npm install` in `client/` on your host OS and retry.
 
@@ -46,8 +46,8 @@ API docs (dev only): [http://localhost:8000/api/docs](http://localhost:8000/api/
 
 | Command | Containers | Use when |
 |---------|------------|----------|
-| `make dev-ultra-lite-infra` + `make dev-ultra-lite-server` + host `npm run dev` | mongodb, redis only | Lowest RAM — host API + Vite; Celery runs inline (no RabbitMQ) |
-| `make dev-lite` + host `npm run dev` | mongodb, redis, rabbitmq, server | API in Docker; also pulls RabbitMQ via `server` depends_on |
+| `make dev-ultra-lite-infra` + `make dev-ultra-lite-server` + `make dev-lite-client` | mongodb, redis only | Lowest RAM — host API + Vite; Celery runs inline (no RabbitMQ) |
+| `make dev-lite` + `make dev-lite-client` | mongodb, redis, rabbitmq, server | API in Docker; also pulls RabbitMQ via `server` depends_on |
 | `make dev-search` | mongodb, redis, elasticsearch, server | Elasticsearch-backed full-text search (`ELASTICSEARCH_URL` required) |
 | `make dev` | + client, nginx | Full stack through nginx; no background jobs |
 | `make dev-worker` | + Celery worker + beat + RabbitMQ | Testing reminders, calendar sync, email jobs |
@@ -91,7 +91,8 @@ Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN` in `.env`.
 |--------------------|--------------------------------------------------|
 | `make dev-ultra-lite-infra` | MongoDB + Redis in Docker; runs migrate |
 | `make dev-ultra-lite-server` | Host uvicorn (:8000); run after infra |
-| `make dev-lite`    | Minimal stack (db, redis, API); run Vite on host |
+| `make dev-lite`    | Minimal stack (db, redis, API); pair with `make dev-lite-client` |
+| `make dev-lite-client` | Host Vite on :3000 (uses `client/.env.development`) |
 | `make dev-search`  | Lite stack + Elasticsearch (set `ELASTICSEARCH_URL` in `.env`) |
 | `make dev`         | Core dev stack (nginx + client; no worker/bot)   |
 | `make dev-worker`  | Core stack + RabbitMQ + Celery worker + beat   |

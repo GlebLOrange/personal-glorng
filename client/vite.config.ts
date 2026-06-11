@@ -5,7 +5,8 @@ import { fileURLToPath, URL } from "node:url";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
 
-const apiProxyTarget = process.env.VITE_API_PROXY_TARGET ?? "http://server:8000";
+// Host dev-lite: client/.env.development → 127.0.0.1:8000. Docker client: compose sets server:8000.
+const apiProxyTarget = process.env.VITE_API_PROXY_TARGET ?? "http://127.0.0.1:8000";
 const behindNginx = process.env.VITE_BEHIND_NGINX === "true";
 const sentryEnabled = Boolean(process.env.SENTRY_AUTH_TOKEN);
 const analyzeBundle = process.env.ANALYZE === "true";

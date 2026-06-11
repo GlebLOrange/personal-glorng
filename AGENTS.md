@@ -31,7 +31,7 @@ For Elasticsearch-backed search, use `make dev-search` (add `-f docker-compose.s
 2. Start backend: `make dev-ultra-lite-infra` then `make dev-ultra-lite-server` (or lite/full compose commands above with the cloud overlay).
 3. Seed admin: `cd server && GLORNG_ENV_FILE=../.env uv run python scripts/ensure_e2e_user.py` (or `make seed-ultra-lite` / `make seed` with `SEED_PASSWORD` set).
 4. Backfill search index (first deploy or after schema changes): `make reindex-search`
-5. Frontend: `cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev` → http://localhost:3000
+5. Frontend: `make dev-lite-client` → http://localhost (dev-lite nginx) or http://localhost:3000
 
 Default E2E credentials: `admin@admin.admin` / `MyTestPass123!`
 

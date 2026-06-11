@@ -1,5 +1,24 @@
-# Minimal dev stack: db + redis + API only. Run Vite on the host (see `make dev-lite`).
+# Minimal dev stack: db + redis + API + nginx. Run Vite on the host (`make dev-lite-client`).
 services:
+  client:
+    profiles:
+      - docker-client
+
   server:
     ports:
       - "8000:8000"
+
+  nginx:
+    volumes:
+      - ./nginx/nginx.dev-lite.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/http_common.conf:/etc/nginx/http_common.conf:ro
+      - ./nginx/security_headers.conf:/etc/nginx/security_headers.conf:ro
+      - ./nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
+      - ./nginx/proxy_sse_params.conf:/etc/nginx/proxy_sse_params.conf:ro
+      - server_media:/app/media:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      !override
+      server:
+        condition: service_started
