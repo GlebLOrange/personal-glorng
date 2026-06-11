@@ -1,5 +1,7 @@
 import axios, { type AxiosRequestConfig } from "axios";
 
+import { handleAuthFailure } from "@/utils/authSession";
+
 export const api = axios.create({
   baseURL: "/api",
   headers: { "Content-Type": "application/json" },
@@ -45,6 +47,7 @@ api.interceptors.response.use(
       return api(orig);
     } catch (refreshError) {
       pendingQueue.forEach(({ reject }) => reject(refreshError));
+      void handleAuthFailure();
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

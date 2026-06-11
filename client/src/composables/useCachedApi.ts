@@ -80,3 +80,8 @@ export function useCachedApi<T>(
 export function invalidateCachedApi(url: string): void {
   cache.delete(url);
 }
+
+/** Clear all cached API responses (e.g. on logout or session expiry). */
+export function clearCachedApi(): void {
+  cache.clear();
+}

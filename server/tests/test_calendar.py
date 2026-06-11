@@ -296,17 +296,22 @@ class TestProcessSyncQueue:
 
 
 class TestGoogleOAuthCallback:
-    @patch("app.routers.callbacks.decode_token")
     @patch("app.routers.callbacks.Flow")
     @patch("app.routers.callbacks.Bot")
     async def test_stores_credential(
         self,
         mock_bot_cls: MagicMock,
         mock_flow_cls: MagicMock,
-        mock_decode_token: MagicMock,
         client: AsyncClient,
     ) -> None:
-        mock_decode_token.return_value = {"type": "oauth_state", "sub": "123456"}
+        from app.core.google_oauth_state import (
+            generate_google_oauth_state,
+            store_google_oauth_state,
+        )
+
+        state = generate_google_oauth_state()
+        await store_google_oauth_state(state=state, telegram_user_id=123456)
+
         mock_creds = MagicMock()
         mock_creds.refresh_token = "new-refresh-token"
 
@@ -319,7 +324,7 @@ class TestGoogleOAuthCallback:
 
         resp = await client.get(
             "/api/callbacks/google",
-            params={"code": "auth-code", "state": "123456"},
+            params={"code": "auth-code", "state": state},
         )
 
         assert resp.status_code == 200
@@ -331,6 +336,14 @@ class TestGoogleOAuthCallback:
         mock_flow_cls: MagicMock,
         client: AsyncClient,
     ) -> None:
+        from app.core.google_oauth_state import (
+            generate_google_oauth_state,
+            store_google_oauth_state,
+        )
+
+        state = generate_google_oauth_state()
+        await store_google_oauth_state(state=state, telegram_user_id=123456)
+
         mock_creds = MagicMock()
         mock_creds.refresh_token = None
 
@@ -340,7 +353,7 @@ class TestGoogleOAuthCallback:
 
         resp = await client.get(
             "/api/callbacks/google",
-            params={"code": "auth-code", "state": "123456"},
+            params={"code": "auth-code", "state": state},
         )
 
         assert resp.status_code == 400
@@ -348,7 +361,7 @@ class TestGoogleOAuthCallback:
     async def test_rejects_invalid_state(self, client: AsyncClient) -> None:
         resp = await client.get(
             "/api/callbacks/google",
-            params={"code": "auth-code", "state": "not-a-number"},
+            params={"code": "auth-code", "state": "not-a-valid-state"},
         )
 
         assert resp.status_code == 400
