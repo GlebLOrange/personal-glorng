@@ -1,5 +1,4 @@
-import { api } from "@/composables/useApi";
-import { handleAuthFailure } from "@/utils/authSession";
+import { tryRefreshSession } from "@/utils/authSession";
 
 const USER_SAFE_ERRORS: Record<number, string> = {
   401: "Please sign in again.",
@@ -27,13 +26,8 @@ export async function streamingPost(
     });
 
   let response = await doFetch();
-  if (response.status === 401) {
-    try {
-      await api.post("/auth/refresh");
-      response = await doFetch();
-    } catch {
-      await handleAuthFailure();
-    }
+  if (response.status === 401 && (await tryRefreshSession())) {
+    response = await doFetch();
   }
   return response;
 }

@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Request, Response
 
 from app.core.deps import (
     AppSettings,
+    AuditServiceDep,
     CurrentUser,
     JobQueueDep,
     oauth2_scheme,
@@ -95,10 +96,12 @@ def _clear_auth_cookies(response: Response) -> None:
 async def register(
     data: RegisterRequest,
     registry: DbRegistry,
+    audit_svc: AuditServiceDep,
     job_queue: JobQueueDep,
 ) -> MessageResponse:
     user = await register_user(
         registry,
+        audit_svc,
         data.email,
         data.password,
         display_name=data.display_name,
@@ -126,10 +129,16 @@ async def register(
 async def login(
     data: LoginRequest,
     registry: DbRegistry,
+    audit_svc: AuditServiceDep,
     response: Response,
     settings: AppSettings,
 ) -> TokenResponse:
-    access_token, refresh_token = await login_user(registry, data.email, data.password)
+    access_token, refresh_token = await login_user(
+        registry,
+        audit_svc,
+        data.email,
+        data.password,
+    )
     _set_auth_cookies(
         response,
         access_token=access_token,
@@ -146,8 +155,12 @@ async def login(
     description="Confirm account email using the token from the verification link.",
     dependencies=[Depends(rate_limit_auth)],
 )
-async def verify(token: str, registry: DbRegistry) -> MessageResponse:
-    await verify_user_email(registry, token)
+async def verify(
+    token: str,
+    registry: DbRegistry,
+    audit_svc: AuditServiceDep,
+) -> MessageResponse:
+    await verify_user_email(registry, audit_svc, token)
     return MessageResponse(message="Email verified successfully")
 
 
@@ -162,6 +175,7 @@ async def verify(token: str, registry: DbRegistry) -> MessageResponse:
 )
 async def refresh(
     registry: DbRegistry,
+    audit_svc: AuditServiceDep,
     response: Response,
     request: Request,
     settings: AppSettings,
@@ -174,7 +188,9 @@ async def refresh(
         raise UnauthorizedError("Missing refresh token")
 
     access_token, new_refresh_token = await refresh_access_token(
-        registry, refresh_token
+        registry,
+        audit_svc,
+        refresh_token,
     )
     _set_auth_cookies(
         response,
@@ -197,6 +213,7 @@ async def refresh(
 )
 async def logout(
     registry: DbRegistry,
+    audit_svc: AuditServiceDep,
     response: Response,
     request: Request,
     data: LogoutRequest | None = None,
@@ -228,7 +245,7 @@ async def logout(
         except ValueError:
             pass
 
-    await record_logout(registry, user_id)
+    await record_logout(audit_svc, user_id)
 
     return MessageResponse(message="Logged out successfully")
 
@@ -243,9 +260,10 @@ async def logout(
 async def forgot_password(
     data: ForgotPasswordRequest,
     registry: DbRegistry,
+    audit_svc: AuditServiceDep,
     job_queue: JobQueueDep,
 ) -> MessageResponse:
-    token = await request_password_reset(registry, data.email)
+    token = await request_password_reset(registry, audit_svc, data.email)
     if token:
         logger.info(
             "Password reset requested",
@@ -267,8 +285,9 @@ async def forgot_password(
 async def reset_password(
     data: ResetPasswordRequest,
     registry: DbRegistry,
+    audit_svc: AuditServiceDep,
 ) -> MessageResponse:
-    await reset_user_password(registry, data.token, data.new_password)
+    await reset_user_password(registry, audit_svc, data.token, data.new_password)
     return MessageResponse(message="Password reset successfully")
 
 

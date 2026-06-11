@@ -29,9 +29,16 @@ return current
 
 
 class RateLimiter:
-    def __init__(self, requests: int = 10, window: int = 60) -> None:
+    def __init__(
+        self,
+        requests: int = 10,
+        window: int = 60,
+        *,
+        fail_open: bool = True,
+    ) -> None:
         self.requests = requests
         self.window = window
+        self.fail_open = fail_open
 
     async def __call__(self, request: Request) -> None:
         client_addr = client_ip(request)
@@ -41,10 +48,23 @@ class RateLimiter:
             script = redis.register_script(_INCR_EXPIRE_LUA)
             current = int(await script(keys=[key], args=[self.window]))
         except RedisError as exc:
+            if not self.fail_open:
+                logger.warning(
+                    "Rate limit check failed; rejecting request",
+                    context={
+                        "path": str(request.url.path),
+                        "ip": client_addr,
+                        "error": str(exc),
+                    },
+                )
+                raise ApiError(503, "Service temporarily unavailable") from exc
             logger.warning(
                 "Rate limit check failed; allowing request",
-                error=exc,
-                context={"path": str(request.url.path), "ip": client_addr},
+                context={
+                    "path": str(request.url.path),
+                    "ip": client_addr,
+                    "error": str(exc),
+                },
             )
             return
 
@@ -61,7 +81,7 @@ class RateLimiter:
             raise ApiError(429, "Too many requests. Please try again later.")
 
 
-rate_limit_auth = RateLimiter(requests=5, window=60)
+rate_limit_auth = RateLimiter(requests=5, window=60, fail_open=False)
 rate_limit_api = RateLimiter(requests=30, window=60)
 rate_limit_shortener_create = RateLimiter(requests=10, window=3600)
 rate_limit_vid_download = RateLimiter(requests=5, window=3600)

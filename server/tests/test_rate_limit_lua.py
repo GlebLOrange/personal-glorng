@@ -1,10 +1,12 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import Request
+from redis.exceptions import RedisError
 
 import app.core.redis as redis_module
-from app.core.rate_limit import RateLimiter
+from app.core.exceptions import ApiError
+from app.core.rate_limit import RateLimiter, rate_limit_auth
 from tests.conftest import FakeRedis
 
 
@@ -61,3 +63,32 @@ async def test_uses_lua_script_via_register_script(
     await rate_limiter(_make_request())
 
     fake_redis.register_script.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_fail_open_allows_request_when_redis_unavailable() -> None:
+    limiter = RateLimiter(requests=2, window=60, fail_open=True)
+    with patch(
+        "app.core.rate_limit.get_redis_client",
+        side_effect=RedisError("connection refused"),
+    ):
+        await limiter(_make_request())
+
+
+@pytest.mark.asyncio
+async def test_fail_closed_rejects_request_when_redis_unavailable() -> None:
+    limiter = RateLimiter(requests=2, window=60, fail_open=False)
+    with (
+        patch(
+            "app.core.rate_limit.get_redis_client",
+            side_effect=RedisError("connection refused"),
+        ),
+        pytest.raises(ApiError) as exc_info,
+    ):
+        await limiter(_make_request())
+
+    assert exc_info.value.status_code == 503
+
+
+def test_auth_rate_limiter_is_fail_closed() -> None:
+    assert rate_limit_auth.fail_open is False

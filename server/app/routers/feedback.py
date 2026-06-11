@@ -4,6 +4,7 @@ from html import escape
 from fastapi import APIRouter, Depends
 
 from app.core.deps import AuthorizedUser, require_capability
+from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.rate_limit import RateLimiter
 from app.core.telegram import notify_admin
@@ -31,8 +32,7 @@ rate_limit_feedback = RateLimiter(requests=5, window=300)
 )
 async def create_feedback(data: FeedbackCreate, registry: DbRegistry) -> Feedback:
     if registry.feedback is None:
-        msg = "Feedback repository is not initialized"
-        raise RuntimeError(msg)
+        raise ApiError(503, "Feedback repository is not initialized")
 
     entry = Feedback(email=data.email, theme=data.theme, message=data.message)
     entry = await registry.feedback.insert(entry)
@@ -68,8 +68,7 @@ async def list_feedback(
     _user: AuthorizedUser,
 ) -> list[Feedback]:
     if registry.feedback is None:
-        msg = "Feedback repository is not initialized"
-        raise RuntimeError(msg)
+        raise ApiError(503, "Feedback repository is not initialized")
     return await registry.feedback.list(limit=500, sort=[("created_at", -1)])
 
 
@@ -87,8 +86,7 @@ async def update_feedback_status(
     user: AuthorizedUser,
 ) -> Feedback:
     if registry.feedback is None:
-        msg = "Feedback repository is not initialized"
-        raise RuntimeError(msg)
+        raise ApiError(503, "Feedback repository is not initialized")
 
     entry = await registry.feedback.update_fields(feedback_id, status=data.status)
     await index_feedback(registry, entry)
