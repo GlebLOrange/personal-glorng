@@ -6,10 +6,11 @@ import { defineConfig } from "vite";
 
 const apiProxyTarget = process.env.VITE_API_PROXY_TARGET ?? "http://server:8000";
 const behindNginx = process.env.VITE_BEHIND_NGINX === "true";
+const sentryEnabled = Boolean(process.env.SENTRY_AUTH_TOKEN);
 
 export default defineConfig({
   build: {
-    sourcemap: "hidden",
+    sourcemap: sentryEnabled ? "hidden" : false,
   },
   plugins: [
     vue(),
@@ -18,7 +19,7 @@ export default defineConfig({
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
       authToken: process.env.SENTRY_AUTH_TOKEN,
-      disable: !process.env.SENTRY_AUTH_TOKEN,
+      disable: !sentryEnabled,
     }),
   ],
   resolve: {

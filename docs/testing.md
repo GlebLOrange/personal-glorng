@@ -15,7 +15,7 @@ Tests are organized into four tiers by CI cost and release risk.
 
 - `uv run pytest -m "not integration"` — mongomock + FakeRedis (~375 cases)
 - `npm run test` — Vitest unit/component tests
-- `npm run lint` / `npm run build`
+- `npm run lint` / `npm run build:check`
 - Playwright smoke (`client/e2e/smoke.spec.ts`)
 - Ruff check/format
 
@@ -71,7 +71,7 @@ REDIS_URL=redis://:local@127.0.0.1:6379/0 uv run pytest -m redis -v
 cd client && npm run test
 
 # E2E (API must be up)
-cd client && npm run build && \
+cd client && npm run build:check && \
   VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run preview &
 npm run e2e
 ```

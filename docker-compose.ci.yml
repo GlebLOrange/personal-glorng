@@ -1,9 +1,20 @@
 # CI overrides: expose API port and skip dev-only reload.
 services:
+  migrate:
+    build:
+      cache_from:
+        - type=gha,scope=glorng-migrate
+      cache_to:
+        - type=gha,scope=glorng-migrate,mode=max
   server:
     ports:
       - "127.0.0.1:8000:8000"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    build:
+      cache_from:
+        - type=gha,scope=glorng-server-dev
+      cache_to:
+        - type=gha,scope=glorng-server-dev,mode=max
     volumes:
       - server_media:/app/media
       - ./.env:/run/glorng/.env:ro

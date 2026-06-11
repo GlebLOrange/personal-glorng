@@ -34,6 +34,8 @@ jobs:
       - uses: astral-sh/setup-uv@v4
         with:
           python-version: "3.14"
+          enable-cache: true
+          cache-dependency-glob: "server/uv.lock"
       - run: uv sync --frozen
       - name: Run Alembic migrations
         env:
@@ -70,6 +72,8 @@ jobs:
       - uses: astral-sh/setup-uv@v4
         with:
           python-version: "3.14"
+          enable-cache: true
+          cache-dependency-glob: "server/uv.lock"
       - run: uv sync --frozen
       - name: Redis integration tests (P1)
         env:
