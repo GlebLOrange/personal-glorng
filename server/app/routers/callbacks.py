@@ -6,8 +6,8 @@ from fastapi.responses import HTMLResponse
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 
+from app.core.google_oauth_state import consume_google_oauth_state
 from app.core.logging import logger
-from app.core.security import decode_token
 from app.db.deps import DbRegistry
 from app.db.documents.credential import GoogleCredential
 from app.settings import get_settings
@@ -45,12 +45,8 @@ async def google_oauth_callback(
     if registry.credentials is None:
         return HTMLResponse(_ERROR_HTML, status_code=500)
 
-    try:
-        payload = decode_token(state)
-        if payload.get("type") != "oauth_state":
-            return HTMLResponse(_ERROR_HTML, status_code=400)
-        telegram_user_id = int(payload.get("sub", ""))
-    except ValueError, TypeError, Exception:
+    telegram_user_id = await consume_google_oauth_state(state)
+    if telegram_user_id is None:
         return HTMLResponse(_ERROR_HTML, status_code=400)
 
     try:

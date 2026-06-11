@@ -6,7 +6,10 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from app.core.security import create_oauth_state_token
+from app.core.google_oauth_state import (
+    generate_google_oauth_state,
+    store_google_oauth_state,
+)
 from app.settings import get_settings
 
 router = Router()
@@ -25,7 +28,11 @@ async def cmd_connect_calendar(message: Message) -> None:
     if not message.from_user:
         return
 
-    state = create_oauth_state_token(str(message.from_user.id))
+    state = generate_google_oauth_state()
+    await store_google_oauth_state(
+        state=state,
+        telegram_user_id=message.from_user.id,
+    )
 
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,

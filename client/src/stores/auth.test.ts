@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { api } from "@/composables/useApi";
+import { useCachedApi } from "@/composables/useCachedApi";
 import { useAuthStore } from "@/stores/auth";
 
 vi.mock("@/composables/useApi", () => ({
@@ -16,6 +17,21 @@ describe("useAuthStore", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+  });
+
+  it("clearUser clears cached API responses", async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: { ok: true } });
+
+    const cached = useCachedApi<{ ok: boolean }>("/auth-cache-test", 60_000);
+    await cached.fetch();
+    expect(api.get).toHaveBeenCalledTimes(1);
+
+    const auth = useAuthStore();
+    auth.clearUser();
+
+    const again = useCachedApi<{ ok: boolean }>("/auth-cache-test", 60_000);
+    await again.fetch();
+    expect(api.get).toHaveBeenCalledTimes(2);
   });
 
   it("clears user on clearUser", () => {

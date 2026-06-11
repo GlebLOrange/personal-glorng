@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from datetime import timedelta
 from urllib.parse import parse_qs, urlparse
 
 import pytest
 from httpx import AsyncClient
 
-from app.core.security import create_access_token, create_oauth_state_token
+from app.core.google_oauth_state import (
+    generate_google_oauth_state,
+    store_google_oauth_state,
+)
 from app.db.registry import DatabaseRegistry
 
 
@@ -84,20 +86,46 @@ async def test_github_oauth_state_is_one_time_use(
 
 
 @pytest.mark.asyncio
-async def test_google_oauth_rejects_non_oauth_state_token(client: AsyncClient) -> None:
-    bad_state = create_access_token("123")
+async def test_google_oauth_rejects_unknown_state(client: AsyncClient) -> None:
     resp = await client.get(
         "/api/callbacks/google",
-        params={"code": "dummy", "state": bad_state},
+        params={"code": "dummy", "state": "unknown-state-token"},
     )
     assert resp.status_code == 400
 
 
 @pytest.mark.asyncio
-async def test_google_oauth_rejects_expired_state_token(client: AsyncClient) -> None:
-    expired = create_oauth_state_token("123", expires_delta=timedelta(seconds=-1))
-    resp = await client.get(
-        "/api/callbacks/google",
-        params={"code": "dummy", "state": expired},
+async def test_google_oauth_state_is_one_time_use(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from unittest.mock import AsyncMock, MagicMock
+
+    from app.routers import callbacks as callbacks_router
+
+    state = generate_google_oauth_state()
+    await store_google_oauth_state(state=state, telegram_user_id=123)
+
+    mock_creds = MagicMock()
+    mock_creds.refresh_token = "new-refresh-token"
+    mock_flow = MagicMock()
+    mock_flow.credentials = mock_creds
+
+    monkeypatch.setattr(
+        callbacks_router.Flow,
+        "from_client_config",
+        MagicMock(return_value=mock_flow),
     )
-    assert resp.status_code == 400
+    monkeypatch.setattr(callbacks_router, "Bot", MagicMock(return_value=AsyncMock()))
+
+    first = await client.get(
+        "/api/callbacks/google",
+        params={"code": "auth-code", "state": state},
+    )
+    assert first.status_code == 200
+
+    second = await client.get(
+        "/api/callbacks/google",
+        params={"code": "auth-code", "state": state},
+    )
+    assert second.status_code == 400

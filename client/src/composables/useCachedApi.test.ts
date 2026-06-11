@@ -2,7 +2,7 @@ import { ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { api } from "@/composables/useApi";
-import { useCachedApi } from "@/composables/useCachedApi";
+import { clearCachedApi, useCachedApi } from "@/composables/useCachedApi";
 
 vi.mock("@/composables/useApi", () => ({
   api: {
@@ -60,6 +60,23 @@ describe("useCachedApi", () => {
     expect(api.get).toHaveBeenCalledTimes(2);
     expect(second.data.value).toEqual({ v: 2 });
     vi.useRealTimers();
+  });
+
+  it("clearCachedApi drops all entries", async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: { n: 1 } });
+
+    const first = useCachedApi<{ n: number }>("/cache-test-clear", 60_000);
+    await first.fetch();
+
+    const second = useCachedApi<{ n: number }>("/cache-test-clear", 60_000);
+    await second.fetch();
+    expect(api.get).toHaveBeenCalledTimes(1);
+
+    clearCachedApi();
+
+    const third = useCachedApi<{ n: number }>("/cache-test-clear", 60_000);
+    await third.fetch();
+    expect(api.get).toHaveBeenCalledTimes(2);
   });
 
   it("resolves reactive url on fetch", async () => {

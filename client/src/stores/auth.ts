@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
 import { api } from "@/composables/useApi";
+import { clearCachedApi } from "@/composables/useCachedApi";
 import { syncGuestWeatherLocations } from "@/composables/useWeatherLocations";
 import type { UserPreferences, UserResponse } from "@/types";
 
@@ -29,6 +30,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   function clearUser(): void {
     user.value = null;
+    clearCachedApi();
   }
 
   function logout(): void {
