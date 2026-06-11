@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
 
 from app.core.deps import CurrentUser
-from app.core.exceptions import UnauthorizedError
+from app.core.exceptions import ApiError, UnauthorizedError
 from app.core.logging import logger
 from app.core.redis import cache_delete, cache_get, cache_set
 from app.db.deps import DbRegistry
@@ -51,8 +51,7 @@ async def github_status(
     user: CurrentUser, registry: DbRegistry
 ) -> GitHubStatusResponse:
     if registry.credentials is None:
-        msg = "Credential repository is not initialized"
-        raise RuntimeError(msg)
+        raise ApiError(503, "Credential store unavailable")
 
     credential = await registry.credentials.get_github_for_user(user.id)
     if not credential:
@@ -71,8 +70,7 @@ async def github_unlink(
     user: CurrentUser, registry: DbRegistry
 ) -> GitHubStatusResponse:
     if registry.credentials is None:
-        msg = "Credential repository is not initialized"
-        raise RuntimeError(msg)
+        raise ApiError(503, "Credential store unavailable")
 
     await registry.credentials.delete_github_for_user(user.id)
     logger.info("GitHub account unlinked", context={"user_id": user.id})
@@ -121,8 +119,7 @@ async def github_callback(
     registry: DbRegistry,
 ) -> GitHubCallbackResponse:
     if registry.credentials is None:
-        msg = "Credential repository is not initialized"
-        raise RuntimeError(msg)
+        raise ApiError(503, "Credential store unavailable")
 
     state_key = _github_oauth_state_key(user_public_id=str(user.public_id))
     expected_state = await cache_get(state_key)
@@ -173,8 +170,7 @@ async def _require_github_token(
     registry: DbRegistry,
 ) -> str:
     if registry.credentials is None:
-        msg = "Credential repository is not initialized"
-        raise RuntimeError(msg)
+        raise ApiError(503, "Credential store unavailable")
 
     credential = await registry.credentials.get_github_for_user(user.id)
     if not credential:

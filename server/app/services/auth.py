@@ -75,13 +75,13 @@ async def _get_user_by_sub(registry: DatabaseRegistry, subject: str) -> User:
 
 async def register_user(
     registry: DatabaseRegistry,
+    audit: AuditService,
     email: str,
     password: str,
     *,
     display_name: str | None = None,
     timezone: str = "UTC",
 ) -> User:
-    audit = AuditService(registry)
     normalized_email = email.strip().lower()
 
     existing = await get_user_by_email(registry, normalized_email)
@@ -115,10 +115,10 @@ async def register_user(
 
 async def login_user(
     registry: DatabaseRegistry,
+    audit: AuditService,
     email: str,
     password: str,
 ) -> tuple[str, str]:
-    audit = AuditService(registry)
     user = await get_user_by_email(registry, email.strip().lower())
     if not user or not verify_password(password, user.hashed_password):
         logger.warning("Login failed", context={"email": _auth_log_email(email)})
@@ -154,6 +154,7 @@ async def login_user(
 
 async def refresh_access_token(
     registry: DatabaseRegistry,
+    audit: AuditService,
     refresh_token: str,
 ) -> tuple[str, str]:
     payload = await _decode_and_validate(refresh_token, "refresh")
@@ -162,7 +163,6 @@ async def refresh_access_token(
     new_access = create_access_token(str(user.public_id), user_id=user.id)
     new_refresh = create_refresh_token(str(user.public_id))
 
-    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -177,7 +177,11 @@ async def refresh_access_token(
     return new_access, new_refresh
 
 
-async def verify_user_email(registry: DatabaseRegistry, token: str) -> User:
+async def verify_user_email(
+    registry: DatabaseRegistry,
+    audit: AuditService,
+    token: str,
+) -> User:
     payload = await _decode_and_validate(token, "verify")
     user = await get_user_by_email(registry, str(payload["sub"]))
     if not user:
@@ -190,7 +194,6 @@ async def verify_user_email(registry: DatabaseRegistry, token: str) -> User:
 
     await _blacklist_payload(payload)
 
-    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -205,12 +208,15 @@ async def verify_user_email(registry: DatabaseRegistry, token: str) -> User:
     return user
 
 
-async def request_password_reset(registry: DatabaseRegistry, email: str) -> str | None:
+async def request_password_reset(
+    registry: DatabaseRegistry,
+    audit: AuditService,
+    email: str,
+) -> str | None:
     user = await get_user_by_email(registry, email.strip().lower())
     if not user:
         return None
 
-    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -228,6 +234,7 @@ async def request_password_reset(registry: DatabaseRegistry, email: str) -> str 
 
 async def reset_user_password(
     registry: DatabaseRegistry,
+    audit: AuditService,
     token: str,
     new_password: str,
 ) -> User:
@@ -243,7 +250,6 @@ async def reset_user_password(
 
     await _blacklist_payload(payload)
 
-    audit = AuditService(registry)
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -258,8 +264,10 @@ async def reset_user_password(
     return user
 
 
-async def record_logout(registry: DatabaseRegistry, user_id: int | None) -> None:
-    audit = AuditService(registry)
+async def record_logout(
+    audit: AuditService,
+    user_id: int | None,
+) -> None:
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,

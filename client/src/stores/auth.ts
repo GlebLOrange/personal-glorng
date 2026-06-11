@@ -5,6 +5,7 @@ import { computed, ref } from "vue";
 import { api } from "@/composables/useApi";
 import { clearCachedApi } from "@/composables/useCachedApi";
 import { syncGuestWeatherLocations } from "@/composables/useWeatherLocations";
+import { tryRefreshSession } from "@/utils/authSession";
 import type { UserPreferences, UserResponse } from "@/types";
 
 export interface RegisterPayload {
@@ -131,7 +132,9 @@ export const useAuthStore = defineStore("auth", () => {
         if (status !== 401) {
           throw err;
         }
-        await api.post("/auth/refresh");
+        if (!(await tryRefreshSession())) {
+          return;
+        }
         await fetchUser();
       }
     } catch (err) {

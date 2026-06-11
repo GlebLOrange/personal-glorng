@@ -73,6 +73,18 @@ async def test_resume_includes_github_section(
 
 
 @pytest.mark.asyncio
+async def test_auth_github_status_returns_503_when_credentials_unavailable(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+) -> None:
+    registry.credentials = None
+
+    resp = await auth_client.get("/api/auth/github/status")
+    assert resp.status_code == 503
+    assert resp.json()["detail"] == "Credential store unavailable"
+
+
+@pytest.mark.asyncio
 async def test_auth_github_repos_requires_link(auth_client: AsyncClient) -> None:
     resp = await auth_client.get("/api/auth/github/repos")
     assert resp.status_code == 401

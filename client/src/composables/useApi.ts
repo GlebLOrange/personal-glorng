@@ -1,6 +1,6 @@
 import axios, { type AxiosRequestConfig } from "axios";
 
-import { handleAuthFailure } from "@/utils/authSession";
+import { tryRefreshSession } from "@/utils/authSession";
 
 export const api = axios.create({
   baseURL: "/api",
@@ -42,12 +42,16 @@ api.interceptors.response.use(
     orig._retry = true;
     isRefreshing = true;
     try {
-      await api.post("/auth/refresh");
+      const refreshed = await tryRefreshSession();
+      if (!refreshed) {
+        const refreshError = new Error("Session refresh failed");
+        pendingQueue.forEach(({ reject }) => reject(refreshError));
+        return Promise.reject(refreshError);
+      }
       pendingQueue.forEach(({ resolve }) => resolve());
       return api(orig);
     } catch (refreshError) {
       pendingQueue.forEach(({ reject }) => reject(refreshError));
-      void handleAuthFailure();
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

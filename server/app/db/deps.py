@@ -14,8 +14,7 @@ from app.settings import Settings, get_settings
 def get_registry(request: Request) -> DatabaseRegistry:
     registry: DatabaseRegistry | None = getattr(request.app.state, "db_registry", None)
     if registry is None:
-        msg = "Database registry is not initialized"
-        raise RuntimeError(msg)
+        raise ApiError(503, "Database not initialized")
     return registry
 
 

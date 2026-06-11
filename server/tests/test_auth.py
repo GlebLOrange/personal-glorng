@@ -1,12 +1,15 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from httpx import AsyncClient
 
 from app.core.deps import get_job_queue_dep
 from app.core.security import create_reset_token, create_verification_token
+from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
 from app.main import app
+from app.services.audit import AuditService
+from app.services.auth import login_user
 from app.services.user import get_user_by_email
 from app.workers.job_names import JobName
 from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, STRONG_PASSWORD
@@ -415,3 +418,23 @@ async def test_reset_password_success(
     )
     assert login.status_code == 200
     assert "access_token" in login.json()
+
+
+@pytest.mark.asyncio
+async def test_login_user_dual_writes_audit_to_postgres(
+    registry: DatabaseRegistry,
+    admin_user: User,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    await registry.users.update_fields(admin_user.id, is_verified=True)  # type: ignore[union-attr]
+
+    record_postgres = AsyncMock()
+    monkeypatch.setattr(AuditService, "_record_postgres", record_postgres)
+    mock_settings = MagicMock()
+    mock_settings.enable_postgres.return_value = True
+    monkeypatch.setattr("app.services.audit.get_settings", lambda: mock_settings)
+
+    audit = AuditService(registry, postgres_db=AsyncMock())
+    await login_user(registry, audit, ADMIN_EMAIL, ADMIN_PASSWORD)
+
+    record_postgres.assert_called_once()
