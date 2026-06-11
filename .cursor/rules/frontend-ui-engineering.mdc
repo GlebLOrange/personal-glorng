@@ -1,9 +1,16 @@
 ---
-name: frontend-ui-engineering
-description: Builds production-quality UIs. Use when building or modifying user-facing interfaces. Use when creating components, implementing layouts, managing state, or when the output needs to look and feel production-quality rather than AI-generated.
+description: Builds production-quality UIs. Use when building or modifying user-facing interfaces.
+alwaysApply: false
 ---
 
 # Frontend UI Engineering
+
+## Relationship to other rules
+
+This rule supplements always-on agent rules; it does not override them.
+
+- **Stack:** Follow Vue/Vite conventions in `frontend-stack.mdc`.
+- **Tests:** Do not run the full suite during routine dev unless the user asks — see `skip-tests-in-dev.mdc`.
 
 ## Overview
 

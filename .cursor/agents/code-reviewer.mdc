@@ -46,13 +46,15 @@ Evaluate every change across these five dimensions:
 
 ## Output Format
 
-Categorize every finding:
+Categorize every finding using the same severity scheme as `code-review-and-quality.mdc`:
 
-**Critical** — Must fix before merge (security vulnerability, data loss risk, broken functionality)
-
-**Important** — Should fix before merge (missing test, wrong abstraction, poor error handling)
-
-**Suggestion** — Consider for improvement (naming, code style, optional optimization)
+| Prefix | Meaning | Author Action |
+|--------|---------|---------------|
+| **Critical:** | Blocks merge | Security vulnerability, data loss, broken functionality |
+| *(no prefix)* | Required change | Must address before merge |
+| **Nit:** | Minor, optional | Author may ignore — formatting, style preferences |
+| **Optional:** / **Consider:** | Suggestion | Worth considering but not required |
+| **FYI** | Informational only | No action needed — context for future reference |
 
 ## Review Output Template
 
@@ -64,13 +66,19 @@ Categorize every finding:
 **Overview:** [1-2 sentences summarizing the change and overall assessment]
 
 ### Critical Issues
+- **Critical:** [File:line] [Description and recommended fix]
+
+### Required Issues
 - [File:line] [Description and recommended fix]
 
-### Important Issues
-- [File:line] [Description and recommended fix]
+### Nits
+- **Nit:** [File:line] [Description]
 
-### Suggestions
-- [File:line] [Description]
+### Optional / Consider
+- **Optional:** [File:line] [Description]
+
+### FYI
+- **FYI** [Context only — no action needed]
 
 ### What's Done Well
 - [Positive observation — always include at least one]
@@ -85,10 +93,11 @@ Categorize every finding:
 
 1. Review the tests first — they reveal intent and coverage
 2. Read the spec or task description before reviewing code
-3. Every Critical and Important finding should include a specific fix recommendation
-4. Don't approve code with Critical issues
+3. Every **Critical:** and required (no-prefix) finding should include a specific fix recommendation
+4. Don't approve code with **Critical:** issues
 5. Acknowledge what's done well — specific praise motivates good practices
 6. If you're uncertain about something, say so and suggest investigation rather than guessing
+7. For Security and Performance depth, consult `security-and-hardening.mdc`, `performance-optimization.mdc`, and the checklists in `references/`
 
 ## Composition
 

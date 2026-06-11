@@ -1,9 +1,16 @@
 ---
-name: security-and-hardening
-description: Hardens code against vulnerabilities. Use when handling user input, authentication, data storage, or external integrations. Use when building any feature that accepts untrusted data, manages user sessions, or interacts with third-party services.
+description: Hardens code against vulnerabilities. Use when handling user input, authentication, data storage, or external integrations.
+alwaysApply: false
 ---
 
 # Security and Hardening
+
+## Relationship to other rules
+
+This rule supplements always-on agent rules; it does not override them.
+
+- **Reviews:** Use as the Security axis detail for `code-review-and-quality.mdc`.
+- **Stack:** Follow client security notes in `frontend-stack.mdc` where applicable.
 
 ## Overview
 
