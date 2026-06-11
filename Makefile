@@ -11,6 +11,11 @@ dev:
 	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) up --build
 
 dev-lite:
+	@echo ""
+	@echo "dev-lite: mongodb, redis, API, nginx are starting."
+	@echo "  http://localhost needs host Vite — run in another terminal: make dev-lite-client"
+	@echo "  Or use http://localhost:3000 after Vite is up (API docs: http://127.0.0.1:8000/api/docs)"
+	@echo ""
 	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml $(COMPOSE_CACHE) up --build mongodb redis server nginx
 
 dev-lite-client:
