@@ -1,0 +1,5 @@
+# Ultra-lite dev: MongoDB + Redis only. Run API on the host (see `make dev-ultra-lite-server`).
+services:
+  redis:
+    ports:
+      - "127.0.0.1:6379:6379"

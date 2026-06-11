@@ -1,13 +1,22 @@
-.PHONY: dev dev-lite dev-search dev-postgres dev-mongo dev-worker dev-bot dev-full prod test lint lint-check check check-symlinks migrate db-init db-reset db-revision db-current db-downgrade db-check seed seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
+.PHONY: dev dev-lite dev-ultra-lite-infra dev-ultra-lite-server dev-search dev-postgres dev-mongo dev-worker dev-bot dev-full prod test lint lint-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed seed-ultra-lite seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
 
 msg ?=
 CHECK_DB ?= 1
+COMPOSE_ULTRA = docker compose -f docker-compose.yml -f docker-compose.ultra-lite.yml
+ULTRA_LITE_ENV = GLORNG_ENV_FILE=$(CURDIR)/.env UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv CELERY_TASK_ALWAYS_EAGER=true MEDIA_DIR=$(CURDIR)/server/media
 
 dev:
 	docker compose up --build
 
 dev-lite:
 	docker compose -f docker-compose.yml -f docker-compose.lite.yml up --build mongodb redis server
+
+dev-ultra-lite-infra:
+	$(COMPOSE_ULTRA) up -d mongodb redis
+	$(COMPOSE_ULTRA) run --rm migrate
+
+dev-ultra-lite-server:
+	cd server && $(ULTRA_LITE_ENV) uv sync --frozen && $(ULTRA_LITE_ENV) uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir app --forwarded-allow-ips=127.0.0.1
 
 dev-search:
 	docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.search.yml --profile search up --build mongodb redis elasticsearch server
@@ -59,6 +68,9 @@ endif
 db-init:
 	docker compose run --rm --build migrate
 
+db-init-ultra-lite:
+	$(COMPOSE_ULTRA) run --rm migrate
+
 migrate: db-init
 
 db-reset:
@@ -81,6 +93,9 @@ db-check:
 
 seed:
 	docker compose exec server python -m app.db.seed
+
+seed-ultra-lite:
+	cd server && $(ULTRA_LITE_ENV) uv run python -m app.db.seed
 
 seed-multicooker-recipes:
 	docker compose exec server python -m app.db.seed_multicooker_recipes

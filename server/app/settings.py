@@ -57,6 +57,10 @@ _COMPOSE_MONGO_HOST = "mongodb"
 _COMPOSE_MONGO_PORT = 27017
 _HOST_MONGO_HOST = "127.0.0.1"
 _HOST_MONGO_PORT = 27017
+_COMPOSE_REDIS_HOST = "redis"
+_COMPOSE_REDIS_PORT = 6379
+_HOST_REDIS_HOST = "127.0.0.1"
+_HOST_REDIS_PORT = 6379
 
 
 def _scrub_url_credentials(url: str) -> str:
@@ -129,6 +133,23 @@ def _resolve_mongodb_url(url: str) -> str:
                 auth = f"{auth}:{parsed.password}"
             auth = f"{auth}@"
         netloc = f"{auth}{_HOST_MONGO_HOST}:{_HOST_MONGO_PORT}"
+        return parsed._replace(netloc=netloc).geturl()
+    return url
+
+
+def _resolve_redis_url(url: str) -> str:
+    """Map Docker Compose Redis host to localhost when running on the host."""
+    if Path("/.dockerenv").exists():
+        return url
+    parsed = urlparse(url)
+    port = parsed.port or _COMPOSE_REDIS_PORT
+    if parsed.hostname == _COMPOSE_REDIS_HOST and port == _COMPOSE_REDIS_PORT:
+        auth = ""
+        if parsed.username or parsed.password is not None:
+            user = parsed.username or ""
+            password = parsed.password or ""
+            auth = f"{user}:{password}@"
+        netloc = f"{auth}{_HOST_REDIS_HOST}:{_HOST_REDIS_PORT}"
         return parsed._replace(netloc=netloc).geturl()
     return url
 
@@ -385,6 +406,12 @@ class Settings(BaseSettings):
 
     # Redis
     REDIS_URL: str
+
+    @model_validator(mode="after")
+    def _normalize_redis_url(self) -> Settings:
+        if self.REDIS_URL:
+            self.REDIS_URL = _resolve_redis_url(self.REDIS_URL)
+        return self
 
     # RabbitMQ / Celery
     RABBITMQ_USER: str

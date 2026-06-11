@@ -17,7 +17,12 @@ Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + Mongo
 # Copy env file and edit values
 cp .env.example .env
 
-# Recommended for daily work (3 containers + Vite on host — lowest RAM)
+# Recommended for daily work (2 Docker containers + host API + host Vite — lowest RAM)
+make dev-ultra-lite-infra    # terminal 1: mongodb + redis
+make dev-ultra-lite-server   # terminal 2: host uvicorn
+cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev
+
+# Or: API in Docker (also starts RabbitMQ via server depends_on)
 make dev-lite
 cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev
 
@@ -31,22 +36,23 @@ make db-init
 make seed
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in lite mode, or [http://localhost](http://localhost) with `make dev`.
+Open [http://localhost:3000](http://localhost:3000) in ultra-lite or lite mode, or [http://localhost](http://localhost) with `make dev`.
 
-API docs (dev only): [http://localhost:8000/api/docs](http://localhost:8000/api/docs) with `make dev-lite`, or `/api/docs` through nginx with `make dev`. Authorize with Bearer token from `POST /api/auth/login`.
+API docs (dev only): [http://localhost:8000/api/docs](http://localhost:8000/api/docs) with host or container API, or `/api/docs` through nginx with `make dev`. Authorize with Bearer token from `POST /api/auth/login`.
 
 ### Dev modes
 
 | Command | Containers | Use when |
 |---------|------------|----------|
-| `make dev-lite` + host `npm run dev` | mongodb, redis, server | Daily UI/API work (lowest resource use) |
+| `make dev-ultra-lite-infra` + `make dev-ultra-lite-server` + host `npm run dev` | mongodb, redis only | Lowest RAM — host API + Vite; Celery runs inline (no RabbitMQ) |
+| `make dev-lite` + host `npm run dev` | mongodb, redis, rabbitmq, server | API in Docker; also pulls RabbitMQ via `server` depends_on |
 | `make dev-search` | mongodb, redis, elasticsearch, server | Elasticsearch-backed full-text search (`ELASTICSEARCH_URL` required) |
 | `make dev` | + client, nginx | Full stack through nginx; no background jobs |
 | `make dev-worker` | + Celery worker + beat + RabbitMQ | Testing reminders, calendar sync, email jobs |
 | `make dev-bot` | + Telegram todobot | Bot development (`TELEGRAM_BOT_TO_DO_TOKEN` required) |
 | `make dev-full` | All 7 | Same as old default — worker + bot + nginx stack |
 
-Leave `ELASTICSEARCH_URL` empty in `.env` for `make dev-lite` (default). MongoDB text search and optional Postgres FTS cover search without Elasticsearch.
+Leave `ELASTICSEARCH_URL` empty in `.env` for ultra-lite and dev-lite (default). MongoDB text search and optional Postgres FTS cover search without Elasticsearch. Use `make dev-worker` when you need real async Celery jobs (RabbitMQ + worker + beat).
 
 ## Project Structure
 
@@ -81,6 +87,8 @@ Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN` in `.env`.
 
 | Command            | Description                                      |
 |--------------------|--------------------------------------------------|
+| `make dev-ultra-lite-infra` | MongoDB + Redis in Docker; runs migrate |
+| `make dev-ultra-lite-server` | Host uvicorn (:8000); run after infra |
 | `make dev-lite`    | Minimal stack (db, redis, API); run Vite on host |
 | `make dev-search`  | Lite stack + Elasticsearch (set `ELASTICSEARCH_URL` in `.env`) |
 | `make dev`         | Core dev stack (nginx + client; no worker/bot)   |
@@ -95,9 +103,11 @@ Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN` in `.env`.
 | `make check`   | Backend lint-check + tests + optional db-check + client lint/test/build |
 | `make db-check`| Alembic migration graph check        |
 | `make db-init` | Run Alembic migrations (`migrate` service) |
+| `make db-init-ultra-lite` | Run migrate service with ultra-lite compose files |
 | `make migrate` | Alias for `db-init`                  |
 | `make db-reset`| Wipe DB volume and re-migrate (destructive) |
 | `make seed`    | Create admin user                    |
+| `make seed-ultra-lite` | Create admin user (host uv, ultra-lite) |
 | `make reindex-search` | Rebuild FTS search index from all sources |
 | `make logs`    | Tail container logs                  |
 
@@ -168,7 +178,7 @@ Locked dependencies live in `server/uv.lock`; Docker and CI use `uv sync --froze
 
 ## Quality checks
 
-With `make dev-lite` running (API container up):
+With `make dev-ultra-lite-server` or `make dev-lite` running (API up):
 
 ```bash
 make lint-check && make test
