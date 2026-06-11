@@ -94,6 +94,32 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
                 started_context["body"] = body_log
             logger.info("Request started", context=started_context)
 
+        # #region agent log
+        if request.url.path == "/api/resume/pdf":
+            import json
+
+            with open(
+                "/Users/glorange/projects/portfolio-glorng/.cursor/debug-27ee16.log",
+                "a",
+                encoding="utf-8",
+            ) as _f:
+                _f.write(
+                    json.dumps(
+                        {
+                            "sessionId": "27ee16",
+                            "location": "middleware.py:dispatch:resume-pdf",
+                            "message": "Resume PDF request reached API",
+                            "data": {
+                                "client_host": request.client.host if request.client else None,
+                            },
+                            "timestamp": int(time.time() * 1000),
+                            "hypothesisId": "H1",
+                        }
+                    )
+                    + "\n"
+                )
+        # #endregion
+
         if csrf_origin_rejected(request):
             return JSONResponse(
                 status_code=403,
@@ -121,5 +147,32 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
 
         if settings.LOG_REQUESTS:
             logger.info("Request completed", context=completed_ctx)
+
+        # #region agent log
+        if request.url.path == "/api/resume/pdf":
+            import json
+
+            with open(
+                "/Users/glorange/projects/portfolio-glorng/.cursor/debug-27ee16.log",
+                "a",
+                encoding="utf-8",
+            ) as _f:
+                _f.write(
+                    json.dumps(
+                        {
+                            "sessionId": "27ee16",
+                            "location": "middleware.py:dispatch:resume-pdf-done",
+                            "message": "Resume PDF request completed",
+                            "data": {
+                                "status": response.status_code,
+                                "duration_ms": completed_ctx["duration_ms"],
+                            },
+                            "timestamp": int(time.time() * 1000),
+                            "hypothesisId": "H2",
+                        }
+                    )
+                    + "\n"
+                )
+        # #endregion
 
         return response
