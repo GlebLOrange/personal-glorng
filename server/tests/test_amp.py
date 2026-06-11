@@ -18,7 +18,10 @@ class TestAmpPage:
         assert "<html" in body
         assert "⚡" in body
         script_hosts = [urlparse(src).hostname for src in _SCRIPT_SRC_RE.findall(body)]
-        assert "cdn.ampproject.org" in script_hosts
+        assert any(
+            host and (host == "cdn.ampproject.org" or host.endswith(".cdn.ampproject.org"))
+            for host in script_hosts
+        )
         assert "Gleb.Y" in body
         assert "Backend-heavy full-stack" in body
         assert 'rel="canonical"' in body
