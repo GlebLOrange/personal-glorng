@@ -19,12 +19,12 @@ cp .env.example .env
 
 # Recommended for daily work (2 Docker containers + host API + host Vite — lowest RAM)
 make dev-ultra-lite-infra    # terminal 1: mongodb + redis
-make dev-ultra-lite-server   # terminal 2: host uvicorn
-cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev
+make dev-ultra-lite-server   # terminal 2: host uvicorn (:8000)
+cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev   # terminal 3: Vite (:3000)
 
 # Or: API in Docker (also starts RabbitMQ via server depends_on)
-make dev-lite
-cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev
+make dev-lite                # terminal 1: mongodb, redis, rabbitmq, API (:8000)
+cd client && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev   # terminal 2: Vite (:3000)
 
 # Or: full UI through nginx without worker/bot (5 containers)
 make dev
@@ -37,6 +37,8 @@ make seed
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in ultra-lite or lite mode, or [http://localhost](http://localhost) with `make dev`.
+
+Ultra-lite and dev-lite start the **API only** in the first terminal. Without the `npm run dev` step, [http://localhost:3000](http://localhost:3000) will refuse connections even when the API on :8000 is healthy. If `npm run dev` fails with a missing `@rolldown/binding-*` module (common when `client/node_modules` was installed in a Linux devcontainer), run `npm install` in `client/` on your host OS and retry.
 
 API docs (dev only): [http://localhost:8000/api/docs](http://localhost:8000/api/docs) with host or container API, or `/api/docs` through nginx with `make dev`. Authorize with Bearer token from `POST /api/auth/login`.
 
