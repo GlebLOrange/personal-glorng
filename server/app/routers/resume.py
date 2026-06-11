@@ -1,9 +1,11 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import Response
 
 from app.content.resume_data import RESUME_DATA
 from app.core.rate_limit import rate_limit_api
+from app.core.utils import attachment_content_disposition
 from app.db.deps import DbRegistry
 from app.services.github_portfolio import get_public_github_repos
 from app.settings import get_settings
@@ -29,3 +31,22 @@ async def get_resume(registry: DbRegistry) -> dict[str, Any]:
         "repos": [repo.model_dump() for repo in repos],
     }
     return data
+
+
+@router.get(
+    "/pdf",
+    summary="Download resume PDF",
+    description="Generate and download the public portfolio resume as a PDF.",
+    dependencies=[Depends(rate_limit_api)],
+)
+async def download_resume_pdf() -> Response:
+    from app.services.resume_pdf import render_resume_pdf
+
+    pdf = render_resume_pdf(dict(RESUME_DATA))
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": attachment_content_disposition("Gleb.Y-CV.pdf"),
+        },
+    )

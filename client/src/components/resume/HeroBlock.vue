@@ -11,10 +11,6 @@ defineProps<{
   bio: string;
   contactLinks?: ContactLink[];
 }>();
-
-function printCv(): void {
-  window.print();
-}
 </script>
 
 <template>
@@ -59,7 +55,7 @@ function printCv(): void {
       <a href="#experience" class="cta-primary"> Experience </a>
       <a href="#projects" class="cta-secondary"> Projects </a>
       <a href="#contact" class="cta-secondary"> Contact </a>
-      <button type="button" class="cta-secondary" @click="printCv">Download CV</button>
+      <a href="/api/resume/pdf" class="cta-secondary" download>Download CV</a>
     </div>
   </div>
 </template>
