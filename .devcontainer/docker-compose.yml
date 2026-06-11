@@ -1,4 +1,23 @@
 services:
-  server:
+  devcontainer:
     build:
-      target: dev
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - .:/workspaces/portfolio-glorng:cached
+    working_dir: /workspaces/portfolio-glorng
+    command: sleep infinity
+    environment:
+      GLORNG_ENV_FILE: /workspaces/portfolio-glorng/.env
+      CELERY_TASK_ALWAYS_EAGER: "true"
+      MEDIA_DIR: /workspaces/portfolio-glorng/server/media
+      VITE_API_PROXY_TARGET: http://127.0.0.1:8000
+    networks:
+      - backend
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully

@@ -1,20 +1,45 @@
 {
-  "name": "glorng-server",
+  "name": "gLOrng (ultra-lite)",
   "dockerComposeFile": [
     "../docker-compose.yml",
-    "../docker-compose.lite.yml",
+    "../docker-compose.ultra-lite.yml",
     "docker-compose.yml"
   ],
-  "service": "server",
-  "workspaceFolder": "/app",
-  "postCreateCommand": "uv sync --frozen",
-  "forwardPorts": [8000],
+  "service": "devcontainer",
+  "runServices": ["mongodb", "redis", "migrate", "devcontainer"],
+  "workspaceFolder": "/workspaces/portfolio-glorng",
+  "initializeCommand": "bash .devcontainer/scripts/initialize.sh",
+  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
+  "forwardPorts": [8000, 3000],
+  "portsAttributes": {
+    "8000": {
+      "label": "API",
+      "onAutoForward": "notify"
+    },
+    "3000": {
+      "label": "Vite",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "remoteEnv": {
+    "GLORNG_ENV_FILE": "${containerWorkspaceFolder}/.env",
+    "CELERY_TASK_ALWAYS_EAGER": "true",
+    "MEDIA_DIR": "${containerWorkspaceFolder}/server/media",
+    "VITE_API_PROXY_TARGET": "http://127.0.0.1:8000"
+  },
   "customizations": {
     "vscode": {
       "extensions": [
+        "ms-python.python",
         "charliermarsh.ruff",
-        "ms-python.python"
-      ]
+        "vue.volar",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/server/.venv/bin/python"
+      }
     }
   }
 }
