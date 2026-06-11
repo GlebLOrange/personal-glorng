@@ -187,6 +187,12 @@ make lint-check && make test
 cd client && npm ci && npm run lint && npm run format:check && npm run test && npm run build:check
 ```
 
+Bundle size report (writes `client/dist/stats.html`):
+
+```bash
+cd client && npm run analyze
+```
+
 Optional end-to-end smoke tests (API on :8000, then):
 
 ```bash
