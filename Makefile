@@ -63,7 +63,7 @@ check: lint-check test
 ifeq ($(CHECK_DB),1)
 	$(MAKE) db-check
 endif
-	cd client && npm run lint && npm run format:check && npm run test && npm run build
+	cd client && npm run lint && npm run format:check && npm run test && npm run build:check
 
 db-init:
 	docker compose run --rm --build migrate

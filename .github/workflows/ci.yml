@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 # P0 PR gate — fast tests on every pull request (see docs/testing.md).
 jobs:
@@ -21,6 +22,8 @@ jobs:
       - uses: astral-sh/setup-uv@v4
         with:
           python-version: "3.14"
+          enable-cache: true
+          cache-dependency-glob: "server/uv.lock"
       - name: Install dependencies
         run: uv sync --frozen
       - name: Ruff check
@@ -48,7 +51,12 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm run test
-      - run: npm run build
+      - run: npm run build:check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: client-dist
+          path: client/dist
+          retention-days: 1
 
   # P1 postgres paths — audit/search dual-write (see docs/testing.md).
   postgres-tests:
@@ -75,6 +83,8 @@ jobs:
       - uses: astral-sh/setup-uv@v4
         with:
           python-version: "3.14"
+          enable-cache: true
+          cache-dependency-glob: "server/uv.lock"
       - name: Install dependencies
         run: uv sync --frozen
       - name: Run Alembic migrations
@@ -88,20 +98,33 @@ jobs:
 
   database:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+      COMPOSE_DOCKER_CLI_BUILD: 1
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
       - name: Write CI env file
         run: cp server/tests/env/ci-docker.env .env
       - name: Start database and migrate
         run: |
           docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d redis mongodb
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm --build migrate
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml build migrate
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm migrate
 
   e2e:
     runs-on: ubuntu-latest
     needs: [frontend]
+    env:
+      DOCKER_BUILDKIT: 1
+      COMPOSE_DOCKER_CLI_BUILD: 1
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-dist
+          path: client/dist
       - name: Write CI env file
         run: |
           cp server/tests/env/ci-docker.env .env
@@ -109,8 +132,9 @@ jobs:
       - name: Start API stack
         run: |
           docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d redis mongodb
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm --build migrate
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build server
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml build migrate server
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm migrate
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d server
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
@@ -122,9 +146,6 @@ jobs:
       - name: Install Playwright
         working-directory: client
         run: npx playwright install --with-deps chromium
-      - name: Build client
-        working-directory: client
-        run: npm run build
       - name: Playwright smoke tests
         working-directory: client
         env:

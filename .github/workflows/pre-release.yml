@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 env:
   ENABLE_MONGODB: "true"
@@ -36,6 +37,8 @@ jobs:
       - uses: astral-sh/setup-uv@v4
         with:
           python-version: "3.14"
+          enable-cache: true
+          cache-dependency-glob: "server/uv.lock"
       - run: uv sync --frozen
       - name: Celery beat schedule registry (P2 unit)
         env:
@@ -45,8 +48,12 @@ jobs:
 
   stack-smoke:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+      COMPOSE_DOCKER_CLI_BUILD: 1
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
       - name: Write CI env file
         run: |
           cat > .env <<'EOF'
@@ -70,8 +77,9 @@ jobs:
       - name: Start API stack (P2 smoke)
         run: |
           docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d redis mongodb rabbitmq
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm --build migrate
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build server
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml build migrate server
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm migrate
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d server
       - name: Health through exposed API port
         run: |
           for i in $(seq 1 30); do
