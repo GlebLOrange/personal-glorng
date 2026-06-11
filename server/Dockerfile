@@ -4,7 +4,7 @@ WORKDIR /app
 
 FROM base AS builder
 
-RUN apk add --no-cache build-base
+RUN apk add --no-cache build-base pango-dev cairo-dev gdk-pixbuf-dev libffi-dev
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.19 /uv /usr/local/bin/uv
 
@@ -20,7 +20,8 @@ RUN uv sync --frozen --no-dev
 
 FROM base AS dev
 
-RUN apk add --no-cache ffmpeg build-base bash libstdc++ wget
+RUN apk add --no-cache ffmpeg build-base bash libstdc++ wget \
+    pango cairo gdk-pixbuf libffi
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.19 /uv /usr/local/bin/uv
 
@@ -41,7 +42,7 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload
 
 FROM base AS production
 
-RUN apk add --no-cache ffmpeg
+RUN apk add --no-cache ffmpeg pango cairo gdk-pixbuf libffi
 
 COPY --from=builder /app /app
 
