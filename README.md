@@ -184,13 +184,13 @@ With `make dev-ultra-lite-server` or `make dev-lite` running (API up):
 
 ```bash
 make lint-check && make test
-cd client && npm ci && npm run lint && npm run format:check && npm run test && npm run build
+cd client && npm ci && npm run lint && npm run format:check && npm run test && npm run build:check
 ```
 
 Optional end-to-end smoke tests (API on :8000, then):
 
 ```bash
-cd client && npm run build && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run preview
+cd client && npm run build:check && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run preview
 # other terminal:
 cd client && npm run e2e
 ```
