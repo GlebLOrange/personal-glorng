@@ -1,0 +1,111 @@
+---
+description: Performance review and optimization guidance for code changes. Use when assessing N+1 queries, unbounded operations, hot paths, or UI render cost.
+alwaysApply: false
+---
+
+# Performance Optimization
+
+## Relationship to other rules
+
+This rule supplements always-on agent rules; it does not override them.
+
+- **Reviews:** Use as the Performance axis detail for `code-review-and-quality.mdc`.
+- **Tests:** Do not run the full suite during routine dev unless the user asks — see `skip-tests-in-dev.mdc`.
+
+## When to Use
+
+- New or modified list/search endpoints
+- Database query changes or new ORM relationships
+- Loops over collections that trigger I/O
+- UI components rendering lists or heavy computations
+- New dependencies with bundle impact
+- Any change flagged during the Performance axis of `code-review-and-quality`
+
+## Review Workflow
+
+### Step 1: Identify Hot Paths
+
+Determine where the change runs frequently or at scale:
+
+- Request handlers on high-traffic routes
+- Render loops in UI components
+- Background jobs processing batches
+- Code inside tight loops over collections
+
+### Step 2: Check Asymptotics
+
+Ask: how does cost scale with input size?
+
+| Pattern | Cost | Action |
+|---------|------|--------|
+| Single indexed query | O(1) per request | Usually fine |
+| N+1 queries in loop | O(n) queries | **Critical** — fix with join/eager load |
+| Unbounded fetch | O(all records) | **Critical** — add pagination |
+| Re-render all children | O(components) per keystroke | Required if user-facing |
+
+### Step 3: Quantify When Possible
+
+Prefer measurable statements over vague concerns:
+
+- "This adds 1 query per item — ~50ms × 100 items = ~5s" beats "this might be slow"
+- "Bundle adds 45KB gzipped" beats "large dependency"
+- "Renders 2000 DOM nodes" beats "might lag"
+
+### Step 4: Run the Checklist
+
+Work through [performance-checklist.md](../references/performance-checklist.md). Flag findings with severity labels from `code-review-and-quality`:
+
+| Prefix | Meaning |
+|--------|---------|
+| **Critical:** | Blocks merge — unbounded ops, N+1 on hot path |
+| *(no prefix)* | Required — must fix before merge |
+| **Nit:** | Minor — low-traffic path, negligible impact |
+| **Optional:** / **Consider:** | Suggestion — premature optimization risk |
+
+## When to Profile
+
+| Checklist finding | Profile? |
+|-------------------|----------|
+| Obvious N+1 or missing pagination | No — fix directly |
+| Latency complaint without clear cause | Yes — measure first |
+| Complex aggregation query | Yes — benchmark with realistic volume |
+| UI jank | Yes — browser profiler or React DevTools |
+
+**Rule:** Don't optimize without a measured bottleneck unless the checklist finding is structurally obvious (N+1, unbounded fetch).
+
+## Common Misses
+
+| Miss | Impact |
+|------|--------|
+| Pagination added to API but not UI | Frontend still fetches everything |
+| Eager loading entire relation graph | Over-fetching replaces N+1 with one huge query |
+| Caching without invalidation | Stale data bugs |
+| Memoization everywhere | Added complexity without measured benefit |
+| Sync I/O in async handler | Blocks event loop under load |
+
+## Output Format
+
+```markdown
+## Performance Review: [change title]
+
+### Hot paths affected
+- [list paths and expected frequency]
+
+### Findings
+- **Critical:** [finding] — [file:line] — [estimated impact]
+- [Required finding] — [file:line]
+- **Consider:** [suggestion]
+
+### Profiling performed
+- [ ] Not needed — structural issue identified
+- [ ] Benchmarked: [method, result]
+
+### Verdict
+- [ ] Approve (no Critical/Required findings)
+- [ ] Request changes
+```
+
+## See Also
+
+- [performance-checklist.md](../references/performance-checklist.md) — detailed checklist
+- `code-review-and-quality.mdc` — full five-axis review process
