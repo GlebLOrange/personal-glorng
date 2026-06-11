@@ -3,40 +3,42 @@
 msg ?=
 CHECK_DB ?= 1
 COMPOSE_ULTRA = docker compose -f docker-compose.yml -f docker-compose.ultra-lite.yml
+COMPOSE_CACHE = -f docker-compose.cache.yml
+DOCKER_BUILD = DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1
 ULTRA_LITE_ENV = GLORNG_ENV_FILE=$(CURDIR)/.env UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv CELERY_TASK_ALWAYS_EAGER=true MEDIA_DIR=$(CURDIR)/server/media
 
 dev:
-	docker compose up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) up --build
 
 dev-lite:
-	docker compose -f docker-compose.yml -f docker-compose.lite.yml up --build mongodb redis server
+	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml $(COMPOSE_CACHE) up --build mongodb redis server
 
 dev-ultra-lite-infra:
-	$(COMPOSE_ULTRA) up -d mongodb redis
-	$(COMPOSE_ULTRA) run --rm migrate
+	$(DOCKER_BUILD) $(COMPOSE_ULTRA) $(COMPOSE_CACHE) up -d mongodb redis
+	$(DOCKER_BUILD) $(COMPOSE_ULTRA) $(COMPOSE_CACHE) run --rm migrate
 
 dev-ultra-lite-server:
 	cd server && $(ULTRA_LITE_ENV) uv sync --frozen && $(ULTRA_LITE_ENV) uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir app --forwarded-allow-ips=127.0.0.1
 
 dev-search:
-	docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.search.yml --profile search up --build mongodb redis elasticsearch server
+	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.search.yml $(COMPOSE_CACHE) --profile search up --build mongodb redis elasticsearch server
 
 dev-postgres:
-	docker compose -f docker-compose.yml -f docker-compose.lite.yml --profile postgres up --build mongodb redis db server
+	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml $(COMPOSE_CACHE) --profile postgres up --build mongodb redis db server
 
 dev-mongo: dev-lite
 
 dev-worker:
-	docker compose --profile worker up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) --profile worker up --build
 
 dev-bot:
-	docker compose --profile bot up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) --profile bot up --build
 
 dev-full:
-	docker compose --profile worker --profile bot up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) --profile worker --profile bot up --build
 
 prod:
-	docker compose -f docker-compose.prod.yml up --build -d
+	$(DOCKER_BUILD) docker compose -f docker-compose.prod.yml $(COMPOSE_CACHE) up --build -d
 
 down:
 	docker compose down
@@ -66,7 +68,7 @@ endif
 	cd client && npm run lint && npm run format:check && npm run test && npm run build:check
 
 db-init:
-	docker compose run --rm --build migrate
+	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) run --rm --build migrate
 
 db-init-ultra-lite:
 	$(COMPOSE_ULTRA) run --rm migrate
@@ -76,7 +78,7 @@ migrate: db-init
 db-reset:
 	docker compose down -v
 	docker compose up -d db
-	docker compose run --rm --build migrate
+	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) run --rm --build migrate
 
 db-revision:
 	@test -n "$(msg)" || (echo "Usage: make db-revision msg='description'" && exit 1)

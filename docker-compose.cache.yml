@@ -1,0 +1,39 @@
+# Local BuildKit layer cache overlay (pair with DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1).
+# Cache dirs live under .docker-cache/ (gitignored). CI uses docker-compose.ci.yml (GHA cache).
+services:
+  migrate:
+    build:
+      cache_from:
+        - type=local,src=.docker-cache/server
+      cache_to:
+        - type=local,dest=.docker-cache/server,mode=max
+  server:
+    build:
+      cache_from:
+        - type=local,src=.docker-cache/server
+      cache_to:
+        - type=local,dest=.docker-cache/server,mode=max
+  worker:
+    build:
+      cache_from:
+        - type=local,src=.docker-cache/server
+      cache_to:
+        - type=local,dest=.docker-cache/server,mode=max
+  beat:
+    build:
+      cache_from:
+        - type=local,src=.docker-cache/server
+      cache_to:
+        - type=local,dest=.docker-cache/server,mode=max
+  todobot:
+    build:
+      cache_from:
+        - type=local,src=.docker-cache/server
+      cache_to:
+        - type=local,dest=.docker-cache/server,mode=max
+  client:
+    build:
+      cache_from:
+        - type=local,src=.docker-cache/client
+      cache_to:
+        - type=local,dest=.docker-cache/client,mode=max

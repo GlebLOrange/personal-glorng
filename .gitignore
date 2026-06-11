@@ -43,6 +43,7 @@ dist/
 celerybeat-schedule*
 
 # Docker
+.docker-cache/
 *.log
 backups/
 logs/backup.log

@@ -26,10 +26,13 @@ jobs:
           cache-dependency-glob: "server/uv.lock"
       - name: Install dependencies
         run: uv sync --frozen
-      - name: Ruff check
-        run: uv run ruff check .
-      - name: Ruff format check
-        run: uv run ruff format --check .
+      - name: Ruff check and format
+        run: |
+          uv run ruff check . & check_pid=$!
+          uv run ruff format --check . & format_pid=$!
+          wait "$check_pid"; check_exit=$?
+          wait "$format_pid"; format_exit=$?
+          exit $((check_exit || format_exit))
       - name: Pytest (P0 — exclude integration tier)
         env:
           GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.test
