@@ -43,7 +43,7 @@ async function load(): Promise<void> {
     items.value = data.items;
     total.value = data.total;
   } catch (err) {
-    console.error(err);
+    if (import.meta.env.DEV) console.error(err);
     toast("Failed to load app logs", "error");
   } finally {
     loading.value = false;

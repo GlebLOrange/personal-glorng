@@ -50,7 +50,7 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
       toast("Category added", "success");
       await loadCategories();
     } catch (err) {
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
       toast(getApiErrorMessage(err, "Failed to add category"), "error");
     }
   }
@@ -95,7 +95,7 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
       toast("Category updated", "success");
       await Promise.all([loadCategories(), onCategoriesChanged()]);
     } catch (err) {
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
       toast(getApiErrorMessage(err, "Failed to update category"), "error");
     }
   }
@@ -106,7 +106,7 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
       toast("Category deleted", "success");
       await loadCategories();
     } catch (err) {
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
       toast(getApiErrorMessage(err, "Cannot delete a category that is used by expenses"), "error");
     }
   }

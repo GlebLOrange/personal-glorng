@@ -52,6 +52,9 @@ export function useExpenseSummary(
   const previousSummary = ref<ExpenseSummary | null>(null);
   const exchangeRates = ref<ExchangeRates | null>(null);
   const listLoading = ref(false);
+  const listError = ref<string | null>(null);
+  const summaryError = ref<string | null>(null);
+  const ratesError = ref<string | null>(null);
   const { toast } = useNotify();
 
   const periodChange = computed(() => {
@@ -89,14 +92,25 @@ export function useExpenseSummary(
   );
 
   function convertAmount(amount: string, from: CurrencyCode, to: CurrencyCode): number {
-    if (from === to || !exchangeRates.value) return parseFloat(amount);
+    const value = parseFloat(amount);
+    if (from === to || !exchangeRates.value) return value;
     const rates = exchangeRates.value.rates;
-    const usd = parseFloat(amount) / parseFloat(rates[from]);
-    return usd * parseFloat(rates[to]);
+    const fromRate = parseFloat(rates[from]);
+    const toRate = parseFloat(rates[to]);
+    if (
+      !Number.isFinite(value) ||
+      !Number.isFinite(fromRate) ||
+      !Number.isFinite(toRate) ||
+      fromRate === 0
+    ) {
+      return Number.NaN;
+    }
+    return (value / fromRate) * toRate;
   }
 
   function formatMoney(amount: string | number, currency: string): string {
     const value = typeof amount === "string" ? parseFloat(amount) : amount;
+    if (!Number.isFinite(value)) return "N/A";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
@@ -119,9 +133,12 @@ export function useExpenseSummary(
         params: queryParams(),
       });
       expenses.value = data;
+      listError.value = null;
     } catch (err) {
-      console.error(err);
-      toast(getApiErrorMessage(err, "Failed to load expenses"), "error");
+      if (import.meta.env.DEV) console.error(err);
+      const message = getApiErrorMessage(err, "Failed to load expenses");
+      listError.value = message;
+      toast(message, "error");
     } finally {
       listLoading.value = false;
     }
@@ -131,9 +148,12 @@ export function useExpenseSummary(
     try {
       const { data } = await api.get<ExchangeRates>("/tools/expenses/rates");
       exchangeRates.value = data;
+      ratesError.value = null;
     } catch (err) {
-      console.error(err);
-      toast(getApiErrorMessage(err, "Failed to load exchange rates"), "error");
+      if (import.meta.env.DEV) console.error(err);
+      const message = getApiErrorMessage(err, "Failed to load exchange rates");
+      ratesError.value = message;
+      toast(message, "error");
     }
   }
 
@@ -143,9 +163,12 @@ export function useExpenseSummary(
         params: summaryParams(),
       });
       summary.value = data;
+      summaryError.value = null;
     } catch (err) {
-      console.error(err);
-      toast(getApiErrorMessage(err, "Failed to load summary"), "error");
+      if (import.meta.env.DEV) console.error(err);
+      const message = getApiErrorMessage(err, "Failed to load summary");
+      summaryError.value = message;
+      toast(message, "error");
     }
   }
 
@@ -162,7 +185,7 @@ export function useExpenseSummary(
       });
       previousSummary.value = data;
     } catch (err) {
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
       previousSummary.value = null;
       toast(getApiErrorMessage(err, "Failed to load period comparison"), "error");
     }
@@ -179,6 +202,9 @@ export function useExpenseSummary(
     periodChange,
     exchangeRates,
     listLoading,
+    listError,
+    summaryError,
+    ratesError,
     lineChart,
     barChart,
     doughnutChart,

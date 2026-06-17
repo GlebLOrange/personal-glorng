@@ -34,7 +34,7 @@ async function loadResume(): Promise<void> {
   try {
     await Promise.all([fetchResume(), fetchDonations()]);
   } catch (err) {
-    console.error(err);
+    if (import.meta.env.DEV) console.error(err);
     apiError.value = true;
   }
 }

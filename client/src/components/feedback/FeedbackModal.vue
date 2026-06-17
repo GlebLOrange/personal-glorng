@@ -30,7 +30,7 @@ async function submit(): Promise<void> {
     toast("Feedback sent — thank you!", "success");
     emit("close");
   } catch (err) {
-    console.error(err);
+    if (import.meta.env.DEV) console.error(err);
     toast("Failed to send feedback", "error");
   } finally {
     loading.value = false;
