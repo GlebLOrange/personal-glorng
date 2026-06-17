@@ -27,7 +27,7 @@ dependencies = [
     "yt-dlp>=2026.3.17",
     "elasticsearch[async]==9.4.*",
     "motor==3.7.*",
-    "weasyprint==68.*",
+    "weasyprint==69.*",
 ]
 
 [dependency-groups]
