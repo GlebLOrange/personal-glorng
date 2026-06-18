@@ -106,8 +106,10 @@ onMounted(loadResume);
     </SectionWrapper>
 
     <div class="print:hidden">
-      <SectionWrapper id="support" title="support" dark alternate>
-        <p class="text-body mb-6">If you find my work useful, consider supporting me.</p>
+      <SectionWrapper id="support" title="Support my work" dark alternate>
+        <p class="text-body mb-6">
+          If my tools or writing have helped you, a small contribution keeps the work going.
+        </p>
         <DonationsBlock v-if="donations" :config="donations" />
       </SectionWrapper>
     </div>

@@ -2,25 +2,26 @@ from pydantic import BaseModel, ConfigDict
 
 
 class StripeDonationConfig(BaseModel):
+    """Public Stripe donation availability."""
+
     enabled: bool
     checkout_enabled: bool
     url: str | None = None
 
 
-class TelegramDonationConfig(BaseModel):
+class DonationLinkConfig(BaseModel):
+    """Public external donation link availability."""
+
     enabled: bool
     url: str | None = None
 
 
-class CryptoDonationConfig(BaseModel):
-    btc: str | None = None
-    eth: str | None = None
-
-
 class DonationsConfigResponse(BaseModel):
+    """Public donation options for the portfolio support section."""
+
     stripe: StripeDonationConfig
-    telegram: TelegramDonationConfig
-    crypto: CryptoDonationConfig
+    paypal: DonationLinkConfig
+    patreon: DonationLinkConfig
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -30,14 +31,16 @@ class DonationsConfigResponse(BaseModel):
                     "checkout_enabled": True,
                     "url": None,
                 },
-                "telegram": {"enabled": True, "url": "https://t.me/example"},
-                "crypto": {"btc": "bc1...", "eth": "0x..."},
+                "paypal": {"enabled": True, "url": "https://paypal.me/example"},
+                "patreon": {"enabled": True, "url": "https://patreon.com/example"},
             }
         }
     )
 
 
 class CheckoutSessionResponse(BaseModel):
+    """Stripe Checkout session redirect URL."""
+
     url: str
 
     model_config = ConfigDict(
@@ -46,6 +49,8 @@ class CheckoutSessionResponse(BaseModel):
 
 
 class WebhookAckResponse(BaseModel):
+    """Stripe webhook acknowledgement."""
+
     status: str
 
     model_config = ConfigDict(json_schema_extra={"example": {"status": "ok"}})

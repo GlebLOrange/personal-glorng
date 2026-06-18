@@ -47,7 +47,7 @@ These appear on **`/tools`** in the UI ([`client/src/pages/ToolsPage.vue`](../cl
 | **Keyword search** | `GET /api/search?q=...` (PUBLIC index only) |
 | **Public AI search chat** | `GET /api/search/config`, `POST /api/search/chat` (SSE) — needs `AI_SEARCH_ENABLED=true` + `OPENAI_API_KEY` |
 | **Feedback** | `POST /api/feedback` (5/5min) |
-| **Donations config** | `GET /api/donations` |
+| **Donations config** | `GET /api/donations/config` — Stripe, PayPal, Patreon links |
 | **Donations Checkout** | `POST /api/donations/checkout` — needs `STRIPE_SECRET_KEY` |
 | **GitHub public repos** | `GET /api/github/repos` — needs `GITHUB_PUBLIC_USERNAME` |
 | **Inbound webhooks** | `POST /api/webhooks/{slug}` — HMAC; see [integration-automation.md](integration-automation.md) |

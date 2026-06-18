@@ -147,7 +147,7 @@ Each capability follows a module-as-service pattern: business logic in `server/a
 - Redis: token blacklist, response cache, rate limiting, task queue
 - Plugin architecture for admin tools (auto-discovery)
 - Telegram todobot: tasks, reminders, and quick expense logging (`/spend`, `/expenses`)
-- Donations: Stripe Payment Link, crypto addresses, Telegram
+- Donations: Stripe card checkout, PayPal, Patreon
 - Two-stream observability: operational telemetry (JSON logs + Sentry) and persistent audit trail (`audit_events`)
 - Ruff linting with enforced type annotations
 

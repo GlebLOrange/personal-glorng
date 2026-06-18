@@ -81,9 +81,9 @@ export interface Project {
 }
 
 export interface DonationsConfig {
-  stripe: { enabled: boolean; url: string };
-  telegram: { enabled: boolean; url: string };
-  crypto: { btc: string; eth: string };
+  stripe: { enabled: boolean; checkout_enabled: boolean; url: string | null };
+  paypal: { enabled: boolean; url: string | null };
+  patreon: { enabled: boolean; url: string | null };
 }
 
 export interface SpotifyNowPlaying {
