@@ -123,7 +123,7 @@ make db-init
 make reindex-search
 ```
 
-Resume content is upserted automatically on API startup when `AI_SEARCH_ENABLED=true`. Recipes, tasks, expenses, and other sources are indexed on create/update; run `make reindex-search` after deploy to backfill existing rows.
+Public resume content is defined in `server/app/content/resume_data.py`, mirrored in `client/src/constants/resumeFallback.ts` for offline rendering, and exposed at `GET /api/resume`. Resume chunks are upserted automatically on API startup when `AI_SEARCH_ENABLED=true`. Recipes, tasks, expenses, and other sources are indexed on create/update; run `make reindex-search` after deploy to backfill existing rows.
 
 Set `AI_SEARCH_ENABLED`, `OPENAI_API_KEY`, and `VITE_AI_SEARCH_ENABLED` in `.env` (see `.env.example`).
 

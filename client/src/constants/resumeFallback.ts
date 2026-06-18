@@ -60,7 +60,7 @@ export const RESUME_FALLBACK: ResumeData = {
     {
       role: "Full-Stack Developer",
       company: "Freelance / Independent",
-      period: "2022-Present",
+      period: "2017-Present",
       description: "",
       highlights: [
         "Deliver complete web applications, backend services, and automation tools for clients",

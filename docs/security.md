@@ -64,7 +64,7 @@ Portfolio search uses Postgres full-text search with a visibility model:
 
 | Visibility | Indexed content (examples) | Who can retrieve |
 |------------|---------------------------|------------------|
-| `PUBLIC` | Resume, public recipes | Anyone (keyword search + public AI chat) |
+| `PUBLIC` | Static resume content, public recipes | Anyone (keyword search + public AI chat) |
 | `ADMIN` | Tasks, expenses, feedback bodies | Admin AI chat only (`ai-chat:write`) |
 
 **Public endpoints** ([`server/app/routers/search.py`](../server/app/routers/search.py)):
@@ -90,6 +90,7 @@ Client-side `VITE_*` flags hide UI only; server flags and auth are authoritative
 
 | Surface | Mitigation |
 |---------|------------|
+| Public resume | Static server content mirrored in the client fallback; Vue interpolation renders text without `v-html` |
 | Email tool (server) | `html.escape` on body; `sanitize_email_subject` blocks CRLF injection |
 | Email preview (client) | DOMPurify via [`sanitizeEmailHtml.ts`](../client/src/utils/sanitizeEmailHtml.ts) |
 | Email console backend | Logs metadata only (`to`, `subject`, byte sizes) — no HTML/token previews |

@@ -43,7 +43,7 @@ These appear on **`/tools`** in the UI ([`client/src/pages/ToolsPage.vue`](../cl
 
 | Feature | Endpoints |
 |---------|-----------|
-| **Portfolio resume** | `GET /api/resume` |
+| **Portfolio resume** | `GET /api/resume` — static public resume JSON, with a client fallback mirror for offline rendering |
 | **Keyword search** | `GET /api/search?q=...` (PUBLIC index only) |
 | **Public AI search chat** | `GET /api/search/config`, `POST /api/search/chat` (SSE) — needs `AI_SEARCH_ENABLED=true` + `OPENAI_API_KEY` |
 | **Feedback** | `POST /api/feedback` (5/5min) |
