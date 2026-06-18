@@ -29,7 +29,7 @@ const sections = computed(() => groupServicesByCategory(publicToolsAsServices())
 
     <p class="text-xs text-surface-muted">
       <RouterLink to="/login" class="text-accent-blue hover:underline">Sign in</RouterLink>
-      for additional admin tools.
+      to unlock limited demo tools.
     </p>
   </div>
 </template>
