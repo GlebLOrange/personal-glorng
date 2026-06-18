@@ -106,7 +106,7 @@ onMounted(loadResume);
     </SectionWrapper>
 
     <div class="print:hidden">
-      <SectionWrapper id="support" title="Support my work" dark alternate>
+      <SectionWrapper id="support" title="support my work" dark alternate>
         <p class="text-body mb-6">
           If my tools or writing have helped you, a small contribution keeps the work going.
         </p>
