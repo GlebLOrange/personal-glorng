@@ -20,7 +20,7 @@ const {
   recipes,
   allTags,
   search,
-  activeTag,
+  activeTags,
   sort,
   page,
   selectedRecipe,
@@ -60,6 +60,11 @@ onMounted(async () => {
   await Promise.all([loadRecipes(), loadTags()]);
   await tryOpenFromQuery();
 });
+
+function clearFilters(): void {
+  search.value = "";
+  setTag(null);
+}
 </script>
 
 <template>
@@ -67,66 +72,70 @@ onMounted(async () => {
     <RecipeFilters
       v-model:search="search"
       v-model:sort="sort"
-      :active-tag="activeTag"
+      :active-tags="activeTags"
       :all-tags="allTags"
       :recipe-count-label="recipeCountLabel"
       :can-write="canWrite"
       @set-tag="setTag"
       @create="openCreate"
-    />
-
-    <div v-if="listLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div
-        v-for="i in 6"
-        :key="i"
-        class="h-64 rounded-lg border border-surface-border bg-surface-card animate-pulse"
-      />
-    </div>
-
-    <div
-      v-else-if="listError"
-      class="text-center py-12 border border-surface-border rounded-lg bg-surface-card"
+      @clear-filters="clearFilters"
     >
-      <p class="text-surface-mid text-sm mb-4">{{ listError }}</p>
-      <BaseButton variant="ghost" size="sm" @click="loadRecipes">Retry</BaseButton>
-    </div>
+      <div v-if="listLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div
+          v-for="i in 6"
+          :key="i"
+          class="h-64 rounded-lg border border-surface-border bg-surface-card animate-pulse"
+        />
+      </div>
 
-    <div v-else-if="recipes.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <RecipeCard
-        v-for="recipe in recipes"
-        :key="recipe.id"
-        :recipe="recipe"
-        :active-tag="activeTag"
-        @select="openDetail"
-        @tag-click="setTag"
-      />
-    </div>
-
-    <div v-else class="text-center py-12">
-      <p class="text-surface-mid text-sm mb-4">
-        {{
-          hasFilters
-            ? "No recipes match your filters."
-            : "No recipes yet. Add your first one to get started."
-        }}
-      </p>
-      <button
-        v-if="!hasFilters && canWrite"
-        type="button"
-        class="text-accent-blue text-sm hover:underline"
-        @click="openCreate"
+      <div
+        v-else-if="listError"
+        class="text-center py-12 border border-surface-border rounded-lg bg-surface-card"
       >
-        + Add your first recipe
-      </button>
-    </div>
+        <p class="text-surface-mid text-sm mb-4">{{ listError }}</p>
+        <BaseButton variant="ghost" size="sm" @click="loadRecipes">Retry</BaseButton>
+      </div>
 
-    <TaskPagination
-      v-if="!listLoading && !listError && (recipes.length > 0 || page > 1)"
-      :page="page"
-      :has-next-page="hasNextPage"
-      @prev="goToPage(page - 1)"
-      @next="goToPage(page + 1)"
-    />
+      <div v-else-if="recipes.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <RecipeCard
+          v-for="recipe in recipes"
+          :key="recipe.id"
+          :recipe="recipe"
+          :active-tags="activeTags"
+          @select="openDetail"
+          @tag-click="setTag"
+        />
+      </div>
+
+      <div v-else class="text-center py-12">
+        <p class="text-surface-mid text-sm mb-4">
+          {{
+            hasFilters
+              ? "No recipes match your filters."
+              : "No recipes yet. Add your first one to get started."
+          }}
+        </p>
+        <BaseButton v-if="hasFilters" variant="ghost" size="sm" @click="clearFilters">
+          Clear filters
+        </BaseButton>
+        <button
+          v-else-if="canWrite"
+          type="button"
+          class="text-accent-blue text-sm hover:underline"
+          @click="openCreate"
+        >
+          + Add your first recipe
+        </button>
+      </div>
+
+      <TaskPagination
+        v-if="!listLoading && !listError && (recipes.length > 0 || page > 1)"
+        :page="page"
+        :has-next-page="hasNextPage"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+      />
+    </RecipeFilters>
 
     <RecipeFormModal
       v-if="canWrite"

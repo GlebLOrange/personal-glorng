@@ -148,7 +148,7 @@ class RecipeService:
     async def list_recipes(
         self,
         search: str | None = None,
-        tag: str | None = None,
+        tags: list[str] | None = None,
         sort: RecipeSort = "updated_desc",
         page: int = 1,
         per_page: int = 24,
@@ -177,11 +177,12 @@ class RecipeService:
         else:
             filtered = all_recipes
 
-        if tag:
+        if tags:
+            selected_tags = set(tags)
             filtered = [
                 recipe
                 for recipe in filtered
-                if tag in _loads_json_list("tags", recipe.tags)
+                if selected_tags.intersection(_loads_json_list("tags", recipe.tags))
             ]
 
         total = len(filtered)
