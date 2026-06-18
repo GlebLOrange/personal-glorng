@@ -4,10 +4,9 @@ from app.core.exceptions import ApiError
 from app.core.rate_limit import RateLimiter
 from app.schemas.donations import (
     CheckoutSessionResponse,
-    CryptoDonationConfig,
+    DonationLinkConfig,
     DonationsConfigResponse,
     StripeDonationConfig,
-    TelegramDonationConfig,
     WebhookAckResponse,
 )
 from app.services.stripe_donations import (
@@ -27,7 +26,7 @@ rate_limit_checkout = RateLimiter(requests=10, window=3600)
     "/config",
     response_model=DonationsConfigResponse,
     summary="Get donation config",
-    description="Public donation links and crypto addresses.",
+    description="Public donation links for Stripe, PayPal, and Patreon.",
 )
 async def get_donations_config() -> DonationsConfigResponse:
     settings = get_settings()
@@ -39,13 +38,13 @@ async def get_donations_config() -> DonationsConfigResponse:
             checkout_enabled=checkout_enabled,
             url=legacy_link,
         ),
-        telegram=TelegramDonationConfig(
-            enabled=bool(settings.TELEGRAM_LINK),
-            url=settings.TELEGRAM_LINK,
+        paypal=DonationLinkConfig(
+            enabled=bool(settings.PAYPAL_DONATION_LINK),
+            url=settings.PAYPAL_DONATION_LINK,
         ),
-        crypto=CryptoDonationConfig(
-            btc=settings.CRYPTO_BTC_ADDRESS,
-            eth=settings.CRYPTO_ETH_ADDRESS,
+        patreon=DonationLinkConfig(
+            enabled=bool(settings.PATREON_LINK),
+            url=settings.PATREON_LINK,
         ),
     )
 

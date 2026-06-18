@@ -117,12 +117,14 @@ Configure secrets in `.env`:
 WEBHOOK_SECRETS={"task-create":"replace-me","feedback":"replace-me","ping":"replace-me"}
 ```
 
-## Stripe donations
+## Donations
 
 When `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are set:
 
 - `POST /api/donations/checkout` — returns a Checkout Session URL (public, rate-limited)
 - `POST /api/donations/webhook` — Stripe-signed events (`checkout.session.completed` notifies admin via Telegram)
+
+PayPal and Patreon support use the configured external links from `GET /api/donations/config`.
 
 Local testing with [Stripe CLI](https://stripe.com/docs/stripe-cli):
 

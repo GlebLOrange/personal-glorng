@@ -1,14 +1,37 @@
 <script setup lang="ts">
+import { ref } from "vue";
+
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
-import { useClipboard } from "@/composables/useClipboard";
+import { api } from "@/composables/useApi";
 import type { DonationsConfig } from "@/types";
 
 defineProps<{
   config: DonationsConfig;
 }>();
 
-const { copy } = useClipboard();
+const isStartingCheckout = ref(false);
+const checkoutError = ref(false);
+const linkButtonBase =
+  "inline-flex items-center font-medium transition-all duration-200 rounded-lg border " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 " +
+  "px-6 py-3 text-base";
+const primaryLinkButton =
+  "bg-gradient-to-r from-accent-blue to-accent-violet text-white border-transparent hover:opacity-90";
+const secondaryLinkButton = "bg-surface-card text-surface-light border-surface-border hover:border-accent-blue";
+
+async function startStripeCheckout(): Promise<void> {
+  checkoutError.value = false;
+  isStartingCheckout.value = true;
+  try {
+    const { data } = await api.post<{ url: string }>("/donations/checkout");
+    window.location.href = data.url;
+  } catch (err) {
+    if (import.meta.env.DEV) console.error(err);
+    checkoutError.value = true;
+  } finally {
+    isStartingCheckout.value = false;
+  }
+}
 </script>
 
 <template>
@@ -17,41 +40,46 @@ const { copy } = useClipboard();
       <a
         v-if="config.stripe.enabled"
         :href="config.stripe.url"
+        :class="[linkButtonBase, primaryLinkButton]"
         target="_blank"
         rel="noopener noreferrer"
       >
-        <BaseButton variant="primary" size="lg"> Support via Stripe </BaseButton>
+        Donate by Card
+      </a>
+
+      <BaseButton
+        v-else-if="config.stripe.checkout_enabled"
+        variant="primary"
+        size="lg"
+        :disabled="isStartingCheckout"
+        @click="startStripeCheckout"
+      >
+        {{ isStartingCheckout ? "Opening..." : "Donate by Card" }}
+      </BaseButton>
+
+      <a
+        v-if="config.paypal.enabled"
+        :href="config.paypal.url"
+        :class="[linkButtonBase, secondaryLinkButton]"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Donate with PayPal
       </a>
 
       <a
-        v-if="config.telegram.enabled"
-        :href="config.telegram.url"
+        v-if="config.patreon.enabled"
+        :href="config.patreon.url"
+        :class="[linkButtonBase, secondaryLinkButton]"
         target="_blank"
         rel="noopener noreferrer"
       >
-        <BaseButton variant="secondary" size="lg"> Telegram </BaseButton>
+        Monthly Support
       </a>
     </div>
 
-    <div
-      v-if="config.crypto.btc || config.crypto.eth"
-      class="grid grid-cols-1 md:grid-cols-2 gap-4"
-    >
-      <BaseCard v-if="config.crypto.btc" hoverable>
-        <div class="text-label text-accent-blue mb-2">BTC</div>
-        <code class="text-sm font-data text-surface-light break-all">{{ config.crypto.btc }}</code>
-        <BaseButton variant="ghost" size="sm" class="mt-3" @click="copy(config.crypto.btc)">
-          Copy Address
-        </BaseButton>
-      </BaseCard>
-
-      <BaseCard v-if="config.crypto.eth" hoverable>
-        <div class="text-label text-accent-blue mb-2">ETH</div>
-        <code class="text-sm font-data text-surface-light break-all">{{ config.crypto.eth }}</code>
-        <BaseButton variant="ghost" size="sm" class="mt-3" @click="copy(config.crypto.eth)">
-          Copy Address
-        </BaseButton>
-      </BaseCard>
-    </div>
+    <p v-if="checkoutError" class="text-label text-accent-golden" role="status">
+      Could not open card checkout. Please try again in a moment.
+    </p>
   </div>
 </template>
