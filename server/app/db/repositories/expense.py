@@ -7,6 +7,17 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.db.documents.expense import Expense, ExpenseCategory
 from app.db.repositories.base import MongoRepository, _parse_doc
 
+EXPENSE_SORTS: dict[str, list[tuple[str, int]]] = {
+    "date_asc": [("expense_date", 1), ("created_at", 1)],
+    "date_desc": [("expense_date", -1), ("created_at", -1)],
+    "category_asc": [("category", 1), ("expense_date", -1), ("created_at", -1)],
+    "category_desc": [("category", -1), ("expense_date", -1), ("created_at", -1)],
+    "product_asc": [("tool_name", 1), ("expense_date", -1), ("created_at", -1)],
+    "product_desc": [("tool_name", -1), ("expense_date", -1), ("created_at", -1)],
+    "amount_asc": [("amount", 1), ("expense_date", -1), ("created_at", -1)],
+    "amount_desc": [("amount", -1), ("expense_date", -1), ("created_at", -1)],
+}
+
 
 class ExpenseRepository:
     def __init__(self, db: AsyncIOMotorDatabase) -> None:
@@ -80,6 +91,9 @@ class ExpenseRepository:
         date_to: date | None = None,
         tool_name: str | None = None,
         category: str | None = None,
+        offset: int = 0,
+        limit: int | None = None,
+        sort: str = "date_desc",
     ) -> list[Expense]:
         query = self._expense_query(
             date_from=date_from,
@@ -87,9 +101,29 @@ class ExpenseRepository:
             tool_name=tool_name,
             category=category,
         )
+        sort_spec = EXPENSE_SORTS.get(sort, EXPENSE_SORTS["date_desc"])
         cursor = (
             self.expenses._col()
             .find(query)
-            .sort([("expense_date", -1), ("created_at", -1)])
+            .sort(sort_spec)
+            .skip(offset)
         )
+        if limit is not None:
+            cursor = cursor.limit(limit)
         return [_parse_doc(Expense, row) async for row in cursor]
+
+    async def count_expenses(
+        self,
+        *,
+        date_from: date | None = None,
+        date_to: date | None = None,
+        tool_name: str | None = None,
+        category: str | None = None,
+    ) -> int:
+        query = self._expense_query(
+            date_from=date_from,
+            date_to=date_to,
+            tool_name=tool_name,
+            category=category,
+        )
+        return await self.expenses._col().count_documents(query)

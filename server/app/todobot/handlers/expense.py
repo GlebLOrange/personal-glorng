@@ -186,7 +186,9 @@ async def cmd_expenses(message: Message, registry: DatabaseRegistry) -> None:
         date_to=date_to,
         display_currency="PLN",
     )
-    expenses = await svc.list_expenses(date_from=date_from, date_to=date_to)
+    expenses = (
+        await svc.list_expenses(date_from=date_from, date_to=date_to, per_page=5)
+    ).items
     today = today_in_tz()
     month_label = f"{_MONTH_NAMES[today.month - 1]} {today.year}"
 
@@ -195,7 +197,7 @@ async def cmd_expenses(message: Message, registry: DatabaseRegistry) -> None:
         lines.append("\nNo expenses yet. Use /spend 45 groceries")
     else:
         lines.append("\n*Recent:*")
-        for expense in expenses[:5]:
+        for expense in expenses:
             cat = expense.category or "—"
             amount_line = _format_money(expense.amount, expense.currency)
             day = expense.expense_date.strftime("%d %b")

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 
 from app.core.catalogs import (
@@ -25,6 +25,7 @@ from app.schemas.expense import (
     ExchangeRatesResponse,
     ExpenseCatalogResponse,
     ExpenseCreate,
+    ExpenseListResponse,
     ExpenseParseRequest,
     ExpenseParseResponse,
     ExpenseResponse,
@@ -213,7 +214,7 @@ async def parse_expense(
 
 @router.get(
     "",
-    response_model=list[ExpenseResponse],
+    response_model=ExpenseListResponse,
     description="Filter by month (YYYY-MM) or inclusive date range.",
 )
 async def list_expenses(
@@ -222,13 +223,27 @@ async def list_expenses(
     filters: Annotated[ExpenseDateFilter, Depends(expense_date_filter)],
     tool_name: str | None = None,
     category: str | None = None,
-) -> list[ExpenseResponse]:
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = 20,
+    sort: Annotated[
+        str,
+        Query(
+            pattern=(
+                "^(date|category|product|amount)_"
+                "(asc|desc)$"
+            )
+        ),
+    ] = "date_desc",
+) -> ExpenseListResponse:
     resolved_from, resolved_to = filters.resolved_bounds()
     return await svc.list_expenses(
         date_from=resolved_from,
         date_to=resolved_to,
         tool_name=tool_name,
         category=category,
+        page=page,
+        per_page=per_page,
+        sort=sort,
     )
 
 

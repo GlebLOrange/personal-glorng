@@ -28,7 +28,7 @@ import {
 } from "@/composables/useExpenseFilters";
 import { useUserPreferences } from "@/composables/useUserPreferences";
 import { useExpenseParse } from "@/composables/useExpenseParse";
-import { useExpenseSort } from "@/composables/useExpenseSort";
+import { useExpenseSort, type ExpenseSortKey } from "@/composables/useExpenseSort";
 import { useExpenseSummary } from "@/composables/useExpenseSummary";
 import { api } from "@/composables/useApi";
 import { useLocalStorageString } from "@/composables/useLocalStorage";
@@ -39,6 +39,7 @@ import type { Expense } from "@/types";
 
 type ExpenseTab = "transactions" | "insights" | "converter" | "settings";
 
+const EXPENSE_PER_PAGE = 20;
 const EXPENSE_TABS: ExpenseTab[] = ["transactions", "insights", "converter", "settings"];
 const expenseTabItems = EXPENSE_TABS.map((tab) => ({
   id: tab,
@@ -54,6 +55,7 @@ const showForm = ref(false);
 const editingId = ref<number | null>(null);
 const deleteTargetId = ref<number | null>(null);
 const deleteCategoryTarget = ref<{ id: number; name: string } | null>(null);
+const expensePage = ref(1);
 
 const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPreferences();
 
@@ -63,15 +65,27 @@ const { value: lastCategory, set: setLastCategory } = useLocalStorageString(
 );
 
 const filtersRef = shallowRef<ReturnType<typeof useExpenseFilters> | null>(null);
+const { sortParam, toggleSort, sortIndicator } = useExpenseSort();
+
+function expenseQueryParams(): Record<string, string> {
+  return {
+    ...(filtersRef.value?.queryParams() ?? {}),
+    page: String(expensePage.value),
+    per_page: String(EXPENSE_PER_PAGE),
+    sort: sortParam.value,
+  };
+}
 
 const summaryHook = useExpenseSummary(
-  () => filtersRef.value?.queryParams() ?? {},
+  expenseQueryParams,
   () => filtersRef.value?.summaryParams() ?? {},
   () => filtersRef.value?.previousSummaryParams() ?? {},
 );
 
 const {
   expenses,
+  expenseTotal,
+  expensePages,
   summary,
   periodChange,
   exchangeRates,
@@ -93,16 +107,20 @@ const {
   reloadListAndSummary,
 } = summaryHook;
 
-const { sortedExpenses, toggleSort, sortIndicator } = useExpenseSort(
-  () => expenses.value,
-  () => displayCurrency.value as CurrencyCode,
-  convertAmount,
-);
-
 const quickAddRef = ref<InstanceType<typeof ExpenseQuickAdd> | null>(null);
 
 async function reloadAfterMutation(): Promise<void> {
   await Promise.all([loadExpenses(), loadSummary(), loadPreviousSummary(), loadCategories()]);
+}
+
+async function reloadFiltersFromFirstPage(): Promise<void> {
+  expensePage.value = 1;
+  await reloadListAndSummary();
+}
+
+async function reloadProductFilterFromFirstPage(): Promise<void> {
+  expensePage.value = 1;
+  await loadExpenses();
 }
 
 function focusQuickAdd(): void {
@@ -129,8 +147,8 @@ const {
 
 const filters = useExpenseFilters(
   displayCurrency as typeof displayCurrency & { value: CurrencyCode },
-  reloadListAndSummary,
-  loadExpenses,
+  reloadFiltersFromFirstPage,
+  reloadProductFilterFromFirstPage,
 );
 filtersRef.value = filters;
 
@@ -173,9 +191,13 @@ const { toast } = useNotify();
 
 const formTitle = computed(() => (editingId.value ? "edit expense" : "new expense"));
 const expenseCountLabel = computed(() => {
-  const count = expenses.value.length;
-  return `${count} expense${count === 1 ? "" : "s"}`;
+  const count = expenseTotal.value;
+  const pageLabel =
+    expensePages.value > 0 ? ` · page ${expensePage.value} of ${expensePages.value}` : "";
+  return `${count} expense${count === 1 ? "" : "s"}${pageLabel}`;
 });
+const hasPreviousExpensePage = computed(() => expensePage.value > 1);
+const hasNextExpensePage = computed(() => expensePage.value < expensePages.value);
 const transactionFilterLabel = computed(() => {
   const count = [productFilter.value.trim(), categoryFilter.value].filter(Boolean).length;
   if (count === 0) return "Filters";
@@ -348,6 +370,18 @@ function handleDatePreset(preset: MonthPreset): void {
 function clearTransactionFilters(): void {
   productFilter.value = "";
   categoryFilter.value = null;
+}
+
+function goToExpensePage(page: number): void {
+  if (page < 1 || (expensePages.value > 0 && page > expensePages.value)) return;
+  expensePage.value = page;
+  void loadExpenses();
+}
+
+function handleExpenseSort(key: ExpenseSortKey): void {
+  toggleSort(key);
+  expensePage.value = 1;
+  void loadExpenses();
 }
 
 function openEdit(expense: Expense): void {
@@ -603,7 +637,7 @@ onMounted(() => {
       </div>
 
       <ExpenseList
-        :expenses="sortedExpenses"
+        :expenses="expenses"
         :loading="listLoading"
         :sort-indicator="sortIndicator"
         :month-label="monthLabel"
@@ -615,8 +649,31 @@ onMounted(() => {
         @edit="openEdit"
         @delete="requestDeleteExpense"
         @duplicate="duplicateExpense"
-        @sort="toggleSort"
+        @sort="handleExpenseSort"
       />
+
+      <div
+        v-if="expensePages > 1"
+        class="flex items-center justify-between gap-3 text-xs text-surface-mid"
+      >
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          :disabled="!hasPreviousExpensePage || listLoading"
+          @click="goToExpensePage(expensePage - 1)"
+        >
+          Previous
+        </BaseButton>
+        <span>Page {{ expensePage }} of {{ expensePages }}</span>
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          :disabled="!hasNextExpensePage || listLoading"
+          @click="goToExpensePage(expensePage + 1)"
+        >
+          Next
+        </BaseButton>
+      </div>
     </div>
 
     <ExpenseInsights

@@ -290,6 +290,14 @@ export interface Expense {
   updated_at: string;
 }
 
+export interface PaginatedExpenses {
+  items: Expense[];
+  total: number;
+  page: number;
+  per_page: number;
+  pages: number;
+}
+
 export interface ExpenseMonthTotal {
   period: string;
   total: string;
