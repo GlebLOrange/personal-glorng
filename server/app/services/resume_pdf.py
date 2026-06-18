@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import html
-from typing import Any
+import multiprocessing
+from multiprocessing.connection import Connection
+from time import perf_counter
+from typing import Any, cast
+
+from app.core.exceptions import ApiError
+from app.core.logging import logger
 
 CONTACT_ORDER = ("email", "telegram", "linkedin", "github")
 CONTACT_LABELS = {
@@ -13,6 +19,7 @@ CONTACT_LABELS = {
     "linkedin": "LinkedIn",
     "github": "GitHub",
 }
+RESUME_PDF_RENDER_TIMEOUT_SECONDS = 30.0
 _cached_pdf: bytes | None = None
 _cache_lock = asyncio.Lock()
 
@@ -333,6 +340,57 @@ def render_resume_pdf(resume: dict[str, Any]) -> bytes:
     return document.write_pdf()
 
 
+def _render_resume_pdf_worker(
+    resume: dict[str, Any],
+    connection: Connection,
+) -> None:
+    """Render PDF in a child process and send a small result payload."""
+    try:
+        connection.send({"ok": True, "pdf": render_resume_pdf(resume)})
+    except BaseException as exc:
+        connection.send({"ok": False, "error": f"{type(exc).__name__}: {exc}"})
+    finally:
+        connection.close()
+
+
+def _render_resume_pdf_in_subprocess(
+    resume: dict[str, Any],
+    timeout: float,
+) -> bytes:
+    """Render PDF in a killable child process."""
+    context = multiprocessing.get_context("spawn")
+    parent_connection, child_connection = context.Pipe(duplex=False)
+    process = context.Process(
+        target=_render_resume_pdf_worker,
+        args=(resume, child_connection),
+        daemon=True,
+    )
+    process.start()
+    child_connection.close()
+
+    deadline = perf_counter() + timeout
+    try:
+        while perf_counter() < deadline:
+            if parent_connection.poll(0.1):
+                result = parent_connection.recv()
+                process.join(timeout=1)
+                if result.get("ok"):
+                    return cast(bytes, result["pdf"])
+                msg = str(result.get("error") or "unknown error")
+                raise RuntimeError(msg)
+            if process.exitcode is not None:
+                break
+
+        if process.is_alive():
+            process.terminate()
+            process.join(timeout=1)
+            raise TimeoutError
+
+        raise RuntimeError(f"PDF renderer exited with code {process.exitcode}")
+    finally:
+        parent_connection.close()
+
+
 async def get_cached_resume_pdf(resume: dict[str, Any]) -> bytes:
     """Return cached PDF bytes, rendering once per process when needed."""
     global _cached_pdf
@@ -342,9 +400,34 @@ async def get_cached_resume_pdf(resume: dict[str, Any]) -> bytes:
 
     async with _cache_lock:
         if _cached_pdf is None:
+            started_at = perf_counter()
+            logger.info("Resume PDF render started")
             # ponytail: per-worker cache stays warm until restart; add invalidation
             # if resume data becomes editable at runtime.
-            _cached_pdf = await asyncio.to_thread(render_resume_pdf, resume)
+            try:
+                # ponytail: subprocess per cold render; cache keeps normal requests
+                # cheap, switch to a worker queue if PDFs become user-generated.
+                _cached_pdf = await asyncio.to_thread(
+                    _render_resume_pdf_in_subprocess,
+                    resume,
+                    RESUME_PDF_RENDER_TIMEOUT_SECONDS,
+                )
+            except TimeoutError:
+                logger.warning(
+                    "Resume PDF render timed out",
+                    context={"timeout_seconds": RESUME_PDF_RENDER_TIMEOUT_SECONDS},
+                )
+                raise ApiError(504, "Resume PDF generation timed out") from None
+            except Exception as exc:
+                logger.error("Resume PDF render failed", error=exc)
+                raise ApiError(500, "Resume PDF generation failed") from None
+            logger.info(
+                "Resume PDF render completed",
+                context={
+                    "duration_ms": round((perf_counter() - started_at) * 1000),
+                    "bytes": len(_cached_pdf),
+                },
+            )
         return _cached_pdf
 
 

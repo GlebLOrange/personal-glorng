@@ -23,7 +23,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM base AS dev
 
 RUN apk add --no-cache ffmpeg build-base bash libstdc++ wget \
-    pango cairo gdk-pixbuf libffi
+    pango cairo gdk-pixbuf libffi fontconfig ttf-dejavu
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.19 /uv /usr/local/bin/uv
 
@@ -44,7 +44,7 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload
 
 FROM base AS production
 
-RUN apk add --no-cache ffmpeg pango cairo gdk-pixbuf libffi
+RUN apk add --no-cache ffmpeg pango cairo gdk-pixbuf libffi fontconfig ttf-dejavu
 
 COPY --from=builder /app /app
 
