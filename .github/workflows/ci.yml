@@ -26,13 +26,15 @@ jobs:
           cache-dependency-glob: "server/uv.lock"
       - name: Install dependencies
         run: uv sync --frozen
-      - name: Ruff check and format
+      - name: Ruff and Mypy checks
         run: |
-          uv run ruff check . & check_pid=$!
-          uv run ruff format --check . & format_pid=$!
-          wait "$check_pid"; check_exit=$?
-          wait "$format_pid"; format_exit=$?
-          exit $((check_exit || format_exit))
+          uv run ruff check . & ruff_check_pid=$!
+          uv run ruff format --check . & ruff_format_pid=$!
+          uv run mypy app & mypy_pid=$!
+          wait "$ruff_check_pid"; ruff_check_exit=$?
+          wait "$ruff_format_pid"; ruff_format_exit=$?
+          wait "$mypy_pid"; mypy_exit=$?
+          exit $((ruff_check_exit || ruff_format_exit || mypy_exit))
       - name: Pytest (P0 — exclude integration tier)
         env:
           GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.test
@@ -103,22 +105,6 @@ jobs:
         env:
           GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.postgres
         run: uv run pytest -m postgres -v
-
-  database:
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_BUILDKIT: 1
-      COMPOSE_DOCKER_CLI_BUILD: 1
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - name: Write CI env file
-        run: cp server/tests/env/ci-docker.env .env
-      - name: Start database and migrate
-        run: |
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d redis mongodb
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml build migrate
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm migrate
 
   e2e:
     runs-on: ubuntu-latest

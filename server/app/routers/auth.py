@@ -17,6 +17,7 @@ from app.core.redis import blacklist_token
 from app.core.security import create_verification_token, decode_token
 from app.db.deps import DbRegistry
 from app.schemas.auth import (
+    FirebaseLoginRequest,
     ForgotPasswordRequest,
     LoginRequest,
     LogoutRequest,
@@ -35,6 +36,10 @@ from app.services.auth import (
     request_password_reset,
     reset_user_password,
     verify_user_email,
+)
+from app.services.firebase_auth import (
+    login_with_firebase_google,
+    verify_firebase_google_token,
 )
 from app.services.user import get_user_by_public_id
 from app.settings import Settings
@@ -146,6 +151,46 @@ async def login(
         settings=settings,
     )
     return TokenResponse(access_token=access_token, refresh_token=refresh_token)
+
+
+@router.post(
+    "/firebase",
+    response_model=TokenResponse,
+    summary="Log in with Firebase Google auth",
+    description=(
+        "Verify a Firebase Google ID token, create a restricted app account "
+        "when needed, and set HttpOnly auth cookies."
+    ),
+    dependencies=[Depends(rate_limit_auth)],
+)
+async def firebase_login(
+    data: FirebaseLoginRequest,
+    registry: DbRegistry,
+    audit_svc: AuditServiceDep,
+    job_queue: JobQueueDep,
+    response: Response,
+    settings: AppSettings,
+) -> TokenResponse:
+    identity = verify_firebase_google_token(data.id_token, settings)
+    result = await login_with_firebase_google(registry, audit_svc, identity)
+    _set_auth_cookies(
+        response,
+        access_token=result.access_token,
+        refresh_token=result.refresh_token,
+        settings=settings,
+    )
+    if result.created:
+        reset_token = await request_password_reset(registry, audit_svc, identity.email)
+        if reset_token:
+            await job_queue.enqueue(
+                JobName.SEND_RESET_EMAIL,
+                identity.email,
+                reset_token,
+            )
+    return TokenResponse(
+        access_token=result.access_token,
+        refresh_token=result.refresh_token,
+    )
 
 
 @router.get(

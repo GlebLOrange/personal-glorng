@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 defineProps<{ title?: string; maxWidth?: "md" | "lg" | "2xl" }>();
 
@@ -10,12 +10,71 @@ const widthClass: Record<string, string> = {
 };
 const emit = defineEmits<{ close: [] }>();
 
-function onKeydown(e: KeyboardEvent) {
-  if (e.key === "Escape") emit("close");
+const modalRef = ref<HTMLElement | null>(null);
+let previouslyFocusedElement: HTMLElement | null = null;
+
+function getFocusableElements(el: HTMLElement): HTMLElement[] {
+  return Array.from(
+    el.querySelectorAll<HTMLElement>(
+      'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]'
+    )
+  ).filter((item) => item.tabIndex >= 0);
 }
 
-onMounted(() => document.addEventListener("keydown", onKeydown));
-onUnmounted(() => document.removeEventListener("keydown", onKeydown));
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === "Escape") {
+    emit("close");
+    return;
+  }
+
+  if (e.key === "Tab") {
+    if (!modalRef.value) return;
+    const focusables = getFocusableElements(modalRef.value);
+    if (focusables.length === 0) {
+      e.preventDefault();
+      return;
+    }
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+
+    if (e.shiftKey) {
+      if (active === first || !modalRef.value.contains(active)) {
+        last.focus();
+        e.preventDefault();
+      }
+    } else {
+      if (active === last || !modalRef.value.contains(active)) {
+        first.focus();
+        e.preventDefault();
+      }
+    }
+  }
+}
+
+onMounted(() => {
+  document.addEventListener("keydown", onKeydown);
+  previouslyFocusedElement = document.activeElement as HTMLElement;
+
+  requestAnimationFrame(() => {
+    if (!modalRef.value) return;
+    if (!modalRef.value.contains(document.activeElement)) {
+      const focusables = getFocusableElements(modalRef.value);
+      if (focusables.length > 0) {
+        focusables[0].focus();
+      } else {
+        modalRef.value.focus();
+      }
+    }
+  });
+});
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", onKeydown);
+  if (previouslyFocusedElement) {
+    previouslyFocusedElement.focus();
+  }
+});
 </script>
 
 <template>
@@ -27,13 +86,18 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         @click="$emit('close')"
       />
       <div
+        ref="modalRef"
+        role="dialog"
+        aria-modal="true"
+        :aria-labelledby="title ? 'modal-title' : undefined"
+        tabindex="-1"
         :class="[
-          'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-2xl',
+          'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-2xl focus:outline-none',
           widthClass[maxWidth ?? 'lg'],
         ]"
       >
         <div class="flex items-center justify-between px-6 pt-5 pb-3">
-          <h2 v-if="title" class="text-lg font-bold text-surface-light">
+          <h2 v-if="title" id="modal-title" class="text-lg font-bold text-surface-light">
             {{ title }}
           </h2>
           <button

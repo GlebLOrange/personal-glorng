@@ -63,14 +63,14 @@ def user_id_from_access_token(raw: str) -> int | None:
     if uid is not None:
         try:
             return int(uid)
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             return None
     sub = payload.get("sub")
     if sub is None:
         return None
     try:
         return int(sub)
-    except ValueError, TypeError:
+    except (ValueError, TypeError):
         return None
 
 

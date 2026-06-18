@@ -314,17 +314,6 @@ export interface ExpenseSummary {
   by_category: ExpenseCategoryTotal[];
 }
 
-/** @deprecated Use Expense */
-export type ToolExpense = Expense;
-/** @deprecated Use ExpenseMonthTotal */
-export type ToolExpenseMonthTotal = ExpenseMonthTotal;
-/** @deprecated Use ExpenseToolTotal */
-export type ToolExpenseToolTotal = ExpenseToolTotal;
-/** @deprecated Use ExpenseCategoryTotal */
-export type ToolExpenseCategoryTotal = ExpenseCategoryTotal;
-/** @deprecated Use ExpenseSummary */
-export type ToolExpenseSummary = ExpenseSummary;
-
 export interface ExchangeRates {
   base: string;
   rates: Record<string, string>;

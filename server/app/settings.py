@@ -422,10 +422,23 @@ class Settings(BaseSettings):
     JWT_SECRET: str
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int
-    JWT_ALGORITHM: str
+    JWT_ALGORITHM: Literal[
+        "HS256",
+        "HS384",
+        "HS512",
+        "RS256",
+        "RS384",
+        "RS512",
+        "ES256",
+        "ES384",
+        "ES512",
+    ]
 
     # Auth
     ALLOWED_EMAIL: str
+    FIREBASE_AUTH_ENABLED: bool = False
+    FIREBASE_PROJECT_ID: str = ""
+    FIREBASE_SERVICE_ACCOUNT_JSON: str = ""
 
     # Email
     EMAIL_BACKEND: str

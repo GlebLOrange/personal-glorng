@@ -64,7 +64,7 @@ export function useCachedApi<T>(
       if (requestGen !== generation) {
         return;
       }
-      console.error(`[useCachedApi] ${resolved}`, err);
+      if (import.meta.env.DEV) console.error(`[useCachedApi] ${resolved}`, err);
       throw err;
     } finally {
       if (requestGen === generation) {

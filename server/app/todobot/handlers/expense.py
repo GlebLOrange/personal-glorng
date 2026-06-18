@@ -10,6 +10,7 @@ from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from app.core.logging import logger
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.db.registry import DatabaseRegistry
 from app.schemas.expense import ExpenseCreate
@@ -319,7 +320,16 @@ async def guided_confirm(
             tool_name=tool_name,
             expense_date=today_in_tz(),
         )
-    except Exception:
+    except Exception as exc:
+        logger.error(
+            "Telegram expense save failed",
+            error=exc,
+            context={
+                "category": category,
+                "currency": currency,
+                "tool_name": tool_name,
+            },
+        )
         if callback.message:
             await callback.message.answer(
                 "Failed to save expense.", reply_markup=main_menu()

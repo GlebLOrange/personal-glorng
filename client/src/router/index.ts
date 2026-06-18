@@ -4,6 +4,7 @@ import { TIME_DATE_WEATHER_LOCATION_ROUTE_NAME } from "@/constants/timeDateWeath
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled } from "@/utils/featureFlags";
+import { safeRedirectPath } from "@/utils/safeUrl";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -231,12 +232,7 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
   if (to.name === "login" && auth.isAuthenticated) {
-    const redirect = to.query.redirect;
-    const target =
-      typeof redirect === "string" && redirect.startsWith("/") && !redirect.startsWith("//")
-        ? redirect
-        : "/admin";
-    next({ path: target, replace: true });
+    next({ path: safeRedirectPath(to.query.redirect), replace: true });
     return;
   }
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
@@ -264,26 +260,5 @@ router.beforeEach(async (to, _from, next) => {
   }
   next();
 });
-
-export function initAnalytics(id: string): void {
-  const script = document.createElement("script");
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
-  document.head.appendChild(script);
-
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function (...args: unknown[]) {
-    window.dataLayer!.push(args);
-  };
-  window.gtag("js", new Date());
-  window.gtag("config", id, { send_page_view: false });
-
-  router.afterEach((to) => {
-    window.gtag!("event", "page_view", {
-      page_path: to.fullPath,
-      page_title: to.name?.toString(),
-    });
-  });
-}
 
 export default router;

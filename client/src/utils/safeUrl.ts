@@ -5,6 +5,28 @@ export function isSafeNavigationUrl(url: string): boolean {
   return safeNavigationHref(url) !== null;
 }
 
+/** Return a same-origin path for auth redirects, or a safe fallback. */
+export function safeRedirectPath(value: unknown, fallback = "/admin"): string {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return fallback;
+  }
+
+  try {
+    const parsed = new URL(trimmed, window.location.origin);
+    if (parsed.origin !== window.location.origin) {
+      return fallback;
+    }
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return fallback;
+  }
+}
+
 /**
  * Return a safe href for in-app navigation, or null when the URL must not be linked.
  * Allows same-origin relative paths and same-origin or https absolute URLs.

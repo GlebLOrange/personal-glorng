@@ -42,7 +42,7 @@ async function load(): Promise<void> {
     const { data } = await api.get<FeedbackItem[]>("/feedback");
     items.value = data;
   } catch (err) {
-    console.error(err);
+    if (import.meta.env.DEV) console.error(err);
     toast("Failed to load feedback", "error");
   }
 }
@@ -53,7 +53,7 @@ async function setStatus(id: number, status: string): Promise<void> {
     const item = items.value.find((i) => i.id === id);
     if (item) item.status = status;
   } catch (err) {
-    console.error(err);
+    if (import.meta.env.DEV) console.error(err);
     toast("Failed to update status", "error");
   }
 }

@@ -31,6 +31,10 @@ class DatabaseInitService:
         await disconnect_mongodb(self.registry.mongo_client)
         self.registry.mongo_client = None
         self.registry.mongo_db = None
+        if self.registry.postgres_engine is not None:
+            await self.registry.postgres_engine.dispose()
+            self.registry.postgres_engine = None
+            self.registry.postgres_factory = None
 
     async def _init_mongo(self) -> None:
         client, database = await connect_mongodb(
@@ -44,6 +48,7 @@ class DatabaseInitService:
     async def _init_postgres(self) -> None:
         await self._wait_for_postgres()
         engine = create_async_engine(self.settings.DATABASE_URL, echo=False)
+        self.registry.postgres_engine = engine
         self.registry.postgres_factory = async_sessionmaker(
             engine,
             class_=AsyncSession,
@@ -58,16 +63,19 @@ class DatabaseInitService:
             self.settings.DATABASE_URL,
             pool_pre_ping=True,
         )
+        last_exc: Exception | None = None
         try:
             for _ in range(max_attempts):
                 try:
                     async with engine.connect() as conn:
                         await conn.execute(text("SELECT 1"))
                     return
-                except OSError, Exception:
+                except OSError as exc:
+                    last_exc = exc
                     await asyncio.sleep(1)
-            msg = "PostgreSQL not ready after retries"
-            raise RuntimeError(msg)
+            detail = str(last_exc) if last_exc else "no exception captured"
+            msg = f"PostgreSQL not ready after {max_attempts} retries: {detail}"
+            raise RuntimeError(msg) from last_exc
         finally:
             await engine.dispose()
 

@@ -4,9 +4,9 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.logging import logger
 from app.core.request_context import request_id_var, user_id_var
 from app.db.documents.audit import (
     AuditActorType,
@@ -116,8 +116,17 @@ class AuditService:
         )
         saved = await self._audit_repo().record(row)
 
+        # Mongo is the source of truth; the Postgres mirror is best-effort so a
+        # secondary-store failure never breaks the request or desyncs the trail.
         if self.postgres_db is not None and get_settings().enable_postgres():
-            await self._record_postgres(event, actor_id, request_id)
+            try:
+                await self._record_postgres(event, actor_id, request_id)
+            except Exception as exc:
+                logger.error(
+                    "Postgres audit mirror failed; Mongo record retained",
+                    error=exc,
+                    context={"action": event.action, "category": event.category.value},
+                )
 
         return saved
 
@@ -156,15 +165,6 @@ class AuditService:
         offset: int = 0,
         limit: int = 50,
     ) -> tuple[list[AuditEvent], int]:
-        if self.postgres_db is not None and get_settings().enable_postgres():
-            return await self._list_events_postgres(
-                category=category,
-                action=action,
-                date_from=date_from,
-                date_to=date_to,
-                offset=offset,
-                limit=limit,
-            )
         return await self._audit_repo().list_events(
             category=category,
             action=action,
@@ -173,55 +173,3 @@ class AuditService:
             offset=offset,
             limit=limit,
         )
-
-    async def _list_events_postgres(
-        self,
-        *,
-        category: str | None,
-        action: str | None,
-        date_from: date | None,
-        date_to: date | None,
-        offset: int,
-        limit: int,
-    ) -> tuple[list[AuditEvent], int]:
-        from app.db.models.audit_event import AuditEvent as PgAuditEvent
-
-        if self.postgres_db is None:
-            return [], 0
-
-        query = select(PgAuditEvent).order_by(PgAuditEvent.occurred_at.desc())
-        count_query = select(func.count()).select_from(PgAuditEvent)
-
-        if category:
-            query = query.where(PgAuditEvent.category == category)
-            count_query = count_query.where(PgAuditEvent.category == category)
-        if action:
-            query = query.where(PgAuditEvent.action == action)
-            count_query = count_query.where(PgAuditEvent.action == action)
-        if date_from:
-            query = query.where(PgAuditEvent.occurred_at >= date_from)
-            count_query = count_query.where(PgAuditEvent.occurred_at >= date_from)
-        if date_to:
-            query = query.where(PgAuditEvent.occurred_at <= date_to)
-            count_query = count_query.where(PgAuditEvent.occurred_at <= date_to)
-
-        total = (await self.postgres_db.execute(count_query)).scalar_one()
-        result = await self.postgres_db.execute(query.offset(offset).limit(limit))
-        rows = []
-        for pg_row in result.scalars().all():
-            rows.append(
-                AuditEvent(
-                    id=pg_row.id,
-                    occurred_at=pg_row.occurred_at,
-                    category=pg_row.category,
-                    action=pg_row.action,
-                    actor_type=pg_row.actor_type,
-                    actor_id=pg_row.actor_id,
-                    source=pg_row.source,
-                    resource_type=pg_row.resource_type,
-                    resource_id=pg_row.resource_id,
-                    metadata_=pg_row.metadata_,
-                    request_id=pg_row.request_id,
-                ),
-            )
-        return rows, total

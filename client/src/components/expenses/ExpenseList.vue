@@ -33,11 +33,11 @@ const skeletonRows = 5;
 
 <template>
   <!-- Loading skeleton -->
-  <div v-if="loading" class="flex flex-col gap-3">
+  <div v-if="loading" class="flex flex-col gap-2">
     <div
       v-for="n in skeletonRows"
       :key="n"
-      class="rounded-lg border border-surface-border bg-surface-card p-4 animate-pulse"
+      class="rounded-lg border border-surface-border bg-surface-card/70 p-4 animate-pulse"
     >
       <div class="h-3 w-24 bg-surface-border rounded mb-2" />
       <div class="h-4 w-40 bg-surface-border rounded mb-3" />
@@ -51,37 +51,41 @@ const skeletonRows = 5;
       <div
         v-for="expense in expenses"
         :key="expense.id"
-        class="rounded-lg border border-surface-border bg-surface-card p-4"
+        class="rounded-lg border border-surface-border bg-surface-card/70 p-4"
       >
-        <div class="flex justify-between items-start gap-2 mb-1">
-          <span class="text-xs text-surface-mid">
-            {{ expense.category ?? "Uncategorized" }} ·
-            {{ formatExpenseDate(expense.expense_date) }}
-          </span>
+        <div class="flex justify-between items-start gap-3">
+          <div class="min-w-0">
+            <p class="text-surface-light text-sm font-semibold truncate">{{ expense.tool_name }}</p>
+            <p class="text-xs text-surface-mid mt-1">
+              {{ expense.category ?? "Uncategorized" }} ·
+              {{ formatExpenseDate(expense.expense_date) }}
+            </p>
+          </div>
+          <div class="text-right text-sm text-surface-light font-data shrink-0">
+            <div>{{ formatMoney(expense.amount, expense.currency) }}</div>
+            <div
+              v-if="expense.currency !== displayCurrency && exchangeRates"
+              class="text-xs text-surface-mid"
+            >
+              ≈
+              {{
+                formatMoney(
+                  convertAmount(expense.amount, expense.currency as CurrencyCode, displayCurrency),
+                  displayCurrency,
+                )
+              }}
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-between items-center mt-3 gap-2">
           <span class="text-xs px-1.5 py-0.5 rounded bg-surface-border text-surface-mid">
             {{ expenseSourceLabel(expense.source) }}
           </span>
+          <p v-if="expense.notes" class="text-xs text-surface-mid truncate min-w-0">
+            {{ expense.notes }}
+          </p>
         </div>
-        <p class="text-surface-light text-sm mb-2">{{ expense.tool_name }}</p>
-        <div class="text-right text-sm text-surface-light mb-3 font-data">
-          <div>{{ formatMoney(expense.amount, expense.currency) }}</div>
-          <div
-            v-if="expense.currency !== displayCurrency && exchangeRates"
-            class="text-xs text-surface-mid"
-          >
-            ≈
-            {{
-              formatMoney(
-                convertAmount(expense.amount, expense.currency as CurrencyCode, displayCurrency),
-                displayCurrency,
-              )
-            }}
-          </div>
-        </div>
-        <p v-if="expense.notes" class="text-xs text-surface-mid mb-3 truncate">
-          {{ expense.notes }}
-        </p>
-        <div class="flex gap-2 justify-end flex-wrap">
+        <div class="flex gap-2 justify-end flex-wrap mt-3">
           <BaseButton variant="ghost" size="sm" @click="emit('duplicate', expense)">
             Again
           </BaseButton>
@@ -97,23 +101,23 @@ const skeletonRows = 5;
     <div class="hidden md:block overflow-x-auto rounded-lg border border-surface-border">
       <table class="w-full text-sm font-data">
         <thead>
-          <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card">
-            <th class="px-4 py-3">
+          <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card/80">
+            <th class="px-3 py-2">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'date')">
                 Date{{ sortIndicator("date") }}
               </button>
             </th>
-            <th class="px-4 py-3">
+            <th class="px-3 py-2">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'category')">
                 Category{{ sortIndicator("category") }}
               </button>
             </th>
-            <th class="px-4 py-3">
+            <th class="px-3 py-2">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'product')">
                 Product{{ sortIndicator("product") }}
               </button>
             </th>
-            <th class="px-4 py-3 text-right">
+            <th class="px-3 py-2 text-right">
               <button
                 type="button"
                 :class="[sortButtonClass, 'w-full text-right']"
@@ -122,9 +126,9 @@ const skeletonRows = 5;
                 Price{{ sortIndicator("amount") }}
               </button>
             </th>
-            <th class="px-4 py-3">Source</th>
-            <th class="px-4 py-3">Notes</th>
-            <th class="px-4 py-3 text-right">Actions</th>
+            <th class="px-3 py-2">Source</th>
+            <th class="px-3 py-2">Notes</th>
+            <th class="px-3 py-2 text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -133,12 +137,12 @@ const skeletonRows = 5;
             :key="expense.id"
             class="border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50"
           >
-            <td class="px-4 py-3 whitespace-nowrap">
+            <td class="px-3 py-2 whitespace-nowrap">
               {{ formatExpenseDate(expense.expense_date) }}
             </td>
-            <td class="px-4 py-3 text-surface-mid">{{ expense.category ?? "—" }}</td>
-            <td class="px-4 py-3 font-sans">{{ expense.tool_name }}</td>
-            <td class="px-4 py-3 text-right whitespace-nowrap">
+            <td class="px-3 py-2 text-surface-mid">{{ expense.category ?? "—" }}</td>
+            <td class="px-3 py-2 font-sans max-w-[220px] truncate">{{ expense.tool_name }}</td>
+            <td class="px-3 py-2 text-right whitespace-nowrap">
               <div>{{ formatMoney(expense.amount, expense.currency) }}</div>
               <div
                 v-if="expense.currency !== displayCurrency && exchangeRates"
@@ -157,13 +161,13 @@ const skeletonRows = 5;
                 }}
               </div>
             </td>
-            <td class="px-4 py-3 text-surface-mid text-xs font-sans">
+            <td class="px-3 py-2 text-surface-mid text-xs font-sans">
               {{ expenseSourceLabel(expense.source) }}
             </td>
-            <td class="px-4 py-3 text-surface-mid max-w-[200px] truncate font-sans">
+            <td class="px-3 py-2 text-surface-mid max-w-[200px] truncate font-sans">
               {{ expense.notes ?? "—" }}
             </td>
-            <td class="px-4 py-3 text-right whitespace-nowrap">
+            <td class="px-3 py-2 text-right whitespace-nowrap">
               <BaseButton variant="ghost" size="sm" @click="emit('duplicate', expense)">
                 Again
               </BaseButton>
@@ -179,9 +183,16 @@ const skeletonRows = 5;
       </table>
     </div>
 
-    <p v-if="expenses.length === 0" class="text-surface-mid text-sm text-center py-8">
-      No expenses in {{ monthLabel || "this period" }}.
-      <span class="block mt-1 text-xs">Add one above, or log from Telegram: /spend 20 coffee</span>
-    </p>
+    <div
+      v-if="expenses.length === 0"
+      class="rounded-lg border border-dashed border-surface-border bg-surface-card/40 py-10 px-4 text-center"
+    >
+      <p class="text-surface-light text-sm font-semibold">
+        No expenses in {{ monthLabel || "this period" }}
+      </p>
+      <p class="text-surface-mid text-xs mt-2">
+        Add one above, import from smart text, or log from Telegram: /spend 20 coffee
+      </p>
+    </div>
   </template>
 </template>
