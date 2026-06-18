@@ -16,7 +16,7 @@ Report privately using one of:
 - **Email:** [glorange@gmail.com](mailto:glorange@gmail.com) (subject: `Security — portfolio-glorng`)
 - **GitHub:** [Private vulnerability reporting](https://github.com/GlebLOrange/personal-glorng/security/advisories/new) (if enabled on the repository)
 
-Include steps to reproduce, impact, and any suggested fix if you have one.
+Include steps to reproduce, impact, affected URL or endpoint, and any suggested fix if you have one. Redact secrets, tokens, personal data, and private account content from reports.
 
 ## Response Timeline
 

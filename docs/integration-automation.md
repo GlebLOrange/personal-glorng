@@ -77,7 +77,7 @@ curl -s "$BASE/api/tools/audit?category=domain&per_page=20" \
 | Weather / time | `GET /api/time-date-weather-location/lookup/{city}` |
 | Visitor feedback | `POST /api/feedback` |
 | Short URL | `POST /api/tools/url-shortener` |
-| Resume JSON | `GET /api/resume` |
+| Resume JSON | `GET /api/resume` (static public profile data) |
 | GitHub public repos | `GET /api/github/repos` |
 
 Rate limits apply (typically 30/min; see [security.md](security.md)).

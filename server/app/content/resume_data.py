@@ -67,7 +67,7 @@ RESUME_DATA: dict[str, Any] = {
         {
             "role": "Full-Stack Developer",
             "company": "Freelance / Independent",
-            "period": "2022-Present",
+            "period": "2017-Present",
             "description": "",
             "highlights": [
                 (
