@@ -4,7 +4,6 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import { setupCookieConsent } from "./composables/useCookieConsent";
-import { restoreAuth } from "./plugins/auth";
 import router from "./router";
 import "./styles/main.css";
 
@@ -18,6 +17,4 @@ app.use(router);
 
 setupCookieConsent(app);
 
-restoreAuth().finally(() => {
-  app.mount("#app");
-});
+app.mount("#app");

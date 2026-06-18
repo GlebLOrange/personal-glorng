@@ -1,8 +1,19 @@
 <script setup lang="ts">
+import { onMounted, ref } from "vue";
+
 import NavBar from "@/components/layout/NavBar.vue";
 import FooterBar from "@/components/layout/FooterBar.vue";
 import ClocksBar from "@/components/weather/ClocksBar.vue";
 import ToastContainer from "@/components/ui/ToastContainer.vue";
+
+const showClocksBar = ref(false);
+
+onMounted(() => {
+  // ponytail: simple delay keeps weather off first paint; use measured idle scheduling if it grows.
+  window.setTimeout(() => {
+    showClocksBar.value = true;
+  }, 250);
+});
 </script>
 
 <template>
@@ -10,7 +21,7 @@ import ToastContainer from "@/components/ui/ToastContainer.vue";
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <NavBar />
     <main id="main-content" class="flex-1" tabindex="-1">
-      <ClocksBar />
+      <ClocksBar v-if="showClocksBar" />
       <RouterView />
     </main>
     <FooterBar />

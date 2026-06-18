@@ -51,6 +51,6 @@ async def download_resume_pdf() -> Response:
         content=pdf,
         media_type="application/pdf",
         headers={
-            "Content-Disposition": attachment_content_disposition("Gleb.Y-CV.pdf"),
+            "Content-Disposition": attachment_content_disposition("gleb.y.cv.pdf"),
         },
     )
