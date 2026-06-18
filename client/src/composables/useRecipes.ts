@@ -52,7 +52,7 @@ export function useRecipes() {
   const total = ref(0);
   const totalPages = ref(0);
   const search = ref("");
-  const activeTag = ref<string | null>(null);
+  const activeTags = ref<string[]>([]);
   const sort = ref<RecipeSort>("updated_desc");
   const page = ref(1);
   const selectedRecipe = ref<Recipe | null>(null);
@@ -74,11 +74,11 @@ export function useRecipes() {
     () => selectedRecipeId.value !== null || selectedRecipe.value !== null,
   );
   const hasNextPage = computed(() => page.value < totalPages.value);
-  const hasFilters = computed(() => Boolean(search.value.trim() || activeTag.value));
+  const hasFilters = computed(() => Boolean(search.value.trim() || activeTags.value.length));
   const recipeCountLabel = computed(() => {
     const n = total.value;
     const parts = [`${n} recipe${n === 1 ? "" : "s"}`];
-    if (activeTag.value) parts.push(`tag: ${activeTag.value}`);
+    if (activeTags.value.length) parts.push(`tags: ${activeTags.value.join(", ")}`);
     if (totalPages.value > 0) {
       parts.push(`page ${page.value} of ${totalPages.value}`);
     }
@@ -117,7 +117,7 @@ export function useRecipes() {
       sort: sort.value,
     };
     if (search.value.trim()) params.search = search.value.trim();
-    if (activeTag.value) params.tag = activeTag.value;
+    if (activeTags.value.length) params.tags = activeTags.value.join(",");
 
     const data = await runList(
       async () => {
@@ -183,7 +183,14 @@ export function useRecipes() {
   }
 
   function setTag(tag: string | null): void {
-    activeTag.value = tag;
+    if (tag === null) {
+      activeTags.value = [];
+      page.value = 1;
+      return;
+    }
+    activeTags.value = activeTags.value.includes(tag)
+      ? activeTags.value.filter((activeTag) => activeTag !== tag)
+      : [...activeTags.value, tag];
     page.value = 1;
   }
 
@@ -330,7 +337,7 @@ export function useRecipes() {
     }, 300);
   });
 
-  watch([activeTag, sort], () => {
+  watch([activeTags, sort], () => {
     if (page.value !== 1) {
       page.value = 1;
       return;
@@ -365,7 +372,7 @@ export function useRecipes() {
     total,
     totalPages,
     search,
-    activeTag,
+    activeTags,
     sort,
     page,
     selectedRecipe,

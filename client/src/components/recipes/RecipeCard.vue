@@ -7,7 +7,7 @@ import type { Recipe } from "@/types";
 
 defineProps<{
   recipe: Recipe;
-  activeTag: string | null;
+  activeTags: string[];
 }>();
 
 const emit = defineEmits<{
@@ -31,7 +31,7 @@ const emit = defineEmits<{
         v-for="tag in recipe.tags"
         :key="tag"
         :tag="tag"
-        :active="activeTag === tag"
+        :active="activeTags.includes(tag)"
         compact
         @click.stop="emit('tagClick', tag)"
       />

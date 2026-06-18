@@ -40,14 +40,20 @@ async def list_tags(svc: RecipeServiceDep) -> list[str]:
 async def list_recipes(
     svc: RecipeServiceDep,
     search: Annotated[str | None, Query(max_length=200)] = None,
-    tag: str | None = None,
+    tag: Annotated[str | None, Query(max_length=100)] = None,
+    tags: Annotated[str | None, Query(max_length=1000)] = None,
     sort: RecipeSort = "updated_desc",
     page: int = 1,
     per_page: int = 24,
 ) -> RecipeListResponse:
+    selected_tags = [
+        value.strip() for value in (tags or "").split(",") if value.strip()
+    ]
+    if tag and tag not in selected_tags:
+        selected_tags.append(tag)
     return await svc.list_recipes(
         search=search,
-        tag=tag,
+        tags=selected_tags,
         sort=sort,
         page=page,
         per_page=per_page,

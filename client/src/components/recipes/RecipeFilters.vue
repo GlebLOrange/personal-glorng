@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import RecipeTagChip from "@/components/recipes/RecipeTagChip.vue";
 import type { RecipeSort } from "@/types";
 
-defineProps<{
+const props = defineProps<{
   search: string;
-  activeTag: string | null;
+  activeTags: string[];
   sort: RecipeSort;
   allTags: string[];
   recipeCountLabel: string;
@@ -18,7 +20,10 @@ const emit = defineEmits<{
   "update:sort": [value: RecipeSort];
   setTag: [tag: string | null];
   create: [];
+  clearFilters: [];
 }>();
+
+const hasActiveFilters = computed(() => Boolean(props.search.trim() || props.activeTags.length));
 
 const sortOptions: { value: RecipeSort; label: string }[] = [
   { value: "updated_desc", label: "Recently updated" },
@@ -31,50 +36,78 @@ const sortOptions: { value: RecipeSort; label: string }[] = [
 
 <template>
   <div class="space-y-4 mb-6">
-    <div class="flex flex-col sm:flex-row gap-3">
-      <div class="flex-1">
-        <BaseInput
-          :model-value="search"
-          placeholder="Search recipes..."
-          @update:model-value="emit('update:search', String($event ?? ''))"
-        />
-      </div>
-      <div class="flex gap-2 items-end">
-        <select
-          :value="sort"
-          class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors h-[42px]"
-          @change="emit('update:sort', ($event.target as HTMLSelectElement).value as RecipeSort)"
-        >
-          <option v-for="option in sortOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-        <BaseButton v-if="canWrite" variant="primary" @click="emit('create')">+ Add</BaseButton>
-      </div>
-    </div>
+    <BaseInput
+      :model-value="search"
+      placeholder="Search recipes..."
+      @update:model-value="emit('update:search', String($event ?? ''))"
+    />
 
-    <div v-if="allTags.length" class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-      <button
-        type="button"
-        :class="[
-          'shrink-0 text-xs px-3 py-1 rounded-full border transition-colors',
-          activeTag === null
-            ? 'border-accent-blue bg-accent-blue/15 text-accent-blue'
-            : 'border-surface-border text-surface-mid hover:border-accent-blue/40 hover:text-surface-light',
-        ]"
-        @click="emit('setTag', null)"
+    <div class="grid grid-cols-1 lg:grid-cols-[14rem_minmax(0,1fr)] gap-4 lg:gap-6">
+      <aside
+        class="rounded-lg border border-surface-border bg-surface-card p-4 space-y-5 lg:sticky lg:top-24 lg:self-start"
       >
-        All
-      </button>
-      <RecipeTagChip
-        v-for="tag in allTags"
-        :key="tag"
-        :tag="tag"
-        :active="activeTag === tag"
-        @click="emit('setTag', tag)"
-      />
-    </div>
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-surface-light">Filter recipes</h2>
+            <p class="text-xs text-surface-mid mt-1">{{ recipeCountLabel }}</p>
+          </div>
+          <BaseButton v-if="canWrite" variant="primary" size="sm" @click="emit('create')">
+            + Add
+          </BaseButton>
+        </div>
 
-    <p class="text-xs text-surface-mid">{{ recipeCountLabel }}</p>
+        <div class="space-y-2">
+          <label
+            for="recipe-sort"
+            class="text-xs font-semibold uppercase tracking-wide text-surface-mid"
+          >
+            Sort
+          </label>
+          <select
+            id="recipe-sort"
+            :value="sort"
+            class="w-full bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors"
+            @change="emit('update:sort', ($event.target as HTMLSelectElement).value as RecipeSort)"
+          >
+            <option v-for="option in sortOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <div v-if="allTags.length" class="space-y-2">
+          <p class="text-xs font-semibold uppercase tracking-wide text-surface-mid">Tags</p>
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              :class="[
+                'text-xs px-3 py-1 rounded-full border transition-colors',
+                activeTags.length === 0
+                  ? 'border-accent-blue bg-accent-blue/15 text-accent-blue'
+                  : 'border-surface-border text-surface-mid hover:border-accent-blue/40 hover:text-surface-light',
+              ]"
+              @click="emit('setTag', null)"
+            >
+              All
+            </button>
+            <RecipeTagChip
+              v-for="tag in allTags"
+              :key="tag"
+              :tag="tag"
+              :active="activeTags.includes(tag)"
+              @click="emit('setTag', tag)"
+            />
+          </div>
+        </div>
+
+        <BaseButton v-if="hasActiveFilters" variant="ghost" size="sm" @click="emit('clearFilters')">
+          Clear filters
+        </BaseButton>
+      </aside>
+
+      <div class="min-w-0">
+        <slot />
+      </div>
+    </div>
   </div>
 </template>
