@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 
 import AdminUserPermissionsEditor from "@/components/admin/AdminUserPermissionsEditor.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
@@ -18,6 +18,17 @@ import { SUPERUSER_PERMISSION } from "@/utils/permissions";
 
 type RoleFilter = "all" | "superuser" | "custom";
 type StatusFilter = "all" | "verified" | "unverified" | "protected";
+type BadgeView = { id: string; label: string; className: string };
+
+const ROLE_BADGE_CLASSES = {
+  superuser: "bg-accent-violet/15 text-accent-violet border-accent-violet/30",
+  custom: "bg-surface-dark text-surface-mid border-surface-border",
+} as const;
+const STATUS_BADGE_CLASSES = {
+  protected: "bg-accent-blue/15 text-accent-blue border-accent-blue/30",
+  verified: "bg-accent-golden/15 text-accent-golden border-accent-golden/30",
+  unverified: "bg-surface-dark text-surface-mid border-surface-border",
+} as const;
 
 const { toast } = useNotify();
 const users = ref<AdminUserSummary[]>([]);
@@ -29,6 +40,9 @@ const searchQuery = ref("");
 const roleFilter = ref<RoleFilter>("all");
 const statusFilter = ref<StatusFilter>("all");
 const selectedUserId = ref<string | null>(null);
+const drawerPanel = ref<HTMLElement | null>(null);
+const drawerCloseButton = ref<HTMLButtonElement | null>(null);
+let returnFocusTarget: HTMLElement | null = null;
 
 const superuserCount = computed(
   () => users.value.filter((u) => u.permissions.includes(SUPERUSER_PERMISSION)).length,
@@ -79,27 +93,80 @@ function permissionCount(user: AdminUserSummary): number {
   ).length;
 }
 
-function roleLabel(user: AdminUserSummary): string {
-  return user.permissions.includes(SUPERUSER_PERMISSION) ? "superuser" : "custom access";
+function roleBadge(user: AdminUserSummary): BadgeView {
+  const isSuperuser = user.permissions.includes(SUPERUSER_PERMISSION);
+  return {
+    id: "role",
+    label: isSuperuser ? "superuser" : "custom access",
+    className: isSuperuser ? ROLE_BADGE_CLASSES.superuser : ROLE_BADGE_CLASSES.custom,
+  };
+}
+
+function statusBadges(user: AdminUserSummary): BadgeView[] {
+  return [
+    ...(user.is_protected
+      ? [{ id: "protected", label: "protected", className: STATUS_BADGE_CLASSES.protected }]
+      : []),
+    user.is_verified
+      ? { id: "verified", label: "verified", className: STATUS_BADGE_CLASSES.verified }
+      : { id: "unverified", label: "unverified", className: STATUS_BADGE_CLASSES.unverified },
+  ];
 }
 
 function setDraftPermissions(userId: string, permissions: string[]): void {
   draftPermissions.value[userId] = permissions;
 }
 
-function openUserDrawer(user: AdminUserSummary): void {
+async function openUserDrawer(user: AdminUserSummary): Promise<void> {
+  returnFocusTarget = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   selectedUserId.value = user.id;
   draftPermissions.value[user.id] = draftPermissions.value[user.id] ?? [...user.permissions];
+  await nextTick();
+  drawerCloseButton.value?.focus();
 }
 
 function closeUserDrawer(): void {
   const user = selectedUser.value;
   if (user) draftPermissions.value[user.id] = [...user.permissions];
   selectedUserId.value = null;
+  void nextTick(() => returnFocusTarget?.focus());
+}
+
+function requestCloseUserDrawer(): void {
+  const user = selectedUser.value;
+  if (user && hasDraftChanges(user) && !window.confirm("Discard unsaved permission changes?")) {
+    return;
+  }
+  closeUserDrawer();
+}
+
+function trapDrawerFocus(event: KeyboardEvent): void {
+  const panel = drawerPanel.value;
+  if (!panel) return;
+
+  const focusable = Array.from(
+    panel.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  );
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (!first || !last) return;
+
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+    return;
+  }
+
+  if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function onKeydown(event: KeyboardEvent): void {
-  if (event.key === "Escape" && selectedUser.value) closeUserDrawer();
+  if (event.key === "Escape" && selectedUser.value) requestCloseUserDrawer();
 }
 
 async function loadUsers(): Promise<void> {
@@ -260,28 +327,17 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 <span class="mt-1 block truncate text-xs text-surface-mid">{{ user.email }}</span>
               </span>
               <StatusBadge
-                :label="roleLabel(user)"
-                :class-name="
-                  user.permissions.includes(SUPERUSER_PERMISSION)
-                    ? 'bg-accent-violet/15 text-accent-violet border-accent-violet/30'
-                    : 'bg-surface-dark text-surface-mid border-surface-border'
-                "
+                :label="roleBadge(user).label"
+                :class-name="roleBadge(user).className"
               />
             </span>
 
             <span class="flex flex-wrap gap-2">
               <StatusBadge
-                v-if="user.is_protected"
-                label="protected"
-                class-name="bg-accent-blue/15 text-accent-blue border-accent-blue/30"
-              />
-              <StatusBadge
-                :label="user.is_verified ? 'verified' : 'unverified'"
-                :class-name="
-                  user.is_verified
-                    ? 'bg-accent-golden/15 text-accent-golden border-accent-golden/30'
-                    : 'bg-surface-dark text-surface-mid border-surface-border'
-                "
+                v-for="badge in statusBadges(user)"
+                :key="badge.id"
+                :label="badge.label"
+                :class-name="badge.className"
               />
             </span>
 
@@ -300,18 +356,20 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
           <div
             v-if="selectedUser"
             class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            @click="closeUserDrawer"
+            @click="requestCloseUserDrawer"
           />
         </Transition>
 
         <Transition name="drawer-slide" appear>
           <aside
             v-if="selectedUser"
+            ref="drawerPanel"
             class="drawer-panel relative flex h-full w-full max-w-2xl flex-col border-l border-surface-border bg-surface-dark"
             aria-modal="true"
             role="dialog"
             :aria-label="`Edit permissions for ${selectedUser.display_name || selectedUser.email}`"
             @click.stop
+            @keydown.tab="trapDrawerFocus"
           >
             <header
               class="flex shrink-0 items-start justify-between gap-3 border-b border-surface-border px-6 py-4"
@@ -326,10 +384,11 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 <p class="mt-1 break-all text-xs text-surface-mid">{{ selectedUser.email }}</p>
               </div>
               <button
+                ref="drawerCloseButton"
                 type="button"
                 class="rounded p-1 text-xl leading-none text-surface-mid hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
                 aria-label="Close user permissions panel"
-                @click="closeUserDrawer"
+                @click="requestCloseUserDrawer"
               >
                 &times;
               </button>
@@ -339,25 +398,14 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
               <div class="mb-5 space-y-3">
                 <div class="flex flex-wrap gap-2">
                   <StatusBadge
-                    :label="roleLabel(selectedUser)"
-                    :class-name="
-                      selectedUser.permissions.includes(SUPERUSER_PERMISSION)
-                        ? 'bg-accent-violet/15 text-accent-violet border-accent-violet/30'
-                        : 'bg-surface-dark text-surface-mid border-surface-border'
-                    "
+                    :label="roleBadge(selectedUser).label"
+                    :class-name="roleBadge(selectedUser).className"
                   />
                   <StatusBadge
-                    v-if="selectedUser.is_protected"
-                    label="protected"
-                    class-name="bg-accent-blue/15 text-accent-blue border-accent-blue/30"
-                  />
-                  <StatusBadge
-                    :label="selectedUser.is_verified ? 'verified' : 'unverified'"
-                    :class-name="
-                      selectedUser.is_verified
-                        ? 'bg-accent-golden/15 text-accent-golden border-accent-golden/30'
-                        : 'bg-surface-dark text-surface-mid border-surface-border'
-                    "
+                    v-for="badge in statusBadges(selectedUser)"
+                    :key="badge.id"
+                    :label="badge.label"
+                    :class-name="badge.className"
                   />
                 </div>
                 <p class="text-xs text-surface-muted">
@@ -393,7 +441,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                   }}
                 </p>
                 <div class="flex gap-2">
-                  <BaseButton variant="ghost" @click="closeUserDrawer">Cancel</BaseButton>
+                  <BaseButton variant="ghost" @click="requestCloseUserDrawer">Cancel</BaseButton>
                   <BaseButton
                     variant="primary"
                     :disabled="
