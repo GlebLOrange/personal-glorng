@@ -8,6 +8,7 @@ from app.core.rate_limit import rate_limit_api
 from app.core.utils import attachment_content_disposition
 from app.db.deps import DbRegistry
 from app.services.github_portfolio import get_public_github_repos
+from app.services.resume_pdf import get_cached_resume_pdf
 from app.settings import get_settings
 
 router = APIRouter()
@@ -40,13 +41,7 @@ async def get_resume(registry: DbRegistry) -> dict[str, Any]:
     dependencies=[Depends(rate_limit_api)],
 )
 async def download_resume_pdf() -> Response:
-    try:
-        from app.services.resume_pdf import render_resume_pdf
-
-        pdf = render_resume_pdf(dict(RESUME_DATA))
-    except Exception:
-        # The global exception handler in create_app() logs and reports this to Sentry.
-        raise
+    pdf = await get_cached_resume_pdf(dict(RESUME_DATA))
     return Response(
         content=pdf,
         media_type="application/pdf",

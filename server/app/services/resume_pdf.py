@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import html
 from typing import Any
 
@@ -12,6 +13,8 @@ CONTACT_LABELS = {
     "linkedin": "LinkedIn",
     "github": "GitHub",
 }
+_cached_pdf: bytes | None = None
+_cache_lock = asyncio.Lock()
 
 
 def _esc(value: str) -> str:
@@ -328,3 +331,25 @@ def render_resume_pdf(resume: dict[str, Any]) -> bytes:
 
     document = HTML(string=render_resume_html(resume))
     return document.write_pdf()
+
+
+async def get_cached_resume_pdf(resume: dict[str, Any]) -> bytes:
+    """Return cached PDF bytes, rendering once per process when needed."""
+    global _cached_pdf
+
+    if _cached_pdf is not None:
+        return _cached_pdf
+
+    async with _cache_lock:
+        if _cached_pdf is None:
+            # ponytail: per-worker cache stays warm until restart; add invalidation
+            # if resume data becomes editable at runtime.
+            _cached_pdf = await asyncio.to_thread(render_resume_pdf, resume)
+        return _cached_pdf
+
+
+def clear_resume_pdf_cache() -> None:
+    """Clear cached PDF bytes for tests and development reloads."""
+    global _cached_pdf
+
+    _cached_pdf = None
