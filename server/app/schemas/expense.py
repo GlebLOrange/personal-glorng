@@ -4,6 +4,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.catalogs import DEFAULT_EXPENSE_CURRENCY, CurrencyCode
+from app.schemas.common import PaginatedResponse
 from app.schemas.validators import validate_clean_optional, validate_clean_required
 
 
@@ -121,6 +122,10 @@ class ExpenseResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ExpenseListResponse(PaginatedResponse[ExpenseResponse]):
+    pass
 
 
 class ExpenseMonthTotal(BaseModel):

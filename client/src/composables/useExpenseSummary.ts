@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
-import type { ExchangeRates, Expense, ExpenseSummary } from "@/types";
+import type { ExchangeRates, Expense, ExpenseSummary, PaginatedExpenses } from "@/types";
 
 import type { CurrencyCode } from "./useExpenseFilters";
 
@@ -48,6 +48,10 @@ export function useExpenseSummary(
   previousSummaryParams: () => Record<string, string>,
 ) {
   const expenses = ref<Expense[]>([]);
+  const expenseTotal = ref(0);
+  const expensePage = ref(1);
+  const expensePages = ref(0);
+  const expensePerPage = ref(20);
   const summary = ref<ExpenseSummary | null>(null);
   const previousSummary = ref<ExpenseSummary | null>(null);
   const exchangeRates = ref<ExchangeRates | null>(null);
@@ -129,10 +133,14 @@ export function useExpenseSummary(
   async function loadExpenses(): Promise<void> {
     listLoading.value = true;
     try {
-      const { data } = await api.get<Expense[]>("/tools/expenses", {
+      const { data } = await api.get<PaginatedExpenses>("/tools/expenses", {
         params: queryParams(),
       });
-      expenses.value = data;
+      expenses.value = data.items;
+      expenseTotal.value = data.total;
+      expensePage.value = data.page;
+      expensePages.value = data.pages;
+      expensePerPage.value = data.per_page;
       listError.value = null;
     } catch (err) {
       if (import.meta.env.DEV) console.error(err);
@@ -197,6 +205,10 @@ export function useExpenseSummary(
 
   return {
     expenses,
+    expenseTotal,
+    expensePage,
+    expensePages,
+    expensePerPage,
     summary,
     previousSummary,
     periodChange,

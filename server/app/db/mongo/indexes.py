@@ -18,6 +18,10 @@ INDEX_SPECS: list[tuple[str, list[tuple[str, int | str]], dict[str, Any] | None]
     ("google_credentials", [("telegram_user_id", 1)], {"unique": True}),
     ("telegram_inbound_messages", [("telegram_message_id", 1)], {"unique": True}),
     ("weather_locations", [("user_id", 1), ("query", 1)], {"unique": True}),
+    ("expenses", [("expense_date", -1), ("created_at", -1)], None),
+    ("expenses", [("category", 1), ("expense_date", -1), ("created_at", -1)], None),
+    ("expenses", [("tool_name", 1), ("expense_date", -1), ("created_at", -1)], None),
+    ("expenses", [("amount", 1), ("expense_date", -1), ("created_at", -1)], None),
     ("expense_categories", [("name", 1)], {"unique": True}),
     (
         "search_documents",

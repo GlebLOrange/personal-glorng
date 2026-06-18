@@ -4,15 +4,18 @@ from calendar import monthrange
 from collections import defaultdict
 from datetime import date
 from decimal import Decimal
+from math import ceil
 
 from app.core.catalogs import ALLOWED_CURRENCIES, DEFAULT_EXPENSE_CURRENCY
 from app.core.exceptions import ValidationError
+from app.core.utils import paginate_params
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.db.documents.expense import Expense
 from app.db.registry import DatabaseRegistry
 from app.schemas.expense import (
     ExpenseCategoryTotal,
     ExpenseCreate,
+    ExpenseListResponse,
     ExpenseMonthTotal,
     ExpenseResponse,
     ExpenseSummary,
@@ -127,14 +130,33 @@ class ExpenseService:
         date_to: date | None = None,
         tool_name: str | None = None,
         category: str | None = None,
-    ) -> list[ExpenseResponse]:
+        page: int = 1,
+        per_page: int = 20,
+        sort: str = "date_desc",
+    ) -> ExpenseListResponse:
+        offset, limit = paginate_params(page, per_page)
         expenses = await self._expenses().list_expenses(
             date_from=date_from,
             date_to=date_to,
             tool_name=tool_name,
             category=category,
+            offset=offset,
+            limit=limit,
+            sort=sort,
         )
-        return [self._to_response(e) for e in expenses]
+        total = await self._expenses().count_expenses(
+            date_from=date_from,
+            date_to=date_to,
+            tool_name=tool_name,
+            category=category,
+        )
+        return ExpenseListResponse(
+            items=[self._to_response(e) for e in expenses],
+            total=total,
+            page=max(1, page),
+            per_page=limit,
+            pages=ceil(total / limit) if total > 0 else 0,
+        )
 
     async def get_expense(self, expense_id: int) -> ExpenseResponse:
         expense = await self._expenses().expenses.get(expense_id)
@@ -147,7 +169,7 @@ class ExpenseService:
         tool_name: str | None = None,
         category: str | None = None,
     ) -> str:
-        expenses = await self.list_expenses(
+        expenses = await self._expenses().list_expenses(
             date_from=date_from,
             date_to=date_to,
             tool_name=tool_name,
