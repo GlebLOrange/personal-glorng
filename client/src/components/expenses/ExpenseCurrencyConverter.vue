@@ -40,6 +40,7 @@ const canConvert = computed(() => {
 
 function formatMoney(value: string | number, currency: string): string {
   const num = typeof value === "string" ? parseFloat(value) : value;
+  if (!Number.isFinite(num)) return "N/A";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
@@ -68,6 +69,13 @@ function swapCurrencies(): void {
   fromCurrency.value = toCurrency.value;
   toCurrency.value = prevFrom;
   result.value = null;
+}
+
+function formatRate(from: CurrencyCode, to: CurrencyCode): string {
+  const rates = props.exchangeRates?.rates;
+  if (!rates) return "N/A";
+  const rate = crossRate(rates, from, to);
+  return Number.isFinite(rate) ? rate.toFixed(4) : "N/A";
 }
 
 const selectClass =
@@ -147,7 +155,7 @@ const selectClass =
     >
       <span class="text-surface-light">1 {{ EXPENSE_DEFAULT_CURRENCY }} =</span>
       <span v-for="c in EXPENSE_EXCHANGE_RATE_TARGETS" :key="c">
-        {{ crossRate(props.exchangeRates.rates, EXPENSE_DEFAULT_CURRENCY, c).toFixed(4) }} {{ c }}
+        {{ formatRate(EXPENSE_DEFAULT_CURRENCY, c) }} {{ c }}
       </span>
     </div>
   </BaseCard>

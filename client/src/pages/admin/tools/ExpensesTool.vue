@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, shallowRef, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import ExpenseCategoryChips from "@/components/expenses/ExpenseCategoryChips.vue";
@@ -40,12 +40,16 @@ import type { Expense } from "@/types";
 type ExpenseTab = "transactions" | "insights" | "converter" | "settings";
 
 const EXPENSE_TABS: ExpenseTab[] = ["transactions", "insights", "converter", "settings"];
-const expenseTabItems = EXPENSE_TABS.map((tab) => ({ id: tab, label: tab }));
+const expenseTabItems = EXPENSE_TABS.map((tab) => ({
+  id: tab,
+  label: tab[0].toUpperCase() + tab.slice(1),
+}));
 
 const route = useRoute();
 const router = useRouter();
 const activeTab = ref<ExpenseTab>("transactions");
 const loading = ref(false);
+const filtersOpen = ref(false);
 const showForm = ref(false);
 const editingId = ref<number | null>(null);
 const deleteTargetId = ref<number | null>(null);
@@ -58,14 +62,12 @@ const { value: lastCategory, set: setLastCategory } = useLocalStorageString(
   DEFAULT_EXPENSE_CATEGORY,
 );
 
-// Assigned once below after summary/category hooks are wired.
-// eslint-disable-next-line prefer-const
-let filters!: ReturnType<typeof useExpenseFilters>;
+const filtersRef = shallowRef<ReturnType<typeof useExpenseFilters> | null>(null);
 
 const summaryHook = useExpenseSummary(
-  () => filters.queryParams(),
-  () => filters.summaryParams(),
-  () => filters.previousSummaryParams(),
+  () => filtersRef.value?.queryParams() ?? {},
+  () => filtersRef.value?.summaryParams() ?? {},
+  () => filtersRef.value?.previousSummaryParams() ?? {},
 );
 
 const {
@@ -81,6 +83,9 @@ const {
   convertAmount,
   formatMoney,
   formatExpenseDate,
+  listError,
+  summaryError,
+  ratesError,
   loadExpenses,
   loadRates,
   loadSummary,
@@ -122,11 +127,12 @@ const {
   removeCategory: removeCategoryRaw,
 } = categoryManager;
 
-filters = useExpenseFilters(
+const filters = useExpenseFilters(
   displayCurrency as typeof displayCurrency & { value: CurrencyCode },
   reloadListAndSummary,
   loadExpenses,
 );
+filtersRef.value = filters;
 
 const {
   monthPreset,
@@ -138,6 +144,7 @@ const {
   categoryFilter,
   monthLabel,
   hasActiveFilters,
+  rangeError,
   applyMonthPreset,
   clearFilters,
   queryParams,
@@ -168,6 +175,11 @@ const formTitle = computed(() => (editingId.value ? "edit expense" : "new expens
 const expenseCountLabel = computed(() => {
   const count = expenses.value.length;
   return `${count} expense${count === 1 ? "" : "s"}`;
+});
+const transactionFilterLabel = computed(() => {
+  const count = [productFilter.value.trim(), categoryFilter.value].filter(Boolean).length;
+  if (count === 0) return "Filters";
+  return `Filters (${count})`;
 });
 
 const productSuggestions = computed(
@@ -259,7 +271,7 @@ async function saveExpense(): Promise<void> {
     resetForm();
     await reloadAfterMutation();
   } catch (err) {
-    console.error(err);
+    if (import.meta.env.DEV) console.error(err);
     toast(getApiErrorMessage(err, "Failed to save expense"), "error");
   } finally {
     loading.value = false;
@@ -287,7 +299,7 @@ async function quickSaveExpense(): Promise<void> {
       await reloadAfterMutation();
       focusQuickAdd();
     } catch (err) {
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
       toast(getApiErrorMessage(err, "Failed to save expense"), "error");
     } finally {
       loading.value = false;
@@ -322,7 +334,7 @@ async function quickSaveExpense(): Promise<void> {
     await reloadAfterMutation();
     focusQuickAdd();
   } catch (err) {
-    console.error(err);
+    if (import.meta.env.DEV) console.error(err);
     toast(getApiErrorMessage(err, "Failed to save expense"), "error");
   } finally {
     loading.value = false;
@@ -331,6 +343,11 @@ async function quickSaveExpense(): Promise<void> {
 
 function handleDatePreset(preset: MonthPreset): void {
   applyMonthPreset(preset);
+}
+
+function clearTransactionFilters(): void {
+  productFilter.value = "";
+  categoryFilter.value = null;
 }
 
 function openEdit(expense: Expense): void {
@@ -376,11 +393,13 @@ async function exportCsv(): Promise<void> {
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = `expenses-${slug}.csv`;
+    document.body.appendChild(anchor);
     anchor.click();
+    anchor.remove();
     URL.revokeObjectURL(url);
     toast("CSV exported", "success");
   } catch (err) {
-    console.error(err);
+    if (import.meta.env.DEV) console.error(err);
     toast(getApiErrorMessage(err, "Failed to export CSV"), "error");
   } finally {
     loading.value = false;
@@ -401,7 +420,7 @@ async function confirmDeleteExpense(): Promise<void> {
     deleteTargetId.value = null;
     await reloadAfterMutation();
   } catch (err) {
-    console.error(err);
+    if (import.meta.env.DEV) console.error(err);
     toast(getApiErrorMessage(err, "Failed to delete expense"), "error");
   } finally {
     loading.value = false;
@@ -471,18 +490,31 @@ onMounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout title="monthly expenses" max-width="xl">
-    <div class="flex flex-col gap-4 mb-6">
-      <ExpenseDateFilters
-        v-model:month-preset="monthPreset"
-        v-model:date-filter-mode="dateFilterMode"
-        v-model:selected-month="selectedMonth"
-        v-model:date-from="dateFrom"
-        v-model:date-to="dateTo"
-        :has-active-filters="hasActiveFilters"
-        @apply-preset="handleDatePreset"
-        @clear-filters="clearFilters"
-      />
+  <AdminPageLayout title="expenses" max-width="xl">
+    <section class="flex flex-col gap-4 mb-6">
+      <div
+        class="rounded-lg border border-surface-border bg-surface-card/50 p-4 flex flex-col gap-3"
+      >
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <p class="text-xs text-surface-mid uppercase tracking-wider">Period</p>
+            <p class="text-surface-light text-lg font-semibold">{{ monthLabel }}</p>
+          </div>
+          <ExpenseDateFilters
+            v-model:month-preset="monthPreset"
+            v-model:date-filter-mode="dateFilterMode"
+            v-model:selected-month="selectedMonth"
+            v-model:date-from="dateFrom"
+            v-model:date-to="dateTo"
+            :has-active-filters="hasActiveFilters"
+            @apply-preset="handleDatePreset"
+            @clear-filters="clearFilters"
+          />
+        </div>
+        <p v-if="rangeError" class="text-sm text-red-300" role="alert">
+          {{ rangeError }}
+        </p>
+      </div>
 
       <ExpenseSummaryCard
         :summary="summary"
@@ -491,11 +523,38 @@ onMounted(() => {
         :period-change="periodChange"
         :format-money="formatMoney"
       />
-    </div>
+      <div
+        v-if="summaryError || ratesError"
+        class="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+        role="status"
+      >
+        {{ summaryError || ratesError }}
+      </div>
+    </section>
 
     <AdminTabBar :model-value="activeTab" :tabs="expenseTabItems" @update:model-value="switchTab" />
 
-    <div v-if="activeTab === 'transactions'" class="flex flex-col gap-6">
+    <div v-if="activeTab === 'transactions'" class="flex flex-col gap-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-semibold text-surface-light">Transactions</h2>
+          <p class="text-xs text-surface-mid">{{ expenseCountLabel }}</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <BaseButton
+            variant="ghost"
+            :disabled="loading"
+            :aria-expanded="filtersOpen"
+            aria-controls="expense-transaction-filters"
+            @click="filtersOpen = !filtersOpen"
+          >
+            {{ transactionFilterLabel }}
+          </BaseButton>
+          <BaseButton variant="ghost" :disabled="loading" @click="exportCsv">Export CSV</BaseButton>
+          <BaseButton variant="primary" @click="openCreate">+ Add</BaseButton>
+        </div>
+      </div>
+
       <ExpenseQuickAdd
         ref="quickAddRef"
         v-model:smart-text="smartText"
@@ -511,22 +570,37 @@ onMounted(() => {
         @submit="quickSaveExpense"
       />
 
-      <div class="flex flex-col sm:flex-row gap-3">
-        <div class="flex-1">
-          <BaseInput v-model="productFilter" placeholder="Filter by product..." />
+      <div
+        v-if="filtersOpen"
+        id="expense-transaction-filters"
+        class="rounded-lg border border-surface-border bg-surface-card/50 p-4 flex flex-col gap-4"
+      >
+        <div class="flex flex-col md:flex-row md:items-end gap-3">
+          <div class="flex-1">
+            <BaseInput v-model="productFilter" placeholder="Filter by product..." />
+          </div>
+          <BaseButton
+            v-if="productFilter || categoryFilter"
+            variant="ghost"
+            @click="clearTransactionFilters"
+          >
+            Clear transaction filters
+          </BaseButton>
         </div>
-        <div class="flex gap-2 items-end">
-          <BaseButton variant="ghost" :disabled="loading" @click="exportCsv">Export CSV</BaseButton>
-          <BaseButton variant="primary" @click="openCreate">+ Add</BaseButton>
-        </div>
+
+        <ExpenseCategoryChips
+          v-model:category-filter="categoryFilter"
+          :category-options="categoryOptions"
+        />
       </div>
 
-      <ExpenseCategoryChips
-        v-model:category-filter="categoryFilter"
-        :category-options="categoryOptions"
-      />
-
-      <p class="text-xs text-surface-mid -mt-3">{{ expenseCountLabel }}</p>
+      <div
+        v-if="listError"
+        class="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+        role="status"
+      >
+        {{ listError }}
+      </div>
 
       <ExpenseList
         :expenses="sortedExpenses"

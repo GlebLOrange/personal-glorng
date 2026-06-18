@@ -76,7 +76,7 @@ def transform_pipe_embed_record(record: dict[str, Any]) -> dict[str, Any]:
         if isinstance(upvotes, int) and isinstance(downvotes, int)
         else 0
     )
-    if total_votes > 0:
+    if total_votes > 0 and isinstance(upvotes, int):
         record["rating_percent"] = round(100 * upvotes / total_votes, 1)
 
     return record

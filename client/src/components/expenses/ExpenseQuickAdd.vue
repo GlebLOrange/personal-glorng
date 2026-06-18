@@ -51,13 +51,19 @@ defineExpose({ focusEntry });
 </script>
 
 <template>
-  <BaseCard class="sticky top-4 z-10">
-    <p class="text-xs text-surface-mid uppercase tracking-wider mb-3">Quick add</p>
+  <BaseCard>
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <div>
+        <p class="text-xs text-surface-mid uppercase tracking-wider">Quick add</p>
+        <p class="text-xs text-surface-muted mt-1">Smart text first; fields stay ready below.</p>
+      </div>
+      <span class="text-xs text-surface-mid font-data">{{ currencyLabel }}</span>
+    </div>
 
     <form class="flex flex-col gap-4" @submit.prevent="emit('submit')">
-      <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+      <div class="flex flex-col md:flex-row md:items-end gap-3">
         <div class="flex-1">
-          <label class="text-sm text-surface-mid block mb-1">Smart add</label>
+          <label class="text-sm text-surface-mid block mb-1">Transaction</label>
           <input
             ref="smartInputRef"
             v-model="smartText"
@@ -65,7 +71,7 @@ defineExpose({ focusEntry });
             :class="FIELD_INPUT_CLASS"
           />
         </div>
-        <BaseButton variant="primary" type="submit" :disabled="loading" class="sm:mb-0.5">
+        <BaseButton variant="primary" type="submit" :disabled="loading" class="md:mb-0.5">
           {{ loading ? "Saving..." : "Save" }}
         </BaseButton>
       </div>
@@ -76,9 +82,8 @@ defineExpose({ focusEntry });
       </p>
       <p v-else-if="smartError" class="text-xs text-red-400">{{ smartError }}</p>
 
-      <div class="border-t border-surface-border pt-3">
-        <p class="text-xs text-surface-mid uppercase tracking-wider mb-2">Or use fields</p>
-        <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+      <div class="rounded-lg border border-surface-border bg-surface-dark/40 p-3">
+        <div class="grid grid-cols-1 md:grid-cols-[180px_1fr_120px] md:items-end gap-3">
           <div>
             <label class="text-xs text-surface-mid uppercase tracking-wider block mb-1">
               Category
@@ -99,7 +104,7 @@ defineExpose({ focusEntry });
               <option v-for="name in productSuggestions" :key="name" :value="name" />
             </datalist>
           </div>
-          <div class="sm:w-28">
+          <div>
             <BaseInput
               v-model="price"
               label="Price"
@@ -111,7 +116,7 @@ defineExpose({ focusEntry });
           </div>
         </div>
         <p class="text-xs text-surface-mid mt-2">
-          {{ currencyLabel }} · today · full form for date, currency, notes
+          Today by default. Use Add for date, currency, and notes.
         </p>
       </div>
     </form>

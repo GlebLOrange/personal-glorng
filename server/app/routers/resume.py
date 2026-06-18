@@ -40,66 +40,12 @@ async def get_resume(registry: DbRegistry) -> dict[str, Any]:
     dependencies=[Depends(rate_limit_api)],
 )
 async def download_resume_pdf() -> Response:
-    # #region agent log
-    import json
-    import time
-
-    def _dbg_resume(location: str, message: str, data: dict, hypothesis_id: str) -> None:
-        with open(
-            "/Users/glorange/projects/portfolio-glorng/.cursor/debug-27ee16.log",
-            "a",
-            encoding="utf-8",
-        ) as _f:
-            _f.write(
-                json.dumps(
-                    {
-                        "sessionId": "27ee16",
-                        "location": location,
-                        "message": message,
-                        "data": data,
-                        "timestamp": int(time.time() * 1000),
-                        "hypothesisId": hypothesis_id,
-                    }
-                )
-                + "\n"
-            )
-
-    _dbg_resume(
-        "resume.py:download_resume_pdf:entry",
-        "PDF download handler entered",
-        {},
-        "H2",
-    )
-    # #endregion
     try:
         from app.services.resume_pdf import render_resume_pdf
 
-        # #region agent log
-        _dbg_resume(
-            "resume.py:download_resume_pdf:pre-render",
-            "WeasyPrint import succeeded, starting render",
-            {},
-            "H3",
-        )
-        # #endregion
         pdf = render_resume_pdf(dict(RESUME_DATA))
-        # #region agent log
-        _dbg_resume(
-            "resume.py:download_resume_pdf:post-render",
-            "PDF render completed",
-            {"pdf_bytes": len(pdf)},
-            "H2",
-        )
-        # #endregion
-    except Exception as exc:
-        # #region agent log
-        _dbg_resume(
-            "resume.py:download_resume_pdf:error",
-            "PDF render failed",
-            {"error_type": type(exc).__name__, "error": str(exc)[:500]},
-            "H3",
-        )
-        # #endregion
+    except Exception:
+        # The global exception handler in create_app() logs and reports this to Sentry.
         raise
     return Response(
         content=pdf,

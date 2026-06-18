@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from httpx import AsyncClient
 
+import app.services.firebase_auth as firebase_auth_service
 from app.core.deps import get_job_queue_dep
 from app.core.security import create_reset_token, create_verification_token
 from app.db.documents.user import User
@@ -11,6 +12,7 @@ from app.main import app
 from app.services.audit import AuditService
 from app.services.auth import login_user
 from app.services.user import get_user_by_email
+from app.settings import get_settings
 from app.workers.job_names import JobName
 from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, STRONG_PASSWORD
 
@@ -163,6 +165,168 @@ async def test_login_nonexistent_user(client: AsyncClient) -> None:
         "/api/auth/login",
         json={"email": "nobody@glorng.dev", "password": STRONG_PASSWORD},
     )
+    assert resp.status_code == 401
+
+
+# --- Firebase Google Login ---
+
+
+def _mock_firebase_token(
+    monkeypatch: pytest.MonkeyPatch,
+    payload: dict[str, object],
+) -> None:
+    settings = get_settings()
+    settings.FIREBASE_AUTH_ENABLED = True
+    settings.FIREBASE_PROJECT_ID = "test-firebase-project"
+    monkeypatch.setattr(firebase_auth_service, "_firebase_app", lambda _settings: object())
+    monkeypatch.setattr(
+        firebase_auth_service.firebase_auth,
+        "verify_id_token",
+        lambda _token, _app: payload,
+    )
+
+
+@pytest.mark.asyncio
+async def test_firebase_login_creates_restricted_user_and_enqueues_reset(
+    client: AsyncClient,
+    registry: DatabaseRegistry,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _mock_firebase_token(
+        monkeypatch,
+        {
+            "email": "Google.User@Glorng.dev",
+            "email_verified": True,
+            "name": "Google User",
+            "firebase": {"sign_in_provider": "google.com"},
+        },
+    )
+    mock_queue = AsyncMock()
+    mock_queue.enqueue = AsyncMock(return_value="job-reset")
+    app.dependency_overrides[get_job_queue_dep] = lambda: mock_queue
+    try:
+        resp = await client.post("/api/auth/firebase", json={"id_token": "x" * 24})
+    finally:
+        app.dependency_overrides.pop(get_job_queue_dep, None)
+
+    assert resp.status_code == 200
+    assert resp.cookies.get("access_token")
+    assert resp.cookies.get("refresh_token")
+    user = await get_user_by_email(registry, "google.user@glorng.dev")
+    assert user is not None
+    assert user.is_verified is True
+    assert user.permissions == []
+    assert user.display_name == "Google User"
+    mock_queue.enqueue.assert_awaited_once()
+    assert mock_queue.enqueue.await_args.args[0] == JobName.SEND_RESET_EMAIL
+    assert mock_queue.enqueue.await_args.args[1] == "google.user@glorng.dev"
+
+
+@pytest.mark.asyncio
+async def test_firebase_login_existing_user_does_not_grant_permissions_or_email(
+    client: AsyncClient,
+    registry: DatabaseRegistry,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    existing = await firebase_auth_service.create_user(
+        registry,
+        email="existing@glorng.dev",
+        password=STRONG_PASSWORD,
+        permissions=[],
+        is_verified=True,
+    )
+    _mock_firebase_token(
+        monkeypatch,
+        {
+            "email": "existing@glorng.dev",
+            "email_verified": True,
+            "name": "Existing",
+            "firebase": {"sign_in_provider": "google.com"},
+        },
+    )
+    mock_queue = AsyncMock()
+    mock_queue.enqueue = AsyncMock(return_value="job-reset")
+    app.dependency_overrides[get_job_queue_dep] = lambda: mock_queue
+    try:
+        resp = await client.post("/api/auth/firebase", json={"id_token": "x" * 24})
+    finally:
+        app.dependency_overrides.pop(get_job_queue_dep, None)
+
+    assert resp.status_code == 200
+    user = await get_user_by_email(registry, "existing@glorng.dev")
+    assert user is not None
+    assert user.id == existing.id
+    assert user.permissions == []
+    mock_queue.enqueue.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_firebase_login_rejects_when_disabled(client: AsyncClient) -> None:
+    settings = get_settings()
+    settings.FIREBASE_AUTH_ENABLED = False
+    settings.FIREBASE_PROJECT_ID = "test-firebase-project"
+
+    resp = await client.post("/api/auth/firebase", json={"id_token": "x" * 24})
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_firebase_login_rejects_missing_project(client: AsyncClient) -> None:
+    settings = get_settings()
+    settings.FIREBASE_AUTH_ENABLED = True
+    settings.FIREBASE_PROJECT_ID = ""
+
+    resp = await client.post("/api/auth/firebase", json={"id_token": "x" * 24})
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_firebase_login_rejects_invalid_token(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = get_settings()
+    settings.FIREBASE_AUTH_ENABLED = True
+    settings.FIREBASE_PROJECT_ID = "test-firebase-project"
+    monkeypatch.setattr(firebase_auth_service, "_firebase_app", lambda _settings: object())
+
+    def _raise_invalid(_token: str, _app: object) -> dict[str, object]:
+        raise ValueError("bad token")
+
+    monkeypatch.setattr(
+        firebase_auth_service.firebase_auth,
+        "verify_id_token",
+        _raise_invalid,
+    )
+
+    resp = await client.post("/api/auth/firebase", json={"id_token": "x" * 24})
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {
+            "email": "unverified@glorng.dev",
+            "email_verified": False,
+            "firebase": {"sign_in_provider": "google.com"},
+        },
+        {
+            "email": "password@glorng.dev",
+            "email_verified": True,
+            "firebase": {"sign_in_provider": "password"},
+        },
+    ],
+)
+async def test_firebase_login_rejects_unverified_or_non_google_token(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+    payload: dict[str, object],
+) -> None:
+    _mock_firebase_token(monkeypatch, payload)
+
+    resp = await client.post("/api/auth/firebase", json={"id_token": "x" * 24})
     assert resp.status_code == 401
 
 

@@ -2,7 +2,7 @@
 
 from typing import Any
 
-INDEX_SPECS: list[tuple[str, list[tuple[str, int]], dict[str, Any] | None]] = [
+INDEX_SPECS: list[tuple[str, list[tuple[str, int | str]], dict[str, Any] | None]] = [
     ("users", [("email", 1)], {"unique": True}),
     ("users", [("public_id", 1)], {"unique": True}),
     ("tasks", [("telegram_user_id", 1), ("scheduled_at", 1)], None),

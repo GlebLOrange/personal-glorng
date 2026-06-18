@@ -3,7 +3,7 @@ import * as CookieConsent from "vanilla-cookieconsent";
 
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
-import { isAnalyticsEnabled } from "@/constants/analytics";
+import { isFirebaseAnalyticsEnabled } from "@/constants/firebase";
 
 const contactLinks = buildContactLinks(RESUME_FALLBACK.links);
 
@@ -28,8 +28,8 @@ function openPreferences() {
           <strong class="text-surface-light">Authentication cookies</strong> — stored when you log
           in, used to keep your session active.
         </li>
-        <li v-if="isAnalyticsEnabled">
-          <strong class="text-surface-light">Google Analytics</strong> — collects anonymous page
+        <li v-if="isFirebaseAnalyticsEnabled">
+          <strong class="text-surface-light">Firebase Analytics</strong> — collects anonymous page
           view data (pages visited, time on site, general location). IP addresses are anonymized.
         </li>
         <li>
@@ -69,14 +69,14 @@ function openPreferences() {
               <td class="px-4 py-2">Stores your cookie consent preferences.</td>
               <td class="px-4 py-2">6 months</td>
             </tr>
-            <tr v-if="isAnalyticsEnabled" class="border-b border-surface-border">
+            <tr v-if="isFirebaseAnalyticsEnabled" class="border-b border-surface-border">
               <td class="px-4 py-2 font-semibold text-surface-light">_ga</td>
-              <td class="px-4 py-2">Distinguishes unique visitors (Google Analytics).</td>
+              <td class="px-4 py-2">Distinguishes unique visitors (Firebase Analytics).</td>
               <td class="px-4 py-2">2 years</td>
             </tr>
-            <tr v-if="isAnalyticsEnabled" class="border-b border-surface-border">
+            <tr v-if="isFirebaseAnalyticsEnabled" class="border-b border-surface-border">
               <td class="px-4 py-2 font-semibold text-surface-light">_gid</td>
-              <td class="px-4 py-2">Distinguishes unique visitors (Google Analytics).</td>
+              <td class="px-4 py-2">Distinguishes unique visitors (Firebase Analytics).</td>
               <td class="px-4 py-2">24 hours</td>
             </tr>
             <tr>
@@ -99,20 +99,20 @@ function openPreferences() {
         >
           cookie settings</button
         >. Analytics and error monitoring only run if you've given consent.
-        <span v-if="!isAnalyticsEnabled"> Google Analytics is currently disabled.</span>
+        <span v-if="!isFirebaseAnalyticsEnabled"> Firebase Analytics is currently disabled.</span>
       </p>
     </section>
 
     <section class="mb-10">
       <h2 class="text-xl font-semibold text-accent-blue mb-3">Third parties</h2>
       <ul class="list-disc list-inside text-surface-sage space-y-1.5 ml-2">
-        <li v-if="isAnalyticsEnabled">
+        <li v-if="isFirebaseAnalyticsEnabled">
           <a
             href="https://policies.google.com/privacy"
             target="_blank"
             rel="noopener"
             class="text-accent-blue hover:text-accent-violet transition-colors"
-            >Google Analytics</a
+            >Firebase Analytics</a
           >
           — used for anonymous usage statistics.
         </li>

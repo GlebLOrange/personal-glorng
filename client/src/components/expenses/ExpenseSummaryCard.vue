@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import BaseCard from "@/components/ui/BaseCard.vue";
 import type { ExpenseCategory, ExpenseSummary } from "@/types";
 
 const props = defineProps<{
@@ -41,30 +40,72 @@ const categoryBreakdown = computed(() => {
     };
   });
 });
+
+const budgetTotals = computed(() => {
+  if (!props.summary) return null;
+  const spent = categoryBreakdown.value.reduce(
+    (total, item) => total + parseFloat(String(item.total)),
+    0,
+  );
+  const budget = categoryBreakdown.value.reduce((total, item) => total + (item.budget ?? 0), 0);
+  if (budget <= 0) return null;
+  const percent = Math.round((spent / budget) * 100);
+  return {
+    spent,
+    budget,
+    percent,
+    overBudget: percent > 100,
+  };
+});
 </script>
 
 <template>
-  <BaseCard class="flex flex-col gap-4">
-    <div>
-      <p class="text-xs text-surface-mid uppercase tracking-wider">Total for {{ monthLabel }}</p>
-      <p v-if="summary" class="text-2xl font-bold text-surface-light font-data">
-        {{ formatMoney(summary.total, summary.currency) }}
-      </p>
-      <p v-else class="text-2xl font-bold text-surface-border animate-pulse">—</p>
-      <p
-        v-if="periodChange"
-        class="text-xs mt-1 font-data"
-        :class="periodChange.increased ? 'text-red-400' : 'text-green-400'"
-      >
-        {{ periodChange.increased ? "+" : "" }}{{ periodChange.delta }}% vs previous period
-      </p>
+  <section class="rounded-lg border border-surface-border bg-surface-card/70 p-4 md:p-5">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <p class="text-xs text-surface-mid uppercase tracking-wider">Total</p>
+        <p v-if="summary" class="text-3xl font-bold text-surface-light font-data mt-1">
+          {{ formatMoney(summary.total, summary.currency) }}
+        </p>
+        <p v-else class="text-3xl font-bold text-surface-border animate-pulse mt-1">—</p>
+        <p class="text-xs text-surface-mid mt-1">{{ monthLabel }}</p>
+      </div>
+
+      <div class="rounded-lg border border-surface-border bg-surface-dark/40 p-3">
+        <p class="text-xs text-surface-mid uppercase tracking-wider">Period change</p>
+        <p
+          v-if="periodChange"
+          class="text-xl font-bold font-data mt-1"
+          :class="periodChange.increased ? 'text-red-400' : 'text-green-400'"
+        >
+          {{ periodChange.increased ? "+" : "" }}{{ periodChange.delta }}%
+        </p>
+        <p v-else class="text-xl font-bold text-surface-border font-data mt-1">—</p>
+        <p class="text-xs text-surface-mid mt-1">vs previous period</p>
+      </div>
+
+      <div class="rounded-lg border border-surface-border bg-surface-dark/40 p-3">
+        <p class="text-xs text-surface-mid uppercase tracking-wider">Budget status</p>
+        <p
+          v-if="budgetTotals && summary"
+          class="text-xl font-bold font-data mt-1"
+          :class="budgetTotals.overBudget ? 'text-red-400' : 'text-accent-blue'"
+        >
+          {{ budgetTotals.percent }}%
+        </p>
+        <p v-else class="text-xl font-bold text-surface-border font-data mt-1">—</p>
+        <p v-if="budgetTotals && summary" class="text-xs text-surface-mid mt-1">
+          {{ formatMoney(budgetTotals.spent, summary.currency) }} of
+          {{ formatMoney(budgetTotals.budget, summary.currency) }}
+        </p>
+        <p v-else class="text-xs text-surface-mid mt-1">No category budgets set</p>
+      </div>
     </div>
 
     <div
       v-if="categoryBreakdown.length > 0"
-      class="flex flex-col gap-2 border-t border-surface-border pt-3"
+      class="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-surface-border mt-5 pt-4"
     >
-      <p class="text-xs text-surface-mid uppercase tracking-wider">By category</p>
       <div v-for="item in categoryBreakdown" :key="item.category" class="flex flex-col gap-1">
         <div class="flex justify-between text-xs">
           <span class="text-surface-light">{{ item.category }}</span>
@@ -88,5 +129,5 @@ const categoryBreakdown = computed(() => {
         </div>
       </div>
     </div>
-  </BaseCard>
+  </section>
 </template>

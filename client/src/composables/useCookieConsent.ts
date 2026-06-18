@@ -3,9 +3,10 @@ import * as CookieConsent from "vanilla-cookieconsent";
 import "vanilla-cookieconsent/dist/cookieconsent.css";
 
 import { initSentry } from "@/instrument";
-import { isAnalyticsEnabled } from "@/constants/analytics";
+import { isFirebaseAnalyticsEnabled } from "@/constants/firebase";
 import { isSentryEnabled } from "@/constants/sentry";
-import { initAnalytics } from "@/router";
+import { initFirebaseAnalytics } from "@/services/firebase";
+import router from "@/router";
 
 let sentryInitialized = false;
 let analyticsInitialized = false;
@@ -16,8 +17,12 @@ function applyConsent(app: App) {
     sentryInitialized = true;
   }
 
-  if (isAnalyticsEnabled && !analyticsInitialized && CookieConsent.acceptedCategory("analytics")) {
-    initAnalytics(import.meta.env.VITE_GA_ID!);
+  if (
+    isFirebaseAnalyticsEnabled &&
+    !analyticsInitialized &&
+    CookieConsent.acceptedCategory("analytics")
+  ) {
+    initFirebaseAnalytics(router);
     analyticsInitialized = true;
   }
 }
@@ -38,7 +43,7 @@ export function setupCookieConsent(app: App): void {
     };
   }
 
-  if (isAnalyticsEnabled) {
+  if (isFirebaseAnalyticsEnabled) {
     categories.analytics = {
       autoClear: {
         cookies: [{ name: /^_ga/ }, { name: "_gid" }],
@@ -53,12 +58,12 @@ export function setupCookieConsent(app: App): void {
         "These cookies are essential for the site to function (authentication, session management).",
       linkedCategory: "necessary",
     },
-    ...(isAnalyticsEnabled
+    ...(isFirebaseAnalyticsEnabled
       ? [
           {
             title: "Analytics",
             description:
-              "Google Analytics helps us understand how visitors interact with the site.",
+              "Firebase Analytics helps us understand how visitors interact with the site.",
             linkedCategory: "analytics",
             cookieTable: {
               headers: {
@@ -70,12 +75,12 @@ export function setupCookieConsent(app: App): void {
                 {
                   name: "_ga",
                   domain: "google.com",
-                  description: "Distinguishes unique users.",
+                  description: "Distinguishes unique users for Firebase Analytics.",
                 },
                 {
                   name: "_gid",
                   domain: "google.com",
-                  description: "Distinguishes unique users (24h).",
+                  description: "Distinguishes unique users for Firebase Analytics (24h).",
                 },
               ],
             },
@@ -118,9 +123,9 @@ export function setupCookieConsent(app: App): void {
           consentModal: {
             title: "Cookie preferences",
             description:
-              isAnalyticsEnabled && isSentryEnabled
+              isFirebaseAnalyticsEnabled && isSentryEnabled
                 ? "This site uses cookies for analytics and error monitoring to improve your experience. You can choose which categories to allow."
-                : isAnalyticsEnabled
+                : isFirebaseAnalyticsEnabled
                   ? "This site uses cookies for analytics to improve your experience. You can choose which categories to allow."
                   : isSentryEnabled
                     ? "This site uses cookies for error monitoring to improve your experience. You can choose which categories to allow."

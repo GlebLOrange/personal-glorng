@@ -6,11 +6,19 @@ import { api } from "@/composables/useApi";
 import { useCachedApi } from "@/composables/useCachedApi";
 import { useAuthStore } from "@/stores/auth";
 
+const { signInWithGooglePopupMock } = vi.hoisted(() => ({
+  signInWithGooglePopupMock: vi.fn(),
+}));
+
 vi.mock("@/composables/useApi", () => ({
   api: {
     get: vi.fn(),
     post: vi.fn(),
   },
+}));
+
+vi.mock("@/services/firebase", () => ({
+  signInWithGooglePopup: signInWithGooglePopupMock,
 }));
 
 describe("useAuthStore", () => {
@@ -75,6 +83,32 @@ describe("useAuthStore", () => {
     });
     expect(auth.user?.email).toBe("admin@admin.admin");
     expect(auth.isAuthenticated).toBe(true);
+  });
+
+  it("exchanges Google Firebase token then fetches user", async () => {
+    const getIdToken = vi.fn().mockResolvedValue("firebase-token");
+    signInWithGooglePopupMock.mockResolvedValue({ user: { getIdToken } });
+    vi.mocked(api.post).mockResolvedValue({ data: {} });
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        id: "u1",
+        email: "google@example.com",
+        permissions: [],
+        is_verified: true,
+        display_name: "Google User",
+        timezone: "UTC",
+        preferences: {},
+        created_at: "2026-01-01T00:00:00Z",
+      },
+    });
+
+    const auth = useAuthStore();
+    await auth.loginWithGoogle();
+
+    expect(api.post).toHaveBeenCalledWith("/auth/firebase", {
+      id_token: "firebase-token",
+    });
+    expect(auth.user?.email).toBe("google@example.com");
   });
 
   it("resolveSession clears user on 401 after refresh fails", async () => {

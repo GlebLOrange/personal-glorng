@@ -17,6 +17,8 @@ const typeBorderClass: Record<Toast["type"], string> = {
     <div
       v-for="t in toasts"
       :key="t.id"
+      :role="t.type === 'error' ? 'alert' : 'status'"
+      :aria-live="t.type === 'error' ? 'assertive' : 'polite'"
       :class="[
         'bg-surface-card border rounded-lg p-4 text-surface-light min-w-[280px] cursor-pointer animate-[slide-in_0.3s_ease-out]',
         typeBorderClass[t.type] || 'border-surface-border',

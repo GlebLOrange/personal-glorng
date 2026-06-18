@@ -3,7 +3,11 @@
 from dataclasses import dataclass, field
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+)
 
 from app.db.repositories.app_log import AppLogRepository
 from app.db.repositories.audit import AuditRepository
@@ -28,6 +32,7 @@ class DatabaseRegistry:
     mongo_client: AsyncIOMotorClient | None = None
     mongo_db: AsyncIOMotorDatabase | None = None
     postgres_factory: async_sessionmaker[AsyncSession] | None = None
+    postgres_engine: AsyncEngine | None = None
     users: UserRepository | None = None
     tasks: TaskRepository | None = None
     recipes: RecipeRepository | None = None
