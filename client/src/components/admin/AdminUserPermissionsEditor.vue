@@ -18,7 +18,7 @@ const emit = defineEmits<{
 const isSuperuser = computed(() => props.permissions.includes(SUPERUSER_PERMISSION));
 
 const sections = computed(() => groupServicesByCategory(props.services));
-const selectedToolPermissionCount = computed(
+const explicitToolPermissionCount = computed(
   () => props.permissions.filter((permission) => permission !== SUPERUSER_PERMISSION).length,
 );
 
@@ -54,6 +54,11 @@ function servicePermissionCount(service: PlatformService): number {
   return service.capabilities.filter((capability) =>
     hasPermission(permissionKey(service.slug, capability)),
   ).length;
+}
+
+function servicePermissionSummary(service: PlatformService): string {
+  if (isSuperuser.value) return "All";
+  return `${servicePermissionCount(service)}/${service.capabilities.length}`;
 }
 </script>
 
@@ -91,8 +96,8 @@ function servicePermissionCount(service: PlatformService): number {
         <div>
           <h3 class="text-sm font-semibold text-surface-light">Tool permissions</h3>
           <p class="text-xs text-surface-mid">
-            {{ selectedToolPermissionCount }} selected
-            <span v-if="isSuperuser" class="text-surface-muted">· included via superuser</span>
+            <template v-if="isSuperuser">All tools included via superuser</template>
+            <template v-else>{{ explicitToolPermissionCount }} selected</template>
           </p>
         </div>
         <p v-if="disabled" class="text-xs text-surface-muted">Editing disabled for this user</p>
@@ -116,7 +121,7 @@ function servicePermissionCount(service: PlatformService): number {
               <p class="mt-0.5 text-xs text-surface-mid">{{ service.description }}</p>
             </div>
             <span class="rounded border border-surface-border bg-surface-card px-2 py-0.5 text-xs text-surface-muted">
-              {{ servicePermissionCount(service) }}/{{ service.capabilities.length }}
+              {{ servicePermissionSummary(service) }}
             </span>
           </div>
 
