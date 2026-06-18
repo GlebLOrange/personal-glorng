@@ -4,16 +4,20 @@ import { useRouter } from "vue-router";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import { EXPENSE_CURRENCIES } from "@/composables/useExpenseFilters";
 import { useUserPreferences } from "@/composables/useUserPreferences";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
+import { PLATFORM_SERVICES } from "@/platform/services";
 import { useAuthStore } from "@/stores/auth";
 import { getApiErrorMessage } from "@/types/api";
 import type { GitHubStatus } from "@/types";
 import { passwordStrength } from "@/utils/passwordPolicy";
+import { SUPERUSER_PERMISSION } from "@/utils/permissions";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -31,6 +35,9 @@ const newPasswordConfirm = ref("");
 const deletePassword = ref("");
 const deleteConfirm = ref(false);
 const githubStatus = ref<GitHubStatus>({ linked: false, github_username: null });
+const githubLoading = ref(false);
+const githubError = ref<string | null>(null);
+const unlinkingGithub = ref(false);
 const savingProfile = ref(false);
 const savingEmail = ref(false);
 const savingPassword = ref(false);
@@ -38,6 +45,59 @@ const savingPrefs = ref(false);
 const deleting = ref(false);
 
 const passwordCheck = computed(() => passwordStrength(newPassword.value));
+const profilePayload = computed(() => ({
+  display_name: displayName.value.trim() || null,
+  timezone: timezone.value.trim(),
+}));
+const isProfileUnchanged = computed(
+  () =>
+    profilePayload.value.display_name === (auth.user?.display_name ?? null) &&
+    profilePayload.value.timezone === (auth.user?.timezone ?? "UTC"),
+);
+const canSaveProfile = computed(
+  () => !!profilePayload.value.timezone && !isProfileUnchanged.value && !savingProfile.value,
+);
+const isEmailUnchanged = computed(
+  () => newEmail.value.trim().toLowerCase() === (auth.user?.email ?? "").toLowerCase(),
+);
+const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+$/.test(newEmail.value.trim()));
+const canSaveEmail = computed(
+  () =>
+    isEmailValid.value &&
+    !isEmailUnchanged.value &&
+    !!emailPassword.value &&
+    !savingEmail.value,
+);
+const passwordsMatch = computed(
+  () => !!newPasswordConfirm.value && newPassword.value === newPasswordConfirm.value,
+);
+const canSavePassword = computed(
+  () =>
+    !!currentPassword.value &&
+    passwordCheck.value.valid &&
+    passwordsMatch.value &&
+    !savingPassword.value,
+);
+const canSaveCurrency = computed(() => !!displayCurrency.value && !savingPrefs.value);
+const canDeleteAccount = computed(() => !!deletePassword.value && deleteConfirm.value && !deleting.value);
+const permissionSummary = computed(() => {
+  if (permissions.value.includes(SUPERUSER_PERMISSION)) {
+    return "Platform superuser: full access to admin tools and user management.";
+  }
+
+  const serviceNames = new Set<string>();
+  for (const permission of permissions.value) {
+    const [serviceSlug] = permission.split(":");
+    const service = PLATFORM_SERVICES.find((item) => item.slug === serviceSlug);
+    if (service) serviceNames.add(service.name);
+  }
+
+  if (serviceNames.size === 0) {
+    return "No tool permissions assigned yet.";
+  }
+
+  return `Access to ${Array.from(serviceNames).join(", ")}.`;
+});
 
 function syncFormFromUser(): void {
   displayName.value = auth.user?.display_name ?? "";
@@ -46,11 +106,15 @@ function syncFormFromUser(): void {
 }
 
 async function loadGithubStatus(): Promise<void> {
+  githubLoading.value = true;
+  githubError.value = null;
   try {
     const { data } = await api.get<GitHubStatus>("/auth/github/status");
     githubStatus.value = data;
-  } catch {
-    githubStatus.value = { linked: false, github_username: null };
+  } catch (err) {
+    githubError.value = getApiErrorMessage(err, "Unable to load GitHub status");
+  } finally {
+    githubLoading.value = false;
   }
 }
 
@@ -60,12 +124,10 @@ onMounted(async () => {
 });
 
 async function saveProfile(): Promise<void> {
+  if (!canSaveProfile.value) return;
   savingProfile.value = true;
   try {
-    await auth.updateProfile({
-      display_name: displayName.value.trim() || null,
-      timezone: timezone.value.trim(),
-    });
+    await auth.updateProfile(profilePayload.value);
     toast("Profile updated", "success");
   } catch (err) {
     toast(getApiErrorMessage(err, "Profile update failed"), "error");
@@ -75,9 +137,10 @@ async function saveProfile(): Promise<void> {
 }
 
 async function saveEmail(): Promise<void> {
+  if (!canSaveEmail.value) return;
   savingEmail.value = true;
   try {
-    await auth.changeEmail(newEmail.value, emailPassword.value);
+    await auth.changeEmail(newEmail.value.trim(), emailPassword.value);
     toast("Email updated — verify your new address", "success");
     emailPassword.value = "";
   } catch (err) {
@@ -88,6 +151,7 @@ async function saveEmail(): Promise<void> {
 }
 
 async function savePassword(): Promise<void> {
+  if (!canSavePassword.value) return;
   savingPassword.value = true;
   try {
     await auth.changePassword(currentPassword.value, newPassword.value, newPasswordConfirm.value);
@@ -103,6 +167,7 @@ async function savePassword(): Promise<void> {
 }
 
 async function saveCurrency(): Promise<void> {
+  if (!canSaveCurrency.value) return;
   savingPrefs.value = true;
   try {
     await saveDisplayCurrency(displayCurrency.value);
@@ -119,16 +184,20 @@ function connectGithub(): void {
 }
 
 async function unlinkGithub(): Promise<void> {
+  unlinkingGithub.value = true;
   try {
     const { data } = await api.delete<GitHubStatus>("/auth/github");
     githubStatus.value = data;
     toast("GitHub unlinked", "success");
   } catch (err) {
     toast(getApiErrorMessage(err, "Failed to unlink GitHub"), "error");
+  } finally {
+    unlinkingGithub.value = false;
   }
 }
 
 async function deleteAccount(): Promise<void> {
+  if (!canDeleteAccount.value) return;
   deleting.value = true;
   try {
     await auth.deleteAccount(deletePassword.value);
@@ -144,108 +213,243 @@ async function deleteAccount(): Promise<void> {
 
 <template>
   <AdminPageLayout title="settings" max-width="md">
-    <div class="space-y-10">
-      <section class="space-y-4">
-        <h2 class="text-lg font-bold text-surface-light">Profile</h2>
-        <BaseInput v-model="displayName" label="Display name" />
-        <BaseInput v-model="timezone" label="Timezone" placeholder="Europe/Warsaw" />
-        <BaseButton variant="primary" :disabled="savingProfile" @click="saveProfile">
-          {{ savingProfile ? "Saving..." : "Save profile" }}
-        </BaseButton>
-      </section>
+    <div class="space-y-5">
+      <BaseCard>
+        <form class="space-y-4" @submit.prevent="saveProfile">
+          <div>
+            <h2 class="text-lg font-bold text-surface-light">Profile</h2>
+            <p class="text-sm text-surface-mid">
+              Set how your name and local time appear across the app.
+            </p>
+          </div>
+          <BaseInput
+            v-model="displayName"
+            label="Display name"
+            name="display-name"
+            autocomplete="name"
+            placeholder="How should we call you?"
+          />
+          <div class="space-y-1">
+            <BaseInput
+              v-model="timezone"
+              label="Timezone"
+              name="timezone"
+              autocomplete="off"
+              placeholder="Europe/Warsaw"
+              aria-describedby="timezone-help"
+              required
+            />
+            <p id="timezone-help" class="text-xs text-surface-muted">
+              Use an IANA timezone such as Europe/Warsaw or America/New_York.
+            </p>
+          </div>
+          <BaseButton type="submit" variant="primary" :disabled="!canSaveProfile">
+            {{ savingProfile ? "Saving..." : "Save profile" }}
+          </BaseButton>
+        </form>
+      </BaseCard>
 
-      <section class="space-y-4">
-        <h2 class="text-lg font-bold text-surface-light">Security</h2>
-        <p class="text-xs text-surface-mid">
-          Signed in as {{ auth.user?.email }}.
-          <RouterLink to="/forgot-password" class="text-accent-blue hover:underline">
-            Forgot password?
-          </RouterLink>
-        </p>
-        <BaseInput v-model="newEmail" type="email" label="Email" />
-        <BaseInput
-          v-model="emailPassword"
-          type="password"
-          label="Current password (required to change email)"
-        />
-        <BaseButton variant="secondary" :disabled="savingEmail" @click="saveEmail">
-          {{ savingEmail ? "Saving..." : "Change email" }}
-        </BaseButton>
+      <BaseCard>
+        <form class="space-y-4" @submit.prevent="saveEmail">
+          <div>
+            <h2 class="text-lg font-bold text-surface-light">Email</h2>
+            <p class="text-sm text-surface-mid">
+              Signed in as
+              <span class="text-surface-light">{{ auth.user?.email }}</span>
+              <span v-if="auth.user?.is_verified" class="text-green-400"> · verified</span>
+              <span v-else class="text-yellow-300"> · unverified</span>
+            </p>
+          </div>
+          <BaseInput
+            v-model="newEmail"
+            type="email"
+            label="Email address"
+            name="email"
+            autocomplete="email"
+            required
+          />
+          <div class="space-y-1">
+            <BaseInput
+              v-model="emailPassword"
+              type="password"
+              label="Current password"
+              name="current-password-for-email"
+              autocomplete="current-password"
+              aria-describedby="email-help"
+              required
+            />
+            <p id="email-help" class="text-xs text-surface-muted">
+              Changing email requires your current password and may ask you to verify the new
+              address.
+            </p>
+          </div>
+          <BaseButton type="submit" variant="secondary" :disabled="!canSaveEmail">
+            {{ savingEmail ? "Saving..." : "Change email" }}
+          </BaseButton>
+        </form>
+      </BaseCard>
 
-        <BaseInput v-model="currentPassword" type="password" label="Current password" />
-        <BaseInput v-model="newPassword" type="password" label="New password" />
-        <p class="text-xs" :class="passwordCheck.valid ? 'text-green-400' : 'text-surface-mid'">
-          {{ passwordCheck.message }}
-        </p>
-        <BaseInput v-model="newPasswordConfirm" type="password" label="Confirm new password" />
-        <BaseButton
-          variant="primary"
-          :disabled="savingPassword || !passwordCheck.valid"
-          @click="savePassword"
-        >
-          {{ savingPassword ? "Saving..." : "Change password" }}
-        </BaseButton>
-      </section>
+      <BaseCard>
+        <form class="space-y-4" @submit.prevent="savePassword">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-bold text-surface-light">Password</h2>
+              <p class="text-sm text-surface-mid">Keep your account protected with a strong password.</p>
+            </div>
+            <RouterLink to="/forgot-password" class="text-sm text-accent-blue hover:underline">
+              Forgot password?
+            </RouterLink>
+          </div>
+          <BaseInput
+            v-model="currentPassword"
+            type="password"
+            label="Current password"
+            name="current-password"
+            autocomplete="current-password"
+            required
+          />
+          <div class="space-y-1">
+            <BaseInput
+              v-model="newPassword"
+              type="password"
+              label="New password"
+              name="new-password"
+              autocomplete="new-password"
+              aria-describedby="password-help"
+              required
+            />
+            <p
+              id="password-help"
+              class="text-xs"
+              :class="passwordCheck.valid ? 'text-green-400' : 'text-surface-mid'"
+            >
+              {{ passwordCheck.message }}
+            </p>
+          </div>
+          <div class="space-y-1">
+            <BaseInput
+              v-model="newPasswordConfirm"
+              type="password"
+              label="Confirm new password"
+              name="confirm-new-password"
+              autocomplete="new-password"
+              aria-describedby="password-confirm-help"
+              required
+            />
+            <p
+              v-if="newPasswordConfirm && !passwordsMatch"
+              id="password-confirm-help"
+              class="text-xs text-yellow-300"
+            >
+              Passwords do not match yet.
+            </p>
+          </div>
+          <BaseButton type="submit" variant="primary" :disabled="!canSavePassword">
+            {{ savingPassword ? "Saving..." : "Change password" }}
+          </BaseButton>
+        </form>
+      </BaseCard>
 
-      <section class="space-y-4">
-        <h2 class="text-lg font-bold text-surface-light">Preferences</h2>
-        <label class="block text-sm text-surface-mid">
-          Expense display currency
-          <select
-            v-model="displayCurrency"
-            class="mt-1 w-full rounded border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-          >
+      <BaseCard>
+        <form class="space-y-4" @submit.prevent="saveCurrency">
+          <div>
+            <h2 class="text-lg font-bold text-surface-light">Preferences</h2>
+            <p class="text-sm text-surface-mid">Choose defaults that make tools feel local to you.</p>
+          </div>
+          <BaseSelect v-model="displayCurrency" label="Expense display currency">
             <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
               {{ code }}
             </option>
-          </select>
-        </label>
-        <BaseButton variant="secondary" :disabled="savingPrefs" @click="saveCurrency">
-          {{ savingPrefs ? "Saving..." : "Save preferences" }}
-        </BaseButton>
-      </section>
-
-      <section class="space-y-4">
-        <h2 class="text-lg font-bold text-surface-light">Integrations</h2>
-        <p v-if="githubStatus.linked" class="text-sm text-surface-mid">
-          GitHub linked as
-          <strong class="text-surface-light">{{ githubStatus.github_username }}</strong>
-        </p>
-        <p v-else class="text-sm text-surface-mid">GitHub is not linked.</p>
-        <div class="flex gap-3">
-          <BaseButton v-if="!githubStatus.linked" variant="primary" @click="connectGithub">
-            Connect GitHub
+          </BaseSelect>
+          <BaseButton type="submit" variant="secondary" :disabled="!canSaveCurrency">
+            {{ savingPrefs ? "Saving..." : "Save preferences" }}
           </BaseButton>
-          <BaseButton v-else variant="secondary" @click="unlinkGithub">Unlink GitHub</BaseButton>
-        </div>
-      </section>
+        </form>
+      </BaseCard>
 
-      <section class="space-y-4">
-        <h2 class="text-lg font-bold text-surface-light">Access</h2>
-        <p class="text-sm text-surface-mid">
-          Tool permissions are managed by an administrator. Contact them if you need access.
-        </p>
-        <ul v-if="permissions.length" class="text-xs text-surface-muted space-y-1">
-          <li v-for="perm in permissions" :key="perm">{{ perm }}</li>
-        </ul>
-        <p v-else class="text-xs text-surface-muted">No tool permissions assigned yet.</p>
-      </section>
+      <BaseCard>
+        <section class="space-y-4">
+          <div>
+            <h2 class="text-lg font-bold text-surface-light">Integrations</h2>
+            <p class="text-sm text-surface-mid">Connect external accounts used by tools.</p>
+          </div>
+          <p v-if="githubLoading" class="text-sm text-surface-mid">Checking GitHub status...</p>
+          <p v-else-if="githubError" class="text-sm text-yellow-300">{{ githubError }}</p>
+          <p v-else-if="githubStatus.linked" class="text-sm text-surface-mid">
+            GitHub linked as
+            <strong class="text-surface-light">{{ githubStatus.github_username }}</strong>
+          </p>
+          <p v-else class="text-sm text-surface-mid">GitHub is not linked.</p>
+          <div class="flex flex-wrap gap-3">
+            <BaseButton
+              v-if="!githubStatus.linked"
+              variant="primary"
+              :disabled="githubLoading"
+              @click="connectGithub"
+            >
+              Connect GitHub
+            </BaseButton>
+            <BaseButton
+              v-else
+              variant="secondary"
+              :disabled="unlinkingGithub"
+              @click="unlinkGithub"
+            >
+              {{ unlinkingGithub ? "Unlinking..." : "Unlink GitHub" }}
+            </BaseButton>
+            <BaseButton v-if="githubError" variant="ghost" :disabled="githubLoading" @click="loadGithubStatus">
+              Retry
+            </BaseButton>
+          </div>
+        </section>
+      </BaseCard>
 
-      <section class="space-y-4 border-t border-surface-border pt-8">
-        <h2 class="text-lg font-bold text-red-400">Delete account</h2>
-        <BaseInput v-model="deletePassword" type="password" label="Current password" />
-        <label class="flex items-center gap-2 text-xs text-surface-mid">
-          <input v-model="deleteConfirm" type="checkbox" />
-          I understand this permanently deletes my account
-        </label>
-        <BaseButton
-          variant="secondary"
-          :disabled="deleting || !deleteConfirm"
-          @click="deleteAccount"
-        >
-          {{ deleting ? "Deleting..." : "Delete account" }}
-        </BaseButton>
-      </section>
+      <BaseCard>
+        <section class="space-y-4">
+          <div>
+            <h2 class="text-lg font-bold text-surface-light">Access</h2>
+            <p class="text-sm text-surface-mid">
+              Tool permissions are managed by an administrator. Contact them if you need access.
+            </p>
+          </div>
+          <p class="text-sm text-surface-light">{{ permissionSummary }}</p>
+          <div v-if="permissions.length" class="flex flex-wrap gap-2">
+            <span
+              v-for="perm in permissions"
+              :key="perm"
+              class="rounded-full border border-surface-border px-2 py-1 text-xs text-surface-muted"
+            >
+              {{ perm }}
+            </span>
+          </div>
+        </section>
+      </BaseCard>
+
+      <BaseCard class="border-red-900/60 bg-red-950/10">
+        <form class="space-y-4" @submit.prevent="deleteAccount">
+          <div>
+            <h2 class="text-lg font-bold text-red-400">Danger zone</h2>
+            <p class="text-sm text-surface-mid">
+              Account deletion is permanent. Your password and confirmation are required.
+            </p>
+          </div>
+          <BaseInput
+            v-model="deletePassword"
+            type="password"
+            label="Current password"
+            name="delete-current-password"
+            autocomplete="current-password"
+            required
+          />
+          <label class="flex items-start gap-2 text-xs text-surface-mid">
+            <input v-model="deleteConfirm" type="checkbox" class="mt-0.5 accent-red-500" />
+            <span>I understand this permanently deletes my account.</span>
+          </label>
+          <BaseButton type="submit" variant="secondary" :disabled="!canDeleteAccount">
+            {{ deleting ? "Deleting..." : "Delete account" }}
+          </BaseButton>
+        </form>
+      </BaseCard>
     </div>
   </AdminPageLayout>
 </template>
