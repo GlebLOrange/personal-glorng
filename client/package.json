@@ -28,7 +28,7 @@
     "@sentry/vue": "^10.58.0",
     "axios": "^1.18.0",
     "chart.js": "^4.5.1",
-    "dompurify": "^3.4.10",
+    "dompurify": "^3.4.11",
     "firebase": "^12.15.0",
     "pinia": "^3.0.4",
     "simple-icons": "^16.23.0",
