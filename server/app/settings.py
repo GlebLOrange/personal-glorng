@@ -481,18 +481,18 @@ class Settings(BaseSettings):
     GITHUB_PUBLIC_USERNAME: str
 
     # Donations
-    STRIPE_LINK: str
-    STRIPE_SECRET_KEY: str
-    STRIPE_WEBHOOK_SECRET: str
-    STRIPE_DONATION_AMOUNT_CENTS: int
-    STRIPE_DONATION_CURRENCY: str
-    STRIPE_CHECKOUT_SUCCESS_URL: str
-    STRIPE_CHECKOUT_CANCEL_URL: str
-    PAYPAL_DONATION_LINK: str
-    PATREON_LINK: str
-    TELEGRAM_LINK: str
-    CRYPTO_BTC_ADDRESS: str
-    CRYPTO_ETH_ADDRESS: str
+    STRIPE_LINK: str = ""
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_DONATION_AMOUNT_CENTS: int = 500
+    STRIPE_DONATION_CURRENCY: str = "usd"
+    STRIPE_CHECKOUT_SUCCESS_URL: str = ""
+    STRIPE_CHECKOUT_CANCEL_URL: str = ""
+    PAYPAL_DONATION_LINK: str = ""
+    PATREON_LINK: str = ""
+    TELEGRAM_LINK: str = ""
+    CRYPTO_BTC_ADDRESS: str = ""
+    CRYPTO_ETH_ADDRESS: str = ""
 
     # Inbound webhooks (slug → HMAC secret)
     WEBHOOK_SECRETS: Annotated[dict[str, str], NoDecode]
