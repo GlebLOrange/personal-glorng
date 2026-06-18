@@ -7,6 +7,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import { isFirebaseEnabled } from "@/constants/firebase";
 import { useNotify } from "@/composables/useNotify";
 import { useAuthStore } from "@/stores/auth";
+import { getApiErrorMessage } from "@/types/api";
 import { safeRedirectPath } from "@/utils/safeUrl";
 
 const auth = useAuthStore();
@@ -27,7 +28,7 @@ async function handleLogin(): Promise<void> {
     router.push(safeRedirectPath(route.query.redirect));
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
-    toast("Invalid credentials", "error");
+    toast(getApiErrorMessage(err, "Invalid email or password"), "error");
   } finally {
     loading.value = false;
   }
@@ -41,7 +42,7 @@ async function handleGoogleLogin(): Promise<void> {
     router.push(safeRedirectPath(route.query.redirect));
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
-    toast("Google login failed", "error");
+    toast(getApiErrorMessage(err, "Google login failed"), "error");
   } finally {
     googleLoading.value = false;
   }
