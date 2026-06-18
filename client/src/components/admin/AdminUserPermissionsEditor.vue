@@ -18,13 +18,16 @@ const emit = defineEmits<{
 const isSuperuser = computed(() => props.permissions.includes(SUPERUSER_PERMISSION));
 
 const sections = computed(() => groupServicesByCategory(props.services));
+const selectedToolPermissionCount = computed(
+  () => props.permissions.filter((permission) => permission !== SUPERUSER_PERMISSION).length,
+);
 
 function hasPermission(key: string): boolean {
   return props.permissions.includes(key);
 }
 
 function emitPermissions(next: string[]): void {
-  emit("update:permissions", next);
+  emit("update:permissions", [...new Set(next)]);
 }
 
 function toggleSuperuser(checked: boolean): void {
@@ -42,39 +45,58 @@ function togglePermission(key: string, checked: boolean): void {
   }
   emitPermissions(props.permissions.filter((p) => p !== key));
 }
+
+function capabilityLabel(capability: string): string {
+  return capability.replace(/[-_]/g, " ");
+}
+
+function servicePermissionCount(service: PlatformService): number {
+  return service.capabilities.filter((capability) =>
+    hasPermission(permissionKey(service.slug, capability)),
+  ).length;
+}
 </script>
 
 <template>
   <div class="space-y-4">
-    <div class="rounded border border-surface-border bg-surface-dark/80 px-3 py-3 space-y-1">
+    <div
+      class="rounded-lg border border-surface-border bg-surface-dark/70 px-4 py-4"
+      :class="{ 'border-accent-violet/40 bg-accent-violet/10': isSuperuser }"
+    >
       <label
-        class="flex items-start gap-2 text-sm text-surface-light cursor-pointer"
+        class="flex items-start gap-3 text-sm text-surface-light cursor-pointer"
         :class="{ 'opacity-50 cursor-not-allowed': disabled || lockSuperuser }"
       >
         <input
           type="checkbox"
-          class="mt-0.5 accent-accent-blue"
+          class="mt-1 accent-accent-blue"
           :checked="isSuperuser"
           :disabled="disabled || lockSuperuser"
           @change="toggleSuperuser(($event.target as HTMLInputElement).checked)"
         />
-        <span>
-          <span class="font-medium">Platform superuser</span>
-          <span class="block text-xs text-surface-mid mt-0.5">
+        <span class="min-w-0">
+          <span class="font-semibold">Platform superuser</span>
+          <span class="block text-xs text-surface-mid mt-1">
             Full admin access to all tools and user management
           </span>
         </span>
       </label>
-      <p v-if="lockSuperuser" class="text-xs text-yellow-300/90 pl-6">
+      <p v-if="lockSuperuser" class="mt-3 rounded border border-accent-golden/30 bg-accent-golden/10 px-3 py-2 text-xs text-accent-golden">
         Cannot demote the last admin
       </p>
     </div>
 
     <div class="space-y-4">
-      <p class="text-xs text-surface-mid">
-        Tool permissions
-        <span v-if="isSuperuser" class="text-surface-muted">— included via superuser</span>
-      </p>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 class="text-sm font-semibold text-surface-light">Tool permissions</h3>
+          <p class="text-xs text-surface-mid">
+            {{ selectedToolPermissionCount }} selected
+            <span v-if="isSuperuser" class="text-surface-muted">· included via superuser</span>
+          </p>
+        </div>
+        <p v-if="disabled" class="text-xs text-surface-muted">Editing disabled for this user</p>
+      </div>
 
       <section v-for="section in sections" :key="section.category" class="space-y-2">
         <h3 class="text-xs font-medium text-surface-light uppercase tracking-wide">
@@ -83,14 +105,26 @@ function togglePermission(key: string, checked: boolean): void {
         <div
           v-for="service in section.services"
           :key="service.slug"
-          class="rounded border border-surface-border/60 px-3 py-2"
+          class="rounded-lg border border-surface-border/60 bg-surface-dark/30 px-3 py-3"
         >
-          <p class="text-xs text-surface-mid mb-2">{{ service.name }}</p>
-          <div class="flex flex-wrap gap-x-4 gap-y-2">
+          <div class="mb-3 flex flex-wrap items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-surface-light">
+                <span aria-hidden="true">{{ service.icon }}</span>
+                {{ service.name }}
+              </p>
+              <p class="mt-0.5 text-xs text-surface-mid">{{ service.description }}</p>
+            </div>
+            <span class="rounded border border-surface-border bg-surface-card px-2 py-0.5 text-xs text-surface-muted">
+              {{ servicePermissionCount(service) }}/{{ service.capabilities.length }}
+            </span>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
             <label
               v-for="capability in service.capabilities"
               :key="permissionKey(service.slug, capability)"
-              class="flex items-center gap-1.5 text-xs text-surface-light cursor-pointer"
+              class="inline-flex items-center gap-2 rounded border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs text-surface-light cursor-pointer transition-colors hover:border-accent-blue"
               :class="{ 'opacity-50 cursor-not-allowed': disabled || isSuperuser }"
             >
               <input
@@ -105,7 +139,8 @@ function togglePermission(key: string, checked: boolean): void {
                   )
                 "
               />
-              {{ permissionKey(service.slug, capability) }}
+              <span class="capitalize">{{ capabilityLabel(capability) }}</span>
+              <span class="font-data text-surface-muted">{{ permissionKey(service.slug, capability) }}</span>
             </label>
           </div>
         </div>
