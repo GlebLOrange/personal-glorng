@@ -1,6 +1,13 @@
 <script setup lang="ts">
+import { ref } from "vue";
+
 import ContactIcon from "@/components/contact/ContactIcon.vue";
+import { api } from "@/composables/useApi";
+import { useNotify } from "@/composables/useNotify";
 import type { ContactLink } from "@/constants/contactMeta";
+import { getApiErrorMessageFromBlob } from "@/types/api";
+
+const CV_FILENAME = "gleb.y.cv.pdf";
 
 defineProps<{
   name: string;
@@ -11,6 +18,40 @@ defineProps<{
   bio: string;
   contactLinks?: ContactLink[];
 }>();
+
+const isDownloadingCv = ref(false);
+const { toast } = useNotify();
+
+async function downloadCv(): Promise<void> {
+  if (isDownloadingCv.value) return;
+  isDownloadingCv.value = true;
+  try {
+    const response = await api.get<Blob>("/resume/pdf", {
+      responseType: "blob",
+      headers: { Accept: "application/pdf" },
+    });
+    const contentType = String(
+      response.headers["content-type"] ?? response.data.type ?? "",
+    ).toLowerCase();
+    if (!contentType.includes("application/pdf")) {
+      throw new Error("CV download did not return a PDF");
+    }
+
+    const url = URL.createObjectURL(response.data);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = CV_FILENAME;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    const message = await getApiErrorMessageFromBlob(err, "Failed to download CV");
+    toast(message, "error");
+  } finally {
+    isDownloadingCv.value = false;
+  }
+}
 </script>
 
 <template>
@@ -55,7 +96,9 @@ defineProps<{
       <a href="#experience" class="cta-primary"> Experience </a>
       <a href="#projects" class="cta-secondary"> Projects </a>
       <a href="#contact" class="cta-secondary"> Contact </a>
-      <a href="/api/resume/pdf" class="cta-secondary" download>Download CV</a>
+      <button type="button" class="cta-secondary" :disabled="isDownloadingCv" @click="downloadCv">
+        {{ isDownloadingCv ? "Downloading..." : "Download CV" }}
+      </button>
     </div>
   </div>
 </template>
