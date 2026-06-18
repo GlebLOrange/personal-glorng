@@ -4,11 +4,12 @@ msg ?=
 CHECK_DB ?= 1
 COMPOSE_ULTRA = docker compose -f docker-compose.yml -f docker-compose.ultra-lite.yml
 COMPOSE_CACHE = -f docker-compose.cache.yml
+COMPOSE_BASE_CACHE = -f docker-compose.yml $(COMPOSE_CACHE)
 DOCKER_BUILD = DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1
 ULTRA_LITE_ENV = GLORNG_ENV_FILE=$(CURDIR)/.env UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv CELERY_TASK_ALWAYS_EAGER=true MEDIA_DIR=$(CURDIR)/server/media
 
 dev:
-	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) up --build
 
 dev-lite:
 	@echo ""
@@ -37,13 +38,13 @@ dev-postgres:
 dev-mongo: dev-lite
 
 dev-worker:
-	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) --profile worker up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) --profile worker up --build
 
 dev-bot:
-	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) --profile bot up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) --profile bot up --build
 
 dev-full:
-	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) --profile worker --profile bot up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) --profile worker --profile bot up --build
 
 prod:
 	$(DOCKER_BUILD) docker compose -f docker-compose.prod.yml $(COMPOSE_CACHE) up --build -d
@@ -76,7 +77,7 @@ endif
 	cd client && npm run lint && npm run format:check && npm run test && npm run build:check
 
 db-init:
-	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) run --rm --build migrate
+	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) run --rm --build migrate
 
 db-init-ultra-lite:
 	$(COMPOSE_ULTRA) run --rm migrate
@@ -86,7 +87,7 @@ migrate: db-init
 db-reset:
 	docker compose down -v
 	docker compose up -d db
-	$(DOCKER_BUILD) docker compose $(COMPOSE_CACHE) run --rm --build migrate
+	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) run --rm --build migrate
 
 db-revision:
 	@test -n "$(msg)" || (echo "Usage: make db-revision msg='description'" && exit 1)
