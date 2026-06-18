@@ -11,10 +11,6 @@ const routes: RouteRecordRaw[] = [
     path: "/",
     name: "portfolio",
     component: () => import("@/pages/PortfolioPage.vue"),
-    beforeEnter: () => {
-      void fetch("/api/resume");
-      return true;
-    },
   },
   {
     path: "/login",
@@ -224,7 +220,11 @@ router.beforeEach(async (to, _from, next) => {
     return;
   }
   const auth = useAuthStore();
-  if (!auth.sessionResolved) {
+  const shouldResolveSession =
+    to.name === "login" ||
+    Boolean(to.meta.requiresAuth) ||
+    Boolean(to.meta.requiresSuperuser);
+  if (shouldResolveSession && !auth.sessionResolved) {
     try {
       await auth.resolveSession();
     } catch {
