@@ -10,18 +10,24 @@ import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
 import ExperienceList from "@/components/resume/ExperienceList.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
+import NowPlayingCard from "@/components/resume/NowPlayingCard.vue";
 import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
 import ProjectsGrid from "@/components/resume/ProjectsGrid.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
+import { useSpotifyNowPlaying } from "@/composables/useSpotifyNowPlaying";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import type { DonationsConfig, ResumeData } from "@/types";
 import { isAiSearchEnabled } from "@/utils/featureFlags";
 
+const SPOTIFY_FALLBACK_EMBED_SRC =
+  "https://open.spotify.com/embed/track/7lQ8MOhq6IN2w8EYcFNSUk?utm_source=generator&theme=0";
+
 const { data: resumeApi, fetch: fetchResume } = useCachedApi<ResumeData>("/resume");
 const { data: donations, fetch: fetchDonations } =
   useCachedApi<DonationsConfig>("/donations/config");
+const { playback, isVisible } = useSpotifyNowPlaying();
 const apiError = ref(false);
 const showFeedback = ref(false);
 
@@ -61,7 +67,16 @@ onMounted(loadResume);
         :availability="resume.availability"
         :bio="resume.bio"
         :contact-links="contactLinks"
-      />
+      >
+        <template #after-actions>
+          <NowPlayingCard
+            :playback="isVisible ? playback : null"
+            :fallback-src="SPOTIFY_FALLBACK_EMBED_SRC"
+            :height="80"
+            class="max-w-md mx-auto mt-8 print:hidden"
+          />
+        </template>
+      </HeroBlock>
     </SectionWrapper>
 
     <SectionWrapper id="about" title="about" dark alternate>
