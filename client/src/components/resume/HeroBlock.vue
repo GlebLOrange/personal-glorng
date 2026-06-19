@@ -100,5 +100,7 @@ async function downloadCv(): Promise<void> {
         {{ isDownloadingCv ? "Downloading..." : "Download CV" }}
       </button>
     </div>
+
+    <slot name="after-actions" />
   </div>
 </template>
