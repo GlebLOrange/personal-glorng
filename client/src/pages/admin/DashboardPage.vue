@@ -12,7 +12,9 @@ const auth = useAuthStore();
 const { can, isSuperuser } = usePermissions();
 const { services, load } = usePlatformCatalog();
 
-const visibleServices = computed(() => services.value.filter((s) => can(s.slug, "read")));
+const visibleServices = computed(() =>
+  services.value.filter((s) => can(s.slug, "read") && (s.slug !== "news" || isSuperuser.value)),
+);
 
 const sections = computed(() => groupServicesByCategory(visibleServices.value));
 
