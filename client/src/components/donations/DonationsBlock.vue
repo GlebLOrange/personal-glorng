@@ -63,10 +63,10 @@ async function startStripeCheckout(): Promise<void> {
         method="post"
         target="_top"
       >
-        <input type="hidden" name="hosted_button_id" value="RJMBWD6K68ADL" />
+        <input type="hidden" name="hosted_button_id" value="QB6QBN48DPDBC" />
         <input
           type="image"
-          src="https://www.paypalobjects.com/en_US/PL/i/btn/btn_donateCC_LG.gif"
+          src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif"
           name="submit"
           title="PayPal - The safer, easier way to pay online!"
           alt="Donate with PayPal button"
