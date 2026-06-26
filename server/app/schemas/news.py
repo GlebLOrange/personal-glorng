@@ -90,19 +90,25 @@ class NewsArticleUpdate(BaseModel):
     """Admin update payload for curated news articles."""
 
     status: NewsStatus | None = None
+    source_name: str | None = Field(None, min_length=1, max_length=120)
+    source_url: HttpUrl | None = None
+    source_feed_url: HttpUrl | None = None
+    source_published_at: datetime | None = None
+    original_title: str | None = Field(None, min_length=1, max_length=255)
     title: str | None = Field(None, min_length=1, max_length=90)
     summary: str | None = Field(None, min_length=1, max_length=600)
     bullets: list[str] | None = Field(None, min_length=2, max_length=5)
     themes: list[NewsTheme] | None = Field(None, min_length=1, max_length=4)
+    language: str | None = Field(None, min_length=2, max_length=12)
     ingest_error: str | None = Field(None, max_length=500)
 
-    @field_validator("title")
+    @field_validator("source_name", "original_title", "title")
     @classmethod
-    def clean_title(cls, value: str | None) -> str | None:
-        """Sanitize optional title."""
+    def clean_required_short(cls, value: str | None) -> str | None:
+        """Sanitize optional short text fields."""
         if value is None:
             return None
-        return validate_clean_required(value, max_length=90, field_name="Title")
+        return validate_clean_required(value, max_length=255)
 
     @field_validator("summary")
     @classmethod
@@ -123,6 +129,19 @@ class NewsArticleUpdate(BaseModel):
             item_max_length=180,
             field_name="Bullet",
         )
+
+    @field_validator("language")
+    @classmethod
+    def clean_language(cls, value: str | None) -> str | None:
+        """Normalize optional language code."""
+        if value is None:
+            return None
+        cleaned = validate_clean_required(
+            value,
+            max_length=12,
+            field_name="Language",
+        )
+        return cleaned.lower()
 
     @field_validator("ingest_error")
     @classmethod

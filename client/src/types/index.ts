@@ -292,11 +292,45 @@ export interface PaginatedNews {
 
 export interface NewsArticleUpdate {
   status?: NewsStatus;
+  source_name?: string;
+  source_url?: string;
+  source_feed_url?: string;
+  source_published_at?: string | null;
+  original_title?: string;
   title?: string;
   summary?: string;
   bullets?: string[];
   themes?: string[];
+  language?: string;
   ingest_error?: string | null;
+}
+
+export interface NewsArticleCreate {
+  status: NewsStatus;
+  source_name: string;
+  source_url: string;
+  source_feed_url: string;
+  source_published_at: string | null;
+  original_title: string;
+  title: string;
+  summary: string;
+  bullets: string[];
+  themes: string[];
+  language: string;
+}
+
+export interface NewsArticleFormData {
+  status: NewsStatus;
+  source_name: string;
+  source_url: string;
+  source_feed_url: string;
+  source_published_at: string;
+  original_title: string;
+  title: string;
+  summary: string;
+  bullets: string[];
+  themes: string;
+  language: string;
 }
 
 export interface NewsIngestResult {

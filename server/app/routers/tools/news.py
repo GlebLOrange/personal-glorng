@@ -10,6 +10,7 @@ from app.db.documents.news import NewsStatus
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.news import (
+    NewsArticleCreate,
     NewsArticleListResponse,
     NewsArticleResponse,
     NewsArticleUpdate,
@@ -90,6 +91,22 @@ async def list_news_themes(svc: NewsServiceDep) -> list[str]:
 async def get_news_article(slug: str, svc: NewsServiceDep) -> NewsArticleResponse:
     """Get a published news article by slug."""
     return await svc.get_public_article(slug)
+
+
+@router.post(
+    "",
+    response_model=NewsArticleResponse,
+    summary="Create news article",
+    description=requires_capability("news", "write"),
+    dependencies=[Depends(require_capability("news", "write"))],
+)
+async def create_news_article(
+    data: NewsArticleCreate,
+    svc: NewsServiceDep,
+    user: AuthorizedUser,
+) -> NewsArticleResponse:
+    """Create a news article manually."""
+    return await svc.create_article(data, actor_id=user.id)
 
 
 @router.post(

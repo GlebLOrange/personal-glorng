@@ -2,16 +2,30 @@
 import { computed, onMounted, ref, watch } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { formatNewsDate, useNews } from "@/composables/useNews";
+import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
-import type { NewsStatus } from "@/types";
+import type {
+  NewsArticle,
+  NewsArticleCreate,
+  NewsArticleFormData,
+  NewsArticleUpdate,
+  NewsStatus,
+} from "@/types";
 
 type StatusFilter = NewsStatus | "all";
+type DrawerMode = "create" | "edit";
 
 const statusFilter = ref<StatusFilter>("all");
 const { can } = usePermissions();
+const { toast } = useNotify();
 const canWrite = computed(() => can("news", "write"));
+const drawerOpen = ref(false);
+const drawerMode = ref<DrawerMode>("create");
+const editingArticleId = ref<number | null>(null);
+const form = ref<NewsArticleFormData>(emptyForm());
 
 const {
   articles,
@@ -28,10 +42,118 @@ const {
   setTheme,
   goToPage,
   ingestNews,
+  createArticle,
   updateArticle,
   deleteArticle,
   repostToTelegram,
 } = useNews();
+
+function emptyForm(): NewsArticleFormData {
+  return {
+    status: "published",
+    source_name: "",
+    source_url: "",
+    source_feed_url: "",
+    source_published_at: "",
+    original_title: "",
+    title: "",
+    summary: "",
+    bullets: ["", ""],
+    themes: "world",
+    language: "en",
+  };
+}
+
+function formFromArticle(article: NewsArticle): NewsArticleFormData {
+  const bullets = article.bullets.length ? [...article.bullets] : ["", ""];
+  while (bullets.length < 2) bullets.push("");
+  return {
+    status: article.status,
+    source_name: article.source_name,
+    source_url: article.source_url,
+    source_feed_url: article.source_feed_url,
+    source_published_at: article.source_published_at?.slice(0, 16) ?? "",
+    original_title: article.original_title,
+    title: article.title,
+    summary: article.summary,
+    bullets,
+    themes: article.themes.join(", "),
+    language: article.language,
+  };
+}
+
+function parsedThemes(): string[] {
+  return form.value.themes
+    .split(",")
+    .map((theme) => theme.trim())
+    .filter(Boolean);
+}
+
+function parsedBullets(): string[] {
+  return form.value.bullets.map((bullet) => bullet.trim()).filter(Boolean);
+}
+
+function isHttpUrl(value: string): boolean {
+  return value.startsWith("http://") || value.startsWith("https://");
+}
+
+function normalizedPublishedAt(): string | null {
+  if (!form.value.source_published_at.trim()) return null;
+  const value = new Date(form.value.source_published_at);
+  return Number.isNaN(value.getTime()) ? null : value.toISOString();
+}
+
+function validateForm(): boolean {
+  if (!form.value.title.trim()) {
+    toast("Title is required", "error");
+    return false;
+  }
+  if (!form.value.summary.trim()) {
+    toast("Summary is required", "error");
+    return false;
+  }
+  if (!form.value.source_name.trim() || !form.value.original_title.trim()) {
+    toast("Source name and original title are required", "error");
+    return false;
+  }
+  if (!isHttpUrl(form.value.source_url) || !isHttpUrl(form.value.source_feed_url)) {
+    toast("Source and feed URLs must start with http:// or https://", "error");
+    return false;
+  }
+  if (parsedBullets().length < 2) {
+    toast("Add at least two key points", "error");
+    return false;
+  }
+  if (parsedThemes().length < 1) {
+    toast("Add at least one theme", "error");
+    return false;
+  }
+  if (form.value.source_published_at.trim() && normalizedPublishedAt() === null) {
+    toast("Source published date is invalid", "error");
+    return false;
+  }
+  return true;
+}
+
+function buildCreatePayload(): NewsArticleCreate {
+  return {
+    status: form.value.status,
+    source_name: form.value.source_name.trim(),
+    source_url: form.value.source_url.trim(),
+    source_feed_url: form.value.source_feed_url.trim(),
+    source_published_at: normalizedPublishedAt(),
+    original_title: form.value.original_title.trim(),
+    title: form.value.title.trim(),
+    summary: form.value.summary.trim(),
+    bullets: parsedBullets(),
+    themes: parsedThemes(),
+    language: form.value.language.trim() || "en",
+  };
+}
+
+function buildUpdatePayload(): NewsArticleUpdate {
+  return buildCreatePayload();
+}
 
 function statusParam(): NewsStatus | null {
   return statusFilter.value === "all" ? null : statusFilter.value;
@@ -63,6 +185,39 @@ async function repost(articleId: number): Promise<void> {
   await loadAdminNews();
 }
 
+function openCreate(): void {
+  drawerMode.value = "create";
+  editingArticleId.value = null;
+  form.value = emptyForm();
+  drawerOpen.value = true;
+}
+
+function openEdit(article: NewsArticle): void {
+  drawerMode.value = "edit";
+  editingArticleId.value = article.id;
+  form.value = formFromArticle(article);
+  drawerOpen.value = true;
+}
+
+function closeDrawer(): void {
+  drawerOpen.value = false;
+  editingArticleId.value = null;
+}
+
+async function saveDrawer(): Promise<void> {
+  if (!validateForm()) return;
+  if (drawerMode.value === "create") {
+    const created = await createArticle(buildCreatePayload());
+    if (!created) return;
+  } else if (editingArticleId.value) {
+    const updated = await updateArticle(editingArticleId.value, buildUpdatePayload());
+    if (!updated) return;
+  }
+  closeDrawer();
+  await loadAdminNews();
+  await loadThemes();
+}
+
 onMounted(async () => {
   await Promise.all([loadAdminNews(), loadThemes()]);
 });
@@ -81,15 +236,14 @@ watch([activeTheme, page, statusFilter], () => {
         </p>
         <p class="text-xs text-surface-muted">{{ countLabel }}</p>
       </div>
-      <BaseButton
-        v-if="canWrite"
-        variant="primary"
-        size="sm"
-        :disabled="actionLoading"
-        @click="runIngest"
-      >
-        Run ingest
-      </BaseButton>
+      <div v-if="canWrite" class="flex flex-wrap gap-2">
+        <BaseButton variant="ghost" size="sm" :disabled="actionLoading" @click="runIngest">
+          Run ingest
+        </BaseButton>
+        <BaseButton variant="primary" size="sm" :disabled="actionLoading" @click="openCreate">
+          New article
+        </BaseButton>
+      </div>
     </div>
 
     <section class="mb-6 flex flex-col gap-3 md:flex-row md:items-center">
@@ -200,6 +354,15 @@ watch([activeTheme, page, statusFilter], () => {
             Publish
           </BaseButton>
           <BaseButton
+            v-if="canWrite"
+            variant="ghost"
+            size="sm"
+            :disabled="actionLoading"
+            @click="openEdit(item)"
+          >
+            Edit
+          </BaseButton>
+          <BaseButton
             v-if="canWrite && item.status === 'published'"
             variant="ghost"
             size="sm"
@@ -258,5 +421,16 @@ watch([activeTheme, page, statusFilter], () => {
         Next
       </BaseButton>
     </nav>
+
+    <NewsArticleDrawer
+      v-if="canWrite"
+      :open="drawerOpen"
+      :mode="drawerMode"
+      :form="form"
+      :loading="actionLoading"
+      @update:form="form = $event"
+      @close="closeDrawer"
+      @save="saveDrawer"
+    />
   </AdminPageLayout>
 </template>

@@ -4,6 +4,7 @@ import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import type {
   NewsArticle,
+  NewsArticleCreate,
   NewsArticleUpdate,
   NewsIngestResult,
   NewsStatus,
@@ -118,6 +119,16 @@ export function useNews() {
     );
   }
 
+  async function createArticle(payload: NewsArticleCreate): Promise<NewsArticle | undefined> {
+    return runAction(
+      async () => {
+        const response = await api.post<NewsArticle>("/tools/news", payload);
+        return response.data;
+      },
+      { successMessage: "News article created", errorFallback: "Failed to create article" },
+    );
+  }
+
   async function deleteArticle(articleId: number): Promise<boolean> {
     const result = await runAction(
       async () => {
@@ -160,6 +171,7 @@ export function useNews() {
     setTheme,
     goToPage,
     ingestNews,
+    createArticle,
     updateArticle,
     deleteArticle,
     repostToTelegram,

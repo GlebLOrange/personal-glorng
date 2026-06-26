@@ -70,6 +70,9 @@ def _apply_article_updates(
     for field in ("bullets", "themes"):
         if field in updates and updates[field] is not None:
             updates[field] = _dumps_json_list(updates[field])
+    for field in ("source_url", "source_feed_url"):
+        if field in updates and updates[field] is not None:
+            updates[field] = str(updates[field])
     if updates.get("status") == "published" and article.published_at is None:
         updates["published_at"] = utc_now()
     merged = article.model_dump()
@@ -171,6 +174,11 @@ class NewsService:
     ) -> NewsArticleResponse:
         """Update a news article."""
         article = await self.require_article(article_id)
+        if data.source_url is not None:
+            source_url = str(data.source_url)
+            existing = await self._news().get_by_source_url(source_url)
+            if existing is not None and existing.id != article_id:
+                raise ConflictError("News source URL already exists")
         updated = _apply_article_updates(article, data)
         article = await self._news().replace(updated)
         await index_news_article(self.registry, article)
