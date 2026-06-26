@@ -33,6 +33,7 @@ function closeMobileMenu(): void {
 
         <div class="hidden md:flex items-center gap-5 text-base">
           <RouterLink to="/" class="nav-link px-2 py-1"> portfolio </RouterLink>
+          <RouterLink to="/news" class="nav-link px-2 py-1"> news </RouterLink>
 
           <RouterLink v-if="auth.isAuthenticated" to="/admin" class="nav-link-accent px-2 py-1">
             tools

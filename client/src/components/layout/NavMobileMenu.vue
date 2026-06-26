@@ -73,6 +73,14 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       </RouterLink>
 
       <RouterLink
+        to="/news"
+        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        @click="emit('close')"
+      >
+        News
+      </RouterLink>
+
+      <RouterLink
         v-if="auth.isAuthenticated"
         to="/admin"
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"

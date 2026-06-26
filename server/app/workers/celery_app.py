@@ -92,6 +92,10 @@ def create_celery_app() -> Celery:
             "task": JobName.PROCESS_SYNC_QUEUE,
             "schedule": crontab(minute="*/2"),
         },
+        "ingest-news": {
+            "task": JobName.INGEST_NEWS,
+            "schedule": crontab(minute=15),
+        },
     }
     return app
 

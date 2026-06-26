@@ -17,6 +17,7 @@ OPENAPI_TAGS: list[dict[str, str]] = [
         "description": "Todobot task admin, intakes, and calendar sync queue.",
     },
     {"name": "recipes", "description": "Personal recipe book CRUD."},
+    {"name": "news", "description": "Curated news digest and publishing workflow."},
     {"name": "email", "description": "Send and preview styled outbound emails."},
     {"name": "file-share", "description": "Upload and manage temporary shared files."},
     {"name": "url-shortener", "description": "Create and manage short redirect links."},

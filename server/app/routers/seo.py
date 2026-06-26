@@ -1,14 +1,18 @@
 """Public SEO routes (sitemap, robots)."""
 
+from html import escape
+
 from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse, Response
 
+from app.db.deps import DbRegistry
 from app.settings import get_settings
 
 router = APIRouter(tags=["seo"])
 
 _PUBLIC_PATHS: tuple[tuple[str, str], ...] = (
     ("/", "weekly"),
+    ("/news", "daily"),
     ("/privacy", "monthly"),
 )
 
@@ -19,15 +23,27 @@ _PUBLIC_PATHS: tuple[tuple[str, str], ...] = (
     summary="Get sitemap",
     description="Public XML sitemap for search engines.",
 )
-async def sitemap_xml() -> Response:
+async def sitemap_xml(registry: DbRegistry) -> Response:
     base = get_settings().BASE_URL.rstrip("/")
-    urls = "\n".join(
+    static_urls = [
         f"  <url>\n"
         f"    <loc>{base}{path}</loc>\n"
         f"    <changefreq>{freq}</changefreq>\n"
         f"  </url>"
         for path, freq in _PUBLIC_PATHS
-    )
+    ]
+    news_urls: list[str] = []
+    if registry.news is not None:
+        articles = await registry.news.list_articles(status="published", limit=1_000)
+        news_urls = [
+            f"  <url>\n"
+            f"    <loc>{escape(f'{base}/news/{article.slug}')}</loc>\n"
+            f"    <changefreq>weekly</changefreq>\n"
+            f"    <lastmod>{article.updated_at.date().isoformat()}</lastmod>\n"
+            f"  </url>"
+            for article in articles
+        ]
+    urls = "\n".join(static_urls + news_urls)
     body = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

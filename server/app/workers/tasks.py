@@ -1,7 +1,7 @@
 """Celery worker tasks: emails, reminders, sync queue, cleanup."""
 
 import smtplib
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -239,6 +239,39 @@ async def process_sync_queue() -> None:
         await registry.tasks.update_sync(item)
 
 
+async def ingest_news() -> None:
+    """Ingest trusted news feeds when enabled."""
+    settings = get_settings()
+    if not settings.NEWS_INGEST_ENABLED:
+        return
+    from app.services.audit import AuditService
+    from app.services.news import NewsService
+    from app.services.news_ingest import NewsIngestService
+
+    registry = await get_worker_registry()
+    result = await NewsIngestService(
+        NewsService(registry, AuditService(registry))
+    ).ingest()
+    if result.processed or result.failed:
+        logger.info("News ingest completed", context=result.model_dump())
+
+
+async def publish_news_telegram(article_id: int) -> None:
+    """Publish one curated news article to Telegram."""
+    settings = get_settings()
+    if not settings.NEWS_TELEGRAM_BOT_TOKEN or not settings.NEWS_TELEGRAM_CHANNEL_ID:
+        return
+    from app.services.audit import AuditService
+    from app.services.news import NewsService
+    from app.services.news_telegram import publish_news_article_to_telegram
+
+    registry = await get_worker_registry()
+    news_svc = NewsService(registry, AuditService(registry))
+    article = await news_svc.require_article(article_id)
+    message_id = await publish_news_article_to_telegram(article)
+    await news_svc.set_telegram_message_id(article_id, message_id)
+
+
 def _run_periodic_task(task: Task, job_name: str, coro_fn: Callable[[], Any]) -> None:
     try:
         run_async(coro_fn())
@@ -284,3 +317,26 @@ def cleanup_expired_shares_task(self: Task) -> None:
 )
 def process_sync_queue_task(self: Task) -> None:
     _run_periodic_task(self, JobName.PROCESS_SYNC_QUEUE, process_sync_queue)
+
+
+@celery_app.task(
+    bind=True,
+    name=JobName.INGEST_NEWS,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def ingest_news_task(self: Task) -> None:
+    _run_periodic_task(self, JobName.INGEST_NEWS, ingest_news)
+
+
+@celery_app.task(
+    bind=True,
+    name=JobName.PUBLISH_NEWS_TELEGRAM,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def publish_news_telegram_task(self: Task, article_id: int) -> None:
+    def _publish() -> Coroutine[object, object, None]:
+        return publish_news_telegram(article_id)
+
+    _run_periodic_task(self, JobName.PUBLISH_NEWS_TELEGRAM, _publish)

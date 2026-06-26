@@ -20,6 +20,7 @@ from app.services.audit import AuditService
 from app.services.currency import CurrencyService
 from app.services.expense import ExpenseService
 from app.services.expense_category import ExpenseCategoryService
+from app.services.news import NewsService
 from app.services.recipe import RecipeService
 from app.services.search_index import SearchIndexService
 from app.services.task import TaskService
@@ -258,3 +259,13 @@ def get_recipe_service(
 
 
 RecipeServiceDep = Annotated[RecipeService, Depends(get_recipe_service)]
+
+
+def get_news_service(
+    registry: DbRegistry,
+    audit_svc: AuditServiceDep,
+) -> NewsService:
+    return NewsService(registry, audit_svc)
+
+
+NewsServiceDep = Annotated[NewsService, Depends(get_news_service)]
