@@ -57,12 +57,7 @@ async function startStripeCheckout(): Promise<void> {
         {{ isStartingCheckout ? "Opening..." : "Donate by Card" }}
       </BaseButton>
 
-      <form
-        v-if="config.paypal.enabled"
-        action="https://www.paypal.com/donate"
-        method="post"
-        target="_top"
-      >
+      <form action="https://www.paypal.com/donate" method="post" target="_top">
         <input type="hidden" name="hosted_button_id" value="QB6QBN48DPDBC" />
         <input
           type="image"
