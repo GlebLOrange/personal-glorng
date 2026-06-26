@@ -9,7 +9,7 @@ defineProps<{
     <ol class="flex items-center gap-2">
       <li>
         <RouterLink to="/tools" class="text-surface-mid hover:text-accent-blue transition-colors">
-          all tools
+          tools
         </RouterLink>
       </li>
       <li class="text-surface-muted" aria-hidden="true">/</li>

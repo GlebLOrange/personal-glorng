@@ -108,7 +108,7 @@ function buttonAriaLabel(val: string): string | undefined {
         to="/tools"
         class="inline-flex w-fit items-center rounded-lg border border-surface-border bg-surface-card px-3 py-1.5 text-xs font-medium text-surface-light transition-all duration-200 hover:border-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
       >
-        Back to all tools
+        Back to tools
       </RouterLink>
     </div>
     <BaseCard>
