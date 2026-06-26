@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AdminBreadcrumbs from "@/components/layout/AdminBreadcrumbs.vue";
 import WeatherLocationCard from "@/components/weather/WeatherLocationCard.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
 import WeatherWidget from "@/components/weather/WeatherWidget.vue";
@@ -43,7 +44,16 @@ async function handleRemove(id: number | string): Promise<void> {
 <template>
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 font-mono">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold accent-gradient mb-2">{{ DATE_TIME_LOCATION_SECTION }}</h1>
+      <AdminBreadcrumbs :current-label="DATE_TIME_LOCATION_SECTION" />
+      <div class="mb-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 class="text-3xl font-bold accent-gradient">{{ DATE_TIME_LOCATION_SECTION }}</h1>
+        <RouterLink
+          to="/tools"
+          class="inline-flex w-fit items-center rounded-lg border border-surface-border bg-surface-card px-3 py-1.5 text-xs font-medium text-surface-light transition-all duration-200 hover:border-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+        >
+          Back to all tools
+        </RouterLink>
+      </div>
       <p class="text-sm text-surface-mid mb-4">Local time and conditions for your cities.</p>
       <WeatherWidget compact show-time />
     </div>
