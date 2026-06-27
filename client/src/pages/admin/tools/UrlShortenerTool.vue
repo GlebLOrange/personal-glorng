@@ -69,7 +69,7 @@ onMounted(loadUrls);
 </script>
 
 <template>
-  <AdminPageLayout title="url-shortener" back-to="/tools" back-label="BACK">
+  <AdminPageLayout title="url-shortener" back-to="/tools">
     <form class="space-y-3 mb-10" @submit.prevent="createUrl">
       <BaseInput v-model="newUrl" placeholder="https://example.com/very-long-url..." label="URL" />
       <BaseInput v-model="newTitle" placeholder="Optional title" label="Title" />

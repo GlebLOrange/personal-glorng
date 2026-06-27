@@ -47,7 +47,7 @@ function onCardKeydown(event: KeyboardEvent, slug: string): void {
         <h1 class="section-title">
           <span class="accent-gradient">news</span>
         </h1>
-        <BackLink to="/tools" label="BACK" />
+        <BackLink to="/tools" />
       </div>
       <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>

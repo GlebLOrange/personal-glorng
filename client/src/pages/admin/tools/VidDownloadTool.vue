@@ -60,7 +60,7 @@ async function download(): Promise<void> {
 </script>
 
 <template>
-  <AdminPageLayout title="vid-download" back-to="/tools" back-label="BACK">
+  <AdminPageLayout title="vid-download" back-to="/tools">
     <form class="space-y-4 mb-8" @submit.prevent="download">
       <BaseInput
         v-model="url"

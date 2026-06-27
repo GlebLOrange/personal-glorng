@@ -285,13 +285,9 @@ watch(articleId, () => {
 </script>
 
 <template>
-  <AdminPageLayout title="edit news article" max-width="xl">
-    <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <RouterLink to="/news" class="nav-link-accent text-sm">
-        BACK
-      </RouterLink>
+  <AdminPageLayout title="edit news article" max-width="xl" back-to="/news">
+    <div v-if="canWrite && article" class="mb-6 flex justify-end">
       <BaseButton
-        v-if="canWrite && article"
         variant="primary"
         :disabled="actionLoading"
         @click="saveArticle"

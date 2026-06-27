@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { isFirebaseEnabled } from "@/constants/firebase";
@@ -91,10 +92,8 @@ async function handleGoogleLogin(): Promise<void> {
         </RouterLink>
       </p>
 
-      <p class="text-center text-xs text-surface-mid mt-4">
-        <RouterLink to="/" class="hover:text-accent-blue transition-colors">
-          BACK
-        </RouterLink>
+      <p class="flex justify-center mt-4">
+        <BackLink to="/" />
       </p>
     </div>
   </div>
