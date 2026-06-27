@@ -1,4 +1,4 @@
-"""Tests for LLM JSON helper base URL support."""
+"""Tests for Gemini JSON helper base URL support."""
 
 import pytest
 
@@ -9,39 +9,40 @@ from app.services import llm_json
 async def test_complete_json_uses_base_url(monkeypatch: pytest.MonkeyPatch) -> None:
     captured: dict[str, object] = {}
 
-    class FakeCompletions:
-        async def create(self, **kwargs: object) -> object:
-            return type(
-                "Resp",
-                (),
-                {
-                    "choices": [
-                        type(
-                            "Choice",
-                            (),
-                            {"message": type("Msg", (), {"content": '{"ok": true}'})()},
-                        )(),
-                    ],
-                },
-            )()
+    class FakeResponse:
+        def raise_for_status(self) -> None:
+            return None
 
-    class FakeChat:
-        def __init__(self) -> None:
-            self.completions = FakeCompletions()
+        def json(self) -> dict[str, object]:
+            return {"output_text": '{"ok": true}'}
 
     class FakeClient:
-        def __init__(self, **kwargs: object) -> None:
-            captured.update(kwargs)
-            self.chat = FakeChat()
+        def __init__(self, *, timeout: float) -> None:
+            captured["timeout"] = timeout
 
-    monkeypatch.setattr(llm_json, "AsyncOpenAI", FakeClient)
+        async def __aenter__(self) -> FakeClient:
+            return self
+
+        async def __aexit__(self, *_args: object) -> None:
+            return None
+
+        async def post(self, url: str, **kwargs: object) -> FakeResponse:
+            captured["url"] = url
+            captured.update(kwargs)
+            return FakeResponse()
+
+    monkeypatch.setattr(llm_json.httpx, "AsyncClient", FakeClient)
 
     result = await llm_json.complete_json(
         api_key="test-key",
-        model="gpt-test",
+        model="gemini-test",
         system_prompt="sys",
         user_content="hello",
-        base_url="https://api.groq.com/openai/v1",
+        api_base_url="https://example.test/v1beta",
     )
     assert result == {"ok": True}
-    assert captured["base_url"] == "https://api.groq.com/openai/v1"
+    assert captured["url"] == "https://example.test/v1beta/interactions"
+    assert captured["headers"] == {
+        "Content-Type": "application/json",
+        "x-goog-api-key": "test-key",
+    }

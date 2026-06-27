@@ -21,22 +21,9 @@ const AI_CHAT_TABS = [
 
 const PROVIDER_EXAMPLES = [
   {
-    name: "Groq (free tier)",
-    env: `OPENAI_API_KEY=gsk_...
-LLM_BASE_URL=https://api.groq.com/openai/v1
-OPENAI_CHAT_MODEL=llama-3.3-70b-versatile`,
-  },
-  {
-    name: "Ollama (local, free)",
-    env: `OPENAI_API_KEY=ollama
-LLM_BASE_URL=http://host.docker.internal:11434/v1
-OPENAI_CHAT_MODEL=llama3.2`,
-  },
-  {
-    name: "OpenRouter (some free models)",
-    env: `OPENAI_API_KEY=sk-or-...
-LLM_BASE_URL=https://openrouter.ai/api/v1
-OPENAI_CHAT_MODEL=google/gemma-2-9b-it:free`,
+    name: "Gemini",
+    env: `GEMINI_API_KEY=AIza...
+GEMINI_CHAT_MODEL=gemini-3.5-flash`,
   },
 ] as const;
 
@@ -172,7 +159,7 @@ onMounted(() => {
           <div class="flex gap-2">
             <dt class="text-surface-mid w-28 shrink-0">Base URL</dt>
             <dd class="text-surface-light font-mono text-xs break-all">
-              {{ chatConfig.base_url ?? "OpenAI default" }}
+              {{ chatConfig.base_url ?? "Gemini API" }}
             </dd>
           </div>
           <div class="flex gap-2">
@@ -198,9 +185,8 @@ onMounted(() => {
         <p class="text-surface-mid text-sm leading-relaxed">
           AI chat searches your indexed content first (portfolio, recipes, tasks, expenses, and
           more), then streams a grounded answer with citations. Set
-          <code class="text-surface-sage">OPENAI_API_KEY</code>, optional
-          <code class="text-surface-sage">LLM_BASE_URL</code>, and
-          <code class="text-surface-sage">OPENAI_CHAT_MODEL</code> in your server
+          <code class="text-surface-sage">GEMINI_API_KEY</code> and
+          <code class="text-surface-sage">GEMINI_CHAT_MODEL</code> in your server
           <code class="text-surface-sage">.env</code>, run
           <code class="text-surface-sage">python scripts/reindex_search.py</code> after deploy, then
           restart the backend. Set <code class="text-surface-sage">AI_CHAT_ENABLED=false</code>
@@ -223,9 +209,16 @@ onMounted(() => {
           }}</pre>
         </div>
         <p class="text-surface-mid text-xs">
-          For Ollama in Docker: run
-          <code class="text-surface-sage">ollama pull &lt;model&gt;</code> on the host and use
-          <code class="text-surface-sage">host.docker.internal</code> as shown above.
+          Get a key from
+          <a
+            class="text-accent-blue hover:text-accent-violet transition-colors"
+            href="https://ai.google.dev/gemini-api/docs"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Google AI Studio
+          </a>
+          and restart the backend after changing server env.
         </p>
       </section>
     </BaseCard>

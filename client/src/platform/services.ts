@@ -150,7 +150,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     name: "ai chat",
     category: "utilities",
     categoryLabel: "utilities",
-    description: "Chat with OpenAI-compatible LLMs from the admin panel",
+    description: "Chat with Gemini from the admin panel",
     apiPrefix: "/ai-chat",
     adminRoute: "/admin/tools/ai-chat",
     icon: "⊛",

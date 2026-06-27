@@ -24,7 +24,7 @@ from app.schemas.news import (
     NewsArticleCreate,
     NewsIngestResponse,
 )
-from app.services.llm_json import complete_json, openai_api_key
+from app.services.llm_json import complete_json, gemini_api_key
 from app.services.news import NewsService
 from app.settings import get_settings
 
@@ -257,11 +257,11 @@ async def _summarize_item(
     source: NewsSourceConfig,
     item: FeedItem,
 ) -> dict[str, Any]:
-    """Summarize one feed item with an OpenAI-compatible model."""
+    """Summarize one feed item with Gemini."""
     settings = get_settings()
-    api_key = openai_api_key()
+    api_key = gemini_api_key()
     if not api_key:
-        raise ApiError(503, "OpenAI API key is not configured")
+        raise ApiError(503, "Gemini API key is not configured")
     user_content = json.dumps(
         {
             "source_name": source.name,
@@ -276,11 +276,11 @@ async def _summarize_item(
     )
     parsed = await complete_json(
         api_key=api_key,
-        model=settings.OPENAI_CHAT_MODEL,
+        model=settings.GEMINI_CHAT_MODEL,
         system_prompt=_SYSTEM_PROMPT,
         user_content=user_content,
         temperature=0.1,
-        base_url=settings.LLM_BASE_URL or None,
+        api_base_url=settings.GEMINI_API_BASE_URL,
     )
     return _validate_ai_payload(parsed, source)
 
@@ -359,7 +359,7 @@ class NewsIngestService:
                                 themes=ai["themes"],
                                 language=source.language,
                                 status="published",
-                                ai_model=settings.OPENAI_CHAT_MODEL,
+                                ai_model=settings.GEMINI_CHAT_MODEL,
                                 ai_input_hash=_hash_input(source, item),
                             ),
                             actor_id=actor_id,

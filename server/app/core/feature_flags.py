@@ -14,12 +14,12 @@ def is_ai_chat_enabled() -> bool:
 
 def is_ai_search_enabled() -> bool:
     settings = get_settings()
-    return settings.AI_SEARCH_ENABLED and bool(settings.OPENAI_API_KEY)
+    return settings.AI_SEARCH_ENABLED and bool(settings.GEMINI_API_KEY)
 
 
 def is_task_intake_ai_enabled() -> bool:
     settings = get_settings()
-    return settings.TASK_INTAKE_AI_ENABLED and bool(settings.OPENAI_API_KEY)
+    return settings.TASK_INTAKE_AI_ENABLED and bool(settings.GEMINI_API_KEY)
 
 
 def is_service_enabled(slug: ServiceSlug) -> bool:

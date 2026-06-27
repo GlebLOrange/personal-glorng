@@ -4,7 +4,7 @@ from enum import StrEnum
 from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.db.documents.search import SearchVisibility
-from app.services.ai_chat import OpenAIService
+from app.services.ai_chat import GeminiChatService
 from app.services.search_index import SearchIndexService
 from app.settings import Settings
 
@@ -63,16 +63,16 @@ class AiSearchService:
     ) -> None:
         self._search = search_svc
         self._settings = settings
-        self._llm: OpenAIService | None = None
+        self._llm: GeminiChatService | None = None
 
-    def _require_llm(self) -> OpenAIService:
+    def _require_llm(self) -> GeminiChatService:
         if self._llm is None:
-            if not self._settings.OPENAI_API_KEY:
+            if not self._settings.GEMINI_API_KEY:
                 raise ApiError(503, "AI search is disabled or not configured")
-            self._llm = OpenAIService(
-                api_key=self._settings.OPENAI_API_KEY,
-                model=self._settings.OPENAI_CHAT_MODEL,
-                base_url=self._settings.LLM_BASE_URL,
+            self._llm = GeminiChatService(
+                api_key=self._settings.GEMINI_API_KEY,
+                model=self._settings.GEMINI_CHAT_MODEL,
+                base_url=self._settings.GEMINI_API_BASE_URL,
             )
         return self._llm
 

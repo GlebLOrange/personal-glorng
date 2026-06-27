@@ -14,7 +14,7 @@ EXPENSE_VENDORS = (
     "Cursor",
     "Vercel",
     "Railway",
-    "OpenAI",
+    "Gemini",
     "Groq",
     "GitHub",
     "Cloudflare",
