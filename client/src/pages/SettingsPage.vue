@@ -63,10 +63,7 @@ const isEmailUnchanged = computed(
 const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+$/.test(newEmail.value.trim()));
 const canSaveEmail = computed(
   () =>
-    isEmailValid.value &&
-    !isEmailUnchanged.value &&
-    !!emailPassword.value &&
-    !savingEmail.value,
+    isEmailValid.value && !isEmailUnchanged.value && !!emailPassword.value && !savingEmail.value,
 );
 const passwordsMatch = computed(
   () => !!newPasswordConfirm.value && newPassword.value === newPasswordConfirm.value,
@@ -79,7 +76,9 @@ const canSavePassword = computed(
     !savingPassword.value,
 );
 const canSaveCurrency = computed(() => !!displayCurrency.value && !savingPrefs.value);
-const canDeleteAccount = computed(() => !!deletePassword.value && deleteConfirm.value && !deleting.value);
+const canDeleteAccount = computed(
+  () => !!deletePassword.value && deleteConfirm.value && !deleting.value,
+);
 const permissionSummary = computed(() => {
   if (permissions.value.includes(SUPERUSER_PERMISSION)) {
     return "Platform superuser: full access to admin tools and user management.";
@@ -294,7 +293,9 @@ async function deleteAccount(): Promise<void> {
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 class="text-lg font-bold text-surface-light">Password</h2>
-              <p class="text-sm text-surface-mid">Keep your account protected with a strong password.</p>
+              <p class="text-sm text-surface-mid">
+                Keep your account protected with a strong password.
+              </p>
             </div>
             <RouterLink to="/forgot-password" class="text-sm text-accent-blue hover:underline">
               Forgot password?
@@ -354,7 +355,9 @@ async function deleteAccount(): Promise<void> {
         <form class="space-y-4" @submit.prevent="saveCurrency">
           <div>
             <h2 class="text-lg font-bold text-surface-light">Preferences</h2>
-            <p class="text-sm text-surface-mid">Choose defaults that make tools feel local to you.</p>
+            <p class="text-sm text-surface-mid">
+              Choose defaults that make tools feel local to you.
+            </p>
           </div>
           <BaseSelect v-model="displayCurrency" label="Expense display currency">
             <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
@@ -397,7 +400,12 @@ async function deleteAccount(): Promise<void> {
             >
               {{ unlinkingGithub ? "Unlinking..." : "Unlink GitHub" }}
             </BaseButton>
-            <BaseButton v-if="githubError" variant="ghost" :disabled="githubLoading" @click="loadGithubStatus">
+            <BaseButton
+              v-if="githubError"
+              variant="ghost"
+              :disabled="githubLoading"
+              @click="loadGithubStatus"
+            >
               Retry
             </BaseButton>
           </div>

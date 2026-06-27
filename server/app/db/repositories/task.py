@@ -323,7 +323,9 @@ class TaskRepository(MongoRepository[Task]):
         )
         return [_parse_doc(Task, row) async for row in cursor]
 
-    async def list_older_than(self, *, cutoff: datetime, limit: int = 100) -> list[Task]:
+    async def list_older_than(
+        self, *, cutoff: datetime, limit: int = 100
+    ) -> list[Task]:
         cursor = (
             self._col()
             .find({"scheduled_at": {"$lt": cutoff}})

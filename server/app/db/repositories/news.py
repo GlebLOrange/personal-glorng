@@ -25,7 +25,9 @@ class NewsRepository(MongoRepository[NewsArticle]):
 
     async def source_url_exists(self, source_url: str) -> bool:
         """Return whether a source URL is already stored."""
-        return await self._col().count_documents({"source_url": source_url}, limit=1) > 0
+        return (
+            await self._col().count_documents({"source_url": source_url}, limit=1) > 0
+        )
 
     async def list_articles(
         self,

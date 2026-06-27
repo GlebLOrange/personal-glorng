@@ -60,7 +60,7 @@ Rate-limit keys prefer nginx-set `X-Real-IP` over client-supplied `X-Forwarded-F
 
 ## Search and AI chat
 
-Portfolio search uses Postgres full-text search with a visibility model:
+Portfolio search uses the configured search backend with a visibility model. MongoDB text search is the default local path; optional Postgres FTS or Elasticsearch can back the same indexed documents when enabled:
 
 | Visibility | Indexed content (examples) | Who can retrieve |
 |------------|---------------------------|------------------|
@@ -95,7 +95,7 @@ Client-side `VITE_*` flags hide UI only; server flags and auth are authoritative
 | Email preview (client) | DOMPurify via [`sanitizeEmailHtml.ts`](../client/src/utils/sanitizeEmailHtml.ts) |
 | Email console backend | Logs metadata only (`to`, `subject`, byte sizes) — no HTML/token previews |
 | AI chat / search | `sanitize_required_text` in [`core/text.py`](../server/app/core/text.py) + message caps |
-| Search source links (client) | [`safeUrl.ts`](../client/src/utils/safeUrl.ts) blocks `javascript:` / `data:` hrefs |
+| Search/news/resume/donation source links (client) | [`safeUrl.ts`](../client/src/utils/safeUrl.ts) blocks unsafe navigation hrefs |
 | Image URLs (client) | [`safeImageSrc.ts`](../client/src/utils/safeImageSrc.ts) — https + same-origin paths only in [`BaseImage.vue`](../client/src/components/ui/BaseImage.vue) |
 | Tasks (admin + todobot) | Shared `TaskTextFields` validators via [`schemas/validators.py`](../server/app/schemas/validators.py) |
 | Task intake (todobot) | `TaskDraft` / `ClarificationTurn` text fields sanitized at schema layer |
@@ -109,7 +109,8 @@ Client-side `VITE_*` flags hide UI only; server flags and auth are authoritative
 | File share uploads | Extension denylist; sanitized stored filenames; daily expired-share cleanup |
 | Downloads | Safe `Content-Disposition` via [`attachment_content_disposition`](../server/app/core/utils.py) |
 | Vid download | YouTube host allowlist; yt-dlp `format` character allowlist; public with rate/concurrency limits |
-| URL shortener URLs | `HttpUrl` validation; private/localhost host blocklist on create |
+| URL shortener/news fetch URLs | `HttpUrl` validation; private, localhost, internal, and non-routable host blocklists |
+| XML parsing | DTD/entity declarations rejected before stdlib XML parsing |
 
 ## Public tools
 
@@ -159,4 +160,4 @@ Decisions for known risks. **Accept** = intentional tradeoff; **Mitigated** = co
 
 ## Testing
 
-- Default pytest uses SQLite — Postgres-only features need `POSTGRES_TEST_URL` and `@pytest.mark.postgres` (see [database.md](database.md#tests))
+- Default pytest uses mongomock-motor; Postgres-only features need `POSTGRES_TEST_URL` and `@pytest.mark.postgres` (see [database.md](database.md#tests))

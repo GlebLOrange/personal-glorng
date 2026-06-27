@@ -242,7 +242,11 @@ onMounted(loadSources);
           :hoverable="canWrite"
           :role="canWrite ? 'button' : undefined"
           :tabindex="canWrite ? 0 : undefined"
-          :class="canWrite ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50' : ''"
+          :class="
+            canWrite
+              ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50'
+              : ''
+          "
           @click="openEditableSource(source)"
           @keydown="onSourceKeydown($event, source)"
         >

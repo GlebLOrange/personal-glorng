@@ -158,7 +158,12 @@ function validateForm(): boolean {
     toast("Choose only supported news themes", "error");
     return false;
   }
-  if (dateIsInvalid(form.value.source_published_at, normalizedDateTime(form.value.source_published_at))) {
+  if (
+    dateIsInvalid(
+      form.value.source_published_at,
+      normalizedDateTime(form.value.source_published_at),
+    )
+  ) {
     toast("Source published date is invalid", "error");
     return false;
   }
@@ -230,11 +235,7 @@ watch(articleId, () => {
 <template>
   <AdminPageLayout title="edit news article" max-width="xl" back-to="/news">
     <div v-if="canWrite && article" class="mb-6 flex justify-end">
-      <BaseButton
-        variant="primary"
-        :disabled="actionLoading"
-        @click="saveArticle"
-      >
+      <BaseButton variant="primary" :disabled="actionLoading" @click="saveArticle">
         {{ actionLoading ? "Saving..." : "Save article" }}
       </BaseButton>
     </div>
@@ -257,7 +258,11 @@ watch(articleId, () => {
       </div>
     </BaseCard>
 
-    <form v-else-if="article" class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]" @submit.prevent="saveArticle">
+    <form
+      v-else-if="article"
+      class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]"
+      @submit.prevent="saveArticle"
+    >
       <div class="space-y-6">
         <BaseCard>
           <h2 class="card-title mb-4">Article</h2>
@@ -265,11 +270,7 @@ watch(articleId, () => {
             <BaseInput v-model="form.slug" label="Slug" :disabled="!canWrite" />
             <label class="flex flex-col gap-1 text-sm text-surface-mid">
               Status
-              <select
-                v-model="form.status"
-                :class="SELECT_CLASS"
-                :disabled="!canWrite"
-              >
+              <select v-model="form.status" :class="SELECT_CLASS" :disabled="!canWrite">
                 <option value="draft">draft</option>
                 <option value="published">published</option>
                 <option value="unpublished">unpublished</option>
@@ -295,7 +296,8 @@ watch(articleId, () => {
                 :class="{
                   'border-accent-blue text-surface-light': themeIsSelected(theme),
                   'text-surface-mid': !themeIsSelected(theme),
-                  'opacity-50': !themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT,
+                  'opacity-50':
+                    !themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT,
                 }"
               >
                 <input
@@ -334,8 +336,18 @@ watch(articleId, () => {
               </select>
             </label>
             <BaseInput v-model="form.source_name" label="Source name" :disabled="!canWrite" />
-            <BaseInput v-model="form.source_url" label="Article URL" type="url" :disabled="!canWrite" />
-            <BaseInput v-model="form.source_feed_url" label="Source feed/home URL" type="url" :disabled="!canWrite" />
+            <BaseInput
+              v-model="form.source_url"
+              label="Article URL"
+              type="url"
+              :disabled="!canWrite"
+            />
+            <BaseInput
+              v-model="form.source_feed_url"
+              label="Source feed/home URL"
+              type="url"
+              :disabled="!canWrite"
+            />
             <BaseInput
               v-model="form.source_published_at"
               label="Source published at"
@@ -368,15 +380,21 @@ watch(articleId, () => {
             </div>
             <div>
               <dt class="text-surface-muted">Telegram message</dt>
-              <dd class="font-data text-surface-light">{{ article.telegram_message_id ?? "none" }}</dd>
+              <dd class="font-data text-surface-light">
+                {{ article.telegram_message_id ?? "none" }}
+              </dd>
             </div>
           </dl>
         </BaseCard>
 
         <BaseCard>
           <h2 class="card-title mb-4">Current preview</h2>
-          <p class="mb-2 text-xs text-surface-muted">{{ form.status }} / {{ form.source_name || "unknown source" }}</p>
-          <h3 class="mb-3 text-lg font-semibold text-surface-light">{{ form.title || "Untitled" }}</h3>
+          <p class="mb-2 text-xs text-surface-muted">
+            {{ form.status }} / {{ form.source_name || "unknown source" }}
+          </p>
+          <h3 class="mb-3 text-lg font-semibold text-surface-light">
+            {{ form.title || "Untitled" }}
+          </h3>
           <p class="text-sm text-surface-mid">{{ form.summary || "No summary yet." }}</p>
           <div class="mt-4 flex flex-wrap gap-2">
             <span

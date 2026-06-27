@@ -109,7 +109,9 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 <select
                   :value="form.source_id ?? ''"
                   class="rounded-lg border border-surface-border bg-surface-dark px-4 py-2 text-sm text-surface-light focus:outline-none focus:border-accent-blue"
-                  @change="patch({ source_id: toSourceId(($event.target as HTMLSelectElement).value) })"
+                  @change="
+                    patch({ source_id: toSourceId(($event.target as HTMLSelectElement).value) })
+                  "
                 >
                   <option value="">Auto from URL host</option>
                   <option v-for="source in sources" :key="source.id" :value="source.id">
@@ -148,7 +150,9 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 <select
                   :value="form.status"
                   class="rounded-lg border border-surface-border bg-surface-dark px-4 py-2 text-sm text-surface-light focus:outline-none focus:border-accent-blue"
-                  @change="patch({ status: ($event.target as HTMLSelectElement).value as NewsStatus })"
+                  @change="
+                    patch({ status: ($event.target as HTMLSelectElement).value as NewsStatus })
+                  "
                 >
                   <option value="draft">draft</option>
                   <option value="published">published</option>
@@ -201,13 +205,16 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                     :class="{
                       'border-accent-blue text-surface-light': themeIsSelected(theme),
                       'text-surface-mid': !themeIsSelected(theme),
-                      'opacity-50': !themeIsSelected(theme) && selectedThemes.length >= NEWS_THEME_LIMIT,
+                      'opacity-50':
+                        !themeIsSelected(theme) && selectedThemes.length >= NEWS_THEME_LIMIT,
                     }"
                   >
                     <input
                       type="checkbox"
                       :checked="themeIsSelected(theme)"
-                      :disabled="!themeIsSelected(theme) && selectedThemes.length >= NEWS_THEME_LIMIT"
+                      :disabled="
+                        !themeIsSelected(theme) && selectedThemes.length >= NEWS_THEME_LIMIT
+                      "
                       @change="toggleTheme(theme)"
                     />
                     {{ theme }}
@@ -221,7 +228,6 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 @update:model-value="patch({ language: toStringValue($event) })"
               />
             </section>
-
           </form>
 
           <footer class="shrink-0 px-6 py-4 border-t border-surface-border bg-surface-dark">

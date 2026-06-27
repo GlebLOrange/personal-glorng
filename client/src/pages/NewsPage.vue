@@ -5,18 +5,11 @@ import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { formatNewsDate, useNews } from "@/composables/useNews";
 import { usePermissions } from "@/composables/usePermissions";
+import { safeNavigationHref } from "@/utils/safeUrl";
 
 const { isSuperuser } = usePermissions();
-const {
-  articles,
-  page,
-  listLoading,
-  listError,
-  hasNextPage,
-  countLabel,
-  loadNews,
-  goToPage,
-} = useNews();
+const { articles, page, listLoading, listError, hasNextPage, countLabel, loadNews, goToPage } =
+  useNews();
 
 onMounted(async () => {
   await loadNews();
@@ -98,7 +91,8 @@ watch(page, () => {
             {{ theme }}
           </span>
           <a
-            :href="item.source_url"
+            v-if="safeNavigationHref(item.source_url)"
+            :href="safeNavigationHref(item.source_url) ?? '#'"
             target="_blank"
             rel="noopener noreferrer"
             class="ml-auto text-xs text-accent-blue hover:underline"

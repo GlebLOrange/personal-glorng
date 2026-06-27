@@ -4,7 +4,6 @@ import { computed, ref } from "vue";
 
 import { api } from "@/composables/useApi";
 import { clearCachedApi } from "@/composables/useCachedApi";
-import { syncGuestWeatherLocations } from "@/composables/useWeatherLocations";
 import { tryRefreshSession } from "@/utils/authSession";
 import type { UserPreferences, UserResponse } from "@/types";
 
@@ -65,6 +64,7 @@ export const useAuthStore = defineStore("auth", () => {
   async function fetchUser(): Promise<void> {
     const { data } = await api.get<UserResponse>("/auth/me");
     user.value = data;
+    const { syncGuestWeatherLocations } = await import("@/composables/useWeatherLocations");
     await syncGuestWeatherLocations();
   }
 

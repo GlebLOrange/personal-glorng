@@ -23,7 +23,9 @@ _SIGNATURE_PREFIX = "sha256="
 
 def parse_webhook_secrets(raw: dict[str, str]) -> dict[str, str]:
     """Return slug → secret mapping with non-empty values only."""
-    return {slug.strip(): secret for slug, secret in raw.items() if slug.strip() and secret}
+    return {
+        slug.strip(): secret for slug, secret in raw.items() if slug.strip() and secret
+    }
 
 
 def verify_webhook_signature(*, secret: str, body: bytes, header: str | None) -> None:

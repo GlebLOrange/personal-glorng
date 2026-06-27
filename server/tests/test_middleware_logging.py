@@ -17,7 +17,9 @@ async def test_request_completed_log_includes_request_id(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
-    activate_env_file(monkeypatch, scenario_env(tmp_path, APP_LOG_PERSIST_MIN_LEVEL="INFO"))
+    activate_env_file(
+        monkeypatch, scenario_env(tmp_path, APP_LOG_PERSIST_MIN_LEVEL="INFO")
+    )
 
     _drain_queue()
     resp = await client.get("/api/resume")

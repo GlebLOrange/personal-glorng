@@ -10,6 +10,7 @@ from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from app.core.date_ranges import month_date_bounds
 from app.core.logging import logger
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.db.registry import DatabaseRegistry
@@ -76,7 +77,7 @@ def _format_expense_line(
 
 async def _month_summary_pln(registry: DatabaseRegistry) -> tuple[Decimal, str]:
     month = _current_month_value()
-    date_from, date_to = ExpenseService.month_date_bounds(month)
+    date_from, date_to = month_date_bounds(month)
     svc = ExpenseService(registry)
     summary = await svc.get_summary(
         date_from=date_from,
@@ -179,7 +180,7 @@ async def cmd_spend(
 @router.message(Command("expenses"))
 async def cmd_expenses(message: Message, registry: DatabaseRegistry) -> None:
     month = _current_month_value()
-    date_from, date_to = ExpenseService.month_date_bounds(month)
+    date_from, date_to = month_date_bounds(month)
     svc = ExpenseService(registry)
     summary = await svc.get_summary(
         date_from=date_from,
@@ -302,7 +303,7 @@ async def guided_confirm(
     data = await state.get_data()
     try:
         amount = Decimal(str(data["amount"])).quantize(Decimal("0.01"))
-    except (InvalidOperation, KeyError):
+    except InvalidOperation, KeyError:
         await state.clear()
         if callback.message:
             await callback.message.answer("Invalid amount. Start again with /spend")

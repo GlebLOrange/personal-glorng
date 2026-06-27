@@ -29,6 +29,7 @@ def _is_blocked_ip(host: str) -> bool:
         or addr.is_link_local
         or addr.is_reserved
         or addr.is_multicast
+        or addr.is_unspecified
     )
 
 
@@ -55,6 +56,11 @@ def is_safe_redirect_url(url: str) -> bool:
         return _is_blocked_ip(host)
 
     return True
+
+
+def is_public_http_url(url: str) -> bool:
+    """Return True when URL is safe enough for server-side HTTP fetching."""
+    return is_safe_redirect_url(url)
 
 
 def validate_redirect_url(url: str) -> str:

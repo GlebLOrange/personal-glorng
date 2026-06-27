@@ -201,8 +201,7 @@ async def import_file(
         error_count=result.error_count,
         preview=result.preview,
         errors=[
-            ImportRowErrorResponse.model_validate(error)
-            for error in result.errors
+            ImportRowErrorResponse.model_validate(error) for error in result.errors
         ],
     )
 

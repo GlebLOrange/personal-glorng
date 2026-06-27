@@ -10,9 +10,7 @@ from app.settings import get_settings
 @pytest.mark.asyncio
 async def test_real_redis_ping() -> None:
     redis_url = get_settings().REDIS_URL
-    if not redis_url or (
-        "127.0.0.1" not in redis_url and "localhost" not in redis_url
-    ):
+    if not redis_url or ("127.0.0.1" not in redis_url and "localhost" not in redis_url):
         pytest.skip("REDIS_URL must point at a test Redis instance")
 
     await init_redis(redis_url)

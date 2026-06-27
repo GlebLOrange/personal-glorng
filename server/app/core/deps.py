@@ -251,13 +251,6 @@ def get_task_intake_service(registry: DbRegistry) -> TaskIntakeService:
 TaskIntakeServiceDep = Annotated[TaskIntakeService, Depends(get_task_intake_service)]
 
 
-def get_news_service(registry: DbRegistry) -> NewsService:
-    return NewsService(registry)
-
-
-NewsServiceDep = Annotated[NewsService, Depends(get_news_service)]
-
-
 def get_recipe_service(
     registry: DbRegistry,
     audit_svc: AuditServiceDep,

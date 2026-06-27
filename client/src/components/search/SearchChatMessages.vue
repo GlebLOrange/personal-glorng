@@ -92,7 +92,9 @@ const messageSourceLinks = computed(() =>
           <a
             v-if="messageSourceLinks[index]?.[sourceIndex]"
             :href="messageSourceLinks[index][sourceIndex]!.href"
-            :rel="messageSourceLinks[index][sourceIndex]!.external ? 'noopener noreferrer' : undefined"
+            :rel="
+              messageSourceLinks[index][sourceIndex]!.external ? 'noopener noreferrer' : undefined
+            "
             :target="messageSourceLinks[index][sourceIndex]!.external ? '_blank' : undefined"
             :class="sourceLinkClass"
           >

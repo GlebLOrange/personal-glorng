@@ -8,6 +8,7 @@ from xml.etree import ElementTree as ET
 
 from app.core.data_extractor.types import ExtractOptions
 from app.core.exceptions import ValidationError
+from app.core.xml_security import has_unsafe_xml_declaration
 
 HandlerResult = tuple[list[Any], dict[str, Any]]
 
@@ -15,6 +16,8 @@ HandlerResult = tuple[list[Any], dict[str, Any]]
 def extract_xml(content: str, options: ExtractOptions) -> HandlerResult:
     if not content.strip():
         raise ValidationError("XML file is empty")
+    if has_unsafe_xml_declaration(content):
+        raise ValidationError("XML DTD and entity declarations are not supported")
 
     try:
         root = ET.fromstring(content, parser=_safe_parser())  # noqa: S314
@@ -32,9 +35,7 @@ def extract_xml(content: str, options: ExtractOptions) -> HandlerResult:
 
     row_tag = options.row_tag or _detect_row_tag(root)
     rows = [
-        _element_to_row(child)
-        for child in root
-        if _local_name(child.tag) == row_tag
+        _element_to_row(child) for child in root if _local_name(child.tag) == row_tag
     ]
     if not rows and options.row_tag:
         raise ValidationError(f"No XML elements found with tag '{options.row_tag}'")

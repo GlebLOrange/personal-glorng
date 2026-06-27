@@ -45,7 +45,8 @@ export async function signInWithGooglePopup(): Promise<UserCredential> {
 export async function initFirebaseAnalytics(router: Router): Promise<void> {
   if (!isFirebaseAnalyticsEnabled) return;
 
-  const { getAnalytics, logEvent, setAnalyticsCollectionEnabled } = await import("firebase/analytics");
+  const { getAnalytics, logEvent, setAnalyticsCollectionEnabled } =
+    await import("firebase/analytics");
   analytics ??= getAnalytics(await getFirebaseApp());
   setAnalyticsCollectionEnabled(analytics, true);
 

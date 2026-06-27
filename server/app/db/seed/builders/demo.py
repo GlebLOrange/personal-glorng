@@ -409,7 +409,9 @@ def build_demo_news_sources(count: int = 20) -> list[NewsSource]:
     return rows
 
 
-def build_demo_news_articles(sources: list[NewsSource], count: int = 20) -> list[NewsArticle]:
+def build_demo_news_articles(
+    sources: list[NewsSource], count: int = 20
+) -> list[NewsArticle]:
     """Build stable demo news articles for inserted sources."""
     base_time = datetime(2026, 1, 20, 12, tzinfo=UTC)
     rows: list[NewsArticle] = []

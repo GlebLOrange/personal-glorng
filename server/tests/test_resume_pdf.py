@@ -17,6 +17,7 @@ def _weasyprint_available() -> bool:
     except Exception:
         return False
 
+
 WEASYPRINT_AVAILABLE = _weasyprint_available()
 
 requires_weasyprint = pytest.mark.skipif(
@@ -31,6 +32,7 @@ async def test_resume_pdf_download(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """PDF endpoint returns a valid PDF attachment."""
+
     async def fake_get_cached_resume_pdf(_resume: dict[str, object]) -> bytes:
         """Return deterministic PDF bytes for the endpoint contract test."""
         return b"%PDF fake"

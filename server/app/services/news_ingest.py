@@ -3,14 +3,13 @@
 import asyncio
 import hashlib
 import html
-import ipaddress
 import json
 import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from typing import Any
-from urllib.parse import urljoin, urlparse, urlsplit, urlunsplit
+from urllib.parse import urljoin, urlsplit, urlunsplit
 from xml.etree import ElementTree
 from xml.etree.ElementTree import ParseError
 
@@ -18,6 +17,8 @@ import httpx
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
+from app.core.url_safety import is_public_http_url
+from app.core.xml_security import has_unsafe_xml_declaration
 from app.db.documents.news import NewsSource
 from app.schemas.news import (
     ALLOWED_NEWS_THEMES,
@@ -31,6 +32,7 @@ from app.settings import get_settings
 _TAG_RE = re.compile(r"<[^>]+>")
 _ATOM = "{http://www.w3.org/2005/Atom}"
 _CONTENT = "{http://purl.org/rss/1.0/modules/content/}"
+_MAX_FEED_BYTES = 1_000_000
 _SYSTEM_PROMPT = """You write concise curated news summaries.
 Use only facts present in the supplied feed metadata.
 Return JSON with: title, summary, bullets, themes, telegram_text.
@@ -81,7 +83,7 @@ def _parse_datetime(value: str | None) -> datetime | None:
         return None
     try:
         parsed = parsedate_to_datetime(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         try:
             parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
         except ValueError:
@@ -91,23 +93,11 @@ def _parse_datetime(value: str | None) -> datetime | None:
     return parsed.astimezone(UTC)
 
 
-def _is_safe_feed_url(url: str) -> bool:
-    """Reject obviously unsafe feed URLs."""
-    parsed = urlparse(url)
-    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
-        return False
-    try:
-        ip = ipaddress.ip_address(parsed.hostname)
-    except ValueError:
-        return parsed.hostname not in {"localhost", "metadata.google.internal"}
-    return not (ip.is_private or ip.is_loopback or ip.is_link_local)
-
-
 def _source_from_raw(raw: dict[str, Any]) -> NewsSourceConfig:
     """Parse one source config object."""
     name = _clean_text(str(raw.get("name", "")), max_length=120)
     feed_url = str(raw.get("feed_url", "")).strip()
-    if not name or not feed_url or not _is_safe_feed_url(feed_url):
+    if not name or not feed_url or not is_public_http_url(feed_url):
         msg = "Invalid news source config"
         raise ValueError(msg)
     themes = tuple(
@@ -164,11 +154,12 @@ def _rss_items(root: ElementTree.Element, source: NewsSourceConfig) -> list[Feed
         excerpt = _clean_text(
             item.findtext("description") or item.findtext(f"{_CONTENT}encoded"),
         )
-        if title and link:
+        canonical_url = _canonical_url(link, base_url=source.feed_url)
+        if title and link and is_public_http_url(canonical_url):
             items.append(
                 FeedItem(
                     title=title,
-                    url=_canonical_url(link, base_url=source.feed_url),
+                    url=canonical_url,
                     excerpt=excerpt,
                     published_at=_parse_datetime(
                         item.findtext("pubDate") or item.findtext("published")
@@ -191,11 +182,12 @@ def _atom_items(root: ElementTree.Element, source: NewsSourceConfig) -> list[Fee
         excerpt = _clean_text(
             entry.findtext(f"{_ATOM}summary") or entry.findtext(f"{_ATOM}content"),
         )
-        if title and link:
+        canonical_url = _canonical_url(link, base_url=source.feed_url)
+        if title and link and is_public_http_url(canonical_url):
             items.append(
                 FeedItem(
                     title=title,
-                    url=_canonical_url(link, base_url=source.feed_url),
+                    url=canonical_url,
                     excerpt=excerpt,
                     published_at=_parse_datetime(
                         entry.findtext(f"{_ATOM}published")
@@ -208,6 +200,9 @@ def _atom_items(root: ElementTree.Element, source: NewsSourceConfig) -> list[Fee
 
 def parse_feed(xml_text: str, source: NewsSourceConfig) -> list[FeedItem]:
     """Parse common RSS/Atom XML into feed items."""
+    if has_unsafe_xml_declaration(xml_text):
+        msg = "Feed XML DTD and entity declarations are not supported"
+        raise ValueError(msg)
     try:
         root = ElementTree.fromstring(xml_text)  # noqa: S314
     except ParseError as exc:
@@ -228,7 +223,9 @@ def _hash_input(source: NewsSourceConfig, item: FeedItem) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
-def _validate_ai_payload(raw: dict[str, Any], source: NewsSourceConfig) -> dict[str, Any]:
+def _validate_ai_payload(
+    raw: dict[str, Any], source: NewsSourceConfig
+) -> dict[str, Any]:
     """Validate and normalize the AI JSON response."""
     title = _clean_text(str(raw.get("title", "")), max_length=90)
     summary = _clean_text(str(raw.get("summary", "")), max_length=600)
@@ -268,7 +265,9 @@ async def _summarize_item(
             "source_url": item.url,
             "original_title": item.title,
             "feed_excerpt": item.excerpt,
-            "published_at": item.published_at.isoformat() if item.published_at else None,
+            "published_at": item.published_at.isoformat()
+            if item.published_at
+            else None,
             "allowed_themes": sorted(ALLOWED_NEWS_THEMES),
             "default_themes": list(source.default_themes),
         },
@@ -328,7 +327,13 @@ class NewsIngestService:
                 try:
                     response = await client.get(source.feed_url)
                     response.raise_for_status()
-                    items = parse_feed(response.text, source)[: source.max_items_per_run]
+                    if len(response.content) > _MAX_FEED_BYTES:
+                        raise ValueError("Feed response is too large")
+                    if not is_public_http_url(str(response.url)):
+                        raise ValueError("Feed redirect target is not allowed")
+                    items = parse_feed(response.text, source)[
+                        : source.max_items_per_run
+                    ]
                 except Exception as exc:
                     failed += 1
                     logger.warning(

@@ -4,6 +4,7 @@ import { ref } from "vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { api } from "@/composables/useApi";
 import type { DonationsConfig } from "@/types";
+import { safeNavigationHref } from "@/utils/safeUrl";
 
 defineProps<{
   config: DonationsConfig;
@@ -17,14 +18,23 @@ const linkButtonBase =
   "px-6 py-3 text-base";
 const primaryLinkButton =
   "bg-gradient-to-r from-accent-blue to-accent-violet text-white border-transparent hover:opacity-90";
-const secondaryLinkButton = "bg-surface-card text-surface-light border-surface-border hover:border-accent-blue";
+const secondaryLinkButton =
+  "bg-surface-card text-surface-light border-surface-border hover:border-accent-blue";
+
+function safeHref(value: string | null | undefined): string | null {
+  return value ? safeNavigationHref(value) : null;
+}
 
 async function startStripeCheckout(): Promise<void> {
   checkoutError.value = false;
   isStartingCheckout.value = true;
   try {
     const { data } = await api.post<{ url: string }>("/donations/checkout");
-    window.location.href = data.url;
+    const checkoutUrl = safeNavigationHref(data.url);
+    if (!checkoutUrl) {
+      throw new Error("Donation checkout returned an unsafe URL");
+    }
+    window.location.href = checkoutUrl;
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
     checkoutError.value = true;
@@ -38,8 +48,8 @@ async function startStripeCheckout(): Promise<void> {
   <div class="space-y-4">
     <div class="flex flex-wrap gap-4">
       <a
-        v-if="config.stripe.enabled"
-        :href="config.stripe.url"
+        v-if="config.stripe.enabled && safeHref(config.stripe.url)"
+        :href="safeHref(config.stripe.url) ?? '#'"
         :class="[linkButtonBase, primaryLinkButton]"
         target="_blank"
         rel="noopener noreferrer"
@@ -58,8 +68,8 @@ async function startStripeCheckout(): Promise<void> {
       </BaseButton>
 
       <a
-        v-if="config.paypal.enabled && config.paypal.url"
-        :href="config.paypal.url"
+        v-if="config.paypal.enabled && safeHref(config.paypal.url)"
+        :href="safeHref(config.paypal.url) ?? '#'"
         :class="[linkButtonBase, secondaryLinkButton]"
         target="_blank"
         rel="noopener noreferrer"
@@ -68,8 +78,8 @@ async function startStripeCheckout(): Promise<void> {
       </a>
 
       <a
-        v-if="config.patreon.enabled"
-        :href="config.patreon.url"
+        v-if="config.patreon.enabled && safeHref(config.patreon.url)"
+        :href="safeHref(config.patreon.url) ?? '#'"
         :class="[linkButtonBase, secondaryLinkButton]"
         target="_blank"
         rel="noopener noreferrer"

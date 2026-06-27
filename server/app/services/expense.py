@@ -1,6 +1,5 @@
 import csv
 import io
-from calendar import monthrange
 from collections import defaultdict
 from datetime import date
 from decimal import Decimal
@@ -54,21 +53,6 @@ class ExpenseService:
             msg = "Expense repository is not initialized"
             raise RuntimeError(msg)
         return self.registry.expenses
-
-    @staticmethod
-    def month_date_bounds(month: str) -> tuple[date, date]:
-        """Return inclusive calendar bounds for YYYY-MM."""
-        parts = month.split("-", 1)
-        if len(parts) != 2:
-            raise ValidationError("month must be YYYY-MM")
-        try:
-            year, mon = int(parts[0]), int(parts[1])
-        except ValueError as exc:
-            raise ValidationError("month must be YYYY-MM") from exc
-        if not 1 <= mon <= 12:
-            raise ValidationError("month must be YYYY-MM")
-        last_day = monthrange(year, mon)[1]
-        return date(year, mon, 1), date(year, mon, last_day)
 
     @staticmethod
     def _to_response(expense: Expense) -> ExpenseResponse:

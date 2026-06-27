@@ -69,7 +69,8 @@ watch(
       return;
     }
 
-    returnFocusTarget = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    returnFocusTarget =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.addEventListener("keydown", onKeydown);
     await nextTick();
     closeButton.value?.focus();

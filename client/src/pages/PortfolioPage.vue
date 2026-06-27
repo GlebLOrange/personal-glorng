@@ -98,13 +98,7 @@ onMounted(loadResume);
       <ProjectsGrid :projects="resume.projects" />
     </SectionWrapper>
 
-    <SectionWrapper
-      v-if="education.length > 0"
-      id="education"
-      title="education"
-      dark
-      alternate
-    >
+    <SectionWrapper v-if="education.length > 0" id="education" title="education" dark alternate>
       <EducationList :education="education" />
     </SectionWrapper>
 

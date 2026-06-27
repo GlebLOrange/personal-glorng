@@ -1,7 +1,6 @@
 """Business logic for curated news articles."""
 
 import html
-import ipaddress
 import json
 import re
 from html.parser import HTMLParser
@@ -15,6 +14,7 @@ from pymongo.errors import DuplicateKeyError
 from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.core.json_lists import parse_json_string_list
 from app.core.logging import logger
+from app.core.url_safety import is_public_http_url
 from app.core.utils import paginate_params, utc_now
 from app.db.documents.news import NewsArticle, NewsSource, NewsStatus
 from app.db.registry import DatabaseRegistry
@@ -116,21 +116,9 @@ class _TitleParser(HTMLParser):
         return None
 
 
-def _is_public_feed_url(url: str) -> bool:
-    """Return whether a feed URL is safe for server-side fetching."""
-    parsed = urlsplit(url)
-    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
-        return False
-    try:
-        ip = ipaddress.ip_address(parsed.hostname)
-    except ValueError:
-        return parsed.hostname not in {"localhost", "metadata.google.internal"}
-    return not (ip.is_private or ip.is_loopback or ip.is_link_local)
-
-
 def _require_public_feed_url(feed_url: str) -> None:
     """Reject feed URLs that could target local infrastructure."""
-    if not _is_public_feed_url(feed_url):
+    if not is_public_http_url(feed_url):
         raise ValidationError("Feed URL must be a public http(s) URL")
 
 
@@ -170,7 +158,9 @@ def _source_name_from_host(host: str) -> str:
     """Build a readable source name from a host."""
     labels = host.split(".")
     stem = labels[0] if labels else host
-    return " ".join(part.capitalize() for part in re.split(r"[-_]+", stem) if part) or host
+    return (
+        " ".join(part.capitalize() for part in re.split(r"[-_]+", stem) if part) or host
+    )
 
 
 def _clean_metadata_text(value: str | None, *, max_length: int) -> str:
@@ -193,8 +183,10 @@ def _article_source_fields(
 ) -> dict[str, str | int | None]:
     """Return article source fields from a selected source or payload."""
     source_name = source.name if source else data.source_name
-    source_feed_url = source.feed_url if source else (
-        str(data.source_feed_url) if data.source_feed_url else None
+    source_feed_url = (
+        source.feed_url
+        if source
+        else (str(data.source_feed_url) if data.source_feed_url else None)
     )
     if not source_name or not source_feed_url:
         raise ValidationError("News source is required")
@@ -459,7 +451,9 @@ class NewsService:
             source = await self._get_or_create_source_for_url(
                 source_url,
                 source_name=data.source_name,
-                source_feed_url=str(data.source_feed_url) if data.source_feed_url else None,
+                source_feed_url=str(data.source_feed_url)
+                if data.source_feed_url
+                else None,
                 actor_id=actor_id,
             )
         slug = await self.unique_slug(data.title)
@@ -524,7 +518,9 @@ class NewsService:
             source = await self._get_or_create_source_for_url(
                 str(data.source_url),
                 source_name=data.source_name,
-                source_feed_url=str(data.source_feed_url) if data.source_feed_url else None,
+                source_feed_url=str(data.source_feed_url)
+                if data.source_feed_url
+                else None,
                 actor_id=actor_id,
             )
         updated = _apply_article_updates(article, data, source)

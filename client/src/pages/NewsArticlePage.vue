@@ -5,6 +5,7 @@ import { useRoute } from "vue-router";
 import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { formatNewsDate, useNews } from "@/composables/useNews";
+import { safeNavigationHref } from "@/utils/safeUrl";
 
 const route = useRoute();
 const slug = computed(() => String(route.params.slug ?? ""));
@@ -87,7 +88,8 @@ watch(slug, () => {
           {{ article.source_name }} for full context.
         </p>
         <a
-          :href="article.source_url"
+          v-if="safeNavigationHref(article.source_url)"
+          :href="safeNavigationHref(article.source_url) ?? '#'"
           target="_blank"
           rel="noopener noreferrer"
           class="text-sm text-accent-blue hover:underline"
