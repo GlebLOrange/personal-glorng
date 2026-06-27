@@ -72,6 +72,17 @@ export function useNews() {
     article.value = data ?? null;
   }
 
+  async function loadAdminArticle(articleId: number): Promise<void> {
+    const data = await runDetail(
+      async () => {
+        const response = await api.get<NewsArticle>(`/tools/news/admin/${articleId}`);
+        return response.data;
+      },
+      { errorFallback: "Failed to load article", logContext: "news.loadAdminArticle" },
+    );
+    article.value = data ?? null;
+  }
+
   async function loadSources(): Promise<void> {
     const data = await runAction(
       async () => {
@@ -172,6 +183,7 @@ export function useNews() {
     countLabel,
     loadNews,
     loadArticle,
+    loadAdminArticle,
     loadSources,
     goToPage,
     ingestNews,

@@ -415,7 +415,10 @@ watch(page, () => {
         </div>
 
         <h2 class="card-title mb-2">
-          <RouterLink :to="`/news/${item.slug}`" class="hover:text-accent-blue">
+          <RouterLink
+            :to="{ name: 'tool-news-article', params: { id: item.id } }"
+            class="hover:text-accent-blue"
+          >
             {{ item.title }}
           </RouterLink>
         </h2>
