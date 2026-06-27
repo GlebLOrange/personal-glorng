@@ -59,18 +59,29 @@ async function startStripeCheckout(): Promise<void> {
 
       <form
         v-if="config.paypal.enabled"
+        class="inline-flex"
         action="https://www.paypal.com/donate"
         method="post"
         target="_top"
       >
         <input type="hidden" name="hosted_button_id" value="RJMBWD6K68ADL" />
-        <input
-          type="image"
-          src="https://www.paypalobjects.com/en_US/PL/i/btn/btn_donateCC_LG.gif"
+        <button
+          type="submit"
           name="submit"
-          title="PayPal - The safer, easier way to pay online!"
-          alt="Donate with PayPal button"
-        />
+          title="Donate securely with PayPal"
+          class="inline-flex min-h-11 items-center gap-3 rounded-lg border border-[#f2c94c] bg-[#ffc439] px-5 py-2.5 text-left text-[#111820] transition-all duration-200 hover:bg-[#f7b900] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+        >
+          <img
+            src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"
+            alt=""
+            aria-hidden="true"
+            class="h-8 w-auto rounded bg-white/80 px-1"
+          />
+          <span class="flex flex-col leading-tight">
+            <span class="font-semibold">Donate with PayPal</span>
+            <span class="text-xs font-medium text-[#344054]">Cards accepted</span>
+          </span>
+        </button>
         <img
           alt=""
           src="https://www.paypal.com/en_PL/i/scr/pixel.gif"
