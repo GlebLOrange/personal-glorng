@@ -16,10 +16,8 @@ import type {
 } from "@/types";
 import { normalizeHttpUrl, sourceFromNewsLink, titleFromNewsLink } from "@/utils/newsForms";
 
-type StatusFilter = NewsStatus | "all";
 type DrawerMode = "create" | "edit";
 
-const statusFilter = ref<StatusFilter>("published");
 const { can } = usePermissions();
 const { toast } = useNotify();
 const canWrite = computed(() => can("news", "write"));
@@ -198,12 +196,8 @@ function buildUpdatePayload(): NewsArticleUpdate {
   return buildCreatePayload();
 }
 
-function statusParam(): NewsStatus | null {
-  return statusFilter.value === "all" ? null : statusFilter.value;
-}
-
 async function loadAdminNews(): Promise<void> {
-  await loadNews({ admin: true, status: statusParam() });
+  await loadNews({ admin: true });
 }
 
 async function runIngest(): Promise<void> {
@@ -268,7 +262,7 @@ onMounted(async () => {
   await loadAdminNews();
 });
 
-watch([page, statusFilter], () => {
+watch(page, () => {
   void loadAdminNews();
 });
 </script>
@@ -291,22 +285,6 @@ watch([page, statusFilter], () => {
         </BaseButton>
       </div>
     </div>
-
-    <section class="mb-6 flex flex-col gap-3 md:flex-row md:items-center">
-      <label class="text-xs text-surface-mid">
-        Status
-        <select
-          v-model="statusFilter"
-          class="ml-2 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-surface-light"
-        >
-          <option value="all">all</option>
-          <option value="published">published</option>
-          <option value="draft">draft</option>
-          <option value="unpublished">unpublished</option>
-          <option value="failed">failed</option>
-        </select>
-      </label>
-    </section>
 
     <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading news">
       <div
