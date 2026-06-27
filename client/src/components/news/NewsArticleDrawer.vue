@@ -108,12 +108,6 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                   <option value="failed">failed</option>
                 </select>
               </label>
-              <BaseInput
-                :model-value="form.language"
-                label="Language"
-                placeholder="en"
-                @update:model-value="patch({ language: toStringValue($event) })"
-              />
             </section>
 
             <section class="space-y-4">
@@ -187,25 +181,6 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 type="url"
                 placeholder="https://..."
                 @update:model-value="patch({ source_url: toStringValue($event) })"
-              />
-              <BaseInput
-                :model-value="form.source_feed_url"
-                label="Feed URL"
-                type="url"
-                placeholder="https://..."
-                @update:model-value="patch({ source_feed_url: toStringValue($event) })"
-              />
-              <BaseInput
-                :model-value="form.original_title"
-                label="Original title"
-                placeholder="Publisher title"
-                @update:model-value="patch({ original_title: toStringValue($event) })"
-              />
-              <BaseInput
-                :model-value="form.source_published_at"
-                label="Source published at"
-                type="datetime-local"
-                @update:model-value="patch({ source_published_at: toStringValue($event) })"
               />
             </section>
           </form>
