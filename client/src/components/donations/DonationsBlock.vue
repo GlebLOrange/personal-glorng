@@ -57,38 +57,24 @@ async function startStripeCheckout(): Promise<void> {
         {{ isStartingCheckout ? "Opening..." : "Donate by Card" }}
       </BaseButton>
 
-      <form
+      <a
         v-if="config.paypal.enabled"
-        class="inline-flex"
-        action="https://www.paypal.com/donate"
-        method="post"
-        target="_top"
+        :href="config.paypal.url"
+        :class="[linkButtonBase, secondaryLinkButton, 'min-h-11 gap-3 text-left hover:text-accent-blue']"
+        target="_blank"
+        rel="noopener noreferrer"
       >
-        <input type="hidden" name="hosted_button_id" value="RJMBWD6K68ADL" />
-        <button
-          type="submit"
-          name="submit"
-          title="Donate securely with PayPal"
-          :class="[linkButtonBase, secondaryLinkButton, 'min-h-11 gap-3 text-left hover:text-accent-blue']"
-        >
-          <img
-            src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"
-            alt=""
-            aria-hidden="true"
-            class="h-7 w-auto rounded bg-white px-2 py-1"
-          />
-          <span class="flex flex-col leading-tight">
-            <span class="font-semibold">Donate with PayPal</span>
-            <span class="text-xs font-medium text-surface-mid">Cards accepted</span>
-          </span>
-        </button>
         <img
+          src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"
           alt=""
-          src="https://www.paypal.com/en_PL/i/scr/pixel.gif"
-          width="1"
-          height="1"
+          aria-hidden="true"
+          class="h-7 w-auto rounded bg-white px-2 py-1"
         />
-      </form>
+        <span class="flex flex-col leading-tight">
+          <span class="font-semibold">Donate with PayPal</span>
+          <span class="text-xs font-medium text-surface-mid">Cards accepted</span>
+        </span>
+      </a>
 
       <a
         v-if="config.patreon.enabled"
