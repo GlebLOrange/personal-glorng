@@ -21,10 +21,9 @@ body:
     attributes:
       label: Environment
       options:
-        - dev-ultra-lite (mongodb, redis in Docker + host API/Vite)
-        - dev-lite (db, redis, API + host Vite)
+        - dev-lite + dev-lite-client (default local dev)
         - make dev (full stack, no worker/bot)
-        - make dev-full (worker + bot)
+        - advanced dev mode (ultra-lite/search/worker/bot/full)
         - production (Docker / VPS)
         - other
     validations:
