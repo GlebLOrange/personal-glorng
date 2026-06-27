@@ -60,11 +60,20 @@ async function startStripeCheckout(): Promise<void> {
       <a
         v-if="config.paypal.enabled"
         :href="config.paypal.url"
-        :class="[linkButtonBase, secondaryLinkButton]"
+        :class="[linkButtonBase, secondaryLinkButton, 'min-h-11 gap-3 text-left hover:text-accent-blue']"
         target="_blank"
         rel="noopener noreferrer"
       >
-        Donate with PayPal
+        <img
+          src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"
+          alt=""
+          aria-hidden="true"
+          class="h-7 w-auto rounded bg-white px-2 py-1"
+        />
+        <span class="flex flex-col leading-tight">
+          <span class="font-semibold">Donate with PayPal</span>
+          <span class="text-xs font-medium text-surface-mid">Cards accepted</span>
+        </span>
       </a>
 
       <a
