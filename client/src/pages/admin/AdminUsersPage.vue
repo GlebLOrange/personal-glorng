@@ -326,10 +326,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 </span>
                 <span class="mt-1 block truncate text-xs text-surface-mid">{{ user.email }}</span>
               </span>
-              <StatusBadge
-                :label="roleBadge(user).label"
-                :class-name="roleBadge(user).className"
-              />
+              <StatusBadge :label="roleBadge(user).label" :class-name="roleBadge(user).className" />
             </span>
 
             <span class="flex flex-wrap gap-2">
@@ -341,7 +338,9 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
               />
             </span>
 
-            <span class="mt-auto flex items-center justify-between gap-3 text-xs text-surface-muted">
+            <span
+              class="mt-auto flex items-center justify-between gap-3 text-xs text-surface-muted"
+            >
               <span>{{ permissionCount(user) }} permissions</span>
               <span>Joined {{ formatDate(user.created_at) }}</span>
             </span>
@@ -429,9 +428,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
               />
             </div>
 
-            <footer
-              class="shrink-0 border-t border-surface-border bg-surface-dark px-6 py-4"
-            >
+            <footer class="shrink-0 border-t border-surface-border bg-surface-dark px-6 py-4">
               <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p class="text-xs text-surface-muted">
                   {{

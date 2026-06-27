@@ -1,17 +1,31 @@
 """Backward-compatible shim for expense API schemas."""
 
 from app.schemas.expense import (
+    ExchangeRatesResponse,
     ExpenseCatalogResponse,
-    ExpenseCategoryTotal as ToolExpenseCategoryTotal,
-    ExpenseCreate as ToolExpenseCreate,
-    ExpenseMonthTotal as ToolExpenseMonthTotal,
     ExpenseParseRequest,
     ExpenseParseResponse,
+)
+from app.schemas.expense import (
+    ExpenseCategoryTotal as ToolExpenseCategoryTotal,
+)
+from app.schemas.expense import (
+    ExpenseCreate as ToolExpenseCreate,
+)
+from app.schemas.expense import (
+    ExpenseMonthTotal as ToolExpenseMonthTotal,
+)
+from app.schemas.expense import (
     ExpenseResponse as ToolExpenseResponse,
+)
+from app.schemas.expense import (
     ExpenseSummary as ToolExpenseSummary,
+)
+from app.schemas.expense import (
     ExpenseToolTotal as ToolExpenseToolTotal,
+)
+from app.schemas.expense import (
     ExpenseUpdate as ToolExpenseUpdate,
-    ExchangeRatesResponse,
 )
 
 __all__ = [

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { NewsArticle } from "@/types";
 import { formatDate } from "@/utils/format";
+import { safeNavigationHref } from "@/utils/safeUrl";
 
 defineProps<{
   articles: NewsArticle[];
@@ -21,13 +22,15 @@ defineProps<{
       </div>
       <h2 class="mb-2 text-lg font-bold text-surface-light">
         <a
-          :href="article.source_url"
+          v-if="safeNavigationHref(article.source_url)"
+          :href="safeNavigationHref(article.source_url) ?? '#'"
           target="_blank"
           rel="noopener noreferrer"
           class="hover:text-accent-blue"
         >
           {{ article.title }}
         </a>
+        <span v-else>{{ article.title }}</span>
       </h2>
       <p v-if="article.summary" class="text-sm leading-6 text-surface-sage">
         {{ article.summary }}

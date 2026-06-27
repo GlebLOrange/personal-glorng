@@ -29,4 +29,15 @@ describe("buildContactLinks", () => {
 
     expect(result.map((link) => link.id)).toEqual(["email", "github"]);
   });
+
+  it("skips unsafe contact values", () => {
+    const result = buildContactLinks({
+      email: "not an email",
+      telegram: "javascript:alert(1)",
+      linkedin: "http://example.com/profile",
+      github: "https://github.com/glorange",
+    });
+
+    expect(result.map((link) => link.id)).toEqual(["github"]);
+  });
 });

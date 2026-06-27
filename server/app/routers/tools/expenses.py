@@ -227,12 +227,7 @@ async def list_expenses(
     per_page: Annotated[int, Query(ge=1, le=100)] = 20,
     sort: Annotated[
         str,
-        Query(
-            pattern=(
-                "^(date|category|product|amount)_"
-                "(asc|desc)$"
-            )
-        ),
+        Query(pattern=("^(date|category|product|amount)_(asc|desc)$")),
     ] = "date_desc",
 ) -> ExpenseListResponse:
     resolved_from, resolved_to = filters.resolved_bounds()

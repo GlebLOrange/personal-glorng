@@ -183,7 +183,9 @@ def test_extract_delimited_pipe_embed_profile() -> None:
 def test_extract_delimited_skips_bad_line_with_profile() -> None:
     content = f"{PIPE_EMBED_LINE}\nnot-enough-fields\n"
     options = apply_profile("pipe_embed", ExtractOptions())
-    result = extract(content.encode(), "delimited", filename="feed.pipe", options=options)
+    result = extract(
+        content.encode(), "delimited", filename="feed.pipe", options=options
+    )
     assert len(result.records) == 1
     assert result.meta["error_count"] == 1
 

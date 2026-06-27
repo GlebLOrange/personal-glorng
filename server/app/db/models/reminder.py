@@ -21,5 +21,4 @@ class Reminder(BaseModelMixin, Base):
     sent: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     job_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
-    task: Mapped["Task"] = relationship(lazy="selectin")  # noqa: F821
-
+    task: Mapped[Task] = relationship(lazy="selectin")

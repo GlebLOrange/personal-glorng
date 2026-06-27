@@ -23,7 +23,10 @@ async def create_checkout_session(settings: Settings | None = None) -> dict[str,
     if not active.stripe_checkout_enabled():
         raise ApiError(503, "Stripe Checkout is not configured")
 
-    success_url = active.STRIPE_CHECKOUT_SUCCESS_URL or f"{active.BASE_URL.rstrip('/')}/?donated=1"
+    success_url = (
+        active.STRIPE_CHECKOUT_SUCCESS_URL
+        or f"{active.BASE_URL.rstrip('/')}/?donated=1"
+    )
     cancel_url = active.STRIPE_CHECKOUT_CANCEL_URL or active.BASE_URL.rstrip("/")
 
     data = {
@@ -31,7 +34,9 @@ async def create_checkout_session(settings: Settings | None = None) -> dict[str,
         "success_url": success_url,
         "cancel_url": cancel_url,
         "line_items[0][price_data][currency]": active.STRIPE_DONATION_CURRENCY.lower(),
-        "line_items[0][price_data][unit_amount]": str(active.STRIPE_DONATION_AMOUNT_CENTS),
+        "line_items[0][price_data][unit_amount]": str(
+            active.STRIPE_DONATION_AMOUNT_CENTS
+        ),
         "line_items[0][price_data][product_data][name]": "Support gLOrng",
         "line_items[0][quantity]": "1",
     }

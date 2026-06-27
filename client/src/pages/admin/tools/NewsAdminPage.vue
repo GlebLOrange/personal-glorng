@@ -21,6 +21,7 @@ import type {
   NewsStatus,
 } from "@/types";
 import { normalizeHttpUrl, titleFromNewsLink } from "@/utils/newsForms";
+import { safeNavigationHref } from "@/utils/safeUrl";
 
 type DrawerMode = "create" | "edit";
 
@@ -467,7 +468,8 @@ watch(page, () => {
             Repost Telegram
           </BaseButton>
           <a
-            :href="item.source_url"
+            v-if="safeNavigationHref(item.source_url)"
+            :href="safeNavigationHref(item.source_url) ?? '#'"
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center px-3 py-1.5 text-xs text-accent-blue hover:underline"
@@ -479,7 +481,11 @@ watch(page, () => {
       </article>
     </section>
 
-    <section v-else role="status" class="rounded-lg border border-surface-border bg-surface-card p-8">
+    <section
+      v-else
+      role="status"
+      class="rounded-lg border border-surface-border bg-surface-card p-8"
+    >
       <h2 class="card-title mb-2">No articles</h2>
       <p class="text-sm text-surface-mid">
         No news articles match this filter. Run ingestion after configuring trusted sources.

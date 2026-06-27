@@ -26,13 +26,7 @@ export const RESUME_FALLBACK: ResumeData = {
     },
     {
       category: "DevOps",
-      items: [
-        "Docker",
-        "Docker Compose",
-        "Nginx",
-        "CI/CD (GitHub Actions)",
-        "Linux",
-      ],
+      items: ["Docker", "Docker Compose", "Nginx", "CI/CD (GitHub Actions)", "Linux"],
     },
     {
       category: "Other",
@@ -48,12 +42,7 @@ export const RESUME_FALLBACK: ResumeData = {
     },
     {
       category: "Patterns",
-      items: [
-        "Clean architecture",
-        "modular services",
-        "async processing",
-        "event-driven tasks",
-      ],
+      items: ["Clean architecture", "modular services", "async processing", "event-driven tasks"],
     },
   ],
   experience: [

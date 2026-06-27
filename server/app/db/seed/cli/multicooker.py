@@ -61,7 +61,9 @@ async def seed_multicooker_recipes(count: int = 25) -> None:
 
 def main() -> None:
     """CLI entrypoint."""
-    parser = argparse.ArgumentParser(description="Seed multicooker recipes from TheMealDB")
+    parser = argparse.ArgumentParser(
+        description="Seed multicooker recipes from TheMealDB"
+    )
     parser.add_argument("--count", type=int, default=25, help="Max recipes to fetch")
     args = parser.parse_args()
     asyncio.run(seed_multicooker_recipes(count=args.count))

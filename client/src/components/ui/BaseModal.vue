@@ -16,8 +16,8 @@ let previouslyFocusedElement: HTMLElement | null = null;
 function getFocusableElements(el: HTMLElement): HTMLElement[] {
   return Array.from(
     el.querySelectorAll<HTMLElement>(
-      'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]'
-    )
+      'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]',
+    ),
   ).filter((item) => item.tabIndex >= 0);
 }
 

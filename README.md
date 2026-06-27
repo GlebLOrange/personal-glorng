@@ -5,7 +5,7 @@ Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + Mongo
 ## Tech Stack
 
 - **Backend**: FastAPI, Motor (MongoDB), SQLAlchemy (async, optional Postgres), Alembic, Celery, RabbitMQ, Redis, Sentry
-- **Frontend**: Vue 3, Vite, TypeScript, Tailwind CSS, SASS, Pinia
+- **Frontend**: Vue 3, Vite, TypeScript, Tailwind CSS, Pinia
 - **Database**: MongoDB (primary); PostgreSQL 18 optional (`--profile postgres` for FTS search + audit)
 - **Cache/Queue**: Redis 8
 - **Proxy**: Nginx
@@ -130,7 +130,7 @@ Each capability follows a module-as-service pattern: business logic in `server/a
 - JWT authentication with email verification and password reset
 - Email-restricted registration (single admin user)
 - Redis: token blacklist, response cache, rate limiting, task queue
-- Plugin architecture for admin tools (auto-discovery)
+- Module-as-service architecture for admin tools
 - Telegram todobot: tasks, reminders, and quick expense logging (`/spend`, `/expenses`)
 - Donations: Stripe card checkout, PayPal, Patreon
 - Two-stream observability: operational telemetry (JSON logs + Sentry) and persistent audit trail (`audit_events`)
@@ -142,11 +142,12 @@ Each capability follows a module-as-service pattern: business logic in `server/a
 Browser → Nginx (:80)
   ├── /              → Vue client (:3000)
   ├── /admin/*       → Vue client (admin SPA)
-  ├── /api/*         → FastAPI (:8000) → PostgreSQL / Redis
+  ├── /api/*         → FastAPI (:8000) → MongoDB / Redis
   ├── /s/:code       → FastAPI → redirect
   └── /f/:code       → FastAPI → file download
 
-FastAPI + Worker + Todobot share PostgreSQL and Redis
+FastAPI + Worker + Todobot share MongoDB and Redis.
+PostgreSQL is optional for secondary FTS search and audit storage.
 ```
 
 See [docs/platform.md](docs/platform.md) for the service catalog and audit model. API tool reference: [docs/api-tools.md](docs/api-tools.md). Database setup and migrations: [docs/database.md](docs/database.md). Security posture and hardening notes: [docs/security.md](docs/security.md).
@@ -166,11 +167,18 @@ Locked dependencies live in `server/uv.lock`; Docker and CI use `uv sync --froze
 
 ## Quality checks
 
-With `make dev-lite` running (API up):
+Non-test checks for local production-readiness review:
 
 ```bash
-make lint-check && make test
-cd client && npm ci && npm run lint && npm run format:check && npm run test && npm run build:check
+make lint-check
+cd client && npm ci && npm run lint && npm run format:check && npm run build:check
+```
+
+Full CI-equivalent checks also run backend/frontend tests and Playwright smoke tests:
+
+```bash
+make check
+cd client && npm run e2e
 ```
 
 Bundle size report (writes `client/dist/stats.html`):

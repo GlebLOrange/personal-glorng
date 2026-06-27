@@ -50,7 +50,9 @@ async def test_password_generator_no_charset_selected(client: AsyncClient) -> No
 
 
 @pytest.mark.asyncio
-async def test_password_generator_includes_all_selected_sets(client: AsyncClient) -> None:
+async def test_password_generator_includes_all_selected_sets(
+    client: AsyncClient,
+) -> None:
     resp = await client.post(
         _ENDPOINT,
         json={

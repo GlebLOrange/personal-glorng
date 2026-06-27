@@ -98,9 +98,7 @@ def _entry_to_app_log(entry: dict[str, Any]) -> AppLog:
 
     occurred_raw = entry.get("timestamp")
     occurred_at = (
-        datetime.fromisoformat(occurred_raw)
-        if isinstance(occurred_raw, str)
-        else None
+        datetime.fromisoformat(occurred_raw) if isinstance(occurred_raw, str) else None
     )
 
     return AppLog(

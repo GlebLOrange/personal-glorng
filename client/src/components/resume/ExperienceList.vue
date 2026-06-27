@@ -23,11 +23,7 @@ defineProps<{
       </div>
       <p v-if="exp.description" class="text-body mt-4">{{ exp.description }}</p>
       <ul v-if="exp.highlights?.length" class="mt-4 space-y-2">
-        <li
-          v-for="(highlight, j) in exp.highlights"
-          :key="j"
-          class="text-body flex gap-3"
-        >
+        <li v-for="(highlight, j) in exp.highlights" :key="j" class="text-body flex gap-3">
           <span class="text-accent-blue shrink-0" aria-hidden="true">▸</span>
           <span>{{ highlight }}</span>
         </li>

@@ -42,7 +42,7 @@ def _highlights_html(highlights: list[Any]) -> str:
     if not items:
         return ""
     bullets = "".join(f"<li>{item}</li>" for item in items)
-    return f"<ul class=\"highlights\">{bullets}</ul>"
+    return f'<ul class="highlights">{bullets}</ul>'
 
 
 def _experience_html(resume: dict[str, Any]) -> str:
@@ -68,9 +68,7 @@ def _education_html(resume: dict[str, Any]) -> str:
     blocks: list[str] = []
     for entry in education:
         description = entry.get("description")
-        description_html = (
-            f"<p>{_esc(str(description))}</p>" if description else ""
-        )
+        description_html = f"<p>{_esc(str(description))}</p>" if description else ""
         blocks.append(
             f"""
         <section class="block card">
@@ -92,9 +90,7 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
     bio = _esc(resume["bio"])
     canonical = _esc(canonical_url)
     description = _esc(_meta_description(resume))
-    tagline_html = (
-        f'<p class="tagline">{_esc(tagline)}</p>' if tagline else ""
-    )
+    tagline_html = f'<p class="tagline">{_esc(tagline)}</p>' if tagline else ""
 
     skills_html = ""
     for group in resume.get("skills", []):

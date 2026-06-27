@@ -75,10 +75,7 @@ async function downloadCv(): Promise<void> {
       {{ bio }}
     </p>
 
-    <div
-      v-if="contactLinks?.length"
-      class="mt-6 flex flex-wrap justify-center gap-3 print:hidden"
-    >
+    <div v-if="contactLinks?.length" class="mt-6 flex flex-wrap justify-center gap-3 print:hidden">
       <a
         v-for="link in contactLinks"
         :key="link.id"

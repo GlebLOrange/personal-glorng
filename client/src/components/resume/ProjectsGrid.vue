@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import BaseCard from "@/components/ui/BaseCard.vue";
 import type { Project } from "@/types";
+import { safeNavigationHref } from "@/utils/safeUrl";
 
 defineProps<{
   projects: Project[];
@@ -22,8 +23,8 @@ defineProps<{
         </span>
       </div>
       <a
-        v-if="proj.url"
-        :href="proj.url"
+        v-if="proj.url && safeNavigationHref(proj.url)"
+        :href="safeNavigationHref(proj.url) ?? '#'"
         target="_blank"
         rel="noopener noreferrer"
         class="text-sm font-medium text-accent-blue hover:text-accent-violet transition-colors"

@@ -46,7 +46,10 @@ const { can } = usePermissions();
 const canWrite = computed(() => can("data-extract", "write"));
 const selectedName = computed(() => selectedFile.value?.name ?? "");
 const selectedBatch = computed(
-  () => batchDetail.value?.batch ?? batchHistory.value.find((b) => b.id === selectedBatchId.value) ?? null,
+  () =>
+    batchDetail.value?.batch ??
+    batchHistory.value.find((b) => b.id === selectedBatchId.value) ??
+    null,
 );
 const canPromoteSelected = computed(
   () =>
@@ -137,12 +140,7 @@ function resetOutputs(): void {
 }
 
 function batchLabel(batch: ImportBatchSummary): string {
-  const parts = [
-    `#${batch.id}`,
-    batch.filename,
-    `${batch.row_count} rows`,
-    batch.status,
-  ];
+  const parts = [`#${batch.id}`, batch.filename, `${batch.row_count} rows`, batch.status];
   if (batch.promoted_count > 0) {
     parts.push(`${batch.promoted_count} promoted`);
   }
@@ -165,9 +163,7 @@ async function loadBatchDetail(batchId: number): Promise<void> {
     batchDetail.value = response.data;
     result.value = {
       format: response.data.batch.format as DataExtractFormat,
-      records: response.data.preview_rows
-        .filter((row) => !row.error)
-        .map((row) => row.fields),
+      records: response.data.preview_rows.filter((row) => !row.error).map((row) => row.fields),
       meta: {
         row_count: response.data.batch.row_count,
         error_count: response.data.batch.error_count,
@@ -180,9 +176,7 @@ async function loadBatchDetail(batchId: number): Promise<void> {
       profile: response.data.batch.profile,
       row_count: response.data.batch.row_count,
       error_count: response.data.batch.error_count,
-      preview: response.data.preview_rows
-        .filter((row) => !row.error)
-        .map((row) => row.fields),
+      preview: response.data.preview_rows.filter((row) => !row.error).map((row) => row.fields),
       errors: [],
     };
     showRawJson.value = false;
@@ -193,9 +187,7 @@ async function promoteSelectedBatch(): Promise<void> {
   if (!selectedBatchId.value || !canPromoteSelected.value) return;
   const response = await run(
     () =>
-      api.post<PromoteBatchResult>(
-        `/tools/data-extract/batches/${selectedBatchId.value}/promote`,
-      ),
+      api.post<PromoteBatchResult>(`/tools/data-extract/batches/${selectedBatchId.value}/promote`),
     { errorFallback: "Promotion failed" },
   );
   if (response) {
@@ -492,7 +484,8 @@ function downloadResult(): void {
       </div>
       <p v-if="promoteResult" class="text-xs text-surface-mid">
         Promoted {{ promoteResult.promoted }}, skipped {{ promoteResult.skipped }}
-        <span v-if="promoteResult.errors.length">, {{ promoteResult.errors.length }} error(s)</span>.
+        <span v-if="promoteResult.errors.length">, {{ promoteResult.errors.length }} error(s)</span
+        >.
       </p>
     </BaseCard>
 
@@ -552,7 +545,8 @@ function downloadResult(): void {
       <pre
         v-if="showRawJson"
         class="overflow-x-auto rounded-md bg-surface-dark border border-surface-border p-4 text-xs text-surface-light"
-      >{{ resultJson }}</pre>
+        >{{ resultJson }}</pre
+      >
     </BaseCard>
   </AdminPageLayout>
 </template>

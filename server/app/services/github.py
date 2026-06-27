@@ -178,8 +178,6 @@ async def list_public_repos(username: str) -> list[GitHubRepoResponse]:
         params={"sort": _DEFAULT_REPO_SORT, "per_page": _DEFAULT_REPO_PER_PAGE},
     )
     public = [
-        item
-        for item in raw
-        if not item.get("fork") and not item.get("private", False)
+        item for item in raw if not item.get("fork") and not item.get("private", False)
     ]
     return [_map_repo(item) for item in public]

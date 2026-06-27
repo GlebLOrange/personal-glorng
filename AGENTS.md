@@ -60,7 +60,7 @@ Cloud-specific notes:
   GLORNG_ENV_FILE=$PWD/tests/.env.test \
   UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
   ```
-- **Backend via Docker:** `docker compose … exec server` uses the production image (no `pytest`/`ruff` in PATH). Prefer host `uv` for backend checks.
+- **Backend via Docker:** prod images do not include `pytest`/`ruff`; dev targets may, but host `uv` is the canonical path for backend checks.
 - **Frontend:** `cd client && npm run lint && npm run test && npm run build:check` (Node 24 recommended per CI; Node 22 works with engine warnings). Use `npm run build` for a fast Vite-only bundle. Agents may run lint and build without test unless asked.
 
 ### Optional services

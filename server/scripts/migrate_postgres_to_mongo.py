@@ -92,6 +92,8 @@ async def migrate() -> None:
         raise RuntimeError(msg)
 
     from app.db.models import (
+        Expense,
+        ExpenseCategory,
         Feedback,
         GitHubCredential,
         GoogleCredential,
@@ -104,8 +106,6 @@ async def migrate() -> None:
         TaskIntake,
         TaskStatusHistory,
         TelegramInboundMessage,
-        Expense,
-        ExpenseCategory,
         User,
         WeatherLocation,
     )

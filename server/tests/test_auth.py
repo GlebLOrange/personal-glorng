@@ -178,7 +178,9 @@ def _mock_firebase_token(
     settings = get_settings()
     settings.FIREBASE_AUTH_ENABLED = True
     settings.FIREBASE_PROJECT_ID = "test-firebase-project"
-    monkeypatch.setattr(firebase_auth_service, "_firebase_app", lambda _settings: object())
+    monkeypatch.setattr(
+        firebase_auth_service, "_firebase_app", lambda _settings: object()
+    )
     monkeypatch.setattr(
         firebase_auth_service.firebase_auth,
         "verify_id_token",
@@ -288,7 +290,9 @@ async def test_firebase_login_rejects_invalid_token(
     settings = get_settings()
     settings.FIREBASE_AUTH_ENABLED = True
     settings.FIREBASE_PROJECT_ID = "test-firebase-project"
-    monkeypatch.setattr(firebase_auth_service, "_firebase_app", lambda _settings: object())
+    monkeypatch.setattr(
+        firebase_auth_service, "_firebase_app", lambda _settings: object()
+    )
 
     def _raise_invalid(_token: str, _app: object) -> dict[str, object]:
         raise ValueError("bad token")

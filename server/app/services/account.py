@@ -165,9 +165,7 @@ async def update_preferences(
         ),
     )
     logger.info("Preferences updated", context={"user_id": user.id})
-    return {
-        key: current[key] for key in ALLOWED_PREFERENCE_KEYS if key in current
-    }
+    return {key: current[key] for key in ALLOWED_PREFERENCE_KEYS if key in current}
 
 
 async def delete_account(

@@ -136,14 +136,14 @@ def _education_html(resume: dict[str, Any]) -> str:
             </div>
             <span class="period">{_esc(period)}</span>
           </div>
-          {f'<p class="summary">{_esc(details)}</p>' if details else ''}
+          {f'<p class="summary">{_esc(details)}</p>' if details else ""}
         </section>""",
         )
     if not blocks:
         return ""
     return f"""
   <h2>Education</h2>
-  {''.join(blocks)}"""
+  {"".join(blocks)}"""
 
 
 def _contact_html(resume: dict[str, Any]) -> str:
@@ -158,7 +158,7 @@ def _contact_html(resume: dict[str, Any]) -> str:
         label = CONTACT_LABELS[link_id]
         chips.append(
             f'<span class="contact-item">'
-            f'<span>{_esc(label)}</span> '
+            f"<span>{_esc(label)}</span> "
             f'<a href="{_esc(href)}">{_esc(raw)}</a>'
             f"</span>",
         )

@@ -1,15 +1,40 @@
-from importlib import import_module
-from pathlib import Path
-
 from fastapi import APIRouter
+
+from app.routers.tools import (
+    ai_chat,
+    app_logs,
+    audit,
+    calculator,
+    data_extract,
+    email,
+    expenses,
+    fileshare,
+    news,
+    news_sources,
+    password_generator,
+    recipes,
+    tasks_admin,
+    urlshortener,
+    viddownload,
+)
 
 tools_router = APIRouter(prefix="/tools")
 
-_SKIPPED_MODULES: set[str] = set()
-
-for module_file in Path(__file__).parent.glob("*.py"):
-    if module_file.name.startswith("_") or module_file.stem in _SKIPPED_MODULES:
-        continue
-    mod = import_module(f".{module_file.stem}", package=__name__)
-    if hasattr(mod, "router"):
-        tools_router.include_router(mod.router)
+for router_module in (
+    ai_chat,
+    app_logs,
+    audit,
+    calculator,
+    data_extract,
+    email,
+    expenses,
+    fileshare,
+    news,
+    news_sources,
+    password_generator,
+    recipes,
+    tasks_admin,
+    urlshortener,
+    viddownload,
+):
+    tools_router.include_router(router_module.router)

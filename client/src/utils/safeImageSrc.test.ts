@@ -24,9 +24,7 @@ describe("safeImageSrc", () => {
   });
 
   it("allows external https URLs", () => {
-    expect(safeImageSrc("https://example.com/photo.jpg")).toBe(
-      "https://example.com/photo.jpg",
-    );
+    expect(safeImageSrc("https://example.com/photo.jpg")).toBe("https://example.com/photo.jpg");
   });
 
   it("rejects external http URLs", () => {

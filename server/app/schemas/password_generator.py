@@ -28,7 +28,5 @@ class PasswordGeneratorResponse(BaseModel):
     length: int
 
     model_config = ConfigDict(
-        json_schema_extra={
-            "example": {"password": "aB3!xY9@mN2#pQ7&", "length": 16}
-        }
+        json_schema_extra={"example": {"password": "aB3!xY9@mN2#pQ7&", "length": 16}}
     )

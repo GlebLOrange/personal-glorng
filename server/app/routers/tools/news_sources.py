@@ -21,6 +21,7 @@ router = APIRouter(
     tags=["news"],
 )
 
+
 @router.get(
     "",
     response_model=list[NewsSourceResponse],
