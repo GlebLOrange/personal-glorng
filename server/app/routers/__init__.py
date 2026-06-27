@@ -9,7 +9,6 @@ from app.routers.feedback import router as feedback_router
 from app.routers.github import router as github_router
 from app.routers.github_public import router as github_public_router
 from app.routers.health import router as health_router
-from app.routers.news import router as news_router
 from app.routers.platform import router as platform_router
 from app.routers.resume import router as resume_router
 from app.routers.search import router as search_router
@@ -33,7 +32,6 @@ api_router.include_router(github_public_router, prefix="/github", tags=["github"
 api_router.include_router(resume_router, prefix="/resume", tags=["resume"])
 api_router.include_router(search_router)
 api_router.include_router(weather_router)
-api_router.include_router(news_router)
 api_router.include_router(
     donations_router,
     prefix="/donations",
