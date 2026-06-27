@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import * as CookieConsent from "vanilla-cookieconsent";
 
+import BackLink from "@/components/ui/BackLink.vue";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import { isFirebaseAnalyticsEnabled } from "@/constants/firebase";
@@ -158,12 +159,7 @@ function openPreferences() {
     </section>
 
     <div class="pt-6 border-t border-surface-border">
-      <router-link
-        to="/"
-        class="text-sm text-surface-muted hover:text-accent-blue transition-colors"
-      >
-        BACK
-      </router-link>
+      <BackLink to="/" />
     </div>
   </div>
 </template>

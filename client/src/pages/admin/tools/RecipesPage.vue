@@ -68,7 +68,7 @@ function clearFilters(): void {
 </script>
 
 <template>
-  <AdminPageLayout title="recipes" max-width="xl" back-to="/tools" back-label="BACK">
+  <AdminPageLayout title="recipes" max-width="xl" back-to="/tools">
     <RecipeFilters
       v-model:search="search"
       v-model:sort="sort"

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
+import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
@@ -51,10 +52,8 @@ async function handleSubmit(): Promise<void> {
         </BaseButton>
       </form>
 
-      <p class="text-center text-xs text-surface-mid mt-6">
-        <RouterLink to="/login" class="text-accent-blue hover:underline"
-          >BACK</RouterLink
-        >
+      <p class="flex justify-center mt-6">
+        <BackLink to="/login" />
       </p>
     </div>
   </div>

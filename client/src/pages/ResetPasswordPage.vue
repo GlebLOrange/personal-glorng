@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
@@ -80,10 +81,8 @@ async function handleSubmit(): Promise<void> {
 
       <p v-else class="text-red-400 text-sm text-center">Invalid or missing reset link.</p>
 
-      <p class="text-center text-xs text-surface-mid mt-6">
-        <RouterLink to="/login" class="text-accent-blue hover:underline"
-          >BACK</RouterLink
-        >
+      <p class="flex justify-center mt-6">
+        <BackLink to="/login" />
       </p>
     </div>
   </div>

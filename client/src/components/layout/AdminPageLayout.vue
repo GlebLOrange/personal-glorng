@@ -11,11 +11,9 @@ const props = withDefaults(
     title: string;
     maxWidth?: "sm" | "md" | "lg" | "xl";
     backTo?: RouteLocationRaw;
-    backLabel?: string;
   }>(),
   {
     backTo: "/admin",
-    backLabel: "BACK",
   },
 );
 
@@ -40,7 +38,7 @@ const breadcrumbLabel = computed(() => formatBreadcrumbLabel(props.title));
       <h1 class="text-2xl font-bold text-surface-light">
         <span class="accent-gradient">€ {{ title }}</span>
       </h1>
-      <BackLink :to="backTo" :label="backLabel" />
+      <BackLink :to="backTo" />
     </div>
     <slot />
   </div>
