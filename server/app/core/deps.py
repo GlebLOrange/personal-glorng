@@ -14,7 +14,7 @@ from app.db.deps import DbRegistry, get_postgres_db
 from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
 from app.platform.registry import Capability, ServiceSlug
-from app.services.ai_chat import OpenAIService
+from app.services.ai_chat import GeminiChatService
 from app.services.ai_search import AiSearchService
 from app.services.audit import AuditService
 from app.services.currency import CurrencyService
@@ -157,20 +157,20 @@ async def require_admin(user: CurrentUser) -> User:
 AdminUser = Annotated[User, Depends(require_admin)]
 
 
-def get_openai_chat_service(settings: AppSettings) -> OpenAIService:
-    """Build OpenAI chat service or raise when the API key is missing."""
-    if not settings.OPENAI_API_KEY:
+def get_gemini_chat_service(settings: AppSettings) -> GeminiChatService:
+    """Build Gemini chat service or raise when the API key is missing."""
+    if not settings.GEMINI_API_KEY:
         from app.core.exceptions import ApiError
 
-        raise ApiError(503, "OpenAI API key is not configured")
-    return OpenAIService(
-        api_key=settings.OPENAI_API_KEY,
-        model=settings.OPENAI_CHAT_MODEL,
-        base_url=settings.LLM_BASE_URL,
+        raise ApiError(503, "Gemini API key is not configured")
+    return GeminiChatService(
+        api_key=settings.GEMINI_API_KEY,
+        model=settings.GEMINI_CHAT_MODEL,
+        base_url=settings.GEMINI_API_BASE_URL,
     )
 
 
-OpenAIChatService = Annotated[OpenAIService, Depends(get_openai_chat_service)]
+GeminiChatServiceDep = Annotated[GeminiChatService, Depends(get_gemini_chat_service)]
 
 
 def get_search_index_service(

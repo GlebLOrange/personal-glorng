@@ -37,7 +37,7 @@ def _require_ai_search_enabled() -> None:
 async def search_config(settings: AppSettings) -> SearchConfigResponse:
     return SearchConfigResponse(
         enabled=is_ai_search_enabled(),
-        configured=bool(settings.OPENAI_API_KEY),
+        configured=bool(settings.GEMINI_API_KEY),
     )
 
 

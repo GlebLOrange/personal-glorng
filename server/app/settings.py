@@ -502,10 +502,10 @@ class Settings(BaseSettings):
     SPOTIFY_CLIENT_SECRET: str
     SPOTIFY_REFRESH_TOKEN: str
 
-    # AI provider API keys (OpenAI-compatible APIs via LLM_BASE_URL)
-    OPENAI_API_KEY: str
-    OPENAI_CHAT_MODEL: str
-    LLM_BASE_URL: str
+    # Gemini API
+    GEMINI_API_KEY: str
+    GEMINI_CHAT_MODEL: str = "gemini-3.5-flash"
+    GEMINI_API_BASE_URL: str = "https://generativelanguage.googleapis.com/v1beta"
     AI_CHAT_ENABLED: bool
     AI_SEARCH_ENABLED: bool
 

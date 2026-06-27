@@ -45,7 +45,7 @@ These appear on **`/tools`** in the UI ([`client/src/pages/ToolsPage.vue`](../cl
 |---------|-----------|
 | **Portfolio resume** | `GET /api/resume` — static public resume JSON, with a client fallback mirror for offline rendering |
 | **Keyword search** | `GET /api/search?q=...` (PUBLIC index only) |
-| **Public AI search chat** | `GET /api/search/config`, `POST /api/search/chat` (SSE) — needs `AI_SEARCH_ENABLED=true` + `OPENAI_API_KEY` |
+| **Public AI search chat** | `GET /api/search/config`, `POST /api/search/chat` (SSE) — needs `AI_SEARCH_ENABLED=true` + `GEMINI_API_KEY` |
 | **Feedback** | `POST /api/feedback` (5/5min) |
 | **Donations config** | `GET /api/donations/config` — Stripe, PayPal, Patreon links |
 | **Donations Checkout** | `POST /api/donations/checkout` — needs `STRIPE_SECRET_KEY` |
@@ -80,8 +80,8 @@ Available in **`/admin/tools/*`** after login. API prefix is always **`/api/tool
 
 Both need LLM config; flags are independent:
 
-- Public search: `AI_SEARCH_ENABLED` + `OPENAI_API_KEY`
-- Admin chat: `AI_CHAT_ENABLED` + `OPENAI_API_KEY` (also hides `ai-chat` from catalog when disabled)
+- Public search: `AI_SEARCH_ENABLED` + `GEMINI_API_KEY`
+- Admin chat: `AI_CHAT_ENABLED` + `GEMINI_API_KEY` (also hides `ai-chat` from catalog when disabled)
 
 ### How to call admin APIs programmatically
 

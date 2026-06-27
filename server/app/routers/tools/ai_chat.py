@@ -34,11 +34,11 @@ def _require_ai_chat_enabled() -> None:
     description=requires_capability("ai-chat", "read"),
 )
 async def chat_config(settings: AppSettings) -> ChatConfigResponse:
-    base_url = settings.LLM_BASE_URL.strip()
+    base_url = settings.GEMINI_API_BASE_URL.strip()
     return ChatConfigResponse(
         enabled=is_ai_chat_enabled(),
-        configured=bool(settings.OPENAI_API_KEY),
-        model=settings.OPENAI_CHAT_MODEL,
+        configured=bool(settings.GEMINI_API_KEY),
+        model=settings.GEMINI_CHAT_MODEL,
         provider=detect_llm_provider(base_url),
         base_url=base_url or None,
     )
