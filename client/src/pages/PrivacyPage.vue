@@ -4,6 +4,7 @@ import * as CookieConsent from "vanilla-cookieconsent";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import { isFirebaseAnalyticsEnabled } from "@/constants/firebase";
+import { isSentryEnabled } from "@/constants/sentry";
 
 const contactLinks = buildContactLinks(RESUME_FALLBACK.links);
 
@@ -32,7 +33,7 @@ function openPreferences() {
           <strong class="text-surface-light">Firebase Analytics</strong> — collects anonymous page
           view data (pages visited, time on site, general location). IP addresses are anonymized.
         </li>
-        <li>
+        <li v-if="isSentryEnabled">
           <strong class="text-surface-light">Sentry</strong> — captures errors and performance data
           to help fix bugs. May collect IP address and browser info when an error occurs.
         </li>
@@ -79,7 +80,7 @@ function openPreferences() {
               <td class="px-4 py-2">Distinguishes unique visitors (Firebase Analytics).</td>
               <td class="px-4 py-2">24 hours</td>
             </tr>
-            <tr>
+            <tr v-if="isSentryEnabled">
               <td class="px-4 py-2 font-semibold text-surface-light">sentry-*</td>
               <td class="px-4 py-2">Error tracking and performance monitoring.</td>
               <td class="px-4 py-2">Session</td>
@@ -98,8 +99,17 @@ function openPreferences() {
           @click="openPreferences"
         >
           cookie settings</button
-        >. Analytics and error monitoring only run if you've given consent.
-        <span v-if="!isFirebaseAnalyticsEnabled"> Firebase Analytics is currently disabled.</span>
+        >.
+        <span v-if="isFirebaseAnalyticsEnabled && isSentryEnabled">
+          Analytics and error monitoring only run if you've given consent.
+        </span>
+        <span v-else-if="isFirebaseAnalyticsEnabled">
+          Analytics only runs if you've given consent.
+        </span>
+        <span v-else-if="isSentryEnabled">
+          Error monitoring only runs if you've given consent.
+        </span>
+        <span v-else> Optional analytics and error monitoring are currently disabled.</span>
       </p>
     </section>
 
@@ -116,7 +126,7 @@ function openPreferences() {
           >
           — used for anonymous usage statistics.
         </li>
-        <li>
+        <li v-if="isSentryEnabled">
           <a
             href="https://sentry.io/privacy/"
             target="_blank"

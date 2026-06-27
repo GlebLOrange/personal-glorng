@@ -1,5 +1,10 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
-import { getAnalytics, logEvent, type Analytics } from "firebase/analytics";
+import {
+  getAnalytics,
+  logEvent,
+  setAnalyticsCollectionEnabled,
+  type Analytics,
+} from "firebase/analytics";
 import {
   getAuth,
   GoogleAuthProvider,
@@ -14,7 +19,7 @@ import { isFirebaseAnalyticsEnabled, isFirebaseEnabled } from "@/constants/fireb
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let analytics: Analytics | null = null;
-let analyticsRouterBound = false;
+let removeAnalyticsRouteHook: (() => void) | null = null;
 
 function firebaseConfig() {
   return {
@@ -46,16 +51,27 @@ export async function signInWithGooglePopup(): Promise<UserCredential> {
 }
 
 export function initFirebaseAnalytics(router: Router): void {
-  if (!isFirebaseAnalyticsEnabled || analyticsRouterBound) return;
+  if (!isFirebaseAnalyticsEnabled) return;
 
   analytics ??= getAnalytics(getFirebaseApp());
-  analyticsRouterBound = true;
+  setAnalyticsCollectionEnabled(analytics, true);
 
-  router.afterEach((to) => {
+  if (removeAnalyticsRouteHook) return;
+
+  removeAnalyticsRouteHook = router.afterEach((to) => {
     if (!analytics) return;
     logEvent(analytics, "page_view", {
       page_path: to.fullPath,
       page_title: to.name?.toString(),
     });
   });
+}
+
+export function disableFirebaseAnalytics(): void {
+  if (analytics) {
+    setAnalyticsCollectionEnabled(analytics, false);
+  }
+
+  removeAnalyticsRouteHook?.();
+  removeAnalyticsRouteHook = null;
 }

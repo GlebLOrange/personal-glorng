@@ -2,28 +2,27 @@ import type { App } from "vue";
 import * as CookieConsent from "vanilla-cookieconsent";
 import "vanilla-cookieconsent/dist/cookieconsent.css";
 
-import { initSentry } from "@/instrument";
+import { disableSentry, initSentry } from "@/instrument";
 import { isFirebaseAnalyticsEnabled } from "@/constants/firebase";
 import { isSentryEnabled } from "@/constants/sentry";
-import { initFirebaseAnalytics } from "@/services/firebase";
+import { disableFirebaseAnalytics, initFirebaseAnalytics } from "@/services/firebase";
 import router from "@/router";
 
-let sentryInitialized = false;
-let analyticsInitialized = false;
-
 function applyConsent(app: App) {
-  if (isSentryEnabled && !sentryInitialized && CookieConsent.acceptedCategory("monitoring")) {
-    initSentry(app);
-    sentryInitialized = true;
+  if (isSentryEnabled) {
+    if (CookieConsent.acceptedCategory("monitoring")) {
+      void initSentry(app);
+    } else {
+      void disableSentry();
+    }
   }
 
-  if (
-    isFirebaseAnalyticsEnabled &&
-    !analyticsInitialized &&
-    CookieConsent.acceptedCategory("analytics")
-  ) {
-    initFirebaseAnalytics(router);
-    analyticsInitialized = true;
+  if (isFirebaseAnalyticsEnabled) {
+    if (CookieConsent.acceptedCategory("analytics")) {
+      initFirebaseAnalytics(router);
+    } else {
+      disableFirebaseAnalytics();
+    }
   }
 }
 
