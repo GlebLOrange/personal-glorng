@@ -3,9 +3,9 @@ import { computed } from "vue";
 
 import RecipeTagChip from "@/components/recipes/RecipeTagChip.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseModal from "@/components/ui/BaseModal.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import type { RecipeFormData } from "@/composables/useRecipes";
 
@@ -114,12 +114,8 @@ const inputClass =
 </script>
 
 <template>
-  <BaseModal v-if="open" max-width="2xl" @close="emit('close')">
-    <h2 class="text-lg font-bold text-surface-light mb-6 -mt-2">
-      <span class="accent-gradient">€ {{ formTitle }}</span>
-    </h2>
-
-    <form class="space-y-6 max-h-[65vh] overflow-y-auto pr-1" @submit.prevent="emit('save')">
+  <BaseDrawer :open="open" :title="formTitle" max-width="xl" @close="emit('close')">
+    <form id="recipe-form-drawer-form" class="space-y-6" @submit.prevent="emit('save')">
       <section class="space-y-4">
         <h3 class="text-sm font-medium text-surface-mid">Basics</h3>
         <BaseInput
@@ -314,13 +310,20 @@ const inputClass =
           @update:model-value="patch({ notes: String($event ?? '') })"
         />
       </section>
+    </form>
 
-      <div class="flex gap-3 pt-2 sticky bottom-0 bg-surface-card">
-        <BaseButton variant="primary" :disabled="loading">
+    <template #footer>
+      <div class="flex gap-3">
+        <BaseButton
+          type="submit"
+          form="recipe-form-drawer-form"
+          variant="primary"
+          :disabled="loading"
+        >
           {{ loading ? "Saving..." : "Save" }}
         </BaseButton>
         <BaseButton variant="ghost" type="button" @click="emit('close')">Cancel</BaseButton>
       </div>
-    </form>
-  </BaseModal>
+    </template>
+  </BaseDrawer>
 </template>

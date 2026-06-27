@@ -12,14 +12,12 @@ const props = defineProps<{
   sort: RecipeSort;
   allTags: string[];
   recipeCountLabel: string;
-  canWrite?: boolean;
 }>();
 
 const emit = defineEmits<{
   "update:search": [value: string];
   "update:sort": [value: RecipeSort];
   setTag: [tag: string | null];
-  create: [];
   clearFilters: [];
 }>();
 
@@ -51,9 +49,6 @@ const sortOptions: { value: RecipeSort; label: string }[] = [
             <h2 class="text-sm font-semibold text-surface-light">Filter recipes</h2>
             <p class="text-xs text-surface-mid mt-1">{{ recipeCountLabel }}</p>
           </div>
-          <BaseButton v-if="canWrite" variant="primary" size="sm" @click="emit('create')">
-            + Add
-          </BaseButton>
         </div>
 
         <div class="space-y-2">
