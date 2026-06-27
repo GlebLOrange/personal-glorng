@@ -14,7 +14,7 @@ import { usePermissions } from "@/composables/usePermissions";
 import { getApiErrorMessage } from "@/types/api";
 import type { NewsAdminArticle, NewsSource } from "@/types";
 import { formatDate } from "@/utils/format";
-import { normalizeHttpUrl, sourceFromNewsLink, titleFromNewsLink } from "@/utils/newsForms";
+import { normalizeHttpUrl, sourceFromNewsLink, sourceKey, titleFromNewsLink } from "@/utils/newsForms";
 
 interface NewsArticleForm {
   title: string;
@@ -77,6 +77,22 @@ const isDefaultStatuses = computed(() => selectedStatuses.value.length === NEWS_
 const hasAdminFilters = computed(
   () => !isDefaultStatuses.value || selectedSort.value !== "published_at:desc",
 );
+const sourceOptionNames = computed(() => {
+  const names: string[] = [];
+  const seen = new Set<string>();
+  for (const source of sources.value) {
+    const key = sourceKey(source.name);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    names.push(source.name);
+  }
+  const currentSource = form.value.source.trim();
+  const currentKey = sourceKey(currentSource);
+  if (currentSource && currentSource !== "gLOrng" && !seen.has(currentKey)) {
+    names.unshift(currentSource);
+  }
+  return names;
+});
 
 async function loadArticles(): Promise<void> {
   loading.value = true;
@@ -156,6 +172,7 @@ function payload(): Record<string, string | boolean | null> | null {
   }
   const derivedTitle = titleFromNewsLink(form.value.link);
   const matchedSource = sourceFromNewsLink(form.value.link, sources.value);
+  const selectedSource = form.value.source.trim();
   const publishedAt = new Date(form.value.published_at);
   if (Number.isNaN(publishedAt.getTime())) {
     toast("Enter a valid publish date", "error");
@@ -164,7 +181,7 @@ function payload(): Record<string, string | boolean | null> | null {
   return {
     title: form.value.title.trim() || derivedTitle || "",
     link: normalizedLink,
-    source: form.value.source.trim() || matchedSource || "gLOrng",
+    source: selectedSource === "gLOrng" ? matchedSource || "gLOrng" : selectedSource || "gLOrng",
     status: form.value.status,
     category: form.value.category.trim(),
     region: form.value.region.trim(),
@@ -172,6 +189,11 @@ function payload(): Record<string, string | boolean | null> | null {
     published_at: publishedAt.toISOString(),
     enabled: form.value.enabled,
   };
+}
+
+function sourceOptionLabel(sourceName: string): string {
+  const exists = sources.value.some((source) => sourceKey(source.name) === sourceKey(sourceName));
+  return exists ? sourceName : `${sourceName} (new from URL)`;
 }
 
 watch([() => form.value.link, () => sources.value], ([link]) => {
@@ -388,7 +410,12 @@ onMounted(() => {
         <form id="news-article-form" class="space-y-4" @submit.prevent="saveArticle">
           <BaseInput v-model="form.link" label="Link" type="url" required />
           <BaseInput v-model="form.title" label="Title" required />
-          <BaseInput v-model="form.source" label="Source" required />
+          <BaseSelect v-model="form.source" label="Source">
+            <option value="gLOrng">Auto-detect from URL</option>
+            <option v-for="sourceName in sourceOptionNames" :key="sourceName" :value="sourceName">
+              {{ sourceOptionLabel(sourceName) }}
+            </option>
+          </BaseSelect>
           <BaseSelect v-model="form.status" label="Status">
             <option value="draft">Draft</option>
             <option value="moderating">Moderating</option>

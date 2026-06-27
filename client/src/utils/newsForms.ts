@@ -1,10 +1,20 @@
 import type { NewsSource } from "@/types";
 
 const SOURCE_ALIASES: Record<string, string> = {
-  dw: "Deutsche Welle",
+  bbc: "BBC News",
+  bbci: "BBC News",
+  dw: "DW",
+  deutschewelle: "DW",
+  reutersagency: "Reuters",
+  theguardian: "The Guardian",
+  aljazeera: "Al Jazeera",
+  france24: "France 24",
+  japantimes: "The Japan Times",
+  abc: "ABC Australia",
   nyt: "New York Times",
   nytimes: "New York Times",
 };
+const SOURCE_HOST_PREFIXES = new Set(["www", "rss", "feeds", "feed", "news", "m", "amp"]);
 
 export function humanTitleFromSlug(slug: string): string | null {
   let decodedSlug = slug;
@@ -24,7 +34,7 @@ export function humanTitleFromSlug(slug: string): string | null {
 }
 
 export function sourceNameFromSlug(slug: string): string | null {
-  const alias = SOURCE_ALIASES[slug.toLowerCase().replace(/[^a-z0-9]+/g, "")];
+  const alias = SOURCE_ALIASES[sourceKey(slug)];
   if (alias) return alias;
   const title = humanTitleFromSlug(slug);
   if (!title) return null;
@@ -66,7 +76,7 @@ export function titleFromNewsLink(link: string): string | null {
 }
 
 export function sourceFromNewsLink(link: string, availableSources: NewsSource[]): string | null {
-  const sourceName = sourceFromMarkedUrl(link);
+  const sourceName = sourceFromUrl(link);
   if (!sourceName) return null;
   const sourceNameKey = sourceKey(sourceName);
   return (
@@ -85,8 +95,20 @@ export function normalizeHttpUrl(value: string): string | null {
   }
 }
 
-function sourceKey(value: string): string {
+export function sourceKey(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function sourceFromUrl(url: string): string | null {
+  const markedSource = sourceFromMarkedUrl(url);
+  if (markedSource) return markedSource;
+  try {
+    const labels = new URL(sanitizeNewsLink(url)).hostname.toLowerCase().split(".").filter(Boolean);
+    const slug = labels.find((label) => !SOURCE_HOST_PREFIXES.has(label));
+    return slug ? sourceNameFromSlug(slug) : null;
+  } catch {
+    return null;
+  }
 }
 
 function withoutHostSourceMarker(link: string): string {

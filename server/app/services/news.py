@@ -28,10 +28,12 @@ from app.schemas.news import (
     NewsArticleStatus,
     NewsListResponse,
     SortOrder,
+    news_source_key,
     sanitize_news_article_link,
     sanitize_news_source_url,
     source_from_news_article_link,
     source_from_news_source_url,
+    source_home_url_from_news_article_link,
     title_from_news_article_link,
 )
 from app.schemas.validators import validate_clean_optional
@@ -369,6 +371,51 @@ async def _prepare_article_payload(
     return payload
 
 
+async def _resolve_article_source(registry: DbRegistry, payload: dict[str, Any]) -> None:
+    """Use or create the editable source object that matches an article URL."""
+    link = str(payload.get("link") or "")
+    if not link:
+        return
+
+    await ensure_default_news_sources(registry)
+    repo = _repo(registry)
+    sources = await repo.list(limit=500, sort=[("name", 1)])
+    sources_by_key = {news_source_key(source.name): source for source in sources}
+
+    selected_source = str(payload.get("source") or "").strip()
+    if selected_source and selected_source != "gLOrng":
+        existing = sources_by_key.get(news_source_key(selected_source))
+        if existing is not None:
+            payload["source"] = existing.name
+            return
+
+    source_name = source_from_news_article_link(link)
+    if source_name is None:
+        return
+
+    existing = sources_by_key.get(news_source_key(source_name))
+    if existing is not None:
+        payload["source"] = existing.name
+        return
+
+    feed_url = source_home_url_from_news_article_link(link) or link
+    try:
+        source = await repo.insert(
+            NewsSource(
+                name=source_name,
+                feed_url=feed_url,
+                category=str(payload.get("category") or "world"),
+                region=str(payload.get("region") or "global"),
+                enabled=False,
+            ),
+        )
+    except DuplicateKeyError:
+        source = await repo.get_by_feed_url(feed_url)
+        if source is None:
+            raise
+    payload["source"] = source.name
+
+
 async def create_news_article(
     registry: DbRegistry,
     data: dict[str, Any],
@@ -379,6 +426,7 @@ async def create_news_article(
     """Create or update an admin-curated news article by link."""
     repo = _article_repo(registry)
     payload = await _prepare_article_payload(data, metadata_fetcher)
+    await _resolve_article_source(registry, payload)
     existing = await repo.get_by_link(payload["link"])
     if existing is not None:
         article = await repo.update_fields(existing.id, **payload)
@@ -388,9 +436,10 @@ async def create_news_article(
         article = await repo.insert(NewsArticle(**payload))
     except DuplicateKeyError as exc:
         existing = await repo.get_by_link(payload["link"])
-        if existing is None:
-            raise ConflictError("A news article with this link already exists") from exc
-        article = await repo.update_fields(existing.id, **payload)
+        if existing is not None:
+            article = await repo.update_fields(existing.id, **payload)
+        else:
+            raise ConflictError(_news_article_conflict_message(exc)) from exc
     await cache_invalidator()
     return article
 
@@ -406,6 +455,7 @@ async def update_news_article(
     """Update an admin-curated news article."""
     repo = _article_repo(registry)
     payload = await _prepare_article_payload(data, metadata_fetcher)
+    await _resolve_article_source(registry, payload)
     await _ensure_unique_news_article_link(
         repo,
         link=payload.get("link"),
@@ -414,7 +464,7 @@ async def update_news_article(
     try:
         article = await repo.update_fields(article_id, **payload)
     except DuplicateKeyError as exc:
-        raise ConflictError("A news article with this link already exists") from exc
+        raise ConflictError(_news_article_conflict_message(exc)) from exc
     await cache_invalidator()
     return article
 
@@ -430,6 +480,29 @@ async def _ensure_unique_news_article_link(
         existing = await repo.get_by_link(link)
         if existing is not None and existing.id != article_id:
             raise ConflictError("A news article with this link already exists")
+
+
+def _duplicate_key_fields(exc: DuplicateKeyError) -> set[str]:
+    """Return MongoDB duplicate-key field names when PyMongo exposes them."""
+    details = getattr(exc, "details", None)
+    if not isinstance(details, dict):
+        return set()
+    fields: set[str] = set()
+    for key in ("keyPattern", "keyValue"):
+        value = details.get(key)
+        if isinstance(value, dict):
+            fields.update(str(field) for field in value)
+    return fields
+
+
+def _news_article_conflict_message(exc: DuplicateKeyError) -> str:
+    """Return a precise admin-facing duplicate article message."""
+    fields = _duplicate_key_fields(exc)
+    if "link" in fields:
+        return "A news article with this link already exists"
+    if "title" in fields:
+        return "A news article with this title already exists"
+    return "A news article conflicts with an existing record"
 
 
 def _clean_text(value: str | None, *, max_length: int = 500) -> str | None:
