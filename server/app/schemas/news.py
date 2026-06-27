@@ -18,8 +18,18 @@ from app.schemas.validators import validate_clean_optional, validate_clean_requi
 _TITLE_MARKER_RE = re.compile(r"\{\{([^{}]+)\}\}")
 _SOURCE_HOST_MARKER_RE = re.compile(r"(?:^|\.)\{\{([^{}]+)\}\}(?=\.|(?::\d+)?$)")
 _DW_ARTICLE_SLUG_RE = re.compile(r"/en/([^/?#]+)/a-\d+")
+_SOURCE_HOST_PREFIXES = {"www", "rss", "feeds", "feed", "news", "m", "amp"}
 _SOURCE_ALIASES = {
-    "dw": "Deutsche Welle",
+    "bbc": "BBC News",
+    "bbci": "BBC News",
+    "dw": "DW",
+    "deutschewelle": "DW",
+    "reutersagency": "Reuters",
+    "theguardian": "The Guardian",
+    "aljazeera": "Al Jazeera",
+    "france24": "France 24",
+    "japantimes": "The Japan Times",
+    "abc": "ABC Australia",
     "nytimes": "New York Times",
     "nyt": "New York Times",
 }
@@ -38,7 +48,7 @@ def _title_from_slug(slug: str) -> str | None:
 
 def _source_from_slug(slug: str) -> str | None:
     """Return a display source name from a URL host marker."""
-    alias = _SOURCE_ALIASES.get(re.sub(r"[^a-z0-9]+", "", slug.lower()))
+    alias = _SOURCE_ALIASES.get(news_source_key(slug))
     if alias is not None:
         return alias
     title = _title_from_slug(slug)
@@ -47,6 +57,24 @@ def _source_from_slug(slug: str) -> str | None:
     return " ".join(
         word.upper() if len(word) <= 3 else word for word in title.split()
     )[:120]
+
+
+def news_source_key(value: str) -> str:
+    """Return a stable key for comparing editable news source names."""
+    return re.sub(r"[^a-z0-9]+", "", value.lower())
+
+
+def _source_slug_from_netloc(netloc: str) -> str | None:
+    """Return the likely source slug from a URL host."""
+    match = _SOURCE_HOST_MARKER_RE.search(netloc)
+    if match is not None:
+        return match.group(1)
+    host = netloc.rsplit("@", 1)[-1].split(":", 1)[0].strip().lower()
+    labels = [label for label in host.split(".") if label]
+    for label in labels:
+        if label not in _SOURCE_HOST_PREFIXES:
+            return label
+    return None
 
 
 def title_from_news_article_link(link: str) -> str | None:
@@ -71,17 +99,30 @@ def title_from_news_article_link(link: str) -> str | None:
 
 
 def source_from_news_article_link(link: str) -> str | None:
-    """Return a source name from a marked URL host."""
+    """Return a source name from a marked or normal URL host."""
     parsed = urlparse(link)
-    match = _SOURCE_HOST_MARKER_RE.search(parsed.netloc)
-    if match is None:
+    slug = _source_slug_from_netloc(parsed.netloc)
+    if slug is None:
         return None
-    return _source_from_slug(match.group(1))
+    return _source_from_slug(slug)
 
 
 def source_from_news_source_url(url: str) -> str | None:
-    """Return a source name from a marked RSS source URL host."""
+    """Return a source name from a marked or normal RSS source URL host."""
     return source_from_news_article_link(url)
+
+
+def source_home_url_from_news_article_link(link: str) -> str | None:
+    """Return a source homepage URL from an article URL."""
+    parsed = urlparse(sanitize_news_article_link(link))
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        return None
+    labels = [label for label in parsed.hostname.lower().split(".") if label]
+    while len(labels) > 2 and labels[0] in _SOURCE_HOST_PREFIXES:
+        labels.pop(0)
+    if not labels:
+        return None
+    return f"{parsed.scheme}://{'.'.join(labels)}"
 
 
 def sanitize_news_article_link(link: str) -> str:

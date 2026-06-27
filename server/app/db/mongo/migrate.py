@@ -78,7 +78,8 @@ async def _drop_obsolete_news_title_unique_index(db: AsyncIOMotorDatabase) -> No
     """Remove the old unique title index so distinct links can share a title."""
     indexes = await db.news_articles.index_information()
     for name, spec in indexes.items():
-        if spec.get("key") == [("title", 1)] and spec.get("unique") is True:
+        key_spec = dict(spec.get("key", []))
+        if key_spec == {"title": 1} and spec.get("unique") is True:
             await db.news_articles.drop_index(name)
             logger.info(
                 "Dropped obsolete MongoDB index",
