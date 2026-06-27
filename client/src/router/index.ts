@@ -89,11 +89,6 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/pages/admin/tools/RecipesPage.vue"),
   },
   {
-    path: "/news",
-    name: "news",
-    component: () => import("@/pages/NewsPage.vue"),
-  },
-  {
     path: "/news/:slug",
     name: "news-article",
     component: () => import("@/pages/NewsArticlePage.vue"),
@@ -164,12 +159,6 @@ const routes: RouteRecordRaw[] = [
     path: "/admin/tools/news-sources",
     name: "tool-news-sources",
     component: () => import("@/pages/admin/tools/NewsSourcesPage.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/admin/tools/news",
-    name: "tool-news",
-    component: () => import("@/pages/admin/tools/NewsAdminPage.vue"),
     meta: { requiresAuth: true },
   },
   {

@@ -1,8 +1,5 @@
 """Repository helpers for curated news articles."""
 
-import re
-from typing import Any
-
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.db.documents.news import NewsArticle, NewsStatus
@@ -34,13 +31,11 @@ class NewsRepository(MongoRepository[NewsArticle]):
         self,
         *,
         status: NewsStatus | None = None,
-        theme: str | None = None,
-        source: str | None = None,
         offset: int = 0,
         limit: int = 20,
     ) -> list[NewsArticle]:
-        """List articles with optional public/admin filters."""
-        query = self._query(status=status, theme=theme, source=source)
+        """List articles with optional status filter."""
+        query = self._query(status=status)
         cursor = (
             self._col()
             .find(query)
@@ -54,13 +49,9 @@ class NewsRepository(MongoRepository[NewsArticle]):
         self,
         *,
         status: NewsStatus | None = None,
-        theme: str | None = None,
-        source: str | None = None,
     ) -> int:
-        """Count articles with optional filters."""
-        return await self._col().count_documents(
-            self._query(status=status, theme=theme, source=source)
-        )
+        """Count articles with optional status filter."""
+        return await self._col().count_documents(self._query(status=status))
 
     async def list_themes(self, *, status: NewsStatus = "published") -> list[str]:
         """Return distinct stored theme JSON values for articles."""
@@ -71,15 +62,9 @@ class NewsRepository(MongoRepository[NewsArticle]):
     def _query(
         *,
         status: NewsStatus | None,
-        theme: str | None,
-        source: str | None,
-    ) -> dict[str, Any]:
+    ) -> dict[str, NewsStatus]:
         """Build a Mongo query for article lists."""
-        query: dict[str, Any] = {}
+        query: dict[str, NewsStatus] = {}
         if status:
             query["status"] = status
-        if theme:
-            query["themes"] = {"$regex": f'"{re.escape(theme)}"'}
-        if source:
-            query["source_name"] = source
         return query

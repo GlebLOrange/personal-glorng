@@ -1,35 +1,25 @@
 <script setup lang="ts">
 import { onMounted, watch } from "vue";
-import { useRoute } from "vue-router";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { formatNewsDate, useNews } from "@/composables/useNews";
 
-const route = useRoute();
 const {
   articles,
-  themes,
-  activeTheme,
   page,
   listLoading,
   listError,
   hasNextPage,
   countLabel,
   loadNews,
-  loadThemes,
-  setTheme,
   goToPage,
 } = useNews();
 
 onMounted(async () => {
-  const theme = Array.isArray(route.query.theme) ? route.query.theme[0] : route.query.theme;
-  if (theme) {
-    activeTheme.value = String(theme);
-  }
-  await Promise.all([loadNews(), loadThemes()]);
+  await loadNews();
 });
 
-watch([activeTheme, page], () => {
+watch(page, () => {
   void loadNews();
 });
 </script>
@@ -45,39 +35,8 @@ watch([activeTheme, page], () => {
         Short worldwide news summaries with source attribution. Every item links back to the
         original publisher.
       </p>
-    </header>
-
-    <section class="mb-8" aria-label="News filters">
-      <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          class="rounded-lg border px-3 py-1.5 text-xs transition-colors"
-          :class="
-            activeTheme === null
-              ? 'border-accent-blue text-accent-blue'
-              : 'border-surface-border text-surface-mid hover:border-accent-blue'
-          "
-          @click="setTheme(null)"
-        >
-          all
-        </button>
-        <button
-          v-for="theme in themes"
-          :key="theme"
-          type="button"
-          class="rounded-lg border px-3 py-1.5 text-xs transition-colors"
-          :class="
-            activeTheme === theme
-              ? 'border-accent-blue text-accent-blue'
-              : 'border-surface-border text-surface-mid hover:border-accent-blue'
-          "
-          @click="setTheme(theme)"
-        >
-          {{ theme }}
-        </button>
-      </div>
       <p class="mt-3 text-xs text-surface-muted">{{ countLabel }}</p>
-    </section>
+    </header>
 
     <section v-if="listLoading" class="space-y-4" aria-busy="true" aria-label="Loading news">
       <div
@@ -118,15 +77,13 @@ watch([activeTheme, page], () => {
         <p class="text-sm text-surface-mid mb-4">{{ item.summary }}</p>
 
         <div class="flex flex-wrap items-center gap-2">
-          <button
+          <span
             v-for="theme in item.themes"
             :key="theme"
-            type="button"
-            class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid hover:border-accent-blue hover:text-accent-blue"
-            @click="setTheme(theme)"
+            class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid"
           >
             {{ theme }}
-          </button>
+          </span>
           <a
             :href="item.source_url"
             target="_blank"

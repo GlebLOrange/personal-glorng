@@ -19,7 +19,7 @@ import { normalizeHttpUrl, sourceFromNewsLink, titleFromNewsLink } from "@/utils
 type StatusFilter = NewsStatus | "all";
 type DrawerMode = "create" | "edit";
 
-const statusFilter = ref<StatusFilter>("all");
+const statusFilter = ref<StatusFilter>("published");
 const { can } = usePermissions();
 const { toast } = useNotify();
 const canWrite = computed(() => can("news", "write"));
@@ -32,8 +32,6 @@ const lastAutoTitle = ref<string | null>(null);
 
 const {
   articles,
-  themes,
-  activeTheme,
   page,
   listLoading,
   listError,
@@ -41,8 +39,6 @@ const {
   hasNextPage,
   countLabel,
   loadNews,
-  loadThemes,
-  setTheme,
   goToPage,
   ingestNews,
   createArticle,
@@ -266,14 +262,13 @@ async function saveDrawer(): Promise<void> {
   }
   closeDrawer();
   await loadAdminNews();
-  await loadThemes();
 }
 
 onMounted(async () => {
-  await Promise.all([loadAdminNews(), loadThemes()]);
+  await loadAdminNews();
 });
 
-watch([activeTheme, page, statusFilter], () => {
+watch([page, statusFilter], () => {
   void loadAdminNews();
 });
 </script>
@@ -311,35 +306,6 @@ watch([activeTheme, page, statusFilter], () => {
           <option value="failed">failed</option>
         </select>
       </label>
-
-      <div class="flex flex-wrap gap-2">
-        <button
-          type="button"
-          class="rounded-lg border px-3 py-1.5 text-xs transition-colors"
-          :class="
-            activeTheme === null
-              ? 'border-accent-blue text-accent-blue'
-              : 'border-surface-border text-surface-mid hover:border-accent-blue'
-          "
-          @click="setTheme(null)"
-        >
-          all themes
-        </button>
-        <button
-          v-for="theme in themes"
-          :key="theme"
-          type="button"
-          class="rounded-lg border px-3 py-1.5 text-xs transition-colors"
-          :class="
-            activeTheme === theme
-              ? 'border-accent-blue text-accent-blue'
-              : 'border-surface-border text-surface-mid hover:border-accent-blue'
-          "
-          @click="setTheme(theme)"
-        >
-          {{ theme }}
-        </button>
-      </div>
     </section>
 
     <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading news">

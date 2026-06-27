@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 
-import { usePermissions } from "@/composables/usePermissions";
 import { useAuthStore } from "@/stores/auth";
 
 defineProps<{
@@ -12,11 +11,7 @@ defineProps<{
 const emit = defineEmits<{ close: [] }>();
 
 const auth = useAuthStore();
-const { can } = usePermissions();
 const route = useRoute();
-const newsRoute = computed(() =>
-  auth.isAuthenticated && can("news", "read") ? "/admin/tools/news" : "/news",
-);
 
 const sectionLinks = [
   { href: "#skills", label: "Skills" },
@@ -76,14 +71,6 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       >
         Portfolio
       </RouterLink>
-      <RouterLink
-        :to="newsRoute"
-        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        @click="emit('close')"
-      >
-        News
-      </RouterLink>
-
       <RouterLink
         to="/news"
         class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
