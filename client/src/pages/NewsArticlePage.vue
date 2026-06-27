@@ -2,6 +2,7 @@
 import { computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 
+import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { formatNewsDate, useNews } from "@/composables/useNews";
 
@@ -24,9 +25,7 @@ watch(slug, () => {
 
 <template>
   <main class="max-w-3xl mx-auto px-6 py-12">
-    <RouterLink to="/news" class="nav-link-accent mb-8 inline-flex text-sm">
-      Back to news
-    </RouterLink>
+    <BackLink to="/news" label="Back to news" class="mb-8" />
 
     <div
       v-if="detailLoading"

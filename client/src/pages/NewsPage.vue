@@ -2,6 +2,7 @@
 import { onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 
+import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { formatNewsDate, useNews } from "@/composables/useNews";
 import { usePermissions } from "@/composables/usePermissions";
@@ -42,9 +43,12 @@ function onCardKeydown(event: KeyboardEvent, slug: string): void {
   <main class="max-w-5xl mx-auto px-6 py-12">
     <header class="mb-10">
       <p class="text-label text-surface-mid mb-2">curated from trusted feeds</p>
-      <h1 class="section-title mb-3">
-        <span class="accent-gradient">news</span>
-      </h1>
+      <div class="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <h1 class="section-title">
+          <span class="accent-gradient">news</span>
+        </h1>
+        <BackLink to="/tools" label="Back to tools" />
+      </div>
       <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p class="text-body max-w-2xl">

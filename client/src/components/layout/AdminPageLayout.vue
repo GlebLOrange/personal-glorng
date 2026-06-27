@@ -1,14 +1,23 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import type { RouteLocationRaw } from "vue-router";
 
 import AdminBreadcrumbs from "@/components/layout/AdminBreadcrumbs.vue";
 import BackLink from "@/components/ui/BackLink.vue";
 import { formatBreadcrumbLabel } from "@/utils/format";
 
-const props = defineProps<{
-  title: string;
-  maxWidth?: "sm" | "md" | "lg" | "xl";
-}>();
+const props = withDefaults(
+  defineProps<{
+    title: string;
+    maxWidth?: "sm" | "md" | "lg" | "xl";
+    backTo?: RouteLocationRaw;
+    backLabel?: string;
+  }>(),
+  {
+    backTo: "/admin",
+    backLabel: "Back to tools",
+  },
+);
 
 const breadcrumbLabel = computed(() => formatBreadcrumbLabel(props.title));
 </script>
@@ -31,7 +40,7 @@ const breadcrumbLabel = computed(() => formatBreadcrumbLabel(props.title));
       <h1 class="text-2xl font-bold text-surface-light">
         <span class="accent-gradient">€ {{ title }}</span>
       </h1>
-      <BackLink to="/admin" />
+      <BackLink :to="backTo" :label="backLabel" />
     </div>
     <slot />
   </div>
