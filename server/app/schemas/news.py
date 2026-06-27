@@ -31,9 +31,10 @@ ALLOWED_NEWS_THEMES: set[str] = set(NewsTheme.__args__)
 class NewsArticleCreate(BaseModel):
     """Admin/create payload for curated news articles."""
 
-    source_name: str = Field(min_length=1, max_length=120)
+    source_id: int | None = Field(None, gt=0)
+    source_name: str | None = Field(None, min_length=1, max_length=120)
     source_url: HttpUrl
-    source_feed_url: HttpUrl
+    source_feed_url: HttpUrl | None = None
     source_published_at: datetime | None = None
     original_title: str = Field(min_length=1, max_length=255)
     title: str = Field(min_length=1, max_length=90)
@@ -46,7 +47,15 @@ class NewsArticleCreate(BaseModel):
     ai_input_hash: str | None = Field(None, max_length=128)
     ingest_error: str | None = Field(None, max_length=500)
 
-    @field_validator("source_name", "original_title", "title")
+    @field_validator("source_name")
+    @classmethod
+    def clean_optional_source_name(cls, value: str | None) -> str | None:
+        """Sanitize optional source name."""
+        if value is None:
+            return None
+        return validate_clean_required(value, max_length=120)
+
+    @field_validator("original_title", "title")
     @classmethod
     def clean_required_short(cls, value: str) -> str:
         """Sanitize required short text fields."""
@@ -90,6 +99,7 @@ class NewsArticleUpdate(BaseModel):
     """Admin update payload for curated news articles."""
 
     status: NewsStatus | None = None
+    source_id: int | None = Field(None, gt=0)
     source_name: str | None = Field(None, min_length=1, max_length=120)
     source_url: HttpUrl | None = None
     source_feed_url: HttpUrl | None = None
@@ -156,6 +166,7 @@ class NewsArticleResponse(BaseModel):
     id: int
     slug: str
     status: NewsStatus
+    source_id: int | None
     source_name: str
     source_url: str
     source_feed_url: str

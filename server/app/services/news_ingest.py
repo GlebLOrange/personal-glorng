@@ -43,6 +43,7 @@ class NewsSourceConfig:
 
     name: str
     feed_url: str
+    id: int | None = None
     enabled: bool = True
     default_themes: tuple[str, ...] = ("world",)
     max_items_per_run: int = 5
@@ -117,6 +118,7 @@ def _source_from_raw(raw: dict[str, Any]) -> NewsSourceConfig:
     return NewsSourceConfig(
         name=name,
         feed_url=feed_url,
+        id=raw.get("id") if isinstance(raw.get("id"), int) else None,
         enabled=bool(raw.get("enabled", True)),
         default_themes=themes or ("world",),
         max_items_per_run=max(1, min(int(raw.get("max_items_per_run", 5)), 20)),
@@ -145,6 +147,7 @@ def _source_from_document(source: NewsSource) -> NewsSourceConfig:
         {
             "name": source.name,
             "feed_url": source.feed_url,
+            "id": source.id,
             "enabled": source.enabled,
             "default_themes": default_themes,
             "language": "en",
@@ -344,6 +347,7 @@ class NewsIngestService:
                         ai = await _summarize_item(source, item)
                         article = await self.news_svc.create_article(
                             NewsArticleCreate(
+                                source_id=source.id,
                                 source_name=source.name,
                                 source_url=item.url,
                                 source_feed_url=source.feed_url,

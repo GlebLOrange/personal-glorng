@@ -86,49 +86,6 @@ export interface DonationsConfig {
   patreon: { enabled: boolean; url: string | null };
 }
 
-export interface NewsArticle {
-  id: string;
-  title: string;
-  link: string;
-  source: string;
-  category: string;
-  region: string;
-  summary: string | null;
-  published_at: string | null;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  editable: boolean;
-}
-
-export interface NewsListResponse {
-  articles: NewsArticle[];
-  sources: string[];
-  categories: string[];
-  regions: string[];
-  page: number;
-  per_page: number;
-  total: number;
-  pages: number;
-  updated_at: string;
-}
-
-export interface NewsAdminArticle {
-  id: number;
-  title: string;
-  link: string;
-  source: string;
-  origin: string;
-  status: string;
-  category: string;
-  region: string;
-  summary: string | null;
-  published_at: string;
-  enabled: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface NewsSource {
   id: number;
   name: string;
@@ -320,6 +277,7 @@ export interface NewsArticle {
   id: number;
   slug: string;
   status: NewsStatus;
+  source_id: number | null;
   source_name: string;
   source_url: string;
   source_feed_url: string;
@@ -348,6 +306,7 @@ export interface PaginatedNews {
 
 export interface NewsArticleUpdate {
   status?: NewsStatus;
+  source_id?: number | null;
   source_name?: string;
   source_url?: string;
   source_feed_url?: string;
@@ -363,9 +322,10 @@ export interface NewsArticleUpdate {
 
 export interface NewsArticleCreate {
   status: NewsStatus;
-  source_name: string;
+  source_id: number;
+  source_name?: string;
   source_url: string;
-  source_feed_url: string;
+  source_feed_url?: string;
   source_published_at: string | null;
   original_title: string;
   title: string;
@@ -377,6 +337,7 @@ export interface NewsArticleCreate {
 
 export interface NewsArticleFormData {
   status: NewsStatus;
+  source_id: number | null;
   source_name: string;
   source_url: string;
   source_feed_url: string;

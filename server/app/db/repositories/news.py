@@ -49,9 +49,16 @@ class NewsRepository(MongoRepository[NewsArticle]):
         self,
         *,
         status: NewsStatus | None = None,
+        source_id: int | None = None,
     ) -> int:
         """Count articles with optional status filter."""
-        return await self._col().count_documents(self._query(status=status))
+        return await self._col().count_documents(
+            self._query(status=status, source_id=source_id)
+        )
+
+    async def count_by_source_id(self, source_id: int) -> int:
+        """Count articles that reference a source."""
+        return await self.count_articles(source_id=source_id)
 
     async def list_themes(self, *, status: NewsStatus = "published") -> list[str]:
         """Return distinct stored theme JSON values for articles."""
@@ -62,11 +69,14 @@ class NewsRepository(MongoRepository[NewsArticle]):
     def _query(
         *,
         status: NewsStatus | None,
-    ) -> dict[str, NewsStatus]:
+        source_id: int | None = None,
+    ) -> dict[str, NewsStatus | int]:
         """Build a Mongo query for article lists."""
-        query: dict[str, NewsStatus] = {}
+        query: dict[str, NewsStatus | int] = {}
         if status:
             query["status"] = status
+        if source_id is not None:
+            query["source_id"] = source_id
         return query
 
 

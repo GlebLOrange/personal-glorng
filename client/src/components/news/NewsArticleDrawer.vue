@@ -4,12 +4,13 @@ import { computed, onMounted, onUnmounted } from "vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
-import type { NewsArticleFormData, NewsStatus } from "@/types";
+import type { NewsArticleFormData, NewsSource, NewsStatus } from "@/types";
 
 const props = defineProps<{
   open: boolean;
   mode: "create" | "edit";
   form: NewsArticleFormData;
+  sources: NewsSource[];
   loading: boolean;
 }>();
 
@@ -30,6 +31,11 @@ function patch(patchValue: Partial<NewsArticleFormData>): void {
 
 function toStringValue(value: string | number | null | undefined): string {
   return String(value ?? "");
+}
+
+function toSourceId(value: string): number | null {
+  const sourceId = Number(value);
+  return Number.isInteger(sourceId) && sourceId > 0 ? sourceId : null;
 }
 
 function updateBullet(index: number, value: string): void {
@@ -95,9 +101,23 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
           <form class="flex-1 overflow-y-auto px-6 py-5 space-y-6" @submit.prevent="emit('save')">
             <section class="space-y-4">
               <h3 class="text-sm font-medium text-surface-mid">Publishing</h3>
+              <label class="flex flex-col gap-1 text-sm text-surface-mid">
+                Source
+                <select
+                  :value="form.source_id ?? ''"
+                  required
+                  class="rounded-lg border border-surface-border bg-surface-dark px-4 py-2 text-sm text-surface-light focus:outline-none focus:border-accent-blue"
+                  @change="patch({ source_id: toSourceId(($event.target as HTMLSelectElement).value) })"
+                >
+                  <option value="" disabled>Select a source</option>
+                  <option v-for="source in sources" :key="source.id" :value="source.id">
+                    {{ source.name }}
+                  </option>
+                </select>
+              </label>
               <BaseInput
                 :model-value="form.source_url"
-                label="Source URL"
+                label="Article URL"
                 type="url"
                 placeholder="https://..."
                 @update:model-value="patch({ source_url: toStringValue($event) })"
