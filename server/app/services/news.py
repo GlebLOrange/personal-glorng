@@ -223,8 +223,6 @@ class NewsService:
         self,
         *,
         status: NewsStatus | None = "published",
-        theme: str | None = None,
-        source: str | None = None,
         page: int = 1,
         per_page: int = 20,
     ) -> NewsArticleListResponse:
@@ -232,15 +230,11 @@ class NewsService:
         offset, limit = paginate_params(page, per_page)
         items = await self._news().list_articles(
             status=status,
-            theme=theme,
-            source=source,
             offset=offset,
             limit=limit,
         )
         total = await self._news().count_articles(
             status=status,
-            theme=theme,
-            source=source,
         )
         return NewsArticleListResponse(
             items=[self._to_response(item) for item in items],

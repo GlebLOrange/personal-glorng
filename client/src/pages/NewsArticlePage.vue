@@ -72,14 +72,13 @@ watch(slug, () => {
       <section class="mb-8">
         <h2 class="card-title mb-4">Themes</h2>
         <div class="flex flex-wrap gap-2">
-          <RouterLink
+          <span
             v-for="theme in article.themes"
             :key="theme"
-            :to="{ path: '/news', query: { theme } }"
-            class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid hover:border-accent-blue hover:text-accent-blue"
+            class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid"
           >
             {{ theme }}
-          </RouterLink>
+          </span>
         </div>
       </section>
 

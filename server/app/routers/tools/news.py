@@ -1,8 +1,6 @@
 """Curated news API. Public reads; writes require `news:write`."""
 
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 
 from app.core.deps import AdminUser, NewsServiceDep
 from app.core.rate_limit import rate_limit_api
@@ -28,16 +26,12 @@ router = APIRouter(prefix="/news", tags=["news"])
 )
 async def list_news(
     svc: NewsServiceDep,
-    theme: Annotated[str | None, Query(max_length=64)] = None,
-    source: Annotated[str | None, Query(max_length=120)] = None,
     page: int = 1,
     per_page: int = 20,
 ) -> NewsArticleListResponse:
     """List published news articles."""
     return await svc.list_articles(
         status="published",
-        theme=theme,
-        source=source,
         page=page,
         per_page=per_page,
     )
@@ -53,8 +47,6 @@ async def list_news_admin(
     svc: NewsServiceDep,
     user: AdminUser,
     status: NewsStatus | None = None,
-    theme: Annotated[str | None, Query(max_length=64)] = None,
-    source: Annotated[str | None, Query(max_length=120)] = None,
     page: int = 1,
     per_page: int = 20,
 ) -> NewsArticleListResponse:
@@ -62,8 +54,6 @@ async def list_news_admin(
     del user
     return await svc.list_articles(
         status=status,
-        theme=theme,
-        source=source,
         page=page,
         per_page=per_page,
     )
