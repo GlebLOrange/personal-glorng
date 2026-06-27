@@ -18,6 +18,7 @@ import httpx
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
+from app.db.documents.news import NewsSource
 from app.schemas.news import (
     ALLOWED_NEWS_THEMES,
     NewsArticleCreate,
@@ -133,6 +134,22 @@ def load_news_sources() -> list[NewsSourceConfig]:
         msg = "NEWS_SOURCES_JSON must be a JSON array"
         raise TypeError(msg)
     return [_source_from_raw(item) for item in parsed if isinstance(item, dict)]
+
+
+def _source_from_document(source: NewsSource) -> NewsSourceConfig:
+    """Convert a stored source document into an ingest config."""
+    default_themes = (
+        [source.category] if source.category in ALLOWED_NEWS_THEMES else ["world"]
+    )
+    return _source_from_raw(
+        {
+            "name": source.name,
+            "feed_url": source.feed_url,
+            "enabled": source.enabled,
+            "default_themes": default_themes,
+            "language": "en",
+        }
+    )
 
 
 def _rss_items(root: ElementTree.Element, source: NewsSourceConfig) -> list[FeedItem]:
@@ -272,10 +289,33 @@ class NewsIngestService:
         """Initialize the ingestion service."""
         self.news_svc = news_svc
 
-    async def ingest(self, *, actor_id: int | None = None) -> NewsIngestResponse:
+    async def _load_sources(
+        self,
+        source_ids: list[int] | None,
+    ) -> list[NewsSourceConfig]:
+        """Load DB-managed sources, falling back to settings JSON when empty."""
+        if self.news_svc.registry.news_sources is not None:
+            stored_sources = await self.news_svc.list_sources()
+            if source_ids:
+                allowed_ids = set(source_ids)
+                stored_sources = [
+                    source for source in stored_sources if source.id in allowed_ids
+                ]
+            if stored_sources or source_ids:
+                return [_source_from_document(source) for source in stored_sources]
+        return load_news_sources()
+
+    async def ingest(
+        self,
+        *,
+        actor_id: int | None = None,
+        source_ids: list[int] | None = None,
+    ) -> NewsIngestResponse:
         """Run ingestion for all enabled sources."""
         settings = get_settings()
-        sources = [source for source in load_news_sources() if source.enabled]
+        sources = [
+            source for source in await self._load_sources(source_ids) if source.enabled
+        ]
         processed = created = skipped = failed = 0
         remaining = max(1, settings.NEWS_INGEST_MAX_ITEMS_PER_RUN)
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:

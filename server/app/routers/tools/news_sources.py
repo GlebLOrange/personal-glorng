@@ -2,11 +2,9 @@ from fastapi import APIRouter, Depends
 
 from app.core.deps import (
     AuthorizedUser,
-    JobQueueDep,
     NewsServiceDep,
     require_capability,
 )
-from app.core.exceptions import ApiError
 from app.db.documents.news import NewsSource
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
@@ -16,7 +14,7 @@ from app.schemas.news import (
     NewsSourcesRefreshRequest,
     NewsSourceUpdate,
 )
-from app.workers.job_names import JobName
+from app.services.news_ingest import NewsIngestService
 
 router = APIRouter(
     prefix="/news-sources",
@@ -48,10 +46,10 @@ async def list_news_sources(
 async def create_source(
     data: NewsSourceCreate,
     svc: NewsServiceDep,
-    user: AuthorizedUser,  # noqa: ARG001
+    user: AuthorizedUser,
 ) -> NewsSource:
     """Create an RSS source."""
-    return await svc.create_source(data.model_dump())
+    return await svc.create_source(data, actor_id=user.id)
 
 
 @router.post(
@@ -64,18 +62,20 @@ async def create_source(
 async def refresh_sources(
     data: NewsSourcesRefreshRequest,
     svc: NewsServiceDep,
-    job_queue: JobQueueDep,
-    user: AuthorizedUser,  # noqa: ARG001
+    user: AuthorizedUser,
 ) -> MessageResponse:
-    """Queue RSS parsing for enabled sources."""
-    await svc.ensure_default_sources()
-    task_id = await job_queue.enqueue(
-        JobName.REFRESH_NEWS_SOURCES,
-        data.source_ids,
+    """Run RSS parsing for enabled sources."""
+    result = await NewsIngestService(svc).ingest(
+        actor_id=user.id,
+        source_ids=data.source_ids,
     )
-    if task_id is None:
-        raise ApiError(503, "News source refresh could not be queued")
-    return MessageResponse(message="News source refresh queued")
+    return MessageResponse(
+        message=(
+            "News source refresh completed: "
+            f"{result.created} created, {result.skipped} skipped, "
+            f"{result.failed} failed"
+        )
+    )
 
 
 @router.put(
@@ -89,11 +89,10 @@ async def update_source(
     source_id: int,
     data: NewsSourceUpdate,
     svc: NewsServiceDep,
-    user: AuthorizedUser,  # noqa: ARG001
+    user: AuthorizedUser,
 ) -> NewsSource:
     """Update an RSS source."""
-    payload = data.model_dump(exclude_unset=True)
-    return await svc.update_source(source_id, payload)
+    return await svc.update_source(source_id, data, actor_id=user.id)
 
 
 @router.delete(
@@ -106,8 +105,8 @@ async def update_source(
 async def delete_source(
     source_id: int,
     svc: NewsServiceDep,
-    user: AuthorizedUser,  # noqa: ARG001
+    user: AuthorizedUser,
 ) -> MessageResponse:
     """Delete an RSS source."""
-    await svc.delete_source(source_id)
+    await svc.delete_source(source_id, actor_id=user.id)
     return MessageResponse(message="News source deleted")

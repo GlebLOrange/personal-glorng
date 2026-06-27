@@ -1,20 +1,25 @@
 """Business logic for curated news articles."""
 
+import ipaddress
 import json
 import re
 from math import ceil
 from typing import Any
+from urllib.parse import urlparse
 
-from app.core.exceptions import ConflictError, NotFoundError
+from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.core.json_lists import parse_json_string_list
 from app.core.utils import paginate_params, utc_now
-from app.db.documents.news import NewsArticle, NewsStatus
+from app.db.documents.news import NewsArticle, NewsSource, NewsStatus
 from app.db.registry import DatabaseRegistry
+from app.db.repositories.news import NewsRepository, NewsSourceRepository
 from app.schemas.news import (
     NewsArticleCreate,
     NewsArticleListResponse,
     NewsArticleResponse,
     NewsArticleUpdate,
+    NewsSourceCreate,
+    NewsSourceUpdate,
 )
 from app.services.audit import AuditService
 from app.services.search_indexers.news import index_news_article, remove_news_article
@@ -36,6 +41,24 @@ def _slugify(value: str) -> str:
     """Return a URL-safe slug."""
     slug = _SLUG_RE.sub("-", value.lower()).strip("-")
     return slug[:80].strip("-") or "news"
+
+
+def _is_public_feed_url(url: str) -> bool:
+    """Return whether a feed URL is safe for server-side fetching."""
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        return False
+    try:
+        ip = ipaddress.ip_address(parsed.hostname)
+    except ValueError:
+        return parsed.hostname not in {"localhost", "metadata.google.internal"}
+    return not (ip.is_private or ip.is_loopback or ip.is_link_local)
+
+
+def _require_public_feed_url(feed_url: str) -> None:
+    """Reject feed URLs that could target local infrastructure."""
+    if not _is_public_feed_url(feed_url):
+        raise ValidationError("Feed URL must be a public http(s) URL")
 
 
 def _article_payload_from_create(data: NewsArticleCreate, slug: str) -> dict[str, Any]:
@@ -80,6 +103,19 @@ def _apply_article_updates(
     return NewsArticle.model_validate(merged)
 
 
+def _source_payload_from_create(data: NewsSourceCreate) -> dict[str, Any]:
+    """Build a source document payload from create data."""
+    feed_url = str(data.feed_url)
+    _require_public_feed_url(feed_url)
+    return {
+        "name": data.name,
+        "feed_url": feed_url,
+        "category": data.category,
+        "region": data.region,
+        "enabled": data.enabled,
+    }
+
+
 class NewsService:
     """Service for news article CRUD and public listing."""
 
@@ -88,12 +124,19 @@ class NewsService:
         self.registry = registry
         self._audit = audit_svc
 
-    def _news(self):
+    def _news(self) -> NewsRepository:
         """Return the initialized news repository."""
         if self.registry.news is None:
             msg = "News repository is not initialized"
             raise RuntimeError(msg)
         return self.registry.news
+
+    def _sources(self) -> NewsSourceRepository:
+        """Return the initialized news source repository."""
+        if self.registry.news_sources is None:
+            msg = "News source repository is not initialized"
+            raise RuntimeError(msg)
+        return self.registry.news_sources
 
     @staticmethod
     def _to_response(article: NewsArticle) -> NewsArticleResponse:
@@ -204,6 +247,76 @@ class NewsService:
             action="news.deleted",
             resource_type="news",
             resource_id=article_id,
+            actor_id=actor_id,
+        )
+
+    async def list_sources(self) -> list[NewsSource]:
+        """List admin-managed RSS sources."""
+        return await self._sources().list_sources()
+
+    async def create_source(
+        self,
+        data: NewsSourceCreate,
+        *,
+        actor_id: int | None = None,
+    ) -> NewsSource:
+        """Create an RSS source."""
+        feed_url = str(data.feed_url)
+        if await self._sources().get_by_feed_url(feed_url):
+            raise ConflictError("News feed URL already exists")
+        source = await self._sources().insert(
+            NewsSource.model_validate(_source_payload_from_create(data))
+        )
+        await self._audit.record_domain(
+            action="news_source.created",
+            resource_type="news_source",
+            resource_id=source.id,
+            actor_id=actor_id,
+            metadata={"name": source.name},
+        )
+        return source
+
+    async def update_source(
+        self,
+        source_id: int,
+        data: NewsSourceUpdate,
+        *,
+        actor_id: int | None = None,
+    ) -> NewsSource:
+        """Update an RSS source."""
+        source = await self._sources().get(source_id)
+        updates = data.model_dump(exclude_unset=True)
+        if data.feed_url is not None:
+            feed_url = str(data.feed_url)
+            _require_public_feed_url(feed_url)
+            existing = await self._sources().get_by_feed_url(feed_url)
+            if existing is not None and existing.id != source_id:
+                raise ConflictError("News feed URL already exists")
+            updates["feed_url"] = feed_url
+        merged = source.model_dump()
+        merged.update(updates)
+        updated = await self._sources().replace(NewsSource.model_validate(merged))
+        await self._audit.record_domain(
+            action="news_source.updated",
+            resource_type="news_source",
+            resource_id=source_id,
+            actor_id=actor_id,
+        )
+        return updated
+
+    async def delete_source(
+        self,
+        source_id: int,
+        *,
+        actor_id: int | None = None,
+    ) -> None:
+        """Delete an RSS source."""
+        await self._sources().get(source_id)
+        await self._sources().delete(source_id)
+        await self._audit.record_domain(
+            action="news_source.deleted",
+            resource_type="news_source",
+            resource_id=source_id,
             actor_id=actor_id,
         )
 

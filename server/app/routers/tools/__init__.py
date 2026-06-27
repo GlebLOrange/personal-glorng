@@ -5,7 +5,7 @@ from fastapi import APIRouter
 
 tools_router = APIRouter(prefix="/tools")
 
-_SKIPPED_MODULES = {"news_sources"}
+_SKIPPED_MODULES: set[str] = set()
 
 for module_file in Path(__file__).parent.glob("*.py"):
     if module_file.name.startswith("_") or module_file.stem in _SKIPPED_MODULES:
