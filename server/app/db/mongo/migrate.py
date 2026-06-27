@@ -74,12 +74,12 @@ async def _rename_legacy_collections(db: AsyncIOMotorDatabase) -> None:
         )
 
 
-async def _drop_obsolete_news_title_unique_index(db: AsyncIOMotorDatabase) -> None:
-    """Remove the old unique title index so distinct links can share a title."""
+async def _drop_obsolete_news_unique_indexes(db: AsyncIOMotorDatabase) -> None:
+    """Remove old unique news indexes superseded by source_url and slug."""
     indexes = await db.news_articles.index_information()
     for name, spec in indexes.items():
         key_spec = dict(spec.get("key", []))
-        if key_spec == {"title": 1} and spec.get("unique") is True:
+        if key_spec in ({"title": 1}, {"link": 1}) and spec.get("unique") is True:
             await db.news_articles.drop_index(name)
             logger.info(
                 "Dropped obsolete MongoDB index",
@@ -90,7 +90,7 @@ async def _drop_obsolete_news_title_unique_index(db: AsyncIOMotorDatabase) -> No
 async def ensure_mongo_schema(db: AsyncIOMotorDatabase) -> None:
     """Create indexes idempotently and record schema version."""
     await _rename_legacy_collections(db)
-    await _drop_obsolete_news_title_unique_index(db)
+    await _drop_obsolete_news_unique_indexes(db)
     for collection, keys, options in INDEX_SPECS:
         kwargs = options or {}
         await db[collection].create_index(keys, **kwargs)

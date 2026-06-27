@@ -3,7 +3,19 @@
 import argparse
 import asyncio
 
+from pymongo.errors import DuplicateKeyError
+
 from app.db.seed.demo.run import seed_demo
+
+
+def _duplicate_key_field(exc: DuplicateKeyError) -> str | None:
+    """Return the Mongo duplicate key field when included by the driver."""
+    key_pattern = (exc.details or {}).get("keyPattern") or {}
+    if len(key_pattern) == 1:
+        return next(iter(key_pattern))
+    if "link_1" in str(exc) or "link" in str(exc):
+        return "link"
+    return None
 
 
 def parse_args() -> argparse.Namespace:
@@ -38,13 +50,21 @@ def main() -> None:
     args = parse_args()
     if args.count < 1:
         raise SystemExit("--count must be at least 1")
-    asyncio.run(
-        seed_demo(
-            count=args.count,
-            reset=args.reset,
-            skip_if_populated=args.skip_if_populated,
+    try:
+        asyncio.run(
+            seed_demo(
+                count=args.count,
+                reset=args.reset,
+                skip_if_populated=args.skip_if_populated,
+            )
         )
-    )
+    except DuplicateKeyError as exc:
+        if _duplicate_key_field(exc) != "link":
+            raise
+        raise SystemExit(
+            "Obsolete unique news_articles.link index found. "
+            "Run migrations/schema init, then retry make seed-demo."
+        ) from exc
 
 
 if __name__ == "__main__":
