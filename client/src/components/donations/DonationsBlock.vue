@@ -69,17 +69,17 @@ async function startStripeCheckout(): Promise<void> {
           type="submit"
           name="submit"
           title="Donate securely with PayPal"
-          class="inline-flex min-h-11 items-center gap-3 rounded-lg border border-[#f2c94c] bg-[#ffc439] px-5 py-2.5 text-left text-[#111820] transition-all duration-200 hover:bg-[#f7b900] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+          :class="[linkButtonBase, secondaryLinkButton, 'min-h-11 gap-3 text-left hover:text-accent-blue']"
         >
           <img
             src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"
             alt=""
             aria-hidden="true"
-            class="h-8 w-auto rounded bg-white/80 px-1"
+            class="h-7 w-auto rounded bg-white px-2 py-1"
           />
           <span class="flex flex-col leading-tight">
             <span class="font-semibold">Donate with PayPal</span>
-            <span class="text-xs font-medium text-[#344054]">Cards accepted</span>
+            <span class="text-xs font-medium text-surface-mid">Cards accepted</span>
           </span>
         </button>
         <img
