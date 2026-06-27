@@ -6,7 +6,7 @@
       to="/"
       class="px-4 py-2 text-sm border border-surface-border rounded-lg text-surface-mid hover:border-accent-blue hover:text-accent-blue transition-colors"
     >
-      Back to Home
+      BACK
     </router-link>
   </div>
 </template>

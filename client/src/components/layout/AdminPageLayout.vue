@@ -15,7 +15,7 @@ const props = withDefaults(
   }>(),
   {
     backTo: "/admin",
-    backLabel: "Back to tools",
+    backLabel: "BACK",
   },
 );
 

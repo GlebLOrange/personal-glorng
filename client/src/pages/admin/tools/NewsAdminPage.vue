@@ -4,6 +4,13 @@ import { computed, onMounted, ref, watch } from "vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import {
+  NEWS_BULLET_MAX_LENGTH,
+  NEWS_SUMMARY_MAX_LENGTH,
+  NEWS_THEME_LIMIT,
+  NEWS_THEME_SET,
+  NEWS_TITLE_MAX_LENGTH,
+} from "@/constants/news";
 import { formatNewsDate, useNews } from "@/composables/useNews";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
@@ -223,12 +230,25 @@ async function updateForm(nextForm: NewsArticleFormData): Promise<void> {
 }
 
 function validateForm(): boolean {
-  if (!form.value.title.trim()) {
+  const title = form.value.title.trim();
+  const summary = form.value.summary.trim();
+  const bullets = parsedBullets();
+  const themes = parsedThemes();
+
+  if (!title) {
     toast("Title is required", "error");
     return false;
   }
-  if (!form.value.summary.trim()) {
+  if (title.length > NEWS_TITLE_MAX_LENGTH) {
+    toast(`Title must be ${NEWS_TITLE_MAX_LENGTH} characters or fewer`, "error");
+    return false;
+  }
+  if (!summary) {
     toast("Summary is required", "error");
+    return false;
+  }
+  if (summary.length > NEWS_SUMMARY_MAX_LENGTH) {
+    toast(`Summary must be ${NEWS_SUMMARY_MAX_LENGTH} characters or fewer`, "error");
     return false;
   }
   const sourceUrl = sourceUrlPayload();
@@ -236,12 +256,28 @@ function validateForm(): boolean {
     toast("Source URL must start with http:// or https://", "error");
     return false;
   }
-  if (parsedBullets().length < 2) {
+  if (bullets.length < 2) {
     toast("Add at least two key points", "error");
     return false;
   }
-  if (parsedThemes().length < 1) {
+  if (bullets.length > 5) {
+    toast("Add no more than five key points", "error");
+    return false;
+  }
+  if (bullets.some((bullet) => bullet.length > NEWS_BULLET_MAX_LENGTH)) {
+    toast(`Each key point must be ${NEWS_BULLET_MAX_LENGTH} characters or fewer`, "error");
+    return false;
+  }
+  if (themes.length < 1) {
     toast("Add at least one theme", "error");
+    return false;
+  }
+  if (themes.length > NEWS_THEME_LIMIT) {
+    toast(`Choose no more than ${NEWS_THEME_LIMIT} themes`, "error");
+    return false;
+  }
+  if (themes.some((theme) => !NEWS_THEME_SET.has(theme))) {
+    toast("Choose only supported news themes", "error");
     return false;
   }
   if (dateIsInvalid(form.value.source_published_at, normalizedSourcePublishedAt())) {

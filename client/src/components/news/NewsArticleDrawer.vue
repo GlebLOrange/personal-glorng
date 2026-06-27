@@ -4,6 +4,7 @@ import { computed, onMounted, onUnmounted } from "vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
+import { NEWS_THEME_LIMIT, NEWS_THEMES } from "@/constants/news";
 import type { NewsArticleFormData, NewsSource, NewsStatus } from "@/types";
 
 const props = defineProps<{
@@ -21,6 +22,12 @@ const emit = defineEmits<{
 }>();
 
 const title = computed(() => (props.mode === "create" ? "New article" : "Edit article"));
+const selectedThemes = computed(() =>
+  props.form.themes
+    .split(",")
+    .map((theme) => theme.trim())
+    .filter(Boolean),
+);
 
 const inputClass =
   "w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50";
@@ -52,6 +59,20 @@ function addBullet(): void {
 function removeBullet(index: number): void {
   if (props.form.bullets.length <= 2) return;
   patch({ bullets: props.form.bullets.filter((_, i) => i !== index) });
+}
+
+function themeIsSelected(theme: string): boolean {
+  return selectedThemes.value.includes(theme);
+}
+
+function toggleTheme(theme: string): void {
+  const themes = selectedThemes.value;
+  if (themes.includes(theme)) {
+    patch({ themes: themes.filter((item) => item !== theme).join(", ") });
+    return;
+  }
+  if (themes.length >= NEWS_THEME_LIMIT) return;
+  patch({ themes: [...themes, theme].join(", ") });
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -183,12 +204,34 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 placeholder="Short readable summary"
                 @update:model-value="patch({ summary: toStringValue($event) })"
               />
-              <BaseInput
-                :model-value="form.themes"
-                label="Themes"
-                placeholder="world, business"
-                @update:model-value="patch({ themes: toStringValue($event) })"
-              />
+              <fieldset class="space-y-2">
+                <legend class="text-sm text-surface-mid">
+                  Themes
+                  <span class="text-xs text-surface-muted">
+                    ({{ selectedThemes.length }}/{{ NEWS_THEME_LIMIT }})
+                  </span>
+                </legend>
+                <div class="flex flex-wrap gap-2">
+                  <label
+                    v-for="theme in NEWS_THEMES"
+                    :key="theme"
+                    class="inline-flex cursor-pointer items-center gap-2 rounded border border-surface-border px-3 py-1.5 text-xs transition-colors"
+                    :class="{
+                      'border-accent-blue text-surface-light': themeIsSelected(theme),
+                      'text-surface-mid': !themeIsSelected(theme),
+                      'opacity-50': !themeIsSelected(theme) && selectedThemes.length >= NEWS_THEME_LIMIT,
+                    }"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="themeIsSelected(theme)"
+                      :disabled="!themeIsSelected(theme) && selectedThemes.length >= NEWS_THEME_LIMIT"
+                      @change="toggleTheme(theme)"
+                    />
+                    {{ theme }}
+                  </label>
+                </div>
+              </fieldset>
               <BaseInput
                 :model-value="form.language"
                 label="Language"
