@@ -3,7 +3,6 @@
 import asyncio
 import calendar
 import ipaddress
-import json
 import re
 import socket
 from collections.abc import Awaitable, Callable
@@ -44,20 +43,6 @@ MAX_PUBLIC_FEED_SOURCES = 8
 FEED_TIMEOUT_SECONDS = 2.5
 FEED_REFRESH_BUDGET_SECONDS = 3.0
 ARTICLE_METADATA_MAX_BYTES = 256_000
-
-
-def _agent_debug_log(
-    *,
-    hypothesis_id: str,
-    location: str,
-    message: str,
-    data: dict[str, Any],
-) -> None:
-    """Append temporary agent debug data for the admin news create flow."""
-    # region agent log
-    with open("/Users/glorange/projects/portfolio-glorng/.cursor/debug-c5418e.log", "a", encoding="utf-8") as debug_file:
-        debug_file.write(json.dumps({"sessionId": "c5418e", "runId": "initial", "hypothesisId": hypothesis_id, "location": location, "message": message, "data": data, "timestamp": int(datetime.now(UTC).timestamp() * 1000)}, default=str) + "\n")
-    # endregion
 ARTICLE_METADATA_MAX_REDIRECTS = 3
 _TAG_RE = re.compile(r"<[^>]+>")
 DW_ATOM_FEED_URL = "https://rss.dw.com/atom/rss-en-top"
@@ -440,90 +425,21 @@ async def create_news_article(
 ) -> NewsArticle:
     """Create or update an admin-curated news article by link."""
     repo = _article_repo(registry)
-    # region agent log
-    _agent_debug_log(
-        hypothesis_id="H4,H5",
-        location="server/app/services/news.py:create_news_article:entry",
-        message="admin news service entered",
-        data={
-            "keys": sorted(data.keys()),
-            "link": str(data.get("link") or ""),
-            "titleLength": len(str(data.get("title") or "")),
-            "source": str(data.get("source") or ""),
-            "status": str(data.get("status") or ""),
-            "category": str(data.get("category") or ""),
-            "region": str(data.get("region") or ""),
-            "publishedAt": str(data.get("published_at") or ""),
-        },
-    )
-    # endregion
     payload = await _prepare_article_payload(data, metadata_fetcher)
-    # region agent log
-    _agent_debug_log(
-        hypothesis_id="H4,H5",
-        location="server/app/services/news.py:create_news_article:prepared",
-        message="admin news payload prepared",
-        data={
-            "link": str(payload.get("link") or ""),
-            "titleLength": len(str(payload.get("title") or "")),
-            "source": str(payload.get("source") or ""),
-            "status": str(payload.get("status") or ""),
-            "category": str(payload.get("category") or ""),
-            "region": str(payload.get("region") or ""),
-        },
-    )
-    # endregion
     await _resolve_article_source(registry, payload)
-    # region agent log
-    _agent_debug_log(
-        hypothesis_id="H5",
-        location="server/app/services/news.py:create_news_article:source_resolved",
-        message="admin news source resolved",
-        data={
-            "link": str(payload.get("link") or ""),
-            "source": str(payload.get("source") or ""),
-            "category": str(payload.get("category") or ""),
-            "region": str(payload.get("region") or ""),
-        },
-    )
-    # endregion
     existing = await repo.get_by_link(payload["link"])
     if existing is not None:
-        # region agent log
-        _agent_debug_log(
-            hypothesis_id="H3,H5",
-            location="server/app/services/news.py:create_news_article:existing",
-            message="admin news existing article updated",
-            data={"existingId": existing.id, "link": payload["link"], "origin": existing.origin},
-        )
-        # endregion
         article = await repo.update_fields(existing.id, **payload)
         await cache_invalidator()
         return article
     try:
         article = await repo.insert(NewsArticle(**payload))
     except DuplicateKeyError as exc:
-        # region agent log
-        _agent_debug_log(
-            hypothesis_id="H3,H5",
-            location="server/app/services/news.py:create_news_article:duplicate_key",
-            message="admin news insert hit duplicate key",
-            data={"link": str(payload.get("link") or ""), "details": getattr(exc, "details", None)},
-        )
-        # endregion
         existing = await repo.get_by_link(payload["link"])
         if existing is not None:
             article = await repo.update_fields(existing.id, **payload)
         else:
             raise ConflictError(_news_article_conflict_message(exc)) from exc
-    # region agent log
-    _agent_debug_log(
-        hypothesis_id="H5",
-        location="server/app/services/news.py:create_news_article:success",
-        message="admin news article persisted",
-        data={"articleId": article.id, "link": article.link, "source": article.source, "status": article.status},
-    )
-    # endregion
     await cache_invalidator()
     return article
 
