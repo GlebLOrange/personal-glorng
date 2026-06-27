@@ -150,6 +150,9 @@ function editArticle(article: NewsAdminArticle): void {
 }
 
 function openCreateDrawer(): void {
+  // #region agent log
+  fetch('http://127.0.0.1:7759/ingest/a59c5ce7-5b46-408d-8a93-dd9a50b51892',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c5418e'},body:JSON.stringify({sessionId:'c5418e',runId:'initial',hypothesisId:'H1,H6',location:'client/src/pages/admin/tools/NewsAdminPage.vue:openCreateDrawer',message:'admin news create drawer opened',data:{canWrite:canWrite.value,articleCount:articles.value.length,sourceCount:sources.value.length},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
   editingId.value = null;
   lastAutoTitle.value = null;
   lastAutoSource.value = null;
@@ -224,11 +227,20 @@ watch(
 );
 
 async function saveArticle(): Promise<void> {
+  // #region agent log
+  fetch('http://127.0.0.1:7759/ingest/a59c5ce7-5b46-408d-8a93-dd9a50b51892',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c5418e'},body:JSON.stringify({sessionId:'c5418e',runId:'initial',hypothesisId:'H1,H6',location:'client/src/pages/admin/tools/NewsAdminPage.vue:saveArticle:before_guard',message:'admin news submit reached before permission guard',data:{canWrite:canWrite.value,editingId:editingId.value,linkLength:form.value.link.length,titleLength:form.value.title.length},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
   if (!canWrite.value) return;
   saving.value = true;
   try {
+    // #region agent log
+    fetch('http://127.0.0.1:7759/ingest/a59c5ce7-5b46-408d-8a93-dd9a50b51892',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c5418e'},body:JSON.stringify({sessionId:'c5418e',runId:'initial',hypothesisId:'H1,H2',location:'client/src/pages/admin/tools/NewsAdminPage.vue:saveArticle:start',message:'admin news save started',data:{canWrite:canWrite.value,editingId:editingId.value,linkLength:form.value.link.length,titleLength:form.value.title.length,status:form.value.status,source:form.value.source,category:form.value.category,region:form.value.region,publishedAt:form.value.published_at},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     const requestPayload = payload();
     if (!requestPayload) return;
+    // #region agent log
+    fetch('http://127.0.0.1:7759/ingest/a59c5ce7-5b46-408d-8a93-dd9a50b51892',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c5418e'},body:JSON.stringify({sessionId:'c5418e',runId:'initial',hypothesisId:'H2,H3',location:'client/src/pages/admin/tools/NewsAdminPage.vue:saveArticle:payload',message:'admin news payload built',data:{editingId:editingId.value,link:requestPayload.link,titleLength:String(requestPayload.title ?? '').length,source:requestPayload.source,status:requestPayload.status,category:requestPayload.category,region:requestPayload.region,publishedAt:requestPayload.published_at,duplicateInLoadedArticles:articles.value.some((article) => article.link === requestPayload.link)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     if (editingId.value) {
       await api.put(`/tools/news/${editingId.value}`, requestPayload);
       toast("News updated", "success");
@@ -244,6 +256,9 @@ async function saveArticle(): Promise<void> {
     await Promise.all([loadArticles(), loadSources()]);
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
+    // #region agent log
+    fetch('http://127.0.0.1:7759/ingest/a59c5ce7-5b46-408d-8a93-dd9a50b51892',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c5418e'},body:JSON.stringify({sessionId:'c5418e',runId:'initial',hypothesisId:'H3,H4,H5',location:'client/src/pages/admin/tools/NewsAdminPage.vue:saveArticle:catch',message:'admin news save failed in client',data:{status:err && typeof err === 'object' && 'response' in err ? (err as { response?: { status?: number; data?: unknown } }).response?.status : null,responseData:err && typeof err === 'object' && 'response' in err ? (err as { response?: { data?: unknown } }).response?.data : null,message:err instanceof Error ? err.message : String(err)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     toast(getApiErrorMessage(err, "Failed to save news"), "error");
   } finally {
     saving.value = false;
