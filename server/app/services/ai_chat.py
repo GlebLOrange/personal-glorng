@@ -88,6 +88,19 @@ class OpenAIService:
                 temperature=temperature,
                 stream=True,
             )
+            has_text = False
+            async for chunk in response:
+                choices = getattr(chunk, "choices", None) or []
+                if not choices:
+                    continue
+
+                delta = getattr(choices[0], "delta", None)
+                content = getattr(delta, "content", None)
+                if not content:
+                    continue
+
+                has_text = True
+                yield content
         except AuthenticationError:
             raise ApiError(502, "Invalid API key") from None
         except RateLimitError:
@@ -99,9 +112,7 @@ class OpenAIService:
             logger.error("AI API connection error", error=exc)
             raise ApiError(502, "AI API unreachable") from None
 
-        async for chunk in response:
-            delta = chunk.choices[0].delta.content
-            if delta:
-                yield delta
+        if not has_text:
+            raise ApiError(502, "AI returned no response text")
 
         logger.info("AI chat stream completed", context={"model": self._model})

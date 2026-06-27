@@ -47,6 +47,16 @@ function applyStreamEvents(messages: ChatMessage[], events: StreamEvent[]): void
   }
 }
 
+function showAssistantError(messages: ChatMessage[], message: string): void {
+  const content = `I couldn't get an AI response: ${message}`;
+  const last = messages.at(-1);
+  if (last?.role === "assistant") {
+    last.content = content;
+    return;
+  }
+  messages.push({ role: "assistant", content, sources: [] });
+}
+
 interface UseSearchChatOptions {
   endpoint: string;
   onError?: (message: string) => void;
@@ -131,10 +141,7 @@ export function useSearchChat(options: UseSearchChatOptions) {
       }
       const msg = err instanceof Error ? err.message : "Failed to get AI response";
       options.onError?.(msg);
-      messages.value.pop();
-      if (messages.value.at(-1)?.role === "user") {
-        messages.value.pop();
-      }
+      showAssistantError(messages.value, msg);
       throw err;
     } finally {
       loading.value = false;
