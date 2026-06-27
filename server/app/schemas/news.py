@@ -41,7 +41,7 @@ class NewsArticleCreate(BaseModel):
     bullets: list[str] = Field(min_length=2, max_length=5)
     themes: list[NewsTheme] = Field(min_length=1, max_length=4)
     language: str = Field(default="en", min_length=2, max_length=12)
-    status: NewsStatus = "published"
+    status: NewsStatus = "draft"
     ai_model: str | None = Field(None, max_length=120)
     ai_input_hash: str | None = Field(None, max_length=128)
     ingest_error: str | None = Field(None, max_length=500)

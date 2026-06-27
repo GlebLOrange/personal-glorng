@@ -47,7 +47,7 @@ const {
 
 function emptyForm(): NewsArticleFormData {
   return {
-    status: "published",
+    status: "draft",
     source_name: "",
     source_url: "",
     source_feed_url: "",
