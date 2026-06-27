@@ -16,13 +16,14 @@ _GITHUB_ISSUES_URL = "https://api.github.com/issues"
 _GITHUB_USER_REPOS_URL = "https://api.github.com/users/{username}/repos"
 _DEFAULT_REPO_SORT = "updated"
 _DEFAULT_REPO_PER_PAGE = 30
+_DEFAULT_TIMEOUT = 20.0
 
 
 async def exchange_code_for_token(code: str) -> str:
     """Exchange an OAuth authorization code for an access token."""
     settings = get_settings()
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=_DEFAULT_TIMEOUT) as client:
         resp = await client.post(
             _GITHUB_TOKEN_URL,
             json={
@@ -52,7 +53,7 @@ async def exchange_code_for_token(code: str) -> str:
 
 async def get_github_user(access_token: str) -> dict:
     """Fetch authenticated GitHub user profile."""
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=_DEFAULT_TIMEOUT) as client:
         resp = await client.get(
             _GITHUB_USER_URL,
             headers={
@@ -120,7 +121,7 @@ async def _fetch_github_json(
     access_token: str | None = None,
     params: dict[str, str | int] | None = None,
 ) -> list[dict[str, Any]]:
-    async with httpx.AsyncClient(timeout=20.0) as client:
+    async with httpx.AsyncClient(timeout=_DEFAULT_TIMEOUT) as client:
         resp = await client.get(
             url,
             headers=_github_headers(access_token),

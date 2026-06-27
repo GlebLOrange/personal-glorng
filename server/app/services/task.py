@@ -27,6 +27,8 @@ from app.schemas.task import (
 from app.services.audit import AuditService, domain_event
 from app.services.search_indexers.task import index_task, remove_task
 
+_TASK_WORKER_BATCH_LIMIT = 100
+
 
 class TaskService:
     def __init__(self, registry: DatabaseRegistry) -> None:
@@ -342,8 +344,15 @@ class TaskService:
     async def get_unsent_reminders(self) -> list[Reminder]:
         return await self._tasks().list_unsent_future_reminders(now=datetime.now(UTC))
 
-    async def get_overdue_pending_tasks(self) -> list[Task]:
-        return await self._tasks().list_overdue_pending(now=datetime.now(UTC))
+    async def get_overdue_pending_tasks(
+        self,
+        *,
+        limit: int = _TASK_WORKER_BATCH_LIMIT,
+    ) -> list[Task]:
+        return await self._tasks().list_overdue_pending(
+            now=datetime.now(UTC),
+            limit=limit,
+        )
 
     async def complete_past_due_tasks(
         self,
@@ -353,7 +362,9 @@ class TaskService:
         source: AuditSource = AuditSource.WORKER,
     ) -> int:
         """Mark pending tasks past scheduled_at as completed."""
-        tasks = await self.get_overdue_pending_tasks()
+        # ponytail: process one bounded batch per tick; switch to cursor/bulk status
+        # updates if overdue-task backlogs become normal.
+        tasks = await self.get_overdue_pending_tasks(limit=_TASK_WORKER_BATCH_LIMIT)
         for task in tasks:
             await self.update_task_status(
                 task=task,
@@ -383,7 +394,12 @@ class TaskService:
 
     async def delete_old_tasks(self, *, months: int = 4) -> int:
         cutoff = datetime.now(UTC) - timedelta(days=months * 30)
-        tasks = await self._tasks().list_older_than(cutoff=cutoff)
+        # ponytail: bounded cleanup keeps worker ticks short; use cursor/bulk delete
+        # when retention cleanup needs to drain large historical backlogs.
+        tasks = await self._tasks().list_older_than(
+            cutoff=cutoff,
+            limit=_TASK_WORKER_BATCH_LIMIT,
+        )
         for task in tasks:
             await remove_task(self.registry, task.id)
             await self._tasks().delete(task.id)

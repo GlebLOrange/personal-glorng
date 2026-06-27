@@ -309,14 +309,27 @@ class TaskRepository(MongoRepository[Task]):
             query["status"] = status
         return await self._col().count_documents(query)
 
-    async def list_overdue_pending(self, *, now: datetime) -> list[Task]:
-        cursor = self._col().find(
-            {"status": TaskStatus.PENDING.value, "scheduled_at": {"$lt": now}},
+    async def list_overdue_pending(
+        self,
+        *,
+        now: datetime,
+        limit: int = 100,
+    ) -> list[Task]:
+        cursor = (
+            self._col()
+            .find({"status": TaskStatus.PENDING.value, "scheduled_at": {"$lt": now}})
+            .sort("scheduled_at", 1)
+            .limit(limit)
         )
         return [_parse_doc(Task, row) async for row in cursor]
 
-    async def list_older_than(self, *, cutoff: datetime) -> list[Task]:
-        cursor = self._col().find({"scheduled_at": {"$lt": cutoff}})
+    async def list_older_than(self, *, cutoff: datetime, limit: int = 100) -> list[Task]:
+        cursor = (
+            self._col()
+            .find({"scheduled_at": {"$lt": cutoff}})
+            .sort("scheduled_at", 1)
+            .limit(limit)
+        )
         return [_parse_doc(Task, row) async for row in cursor]
 
     async def list_unsent_future_reminders(self, *, now: datetime) -> list[Reminder]:
@@ -358,12 +371,15 @@ class TaskRepository(MongoRepository[Task]):
         cursor = (
             self.db.task_intakes.find().sort("created_at", -1).skip(offset).limit(limit)
         )
-        rows: list[tuple[TaskIntake, str | None]] = []
-        async for intake_doc in cursor:
-            intake = _intake_from_doc(intake_doc)
-            inbound = await self.db.telegram_inbound_messages.find_one(
-                {"id": intake.inbound_message_id},
+        intakes = [_intake_from_doc(row) async for row in cursor]
+        inbound_ids = [intake.inbound_message_id for intake in intakes]
+        inbound_by_id: dict[int, dict[str, Any]] = {}
+        if inbound_ids:
+            inbound_cursor = self.db.telegram_inbound_messages.find(
+                {"id": {"$in": inbound_ids}},
             )
-            text = inbound.get("text") if inbound else None
-            rows.append((intake, text))
-        return rows
+            inbound_by_id = {row["id"]: row async for row in inbound_cursor}
+        return [
+            (intake, inbound_by_id.get(intake.inbound_message_id, {}).get("text"))
+            for intake in intakes
+        ]

@@ -128,9 +128,7 @@ const tableRows = computed((): Record<string, unknown>[] => {
   );
 });
 
-const resultJson = computed(() =>
-  result.value ? JSON.stringify(result.value, null, 2) : "",
-);
+const resultJson = computed(() => (showRawJson.value && result.value ? serializeResult() : ""));
 
 function resetOutputs(): void {
   result.value = null;
@@ -233,6 +231,10 @@ function formatCell(value: unknown): string {
   return String(value);
 }
 
+function serializeResult(): string {
+  return result.value ? JSON.stringify(result.value, null, 2) : "";
+}
+
 function buildQueryParams(): URLSearchParams {
   const params = new URLSearchParams();
   if (formatChoice.value !== "auto") {
@@ -319,13 +321,14 @@ async function importFile(): Promise<void> {
 }
 
 async function copyResult(): Promise<void> {
-  if (!resultJson.value) return;
-  await copy(resultJson.value);
+  const json = serializeResult();
+  if (!json) return;
+  await copy(json);
 }
 
 function downloadResult(): void {
   if (!result.value) return;
-  const blob = new Blob([resultJson.value], { type: "application/json" });
+  const blob = new Blob([serializeResult()], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;

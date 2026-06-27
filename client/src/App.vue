@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { defineAsyncComponent, onMounted, ref } from "vue";
 
 import NavBar from "@/components/layout/NavBar.vue";
 import FooterBar from "@/components/layout/FooterBar.vue";
-import ClocksBar from "@/components/weather/ClocksBar.vue";
 import ToastContainer from "@/components/ui/ToastContainer.vue";
 
+const ClocksBar = defineAsyncComponent(() => import("@/components/weather/ClocksBar.vue"));
 const showClocksBar = ref(false);
 
 onMounted(() => {

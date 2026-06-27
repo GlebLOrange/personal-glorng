@@ -1,5 +1,6 @@
 """Extract structured data from uploaded CSV, JSON, XML, or delimited files."""
 
+import asyncio
 import json
 from typing import Annotated, Literal
 
@@ -118,7 +119,8 @@ async def extract_file(
         list_delimiter=list_delimiter,
         field_names=field_names,
     )
-    result = data_extract_svc.extract_upload(
+    result = await asyncio.to_thread(
+        data_extract_svc.extract_upload,
         contents,
         filename=file.filename,
         format=format,

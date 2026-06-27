@@ -47,7 +47,7 @@ const {
 
 function emptyForm(): NewsArticleFormData {
   return {
-    status: "published",
+    status: "draft",
     source_name: "",
     source_url: "",
     source_feed_url: "",
@@ -114,6 +114,12 @@ function sourceUrlPayload(): string | null {
   return normalizeHttpUrl(form.value.source_url);
 }
 
+function sourceNamePayload(sourceUrl: string | null = sourceUrlPayload()): string | null {
+  if (sourceUrl) return sourceFromNewsLink(sourceUrl, []);
+  const sourceName = form.value.source_name.trim();
+  return sourceName || null;
+}
+
 function withSourceUrlDefaults(nextForm: NewsArticleFormData): NewsArticleFormData {
   const sourceUrl = normalizeHttpUrl(nextForm.source_url);
   if (!sourceUrl) return { ...nextForm, source_feed_url: "" };
@@ -127,7 +133,7 @@ function withSourceUrlDefaults(nextForm: NewsArticleFormData): NewsArticleFormDa
     lastAutoTitle.value = autoTitle;
   }
   const autoSourceName = sourceFromNewsLink(sourceUrl, []);
-  if (autoSourceName && canReplaceAutoValue(nextForm.source_name, lastAutoSourceName.value)) {
+  if (autoSourceName) {
     nextValues.source_name = autoSourceName;
     lastAutoSourceName.value = autoSourceName;
   }
@@ -151,12 +157,13 @@ function validateForm(): boolean {
     toast("Summary is required", "error");
     return false;
   }
-  if (!form.value.source_name.trim()) {
-    toast("Source name is required", "error");
+  const sourceUrl = sourceUrlPayload();
+  if (!sourceUrl) {
+    toast("Source URL must start with http:// or https://", "error");
     return false;
   }
-  if (!sourceUrlPayload()) {
-    toast("Source URL must start with http:// or https://", "error");
+  if (!sourceNamePayload(sourceUrl)) {
+    toast("Source URL must include a recognizable source", "error");
     return false;
   }
   if (parsedBullets().length < 2) {
@@ -176,10 +183,11 @@ function validateForm(): boolean {
 
 function buildCreatePayload(): NewsArticleCreate {
   const sourceUrl = sourceUrlPayload() ?? form.value.source_url.trim();
+  const sourceName = sourceNamePayload(sourceUrl) ?? "";
   const title = form.value.title.trim();
   return {
     status: form.value.status,
-    source_name: form.value.source_name.trim(),
+    source_name: sourceName,
     source_url: sourceUrl,
     source_feed_url: sourceUrl,
     source_published_at: sourcePublishedAtPayload(),

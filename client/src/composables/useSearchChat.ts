@@ -31,20 +31,71 @@ export function parseSseEvents(buffer: string): { events: StreamEvent[]; rest: s
   return { events, rest };
 }
 
-function applyStreamEvents(messages: ChatMessage[], events: StreamEvent[]): void {
-  for (const event of events) {
-    if (event.error) {
-      throw new Error(event.error);
+function requestStreamFlush(callback: () => void): number {
+  return window.requestAnimationFrame
+    ? window.requestAnimationFrame(callback)
+    : window.setTimeout(callback, 16);
+}
+
+function cancelStreamFlush(id: number): void {
+  if (window.cancelAnimationFrame) {
+    window.cancelAnimationFrame(id);
+    return;
+  }
+  window.clearTimeout(id);
+}
+
+function createStreamEventApplier(messages: ChatMessage[]): {
+  apply: (events: StreamEvent[]) => void;
+  flush: () => void;
+} {
+  let pendingDelta = "";
+  let pendingSources: SearchSource[] | null = null;
+  let flushId: number | null = null;
+
+  function flush(): void {
+    if (flushId !== null) {
+      cancelStreamFlush(flushId);
+      flushId = null;
     }
+
+    if (!pendingDelta && !pendingSources) return;
+
     const last = messages.at(-1);
-    if (!last || last.role !== "assistant") continue;
-    if (event.sources) {
-      last.sources = event.sources;
+    if (!last || last.role !== "assistant") return;
+
+    if (pendingSources) {
+      last.sources = pendingSources;
+      pendingSources = null;
     }
-    if (event.delta) {
-      last.content += event.delta;
+    if (pendingDelta) {
+      last.content += pendingDelta;
+      pendingDelta = "";
     }
   }
+
+  function scheduleFlush(): void {
+    if (flushId !== null) return;
+    flushId = requestStreamFlush(flush);
+  }
+
+  function apply(events: StreamEvent[]): void {
+    for (const event of events) {
+      if (event.error) {
+        throw new Error(event.error);
+      }
+      if (event.sources) {
+        pendingSources = event.sources;
+      }
+      if (event.delta) {
+        pendingDelta += event.delta;
+      }
+    }
+    if (!pendingDelta && !pendingSources) return;
+    scheduleFlush();
+  }
+
+  return { apply, flush };
 }
 
 function showAssistantError(messages: ChatMessage[], message: string): void {
@@ -120,6 +171,7 @@ export function useSearchChat(options: UseSearchChatOptions) {
 
       const decoder = new TextDecoder();
       let buffer = "";
+      const streamEvents = createStreamEventApplier(messages.value);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -128,13 +180,14 @@ export function useSearchChat(options: UseSearchChatOptions) {
         buffer += decoder.decode(value, { stream: true });
         const { events, rest } = parseSseEvents(buffer);
         buffer = rest;
-        applyStreamEvents(messages.value, events);
+        streamEvents.apply(events);
       }
 
       if (buffer.trim()) {
         const { events } = parseSseEvents(`${buffer}\n\n`);
-        applyStreamEvents(messages.value, events);
+        streamEvents.apply(events);
       }
+      streamEvents.flush();
     } catch (err) {
       if (controller.signal.aborted) {
         return;

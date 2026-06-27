@@ -1,5 +1,6 @@
 """File share business logic."""
 
+import asyncio
 from datetime import timedelta
 from pathlib import Path
 
@@ -105,6 +106,13 @@ def download_media_type(stored_type: str) -> str:
     return "application/octet-stream"
 
 
+def _unlink_existing(path: Path) -> bool:
+    if not path.exists():
+        return False
+    path.unlink()
+    return True
+
+
 async def upload(
     registry: DatabaseRegistry,
     *,
@@ -125,8 +133,8 @@ async def upload(
     safe_type = _sniff_content_type(contents, filename)
 
     dest = _shares_dir()
-    dest.mkdir(parents=True, exist_ok=True)
-    (dest / stored_name).write_bytes(contents)
+    await asyncio.to_thread(dest.mkdir, parents=True, exist_ok=True)
+    await asyncio.to_thread((dest / stored_name).write_bytes, contents)
 
     shared = SharedFile(
         code=code,
@@ -172,8 +180,7 @@ async def delete(registry: DatabaseRegistry, *, file_id: int, user_id: int) -> N
         raise NotFoundError("File not found")
 
     disk_path = _shares_dir() / shared.file_path
-    if disk_path.exists():
-        disk_path.unlink()
+    await asyncio.to_thread(_unlink_existing, disk_path)
 
     await _files(registry).delete(file_id)
 
@@ -199,7 +206,7 @@ async def get_by_code(
         raise ApiError(410, "This file has expired")
 
     disk_path = _shares_dir() / shared.file_path
-    if not disk_path.exists():
+    if not await asyncio.to_thread(disk_path.exists):
         raise NotFoundError("File not found on disk")
 
     await _files(registry).update_fields(shared.id, downloads=shared.downloads + 1)
@@ -221,8 +228,7 @@ async def cleanup_expired(registry: DatabaseRegistry) -> dict[str, int]:
     for shared in expired:
         disk_path = shares_dir / shared.file_path
         try:
-            if disk_path.exists():
-                disk_path.unlink()
+            if await asyncio.to_thread(_unlink_existing, disk_path):
                 deleted_files += 1
         except OSError as exc:
             errors += 1
