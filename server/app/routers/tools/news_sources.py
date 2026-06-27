@@ -1,10 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.core.deps import (
-    AdminUser,
+    AuthorizedUser,
     NewsServiceDep,
+    require_capability,
 )
 from app.db.documents.news import NewsSource
+from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.news import (
     NewsSourceCreate,
@@ -23,13 +25,15 @@ router = APIRouter(
     "",
     response_model=list[NewsSourceResponse],
     summary="List RSS news sources",
-    description="Requires platform superuser.",
+    description=requires_capability("news-sources", "read"),
+    dependencies=[Depends(require_capability("news-sources", "read"))],
 )
 async def list_news_sources(
     svc: NewsServiceDep,
-    user: AdminUser,  # noqa: ARG001
+    user: AuthorizedUser,
 ) -> list[NewsSource]:
     """List admin-managed RSS sources."""
+    del user
     return await svc.list_sources()
 
 
@@ -37,12 +41,13 @@ async def list_news_sources(
     "",
     response_model=NewsSourceResponse,
     summary="Create RSS news source",
-    description="Requires platform superuser.",
+    description=requires_capability("news-sources", "write"),
+    dependencies=[Depends(require_capability("news-sources", "write"))],
 )
 async def create_source(
     data: NewsSourceCreate,
     svc: NewsServiceDep,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> NewsSource:
     """Create an RSS source."""
     return await svc.create_source(data, actor_id=user.id)
@@ -52,12 +57,13 @@ async def create_source(
     "/refresh",
     response_model=MessageResponse,
     summary="Parse RSS sources into stored news articles",
-    description="Requires platform superuser.",
+    description=requires_capability("news-sources", "write"),
+    dependencies=[Depends(require_capability("news-sources", "write"))],
 )
 async def refresh_sources(
     data: NewsSourcesRefreshRequest,
     svc: NewsServiceDep,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> MessageResponse:
     """Run RSS parsing for enabled sources."""
     result = await NewsIngestService(svc).ingest(
@@ -77,13 +83,14 @@ async def refresh_sources(
     "/{source_id}",
     response_model=NewsSourceResponse,
     summary="Update RSS news source",
-    description="Requires platform superuser.",
+    description=requires_capability("news-sources", "write"),
+    dependencies=[Depends(require_capability("news-sources", "write"))],
 )
 async def update_source(
     source_id: int,
     data: NewsSourceUpdate,
     svc: NewsServiceDep,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> NewsSource:
     """Update an RSS source."""
     return await svc.update_source(source_id, data, actor_id=user.id)
@@ -93,12 +100,13 @@ async def update_source(
     "/{source_id}",
     response_model=MessageResponse,
     summary="Delete RSS news source",
-    description="Requires platform superuser.",
+    description=requires_capability("news-sources", "write"),
+    dependencies=[Depends(require_capability("news-sources", "write"))],
 )
 async def delete_source(
     source_id: int,
     svc: NewsServiceDep,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> MessageResponse:
     """Delete an RSS source."""
     await svc.delete_source(source_id, actor_id=user.id)
