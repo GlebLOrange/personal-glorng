@@ -14,7 +14,7 @@ CSP currently allows `'unsafe-inline'` for scripts and styles so Vite dev HMR, G
 
 **Dev caveat:** Lite mode (Vite → API on `:8000`, no nginx) skips CSP/HSTS. CSRF origin checks are production-only.
 
-HTTPS termination is expected upstream of compose nginx (port 80 in-repo); `secure` cookies require HTTPS at the edge.
+HTTPS termination is expected upstream of compose nginx (port 80 by default); `secure` cookies require HTTPS at the edge. For the minimal Cloudflare path with strict origin TLS, see [cloudflare.md](cloudflare.md).
 
 ## Authentication
 
