@@ -8,7 +8,7 @@ import RecipeCard from "@/components/recipes/RecipeCard.vue";
 import RecipeCookMode from "@/components/recipes/RecipeCookMode.vue";
 import RecipeDetailDrawer from "@/components/recipes/RecipeDetailDrawer.vue";
 import RecipeFilters from "@/components/recipes/RecipeFilters.vue";
-import RecipeFormModal from "@/components/recipes/RecipeFormModal.vue";
+import RecipeFormDrawer from "@/components/recipes/RecipeFormDrawer.vue";
 import TaskPagination from "@/components/tasks/TaskPagination.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import { useRecipes } from "@/composables/useRecipes";
@@ -65,19 +65,35 @@ function clearFilters(): void {
   search.value = "";
   setTag(null);
 }
+
+function openRecipeFromCard(recipeId: number): void {
+  const recipe = recipes.value.find((item) => item.id === recipeId);
+  if (canWrite.value && recipe) {
+    openEdit(recipe);
+    return;
+  }
+  void openDetail(recipeId);
+}
+
+function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void {
+  closeDetail();
+  openEdit(recipe);
+}
 </script>
 
 <template>
   <AdminPageLayout title="recipes" max-width="xl" back-to="/tools">
+    <div v-if="canWrite" class="mb-4 flex justify-end">
+      <BaseButton variant="primary" @click="openCreate">+ New recipe</BaseButton>
+    </div>
+
     <RecipeFilters
       v-model:search="search"
       v-model:sort="sort"
       :active-tags="activeTags"
       :all-tags="allTags"
       :recipe-count-label="recipeCountLabel"
-      :can-write="canWrite"
       @set-tag="setTag"
-      @create="openCreate"
       @clear-filters="clearFilters"
     >
       <div v-if="listLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -102,7 +118,7 @@ function clearFilters(): void {
           :key="recipe.id"
           :recipe="recipe"
           :active-tags="activeTags"
-          @select="openDetail"
+          @select="openRecipeFromCard"
           @tag-click="setTag"
         />
       </div>
@@ -137,7 +153,7 @@ function clearFilters(): void {
       />
     </RecipeFilters>
 
-    <RecipeFormModal
+    <RecipeFormDrawer
       v-if="canWrite"
       :open="showForm"
       :form="form"
@@ -154,7 +170,7 @@ function clearFilters(): void {
       :recipe="selectedRecipe"
       :loading="detailLoading"
       @close="closeDetail"
-      @edit="openEdit"
+      @edit="openRecipeEdit"
       @delete="requestDelete"
       @cook="openCookMode"
     />

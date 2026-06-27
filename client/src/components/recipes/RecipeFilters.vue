@@ -12,14 +12,12 @@ const props = defineProps<{
   sort: RecipeSort;
   allTags: string[];
   recipeCountLabel: string;
-  canWrite?: boolean;
 }>();
 
 const emit = defineEmits<{
   "update:search": [value: string];
   "update:sort": [value: RecipeSort];
   setTag: [tag: string | null];
-  create: [];
   clearFilters: [];
 }>();
 
@@ -84,7 +82,12 @@ onUnmounted(() => {
       <div
         class="flex flex-wrap items-center gap-3 rounded-lg border border-surface-border bg-surface-card p-3"
       >
-        <p class="mr-auto text-xs text-surface-mid">{{ recipeCountLabel }}</p>
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-surface-light">Filter recipes</h2>
+            <p class="text-xs text-surface-mid mt-1">{{ recipeCountLabel }}</p>
+          </div>
+        </div>
 
         <div class="flex items-center gap-2">
           <label
