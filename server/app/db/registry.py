@@ -16,7 +16,7 @@ from app.db.repositories.data_import import DataImportRepository
 from app.db.repositories.expense import ExpenseRepository
 from app.db.repositories.feedback import FeedbackRepository
 from app.db.repositories.fileshare import FileShareRepository
-from app.db.repositories.news import NewsArticleRepository, NewsSourceRepository
+from app.db.repositories.news import NewsRepository
 from app.db.repositories.recipe import RecipeRepository
 from app.db.repositories.search import SearchRepository
 from app.db.repositories.task import TaskRepository
@@ -36,6 +36,7 @@ class DatabaseRegistry:
     postgres_engine: AsyncEngine | None = None
     users: UserRepository | None = None
     tasks: TaskRepository | None = None
+    news: NewsRepository | None = None
     recipes: RecipeRepository | None = None
     expenses: ExpenseRepository | None = None
     urls: UrlRepository | None = None
@@ -74,6 +75,7 @@ class DatabaseRegistry:
         mongo = self.require_mongo()
         self.users = UserRepository(mongo)
         self.tasks = TaskRepository(mongo)
+        self.news = NewsRepository(mongo)
         self.recipes = RecipeRepository(mongo)
         self.expenses = ExpenseRepository(mongo)
         self.urls = UrlRepository(mongo)

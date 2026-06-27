@@ -2,452 +2,435 @@
 import { computed, onMounted, ref, watch } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
-import BaseDrawer from "@/components/ui/BaseDrawer.vue";
-import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseSelect from "@/components/ui/BaseSelect.vue";
-import BaseTextarea from "@/components/ui/BaseTextarea.vue";
-import { api } from "@/composables/useApi";
+import { formatNewsDate, useNews } from "@/composables/useNews";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
-import { getApiErrorMessage } from "@/types/api";
-import type { NewsAdminArticle, NewsSource } from "@/types";
-import { formatDate } from "@/utils/format";
-import { normalizeHttpUrl, sourceFromNewsLink, sourceKey, titleFromNewsLink } from "@/utils/newsForms";
+import type {
+  NewsArticle,
+  NewsArticleCreate,
+  NewsArticleFormData,
+  NewsArticleUpdate,
+  NewsStatus,
+} from "@/types";
 
-interface NewsArticleForm {
-  title: string;
-  link: string;
-  source: string;
-  status: string;
-  category: string;
-  region: string;
-  summary: string;
-  published_at: string;
-  enabled: boolean;
-}
+type StatusFilter = NewsStatus | "all";
+type DrawerMode = "create" | "edit";
 
-const NEWS_STATUSES = ["draft", "moderating", "published", "archived"] as const;
-type NewsArticleStatus = (typeof NEWS_STATUSES)[number];
-type NewsSort =
-  | "published_at:desc"
-  | "published_at:asc"
-  | "created_at:desc"
-  | "created_at:asc"
-  | "updated_at:desc"
-  | "updated_at:asc";
-
-function datetimeInputValue(iso?: string): string {
-  const date = iso ? new Date(iso) : new Date();
-  const offset = date.getTimezoneOffset() * 60_000;
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
-}
-
-const blankForm = (): NewsArticleForm => ({
-  title: "",
-  link: "",
-  source: "gLOrng",
-  status: "moderating",
-  category: "world",
-  region: "global",
-  summary: "",
-  published_at: datetimeInputValue(),
-  enabled: true,
-});
-
-const articles = ref<NewsAdminArticle[]>([]);
-const sources = ref<NewsSource[]>([]);
-const form = ref<NewsArticleForm>(blankForm());
-const selectedStatuses = ref<NewsArticleStatus[]>([...NEWS_STATUSES]);
-const selectedSort = ref<NewsSort>("published_at:desc");
-const editingId = ref<number | null>(null);
-const drawerOpen = ref(false);
-const loading = ref(true);
-const loadError = ref(false);
-const saving = ref(false);
-const deletingId = ref<number | null>(null);
-const lastAutoTitle = ref<string | null>(null);
-const lastAutoSource = ref<string | null>(null);
-const { toast } = useNotify();
+const statusFilter = ref<StatusFilter>("all");
 const { can } = usePermissions();
+const { toast } = useNotify();
 const canWrite = computed(() => can("news", "write"));
-const formTitle = computed(() => (editingId.value ? "Edit news" : "Add news"));
-const isDefaultStatuses = computed(() => selectedStatuses.value.length === NEWS_STATUSES.length);
-const hasAdminFilters = computed(
-  () => !isDefaultStatuses.value || selectedSort.value !== "published_at:desc",
-);
-const sourceOptionNames = computed(() => {
-  const names: string[] = [];
-  const seen = new Set<string>();
-  for (const source of sources.value) {
-    const key = sourceKey(source.name);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    names.push(source.name);
-  }
-  const currentSource = form.value.source.trim();
-  const currentKey = sourceKey(currentSource);
-  if (currentSource && currentSource !== "gLOrng" && !seen.has(currentKey)) {
-    names.unshift(currentSource);
-  }
-  return names;
-});
+const drawerOpen = ref(false);
+const drawerMode = ref<DrawerMode>("create");
+const editingArticleId = ref<number | null>(null);
+const form = ref<NewsArticleFormData>(emptyForm());
 
-async function loadArticles(): Promise<void> {
-  loading.value = true;
-  loadError.value = false;
-  try {
-    const params = new URLSearchParams();
-    const [sortBy, sortOrder] = selectedSort.value.split(":");
-    if (!isDefaultStatuses.value) {
-      for (const status of selectedStatuses.value) params.append("status", status);
-    }
-    params.set("sort_by", sortBy);
-    params.set("sort_order", sortOrder);
-    const { data } = await api.get<NewsAdminArticle[]>(`/tools/news?${params.toString()}`);
-    articles.value = data;
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    loadError.value = true;
-    toast("Failed to load news", "error");
-  } finally {
-    loading.value = false;
-  }
-}
+const {
+  articles,
+  themes,
+  activeTheme,
+  page,
+  listLoading,
+  listError,
+  actionLoading,
+  hasNextPage,
+  countLabel,
+  loadNews,
+  loadThemes,
+  setTheme,
+  goToPage,
+  ingestNews,
+  createArticle,
+  updateArticle,
+  deleteArticle,
+  repostToTelegram,
+} = useNews();
 
-function clearAdminFilters(): void {
-  selectedStatuses.value = [...NEWS_STATUSES];
-  selectedSort.value = "published_at:desc";
-}
-
-async function loadSources(): Promise<void> {
-  try {
-    const { data } = await api.get<NewsSource[]>("/tools/news-sources");
-    sources.value = data;
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    toast("Failed to load news sources", "error");
-  }
-}
-
-function editArticle(article: NewsAdminArticle): void {
-  editingId.value = article.id;
-  lastAutoTitle.value = null;
-  lastAutoSource.value = null;
-  form.value = {
-    title: article.title,
-    link: article.link,
-    source: article.source,
-    status: article.status,
-    category: article.category,
-    region: article.region,
-    summary: article.summary ?? "",
-    published_at: datetimeInputValue(article.published_at),
-    enabled: article.enabled,
-  };
-  drawerOpen.value = true;
-}
-
-function openCreateDrawer(): void {
-  editingId.value = null;
-  lastAutoTitle.value = null;
-  lastAutoSource.value = null;
-  form.value = blankForm();
-  drawerOpen.value = true;
-}
-
-function closeDrawer(force = false): void {
-  if (saving.value && !force) return;
-  drawerOpen.value = false;
-  editingId.value = null;
-  form.value = blankForm();
-}
-
-function payload(): Record<string, string | boolean | null> | null {
-  const normalizedLink = normalizeHttpUrl(form.value.link);
-  if (!normalizedLink) {
-    toast("Enter a valid http(s) news link", "error");
-    return null;
-  }
-  const derivedTitle = titleFromNewsLink(form.value.link);
-  const matchedSource = sourceFromNewsLink(form.value.link, sources.value);
-  const selectedSource = form.value.source.trim();
-  const publishedAt = new Date(form.value.published_at);
-  if (Number.isNaN(publishedAt.getTime())) {
-    toast("Enter a valid publish date", "error");
-    return null;
-  }
+function emptyForm(): NewsArticleFormData {
   return {
-    title: form.value.title.trim() || derivedTitle || "",
-    link: normalizedLink,
-    source: selectedSource === "gLOrng" ? matchedSource || "gLOrng" : selectedSource || "gLOrng",
-    status: form.value.status,
-    category: form.value.category.trim(),
-    region: form.value.region.trim(),
-    summary: form.value.summary.trim() || null,
-    published_at: publishedAt.toISOString(),
-    enabled: form.value.enabled,
+    status: "published",
+    source_name: "",
+    source_url: "",
+    source_feed_url: "",
+    source_published_at: "",
+    original_title: "",
+    title: "",
+    summary: "",
+    bullets: ["", ""],
+    themes: "world",
+    language: "en",
   };
 }
 
-function sourceOptionLabel(sourceName: string): string {
-  const exists = sources.value.some((source) => sourceKey(source.name) === sourceKey(sourceName));
-  return exists ? sourceName : `${sourceName} (new from URL)`;
+function formFromArticle(article: NewsArticle): NewsArticleFormData {
+  const bullets = article.bullets.length ? [...article.bullets] : ["", ""];
+  while (bullets.length < 2) bullets.push("");
+  return {
+    status: article.status,
+    source_name: article.source_name,
+    source_url: article.source_url,
+    source_feed_url: article.source_feed_url,
+    source_published_at: article.source_published_at?.slice(0, 16) ?? "",
+    original_title: article.original_title,
+    title: article.title,
+    summary: article.summary,
+    bullets,
+    themes: article.themes.join(", "),
+    language: article.language,
+  };
 }
 
-watch([() => form.value.link, () => sources.value], ([link]) => {
-  if (editingId.value) return;
-  const title = titleFromNewsLink(link);
-  if (title) {
-    const currentTitle = form.value.title.trim();
-    if (!currentTitle || currentTitle === lastAutoTitle.value) {
-      form.value.title = title;
-      lastAutoTitle.value = title;
-    }
-  }
+function parsedThemes(): string[] {
+  return form.value.themes
+    .split(",")
+    .map((theme) => theme.trim())
+    .filter(Boolean);
+}
 
-  const source = sourceFromNewsLink(link, sources.value);
-  if (!source) return;
-  const currentSource = form.value.source.trim();
-  if (currentSource && currentSource !== "gLOrng" && currentSource !== lastAutoSource.value) return;
-  form.value.source = source;
-  lastAutoSource.value = source;
+function parsedBullets(): string[] {
+  return form.value.bullets.map((bullet) => bullet.trim()).filter(Boolean);
+}
+
+function isHttpUrl(value: string): boolean {
+  return value.startsWith("http://") || value.startsWith("https://");
+}
+
+function normalizedPublishedAt(): string | null {
+  if (!form.value.source_published_at.trim()) return null;
+  const value = new Date(form.value.source_published_at);
+  return Number.isNaN(value.getTime()) ? null : value.toISOString();
+}
+
+function validateForm(): boolean {
+  if (!form.value.title.trim()) {
+    toast("Title is required", "error");
+    return false;
+  }
+  if (!form.value.summary.trim()) {
+    toast("Summary is required", "error");
+    return false;
+  }
+  if (!form.value.source_name.trim() || !form.value.original_title.trim()) {
+    toast("Source name and original title are required", "error");
+    return false;
+  }
+  if (!isHttpUrl(form.value.source_url) || !isHttpUrl(form.value.source_feed_url)) {
+    toast("Source and feed URLs must start with http:// or https://", "error");
+    return false;
+  }
+  if (parsedBullets().length < 2) {
+    toast("Add at least two key points", "error");
+    return false;
+  }
+  if (parsedThemes().length < 1) {
+    toast("Add at least one theme", "error");
+    return false;
+  }
+  if (form.value.source_published_at.trim() && normalizedPublishedAt() === null) {
+    toast("Source published date is invalid", "error");
+    return false;
+  }
+  return true;
+}
+
+function buildCreatePayload(): NewsArticleCreate {
+  return {
+    status: form.value.status,
+    source_name: form.value.source_name.trim(),
+    source_url: form.value.source_url.trim(),
+    source_feed_url: form.value.source_feed_url.trim(),
+    source_published_at: normalizedPublishedAt(),
+    original_title: form.value.original_title.trim(),
+    title: form.value.title.trim(),
+    summary: form.value.summary.trim(),
+    bullets: parsedBullets(),
+    themes: parsedThemes(),
+    language: form.value.language.trim() || "en",
+  };
+}
+
+function buildUpdatePayload(): NewsArticleUpdate {
+  return buildCreatePayload();
+}
+
+function statusParam(): NewsStatus | null {
+  return statusFilter.value === "all" ? null : statusFilter.value;
+}
+
+async function loadAdminNews(): Promise<void> {
+  await loadNews({ admin: true, status: statusParam() });
+}
+
+async function runIngest(): Promise<void> {
+  await ingestNews();
+  await loadAdminNews();
+}
+
+async function setStatus(articleId: number, status: NewsStatus): Promise<void> {
+  await updateArticle(articleId, { status });
+  await loadAdminNews();
+}
+
+async function removeArticle(articleId: number, title: string): Promise<void> {
+  if (!window.confirm(`Delete "${title}"? This cannot be undone.`)) return;
+  if (await deleteArticle(articleId)) {
+    await loadAdminNews();
+  }
+}
+
+async function repost(articleId: number): Promise<void> {
+  await repostToTelegram(articleId);
+  await loadAdminNews();
+}
+
+function openCreate(): void {
+  drawerMode.value = "create";
+  editingArticleId.value = null;
+  form.value = emptyForm();
+  drawerOpen.value = true;
+}
+
+function openEdit(article: NewsArticle): void {
+  drawerMode.value = "edit";
+  editingArticleId.value = article.id;
+  form.value = formFromArticle(article);
+  drawerOpen.value = true;
+}
+
+function closeDrawer(): void {
+  drawerOpen.value = false;
+  editingArticleId.value = null;
+}
+
+async function saveDrawer(): Promise<void> {
+  if (!validateForm()) return;
+  if (drawerMode.value === "create") {
+    const created = await createArticle(buildCreatePayload());
+    if (!created) return;
+  } else if (editingArticleId.value) {
+    const updated = await updateArticle(editingArticleId.value, buildUpdatePayload());
+    if (!updated) return;
+  }
+  closeDrawer();
+  await loadAdminNews();
+  await loadThemes();
+}
+
+onMounted(async () => {
+  await Promise.all([loadAdminNews(), loadThemes()]);
 });
 
-watch(
-  [selectedStatuses, selectedSort],
-  async () => {
-    await loadArticles();
-  },
-  { deep: true },
-);
-
-async function saveArticle(): Promise<void> {
-  if (!canWrite.value) return;
-  saving.value = true;
-  try {
-    const requestPayload = payload();
-    if (!requestPayload) return;
-    if (editingId.value) {
-      await api.put(`/tools/news/${editingId.value}`, requestPayload);
-      toast("News updated", "success");
-    } else {
-      if (articles.value.some((article) => article.link === requestPayload.link)) {
-        toast("A news article with this link already exists", "error");
-        return;
-      }
-      await api.post<NewsAdminArticle>("/tools/news", requestPayload);
-      toast("News created", "success");
-    }
-    closeDrawer(true);
-    await Promise.all([loadArticles(), loadSources()]);
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    toast(getApiErrorMessage(err, "Failed to save news"), "error");
-  } finally {
-    saving.value = false;
-  }
-}
-
-async function deleteArticle(article: NewsAdminArticle): Promise<void> {
-  if (!canWrite.value) return;
-  if (!window.confirm(`Delete ${article.title}?`)) return;
-  deletingId.value = article.id;
-  try {
-    await api.delete(`/tools/news/${article.id}`);
-    articles.value = articles.value.filter((item) => item.id !== article.id);
-    if (editingId.value === article.id) closeDrawer();
-    toast("News deleted", "success");
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    toast("Failed to delete news", "error");
-  } finally {
-    deletingId.value = null;
-  }
-}
-
-onMounted(() => {
-  void loadSources();
-  void loadArticles();
+watch([activeTheme, page, statusFilter], () => {
+  void loadAdminNews();
 });
 </script>
 
 <template>
   <AdminPageLayout title="news" max-width="xl">
-    <div class="space-y-4">
-      <div class="flex justify-end">
-        <BaseButton v-if="canWrite" variant="primary" @click="openCreateDrawer"
-          >Add news</BaseButton
-        >
-      </div>
-
-      <BaseCard>
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto] md:items-end">
-          <fieldset>
-            <legend class="mb-2 text-sm text-surface-mid">Statuses</legend>
-            <div class="flex flex-wrap gap-3 text-sm text-surface-mid">
-              <label v-for="status in NEWS_STATUSES" :key="status" class="flex items-center gap-2">
-                <input
-                  v-model="selectedStatuses"
-                  type="checkbox"
-                  class="size-4 accent-accent-blue"
-                  :value="status"
-                  :disabled="selectedStatuses.length === 1 && selectedStatuses.includes(status)"
-                />
-                {{ status }}
-              </label>
-            </div>
-          </fieldset>
-          <BaseSelect v-model="selectedSort" label="Sort">
-            <option value="published_at:desc">Published newest</option>
-            <option value="published_at:asc">Published oldest</option>
-            <option value="created_at:desc">Created newest</option>
-            <option value="created_at:asc">Created oldest</option>
-            <option value="updated_at:desc">Updated newest</option>
-            <option value="updated_at:asc">Updated oldest</option>
-          </BaseSelect>
-        </div>
-        <div class="mt-3 flex justify-end">
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            :disabled="!hasAdminFilters"
-            @click="clearAdminFilters"
-          >
-            Clear filters
-          </BaseButton>
-        </div>
-      </BaseCard>
-
-      <div v-if="loading" class="space-y-3" aria-busy="true" aria-label="Loading news">
-        <div
-          v-for="i in 5"
-          :key="i"
-          class="h-32 animate-pulse rounded-lg border border-surface-border bg-surface-card"
-        />
-      </div>
-
-      <BaseCard v-else-if="loadError" role="alert">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-sm text-accent-golden">News could not be loaded.</p>
-          <BaseButton variant="ghost" size="sm" @click="loadArticles">Retry</BaseButton>
-        </div>
-      </BaseCard>
-
-      <BaseCard v-else-if="articles.length === 0">
-        <p class="text-sm text-surface-mid">
-          {{ hasAdminFilters ? "No news match those filters." : "No curated news yet." }}
+    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="text-sm text-surface-mid mb-2">
+          Manage curated news articles, ingestion, and Telegram delivery.
         </p>
-      </BaseCard>
-
-      <template v-else>
-        <BaseCard v-for="article in articles" :key="article.id">
-          <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div class="min-w-0 flex-1">
-              <div class="mb-2 flex flex-wrap items-center gap-2">
-                <h2 class="break-words text-base font-bold text-surface-light">
-                  {{ article.title }}
-                </h2>
-                <span
-                  class="rounded px-2 py-0.5 text-[10px]"
-                  :class="
-                    article.enabled
-                      ? 'bg-accent-blue/20 text-accent-blue'
-                      : 'bg-surface-border text-surface-mid'
-                  "
-                >
-                  {{ article.enabled ? "enabled" : "disabled" }}
-                </span>
-                <span class="rounded bg-surface-border px-2 py-0.5 text-[10px] text-surface-mid">
-                  {{ article.status }}
-                </span>
-                <span class="rounded bg-surface-border px-2 py-0.5 text-[10px] text-surface-mid">
-                  {{ article.origin }}
-                </span>
-              </div>
-              <p class="text-xs text-surface-mid">
-                {{ article.source }} · {{ article.category }} · {{ article.region }} · Published
-                {{ formatDate(article.published_at) }}
-              </p>
-              <p class="mt-1 text-xs text-surface-muted">
-                Created {{ formatDate(article.created_at) }} · Updated
-                {{ formatDate(article.updated_at) }}
-              </p>
-              <p v-if="article.summary" class="mt-2 text-sm text-surface-sage">
-                {{ article.summary }}
-              </p>
-              <a
-                :href="article.link"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mt-2 inline-block max-w-full break-all text-xs text-accent-blue hover:underline"
-              >
-                {{ article.link }}
-              </a>
-            </div>
-            <div class="flex shrink-0 gap-2">
-              <BaseButton v-if="canWrite" variant="ghost" size="sm" @click="editArticle(article)">
-                Edit
-              </BaseButton>
-              <BaseButton
-                v-if="canWrite"
-                variant="ghost"
-                size="sm"
-                :disabled="deletingId === article.id"
-                @click="deleteArticle(article)"
-              >
-                Delete
-              </BaseButton>
-            </div>
-          </div>
-        </BaseCard>
-      </template>
+        <p class="text-xs text-surface-muted">{{ countLabel }}</p>
+      </div>
+      <div v-if="canWrite" class="flex flex-wrap gap-2">
+        <BaseButton variant="ghost" size="sm" :disabled="actionLoading" @click="runIngest">
+          Run ingest
+        </BaseButton>
+        <BaseButton variant="primary" size="sm" :disabled="actionLoading" @click="openCreate">
+          New article
+        </BaseButton>
+      </div>
     </div>
 
-    <BaseDrawer :open="drawerOpen" :title="formTitle" max-width="lg" @close="closeDrawer">
-      <template #default>
-        <form id="news-article-form" class="space-y-4" @submit.prevent="saveArticle">
-          <BaseInput v-model="form.link" label="Link" type="url" required />
-          <BaseInput v-model="form.title" label="Title" required />
-          <BaseSelect v-model="form.source" label="Source">
-            <option value="gLOrng">Auto-detect from URL</option>
-            <option v-for="sourceName in sourceOptionNames" :key="sourceName" :value="sourceName">
-              {{ sourceOptionLabel(sourceName) }}
-            </option>
-          </BaseSelect>
-          <BaseSelect v-model="form.status" label="Status">
-            <option value="draft">Draft</option>
-            <option value="moderating">Moderating</option>
-            <option value="published">Published</option>
-            <option value="archived">Archived</option>
-          </BaseSelect>
-          <BaseInput v-model="form.category" label="Category" required />
-          <BaseInput v-model="form.region" label="Region" required />
-          <BaseInput
-            v-model="form.published_at"
-            label="Published at"
-            type="datetime-local"
-            required
-          />
-          <BaseTextarea v-model="form.summary" label="Summary" :rows="4" />
-          <label class="flex items-center gap-2 text-sm text-surface-mid">
-            <input v-model="form.enabled" type="checkbox" class="size-4 accent-accent-blue" />
-            Enabled
-          </label>
-        </form>
-      </template>
+    <section class="mb-6 flex flex-col gap-3 md:flex-row md:items-center">
+      <label class="text-xs text-surface-mid">
+        Status
+        <select
+          v-model="statusFilter"
+          class="ml-2 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-surface-light"
+        >
+          <option value="all">all</option>
+          <option value="published">published</option>
+          <option value="draft">draft</option>
+          <option value="unpublished">unpublished</option>
+          <option value="failed">failed</option>
+        </select>
+      </label>
 
-      <template #footer>
-        <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <BaseButton type="button" variant="ghost" :disabled="saving" @click="closeDrawer">
-            Cancel
-          </BaseButton>
-          <BaseButton type="submit" form="news-article-form" variant="primary" :disabled="saving">
-            {{ saving ? "Saving..." : "Save" }}
-          </BaseButton>
+      <div class="flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="rounded-lg border px-3 py-1.5 text-xs transition-colors"
+          :class="
+            activeTheme === null
+              ? 'border-accent-blue text-accent-blue'
+              : 'border-surface-border text-surface-mid hover:border-accent-blue'
+          "
+          @click="setTheme(null)"
+        >
+          all themes
+        </button>
+        <button
+          v-for="theme in themes"
+          :key="theme"
+          type="button"
+          class="rounded-lg border px-3 py-1.5 text-xs transition-colors"
+          :class="
+            activeTheme === theme
+              ? 'border-accent-blue text-accent-blue'
+              : 'border-surface-border text-surface-mid hover:border-accent-blue'
+          "
+          @click="setTheme(theme)"
+        >
+          {{ theme }}
+        </button>
+      </div>
+    </section>
+
+    <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading news">
+      <div
+        v-for="i in 5"
+        :key="i"
+        class="h-36 rounded-lg border border-surface-border bg-surface-card animate-pulse"
+      />
+    </section>
+
+    <section
+      v-else-if="listError"
+      class="rounded-lg border border-surface-border bg-surface-card p-8 text-center"
+    >
+      <p class="text-sm text-surface-mid mb-4">{{ listError }}</p>
+      <BaseButton variant="ghost" size="sm" @click="loadAdminNews">Retry</BaseButton>
+    </section>
+
+    <section v-else-if="articles.length" class="space-y-3">
+      <article
+        v-for="item in articles"
+        :key="item.id"
+        class="rounded-lg border border-surface-border bg-surface-card p-5"
+      >
+        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
+          <span>{{ item.status }}</span>
+          <span aria-hidden="true">/</span>
+          <span>{{ item.source_name }}</span>
+          <span aria-hidden="true">/</span>
+          <time :datetime="item.published_at ?? item.created_at">
+            {{ formatNewsDate(item.published_at ?? item.created_at) }}
+          </time>
+          <span v-if="item.telegram_message_id" class="text-accent-blue">
+            Telegram #{{ item.telegram_message_id }}
+          </span>
         </div>
-      </template>
-    </BaseDrawer>
+
+        <h2 class="card-title mb-2">
+          <RouterLink :to="`/news/${item.slug}`" class="hover:text-accent-blue">
+            {{ item.title }}
+          </RouterLink>
+        </h2>
+        <p class="text-sm text-surface-mid mb-3">{{ item.summary }}</p>
+
+        <div class="mb-4 flex flex-wrap gap-2">
+          <span
+            v-for="theme in item.themes"
+            :key="theme"
+            class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid"
+          >
+            {{ theme }}
+          </span>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <BaseButton
+            v-if="canWrite && item.status !== 'published'"
+            variant="ghost"
+            size="sm"
+            :disabled="actionLoading"
+            @click="setStatus(item.id, 'published')"
+          >
+            Publish
+          </BaseButton>
+          <BaseButton
+            v-if="canWrite"
+            variant="ghost"
+            size="sm"
+            :disabled="actionLoading"
+            @click="openEdit(item)"
+          >
+            Edit
+          </BaseButton>
+          <BaseButton
+            v-if="canWrite && item.status === 'published'"
+            variant="ghost"
+            size="sm"
+            :disabled="actionLoading"
+            @click="setStatus(item.id, 'unpublished')"
+          >
+            Unpublish
+          </BaseButton>
+          <BaseButton
+            v-if="canWrite"
+            variant="ghost"
+            size="sm"
+            :disabled="actionLoading"
+            @click="repost(item.id)"
+          >
+            Repost Telegram
+          </BaseButton>
+          <BaseButton
+            v-if="canWrite"
+            variant="ghost"
+            size="sm"
+            :disabled="actionLoading"
+            @click="removeArticle(item.id, item.title)"
+          >
+            Delete
+          </BaseButton>
+          <a
+            :href="item.source_url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center px-3 py-1.5 text-xs text-accent-blue hover:underline"
+          >
+            Source
+          </a>
+        </div>
+      </article>
+    </section>
+
+    <section v-else role="status" class="rounded-lg border border-surface-border bg-surface-card p-8">
+      <h2 class="card-title mb-2">No articles</h2>
+      <p class="text-sm text-surface-mid">
+        No news articles match this filter. Run ingestion after configuring trusted sources.
+      </p>
+    </section>
+
+    <nav
+      v-if="!listLoading && !listError && (articles.length > 0 || page > 1)"
+      class="mt-8 flex items-center justify-between"
+      aria-label="Admin news pagination"
+    >
+      <BaseButton variant="ghost" size="sm" :disabled="page <= 1" @click="goToPage(page - 1)">
+        Previous
+      </BaseButton>
+      <span class="text-xs text-surface-muted">page {{ page }}</span>
+      <BaseButton variant="ghost" size="sm" :disabled="!hasNextPage" @click="goToPage(page + 1)">
+        Next
+      </BaseButton>
+    </nav>
+
+    <NewsArticleDrawer
+      v-if="canWrite"
+      :open="drawerOpen"
+      :mode="drawerMode"
+      :form="form"
+      :loading="actionLoading"
+      @update:form="form = $event"
+      @close="closeDrawer"
+      @save="saveDrawer"
+    />
   </AdminPageLayout>
 </template>

@@ -69,6 +69,19 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     public: true,
   },
   {
+    slug: "news",
+    name: "news",
+    category: "content",
+    categoryLabel: "content",
+    description: "Curated worldwide news digest with source attribution",
+    apiPrefix: "/news",
+    adminRoute: "/admin/tools/news",
+    icon: "◇",
+    capabilities: ["read", "write"],
+    external: false,
+    public: true,
+  },
+  {
     slug: "file-share",
     name: "file share",
     category: "content",
@@ -237,7 +250,9 @@ export interface PlatformCatalog {
 
 /** Public tools shown on /tools for guests (includes non-registry entries). */
 export const PUBLIC_TOOLS: PlatformService[] = [
-  ...PLATFORM_SERVICES.filter((s) => s.public),
+  ...PLATFORM_SERVICES.filter((s) => s.public).map((service) =>
+    service.slug === "news" ? { ...service, adminRoute: "/news" } : service,
+  ),
   {
     slug: "time-date-weather-location",
     name: DATE_TIME_LOCATION_SECTION,

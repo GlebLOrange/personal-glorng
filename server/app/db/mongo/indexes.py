@@ -23,6 +23,11 @@ INDEX_SPECS: list[tuple[str, list[tuple[str, int | str]], dict[str, Any] | None]
     ("expenses", [("tool_name", 1), ("expense_date", -1), ("created_at", -1)], None),
     ("expenses", [("amount", 1), ("expense_date", -1), ("created_at", -1)], None),
     ("expense_categories", [("name", 1)], {"unique": True}),
+    ("news_articles", [("source_url", 1)], {"unique": True}),
+    ("news_articles", [("slug", 1)], {"unique": True}),
+    ("news_articles", [("published_at", -1)], None),
+    ("news_articles", [("themes", 1)], None),
+    ("news_articles", [("status", 1), ("published_at", -1)], None),
     (
         "search_documents",
         [("title", "text"), ("body", "text")],

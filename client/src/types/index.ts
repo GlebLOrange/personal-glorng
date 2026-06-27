@@ -314,6 +314,88 @@ export interface PaginatedRecipes {
   pages: number;
 }
 
+export type NewsStatus = "draft" | "published" | "unpublished" | "failed";
+
+export interface NewsArticle {
+  id: number;
+  slug: string;
+  status: NewsStatus;
+  source_name: string;
+  source_url: string;
+  source_feed_url: string;
+  source_published_at: string | null;
+  original_title: string;
+  title: string;
+  summary: string;
+  bullets: string[];
+  themes: string[];
+  language: string;
+  published_at: string | null;
+  telegram_message_id: number | null;
+  ai_model: string | null;
+  ingest_error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaginatedNews {
+  items: NewsArticle[];
+  total: number;
+  page: number;
+  per_page: number;
+  pages: number;
+}
+
+export interface NewsArticleUpdate {
+  status?: NewsStatus;
+  source_name?: string;
+  source_url?: string;
+  source_feed_url?: string;
+  source_published_at?: string | null;
+  original_title?: string;
+  title?: string;
+  summary?: string;
+  bullets?: string[];
+  themes?: string[];
+  language?: string;
+  ingest_error?: string | null;
+}
+
+export interface NewsArticleCreate {
+  status: NewsStatus;
+  source_name: string;
+  source_url: string;
+  source_feed_url: string;
+  source_published_at: string | null;
+  original_title: string;
+  title: string;
+  summary: string;
+  bullets: string[];
+  themes: string[];
+  language: string;
+}
+
+export interface NewsArticleFormData {
+  status: NewsStatus;
+  source_name: string;
+  source_url: string;
+  source_feed_url: string;
+  source_published_at: string;
+  original_title: string;
+  title: string;
+  summary: string;
+  bullets: string[];
+  themes: string;
+  language: string;
+}
+
+export interface NewsIngestResult {
+  processed: number;
+  created: number;
+  skipped: number;
+  failed: number;
+}
+
 export interface ExpenseCategory {
   id: number;
   name: string;

@@ -509,6 +509,13 @@ class Settings(BaseSettings):
     AI_CHAT_ENABLED: bool
     AI_SEARCH_ENABLED: bool
 
+    # Curated news
+    NEWS_INGEST_ENABLED: bool = False
+    NEWS_SOURCES_JSON: str = "[]"
+    NEWS_INGEST_MAX_ITEMS_PER_RUN: int = 10
+    NEWS_TELEGRAM_BOT_TOKEN: str = ""
+    NEWS_TELEGRAM_CHANNEL_ID: str = ""
+
     # Task intake (Telegram AI)
     TASK_INTAKE_AI_ENABLED: bool
     TASK_INTAKE_CONFIDENCE_THRESHOLD: float

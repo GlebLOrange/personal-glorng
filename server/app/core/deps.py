@@ -266,3 +266,13 @@ def get_recipe_service(
 
 
 RecipeServiceDep = Annotated[RecipeService, Depends(get_recipe_service)]
+
+
+def get_news_service(
+    registry: DbRegistry,
+    audit_svc: AuditServiceDep,
+) -> NewsService:
+    return NewsService(registry, audit_svc)
+
+
+NewsServiceDep = Annotated[NewsService, Depends(get_news_service)]

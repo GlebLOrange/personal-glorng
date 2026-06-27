@@ -1,30 +1,30 @@
+"""MongoDB document for curated news articles."""
+
 from datetime import datetime
+from typing import Literal
 
 from app.db.documents.base import TimestampedDocument
 
-
-class NewsSource(TimestampedDocument):
-    """Admin-managed RSS or Atom source for the public news page."""
-
-    name: str
-    feed_url: str
-    category: str = "world"
-    region: str = "global"
-    enabled: bool = True
-    last_error: str | None = None
-    last_fetched_at: datetime | None = None
+NewsStatus = Literal["draft", "published", "unpublished", "failed"]
 
 
 class NewsArticle(TimestampedDocument):
-    """Stored news article for the public news page."""
+    """Persisted curated news article."""
 
+    slug: str
+    status: NewsStatus = "draft"
+    source_name: str
+    source_url: str
+    source_feed_url: str
+    source_published_at: datetime | None = None
+    original_title: str
     title: str
-    link: str
-    source: str = "gLOrng"
-    origin: str = "manual"
-    status: str = "published"
-    category: str = "world"
-    region: str = "global"
-    summary: str | None = None
-    published_at: datetime
-    enabled: bool = True
+    summary: str
+    bullets: str = "[]"
+    themes: str = "[]"
+    language: str = "en"
+    published_at: datetime | None = None
+    telegram_message_id: int | None = None
+    ai_model: str | None = None
+    ai_input_hash: str | None = None
+    ingest_error: str | None = None

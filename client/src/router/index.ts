@@ -89,6 +89,16 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/pages/admin/tools/RecipesPage.vue"),
   },
   {
+    path: "/news",
+    name: "news",
+    component: () => import("@/pages/NewsPage.vue"),
+  },
+  {
+    path: "/news/:slug",
+    name: "news-article",
+    component: () => import("@/pages/NewsArticlePage.vue"),
+  },
+  {
     path: "/admin/tools/recipes",
     redirect: { name: "recipes" },
   },
@@ -181,6 +191,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/admin/tools/news",
+    name: "tool-news",
+    component: () => import("@/pages/admin/tools/NewsAdminPage.vue"),
+    meta: { requiresAuth: true, requiresSuperuser: true },
+  },
+  {
     path: "/callback",
     name: "oauth-callback",
     component: () => import("@/pages/CallbackPage.vue"),
@@ -217,7 +233,6 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-file-share": "file-share",
   "tool-email": "email",
   "tool-feedback": "feedback",
-  "tool-news-sources": "news-sources",
   "tool-news": "news",
   "tool-ai-chat": "ai-chat",
   "tool-data-extract": "data-extract",

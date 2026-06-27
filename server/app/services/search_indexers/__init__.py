@@ -6,6 +6,7 @@ from app.db.registry import DatabaseRegistry
 from app.services.search_index import remove_by_source, upsert_document
 from app.services.search_indexers.expense import index_expense
 from app.services.search_indexers.feedback import index_feedback
+from app.services.search_indexers.news import NEWS_SOURCE_TYPE, index_news_article
 from app.services.search_indexers.recipe import RECIPE_SOURCE_TYPE, index_recipe
 from app.services.search_indexers.resume import index_resume
 from app.services.search_indexers.task import index_task
@@ -22,6 +23,15 @@ async def _reindex_recipes(registry: DatabaseRegistry) -> int:
     for recipe in recipes:
         await index_recipe(registry, recipe)
     return len(recipes)
+
+
+async def _reindex_news(registry: DatabaseRegistry) -> int:
+    if registry.news is None:
+        return 0
+    articles = await registry.news.list_articles(status="published", limit=10_000)
+    for article in articles:
+        await index_news_article(registry, article)
+    return len(articles)
 
 
 async def _reindex_tasks(registry: DatabaseRegistry) -> int:
@@ -63,6 +73,7 @@ async def _reindex_urls(registry: DatabaseRegistry) -> int:
 SEARCH_REINDEXERS: tuple[tuple[str, ReindexFn], ...] = (
     ("resume", index_resume),
     (RECIPE_SOURCE_TYPE, _reindex_recipes),
+    (NEWS_SOURCE_TYPE, _reindex_news),
     (SearchSourceType.TASK, _reindex_tasks),
     (SearchSourceType.EXPENSE, _reindex_expenses),
     (SearchSourceType.FEEDBACK, _reindex_feedback),
