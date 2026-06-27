@@ -57,27 +57,15 @@ async function startStripeCheckout(): Promise<void> {
         {{ isStartingCheckout ? "Opening..." : "Donate by Card" }}
       </BaseButton>
 
-      <form
+      <a
         v-if="config.paypal.enabled"
-        action="https://www.paypal.com/donate"
-        method="post"
-        target="_top"
+        :href="config.paypal.url"
+        :class="[linkButtonBase, secondaryLinkButton]"
+        target="_blank"
+        rel="noopener noreferrer"
       >
-        <input type="hidden" name="hosted_button_id" value="RJMBWD6K68ADL" />
-        <input
-          type="image"
-          src="https://www.paypalobjects.com/en_US/PL/i/btn/btn_donateCC_LG.gif"
-          name="submit"
-          title="PayPal - The safer, easier way to pay online!"
-          alt="Donate with PayPal button"
-        />
-        <img
-          alt=""
-          src="https://www.paypal.com/en_PL/i/scr/pixel.gif"
-          width="1"
-          height="1"
-        />
-      </form>
+        Donate with PayPal
+      </a>
 
       <a
         v-if="config.patreon.enabled"
