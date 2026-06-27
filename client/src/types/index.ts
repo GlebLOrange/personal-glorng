@@ -337,7 +337,7 @@ export interface NewsArticleCreate {
   original_title: string;
   title: string;
   summary: string;
-  bullets: string[];
+  bullets?: string[];
   themes: string[];
   language: string;
   ai_model?: string | null;

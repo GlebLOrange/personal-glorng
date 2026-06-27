@@ -39,7 +39,7 @@ class NewsArticleCreate(BaseModel):
     original_title: str = Field(min_length=1, max_length=255)
     title: str = Field(min_length=1, max_length=90)
     summary: str = Field(min_length=1, max_length=600)
-    bullets: list[str] = Field(min_length=2, max_length=5)
+    bullets: list[str] = Field(default_factory=list, max_length=5)
     themes: list[NewsTheme] = Field(min_length=1, max_length=4)
     language: str = Field(default="en", min_length=2, max_length=12)
     status: NewsStatus = "draft"
@@ -108,7 +108,7 @@ class NewsArticleUpdate(BaseModel):
     original_title: str | None = Field(None, min_length=1, max_length=255)
     title: str | None = Field(None, min_length=1, max_length=90)
     summary: str | None = Field(None, min_length=1, max_length=600)
-    bullets: list[str] | None = Field(None, min_length=2, max_length=5)
+    bullets: list[str] | None = Field(None, max_length=5)
     themes: list[NewsTheme] | None = Field(None, min_length=1, max_length=4)
     language: str | None = Field(None, min_length=2, max_length=12)
     published_at: datetime | None = None

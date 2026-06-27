@@ -222,7 +222,7 @@ def _article_payload_from_create(
         "original_title": data.original_title,
         "title": data.title,
         "summary": data.summary,
-        "bullets": _dumps_json_list(data.bullets),
+        "bullets": _dumps_json_list(data.bullets or []),
         "themes": _dumps_json_list([str(theme) for theme in data.themes]),
         "language": data.language,
         "published_at": published_at,

@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { formatNewsDate, useNews } from "@/composables/useNews";
 import { usePermissions } from "@/composables/usePermissions";
 
-const router = useRouter();
 const { isSuperuser } = usePermissions();
 const {
   articles,
@@ -27,16 +25,6 @@ onMounted(async () => {
 watch(page, () => {
   void loadNews();
 });
-
-function openArticle(slug: string): void {
-  void router.push(`/news/${slug}`);
-}
-
-function onCardKeydown(event: KeyboardEvent, slug: string): void {
-  if (event.key !== "Enter" && event.key !== " ") return;
-  event.preventDefault();
-  openArticle(slug);
-}
 </script>
 
 <template>
@@ -87,11 +75,7 @@ function onCardKeydown(event: KeyboardEvent, slug: string): void {
       <article
         v-for="item in articles"
         :key="item.id"
-        role="link"
-        tabindex="0"
-        class="cursor-pointer rounded-lg border border-surface-border bg-surface-card p-5 transition-colors hover:border-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-        @click="openArticle(item.slug)"
-        @keydown="onCardKeydown($event, item.slug)"
+        class="rounded-lg border border-surface-border bg-surface-card p-5"
       >
         <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
           <span>{{ item.source_name }}</span>

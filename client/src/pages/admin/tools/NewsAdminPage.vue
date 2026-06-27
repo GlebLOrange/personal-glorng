@@ -5,7 +5,6 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import {
-  NEWS_BULLET_MAX_LENGTH,
   NEWS_SUMMARY_MAX_LENGTH,
   NEWS_THEME_LIMIT,
   NEWS_THEME_SET,
@@ -67,7 +66,7 @@ function emptyForm(): NewsArticleFormData {
     original_title: "",
     title: "",
     summary: "",
-    bullets: ["", ""],
+    bullets: [],
     themes: "world",
     language: "en",
     published_at: "",
@@ -79,8 +78,6 @@ function emptyForm(): NewsArticleFormData {
 }
 
 function formFromArticle(article: NewsArticle): NewsArticleFormData {
-  const bullets = article.bullets.length ? [...article.bullets] : ["", ""];
-  while (bullets.length < 2) bullets.push("");
   return {
     slug: article.slug,
     status: article.status,
@@ -92,7 +89,7 @@ function formFromArticle(article: NewsArticle): NewsArticleFormData {
     original_title: article.original_title,
     title: article.title,
     summary: article.summary,
-    bullets,
+    bullets: [],
     themes: article.themes.join(", "),
     language: article.language,
     published_at: article.published_at?.slice(0, 16) ?? "",
@@ -110,10 +107,6 @@ function parsedThemes(): string[] {
     .filter(Boolean);
 }
 
-function parsedBullets(): string[] {
-  return form.value.bullets.map((bullet) => bullet.trim()).filter(Boolean);
-}
-
 function canReplaceAutoValue(currentValue: string, lastAutoValue: string | null): boolean {
   return !currentValue.trim() || (lastAutoValue !== null && currentValue === lastAutoValue);
 }
@@ -128,17 +121,6 @@ function normalizedSourcePublishedAt(): string | null {
   return normalizedDateTime(form.value.source_published_at);
 }
 
-function normalizedPublishedAt(): string | null {
-  return normalizedDateTime(form.value.published_at);
-}
-
-function telegramMessageIdPayload(): number | null {
-  const value = form.value.telegram_message_id.trim();
-  if (!value) return null;
-  const messageId = Number(value);
-  return Number.isInteger(messageId) && messageId >= 0 ? messageId : Number.NaN;
-}
-
 function optionalText(value: string): string | null {
   const trimmed = value.trim();
   return trimmed || null;
@@ -146,10 +128,6 @@ function optionalText(value: string): string | null {
 
 function sourcePublishedAtPayload(): string | null {
   return normalizedSourcePublishedAt();
-}
-
-function publishedAtPayload(): string | null {
-  return normalizedPublishedAt();
 }
 
 function sourceUrlPayload(): string | null {
@@ -232,7 +210,6 @@ async function updateForm(nextForm: NewsArticleFormData): Promise<void> {
 function validateForm(): boolean {
   const title = form.value.title.trim();
   const summary = form.value.summary.trim();
-  const bullets = parsedBullets();
   const themes = parsedThemes();
 
   if (!title) {
@@ -256,18 +233,6 @@ function validateForm(): boolean {
     toast("Source URL must start with http:// or https://", "error");
     return false;
   }
-  if (bullets.length < 2) {
-    toast("Add at least two key points", "error");
-    return false;
-  }
-  if (bullets.length > 5) {
-    toast("Add no more than five key points", "error");
-    return false;
-  }
-  if (bullets.some((bullet) => bullet.length > NEWS_BULLET_MAX_LENGTH)) {
-    toast(`Each key point must be ${NEWS_BULLET_MAX_LENGTH} characters or fewer`, "error");
-    return false;
-  }
   if (themes.length < 1) {
     toast("Add at least one theme", "error");
     return false;
@@ -282,14 +247,6 @@ function validateForm(): boolean {
   }
   if (dateIsInvalid(form.value.source_published_at, normalizedSourcePublishedAt())) {
     toast("Source published date is invalid", "error");
-    return false;
-  }
-  if (dateIsInvalid(form.value.published_at, normalizedPublishedAt())) {
-    toast("Published date is invalid", "error");
-    return false;
-  }
-  if (Number.isNaN(telegramMessageIdPayload())) {
-    toast("Telegram message ID must be a whole number", "error");
     return false;
   }
   return true;
@@ -309,12 +266,8 @@ function buildCreatePayload(): NewsArticleCreate {
     original_title: originalTitle,
     title,
     summary: form.value.summary.trim(),
-    bullets: parsedBullets(),
     themes: parsedThemes(),
     language: form.value.language.trim() || "en",
-    ai_model: optionalText(form.value.ai_model),
-    ai_input_hash: optionalText(form.value.ai_input_hash),
-    ingest_error: optionalText(form.value.ingest_error),
   };
 }
 
@@ -322,8 +275,6 @@ function buildUpdatePayload(): NewsArticleUpdate {
   return {
     ...buildCreatePayload(),
     slug: slugPayload(),
-    published_at: publishedAtPayload(),
-    telegram_message_id: telegramMessageIdPayload(),
   };
 }
 
@@ -339,13 +290,6 @@ async function runIngest(): Promise<void> {
 async function setStatus(articleId: number, status: NewsStatus): Promise<void> {
   await updateArticle(articleId, { status });
   await loadAdminNews();
-}
-
-async function removeArticle(articleId: number, title: string): Promise<void> {
-  if (!window.confirm(`Delete "${title}"? This cannot be undone.`)) return;
-  if (await deleteArticle(articleId)) {
-    await loadAdminNews();
-  }
 }
 
 async function repost(articleId: number): Promise<void> {
@@ -369,6 +313,17 @@ function openEdit(article: NewsArticle): void {
   drawerOpen.value = true;
 }
 
+function openEditableArticle(article: NewsArticle): void {
+  if (!canWrite.value) return;
+  openEdit(article);
+}
+
+function onArticleKeydown(event: KeyboardEvent, article: NewsArticle): void {
+  if (!canWrite.value || (event.key !== "Enter" && event.key !== " ")) return;
+  event.preventDefault();
+  openEdit(article);
+}
+
 function closeDrawer(): void {
   drawerOpen.value = false;
   editingArticleId.value = null;
@@ -383,6 +338,15 @@ async function saveDrawer(): Promise<void> {
     const updated = await updateArticle(editingArticleId.value, buildUpdatePayload());
     if (!updated) return;
   }
+  closeDrawer();
+  await loadAdminNews();
+}
+
+async function deleteDrawerArticle(): Promise<void> {
+  if (!editingArticleId.value) return;
+  const title = form.value.title.trim() || "this article";
+  if (!window.confirm(`Delete "${title}"? This cannot be undone.`)) return;
+  if (!(await deleteArticle(editingArticleId.value))) return;
   closeDrawer();
   await loadAdminNews();
 }
@@ -435,7 +399,16 @@ watch(page, () => {
       <article
         v-for="item in articles"
         :key="item.id"
-        class="rounded-lg border border-surface-border bg-surface-card p-5"
+        :role="canWrite ? 'button' : undefined"
+        :tabindex="canWrite ? 0 : undefined"
+        :class="[
+          'rounded-lg border border-surface-border bg-surface-card p-5',
+          canWrite
+            ? 'cursor-pointer transition-colors hover:border-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50'
+            : '',
+        ]"
+        @click="openEditableArticle(item)"
+        @keydown="onArticleKeydown($event, item)"
       >
         <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
           <span>{{ item.status }}</span>
@@ -451,12 +424,7 @@ watch(page, () => {
         </div>
 
         <h2 class="card-title mb-2">
-          <RouterLink
-            :to="{ name: 'tool-news-article', params: { id: item.id } }"
-            class="hover:text-accent-blue"
-          >
-            {{ item.title }}
-          </RouterLink>
+          {{ item.title }}
         </h2>
         <p class="text-sm text-surface-mid mb-3">{{ item.summary }}</p>
 
@@ -470,7 +438,7 @@ watch(page, () => {
           </span>
         </div>
 
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2" @click.stop @keydown.stop>
           <BaseButton
             v-if="canWrite && item.status !== 'published'"
             variant="ghost"
@@ -479,15 +447,6 @@ watch(page, () => {
             @click="setStatus(item.id, 'published')"
           >
             Publish
-          </BaseButton>
-          <BaseButton
-            v-if="canWrite"
-            variant="ghost"
-            size="sm"
-            :disabled="actionLoading"
-            @click="openEdit(item)"
-          >
-            Edit
           </BaseButton>
           <BaseButton
             v-if="canWrite && item.status === 'published'"
@@ -507,20 +466,12 @@ watch(page, () => {
           >
             Repost Telegram
           </BaseButton>
-          <BaseButton
-            v-if="canWrite"
-            variant="ghost"
-            size="sm"
-            :disabled="actionLoading"
-            @click="removeArticle(item.id, item.title)"
-          >
-            Delete
-          </BaseButton>
           <a
             :href="item.source_url"
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center px-3 py-1.5 text-xs text-accent-blue hover:underline"
+            @click.stop
           >
             Source
           </a>
@@ -558,6 +509,7 @@ watch(page, () => {
       :loading="actionLoading"
       @update:form="updateForm"
       @close="closeDrawer"
+      @delete="deleteDrawerArticle"
       @save="saveDrawer"
     />
   </AdminPageLayout>
