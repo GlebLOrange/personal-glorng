@@ -439,6 +439,11 @@ class NewsService:
             raise NotFoundError("News article not found")
         return self._to_response(article)
 
+    async def get_article(self, article_id: int) -> NewsArticleResponse:
+        """Return any article by id for admin tools."""
+        article = await self.require_article(article_id)
+        return self._to_response(article)
+
     async def create_article(
         self,
         data: NewsArticleCreate,

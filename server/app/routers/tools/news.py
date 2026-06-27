@@ -1,10 +1,11 @@
-"""Curated news API. Public reads; writes require `news:write`."""
+"""Curated news API. Public reads; admin routes use news capabilities."""
 
 from fastapi import APIRouter, Depends
 
-from app.core.deps import AdminUser, NewsServiceDep
+from app.core.deps import AuthorizedUser, NewsServiceDep, require_capability
 from app.core.rate_limit import rate_limit_api
 from app.db.documents.news import NewsStatus
+from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.news import (
     NewsArticleCreate,
@@ -43,11 +44,12 @@ async def list_news(
     "/admin",
     response_model=NewsArticleListResponse,
     summary="List news for admin",
-    description="Requires platform superuser.",
+    description=requires_capability("news", "read"),
+    dependencies=[Depends(require_capability("news", "read"))],
 )
 async def list_news_admin(
     svc: NewsServiceDep,
-    user: AdminUser,
+    user: AuthorizedUser,
     status: NewsStatus | None = None,
     page: int = 1,
     per_page: int = 20,
@@ -77,15 +79,33 @@ async def list_news_themes(svc: NewsServiceDep) -> list[str]:
     "/metadata",
     response_model=NewsArticleMetadataResponse,
     summary="Load article metadata",
-    description="Requires platform superuser.",
+    description=requires_capability("news", "write"),
+    dependencies=[Depends(require_capability("news", "write"))],
 )
 async def load_article_metadata(
     data: NewsArticleMetadataRequest,
     svc: NewsServiceDep,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> NewsArticleMetadataResponse:
     """Load article metadata from a public URL."""
     return await svc.load_article_metadata(str(data.url), actor_id=user.id)
+
+
+@router.get(
+    "/admin/{article_id}",
+    response_model=NewsArticleResponse,
+    summary="Get news article for admin",
+    description=requires_capability("news", "read"),
+    dependencies=[Depends(require_capability("news", "read"))],
+)
+async def get_news_article_admin(
+    article_id: int,
+    svc: NewsServiceDep,
+    user: AuthorizedUser,
+) -> NewsArticleResponse:
+    """Get any news article by ID for admin tools."""
+    del user
+    return await svc.get_article(article_id)
 
 
 @router.get(
@@ -104,12 +124,13 @@ async def get_news_article(slug: str, svc: NewsServiceDep) -> NewsArticleRespons
     "",
     response_model=NewsArticleResponse,
     summary="Create news article",
-    description="Requires platform superuser.",
+    description=requires_capability("news", "write"),
+    dependencies=[Depends(require_capability("news", "write"))],
 )
 async def create_news_article(
     data: NewsArticleCreate,
     svc: NewsServiceDep,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> NewsArticleResponse:
     """Create a news article manually."""
     return await svc.create_article(data, actor_id=user.id)
@@ -119,11 +140,12 @@ async def create_news_article(
     "/ingest",
     response_model=NewsIngestResponse,
     summary="Run news ingestion",
-    description="Requires platform superuser.",
+    description=requires_capability("news", "write"),
+    dependencies=[Depends(require_capability("news", "write"))],
 )
 async def ingest_news(
     svc: NewsServiceDep,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> NewsIngestResponse:
     """Run a news ingestion pass."""
     from app.services.news_ingest import NewsIngestService
@@ -135,12 +157,13 @@ async def ingest_news(
     "/{article_id}/telegram",
     response_model=NewsArticleResponse,
     summary="Publish news article to Telegram",
-    description="Requires platform superuser.",
+    description=requires_capability("news", "write"),
+    dependencies=[Depends(require_capability("news", "write"))],
 )
 async def publish_news_to_telegram(
     article_id: int,
     svc: NewsServiceDep,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> NewsArticleResponse:
     """Publish an article to the configured Telegram channel."""
     del user
@@ -155,13 +178,14 @@ async def publish_news_to_telegram(
     "/{article_id}",
     response_model=NewsArticleResponse,
     summary="Update news article",
-    description="Requires platform superuser.",
+    description=requires_capability("news", "write"),
+    dependencies=[Depends(require_capability("news", "write"))],
 )
 async def update_news_article(
     article_id: int,
     data: NewsArticleUpdate,
     svc: NewsServiceDep,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> NewsArticleResponse:
     """Update a news article."""
     return await svc.update_article(article_id, data, actor_id=user.id)
@@ -171,12 +195,13 @@ async def update_news_article(
     "/{article_id}",
     response_model=MessageResponse,
     summary="Delete news article",
-    description="Requires platform superuser.",
+    description=requires_capability("news", "write"),
+    dependencies=[Depends(require_capability("news", "write"))],
 )
 async def delete_news_article(
     article_id: int,
     svc: NewsServiceDep,
-    user: AdminUser,
+    user: AuthorizedUser,
 ) -> MessageResponse:
     """Delete a news article."""
     await svc.delete_article(article_id, actor_id=user.id)

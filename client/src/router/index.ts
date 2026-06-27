@@ -183,7 +183,13 @@ const routes: RouteRecordRaw[] = [
     path: "/admin/tools/news",
     name: "tool-news",
     component: () => import("@/pages/admin/tools/NewsAdminPage.vue"),
-    meta: { requiresAuth: true, requiresSuperuser: true },
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/admin/tools/news/:id",
+    name: "tool-news-article",
+    component: () => import("@/pages/admin/tools/NewsArticleAdminPage.vue"),
+    meta: { requiresAuth: true },
   },
   {
     path: "/callback",
@@ -223,6 +229,7 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-email": "email",
   "tool-feedback": "feedback",
   "tool-news": "news",
+  "tool-news-article": "news",
   "tool-news-sources": "news-sources",
   "tool-ai-chat": "ai-chat",
   "tool-data-extract": "data-extract",
