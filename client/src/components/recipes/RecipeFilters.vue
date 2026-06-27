@@ -159,10 +159,6 @@ onUnmounted(() => {
         <BaseButton v-if="hasActiveFilters" variant="ghost" size="sm" @click="emit('clearFilters')">
           Clear filters
         </BaseButton>
-
-        <BaseButton v-if="canWrite" variant="primary" size="sm" @click="emit('create')">
-          + Add
-        </BaseButton>
       </div>
 
       <slot />

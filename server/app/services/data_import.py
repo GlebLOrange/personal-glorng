@@ -22,6 +22,7 @@ from app.services.audit import AuditService
 from app.services.data_extract import extract_upload
 
 PREVIEW_LIMIT = 10
+PROMOTE_BATCH_SIZE = 500
 
 
 @dataclass
@@ -35,7 +36,9 @@ class ImportResult:
     errors: list[dict[str, Any]] = field(default_factory=list)
 
 
-def _batch_status(row_count: int, error_count: int) -> Literal["completed", "partial", "failed"]:
+def _batch_status(
+    row_count: int, error_count: int
+) -> Literal["completed", "partial", "failed"]:
     if row_count == 0 and error_count > 0:
         return "failed"
     if error_count > 0:
@@ -240,8 +243,23 @@ async def promote_batch(
     repo = _imports(registry)
     batch = await repo.batches.get(batch_id)
     assert_batch_access(batch, user)
-    rows = await repo.rows.list_success_for_batch(batch_id)
-    result = await promote_batch_rows(batch, rows, _embed_items(registry))
+    embed_repo = _embed_items(registry)
+    result = PromoteResult(promoted=0, skipped=0, errors=[])
+    after_row_index: int | None = None
+    while True:
+        rows = await repo.rows.list_success_for_batch(
+            batch_id,
+            after_row_index=after_row_index,
+            limit=PROMOTE_BATCH_SIZE,
+        )
+        if not rows:
+            break
+        chunk_result = await promote_batch_rows(batch, rows, embed_repo)
+        result.promoted += chunk_result.promoted
+        result.skipped += chunk_result.skipped
+        result.errors.extend(chunk_result.errors)
+        after_row_index = rows[-1].row_index
+
     if result.promoted > 0:
         await repo.batches.update_fields(
             batch_id,

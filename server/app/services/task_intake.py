@@ -20,7 +20,7 @@ from app.schemas.task_intake import (
     TaskDraft,
     TaskIntakeResponse,
 )
-from app.services.llm_json import complete_json, openai_api_key
+from app.services.llm_json import complete_json, gemini_api_key
 from app.services.task import TaskService
 from app.settings import get_settings
 from app.todobot.utils.nlp import parse_task_input
@@ -152,7 +152,7 @@ class TaskIntakeService:
         hints = self.nlp_hints(text)
         turns = intake.clarification_turns_json or []
 
-        if is_task_intake_ai_enabled() and openai_api_key():
+        if is_task_intake_ai_enabled() and gemini_api_key():
             result = await self._extract_with_llm(
                 text=text,
                 hints=hints,
@@ -340,11 +340,11 @@ class TaskIntakeService:
             "clarification_history": turns,
         }
         raw = await complete_json(
-            api_key=openai_api_key() or "",
-            model=self.settings.OPENAI_CHAT_MODEL,
+            api_key=gemini_api_key() or "",
+            model=self.settings.GEMINI_CHAT_MODEL,
             system_prompt=EXTRACTION_SYSTEM_PROMPT,
             user_content=json.dumps(user_payload),
-            base_url=self.settings.LLM_BASE_URL or None,
+            api_base_url=self.settings.GEMINI_API_BASE_URL,
         )
         return self._parse_extraction_payload(raw)
 

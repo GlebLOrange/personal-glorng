@@ -1,5 +1,6 @@
 import re
 from datetime import UTC, date, datetime
+from decimal import Decimal
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -17,6 +18,12 @@ EXPENSE_SORTS: dict[str, list[tuple[str, int]]] = {
     "amount_asc": [("amount", 1), ("expense_date", -1), ("created_at", -1)],
     "amount_desc": [("amount", -1), ("expense_date", -1), ("created_at", -1)],
 }
+
+
+def _decimal_from_mongo(value: object) -> Decimal:
+    if hasattr(value, "to_decimal"):
+        return value.to_decimal()
+    return Decimal(str(value))
 
 
 class ExpenseRepository:
@@ -59,7 +66,9 @@ class ExpenseRepository:
 
     @staticmethod
     def _date_bound(value: date, *, end_of_day: bool = False) -> datetime:
-        when = datetime.combine(value, datetime.max.time() if end_of_day else datetime.min.time())
+        when = datetime.combine(
+            value, datetime.max.time() if end_of_day else datetime.min.time()
+        )
         return when.replace(tzinfo=UTC)
 
     def _expense_query(
@@ -102,12 +111,7 @@ class ExpenseRepository:
             category=category,
         )
         sort_spec = EXPENSE_SORTS.get(sort, EXPENSE_SORTS["date_desc"])
-        cursor = (
-            self.expenses._col()
-            .find(query)
-            .sort(sort_spec)
-            .skip(offset)
-        )
+        cursor = self.expenses._col().find(query).sort(sort_spec).skip(offset)
         if limit is not None:
             cursor = cursor.limit(limit)
         return [_parse_doc(Expense, row) async for row in cursor]
@@ -127,3 +131,75 @@ class ExpenseRepository:
             category=category,
         )
         return await self.expenses._col().count_documents(query)
+
+    async def summarize_expenses(
+        self,
+        *,
+        date_from: date | None = None,
+        date_to: date | None = None,
+    ) -> dict[str, list[dict[str, Any]]]:
+        query = self._expense_query(date_from=date_from, date_to=date_to)
+        pipeline: list[dict[str, Any]] = [
+            {"$match": query},
+            {
+                "$facet": {
+                    "total": [
+                        {
+                            "$group": {
+                                "_id": {"currency": "$currency"},
+                                "amount": {"$sum": {"$toDecimal": "$amount"}},
+                            },
+                        },
+                    ],
+                    "by_month": [
+                        {
+                            "$group": {
+                                "_id": {
+                                    "period": {
+                                        "$dateToString": {
+                                            "format": "%Y-%m",
+                                            "date": "$expense_date",
+                                        },
+                                    },
+                                    "currency": "$currency",
+                                },
+                                "amount": {"$sum": {"$toDecimal": "$amount"}},
+                            },
+                        },
+                        {"$sort": {"_id.period": 1}},
+                    ],
+                    "by_tool": [
+                        {
+                            "$group": {
+                                "_id": {
+                                    "tool_name": "$tool_name",
+                                    "currency": "$currency",
+                                },
+                                "amount": {"$sum": {"$toDecimal": "$amount"}},
+                            },
+                        },
+                    ],
+                    "by_category": [
+                        {
+                            "$group": {
+                                "_id": {
+                                    "category": {
+                                        "$ifNull": ["$category", "Uncategorized"],
+                                    },
+                                    "currency": "$currency",
+                                },
+                                "amount": {"$sum": {"$toDecimal": "$amount"}},
+                            },
+                        },
+                    ],
+                },
+            },
+        ]
+        rows = await self.expenses._col().aggregate(pipeline).to_list(length=1)
+        if not rows:
+            return {"total": [], "by_month": [], "by_tool": [], "by_category": []}
+        summary = rows[0]
+        for bucket in ("total", "by_month", "by_tool", "by_category"):
+            for row in summary.get(bucket, []):
+                row["amount"] = _decimal_from_mongo(row["amount"])
+        return summary

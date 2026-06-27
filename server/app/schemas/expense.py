@@ -54,7 +54,7 @@ class ExpenseCreate(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "tool_name": "OpenAI API",
+                "tool_name": "Gemini API",
                 "amount": "12.50",
                 "currency": "USD",
                 "expense_date": "2026-06-01",

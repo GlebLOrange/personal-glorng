@@ -5,6 +5,7 @@ from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 from math import ceil
+from typing import Any
 
 from app.core.catalogs import ALLOWED_CURRENCIES, DEFAULT_EXPENSE_CURRENCY
 from app.core.exceptions import ValidationError
@@ -28,6 +29,7 @@ from app.services.expense_category import ExpenseCategoryService
 from app.services.search_indexers.expense import index_expense, remove_expense
 
 _CSV_FORMULA_PREFIXES = frozenset("=+-@\t\r")
+_CSV_EXPORT_ROW_LIMIT = 10_000
 
 
 def _csv_cell(value: str) -> str:
@@ -169,11 +171,22 @@ class ExpenseService:
         tool_name: str | None = None,
         category: str | None = None,
     ) -> str:
+        total = await self._expenses().count_expenses(
+            date_from=date_from,
+            date_to=date_to,
+            tool_name=tool_name,
+            category=category,
+        )
+        if total > _CSV_EXPORT_ROW_LIMIT:
+            raise ValidationError(
+                "CSV export is limited to 10000 rows; narrow the filters and retry",
+            )
         expenses = await self._expenses().list_expenses(
             date_from=date_from,
             date_to=date_to,
             tool_name=tool_name,
             category=category,
+            limit=_CSV_EXPORT_ROW_LIMIT,
         )
         buffer = io.StringIO()
         writer = csv.writer(buffer)
@@ -205,7 +218,7 @@ class ExpenseService:
                 f"display_currency must be one of: {', '.join(ALLOWED_CURRENCIES)}"
             )
 
-        expenses = await self._expenses().list_expenses(
+        summary = await self._expenses().summarize_expenses(
             date_from=date_from,
             date_to=date_to,
         )
@@ -213,25 +226,53 @@ class ExpenseService:
         rates = await self._currency_svc.get_rates()
         rates_meta = await self._currency_svc.get_rates_meta()
 
-        total = Decimal("0")
         month_totals: dict[str, Decimal] = defaultdict(Decimal)
         tool_totals: dict[str, Decimal] = defaultdict(Decimal)
         category_totals: dict[str, Decimal] = defaultdict(Decimal)
 
-        for expense in expenses:
-            amount = Decimal(str(expense.amount))
+        def convert_bucket(
+            rows: list[dict[str, Any]],
+            label_key: str,
+        ) -> dict[str, Decimal]:
+            totals: dict[str, Decimal] = defaultdict(Decimal)
+            for row in rows:
+                row_id = row.get("_id", {})
+                if not isinstance(row_id, dict):
+                    continue
+                label = row_id.get(label_key)
+                currency = row_id.get("currency")
+                if not isinstance(label, str) or not isinstance(currency, str):
+                    continue
+                amount = row["amount"]
+                converted = self._currency_svc.convert(
+                    amount,
+                    currency,
+                    display_currency,
+                    rates,
+                )
+                totals[label] += converted
+            return totals
+
+        total = Decimal("0")
+        for row in summary.get("total", []):
+            row_id = row.get("_id", {})
+            if not isinstance(row_id, dict):
+                continue
+            currency = row_id.get("currency")
+            if not isinstance(currency, str):
+                continue
+            amount = row["amount"]
             converted = self._currency_svc.convert(
                 amount,
-                expense.currency,
+                currency,
                 display_currency,
                 rates,
             )
             total += converted
-            period = expense.expense_date.strftime("%Y-%m")
-            month_totals[period] += converted
-            tool_totals[expense.tool_name] += converted
-            category = expense.category or "Uncategorized"
-            category_totals[category] += converted
+
+        month_totals = convert_bucket(summary.get("by_month", []), "period")
+        tool_totals = convert_bucket(summary.get("by_tool", []), "tool_name")
+        category_totals = convert_bucket(summary.get("by_category", []), "category")
 
         return ExpenseSummary(
             total=total.quantize(Decimal("0.01")),
