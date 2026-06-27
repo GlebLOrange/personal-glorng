@@ -16,6 +16,7 @@ from app.db.repositories.data_import import DataImportRepository
 from app.db.repositories.expense import ExpenseRepository
 from app.db.repositories.feedback import FeedbackRepository
 from app.db.repositories.fileshare import FileShareRepository
+from app.db.repositories.news import NewsArticleRepository, NewsSourceRepository
 from app.db.repositories.recipe import RecipeRepository
 from app.db.repositories.search import SearchRepository
 from app.db.repositories.task import TaskRepository
@@ -47,6 +48,8 @@ class DatabaseRegistry:
     audit: AuditRepository | None = None
     app_logs: AppLogRepository | None = None
     data_imports: DataImportRepository | None = None
+    news_sources: NewsSourceRepository | None = None
+    news_articles: NewsArticleRepository | None = None
     _repos_initialized: bool = field(default=False, repr=False)
 
     def require_mongo(self) -> AsyncIOMotorDatabase:
@@ -83,4 +86,6 @@ class DatabaseRegistry:
         self.audit = AuditRepository(mongo)
         self.app_logs = AppLogRepository(mongo)
         self.data_imports = DataImportRepository(mongo)
+        self.news_sources = NewsSourceRepository(mongo)
+        self.news_articles = NewsArticleRepository(mongo)
         self._repos_initialized = True

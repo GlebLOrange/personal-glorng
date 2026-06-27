@@ -73,8 +73,17 @@ class StructuredLogger:
     def info(self, message: str, context: dict[str, Any] | None = None) -> None:
         _loguru.bind(context=context or {}).info(message)
 
-    def warning(self, message: str, context: dict[str, Any] | None = None) -> None:
-        _loguru.bind(context=context or {}).warning(message)
+    def warning(
+        self,
+        message: str,
+        context: dict[str, Any] | None = None,
+        error: Exception | None = None,
+    ) -> None:
+        ctx = {**(context or {})}
+        if error:
+            ctx["error"] = str(error)
+            ctx["error_type"] = type(error).__name__
+        _loguru.opt(exception=error).bind(context=ctx).warning(message)
 
     def error(
         self,
