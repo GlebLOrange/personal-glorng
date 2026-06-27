@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, shallowRef, watch } from "vue";
+import { computed, defineAsyncComponent, nextTick, onMounted, ref, shallowRef, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import ExpenseCategoryChips from "@/components/expenses/ExpenseCategoryChips.vue";
@@ -8,7 +8,6 @@ import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue
 import ExpenseCurrencyConverter from "@/components/expenses/ExpenseCurrencyConverter.vue";
 import ExpenseDateFilters from "@/components/expenses/ExpenseDateFilters.vue";
 import ExpenseFormModal from "@/components/expenses/ExpenseFormModal.vue";
-import ExpenseInsights from "@/components/expenses/ExpenseInsights.vue";
 import ExpenseList from "@/components/expenses/ExpenseList.vue";
 import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
 import ExpenseSummaryCard from "@/components/expenses/ExpenseSummaryCard.vue";
@@ -41,6 +40,9 @@ type ExpenseTab = "transactions" | "insights" | "converter" | "settings";
 
 const EXPENSE_PER_PAGE = 20;
 const EXPENSE_TABS: ExpenseTab[] = ["transactions", "insights", "converter", "settings"];
+const ExpenseInsights = defineAsyncComponent(
+  () => import("@/components/expenses/ExpenseInsights.vue"),
+);
 const expenseTabItems = EXPENSE_TABS.map((tab) => ({
   id: tab,
   label: tab[0].toUpperCase() + tab.slice(1),

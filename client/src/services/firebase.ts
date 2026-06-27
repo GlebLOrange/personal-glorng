@@ -1,17 +1,6 @@
-import { initializeApp, type FirebaseApp } from "firebase/app";
-import {
-  getAnalytics,
-  logEvent,
-  setAnalyticsCollectionEnabled,
-  type Analytics,
-} from "firebase/analytics";
-import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  type Auth,
-  type UserCredential,
-} from "firebase/auth";
+import type { FirebaseApp } from "firebase/app";
+import type { Analytics } from "firebase/analytics";
+import type { Auth, UserCredential } from "firebase/auth";
 import type { Router } from "vue-router";
 
 import { isFirebaseAnalyticsEnabled, isFirebaseEnabled } from "@/constants/firebase";
@@ -31,29 +20,33 @@ function firebaseConfig() {
   };
 }
 
-function getFirebaseApp(): FirebaseApp {
+async function getFirebaseApp(): Promise<FirebaseApp> {
   if (!isFirebaseEnabled) {
     throw new Error("Firebase is not configured");
   }
+  const { initializeApp } = await import("firebase/app");
   app ??= initializeApp(firebaseConfig());
   return app;
 }
 
-export function getFirebaseAuth(): Auth {
-  auth ??= getAuth(getFirebaseApp());
+export async function getFirebaseAuth(): Promise<Auth> {
+  const { getAuth } = await import("firebase/auth");
+  auth ??= getAuth(await getFirebaseApp());
   return auth;
 }
 
 export async function signInWithGooglePopup(): Promise<UserCredential> {
+  const { GoogleAuthProvider, signInWithPopup } = await import("firebase/auth");
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
-  return signInWithPopup(getFirebaseAuth(), provider);
+  return signInWithPopup(await getFirebaseAuth(), provider);
 }
 
-export function initFirebaseAnalytics(router: Router): void {
+export async function initFirebaseAnalytics(router: Router): Promise<void> {
   if (!isFirebaseAnalyticsEnabled) return;
 
-  analytics ??= getAnalytics(getFirebaseApp());
+  const { getAnalytics, logEvent, setAnalyticsCollectionEnabled } = await import("firebase/analytics");
+  analytics ??= getAnalytics(await getFirebaseApp());
   setAnalyticsCollectionEnabled(analytics, true);
 
   if (removeAnalyticsRouteHook) return;
@@ -67,7 +60,10 @@ export function initFirebaseAnalytics(router: Router): void {
   });
 }
 
-export function disableFirebaseAnalytics(): void {
+export async function disableFirebaseAnalytics(): Promise<void> {
+  if (!analytics) return;
+
+  const { setAnalyticsCollectionEnabled } = await import("firebase/analytics");
   if (analytics) {
     setAnalyticsCollectionEnabled(analytics, false);
   }

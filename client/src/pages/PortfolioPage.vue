@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref } from "vue";
 
 import ContactIcon from "@/components/contact/ContactIcon.vue";
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import DonationsBlock from "@/components/donations/DonationsBlock.vue";
-import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
-import PortfolioSearchChat from "@/components/search/PortfolioSearchChat.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
 import ExperienceList from "@/components/resume/ExperienceList.vue";
@@ -23,6 +21,11 @@ import { isAiSearchEnabled } from "@/utils/featureFlags";
 
 const SPOTIFY_FALLBACK_EMBED_SRC =
   "https://open.spotify.com/embed/track/7lQ8MOhq6IN2w8EYcFNSUk?utm_source=generator&theme=0";
+
+const FeedbackModal = defineAsyncComponent(() => import("@/components/feedback/FeedbackModal.vue"));
+const PortfolioSearchChat = defineAsyncComponent(
+  () => import("@/components/search/PortfolioSearchChat.vue"),
+);
 
 const { data: resumeApi, fetch: fetchResume } = useCachedApi<ResumeData>("/resume");
 const { data: donations, fetch: fetchDonations } =

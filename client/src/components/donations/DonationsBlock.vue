@@ -78,7 +78,7 @@ async function startStripeCheckout(): Promise<void> {
           <span class="font-semibold">Donate with PayPal</span>
           <span class="text-xs font-medium text-surface-mid">Cards accepted</span>
         </span>
-      </a>
+      </form>
 
       <a
         v-if="config.patreon.enabled"
