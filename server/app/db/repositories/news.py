@@ -2,7 +2,7 @@
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.db.documents.news import NewsArticle, NewsStatus
+from app.db.documents.news import NewsArticle, NewsSource, NewsStatus
 from app.db.repositories.base import MongoRepository, _parse_doc
 
 
@@ -68,3 +68,21 @@ class NewsRepository(MongoRepository[NewsArticle]):
         if status:
             query["status"] = status
         return query
+
+
+class NewsSourceRepository(MongoRepository[NewsSource]):
+    """Mongo repository for RSS/Atom source queries."""
+
+    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+        """Initialize the news source repository."""
+        super().__init__(db, "news_sources", NewsSource)
+
+    async def get_by_feed_url(self, feed_url: str) -> NewsSource | None:
+        """Return a source by feed URL."""
+        data = await self._col().find_one({"feed_url": feed_url})
+        return _parse_doc(NewsSource, data) if data else None
+
+    async def list_sources(self) -> list[NewsSource]:
+        """List sources ordered for admin display."""
+        cursor = self._col().find({}).sort([("name", 1), ("id", 1)])
+        return [_parse_doc(NewsSource, row) async for row in cursor]

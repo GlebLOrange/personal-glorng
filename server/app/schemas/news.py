@@ -180,6 +180,78 @@ class NewsArticleListResponse(PaginatedResponse[NewsArticleResponse]):
     """Paginated news article list response."""
 
 
+class NewsSourceCreate(BaseModel):
+    """Admin/create payload for RSS news sources."""
+
+    name: str = Field(min_length=1, max_length=120)
+    feed_url: HttpUrl
+    category: str = Field(default="world", min_length=1, max_length=80)
+    region: str = Field(default="global", min_length=1, max_length=80)
+    enabled: bool = True
+
+    @field_validator("name", "category", "region")
+    @classmethod
+    def clean_required_text(cls, value: str) -> str:
+        """Sanitize source text fields."""
+        return validate_clean_required(value, max_length=120)
+
+
+class NewsSourceUpdate(BaseModel):
+    """Admin update payload for RSS news sources."""
+
+    name: str | None = Field(None, min_length=1, max_length=120)
+    feed_url: HttpUrl | None = None
+    category: str | None = Field(None, min_length=1, max_length=80)
+    region: str | None = Field(None, min_length=1, max_length=80)
+    enabled: bool | None = None
+    last_error: str | None = Field(None, max_length=500)
+
+    @field_validator("name", "category", "region")
+    @classmethod
+    def clean_optional_text(cls, value: str | None) -> str | None:
+        """Sanitize optional source text fields."""
+        if value is None:
+            return None
+        return validate_clean_required(value, max_length=120)
+
+    @field_validator("last_error")
+    @classmethod
+    def clean_last_error(cls, value: str | None) -> str | None:
+        """Sanitize optional source error text."""
+        return validate_clean_optional(value, max_length=500)
+
+
+class NewsSourceResponse(BaseModel):
+    """RSS news source response."""
+
+    id: int
+    name: str
+    feed_url: str
+    category: str
+    region: str
+    enabled: bool
+    last_error: str | None
+    last_fetched_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class NewsSourcesRefreshRequest(BaseModel):
+    """Request payload for running source ingestion."""
+
+    source_ids: list[int] | None = None
+
+    @field_validator("source_ids")
+    @classmethod
+    def clean_source_ids(cls, value: list[int] | None) -> list[int] | None:
+        """Keep only positive, unique source IDs."""
+        if value is None:
+            return None
+        return sorted({source_id for source_id in value if source_id > 0}) or None
+
+
 class NewsIngestResponse(BaseModel):
     """Result of a news ingestion run."""
 

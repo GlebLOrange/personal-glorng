@@ -28,3 +28,15 @@ class NewsArticle(TimestampedDocument):
     ai_model: str | None = None
     ai_input_hash: str | None = None
     ingest_error: str | None = None
+
+
+class NewsSource(TimestampedDocument):
+    """Persisted RSS/Atom source for news ingestion."""
+
+    name: str
+    feed_url: str
+    category: str = "world"
+    region: str = "global"
+    enabled: bool = True
+    last_error: str | None = None
+    last_fetched_at: datetime | None = None
