@@ -160,7 +160,7 @@ const routes: RouteRecordRaw[] = [
     path: "/admin/tools/news-sources",
     name: "tool-news-sources",
     component: () => import("@/pages/admin/tools/NewsSourcesPage.vue"),
-    meta: { requiresAuth: true, requiresSuperuser: true },
+    meta: { requiresAuth: true },
   },
   {
     path: "/admin/tools/ai-chat",

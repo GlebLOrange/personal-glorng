@@ -12,7 +12,7 @@ const auth = useAuthStore();
 const { can, isSuperuser } = usePermissions();
 const { services, load } = usePlatformCatalog();
 
-const SUPERUSER_ONLY_SERVICES = new Set(["news", "news-sources"]);
+const SUPERUSER_ONLY_SERVICES = new Set(["news"]);
 
 const visibleServices = computed(() =>
   services.value.filter(
