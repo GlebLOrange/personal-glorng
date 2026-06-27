@@ -164,30 +164,14 @@ class RecipeService:
             )
             recipe_ids = [hit.source_id for hit in results]
 
-        all_recipes = await self._recipes().list(
-            limit=10_000, sort=[("updated_at", -1)]
+        total = await self._recipes().count_recipes(recipe_ids=recipe_ids, tags=tags)
+        items = await self._recipes().list_recipes(
+            recipe_ids=recipe_ids,
+            tags=tags,
+            offset=offset,
+            limit=limit,
+            sort=sort,
         )
-
-        if recipe_ids is not None:
-            id_set = set(recipe_ids)
-            if not id_set:
-                filtered: list[Recipe] = []
-            else:
-                filtered = [recipe for recipe in all_recipes if recipe.id in id_set]
-        else:
-            filtered = all_recipes
-
-        if tags:
-            selected_tags = set(tags)
-            filtered = [
-                recipe
-                for recipe in filtered
-                if selected_tags.intersection(_loads_json_list("tags", recipe.tags))
-            ]
-
-        total = len(filtered)
-        sorted_items = self._sort_recipes(filtered, sort)
-        items = sorted_items[offset : offset + limit]
         pages = ceil(total / limit) if total > 0 else 0
 
         return RecipeListResponse(
@@ -197,36 +181,6 @@ class RecipeService:
             per_page=limit,
             pages=pages,
         )
-
-    @staticmethod
-    def _sort_recipes(recipes: list[Recipe], sort: RecipeSort) -> list[Recipe]:
-        match sort:
-            case "title_asc":
-                return sorted(recipes, key=lambda recipe: recipe.title.lower())
-            case "title_desc":
-                return sorted(
-                    recipes,
-                    key=lambda recipe: recipe.title.lower(),
-                    reverse=True,
-                )
-            case "prep_asc":
-                return sorted(
-                    recipes,
-                    key=lambda recipe: recipe.prep_time or 10**9,
-                )
-            case "total_time_asc":
-                return sorted(
-                    recipes,
-                    key=lambda recipe: (
-                        (recipe.prep_time or 0) + (recipe.cook_time or 0)
-                    ),
-                )
-            case _:
-                return sorted(
-                    recipes,
-                    key=lambda recipe: recipe.updated_at,
-                    reverse=True,
-                )
 
     async def get_recipe(self, recipe_id: int) -> RecipeResponse:
         recipe = await self.require_recipe(recipe_id)

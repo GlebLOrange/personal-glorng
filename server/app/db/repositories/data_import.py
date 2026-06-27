@@ -75,21 +75,20 @@ class ImportRowRepository(MongoRepository[ImportRow]):
         query: dict[str, Any] = {"batch_id": batch_id}
         if errors_only:
             query["error"] = {"$ne": None}
-        cursor = (
-            self._col()
-            .find(query)
-            .sort("row_index", 1)
-            .skip(offset)
-            .limit(limit)
-        )
+        cursor = self._col().find(query).sort("row_index", 1).skip(offset).limit(limit)
         return [_parse_doc(ImportRow, row) async for row in cursor]
 
-    async def list_success_for_batch(self, batch_id: int) -> list[ImportRow]:
-        cursor = (
-            self._col()
-            .find({"batch_id": batch_id, "error": None})
-            .sort("row_index", 1)
-        )
+    async def list_success_for_batch(
+        self,
+        batch_id: int,
+        *,
+        after_row_index: int | None = None,
+        limit: int = 500,
+    ) -> list[ImportRow]:
+        query: dict[str, Any] = {"batch_id": batch_id, "error": None}
+        if after_row_index is not None:
+            query["row_index"] = {"$gt": after_row_index}
+        cursor = self._col().find(query).sort("row_index", 1).limit(limit)
         return [_parse_doc(ImportRow, row) async for row in cursor]
 
 

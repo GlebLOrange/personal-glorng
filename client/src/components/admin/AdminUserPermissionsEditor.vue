@@ -16,6 +16,7 @@ const emit = defineEmits<{
 }>();
 
 const isSuperuser = computed(() => props.permissions.includes(SUPERUSER_PERMISSION));
+const permissionSet = computed(() => new Set(props.permissions));
 
 const sections = computed(() => groupServicesByCategory(props.services));
 const explicitToolPermissionCount = computed(
@@ -23,7 +24,7 @@ const explicitToolPermissionCount = computed(
 );
 
 function hasPermission(key: string): boolean {
-  return props.permissions.includes(key);
+  return permissionSet.value.has(key);
 }
 
 function emitPermissions(next: string[]): void {
@@ -86,7 +87,10 @@ function servicePermissionSummary(service: PlatformService): string {
           </span>
         </span>
       </label>
-      <p v-if="lockSuperuser" class="mt-3 rounded border border-accent-golden/30 bg-accent-golden/10 px-3 py-2 text-xs text-accent-golden">
+      <p
+        v-if="lockSuperuser"
+        class="mt-3 rounded border border-accent-golden/30 bg-accent-golden/10 px-3 py-2 text-xs text-accent-golden"
+      >
         Cannot demote the last admin
       </p>
     </div>
@@ -120,7 +124,9 @@ function servicePermissionSummary(service: PlatformService): string {
               </p>
               <p class="mt-0.5 text-xs text-surface-mid">{{ service.description }}</p>
             </div>
-            <span class="rounded border border-surface-border bg-surface-card px-2 py-0.5 text-xs text-surface-muted">
+            <span
+              class="rounded border border-surface-border bg-surface-card px-2 py-0.5 text-xs text-surface-muted"
+            >
               {{ servicePermissionSummary(service) }}
             </span>
           </div>
@@ -145,7 +151,9 @@ function servicePermissionSummary(service: PlatformService): string {
                 "
               />
               <span class="capitalize">{{ capabilityLabel(capability) }}</span>
-              <span class="font-data text-surface-muted">{{ permissionKey(service.slug, capability) }}</span>
+              <span class="font-data text-surface-muted">{{
+                permissionKey(service.slug, capability)
+              }}</span>
             </label>
           </div>
         </div>

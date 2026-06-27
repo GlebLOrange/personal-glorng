@@ -35,8 +35,4 @@ class UserRepository(MongoRepository[User]):
         return [_parse_doc(User, row) async for row in cursor]
 
     async def count_superusers(self, permission: str) -> int:
-        count = 0
-        cursor = self._col().find({"permissions": permission})
-        async for _ in cursor:
-            count += 1
-        return count
+        return await self._col().count_documents({"permissions": permission})
