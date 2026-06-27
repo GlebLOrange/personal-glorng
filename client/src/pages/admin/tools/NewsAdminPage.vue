@@ -14,7 +14,7 @@ import type {
   NewsArticleUpdate,
   NewsStatus,
 } from "@/types";
-import { normalizeHttpUrl, sourceFromNewsLink, titleFromNewsLink } from "@/utils/newsForms";
+import { normalizeHttpUrl, titleFromNewsLink } from "@/utils/newsForms";
 
 type DrawerMode = "create" | "edit";
 
@@ -25,11 +25,11 @@ const drawerOpen = ref(false);
 const drawerMode = ref<DrawerMode>("create");
 const editingArticleId = ref<number | null>(null);
 const form = ref<NewsArticleFormData>(emptyForm());
-const lastAutoSourceName = ref<string | null>(null);
 const lastAutoTitle = ref<string | null>(null);
 
 const {
   articles,
+  sources,
   page,
   listLoading,
   listError,
@@ -37,6 +37,7 @@ const {
   hasNextPage,
   countLabel,
   loadNews,
+  loadSources,
   goToPage,
   ingestNews,
   createArticle,
@@ -48,6 +49,7 @@ const {
 function emptyForm(): NewsArticleFormData {
   return {
     status: "draft",
+    source_id: null,
     source_name: "",
     source_url: "",
     source_feed_url: "",
@@ -66,6 +68,7 @@ function formFromArticle(article: NewsArticle): NewsArticleFormData {
   while (bullets.length < 2) bullets.push("");
   return {
     status: article.status,
+    source_id: article.source_id,
     source_name: article.source_name,
     source_url: article.source_url,
     source_feed_url: article.source_feed_url,
@@ -114,12 +117,6 @@ function sourceUrlPayload(): string | null {
   return normalizeHttpUrl(form.value.source_url);
 }
 
-function sourceNamePayload(sourceUrl: string | null = sourceUrlPayload()): string | null {
-  if (sourceUrl) return sourceFromNewsLink(sourceUrl, []);
-  const sourceName = form.value.source_name.trim();
-  return sourceName || null;
-}
-
 function withSourceUrlDefaults(nextForm: NewsArticleFormData): NewsArticleFormData {
   const sourceUrl = normalizeHttpUrl(nextForm.source_url);
   if (!sourceUrl) return { ...nextForm, source_feed_url: "" };
@@ -131,11 +128,6 @@ function withSourceUrlDefaults(nextForm: NewsArticleFormData): NewsArticleFormDa
   if (autoTitle && canReplaceAutoValue(nextForm.title, lastAutoTitle.value)) {
     nextValues.title = autoTitle;
     lastAutoTitle.value = autoTitle;
-  }
-  const autoSourceName = sourceFromNewsLink(sourceUrl, []);
-  if (autoSourceName) {
-    nextValues.source_name = autoSourceName;
-    lastAutoSourceName.value = autoSourceName;
   }
   return { ...nextForm, ...nextValues };
 }
@@ -162,8 +154,8 @@ function validateForm(): boolean {
     toast("Source URL must start with http:// or https://", "error");
     return false;
   }
-  if (!sourceNamePayload(sourceUrl)) {
-    toast("Source URL must include a recognizable source", "error");
+  if (!form.value.source_id) {
+    toast("Select a news source", "error");
     return false;
   }
   if (parsedBullets().length < 2) {
@@ -183,13 +175,11 @@ function validateForm(): boolean {
 
 function buildCreatePayload(): NewsArticleCreate {
   const sourceUrl = sourceUrlPayload() ?? form.value.source_url.trim();
-  const sourceName = sourceNamePayload(sourceUrl) ?? "";
   const title = form.value.title.trim();
   return {
     status: form.value.status,
-    source_name: sourceName,
+    source_id: form.value.source_id ?? 0,
     source_url: sourceUrl,
-    source_feed_url: sourceUrl,
     source_published_at: sourcePublishedAtPayload(),
     original_title: title,
     title,
@@ -233,7 +223,6 @@ async function repost(articleId: number): Promise<void> {
 function openCreate(): void {
   drawerMode.value = "create";
   editingArticleId.value = null;
-  lastAutoSourceName.value = null;
   lastAutoTitle.value = null;
   form.value = emptyForm();
   drawerOpen.value = true;
@@ -242,7 +231,6 @@ function openCreate(): void {
 function openEdit(article: NewsArticle): void {
   drawerMode.value = "edit";
   editingArticleId.value = article.id;
-  lastAutoSourceName.value = null;
   lastAutoTitle.value = null;
   form.value = formFromArticle(article);
   drawerOpen.value = true;
@@ -267,7 +255,7 @@ async function saveDrawer(): Promise<void> {
 }
 
 onMounted(async () => {
-  await loadAdminNews();
+  await Promise.all([loadAdminNews(), loadSources()]);
 });
 
 watch(page, () => {
@@ -430,6 +418,7 @@ watch(page, () => {
       :open="drawerOpen"
       :mode="drawerMode"
       :form="form"
+      :sources="sources"
       :loading="actionLoading"
       @update:form="updateForm"
       @close="closeDrawer"

@@ -61,15 +61,37 @@ def _require_public_feed_url(feed_url: str) -> None:
         raise ValidationError("Feed URL must be a public http(s) URL")
 
 
-def _article_payload_from_create(data: NewsArticleCreate, slug: str) -> dict[str, Any]:
+def _article_source_fields(
+    data: NewsArticleCreate,
+    source: NewsSource | None,
+) -> dict[str, str | int | None]:
+    """Return article source fields from a selected source or payload."""
+    source_name = source.name if source else data.source_name
+    source_feed_url = source.feed_url if source else (
+        str(data.source_feed_url) if data.source_feed_url else None
+    )
+    if not source_name or not source_feed_url:
+        raise ValidationError("News source is required")
+    return {
+        "source_id": source.id if source else data.source_id,
+        "source_name": source_name,
+        "source_feed_url": source_feed_url,
+    }
+
+
+def _article_payload_from_create(
+    data: NewsArticleCreate,
+    slug: str,
+    source: NewsSource | None,
+) -> dict[str, Any]:
     """Build a document payload from create data."""
     published_at = utc_now() if data.status == "published" else None
+    source_fields = _article_source_fields(data, source)
     return {
         "slug": slug,
         "status": data.status,
-        "source_name": data.source_name,
+        **source_fields,
         "source_url": str(data.source_url),
-        "source_feed_url": str(data.source_feed_url),
         "source_published_at": data.source_published_at,
         "original_title": data.original_title,
         "title": data.title,
@@ -87,9 +109,14 @@ def _article_payload_from_create(data: NewsArticleCreate, slug: str) -> dict[str
 def _apply_article_updates(
     article: NewsArticle,
     data: NewsArticleUpdate,
+    source: NewsSource | None,
 ) -> NewsArticle:
     """Apply update payload to an article document."""
     updates = data.model_dump(exclude_unset=True)
+    if source is not None:
+        updates["source_id"] = source.id
+        updates["source_name"] = source.name
+        updates["source_feed_url"] = source.feed_url
     for field in ("bullets", "themes"):
         if field in updates and updates[field] is not None:
             updates[field] = _dumps_json_list(updates[field])
@@ -145,6 +172,7 @@ class NewsService:
             id=article.id,
             slug=article.slug,
             status=article.status,
+            source_id=article.source_id,
             source_name=article.source_name,
             source_url=article.source_url,
             source_feed_url=article.source_feed_url,
@@ -177,6 +205,12 @@ class NewsService:
         """Return an article by id or raise."""
         return await self._news().get(article_id)
 
+    async def _resolve_article_source(self, source_id: int | None) -> NewsSource | None:
+        """Return a selected source for article writes."""
+        if source_id is None:
+            return None
+        return await self._sources().get(source_id)
+
     async def get_public_article(self, slug: str) -> NewsArticleResponse:
         """Return a published article by slug."""
         article = await self._news().get_by_slug(slug)
@@ -194,8 +228,9 @@ class NewsService:
         source_url = str(data.source_url)
         if await self._news().source_url_exists(source_url):
             raise ConflictError("News source URL already exists")
+        source = await self._resolve_article_source(data.source_id)
         article = NewsArticle.model_validate(
-            _article_payload_from_create(data, await self.unique_slug(data.title))
+            _article_payload_from_create(data, await self.unique_slug(data.title), source)
         )
         article = await self._news().insert(article)
         await index_news_article(self.registry, article)
@@ -204,7 +239,11 @@ class NewsService:
             resource_type="news",
             resource_id=article.id,
             actor_id=actor_id,
-            metadata={"title": article.title, "source": article.source_name},
+            metadata={
+                "title": article.title,
+                "source": article.source_name,
+                "source_id": article.source_id,
+            },
         )
         return self._to_response(article)
 
@@ -222,7 +261,8 @@ class NewsService:
             existing = await self._news().get_by_source_url(source_url)
             if existing is not None and existing.id != article_id:
                 raise ConflictError("News source URL already exists")
-        updated = _apply_article_updates(article, data)
+        source = await self._resolve_article_source(data.source_id)
+        updated = _apply_article_updates(article, data, source)
         article = await self._news().replace(updated)
         await index_news_article(self.registry, article)
         await self._audit.record_domain(
@@ -312,6 +352,8 @@ class NewsService:
     ) -> None:
         """Delete an RSS source."""
         await self._sources().get(source_id)
+        if await self._news().count_by_source_id(source_id):
+            raise ConflictError("News source is used by existing articles")
         await self._sources().delete(source_id)
         await self._audit.record_domain(
             action="news_source.deleted",

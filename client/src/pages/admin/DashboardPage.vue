@@ -12,8 +12,14 @@ const auth = useAuthStore();
 const { can, isSuperuser } = usePermissions();
 const { services, load } = usePlatformCatalog();
 
+const SUPERUSER_ONLY_SERVICES = new Set(["news", "news-sources"]);
+
 const visibleServices = computed(() =>
-  services.value.filter((s) => can(s.slug, "read") && (s.slug !== "news" || isSuperuser.value)),
+  services.value.filter(
+    (service) =>
+      can(service.slug, "read") &&
+      (!SUPERUSER_ONLY_SERVICES.has(service.slug) || isSuperuser.value),
+  ),
 );
 
 const sections = computed(() => groupServicesByCategory(visibleServices.value));
@@ -41,9 +47,9 @@ onMounted(() => load());
       <h2 class="text-lg font-bold text-surface-light mb-4">{{ section.label }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <component
+          :is="tool.external ? 'a' : 'RouterLink'"
           v-for="tool in section.services"
           :key="tool.adminRoute"
-          :is="tool.external ? 'a' : 'RouterLink'"
           :to="tool.external ? undefined : tool.adminRoute"
           :href="tool.external ? tool.adminRoute : undefined"
           :target="tool.external ? '_blank' : undefined"

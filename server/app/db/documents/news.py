@@ -13,6 +13,7 @@ class NewsArticle(TimestampedDocument):
 
     slug: str
     status: NewsStatus = "draft"
+    source_id: int | None = None
     source_name: str
     source_url: str
     source_feed_url: str

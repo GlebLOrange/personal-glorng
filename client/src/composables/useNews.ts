@@ -7,6 +7,7 @@ import type {
   NewsArticleCreate,
   NewsArticleUpdate,
   NewsIngestResult,
+  NewsSource,
   NewsStatus,
   PaginatedNews,
 } from "@/types";
@@ -24,6 +25,7 @@ export function formatNewsDate(value: string | null): string {
 export function useNews() {
   const articles = ref<NewsArticle[]>([]);
   const article = ref<NewsArticle | null>(null);
+  const sources = ref<NewsSource[]>([]);
   const page = ref(1);
   const total = ref(0);
   const totalPages = ref(0);
@@ -67,6 +69,17 @@ export function useNews() {
       { errorFallback: "Failed to load article", logContext: "news.loadArticle" },
     );
     article.value = data ?? null;
+  }
+
+  async function loadSources(): Promise<void> {
+    const data = await runAction(
+      async () => {
+        const response = await api.get<NewsSource[]>("/tools/news-sources");
+        return response.data;
+      },
+      { errorFallback: "Failed to load news sources", logContext: "news.loadSources" },
+    );
+    if (data) sources.value = data;
   }
 
   function goToPage(nextPage: number): void {
@@ -132,6 +145,7 @@ export function useNews() {
   return {
     articles,
     article,
+    sources,
     page,
     total,
     totalPages,
@@ -144,6 +158,7 @@ export function useNews() {
     countLabel,
     loadNews,
     loadArticle,
+    loadSources,
     goToPage,
     ingestNews,
     createArticle,
