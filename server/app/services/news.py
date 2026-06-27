@@ -7,8 +7,11 @@ from math import ceil
 from typing import Any
 from urllib.parse import urlparse
 
+from pymongo.errors import DuplicateKeyError
+
 from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.core.json_lists import parse_json_string_list
+from app.core.logging import logger
 from app.core.utils import paginate_params, utc_now
 from app.db.documents.news import NewsArticle, NewsSource, NewsStatus
 from app.db.registry import DatabaseRegistry
@@ -25,6 +28,7 @@ from app.services.audit import AuditService
 from app.services.search_indexers.news import index_news_article, remove_news_article
 
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
+_SLUG_RETRY_LIMIT = 5
 
 
 def _loads_json_list(field: str, raw: str) -> list[str]:
@@ -41,6 +45,19 @@ def _slugify(value: str) -> str:
     """Return a URL-safe slug."""
     slug = _SLUG_RE.sub("-", value.lower()).strip("-")
     return slug[:80].strip("-") or "news"
+
+
+def _duplicate_key_field(exc: DuplicateKeyError) -> str | None:
+    """Return the Mongo duplicate key field when the driver includes it."""
+    key_pattern = (exc.details or {}).get("keyPattern") or {}
+    if len(key_pattern) == 1:
+        return next(iter(key_pattern))
+    errmsg = str(exc)
+    if "source_url" in errmsg:
+        return "source_url"
+    if "slug" in errmsg:
+        return "slug"
+    return None
 
 
 def _is_public_feed_url(url: str) -> bool:
@@ -194,11 +211,22 @@ class NewsService:
     async def unique_slug(self, title: str) -> str:
         """Generate a slug that is unique among news articles."""
         base = _slugify(title)
-        slug = base
         suffix = 2
+        slug = base
         while await self._news().get_by_slug(slug):
             slug = f"{base}-{suffix}"
             suffix += 1
+        return slug
+
+    async def unique_slug_after_conflict(self, title: str, attempted_slug: str) -> str:
+        """Generate a slug after Mongo rejects a stale uniqueness check."""
+        base = _slugify(title)
+        match = re.fullmatch(rf"{re.escape(base)}-(\d+)", attempted_slug)
+        suffix = int(match.group(1)) + 1 if match else 2
+        slug = f"{base}-{suffix}"
+        while await self._news().get_by_slug(slug):
+            suffix += 1
+            slug = f"{base}-{suffix}"
         return slug
 
     async def require_article(self, article_id: int) -> NewsArticle:
@@ -229,11 +257,32 @@ class NewsService:
         if await self._news().source_url_exists(source_url):
             raise ConflictError("News source URL already exists")
         source = await self._resolve_article_source(data.source_id)
-        article = NewsArticle.model_validate(
-            _article_payload_from_create(data, await self.unique_slug(data.title), source)
-        )
-        article = await self._news().insert(article)
-        await index_news_article(self.registry, article)
+        slug = await self.unique_slug(data.title)
+        for _ in range(_SLUG_RETRY_LIMIT):
+            article = NewsArticle.model_validate(
+                _article_payload_from_create(data, slug, source)
+            )
+            try:
+                article = await self._news().insert(article)
+                break
+            except DuplicateKeyError as exc:
+                field = _duplicate_key_field(exc)
+                if field == "source_url":
+                    raise ConflictError("News source URL already exists") from exc
+                if field != "slug":
+                    raise
+                slug = await self.unique_slug_after_conflict(data.title, slug)
+        else:
+            raise ConflictError("Could not generate a unique news URL")
+        if article.status == "published":
+            try:
+                await index_news_article(self.registry, article)
+            except Exception as exc:
+                logger.warning(
+                    "News article search indexing failed after create",
+                    error=exc,
+                    context={"article_id": article.id, "slug": article.slug},
+                )
         await self._audit.record_domain(
             action="news.created",
             resource_type="news",
