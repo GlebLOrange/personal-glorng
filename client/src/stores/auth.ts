@@ -5,7 +5,6 @@ import { computed, ref } from "vue";
 import { api } from "@/composables/useApi";
 import { clearCachedApi } from "@/composables/useCachedApi";
 import { syncGuestWeatherLocations } from "@/composables/useWeatherLocations";
-import { signInWithGooglePopup } from "@/services/firebase";
 import { tryRefreshSession } from "@/utils/authSession";
 import type { UserPreferences, UserResponse } from "@/types";
 
@@ -50,6 +49,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function loginWithGoogle(): Promise<void> {
+    const { signInWithGooglePopup } = await import("@/services/firebase");
     const credential = await signInWithGooglePopup();
     const idToken = await credential.user.getIdToken();
     await api.post("/auth/firebase", {

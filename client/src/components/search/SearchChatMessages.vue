@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import { isExternalHref, safeNavigationHref } from "@/utils/safeUrl";
 import type { ChatMessage } from "@/types/search";
 
@@ -7,7 +9,7 @@ interface SourceLink {
   external: boolean;
 }
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     messages: ChatMessage[];
     loading: boolean;
@@ -46,6 +48,10 @@ function sourceLink(url: string): SourceLink | null {
   }
   return { href, external: isExternalHref(href) };
 }
+
+const messageSourceLinks = computed(() =>
+  props.messages.map((message) => message.sources?.map((source) => sourceLink(source.url)) ?? []),
+);
 </script>
 
 <template>
@@ -82,12 +88,12 @@ function sourceLink(url: string): SourceLink | null {
         <p class="text-[10px] uppercase tracking-wider text-surface-mid">
           {{ sourcesLabel }}
         </p>
-        <template v-for="source in msg.sources" :key="source.id">
+        <template v-for="(source, sourceIndex) in msg.sources" :key="source.id">
           <a
-            v-if="sourceLink(source.url)"
-            :href="sourceLink(source.url)!.href"
-            :rel="sourceLink(source.url)!.external ? 'noopener noreferrer' : undefined"
-            :target="sourceLink(source.url)!.external ? '_blank' : undefined"
+            v-if="messageSourceLinks[index]?.[sourceIndex]"
+            :href="messageSourceLinks[index][sourceIndex]!.href"
+            :rel="messageSourceLinks[index][sourceIndex]!.external ? 'noopener noreferrer' : undefined"
+            :target="messageSourceLinks[index][sourceIndex]!.external ? '_blank' : undefined"
             :class="sourceLinkClass"
           >
             <span :class="sourceTitleClass">{{ source.title }}</span>

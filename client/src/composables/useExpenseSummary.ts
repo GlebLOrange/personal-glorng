@@ -7,6 +7,21 @@ import type { ExchangeRates, Expense, ExpenseSummary, PaginatedExpenses } from "
 
 import type { CurrencyCode } from "./useExpenseFilters";
 
+const moneyFormatters = new Map<string, Intl.NumberFormat>();
+
+function moneyFormatter(currency: string): Intl.NumberFormat {
+  const cached = moneyFormatters.get(currency);
+  if (cached) return cached;
+
+  const formatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+  });
+  moneyFormatters.set(currency, formatter);
+  return formatter;
+}
+
 function topCategoryChart(summaryData: ExpenseSummary): { labels: string[]; values: number[] } {
   const items = summaryData.by_category.map((c) => ({
     label: c.category,
@@ -115,11 +130,7 @@ export function useExpenseSummary(
   function formatMoney(amount: string | number, currency: string): string {
     const value = typeof amount === "string" ? parseFloat(amount) : amount;
     if (!Number.isFinite(value)) return "N/A";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-    }).format(value);
+    return moneyFormatter(currency).format(value);
   }
 
   function formatExpenseDate(iso: string): string {

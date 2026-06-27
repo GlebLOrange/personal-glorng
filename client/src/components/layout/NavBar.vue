@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
-import { usePermissions } from "@/composables/usePermissions";
 import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
-const { can } = usePermissions();
 const mobileOpen = ref(false);
-const newsRoute = computed(() =>
-  auth.isAuthenticated && can("news", "read") ? "/admin/tools/news" : "/news",
-);
 
 function handleLogout(): void {
   auth.logout();

@@ -3,7 +3,6 @@ import { createApp } from "vue";
 
 import App from "./App.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
-import { setupCookieConsent } from "./composables/useCookieConsent";
 import router from "./router";
 import "./styles/main.css";
 
@@ -15,6 +14,10 @@ const pinia = createPinia();
 app.use(pinia);
 app.use(router);
 
-setupCookieConsent(app);
-
 app.mount("#app");
+
+window.setTimeout(() => {
+  void import("./composables/useCookieConsent").then(({ setupCookieConsent }) => {
+    setupCookieConsent(app);
+  });
+}, 0);
