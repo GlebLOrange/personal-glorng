@@ -17,6 +17,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: [];
+  delete: [];
   save: [];
   "update:form": [value: NewsArticleFormData];
 }>();
@@ -29,9 +30,6 @@ const selectedThemes = computed(() =>
     .filter(Boolean),
 );
 
-const inputClass =
-  "w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50";
-
 function patch(patchValue: Partial<NewsArticleFormData>): void {
   emit("update:form", { ...props.form, ...patchValue });
 }
@@ -43,22 +41,6 @@ function toStringValue(value: string | number | null | undefined): string {
 function toSourceId(value: string): number | null {
   const sourceId = Number(value);
   return Number.isInteger(sourceId) && sourceId > 0 ? sourceId : null;
-}
-
-function updateBullet(index: number, value: string): void {
-  const bullets = [...props.form.bullets];
-  bullets[index] = value;
-  patch({ bullets });
-}
-
-function addBullet(): void {
-  if (props.form.bullets.length >= 5) return;
-  patch({ bullets: [...props.form.bullets, ""] });
-}
-
-function removeBullet(index: number): void {
-  if (props.form.bullets.length <= 2) return;
-  patch({ bullets: props.form.bullets.filter((_, i) => i !== index) });
 }
 
 function themeIsSelected(theme: string): boolean {
@@ -240,84 +222,25 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
               />
             </section>
 
-            <section class="space-y-3">
-              <div class="flex items-center justify-between gap-3">
-                <h3 class="text-sm font-medium text-surface-mid">Key points</h3>
-                <BaseButton
-                  variant="ghost"
-                  size="sm"
-                  type="button"
-                  :disabled="form.bullets.length >= 5"
-                  @click="addBullet"
-                >
-                  + bullet
-                </BaseButton>
-              </div>
-              <div v-for="(_, index) in form.bullets" :key="index" class="flex items-start gap-2">
-                <span class="pt-2 text-sm text-surface-muted">{{ index + 1 }}.</span>
-                <input
-                  :value="form.bullets[index]"
-                  :class="inputClass"
-                  :placeholder="`Key point ${index + 1}`"
-                  @input="updateBullet(index, ($event.target as HTMLInputElement).value)"
-                />
-                <BaseButton
-                  v-if="form.bullets.length > 2"
-                  variant="ghost"
-                  size="sm"
-                  type="button"
-                  aria-label="Remove bullet"
-                  @click="removeBullet(index)"
-                >
-                  &times;
-                </BaseButton>
-              </div>
-            </section>
-
-            <section class="space-y-4">
-              <h3 class="text-sm font-medium text-surface-mid">Admin metadata</h3>
-              <BaseInput
-                :model-value="form.published_at"
-                label="Published at"
-                type="datetime-local"
-                @update:model-value="patch({ published_at: toStringValue($event) })"
-              />
-              <BaseInput
-                :model-value="form.telegram_message_id"
-                label="Telegram message ID"
-                inputmode="numeric"
-                placeholder="12345"
-                @update:model-value="patch({ telegram_message_id: toStringValue($event) })"
-              />
-              <BaseInput
-                :model-value="form.ai_model"
-                label="AI model"
-                placeholder="gpt-..."
-                @update:model-value="patch({ ai_model: toStringValue($event) })"
-              />
-              <BaseInput
-                :model-value="form.ai_input_hash"
-                label="AI input hash"
-                placeholder="sha256..."
-                @update:model-value="patch({ ai_input_hash: toStringValue($event) })"
-              />
-              <BaseTextarea
-                :model-value="form.ingest_error"
-                label="Ingest error"
-                :rows="3"
-                placeholder="Optional ingestion error"
-                @update:model-value="patch({ ingest_error: toStringValue($event) })"
-              />
-            </section>
-
           </form>
 
           <footer class="shrink-0 px-6 py-4 border-t border-surface-border bg-surface-dark">
-            <div class="flex gap-3">
-              <BaseButton variant="primary" :disabled="loading" @click="emit('save')">
-                {{ loading ? "Saving..." : "Save" }}
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <BaseButton
+                v-if="mode === 'edit'"
+                variant="ghost"
+                type="button"
+                :disabled="loading"
+                @click="emit('delete')"
+              >
+                Delete
               </BaseButton>
-              <BaseButton variant="ghost" type="button" @click="emit('close')">Cancel</BaseButton>
+              <div class="flex gap-3">
+                <BaseButton variant="primary" :disabled="loading" @click="emit('save')">
+                  {{ loading ? "Saving..." : "Save" }}
+                </BaseButton>
+                <BaseButton variant="ghost" type="button" @click="emit('close')">Cancel</BaseButton>
+              </div>
             </div>
           </footer>
         </aside>

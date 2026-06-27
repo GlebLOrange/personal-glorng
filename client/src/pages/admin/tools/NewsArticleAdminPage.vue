@@ -9,7 +9,6 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { SELECT_CLASS } from "@/constants/formClasses";
 import {
-  NEWS_BULLET_MAX_LENGTH,
   NEWS_SUMMARY_MAX_LENGTH,
   NEWS_THEME_LIMIT,
   NEWS_THEME_SET,
@@ -53,7 +52,7 @@ function emptyForm(): NewsArticleFormData {
     original_title: "",
     title: "",
     summary: "",
-    bullets: ["", ""],
+    bullets: [],
     themes: "",
     language: "en",
     published_at: "",
@@ -65,8 +64,6 @@ function emptyForm(): NewsArticleFormData {
 }
 
 function formFromArticle(item: NewsArticle): NewsArticleFormData {
-  const bullets = item.bullets.length ? [...item.bullets] : ["", ""];
-  while (bullets.length < 2) bullets.push("");
   return {
     slug: item.slug,
     status: item.status,
@@ -78,7 +75,7 @@ function formFromArticle(item: NewsArticle): NewsArticleFormData {
     original_title: item.original_title,
     title: item.title,
     summary: item.summary,
-    bullets,
+    bullets: [],
     themes: item.themes.join(", "),
     language: item.language,
     published_at: item.published_at?.slice(0, 16) ?? "",
@@ -96,10 +93,6 @@ function parsedThemes(): string[] {
     .filter(Boolean);
 }
 
-function parsedBullets(): string[] {
-  return form.value.bullets.map((bullet) => bullet.trim()).filter(Boolean);
-}
-
 function normalizedDateTime(value: string): string | null {
   if (!value.trim()) return null;
   const parsed = new Date(value);
@@ -109,13 +102,6 @@ function normalizedDateTime(value: string): string | null {
 function optionalText(value: string): string | null {
   const trimmed = value.trim();
   return trimmed || null;
-}
-
-function telegramMessageIdPayload(): number | null {
-  const value = form.value.telegram_message_id.trim();
-  if (!value) return null;
-  const messageId = Number(value);
-  return Number.isInteger(messageId) && messageId >= 0 ? messageId : Number.NaN;
 }
 
 function sourceFeedUrlPayload(): string | undefined {
@@ -129,7 +115,6 @@ function dateIsInvalid(value: string, normalizedValue: string | null): boolean {
 function validateForm(): boolean {
   const title = form.value.title.trim();
   const summary = form.value.summary.trim();
-  const bullets = parsedBullets();
   const themes = parsedThemes();
 
   if (!canWrite.value) return false;
@@ -161,18 +146,6 @@ function validateForm(): boolean {
     toast("Source feed/home URL must start with http:// or https://", "error");
     return false;
   }
-  if (bullets.length < 2) {
-    toast("Add at least two key points", "error");
-    return false;
-  }
-  if (bullets.length > 5) {
-    toast("Add no more than five key points", "error");
-    return false;
-  }
-  if (bullets.some((bullet) => bullet.length > NEWS_BULLET_MAX_LENGTH)) {
-    toast(`Each key point must be ${NEWS_BULLET_MAX_LENGTH} characters or fewer`, "error");
-    return false;
-  }
   if (themes.length < 1) {
     toast("Add at least one theme", "error");
     return false;
@@ -187,14 +160,6 @@ function validateForm(): boolean {
   }
   if (dateIsInvalid(form.value.source_published_at, normalizedDateTime(form.value.source_published_at))) {
     toast("Source published date is invalid", "error");
-    return false;
-  }
-  if (dateIsInvalid(form.value.published_at, normalizedDateTime(form.value.published_at))) {
-    toast("Published date is invalid", "error");
-    return false;
-  }
-  if (Number.isNaN(telegramMessageIdPayload())) {
-    toast("Telegram message ID must be a whole number", "error");
     return false;
   }
   return true;
@@ -212,31 +177,9 @@ function buildUpdatePayload(): NewsArticleUpdate {
     original_title: form.value.original_title.trim() || form.value.title.trim(),
     title: form.value.title.trim(),
     summary: form.value.summary.trim(),
-    bullets: parsedBullets(),
     themes: parsedThemes(),
     language: form.value.language.trim() || "en",
-    published_at: normalizedDateTime(form.value.published_at),
-    telegram_message_id: telegramMessageIdPayload(),
-    ai_model: optionalText(form.value.ai_model),
-    ai_input_hash: optionalText(form.value.ai_input_hash),
-    ingest_error: optionalText(form.value.ingest_error),
   };
-}
-
-function updateBullet(index: number, value: string): void {
-  const bullets = [...form.value.bullets];
-  bullets[index] = value;
-  form.value.bullets = bullets;
-}
-
-function addBullet(): void {
-  if (form.value.bullets.length >= 5) return;
-  form.value.bullets = [...form.value.bullets, ""];
-}
-
-function removeBullet(index: number): void {
-  if (form.value.bullets.length <= 2) return;
-  form.value.bullets = form.value.bullets.filter((_, i) => i !== index);
 }
 
 function themeIsSelected(theme: string): boolean {
@@ -374,44 +317,6 @@ watch(articleId, () => {
         </BaseCard>
 
         <BaseCard>
-          <div class="mb-4 flex items-center justify-between gap-3">
-            <h2 class="card-title">Key points</h2>
-            <BaseButton
-              v-if="canWrite"
-              variant="ghost"
-              size="sm"
-              type="button"
-              :disabled="form.bullets.length >= 5"
-              @click="addBullet"
-            >
-              + bullet
-            </BaseButton>
-          </div>
-          <div class="space-y-3">
-            <div v-for="(_, index) in form.bullets" :key="index" class="flex items-start gap-2">
-              <span class="pt-2 text-sm text-surface-muted">{{ index + 1 }}.</span>
-              <input
-                :value="form.bullets[index]"
-                class="w-full rounded-lg border border-surface-border bg-surface-dark px-4 py-2 text-sm text-surface-light transition-colors placeholder:text-surface-mid/50 focus:outline-none focus:border-accent-blue disabled:opacity-60"
-                :disabled="!canWrite"
-                :placeholder="`Key point ${index + 1}`"
-                @input="updateBullet(index, ($event.target as HTMLInputElement).value)"
-              />
-              <BaseButton
-                v-if="canWrite && form.bullets.length > 2"
-                variant="ghost"
-                size="sm"
-                type="button"
-                aria-label="Remove bullet"
-                @click="removeBullet(index)"
-              >
-                &times;
-              </BaseButton>
-            </div>
-          </div>
-        </BaseCard>
-
-        <BaseCard>
           <h2 class="card-title mb-4">Source</h2>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <label class="flex flex-col gap-1 text-sm text-surface-mid">
@@ -437,29 +342,6 @@ watch(articleId, () => {
               type="datetime-local"
               :disabled="!canWrite"
             />
-            <BaseInput
-              v-model="form.published_at"
-              label="Published at"
-              type="datetime-local"
-              :disabled="!canWrite"
-            />
-          </div>
-        </BaseCard>
-
-        <BaseCard>
-          <h2 class="card-title mb-4">Admin metadata</h2>
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <BaseInput
-              v-model="form.telegram_message_id"
-              label="Telegram message ID"
-              inputmode="numeric"
-              :disabled="!canWrite"
-            />
-            <BaseInput v-model="form.ai_model" label="AI model" :disabled="!canWrite" />
-            <BaseInput v-model="form.ai_input_hash" label="AI input hash" :disabled="!canWrite" />
-          </div>
-          <div class="mt-4">
-            <BaseTextarea v-model="form.ingest_error" label="Ingest error" :rows="3" :disabled="!canWrite" />
           </div>
         </BaseCard>
       </div>

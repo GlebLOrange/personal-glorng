@@ -92,7 +92,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/news/:slug",
     name: "news-article",
-    component: () => import("@/pages/NewsArticlePage.vue"),
+    redirect: { name: "news" },
   },
   {
     path: "/admin/tools/recipes",

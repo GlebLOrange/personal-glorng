@@ -96,6 +96,17 @@ function openEdit(source: NewsSource): void {
   drawerOpen.value = true;
 }
 
+function openEditableSource(source: NewsSource): void {
+  if (!canWrite.value) return;
+  openEdit(source);
+}
+
+function onSourceKeydown(event: KeyboardEvent, source: NewsSource): void {
+  if (!canWrite.value || (event.key !== "Enter" && event.key !== " ")) return;
+  event.preventDefault();
+  openEdit(source);
+}
+
 function closeDrawer(): void {
   drawerOpen.value = false;
   editingId.value = null;
@@ -225,7 +236,16 @@ onMounted(loadSources);
       </BaseCard>
 
       <template v-else>
-        <BaseCard v-for="source in sources" :key="source.id">
+        <BaseCard
+          v-for="source in sources"
+          :key="source.id"
+          :hoverable="canWrite"
+          :role="canWrite ? 'button' : undefined"
+          :tabindex="canWrite ? 0 : undefined"
+          :class="canWrite ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50' : ''"
+          @click="openEditableSource(source)"
+          @keydown="onSourceKeydown($event, source)"
+        >
           <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div class="min-w-0 flex-1">
               <div class="mb-2 flex flex-wrap items-center gap-2">
@@ -237,6 +257,8 @@ onMounted(loadSources);
                   :value="source.id"
                   :disabled="refreshing || !source.enabled"
                   :aria-label="`Select ${source.name} for parser refresh`"
+                  @click.stop
+                  @keydown.stop
                 />
                 <h2 class="truncate text-base font-bold text-surface-light">{{ source.name }}</h2>
                 <span
@@ -261,10 +283,7 @@ onMounted(loadSources);
                 Last error: {{ source.last_error }}
               </p>
             </div>
-            <div class="flex shrink-0 gap-2">
-              <BaseButton v-if="canWrite" variant="ghost" size="sm" @click="openEdit(source)">
-                Edit
-              </BaseButton>
+            <div class="flex shrink-0 gap-2" @click.stop @keydown.stop>
               <BaseButton
                 v-if="canWrite"
                 variant="ghost"
