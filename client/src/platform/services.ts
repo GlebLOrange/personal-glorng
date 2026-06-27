@@ -75,7 +75,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "content",
     description: "Curated worldwide news digest with source attribution",
     apiPrefix: "/tools/news",
-    adminRoute: "/admin/tools/news",
+    adminRoute: "/news",
     icon: "◇",
     capabilities: ["read", "write"],
     external: false,
@@ -238,9 +238,7 @@ export interface PlatformCatalog {
 
 /** Public tools shown on /tools for guests (includes non-registry entries). */
 export const PUBLIC_TOOLS: PlatformService[] = [
-  ...PLATFORM_SERVICES.filter((s) => s.public).map((service) =>
-    service.slug === "news" ? { ...service, adminRoute: "/news" } : service,
-  ),
+  ...PLATFORM_SERVICES.filter((s) => s.public),
   {
     slug: "time-date-weather-location",
     name: DATE_TIME_LOCATION_SECTION,

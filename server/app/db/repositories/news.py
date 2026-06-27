@@ -92,6 +92,11 @@ class NewsSourceRepository(MongoRepository[NewsSource]):
         data = await self._col().find_one({"feed_url": feed_url})
         return _parse_doc(NewsSource, data) if data else None
 
+    async def get_by_host(self, host: str) -> NewsSource | None:
+        """Return a source by normalized host."""
+        data = await self._col().find_one({"host": host})
+        return _parse_doc(NewsSource, data) if data else None
+
     async def list_sources(self) -> list[NewsSource]:
         """List sources ordered for admin display."""
         cursor = self._col().find({}).sort([("name", 1), ("id", 1)])

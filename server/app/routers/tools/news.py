@@ -9,6 +9,8 @@ from app.schemas.common import MessageResponse
 from app.schemas.news import (
     NewsArticleCreate,
     NewsArticleListResponse,
+    NewsArticleMetadataRequest,
+    NewsArticleMetadataResponse,
     NewsArticleResponse,
     NewsArticleUpdate,
     NewsIngestResponse,
@@ -69,6 +71,21 @@ async def list_news_admin(
 async def list_news_themes(svc: NewsServiceDep) -> list[str]:
     """List public news themes."""
     return await svc.list_themes()
+
+
+@router.post(
+    "/metadata",
+    response_model=NewsArticleMetadataResponse,
+    summary="Load article metadata",
+    description="Requires platform superuser.",
+)
+async def load_article_metadata(
+    data: NewsArticleMetadataRequest,
+    svc: NewsServiceDep,
+    user: AdminUser,
+) -> NewsArticleMetadataResponse:
+    """Load article metadata from a public URL."""
+    return await svc.load_article_metadata(str(data.url), actor_id=user.id)
 
 
 @router.get(

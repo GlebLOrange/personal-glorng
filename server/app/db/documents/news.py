@@ -36,6 +36,7 @@ class NewsSource(TimestampedDocument):
 
     name: str
     feed_url: str
+    host: str | None = None
     category: str = "world"
     region: str = "global"
     enabled: bool = True

@@ -7,6 +7,7 @@ from app.db.seed.core.admin import WEAK_PASSWORDS
 from app.db.seed.demo.reset import reset_tool_tables
 from app.db.seed.demo.tools.expenses import seed_demo_expenses
 from app.db.seed.demo.tools.feedback import seed_demo_feedback
+from app.db.seed.demo.tools.news import seed_demo_news
 from app.db.seed.demo.tools.recipes import seed_demo_recipes
 from app.db.seed.demo.tools.tasks import seed_demo_tasks
 from app.db.seed.demo.tools.urls import seed_demo_short_urls
@@ -65,6 +66,7 @@ async def seed_demo(
         )
         feedback_count = await seed_demo_feedback(registry, count)
         url_count = await seed_demo_short_urls(registry, count, owners)
+        news_count = await seed_demo_news(registry, 20)
     finally:
         await init_svc.shutdown()
 
@@ -78,6 +80,7 @@ async def seed_demo(
             "tasks": task_count,
             "feedback": feedback_count,
             "short_urls": url_count,
+            "news": news_count,
             "users": len(owners),
         },
     )

@@ -30,6 +30,10 @@ async def reset_tool_tables(registry: DatabaseRegistry) -> None:
         await registry.expenses.expenses._col().delete_many({})
     if registry.recipes is not None:
         await registry.recipes._col().delete_many({})
+    if registry.news is not None:
+        await registry.news._col().delete_many({})
+    if registry.news_sources is not None:
+        await registry.news_sources._col().delete_many({})
 
     if registry.users is not None:
         for email in DEMO_USER_EMAILS:

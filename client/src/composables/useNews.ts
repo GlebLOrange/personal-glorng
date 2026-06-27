@@ -5,6 +5,7 @@ import { useApiAction } from "@/composables/useApiAction";
 import type {
   NewsArticle,
   NewsArticleCreate,
+  NewsArticleMetadata,
   NewsArticleUpdate,
   NewsIngestResult,
   NewsSource,
@@ -98,6 +99,19 @@ export function useNews() {
     );
   }
 
+  async function loadArticleMetadata(url: string): Promise<NewsArticleMetadata | undefined> {
+    return runAction(
+      async () => {
+        const response = await api.post<NewsArticleMetadata>("/tools/news/metadata", { url });
+        return response.data;
+      },
+      {
+        errorFallback: "Failed to load article metadata",
+        logContext: "news.loadArticleMetadata",
+      },
+    );
+  }
+
   async function updateArticle(
     articleId: number,
     payload: NewsArticleUpdate,
@@ -161,6 +175,7 @@ export function useNews() {
     loadSources,
     goToPage,
     ingestNews,
+    loadArticleMetadata,
     createArticle,
     updateArticle,
     deleteArticle,

@@ -1,12 +1,15 @@
 """Business logic for curated news articles."""
 
+import html
 import ipaddress
 import json
 import re
+from html.parser import HTMLParser
 from math import ceil
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urlsplit, urlunsplit
 
+import httpx
 from pymongo.errors import DuplicateKeyError
 
 from app.core.exceptions import ConflictError, NotFoundError, ValidationError
@@ -19,6 +22,7 @@ from app.db.repositories.news import NewsRepository, NewsSourceRepository
 from app.schemas.news import (
     NewsArticleCreate,
     NewsArticleListResponse,
+    NewsArticleMetadataResponse,
     NewsArticleResponse,
     NewsArticleUpdate,
     NewsSourceCreate,
@@ -29,6 +33,8 @@ from app.services.search_indexers.news import index_news_article, remove_news_ar
 
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
 _SLUG_RETRY_LIMIT = 5
+_METADATA_MAX_BYTES = 200_000
+_METADATA_TIMEOUT_SECONDS = 5.0
 
 
 def _loads_json_list(field: str, raw: str) -> list[str]:
@@ -57,12 +63,62 @@ def _duplicate_key_field(exc: DuplicateKeyError) -> str | None:
         return "source_url"
     if "slug" in errmsg:
         return "slug"
+    if "host" in errmsg:
+        return "host"
     return None
+
+
+class _TitleParser(HTMLParser):
+    """Extract page title metadata from a small HTML document."""
+
+    def __init__(self) -> None:
+        """Initialize title collection state."""
+        super().__init__()
+        self.in_title = False
+        self.title_parts: list[str] = []
+        self.meta_titles: list[str] = []
+
+    def handle_starttag(
+        self,
+        tag: str,
+        attrs: list[tuple[str, str | None]],
+    ) -> None:
+        """Capture title and common metadata tags."""
+        if tag.lower() == "title":
+            self.in_title = True
+            return
+        if tag.lower() != "meta":
+            return
+        attr_map = {key.lower(): value for key, value in attrs if value}
+        name = (attr_map.get("property") or attr_map.get("name") or "").lower()
+        if name in {"og:title", "twitter:title"} and attr_map.get("content"):
+            self.meta_titles.append(attr_map["content"])
+
+    def handle_endtag(self, tag: str) -> None:
+        """Stop title capture after the closing title tag."""
+        if tag.lower() == "title":
+            self.in_title = False
+
+    def handle_data(self, data: str) -> None:
+        """Append text inside the title tag."""
+        if self.in_title:
+            self.title_parts.append(data)
+
+    def best_title(self) -> str | None:
+        """Return the best extracted title."""
+        title = _clean_metadata_text(" ".join(self.title_parts), max_length=90)
+        if title:
+            return title
+        for value in self.meta_titles:
+            title = _clean_metadata_text(value, max_length=90)
+            if title:
+                return title
+        return None
 
 
 def _is_public_feed_url(url: str) -> bool:
     """Return whether a feed URL is safe for server-side fetching."""
-    parsed = urlparse(url)
+    parsed = urlsplit(url)
     if parsed.scheme not in {"http", "https"} or not parsed.hostname:
         return False
     try:
@@ -76,6 +132,59 @@ def _require_public_feed_url(feed_url: str) -> None:
     """Reject feed URLs that could target local infrastructure."""
     if not _is_public_feed_url(feed_url):
         raise ValidationError("Feed URL must be a public http(s) URL")
+
+
+def _canonical_url(value: str) -> str:
+    """Normalize URL casing and remove fragments."""
+    parts = urlsplit(value.strip())
+    return urlunsplit(
+        (
+            parts.scheme.lower(),
+            parts.netloc.lower(),
+            parts.path or "/",
+            parts.query,
+            "",
+        )
+    )
+
+
+def _normalized_host(value: str) -> str:
+    """Return a stable source host for a URL."""
+    parsed = urlsplit(value)
+    if not parsed.hostname:
+        raise ValidationError("Article URL must include a host")
+    host = parsed.hostname.rstrip(".").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    return host
+
+
+def _homepage_url(value: str) -> str:
+    """Return a source homepage URL from an article URL."""
+    parts = urlsplit(value)
+    host = parts.hostname or ""
+    return urlunsplit((parts.scheme.lower(), host.lower(), "/", "", ""))
+
+
+def _source_name_from_host(host: str) -> str:
+    """Build a readable source name from a host."""
+    labels = host.split(".")
+    stem = labels[0] if labels else host
+    return " ".join(part.capitalize() for part in re.split(r"[-_]+", stem) if part) or host
+
+
+def _clean_metadata_text(value: str | None, *, max_length: int) -> str:
+    """Normalize fetched metadata text."""
+    if not value:
+        return ""
+    return " ".join(html.unescape(value).split())[:max_length]
+
+
+def _extract_title(document: str) -> str | None:
+    """Extract title metadata from HTML."""
+    parser = _TitleParser()
+    parser.feed(document)
+    return parser.best_title()
 
 
 def _article_source_fields(
@@ -140,6 +249,8 @@ def _apply_article_updates(
     for field in ("source_url", "source_feed_url"):
         if field in updates and updates[field] is not None:
             updates[field] = str(updates[field])
+    if updates.get("slug"):
+        updates["slug"] = _slugify(str(updates["slug"]))
     if updates.get("status") == "published" and article.published_at is None:
         updates["published_at"] = utc_now()
     merged = article.model_dump()
@@ -151,9 +262,11 @@ def _source_payload_from_create(data: NewsSourceCreate) -> dict[str, Any]:
     """Build a source document payload from create data."""
     feed_url = str(data.feed_url)
     _require_public_feed_url(feed_url)
+    host = data.host or _normalized_host(feed_url)
     return {
         "name": data.name,
         "feed_url": feed_url,
+        "host": host,
         "category": data.category,
         "region": data.region,
         "enabled": data.enabled,
@@ -203,6 +316,7 @@ class NewsService:
             published_at=article.published_at,
             telegram_message_id=article.telegram_message_id,
             ai_model=article.ai_model,
+            ai_input_hash=article.ai_input_hash,
             ingest_error=article.ingest_error,
             created_at=article.created_at,
             updated_at=article.updated_at,
@@ -239,6 +353,85 @@ class NewsService:
             return None
         return await self._sources().get(source_id)
 
+    async def _get_or_create_source_for_url(
+        self,
+        source_url: str,
+        *,
+        source_name: str | None = None,
+        source_feed_url: str | None = None,
+        actor_id: int | None = None,
+    ) -> NewsSource:
+        """Return an existing source for the URL host or create one."""
+        _require_public_feed_url(source_url)
+        host = _normalized_host(source_url)
+        existing = await self._sources().get_by_host(host)
+        if existing is not None:
+            return existing
+        feed_url = source_feed_url or _homepage_url(source_url)
+        existing = await self._sources().get_by_feed_url(feed_url)
+        if existing is not None:
+            if existing.host is None:
+                return await self._sources().update_fields(existing.id, host=host)
+            return existing
+        data = NewsSourceCreate(
+            name=source_name or _source_name_from_host(host),
+            feed_url=feed_url,
+            host=host,
+            category="world",
+            region="global",
+            enabled=True,
+        )
+        return await self.create_source(data, actor_id=actor_id)
+
+    async def load_article_metadata(
+        self,
+        source_url: str,
+        *,
+        actor_id: int | None = None,
+    ) -> NewsArticleMetadataResponse:
+        """Fetch article metadata and ensure a matching source exists."""
+        normalized_url = _canonical_url(source_url)
+        _require_public_feed_url(normalized_url)
+        try:
+            async with (
+                httpx.AsyncClient(
+                    follow_redirects=True,
+                    timeout=_METADATA_TIMEOUT_SECONDS,
+                ) as client,
+                client.stream(
+                    "GET",
+                    normalized_url,
+                    headers={"Accept": "text/html,application/xhtml+xml"},
+                ) as response,
+            ):
+                response.raise_for_status()
+                final_url = _canonical_url(str(response.url))
+                _require_public_feed_url(final_url)
+                chunks: list[bytes] = []
+                total = 0
+                async for chunk in response.aiter_bytes():
+                    total += len(chunk)
+                    if total > _METADATA_MAX_BYTES:
+                        remaining = _METADATA_MAX_BYTES - (total - len(chunk))
+                        chunks.append(chunk[: max(0, remaining)])
+                        break
+                    chunks.append(chunk)
+        except httpx.HTTPError as exc:
+            raise ValidationError("Could not load article URL") from exc
+        encoding = response.encoding or "utf-8"
+        document = b"".join(chunks).decode(encoding, errors="replace")
+        host = _normalized_host(final_url)
+        source = await self._get_or_create_source_for_url(final_url, actor_id=actor_id)
+        title = _extract_title(document) or _source_name_from_host(host)
+        return NewsArticleMetadataResponse(
+            source_url=final_url,
+            title=title,
+            source_host=host,
+            source_id=source.id,
+            source_name=source.name,
+            source_feed_url=source.feed_url,
+        )
+
     async def get_public_article(self, slug: str) -> NewsArticleResponse:
         """Return a published article by slug."""
         article = await self._news().get_by_slug(slug)
@@ -257,6 +450,13 @@ class NewsService:
         if await self._news().source_url_exists(source_url):
             raise ConflictError("News source URL already exists")
         source = await self._resolve_article_source(data.source_id)
+        if source is None:
+            source = await self._get_or_create_source_for_url(
+                source_url,
+                source_name=data.source_name,
+                source_feed_url=str(data.source_feed_url) if data.source_feed_url else None,
+                actor_id=actor_id,
+            )
         slug = await self.unique_slug(data.title)
         for _ in range(_SLUG_RETRY_LIMIT):
             article = NewsArticle.model_validate(
@@ -305,12 +505,23 @@ class NewsService:
     ) -> NewsArticleResponse:
         """Update a news article."""
         article = await self.require_article(article_id)
+        if data.slug is not None:
+            existing = await self._news().get_by_slug(_slugify(data.slug))
+            if existing is not None and existing.id != article_id:
+                raise ConflictError("News slug already exists")
         if data.source_url is not None:
             source_url = str(data.source_url)
             existing = await self._news().get_by_source_url(source_url)
             if existing is not None and existing.id != article_id:
                 raise ConflictError("News source URL already exists")
         source = await self._resolve_article_source(data.source_id)
+        if source is None and data.source_url is not None:
+            source = await self._get_or_create_source_for_url(
+                str(data.source_url),
+                source_name=data.source_name,
+                source_feed_url=str(data.source_feed_url) if data.source_feed_url else None,
+                actor_id=actor_id,
+            )
         updated = _apply_article_updates(article, data, source)
         article = await self._news().replace(updated)
         await index_news_article(self.registry, article)
@@ -353,6 +564,9 @@ class NewsService:
         feed_url = str(data.feed_url)
         if await self._sources().get_by_feed_url(feed_url):
             raise ConflictError("News feed URL already exists")
+        host = data.host or _normalized_host(feed_url)
+        if await self._sources().get_by_host(host):
+            raise ConflictError("News source host already exists")
         source = await self._sources().insert(
             NewsSource.model_validate(_source_payload_from_create(data))
         )
@@ -382,6 +596,12 @@ class NewsService:
             if existing is not None and existing.id != source_id:
                 raise ConflictError("News feed URL already exists")
             updates["feed_url"] = feed_url
+            updates.setdefault("host", _normalized_host(feed_url))
+        if updates.get("host") is not None:
+            host = str(updates["host"])
+            existing = await self._sources().get_by_host(host)
+            if existing is not None and existing.id != source_id:
+                raise ConflictError("News source host already exists")
         merged = source.model_dump()
         merged.update(updates)
         updated = await self._sources().replace(NewsSource.model_validate(merged))

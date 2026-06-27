@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { formatNewsDate, useNews } from "@/composables/useNews";
+import { usePermissions } from "@/composables/usePermissions";
 
+const router = useRouter();
+const { isSuperuser } = usePermissions();
 const {
   articles,
   page,
@@ -22,6 +26,16 @@ onMounted(async () => {
 watch(page, () => {
   void loadNews();
 });
+
+function openArticle(slug: string): void {
+  void router.push(`/news/${slug}`);
+}
+
+function onCardKeydown(event: KeyboardEvent, slug: string): void {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  openArticle(slug);
+}
 </script>
 
 <template>
@@ -31,11 +45,22 @@ watch(page, () => {
       <h1 class="section-title mb-3">
         <span class="accent-gradient">news</span>
       </h1>
-      <p class="text-body max-w-2xl">
-        Short worldwide news summaries with source attribution. Every item links back to the
-        original publisher.
-      </p>
-      <p class="mt-3 text-xs text-surface-muted">{{ countLabel }}</p>
+      <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="text-body max-w-2xl">
+            Short worldwide news summaries with source attribution. Every item links back to the
+            original publisher.
+          </p>
+          <p class="mt-3 text-xs text-surface-muted">{{ countLabel }}</p>
+        </div>
+        <RouterLink
+          v-if="isSuperuser"
+          to="/admin/tools/news"
+          class="text-xs text-accent-blue hover:underline"
+        >
+          Manage news
+        </RouterLink>
+      </div>
     </header>
 
     <section v-if="listLoading" class="space-y-4" aria-busy="true" aria-label="Loading news">
@@ -58,7 +83,11 @@ watch(page, () => {
       <article
         v-for="item in articles"
         :key="item.id"
-        class="rounded-lg border border-surface-border bg-surface-card p-5 transition-colors hover:border-accent-blue"
+        role="link"
+        tabindex="0"
+        class="cursor-pointer rounded-lg border border-surface-border bg-surface-card p-5 transition-colors hover:border-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+        @click="openArticle(item.slug)"
+        @keydown="onCardKeydown($event, item.slug)"
       >
         <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
           <span>{{ item.source_name }}</span>
@@ -68,11 +97,7 @@ watch(page, () => {
           </time>
         </div>
 
-        <h2 class="card-title mb-2">
-          <RouterLink :to="`/news/${item.slug}`" class="hover:text-accent-blue">
-            {{ item.title }}
-          </RouterLink>
-        </h2>
+        <h2 class="card-title mb-2">{{ item.title }}</h2>
 
         <p class="text-sm text-surface-mid mb-4">{{ item.summary }}</p>
 
@@ -89,6 +114,7 @@ watch(page, () => {
             target="_blank"
             rel="noopener noreferrer"
             class="ml-auto text-xs text-accent-blue hover:underline"
+            @click.stop
           >
             source
           </a>

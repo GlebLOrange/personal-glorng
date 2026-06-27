@@ -26,6 +26,7 @@ const drawerMode = ref<DrawerMode>("create");
 const editingArticleId = ref<number | null>(null);
 const form = ref<NewsArticleFormData>(emptyForm());
 const lastAutoTitle = ref<string | null>(null);
+const metadataRequestId = ref(0);
 
 const {
   articles,
@@ -40,6 +41,7 @@ const {
   loadSources,
   goToPage,
   ingestNews,
+  loadArticleMetadata,
   createArticle,
   updateArticle,
   deleteArticle,
@@ -48,18 +50,24 @@ const {
 
 function emptyForm(): NewsArticleFormData {
   return {
+    slug: "",
     status: "draft",
     source_id: null,
     source_name: "",
     source_url: "",
     source_feed_url: "",
-    source_published_at: datetimeLocalNow(),
+    source_published_at: "",
     original_title: "",
     title: "",
     summary: "",
     bullets: ["", ""],
     themes: "world",
     language: "en",
+    published_at: "",
+    telegram_message_id: "",
+    ai_model: "",
+    ai_input_hash: "",
+    ingest_error: "",
   };
 }
 
@@ -67,6 +75,7 @@ function formFromArticle(article: NewsArticle): NewsArticleFormData {
   const bullets = article.bullets.length ? [...article.bullets] : ["", ""];
   while (bullets.length < 2) bullets.push("");
   return {
+    slug: article.slug,
     status: article.status,
     source_id: article.source_id,
     source_name: article.source_name,
@@ -79,6 +88,11 @@ function formFromArticle(article: NewsArticle): NewsArticleFormData {
     bullets,
     themes: article.themes.join(", "),
     language: article.language,
+    published_at: article.published_at?.slice(0, 16) ?? "",
+    telegram_message_id: article.telegram_message_id?.toString() ?? "",
+    ai_model: article.ai_model ?? "",
+    ai_input_hash: article.ai_input_hash ?? "",
+    ingest_error: article.ingest_error ?? "",
   };
 }
 
@@ -93,28 +107,89 @@ function parsedBullets(): string[] {
   return form.value.bullets.map((bullet) => bullet.trim()).filter(Boolean);
 }
 
-function datetimeLocalNow(): string {
-  const now = new Date();
-  const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
-  return localNow.toISOString().slice(0, 16);
-}
-
 function canReplaceAutoValue(currentValue: string, lastAutoValue: string | null): boolean {
   return !currentValue.trim() || (lastAutoValue !== null && currentValue === lastAutoValue);
 }
 
-function normalizedPublishedAt(): string | null {
-  if (!form.value.source_published_at.trim()) return null;
-  const value = new Date(form.value.source_published_at);
-  return Number.isNaN(value.getTime()) ? null : value.toISOString();
+function normalizedDateTime(value: string): string | null {
+  if (!value.trim()) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
-function sourcePublishedAtPayload(): string {
-  return normalizedPublishedAt() ?? new Date().toISOString();
+function normalizedSourcePublishedAt(): string | null {
+  return normalizedDateTime(form.value.source_published_at);
+}
+
+function normalizedPublishedAt(): string | null {
+  return normalizedDateTime(form.value.published_at);
+}
+
+function telegramMessageIdPayload(): number | null {
+  const value = form.value.telegram_message_id.trim();
+  if (!value) return null;
+  const messageId = Number(value);
+  return Number.isInteger(messageId) && messageId >= 0 ? messageId : Number.NaN;
+}
+
+function optionalText(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function sourcePublishedAtPayload(): string | null {
+  return normalizedSourcePublishedAt();
+}
+
+function publishedAtPayload(): string | null {
+  return normalizedPublishedAt();
 }
 
 function sourceUrlPayload(): string | null {
   return normalizeHttpUrl(form.value.source_url);
+}
+
+function sourceFeedUrlPayload(): string | undefined {
+  const sourceFeedUrl = normalizeHttpUrl(form.value.source_feed_url);
+  return sourceFeedUrl ?? undefined;
+}
+
+function slugPayload(): string | undefined {
+  const slug = form.value.slug.trim();
+  return slug || undefined;
+}
+
+function applySource(sourceId: number | null): void {
+  const source = sources.value.find((item) => item.id === sourceId);
+  form.value = {
+    ...form.value,
+    source_id: sourceId,
+    source_name: source?.name ?? form.value.source_name,
+    source_feed_url: source?.feed_url ?? form.value.source_feed_url,
+  };
+}
+
+async function hydrateFromSourceUrl(sourceUrl: string): Promise<void> {
+  const requestId = metadataRequestId.value + 1;
+  metadataRequestId.value = requestId;
+  const metadata = await loadArticleMetadata(sourceUrl);
+  if (!metadata || requestId !== metadataRequestId.value) return;
+  await loadSources();
+  const nextValues: Partial<NewsArticleFormData> = {
+    source_url: metadata.source_url,
+    source_id: metadata.source_id,
+    source_name: metadata.source_name,
+    source_feed_url: metadata.source_feed_url,
+  };
+  if (metadata.title && canReplaceAutoValue(form.value.title, lastAutoTitle.value)) {
+    nextValues.title = metadata.title;
+    lastAutoTitle.value = metadata.title;
+  }
+  form.value = { ...form.value, ...nextValues };
+}
+
+function dateIsInvalid(value: string, normalizedValue: string | null): boolean {
+  return Boolean(value.trim()) && normalizedValue === null;
 }
 
 function withSourceUrlDefaults(nextForm: NewsArticleFormData): NewsArticleFormData {
@@ -132,9 +207,16 @@ function withSourceUrlDefaults(nextForm: NewsArticleFormData): NewsArticleFormDa
   return { ...nextForm, ...nextValues };
 }
 
-function updateForm(nextForm: NewsArticleFormData): void {
+async function updateForm(nextForm: NewsArticleFormData): Promise<void> {
+  if (nextForm.source_id !== form.value.source_id) {
+    applySource(nextForm.source_id);
+    return;
+  }
   if (nextForm.source_url !== form.value.source_url) {
-    form.value = withSourceUrlDefaults(nextForm);
+    const nextWithDefaults = withSourceUrlDefaults(nextForm);
+    form.value = nextWithDefaults;
+    const sourceUrl = normalizeHttpUrl(nextWithDefaults.source_url);
+    if (sourceUrl) await hydrateFromSourceUrl(sourceUrl);
     return;
   }
   form.value = nextForm;
@@ -154,10 +236,6 @@ function validateForm(): boolean {
     toast("Source URL must start with http:// or https://", "error");
     return false;
   }
-  if (!form.value.source_id) {
-    toast("Select a news source", "error");
-    return false;
-  }
   if (parsedBullets().length < 2) {
     toast("Add at least two key points", "error");
     return false;
@@ -166,8 +244,16 @@ function validateForm(): boolean {
     toast("Add at least one theme", "error");
     return false;
   }
-  if (form.value.source_published_at.trim() && normalizedPublishedAt() === null) {
+  if (dateIsInvalid(form.value.source_published_at, normalizedSourcePublishedAt())) {
     toast("Source published date is invalid", "error");
+    return false;
+  }
+  if (dateIsInvalid(form.value.published_at, normalizedPublishedAt())) {
+    toast("Published date is invalid", "error");
+    return false;
+  }
+  if (Number.isNaN(telegramMessageIdPayload())) {
+    toast("Telegram message ID must be a whole number", "error");
     return false;
   }
   return true;
@@ -176,22 +262,33 @@ function validateForm(): boolean {
 function buildCreatePayload(): NewsArticleCreate {
   const sourceUrl = sourceUrlPayload() ?? form.value.source_url.trim();
   const title = form.value.title.trim();
+  const originalTitle = form.value.original_title.trim() || title;
   return {
     status: form.value.status,
-    source_id: form.value.source_id ?? 0,
+    source_id: form.value.source_id,
+    source_name: optionalText(form.value.source_name) ?? undefined,
     source_url: sourceUrl,
+    source_feed_url: sourceFeedUrlPayload(),
     source_published_at: sourcePublishedAtPayload(),
-    original_title: title,
+    original_title: originalTitle,
     title,
     summary: form.value.summary.trim(),
     bullets: parsedBullets(),
     themes: parsedThemes(),
-    language: "en",
+    language: form.value.language.trim() || "en",
+    ai_model: optionalText(form.value.ai_model),
+    ai_input_hash: optionalText(form.value.ai_input_hash),
+    ingest_error: optionalText(form.value.ingest_error),
   };
 }
 
 function buildUpdatePayload(): NewsArticleUpdate {
-  return buildCreatePayload();
+  return {
+    ...buildCreatePayload(),
+    slug: slugPayload(),
+    published_at: publishedAtPayload(),
+    telegram_message_id: telegramMessageIdPayload(),
+  };
 }
 
 async function loadAdminNews(): Promise<void> {

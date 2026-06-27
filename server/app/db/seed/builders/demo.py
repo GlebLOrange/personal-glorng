@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 
 from app.core.permissions import permission_key
 from app.db.documents.feedback import Feedback
+from app.db.documents.news import NewsArticle, NewsSource
 from app.db.documents.recipe import Recipe
 from app.db.documents.task import Task, TaskStatus
 from app.platform.registry import PLATFORM_SERVICES
@@ -185,6 +186,52 @@ SHORT_URL_TARGETS = (
     "https://docs.docker.com/compose/",
 )
 
+NEWS_SOURCE_FIXTURES: tuple[tuple[str, str, str], ...] = (
+    ("DW", "dw.com", "https://www.dw.com/"),
+    ("BBC News", "bbc.com", "https://www.bbc.com/"),
+    ("Reuters", "reuters.com", "https://www.reuters.com/"),
+    ("The Guardian", "theguardian.com", "https://www.theguardian.com/"),
+    ("France 24", "france24.com", "https://www.france24.com/"),
+    ("Al Jazeera", "aljazeera.com", "https://www.aljazeera.com/"),
+    ("NPR", "npr.org", "https://www.npr.org/"),
+    ("AP News", "apnews.com", "https://apnews.com/"),
+    ("The Verge", "theverge.com", "https://www.theverge.com/"),
+    ("Ars Technica", "arstechnica.com", "https://arstechnica.com/"),
+    ("Wired", "wired.com", "https://www.wired.com/"),
+    ("Nature", "nature.com", "https://www.nature.com/"),
+    ("ScienceDaily", "sciencedaily.com", "https://www.sciencedaily.com/"),
+    ("WHO", "who.int", "https://www.who.int/"),
+    ("NASA", "nasa.gov", "https://www.nasa.gov/"),
+    ("NOAA", "noaa.gov", "https://www.noaa.gov/"),
+    ("Financial Times", "ft.com", "https://www.ft.com/"),
+    ("Nikkei Asia", "asia.nikkei.com", "https://asia.nikkei.com/"),
+    ("Politico", "politico.com", "https://www.politico.com/"),
+    ("The Japan Times", "japantimes.co.jp", "https://www.japantimes.co.jp/"),
+)
+
+NEWS_ARTICLE_TITLES = (
+    "Global leaders outline fresh climate funding targets",
+    "Researchers report progress on safer battery materials",
+    "Markets steady as investors weigh central bank signals",
+    "New satellite data improves storm forecasting models",
+    "Hospitals test faster triage workflows with AI support",
+    "European cities expand overnight rail connections",
+    "Security teams warn of renewed phishing campaigns",
+    "Ocean monitoring project maps warming coastal waters",
+    "Startups race to build cheaper home energy storage",
+    "Public health agencies update winter virus guidance",
+    "Parliament debates stricter rules for political ads",
+    "Museums launch shared archive for digital collections",
+    "Engineers test low-power chips for edge devices",
+    "Farmers adopt sensors to reduce irrigation waste",
+    "Space agency schedules next lunar cargo mission",
+    "Analysts track shipping delays after port disruption",
+    "Universities publish open datasets for cancer research",
+    "City planners redesign streets around heat resilience",
+    "Court ruling clarifies platform moderation obligations",
+    "Japan expands incentives for regional tech investment",
+)
+
 
 def demo_reader_permissions() -> list[str]:
     """Read access for every registry capability named read."""
@@ -341,5 +388,61 @@ def build_short_url_seeds(count: int, *, seed: int = 42) -> list[ShortUrlSeed]:
                 title=f"Demo link {index + 1}",
                 clicks=rng.randint(0, 500),
             ),
+        )
+    return rows
+
+
+def build_demo_news_sources(count: int = 20) -> list[NewsSource]:
+    """Build stable demo news source rows."""
+    rows: list[NewsSource] = []
+    for name, host, feed_url in NEWS_SOURCE_FIXTURES[:count]:
+        rows.append(
+            NewsSource(
+                name=name,
+                feed_url=feed_url,
+                host=host,
+                category="world",
+                region="global",
+                enabled=True,
+            )
+        )
+    return rows
+
+
+def build_demo_news_articles(sources: list[NewsSource], count: int = 20) -> list[NewsArticle]:
+    """Build stable demo news articles for inserted sources."""
+    base_time = datetime(2026, 1, 20, 12, tzinfo=UTC)
+    rows: list[NewsArticle] = []
+    for index, source in enumerate(sources[:count]):
+        title = NEWS_ARTICLE_TITLES[index % len(NEWS_ARTICLE_TITLES)]
+        published_at = base_time - timedelta(hours=index)
+        slug = f"demo-news-{index + 1}"
+        rows.append(
+            NewsArticle(
+                slug=slug,
+                status="published",
+                source_id=source.id,
+                source_name=source.name,
+                source_url=f"{source.feed_url.rstrip('/')}/demo/{slug}",
+                source_feed_url=source.feed_url,
+                source_published_at=published_at,
+                original_title=title,
+                title=title,
+                summary=(
+                    "A concise demo summary for the public news digest, "
+                    "with realistic source attribution and publication metadata."
+                ),
+                bullets=json.dumps(
+                    [
+                        "Demo article seeded without network access.",
+                        "Source and article stay linked through source_id.",
+                    ]
+                ),
+                themes=json.dumps(["world", "tech"] if index % 3 == 0 else ["world"]),
+                language="en",
+                published_at=published_at,
+                ai_model="demo",
+                ai_input_hash=f"demo-news-{index + 1:02d}",
+            )
         )
     return rows

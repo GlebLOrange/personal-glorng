@@ -53,6 +53,7 @@ INDEX_SPECS: list[tuple[str, list[tuple[str, int | str]], dict[str, Any] | None]
     ("news_articles", [("status", 1), ("published_at", -1)], None),
     ("news_sources", [("id", 1)], {"unique": True}),
     ("news_sources", [("feed_url", 1)], {"unique": True}),
+    ("news_sources", [("host", 1)], {"unique": True, "sparse": True}),
     (
         "search_documents",
         [("title", "text"), ("body", "text")],
