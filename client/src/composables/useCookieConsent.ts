@@ -2,26 +2,33 @@ import type { App } from "vue";
 import * as CookieConsent from "vanilla-cookieconsent";
 import "vanilla-cookieconsent/dist/cookieconsent.css";
 
-import { disableSentry, initSentry } from "@/instrument";
 import { isFirebaseAnalyticsEnabled } from "@/constants/firebase";
 import { isSentryEnabled } from "@/constants/sentry";
-import { disableFirebaseAnalytics, initFirebaseAnalytics } from "@/services/firebase";
 import router from "@/router";
 
-function applyConsent(app: App) {
+let hasLoadedFirebaseAnalytics = false;
+let hasLoadedSentry = false;
+
+function applyConsent(app: App): void {
   if (isSentryEnabled) {
     if (CookieConsent.acceptedCategory("monitoring")) {
-      void initSentry(app);
-    } else {
-      void disableSentry();
+      hasLoadedSentry = true;
+      void import("@/instrument").then(({ initSentry }) => initSentry(app));
+    } else if (hasLoadedSentry) {
+      void import("@/instrument").then(({ disableSentry }) => disableSentry());
     }
   }
 
   if (isFirebaseAnalyticsEnabled) {
     if (CookieConsent.acceptedCategory("analytics")) {
-      initFirebaseAnalytics(router);
-    } else {
-      disableFirebaseAnalytics();
+      hasLoadedFirebaseAnalytics = true;
+      void import("@/services/firebase").then(({ initFirebaseAnalytics }) =>
+        initFirebaseAnalytics(router),
+      );
+    } else if (hasLoadedFirebaseAnalytics) {
+      void import("@/services/firebase").then(({ disableFirebaseAnalytics }) =>
+        disableFirebaseAnalytics(),
+      );
     }
   }
 }
