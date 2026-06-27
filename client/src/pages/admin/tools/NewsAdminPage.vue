@@ -14,6 +14,7 @@ import type {
   NewsArticleUpdate,
   NewsStatus,
 } from "@/types";
+import { normalizeHttpUrl, sourceFromNewsLink, titleFromNewsLink } from "@/utils/newsForms";
 
 type StatusFilter = NewsStatus | "all";
 type DrawerMode = "create" | "edit";
@@ -26,6 +27,8 @@ const drawerOpen = ref(false);
 const drawerMode = ref<DrawerMode>("create");
 const editingArticleId = ref<number | null>(null);
 const form = ref<NewsArticleFormData>(emptyForm());
+const lastAutoSourceName = ref<string | null>(null);
+const lastAutoTitle = ref<string | null>(null);
 
 const {
   articles,
@@ -54,7 +57,7 @@ function emptyForm(): NewsArticleFormData {
     source_name: "",
     source_url: "",
     source_feed_url: "",
-    source_published_at: "",
+    source_published_at: datetimeLocalNow(),
     original_title: "",
     title: "",
     summary: "",
@@ -93,14 +96,56 @@ function parsedBullets(): string[] {
   return form.value.bullets.map((bullet) => bullet.trim()).filter(Boolean);
 }
 
-function isHttpUrl(value: string): boolean {
-  return value.startsWith("http://") || value.startsWith("https://");
+function datetimeLocalNow(): string {
+  const now = new Date();
+  const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+  return localNow.toISOString().slice(0, 16);
+}
+
+function canReplaceAutoValue(currentValue: string, lastAutoValue: string | null): boolean {
+  return !currentValue.trim() || (lastAutoValue !== null && currentValue === lastAutoValue);
 }
 
 function normalizedPublishedAt(): string | null {
   if (!form.value.source_published_at.trim()) return null;
   const value = new Date(form.value.source_published_at);
   return Number.isNaN(value.getTime()) ? null : value.toISOString();
+}
+
+function sourcePublishedAtPayload(): string {
+  return normalizedPublishedAt() ?? new Date().toISOString();
+}
+
+function sourceUrlPayload(): string | null {
+  return normalizeHttpUrl(form.value.source_url);
+}
+
+function withSourceUrlDefaults(nextForm: NewsArticleFormData): NewsArticleFormData {
+  const sourceUrl = normalizeHttpUrl(nextForm.source_url);
+  if (!sourceUrl) return { ...nextForm, source_feed_url: "" };
+
+  const nextValues: Partial<NewsArticleFormData> = {
+    source_feed_url: sourceUrl,
+  };
+  const autoTitle = titleFromNewsLink(sourceUrl);
+  if (autoTitle && canReplaceAutoValue(nextForm.title, lastAutoTitle.value)) {
+    nextValues.title = autoTitle;
+    lastAutoTitle.value = autoTitle;
+  }
+  const autoSourceName = sourceFromNewsLink(sourceUrl, []);
+  if (autoSourceName && canReplaceAutoValue(nextForm.source_name, lastAutoSourceName.value)) {
+    nextValues.source_name = autoSourceName;
+    lastAutoSourceName.value = autoSourceName;
+  }
+  return { ...nextForm, ...nextValues };
+}
+
+function updateForm(nextForm: NewsArticleFormData): void {
+  if (nextForm.source_url !== form.value.source_url) {
+    form.value = withSourceUrlDefaults(nextForm);
+    return;
+  }
+  form.value = nextForm;
 }
 
 function validateForm(): boolean {
@@ -112,12 +157,12 @@ function validateForm(): boolean {
     toast("Summary is required", "error");
     return false;
   }
-  if (!form.value.source_name.trim() || !form.value.original_title.trim()) {
-    toast("Source name and original title are required", "error");
+  if (!form.value.source_name.trim()) {
+    toast("Source name is required", "error");
     return false;
   }
-  if (!isHttpUrl(form.value.source_url) || !isHttpUrl(form.value.source_feed_url)) {
-    toast("Source and feed URLs must start with http:// or https://", "error");
+  if (!sourceUrlPayload()) {
+    toast("Source URL must start with http:// or https://", "error");
     return false;
   }
   if (parsedBullets().length < 2) {
@@ -136,18 +181,20 @@ function validateForm(): boolean {
 }
 
 function buildCreatePayload(): NewsArticleCreate {
+  const sourceUrl = sourceUrlPayload() ?? form.value.source_url.trim();
+  const title = form.value.title.trim();
   return {
     status: form.value.status,
     source_name: form.value.source_name.trim(),
-    source_url: form.value.source_url.trim(),
-    source_feed_url: form.value.source_feed_url.trim(),
-    source_published_at: normalizedPublishedAt(),
-    original_title: form.value.original_title.trim(),
-    title: form.value.title.trim(),
+    source_url: sourceUrl,
+    source_feed_url: sourceUrl,
+    source_published_at: sourcePublishedAtPayload(),
+    original_title: title,
+    title,
     summary: form.value.summary.trim(),
     bullets: parsedBullets(),
     themes: parsedThemes(),
-    language: form.value.language.trim() || "en",
+    language: "en",
   };
 }
 
@@ -188,6 +235,8 @@ async function repost(articleId: number): Promise<void> {
 function openCreate(): void {
   drawerMode.value = "create";
   editingArticleId.value = null;
+  lastAutoSourceName.value = null;
+  lastAutoTitle.value = null;
   form.value = emptyForm();
   drawerOpen.value = true;
 }
@@ -195,6 +244,8 @@ function openCreate(): void {
 function openEdit(article: NewsArticle): void {
   drawerMode.value = "edit";
   editingArticleId.value = article.id;
+  lastAutoSourceName.value = null;
+  lastAutoTitle.value = null;
   form.value = formFromArticle(article);
   drawerOpen.value = true;
 }
@@ -428,7 +479,7 @@ watch([activeTheme, page, statusFilter], () => {
       :mode="drawerMode"
       :form="form"
       :loading="actionLoading"
-      @update:form="form = $event"
+      @update:form="updateForm"
       @close="closeDrawer"
       @save="saveDrawer"
     />
