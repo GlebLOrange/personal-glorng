@@ -82,7 +82,7 @@ async function handleSubmit(): Promise<void> {
 
       <p class="text-center text-xs text-surface-mid mt-6">
         <RouterLink to="/login" class="text-accent-blue hover:underline"
-          >&larr; Back to login</RouterLink
+          >BACK</RouterLink
         >
       </p>
     </div>

@@ -8,6 +8,14 @@ import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { SELECT_CLASS } from "@/constants/formClasses";
+import {
+  NEWS_BULLET_MAX_LENGTH,
+  NEWS_SUMMARY_MAX_LENGTH,
+  NEWS_THEME_LIMIT,
+  NEWS_THEME_SET,
+  NEWS_THEMES,
+  NEWS_TITLE_MAX_LENGTH,
+} from "@/constants/news";
 import { formatNewsDate, useNews } from "@/composables/useNews";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
@@ -119,17 +127,30 @@ function dateIsInvalid(value: string, normalizedValue: string | null): boolean {
 }
 
 function validateForm(): boolean {
+  const title = form.value.title.trim();
+  const summary = form.value.summary.trim();
+  const bullets = parsedBullets();
+  const themes = parsedThemes();
+
   if (!canWrite.value) return false;
   if (!form.value.slug.trim()) {
     toast("Slug is required", "error");
     return false;
   }
-  if (!form.value.title.trim()) {
+  if (!title) {
     toast("Title is required", "error");
     return false;
   }
-  if (!form.value.summary.trim()) {
+  if (title.length > NEWS_TITLE_MAX_LENGTH) {
+    toast(`Title must be ${NEWS_TITLE_MAX_LENGTH} characters or fewer`, "error");
+    return false;
+  }
+  if (!summary) {
     toast("Summary is required", "error");
+    return false;
+  }
+  if (summary.length > NEWS_SUMMARY_MAX_LENGTH) {
+    toast(`Summary must be ${NEWS_SUMMARY_MAX_LENGTH} characters or fewer`, "error");
     return false;
   }
   if (!normalizeHttpUrl(form.value.source_url)) {
@@ -140,12 +161,28 @@ function validateForm(): boolean {
     toast("Source feed/home URL must start with http:// or https://", "error");
     return false;
   }
-  if (parsedBullets().length < 2) {
+  if (bullets.length < 2) {
     toast("Add at least two key points", "error");
     return false;
   }
-  if (parsedThemes().length < 1) {
+  if (bullets.length > 5) {
+    toast("Add no more than five key points", "error");
+    return false;
+  }
+  if (bullets.some((bullet) => bullet.length > NEWS_BULLET_MAX_LENGTH)) {
+    toast(`Each key point must be ${NEWS_BULLET_MAX_LENGTH} characters or fewer`, "error");
+    return false;
+  }
+  if (themes.length < 1) {
     toast("Add at least one theme", "error");
+    return false;
+  }
+  if (themes.length > NEWS_THEME_LIMIT) {
+    toast(`Choose no more than ${NEWS_THEME_LIMIT} themes`, "error");
+    return false;
+  }
+  if (themes.some((theme) => !NEWS_THEME_SET.has(theme))) {
+    toast("Choose only supported news themes", "error");
     return false;
   }
   if (dateIsInvalid(form.value.source_published_at, normalizedDateTime(form.value.source_published_at))) {
@@ -202,6 +239,20 @@ function removeBullet(index: number): void {
   form.value.bullets = form.value.bullets.filter((_, i) => i !== index);
 }
 
+function themeIsSelected(theme: string): boolean {
+  return parsedThemes().includes(theme);
+}
+
+function toggleTheme(theme: string): void {
+  const themes = parsedThemes();
+  if (themes.includes(theme)) {
+    form.value.themes = themes.filter((item) => item !== theme).join(", ");
+    return;
+  }
+  if (themes.length >= NEWS_THEME_LIMIT) return;
+  form.value.themes = [...themes, theme].join(", ");
+}
+
 function applySource(sourceId: number | null): void {
   const source = sources.value.find((item) => item.id === sourceId);
   form.value.source_id = sourceId;
@@ -236,8 +287,8 @@ watch(articleId, () => {
 <template>
   <AdminPageLayout title="edit news article" max-width="xl">
     <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <RouterLink to="/admin/tools/news" class="nav-link-accent text-sm">
-        Back to NEWS
+      <RouterLink to="/news" class="nav-link-accent text-sm">
+        BACK
       </RouterLink>
       <BaseButton
         v-if="canWrite && article"
@@ -289,8 +340,38 @@ watch(articleId, () => {
             <BaseInput v-model="form.title" label="Title" :disabled="!canWrite" />
             <BaseInput v-model="form.original_title" label="Original title" :disabled="!canWrite" />
             <BaseInput v-model="form.language" label="Language" :disabled="!canWrite" />
-            <BaseInput v-model="form.themes" label="Themes" placeholder="world, business" :disabled="!canWrite" />
           </div>
+          <fieldset class="mt-4 space-y-2">
+            <legend class="text-sm text-surface-mid">
+              Themes
+              <span class="text-xs text-surface-muted">
+                ({{ parsedThemes().length }}/{{ NEWS_THEME_LIMIT }})
+              </span>
+            </legend>
+            <div class="flex flex-wrap gap-2">
+              <label
+                v-for="theme in NEWS_THEMES"
+                :key="theme"
+                class="inline-flex cursor-pointer items-center gap-2 rounded border border-surface-border px-3 py-1.5 text-xs transition-colors"
+                :class="{
+                  'border-accent-blue text-surface-light': themeIsSelected(theme),
+                  'text-surface-mid': !themeIsSelected(theme),
+                  'opacity-50': !themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT,
+                }"
+              >
+                <input
+                  type="checkbox"
+                  :checked="themeIsSelected(theme)"
+                  :disabled="
+                    !canWrite ||
+                    (!themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT)
+                  "
+                  @change="toggleTheme(theme)"
+                />
+                {{ theme }}
+              </label>
+            </div>
+          </fieldset>
           <div class="mt-4">
             <BaseTextarea v-model="form.summary" label="Summary" :rows="4" :disabled="!canWrite" />
           </div>

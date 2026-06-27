@@ -25,7 +25,7 @@ watch(slug, () => {
 
 <template>
   <main class="max-w-3xl mx-auto px-6 py-12">
-    <BackLink to="/news" label="Back to news" class="mb-8" />
+    <BackLink to="/news" label="BACK" class="mb-8" />
 
     <div
       v-if="detailLoading"

@@ -93,7 +93,7 @@ async function handleGoogleLogin(): Promise<void> {
 
       <p class="text-center text-xs text-surface-mid mt-4">
         <RouterLink to="/" class="hover:text-accent-blue transition-colors">
-          &larr; Back to portfolio
+          BACK
         </RouterLink>
       </p>
     </div>

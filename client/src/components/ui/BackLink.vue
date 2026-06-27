@@ -7,7 +7,7 @@ withDefaults(
     label?: string;
   }>(),
   {
-    label: "Back",
+    label: "BACK",
   },
 );
 </script>

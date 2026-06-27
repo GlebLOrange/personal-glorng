@@ -63,7 +63,8 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/news",
     name: "news",
-    component: () => import("@/pages/NewsPage.vue"),
+    component: () => import("@/pages/NewsRoutePage.vue"),
+    meta: { resolveSession: true },
   },
   {
     path: "/calculator",
@@ -181,9 +182,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/admin/tools/news",
-    name: "tool-news",
-    component: () => import("@/pages/admin/tools/NewsAdminPage.vue"),
-    meta: { requiresAuth: true },
+    redirect: { name: "news" },
   },
   {
     path: "/admin/tools/news/:id",
@@ -253,6 +252,7 @@ router.beforeEach(async (to, _from, next) => {
   const auth = useAuthStore();
   const shouldResolveSession =
     to.name === "login" ||
+    Boolean(to.meta.resolveSession) ||
     Boolean(to.meta.requiresAuth) ||
     Boolean(to.meta.requiresSuperuser);
   if (shouldResolveSession && !auth.sessionResolved) {

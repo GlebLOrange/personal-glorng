@@ -162,7 +162,7 @@ function openPreferences() {
         to="/"
         class="text-sm text-surface-muted hover:text-accent-blue transition-colors"
       >
-        ← Back to home
+        BACK
       </router-link>
     </div>
   </div>
