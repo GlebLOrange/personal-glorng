@@ -6,30 +6,30 @@ Coding standards and agent behavior live in [`.cursor/rules/`](.cursor/rules/) (
 
 ### Product overview
 
-**gLOrng** is a FastAPI + Vue 3 developer portfolio and personal platform. The recommended dev workflow is **ultra-lite mode**: MongoDB and Redis in Docker; API and Vite on the host. Use **lite mode** when you prefer the API in Docker.
+**gLOrng** is a FastAPI + Vue 3 developer portfolio and personal platform. The recommended dev workflow is **lite mode**: MongoDB, Redis, API, and nginx in Docker; Vite runs on the host with `make dev-lite-client`.
 
 ### Cloud VM Docker caveat
 
 Nested Docker on Cloud Agent VMs cannot apply Compose `deploy.resources` memory limits (cgroupv2 threaded mode). Always include the cloud overlay when starting services:
 
 ```bash
-# Ultra-lite (lowest RAM): MongoDB + Redis only
-docker compose -f docker-compose.yml -f docker-compose.ultra-lite.yml -f docker-compose.cloud-vm.yml up -d mongodb redis
-make dev-ultra-lite-server
-
 # Lite: API in Docker (also starts RabbitMQ via server depends_on)
 docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.cloud-vm.yml up -d mongodb redis server
+
+# Ultra-lite, when you specifically want host API work
+docker compose -f docker-compose.yml -f docker-compose.ultra-lite.yml -f docker-compose.cloud-vm.yml up -d mongodb redis
+make dev-ultra-lite-server
 ```
 
-Equivalent to `make dev-ultra-lite-infra` / `make dev-lite` with the cloud overlay. Docker daemon on this VM also uses `fuse-overlayfs` and `default-cgroupns-mode: host` in `/etc/docker/daemon.json`.
+Equivalent to `make dev-lite` / `make dev-ultra-lite-infra` with the cloud overlay. Docker daemon on this VM also uses `fuse-overlayfs` and `default-cgroupns-mode: host` in `/etc/docker/daemon.json`.
 
 For Elasticsearch-backed search, use `make dev-search` (add `-f docker-compose.search.yml` and `--profile search` to the compose command above) and set `ELASTICSEARCH_URL=http://elasticsearch:9200` in `.env`. Leave `ELASTICSEARCH_URL` empty for lite mode.
 
 ### First-time / manual setup
 
 1. Copy env: `cp .env.example .env` and fill in all values (see `.env.example` for the full contract). Minimum secrets: `JWT_SECRET` (32+ chars), `REDIS_PASSWORD`, `MONGODB_PASSWORD`, and `SEED_PASSWORD`. Bootstrap knobs `RUN_MIGRATIONS` / `RUN_SEED` live in `.env` only—not Docker Compose overrides.
-2. Start backend: `make dev-ultra-lite-infra` then `make dev-ultra-lite-server` (or lite/full compose commands above with the cloud overlay).
-3. Seed admin: `cd server && GLORNG_ENV_FILE=../.env uv run python scripts/ensure_e2e_user.py` (or `make seed-ultra-lite` / `make seed` with `SEED_PASSWORD` set).
+2. Start backend: `make dev-lite` (or the lite compose command above with the cloud overlay).
+3. Seed admin: `make seed` with `SEED_PASSWORD` set.
 4. Backfill search index (first deploy or after schema changes): `make reindex-search`
 5. Frontend: `make dev-lite-client` → http://localhost (dev-lite nginx) or http://localhost:3000
 
@@ -39,10 +39,10 @@ Default E2E credentials: `admin@admin.admin` / `MyTestPass123!`
 
 | Service | URL / port |
 |---------|------------|
-| API (ultra-lite / lite) | http://127.0.0.1:8000 — docs at `/api/docs` |
+| API (lite) | http://127.0.0.1:8000 — docs at `/api/docs` |
 | Vite (host) | http://localhost:3000 |
 | MongoDB (host tools) | `127.0.0.1:27017` |
-| Redis (host tools, ultra-lite) | `127.0.0.1:6379` |
+| Redis (host tools, ultra-lite only) | `127.0.0.1:6379` |
 | PostgreSQL (optional secondary) | `127.0.0.1:5433` with `--profile postgres` |
 
 ### Lint / test / build
@@ -65,8 +65,8 @@ Cloud-specific notes:
 
 ### Optional services
 
-- `make dev-ultra-lite-infra` / `make dev-ultra-lite-server` — lowest RAM; host API with inline Celery (no RabbitMQ).
 - `make dev-lite` — API in Docker; also starts RabbitMQ via `server` depends_on.
 - `make dev` — adds nginx + client containers (port 80).
+- `make dev-ultra-lite-infra` / `make dev-ultra-lite-server` — host API with inline Celery (no RabbitMQ).
 - `make dev-postgres` — adds Postgres for FTS search / audit secondary storage.
 - `make dev-worker` / `make dev-bot` — Celery worker + beat (RabbitMQ) and Telegram bot (need tokens).

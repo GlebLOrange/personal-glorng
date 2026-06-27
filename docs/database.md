@@ -47,15 +47,13 @@ flowchart TD
 
 | Command | Description |
 |---------|-------------|
-| `make dev-ultra-lite-infra` | MongoDB + Redis only; runs migrate |
-| `make dev-ultra-lite-server` | Host uvicorn (after infra) |
-| `make dev-lite` | MongoDB + Redis + API in Docker (also starts RabbitMQ) |
+| `make dev-lite` | Default dev stack: MongoDB + Redis + API in Docker, with nginx for host Vite |
+| `make dev-lite-client` | Host Vite client; pair with `make dev-lite` |
+| `make dev` | Full Docker UI stack with nginx + containerized client |
 | `make dev-postgres` | Adds Postgres profile for search/audit secondary |
 | `make db-init` | Run migrations (`docker compose run --rm migrate`) |
-| `make db-init-ultra-lite` | Run migrate with ultra-lite compose files |
 | `make migrate` | Alias for `db-init` |
 | `make seed` | Idempotent admin + sample data (Mongo) |
-| `make seed-ultra-lite` | Same as `make seed`, host uv (ultra-lite) |
 | `make seed-demo` | Bulk random demo data per platform tool (wipe + fill) |
 | `make seed-demo-add` | Append demo data without wiping |
 | `make seed-multicooker-recipes` | Fetch multicooker recipes from TheMealDB |

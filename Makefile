@@ -1,4 +1,6 @@
-.PHONY: dev dev-lite dev-lite-client dev-ultra-lite-infra dev-ultra-lite-server dev-search dev-postgres dev-mongo dev-worker dev-bot dev-full prod test lint lint-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed seed-ultra-lite seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
+.PHONY: dev dev-lite dev-lite-client
+.PHONY: dev-ultra-lite-infra dev-ultra-lite-server dev-search dev-postgres dev-worker dev-bot dev-full
+.PHONY: prod test lint lint-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed seed-ultra-lite seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
 
 msg ?=
 CHECK_DB ?= 1
@@ -34,8 +36,6 @@ dev-search:
 
 dev-postgres:
 	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml $(COMPOSE_CACHE) --profile postgres up --build mongodb redis db server
-
-dev-mongo: dev-lite
 
 dev-worker:
 	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) --profile worker up --build
