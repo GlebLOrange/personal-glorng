@@ -47,4 +47,12 @@ INDEX_SPECS: list[tuple[str, list[tuple[str, int | str]], dict[str, Any] | None]
     ),
     ("embed_items", [("embed_id", 1)], {"unique": True}),
     ("embed_items", [("source_batch_id", 1)], None),
+    ("news_sources", [("feed_url", 1)], {"unique": True}),
+    ("news_sources", [("enabled", 1), ("name", 1)], None),
+    ("news_articles", [("link", 1)], {"unique": True}),
+    ("news_articles", [("enabled", 1), ("published_at", -1)], None),
+    ("news_articles", [("enabled", 1), ("status", 1), ("published_at", -1)], None),
+    ("news_articles", [("enabled", 1), ("status", 1), ("created_at", -1)], None),
+    ("news_articles", [("enabled", 1), ("status", 1), ("updated_at", -1)], None),
+    ("news_articles", [("source", 1), ("published_at", -1)], None),
 ]

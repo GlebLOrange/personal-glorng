@@ -61,6 +61,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/pages/ToolsPage.vue"),
   },
   {
+    path: "/news",
+    name: "news",
+    component: () => import("@/pages/NewsPage.vue"),
+  },
+  {
     path: "/calculator",
     name: "calculator",
     component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
@@ -153,6 +158,18 @@ const routes: RouteRecordRaw[] = [
     path: "/admin/tools/feedback",
     name: "tool-feedback",
     component: () => import("@/pages/admin/tools/FeedbackPage.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/admin/tools/news-sources",
+    name: "tool-news-sources",
+    component: () => import("@/pages/admin/tools/NewsSourcesPage.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/admin/tools/news",
+    name: "tool-news",
+    component: () => import("@/pages/admin/tools/NewsAdminPage.vue"),
     meta: { requiresAuth: true },
   },
   {

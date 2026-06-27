@@ -86,6 +86,62 @@ export interface DonationsConfig {
   patreon: { enabled: boolean; url: string | null };
 }
 
+export interface NewsArticle {
+  id: string;
+  title: string;
+  link: string;
+  source: string;
+  category: string;
+  region: string;
+  summary: string | null;
+  published_at: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  editable: boolean;
+}
+
+export interface NewsListResponse {
+  articles: NewsArticle[];
+  sources: string[];
+  categories: string[];
+  regions: string[];
+  page: number;
+  per_page: number;
+  total: number;
+  pages: number;
+  updated_at: string;
+}
+
+export interface NewsAdminArticle {
+  id: number;
+  title: string;
+  link: string;
+  source: string;
+  origin: string;
+  status: string;
+  category: string;
+  region: string;
+  summary: string | null;
+  published_at: string;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NewsSource {
+  id: number;
+  name: string;
+  feed_url: string;
+  category: string;
+  region: string;
+  enabled: boolean;
+  last_error: string | null;
+  last_fetched_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SpotifyNowPlaying {
   enabled: boolean;
   is_playing: boolean;

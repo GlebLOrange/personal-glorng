@@ -69,12 +69,16 @@ async function startStripeCheckout(): Promise<void> {
           Donate with PayPal
         </button>
         <img
+          src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"
           alt=""
-          src="https://www.paypal.com/en_PL/i/scr/pixel.gif"
-          width="1"
-          height="1"
+          aria-hidden="true"
+          class="h-7 w-auto rounded bg-white px-2 py-1"
         />
-      </form>
+        <span class="flex flex-col leading-tight">
+          <span class="font-semibold">Donate with PayPal</span>
+          <span class="text-xs font-medium text-surface-mid">Cards accepted</span>
+        </span>
+      </a>
 
       <a
         v-if="config.patreon.enabled"

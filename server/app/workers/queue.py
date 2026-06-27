@@ -9,6 +9,7 @@ from celery import Celery
 from app.core.logging import logger
 from app.workers.job_names import JobName
 from app.workers.tasks import (
+    refresh_news_sources_task,
     send_reminder_task,
     send_reset_email_task,
     send_verification_email_task,
@@ -54,6 +55,24 @@ def _sanitize_enqueue_args(job: JobName, args: tuple[object, ...]) -> tuple[Any,
             raise ValueError(msg)
         return (reminder_id,)
 
+    if job == JobName.REFRESH_NEWS_SOURCES:
+        if len(args) > 1:
+            msg = "refresh_news_sources accepts an optional source id list"
+            raise ValueError(msg)
+        if not args or args[0] is None:
+            return ()
+        source_ids = args[0]
+        if not isinstance(source_ids, list):
+            msg = "source_ids must be a list"
+            raise ValueError(msg)
+        cleaned = list(dict.fromkeys(source_ids))
+        if any(
+            not isinstance(source_id, int) or source_id <= 0 for source_id in cleaned
+        ):
+            msg = "source_ids must be positive integers"
+            raise ValueError(msg)
+        return (cleaned,)
+
     msg = f"Unsupported on-demand job: {job}"
     raise ValueError(msg)
 
@@ -67,6 +86,7 @@ class CeleryJobQueue:
             JobName.SEND_VERIFICATION_EMAIL: send_verification_email_task,
             JobName.SEND_RESET_EMAIL: send_reset_email_task,
             JobName.SEND_REMINDER: send_reminder_task,
+            JobName.REFRESH_NEWS_SOURCES: refresh_news_sources_task,
         }
 
     async def enqueue(

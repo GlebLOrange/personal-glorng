@@ -49,6 +49,8 @@ class DatabaseRegistry:
     audit: AuditRepository | None = None
     app_logs: AppLogRepository | None = None
     data_imports: DataImportRepository | None = None
+    news_sources: NewsSourceRepository | None = None
+    news_articles: NewsArticleRepository | None = None
     _repos_initialized: bool = field(default=False, repr=False)
 
     def require_mongo(self) -> AsyncIOMotorDatabase:
@@ -86,4 +88,6 @@ class DatabaseRegistry:
         self.audit = AuditRepository(mongo)
         self.app_logs = AppLogRepository(mongo)
         self.data_imports = DataImportRepository(mongo)
+        self.news_sources = NewsSourceRepository(mongo)
+        self.news_articles = NewsArticleRepository(mongo)
         self._repos_initialized = True
