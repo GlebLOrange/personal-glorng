@@ -85,6 +85,7 @@ Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN` in `.env`.
 | `make dev-lite-client` | Host Vite on :3000 (uses `client/.env.development`) |
 | `make dev`         | Core dev stack (nginx + client; no worker/bot)   |
 | `make prod`        | Start production environment                     |
+| `make prod-cloudflare` | Start production with nginx origin TLS for Cloudflare Full strict |
 | `make down`    | Stop all containers                  |
 | `make test`    | Run backend tests                    |
 | `make lint`    | Lint and format Python code (auto-fix) |

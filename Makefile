@@ -1,6 +1,6 @@
 .PHONY: dev dev-lite dev-lite-client
 .PHONY: dev-ultra-lite-infra dev-ultra-lite-server dev-search dev-postgres dev-worker dev-bot dev-full
-.PHONY: prod test lint lint-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed seed-ultra-lite seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
+.PHONY: prod prod-cloudflare test lint lint-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed seed-ultra-lite seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
 
 msg ?=
 CHECK_DB ?= 1
@@ -48,6 +48,9 @@ dev-full:
 
 prod:
 	$(DOCKER_BUILD) docker compose -f docker-compose.prod.yml $(COMPOSE_CACHE) up --build -d
+
+prod-cloudflare:
+	$(DOCKER_BUILD) docker compose -f docker-compose.prod.yml -f docker-compose.cloudflare.yml $(COMPOSE_CACHE) up --build -d
 
 down:
 	docker compose down

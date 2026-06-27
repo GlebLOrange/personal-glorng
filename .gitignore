@@ -2,6 +2,8 @@
 .env
 *.env.local
 /env
+/deploy/cloudflare/*.pem
+/deploy/cloudflare/*.key
 
 # Python
 __pycache__/

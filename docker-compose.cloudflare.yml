@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-go/refs/heads/main/schema/compose-spec.json
+services:
+  nginx:
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.cloudflare.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/cloudflare/origin.pem:/etc/nginx/certs/origin.pem:ro
+      - ./deploy/cloudflare/origin.key:/etc/nginx/certs/origin.key:ro
