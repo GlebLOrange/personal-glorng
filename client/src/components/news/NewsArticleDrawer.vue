@@ -95,6 +95,13 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
           <form class="flex-1 overflow-y-auto px-6 py-5 space-y-6" @submit.prevent="emit('save')">
             <section class="space-y-4">
               <h3 class="text-sm font-medium text-surface-mid">Publishing</h3>
+              <BaseInput
+                :model-value="form.source_url"
+                label="Source URL"
+                type="url"
+                placeholder="https://..."
+                @update:model-value="patch({ source_url: toStringValue($event) })"
+              />
               <label class="flex flex-col gap-1 text-sm text-surface-mid">
                 Status
                 <select
@@ -167,22 +174,6 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
               </div>
             </section>
 
-            <section class="space-y-4">
-              <h3 class="text-sm font-medium text-surface-mid">Source</h3>
-              <BaseInput
-                :model-value="form.source_name"
-                label="Source name"
-                placeholder="Reuters"
-                @update:model-value="patch({ source_name: toStringValue($event) })"
-              />
-              <BaseInput
-                :model-value="form.source_url"
-                label="Source URL"
-                type="url"
-                placeholder="https://..."
-                @update:model-value="patch({ source_url: toStringValue($event) })"
-              />
-            </section>
           </form>
 
           <footer class="shrink-0 px-6 py-4 border-t border-surface-border bg-surface-dark">
