@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, Literal
@@ -117,7 +118,8 @@ async def import_upload(
 ) -> ImportResult:
     """Extract an upload and persist rows to staging storage."""
     opts = options or ExtractOptions()
-    result = extract_upload(
+    result = await asyncio.to_thread(
+        extract_upload,
         contents,
         filename=filename,
         format=format,
@@ -138,7 +140,12 @@ async def import_upload(
     )
     repo = _imports(registry)
     batch = await repo.batches.insert(batch)
-    import_rows = _build_import_rows(batch.id, result.records, error_rows)
+    import_rows = await asyncio.to_thread(
+        _build_import_rows,
+        batch.id,
+        result.records,
+        error_rows,
+    )
     await _persist_import_rows(repo, batch, import_rows)
 
     preview = [row.fields for row in import_rows if not row.error][:PREVIEW_LIMIT]
