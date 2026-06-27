@@ -239,6 +239,18 @@ async def process_sync_queue() -> None:
         await registry.tasks.update_sync(item)
 
 
+async def refresh_news_sources(source_ids: list[int] | None = None) -> None:
+    """Parse enabled RSS sources into MongoDB news articles."""
+    registry = await get_worker_registry()
+    from app.services.news import NewsService
+
+    stored_count = await NewsService(registry).refresh_from_sources(
+        source_ids=source_ids,
+    )
+    if stored_count:
+        logger.info("News sources refreshed", context={"stored": stored_count})
+
+
 def _run_periodic_task(task: Task, job_name: str, coro_fn: Callable[[], Any]) -> None:
     try:
         run_async(coro_fn())
@@ -284,3 +296,17 @@ def cleanup_expired_shares_task(self: Task) -> None:
 )
 def process_sync_queue_task(self: Task) -> None:
     _run_periodic_task(self, JobName.PROCESS_SYNC_QUEUE, process_sync_queue)
+
+
+@celery_app.task(
+    bind=True,
+    name=JobName.REFRESH_NEWS_SOURCES,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def refresh_news_sources_task(self: Task, source_ids: list[int] | None = None) -> None:
+    _run_periodic_task(
+        self,
+        JobName.REFRESH_NEWS_SOURCES,
+        lambda: refresh_news_sources(source_ids),
+    )

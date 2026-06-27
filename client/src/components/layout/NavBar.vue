@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
+import { usePermissions } from "@/composables/usePermissions";
 import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
+const { can } = usePermissions();
 const mobileOpen = ref(false);
+const newsRoute = computed(() =>
+  auth.isAuthenticated && can("news", "read") ? "/admin/tools/news" : "/news",
+);
 
 function handleLogout(): void {
   auth.logout();
@@ -33,6 +38,7 @@ function closeMobileMenu(): void {
 
         <div class="hidden md:flex items-center gap-5 text-base">
           <RouterLink to="/" class="nav-link px-2 py-1"> portfolio </RouterLink>
+          <RouterLink :to="newsRoute" class="nav-link px-2 py-1"> news </RouterLink>
 
           <RouterLink v-if="auth.isAuthenticated" to="/admin" class="nav-link-accent px-2 py-1">
             tools

@@ -11,3 +11,4 @@ class JobName(StrEnum):
     CLEANUP_OLD_TASKS = "cleanup_old_tasks"
     CLEANUP_EXPIRED_SHARES = "cleanup_expired_shares"
     PROCESS_SYNC_QUEUE = "process_sync_queue"
+    REFRESH_NEWS_SOURCES = "refresh_news_sources"

@@ -61,6 +61,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/pages/ToolsPage.vue"),
   },
   {
+    path: "/news",
+    name: "news",
+    component: () => import("@/pages/NewsPage.vue"),
+  },
+  {
     path: "/calculator",
     name: "calculator",
     component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
@@ -146,6 +151,18 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/admin/tools/news-sources",
+    name: "tool-news-sources",
+    component: () => import("@/pages/admin/tools/NewsSourcesPage.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/admin/tools/news",
+    name: "tool-news",
+    component: () => import("@/pages/admin/tools/NewsAdminPage.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/admin/tools/ai-chat",
     name: "tool-ai-chat",
     component: () => import("@/pages/admin/tools/AiChatTool.vue"),
@@ -200,6 +217,8 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-file-share": "file-share",
   "tool-email": "email",
   "tool-feedback": "feedback",
+  "tool-news-sources": "news-sources",
+  "tool-news": "news",
   "tool-ai-chat": "ai-chat",
   "tool-data-extract": "data-extract",
   "tool-audit": "audit",

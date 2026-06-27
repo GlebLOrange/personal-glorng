@@ -92,6 +92,10 @@ def create_celery_app() -> Celery:
             "task": JobName.PROCESS_SYNC_QUEUE,
             "schedule": crontab(minute="*/2"),
         },
+        "refresh-news-sources": {
+            "task": JobName.REFRESH_NEWS_SOURCES,
+            "schedule": crontab(minute="*/15"),
+        },
     }
     return app
 
