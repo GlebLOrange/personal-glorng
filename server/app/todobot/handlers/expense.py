@@ -302,7 +302,7 @@ async def guided_confirm(
     data = await state.get_data()
     try:
         amount = Decimal(str(data["amount"])).quantize(Decimal("0.01"))
-    except InvalidOperation, KeyError:
+    except (InvalidOperation, KeyError):
         await state.clear()
         if callback.message:
             await callback.message.answer("Invalid amount. Start again with /spend")
