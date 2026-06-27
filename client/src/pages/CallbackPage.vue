@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import BackLink from "@/components/ui/BackLink.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
@@ -59,10 +60,8 @@ onMounted(async () => {
       <div v-else class="space-y-4">
         <p class="text-2xl">&#10007;</p>
         <p class="text-surface-light font-medium">{{ message }}</p>
-        <p class="text-xs text-surface-mid">
-          <RouterLink to="/admin" class="hover:text-accent-blue transition-colors">
-            &larr; Back to tools
-          </RouterLink>
+        <p class="flex justify-center">
+          <BackLink to="/admin" />
         </p>
       </div>
     </div>

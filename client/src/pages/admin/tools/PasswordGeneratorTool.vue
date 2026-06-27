@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 
 import AdminBreadcrumbs from "@/components/layout/AdminBreadcrumbs.vue";
+import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -66,12 +67,7 @@ async function generatePassword(): Promise<void> {
     <AdminBreadcrumbs current-label="password generator" />
     <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-3xl font-bold accent-gradient">password generator</h1>
-      <RouterLink
-        to="/tools"
-        class="inline-flex w-fit items-center rounded-lg border border-surface-border bg-surface-card px-3 py-1.5 text-xs font-medium text-surface-light transition-all duration-200 hover:border-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-      >
-        Back to tools
-      </RouterLink>
+      <BackLink to="/tools" />
     </div>
     <BaseCard>
       <form class="space-y-4" @submit.prevent="generatePassword">

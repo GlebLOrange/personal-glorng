@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import AdminBreadcrumbs from "@/components/layout/AdminBreadcrumbs.vue";
+import BackLink from "@/components/ui/BackLink.vue";
 import { formatBreadcrumbLabel } from "@/utils/format";
 
 const props = defineProps<{
@@ -30,12 +31,7 @@ const breadcrumbLabel = computed(() => formatBreadcrumbLabel(props.title));
       <h1 class="text-2xl font-bold text-surface-light">
         <span class="accent-gradient">€ {{ title }}</span>
       </h1>
-      <RouterLink
-        to="/admin"
-        class="inline-flex w-fit items-center rounded-lg border border-surface-border bg-surface-card px-3 py-1.5 text-xs font-medium text-surface-light transition-all duration-200 hover:border-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-      >
-        Back to tools
-      </RouterLink>
+      <BackLink to="/admin" />
     </div>
     <slot />
   </div>
