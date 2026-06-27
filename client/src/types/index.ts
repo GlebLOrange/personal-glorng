@@ -90,6 +90,7 @@ export interface NewsSource {
   id: number;
   name: string;
   feed_url: string;
+  host: string | null;
   category: string;
   region: string;
   enabled: boolean;
@@ -291,6 +292,7 @@ export interface NewsArticle {
   published_at: string | null;
   telegram_message_id: number | null;
   ai_model: string | null;
+  ai_input_hash: string | null;
   ingest_error: string | null;
   created_at: string;
   updated_at: string;
@@ -305,6 +307,7 @@ export interface PaginatedNews {
 }
 
 export interface NewsArticleUpdate {
+  slug?: string;
   status?: NewsStatus;
   source_id?: number | null;
   source_name?: string;
@@ -317,12 +320,16 @@ export interface NewsArticleUpdate {
   bullets?: string[];
   themes?: string[];
   language?: string;
+  published_at?: string | null;
+  telegram_message_id?: number | null;
+  ai_model?: string | null;
+  ai_input_hash?: string | null;
   ingest_error?: string | null;
 }
 
 export interface NewsArticleCreate {
   status: NewsStatus;
-  source_id: number;
+  source_id?: number | null;
   source_name?: string;
   source_url: string;
   source_feed_url?: string;
@@ -333,9 +340,13 @@ export interface NewsArticleCreate {
   bullets: string[];
   themes: string[];
   language: string;
+  ai_model?: string | null;
+  ai_input_hash?: string | null;
+  ingest_error?: string | null;
 }
 
 export interface NewsArticleFormData {
+  slug: string;
   status: NewsStatus;
   source_id: number | null;
   source_name: string;
@@ -348,6 +359,20 @@ export interface NewsArticleFormData {
   bullets: string[];
   themes: string;
   language: string;
+  published_at: string;
+  telegram_message_id: string;
+  ai_model: string;
+  ai_input_hash: string;
+  ingest_error: string;
+}
+
+export interface NewsArticleMetadata {
+  source_url: string;
+  title: string;
+  source_host: string;
+  source_id: number;
+  source_name: string;
+  source_feed_url: string;
 }
 
 export interface NewsIngestResult {

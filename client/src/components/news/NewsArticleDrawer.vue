@@ -105,13 +105,12 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 Source
                 <select
                   :value="form.source_id ?? ''"
-                  required
                   class="rounded-lg border border-surface-border bg-surface-dark px-4 py-2 text-sm text-surface-light focus:outline-none focus:border-accent-blue"
                   @change="patch({ source_id: toSourceId(($event.target as HTMLSelectElement).value) })"
                 >
-                  <option value="" disabled>Select a source</option>
+                  <option value="">Auto from URL host</option>
                   <option v-for="source in sources" :key="source.id" :value="source.id">
-                    {{ source.name }}
+                    {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
                   </option>
                 </select>
               </label>
@@ -121,6 +120,25 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 type="url"
                 placeholder="https://..."
                 @update:model-value="patch({ source_url: toStringValue($event) })"
+              />
+              <BaseInput
+                :model-value="form.source_name"
+                label="Source name"
+                placeholder="DW"
+                @update:model-value="patch({ source_name: toStringValue($event) })"
+              />
+              <BaseInput
+                :model-value="form.source_feed_url"
+                label="Source feed/home URL"
+                type="url"
+                placeholder="https://www.dw.com/"
+                @update:model-value="patch({ source_feed_url: toStringValue($event) })"
+              />
+              <BaseInput
+                :model-value="form.source_published_at"
+                label="Source published at"
+                type="datetime-local"
+                @update:model-value="patch({ source_published_at: toStringValue($event) })"
               />
               <label class="flex flex-col gap-1 text-sm text-surface-mid">
                 Status
@@ -140,10 +158,23 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
             <section class="space-y-4">
               <h3 class="text-sm font-medium text-surface-mid">Article</h3>
               <BaseInput
+                v-if="mode === 'edit'"
+                :model-value="form.slug"
+                label="Slug"
+                placeholder="article-url-slug"
+                @update:model-value="patch({ slug: toStringValue($event) })"
+              />
+              <BaseInput
                 :model-value="form.title"
                 label="Title"
                 placeholder="Readable news title"
                 @update:model-value="patch({ title: toStringValue($event) })"
+              />
+              <BaseInput
+                :model-value="form.original_title"
+                label="Original title"
+                placeholder="Original publisher title"
+                @update:model-value="patch({ original_title: toStringValue($event) })"
               />
               <BaseTextarea
                 :model-value="form.summary"
@@ -157,6 +188,12 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 label="Themes"
                 placeholder="world, business"
                 @update:model-value="patch({ themes: toStringValue($event) })"
+              />
+              <BaseInput
+                :model-value="form.language"
+                label="Language"
+                placeholder="en"
+                @update:model-value="patch({ language: toStringValue($event) })"
               />
             </section>
 
@@ -192,6 +229,42 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                   &times;
                 </BaseButton>
               </div>
+            </section>
+
+            <section class="space-y-4">
+              <h3 class="text-sm font-medium text-surface-mid">Admin metadata</h3>
+              <BaseInput
+                :model-value="form.published_at"
+                label="Published at"
+                type="datetime-local"
+                @update:model-value="patch({ published_at: toStringValue($event) })"
+              />
+              <BaseInput
+                :model-value="form.telegram_message_id"
+                label="Telegram message ID"
+                inputmode="numeric"
+                placeholder="12345"
+                @update:model-value="patch({ telegram_message_id: toStringValue($event) })"
+              />
+              <BaseInput
+                :model-value="form.ai_model"
+                label="AI model"
+                placeholder="gpt-..."
+                @update:model-value="patch({ ai_model: toStringValue($event) })"
+              />
+              <BaseInput
+                :model-value="form.ai_input_hash"
+                label="AI input hash"
+                placeholder="sha256..."
+                @update:model-value="patch({ ai_input_hash: toStringValue($event) })"
+              />
+              <BaseTextarea
+                :model-value="form.ingest_error"
+                label="Ingest error"
+                :rows="3"
+                placeholder="Optional ingestion error"
+                @update:model-value="patch({ ingest_error: toStringValue($event) })"
+              />
             </section>
 
           </form>

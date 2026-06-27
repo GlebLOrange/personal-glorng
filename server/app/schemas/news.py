@@ -98,6 +98,7 @@ class NewsArticleCreate(BaseModel):
 class NewsArticleUpdate(BaseModel):
     """Admin update payload for curated news articles."""
 
+    slug: str | None = Field(None, min_length=1, max_length=120)
     status: NewsStatus | None = None
     source_id: int | None = Field(None, gt=0)
     source_name: str | None = Field(None, min_length=1, max_length=120)
@@ -110,9 +111,13 @@ class NewsArticleUpdate(BaseModel):
     bullets: list[str] | None = Field(None, min_length=2, max_length=5)
     themes: list[NewsTheme] | None = Field(None, min_length=1, max_length=4)
     language: str | None = Field(None, min_length=2, max_length=12)
+    published_at: datetime | None = None
+    telegram_message_id: int | None = Field(None, ge=0)
+    ai_model: str | None = Field(None, max_length=120)
+    ai_input_hash: str | None = Field(None, max_length=128)
     ingest_error: str | None = Field(None, max_length=500)
 
-    @field_validator("source_name", "original_title", "title")
+    @field_validator("slug", "source_name", "original_title", "title")
     @classmethod
     def clean_required_short(cls, value: str | None) -> str | None:
         """Sanitize optional short text fields."""
@@ -153,10 +158,10 @@ class NewsArticleUpdate(BaseModel):
         )
         return cleaned.lower()
 
-    @field_validator("ingest_error")
+    @field_validator("ai_model", "ai_input_hash", "ingest_error")
     @classmethod
-    def clean_ingest_error(cls, value: str | None) -> str | None:
-        """Sanitize optional ingest error."""
+    def clean_optional_meta(cls, value: str | None) -> str | None:
+        """Sanitize optional metadata fields."""
         return validate_clean_optional(value, max_length=500)
 
 
@@ -180,6 +185,7 @@ class NewsArticleResponse(BaseModel):
     published_at: datetime | None
     telegram_message_id: int | None
     ai_model: str | None
+    ai_input_hash: str | None
     ingest_error: str | None
     created_at: datetime
     updated_at: datetime
@@ -196,14 +202,17 @@ class NewsSourceCreate(BaseModel):
 
     name: str = Field(min_length=1, max_length=120)
     feed_url: HttpUrl
+    host: str | None = Field(None, min_length=1, max_length=255)
     category: str = Field(default="world", min_length=1, max_length=80)
     region: str = Field(default="global", min_length=1, max_length=80)
     enabled: bool = True
 
-    @field_validator("name", "category", "region")
+    @field_validator("name", "category", "region", "host")
     @classmethod
-    def clean_required_text(cls, value: str) -> str:
+    def clean_text(cls, value: str | None) -> str | None:
         """Sanitize source text fields."""
+        if value is None:
+            return None
         return validate_clean_required(value, max_length=120)
 
 
@@ -212,12 +221,13 @@ class NewsSourceUpdate(BaseModel):
 
     name: str | None = Field(None, min_length=1, max_length=120)
     feed_url: HttpUrl | None = None
+    host: str | None = Field(None, min_length=1, max_length=255)
     category: str | None = Field(None, min_length=1, max_length=80)
     region: str | None = Field(None, min_length=1, max_length=80)
     enabled: bool | None = None
     last_error: str | None = Field(None, max_length=500)
 
-    @field_validator("name", "category", "region")
+    @field_validator("name", "category", "region", "host")
     @classmethod
     def clean_optional_text(cls, value: str | None) -> str | None:
         """Sanitize optional source text fields."""
@@ -238,6 +248,7 @@ class NewsSourceResponse(BaseModel):
     id: int
     name: str
     feed_url: str
+    host: str | None
     category: str
     region: str
     enabled: bool
@@ -261,6 +272,23 @@ class NewsSourcesRefreshRequest(BaseModel):
         if value is None:
             return None
         return sorted({source_id for source_id in value if source_id > 0}) or None
+
+
+class NewsArticleMetadataRequest(BaseModel):
+    """Request payload for loading article metadata from a URL."""
+
+    url: HttpUrl
+
+
+class NewsArticleMetadataResponse(BaseModel):
+    """Article metadata derived from a source URL."""
+
+    source_url: str
+    title: str
+    source_host: str
+    source_id: int
+    source_name: str
+    source_feed_url: str
 
 
 class NewsIngestResponse(BaseModel):
