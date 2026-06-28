@@ -21,6 +21,7 @@ _LEVEL_ORDER = {"debug": 10, "info": 20, "warning": 30, "error": 40}
 
 _log_queue: queue.Queue[dict[str, Any]] = queue.Queue(maxsize=LOG_QUEUE_MAX)
 _worker_task: asyncio.Task[None] | None = None
+_worker_wakeup: asyncio.Event | None = None
 _running = False
 
 
@@ -52,6 +53,8 @@ def enqueue_log_entry(entry: dict[str, Any]) -> None:
             _log_queue.put_nowait(entry)
         except queue.Empty:
             pass
+    if _worker_wakeup is not None:
+        _worker_wakeup.set()
 
 
 def _drain_queue(*, max_items: int | None = None) -> list[dict[str, Any]]:
@@ -145,14 +148,18 @@ async def _flush_batch(entries: list[dict[str, Any]]) -> None:
         _write_persist_error("App log persist failed", exc)
 
 
-async def _worker_loop() -> None:
+async def _worker_loop(wakeup: asyncio.Event) -> None:
     while _running:
         batch = _drain_queue(max_items=BATCH_SIZE)
         if batch:
             await _flush_batch(batch)
         if not _running:
             break
-        await asyncio.sleep(FLUSH_INTERVAL_SEC)
+        try:
+            await asyncio.wait_for(wakeup.wait(), timeout=FLUSH_INTERVAL_SEC)
+            wakeup.clear()
+        except TimeoutError:
+            pass
 
     final_batch = _drain_queue()
     if final_batch:
@@ -161,18 +168,22 @@ async def _worker_loop() -> None:
 
 async def start_app_log_worker() -> None:
     """Start the background MongoDB log drain task."""
-    global _worker_task, _running
+    global _worker_task, _worker_wakeup, _running
     if _worker_task is not None:
         return
     _running = True
-    _worker_task = asyncio.create_task(_worker_loop())
+    _worker_wakeup = asyncio.Event()
+    _worker_task = asyncio.create_task(_worker_loop(_worker_wakeup))
 
 
 async def stop_app_log_worker() -> None:
     """Stop the worker and flush any queued entries."""
-    global _worker_task, _running
+    global _worker_task, _worker_wakeup, _running
     _running = False
     if _worker_task is None:
         return
+    if _worker_wakeup is not None:
+        _worker_wakeup.set()
     await _worker_task
     _worker_task = None
+    _worker_wakeup = None
