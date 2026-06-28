@@ -1,4 +1,3 @@
-import asyncio
 from pathlib import Path
 
 import pytest
@@ -61,7 +60,6 @@ async def test_worker_persists_batch(registry: DatabaseRegistry) -> None:
     await start_app_log_worker()
     try:
         enqueue_log_entry(_sample_entry())
-        await asyncio.sleep(1.2)
     finally:
         await stop_app_log_worker()
 

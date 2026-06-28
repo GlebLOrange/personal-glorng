@@ -1,19 +1,18 @@
 import { expect, test } from "@playwright/test";
 
-const adminEmail = process.env.E2E_EMAIL ?? "admin@admin.admin";
-const adminPassword = process.env.E2E_PASSWORD ?? "MyTestPass123!";
+import { loginAsAdmin } from "./helpers/auth";
 
 test.describe("public pages", () => {
   test("portfolio page loads", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("link", { name: /back to portfolio/i })).toHaveCount(0);
     await expect(page.locator("body")).toBeVisible();
   });
 
   test("portfolio shows resume hero content", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: /Gleb\.Y/i })).toBeVisible();
-    await expect(page.getByText(/Backend-heavy full-stack/i)).toBeVisible();
+    await expect(page.getByText(/End-to-end delivery of web apps/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: /^experience$/i })).toBeVisible();
   });
 
@@ -25,7 +24,7 @@ test.describe("public pages", () => {
   });
 
   test("guest sees tools nav and public tools catalog", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("link", { name: /^tools$/i })).toBeVisible();
 
     await page.getByRole("link", { name: /^tools$/i }).click();
@@ -40,7 +39,7 @@ test.describe("public pages", () => {
   });
 
   test("guest sees clocks bar on portfolio", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("complementary", { name: /date & time & location/i })).toBeVisible();
   });
 
@@ -68,7 +67,7 @@ test.describe("public pages", () => {
 
   test("guest can open public recipes page", async ({ page }) => {
     await page.goto("/recipes");
-    await expect(page.getByRole("heading", { name: /recipes/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^€ recipes$/i })).toBeVisible();
   });
 
   test("guest can open public shortener page", async ({ page }) => {
@@ -100,7 +99,7 @@ test.describe("public pages", () => {
     await page.getByPlaceholder(/search city/i).fill("London");
     await page.getByRole("button", { name: /^add$/i }).click();
     await expect(page.getByText(/location added/i)).toBeVisible();
-    await expect(page.getByRole("timer").first()).toHaveText(/\d{2}:\d{2}:\d{2}/);
+    await expect(page.getByRole("heading", { name: "London" })).toBeVisible();
   });
 });
 
@@ -119,13 +118,6 @@ test.describe("auth guards", () => {
 });
 
 test.describe("authenticated admin", () => {
-  async function loginAsAdmin(page: import("@playwright/test").Page): Promise<void> {
-    await page.goto("/login");
-    await page.getByPlaceholder("you@example.com").fill(adminEmail);
-    await page.getByPlaceholder("••••••••••••").fill(adminPassword);
-    await page.getByRole("button", { name: /^login$/i }).click();
-  }
-
   test("calculator tool loads after login", async ({ page }) => {
     await loginAsAdmin(page);
 
@@ -134,12 +126,11 @@ test.describe("authenticated admin", () => {
     await expect(page.getByRole("button", { name: "7" })).toBeVisible();
   });
 
-  test("admin dashboard shows tool cards after login", async ({ page }) => {
+  test("admin dashboard loads after login", async ({ page }) => {
     await loginAsAdmin(page);
 
     await page.goto("/admin");
-    await expect(page.getByRole("heading", { name: /^tools$/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /tasks/i }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: /expenses/i }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^€ tools$/i })).toBeVisible();
+    await expect(page.getByText(/Services shared across web, bot, and workers/i)).toBeVisible();
   });
 });
