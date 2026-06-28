@@ -3,7 +3,6 @@
 import json
 import time
 import uuid
-from typing import Any
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
@@ -28,33 +27,45 @@ def _optional_user_id(request: Request) -> int | None:
     return user_id_from_access_token(raw_token)
 
 
-def _sanitize_body_for_log(raw: bytes) -> str | None:
+def _sanitize_body_for_log(
+    raw: bytes,
+    *,
+    content_type: str | None = None,
+) -> str | None:
     if not raw:
         return None
     text = raw.decode("utf-8", errors="replace")
-    if len(text) > _BODY_LOG_MAX_CHARS:
-        text = text[: _BODY_LOG_MAX_CHARS - 3] + "..."
     try:
         payload = json.loads(text)
     except json.JSONDecodeError:
-        return text
-    if isinstance(payload, dict):
-        return json.dumps(_redact_body_dict(payload), default=str)
-    return text
+        return (
+            f"[non-json request body omitted: {len(raw)} bytes, "
+            f"content_type={content_type or 'unknown'}]"
+        )
+    sanitized = json.dumps(_redact_body_value(payload), default=str)
+    if len(sanitized) > _BODY_LOG_MAX_CHARS:
+        return sanitized[: _BODY_LOG_MAX_CHARS - 3] + "..."
+    return sanitized
 
 
-def _redact_body_dict(payload: dict[str, Any]) -> dict[str, Any]:
-    redacted: dict[str, Any] = {}
+def _redact_body_dict(payload: dict[str, object]) -> dict[str, object]:
+    redacted: dict[str, object] = {}
     for key, value in payload.items():
         if key.lower() in _SENSITIVE_BODY_KEYS or any(
             marker in key.lower() for marker in ("password", "token", "secret")
         ):
             redacted[key] = "[REDACTED]"
-        elif isinstance(value, dict):
-            redacted[key] = _redact_body_dict(value)
         else:
-            redacted[key] = value
+            redacted[key] = _redact_body_value(value)
     return redacted
+
+
+def _redact_body_value(value: object) -> object:
+    if isinstance(value, dict):
+        return _redact_body_dict(value)
+    if isinstance(value, list):
+        return [_redact_body_value(item) for item in value]
+    return value
 
 
 class RequestIdMiddleware(BaseHTTPMiddleware):
@@ -82,11 +93,14 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
         if settings.LOG_REQUEST_BODIES and request.method in {"POST", "PUT", "PATCH"}:
             body_bytes = await request.body()
 
-            async def receive() -> dict[str, Any]:
+            async def receive() -> dict[str, object]:
                 return {"type": "http.request", "body": body_bytes, "more_body": False}
 
             request = Request(request.scope, receive)
-            body_log = _sanitize_body_for_log(body_bytes)
+            body_log = _sanitize_body_for_log(
+                body_bytes,
+                content_type=request.headers.get("content-type"),
+            )
 
         if settings.LOG_REQUESTS:
             started_context = dict(log_ctx)

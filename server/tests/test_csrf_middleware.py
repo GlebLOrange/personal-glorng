@@ -3,7 +3,7 @@
 import pytest
 from httpx import AsyncClient
 
-from app.core.security import create_access_token
+from app.core.security import create_access_token, create_refresh_token
 from app.settings import get_settings
 from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file
 from tests.factories import create_user
@@ -54,4 +54,41 @@ async def test_csrf_allows_cookie_post_with_allowed_origin(
         headers={"origin": origin},
     )
     assert resp.status_code != 403
+    get_settings.cache_clear()
+
+
+@pytest.mark.asyncio
+@pytest.mark.e2e_api
+async def test_csrf_rejects_cookie_refresh_without_origin(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _enable_production(monkeypatch)
+
+    resp = await client.post(
+        "/api/auth/refresh",
+        cookies={"refresh_token": "cookie-refresh-token"},
+    )
+    assert resp.status_code == 403
+    assert resp.json()["detail"] == "Origin not allowed"
+    get_settings.cache_clear()
+
+
+@pytest.mark.asyncio
+@pytest.mark.e2e_api
+async def test_csrf_allows_body_refresh_without_cookie_origin(
+    client: AsyncClient,
+    registry,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _enable_production(monkeypatch)
+    user = await create_user(registry, email="csrf-refresh@glorng.dev")
+    refresh_token = create_refresh_token(str(user.public_id))
+
+    resp = await client.post(
+        "/api/auth/refresh",
+        json={"refresh_token": refresh_token},
+    )
+    assert resp.status_code == 200
+    assert "access_token" in resp.json()
     get_settings.cache_clear()

@@ -9,7 +9,6 @@ _EXEMPT_PREFIXES = (
     "/api/auth/login",
     "/api/auth/register",
     "/api/auth/firebase",
-    "/api/auth/refresh",
     "/api/auth/forgot-password",
     "/api/auth/reset-password",
     "/api/auth/verify",
@@ -17,6 +16,7 @@ _EXEMPT_PREFIXES = (
     "/api/auth/github",
 )
 _ACCESS_COOKIE = "access_token"
+_REFRESH_COOKIE = "refresh_token"
 
 
 def _origin_allowed(request: Request, allowed_origins: list[str]) -> bool:
@@ -40,6 +40,10 @@ def csrf_origin_rejected(request: Request) -> bool:
     path = request.url.path
     if not path.startswith("/api"):
         return False
+    if path.startswith("/api/auth/refresh"):
+        if _REFRESH_COOKIE not in request.cookies:
+            return False
+        return not _origin_allowed(request, settings.CORS_ORIGINS)
     if any(path.startswith(prefix) for prefix in _EXEMPT_PREFIXES):
         return False
     if _ACCESS_COOKIE not in request.cookies:

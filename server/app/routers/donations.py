@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request
 
 from app.core.exceptions import ApiError
 from app.core.rate_limit import RateLimiter
+from app.core.uploads import read_request_body_bounded
 from app.schemas.donations import (
     CheckoutSessionResponse,
     DonationLinkConfig,
@@ -19,7 +20,9 @@ from app.settings import get_settings
 
 router = APIRouter()
 
-rate_limit_checkout = RateLimiter(requests=10, window=3600)
+STRIPE_WEBHOOK_MAX_BODY_BYTES = 1024 * 1024
+
+rate_limit_checkout = RateLimiter(requests=10, window=3600, fail_open=False)
 
 
 @router.get(
@@ -72,7 +75,7 @@ async def stripe_webhook(request: Request) -> WebhookAckResponse:
     if not settings.stripe_webhook_enabled():
         raise ApiError(503, "Stripe webhooks are not configured")
 
-    payload = await request.body()
+    payload = await read_request_body_bounded(request, STRIPE_WEBHOOK_MAX_BODY_BYTES)
     verify_stripe_signature(
         payload=payload,
         signature_header=request.headers.get("stripe-signature"),

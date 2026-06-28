@@ -20,7 +20,7 @@ from app.settings import get_settings
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
-rate_limit_feedback = RateLimiter(requests=5, window=300)
+rate_limit_feedback = RateLimiter(requests=5, window=300, fail_open=False)
 
 
 @router.post(

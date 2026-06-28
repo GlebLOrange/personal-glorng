@@ -20,7 +20,7 @@ from app.services.search_index import SearchIndexService
 
 router = APIRouter(prefix="/search", tags=["search"])
 
-rate_limit_search_chat = RateLimiter(requests=5, window=300)
+rate_limit_search_chat = RateLimiter(requests=5, window=300, fail_open=False)
 rate_limit_search_query = RateLimiter(requests=30, window=60)
 
 
