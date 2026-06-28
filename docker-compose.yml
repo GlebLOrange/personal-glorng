@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-go/refs/heads/main/schema/compose-spec.json
 services:
-  postgres:
+  db:
     image: postgres:18.4-alpine
     profiles:
       - postgres

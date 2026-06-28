@@ -16,7 +16,7 @@
 |---------|-----|
 | Docker (Mongo) | `MONGODB_URL` in `.env` (host `mongodb`, port `27017`) |
 | Host tools | `127.0.0.1:27017` |
-| Docker (Postgres secondary) | `DATABASE_URL` with host `postgres` in dev compose or `db` in prod compose, port `5432` |
+| Docker (Postgres secondary) | `DATABASE_URL` with host `db`, port `5432` |
 | Host Postgres tools | `localhost:5433` (dev compose maps `5433:5432`) |
 
 ## Bootstrap flow
