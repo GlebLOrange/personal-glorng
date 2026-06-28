@@ -217,6 +217,3 @@ export function useSearchChat(options: UseSearchChatOptions) {
     clear,
   };
 }
-
-/** Alias for streaming chat composable used by public and admin surfaces. */
-export const useSseChat = useSearchChat;

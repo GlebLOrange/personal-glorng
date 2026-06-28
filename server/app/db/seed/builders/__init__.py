@@ -16,7 +16,6 @@ from app.db.seed.builders.expense import (
     EXPENSE_CATEGORIES,
     EXPENSE_CURRENCIES,
     EXPENSE_PRODUCTS,
-    EXPENSE_TOOLS,
     EXPENSE_VENDORS,
     build_random_expenses,
 )
@@ -28,7 +27,6 @@ __all__ = [
     "EXPENSE_CATEGORIES",
     "EXPENSE_CURRENCIES",
     "EXPENSE_PRODUCTS",
-    "EXPENSE_TOOLS",
     "EXPENSE_VENDORS",
     "TASK_TITLES",
     "ShortUrlSeed",

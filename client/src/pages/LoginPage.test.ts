@@ -1,4 +1,4 @@
-import { flushPromises, mount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -32,7 +32,7 @@ describe("LoginPage", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
-    for (const key of Object.keys(mocks.routeQuery)) delete mocks.routeQuery[key];
+    mocks.routeQuery = {};
   });
 
   it("shows email password login and Google sign-in", () => {
@@ -57,10 +57,9 @@ describe("LoginPage", () => {
     await wrapper.get('input[placeholder="you@example.com"]').setValue("admin@example.com");
     await wrapper.get('input[type="password"]').setValue("password-123");
     await wrapper.get("form").trigger("submit");
-    await flushPromises();
 
     expect(login).toHaveBeenCalledWith("admin@example.com", "password-123");
+    await vi.waitFor(() => expect(mocks.push).toHaveBeenCalledWith("/admin"));
     expect(mocks.toast).toHaveBeenCalledWith("Logged in successfully", "success");
-    expect(mocks.push).toHaveBeenCalledWith("/admin");
   });
 });

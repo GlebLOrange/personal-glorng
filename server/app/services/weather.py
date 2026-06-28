@@ -180,12 +180,6 @@ async def _resolve_timezone_info(lat: float, lon: float) -> TimezoneInfo | None:
     return info
 
 
-async def _resolve_utc_offset_hours(lat: float, lon: float) -> float | None:
-    """Backward-compatible offset resolver for tests and fallbacks."""
-    info = await _resolve_timezone_info(lat, lon)
-    return info.offset_hours if info else None
-
-
 async def enrich_weather_timezone(data: dict[str, Any]) -> dict[str, Any]:
     """Backfill timezone metadata and World Time API clock data."""
     if not _needs_time_enrichment(data):
