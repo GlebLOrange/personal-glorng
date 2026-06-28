@@ -8,6 +8,7 @@ import time
 import pytest
 from httpx import AsyncClient
 
+from app.routers.donations import STRIPE_WEBHOOK_MAX_BODY_BYTES
 from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file
 
 
@@ -97,3 +98,14 @@ async def test_stripe_webhook_rejects_invalid_signature(client: AsyncClient) -> 
         headers={"Stripe-Signature": "t=1,v1=bad"},
     )
     assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_stripe_webhook_rejects_oversized_body(client: AsyncClient) -> None:
+    body = b"x" * (STRIPE_WEBHOOK_MAX_BODY_BYTES + 1)
+    resp = await client.post(
+        "/api/donations/webhook",
+        content=body,
+        headers={"Stripe-Signature": _stripe_signature(body, "whsec_test")},
+    )
+    assert resp.status_code == 413

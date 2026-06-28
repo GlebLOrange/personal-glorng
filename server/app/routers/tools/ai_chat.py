@@ -19,7 +19,7 @@ router = APIRouter(
     dependencies=[Depends(require_capability("ai-chat", "read"))],
 )
 
-rate_limit_ai_chat = RateLimiter(requests=5, window=300)
+rate_limit_ai_chat = RateLimiter(requests=5, window=300, fail_open=False)
 
 
 def _require_ai_chat_enabled() -> None:
