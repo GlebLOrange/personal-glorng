@@ -8,7 +8,7 @@ defineProps<{
   <nav aria-label="Breadcrumb" class="text-xs mb-3">
     <ol class="flex items-center gap-2">
       <li>
-        <RouterLink to="/tools" class="text-surface-mid hover:text-accent-blue transition-colors">
+        <RouterLink to="/admin" class="text-surface-mid hover:text-accent-blue transition-colors">
           tools
         </RouterLink>
       </li>

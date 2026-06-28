@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
 import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
+const router = useRouter();
 const mobileOpen = ref(false);
 
 function handleLogout(): void {
   auth.logout();
+  void router.push("/");
 }
 
 function toggleMobileMenu(): void {
