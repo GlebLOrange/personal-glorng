@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import { useAuthStore } from "@/stores/auth";
 
@@ -12,6 +12,7 @@ const emit = defineEmits<{ close: [] }>();
 
 const auth = useAuthStore();
 const route = useRoute();
+const router = useRouter();
 
 const sectionLinks = [
   { href: "#skills", label: "Skills" },
@@ -33,6 +34,7 @@ function handleSectionClick(): void {
 function handleLogout(): void {
   auth.logout();
   emit("close");
+  void router.push("/");
 }
 
 watch(

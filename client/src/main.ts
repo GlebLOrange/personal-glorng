@@ -3,6 +3,7 @@ import { createApp } from "vue";
 
 import App from "./App.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
+import { restoreAuth } from "@/plugins/auth";
 import router from "./router";
 import "./styles/main.css";
 
@@ -15,6 +16,8 @@ app.use(pinia);
 app.use(router);
 
 app.mount("#app");
+
+void router.isReady().then(() => restoreAuth());
 
 window.setTimeout(() => {
   void import("./composables/useCookieConsent").then(({ setupCookieConsent }) => {
