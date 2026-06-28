@@ -10,7 +10,7 @@ alwaysApply: false
 This rule supplements always-on agent rules; it does not override them.
 
 - **Reviews:** Use as the Performance axis detail for `code-review-and-quality.mdc`.
-- **Tests:** Do not run the full suite during routine dev unless the user asks — see `skip-tests-in-dev.mdc`.
+- **Tests:** Do not run the full suite during routine dev unless the user asks, CI is failing, or the task is test-focused.
 
 ## When to Use
 

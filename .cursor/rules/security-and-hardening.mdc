@@ -10,7 +10,7 @@ alwaysApply: false
 This rule supplements always-on agent rules; it does not override them.
 
 - **Reviews:** Use as the Security axis detail for `code-review-and-quality.mdc`.
-- **Stack:** Follow client security notes in `frontend-stack.mdc` where applicable.
+- **Stack:** Follow the frontend Vue/Pinia and design-system rules for client rendering, links, forms, and accessibility.
 
 ## Overview
 

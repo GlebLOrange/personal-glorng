@@ -14,6 +14,7 @@ from app.settings import get_settings
 
 MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100 MB
 EXPIRY_HOURS = 24
+_MAX_CODE_RETRIES = 3
 _BLOCKED_EXTENSIONS = frozenset(
     {
         ".html",
@@ -128,7 +129,13 @@ async def upload(
     if blocked:
         raise ApiError(400, f"File type '{blocked}' is not allowed")
 
-    code = generate_short_code(6)
+    for attempt in range(_MAX_CODE_RETRIES):
+        code = generate_short_code(6)
+        if await _files(registry).get_by_code(code) is None:
+            break
+        if attempt == _MAX_CODE_RETRIES - 1:
+            raise ApiError(503, "Failed to generate unique share code")
+
     stored_name = f"{code}_{_sanitize_filename(filename)}"
     safe_type = _sniff_content_type(contents, filename)
 

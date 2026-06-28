@@ -14,4 +14,4 @@ Before editing tracked project files:
 
 For new chats or risky/experimental work, prefer Cursor **Worktree** mode or start with `/worktree <task>` so changes stay isolated.
 
-When the user asks to commit or open a PR, follow `git-commit.mdc` and `gh-pr.mdc`.
+When the user asks to commit or open a PR, inspect status, diff, and recent history first; never commit, push, amend, or open a PR unless explicitly requested.

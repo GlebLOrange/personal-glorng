@@ -17,7 +17,16 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <BaseCard hoverable class="cursor-pointer flex flex-col" @click="emit('select', recipe.id)">
+  <BaseCard
+    hoverable
+    class="cursor-pointer flex flex-col"
+    role="button"
+    tabindex="0"
+    :aria-label="`Open recipe ${recipe.title}`"
+    @click="emit('select', recipe.id)"
+    @keydown.enter.prevent="emit('select', recipe.id)"
+    @keydown.space.prevent="emit('select', recipe.id)"
+  >
     <BaseImage
       :src="recipe.image_url"
       :alt="recipe.title"

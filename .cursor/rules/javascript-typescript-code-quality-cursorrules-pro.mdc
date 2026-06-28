@@ -1,59 +1,35 @@
 ---
-description: "Cursor rules for JavaScript and TypeScript development with code quality integration."
-globs: **/*
+description: "TypeScript quality rules for the Vite Vue client."
+globs: ["client/src/**/*.ts", "client/src/**/*.vue"]
 alwaysApply: false
 ---
-# Persona
+# TypeScript Client Quality
 
-You are a senior full-stack developer. One of those rare 10x developers that has incredible knowledge.
+Use this rule when editing client TypeScript or Vue components.
 
-# Coding Guidelines
+## Principles
 
-Follow these guidelines to ensure your code is clean, maintainable, and adheres to best practices. Remember, less code is better. Lines of code = Debt.
+- Keep changes small and local to the task.
+- Prefer clear names, early returns, and simple control flow.
+- Avoid `any`; use `unknown` at external boundaries and narrow it.
+- Prefer `const`; use `let` only when reassignment is needed.
+- Use existing composables, stores, utilities, and components before adding new abstractions.
+- Add comments only for non-obvious intent or constraints.
 
-# Key Mindsets
+## Vue And Events
 
-**1** **Simplicity**: Write simple and straightforward code.
-**2** **Readability**: Ensure your code is easy to read and understand.
-**3** **Performance**: Keep performance in mind but do not over-optimize at the cost of readability.
-**4** **Maintainability**: Write code that is easy to maintain and update.
-**5** **Testability**: Ensure your code is easy to test.
-**6** **Reusability**: Write reusable components and functions.
+- Prefix event handlers with `handle` when they are passed to templates or child components.
+- Move complex template expressions into `computed` values or small helpers.
+- Keep business workflows in stores/composables instead of large page components.
+- Use conditional classes or computed class lists when it improves readability; do not over-abstract one-off classes.
 
-Code Guidelines
+## Safety
 
-**1** **Utilize Early Returns**: Use early returns to avoid nested conditions and improve readability.
-**2** **Conditional Classes**: Prefer conditional classes over ternary operators for class attributes.
-**3** **Descriptive Names**: Use descriptive names for variables and functions. Prefix event handler functions with "handle" (e.g., handleClick, handleKeyDown).
-**4** **Constants Over Functions**: Use constants instead of functions where possible. Define types if applicable.
-**5** **Correct and DRY Code**: Focus on writing correct, best practice, DRY (Don't Repeat Yourself) code.
-**6** **Functional and Immutable Style**: Prefer a functional, immutable style unless it becomes much more verbose.
-**7** **Minimal Code Changes**: Only modify sections of the code related to the task at hand. Avoid modifying unrelated pieces of code. Accomplish goals with minimal code changes.
+- Treat API responses, persisted store data, URL params, and browser state as untrusted until validated or narrowed.
+- Never use raw `v-html`; only use sanitized HTML through existing utilities.
+- Use safe URL/image helpers for dynamic navigation or media sources.
 
-Comments and Documentation
+## Verification
 
-* **Function Comments**: Add a comment at the start of each function describing what it does.
-* **JSDoc Comments**: Use JSDoc comments for JavaScript (unless it's TypeScript) and modern ES6 syntax.
-
-Function Ordering
-
-* Order functions with those that are composing other functions appearing earlier in the file. For example, if you have a menu with multiple buttons, define the menu function above the buttons.
-
-Handling Bugs
-
-* **TODO Comments**: If you encounter a bug in existing code, or the instructions lead to suboptimal or buggy code, add comments starting with "TODO:" outlining the problems.
-
-Example Pseudocode Plan and Implementation
-
-When responding to questions, use the Chain of Thought method. Outline a detailed pseudocode plan step by step, then confirm it, and proceed to write the code. Here’s an example:
-
-# Important: Minimal Code Changes
-
-**Only modify sections of the code related to the task at hand.**
-**Avoid modifying unrelated pieces of code.**
-**Avoid changing existing comments.**
-**Avoid any kind of cleanup unless specifically instructed to.**
-**Accomplish the goal with the minimum amount of code changes.**
-**Code change = potential for bugs and technical debt.**
-
-Follow these guidelines to produce high-quality code and improve your coding skills. If you have any questions or need clarification, don’t hesitate to ask!
+- Prefer focused Vitest files, `npm run typecheck`, or `npm run lint` for touched client code.
+- Run Playwright only when the user asks, CI is failing, or the change affects a critical browser flow.
