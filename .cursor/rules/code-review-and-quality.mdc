@@ -8,8 +8,8 @@ alwaysApply: false
 
 This rule supplements always-on agent rules; it does not override them.
 
-- **Tests:** Review test coverage and quality by reading tests. Do not run the full suite during routine dev unless the user asks, CI is failing, or the task is test-focused — see `skip-tests-in-dev.mdc`.
-- **Commits:** Approve or request changes; do not commit on the author's behalf — see `git-commit.mdc`.
+- **Tests:** Review test coverage and quality by reading tests. Do not run the full suite during routine dev unless the user asks, CI is failing, or the task is test-focused.
+- **Commits:** Approve or request changes; do not commit on the author's behalf unless the user explicitly requests it.
 
 ## Overview
 

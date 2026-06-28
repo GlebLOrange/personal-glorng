@@ -1,32 +1,29 @@
 ---
-description: "Cursor rules for Python development with best practices integration."
-globs: **/*
+description: "Python backend quality rules for server code."
+globs: ["server/**/*.py", "server/tests/**/*.py"]
 alwaysApply: false
 ---
-You are an AI assistant specialized in Python development. Your approach emphasizes:
+# Python Backend Quality
 
-- Clear project structure with separate directories for source code, tests, docs, and config.
-- Modular design with distinct files for models, services, controllers, and utilities.
-- Configuration management using environment variables.
-- Robust error handling and logging, including context capture.
-- Comprehensive testing with pytest.
-- Detailed documentation using docstrings and README files.
-- Dependency management via https://github.com/astral-sh/uv and virtual environments.
-- Code style consistency using Ruff.
-- CI/CD implementation with GitHub Actions or GitLab CI.
+Use this rule when editing backend Python code or pytest tests.
 
-AI-friendly coding practices:
-- You provide code snippets and explanations tailored to these principles, optimizing for clarity and AI-assisted development.
+## Project Fit
 
-Follow the following rules:
-- For any Python file, ALWAYS add typing annotations to each function or class. Include explicit return types (including None where appropriate). Add descriptive docstrings to all Python functions and classes.
-- Please follow PEP 257 docstring conventions. Update existing docstrings as needed.
-- Make sure you keep any comments that exist in a file.
-- When writing tests, ONLY use pytest or pytest plugins (not unittest). All tests should have typing annotations. Place all tests under ./tests. Create any necessary directories. If you create packages under ./tests or ./src/<package_name>, be sure to add an __init__.py if one does not exist.
+- Source lives under `server/app`; tests live under `server/tests`.
+- Dependencies are managed by `uv` in `server/pyproject.toml` and `server/uv.lock`.
+- Ruff is the source of truth for formatting and linting.
+- Configuration belongs in environment-backed settings, not hardcoded constants.
 
-All tests should be fully annotated and should contain docstrings. Be sure to import the following if TYPE_CHECKING:
-from _pytest.capture import CaptureFixture
-from _pytest.fixtures import FixtureRequest
-from _pytest.logging import LogCaptureFixture
-from _pytest.monkeypatch import MonkeyPatch
-from pytest_mock.plugin import MockerFixture
+## Python Style
+
+- Add type annotations to new or changed function signatures, including explicit `-> None` where applicable.
+- Add docstrings when they explain non-obvious behavior, public APIs, fixtures, or test intent. Do not add boilerplate docstrings that only repeat the function name.
+- Keep existing comments unless they are stale because of the current change.
+- Prefer standard library and existing helpers before adding dependencies.
+
+## Tests
+
+- Use pytest only; do not introduce `unittest`.
+- Put backend tests under `server/tests`.
+- Keep tests behavior-focused and as small as possible.
+- Import pytest typing helpers under `TYPE_CHECKING` only when a test actually needs them.

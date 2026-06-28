@@ -1,6 +1,6 @@
 ---
 description: Toss-style UI design rules for disciplined spacing, typography, grayscale hierarchy, restrained color, cards, metrics, dark mode, and accessibility
-globs: ["**/*.tsx", "**/*.jsx", "**/*.vue", "**/*.svelte", "**/*.css", "**/*.scss", "tailwind.config.*"]
+globs: ["client/src/**/*.vue", "client/src/**/*.css", "client/src/**/*.scss", "client/tailwind.config.*"]
 alwaysApply: false
 ---
 

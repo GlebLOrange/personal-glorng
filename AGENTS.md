@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Coding standards and agent behavior live in [`.cursor/rules/`](.cursor/rules/) (stack conventions, git commit, PR workflow). Opt-in rules: `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, `frontend-ui-engineering`, `spec-driven-development`. This file covers environment and bootstrap only.
+Coding standards and agent behavior live in [`.cursor/rules/`](.cursor/rules/): always-on safety/dependency/git workflow rules, backend FastAPI/Python rules, frontend Vue/Pinia/TypeScript rules, design-system guidance, and opt-in review/process rules such as `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, and `spec-driven-development`. This file covers environment and bootstrap only.
 
 ## Cursor Cloud specific instructions
 
@@ -47,7 +47,7 @@ Default E2E credentials: `admin@admin.admin` / `MyTestPass123!`
 
 ### Lint / test / build
 
-See `README.md` for canonical commands. **Agents skip test execution in dev by default** — see [`.cursor/rules/skip-tests-in-dev.mdc`](.cursor/rules/skip-tests-in-dev.mdc). CI runs the full suite on pull requests; use the commands below manually when you want local verification.
+See `README.md` for canonical commands. Agents prefer targeted checks in dev by default; CI runs the full suite on pull requests. Use the commands below manually when you want local full-suite verification.
 
 Cloud-specific notes:
 

@@ -9,8 +9,8 @@ alwaysApply: false
 This rule supplements always-on agent rules; it does not override them.
 
 - **Writing tests:** Follow RED/GREEN/REFACTOR — write tests before or alongside implementation for logic and bug fixes.
-- **Running tests:** Run the **new or changed test file** after each edit. Do not run full `make test`, `npm run test`, or Playwright unless the user asks, CI is failing, or the task is test-focused — see `skip-tests-in-dev.mdc`.
-- **Commits:** Do not commit unless the user explicitly requests it — see `git-commit.mdc`.
+- **Running tests:** Run the **new or changed test file** after each edit. Do not run full `make test`, `npm run test`, or Playwright unless the user asks, CI is failing, or the task is test-focused.
+- **Commits:** Do not commit unless the user explicitly requests it.
 
 ## Overview
 
@@ -313,7 +313,7 @@ For UI changes, unit/component tests alone may not be enough — verify in the b
 5. VERIFY: Reload, screenshot, confirm console is clean; run targeted unit tests
 ```
 
-Use the browser MCP (`browser_navigate`, `browser_snapshot`, `browser_take_screenshot`) for runtime verification. Do not run Playwright e2e unless the user asks or CI is failing — see `skip-tests-in-dev.mdc`.
+Use the browser MCP (`browser_navigate`, `browser_snapshot`, `browser_take_screenshot`) for runtime verification. Do not run Playwright e2e unless the user asks or CI is failing.
 
 ### Security Boundaries
 

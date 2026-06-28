@@ -8,8 +8,8 @@ alwaysApply: false
 
 This rule supplements always-on agent rules; it does not override them.
 
-- **Tests:** Write tests for each slice; run **targeted** tests for the files you changed. Do not run full `make test`, `npm run test`, or Playwright unless the user asks, CI is failing, or the task is test-focused — see `skip-tests-in-dev.mdc`.
-- **Commits:** Leave each slice in a committable state, but only `git commit` when the user explicitly requests it — see `git-commit.mdc`.
+- **Tests:** Write tests for each slice; run **targeted** tests for the files you changed. Do not run full `make test`, `npm run test`, or Playwright unless the user asks, CI is failing, or the task is test-focused.
+- **Commits:** Leave each slice in a committable state, but only `git commit` when the user explicitly requests it.
 
 ## Overview
 
@@ -45,7 +45,7 @@ For each slice:
 1. **Implement** the smallest complete piece of functionality
 2. **Test** — write or update tests for the slice; run targeted tests for changed files
 3. **Verify** — confirm the slice works (targeted tests pass, lint/build succeeds, manual check if needed)
-4. **Prepare commit** — summarize the slice; commit only when the user asks (see `git-commit.mdc`)
+4. **Prepare commit** — summarize the slice; commit only when the user asks
 5. **Move to the next slice** — carry forward, don't restart
 
 ## Slicing Strategies

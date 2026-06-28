@@ -1,66 +1,54 @@
 ---
-description: "Complete AI coding setup for Vue 3 & Nuxt 3 — .cursorrules + CLAUDE.md + Copilot instructions + generation skills."
-globs: **/*
+description: "Vue 3 component guidance for the Vite client."
+globs: ["client/src/**/*.vue"]
 alwaysApply: false
 ---
-You are an expert Vue 3 and Nuxt 3 developer with deep knowledge of TypeScript, Pinia, VueUse, Tailwind CSS, and the Vue ecosystem.
+# Vue 3 Client
 
 ## Core Principles
-- Always use Vue 3 Composition API with `<script setup lang="ts">`
-- Never use Options API, mixins, or `this` keyword in setup
-- Write TypeScript with strict mode — no `any`
-- Follow Vue style guide priority A and B rules
-- Prefer composables over utility functions for reactive logic
+- Use Vue 3 Composition API with `<script setup lang="ts">`.
+- Do not add Options API, mixins, or `this`-based component code.
+- Write strict TypeScript and avoid `any`.
+- Prefer composables for reusable reactive logic.
+- Keep templates readable; move complex logic into `computed` values, composables, or small helpers.
 
 ## Component Rules
-- Use `defineProps<T>()` with TypeScript generics for props
-- Use `defineEmits<T>()` with typed events
-- Use `defineModel()` for v-model bindings (Vue 3.4+)
-- Keep templates clean — extract complex logic to computed or composables
-- One component per file, filename matches component name in PascalCase
+- Use `defineProps<T>()` with TypeScript generics for props.
+- Use typed `defineEmits<T>()` for emitted events.
+- Use `defineModel()` for new v-model bindings when it keeps the component simpler.
+- Keep one component per file; component filenames should stay PascalCase.
 
 ## State Management (Pinia)
-- Use setup stores with `defineStore('name', () => { ... })`
-- Use `storeToRefs()` when destructuring store state
-- Keep stores small and focused — one domain per store
-- Never access store state directly in templates, use computed
+- Use setup stores with `defineStore('name', () => { ... })`.
+- Use `storeToRefs()` when destructuring store state or getters.
+- Keep stores focused by domain.
+- Keep server state in the API/composable layer unless Pinia intentionally owns UI workflow state.
 
 ## Composables
-- Prefix with `use` (useAuth, useCart, useSearch)
-- Accept `MaybeRef<T>` for flexible inputs
-- Return `{ data, error, loading }` pattern for async composables
-- Place in `composables/` directory for Nuxt auto-import
-
-## Nuxt Specifics
-- Use `useFetch` / `useAsyncData` for data fetching (SSR-compatible)
-- Use file-based routing in `pages/`
-- Use `definePageMeta()` for route metadata
-- Server routes go in `server/api/`
-- Use `createError()` for error handling
+- Prefix reusable composables with `use`.
+- Return explicit loading/error state for async composables when the UI depends on it.
+- Place shared composables under `client/src/composables`.
+- Use the existing API layer for data fetching.
 
 ## TypeScript
-- Define interfaces in `types/` directory
-- Use `type` over `interface` unless extending
-- Use `satisfies` operator for type checking
-- No type assertions (`as`) unless absolutely necessary
+- Prefer `type` for local aliases and `interface` for shared object contracts that are extended.
+- Use `satisfies` when it improves checking without widening types.
+- Avoid type assertions unless the value has already been validated or narrowed.
 
 ## Testing
-- Vitest + @vue/test-utils
-- Test files next to source: `*.test.ts`
-- Test behavior, not implementation
-- Use `mount()` over `shallowMount()`
+- Use Vitest and `@vue/test-utils`.
+- Keep component tests behavior-focused.
+- Prefer `mount()` unless a shallow render is clearly enough.
 
 ## Tailwind CSS
-- Use utility classes directly in templates
-- Extract repeated patterns to components, not CSS classes
-- Use `@apply` sparingly — only in base styles
-- Dark mode: use `dark:` variant
+- Use existing utility classes and design tokens.
+- Extract repeated UI patterns to components before adding ad hoc CSS.
+- Respect dark mode and reduced motion patterns already in the client.
 
 ## Do NOT
-- Generate Options API code
-- Use `any` type — use `unknown` and narrow
-- Put business logic in components
-- Skip TypeScript on any file
-- Use `v-html` with user input
-- Mutate props
-- Use `var` — always `const` or `let`
+- Generate Options API code.
+- Use `any` where `unknown` plus narrowing works.
+- Put large business workflows in page components.
+- Use `v-html` with unsanitized content.
+- Mutate props.
+- Use `var`.

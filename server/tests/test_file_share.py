@@ -31,6 +31,35 @@ async def test_upload_file(auth_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_upload_retries_when_share_code_collides(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    user = await create_user(registry, email="collision-owner@example.com")
+    assert registry.files is not None
+    await registry.files.insert(
+        SharedFile(
+            code="abc123",
+            original_filename="existing.txt",
+            file_path="abc123_existing.txt",
+            file_size=1,
+            content_type="text/plain",
+            downloads=0,
+            expires_at=datetime.now(UTC) + timedelta(hours=1),
+            created_by=user.id,
+        )
+    )
+    codes = iter(["abc123", "def456"])
+    monkeypatch.setattr(fileshare_svc, "generate_short_code", lambda _length: next(codes))
+
+    resp = await auth_client.post("/api/tools/file-share", files=_make_file())
+
+    assert resp.status_code == 200
+    assert resp.json()["code"] == "def456"
+
+
+@pytest.mark.asyncio
 async def test_upload_unauthorized(client: AsyncClient) -> None:
     resp = await client.post("/api/tools/file-share", files=_make_file())
     assert resp.status_code == 401

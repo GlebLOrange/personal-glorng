@@ -1,6 +1,6 @@
 # Accessibility Checklist (WCAG 2.1 AA)
 
-Use when building or reviewing UI. For workflow guidance, see the `frontend-ui-engineering` rule.
+Use when building or reviewing UI. Pair this checklist with the Vue and design-system rules.
 
 ## Perceivable
 

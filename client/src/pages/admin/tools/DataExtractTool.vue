@@ -337,6 +337,9 @@ function downloadResult(): void {
     </p>
 
     <div
+      role="button"
+      tabindex="0"
+      aria-label="Choose a file to extract"
       :class="[
         'border-2 border-dashed rounded-lg p-8 text-center mb-6 transition-colors cursor-pointer',
         dragOver
@@ -347,6 +350,8 @@ function downloadResult(): void {
       @dragleave="dragOver = false"
       @drop.prevent="onDrop"
       @click="fileInputRef?.click()"
+      @keydown.enter.prevent="fileInputRef?.click()"
+      @keydown.space.prevent="fileInputRef?.click()"
     >
       <input
         ref="fileInputRef"
