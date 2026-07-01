@@ -22,7 +22,7 @@ dependencies = [
     "dateparser==1.4.*",
     "google-auth==2.55.*",
     "google-auth-oauthlib==1.4.*",
-    "google-api-python-client==2.197.*",
+    "google-api-python-client==2.198.*",
     "yt-dlp>=2026.3.17",
     "elasticsearch[async]==9.4.*",
     "motor==3.7.*",
