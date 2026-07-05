@@ -12,6 +12,7 @@ import RecipeFormDrawer from "@/components/recipes/RecipeFormDrawer.vue";
 import TaskPagination from "@/components/tasks/TaskPagination.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import { useRecipes } from "@/composables/useRecipes";
+import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 
 const { can } = usePermissions();
 const canWrite = computed(() => can("recipes", "write"));
@@ -55,6 +56,10 @@ const {
   confirmDelete,
   tryOpenFromQuery,
 } = useRecipes();
+
+useScrollListFingerprint(
+  () => `${sort.value}:${activeTags.value.join(",")}:${recipes.value.length}`,
+);
 
 onMounted(async () => {
   await Promise.all([loadRecipes(), loadTags()]);

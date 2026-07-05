@@ -12,6 +12,7 @@ import TaskPagination from "@/components/tasks/TaskPagination.vue";
 import TaskSummaryBar from "@/components/tasks/TaskSummaryBar.vue";
 import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
 import { usePermissions } from "@/composables/usePermissions";
+import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { useTasks } from "@/composables/useTasks";
 
 type Tab = "queue" | "intakes" | "sync";
@@ -57,6 +58,11 @@ const {
   createTask,
   goToPage,
 } = useTasks();
+
+useScrollListFingerprint(
+  () =>
+    `${activeTab.value}:${filterStatus.value}:${page.value}:${tasks.value[0]?.id ?? ""}:${intakes.value[0]?.id ?? ""}:${syncQueue.value[0]?.id ?? ""}`,
+);
 
 function switchTab(tab: string): void {
   if (!TASK_TABS.some((item) => item.id === tab)) return;

@@ -5,11 +5,16 @@ import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { formatNewsDate, useNews } from "@/composables/useNews";
 import { usePermissions } from "@/composables/usePermissions";
+import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
 const { isSuperuser } = usePermissions();
-const { articles, page, listLoading, listError, hasNextPage, countLabel, loadNews, goToPage } =
+const { articles, page, total, listLoading, listError, hasNextPage, countLabel, loadNews, goToPage } =
   useNews();
+
+useScrollListFingerprint(
+  () => `${page.value}:${total.value}:${articles.value[0]?.id ?? ""}`,
+);
 
 onMounted(async () => {
   await loadNews();

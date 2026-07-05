@@ -3,6 +3,7 @@ import { defineAsyncComponent, onMounted, ref } from "vue";
 
 import NavBar from "@/components/layout/NavBar.vue";
 import FooterBar from "@/components/layout/FooterBar.vue";
+import ScrollControls from "@/components/layout/ScrollControls.vue";
 import ToastContainer from "@/components/ui/ToastContainer.vue";
 
 const ClocksBar = defineAsyncComponent(() => import("@/components/weather/ClocksBar.vue"));
@@ -23,6 +24,7 @@ onMounted(() => {
     <main id="main-content" class="flex-1" tabindex="-1">
       <ClocksBar v-if="showClocksBar" />
       <RouterView />
+      <ScrollControls />
     </main>
     <FooterBar />
     <ToastContainer />
