@@ -1,6 +1,6 @@
 # Security
 
-How this repo handles common web risks. For vulnerability disclosure, see [SECURITY.md](../SECURITY.md).
+How this repo handles common web risks. For vulnerability disclosure, see [SECURITY.md](../../SECURITY.md).
 
 ## Transport and headers
 
@@ -8,13 +8,13 @@ Production serves the SPA and API through nginx with:
 
 - `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`
 - **HSTS** on the prod nginx config only
-- **Content-Security-Policy** in [`nginx/security_headers.conf`](../nginx/security_headers.conf)
+- **Content-Security-Policy** in [`nginx/security_headers.conf`](../../nginx/security_headers.conf)
 
 CSP currently allows `'unsafe-inline'` for scripts and styles so Vite dev HMR, Google Tag Manager, and inline bootstrapping work. Tightening CSP (nonces or hashes for built assets) is a planned hardening step; until then, XSS defenses rely on Vue escaping, minimal `v-html`, and DOMPurify on email previews.
 
 **Dev caveat:** Lite mode (Vite → API on `:8000`, no nginx) skips CSP/HSTS. CSRF origin checks are production-only.
 
-HTTPS termination is expected upstream of compose nginx (port 80 by default); `secure` cookies require HTTPS at the edge. For the minimal Cloudflare path with strict origin TLS, see [cloudflare.md](cloudflare.md).
+HTTPS termination is expected upstream of compose nginx (port 80 by default); `secure` cookies require HTTPS at the edge. For the minimal Cloudflare path with strict origin TLS, see [Cloudflare](/operations/cloudflare).
 
 ## Authentication
 
@@ -25,38 +25,57 @@ HTTPS termination is expected upstream of compose nginx (port 80 by default); `s
 - Password policy: 12+ chars, upper, lower, digit, special; common passwords rejected
 - `ALLOWED_EMAIL` is seed-only for the bootstrap superuser; GitHub OAuth uses `GITHUB_ALLOWED_USERS`
 - Users manage profile, password, email, and preferences via `/settings`; permissions are admin-only
-- GitHub OAuth access tokens are **encrypted at rest** (Fernet, key derived from `JWT_SECRET`) — see [`core/fernet_secrets.py`](../server/app/core/fernet_secrets.py)
+- GitHub OAuth access tokens are **encrypted at rest** (Fernet, key derived from `JWT_SECRET`) — see [`core/fernet_secrets.py`](../../server/app/core/fernet_secrets.py)
 
-## CSRF and CORS
+## CSRF and CORS {#csrf-and-cors}
 
 The API uses `CORSMiddleware` with `allow_credentials=True`. In **production**:
 
 - `CORS_ORIGINS` must list explicit origins (no `*`)
-- Mutating `/api` requests that send the `access_token` cookie must include an `Origin` (or matching `Referer`) from `CORS_ORIGINS` — see [`server/app/core/csrf.py`](../server/app/core/csrf.py)
+- Mutating `/api` requests that send the `access_token` cookie must include an `Origin` (or matching `Referer`) from `CORS_ORIGINS` — see [`server/app/core/csrf.py`](../../server/app/core/csrf.py)
+
+**Refresh token split:** `/api/auth/refresh` with a `refresh_token` **cookie** requires a valid origin. Body-only refresh (`{"refresh_token": "..."}`) is exempt — typical for scripts and Bearer clients.
 
 Public auth and feedback routes are exempt. Bearer-only clients (typical admin SPA with in-memory tokens) are unaffected.
 
 ## Redis
 
-Redis uses **`noeviction`** (`--maxmemory-policy noeviction`) so security-sensitive keys (token blacklist `bl:{jti}`, rate limits `rl:{path}:{ip}`) are never silently dropped. Dev compose caps memory at 64mb; production at 256mb. Key prefixes are documented in [`server/app/core/redis_keys.py`](../server/app/core/redis_keys.py).
+Redis uses **`noeviction`** (`--maxmemory-policy noeviction`) so security-sensitive keys (token blacklist `bl:{jti}`, rate limits `rl:{path}:{ip}`) are never silently dropped. Dev compose caps memory at 64mb; production at 256mb. Key prefixes are documented in [`server/app/core/redis_keys.py`](../../server/app/core/redis_keys.py).
 
-On Redis failure: general API rate limiting **fails open** (allows the request); **auth** rate limiting (`/api/auth/*`) **fails closed** (returns 503); token blacklist checks **fail closed** in production (rejects the token). Cache reads fall through to origin APIs.
+On Redis failure:
+
+| Component | Behavior |
+|-----------|----------|
+| General API rate limiting | **Fails open** (allows request) |
+| Abuse-sensitive rate limiting | **Fails closed** (503) — see table below |
+| Auth rate limiting (`/api/auth/*`) | **Fails closed** (503) |
+| Token blacklist | **Fails closed** in production (rejects token) |
+| Cache reads | Fall through to origin APIs |
 
 `/api/ready` reports Redis memory usage (`used_memory`, `maxmemory`, `maxmemory_policy`) and warns when usage exceeds 85% of `maxmemory`.
 
 ## Rate limiting
 
-Redis fixed-window limits on auth, feedback, general API traffic, and search — [`server/app/core/rate_limit.py`](../server/app/core/rate_limit.py).
+Redis fixed-window limits — [`server/app/core/rate_limit.py`](../../server/app/core/rate_limit.py). Counter uses atomic Lua (`INCR` + `EXPIRE` on first hit only).
 
-| Limiter | Limit | Routes |
-|---------|-------|--------|
-| Auth | 5/min | All `/api/auth/*` |
-| API general | 30/min | Most public APIs |
-| Search query | 30/min | `GET /api/search` |
-| Search chat | 5/5min | `POST /api/search/chat` |
-| Feedback | 5/5min | `POST /api/feedback` |
+| Limiter | Limit | Routes | Redis down |
+|---------|-------|--------|------------|
+| Auth | 5/min | All `/api/auth/*` | Fail closed |
+| API general | 30/min | Most public APIs | Fail open |
+| Search query | 30/min | `GET /api/search` | Fail open |
+| Search chat | 5/5min | `POST /api/search/chat` | Fail closed |
+| Feedback | 5/5min | `POST /api/feedback` | Fail closed |
+| Checkout | 10/hour | `POST /api/donations/checkout` | Fail closed |
+| AI chat (admin) | 5/5min | `POST /api/tools/ai-chat` | Fail closed |
+| URL shortener create | 10/hour | `POST /api/tools/url-shortener` | Fail closed |
+| Video download | 5/hour | `POST /api/tools/vid-download` | Fail closed |
+| Inbound webhooks | 30/min | `POST /api/webhooks/{slug}` | Fail closed |
 
 Rate-limit keys prefer nginx-set `X-Real-IP` over client-supplied `X-Forwarded-For`.
+
+## Request body limits
+
+Inbound webhooks and Stripe webhooks read bodies via [`read_request_body_bounded`](../../server/app/core/uploads.py) with a **1 MB** cap (HTTP 413 before signature verification).
 
 ## Search and AI chat
 
@@ -67,13 +86,13 @@ Portfolio search uses the configured search backend with a visibility model. Mon
 | `PUBLIC` | Static resume content, public recipes | Anyone (keyword search + public AI chat) |
 | `ADMIN` | Tasks, expenses, feedback bodies | Admin AI chat only (`ai-chat:write`) |
 
-**Public endpoints** ([`server/app/routers/search.py`](../server/app/routers/search.py)):
+**Public endpoints** ([`server/app/routers/search.py`](../../server/app/routers/search.py)):
 
 - `GET /api/search` — keyword lookup over `PUBLIC` documents only (no LLM)
 - `GET /api/search/config` — reports whether AI search is enabled and configured
 - `POST /api/search/chat` — unauthenticated grounded AI chat; retrieval scoped to `PUBLIC` only
 
-**Admin endpoint** ([`server/app/routers/tools/ai_chat.py`](../server/app/routers/tools/ai_chat.py)):
+**Admin endpoint** ([`server/app/routers/tools/ai_chat.py`](../../server/app/routers/tools/ai_chat.py)):
 
 - `POST /api/tools/ai-chat` — requires `ai-chat:write`; retrieval includes `PUBLIC` + `ADMIN`
 
@@ -84,7 +103,7 @@ Both chat paths use retrieve-then-generate (`AiSearchService`): the LLM receives
 
 Client-side `VITE_*` flags hide UI only; server flags and auth are authoritative.
 
-**Chat UI hardening:** message content is rendered as plain text (no `v-html`). Source citation links pass through [`safeUrl.ts`](../client/src/utils/safeUrl.ts) — relative paths and same-origin or external `https:` URLs only.
+**Chat UI hardening:** message content is rendered as plain text (no `v-html`). Source citation links pass through [`safeUrl.ts`](../../client/src/utils/safeUrl.ts) — relative paths and same-origin or external `https:` URLs only.
 
 ## Input sanitization
 
@@ -92,12 +111,12 @@ Client-side `VITE_*` flags hide UI only; server flags and auth are authoritative
 |---------|------------|
 | Public resume | Static server content mirrored in the client fallback; Vue interpolation renders text without `v-html` |
 | Email tool (server) | `html.escape` on body; `sanitize_email_subject` blocks CRLF injection |
-| Email preview (client) | DOMPurify via [`sanitizeEmailHtml.ts`](../client/src/utils/sanitizeEmailHtml.ts) |
+| Email preview (client) | DOMPurify via [`sanitizeEmailHtml.ts`](../../client/src/utils/sanitizeEmailHtml.ts) |
 | Email console backend | Logs metadata only (`to`, `subject`, byte sizes) — no HTML/token previews |
-| AI chat / search | `sanitize_required_text` in [`core/text.py`](../server/app/core/text.py) + message caps |
-| Search/news/resume/donation source links (client) | [`safeUrl.ts`](../client/src/utils/safeUrl.ts) blocks unsafe navigation hrefs |
-| Image URLs (client) | [`safeImageSrc.ts`](../client/src/utils/safeImageSrc.ts) — https + same-origin paths only in [`BaseImage.vue`](../client/src/components/ui/BaseImage.vue) |
-| Tasks (admin + todobot) | Shared `TaskTextFields` validators via [`schemas/validators.py`](../server/app/schemas/validators.py) |
+| AI chat / search | `sanitize_required_text` in [`core/text.py`](../../server/app/core/text.py) + message caps |
+| Search/news/resume/donation source links (client) | [`safeUrl.ts`](../../client/src/utils/safeUrl.ts) blocks unsafe navigation hrefs |
+| Image URLs (client) | [`safeImageSrc.ts`](../../client/src/utils/safeImageSrc.ts) — https + same-origin paths only in [`BaseImage.vue`](../../client/src/components/ui/BaseImage.vue) |
+| Tasks (admin + todobot) | Shared `TaskTextFields` validators via [`schemas/validators.py`](../../server/app/schemas/validators.py) |
 | Task intake (todobot) | `TaskDraft` / `ClarificationTurn` text fields sanitized at schema layer |
 | Feedback (public) | `theme` + `message` via shared validators |
 | Recipes | `title`, `ingredients`, `steps`, `notes`, `tags` via shared validators |
@@ -107,7 +126,7 @@ Client-side `VITE_*` flags hide UI only; server flags and auth are authoritative
 | Weather saved locations | `label` + `query` at schema layer; format validated in service |
 | URL shortener titles | Optional `title` via shared validators |
 | File share uploads | Extension denylist; sanitized stored filenames; daily expired-share cleanup |
-| Downloads | Safe `Content-Disposition` via [`attachment_content_disposition`](../server/app/core/utils.py) |
+| Downloads | Safe `Content-Disposition` via [`attachment_content_disposition`](../../server/app/core/utils.py) |
 | Vid download | YouTube host allowlist; yt-dlp `format` character allowlist; public with rate/concurrency limits |
 | URL shortener/news fetch URLs | `HttpUrl` validation; private, localhost, internal, and non-routable host blocklists |
 | XML parsing | DTD/entity declarations rejected before stdlib XML parsing |
@@ -122,7 +141,7 @@ Client-side `VITE_*` flags hide UI only; server flags and auth are authoritative
 
 ## Application log persistence
 
-Structured API logs (Loguru / [`logging.py`](../server/app/core/logging.py)) are written to **stderr** for Docker (`make logs`) and optionally persisted to MongoDB collection `app_logs` via [`app_log_persist.py`](../server/app/core/app_log_persist.py).
+Structured API logs (Loguru / [`logging.py`](../../server/app/core/logging.py)) are written to **stderr** for Docker (`make logs`) and optionally persisted to MongoDB collection `app_logs` via [`app_log_persist.py`](../../server/app/core/app_log_persist.py).
 
 | Control | Detail |
 |---------|--------|
@@ -132,14 +151,15 @@ Structured API logs (Loguru / [`logging.py`](../server/app/core/logging.py)) are
 | Admin access | `GET /api/tools/app-logs` requires `app-logs:read` |
 | Health noise | `/api/health` request logs are not persisted |
 | Failure mode | Queue is bounded; overflow drops oldest entries; DB errors never crash the app |
+| Body logging | `LOG_REQUEST_BODIES` logs redacted JSON only; non-JSON bodies omitted |
 
-Audit events ([`audit_events`](server/app/db/repositories/audit.py)) remain a separate, intentional change trail — not general application logs.
+Audit events ([`audit_events`](../../server/app/db/repositories/audit.py)) remain a separate, intentional change trail — not general application logs.
 
 ## Secrets and CI
 
-- Never commit `.env` (see [`.env.example`](../.env.example))
-- Production startup validates strength of `JWT_SECRET`, `RABBITMQ_PASSWORD`, `POSTGRES_PASSWORD`, and the password embedded in `REDIS_URL` — see [`server/app/settings.py`](../server/app/settings.py)
-- Weekly Dependabot updates; [`security.yml`](../.github/workflows/security.yml) runs gitleaks, pip-audit, and npm audit
+- Never commit `.env` (see [Configuration](/reference/configuration))
+- Production startup validates strength of `JWT_SECRET`, `RABBITMQ_PASSWORD`, `POSTGRES_PASSWORD`, and the password embedded in `REDIS_URL` — see [`server/app/settings.py`](../../server/app/settings.py)
+- Weekly Dependabot updates; [`security.yml`](../../.github/workflows/security.yml) runs gitleaks, pip-audit, and npm audit
 
 ## Risk register
 
@@ -160,4 +180,4 @@ Decisions for known risks. **Accept** = intentional tradeoff; **Mitigated** = co
 
 ## Testing
 
-- Default pytest uses mongomock-motor; Postgres-only features need `POSTGRES_TEST_URL` and `@pytest.mark.postgres` (see [database.md](database.md#tests))
+- Default pytest uses mongomock-motor; Postgres-only features need `POSTGRES_TEST_URL` and `@pytest.mark.postgres` (see [Database — tests](/operations/database#tests))

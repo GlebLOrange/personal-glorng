@@ -87,3 +87,8 @@ After the minimal setup is stable, consider a separate hardening pass:
 - Restore real visitor IPs from Cloudflare headers before app rate limiting decisions.
 - Restrict direct origin traffic to Cloudflare IP ranges in the VPS firewall.
 - Add small WAF or rate-limit rules only if traffic shows bot abuse.
+
+## Related
+
+- [Deployment](/operations/deployment)
+- [Security](/reference/security)

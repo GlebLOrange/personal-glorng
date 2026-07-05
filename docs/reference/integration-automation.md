@@ -2,7 +2,7 @@
 
 How to connect external tools (shell scripts, n8n, Huginn, cron) to gLOrng without changing application code.
 
-See also [api-tools.md](api-tools.md) for the full endpoint catalog and [integration webhooks](#inbound-webhooks) below.
+See also [API & tools](/reference/api-tools) for the full endpoint catalog, [Postman](/reference/postman) for OpenAPI import, and [inbound webhooks](#inbound-webhooks) below.
 
 ## Discover services
 
@@ -50,7 +50,7 @@ ACCESS=$(curl -s -X POST "$BASE/api/auth/refresh" \
   -d "{\"refresh_token\":\"$REFRESH\"}" | jq -r .access_token)
 ```
 
-Production note: Bearer-only clients skip CSRF. Auth endpoints are limited to **5 requests/minute per IP**.
+Production note: Bearer-only clients skip CSRF. Auth endpoints are limited to **5 requests/minute per IP** (fail closed if Redis is down).
 
 ## Example: monthly expense export
 
@@ -80,13 +80,13 @@ curl -s "$BASE/api/tools/audit?category=domain&per_page=20" \
 | Resume JSON | `GET /api/resume` (static public profile data) |
 | GitHub public repos | `GET /api/github/repos` |
 
-Rate limits apply (typically 30/min; see [security.md](security.md)).
+Rate limits apply (typically 30/min; see [Security](/reference/security)).
 
 ## Inbound webhooks
 
 When `WEBHOOK_SECRETS` is configured, external systems can POST signed payloads without JWT.
 
-**Endpoint:** `POST /api/webhooks/{slug}`
+**Endpoint:** `POST /api/webhooks/{slug}` (1 MB body limit)
 
 **Header:** `X-Glorng-Signature: sha256=<hex>` where the hex is `HMAC-SHA256(secret, raw_body)`.
 
@@ -121,8 +121,8 @@ WEBHOOK_SECRETS={"task-create":"replace-me","feedback":"replace-me","ping":"repl
 
 When `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are set:
 
-- `POST /api/donations/checkout` — returns a Checkout Session URL (public, rate-limited)
-- `POST /api/donations/webhook` — Stripe-signed events (`checkout.session.completed` notifies admin via Telegram)
+- `POST /api/donations/checkout` — returns a Checkout Session URL (public, rate-limited, fail closed)
+- `POST /api/donations/webhook` — Stripe-signed events (`checkout.session.completed` notifies admin via Telegram); 1 MB body limit
 
 PayPal and Patreon support use the configured external links from `GET /api/donations/config`.
 
@@ -157,6 +157,6 @@ Public portfolio repos (no login): `GET /api/github/repos` — uses `GITHUB_PUBL
 
 ## Related docs
 
-- [api-tools.md](api-tools.md) — capabilities and UI routes
-- [platform.md](platform.md) — channels and service pattern
-- [security.md](security.md) — rate limits and auth model
+- [API & tools](/reference/api-tools) — capabilities and UI routes
+- [Platform overview](/reference/platform) — channels and service pattern
+- [Security](/reference/security) — rate limits and auth model

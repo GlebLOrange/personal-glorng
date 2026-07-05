@@ -1,10 +1,10 @@
-# API tools on your self-hosted site
+# API & tools
 
-All JSON routes live under **`/api`**. Platform tools mount at **`/api/tools/<slug>`** ([`server/app/routers/tools/__init__.py`](../server/app/routers/tools/__init__.py)). The canonical catalog is in [`server/app/platform/registry.py`](../server/app/platform/registry.py) and exposed at **`GET /api/platform/services`** (no auth required).
+All JSON routes live under **`/api`**. Platform tools mount at **`/api/tools/<slug>`** ([`server/app/routers/tools/__init__.py`](../../server/app/routers/tools/__init__.py)). The canonical catalog is in [`server/app/platform/registry.py`](../../server/app/platform/registry.py) and exposed at **`GET /api/platform/services`** (no auth required).
 
-**Interactive docs:** Swagger UI at **`/api/docs`** only when `APP_ENV=development` ([`server/app/main.py`](../server/app/main.py)). In production, use the registry + this list or read [`server/app/openapi.py`](../server/app/openapi.py) tags locally.
+**Interactive docs:** Swagger UI at **`/api/docs`** only when `APP_ENV=development` ([`server/app/main.py`](../../server/app/main.py)). In production, use the registry + this list or read [`server/app/openapi.py`](../../server/app/openapi.py) tags locally. **Postman:** import OpenAPI from dev — [Postman guide](/reference/postman).
 
-**Auth model:** Admin tool routes require JWT (cookie or `Authorization: Bearer`) plus a capability like `expenses:read`. The bootstrap admin gets `platform:superuser` (all capabilities). New registered users start with **zero** tool permissions ([security.md](security.md)).
+**Auth model:** Admin tool routes require JWT (cookie or `Authorization: Bearer`) plus a capability like `expenses:read`. The bootstrap admin gets `platform:superuser` (all capabilities). New registered users start with **zero** tool permissions ([Security](/reference/security)).
 
 ```mermaid
 flowchart LR
@@ -29,15 +29,15 @@ flowchart LR
 
 ## Public tools (guests — no sign-in)
 
-These appear on **`/tools`** in the UI ([`client/src/pages/ToolsPage.vue`](../client/src/pages/ToolsPage.vue)) and are rate-limited (typically 30 req/min per IP).
+These appear on **`/tools`** in the UI ([`client/src/pages/ToolsPage.vue`](../../client/src/pages/ToolsPage.vue)) and are rate-limited (typically 30 req/min per IP).
 
 | Tool | UI route | Key API endpoints | Notes |
 |------|----------|-------------------|-------|
-| **Calculator** | `/calculator` | `POST /api/tools/calculator?a=&b=&op=` | Fully public; no capability gate ([`calculator.py`](../server/app/routers/tools/calculator.py)) |
+| **Calculator** | `/calculator` | `POST /api/tools/calculator?a=&b=&op=` | Fully public; no capability gate ([`calculator.py`](../../server/app/routers/tools/calculator.py)) |
 | **Recipes** | `/recipes` | `GET /api/tools/recipes`, `GET /api/tools/recipes/tags`, `GET /api/tools/recipes/{id}` | Read-only public; writes need `recipes:write` |
 | **URL shortener** | `/shortener` | `POST /api/tools/url-shortener` | Create is public (10/hour/IP); list/delete need `url-shortener:read/write`. Redirect: **`GET /s/{code}`** (not under `/api`) |
 | **Video download** | `/vid-download` | `POST /api/tools/vid-download` | Public with strict limits (5/hour/IP, concurrency caps); YouTube hosts only |
-| **Time / weather / location** | `/time-date-weather-location` | `GET /api/time-date-weather-location/config`, `/lookup/{city}`, `/time/{city}` | Lookup endpoints public; saved locations CRUD requires login ([`weather.py`](../server/app/routers/weather.py)) |
+| **Time / weather / location** | `/time-date-weather-location` | `GET /api/time-date-weather-location/config`, `/lookup/{city}`, `/time/{city}` | Lookup endpoints public; saved locations CRUD requires login ([`weather.py`](../../server/app/routers/weather.py)) |
 
 ### Other public APIs (not on `/tools` page but usable)
 
@@ -50,7 +50,7 @@ These appear on **`/tools`** in the UI ([`client/src/pages/ToolsPage.vue`](../cl
 | **Donations config** | `GET /api/donations/config` — Stripe, PayPal, Patreon links |
 | **Donations Checkout** | `POST /api/donations/checkout` — needs `STRIPE_SECRET_KEY` |
 | **GitHub public repos** | `GET /api/github/repos` — needs `GITHUB_PUBLIC_USERNAME` |
-| **Inbound webhooks** | `POST /api/webhooks/{slug}` — HMAC; see [integration-automation.md](integration-automation.md) |
+| **Inbound webhooks** | `POST /api/webhooks/{slug}` — HMAC; see [Integration automation](/reference/integration-automation) |
 | **Spotify widget** | `GET /api/spotify/now-playing` |
 | **Health** | `GET /api/health`, `GET /api/ready` |
 | **Service catalog** | `GET /api/platform/services` |
@@ -104,14 +104,14 @@ These reuse the same service layer but are not REST “site API tools”:
 curl -s https://your-domain/api/platform/services | jq '.services[].slug'
 ```
 
-Compare with [`.env.example`](../.env.example) for feature flags (`AI_SEARCH_ENABLED`, `AI_CHAT_ENABLED`, etc.).
+Compare with [Configuration](/reference/configuration) for feature flags (`AI_SEARCH_ENABLED`, `AI_CHAT_ENABLED`, etc.).
 
 ## Inbound webhooks and automation
 
-Signed webhooks (`POST /api/webhooks/{slug}`), Stripe Checkout, and script/n8n examples: [integration-automation.md](integration-automation.md).
+Signed webhooks (`POST /api/webhooks/{slug}`), Stripe Checkout, and script/n8n examples: [Integration automation](/reference/integration-automation).
 
 ## Related docs
 
-- [Integration automation](integration-automation.md) — JWT scripts, webhooks, n8n, Stripe
-- [Platform overview](platform.md) — channels, module-as-service pattern, observability
-- [Security](security.md) — auth, rate limits, public-tool risks, AI scope
+- [Integration automation](/reference/integration-automation) — JWT scripts, webhooks, n8n, Stripe
+- [Platform overview](/reference/platform) — channels, module-as-service pattern, observability
+- [Security](/reference/security) — auth, rate limits, public-tool risks, AI scope

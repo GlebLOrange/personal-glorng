@@ -24,6 +24,9 @@ client/.vite/
 client/playwright-report/
 client/test-results/
 dist/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+docs/.vitepress/.temp/
 *.tsbuildinfo
 
 # IDE
