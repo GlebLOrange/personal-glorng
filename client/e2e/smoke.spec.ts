@@ -38,8 +38,16 @@ test.describe("public pages", () => {
     await expect(page.getByRole("link", { name: /◷ weather/i })).toBeVisible();
   });
 
-  test("guest sees weather bar on portfolio", async ({ page }) => {
+  test("guest sees weather card in header on portfolio", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
+  });
+
+  test("guest sees weather card in mobile menu", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: /toggle navigation menu/i }).click();
     await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
   });
 
