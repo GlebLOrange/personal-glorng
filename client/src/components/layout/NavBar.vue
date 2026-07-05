@@ -1,13 +1,22 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { defineAsyncComponent, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
 import { useAuthStore } from "@/stores/auth";
 
+const WeatherBar = defineAsyncComponent(() => import("@/components/weather/WeatherBar.vue"));
+const showWeatherBar = ref(false);
+
 const auth = useAuthStore();
 const router = useRouter();
 const mobileOpen = ref(false);
+
+onMounted(() => {
+  window.setTimeout(() => {
+    showWeatherBar.value = true;
+  }, 250);
+});
 
 function handleLogout(): void {
   auth.logout();
@@ -29,33 +38,37 @@ function closeMobileMenu(): void {
       aria-label="Main navigation"
       class="sticky top-0 z-40 backdrop-blur-md bg-surface-dark/80 border-b border-surface-border"
     >
-      <div class="max-w-5xl mx-auto px-6 py-4 md:py-5 flex items-center justify-between">
+      <div class="max-w-5xl mx-auto px-6 py-4 md:py-5 flex items-start justify-between gap-4">
         <RouterLink to="/" class="text-xl font-bold text-surface-light" @click="closeMobileMenu">
           Gleb.Y
         </RouterLink>
 
-        <div class="hidden md:flex items-center gap-5 text-base">
-          <RouterLink to="/" class="nav-link px-2 py-1"> portfolio </RouterLink>
-          <RouterLink to="/news" class="nav-link px-2 py-1"> news </RouterLink>
+        <div class="hidden md:flex flex-col items-end gap-2 text-base shrink-0">
+          <div class="flex items-center gap-5">
+            <RouterLink to="/" class="nav-link px-2 py-1"> portfolio </RouterLink>
+            <RouterLink to="/news" class="nav-link px-2 py-1"> news </RouterLink>
 
-          <RouterLink v-if="auth.isAuthenticated" to="/admin" class="nav-link-accent px-2 py-1">
-            tools
-          </RouterLink>
-          <RouterLink v-else to="/tools" class="nav-link-accent px-2 py-1"> tools </RouterLink>
+            <RouterLink v-if="auth.isAuthenticated" to="/admin" class="nav-link-accent px-2 py-1">
+              tools
+            </RouterLink>
+            <RouterLink v-else to="/tools" class="nav-link-accent px-2 py-1"> tools </RouterLink>
 
-          <RouterLink v-if="auth.isAuthenticated" to="/settings" class="nav-link px-2 py-1">
-            settings
-          </RouterLink>
+            <RouterLink v-if="auth.isAuthenticated" to="/settings" class="nav-link px-2 py-1">
+              settings
+            </RouterLink>
 
-          <button
-            v-if="auth.isAuthenticated"
-            type="button"
-            class="nav-link-violet px-2 py-1"
-            @click="handleLogout"
-          >
-            logout
-          </button>
-          <RouterLink v-else to="/login" class="nav-link-accent px-2 py-1"> login </RouterLink>
+            <button
+              v-if="auth.isAuthenticated"
+              type="button"
+              class="nav-link-violet px-2 py-1"
+              @click="handleLogout"
+            >
+              logout
+            </button>
+            <RouterLink v-else to="/login" class="nav-link-accent px-2 py-1"> login </RouterLink>
+          </div>
+
+          <WeatherBar v-if="showWeatherBar" />
         </div>
 
         <button
@@ -83,6 +96,6 @@ function closeMobileMenu(): void {
       </div>
     </nav>
 
-    <NavMobileMenu :open="mobileOpen" @close="closeMobileMenu" />
+    <NavMobileMenu :open="mobileOpen" :show-weather-bar="showWeatherBar" @close="closeMobileMenu" />
   </div>
 </template>

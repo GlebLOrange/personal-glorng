@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 
 defineProps<{
   title: string;
@@ -16,7 +16,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <BaseCard hoverable>
+  <Card hoverable>
     <div class="flex justify-between items-start">
       <div class="flex-1 min-w-0">
         <div class="text-surface-light font-bold text-sm truncate">{{ title }}</div>
@@ -29,5 +29,5 @@ const emit = defineEmits<{
         <BaseButton variant="ghost" size="sm" @click="emit('delete')">Delete</BaseButton>
       </div>
     </div>
-  </BaseCard>
+  </Card>
 </template>

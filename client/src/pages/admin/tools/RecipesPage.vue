@@ -4,6 +4,7 @@ import { computed, onMounted } from "vue";
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import { Card } from "@/components/ui/card";
 import RecipeCard from "@/components/recipes/RecipeCard.vue";
 import RecipeCookMode from "@/components/recipes/RecipeCookMode.vue";
 import RecipeDetailDrawer from "@/components/recipes/RecipeDetailDrawer.vue";
@@ -102,20 +103,13 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
       @clear-filters="clearFilters"
     >
       <div v-if="listLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div
-          v-for="i in 6"
-          :key="i"
-          class="h-64 rounded-lg border border-surface-border bg-surface-card animate-pulse"
-        />
+        <Card v-for="i in 6" :key="i" class="h-64 animate-pulse" />
       </div>
 
-      <div
-        v-else-if="listError"
-        class="text-center py-12 border border-surface-border rounded-lg bg-surface-card"
-      >
+      <Card v-else-if="listError" class="py-12 text-center">
         <p class="text-surface-mid text-sm mb-4">{{ listError }}</p>
         <BaseButton variant="ghost" size="sm" @click="loadRecipes">Retry</BaseButton>
-      </div>
+      </Card>
 
       <div v-else-if="recipes.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <RecipeCard

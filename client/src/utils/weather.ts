@@ -191,3 +191,111 @@ export function formatLiveLocalDateTimeFromUnix(unixtime: number, offsetHours: n
   const hour12 = hours24 % 12 || 12;
   return `${weekday} ${month} ${day} ${hour12}:${pad2(minutes)} ${ampm}`;
 }
+
+/** Live local date only, e.g. "Sun, Jun 7". */
+export function formatLiveLocalDate(offsetHours: number): string {
+  const local = localDateFromOffset(offsetHours);
+  return `${WEEKDAYS[local.getUTCDay()]}, ${MONTHS[local.getUTCMonth()]} ${local.getUTCDate()}`;
+}
+
+export function formatLiveLocalDateFromUnix(unixtime: number, offsetHours: number): string {
+  const local = new Date(unixtime * 1000 + offsetHours * 3_600_000);
+  return `${WEEKDAYS[local.getUTCDay()]}, ${MONTHS[local.getUTCMonth()]} ${local.getUTCDate()}`;
+}
+
+/** ISO date from offset clock (for date-only time[datetime]). */
+export function isoDateFromOffset(offsetHours: number): string {
+  const local = localDateFromOffset(offsetHours);
+  return `${local.getUTCFullYear()}-${pad2(local.getUTCMonth() + 1)}-${pad2(local.getUTCDate())}`;
+}
+
+/** ISO date from unix anchor and offset. */
+export function isoDateFromUnix(unixtime: number, offsetHours: number): string {
+  const local = new Date(unixtime * 1000 + offsetHours * 3_600_000);
+  return `${local.getUTCFullYear()}-${pad2(local.getUTCMonth() + 1)}-${pad2(local.getUTCDate())}`;
+}
+
+// ponytail: coarse wttr code buckets; extend map if a code renders wrong often.
+const WEATHER_CODE_EMOJI: Record<number, string> = {
+  113: "☀️",
+  116: "⛅",
+  119: "☁️",
+  122: "☁️",
+  143: "🌫️",
+  176: "🌦️",
+  179: "🌨️",
+  182: "🌨️",
+  185: "🌨️",
+  200: "⛈️",
+  227: "🌨️",
+  230: "🌨️",
+  248: "🌫️",
+  260: "🌫️",
+  263: "🌧️",
+  266: "🌧️",
+  281: "🌧️",
+  284: "🌧️",
+  293: "🌧️",
+  296: "🌧️",
+  299: "🌧️",
+  302: "🌧️",
+  305: "🌧️",
+  308: "🌧️",
+  311: "🌧️",
+  314: "🌧️",
+  317: "🌨️",
+  320: "🌨️",
+  323: "🌨️",
+  326: "🌨️",
+  329: "🌨️",
+  332: "🌨️",
+  335: "🌨️",
+  338: "🌨️",
+  350: "🌨️",
+  353: "🌧️",
+  356: "🌧️",
+  359: "🌧️",
+  362: "🌨️",
+  365: "🌨️",
+  368: "🌨️",
+  371: "🌨️",
+  374: "🌧️",
+  377: "🌨️",
+  386: "⛈️",
+  389: "⛈️",
+  392: "⛈️",
+  395: "❄️",
+};
+
+/** Emoji for wttr.in weatherCode; falls back to condition text or generic icon. */
+export function weatherConditionEmoji(
+  code: string | undefined,
+  weatherDesc?: string,
+): string {
+  if (code) {
+    const parsed = Number.parseInt(code, 10);
+    if (Number.isFinite(parsed) && WEATHER_CODE_EMOJI[parsed]) {
+      return WEATHER_CODE_EMOJI[parsed];
+    }
+  }
+  const desc = weatherDesc?.toLowerCase() ?? "";
+  if (desc.includes("sun") || desc.includes("clear")) {
+    return "☀️";
+  }
+  if (desc.includes("cloud")) {
+    return "☁️";
+  }
+  if (desc.includes("rain") || desc.includes("drizzle")) {
+    return "🌧️";
+  }
+  if (desc.includes("snow")) {
+    return "🌨️";
+  }
+  if (desc.includes("thunder") || desc.includes("storm")) {
+    return "⛈️";
+  }
+  if (desc.includes("fog") || desc.includes("mist")) {
+    return "🌫️";
+  }
+  return "🌡️";
+}

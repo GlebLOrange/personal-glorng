@@ -4,6 +4,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import { Card } from "@/components/ui/card";
 import {
   NEWS_SUMMARY_MAX_LENGTH,
   NEWS_THEME_LIMIT,
@@ -387,33 +388,25 @@ watch(page, () => {
     </div>
 
     <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading news">
-      <div
-        v-for="i in 5"
-        :key="i"
-        class="h-36 rounded-lg border border-surface-border bg-surface-card animate-pulse"
-      />
+      <Card v-for="i in 5" :key="i" class="h-36 animate-pulse" />
     </section>
 
-    <section
-      v-else-if="listError"
-      class="rounded-lg border border-surface-border bg-surface-card p-8 text-center"
-    >
+    <Card v-else-if="listError" as="section" class="!p-8 text-center">
       <p class="text-sm text-surface-mid mb-4">{{ listError }}</p>
       <BaseButton variant="ghost" size="sm" @click="loadAdminNews">Retry</BaseButton>
-    </section>
+    </Card>
 
     <section v-else-if="articles.length" class="space-y-3">
-      <article
+      <Card
         v-for="item in articles"
         :key="item.id"
+        as="article"
+        variant="compact"
+        :hoverable="canWrite"
+        :interactive="canWrite"
         :role="canWrite ? 'button' : undefined"
         :tabindex="canWrite ? 0 : undefined"
-        :class="[
-          'rounded-lg border border-surface-border bg-surface-card p-5',
-          canWrite
-            ? 'cursor-pointer transition-colors hover:border-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50'
-            : '',
-        ]"
+        :class="canWrite ? 'cursor-pointer' : undefined"
         @click="openEditableArticle(item)"
         @keydown="onArticleKeydown($event, item)"
       >
@@ -484,19 +477,15 @@ watch(page, () => {
             Source
           </a>
         </div>
-      </article>
+      </Card>
     </section>
 
-    <section
-      v-else
-      role="status"
-      class="rounded-lg border border-surface-border bg-surface-card p-8"
-    >
+    <Card v-else as="section" role="status" class="!p-8">
       <h2 class="card-title mb-2">No articles</h2>
       <p class="text-sm text-surface-mid">
         No news articles match this filter. Run ingestion after configuring trusted sources.
       </p>
-    </section>
+    </Card>
 
     <nav
       v-if="!listLoading && !listError && (articles.length > 0 || page > 1)"

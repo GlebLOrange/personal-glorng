@@ -3,12 +3,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WeatherData } from "@/types";
 
 import {
+  formatLiveLocalDate,
+  formatLiveLocalDateFromUnix,
   formatLiveLocalDateTime,
   formatLiveLocalTimeWithSecondsFromUnix,
   isoDateTimeFromOffset,
   isValidWeatherLocationQuery,
   localTimeFromOffset,
   weatherAnchorUnixtime,
+  weatherConditionEmoji,
   weatherUtcOffsetHours,
 } from "@/utils/weather";
 import { sanitizeGuestWeatherLocations } from "@/utils/guestWeatherLocations";
@@ -40,6 +43,26 @@ describe("weather time formatting", () => {
 
   it("formatLiveLocalTimeWithSecondsFromUnix formats anchored wall clock", () => {
     expect(formatLiveLocalTimeWithSecondsFromUnix(1_780_833_600, 2)).toBe("14:00:00");
+  });
+
+  it("formatLiveLocalDate matches offset wall clock", () => {
+    expect(formatLiveLocalDate(3)).toBe("Sat, Jun 7");
+  });
+
+  it("formatLiveLocalDateFromUnix formats anchored wall date", () => {
+    expect(formatLiveLocalDateFromUnix(1_780_833_600, 2)).toBe("Sun, Jun 7");
+  });
+});
+
+describe("weatherConditionEmoji", () => {
+  it("maps known wttr codes", () => {
+    expect(weatherConditionEmoji("113")).toBe("☀️");
+    expect(weatherConditionEmoji("296")).toBe("🌧️");
+  });
+
+  it("falls back to description or generic icon", () => {
+    expect(weatherConditionEmoji(undefined, "Partly cloudy")).toBe("☁️");
+    expect(weatherConditionEmoji("99999")).toBe("🌡️");
   });
 });
 

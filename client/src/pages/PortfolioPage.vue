@@ -8,7 +8,7 @@ import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
 import ExperienceList from "@/components/resume/ExperienceList.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
-import NowPlayingCard from "@/components/resume/NowPlayingCard.vue";
+import NowPlayingEmbed from "@/components/resume/NowPlayingEmbed.vue";
 import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
 import ProjectsGrid from "@/components/resume/ProjectsGrid.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
@@ -72,7 +72,7 @@ onMounted(loadResume);
         :contact-links="contactLinks"
       >
         <template #after-actions>
-          <NowPlayingCard
+          <NowPlayingEmbed
             :playback="isVisible ? playback : null"
             :fallback-src="SPOTIFY_FALLBACK_EMBED_SRC"
             :height="80"

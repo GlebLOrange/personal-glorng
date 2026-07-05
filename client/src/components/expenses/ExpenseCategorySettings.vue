@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import {
   crossRate,
   EXPENSE_CURRENCIES,
@@ -35,15 +35,15 @@ const selectClass =
 
 <template>
   <div class="flex flex-col gap-6">
-    <BaseCard>
+    <Card>
       <p class="text-xs text-surface-mid uppercase tracking-wider mb-3">Display</p>
       <label class="text-sm text-surface-mid block mb-1">Show totals in</label>
       <select v-model="displayCurrency" :class="selectClass">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </select>
-    </BaseCard>
+    </Card>
 
-    <BaseCard v-if="exchangeRates">
+    <Card v-if="exchangeRates">
       <p class="text-xs text-surface-mid uppercase tracking-wider mb-3">Exchange rates</p>
       <div class="flex flex-wrap gap-3 text-xs text-surface-mid">
         <span class="text-surface-light">1 {{ EXPENSE_DEFAULT_CURRENCY }} =</span>
@@ -51,9 +51,9 @@ const selectClass =
           {{ crossRate(exchangeRates.rates, EXPENSE_DEFAULT_CURRENCY, c).toFixed(4) }} {{ c }}
         </span>
       </div>
-    </BaseCard>
+    </Card>
 
-    <BaseCard>
+    <Card>
       <p class="text-xs text-surface-mid uppercase tracking-wider mb-3">Categories</p>
 
       <ul class="divide-y divide-surface-border rounded-lg border border-surface-border mb-3">
@@ -112,6 +112,6 @@ const selectClass =
         Renaming updates all expenses in that category. Optional monthly budget uses display
         currency. Delete only works when unused.
       </p>
-    </BaseCard>
+    </Card>
   </div>
 </template>

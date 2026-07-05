@@ -4,7 +4,7 @@ import { ref } from "vue";
 import AdminBreadcrumbs from "@/components/layout/AdminBreadcrumbs.vue";
 import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 
@@ -107,7 +107,7 @@ function buttonAriaLabel(val: string): string | undefined {
       <h1 class="text-3xl font-bold accent-gradient">calculator</h1>
       <BackLink to="/tools" />
     </div>
-    <BaseCard>
+    <Card>
       <div
         class="bg-surface-dark rounded-lg p-4 mb-4 text-right"
         role="status"
@@ -147,6 +147,6 @@ function buttonAriaLabel(val: string): string | undefined {
           {{ btn }}
         </BaseButton>
       </div>
-    </BaseCard>
+    </Card>
   </div>
 </template>

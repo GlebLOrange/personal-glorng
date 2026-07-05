@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/format";
 import type { SyncQueueItem } from "@/types";
@@ -18,10 +18,10 @@ const skeletonRows = 3;
 
 <template>
   <div v-if="loading" class="space-y-3">
-    <BaseCard v-for="n in skeletonRows" :key="n" class="animate-pulse">
+    <Card v-for="n in skeletonRows" :key="n" class="animate-pulse">
       <div class="h-4 w-28 bg-surface-border rounded mb-2" />
       <div class="h-3 w-full bg-surface-border rounded" />
-    </BaseCard>
+    </Card>
   </div>
 
   <div v-else-if="items.length === 0" class="text-surface-mid text-sm text-center py-8">
@@ -29,7 +29,7 @@ const skeletonRows = 3;
   </div>
 
   <div v-else class="space-y-3">
-    <BaseCard v-for="item in items" :key="item.id">
+    <Card v-for="item in items" :key="item.id">
       <div class="flex justify-between items-start gap-3">
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1 flex-wrap">
@@ -63,6 +63,6 @@ const skeletonRows = 3;
           Retry
         </BaseButton>
       </div>
-    </BaseCard>
+    </Card>
   </div>
 </template>

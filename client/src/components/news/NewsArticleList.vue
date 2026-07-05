@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from "@/components/ui/card";
 import type { NewsArticle } from "@/types";
 import { formatDate } from "@/utils/format";
 import { safeNavigationHref } from "@/utils/safeUrl";
@@ -10,10 +11,12 @@ defineProps<{
 
 <template>
   <div class="space-y-4">
-    <article
+    <Card
       v-for="article in articles"
       :key="article.id"
-      class="rounded-lg border border-surface-border bg-surface-card p-5 transition-colors hover:border-accent-blue"
+      as="article"
+      variant="compact"
+      hoverable
     >
       <div class="mb-2 flex flex-wrap items-center gap-2 text-xs text-surface-mid">
         <span class="font-bold text-accent-golden">{{ article.source_name }}</span>
@@ -38,6 +41,6 @@ defineProps<{
       <p class="mt-3 text-xs text-surface-muted">
         Created {{ formatDate(article.created_at) }} · Updated {{ formatDate(article.updated_at) }}
       </p>
-    </article>
+    </Card>
   </div>
 </template>

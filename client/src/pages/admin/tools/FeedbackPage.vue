@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { formatDate } from "@/utils/format";
@@ -91,7 +91,7 @@ onMounted(load);
     </div>
 
     <div class="space-y-3">
-      <BaseCard
+      <Card
         v-for="item in filtered"
         :key="item.id"
         hoverable
@@ -124,7 +124,7 @@ onMounted(load);
           <p class="text-sm text-surface-sage whitespace-pre-wrap mb-3">{{ item.message }}</p>
           <BaseButton variant="ghost" size="sm" @click.stop="reply(item)"> Reply </BaseButton>
         </div>
-      </BaseCard>
+      </Card>
 
       <p v-if="filtered.length === 0" class="text-surface-mid text-sm text-center py-8">
         No feedback messages{{ filter !== "all" ? ` with status "${filter}"` : "" }}.

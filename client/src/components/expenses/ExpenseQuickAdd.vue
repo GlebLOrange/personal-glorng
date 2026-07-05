@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { FIELD_INPUT_CLASS, SELECT_CLASS_COMPACT } from "@/constants/formClasses";
 import type { ExpenseParseResult } from "@/types";
@@ -51,7 +51,7 @@ defineExpose({ focusEntry });
 </script>
 
 <template>
-  <BaseCard>
+  <Card>
     <div class="flex items-center justify-between gap-3 mb-3">
       <div>
         <p class="text-xs text-surface-mid uppercase tracking-wider">Quick add</p>
@@ -120,5 +120,5 @@ defineExpose({ focusEntry });
         </p>
       </div>
     </form>
-  </BaseCard>
+  </Card>
 </template>

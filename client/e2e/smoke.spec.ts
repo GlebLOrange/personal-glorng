@@ -35,12 +35,20 @@ test.describe("public pages", () => {
     await expect(page.getByRole("link", { name: /recipes/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /url shortener/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /video download/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /◷ date & time & location/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /◷ weather/i })).toBeVisible();
   });
 
-  test("guest sees clocks bar on portfolio", async ({ page }) => {
+  test("guest sees weather card in header on portfolio", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("complementary", { name: /date & time & location/i })).toBeVisible();
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
+  });
+
+  test("guest sees weather card in mobile menu", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: /toggle navigation menu/i }).click();
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
   });
 
   test("guest can use public calculator", async ({ page }) => {
@@ -93,13 +101,14 @@ test.describe("public pages", () => {
     await expect(page).toHaveURL(/\/vid-download$/);
   });
 
-  test("guest can add a city on date-time page", async ({ page }) => {
-    await page.goto("/time-date-weather-location");
+  test("guest can add a city on weather page", async ({ page }) => {
+    await page.goto("/weather");
+    await expect(page.getByRole("heading", { name: "weather", level: 1 })).toBeVisible();
     await expect(page.getByText(/\d+\/8 cities saved in your browser/i)).toBeVisible();
     await page.getByPlaceholder(/search city/i).fill("London");
     await page.getByRole("button", { name: /^add$/i }).click();
     await expect(page.getByText(/location added/i)).toBeVisible();
-    await expect(page.getByRole("heading", { name: "London" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "London", level: 3 })).toBeVisible();
   });
 });
 

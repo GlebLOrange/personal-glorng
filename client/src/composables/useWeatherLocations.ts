@@ -1,6 +1,7 @@
 import { computed, ref, watch, type ComputedRef, type Ref } from "vue";
 
 import { api } from "@/composables/useApi";
+import { useApiAction } from "@/composables/useApiAction";
 import { useLocalStorage } from "@/composables/useLocalStorage";
 import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import {
@@ -9,8 +10,8 @@ import {
   MAX_WEATHER_LOCATION_LABEL_LENGTH,
   MAX_WEATHER_LOCATION_QUERY_LENGTH,
   SAVED_LOCATIONS_STORAGE_KEY,
-  TIME_DATE_WEATHER_LOCATION_API_PREFIX,
-} from "@/constants/timeDateWeatherLocation";
+  WEATHER_API_PREFIX,
+} from "@/constants/weather";
 import { useAuthStore } from "@/stores/auth";
 import type { WeatherLocation } from "@/types";
 import {
@@ -76,6 +77,8 @@ export function useWeatherLocations(): {
   const auth = useAuthStore();
   const { fetchConfig, isDefaultQuery } = useWeatherConfig();
   const guestLocations = useLocalStorage<GuestWeatherLocation[]>(SAVED_LOCATIONS_STORAGE_KEY, []);
+  const { run: runList } = useApiAction({ silent: true, logContext: "weather-locations" });
+  const { run: runMutate } = useApiAction({ silent: true, logContext: "weather-locations" });
 
   if (typeof localStorage !== "undefined") {
     const sanitized = readGuestLocations(SAVED_LOCATIONS_STORAGE_KEY);
@@ -127,14 +130,17 @@ export function useWeatherLocations(): {
       const { label, query } = await fetchConfig();
 
       if (isAuthenticated.value) {
-        const { data } = await api.post<WeatherLocation>(
-          `${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/locations`,
-          {
-            label,
-            query,
-          },
+        const result = await runMutate(
+          () =>
+            api.post<WeatherLocation>(`${WEATHER_API_PREFIX}/locations`, {
+              label,
+              query,
+            }),
+          { errorFallback: "Couldn't initialize default city" },
         );
-        serverLocations.value = [data];
+        if (result) {
+          serverLocations.value = [result.data];
+        }
       } else {
         persistGuestLocations([
           {
@@ -161,17 +167,17 @@ export function useWeatherLocations(): {
     }
     loading.value = true;
     error.value = null;
-    try {
-      const { data } = await api.get<WeatherLocation[]>(
-        `${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/locations`,
-      );
-      serverLocations.value = data;
-      await ensureDefaultLocation();
-    } catch {
+    const result = await runList(
+      () => api.get<WeatherLocation[]>(`${WEATHER_API_PREFIX}/locations`),
+      { errorFallback: "Couldn't load saved locations" },
+    );
+    if (result) {
+      serverLocations.value = result.data;
+    } else {
       error.value = "Couldn't load saved locations";
-    } finally {
-      loading.value = false;
     }
+    await ensureDefaultLocation();
+    loading.value = false;
   }
 
   async function addLocation(label: string, query: string): Promise<void> {
@@ -185,14 +191,18 @@ export function useWeatherLocations(): {
     }
 
     if (isAuthenticated.value) {
-      const { data } = await api.post<WeatherLocation>(
-        `${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/locations`,
-        {
-          label: trimmedLabel,
-          query: trimmedQuery,
-        },
+      const result = await runMutate(
+        () =>
+          api.post<WeatherLocation>(`${WEATHER_API_PREFIX}/locations`, {
+            label: trimmedLabel,
+            query: trimmedQuery,
+          }),
+        { silent: true },
       );
-      serverLocations.value = [...serverLocations.value, data];
+      if (!result) {
+        throw new Error("Failed to add location");
+      }
+      serverLocations.value = [...serverLocations.value, result.data];
       return;
     }
 
@@ -223,7 +233,13 @@ export function useWeatherLocations(): {
       if (target && isDefaultLocation(target)) {
         throw new Error("Default location cannot be removed");
       }
-      await api.delete(`${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/locations/${id}`);
+      const result = await runMutate(
+        () => api.delete(`${WEATHER_API_PREFIX}/locations/${id}`),
+        { silent: true },
+      );
+      if (result === undefined) {
+        throw new Error("Failed to remove location");
+      }
       serverLocations.value = serverLocations.value.filter((loc) => loc.id !== id);
       return;
     }
@@ -302,7 +318,7 @@ export async function syncGuestWeatherLocations(): Promise<void> {
 
   for (const loc of stored) {
     try {
-      await api.post(`${TIME_DATE_WEATHER_LOCATION_API_PREFIX}/locations`, {
+      await api.post(`${WEATHER_API_PREFIX}/locations`, {
         label: loc.label,
         query: loc.query,
       });

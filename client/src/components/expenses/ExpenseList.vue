@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
+import { Card } from "@/components/ui/card";
 import type { ExchangeRates, Expense } from "@/types";
 import { expenseSourceLabel } from "@/utils/expenseSource";
 
@@ -34,25 +35,17 @@ const skeletonRows = 5;
 <template>
   <!-- Loading skeleton -->
   <div v-if="loading" class="flex flex-col gap-2">
-    <div
-      v-for="n in skeletonRows"
-      :key="n"
-      class="rounded-lg border border-surface-border bg-surface-card/70 p-4 animate-pulse"
-    >
+    <Card v-for="n in skeletonRows" :key="n" variant="compact" class="animate-pulse">
       <div class="h-3 w-24 bg-surface-border rounded mb-2" />
       <div class="h-4 w-40 bg-surface-border rounded mb-3" />
       <div class="h-3 w-20 bg-surface-border rounded" />
-    </div>
+    </Card>
   </div>
 
   <template v-else>
     <!-- Mobile cards -->
     <div class="flex flex-col gap-3 md:hidden">
-      <div
-        v-for="expense in expenses"
-        :key="expense.id"
-        class="rounded-lg border border-surface-border bg-surface-card/70 p-4"
-      >
+      <Card v-for="expense in expenses" :key="expense.id" variant="compact">
         <div class="flex justify-between items-start gap-3">
           <div class="min-w-0">
             <p class="text-surface-light text-sm font-semibold truncate">{{ expense.tool_name }}</p>
@@ -94,7 +87,7 @@ const skeletonRows = 5;
             Delete
           </BaseButton>
         </div>
-      </div>
+      </Card>
     </div>
 
     <!-- Desktop table -->
@@ -183,9 +176,10 @@ const skeletonRows = 5;
       </table>
     </div>
 
-    <div
+    <Card
       v-if="expenses.length === 0"
-      class="rounded-lg border border-dashed border-surface-border bg-surface-card/40 py-10 px-4 text-center"
+      variant="compact"
+      class="border-dashed bg-surface-card/40 py-10 text-center"
     >
       <p class="text-surface-light text-sm font-semibold">
         No expenses in {{ monthLabel || "this period" }}
@@ -193,6 +187,6 @@ const skeletonRows = 5;
       <p class="text-surface-mid text-xs mt-2">
         Add one above, import from smart text, or log from Telegram: /spend 20 coffee
       </p>
-    </div>
+    </Card>
   </template>
 </template>

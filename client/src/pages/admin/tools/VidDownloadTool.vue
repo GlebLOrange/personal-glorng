@@ -3,7 +3,7 @@ import { ref } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
@@ -97,7 +97,7 @@ async function download(): Promise<void> {
       {{ guideOpen ? "▾ Hide" : "▸ Show" }} yt-dlp usage guide
     </button>
 
-    <BaseCard v-if="guideOpen">
+    <Card v-if="guideOpen">
       <div class="text-surface-light text-sm space-y-4">
         <div>
           <h3 class="text-accent-blue font-bold mb-2">Format selection</h3>
@@ -153,6 +153,6 @@ async function download(): Promise<void> {
           Full yt-dlp documentation &rarr;
         </a>
       </div>
-    </BaseCard>
+    </Card>
   </AdminPageLayout>
 </template>

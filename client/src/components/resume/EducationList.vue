@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import type { Education } from "@/types";
 
 defineProps<{
@@ -9,7 +9,7 @@ defineProps<{
 
 <template>
   <div class="space-y-4">
-    <BaseCard v-for="(entry, i) in education" :key="i" hoverable>
+    <Card v-for="(entry, i) in education" :key="i" hoverable>
       <div class="flex justify-between items-start mb-2 gap-4">
         <div>
           <h3 class="card-title">{{ entry.degree }}</h3>
@@ -18,6 +18,6 @@ defineProps<{
         <span class="text-meta shrink-0">{{ entry.period }}</span>
       </div>
       <p v-if="entry.description" class="text-body">{{ entry.description }}</p>
-    </BaseCard>
+    </Card>
   </div>
 </template>

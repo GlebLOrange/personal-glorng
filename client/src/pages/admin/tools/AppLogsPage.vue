@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -105,7 +105,7 @@ onMounted(load);
       Structured application logs persisted from the API server
     </p>
 
-    <BaseCard class="mb-6">
+    <Card class="mb-6">
       <div class="flex flex-wrap gap-3 items-end">
         <label class="text-xs text-surface-mid">
           Level
@@ -140,7 +140,7 @@ onMounted(load);
         </label>
         <BaseButton size="sm" @click="applyFilters">Filter</BaseButton>
       </div>
-    </BaseCard>
+    </Card>
 
     <p v-if="loading" class="text-surface-mid text-sm animate-pulse">Loading...</p>
 
@@ -170,7 +170,7 @@ onMounted(load);
           </BaseButton>
         </div>
       </div>
-      <BaseCard v-for="entry in items" :key="entry.id" class="text-sm">
+      <Card v-for="entry in items" :key="entry.id" class="text-sm">
         <div class="flex flex-wrap items-center gap-2 mb-2">
           <span class="text-xs px-2 py-0.5 rounded" :class="levelClass(entry.level)">
             {{ entry.level }}
@@ -203,7 +203,7 @@ onMounted(load);
             >{{ entry.traceback }}</pre
           >
         </div>
-      </BaseCard>
+      </Card>
     </div>
   </AdminPageLayout>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import type { SkillGroup } from "@/types";
 
 defineProps<{
@@ -9,7 +9,7 @@ defineProps<{
 
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <BaseCard v-for="group in skills" :key="group.category" hoverable>
+    <Card v-for="group in skills" :key="group.category" hoverable>
       <h3 class="card-title text-accent-blue mb-3">
         {{ group.category }}
       </h3>
@@ -22,6 +22,6 @@ defineProps<{
           {{ item }}
         </span>
       </div>
-    </BaseCard>
+    </Card>
   </div>
 </template>

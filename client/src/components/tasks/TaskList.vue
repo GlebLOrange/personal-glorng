@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from "@/components/ui/card";
 import TaskCard from "@/components/tasks/TaskCard.vue";
 import type { TaskItem } from "@/types";
 
@@ -21,15 +22,11 @@ const emptyMessage = (filterStatus: string): string => {
 
 <template>
   <div v-if="loading" class="flex flex-col gap-3">
-    <div
-      v-for="n in skeletonRows"
-      :key="n"
-      class="rounded-lg border border-surface-border bg-surface-card p-4 animate-pulse"
-    >
+    <Card v-for="n in skeletonRows" :key="n" variant="compact" class="animate-pulse">
       <div class="h-3 w-24 bg-surface-border rounded mb-2" />
       <div class="h-4 w-48 bg-surface-border rounded mb-3" />
       <div class="h-3 w-32 bg-surface-border rounded" />
-    </div>
+    </Card>
   </div>
 
   <div v-else-if="tasks.length === 0" class="text-surface-mid text-sm text-center py-8">

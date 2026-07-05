@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import {
   crossRate,
@@ -84,7 +84,7 @@ const selectClass =
 </script>
 
 <template>
-  <BaseCard class="space-y-4">
+  <Card class="space-y-4">
     <p class="text-xs text-surface-mid">Convert between EUR, USD, PLN, and BYN using live rates.</p>
 
     <BaseInput
@@ -158,5 +158,5 @@ const selectClass =
         {{ formatRate(EXPENSE_DEFAULT_CURRENCY, c) }} {{ c }}
       </span>
     </div>
-  </BaseCard>
+  </Card>
 </template>

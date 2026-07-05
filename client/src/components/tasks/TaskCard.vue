@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Card } from "@/components/ui/card";
 import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/format";
 import type { TaskItem } from "@/types";
@@ -11,9 +12,13 @@ const emit = defineEmits<{ select: [id: number] }>();
 </script>
 
 <template>
-  <button
+  <Card
+    as="button"
     type="button"
-    class="w-full text-left rounded-lg border border-surface-border bg-surface-card p-4 hover:border-accent-blue/40 transition-colors"
+    variant="compact"
+    hoverable
+    interactive
+    class="w-full text-left"
     @click="emit('select', task.id)"
   >
     <div class="flex justify-between items-start gap-3">
@@ -40,5 +45,5 @@ const emit = defineEmits<{ select: [id: number] }>();
         GCal
       </div>
     </div>
-  </button>
+  </Card>
 </template>

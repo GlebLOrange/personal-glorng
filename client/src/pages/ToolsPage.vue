@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import { groupServicesByCategory, publicToolsAsServices } from "@/platform/services";
 
 const sections = computed(() => groupServicesByCategory(publicToolsAsServices()));
@@ -18,11 +18,11 @@ const sections = computed(() => groupServicesByCategory(publicToolsAsServices())
       <h2 class="text-lg font-bold text-surface-light mb-4">{{ section.label }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <RouterLink v-for="tool in section.services" :key="tool.adminRoute" :to="tool.adminRoute">
-          <BaseCard hoverable class="h-full">
+          <Card hoverable class="h-full">
             <div class="text-2xl mb-3">{{ tool.icon }}</div>
             <h3 class="text-surface-light font-bold mb-1">{{ tool.name }}</h3>
             <p class="text-xs text-surface-mid">{{ tool.description }}</p>
-          </BaseCard>
+          </Card>
         </RouterLink>
       </div>
     </section>

@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import AdminBreadcrumbs from "@/components/layout/AdminBreadcrumbs.vue";
+import { computed } from "vue";
+
 import BackLink from "@/components/ui/BackLink.vue";
+import { Card } from "@/components/ui/card";
 import WeatherLocationCard from "@/components/weather/WeatherLocationCard.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
-import WeatherWidget from "@/components/weather/WeatherWidget.vue";
-import { DATE_TIME_LOCATION_SECTION } from "@/constants/timeDateWeatherLocation";
+import WeatherSummaryContent from "@/components/weather/WeatherSummaryContent.vue";
+import { WEATHER_TOOL_NAME } from "@/constants/weather";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
 
@@ -19,6 +21,12 @@ const {
   guestLimitMessage,
 } = useWeatherLocations();
 const { toast } = useNotify();
+
+const defaultLocation = computed(() => locations.value.find((loc) => isDefaultLocation(loc)));
+
+const trackerLocations = computed(() =>
+  locations.value.filter((loc) => !isDefaultLocation(loc)),
+);
 
 async function handleAdd(label: string, query: string): Promise<void> {
   try {
@@ -43,45 +51,58 @@ async function handleRemove(id: number | string): Promise<void> {
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 font-mono">
-    <div class="mb-8">
-      <AdminBreadcrumbs :current-label="DATE_TIME_LOCATION_SECTION" />
-      <div class="mb-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 class="text-3xl font-bold accent-gradient">{{ DATE_TIME_LOCATION_SECTION }}</h1>
+  <main class="max-w-5xl mx-auto px-6 py-12 font-mono">
+    <header class="mb-10">
+      <div class="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <h1 class="text-3xl font-bold accent-gradient">{{ WEATHER_TOOL_NAME }}</h1>
         <BackLink to="/tools" />
       </div>
-      <p class="text-sm text-surface-mid mb-4">Local time and conditions for your cities.</p>
-      <WeatherWidget compact show-time />
-    </div>
-
-    <WeatherLocationForm
-      :add-location="handleAdd"
-      :disabled="!canAddLocation"
-      :helper-text="guestLimitMessage"
-      class="mb-8"
-    />
+      <p class="text-sm text-surface-mid">Local time and conditions for your cities.</p>
+    </header>
 
     <section class="mb-10">
-      <h2 class="text-lg font-bold text-surface-light mb-4">cities</h2>
+      <h2 class="text-lg font-bold text-surface-light mb-4">current</h2>
+      <Card
+        v-if="loading || seeding"
+        class="text-sm text-surface-mid animate-pulse font-mono"
+      >
+        Loading...
+      </Card>
+      <Card v-else class="font-mono">
+        <WeatherSummaryContent :query="defaultLocation?.query ?? ''" />
+      </Card>
+    </section>
+
+    <section class="mb-10">
+      <h2 class="text-lg font-bold text-surface-light mb-4">add city</h2>
+      <WeatherLocationForm
+        :add-location="handleAdd"
+        :disabled="!canAddLocation"
+        :helper-text="guestLimitMessage"
+      />
+    </section>
+
+    <section v-if="trackerLocations.length > 0 || (!loading && !seeding && locations.length > 0)">
+      <h2 class="text-lg font-bold text-surface-light mb-4">trackers</h2>
 
       <div v-if="loading || seeding" class="text-sm text-surface-mid animate-pulse mb-4">
         Loading cities...
       </div>
 
-      <div v-else-if="locations.length === 0" class="text-sm text-surface-mid mb-4">
-        No cities yet. Add one to track its local time and weather.
+      <div v-else-if="trackerLocations.length === 0" class="text-sm text-surface-mid mb-4">
+        No extra cities yet. Search above to track more locations.
       </div>
 
-      <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <WeatherLocationCard
-          v-for="loc in locations"
+          v-for="loc in trackerLocations"
           :key="loc.id"
           :label="loc.label"
           :query="loc.query"
-          :removable="!isDefaultLocation(loc)"
+          removable
           @remove="handleRemove(loc.id)"
         />
       </div>
     </section>
-  </div>
+  </main>
 </template>

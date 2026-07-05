@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -95,7 +95,7 @@ onMounted(load);
   <AdminPageLayout title="audit log">
     <p class="text-surface-muted text-xs mb-6 -mt-4">Persistent security and domain change trail</p>
 
-    <BaseCard class="mb-6">
+    <Card class="mb-6">
       <div class="flex flex-wrap gap-3 items-end">
         <label class="text-xs text-surface-mid">
           Category
@@ -119,7 +119,7 @@ onMounted(load);
         </label>
         <BaseButton size="sm" @click="applyFilters">Filter</BaseButton>
       </div>
-    </BaseCard>
+    </Card>
 
     <p v-if="loading" class="text-surface-mid text-sm animate-pulse">Loading...</p>
 
@@ -151,7 +151,7 @@ onMounted(load);
           </BaseButton>
         </div>
       </div>
-      <BaseCard v-for="event in items" :key="event.id" class="text-sm">
+      <Card v-for="event in items" :key="event.id" class="text-sm">
         <div class="flex flex-wrap items-center gap-2 mb-2">
           <span class="text-xs px-2 py-0.5 rounded" :class="categoryClass(event.category)">
             {{ event.category }}
@@ -186,7 +186,7 @@ onMounted(load);
             >{{ JSON.stringify(event.metadata, null, 2) }}</pre
           >
         </div>
-      </BaseCard>
+      </Card>
     </div>
   </AdminPageLayout>
 </template>

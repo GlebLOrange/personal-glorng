@@ -4,7 +4,7 @@ import { useRoute } from "vue-router";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { SELECT_CLASS } from "@/constants/formClasses";
@@ -245,23 +245,23 @@ watch(articleId, () => {
       </BaseButton>
     </div>
 
-    <BaseCard v-if="!Number.isInteger(articleId) || articleId <= 0" role="alert">
+    <Card v-if="!Number.isInteger(articleId) || articleId <= 0" role="alert">
       <p class="text-sm text-accent-golden">Invalid news article id.</p>
-    </BaseCard>
+    </Card>
 
-    <div
+    <Card
       v-else-if="detailLoading"
-      class="h-96 rounded-lg border border-surface-border bg-surface-card animate-pulse"
+      class="h-96 animate-pulse"
       aria-busy="true"
       aria-label="Loading news article"
     />
 
-    <BaseCard v-else-if="detailError" role="alert">
+    <Card v-else-if="detailError" role="alert">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-accent-golden">{{ detailError }}</p>
         <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">Retry</BaseButton>
       </div>
-    </BaseCard>
+    </Card>
 
     <form
       v-else-if="article"
@@ -269,7 +269,7 @@ watch(articleId, () => {
       @submit.prevent="saveArticle"
     >
       <div class="space-y-6">
-        <BaseCard>
+        <Card>
           <h2 class="card-title mb-4">Article</h2>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <BaseInput v-model="form.slug" label="Slug" :disabled="!canWrite" />
@@ -321,9 +321,9 @@ watch(articleId, () => {
           <div class="mt-4">
             <BaseTextarea v-model="form.summary" label="Summary" :rows="4" :disabled="!canWrite" />
           </div>
-        </BaseCard>
+        </Card>
 
-        <BaseCard>
+        <Card>
           <h2 class="card-title mb-4">Source</h2>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <label class="flex flex-col gap-1 text-sm text-surface-mid">
@@ -360,11 +360,11 @@ watch(articleId, () => {
               :disabled="!canWrite"
             />
           </div>
-        </BaseCard>
+        </Card>
       </div>
 
       <aside class="space-y-6">
-        <BaseCard>
+        <Card>
           <h2 class="card-title mb-4">System fields</h2>
           <dl class="space-y-3 text-sm">
             <div>
@@ -390,9 +390,9 @@ watch(articleId, () => {
               </dd>
             </div>
           </dl>
-        </BaseCard>
+        </Card>
 
-        <BaseCard>
+        <Card>
           <h2 class="card-title mb-4">Current preview</h2>
           <p class="mb-2 text-xs text-surface-muted">
             {{ form.status }} / {{ form.source_name || "unknown source" }}
@@ -410,13 +410,13 @@ watch(articleId, () => {
               {{ theme }}
             </span>
           </div>
-        </BaseCard>
+        </Card>
 
-        <BaseCard v-if="!canWrite">
+        <Card v-if="!canWrite">
           <p class="text-sm text-surface-mid">
             You have `news:read`, so this page is read-only. Saving requires `news:write`.
           </p>
-        </BaseCard>
+        </Card>
       </aside>
     </form>
   </AdminPageLayout>
