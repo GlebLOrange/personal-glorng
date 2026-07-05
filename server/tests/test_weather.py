@@ -42,7 +42,7 @@ def _mock_weather_client(payload: dict | None = None) -> MagicMock:
 
 @pytest.mark.asyncio
 async def test_weather_lookup_invalid_city(client: AsyncClient) -> None:
-    resp = await client.get("/api/time-date-weather-location/lookup/Paris123")
+    resp = await client.get("/api/weather/lookup/Paris123")
     assert resp.status_code == 422
     assert "invalid" in resp.json()["detail"].lower()
 
@@ -53,7 +53,7 @@ async def test_weather_lookup_public(client: AsyncClient) -> None:
         "app.services.weather.httpx.AsyncClient",
         return_value=_mock_weather_client({"current_condition": [{"temp_C": "20"}]}),
     ):
-        resp = await client.get("/api/time-date-weather-location/lookup/London")
+        resp = await client.get("/api/weather/lookup/London")
 
     assert resp.status_code == 200
     assert resp.json()["current_condition"][0]["temp_C"] == "20"
@@ -66,7 +66,7 @@ async def test_weather_lookup_coords(client: AsyncClient) -> None:
         return_value=_mock_weather_client(),
     ) as mock_cls:
         resp = await client.get(
-            "/api/time-date-weather-location/lookup/51.1000,17.0333"
+            "/api/weather/lookup/51.1000,17.0333"
         )
 
     assert resp.status_code == 200
@@ -77,23 +77,23 @@ async def test_weather_lookup_coords(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_weather_locations_unauthorized(client: AsyncClient) -> None:
-    resp = await client.get("/api/time-date-weather-location/locations")
+    resp = await client.get("/api/weather/locations")
     assert resp.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_weather_location_mutations_unauthorized(client: AsyncClient) -> None:
     create_resp = await client.post(
-        "/api/time-date-weather-location/locations",
+        "/api/weather/locations",
         json={"label": "London", "query": "London"},
     )
     assert create_resp.status_code == 401
 
-    delete_resp = await client.delete("/api/time-date-weather-location/locations/1")
+    delete_resp = await client.delete("/api/weather/locations/1")
     assert delete_resp.status_code == 401
 
     reorder_resp = await client.put(
-        "/api/time-date-weather-location/locations/reorder",
+        "/api/weather/locations/reorder",
         json={"ordered_ids": [1]},
     )
     assert reorder_resp.status_code == 401
@@ -101,11 +101,15 @@ async def test_weather_location_mutations_unauthorized(client: AsyncClient) -> N
 
 @pytest.mark.asyncio
 async def test_weather_config(client: AsyncClient) -> None:
-    resp = await client.get("/api/time-date-weather-location/config")
+    resp = await client.get("/api/weather/config")
     assert resp.status_code == 200
     data = resp.json()
     assert data["label"] == "Wrocław"
     assert data["query"] == "Wroclaw"
+
+    legacy_resp = await client.get("/api/time-date-weather-location/config")
+    assert legacy_resp.status_code == 200
+    assert legacy_resp.json() == data
 
 
 @pytest.mark.asyncio
@@ -115,7 +119,7 @@ async def test_weather_location_crud(auth_client: AsyncClient) -> None:
         return_value=_mock_weather_client(),
     ):
         create_resp = await auth_client.post(
-            "/api/time-date-weather-location/locations",
+            "/api/weather/locations",
             json={"label": "London", "query": "London"},
         )
         assert create_resp.status_code == 201
@@ -123,16 +127,16 @@ async def test_weather_location_crud(auth_client: AsyncClient) -> None:
         assert created["label"] == "London"
         assert created["query"] == "London"
 
-        list_resp = await auth_client.get("/api/time-date-weather-location/locations")
+        list_resp = await auth_client.get("/api/weather/locations")
         assert list_resp.status_code == 200
         assert len(list_resp.json()) == 1
 
         delete_resp = await auth_client.delete(
-            f"/api/time-date-weather-location/locations/{created['id']}"
+            f"/api/weather/locations/{created['id']}"
         )
         assert delete_resp.status_code == 204
 
-        list_after = await auth_client.get("/api/time-date-weather-location/locations")
+        list_after = await auth_client.get("/api/weather/locations")
         assert list_after.json() == []
 
 
@@ -143,19 +147,19 @@ async def test_weather_location_cannot_delete_default(auth_client: AsyncClient) 
         return_value=_mock_weather_client(),
     ):
         create_resp = await auth_client.post(
-            "/api/time-date-weather-location/locations",
+            "/api/weather/locations",
             json={"label": "Wrocław", "query": "Wroclaw"},
         )
         assert create_resp.status_code == 201
         created = create_resp.json()
 
         delete_resp = await auth_client.delete(
-            f"/api/time-date-weather-location/locations/{created['id']}"
+            f"/api/weather/locations/{created['id']}"
         )
         assert delete_resp.status_code == 422
         assert "default" in delete_resp.json()["detail"].lower()
 
-        list_resp = await auth_client.get("/api/time-date-weather-location/locations")
+        list_resp = await auth_client.get("/api/weather/locations")
         assert len(list_resp.json()) == 1
         assert list_resp.json()[0]["id"] == created["id"]
 
@@ -167,13 +171,13 @@ async def test_weather_location_duplicate(auth_client: AsyncClient) -> None:
         return_value=_mock_weather_client(),
     ):
         first = await auth_client.post(
-            "/api/time-date-weather-location/locations",
+            "/api/weather/locations",
             json={"label": "Minsk", "query": "Minsk"},
         )
         assert first.status_code == 201
 
         second = await auth_client.post(
-            "/api/time-date-weather-location/locations",
+            "/api/weather/locations",
             json={"label": "Minsk", "query": "Minsk"},
         )
         assert second.status_code == 422
@@ -183,7 +187,7 @@ async def test_weather_location_duplicate(auth_client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_weather_location_invalid_query(auth_client: AsyncClient) -> None:
     resp = await auth_client.post(
-        "/api/time-date-weather-location/locations",
+        "/api/weather/locations",
         json={"label": "Bad", "query": "Paris123"},
     )
     assert resp.status_code == 422
@@ -206,7 +210,7 @@ async def test_weather_location_delete_other_user_forbidden(
         return_value=_mock_weather_client(),
     ):
         create_resp = await client.post(
-            "/api/time-date-weather-location/locations",
+            "/api/weather/locations",
             json={"label": "London", "query": "London"},
             headers={"Authorization": f"Bearer {owner_token}"},
         )
@@ -214,7 +218,7 @@ async def test_weather_location_delete_other_user_forbidden(
         location_id = create_resp.json()["id"]
 
         delete_resp = await client.delete(
-            f"/api/time-date-weather-location/locations/{location_id}",
+            f"/api/weather/locations/{location_id}",
             headers={"Authorization": f"Bearer {other_token}"},
         )
         assert delete_resp.status_code == 404

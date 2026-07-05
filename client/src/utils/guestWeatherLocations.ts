@@ -2,7 +2,7 @@ import {
   MAX_SAVED_WEATHER_LOCATIONS,
   MAX_WEATHER_LOCATION_LABEL_LENGTH,
   MAX_WEATHER_LOCATION_QUERY_LENGTH,
-} from "@/constants/timeDateWeatherLocation";
+} from "@/constants/weather";
 import { isValidWeatherLocationQuery } from "@/utils/weather";
 
 export interface GuestWeatherLocation {

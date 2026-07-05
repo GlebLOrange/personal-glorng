@@ -1,8 +1,3 @@
-import {
-  DATE_TIME_LOCATION_SECTION,
-  TIME_DATE_WEATHER_LOCATION_PATH,
-} from "@/constants/timeDateWeatherLocation";
-
 export interface PlatformService {
   slug: string;
   name: string;
@@ -146,6 +141,19 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     public: true,
   },
   {
+    slug: "weather",
+    name: "weather",
+    category: "utilities",
+    categoryLabel: "utilities",
+    description: "Search cities, view local time and weather",
+    apiPrefix: "/weather",
+    adminRoute: "/weather",
+    icon: "◷",
+    capabilities: ["read"],
+    external: false,
+    public: true,
+  },
+  {
     slug: "ai-chat",
     name: "ai chat",
     category: "utilities",
@@ -236,27 +244,9 @@ export interface PlatformCatalog {
   categories: Record<string, string>;
 }
 
-/** Public tools shown on /tools for guests (includes non-registry entries). */
-export const PUBLIC_TOOLS: PlatformService[] = [
-  ...PLATFORM_SERVICES.filter((s) => s.public),
-  {
-    slug: "time-date-weather-location",
-    name: DATE_TIME_LOCATION_SECTION,
-    category: "utilities",
-    categoryLabel: "utilities",
-    description: "Search cities, view local time and weather",
-    apiPrefix: TIME_DATE_WEATHER_LOCATION_PATH,
-    adminRoute: TIME_DATE_WEATHER_LOCATION_PATH,
-    icon: "◷",
-    capabilities: ["read"],
-    external: false,
-    public: true,
-  },
-];
-
-/** Map public tools for reuse with groupServicesByCategory. */
+/** Public tools shown on /tools for guests. */
 export function publicToolsAsServices(): PlatformService[] {
-  return PUBLIC_TOOLS;
+  return PLATFORM_SERVICES.filter((s) => s.public);
 }
 
 export const PLATFORM_CATEGORIES: Record<string, string> = {

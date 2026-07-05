@@ -6,13 +6,13 @@ import FooterBar from "@/components/layout/FooterBar.vue";
 import ScrollControls from "@/components/layout/ScrollControls.vue";
 import ToastContainer from "@/components/ui/ToastContainer.vue";
 
-const ClocksBar = defineAsyncComponent(() => import("@/components/weather/ClocksBar.vue"));
-const showClocksBar = ref(false);
+const WeatherBar = defineAsyncComponent(() => import("@/components/weather/WeatherBar.vue"));
+const showWeatherBar = ref(false);
 
 onMounted(() => {
   // ponytail: simple delay keeps weather off first paint; use measured idle scheduling if it grows.
   window.setTimeout(() => {
-    showClocksBar.value = true;
+    showWeatherBar.value = true;
   }, 250);
 });
 </script>
@@ -22,7 +22,7 @@ onMounted(() => {
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <NavBar />
     <main id="main-content" class="flex-1" tabindex="-1">
-      <ClocksBar v-if="showClocksBar" />
+      <WeatherBar v-if="showWeatherBar" />
       <RouterView />
       <ScrollControls />
     </main>

@@ -32,8 +32,8 @@ OPENAPI_TAGS: list[dict[str, str]] = [
     {"name": "app-logs", "description": "Persisted structured application logs."},
     {"name": "feedback", "description": "Visitor feedback inbox (admin read)."},
     {
-        "name": "time-date-weather-location",
-        "description": "Weather lookup, clocks bar config, and saved locations.",
+        "name": "weather",
+        "description": "Weather lookup, saved locations, and local time.",
     },
     {"name": "platform", "description": "Admin service catalog and capabilities."},
     {"name": "resume", "description": "Public portfolio resume content."},

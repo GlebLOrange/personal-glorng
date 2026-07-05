@@ -66,7 +66,7 @@ async def test_lookup_world_time_endpoint(client: AsyncClient) -> None:
         "app.routers.weather.WeatherService.get_weather",
         new=AsyncMock(return_value=enriched_weather),
     ):
-        resp = await client.get("/api/time-date-weather-location/time/London")
+        resp = await client.get("/api/weather/time/London")
 
     assert resp.status_code == 200
     data = resp.json()

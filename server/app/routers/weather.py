@@ -15,14 +15,10 @@ from app.schemas.world_time import WorldTimeResponse
 from app.services.weather import WeatherService
 from app.services.weather_location import WeatherLocationService
 
-router = APIRouter(
-    prefix="/time-date-weather-location",
-    tags=["time-date-weather-location"],
-    dependencies=[Depends(rate_limit_api)],
-)
+routes = APIRouter(dependencies=[Depends(rate_limit_api)])
 
 
-@router.get("/config")
+@routes.get("/config")
 async def get_weather_config(settings: AppSettings) -> dict[str, str]:
     """Public default city config for section seeding and fallbacks."""
     return {
@@ -31,7 +27,7 @@ async def get_weather_config(settings: AppSettings) -> dict[str, str]:
     }
 
 
-@router.get(
+@routes.get(
     "/lookup/{location:path}",
     summary="Lookup weather",
     description="Public weather lookup for a city name or lat,lon coordinate pair.",
@@ -65,14 +61,14 @@ def _world_time_from_weather(data: dict[str, Any]) -> WorldTimeResponse:
     )
 
 
-@router.get("/time/{location:path}", response_model=WorldTimeResponse)
+@routes.get("/time/{location:path}", response_model=WorldTimeResponse)
 async def lookup_world_time(location: str = Path(max_length=100)) -> WorldTimeResponse:
     """Public world clock for a city name or lat,lon coordinate pair."""
     data = await WeatherService().get_weather(location)
     return _world_time_from_weather(data)
 
 
-@router.get("/locations", response_model=list[WeatherLocationResponse])
+@routes.get("/locations", response_model=list[WeatherLocationResponse])
 async def list_weather_locations(
     registry: DbRegistry,
     user: CurrentUser,
@@ -81,7 +77,7 @@ async def list_weather_locations(
     return [WeatherLocationResponse.model_validate(loc) for loc in locations]
 
 
-@router.post(
+@routes.post(
     "/locations",
     response_model=WeatherLocationResponse,
     status_code=201,
@@ -101,7 +97,7 @@ async def add_weather_location(
     return WeatherLocationResponse.model_validate(location)
 
 
-@router.delete(
+@routes.delete(
     "/locations/{location_id}",
     status_code=204,
     summary="Remove saved location",
@@ -115,7 +111,7 @@ async def remove_weather_location(
     await WeatherLocationService(registry).remove_location(user.id, location_id)
 
 
-@router.put(
+@routes.put(
     "/locations/reorder",
     response_model=list[WeatherLocationResponse],
     summary="Reorder saved locations",
@@ -131,3 +127,10 @@ async def reorder_weather_locations(
         body.ordered_ids,
     )
     return [WeatherLocationResponse.model_validate(loc) for loc in locations]
+
+
+router = APIRouter(prefix="/weather", tags=["weather"])
+router.include_router(routes)
+
+legacy_router = APIRouter(prefix="/time-date-weather-location", tags=["weather"])
+legacy_router.include_router(routes)

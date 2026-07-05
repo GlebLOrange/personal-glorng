@@ -14,6 +14,7 @@ from app.routers.resume import router as resume_router
 from app.routers.search import router as search_router
 from app.routers.spotify import router as spotify_router
 from app.routers.tools import tools_router
+from app.routers.weather import legacy_router as weather_legacy_router
 from app.routers.weather import router as weather_router
 from app.routers.webhooks import router as webhooks_router
 
@@ -32,6 +33,7 @@ api_router.include_router(github_public_router, prefix="/github", tags=["github"
 api_router.include_router(resume_router, prefix="/resume", tags=["resume"])
 api_router.include_router(search_router)
 api_router.include_router(weather_router)
+api_router.include_router(weather_legacy_router)
 api_router.include_router(
     donations_router,
     prefix="/donations",
