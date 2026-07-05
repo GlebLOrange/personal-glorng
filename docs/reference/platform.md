@@ -1,4 +1,4 @@
-# gLOrng Platform
+# Platform overview
 
 gLOrng is a **personal platform** where the same domain services power the public portfolio, admin panel, Telegram todobot, and Celery background workers.
 
@@ -12,20 +12,29 @@ gLOrng is a **personal platform** where the same domain services power the publi
 | Worker | `celery -A app.workers.celery_app worker` | Reminders, calendar sync, cleanup |
 | Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks |
 
-## Service Catalog
+## Service catalog
 
-Registry source of truth: [`server/app/platform/registry.py`](../server/app/platform/registry.py)
+Registry source of truth: [`server/app/platform/registry.py`](../../server/app/platform/registry.py)
 
 Exposed via `GET /api/platform/services` for the admin dashboard.
 
-Full endpoint reference (public vs admin, capabilities, UI routes): [api-tools.md](api-tools.md).
+Full endpoint reference (public vs admin, capabilities, UI routes): [API & tools](/reference/api-tools).
 
-## Module-as-Service Pattern
+## Module-as-service pattern
 
 ```
 Router (HTTP/auth) → Service (logic + audit) → MongoDB / Redis (+ optional PostgreSQL for search/audit)
 Channel adapter (Vue page, bot handler) → Service
 ```
+
+## Platform pillars
+
+| Pillar | Services |
+|--------|----------|
+| **Productivity** | Tasks, Email, Expenses |
+| **Content** | Recipes, File share, URL shortener |
+| **Utilities** | Calculator, Video download, AI chat |
+| **Operations** | Feedback, Audit log |
 
 ## Observability
 
@@ -43,6 +52,7 @@ Services emit audit events on mutations and auth flows. HTTP middleware correlat
 
 ## Related docs
 
-- [API tools](api-tools.md) — public and admin endpoints, capabilities, programmatic access
-- [Security](security.md) — CSP, auth, CSRF, sanitization, admin-tool risks
-- [Database](database.md) — migrations and test database notes
+- [API & tools](/reference/api-tools) — public and admin endpoints, capabilities, programmatic access
+- [Security](/reference/security) — CSP, auth, CSRF, sanitization, admin-tool risks
+- [Database](/operations/database) — migrations and test database notes
+- [Architecture](/guide/architecture) — request pipeline and data stores

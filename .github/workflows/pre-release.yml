@@ -1,4 +1,4 @@
-# P2 pre-release tier — worker/nginx smoke (see docs/testing.md).
+# P2 pre-release tier — worker/nginx smoke (see docs/reference/testing.md).
 name: pre-release
 
 on:

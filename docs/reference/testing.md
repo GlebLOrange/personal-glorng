@@ -1,4 +1,4 @@
-# Testing strategy (gLOrng)
+# Testing
 
 Tests are organized into four tiers by CI cost and release risk.
 
@@ -6,9 +6,9 @@ Tests are organized into four tiers by CI cost and release risk.
 
 | Tier | When | Runtime target | Automation |
 |------|------|----------------|------------|
-| **P0 — PR gate** | Every pull request | Backend &lt; 5 min, frontend &lt; 3 min | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) |
-| **P1 — Nightly** | `main` branch nightly | &lt; 15 min | [`.github/workflows/nightly.yml`](../.github/workflows/nightly.yml) |
-| **P2 — Pre-release** | Before production deploy | &lt; 45 min | [`.github/workflows/pre-release.yml`](../.github/workflows/pre-release.yml) |
+| **P0 — PR gate** | Every pull request | Backend &lt; 5 min, frontend &lt; 3 min | [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) |
+| **P1 — Nightly** | `main` branch nightly | &lt; 15 min | [`.github/workflows/nightly.yml`](../../.github/workflows/nightly.yml) |
+| **P2 — Pre-release** | Before production deploy | &lt; 45 min | [`.github/workflows/pre-release.yml`](../../.github/workflows/pre-release.yml) |
 | **P3 — Staging manual** | Post-deploy validation | Human-driven | Checklist below |
 
 ### P0 — PR gate (default)
@@ -32,7 +32,7 @@ Tests are organized into four tiers by CI cost and release risk.
 - `make reindex-search` smoke
 - Beat schedule registry unit tests (cron definitions, not live firing)
 
-### P3 — Staging manual (deferred from CI)
+### P3 — Staging manual (deferred from CI) {#p3-staging-manual-deferred-from-ci}
 
 These are intentionally **not** automated in CI — flaky, vendor-dependent, or require live credentials:
 
@@ -44,7 +44,7 @@ These are intentionally **not** automated in CI — flaky, vendor-dependent, or 
 
 ## Pytest markers
 
-Defined in [`server/pyproject.toml`](../server/pyproject.toml):
+Defined in [`server/pyproject.toml`](../../server/pyproject.toml):
 
 | Marker | Purpose |
 |--------|---------|
@@ -97,3 +97,8 @@ npm run e2e
 | Portfolio / resume UI | Built | `resumeGlance.test.ts`, E2E smoke |
 | Admin UI harness | Built | `adminToolHarness.test.ts` |
 | Admin Playwright flows | Built (P1) | `admin-tools.spec.ts` |
+
+## Related
+
+- [Contributing](/guide/contributing)
+- [Database — tests](/operations/database#tests)

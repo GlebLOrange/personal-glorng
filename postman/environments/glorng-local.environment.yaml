@@ -1,0 +1,20 @@
+name: gLOrng Local
+values:
+  - key: base_url
+    value: http://127.0.0.1:8000
+    enabled: true
+  - key: admin_email
+    value: admin@admin.admin
+    enabled: true
+  - key: admin_password
+    value: ""
+    enabled: true
+  - key: access_token
+    value: ""
+    enabled: true
+  - key: refresh_token
+    value: ""
+    enabled: true
+  - key: webhook_task_secret
+    value: ""
+    enabled: true

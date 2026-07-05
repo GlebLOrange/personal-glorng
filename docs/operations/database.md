@@ -33,7 +33,7 @@ flowchart TD
 ```
 
 1. **MongoDB** starts (default in compose).
-2. **`migrate` service** runs [`server/scripts/db_init.sh`](../server/scripts/db_init.sh): wait for Mongo, `python -m app.db.mongo.migrate`, optionally Postgres Alembic.
+2. **`migrate` service** runs [`server/scripts/db_init.sh`](../../server/scripts/db_init.sh): wait for Mongo, `python -m app.db.mongo.migrate`, optionally Postgres Alembic.
 3. **App services** start after `migrate` completes.
 
 ### Dev vs production
@@ -68,7 +68,7 @@ Entrypoints (backward-compatible module paths unchanged):
 | `python -m app.db.seed_demo` | Demo bulk seed per tool |
 | `python -m app.db.seed_multicooker_recipes` | External recipe import |
 
-Implementation lives under [`server/app/db/seed/`](../server/app/db/seed/):
+Implementation lives under [`server/app/db/seed/`](../../server/app/db/seed/):
 
 - `core/` — admin user, sample recipes (`data/sample_recipes.json`), expenses, tasks
 - `demo/tools/` — per-platform-tool demo seeders (recipes, expenses, tasks, feedback, URLs)
@@ -94,7 +94,7 @@ ENABLE_POSTGRES=true DATABASE_URL=postgresql+asyncpg://... \
 
 Preserves integer `id` fields and seeds the Mongo counter collection.
 
-## Tests
+## Tests {#tests}
 
 - Default: **mongomock-motor** in pytest (`server/tests/conftest.py`)
 - Optional real Postgres integration: `POSTGRES_TEST_URL` + `pytest -m postgres`
@@ -102,10 +102,10 @@ Preserves integer `id` fields and seeds the Mongo counter collection.
 
 ## Architecture
 
-- [`server/app/db/registry.py`](../server/app/db/registry.py) — injected connections + repositories
-- [`server/app/db/init_service.py`](../server/app/db/init_service.py) — startup/shutdown orchestration
-- [`server/app/db/repositories/`](../server/app/db/repositories/) — Mongo data access
-- [`server/app/db/documents/`](../server/app/db/documents/) — Pydantic document models
+- [`server/app/db/registry.py`](../../server/app/db/registry.py) — injected connections + repositories
+- [`server/app/db/init_service.py`](../../server/app/db/init_service.py) — startup/shutdown orchestration
+- [`server/app/db/repositories/`](../../server/app/db/repositories/) — Mongo data access
+- [`server/app/db/documents/`](../../server/app/db/documents/) — Pydantic document models
 
 ### Expense storage
 
@@ -113,4 +113,10 @@ Mongo collections: `expenses`, `expense_categories` (legacy `tool_*` names are r
 
 Postgres tables (optional secondary): `expenses`, `expense_categories` — see Alembic revision `o9p0q1r2s3t4`.
 
-Domain types: `Expense`, `ExpenseCategory` in [`documents/expense.py`](../server/app/db/documents/expense.py). The expense field `tool_name` is the vendor/product label (e.g. Cursor, groceries), not a platform-tool slug.
+Domain types: `Expense`, `ExpenseCategory` in [`documents/expense.py`](../../server/app/db/documents/expense.py). The expense field `tool_name` is the vendor/product label (e.g. Cursor, groceries), not a platform-tool slug.
+
+## Related
+
+- [Backup & restore](/operations/backup-restore)
+- [Configuration](/reference/configuration)
+- [Testing](/reference/testing)
