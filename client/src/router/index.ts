@@ -4,6 +4,7 @@ import { TIME_DATE_WEATHER_LOCATION_ROUTE_NAME } from "@/constants/timeDateWeath
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled } from "@/utils/featureFlags";
+import { installScrollRestore, resolveScrollBehavior } from "@/utils/scrollRestore";
 import { safeRedirectPath } from "@/utils/safeUrl";
 
 const routes: RouteRecordRaw[] = [
@@ -53,7 +54,7 @@ const routes: RouteRecordRaw[] = [
     path: "/admin/users",
     name: "admin-users",
     component: () => import("@/pages/admin/AdminUsersPage.vue"),
-    meta: { requiresAuth: true, requiresSuperuser: true },
+    meta: { requiresAuth: true, requiresSuperuser: true, scrollRestore: "volatile" },
   },
   {
     path: "/tools",
@@ -64,7 +65,7 @@ const routes: RouteRecordRaw[] = [
     path: "/news",
     name: "news",
     component: () => import("@/pages/NewsRoutePage.vue"),
-    meta: { resolveSession: true },
+    meta: { resolveSession: true, scrollRestore: "volatile" },
   },
   {
     path: "/calculator",
@@ -88,6 +89,7 @@ const routes: RouteRecordRaw[] = [
     path: "/recipes",
     name: "recipes",
     component: () => import("@/pages/admin/tools/RecipesPage.vue"),
+    meta: { scrollRestore: "volatile" },
   },
   {
     path: "/news/:slug",
@@ -130,13 +132,13 @@ const routes: RouteRecordRaw[] = [
     path: "/admin/tools/tasks",
     name: "tool-tasks",
     component: () => import("@/pages/admin/tools/TasksPage.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, scrollRestore: "volatile" },
   },
   {
     path: "/admin/tools/expenses",
     name: "tool-expenses",
     component: () => import("@/pages/admin/tools/ExpensesTool.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, scrollRestore: "volatile" },
   },
   {
     path: "/admin/tools/email",
@@ -172,13 +174,13 @@ const routes: RouteRecordRaw[] = [
     path: "/admin/tools/audit",
     name: "tool-audit",
     component: () => import("@/pages/admin/tools/AuditPage.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, scrollRestore: "volatile" },
   },
   {
     path: "/admin/tools/app-logs",
     name: "tool-app-logs",
     component: () => import("@/pages/admin/tools/AppLogsPage.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, scrollRestore: "volatile" },
   },
   {
     path: "/admin/tools/news",
@@ -188,7 +190,7 @@ const routes: RouteRecordRaw[] = [
     path: "/admin/tools/news/:id",
     name: "tool-news-article",
     component: () => import("@/pages/admin/tools/NewsArticleAdminPage.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, scrollRestore: "volatile" },
   },
   {
     path: "/callback",
@@ -200,6 +202,7 @@ const routes: RouteRecordRaw[] = [
     path: "/time-date-weather-location",
     name: TIME_DATE_WEATHER_LOCATION_ROUTE_NAME,
     component: () => import("@/pages/WeatherPage.vue"),
+    meta: { scrollRestore: "live" },
   },
   {
     path: "/clocks",
@@ -239,10 +242,15 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(_to, _from, savedPosition) {
-    return savedPosition || { top: 0 };
+  scrollBehavior(to, _from, savedPosition) {
+    if (to.hash) {
+      return { el: to.hash, behavior: "smooth" };
+    }
+    return resolveScrollBehavior(to, savedPosition);
   },
 });
+
+installScrollRestore(router);
 
 router.beforeEach(async (to, _from, next) => {
   if (to.name === "tool-ai-chat" && !isAiChatEnabled()) {

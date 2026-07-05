@@ -13,6 +13,7 @@ import {
 import { formatNewsDate, useNews } from "@/composables/useNews";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
+import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import type {
   NewsArticle,
   NewsArticleCreate,
@@ -39,6 +40,7 @@ const {
   articles,
   sources,
   page,
+  total,
   listLoading,
   listError,
   actionLoading,
@@ -54,6 +56,10 @@ const {
   deleteArticle,
   repostToTelegram,
 } = useNews();
+
+useScrollListFingerprint(
+  () => `${page.value}:${total.value}:${articles.value[0]?.id ?? ""}`,
+);
 
 function emptyForm(): NewsArticleFormData {
   return {

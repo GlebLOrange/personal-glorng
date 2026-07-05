@@ -10,6 +10,7 @@ import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { FIELD_INPUT_CLASS, SELECT_CLASS_COMPACT } from "@/constants/formClasses";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { usePlatformCatalog } from "@/composables/usePlatformCatalog";
 import type { AdminUserSummary } from "@/types";
 import { getApiErrorMessage } from "@/types/api";
@@ -74,6 +75,11 @@ const filteredUsers = computed(() => {
 });
 const selectedUser = computed(
   () => users.value.find((user) => user.id === selectedUserId.value) ?? null,
+);
+
+useScrollListFingerprint(
+  () =>
+    `${searchQuery.value}:${roleFilter.value}:${statusFilter.value}:${filteredUsers.value.length}:${filteredUsers.value[0]?.id ?? ""}`,
 );
 
 function isLastSuperuser(user: AdminUserSummary): boolean {

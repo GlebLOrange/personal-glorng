@@ -29,6 +29,7 @@ import { useUserPreferences } from "@/composables/useUserPreferences";
 import { useExpenseParse } from "@/composables/useExpenseParse";
 import { useExpenseSort, type ExpenseSortKey } from "@/composables/useExpenseSort";
 import { useExpenseSummary } from "@/composables/useExpenseSummary";
+import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { api } from "@/composables/useApi";
 import { useLocalStorageString } from "@/composables/useLocalStorage";
 import { useNotify } from "@/composables/useNotify";
@@ -108,6 +109,11 @@ const {
   loadPreviousSummary,
   reloadListAndSummary,
 } = summaryHook;
+
+useScrollListFingerprint(() => {
+  const params = expenseQueryParams();
+  return `${activeTab.value}:${sortParam.value}:${expensePage.value}:${expenseTotal.value}:${JSON.stringify(params)}`;
+});
 
 const quickAddRef = ref<InstanceType<typeof ExpenseQuickAdd> | null>(null);
 

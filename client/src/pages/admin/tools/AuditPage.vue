@@ -6,6 +6,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { formatDate } from "@/utils/format";
 
 interface AuditEvent {
@@ -34,6 +35,11 @@ const { toast } = useNotify();
 const totalPages = computed(() => Math.ceil(total.value / PER_PAGE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
+
+useScrollListFingerprint(
+  () =>
+    `${page.value}:${total.value}:${category.value}:${action.value}:${items.value[0]?.id ?? ""}`,
+);
 
 async function load(): Promise<void> {
   loading.value = true;

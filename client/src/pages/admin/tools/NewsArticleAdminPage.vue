@@ -18,6 +18,7 @@ import {
 import { formatNewsDate, useNews } from "@/composables/useNews";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
+import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import type { NewsArticle, NewsArticleFormData, NewsArticleUpdate } from "@/types";
 import { normalizeHttpUrl } from "@/utils/newsForms";
 
@@ -37,6 +38,10 @@ const {
   loadSources,
   updateArticle,
 } = useNews();
+
+useScrollListFingerprint(
+  () => `${articleId.value}:${article.value?.id ?? ""}:${article.value?.updated_at ?? ""}`,
+);
 
 const form = ref<NewsArticleFormData>(emptyForm());
 
