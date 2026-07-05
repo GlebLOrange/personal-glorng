@@ -2,7 +2,7 @@
 import { computed, onMounted } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import { usePlatformCatalog } from "@/composables/usePlatformCatalog";
 import { groupServicesByCategory } from "@/platform/services";
 import { usePermissions } from "@/composables/usePermissions";
@@ -55,11 +55,11 @@ onMounted(() => load());
           :target="tool.external ? '_blank' : undefined"
           :rel="tool.external ? 'noopener' : undefined"
         >
-          <BaseCard hoverable class="h-full">
+          <Card hoverable class="h-full">
             <div class="text-2xl mb-3">{{ tool.icon }}</div>
             <h3 class="text-surface-light font-bold mb-1">{{ tool.name }}</h3>
             <p class="text-xs text-surface-mid">{{ tool.description }}</p>
-          </BaseCard>
+          </Card>
         </component>
       </div>
     </section>

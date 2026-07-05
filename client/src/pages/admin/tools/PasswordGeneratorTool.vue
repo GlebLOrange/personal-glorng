@@ -4,7 +4,7 @@ import { computed, ref } from "vue";
 import AdminBreadcrumbs from "@/components/layout/AdminBreadcrumbs.vue";
 import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
@@ -69,7 +69,7 @@ async function generatePassword(): Promise<void> {
       <h1 class="text-3xl font-bold accent-gradient">password generator</h1>
       <BackLink to="/tools" />
     </div>
-    <BaseCard>
+    <Card>
       <form class="space-y-4" @submit.prevent="generatePassword">
         <BaseInput v-model.number="length" type="number" label="Length" />
 
@@ -127,6 +127,6 @@ async function generatePassword(): Promise<void> {
           {{ strength.message }}
         </p>
       </div>
-    </BaseCard>
+    </Card>
   </div>
 </template>

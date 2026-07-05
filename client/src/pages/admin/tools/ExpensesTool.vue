@@ -15,6 +15,7 @@ import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import { Card } from "@/components/ui/card";
 import { DEFAULT_EXPENSE_CATEGORY } from "@/constants/expenseCategories";
 import { useCategoryManager } from "@/composables/useCategoryManager";
 import {
@@ -534,9 +535,7 @@ onMounted(() => {
 <template>
   <AdminPageLayout title="expenses" max-width="xl">
     <section class="flex flex-col gap-4 mb-6">
-      <div
-        class="rounded-lg border border-surface-border bg-surface-card/50 p-4 flex flex-col gap-3"
-      >
+      <Card variant="compact" class="flex flex-col gap-3">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
             <p class="text-xs text-surface-mid uppercase tracking-wider">Period</p>
@@ -556,7 +555,7 @@ onMounted(() => {
         <p v-if="rangeError" class="text-sm text-red-300" role="alert">
           {{ rangeError }}
         </p>
-      </div>
+      </Card>
 
       <ExpenseSummaryCard
         :summary="summary"
@@ -612,10 +611,11 @@ onMounted(() => {
         @submit="quickSaveExpense"
       />
 
-      <div
+      <Card
         v-if="filtersOpen"
         id="expense-transaction-filters"
-        class="rounded-lg border border-surface-border bg-surface-card/50 p-4 flex flex-col gap-4"
+        variant="compact"
+        class="flex flex-col gap-4"
       >
         <div class="flex flex-col md:flex-row md:items-end gap-3">
           <div class="flex-1">
@@ -634,7 +634,7 @@ onMounted(() => {
           v-model:category-filter="categoryFilter"
           :category-options="categoryOptions"
         />
-      </div>
+      </Card>
 
       <div
         v-if="listError"

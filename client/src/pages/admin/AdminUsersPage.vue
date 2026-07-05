@@ -4,7 +4,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import AdminUserPermissionsEditor from "@/components/admin/AdminUserPermissionsEditor.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { FIELD_INPUT_CLASS, SELECT_CLASS_COMPACT } from "@/constants/formClasses";
@@ -227,7 +227,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         themselves.
       </p>
 
-      <BaseCard>
+      <Card>
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div class="rounded-lg border border-surface-border/70 bg-surface-dark/60 p-3">
             <p class="text-xs text-surface-muted">Total users</p>
@@ -286,11 +286,11 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
             </select>
           </label>
         </div>
-      </BaseCard>
+      </Card>
     </div>
 
     <div v-if="loading" class="space-y-4" aria-busy="true" aria-label="Loading users">
-      <BaseCard v-for="index in 3" :key="index">
+      <Card v-for="index in 3" :key="index">
         <div class="animate-pulse space-y-4">
           <div class="flex items-center justify-between gap-4">
             <div class="space-y-2">
@@ -301,7 +301,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
           </div>
           <div class="h-24 rounded bg-surface-dark" />
         </div>
-      </BaseCard>
+      </Card>
     </div>
 
     <EmptyState v-else-if="users.length === 0">No users found.</EmptyState>

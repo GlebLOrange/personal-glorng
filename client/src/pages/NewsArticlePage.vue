@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import { Card } from "@/components/ui/card";
 import { formatNewsDate, useNews } from "@/composables/useNews";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
@@ -28,20 +29,17 @@ watch(slug, () => {
   <main class="max-w-3xl mx-auto px-6 py-12">
     <BackLink to="/news" class="mb-8" />
 
-    <div
+    <Card
       v-if="detailLoading"
-      class="h-96 rounded-lg border border-surface-border bg-surface-card animate-pulse"
+      class="h-96 animate-pulse"
       aria-busy="true"
       aria-label="Loading article"
     />
 
-    <section
-      v-else-if="detailError"
-      class="rounded-lg border border-surface-border bg-surface-card p-8 text-center"
-    >
+    <Card v-else-if="detailError" as="section" class="!p-8 text-center">
       <p class="text-sm text-surface-mid mb-4">{{ detailError }}</p>
       <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">Retry</BaseButton>
-    </section>
+    </Card>
 
     <article v-else-if="article">
       <header class="mb-8">
@@ -59,13 +57,14 @@ watch(slug, () => {
       <section v-if="article.bullets.length" class="mb-8">
         <h2 class="card-title mb-4">Key points</h2>
         <ul class="space-y-3 text-sm text-surface-mid">
-          <li
+          <Card
             v-for="bullet in article.bullets"
             :key="bullet"
-            class="rounded-lg border border-surface-border bg-surface-card p-4"
+            as="li"
+            variant="compact"
           >
             {{ bullet }}
-          </li>
+          </Card>
         </ul>
       </section>
 
@@ -82,7 +81,7 @@ watch(slug, () => {
         </div>
       </section>
 
-      <footer class="rounded-lg border border-surface-border bg-surface-card p-5">
+      <Card as="footer" variant="compact">
         <p class="text-sm text-surface-mid mb-3">
           This is a curated summary. Read the original article from
           {{ article.source_name }} for full context.
@@ -96,7 +95,7 @@ watch(slug, () => {
         >
           Open original source
         </a>
-      </footer>
+      </Card>
     </article>
   </main>
 </template>

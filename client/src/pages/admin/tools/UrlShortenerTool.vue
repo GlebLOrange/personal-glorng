@@ -5,6 +5,7 @@ import ShareableListItem from "@/components/admin/ShareableListItem.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
@@ -78,10 +79,7 @@ onMounted(loadUrls);
       </BaseButton>
     </form>
 
-    <div
-      v-if="lastCreatedLink"
-      class="mb-10 rounded-lg border border-surface-border bg-surface-card p-4"
-    >
+    <Card v-if="lastCreatedLink" variant="compact" class="mb-10">
       <p class="text-sm text-surface-mid mb-2">Your short link</p>
       <div class="flex flex-wrap items-center gap-3">
         <a
@@ -94,7 +92,7 @@ onMounted(loadUrls);
         </a>
         <BaseButton variant="ghost" size="sm" @click="copy(lastCreatedLink)">Copy</BaseButton>
       </div>
-    </div>
+    </Card>
 
     <div v-if="canManage" class="space-y-3">
       <ShareableListItem

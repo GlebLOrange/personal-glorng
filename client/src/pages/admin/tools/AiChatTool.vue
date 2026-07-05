@@ -5,7 +5,7 @@ import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import { useChatConfig } from "@/composables/useChatConfig";
 import { useNotify } from "@/composables/useNotify";
 import { useSearchChat } from "@/composables/useSearchChat";
@@ -91,7 +91,7 @@ onMounted(() => {
   <AdminPageLayout title="ai chat">
     <AdminTabBar v-model="activeTab" :tabs="[...AI_CHAT_TABS]" />
 
-    <BaseCard v-if="activeTab === 'chat'" class="flex flex-col h-[65vh]">
+    <Card v-if="activeTab === 'chat'" class="flex flex-col h-[65vh]">
       <div class="flex items-center gap-3 mb-4 pb-4 border-b border-surface-border">
         <span class="text-surface-mid text-xs uppercase tracking-wider">
           {{ providerLabel }}
@@ -139,9 +139,9 @@ onMounted(() => {
           </BaseButton>
         </div>
       </form>
-    </BaseCard>
+    </Card>
 
-    <BaseCard v-else class="space-y-8">
+    <Card v-else class="space-y-8">
       <section class="space-y-3">
         <h2 class="text-sm font-semibold text-surface-light uppercase tracking-wider">
           Current setup
@@ -221,6 +221,6 @@ onMounted(() => {
           and restart the backend after changing server env.
         </p>
       </section>
-    </BaseCard>
+    </Card>
   </AdminPageLayout>
 </template>

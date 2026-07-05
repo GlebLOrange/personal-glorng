@@ -15,12 +15,22 @@ const props = withDefaults(
   defineProps<{
     query?: string;
     interactive?: boolean;
+    align?: "left" | "right";
   }>(),
   {
     query: "",
     interactive: false,
+    align: "left",
   },
 );
+
+const isRight = computed(() => props.align === "right");
+
+const stackClass = computed(() =>
+  isRight.value ? "items-end text-right" : "items-start text-left",
+);
+
+const skeletonClass = computed(() => (isRight.value ? "ml-auto" : undefined));
 
 const { config, fetchConfig } = useWeatherConfig();
 
@@ -70,13 +80,18 @@ onMounted(async () => {
     class="font-mono min-w-0"
     :class="interactive ? 'rounded-lg transition-colors' : undefined"
   >
-    <div v-if="loading" class="space-y-1.5 animate-pulse" aria-busy="true">
-      <div class="h-8 w-24 rounded bg-surface-border/60" />
-      <div class="h-4 w-28 rounded bg-surface-border/40" />
-      <div class="h-4 w-40 rounded bg-surface-border/40" />
+    <div
+      v-if="loading"
+      class="space-y-1.5 animate-pulse"
+      :class="stackClass"
+      aria-busy="true"
+    >
+      <div class="h-8 w-24 rounded bg-surface-border/60" :class="skeletonClass" />
+      <div class="h-4 w-28 rounded bg-surface-border/40" :class="skeletonClass" />
+      <div class="h-4 w-40 rounded bg-surface-border/40" :class="skeletonClass" />
     </div>
 
-    <div v-else-if="error" class="text-sm space-y-2">
+    <div v-else-if="error" class="text-sm space-y-2" :class="stackClass">
       <p class="text-accent-golden">{{ error }}</p>
       <button
         type="button"
@@ -90,6 +105,7 @@ onMounted(async () => {
     <div
       v-else-if="weather"
       class="flex flex-col gap-0.5 min-w-0"
+      :class="stackClass"
       :aria-label="liveTime ? `Local time ${liveTime}` : undefined"
     >
       <time
@@ -109,6 +125,7 @@ onMounted(async () => {
       </time>
       <p
         class="flex items-center gap-1.5 min-w-0 text-sm text-surface-mid"
+        :class="isRight ? 'justify-end' : undefined"
         :aria-label="conditionsAriaLabel"
       >
         <span aria-hidden="true">{{ weatherEmoji }}</span>
@@ -119,7 +136,7 @@ onMounted(async () => {
       </p>
     </div>
 
-    <div v-else class="text-sm text-surface-mid">
+    <div v-else class="text-sm text-surface-mid" :class="stackClass">
       Weather unavailable.
       <button type="button" class="ml-2 underline hover:text-surface-light" @click="refresh">
         Retry

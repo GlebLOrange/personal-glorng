@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card, CardBody, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import { EXPENSE_CURRENCIES } from "@/composables/useExpenseFilters";
@@ -213,14 +213,13 @@ async function deleteAccount(): Promise<void> {
 <template>
   <AdminPageLayout title="settings" max-width="md">
     <div class="space-y-5">
-      <BaseCard>
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile</CardTitle>
+          <CardDescription>Set how your name and local time appear across the app.</CardDescription>
+        </CardHeader>
+        <CardBody>
         <form class="space-y-4" @submit.prevent="saveProfile">
-          <div>
-            <h2 class="text-lg font-bold text-surface-light">Profile</h2>
-            <p class="text-sm text-surface-mid">
-              Set how your name and local time appear across the app.
-            </p>
-          </div>
           <BaseInput
             v-model="displayName"
             label="Display name"
@@ -246,19 +245,21 @@ async function deleteAccount(): Promise<void> {
             {{ savingProfile ? "Saving..." : "Save profile" }}
           </BaseButton>
         </form>
-      </BaseCard>
+        </CardBody>
+      </Card>
 
-      <BaseCard>
+      <Card>
+        <CardHeader>
+          <CardTitle>Email</CardTitle>
+          <CardDescription>
+            Signed in as
+            <span class="text-surface-light">{{ auth.user?.email }}</span>
+            <span v-if="auth.user?.is_verified" class="text-green-400"> · verified</span>
+            <span v-else class="text-yellow-300"> · unverified</span>
+          </CardDescription>
+        </CardHeader>
+        <CardBody>
         <form class="space-y-4" @submit.prevent="saveEmail">
-          <div>
-            <h2 class="text-lg font-bold text-surface-light">Email</h2>
-            <p class="text-sm text-surface-mid">
-              Signed in as
-              <span class="text-surface-light">{{ auth.user?.email }}</span>
-              <span v-if="auth.user?.is_verified" class="text-green-400"> · verified</span>
-              <span v-else class="text-yellow-300"> · unverified</span>
-            </p>
-          </div>
           <BaseInput
             v-model="newEmail"
             type="email"
@@ -286,21 +287,21 @@ async function deleteAccount(): Promise<void> {
             {{ savingEmail ? "Saving..." : "Change email" }}
           </BaseButton>
         </form>
-      </BaseCard>
+        </CardBody>
+      </Card>
 
-      <BaseCard>
-        <form class="space-y-4" @submit.prevent="savePassword">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 class="text-lg font-bold text-surface-light">Password</h2>
-              <p class="text-sm text-surface-mid">
-                Keep your account protected with a strong password.
-              </p>
-            </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Password</CardTitle>
+          <CardDescription>Keep your account protected with a strong password.</CardDescription>
+          <template #actions>
             <RouterLink to="/forgot-password" class="text-sm text-accent-blue hover:underline">
               Forgot password?
             </RouterLink>
-          </div>
+          </template>
+        </CardHeader>
+        <CardBody>
+        <form class="space-y-4" @submit.prevent="savePassword">
           <BaseInput
             v-model="currentPassword"
             type="password"
@@ -349,16 +350,16 @@ async function deleteAccount(): Promise<void> {
             {{ savingPassword ? "Saving..." : "Change password" }}
           </BaseButton>
         </form>
-      </BaseCard>
+        </CardBody>
+      </Card>
 
-      <BaseCard>
+      <Card>
+        <CardHeader>
+          <CardTitle>Preferences</CardTitle>
+          <CardDescription>Choose defaults that make tools feel local to you.</CardDescription>
+        </CardHeader>
+        <CardBody>
         <form class="space-y-4" @submit.prevent="saveCurrency">
-          <div>
-            <h2 class="text-lg font-bold text-surface-light">Preferences</h2>
-            <p class="text-sm text-surface-mid">
-              Choose defaults that make tools feel local to you.
-            </p>
-          </div>
           <BaseSelect v-model="displayCurrency" label="Expense display currency">
             <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
               {{ code }}
@@ -368,14 +369,16 @@ async function deleteAccount(): Promise<void> {
             {{ savingPrefs ? "Saving..." : "Save preferences" }}
           </BaseButton>
         </form>
-      </BaseCard>
+        </CardBody>
+      </Card>
 
-      <BaseCard>
+      <Card>
+        <CardHeader>
+          <CardTitle>Integrations</CardTitle>
+          <CardDescription>Connect external accounts used by tools.</CardDescription>
+        </CardHeader>
+        <CardBody>
         <section class="space-y-4">
-          <div>
-            <h2 class="text-lg font-bold text-surface-light">Integrations</h2>
-            <p class="text-sm text-surface-mid">Connect external accounts used by tools.</p>
-          </div>
           <p v-if="githubLoading" class="text-sm text-surface-mid">Checking GitHub status...</p>
           <p v-else-if="githubError" class="text-sm text-yellow-300">{{ githubError }}</p>
           <p v-else-if="githubStatus.linked" class="text-sm text-surface-mid">
@@ -410,16 +413,18 @@ async function deleteAccount(): Promise<void> {
             </BaseButton>
           </div>
         </section>
-      </BaseCard>
+        </CardBody>
+      </Card>
 
-      <BaseCard>
+      <Card>
+        <CardHeader>
+          <CardTitle>Access</CardTitle>
+          <CardDescription>
+            Tool permissions are managed by an administrator. Contact them if you need access.
+          </CardDescription>
+        </CardHeader>
+        <CardBody>
         <section class="space-y-4">
-          <div>
-            <h2 class="text-lg font-bold text-surface-light">Access</h2>
-            <p class="text-sm text-surface-mid">
-              Tool permissions are managed by an administrator. Contact them if you need access.
-            </p>
-          </div>
           <p class="text-sm text-surface-light">{{ permissionSummary }}</p>
           <div v-if="permissions.length" class="flex flex-wrap gap-2">
             <span
@@ -431,16 +436,18 @@ async function deleteAccount(): Promise<void> {
             </span>
           </div>
         </section>
-      </BaseCard>
+        </CardBody>
+      </Card>
 
-      <BaseCard class="border-red-900/60 bg-red-950/10">
+      <Card tint="danger">
+        <CardHeader>
+          <h2 class="card-title text-red-400">Danger zone</h2>
+          <CardDescription>
+            Account deletion is permanent. Your password and confirmation are required.
+          </CardDescription>
+        </CardHeader>
+        <CardBody>
         <form class="space-y-4" @submit.prevent="deleteAccount">
-          <div>
-            <h2 class="text-lg font-bold text-red-400">Danger zone</h2>
-            <p class="text-sm text-surface-mid">
-              Account deletion is permanent. Your password and confirmation are required.
-            </p>
-          </div>
           <BaseInput
             v-model="deletePassword"
             type="password"
@@ -457,7 +464,8 @@ async function deleteAccount(): Promise<void> {
             {{ deleting ? "Deleting..." : "Delete account" }}
           </BaseButton>
         </form>
-      </BaseCard>
+        </CardBody>
+      </Card>
     </div>
   </AdminPageLayout>
 </template>

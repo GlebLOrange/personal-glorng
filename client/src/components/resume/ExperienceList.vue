@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import type { Experience } from "@/types";
 
 defineProps<{
@@ -9,7 +9,7 @@ defineProps<{
 
 <template>
   <div class="space-y-4">
-    <BaseCard v-for="(exp, i) in experience" :key="i" hoverable>
+    <Card v-for="(exp, i) in experience" :key="i" hoverable>
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
           <h3 class="card-title">{{ exp.role }}</h3>
@@ -28,6 +28,6 @@ defineProps<{
           <span>{{ highlight }}</span>
         </li>
       </ul>
-    </BaseCard>
+    </Card>
   </div>
 </template>

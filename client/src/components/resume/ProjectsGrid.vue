@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import type { Project } from "@/types";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
@@ -10,7 +10,7 @@ defineProps<{
 
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <BaseCard v-for="(proj, i) in projects" :key="i" hoverable>
+    <Card v-for="(proj, i) in projects" :key="i" hoverable>
       <h3 class="card-title mb-1">{{ proj.name }}</h3>
       <p class="text-body mb-4">{{ proj.description }}</p>
       <div class="flex flex-wrap gap-2 mb-4">
@@ -31,6 +31,6 @@ defineProps<{
       >
         View Project &rarr;
       </a>
-    </BaseCard>
+    </Card>
   </div>
 </template>

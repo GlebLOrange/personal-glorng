@@ -4,7 +4,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
@@ -217,26 +217,22 @@ onMounted(loadSources);
       </div>
 
       <div v-if="loading" class="space-y-3" aria-busy="true" aria-label="Loading sources">
-        <div
-          v-for="i in 5"
-          :key="i"
-          class="h-28 animate-pulse rounded-lg border border-surface-border bg-surface-card"
-        />
+        <Card v-for="i in 5" :key="i" class="h-28 animate-pulse" />
       </div>
 
-      <BaseCard v-else-if="loadError" role="alert">
+      <Card v-else-if="loadError" role="alert">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-sm text-accent-golden">News sources could not be loaded.</p>
           <BaseButton variant="ghost" size="sm" @click="loadSources">Retry</BaseButton>
         </div>
-      </BaseCard>
+      </Card>
 
-      <BaseCard v-else-if="sources.length === 0">
+      <Card v-else-if="sources.length === 0">
         <p class="text-sm text-surface-mid">No news sources yet.</p>
-      </BaseCard>
+      </Card>
 
       <template v-else>
-        <BaseCard
+        <Card
           v-for="source in sources"
           :key="source.id"
           :hoverable="canWrite"
@@ -299,7 +295,7 @@ onMounted(loadSources);
               </BaseButton>
             </div>
           </div>
-        </BaseCard>
+        </Card>
       </template>
     </div>
 

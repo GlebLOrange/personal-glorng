@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import RecipeTagChip from "@/components/recipes/RecipeTagChip.vue";
 import { formatRecipeTime } from "@/utils/recipe";
@@ -17,8 +17,9 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <BaseCard
+  <Card
     hoverable
+    interactive
     class="cursor-pointer flex flex-col"
     role="button"
     tabindex="0"
@@ -51,5 +52,5 @@ const emit = defineEmits<{
       <span v-if="recipe.cook_time">{{ formatRecipeTime(recipe.cook_time) }} cook</span>
       <span v-if="recipe.servings">{{ recipe.servings }} servings</span>
     </div>
-  </BaseCard>
+  </Card>
 </template>

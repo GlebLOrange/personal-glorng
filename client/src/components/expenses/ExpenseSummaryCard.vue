@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import { Card } from "@/components/ui/card";
 import type { ExpenseCategory, ExpenseSummary } from "@/types";
 
 const props = defineProps<{
@@ -60,7 +61,7 @@ const budgetTotals = computed(() => {
 </script>
 
 <template>
-  <section class="rounded-lg border border-surface-border bg-surface-card/70 p-4 md:p-5">
+  <Card as="section" variant="compact" class="md:!p-5">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div>
         <p class="text-xs text-surface-mid uppercase tracking-wider">Total</p>
@@ -71,7 +72,7 @@ const budgetTotals = computed(() => {
         <p class="text-xs text-surface-mid mt-1">{{ monthLabel }}</p>
       </div>
 
-      <div class="rounded-lg border border-surface-border bg-surface-dark/40 p-3">
+      <Card variant="inset">
         <p class="text-xs text-surface-mid uppercase tracking-wider">Period change</p>
         <p
           v-if="periodChange"
@@ -82,9 +83,9 @@ const budgetTotals = computed(() => {
         </p>
         <p v-else class="text-xl font-bold text-surface-border font-data mt-1">—</p>
         <p class="text-xs text-surface-mid mt-1">vs previous period</p>
-      </div>
+      </Card>
 
-      <div class="rounded-lg border border-surface-border bg-surface-dark/40 p-3">
+      <Card variant="inset">
         <p class="text-xs text-surface-mid uppercase tracking-wider">Budget status</p>
         <p
           v-if="budgetTotals && summary"
@@ -99,7 +100,7 @@ const budgetTotals = computed(() => {
           {{ formatMoney(budgetTotals.budget, summary.currency) }}
         </p>
         <p v-else class="text-xs text-surface-mid mt-1">No category budgets set</p>
-      </div>
+      </Card>
     </div>
 
     <div
@@ -129,5 +130,5 @@ const budgetTotals = computed(() => {
         </div>
       </div>
     </div>
-  </section>
+  </Card>
 </template>

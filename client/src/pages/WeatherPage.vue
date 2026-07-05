@@ -2,9 +2,10 @@
 import { computed } from "vue";
 
 import BackLink from "@/components/ui/BackLink.vue";
+import { Card } from "@/components/ui/card";
 import WeatherLocationCard from "@/components/weather/WeatherLocationCard.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
-import WeatherSummaryCard from "@/components/weather/WeatherSummaryCard.vue";
+import WeatherSummaryContent from "@/components/weather/WeatherSummaryContent.vue";
 import { WEATHER_TOOL_NAME } from "@/constants/weather";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
@@ -61,18 +62,15 @@ async function handleRemove(id: number | string): Promise<void> {
 
     <section class="mb-10">
       <h2 class="text-lg font-bold text-surface-light mb-4">current</h2>
-      <div
+      <Card
         v-if="loading || seeding"
-        class="bg-surface-card border border-surface-border rounded-xl p-6 text-sm text-surface-mid animate-pulse"
+        class="text-sm text-surface-mid animate-pulse font-mono"
       >
         Loading...
-      </div>
-      <div
-        v-else
-        class="bg-surface-card border border-surface-border rounded-xl p-6 md:p-7"
-      >
-        <WeatherSummaryCard :query="defaultLocation?.query ?? ''" />
-      </div>
+      </Card>
+      <Card v-else class="font-mono">
+        <WeatherSummaryContent :query="defaultLocation?.query ?? ''" />
+      </Card>
     </section>
 
     <section class="mb-10">

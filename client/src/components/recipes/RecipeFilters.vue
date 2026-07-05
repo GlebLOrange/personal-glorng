@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import { Card } from "@/components/ui/card";
 import RecipeTagChip from "@/components/recipes/RecipeTagChip.vue";
 import type { RecipeSort } from "@/types";
 
@@ -79,9 +80,7 @@ onUnmounted(() => {
     />
 
     <div class="space-y-4">
-      <div
-        class="flex flex-wrap items-center gap-3 rounded-lg border border-surface-border bg-surface-card p-3"
-      >
+      <Card variant="compact" class="flex flex-wrap items-center gap-3 !p-3">
         <div class="flex items-center justify-between gap-3">
           <div>
             <h2 class="text-sm font-semibold text-surface-light">Filter recipes</h2>
@@ -120,12 +119,13 @@ onUnmounted(() => {
             <span class="text-surface-mid" aria-hidden="true">▾</span>
           </button>
 
-          <div
+          <Card
             v-if="tagMenuOpen"
             role="listbox"
             aria-label="Filter by tags"
             aria-multiselectable="true"
-            class="absolute right-0 top-full z-10 mt-2 max-h-64 w-max max-w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
+            variant="compact"
+            class="absolute right-0 top-full z-10 mt-2 max-h-64 w-max max-w-[min(20rem,calc(100vw-2rem))] overflow-y-auto !p-3 shadow-lg"
             @click.stop
           >
             <div class="flex flex-wrap gap-2">
@@ -153,13 +153,13 @@ onUnmounted(() => {
                 @click="emit('setTag', tag)"
               />
             </div>
-          </div>
+          </Card>
         </div>
 
         <BaseButton v-if="hasActiveFilters" variant="ghost" size="sm" @click="emit('clearFilters')">
           Clear filters
         </BaseButton>
-      </div>
+      </Card>
 
       <slot />
     </div>

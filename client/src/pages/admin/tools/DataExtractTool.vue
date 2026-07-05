@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
@@ -443,7 +443,7 @@ function downloadResult(): void {
       </BaseButton>
     </div>
 
-    <BaseCard v-if="batchHistory.length" class="space-y-3 mb-6">
+    <Card v-if="batchHistory.length" class="space-y-3 mb-6">
       <div class="flex items-center justify-between gap-3">
         <h2 class="text-lg font-semibold text-surface-light">Recent imports</h2>
         <BaseButton variant="ghost" @click="loadBatchHistory">Refresh</BaseButton>
@@ -464,9 +464,9 @@ function downloadResult(): void {
           </button>
         </li>
       </ul>
-    </BaseCard>
+    </Card>
 
-    <BaseCard v-if="importResult" class="space-y-3 mb-6">
+    <Card v-if="importResult" class="space-y-3 mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 class="text-lg font-semibold text-surface-light">Import batch</h2>
@@ -492,9 +492,9 @@ function downloadResult(): void {
         <span v-if="promoteResult.errors.length">, {{ promoteResult.errors.length }} error(s)</span
         >.
       </p>
-    </BaseCard>
+    </Card>
 
-    <BaseCard v-if="result" class="space-y-4">
+    <Card v-if="result" class="space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 class="text-lg font-semibold text-surface-light">Results</h2>
@@ -552,6 +552,6 @@ function downloadResult(): void {
         class="overflow-x-auto rounded-md bg-surface-dark border border-surface-border p-4 text-xs text-surface-light"
         >{{ resultJson }}</pre
       >
-    </BaseCard>
+    </Card>
   </AdminPageLayout>
 </template>

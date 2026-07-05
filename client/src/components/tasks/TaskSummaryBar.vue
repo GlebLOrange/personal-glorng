@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseCard from "@/components/ui/BaseCard.vue";
+import { Card } from "@/components/ui/card";
 import type { TaskStats } from "@/types";
 
 defineProps<{
@@ -13,26 +13,26 @@ const skeletonCards = 4;
 <template>
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <template v-if="loading && !stats">
-      <BaseCard v-for="n in skeletonCards" :key="n" class="animate-pulse">
+      <Card v-for="n in skeletonCards" :key="n" class="animate-pulse">
         <div class="h-7 w-12 bg-surface-border rounded mb-2" />
         <div class="h-3 w-16 bg-surface-border rounded" />
-      </BaseCard>
+      </Card>
     </template>
 
     <template v-else-if="stats">
-      <BaseCard>
+      <Card>
         <div class="text-2xl font-bold text-surface-light">{{ stats.total }}</div>
         <div class="text-xs text-surface-mid mt-1">Total</div>
-      </BaseCard>
-      <BaseCard>
+      </Card>
+      <Card>
         <div class="text-2xl font-bold text-yellow-400">{{ stats.pending }}</div>
         <div class="text-xs text-surface-mid mt-1">Pending</div>
-      </BaseCard>
-      <BaseCard>
+      </Card>
+      <Card>
         <div class="text-2xl font-bold text-green-400">{{ stats.completed }}</div>
         <div class="text-xs text-surface-mid mt-1">Completed</div>
-      </BaseCard>
-      <BaseCard :class="stats.failed_syncs > 0 ? 'border-red-400/40' : ''">
+      </Card>
+      <Card :class="stats.failed_syncs > 0 ? 'border-red-400/40' : ''">
         <div
           :class="[
             'text-2xl font-bold',
@@ -42,7 +42,7 @@ const skeletonCards = 4;
           {{ stats.failed_syncs }}
         </div>
         <div class="text-xs text-surface-mid mt-1">Failed syncs</div>
-      </BaseCard>
+      </Card>
     </template>
   </div>
 </template>
