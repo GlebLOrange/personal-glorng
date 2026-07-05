@@ -137,6 +137,7 @@ export interface WeatherConfig {
 export interface WeatherData {
   current_condition: Array<{
     temp_C: string;
+    weatherCode?: string;
     weatherDesc: Array<{ value: string }>;
     humidity: string;
     windspeedKmph: string;

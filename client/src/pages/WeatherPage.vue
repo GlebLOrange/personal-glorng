@@ -51,7 +51,7 @@ async function handleRemove(id: number | string): Promise<void> {
         <BackLink to="/tools" />
       </div>
       <p class="text-sm text-surface-mid mb-4">Local time and conditions for your cities.</p>
-      <WeatherWidget compact show-time />
+      <WeatherWidget compact stack show-time />
     </div>
 
     <WeatherLocationForm

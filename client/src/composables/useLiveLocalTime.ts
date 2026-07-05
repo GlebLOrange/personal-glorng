@@ -1,26 +1,37 @@
 import { onMounted, onUnmounted, ref, watch, type MaybeRefOrGetter, type Ref, toValue } from "vue";
 
 import {
+  formatLiveLocalDate,
+  formatLiveLocalDateFromUnix,
   formatLiveLocalDateTime,
   formatLiveLocalDateTimeFromUnix,
   formatLiveLocalTime,
   formatLiveLocalTimeFromUnix,
   formatLiveLocalTimeWithSeconds,
   formatLiveLocalTimeWithSecondsFromUnix,
+  isoDateFromOffset,
+  isoDateFromUnix,
   isoDateTimeFromOffset,
   isoDateTimeFromUnix,
 } from "@/utils/weather";
 
-type LiveTimeFormat = "time" | "time-seconds" | "datetime";
+type LiveTimeFormat = "time" | "time-seconds" | "datetime" | "date";
 
 /** Tick every second with local time synced to World Time API or UTC offset. */
 export function useLiveLocalTime(
   offsetHours: MaybeRefOrGetter<number | null>,
   format: MaybeRefOrGetter<LiveTimeFormat> = "datetime",
   anchorUnixtime?: MaybeRefOrGetter<number | null>,
-): { liveTime: Ref<string | null>; liveDateTime: Ref<string | null> } {
+): {
+  liveTime: Ref<string | null>;
+  liveDate: Ref<string | null>;
+  liveDateTime: Ref<string | null>;
+  liveDateIso: Ref<string | null>;
+} {
   const liveTime = ref<string | null>(null);
+  const liveDate = ref<string | null>(null);
   const liveDateTime = ref<string | null>(null);
+  const liveDateIso = ref<string | null>(null);
   let timer: ReturnType<typeof setInterval> | null = null;
   let baseUnixtime: number | null = null;
   let basePerfNow = 0;
@@ -48,7 +59,9 @@ export function useLiveLocalTime(
     const offset = toValue(offsetHours);
     if (offset === null) {
       liveTime.value = null;
+      liveDate.value = null;
       liveDateTime.value = null;
+      liveDateIso.value = null;
       return;
     }
 
@@ -61,8 +74,12 @@ export function useLiveLocalTime(
           ? formatLiveLocalDateTimeFromUnix(unixtime, offset)
           : fmt === "time-seconds"
             ? formatLiveLocalTimeWithSecondsFromUnix(unixtime, offset)
-            : formatLiveLocalTimeFromUnix(unixtime, offset);
+            : fmt === "date"
+              ? formatLiveLocalDateFromUnix(unixtime, offset)
+              : formatLiveLocalTimeFromUnix(unixtime, offset);
+      liveDate.value = formatLiveLocalDateFromUnix(unixtime, offset);
       liveDateTime.value = isoDateTimeFromUnix(unixtime, offset);
+      liveDateIso.value = isoDateFromUnix(unixtime, offset);
       return;
     }
 
@@ -71,8 +88,12 @@ export function useLiveLocalTime(
         ? formatLiveLocalDateTime(offset)
         : fmt === "time-seconds"
           ? formatLiveLocalTimeWithSeconds(offset)
-          : formatLiveLocalTime(offset);
+          : fmt === "date"
+            ? formatLiveLocalDate(offset)
+            : formatLiveLocalTime(offset);
+    liveDate.value = formatLiveLocalDate(offset);
     liveDateTime.value = isoDateTimeFromOffset(offset);
+    liveDateIso.value = isoDateFromOffset(offset);
   }
 
   onMounted(() => {
@@ -100,5 +121,5 @@ export function useLiveLocalTime(
     },
   );
 
-  return { liveTime, liveDateTime };
+  return { liveTime, liveDate, liveDateTime, liveDateIso };
 }
