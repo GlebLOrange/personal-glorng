@@ -1,5 +1,5 @@
 <script setup lang="ts">
-type BreadcrumbSegment = { label: string; to?: string };
+import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
 
 defineProps<{
   segments: BreadcrumbSegment[];

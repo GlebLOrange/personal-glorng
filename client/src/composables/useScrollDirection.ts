@@ -8,6 +8,7 @@ export type UseScrollDirectionOptions = {
 
 export function useScrollDirection(options: UseScrollDirectionOptions = {}): {
   isHidden: Readonly<{ value: boolean }>;
+  show: () => void;
 } {
   const hideAfterY = options.hideAfterY ?? 80;
   const deltaThreshold = options.deltaThreshold ?? 6;
@@ -15,12 +16,17 @@ export function useScrollDirection(options: UseScrollDirectionOptions = {}): {
 
   let lastScrollY = 0;
   let ticking = false;
+  let rafId = 0;
+
+  function show(): void {
+    isHidden.value = false;
+  }
 
   function onScroll(): void {
     if (ticking) return;
     ticking = true;
 
-    window.requestAnimationFrame(() => {
+    rafId = window.requestAnimationFrame(() => {
       if (options.disabled?.()) {
         isHidden.value = false;
         lastScrollY = window.scrollY;
@@ -47,8 +53,8 @@ export function useScrollDirection(options: UseScrollDirectionOptions = {}): {
 
   onBeforeUnmount(() => {
     window.removeEventListener("scroll", onScroll);
+    if (rafId) window.cancelAnimationFrame(rafId);
   });
 
-  return { isHidden };
+  return { isHidden, show };
 }
-

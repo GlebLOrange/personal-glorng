@@ -30,7 +30,7 @@ watch(slug, () => {
 <template>
   <PageShell
     :title="articleTitle"
-    :breadcrumbs="[{ label: 'news', to: '/news' }, { label: 'article' }]"
+    :breadcrumbs="[{ label: 'news', to: '/news' }, { label: articleTitle }]"
     back-to="/news"
     max-width="md"
   >
@@ -55,7 +55,6 @@ watch(slug, () => {
             {{ formatNewsDate(article.published_at ?? article.created_at) }}
           </time>
         </div>
-        <h1 class="section-title mb-4 break-words">{{ article.title }}</h1>
         <p class="text-body break-words">{{ article.summary }}</p>
       </header>
 

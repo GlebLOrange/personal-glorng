@@ -26,7 +26,7 @@ onMounted(() => load());
 </script>
 
 <template>
-  <AdminPageLayout title="tools" max-width="xl" back-to="/" catalog>
+  <AdminPageLayout title="tools" max-width="xl" back-to="/">
     <div v-if="isSuperuser" class="mb-8 min-w-0">
       <div class="page-tool-grid">
         <RouterLink to="/admin/users" class="page-tile">

@@ -8,22 +8,21 @@ import { formatBreadcrumbLabel } from "@/utils/format";
 const props = withDefaults(
   defineProps<{
     title: string;
-    maxWidth?: "sm" | "md" | "lg" | "xl";
+    maxWidth?: "sm" | "md" | "xl";
     backTo?: RouteLocationRaw;
-    catalog?: boolean;
   }>(),
   {
     backTo: "/admin",
-    catalog: false,
   },
 );
 
 const breadcrumbLabel = computed(() => formatBreadcrumbLabel(props.title));
 
-const shellMaxWidth = computed((): "sm" | "md" | "xl" | "5xl" => {
+const shellMaxWidth = computed((): "sm" | "md" | "5xl" => {
   if (props.maxWidth === "sm") return "sm";
   if (props.maxWidth === "md") return "md";
-  return "5xl";
+  if (props.maxWidth === "xl") return "5xl";
+  return "md";
 });
 </script>
 

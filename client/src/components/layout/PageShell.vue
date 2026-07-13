@@ -23,7 +23,7 @@ const props = withDefaults(
     narrow: true,
     maxWidth: "5xl",
     paddingY: "pb-8 md:pb-10",
-    as: "main",
+    as: "div",
     bodyClass: "",
   },
 );

@@ -4,9 +4,8 @@ import type { RouteLocationRaw } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
 import PageBreadcrumbs from "@/components/layout/PageBreadcrumbs.vue";
+import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
 import WeatherBar from "@/components/weather/WeatherBar.vue";
-
-type BreadcrumbSegment = { label: string; to?: string };
 
 withDefaults(
   defineProps<{
@@ -41,6 +40,7 @@ onMounted(() => {
 
     <h1
       class="mt-0.5 min-w-0 truncate text-lg font-bold leading-tight text-surface-light md:max-w-[var(--content)]"
+      :title="`${titlePrefix}${title}`"
     >
       <span class="accent-gradient">{{ titlePrefix }}{{ title }}</span>
     </h1>
@@ -48,7 +48,7 @@ onMounted(() => {
     <WeatherBar
       v-if="showWeatherBar"
       chrome
-      wrapper-class="hidden md:block absolute right-6 top-0 z-10 mt-[100px] w-[var(--tile)]"
+      wrapper-class="hidden md:block absolute right-6 top-0 z-10 mt-[var(--page-chrome-offset)] w-[var(--tile)]"
       card-class="page-chrome-weather-card"
     />
   </div>
