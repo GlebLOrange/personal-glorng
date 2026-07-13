@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
@@ -10,19 +10,33 @@ const showWeatherBar = ref(false);
 const headerEl = ref<HTMLElement | null>(null);
 const headerSpacerHeight = ref(0);
 let resizeObserver: ResizeObserver | null = null;
+let mobileNavMq: MediaQueryList | null = null;
+let syncMobileNav: (() => void) | null = null;
 
 const auth = useAuthStore();
 const router = useRouter();
 const mobileOpen = ref(false);
+const isMobileNav = ref(false);
 
-const { isHidden: isHeaderHidden } = useScrollDirection({
-  disabled: () => mobileOpen.value,
+const { isHidden: isHeaderHidden, show: showHeader } = useScrollDirection({
+  disabled: () => mobileOpen.value || isMobileNav.value,
+});
+
+watch(mobileOpen, (open) => {
+  if (open) showHeader();
 });
 
 onMounted(() => {
   window.setTimeout(() => {
     showWeatherBar.value = true;
   }, 250);
+
+  mobileNavMq = window.matchMedia("(max-width: 767px)");
+  syncMobileNav = (): void => {
+    isMobileNav.value = mobileNavMq?.matches ?? false;
+  };
+  syncMobileNav();
+  mobileNavMq.addEventListener("change", syncMobileNav);
 
   if (typeof ResizeObserver !== "undefined") {
     resizeObserver = new ResizeObserver(() => {
@@ -35,6 +49,11 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  if (mobileNavMq && syncMobileNav) {
+    mobileNavMq.removeEventListener("change", syncMobileNav);
+  }
+  mobileNavMq = null;
+  syncMobileNav = null;
   resizeObserver?.disconnect();
   resizeObserver = null;
 });
@@ -100,7 +119,6 @@ function closeMobileMenu(): void {
             aria-label="Toggle navigation menu"
             @click="toggleMobileMenu"
           >
-            <span class="sr-only">Menu</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"

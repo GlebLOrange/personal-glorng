@@ -65,7 +65,14 @@ watch(page, () => {
           </time>
         </div>
 
-        <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
+        <h2 class="card-title mb-2 break-words">
+          <RouterLink
+            :to="{ name: 'news-article', params: { slug: item.slug } }"
+            class="hover:text-accent-blue transition-colors"
+          >
+            {{ item.title }}
+          </RouterLink>
+        </h2>
 
         <p class="text-sm text-surface-mid mb-4 break-words">{{ item.summary }}</p>
 

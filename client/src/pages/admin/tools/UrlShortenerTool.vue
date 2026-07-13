@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 
 import ShareableListItem from "@/components/admin/ShareableListItem.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { Card } from "@/components/ui/card";
@@ -70,7 +70,13 @@ onMounted(loadUrls);
 </script>
 
 <template>
-  <AdminPageLayout title="url-shortener" back-to="/tools">
+  <PageShell
+    title="url-shortener"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'url-shortener' }]"
+    back-to="/tools"
+    max-width="md"
+    :narrow="false"
+  >
     <form class="space-y-3 mb-10" @submit.prevent="createUrl">
       <BaseInput v-model="newUrl" placeholder="https://example.com/very-long-url..." label="URL" />
       <BaseInput v-model="newTitle" placeholder="Optional title" label="Title" />
@@ -108,5 +114,5 @@ onMounted(loadUrls);
 
       <EmptyState v-if="urls.length === 0">No shortened URLs yet. Create one above.</EmptyState>
     </div>
-  </AdminPageLayout>
+  </PageShell>
 </template>

@@ -94,7 +94,8 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/news/:slug",
     name: "news-article",
-    redirect: { name: "news" },
+    component: () => import("@/pages/NewsArticlePage.vue"),
+    meta: { scrollRestore: "volatile" },
   },
   {
     path: "/admin/tools/recipes",

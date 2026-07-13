@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -60,7 +60,13 @@ async function download(): Promise<void> {
 </script>
 
 <template>
-  <AdminPageLayout title="vid-download" back-to="/tools">
+  <PageShell
+    title="vid-download"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'vid-download' }]"
+    back-to="/tools"
+    max-width="md"
+    :narrow="false"
+  >
     <form class="space-y-4 mb-8" @submit.prevent="download">
       <BaseInput
         v-model="url"
@@ -154,5 +160,5 @@ async function download(): Promise<void> {
         </a>
       </div>
     </Card>
-  </AdminPageLayout>
+  </PageShell>
 </template>

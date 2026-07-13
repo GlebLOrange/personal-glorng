@@ -37,7 +37,7 @@ test.describe("public pages", () => {
     await expect(page.getByRole("link", { name: /video download/i })).toBeVisible();
   });
 
-  test("guest sees weather card in header on portfolio", async ({ page }) => {
+  test("guest sees weather tile on portfolio page chrome", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
@@ -74,7 +74,7 @@ test.describe("public pages", () => {
 
   test("guest can open public recipes page", async ({ page }) => {
     await page.goto("/recipes");
-    await expect(page.getByRole("heading", { name: /^€ recipes$/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^recipes$/i })).toBeVisible();
   });
 
   test("guest can open public shortener page", async ({ page }) => {
@@ -87,6 +87,32 @@ test.describe("public pages", () => {
     await page.goto("/vid-download");
     await expect(page.getByRole("heading", { name: /vid-download/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /download/i })).toBeVisible();
+  });
+
+  test("guest sees weather tile on calculator page chrome", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto("/calculator");
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
+  });
+
+  test("mobile nav stays reachable after scrolling down", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await page.getByRole("button", { name: /toggle navigation menu/i }).click();
+    await expect(page.getByRole("link", { name: /^news$/i })).toBeVisible();
+  });
+
+  test("guest can open a news article from the list", async ({ page }) => {
+    await page.goto("/news");
+    const articleLink = page.locator('a[href^="/news/"]').first();
+    await expect(articleLink).toBeVisible({ timeout: 15_000 });
+    const href = await articleLink.getAttribute("href");
+    expect(href).toMatch(/^\/news\/.+/);
+
+    await articleLink.click();
+    await expect(page).toHaveURL(new RegExp(`^${href}$`));
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
   });
 
   test("old admin tool URLs redirect to public routes", async ({ page }) => {

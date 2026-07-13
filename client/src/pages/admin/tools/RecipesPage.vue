@@ -2,7 +2,7 @@
 import { computed, onMounted } from "vue";
 
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import RecipeCard from "@/components/recipes/RecipeCard.vue";
@@ -88,7 +88,13 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
 </script>
 
 <template>
-  <AdminPageLayout title="recipes" max-width="xl" back-to="/tools">
+  <PageShell
+    title="recipes"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'recipes' }]"
+    back-to="/tools"
+    max-width="xl"
+    :narrow="false"
+  >
     <header class="page-intro">
       <div v-if="canWrite" class="flex flex-wrap gap-2">
         <BaseButton variant="primary" @click="openCreate">+ New recipe</BaseButton>
@@ -188,5 +194,5 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
       @confirm="confirmDelete"
       @cancel="cancelDelete"
     />
-  </AdminPageLayout>
+  </PageShell>
 </template>
