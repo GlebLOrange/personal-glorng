@@ -475,10 +475,10 @@ function downloadResult(): void {
         <div>
           <h2 class="text-lg font-semibold text-surface-light">Import batch</h2>
           <p class="text-sm text-surface-mid">{{ importSummary }}</p>
-          <p v-if="importResult.error_count > 0" class="text-xs text-amber-400">
+          <p v-if="importResult.error_count > 0" class="text-xs text-status-warning">
             {{ importResult.error_count }} row(s) failed parsing and were stored with errors.
           </p>
-          <p v-if="selectedBatch?.promoted_count" class="text-xs text-emerald-400 mt-1">
+          <p v-if="selectedBatch?.promoted_count" class="text-xs text-status-success mt-1">
             {{ selectedBatch.promoted_count }} row(s) promoted to embed storage.
           </p>
         </div>

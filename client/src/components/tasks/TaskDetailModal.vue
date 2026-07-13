@@ -90,8 +90,8 @@ function actionVariant(status: TaskStatus): "primary" | "ghost" {
               :class="[
                 'text-xs px-2 py-0.5 rounded-full shrink-0',
                 reminder.sent
-                  ? 'text-green-400 bg-green-400/10'
-                  : 'text-yellow-400 bg-yellow-400/10',
+                  ? 'text-status-success bg-status-success/10'
+                  : 'text-status-warning bg-status-warning/10',
               ]"
             >
               {{ reminder.sent ? "Delivered" : "Upcoming" }}

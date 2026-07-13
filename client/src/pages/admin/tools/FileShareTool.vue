@@ -5,6 +5,7 @@ import ShareableListItem from "@/components/admin/ShareableListItem.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
+import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
@@ -112,19 +113,30 @@ onMounted(loadFiles);
     </BaseButton>
 
     <div class="space-y-3">
-      <ShareableListItem
-        v-for="f in files"
-        :key="f.id"
-        :title="f.original_filename"
-        :link="publicUrl('f', f.code)"
-        :meta="fileMeta(f)"
-        @copy="copy(publicUrl('f', f.code))"
-        @delete="deleteFile(f.id)"
-      />
+      <div v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading shared files">
+        <Card v-for="n in 3" :key="n" variant="compact" class="animate-pulse">
+          <div class="h-4 w-48 bg-surface-border rounded mb-2" />
+          <div class="h-3 w-32 bg-surface-border rounded" />
+        </Card>
+      </div>
 
-      <EmptyState v-if="files.length === 0 && !listLoading">
-        No shared files yet. Upload one above.
-      </EmptyState>
+      <template v-else>
+        <ShareableListItem
+          v-for="f in files"
+          :key="f.id"
+          :title="f.original_filename"
+          :link="publicUrl('f', f.code)"
+          :meta="fileMeta(f)"
+          @copy="copy(publicUrl('f', f.code))"
+          @delete="deleteFile(f.id)"
+        />
+
+        <EmptyState
+          v-if="files.length === 0"
+          title="No shared files"
+          description="Upload a file above to get a shareable link."
+        />
+      </template>
     </div>
   </AdminPageLayout>
 </template>

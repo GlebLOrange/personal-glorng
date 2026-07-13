@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
@@ -17,15 +18,31 @@ import { useTasks } from "@/composables/useTasks";
 
 type Tab = "queue" | "intakes" | "sync";
 
-const { isSuperuser } = usePermissions();
-
 const TASK_TABS: { id: Tab; label: string }[] = [
   { id: "queue", label: "queue" },
   { id: "intakes", label: "intakes" },
   { id: "sync", label: "sync" },
 ];
 
+const route = useRoute();
+const router = useRouter();
 const activeTab = ref<Tab>("queue");
+
+function parseTaskTab(value: unknown): Tab | null {
+  return typeof value === "string" && TASK_TABS.some((item) => item.id === value)
+    ? (value as Tab)
+    : null;
+}
+
+function switchTab(tab: string): void {
+  if (!TASK_TABS.some((item) => item.id === tab)) return;
+  activeTab.value = tab as Tab;
+  void router.replace({ query: { ...route.query, tab } });
+  if (tab === "intakes") void loadIntakes();
+  if (tab === "sync") void loadSyncQueue();
+}
+
+const { isSuperuser } = usePermissions();
 
 const {
   tasks,
@@ -64,14 +81,13 @@ useScrollListFingerprint(
     `${activeTab.value}:${filterStatus.value}:${page.value}:${tasks.value[0]?.id ?? ""}:${intakes.value[0]?.id ?? ""}:${syncQueue.value[0]?.id ?? ""}`,
 );
 
-function switchTab(tab: string): void {
-  if (!TASK_TABS.some((item) => item.id === tab)) return;
-  activeTab.value = tab as Tab;
-  if (tab === "intakes") void loadIntakes();
-  if (tab === "sync") void loadSyncQueue();
-}
-
 onMounted(() => {
+  const tab = parseTaskTab(route.query.tab);
+  if (tab) {
+    activeTab.value = tab;
+    if (tab === "intakes") void loadIntakes();
+    if (tab === "sync") void loadSyncQueue();
+  }
   void loadTasks();
   void loadStats();
 });

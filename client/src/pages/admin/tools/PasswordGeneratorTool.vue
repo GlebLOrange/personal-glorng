@@ -123,7 +123,7 @@ async function generatePassword(): Promise<void> {
           </BaseButton>
           <BaseButton variant="ghost" size="sm" @click="copy(generated)">Copy</BaseButton>
         </div>
-        <p class="text-xs" :class="strength.valid ? 'text-green-400' : 'text-surface-mid'">
+        <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
           {{ strength.message }}
         </p>
       </div>

@@ -1,7 +1,8 @@
+/** Chart palette aligned with @theme accents in main.css */
 export const CHART_COLORS = [
-  "#7BBDE2",
-  "#B8A3C8",
-  "#D4CE94",
+  "#7bbde2",
+  "#b8a3c8",
+  "#d4ce94",
   "#C4B8AC",
   "#8A847E",
   "#5a8fb0",

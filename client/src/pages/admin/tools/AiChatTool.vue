@@ -99,7 +99,7 @@ onMounted(() => {
         <span class="text-surface-mid/60 text-xs">·</span>
         <span class="text-surface-mid text-xs">{{ modelLabel }}</span>
         <span class="text-surface-mid/60 text-xs">· personal search</span>
-        <span v-if="!configLoading && !isReady" class="ml-auto text-xs text-amber-400/90">
+        <span v-if="!configLoading && !isReady" class="ml-auto text-xs text-status-warning/90">
           not configured
         </span>
       </div>
@@ -164,7 +164,7 @@ onMounted(() => {
           </div>
           <div class="flex gap-2">
             <dt class="text-surface-mid w-28 shrink-0">API key</dt>
-            <dd :class="chatConfig.configured ? 'text-emerald-400' : 'text-amber-400'">
+            <dd :class="chatConfig.configured ? 'text-status-success' : 'text-status-warning'">
               {{ chatConfig.configured ? "configured" : "missing" }}
             </dd>
           </div>

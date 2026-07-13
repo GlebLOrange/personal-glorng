@@ -50,7 +50,7 @@ const skeletonRows = 3;
               · Next retry: {{ formatDate(item.next_retry_at) }}
             </span>
           </div>
-          <div v-if="item.last_error" class="text-xs text-red-400 mt-1 break-words">
+          <div v-if="item.last_error" class="text-xs text-status-error mt-1 break-words">
             {{ item.last_error }}
           </div>
         </div>

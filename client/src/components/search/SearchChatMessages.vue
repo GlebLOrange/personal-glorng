@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import EmptyState from "@/components/ui/EmptyState.vue";
 import { isExternalHref, safeNavigationHref } from "@/utils/safeUrl";
 import type { ChatMessage } from "@/types/search";
 
@@ -56,9 +57,7 @@ const messageSourceLinks = computed(() =>
 
 <template>
   <div class="space-y-3">
-    <p v-if="!messages.length" class="text-surface-mid text-sm text-center py-6">
-      {{ emptyMessage }}
-    </p>
+    <EmptyState v-if="!messages.length" :description="emptyMessage" />
 
     <div
       v-for="(msg, index) in messages"
@@ -112,7 +111,7 @@ const messageSourceLinks = computed(() =>
 
       <p
         v-else-if="msg.role === 'assistant' && !loading && !msg.sources?.length && msg.content"
-        class="mt-2 text-[11px] text-amber-400/90"
+        class="mt-2 text-[11px] text-status-warning/90"
       >
         No matching documents — answer may be limited.
       </p>

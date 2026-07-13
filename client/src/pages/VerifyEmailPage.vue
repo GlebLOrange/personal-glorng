@@ -41,7 +41,7 @@ onMounted(async () => {
       </h1>
 
       <p v-if="status === 'loading'" class="text-surface-mid text-sm">Verifying your email...</p>
-      <p v-else class="text-sm" :class="status === 'success' ? 'text-green-400' : 'text-red-400'">
+      <p v-else class="text-sm" :class="status === 'success' ? 'text-status-success' : 'text-status-error'">
         {{ message }}
       </p>
 

@@ -101,7 +101,7 @@ onUnmounted(() => {
             {{ title }}
           </h2>
           <button
-            class="ml-auto text-surface-mid hover:text-surface-light transition-colors text-xl leading-none"
+            class="ml-auto rounded text-xl leading-none text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
             aria-label="Close"
             @click="$emit('close')"
           >
