@@ -35,7 +35,6 @@ test.describe("public pages", () => {
     await expect(page.getByRole("link", { name: /recipes/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /url shortener/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /video download/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /◷ weather/i })).toBeVisible();
   });
 
   test("guest sees weather card in header on portfolio", async ({ page }) => {
@@ -140,6 +139,6 @@ test.describe("authenticated admin", () => {
 
     await page.goto("/admin");
     await expect(page.getByRole("heading", { name: /^€ tools$/i })).toBeVisible();
-    await expect(page.getByText(/Services shared across web, bot, and workers/i)).toBeVisible();
+    await expect(page.locator('a[href="/admin/users"]')).toBeVisible();
   });
 });

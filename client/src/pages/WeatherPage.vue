@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import BackLink from "@/components/ui/BackLink.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import { Card } from "@/components/ui/card";
 import WeatherLocationCard from "@/components/weather/WeatherLocationCard.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
@@ -51,29 +51,26 @@ async function handleRemove(id: number | string): Promise<void> {
 </script>
 
 <template>
-  <main class="max-w-5xl mx-auto px-6 py-12 font-mono">
-    <header class="mb-10">
-      <div class="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <h1 class="text-3xl font-bold accent-gradient">{{ WEATHER_TOOL_NAME }}</h1>
-        <BackLink to="/tools" />
-      </div>
+  <PageShell
+    :title="WEATHER_TOOL_NAME"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'weather' }]"
+    body-class="font-mono"
+  >
+    <header class="page-intro">
       <p class="text-sm text-surface-mid">Local time and conditions for your cities.</p>
     </header>
 
-    <section class="mb-10">
+    <section class="mb-10 min-w-0">
       <h2 class="text-lg font-bold text-surface-light mb-4">current</h2>
-      <Card
-        v-if="loading || seeding"
-        class="text-sm text-surface-mid animate-pulse font-mono"
-      >
+      <Card v-if="loading || seeding" class="text-sm text-surface-mid animate-pulse font-mono">
         Loading...
       </Card>
-      <Card v-else class="font-mono">
+      <Card v-else class="min-w-0 font-mono">
         <WeatherSummaryContent :query="defaultLocation?.query ?? ''" />
       </Card>
     </section>
 
-    <section class="mb-10">
+    <section class="mb-10 min-w-0">
       <h2 class="text-lg font-bold text-surface-light mb-4">add city</h2>
       <WeatherLocationForm
         :add-location="handleAdd"
@@ -82,7 +79,10 @@ async function handleRemove(id: number | string): Promise<void> {
       />
     </section>
 
-    <section v-if="trackerLocations.length > 0 || (!loading && !seeding && locations.length > 0)">
+    <section
+      v-if="trackerLocations.length > 0 || (!loading && !seeding && locations.length > 0)"
+      class="min-w-0"
+    >
       <h2 class="text-lg font-bold text-surface-light mb-4">trackers</h2>
 
       <div v-if="loading || seeding" class="text-sm text-surface-mid animate-pulse mb-4">
@@ -93,7 +93,7 @@ async function handleRemove(id: number | string): Promise<void> {
         No extra cities yet. Search above to track more locations.
       </div>
 
-      <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div v-else class="grid min-w-0 grid-cols-1 gap-6">
         <WeatherLocationCard
           v-for="loc in trackerLocations"
           :key="loc.id"
@@ -104,5 +104,5 @@ async function handleRemove(id: number | string): Promise<void> {
         />
       </div>
     </section>
-  </main>
+  </PageShell>
 </template>

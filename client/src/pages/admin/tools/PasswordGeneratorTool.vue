@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import AdminBreadcrumbs from "@/components/layout/AdminBreadcrumbs.vue";
-import BackLink from "@/components/ui/BackLink.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -63,12 +62,13 @@ async function generatePassword(): Promise<void> {
 </script>
 
 <template>
-  <div class="max-w-md mx-auto px-6 py-10">
-    <AdminBreadcrumbs current-label="password generator" />
-    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <h1 class="text-3xl font-bold accent-gradient">password generator</h1>
-      <BackLink to="/tools" />
-    </div>
+  <PageShell
+    title="password generator"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'password generator' }]"
+    back-to="/tools"
+    max-width="md"
+    :narrow="false"
+  >
     <Card>
       <form class="space-y-4" @submit.prevent="generatePassword">
         <BaseInput v-model.number="length" type="number" label="Length" />
@@ -128,5 +128,5 @@ async function generatePassword(): Promise<void> {
         </p>
       </div>
     </Card>
-  </div>
+  </PageShell>
 </template>

@@ -79,6 +79,7 @@ onMounted(() => {
 
 <template>
   <AdminPageLayout title="tasks" max-width="xl">
+    <div class="min-w-0">
     <TaskSummaryBar :stats="stats" :loading="statsLoading" />
 
     <AdminTabBar :model-value="activeTab" :tabs="TASK_TABS" @update:model-value="switchTab" />
@@ -137,5 +138,6 @@ onMounted(() => {
       @retry-sync="retrySync"
       @update-status="updateTaskStatus(selectedTask.id, $event)"
     />
+    </div>
   </AdminPageLayout>
 </template>

@@ -89,9 +89,11 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
 
 <template>
   <AdminPageLayout title="recipes" max-width="xl" back-to="/tools">
-    <div v-if="canWrite" class="mb-4 flex justify-end">
-      <BaseButton variant="primary" @click="openCreate">+ New recipe</BaseButton>
-    </div>
+    <header class="page-intro">
+      <div v-if="canWrite" class="flex flex-wrap gap-2">
+        <BaseButton variant="primary" @click="openCreate">+ New recipe</BaseButton>
+      </div>
+    </header>
 
     <RecipeFilters
       v-model:search="search"

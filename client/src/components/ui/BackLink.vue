@@ -1,19 +1,26 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from "vue-router";
 
-defineProps<{
-  to: RouteLocationRaw;
-}>();
+withDefaults(
+  defineProps<{
+    to: RouteLocationRaw;
+    size?: "default" | "compact";
+  }>(),
+  {
+    size: "default",
+  },
+);
 </script>
 
 <template>
   <RouterLink
     :to="to"
     aria-label="Back"
-    class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-surface-border bg-surface-card text-surface-light transition-all duration-200 hover:border-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+    class="inline-flex items-center justify-center rounded-lg border border-surface-border bg-surface-card text-surface-light transition-all duration-200 hover:border-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+    :class="size === 'compact' ? 'h-8 w-8' : 'h-10 w-10'"
   >
     <svg
-      class="h-10 w-10"
+      :class="size === 'compact' ? 'h-5 w-5' : 'h-10 w-10'"
       viewBox="0 0 40 40"
       fill="none"
       stroke="currentColor"
