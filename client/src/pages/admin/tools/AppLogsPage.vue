@@ -101,9 +101,11 @@ onMounted(load);
 
 <template>
   <AdminPageLayout title="app logs">
-    <p class="text-surface-muted text-xs mb-6 -mt-4">
-      Structured application logs persisted from the API server
-    </p>
+    <header class="page-intro">
+      <p class="text-xs text-surface-muted">
+        Structured application logs persisted from the API server
+      </p>
+    </header>
 
     <Card class="mb-6">
       <div class="flex flex-wrap gap-3 items-end">
@@ -146,7 +148,7 @@ onMounted(load);
 
     <div v-else-if="items.length === 0" class="text-surface-mid text-sm">No log entries found.</div>
 
-    <div v-else class="space-y-3">
+    <div v-else class="min-w-0 space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <p class="text-xs text-surface-muted">
           {{ total }} entries total · page {{ page }} of {{ Math.max(totalPages, 1) }}
@@ -175,7 +177,7 @@ onMounted(load);
           <span class="text-xs px-2 py-0.5 rounded" :class="levelClass(entry.level)">
             {{ entry.level }}
           </span>
-          <span class="text-surface-light">{{ entry.message }}</span>
+          <span class="min-w-0 break-words text-surface-light">{{ entry.message }}</span>
           <span class="text-xs text-surface-muted ml-auto">
             {{ formatDate(entry.occurred_at) }}
           </span>

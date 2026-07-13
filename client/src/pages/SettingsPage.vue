@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card, CardBody, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -211,8 +211,22 @@ async function deleteAccount(): Promise<void> {
 </script>
 
 <template>
-  <AdminPageLayout title="settings" max-width="md">
-    <div class="space-y-5">
+  <PageShell
+    title="settings"
+    :breadcrumbs="[{ label: 'settings' }]"
+    max-width="5xl"
+    :narrow="false"
+  >
+    <header class="page-intro">
+      <p class="text-sm text-surface-mid">
+        Manage your profile, security, preferences, and connected accounts.
+      </p>
+    </header>
+
+    <div class="min-w-0 space-y-8">
+      <section class="space-y-5">
+        <h2 class="mb-3 text-xs uppercase tracking-wider text-surface-muted">Account</h2>
+
       <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
@@ -352,6 +366,12 @@ async function deleteAccount(): Promise<void> {
         </form>
         </CardBody>
       </Card>
+      </section>
+
+      <section class="space-y-5">
+        <h2 class="mb-3 text-xs uppercase tracking-wider text-surface-muted">
+          Preferences & connections
+        </h2>
 
       <Card>
         <CardHeader>
@@ -383,7 +403,11 @@ async function deleteAccount(): Promise<void> {
           <p v-else-if="githubError" class="text-sm text-yellow-300">{{ githubError }}</p>
           <p v-else-if="githubStatus.linked" class="text-sm text-surface-mid">
             GitHub linked as
-            <strong class="text-surface-light">{{ githubStatus.github_username }}</strong>
+            <span
+              class="rounded border border-surface-border bg-surface-dark/60 px-2 py-0.5 font-medium text-surface-light"
+            >
+              {{ githubStatus.github_username }}
+            </span>
           </p>
           <p v-else class="text-sm text-surface-mid">GitHub is not linked.</p>
           <div class="flex flex-wrap gap-3">
@@ -415,6 +439,10 @@ async function deleteAccount(): Promise<void> {
         </section>
         </CardBody>
       </Card>
+      </section>
+
+      <section class="space-y-5">
+        <h2 class="mb-3 text-xs uppercase tracking-wider text-surface-muted">Access</h2>
 
       <Card>
         <CardHeader>
@@ -430,7 +458,7 @@ async function deleteAccount(): Promise<void> {
             <span
               v-for="perm in permissions"
               :key="perm"
-              class="rounded-full border border-surface-border px-2 py-1 text-xs text-surface-muted"
+              class="break-words rounded-full border border-surface-border px-2 py-1 text-xs text-surface-muted"
             >
               {{ perm }}
             </span>
@@ -438,10 +466,14 @@ async function deleteAccount(): Promise<void> {
         </section>
         </CardBody>
       </Card>
+      </section>
+
+      <section class="mt-4 space-y-5">
+        <h2 class="mb-3 text-xs uppercase tracking-wider text-red-400/80">Danger zone</h2>
 
       <Card tint="danger">
         <CardHeader>
-          <h2 class="card-title text-red-400">Danger zone</h2>
+          <h2 class="card-title text-red-400">Delete account</h2>
           <CardDescription>
             Account deletion is permanent. Your password and confirmation are required.
           </CardDescription>
@@ -466,6 +498,7 @@ async function deleteAccount(): Promise<void> {
         </form>
         </CardBody>
       </Card>
+      </section>
     </div>
-  </AdminPageLayout>
+  </PageShell>
 </template>

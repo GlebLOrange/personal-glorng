@@ -15,22 +15,56 @@ const props = withDefaults(
   defineProps<{
     query?: string;
     interactive?: boolean;
-    align?: "left" | "right";
+    align?: "left" | "center" | "right";
+    dense?: boolean;
+    size?: "default" | "chrome";
   }>(),
   {
     query: "",
     interactive: false,
     align: "left",
+    dense: false,
+    size: "default",
   },
 );
 
 const isRight = computed(() => props.align === "right");
+const isCenter = computed(() => props.align === "center");
 
-const stackClass = computed(() =>
-  isRight.value ? "items-end text-right" : "items-start text-left",
+const stackClass = computed(() => {
+  if (isCenter.value) return "items-center text-center";
+  if (isRight.value) return "items-end text-right";
+  return "items-start text-left";
+});
+
+const skeletonClass = computed(() => {
+  if (isCenter.value || isRight.value) return "mx-auto";
+  return undefined;
+});
+
+const timeClass = computed(() => {
+  if (props.size === "chrome") {
+    return "text-lg font-bold leading-none text-surface-light tabular-nums tracking-tight";
+  }
+  if (props.dense) {
+    return "text-2xl font-bold text-surface-light tabular-nums tracking-tight";
+  }
+  return "text-2xl sm:text-3xl font-bold text-surface-light tabular-nums tracking-tight";
+});
+
+const dateClass = computed(() =>
+  props.size === "chrome" ? "text-xs leading-none text-surface-mid" : "text-sm text-surface-mid",
 );
 
-const skeletonClass = computed(() => (isRight.value ? "ml-auto" : undefined));
+const conditionsClass = computed(() => {
+  const base =
+    props.size === "chrome"
+      ? "flex items-center gap-1 min-w-0 text-xs leading-none text-surface-mid"
+      : "flex items-center gap-1.5 min-w-0 text-sm text-surface-mid";
+  if (isCenter.value) return `${base} justify-center`;
+  if (isRight.value) return `${base} justify-end`;
+  return base;
+});
 
 const { config, fetchConfig } = useWeatherConfig();
 
@@ -111,7 +145,7 @@ onMounted(async () => {
       <time
         v-if="liveTime"
         :datetime="liveDateTime ?? undefined"
-        class="text-2xl sm:text-3xl font-bold text-surface-light tabular-nums tracking-tight"
+        :class="timeClass"
         role="timer"
       >
         {{ liveTime }}
@@ -119,15 +153,11 @@ onMounted(async () => {
       <time
         v-if="liveDate"
         :datetime="liveDateIso ?? undefined"
-        class="text-sm text-surface-mid"
+        :class="dateClass"
       >
         {{ liveDate }}
       </time>
-      <p
-        class="flex items-center gap-1.5 min-w-0 text-sm text-surface-mid"
-        :class="isRight ? 'justify-end' : undefined"
-        :aria-label="conditionsAriaLabel"
-      >
+      <p :class="conditionsClass" :aria-label="conditionsAriaLabel">
         <span aria-hidden="true">{{ weatherEmoji }}</span>
         <span class="font-bold accent-gradient tabular-nums shrink-0">{{ temperature }}°C</span>
         <span aria-hidden="true" class="text-surface-muted">·</span>

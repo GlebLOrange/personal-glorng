@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, ref } from "vue";
-
+import PageShell from "@/components/layout/PageShell.vue";
 import ContactIcon from "@/components/contact/ContactIcon.vue";
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import DonationsBlock from "@/components/donations/DonationsBlock.vue";
@@ -53,15 +53,24 @@ onMounted(loadResume);
 
 <template>
   <div class="portfolio-cv">
-    <p
-      v-if="apiError"
-      class="max-w-5xl mx-auto px-6 pt-4 text-label text-accent-golden print:hidden"
-      role="status"
+    <PageShell
+      as="div"
+      title="portfolio"
+      :breadcrumbs="[{ label: 'portfolio' }]"
+      :narrow="false"
+      padding-y=""
+      body-class="!mt-0"
     >
-      Using cached portfolio data — live sync unavailable.
-    </p>
+      <p
+        v-if="apiError"
+        class="text-label text-accent-golden print:hidden"
+        role="status"
+      >
+        Using cached portfolio data — live sync unavailable.
+      </p>
+    </PageShell>
 
-    <SectionWrapper>
+    <SectionWrapper centered>
       <HeroBlock
         :name="resume.name"
         :title="resume.title"

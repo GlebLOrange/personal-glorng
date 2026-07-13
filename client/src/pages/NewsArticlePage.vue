@@ -2,7 +2,7 @@
 import { computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 
-import BackLink from "@/components/ui/BackLink.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, useNews } from "@/composables/useNews";
@@ -12,6 +12,8 @@ const route = useRoute();
 const slug = computed(() => String(route.params.slug ?? ""));
 
 const { article, detailLoading, detailError, loadArticle } = useNews();
+
+const articleTitle = computed(() => article.value?.title ?? "article");
 
 async function loadCurrentArticle(): Promise<void> {
   if (slug.value) {
@@ -26,9 +28,12 @@ watch(slug, () => {
 </script>
 
 <template>
-  <main class="max-w-3xl mx-auto px-6 py-12">
-    <BackLink to="/news" class="mb-8" />
-
+  <PageShell
+    :title="articleTitle"
+    :breadcrumbs="[{ label: 'news', to: '/news' }, { label: 'article' }]"
+    back-to="/news"
+    max-width="md"
+  >
     <Card
       v-if="detailLoading"
       class="h-96 animate-pulse"
@@ -41,7 +46,7 @@ watch(slug, () => {
       <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">Retry</BaseButton>
     </Card>
 
-    <article v-else-if="article">
+    <article v-else-if="article" class="min-w-0">
       <header class="mb-8">
         <div class="mb-4 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
           <span>{{ article.source_name }}</span>
@@ -50,25 +55,20 @@ watch(slug, () => {
             {{ formatNewsDate(article.published_at ?? article.created_at) }}
           </time>
         </div>
-        <h1 class="section-title mb-4">{{ article.title }}</h1>
-        <p class="text-body">{{ article.summary }}</p>
+        <h1 class="section-title mb-4 break-words">{{ article.title }}</h1>
+        <p class="text-body break-words">{{ article.summary }}</p>
       </header>
 
-      <section v-if="article.bullets.length" class="mb-8">
+      <section v-if="article.bullets.length" class="mb-8 min-w-0">
         <h2 class="card-title mb-4">Key points</h2>
         <ul class="space-y-3 text-sm text-surface-mid">
-          <Card
-            v-for="bullet in article.bullets"
-            :key="bullet"
-            as="li"
-            variant="compact"
-          >
+          <Card v-for="bullet in article.bullets" :key="bullet" as="li" variant="compact">
             {{ bullet }}
           </Card>
         </ul>
       </section>
 
-      <section class="mb-8">
+      <section class="mb-8 min-w-0">
         <h2 class="card-title mb-4">Themes</h2>
         <div class="flex flex-wrap gap-2">
           <span
@@ -97,5 +97,5 @@ watch(slug, () => {
         </a>
       </Card>
     </article>
-  </main>
+  </PageShell>
 </template>

@@ -534,7 +534,8 @@ onMounted(() => {
 
 <template>
   <AdminPageLayout title="expenses" max-width="xl">
-    <section class="flex flex-col gap-4 mb-6">
+    <div class="min-w-0">
+    <section class="mb-6 flex flex-col gap-4">
       <Card variant="compact" class="flex flex-col gap-3">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
@@ -747,5 +748,6 @@ onMounted(() => {
       @confirm="confirmDeleteCategory"
       @cancel="deleteCategoryTarget = null"
     />
+    </div>
   </AdminPageLayout>
 </template>

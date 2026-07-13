@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import PageShell from "@/components/layout/PageShell.vue";
 import { Card } from "@/components/ui/card";
 import { groupServicesByCategory, publicToolsAsServices } from "@/platform/services";
 
@@ -8,20 +9,24 @@ const sections = computed(() => groupServicesByCategory(publicToolsAsServices())
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto px-6 py-10">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold accent-gradient mb-2">tools</h1>
+  <PageShell title="tools" :breadcrumbs="[{ label: 'tools' }]" :narrow="false">
+    <header class="page-intro">
       <p class="text-sm text-surface-mid">Public utilities available without signing in.</p>
-    </div>
+    </header>
 
-    <section v-for="section in sections" :key="section.category" class="mb-10">
+    <section v-for="section in sections" :key="section.category" class="mb-10 min-w-0">
       <h2 class="text-lg font-bold text-surface-light mb-4">{{ section.label }}</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <RouterLink v-for="tool in section.services" :key="tool.adminRoute" :to="tool.adminRoute">
-          <Card hoverable class="h-full">
+      <div class="page-tool-grid">
+        <RouterLink
+          v-for="tool in section.services"
+          :key="tool.adminRoute"
+          :to="tool.adminRoute"
+          class="page-tile"
+        >
+          <Card hoverable class="page-tile-card h-full">
             <div class="text-2xl mb-3">{{ tool.icon }}</div>
-            <h3 class="text-surface-light font-bold mb-1">{{ tool.name }}</h3>
-            <p class="text-xs text-surface-mid">{{ tool.description }}</p>
+            <h3 class="text-surface-light font-bold mb-1 break-words">{{ tool.name }}</h3>
+            <p class="text-xs text-surface-mid break-words">{{ tool.description }}</p>
           </Card>
         </RouterLink>
       </div>
@@ -31,5 +36,5 @@ const sections = computed(() => groupServicesByCategory(publicToolsAsServices())
       <RouterLink to="/login" class="text-accent-blue hover:underline">Sign in</RouterLink>
       to unlock limited demo tools.
     </p>
-  </div>
+  </PageShell>
 </template>

@@ -37,6 +37,65 @@
   --spacing-grid-gap: 0.5rem;
 }
 
+@utility page-shell {
+  @apply mx-auto mt-[20px] w-full px-6;
+  --tile: calc((100% - 2rem) / 3);
+  --content: calc(var(--tile) * 2 + 1rem);
+}
+
+@utility page-body {
+  @apply w-full min-w-0 mt-[100px];
+}
+
+@utility page-breadcrumb {
+  @apply text-[11px] leading-none font-normal;
+}
+
+@utility page-breadcrumb-row {
+  @apply flex h-4 items-center justify-between gap-2 pr-1;
+}
+
+@utility page-intro {
+  @apply mb-8 min-w-0;
+}
+
+@utility page-tile-scope {
+  --tile: calc((100% - 2rem) / 3);
+  --content: calc(var(--tile) * 2 + 1rem);
+}
+
+@utility page-tool-grid {
+  @apply grid min-w-0 grid-cols-1 gap-4;
+}
+
+@utility page-tile {
+  @apply block h-full min-w-0 w-full;
+}
+
+@utility page-tile-card {
+  @apply flex h-full min-w-0 flex-col items-start p-6 text-left;
+}
+
+@utility page-chrome-weather-card {
+  @apply flex h-full min-w-0 flex-col items-center justify-center overflow-hidden px-3 py-1 text-center;
+}
+
+@utility page-weather-tile-card {
+  @apply flex h-full min-w-0 flex-col items-center justify-center px-6 py-12 text-center;
+}
+
+@media (min-width: 768px) {
+  .page-shell > .page-body-narrow,
+  .page-tile-scope > .page-body-narrow {
+    max-width: var(--content);
+  }
+
+  .page-shell .page-tool-grid,
+  .page-tile-scope .page-tool-grid {
+    grid-template-columns: repeat(3, var(--tile));
+  }
+}
+
 @utility font-data {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;

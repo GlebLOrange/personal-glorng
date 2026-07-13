@@ -239,11 +239,15 @@ watch(articleId, () => {
 
 <template>
   <AdminPageLayout title="edit news article" max-width="xl" back-to="/news">
-    <div v-if="canWrite && article" class="mb-6 flex justify-end">
-      <BaseButton variant="primary" :disabled="actionLoading" @click="saveArticle">
-        {{ actionLoading ? "Saving..." : "Save article" }}
-      </BaseButton>
-    </div>
+    <header v-if="canWrite && article" class="page-intro">
+      <div class="flex flex-wrap gap-2">
+        <BaseButton variant="primary" :disabled="actionLoading" @click="saveArticle">
+          {{ actionLoading ? "Saving..." : "Save article" }}
+        </BaseButton>
+      </div>
+    </header>
+
+    <div class="min-w-0">
 
     <Card v-if="!Number.isInteger(articleId) || articleId <= 0" role="alert">
       <p class="text-sm text-accent-golden">Invalid news article id.</p>
@@ -419,5 +423,6 @@ watch(articleId, () => {
         </Card>
       </aside>
     </form>
+    </div>
   </AdminPageLayout>
 </template>

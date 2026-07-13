@@ -93,7 +93,9 @@ onMounted(load);
 
 <template>
   <AdminPageLayout title="audit log">
-    <p class="text-surface-muted text-xs mb-6 -mt-4">Persistent security and domain change trail</p>
+    <header class="page-intro">
+      <p class="text-xs text-surface-muted">Persistent security and domain change trail</p>
+    </header>
 
     <Card class="mb-6">
       <div class="flex flex-wrap gap-3 items-end">
@@ -127,7 +129,7 @@ onMounted(load);
       No audit events found.
     </div>
 
-    <div v-else class="space-y-3">
+    <div v-else class="min-w-0 space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <p class="text-xs text-surface-muted">
           {{ total }} events total · page {{ page }} of {{ Math.max(totalPages, 1) }}
@@ -156,7 +158,7 @@ onMounted(load);
           <span class="text-xs px-2 py-0.5 rounded" :class="categoryClass(event.category)">
             {{ event.category }}
           </span>
-          <span class="text-surface-light">{{ event.action }}</span>
+          <span class="min-w-0 break-words text-surface-light">{{ event.action }}</span>
           <span class="text-xs text-surface-muted ml-auto">
             {{ formatDate(event.occurred_at) }}
           </span>

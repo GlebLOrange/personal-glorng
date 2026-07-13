@@ -78,30 +78,32 @@ onMounted(load);
 
 <template>
   <AdminPageLayout title="feedback">
-    <div class="flex gap-2 mb-6">
-      <BaseButton
-        v-for="f in ['all', 'unread', 'archived'] as const"
-        :key="f"
-        :variant="filter === f ? 'primary' : 'ghost'"
-        size="sm"
-        @click="filter = f"
-      >
-        {{ f.charAt(0).toUpperCase() + f.slice(1) }}
-      </BaseButton>
-    </div>
+    <header class="page-intro">
+      <div class="flex flex-wrap gap-2">
+        <BaseButton
+          v-for="f in ['all', 'unread', 'archived'] as const"
+          :key="f"
+          :variant="filter === f ? 'primary' : 'ghost'"
+          size="sm"
+          @click="filter = f"
+        >
+          {{ f.charAt(0).toUpperCase() + f.slice(1) }}
+        </BaseButton>
+      </div>
+    </header>
 
-    <div class="space-y-3">
+    <div class="min-w-0 space-y-3">
       <Card
         v-for="item in filtered"
         :key="item.id"
         hoverable
-        class="cursor-pointer"
+        class="min-w-0 cursor-pointer"
         @click="toggle(item)"
       >
         <div class="flex items-start justify-between gap-4">
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-1">
-              <span class="text-surface-light font-bold text-sm truncate">{{ item.theme }}</span>
+              <span class="break-words text-sm font-bold text-surface-light">{{ item.theme }}</span>
               <span class="text-[10px] px-1.5 py-0.5 rounded" :class="statusColors[item.status]">
                 {{ item.status }}
               </span>
@@ -121,7 +123,7 @@ onMounted(load);
         </div>
 
         <div v-if="expandedId === item.id" class="mt-3 pt-3 border-t border-surface-border">
-          <p class="text-sm text-surface-sage whitespace-pre-wrap mb-3">{{ item.message }}</p>
+          <p class="mb-3 whitespace-pre-wrap break-words text-sm text-surface-sage">{{ item.message }}</p>
           <BaseButton variant="ghost" size="sm" @click.stop="reply(item)"> Reply </BaseButton>
         </div>
       </Card>

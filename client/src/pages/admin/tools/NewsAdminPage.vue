@@ -370,13 +370,11 @@ watch(page, () => {
 
 <template>
   <AdminPageLayout title="news" max-width="xl">
-    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-      <div>
-        <p class="text-sm text-surface-mid mb-2">
-          Manage curated news articles, ingestion, and Telegram delivery.
-        </p>
-        <p class="text-xs text-surface-muted">{{ countLabel }}</p>
-      </div>
+    <header class="page-intro">
+      <p class="text-sm text-surface-mid mb-2">
+        Manage curated news articles, ingestion, and Telegram delivery.
+      </p>
+      <p class="text-xs text-surface-muted mb-4">{{ countLabel }}</p>
       <div v-if="canWrite" class="flex flex-wrap gap-2">
         <BaseButton variant="ghost" size="sm" :disabled="actionLoading" @click="runIngest">
           Run ingest
@@ -385,7 +383,7 @@ watch(page, () => {
           New article
         </BaseButton>
       </div>
-    </div>
+    </header>
 
     <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading news">
       <Card v-for="i in 5" :key="i" class="h-36 animate-pulse" />
@@ -396,12 +394,13 @@ watch(page, () => {
       <BaseButton variant="ghost" size="sm" @click="loadAdminNews">Retry</BaseButton>
     </Card>
 
-    <section v-else-if="articles.length" class="space-y-3">
+    <section v-else-if="articles.length" class="space-y-3 min-w-0">
       <Card
         v-for="item in articles"
         :key="item.id"
         as="article"
         variant="compact"
+        class="min-w-0"
         :hoverable="canWrite"
         :interactive="canWrite"
         :role="canWrite ? 'button' : undefined"
@@ -423,10 +422,10 @@ watch(page, () => {
           </span>
         </div>
 
-        <h2 class="card-title mb-2">
+        <h2 class="card-title mb-2 break-words">
           {{ item.title }}
         </h2>
-        <p class="text-sm text-surface-mid mb-3">{{ item.summary }}</p>
+        <p class="text-sm text-surface-mid mb-3 break-words">{{ item.summary }}</p>
 
         <div class="mb-4 flex flex-wrap gap-2">
           <span

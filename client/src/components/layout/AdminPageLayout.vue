@@ -2,8 +2,7 @@
 import { computed } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 
-import AdminBreadcrumbs from "@/components/layout/AdminBreadcrumbs.vue";
-import BackLink from "@/components/ui/BackLink.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import { formatBreadcrumbLabel } from "@/utils/format";
 
 const props = withDefaults(
@@ -11,35 +10,36 @@ const props = withDefaults(
     title: string;
     maxWidth?: "sm" | "md" | "lg" | "xl";
     backTo?: RouteLocationRaw;
+    catalog?: boolean;
   }>(),
   {
     backTo: "/admin",
+    catalog: false,
   },
 );
 
 const breadcrumbLabel = computed(() => formatBreadcrumbLabel(props.title));
+
+const shellMaxWidth = computed((): "sm" | "md" | "xl" | "5xl" => {
+  if (props.maxWidth === "sm") return "sm";
+  if (props.maxWidth === "md") return "md";
+  return "5xl";
+});
 </script>
 
 <template>
-  <div
-    :class="[
-      'mx-auto px-6 py-16',
-      maxWidth === 'sm'
-        ? 'max-w-sm'
-        : maxWidth === 'md'
-          ? 'max-w-3xl'
-          : maxWidth === 'xl'
-            ? 'max-w-5xl'
-            : 'max-w-3xl',
+  <PageShell
+    :title="title"
+    title-prefix="€ "
+    :breadcrumbs="[
+      { label: 'tools', to: '/admin' },
+      { label: breadcrumbLabel },
     ]"
+    :back-to="backTo"
+    :max-width="shellMaxWidth"
+    :narrow="false"
+    as="div"
   >
-    <AdminBreadcrumbs :current-label="breadcrumbLabel" />
-    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <h1 class="text-2xl font-bold text-surface-light">
-        <span class="accent-gradient">€ {{ title }}</span>
-      </h1>
-      <BackLink :to="backTo" />
-    </div>
     <slot />
-  </div>
+  </PageShell>
 </template>

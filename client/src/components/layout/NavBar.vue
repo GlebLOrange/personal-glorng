@@ -1,21 +1,42 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
+import { useScrollDirection } from "@/composables/useScrollDirection";
 import { useAuthStore } from "@/stores/auth";
 
-const WeatherBar = defineAsyncComponent(() => import("@/components/weather/WeatherBar.vue"));
 const showWeatherBar = ref(false);
+const headerEl = ref<HTMLElement | null>(null);
+const headerSpacerHeight = ref(0);
+let resizeObserver: ResizeObserver | null = null;
 
 const auth = useAuthStore();
 const router = useRouter();
 const mobileOpen = ref(false);
 
+const { isHidden: isHeaderHidden } = useScrollDirection({
+  disabled: () => mobileOpen.value,
+});
+
 onMounted(() => {
   window.setTimeout(() => {
     showWeatherBar.value = true;
   }, 250);
+
+  if (typeof ResizeObserver !== "undefined") {
+    resizeObserver = new ResizeObserver(() => {
+      headerSpacerHeight.value = headerEl.value?.offsetHeight ?? 0;
+    });
+    if (headerEl.value) resizeObserver.observe(headerEl.value);
+  } else {
+    headerSpacerHeight.value = headerEl.value?.offsetHeight ?? 0;
+  }
+});
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
 });
 
 function handleLogout(): void {
@@ -34,17 +55,20 @@ function closeMobileMenu(): void {
 
 <template>
   <div>
-    <nav
-      aria-label="Main navigation"
-      class="sticky top-0 z-40 backdrop-blur-md bg-surface-dark/80 border-b border-surface-border"
-    >
-      <div class="max-w-5xl mx-auto px-6 py-4 md:py-5 flex items-start justify-between gap-4">
-        <RouterLink to="/" class="text-xl font-bold text-surface-light" @click="closeMobileMenu">
-          Gleb.Y
-        </RouterLink>
+    <div :style="{ height: `${headerSpacerHeight}px` }" aria-hidden="true" />
 
-        <div class="hidden md:flex flex-col items-end gap-2 text-base shrink-0">
-          <div class="flex items-center gap-5">
+    <header
+      ref="headerEl"
+      class="fixed left-0 right-0 top-0 z-40 bg-surface-dark/80 backdrop-blur-md transition-transform duration-200"
+      :class="isHeaderHidden ? '-translate-y-full' : 'translate-y-0'"
+    >
+      <nav aria-label="Main navigation" class="border-b border-surface-border">
+        <div class="max-w-5xl mx-auto px-6 py-4 md:py-5 flex items-center justify-between gap-4">
+          <RouterLink to="/" class="text-xl font-bold text-surface-light" @click="closeMobileMenu">
+            Gleb.Y
+          </RouterLink>
+
+          <div class="hidden md:flex items-center gap-5 text-base shrink-0">
             <RouterLink to="/" class="nav-link px-2 py-1"> portfolio </RouterLink>
             <RouterLink to="/news" class="nav-link px-2 py-1"> news </RouterLink>
 
@@ -68,34 +92,32 @@ function closeMobileMenu(): void {
             <RouterLink v-else to="/login" class="nav-link-accent px-2 py-1"> login </RouterLink>
           </div>
 
-          <WeatherBar v-if="showWeatherBar" />
-        </div>
-
-        <button
-          type="button"
-          class="md:hidden interactive-surface px-3 py-2 text-surface-light"
-          :aria-expanded="mobileOpen"
-          aria-controls="nav-mobile-menu"
-          aria-label="Toggle navigation menu"
-          @click="toggleMobileMenu"
-        >
-          <span class="sr-only">Menu</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            class="size-5"
-            aria-hidden="true"
+          <button
+            type="button"
+            class="md:hidden interactive-surface px-3 py-2 text-surface-light"
+            :aria-expanded="mobileOpen"
+            aria-controls="nav-mobile-menu"
+            aria-label="Toggle navigation menu"
+            @click="toggleMobileMenu"
           >
-            <path v-if="!mobileOpen" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
-            <path v-else stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
-          </svg>
-        </button>
-      </div>
-    </nav>
+            <span class="sr-only">Menu</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="size-5"
+              aria-hidden="true"
+            >
+              <path v-if="!mobileOpen" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
+              <path v-else stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+      </nav>
 
-    <NavMobileMenu :open="mobileOpen" :show-weather-bar="showWeatherBar" @close="closeMobileMenu" />
+      <NavMobileMenu :open="mobileOpen" :show-weather-bar="showWeatherBar" @close="closeMobileMenu" />
+    </header>
   </div>
 </template>

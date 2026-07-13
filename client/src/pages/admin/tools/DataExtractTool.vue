@@ -332,9 +332,13 @@ function downloadResult(): void {
 
 <template>
   <AdminPageLayout title="data extract">
-    <p class="text-surface-mid text-sm mb-6">
-      Upload CSV, JSON, XML, or delimited text. Preview records or import them into staging storage.
-    </p>
+    <header class="page-intro">
+      <p class="text-sm text-surface-mid">
+        Upload CSV, JSON, XML, or delimited text. Preview records or import them into staging storage.
+      </p>
+    </header>
+
+    <div class="min-w-0">
 
     <div
       role="button"
@@ -553,5 +557,6 @@ function downloadResult(): void {
         >{{ resultJson }}</pre
       >
     </Card>
+    </div>
   </AdminPageLayout>
 </template>
