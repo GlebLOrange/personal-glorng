@@ -14,6 +14,7 @@ RESUME_DATA: dict[str, Any] = {
     "skills": [
         {
             "category": "Backend",
+            "summary": "Production APIs, auth, workers, and service boundaries.",
             "items": [
                 "Python",
                 "FastAPI",
@@ -25,14 +26,17 @@ RESUME_DATA: dict[str, Any] = {
         },
         {
             "category": "Frontend",
+            "summary": "Responsive UIs with typed components and predictable state.",
             "items": ["Vue 3", "TypeScript", "Pinia", "Tailwind"],
         },
         {
             "category": "Databases",
+            "summary": "Relational and document stores with caching layers.",
             "items": ["PostgreSQL", "MongoDB", "Redis"],
         },
         {
             "category": "DevOps",
+            "summary": "Containerized deploys, CI/CD, and Linux ops.",
             "items": [
                 "Docker",
                 "Docker Compose",
@@ -43,6 +47,7 @@ RESUME_DATA: dict[str, Any] = {
         },
         {
             "category": "Other",
+            "summary": "Cross-cutting concerns for production systems.",
             "items": [
                 "API design",
                 "authentication",
@@ -55,6 +60,7 @@ RESUME_DATA: dict[str, Any] = {
         },
         {
             "category": "Patterns",
+            "summary": "Maintainable architecture for long-lived codebases.",
             "items": [
                 "Clean architecture",
                 "modular services",
