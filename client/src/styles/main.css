@@ -33,6 +33,9 @@
   --color-surface-dark: #141820;
   --color-surface-card: #1c2230;
   --color-surface-border: #2e3a4e;
+  --color-status-error: #e57373;
+  --color-status-warning: #d4a574;
+  --color-status-success: #6ebf8a;
   --radius-interactive: 0.5rem;
   --spacing-grid-gap: 0.5rem;
 }
@@ -191,6 +194,14 @@
   &:focus-visible {
     @apply outline-none ring-2 ring-accent-blue/50;
   }
+}
+
+@utility alert-surface-error {
+  @apply rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error;
+}
+
+@utility alert-surface-warning {
+  @apply rounded-lg border border-status-warning/30 bg-status-warning/10 text-sm text-status-warning;
 }
 
 html {

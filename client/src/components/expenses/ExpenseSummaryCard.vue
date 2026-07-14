@@ -77,7 +77,7 @@ const budgetTotals = computed(() => {
         <p
           v-if="periodChange"
           class="text-xl font-bold font-data mt-1"
-          :class="periodChange.increased ? 'text-red-400' : 'text-green-400'"
+          :class="periodChange.increased ? 'text-status-error' : 'text-status-success'"
         >
           {{ periodChange.increased ? "+" : "" }}{{ periodChange.delta }}%
         </p>
@@ -90,7 +90,7 @@ const budgetTotals = computed(() => {
         <p
           v-if="budgetTotals && summary"
           class="text-xl font-bold font-data mt-1"
-          :class="budgetTotals.overBudget ? 'text-red-400' : 'text-accent-blue'"
+          :class="budgetTotals.overBudget ? 'text-status-error' : 'text-accent-blue'"
         >
           {{ budgetTotals.percent }}%
         </p>

@@ -15,9 +15,14 @@ def _skills_text(skills: list[dict[str, Any]]) -> str:
     parts: list[str] = []
     for group in skills:
         category = group.get("category", "")
+        summary = str(group.get("summary", "")).strip()
         items = group.get("items", [])
         if isinstance(items, list):
-            parts.append(f"{category}: {', '.join(str(item) for item in items)}")
+            items_text = ", ".join(str(item) for item in items)
+            if summary:
+                parts.append(f"{category}: {summary} — {items_text}")
+            else:
+                parts.append(f"{category}: {items_text}")
     return "\n".join(parts)
 
 

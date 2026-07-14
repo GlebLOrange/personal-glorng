@@ -7,7 +7,7 @@ const { toasts, dismiss } = useNotify();
 
 const typeBorderClass: Record<Toast["type"], string> = {
   success: "border-green-500",
-  error: "border-accent-violet",
+  error: "border-status-error",
   info: "",
 };
 </script>

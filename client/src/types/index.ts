@@ -56,6 +56,7 @@ export interface ResumeData {
 export interface SkillGroup {
   category: string;
   items: string[];
+  summary?: string;
 }
 
 export interface Experience {

@@ -14,22 +14,27 @@ export const RESUME_FALLBACK: ResumeData = {
   skills: [
     {
       category: "Backend",
+      summary: "Production APIs, auth, workers, and service boundaries.",
       items: ["Python", "FastAPI", "Django", "SQLAlchemy", "Celery", "Redis"],
     },
     {
       category: "Frontend",
+      summary: "Responsive UIs with typed components and predictable state.",
       items: ["Vue 3", "TypeScript", "Pinia", "Tailwind"],
     },
     {
       category: "Databases",
+      summary: "Relational and document stores with caching layers.",
       items: ["PostgreSQL", "MongoDB", "Redis"],
     },
     {
       category: "DevOps",
+      summary: "Containerized deploys, CI/CD, and Linux ops.",
       items: ["Docker", "Docker Compose", "Nginx", "CI/CD (GitHub Actions)", "Linux"],
     },
     {
       category: "Other",
+      summary: "Cross-cutting concerns for production systems.",
       items: [
         "API design",
         "authentication",
@@ -42,6 +47,7 @@ export const RESUME_FALLBACK: ResumeData = {
     },
     {
       category: "Patterns",
+      summary: "Maintainable architecture for long-lived codebases.",
       items: ["Clean architecture", "modular services", "async processing", "event-driven tasks"],
     },
   ],

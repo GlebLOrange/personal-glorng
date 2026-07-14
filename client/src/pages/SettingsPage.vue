@@ -268,7 +268,7 @@ async function deleteAccount(): Promise<void> {
           <CardDescription>
             Signed in as
             <span class="text-surface-light">{{ auth.user?.email }}</span>
-            <span v-if="auth.user?.is_verified" class="text-green-400"> · verified</span>
+            <span v-if="auth.user?.is_verified" class="text-status-success"> · verified</span>
             <span v-else class="text-yellow-300"> · unverified</span>
           </CardDescription>
         </CardHeader>
@@ -337,7 +337,7 @@ async function deleteAccount(): Promise<void> {
             <p
               id="password-help"
               class="text-xs"
-              :class="passwordCheck.valid ? 'text-green-400' : 'text-surface-mid'"
+              :class="passwordCheck.valid ? 'text-status-success' : 'text-surface-mid'"
             >
               {{ passwordCheck.message }}
             </p>
@@ -469,11 +469,11 @@ async function deleteAccount(): Promise<void> {
       </section>
 
       <section class="mt-4 space-y-5">
-        <h2 class="mb-3 text-xs uppercase tracking-wider text-red-400/80">Danger zone</h2>
+        <h2 class="mb-3 text-xs uppercase tracking-wider text-status-error/80">Danger zone</h2>
 
       <Card tint="danger">
         <CardHeader>
-          <h2 class="card-title text-red-400">Delete account</h2>
+          <h2 class="card-title text-status-error">Delete account</h2>
           <CardDescription>
             Account deletion is permanent. Your password and confirmation are required.
           </CardDescription>

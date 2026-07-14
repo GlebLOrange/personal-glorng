@@ -80,7 +80,7 @@ defineExpose({ focusEntry });
       <p v-else-if="parsedPreview" class="text-xs text-accent-blue font-data">
         {{ parsedPreview }}
       </p>
-      <p v-else-if="smartError" class="text-xs text-red-400">{{ smartError }}</p>
+      <p v-else-if="smartError" class="text-xs text-status-error">{{ smartError }}</p>
 
       <div class="rounded-lg border border-surface-border bg-surface-dark/40 p-3">
         <div class="grid grid-cols-1 md:grid-cols-[180px_1fr_120px] md:items-end gap-3">
