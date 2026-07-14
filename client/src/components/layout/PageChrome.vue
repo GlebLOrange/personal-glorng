@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
 import PageBreadcrumbs from "@/components/layout/PageBreadcrumbs.vue";
 import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
-import WeatherBar from "@/components/weather/WeatherBar.vue";
 
 withDefaults(
   defineProps<{
@@ -19,14 +17,6 @@ withDefaults(
     backTo: undefined,
   },
 );
-
-const showWeatherBar = ref(false);
-
-onMounted(() => {
-  window.setTimeout(() => {
-    showWeatherBar.value = true;
-  }, 250);
-});
 </script>
 
 <template>
@@ -47,13 +37,6 @@ onMounted(() => {
           <span class="accent-gradient">{{ titlePrefix }}{{ title }}</span>
         </h1>
       </div>
-
-      <WeatherBar
-        v-if="showWeatherBar"
-        chrome
-        wrapper-class="hidden md:flex w-[var(--tile)] shrink-0 self-stretch"
-        card-class="page-chrome-weather-card"
-      />
     </div>
   </div>
 </template>

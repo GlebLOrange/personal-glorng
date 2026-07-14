@@ -37,17 +37,23 @@ test.describe("public pages", () => {
     await expect(page.getByRole("link", { name: /video download/i })).toBeVisible();
   });
 
-  test("guest sees weather tile on portfolio page chrome", async ({ page }) => {
+  test("guest sees weather tile on tools page", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/tools");
     await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
   });
 
-  test("guest sees weather card in mobile menu", async ({ page }) => {
+  test("portfolio page has no weather tile", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toHaveCount(0);
+  });
+
+  test("mobile menu has no weather card", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: /toggle navigation menu/i }).click();
-    await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toHaveCount(0);
   });
 
   test("guest can use public calculator", async ({ page }) => {
@@ -89,7 +95,7 @@ test.describe("public pages", () => {
     await expect(page.getByRole("button", { name: /download/i })).toBeVisible();
   });
 
-  test("guest sees weather tile on calculator page chrome", async ({ page }) => {
+  test("guest sees weather tile on calculator page", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto("/calculator");
     await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
@@ -166,5 +172,6 @@ test.describe("authenticated admin", () => {
     await page.goto("/admin");
     await expect(page.getByRole("heading", { name: /^€ tools$/i })).toBeVisible();
     await expect(page.locator('a[href="/admin/users"]')).toBeVisible();
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
   });
 });

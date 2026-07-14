@@ -3,6 +3,7 @@ import { computed } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 
 import PageChrome from "@/components/layout/PageChrome.vue";
+import PinnedToolsRow from "@/components/layout/PinnedToolsRow.vue";
 
 export type BreadcrumbSegment = { label: string; to?: string };
 
@@ -54,6 +55,7 @@ const bodyClass = computed(() => [
       :back-to="backTo"
     />
     <div :class="bodyClass">
+      <PinnedToolsRow />
       <slot />
     </div>
   </component>

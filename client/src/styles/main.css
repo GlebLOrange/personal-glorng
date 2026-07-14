@@ -85,14 +85,6 @@
   @apply flex h-full min-w-0 flex-col items-start p-6 text-left;
 }
 
-@utility page-chrome-weather-card {
-  @apply flex h-full w-full min-w-0 flex-col items-center justify-center overflow-hidden px-3 py-1 text-center;
-}
-
-@utility page-weather-menu-card {
-  @apply flex w-full min-w-0 flex-col items-center justify-center px-4 py-3 text-center;
-}
-
 @utility page-weather-tile-card {
   @apply flex h-full min-w-0 flex-col items-center justify-center px-6 py-12 text-center;
 }

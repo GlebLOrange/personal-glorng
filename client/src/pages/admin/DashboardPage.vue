@@ -27,17 +27,6 @@ onMounted(() => load());
 
 <template>
   <AdminPageLayout title="tools" max-width="xl" back-to="/">
-    <div v-if="isSuperuser" class="mb-8 min-w-0">
-      <div class="page-tool-grid">
-        <RouterLink to="/admin/users" class="page-tile">
-          <Card hoverable class="page-tile-card h-full">
-            <div class="text-2xl mb-3">👤</div>
-            <h3 class="text-surface-light font-bold break-words">users</h3>
-          </Card>
-        </RouterLink>
-      </div>
-    </div>
-
     <section v-for="section in sections" :key="section.category" class="mb-10 min-w-0">
       <h2 class="text-lg font-bold text-surface-light mb-4">{{ section.label }}</h2>
       <div class="page-tool-grid">
