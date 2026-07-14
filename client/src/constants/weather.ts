@@ -16,6 +16,9 @@ export const SAVED_LOCATIONS_STORAGE_KEY = `${LEGACY_SLUG}:saved-locations`;
 
 export const LEGACY_SAVED_LOCATIONS_STORAGE_KEY = "weather:saved-locations";
 
+/** Browser-local active city shown in page header / mobile menu. */
+export const ACTIVE_WEATHER_QUERY_KEY = `${LEGACY_SLUG}:active-query`;
+
 export const DEFAULT_WEATHER_LOCATION = {
   label: "Wrocław",
   query: "Wroclaw",

@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 
+import { useActiveWeatherQuery } from "@/composables/useActiveWeatherQuery";
 import { Card } from "@/components/ui/card";
 import WeatherSummaryContent from "@/components/weather/WeatherSummaryContent.vue";
 import { WEATHER_PATH, WEATHER_ROUTE_NAME, WEATHER_TOOL_NAME } from "@/constants/weather";
@@ -20,6 +21,7 @@ const props = withDefaults(
 );
 
 const route = useRoute();
+const { activeQuery } = useActiveWeatherQuery();
 
 const visible = computed(() => route.name !== WEATHER_ROUTE_NAME);
 
@@ -31,6 +33,7 @@ const asideClass = computed(() => [props.wrapperClass]);
     <RouterLink :to="WEATHER_PATH" class="block w-full">
       <Card hoverable :class="cardClass">
         <WeatherSummaryContent
+          :query="activeQuery"
           align="center"
           interactive
           :dense="!chrome"
