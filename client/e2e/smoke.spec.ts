@@ -133,13 +133,15 @@ test.describe("public pages", () => {
   });
 
   test("guest can add a city on weather page", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto("/weather");
     await expect(page.getByRole("heading", { name: "weather", level: 1 })).toBeVisible();
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
     await expect(page.getByText(/\d+\/8 cities saved in your browser/i)).toBeVisible();
     await page.getByPlaceholder(/search city/i).fill("London");
     await page.getByRole("button", { name: /^add$/i }).click();
     await expect(page.getByText(/location added/i)).toBeVisible();
-    await expect(page.getByRole("heading", { name: "London", level: 3 })).toBeVisible();
+    await expect(page.getByRole("button", { name: /set london as active city/i })).toBeVisible();
   });
 });
 

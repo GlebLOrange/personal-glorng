@@ -10,9 +10,7 @@ import { WEATHER_ROUTE_NAME } from "@/constants/weather";
 const route = useRoute();
 const { isSuperuser } = usePermissions();
 
-const showRow = computed(
-  () => isSuperuser.value || route.name !== WEATHER_ROUTE_NAME,
-);
+const isWeatherPage = computed(() => route.name === WEATHER_ROUTE_NAME);
 
 const showUsersTile = computed(
   () => isSuperuser.value && route.name === "admin",
@@ -20,7 +18,7 @@ const showUsersTile = computed(
 </script>
 
 <template>
-  <div v-if="showRow" class="page-tool-grid mb-8 min-w-0">
+  <div v-if="!isWeatherPage" class="page-tool-grid mb-8 min-w-0">
     <RouterLink v-if="showUsersTile" to="/admin/users" class="page-tile">
       <Card hoverable class="page-tile-card h-full">
         <div class="text-2xl mb-3">👤</div>

@@ -122,7 +122,16 @@ def _needs_time_enrichment(data: dict[str, Any]) -> bool:
     zones = data.get("time_zone") or []
     if not zones:
         return True
-    return zones[0].get("unixtime") is None
+    zone = zones[0]
+    if zone.get("unixtime") is None:
+        return True
+    timezone = zone.get("timezone")
+    if not isinstance(timezone, str) or not timezone.strip():
+        return True
+    utc_offset = zone.get("utcOffset")
+    if not isinstance(utc_offset, str) or not utc_offset.strip():
+        return True
+    return False
 
 
 async def _resolve_timezone_info(lat: float, lon: float) -> TimezoneInfo | None:
