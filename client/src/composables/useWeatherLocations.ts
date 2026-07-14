@@ -69,6 +69,7 @@ export function useWeatherLocations(): {
   isDefaultLocation: (loc: WeatherLocation | GuestWeatherLocation) => boolean;
   addLocation: (label: string, query: string) => Promise<void>;
   removeLocation: (id: number | string) => Promise<void>;
+  setGuestDefaultByQuery: (query: string) => void;
   refresh: () => Promise<void>;
   maxLocations: ComputedRef<number>;
   canAddLocation: ComputedRef<boolean>;
@@ -118,6 +119,22 @@ export function useWeatherLocations(): {
       return true;
     }
     return isDefaultQuery(loc.query);
+  }
+
+  function setGuestDefaultByQuery(query: string): void {
+    if (isAuthenticated.value) {
+      return;
+    }
+    const normalized = query.trim().toLowerCase();
+    persistGuestLocations(
+      guestLocations.value.map((loc) => {
+        if (loc.query.toLowerCase() === normalized) {
+          return { ...loc, is_default: true };
+        }
+        const { is_default: _removed, ...rest } = loc;
+        return rest;
+      }),
+    );
   }
 
   async function ensureDefaultLocation(): Promise<void> {
@@ -285,6 +302,7 @@ export function useWeatherLocations(): {
     error,
     isAuthenticated,
     isDefaultLocation,
+    setGuestDefaultByQuery,
     addLocation,
     removeLocation,
     refresh,

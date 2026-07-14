@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue";
-
 import PageShell from "@/components/layout/PageShell.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import WeatherLocationCard from "@/components/weather/WeatherLocationCard.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
-import WeatherSummaryContent from "@/components/weather/WeatherSummaryContent.vue";
+import { useActiveWeatherQuery } from "@/composables/useActiveWeatherQuery";
 import { WEATHER_TOOL_NAME } from "@/constants/weather";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
@@ -21,13 +19,8 @@ const {
   canAddLocation,
   guestLimitMessage,
 } = useWeatherLocations();
+const { activeQuery, setActiveQuery } = useActiveWeatherQuery();
 const { toast } = useNotify();
-
-const defaultLocation = computed(() => locations.value.find((loc) => isDefaultLocation(loc)));
-
-const trackerLocations = computed(() =>
-  locations.value.filter((loc) => !isDefaultLocation(loc)),
-);
 
 async function handleAdd(label: string, query: string): Promise<void> {
   try {
@@ -49,6 +42,10 @@ async function handleRemove(id: number | string): Promise<void> {
     toast(message, "error");
   }
 }
+
+function handleSelect(query: string): void {
+  setActiveQuery(query);
+}
 </script>
 
 <template>
@@ -58,25 +55,13 @@ async function handleRemove(id: number | string): Promise<void> {
     body-class="font-mono"
   >
     <header class="page-intro">
-      <p class="text-sm text-surface-mid">Local time and conditions for your cities.</p>
+      <p class="text-sm text-surface-mid">
+        Local time and conditions for your cities. Click a city to show it in the page header.
+      </p>
     </header>
 
-    <section class="mb-10 min-w-0">
-      <h2 class="text-lg font-bold text-surface-light mb-4">current</h2>
-      <div v-if="loading || seeding" class="space-y-3" aria-busy="true" aria-label="Loading weather">
-        <Card class="animate-pulse">
-          <div class="h-4 w-32 bg-surface-border rounded mb-3" />
-          <div class="h-8 w-48 bg-surface-border rounded mb-2" />
-          <div class="h-3 w-40 bg-surface-border rounded" />
-        </Card>
-      </div>
-      <Card v-else class="min-w-0 font-mono">
-        <WeatherSummaryContent :query="defaultLocation?.query ?? ''" />
-      </Card>
-    </section>
-
-    <section class="mb-10 min-w-0">
-      <h2 class="text-lg font-bold text-surface-light mb-4">add city</h2>
+    <section class="mb-8 min-w-0">
+      <h2 class="text-lg font-bold text-surface-light mb-4">your cities</h2>
       <WeatherLocationForm
         :add-location="handleAdd"
         :disabled="!canAddLocation"
@@ -84,32 +69,34 @@ async function handleRemove(id: number | string): Promise<void> {
       />
     </section>
 
-    <section
-      v-if="trackerLocations.length > 0 || (!loading && !seeding && locations.length > 0)"
-      class="min-w-0"
-    >
-      <h2 class="text-lg font-bold text-surface-light mb-4">trackers</h2>
-
-      <div v-if="loading || seeding" class="space-y-3 mb-4" aria-busy="true" aria-label="Loading cities">
-        <Card v-for="n in 2" :key="n" variant="compact" class="animate-pulse">
+    <section class="min-w-0">
+      <div
+        v-if="loading || seeding"
+        class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
+        aria-busy="true"
+        aria-label="Loading cities"
+      >
+        <Card v-for="n in 3" :key="n" variant="compact" class="animate-pulse">
           <div class="h-4 w-24 bg-surface-border rounded mb-2" />
           <div class="h-3 w-40 bg-surface-border rounded" />
         </Card>
       </div>
 
       <EmptyState
-        v-else-if="trackerLocations.length === 0"
-        class="mb-4"
-        description="No extra cities yet. Search above to track more locations."
+        v-else-if="locations.length === 0"
+        description="No cities yet. Search above to add your first location."
       />
 
-      <div v-else class="grid min-w-0 grid-cols-1 gap-6">
+      <div v-else class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
         <WeatherLocationCard
-          v-for="loc in trackerLocations"
+          v-for="loc in locations"
           :key="loc.id"
           :label="loc.label"
           :query="loc.query"
-          removable
+          :active="loc.query.toLowerCase() === activeQuery.toLowerCase()"
+          selectable
+          :removable="!isDefaultLocation(loc)"
+          @select="handleSelect(loc.query)"
           @remove="handleRemove(loc.id)"
         />
       </div>
