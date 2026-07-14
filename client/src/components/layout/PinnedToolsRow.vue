@@ -13,11 +13,15 @@ const { isSuperuser } = usePermissions();
 const showRow = computed(
   () => isSuperuser.value || route.name !== WEATHER_ROUTE_NAME,
 );
+
+const showUsersTile = computed(
+  () => isSuperuser.value && route.name === "admin",
+);
 </script>
 
 <template>
   <div v-if="showRow" class="page-tool-grid mb-8 min-w-0">
-    <RouterLink v-if="isSuperuser" to="/admin/users" class="page-tile">
+    <RouterLink v-if="showUsersTile" to="/admin/users" class="page-tile">
       <Card hoverable class="page-tile-card h-full">
         <div class="text-2xl mb-3">👤</div>
         <h3 class="text-surface-light font-bold break-words">users</h3>

@@ -164,6 +164,7 @@ test.describe("authenticated admin", () => {
     await page.goto("/calculator");
     await expect(page.getByRole("heading", { name: /^calculator$/i })).toBeVisible();
     await expect(page.getByRole("button", { name: "7" })).toBeVisible();
+    await expect(page.locator('a[href="/admin/users"]')).toHaveCount(0);
   });
 
   test("admin dashboard loads after login", async ({ page }) => {
