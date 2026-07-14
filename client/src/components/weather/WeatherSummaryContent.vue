@@ -59,12 +59,18 @@ const dateClass = computed(() =>
 const conditionsClass = computed(() => {
   const base =
     props.size === "chrome"
-      ? "flex items-center gap-1 min-w-0 text-xs leading-none text-surface-mid"
+      ? "flex w-full max-w-full items-center gap-1 min-w-0 text-xs leading-none text-surface-mid"
       : "flex items-center gap-1.5 min-w-0 text-sm text-surface-mid";
   if (isCenter.value) return `${base} justify-center`;
   if (isRight.value) return `${base} justify-end`;
   return base;
 });
+
+const rootClass = computed(() => [
+  "font-mono min-w-0",
+  props.size === "chrome" && "w-full max-w-full",
+  props.interactive && "rounded-lg transition-colors",
+]);
 
 const { config, fetchConfig } = useWeatherConfig();
 
@@ -110,10 +116,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div
-    class="font-mono min-w-0"
-    :class="interactive ? 'rounded-lg transition-colors' : undefined"
-  >
+  <div :class="rootClass">
     <div
       v-if="loading"
       class="space-y-1.5 animate-pulse"
@@ -138,7 +141,7 @@ onMounted(async () => {
 
     <div
       v-else-if="weather"
-      class="flex flex-col gap-0.5 min-w-0"
+      class="flex w-full max-w-full flex-col gap-0.5 min-w-0"
       :class="stackClass"
       :aria-label="liveTime ? `Local time ${liveTime}` : undefined"
     >

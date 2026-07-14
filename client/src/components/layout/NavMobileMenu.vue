@@ -130,7 +130,11 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
       <div class="border-t border-surface-border my-2" />
 
-      <WeatherBar v-if="showWeatherBar" wrapper-class="w-full" />
+      <WeatherBar
+        v-if="showWeatherBar"
+        wrapper-class="w-full"
+        card-class="page-weather-menu-card"
+      />
     </div>
   </div>
 </template>
