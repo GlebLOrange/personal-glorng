@@ -26,11 +26,13 @@ const { activeQuery } = useActiveWeatherQuery();
 const visible = computed(() => route.name !== WEATHER_ROUTE_NAME);
 
 const asideClass = computed(() => [props.wrapperClass]);
+
+const linkClass = computed(() => (props.chrome ? "block h-full w-full" : "block w-full"));
 </script>
 
 <template>
   <aside v-if="visible" :aria-label="WEATHER_TOOL_NAME" :class="asideClass">
-    <RouterLink :to="WEATHER_PATH" class="block w-full">
+    <RouterLink :to="WEATHER_PATH" :class="linkClass">
       <Card hoverable :class="cardClass">
         <WeatherSummaryContent
           :query="activeQuery"
