@@ -64,7 +64,7 @@ describe("PinnedToolsRow", () => {
     expect(wrapper.find(".page-tool-grid").exists()).toBe(false);
   });
 
-  it("shows users on the weather page for superusers", () => {
+  it("hides users tile on the weather page for superusers", () => {
     mocks.isSuperuser.value = true;
     mocks.routeName = WEATHER_ROUTE_NAME;
 
@@ -80,6 +80,26 @@ describe("PinnedToolsRow", () => {
     });
 
     expect(wrapper.find(".page-tool-grid").exists()).toBe(true);
-    expect(wrapper.get('a[href="/admin/users"]').exists()).toBe(true);
+    expect(wrapper.find('a[href="/admin/users"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
+  });
+
+  it("hides users tile for superusers off the admin dashboard", () => {
+    mocks.isSuperuser.value = true;
+    mocks.routeName = "calculator";
+
+    const wrapper = mount(PinnedToolsRow, {
+      global: {
+        stubs: {
+          RouterLink: {
+            props: ["to"],
+            template: '<a :href="to"><slot /></a>',
+          },
+        },
+      },
+    });
+
+    expect(wrapper.find('a[href="/admin/users"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
   });
 });
