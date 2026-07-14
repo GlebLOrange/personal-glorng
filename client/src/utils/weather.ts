@@ -73,6 +73,114 @@ export function weatherAnchorUnixtime(data: WeatherData): number | null {
   return unixtime;
 }
 
+/** IANA timezone id from enriched weather payload (e.g. Europe/Warsaw). */
+export function weatherIanaTimezone(data: WeatherData): string | null {
+  const timezone = data.time_zone?.[0]?.timezone?.trim();
+  if (!timezone || !timezone.includes("/")) {
+    return null;
+  }
+  return timezone;
+}
+
+export type LiveTimeFormatKind = "time" | "time-seconds" | "datetime" | "date";
+
+function intlParts(date: Date, timezone: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormatPart[] {
+  return new Intl.DateTimeFormat("en-US", { timeZone: timezone, ...options }).formatToParts(date);
+}
+
+function partValue(parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes): string {
+  return parts.find((part) => part.type === type)?.value ?? "";
+}
+
+/** Live local time via IANA timezone (DST-safe). */
+export function formatLiveLocalTimeFromIana(timezone: string, at: Date = new Date()): string {
+  const parts = intlParts(at, timezone, {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return `${partValue(parts, "hour")}:${partValue(parts, "minute")}`;
+}
+
+export function formatLiveLocalTimeWithSecondsFromIana(timezone: string, at: Date = new Date()): string {
+  const parts = intlParts(at, timezone, {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  return `${partValue(parts, "hour")}:${partValue(parts, "minute")}:${partValue(parts, "second")}`;
+}
+
+export function formatLiveLocalDateFromIana(timezone: string, at: Date = new Date()): string {
+  const parts = intlParts(at, timezone, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+  return `${partValue(parts, "weekday")}, ${partValue(parts, "month")} ${partValue(parts, "day")}`;
+}
+
+export function formatLiveLocalDateTimeFromIana(timezone: string, at: Date = new Date()): string {
+  const parts = intlParts(at, timezone, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  const weekday = partValue(parts, "weekday");
+  const month = partValue(parts, "month");
+  const day = partValue(parts, "day");
+  const hour = partValue(parts, "hour");
+  const minute = partValue(parts, "minute");
+  const dayPeriod = partValue(parts, "dayPeriod").toLowerCase();
+  return `${weekday} ${month} ${day} ${hour}:${minute} ${dayPeriod}`;
+}
+
+export function isoDateTimeFromIana(timezone: string, at: Date = new Date()): string {
+  const parts = intlParts(at, timezone, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  return (
+    `${partValue(parts, "year")}-${partValue(parts, "month")}-${partValue(parts, "day")}` +
+    `T${partValue(parts, "hour")}:${partValue(parts, "minute")}:${partValue(parts, "second")}`
+  );
+}
+
+export function isoDateFromIana(timezone: string, at: Date = new Date()): string {
+  const parts = intlParts(at, timezone, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return `${partValue(parts, "year")}-${partValue(parts, "month")}-${partValue(parts, "day")}`;
+}
+
+export function formatLiveLocalFromIana(
+  timezone: string,
+  format: LiveTimeFormatKind,
+  at: Date = new Date(),
+): string {
+  if (format === "datetime") {
+    return formatLiveLocalDateTimeFromIana(timezone, at);
+  }
+  if (format === "time-seconds") {
+    return formatLiveLocalTimeWithSecondsFromIana(timezone, at);
+  }
+  if (format === "date") {
+    return formatLiveLocalDateFromIana(timezone, at);
+  }
+  return formatLiveLocalTimeFromIana(timezone, at);
+}
+
 /** Static local time string from wttr observation timestamp. */
 export function weatherObservedTime(data: WeatherData): string | null {
   const obs = data.current_condition?.[0]?.localObsDateTime;

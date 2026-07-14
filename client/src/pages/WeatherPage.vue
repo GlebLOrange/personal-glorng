@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import PageShell from "@/components/layout/PageShell.vue";
-import { Card } from "@/components/ui/card";
-import EmptyState from "@/components/ui/EmptyState.vue";
-import WeatherLocationCard from "@/components/weather/WeatherLocationCard.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
+import WeatherPinnedCitiesRow from "@/components/weather/WeatherPinnedCitiesRow.vue";
 import { useActiveWeatherQuery } from "@/composables/useActiveWeatherQuery";
 import { WEATHER_TOOL_NAME } from "@/constants/weather";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
@@ -52,11 +50,12 @@ function handleSelect(query: string): void {
   <PageShell
     :title="WEATHER_TOOL_NAME"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'weather' }]"
+    :narrow="false"
     body-class="font-mono"
   >
     <header class="page-intro">
       <p class="text-sm text-surface-mid">
-        Local time and conditions for your cities. Click a city to show it in the page header.
+        Local time and conditions for your cities. Click a city tile to make it active.
       </p>
     </header>
 
@@ -69,37 +68,14 @@ function handleSelect(query: string): void {
       />
     </section>
 
-    <section class="min-w-0">
-      <div
-        v-if="loading || seeding"
-        class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
-        aria-busy="true"
-        aria-label="Loading cities"
-      >
-        <Card v-for="n in 3" :key="n" variant="compact" class="animate-pulse">
-          <div class="h-4 w-24 bg-surface-border rounded mb-2" />
-          <div class="h-3 w-40 bg-surface-border rounded" />
-        </Card>
-      </div>
-
-      <EmptyState
-        v-else-if="locations.length === 0"
-        description="No cities yet. Search above to add your first location."
-      />
-
-      <div v-else class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-        <WeatherLocationCard
-          v-for="loc in locations"
-          :key="loc.id"
-          :label="loc.label"
-          :query="loc.query"
-          :active="loc.query.toLowerCase() === activeQuery.toLowerCase()"
-          selectable
-          :removable="!isDefaultLocation(loc)"
-          @select="handleSelect(loc.query)"
-          @remove="handleRemove(loc.id)"
-        />
-      </div>
-    </section>
+    <WeatherPinnedCitiesRow
+      :locations="locations"
+      :active-query="activeQuery"
+      :loading="loading"
+      :seeding="seeding"
+      :is-default-location="isDefaultLocation"
+      @select="handleSelect"
+      @remove="handleRemove"
+    />
   </PageShell>
 </template>

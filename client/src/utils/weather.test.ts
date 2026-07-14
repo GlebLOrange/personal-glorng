@@ -6,12 +6,14 @@ import {
   formatLiveLocalDate,
   formatLiveLocalDateFromUnix,
   formatLiveLocalDateTime,
+  formatLiveLocalTimeFromIana,
   formatLiveLocalTimeWithSecondsFromUnix,
   isoDateTimeFromOffset,
   isValidWeatherLocationQuery,
   localTimeFromOffset,
   weatherAnchorUnixtime,
   weatherConditionEmoji,
+  weatherIanaTimezone,
   weatherUtcOffsetHours,
 } from "@/utils/weather";
 import { sanitizeGuestWeatherLocations } from "@/utils/guestWeatherLocations";
@@ -88,6 +90,18 @@ describe("weather time_zone helpers", () => {
 
   it("weatherUtcOffsetHours parses colon offsets", () => {
     expect(weatherUtcOffsetHours(weatherWithAnchor)).toBe(2);
+  });
+
+  it("weatherIanaTimezone extracts IANA id", () => {
+    expect(weatherIanaTimezone(weatherWithAnchor)).toBe("Europe/Warsaw");
+    expect(weatherIanaTimezone({ current_condition: [] })).toBeNull();
+  });
+});
+
+describe("IANA timezone formatting", () => {
+  it("formatLiveLocalTimeFromIana shows CEST wall clock for Warsaw", () => {
+    const at = new Date("2026-07-14T01:35:00Z");
+    expect(formatLiveLocalTimeFromIana("Europe/Warsaw", at)).toBe("03:35");
   });
 });
 

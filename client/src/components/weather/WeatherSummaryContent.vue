@@ -7,6 +7,7 @@ import { useWeatherLookup } from "@/composables/useWeatherLookup";
 import {
   weatherAnchorUnixtime,
   weatherConditionEmoji,
+  weatherIanaTimezone,
   weatherLocationLabel,
   weatherUtcOffsetHours,
 } from "@/utils/weather";
@@ -100,6 +101,10 @@ const conditionsAriaLabel = computed(() => {
 
 const utcOffset = computed(() => (weather.value ? weatherUtcOffsetHours(weather.value) : null));
 
+const ianaTimezone = computed(() =>
+  weather.value ? weatherIanaTimezone(weather.value) : null,
+);
+
 const anchorUnixtime = computed(() =>
   weather.value ? weatherAnchorUnixtime(weather.value) : null,
 );
@@ -108,6 +113,7 @@ const { liveTime, liveDate, liveDateTime, liveDateIso } = useLiveLocalTime(
   utcOffset,
   computed(() => "time" as const),
   anchorUnixtime,
+  ianaTimezone,
 );
 
 onMounted(async () => {

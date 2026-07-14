@@ -20,8 +20,9 @@ vi.mock("vue-router", () => ({
 vi.mock("@/components/weather/WeatherBar.vue", () => ({
   default: {
     name: "WeatherBar",
-    props: ["wrapperClass", "cardClass"],
-    template: '<aside data-testid="weather-bar" />',
+    props: ["wrapperClass", "cardClass", "expanded"],
+    template:
+      '<aside data-testid="weather-bar" :data-wrapper-class="wrapperClass" :data-expanded="expanded" />',
   },
 }));
 
@@ -43,6 +44,9 @@ describe("PinnedToolsRow", () => {
 
     expect(wrapper.get('a[href="/admin/users"]').text()).toContain("users");
     expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="weather-bar"]').attributes("data-wrapper-class")).toBe(
+      "page-tile md:col-start-3",
+    );
   });
 
   it("shows weather without users for guests off the weather page", () => {
@@ -53,9 +57,10 @@ describe("PinnedToolsRow", () => {
 
     expect(wrapper.find('a[href="/admin/users"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="weather-bar"]').attributes("data-expanded")).toBeUndefined();
   });
 
-  it("hides the row on the weather page for guests", () => {
+  it("hides the pinned row on the weather page", () => {
     mocks.isSuperuser.value = false;
     mocks.routeName = WEATHER_ROUTE_NAME;
 
@@ -64,7 +69,7 @@ describe("PinnedToolsRow", () => {
     expect(wrapper.find(".page-tool-grid").exists()).toBe(false);
   });
 
-  it("hides users tile on the weather page for superusers", () => {
+  it("hides the pinned row for superusers on weather page", () => {
     mocks.isSuperuser.value = true;
     mocks.routeName = WEATHER_ROUTE_NAME;
 
@@ -79,9 +84,7 @@ describe("PinnedToolsRow", () => {
       },
     });
 
-    expect(wrapper.find(".page-tool-grid").exists()).toBe(true);
-    expect(wrapper.find('a[href="/admin/users"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
+    expect(wrapper.find(".page-tool-grid").exists()).toBe(false);
   });
 
   it("hides users tile for superusers off the admin dashboard", () => {

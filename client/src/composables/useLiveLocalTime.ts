@@ -2,26 +2,24 @@ import { onMounted, onUnmounted, ref, watch, type MaybeRefOrGetter, type Ref, to
 
 import {
   formatLiveLocalDate,
-  formatLiveLocalDateFromUnix,
+  formatLiveLocalDateFromIana,
   formatLiveLocalDateTime,
-  formatLiveLocalDateTimeFromUnix,
+  formatLiveLocalFromIana,
   formatLiveLocalTime,
-  formatLiveLocalTimeFromUnix,
   formatLiveLocalTimeWithSeconds,
-  formatLiveLocalTimeWithSecondsFromUnix,
+  isoDateFromIana,
   isoDateFromOffset,
-  isoDateFromUnix,
+  isoDateTimeFromIana,
   isoDateTimeFromOffset,
-  isoDateTimeFromUnix,
+  type LiveTimeFormatKind,
 } from "@/utils/weather";
 
-type LiveTimeFormat = "time" | "time-seconds" | "datetime" | "date";
-
-/** Tick every second with local time synced to World Time API or UTC offset. */
+/** Tick every second with IANA timezone or UTC offset wall clock. */
 export function useLiveLocalTime(
   offsetHours: MaybeRefOrGetter<number | null>,
-  format: MaybeRefOrGetter<LiveTimeFormat> = "datetime",
-  anchorUnixtime?: MaybeRefOrGetter<number | null>,
+  format: MaybeRefOrGetter<LiveTimeFormatKind> = "datetime",
+  _anchorUnixtime?: MaybeRefOrGetter<number | null>,
+  ianaTimezone?: MaybeRefOrGetter<string | null>,
 ): {
   liveTime: Ref<string | null>;
   liveDate: Ref<string | null>;
@@ -33,53 +31,26 @@ export function useLiveLocalTime(
   const liveDateTime = ref<string | null>(null);
   const liveDateIso = ref<string | null>(null);
   let timer: ReturnType<typeof setInterval> | null = null;
-  let baseUnixtime: number | null = null;
-  let basePerfNow = 0;
-
-  function syncAnchor(): void {
-    const anchor = anchorUnixtime ? toValue(anchorUnixtime) : null;
-    if (anchor !== null) {
-      baseUnixtime = anchor;
-      basePerfNow = performance.now();
-    } else {
-      baseUnixtime = null;
-      basePerfNow = 0;
-    }
-  }
-
-  function currentUnixtime(): number | null {
-    if (baseUnixtime === null) {
-      return null;
-    }
-    const elapsed = (performance.now() - basePerfNow) / 1000;
-    return baseUnixtime + elapsed;
-  }
 
   function update(): void {
+    const fmt = toValue(format);
+    const iana = ianaTimezone ? toValue(ianaTimezone) : null;
+
+    if (iana) {
+      const now = new Date();
+      liveTime.value = formatLiveLocalFromIana(iana, fmt, now);
+      liveDate.value = formatLiveLocalDateFromIana(iana, now);
+      liveDateTime.value = isoDateTimeFromIana(iana, now);
+      liveDateIso.value = isoDateFromIana(iana, now);
+      return;
+    }
+
     const offset = toValue(offsetHours);
     if (offset === null) {
       liveTime.value = null;
       liveDate.value = null;
       liveDateTime.value = null;
       liveDateIso.value = null;
-      return;
-    }
-
-    const fmt = toValue(format);
-    const unixtime = currentUnixtime();
-
-    if (unixtime !== null) {
-      liveTime.value =
-        fmt === "datetime"
-          ? formatLiveLocalDateTimeFromUnix(unixtime, offset)
-          : fmt === "time-seconds"
-            ? formatLiveLocalTimeWithSecondsFromUnix(unixtime, offset)
-            : fmt === "date"
-              ? formatLiveLocalDateFromUnix(unixtime, offset)
-              : formatLiveLocalTimeFromUnix(unixtime, offset);
-      liveDate.value = formatLiveLocalDateFromUnix(unixtime, offset);
-      liveDateTime.value = isoDateTimeFromUnix(unixtime, offset);
-      liveDateIso.value = isoDateFromUnix(unixtime, offset);
       return;
     }
 
@@ -97,7 +68,6 @@ export function useLiveLocalTime(
   }
 
   onMounted(() => {
-    syncAnchor();
     update();
     timer = setInterval(update, 1_000);
   });
@@ -113,10 +83,9 @@ export function useLiveLocalTime(
       [
         toValue(offsetHours),
         toValue(format),
-        anchorUnixtime ? toValue(anchorUnixtime) : null,
+        ianaTimezone ? toValue(ianaTimezone) : null,
       ] as const,
     () => {
-      syncAnchor();
       update();
     },
   );
