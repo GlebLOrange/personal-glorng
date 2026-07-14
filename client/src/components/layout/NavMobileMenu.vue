@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, onUnmounted, watch } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useAuthStore } from "@/stores/auth";
 
-const WeatherBar = defineAsyncComponent(() => import("@/components/weather/WeatherBar.vue"));
-
 defineProps<{
   open: boolean;
-  showWeatherBar: boolean;
 }>();
 
 const emit = defineEmits<{ close: [] }>();
@@ -127,14 +124,6 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       >
         Login
       </RouterLink>
-
-      <div class="border-t border-surface-border my-2" />
-
-      <WeatherBar
-        v-if="showWeatherBar"
-        wrapper-class="w-full"
-        card-class="page-weather-menu-card"
-      />
     </div>
   </div>
 </template>

@@ -6,7 +6,6 @@ import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
 import { useScrollDirection } from "@/composables/useScrollDirection";
 import { useAuthStore } from "@/stores/auth";
 
-const showWeatherBar = ref(false);
 const headerEl = ref<HTMLElement | null>(null);
 const headerSpacerHeight = ref(0);
 let resizeObserver: ResizeObserver | null = null;
@@ -27,10 +26,6 @@ watch(mobileOpen, (open) => {
 });
 
 onMounted(() => {
-  window.setTimeout(() => {
-    showWeatherBar.value = true;
-  }, 250);
-
   mobileNavMq = window.matchMedia("(max-width: 767px)");
   syncMobileNav = (): void => {
     isMobileNav.value = mobileNavMq?.matches ?? false;
@@ -135,7 +130,7 @@ function closeMobileMenu(): void {
         </div>
       </nav>
 
-      <NavMobileMenu :open="mobileOpen" :show-weather-bar="showWeatherBar" @close="closeMobileMenu" />
+      <NavMobileMenu :open="mobileOpen" @close="closeMobileMenu" />
     </header>
   </div>
 </template>
