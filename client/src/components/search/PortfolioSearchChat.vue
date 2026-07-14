@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 
 import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
@@ -45,17 +45,15 @@ async function handleSend(): Promise<void> {
 }
 
 function toggle(): void {
-  open.value = !open.value;
-  if (open.value) {
+  const opening = !open.value;
+  open.value = opening;
+  if (opening) {
+    if (!isReady.value && !configLoading.value) {
+      void loadConfig();
+    }
     scrollToBottom();
   }
 }
-
-onMounted(() => {
-  if (showWidget.value) {
-    void loadConfig();
-  }
-});
 </script>
 
 <template>
@@ -115,7 +113,7 @@ onMounted(() => {
       variant="primary"
       type="button"
       class="shadow-lg"
-      :disabled="configLoading || !isAvailable"
+      :disabled="configLoading"
       @click="toggle"
     >
       Ask portfolio

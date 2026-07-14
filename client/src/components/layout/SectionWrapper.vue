@@ -1,11 +1,26 @@
 <script setup lang="ts">
-defineProps<{
+import { computed } from "vue";
+
+const props = defineProps<{
   id?: string;
   title?: string;
   dark?: boolean;
   alternate?: boolean;
+  /** @deprecated Use width="full" instead */
   centered?: boolean;
+  width?: "full" | "content" | "prose";
 }>();
+
+const innerClass = computed(() => {
+  const resolvedWidth = props.width ?? (props.centered ? "full" : "content");
+  if (resolvedWidth === "full") {
+    return "mx-auto w-full";
+  }
+  if (resolvedWidth === "prose") {
+    return "mx-auto w-full max-w-3xl";
+  }
+  return "page-body-narrow mx-auto w-full";
+});
 </script>
 
 <template>
@@ -18,7 +33,7 @@ defineProps<{
     ]"
   >
     <div class="page-tile-scope mx-auto w-full max-w-5xl">
-      <div :class="centered ? 'w-full' : 'page-body-narrow w-full'">
+      <div :class="innerClass">
         <h2 v-if="title" class="section-title mb-8">
           <span aria-hidden="true" class="text-accent-blue">€ </span>
           {{ title }}

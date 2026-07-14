@@ -14,6 +14,26 @@ const analyzeBundle = process.env.ANALYZE === "true";
 export default defineConfig({
   build: {
     sourcemap: sentryEnabled ? "hidden" : false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules/chart.js") || id.includes("node_modules/vue-chartjs")) {
+            return "charts";
+          }
+          if (id.includes("node_modules/firebase")) {
+            return "firebase";
+          }
+          if (
+            id.includes("node_modules/vue/") ||
+            id.includes("node_modules/@vue/") ||
+            id.includes("node_modules/vue-router") ||
+            id.includes("node_modules/pinia")
+          ) {
+            return "vue-vendor";
+          }
+        },
+      },
+    },
   },
   plugins: [
     vue(),
