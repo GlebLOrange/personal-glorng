@@ -32,22 +32,22 @@ describe("normalizeStreamError", () => {
     ).toBe("You're sending messages too quickly — wait a few minutes");
   });
 
-  it("preserves Gemini retry-after seconds in quota errors", () => {
+  it("preserves Groq retry-after seconds in quota errors", () => {
     expect(
       normalizeStreamError(
-        "Google Gemini quota exceeded — try again in ~60s",
+        "Groq rate limit exceeded — try again in ~60s",
         "/api/tools/ai-chat",
       ),
     ).toBe(
-      "Google API quota reached — try again in ~60s, or check usage in Google AI Studio",
+      "Groq rate limit reached — try again in ~60s, or check usage in the Groq console",
     );
   });
 
   it("uses generic quota message when server omits retry-after", () => {
     expect(
-      normalizeStreamError("Google Gemini quota exceeded — try again shortly", "/api/tools/ai-chat"),
+      normalizeStreamError("Groq rate limit exceeded — try again shortly", "/api/tools/ai-chat"),
     ).toBe(
-      "Google API quota reached — wait a minute and try again, or check usage in Google AI Studio",
+      "Groq rate limit reached — wait a minute and try again, or check usage in the Groq console",
     );
   });
 });

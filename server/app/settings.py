@@ -226,9 +226,9 @@ class Settings(BaseSettings):
     def _parse_webhook_secrets(cls, value: Any) -> dict[str, str]:
         return _parse_env_dict(value)
 
-    @field_validator("GEMINI_API_KEY", mode="before")
+    @field_validator("GROQ_API_KEY", mode="before")
     @classmethod
-    def _strip_gemini_api_key(cls, value: Any) -> str:
+    def _strip_groq_api_key(cls, value: Any) -> str:
         if value is None:
             return ""
         return str(value).strip()
@@ -509,10 +509,10 @@ class Settings(BaseSettings):
     SPOTIFY_CLIENT_SECRET: str
     SPOTIFY_REFRESH_TOKEN: str
 
-    # Gemini API
-    GEMINI_API_KEY: str
-    GEMINI_CHAT_MODEL: str = "gemini-3.5-flash"
-    GEMINI_API_BASE_URL: str = "https://generativelanguage.googleapis.com/v1beta"
+    # Groq API
+    GROQ_API_KEY: str
+    GROQ_CHAT_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_API_BASE_URL: str = "https://api.groq.com/openai/v1"
     AI_CHAT_ENABLED: bool
     AI_SEARCH_ENABLED: bool
 

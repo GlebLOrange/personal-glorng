@@ -10,12 +10,12 @@ from app.core.deps import get_ai_search_service
 from app.core.exceptions import ApiError
 from app.main import app
 from app.services.ai_chat import (
-    GEMINI_API_BASE_URL,
-    GEMINI_MAX_RETRIES,
-    GeminiChatService,
-    _gemini_rate_limit_message,
+    GROQ_API_BASE_URL,
+    GROQ_MAX_RETRIES,
+    GroqChatService,
+    _rate_limit_message,
     _retry_after_seconds,
-    _should_retry_gemini_429,
+    _should_retry_rate_limit_429,
     detect_llm_provider,
 )
 from app.services.ai_search import AiSearchService
@@ -56,7 +56,7 @@ def missing_api_key(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         scenario_env(
             tmp_path,
             base=ENV_SCENARIOS_DIR / "ai-chat.env",
-            GEMINI_API_KEY="",
+            GROQ_API_KEY="",
         ),
     )
     yield
@@ -143,7 +143,7 @@ async def test_ai_chat_streams_sse(
     assert 'data: {"delta": "Hi "}' in body
     assert 'data: {"delta": "there"}' in body
     assert '"done": true' in body
-    assert '"model": "gemini-3.5-flash"' in body
+    assert '"model": "llama-3.3-70b-versatile"' in body
 
 
 @pytest.mark.asyncio
@@ -161,9 +161,9 @@ async def test_ai_chat_config_returns_status_without_secret(
     body = resp.json()
     assert body["enabled"] is True
     assert body["configured"] is True
-    assert body["model"] == "gemini-3.5-flash"
-    assert body["provider"] == "gemini"
-    assert body["base_url"] == GEMINI_API_BASE_URL
+    assert body["model"] == "llama-3.3-70b-versatile"
+    assert body["provider"] == "groq"
+    assert body["base_url"] == GROQ_API_BASE_URL
     assert "api_key" not in body
     assert "test-key" not in resp.text
 
@@ -181,7 +181,7 @@ async def test_ai_chat_config_not_configured_without_key(
 
 
 @pytest.mark.asyncio
-async def test_ai_chat_config_returns_custom_gemini_base_url(
+async def test_ai_chat_config_returns_custom_groq_base_url(
     auth_client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -190,48 +190,45 @@ async def test_ai_chat_config_returns_custom_gemini_base_url(
         monkeypatch,
         scenario_env(
             tmp_path,
-            GEMINI_API_BASE_URL="https://example.test/v1beta",
-            GEMINI_CHAT_MODEL="gemini-test",
+            GROQ_API_BASE_URL="https://example.test/v1",
+            GROQ_CHAT_MODEL="llama-test",
         ),
     )
 
     resp = await auth_client.get(CONFIG_URL)
     assert resp.status_code == 200
     body = resp.json()
-    assert body["provider"] == "gemini"
-    assert body["base_url"] == "https://example.test/v1beta"
-    assert body["model"] == "gemini-test"
+    assert body["provider"] == "groq"
+    assert body["base_url"] == "https://example.test/v1"
+    assert body["model"] == "llama-test"
 
 
 def test_detect_llm_provider_labels() -> None:
-    assert detect_llm_provider("") == "gemini"
-    assert detect_llm_provider("https://example.com/v1") == "gemini"
+    assert detect_llm_provider("") == "groq"
+    assert detect_llm_provider("https://example.com/v1") == "groq"
 
 
-def test_gemini_service_normalizes_base_url() -> None:
-    service = GeminiChatService(
+def test_groq_service_normalizes_base_url() -> None:
+    service = GroqChatService(
         api_key="test-key",
-        model="gemini-test",
-        base_url="https://example.test/v1beta/",
+        model="llama-test",
+        base_url="https://example.test/v1/",
     )
 
-    assert service.provider == "gemini"
-    assert service.model == "gemini-test"
-    assert service.base_url == "https://example.test/v1beta"
+    assert service.provider == "groq"
+    assert service.model == "llama-test"
+    assert service.base_url == "https://example.test/v1"
 
 
 @pytest.mark.asyncio
-async def test_gemini_service_reads_text_from_step_start() -> None:
-    """Capture initial model_output text delivered on step.start."""
+async def test_groq_service_streams_text_deltas() -> None:
+    """Yield assistant text from OpenAI-compatible SSE chunks."""
     lines = [
-        'data: {"event_type":"interaction.created"}',
-        (
-            'data: {"event_type":"step.start","index":1,'
-            '"step":{"type":"model_output","content":[{"type":"text","text":"Hello"}]}}'
-        ),
-        'data: {"event_type":"step.delta","index":1,"delta":{"type":"text","text":" world"}}',
+        'data: {"choices":[{"delta":{"content":"Hello"}}]}',
+        'data: {"choices":[{"delta":{"content":" world"}}]}',
+        "data: [DONE]",
     ]
-    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
+    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
 
     with patch("app.services.ai_chat.httpx.AsyncClient", _fake_client(lines)):
         chunks = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
@@ -240,14 +237,13 @@ async def test_gemini_service_reads_text_from_step_start() -> None:
 
 
 @pytest.mark.asyncio
-async def test_gemini_service_skips_contentless_stream_chunks() -> None:
-    """Ignore provider bookkeeping chunks and keep yielding text chunks."""
+async def test_groq_service_skips_contentless_stream_chunks() -> None:
+    """Ignore empty deltas and keep yielding text chunks."""
     lines = [
-        'data: {"event_type":"interaction.created"}',
-        'data: {"event_type":"step.delta","delta":{"type":"thought_signature"}}',
-        'data: {"event_type":"step.delta","delta":{"type":"text","text":"Hi"}}',
+        'data: {"choices":[{"delta":{}}]}',
+        'data: {"choices":[{"delta":{"content":"Hi"}}]}',
     ]
-    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
+    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
 
     with patch("app.services.ai_chat.httpx.AsyncClient", _fake_client(lines)):
         chunks = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
@@ -256,13 +252,13 @@ async def test_gemini_service_skips_contentless_stream_chunks() -> None:
 
 
 @pytest.mark.asyncio
-async def test_gemini_service_rejects_stream_without_text() -> None:
+async def test_groq_service_rejects_stream_without_text() -> None:
     """Return a useful error instead of silently completing an empty stream."""
     lines = [
-        'data: {"event_type":"interaction.created"}',
-        'data: {"event_type":"step.delta","delta":{"type":"thought_signature"}}',
+        'data: {"choices":[{"delta":{}}]}',
+        "data: [DONE]",
     ]
-    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
+    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
 
     with (
         pytest.raises(ApiError, match="no response text"),
@@ -271,49 +267,36 @@ async def test_gemini_service_rejects_stream_without_text() -> None:
         _ = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
 
 
-def test_gemini_rate_limit_message_includes_retry_after() -> None:
-    request = httpx.Request("POST", "https://example.test/v1beta/interactions")
+def test_rate_limit_message_includes_retry_after() -> None:
+    request = httpx.Request("POST", "https://example.test/v1/chat/completions")
     response = httpx.Response(429, request=request, headers={"Retry-After": "60"})
-    assert _gemini_rate_limit_message(response) == (
-        "Google Gemini quota exceeded — try again in ~60s"
+    assert _rate_limit_message(response) == (
+        "Groq rate limit exceeded — try again in ~60s"
     )
 
 
-def test_retry_after_seconds_reads_retry_delay_from_body() -> None:
-    request = httpx.Request("POST", "https://example.test/v1beta/interactions")
-    response = httpx.Response(
-        429,
-        request=request,
-        json={
-            "error": {
-                "details": [
-                    {
-                        "@type": "type.googleapis.com/google.rpc.RetryInfo",
-                        "retryDelay": "45s",
-                    }
-                ]
-            }
-        },
-    )
-    assert _retry_after_seconds(response) == 45
-
-
-def test_should_retry_gemini_429_only_for_short_retry_after() -> None:
-    request = httpx.Request("POST", "https://example.test/v1beta/interactions")
+def test_should_retry_rate_limit_429_only_for_short_retry_after() -> None:
+    request = httpx.Request("POST", "https://example.test/v1/chat/completions")
     short_wait = httpx.Response(429, request=request, headers={"Retry-After": "30"})
     long_wait = httpx.Response(429, request=request, headers={"Retry-After": "31"})
     no_hint = httpx.Response(429, request=request)
 
-    assert _should_retry_gemini_429(short_wait) is True
-    assert _should_retry_gemini_429(long_wait) is False
-    assert _should_retry_gemini_429(no_hint) is False
+    assert _should_retry_rate_limit_429(short_wait) is True
+    assert _should_retry_rate_limit_429(long_wait) is False
+    assert _should_retry_rate_limit_429(no_hint) is False
+
+
+def test_retry_after_seconds_reads_header() -> None:
+    request = httpx.Request("POST", "https://example.test/v1/chat/completions")
+    response = httpx.Response(429, request=request, headers={"Retry-After": "45"})
+    assert _retry_after_seconds(response) == 45
 
 
 @pytest.mark.asyncio
-async def test_gemini_service_retries_on_429_then_succeeds() -> None:
-    """Retry short-lived Gemini 429 when Retry-After is present."""
-    lines = ['data: {"event_type":"step.delta","delta":{"type":"text","text":"Hi"}}']
-    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
+async def test_groq_service_retries_on_429_then_succeeds() -> None:
+    """Retry short-lived Groq 429 when Retry-After is present."""
+    lines = ['data: {"choices":[{"delta":{"content":"Hi"}}]}']
+    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
 
     with (
         patch("app.services.ai_chat.asyncio.sleep", new_callable=AsyncMock),
@@ -328,10 +311,10 @@ async def test_gemini_service_retries_on_429_then_succeeds() -> None:
 
 
 @pytest.mark.asyncio
-async def test_gemini_service_raises_after_retry_exhausted() -> None:
+async def test_groq_service_raises_after_retry_exhausted() -> None:
     """Surface quota error after short-lived 429 retries are exhausted."""
-    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
-    max_attempts = GEMINI_MAX_RETRIES + 1
+    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
+    max_attempts = GROQ_MAX_RETRIES + 1
 
     with (
         patch("app.services.ai_chat.asyncio.sleep", new_callable=AsyncMock),
@@ -339,20 +322,20 @@ async def test_gemini_service_raises_after_retry_exhausted() -> None:
             "app.services.ai_chat.httpx.AsyncClient",
             _rate_limited_client(fail_count=max_attempts, lines=[]),
         ),
-        pytest.raises(ApiError, match="Google Gemini quota exceeded"),
+        pytest.raises(ApiError, match="Groq rate limit exceeded"),
     ):
         _ = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
 
 
 @pytest.mark.asyncio
-async def test_gemini_service_fails_fast_on_429_without_retry_after() -> None:
-    """Do not burn extra quota when Google omits a short retry hint."""
-    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
+async def test_groq_service_fails_fast_on_429_without_retry_after() -> None:
+    """Do not burn extra quota when Groq omits a short retry hint."""
+    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
     client_cls, call_state = _quota_error_client(retry_after=None)
 
     with (
         patch("app.services.ai_chat.httpx.AsyncClient", client_cls),
-        pytest.raises(ApiError, match="Google Gemini quota exceeded"),
+        pytest.raises(ApiError, match="Groq rate limit exceeded"),
     ):
         _ = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
 
@@ -360,21 +343,21 @@ async def test_gemini_service_fails_fast_on_429_without_retry_after() -> None:
 
 
 @pytest.mark.asyncio
-async def test_gemini_service_fails_fast_on_429_long_retry_after() -> None:
-    """Do not wait out long daily quota windows inside one request."""
-    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
+async def test_groq_service_fails_fast_on_429_long_retry_after() -> None:
+    """Do not wait out long quota windows inside one request."""
+    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
     client_cls, call_state = _quota_error_client(retry_after="120")
 
     with (
         patch("app.services.ai_chat.httpx.AsyncClient", client_cls),
-        pytest.raises(ApiError, match="Google Gemini quota exceeded"),
+        pytest.raises(ApiError, match="Groq rate limit exceeded"),
     ):
         _ = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
 
     assert call_state["calls"] == 1
 
 
-class _RateLimitedFakeGeminiResponse:
+class _RateLimitedFakeGroqResponse:
     """Stream response that can fail with HTTP 429."""
 
     def __init__(
@@ -388,7 +371,7 @@ class _RateLimitedFakeGeminiResponse:
         self._status_code = status_code
         self._retry_after = retry_after
 
-    async def __aenter__(self) -> _RateLimitedFakeGeminiResponse:
+    async def __aenter__(self) -> _RateLimitedFakeGroqResponse:
         return self
 
     async def __aexit__(self, *_args: object) -> None:
@@ -397,7 +380,7 @@ class _RateLimitedFakeGeminiResponse:
     def raise_for_status(self) -> None:
         if self._status_code != 429:
             return
-        request = httpx.Request("POST", "https://example.test/v1beta/interactions")
+        request = httpx.Request("POST", "https://example.test/v1/chat/completions")
         headers = {"Retry-After": self._retry_after} if self._retry_after else {}
         response = httpx.Response(
             429,
@@ -411,7 +394,7 @@ class _RateLimitedFakeGeminiResponse:
             yield line
 
 
-class _RateLimitedFakeGeminiClient:
+class _RateLimitedFakeGroqClient:
     """HTTP client that returns 429 for the first N stream calls."""
 
     def __init__(
@@ -426,36 +409,36 @@ class _RateLimitedFakeGeminiClient:
         self._calls = 0
         self.timeout = timeout
 
-    async def __aenter__(self) -> _RateLimitedFakeGeminiClient:
+    async def __aenter__(self) -> _RateLimitedFakeGroqClient:
         return self
 
     async def __aexit__(self, *_args: object) -> None:
         return None
 
-    def stream(self, *_args: object, **_kwargs: object) -> _RateLimitedFakeGeminiResponse:
+    def stream(self, *_args: object, **_kwargs: object) -> _RateLimitedFakeGroqResponse:
         self._calls += 1
         if self._calls <= self._fail_count:
-            return _RateLimitedFakeGeminiResponse([], status_code=429)
-        return _RateLimitedFakeGeminiResponse(self._lines)
+            return _RateLimitedFakeGroqResponse([], status_code=429)
+        return _RateLimitedFakeGroqResponse(self._lines)
 
 
 def _rate_limited_client(
     *,
     fail_count: int,
     lines: list[str],
-) -> type[_RateLimitedFakeGeminiClient]:
-    """Build a fake Gemini client that 429s for the first N stream calls."""
+) -> type[_RateLimitedFakeGroqClient]:
+    """Build a fake Groq client that 429s for the first N stream calls."""
     call_state = {"calls": 0}
 
-    class BoundRateLimitedClient(_RateLimitedFakeGeminiClient):
+    class BoundRateLimitedClient(_RateLimitedFakeGroqClient):
         def __init__(self, *, timeout: float) -> None:
             super().__init__(fail_count=fail_count, lines=lines, timeout=timeout)
 
-        def stream(self, *_args: object, **_kwargs: object) -> _RateLimitedFakeGeminiResponse:
+        def stream(self, *_args: object, **_kwargs: object) -> _RateLimitedFakeGroqResponse:
             call_state["calls"] += 1
             if call_state["calls"] <= fail_count:
-                return _RateLimitedFakeGeminiResponse([], status_code=429)
-            return _RateLimitedFakeGeminiResponse(lines)
+                return _RateLimitedFakeGroqResponse([], status_code=429)
+            return _RateLimitedFakeGroqResponse(lines)
 
     return BoundRateLimitedClient
 
@@ -464,7 +447,7 @@ def _quota_error_client(
     *,
     retry_after: str | None,
 ) -> tuple[type, dict[str, int]]:
-    """Build a fake Gemini client that always returns one quota error."""
+    """Build a fake Groq client that always returns one quota error."""
     call_state = {"calls": 0}
 
     class BoundQuotaErrorClient:
@@ -481,9 +464,9 @@ def _quota_error_client(
             self,
             *_args: object,
             **_kwargs: object,
-        ) -> _RateLimitedFakeGeminiResponse:
+        ) -> _RateLimitedFakeGroqResponse:
             call_state["calls"] += 1
-            return _RateLimitedFakeGeminiResponse(
+            return _RateLimitedFakeGroqResponse(
                 [],
                 status_code=429,
                 retry_after=retry_after,
@@ -492,13 +475,13 @@ def _quota_error_client(
     return BoundQuotaErrorClient, call_state
 
 
-class _FakeGeminiResponse:
-    """Minimal async stream response for Gemini chat tests."""
+class _FakeGroqResponse:
+    """Minimal async stream response for Groq chat tests."""
 
     def __init__(self, lines: list[str]) -> None:
         self._lines = lines
 
-    async def __aenter__(self) -> _FakeGeminiResponse:
+    async def __aenter__(self) -> _FakeGroqResponse:
         return self
 
     async def __aexit__(self, *_args: object) -> None:
@@ -512,31 +495,31 @@ class _FakeGeminiResponse:
             yield line
 
 
-class _FakeGeminiClient:
-    """Minimal async HTTP client for Gemini chat tests."""
+class _FakeGroqClient:
+    """Minimal async HTTP client for Groq chat tests."""
 
     def __init__(self, lines: list[str], *, timeout: float) -> None:
         self._lines = lines
         self.timeout = timeout
 
-    async def __aenter__(self) -> _FakeGeminiClient:
+    async def __aenter__(self) -> _FakeGroqClient:
         return self
 
     async def __aexit__(self, *_args: object) -> None:
         return None
 
-    def stream(self, *_args: object, **_kwargs: object) -> _FakeGeminiResponse:
-        return _FakeGeminiResponse(self._lines)
+    def stream(self, *_args: object, **_kwargs: object) -> _FakeGroqResponse:
+        return _FakeGroqResponse(self._lines)
 
 
-def _fake_client(lines: list[str]) -> type[_FakeGeminiClient]:
-    """Build a fake Gemini HTTP client class bound to stream lines."""
+def _fake_client(lines: list[str]) -> type[_FakeGroqClient]:
+    """Build a fake Groq HTTP client class bound to stream lines."""
 
-    class BoundFakeGeminiClient(_FakeGeminiClient):
+    class BoundFakeGroqClient(_FakeGroqClient):
         def __init__(self, *, timeout: float) -> None:
             super().__init__(lines, timeout=timeout)
 
-    return BoundFakeGeminiClient
+    return BoundFakeGroqClient
 
 
 async def _mock_stream(*_args: object, **_kwargs: object) -> AsyncIterator[str]:
@@ -563,4 +546,4 @@ async def _mock_search_events(
     }
     async for delta in _mock_stream():
         yield {"delta": delta}
-    yield {"done": True, "model": "gemini-3.5-flash"}
+    yield {"done": True, "model": "llama-3.3-70b-versatile"}

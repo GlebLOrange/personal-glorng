@@ -1,4 +1,4 @@
-"""Tests for Gemini JSON helper base URL support."""
+"""Tests for Groq JSON helper base URL support."""
 
 import httpx
 import pytest
@@ -16,7 +16,11 @@ async def test_complete_json_uses_base_url(monkeypatch: pytest.MonkeyPatch) -> N
             return None
 
         def json(self) -> dict[str, object]:
-            return {"output_text": '{"ok": true}'}
+            return {
+                "choices": [
+                    {"message": {"content": '{"ok": true}'}},
+                ],
+            }
 
     class FakeClient:
         def __init__(self, *, timeout: float) -> None:
@@ -37,16 +41,16 @@ async def test_complete_json_uses_base_url(monkeypatch: pytest.MonkeyPatch) -> N
 
     result = await llm_json.complete_json(
         api_key="test-key",
-        model="gemini-test",
+        model="llama-test",
         system_prompt="sys",
         user_content="hello",
-        api_base_url="https://example.test/v1beta",
+        api_base_url="https://example.test/v1",
     )
     assert result == {"ok": True}
-    assert captured["url"] == "https://example.test/v1beta/interactions"
+    assert captured["url"] == "https://example.test/v1/chat/completions"
     assert captured["headers"] == {
         "Content-Type": "application/json",
-        "x-goog-api-key": "test-key",
+        "Authorization": "Bearer test-key",
     }
 
 
@@ -54,12 +58,12 @@ async def test_complete_json_uses_base_url(monkeypatch: pytest.MonkeyPatch) -> N
 async def test_complete_json_fails_fast_on_429_without_retry_after(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Do not retry JSON calls when Google omits a short retry hint."""
+    """Do not retry JSON calls when Groq omits a short retry hint."""
     call_state = {"calls": 0}
 
     class FakeResponse:
         def raise_for_status(self) -> None:
-            request = httpx.Request("POST", "https://example.test/v1beta/interactions")
+            request = httpx.Request("POST", "https://example.test/v1/chat/completions")
             response = httpx.Response(429, request=request)
             raise httpx.HTTPStatusError("429", request=request, response=response)
 
@@ -79,13 +83,13 @@ async def test_complete_json_fails_fast_on_429_without_retry_after(
 
     monkeypatch.setattr(llm_json.httpx, "AsyncClient", FakeClient)
 
-    with pytest.raises(ApiError, match="Google Gemini quota exceeded"):
+    with pytest.raises(ApiError, match="Groq rate limit exceeded"):
         await llm_json.complete_json(
             api_key="test-key",
-            model="gemini-test",
+            model="llama-test",
             system_prompt="sys",
             user_content="hello",
-            api_base_url="https://example.test/v1beta",
+            api_base_url="https://example.test/v1",
         )
 
     assert call_state["calls"] == 1

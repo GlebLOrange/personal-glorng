@@ -124,12 +124,13 @@ Client: `VITE_SENTRY_*` in `client/.env.development` or commented block in `.env
 | `GITHUB_ALLOWED_USERS` | Comma-separated GitHub usernames allowed to link |
 | `GITHUB_PUBLIC_USERNAME` | Public repos widget |
 
-## AI (Gemini)
+## AI (Groq)
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `GEMINI_API_KEY` | | Required when AI features enabled |
-| `GEMINI_CHAT_MODEL` | `gemini-3.5-flash` | Model id |
+| `GROQ_API_KEY` | | Required when AI features enabled |
+| `GROQ_CHAT_MODEL` | `llama-3.3-70b-versatile` | Model id |
+| `GROQ_API_BASE_URL` | `https://api.groq.com/openai/v1` | API base URL |
 | `AI_CHAT_ENABLED` | `true` | Admin AI chat |
 | `AI_SEARCH_ENABLED` | `true` | Public search chat |
 

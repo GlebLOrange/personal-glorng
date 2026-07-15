@@ -22,9 +22,9 @@ const AI_CHAT_TABS = [
 
 const PROVIDER_EXAMPLES = [
   {
-    name: "Gemini",
-    env: `GEMINI_API_KEY=AIza...
-GEMINI_CHAT_MODEL=gemini-3.5-flash`,
+    name: "Groq",
+    env: `GROQ_API_KEY=gsk_...
+GROQ_CHAT_MODEL=llama-3.3-70b-versatile`,
   },
 ] as const;
 
@@ -173,7 +173,7 @@ onMounted(() => {
           <div class="flex gap-2">
             <dt class="text-surface-mid w-28 shrink-0">Base URL</dt>
             <dd class="text-surface-light font-mono text-xs break-all">
-              {{ chatConfig.base_url ?? "Gemini API" }}
+              {{ chatConfig.base_url ?? "Groq API" }}
             </dd>
           </div>
           <div class="flex gap-2">
@@ -199,17 +199,16 @@ onMounted(() => {
         <ul class="text-surface-mid text-sm leading-relaxed list-disc pl-5 space-y-2">
           <li>
             <strong class="text-surface-light font-medium">Quota or rate limit</strong> — wait for
-            the retry window, then try again. Check RPM and daily (RPD) limits in
+            the retry window, then try again. Check RPM limits in
             <a
               class="text-accent-blue hover:text-accent-violet transition-colors"
-              href="https://aistudio.google.com/"
+              href="https://console.groq.com/"
               rel="noopener noreferrer"
               target="_blank"
             >
-              Google AI Studio
+              Groq Console
             </a>
-            (daily caps reset at midnight Pacific). Free-tier keys exhaust quickly during testing.
-            Disable competing features in <code class="text-surface-sage">.env</code> while testing
+            . Disable competing features in <code class="text-surface-sage">.env</code> while testing
             chat: <code class="text-surface-sage">AI_SEARCH_ENABLED=false</code>,
             <code class="text-surface-sage">TASK_INTAKE_AI_ENABLED=false</code>,
             <code class="text-surface-sage">NEWS_INGEST_ENABLED=false</code>.
@@ -227,8 +226,8 @@ onMounted(() => {
           </li>
           <li>
             <strong class="text-surface-light font-medium">After .env changes</strong> — set
-            <code class="text-surface-sage">GEMINI_API_KEY</code>,
-            <code class="text-surface-sage">GEMINI_CHAT_MODEL</code>, and
+            <code class="text-surface-sage">GROQ_API_KEY</code>,
+            <code class="text-surface-sage">GROQ_CHAT_MODEL</code>, and
             <code class="text-surface-sage">AI_CHAT_ENABLED=true</code>, then restart the backend.
           </li>
         </ul>
@@ -241,16 +240,16 @@ onMounted(() => {
         <p class="text-surface-mid text-sm leading-relaxed">
           AI chat searches your indexed content first (portfolio, recipes, tasks, expenses, and
           more), then streams a grounded answer with citations. Set
-          <code class="text-surface-sage">GEMINI_API_KEY</code> and
-          <code class="text-surface-sage">GEMINI_CHAT_MODEL</code> in your server
+          <code class="text-surface-sage">GROQ_API_KEY</code> and
+          <code class="text-surface-sage">GROQ_CHAT_MODEL</code> in your server
           <code class="text-surface-sage">.env</code>, run
           <code class="text-surface-sage">python scripts/reindex_search.py</code> after deploy, then
           restart the backend. Set <code class="text-surface-sage">AI_CHAT_ENABLED=false</code>
           to hide this tool entirely.
         </p>
         <p class="text-surface-mid text-sm leading-relaxed">
-          The same Gemini key is shared by AI chat, public search, news ingest, and task intake.
-          Free-tier keys have low requests-per-minute limits. This app also caps chat to 5 messages
+          The same Groq key is shared by AI chat, public search, news ingest, and task intake.
+          Groq enforces per-model RPM limits. This app also caps chat to 5 messages
           per 5 minutes per IP.
         </p>
       </section>
@@ -273,11 +272,11 @@ onMounted(() => {
           Get a key from
           <a
             class="text-accent-blue hover:text-accent-violet transition-colors"
-            href="https://ai.google.dev/gemini-api/docs"
+            href="https://console.groq.com/keys"
             rel="noopener noreferrer"
             target="_blank"
           >
-            Google AI Studio
+            Groq Console
           </a>
           and restart the backend after changing server env.
         </p>

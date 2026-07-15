@@ -49,7 +49,7 @@ async def _mock_search_events(
     }
     async for delta in _mock_stream():
         yield {"delta": delta}
-    yield {"done": True, "model": "gemini-3.5-flash"}
+    yield {"done": True, "model": "llama-3.3-70b-versatile"}
 
 
 @pytest.mark.asyncio
@@ -159,7 +159,7 @@ async def test_search_config_disabled_without_key(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
-    activate_env_file(monkeypatch, scenario_env(tmp_path, GEMINI_API_KEY=""))
+    activate_env_file(monkeypatch, scenario_env(tmp_path, GROQ_API_KEY=""))
     resp = await client.get(SEARCH_CONFIG_URL)
     assert resp.status_code == 200
     body = resp.json()

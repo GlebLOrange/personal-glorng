@@ -28,7 +28,7 @@ def test_ai_chat_requires_flag_and_api_key(
 ) -> None:
     activate_env_file(
         monkeypatch,
-        scenario_env(tmp_path, AI_CHAT_ENABLED="true", GEMINI_API_KEY=""),
+        scenario_env(tmp_path, AI_CHAT_ENABLED="true", GROQ_API_KEY=""),
     )
     assert is_ai_chat_enabled() is False
     get_settings.cache_clear()
@@ -40,7 +40,7 @@ def test_ai_chat_enabled_with_key(
 ) -> None:
     activate_env_file(
         monkeypatch,
-        scenario_env(tmp_path, AI_CHAT_ENABLED="true", GEMINI_API_KEY="sk-test-key"),
+        scenario_env(tmp_path, AI_CHAT_ENABLED="true", GROQ_API_KEY="sk-test-key"),
     )
     assert is_ai_chat_enabled() is True
     get_settings.cache_clear()
@@ -52,7 +52,7 @@ def test_ai_search_requires_flag_and_api_key(
 ) -> None:
     activate_env_file(
         monkeypatch,
-        scenario_env(tmp_path, AI_SEARCH_ENABLED="true", GEMINI_API_KEY=""),
+        scenario_env(tmp_path, AI_SEARCH_ENABLED="true", GROQ_API_KEY=""),
     )
     assert is_ai_search_enabled() is False
     get_settings.cache_clear()
@@ -64,7 +64,7 @@ def test_ai_search_enabled_with_key(
 ) -> None:
     activate_env_file(
         monkeypatch,
-        scenario_env(tmp_path, AI_SEARCH_ENABLED="true", GEMINI_API_KEY="sk-test-key"),
+        scenario_env(tmp_path, AI_SEARCH_ENABLED="true", GROQ_API_KEY="sk-test-key"),
     )
     assert is_ai_search_enabled() is True
     get_settings.cache_clear()
