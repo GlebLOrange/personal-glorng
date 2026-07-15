@@ -2,12 +2,12 @@
 import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
+import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
@@ -24,6 +24,8 @@ interface FeedbackItem {
   status: string;
   created_at: string;
 }
+
+const FILTER_OPTIONS = ["all", "unread", "archived"] as const;
 
 const items = ref<FeedbackItem[]>([]);
 const selectedItem = ref<FeedbackItem | null>(null);
@@ -128,60 +130,62 @@ onMounted(load);
 
 <template>
   <AdminPageLayout title="feedback">
-    <header class="page-intro">
-      <div class="flex flex-wrap gap-2">
-        <BaseButton
-          v-for="f in ['all', 'unread', 'archived'] as const"
-          :key="f"
-          :variant="filter === f ? 'primary' : 'ghost'"
-          size="sm"
-          @click="setFilter(f)"
-        >
-          {{ f.charAt(0).toUpperCase() + f.slice(1) }}
-        </BaseButton>
-      </div>
-    </header>
-
     <AdminListSkeleton v-if="loading" label="Loading feedback" />
 
-    <EmptyState
-      v-else-if="items.length === 0"
-      :description="
-        filter !== 'all' ? `No feedback messages with status '${filter}'.` : 'No feedback messages.'
-      "
-    />
-
-    <div v-else class="min-w-0 space-y-1">
+    <template v-else>
       <AdminListToolbar
         :total="total"
         :page="page"
         :total-pages="totalPages"
         :has-next-page="page < totalPages"
         :has-previous-page="page > 1"
-        :loading="loading"
         item-label="messages"
         ariaLabel="Feedback pagination"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
-      />
-      <AdminListRow
-        v-for="item in items"
-        :key="item.id"
-        interactive
-        @click="openItem(item)"
       >
-        <template #badge>
-          <StatusBadge :label="item.status" :class-name="statusColors[item.status]" />
+        <template #start>
+          <div class="flex flex-wrap gap-2">
+            <AdminFilterChip
+              v-for="f in FILTER_OPTIONS"
+              :key="f"
+              :label="f"
+              :active="filter === f"
+              color-class="text-surface-light bg-surface-dark"
+              @click="setFilter(f)"
+            />
+          </div>
         </template>
-        <template #primary>
-          <span :title="item.theme">{{ item.theme }}</span>
-        </template>
-        <template #meta>
-          <span>{{ item.email }}</span>
-        </template>
-        <template #time>{{ formatDate(item.created_at) }}</template>
-      </AdminListRow>
-    </div>
+      </AdminListToolbar>
+
+      <EmptyState
+        v-if="items.length === 0"
+        class="mt-4"
+        :description="
+          filter !== 'all' ? `No feedback messages with status '${filter}'.` : 'No feedback messages.'
+        "
+      />
+
+      <div v-else class="min-w-0 mt-1 space-y-1">
+        <AdminListRow
+          v-for="item in items"
+          :key="item.id"
+          interactive
+          @click="openItem(item)"
+        >
+          <template #badge>
+            <StatusBadge :label="item.status" :class-name="statusColors[item.status]" />
+          </template>
+          <template #primary>
+            <span :title="item.theme">{{ item.theme }}</span>
+          </template>
+          <template #meta>
+            <span>{{ item.email }}</span>
+          </template>
+          <template #time>{{ formatDate(item.created_at) }}</template>
+        </AdminListRow>
+      </div>
+    </template>
 
     <FeedbackDetailDrawer
       :open="drawerOpen"

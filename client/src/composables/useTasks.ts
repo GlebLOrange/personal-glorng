@@ -12,7 +12,6 @@ import type {
   TaskDetail,
   TaskIntakeItem,
   TaskItem,
-  TaskStats,
 } from "@/types";
 
 export interface TaskCreateForm {
@@ -24,7 +23,6 @@ export interface TaskCreateForm {
 
 export function useTasks() {
   const tasks = ref<TaskItem[]>([]);
-  const stats = ref<TaskStats | null>(null);
   const syncQueue = ref<SyncQueueItem[]>([]);
   const intakes = ref<TaskIntakeItem[]>([]);
   const selectedTask = ref<TaskDetail | null>(null);
@@ -47,7 +45,6 @@ export function useTasks() {
   });
 
   const { loading: listLoading, run: runList } = useApiAction();
-  const { loading: statsLoading, run: runStats } = useApiAction();
   const { loading: intakesLoading, run: runIntakes } = useApiAction();
   const { loading: syncLoading, run: runSync } = useApiAction();
   const { loading: detailLoading, run: runDetail } = useApiAction();
@@ -83,19 +80,6 @@ export function useTasks() {
       tasks.value = data.items;
       totalPages.value = data.pages;
       total.value = data.total;
-    }
-  }
-
-  async function loadStats(): Promise<void> {
-    const data = await runStats(
-      async () => {
-        const response = await api.get<TaskStats>("/tools/tasks/stats");
-        return response.data;
-      },
-      { errorFallback: "Failed to load stats", silent: true },
-    );
-    if (data) {
-      stats.value = data;
     }
   }
 
@@ -175,7 +159,7 @@ export function useTasks() {
     if (selectedTask.value?.id === taskId) {
       await openDetail(taskId);
     }
-    await Promise.all([loadTasks(), loadStats()]);
+    await loadTasks();
   }
 
   function openCreate(): void {
@@ -213,7 +197,7 @@ export function useTasks() {
     if (result !== null) {
       showCreateForm.value = false;
       page.value = 1;
-      await Promise.all([loadTasks(), loadStats()]);
+      await loadTasks();
     }
   }
 
@@ -254,7 +238,6 @@ export function useTasks() {
 
   return {
     tasks,
-    stats,
     syncQueue,
     intakes,
     selectedTask,
@@ -271,7 +254,6 @@ export function useTasks() {
     showCreateForm,
     createForm,
     listLoading,
-    statsLoading,
     intakesLoading,
     syncLoading,
     detailLoading,
@@ -284,7 +266,6 @@ export function useTasks() {
     hasNextSyncPage,
     hasPreviousSyncPage,
     loadTasks,
-    loadStats,
     loadIntakes,
     loadSyncQueue,
     openDetail,

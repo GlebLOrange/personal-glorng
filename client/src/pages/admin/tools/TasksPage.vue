@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
@@ -10,8 +11,8 @@ import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
 import TaskFilters from "@/components/tasks/TaskFilters.vue";
 import TaskIntakeList from "@/components/tasks/TaskIntakeList.vue";
 import TaskList from "@/components/tasks/TaskList.vue";
-import TaskSummaryBar from "@/components/tasks/TaskSummaryBar.vue";
 import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
+import { statusBadgeClass } from "@/constants/taskStatus";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { useTasks } from "@/composables/useTasks";
@@ -23,6 +24,15 @@ const TASK_TABS: { id: Tab; label: string }[] = [
   { id: "intakes", label: "intakes" },
   { id: "sync", label: "sync" },
 ];
+
+const STATUS_FILTERS = [
+  { label: "all", value: "" },
+  { label: "pending", value: "pending" },
+  { label: "completed", value: "completed" },
+  { label: "not completed", value: "not_completed" },
+  { label: "postponed", value: "postponed" },
+  { label: "cancelled", value: "cancelled" },
+] as const;
 
 const route = useRoute();
 const router = useRouter();
@@ -46,7 +56,6 @@ const { isSuperuser } = usePermissions();
 
 const {
   tasks,
-  stats,
   syncQueue,
   intakes,
   selectedTask,
@@ -55,7 +64,6 @@ const {
   showCreateForm,
   createForm,
   listLoading,
-  statsLoading,
   intakesLoading,
   syncLoading,
   detailLoading,
@@ -76,7 +84,6 @@ const {
   intakeTotal,
   syncTotal,
   loadTasks,
-  loadStats,
   loadIntakes,
   loadSyncQueue,
   openDetail,
@@ -89,6 +96,10 @@ const {
   goToIntakePage,
   goToSyncPage,
 } = useTasks();
+
+function setFilter(status: string): void {
+  filterStatus.value = status;
+}
 
 useScrollListFingerprint(
   () =>
@@ -103,23 +114,15 @@ onMounted(() => {
     if (tab === "sync") void loadSyncQueue();
   }
   void loadTasks();
-  void loadStats();
 });
 </script>
 
 <template>
   <AdminPageLayout title="tasks" max-width="xl">
     <div class="min-w-0">
-      <TaskSummaryBar
-        v-model:filter-status="filterStatus"
-        :stats="stats"
-        :loading="statsLoading"
-        @switch-tab="switchTab"
-      >
-        <template #actions>
-          <TaskFilters :can-mutate="isSuperuser" @create="openCreate" />
-        </template>
-      </TaskSummaryBar>
+      <div class="mb-3 flex justify-end">
+        <TaskFilters :can-mutate="isSuperuser" @create="openCreate" />
+      </div>
 
       <AdminTabBar
         panel-id-prefix="tasks-tab"
@@ -136,20 +139,41 @@ onMounted(() => {
         tabindex="0"
         class="outline-none"
       >
-        <div v-if="!listLoading && tasks.length > 0" class="mb-1">
-          <AdminListToolbar
-            :total="total"
-            :page="page"
-            :total-pages="totalPages"
-            :has-next-page="hasNextPage"
-            :has-previous-page="hasPreviousPage"
-            :loading="listLoading"
-            item-label="tasks"
-            ariaLabel="Tasks pagination"
-            @prev="goToPage(page - 1)"
-            @next="goToPage(page + 1)"
-          />
-        </div>
+        <AdminListToolbar
+          v-if="!listLoading"
+          class="mb-1"
+          :total="total"
+          :page="page"
+          :total-pages="totalPages"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          :loading="listLoading"
+          item-label="tasks"
+          ariaLabel="Tasks pagination"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+        >
+          <template #start>
+            <div class="flex flex-wrap gap-2">
+              <AdminFilterChip
+                v-for="chip in STATUS_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :active="filterStatus === chip.value"
+                :color-class="
+                  chip.value ? statusBadgeClass(chip.value) : 'text-surface-light bg-surface-dark'
+                "
+                @click="setFilter(chip.value)"
+              />
+              <AdminFilterChip
+                label="failed syncs"
+                :active="false"
+                color-class="text-status-error bg-status-error/10 border-status-error/30"
+                @click="switchTab('sync')"
+              />
+            </div>
+          </template>
+        </AdminListToolbar>
         <TaskList
           :tasks="tasks"
           :loading="listLoading"

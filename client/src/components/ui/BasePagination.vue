@@ -30,9 +30,9 @@ const canGoPrevious = computed(() => {
 
 const pageLabel = computed(() => {
   if (props.totalPages !== undefined && props.totalPages > 0) {
-    return `Page ${props.page} of ${props.totalPages}`;
+    return `page ${props.page} of ${props.totalPages}`;
   }
-  return `Page ${props.page}`;
+  return `page ${props.page}`;
 });
 
 const prevDisabled = computed(() => props.loading || !canGoPrevious.value);
@@ -47,11 +47,11 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
     "
   >
     <BaseButton variant="ghost" size="sm" :disabled="prevDisabled" @click="emit('prev')">
-      Previous
+      previous
     </BaseButton>
     <span v-if="layout === 'bar'" class="text-xs text-surface-muted">{{ pageLabel }}</span>
     <BaseButton variant="ghost" size="sm" :disabled="nextDisabled" @click="emit('next')">
-      Next
+      next
     </BaseButton>
   </nav>
 </template>
