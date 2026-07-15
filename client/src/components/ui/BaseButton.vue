@@ -14,7 +14,7 @@ defineProps<{
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
       'disabled:opacity-50 disabled:cursor-not-allowed',
       variant === 'primary'
-        ? 'bg-gradient-to-r from-accent-blue to-accent-violet text-white border-transparent hover:opacity-90'
+        ? 'bg-accent-blue text-surface-dark border-transparent hover:bg-accent-blue/90'
         : variant === 'ghost'
           ? 'bg-transparent text-surface-light border-surface-border hover:border-accent-blue'
           : 'bg-surface-card text-surface-light border-surface-border hover:border-accent-blue',

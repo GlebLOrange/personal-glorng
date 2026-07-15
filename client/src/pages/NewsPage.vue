@@ -3,6 +3,8 @@ import { onMounted, watch } from "vue";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
+import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, useNews } from "@/composables/useNews";
 import { usePermissions } from "@/composables/usePermissions";
@@ -50,10 +52,12 @@ watch(page, () => {
       <Card v-for="i in 5" :key="i" class="h-40 animate-pulse" />
     </section>
 
-    <Card v-else-if="listError" as="section" class="!p-8 text-center">
-      <p class="text-sm text-surface-mid mb-4">{{ listError }}</p>
-      <BaseButton variant="ghost" size="sm" @click="loadNews">Retry</BaseButton>
-    </Card>
+    <ErrorState
+      v-else-if="listError"
+      :message="listError"
+      show-retry
+      @retry="loadNews"
+    />
 
     <section v-else-if="articles.length" class="space-y-4 min-w-0">
       <Card v-for="item in articles" :key="item.id" as="article" variant="compact" class="min-w-0">
@@ -98,12 +102,11 @@ watch(page, () => {
       </Card>
     </section>
 
-    <Card v-else as="section" role="status" class="!p-8 text-center">
-      <h2 class="card-title mb-2">No news yet</h2>
-      <p class="text-sm text-surface-mid">
-        The digest has not published anything yet. Check back after the next ingestion run.
-      </p>
-    </Card>
+    <EmptyState
+      v-else
+      title="No news yet"
+      description="The digest has not published anything yet. Check back after the next ingestion run."
+    />
 
     <nav
       v-if="!listLoading && !listError && (articles.length > 0 || page > 1)"

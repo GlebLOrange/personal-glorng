@@ -92,7 +92,7 @@ onUnmounted(() => {
         :aria-labelledby="title ? 'modal-title' : undefined"
         tabindex="-1"
         :class="[
-          'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-2xl focus:outline-none',
+          'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-sm focus:outline-none',
           widthClass[maxWidth ?? 'lg'],
         ]"
       >

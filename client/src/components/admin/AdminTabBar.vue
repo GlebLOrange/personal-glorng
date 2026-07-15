@@ -9,17 +9,31 @@ export interface AdminTab {
 const activeTab = defineModel<string>({ required: true });
 const tablistRef = ref<HTMLElement | null>(null);
 
-const props = defineProps<{
-  tabs: AdminTab[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    tabs: AdminTab[];
+    panelIdPrefix?: string;
+  }>(),
+  {
+    panelIdPrefix: "admin-tab",
+  },
+);
 
 const tabClass = (id: string): string =>
   [
-    "px-3 py-1.5 text-xs rounded-lg transition-colors",
+    "px-3 py-1.5 text-xs rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
     activeTab.value === id
       ? "bg-accent-blue/20 text-accent-blue"
       : "text-surface-mid hover:text-surface-light",
   ].join(" ");
+
+function tabButtonId(tabId: string): string {
+  return `${props.panelIdPrefix}-tab-${tabId}`;
+}
+
+function tabPanelId(tabId: string): string {
+  return `${props.panelIdPrefix}-panel-${tabId}`;
+}
 
 function activateTabAt(index: number, shouldFocus = false): void {
   const tab = props.tabs[index];
@@ -62,10 +76,12 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
   >
     <button
       v-for="(tab, index) in tabs"
+      :id="tabButtonId(tab.id)"
       :key="tab.id"
       type="button"
       role="tab"
       :aria-selected="activeTab === tab.id"
+      :aria-controls="tabPanelId(tab.id)"
       :tabindex="activeTab === tab.id ? 0 : -1"
       :class="tabClass(tab.id)"
       @click="activeTab = tab.id"

@@ -6,7 +6,7 @@ import type { Toast } from "@/types";
 const { toasts, dismiss } = useNotify();
 
 const typeBorderClass: Record<Toast["type"], string> = {
-  success: "border-green-500",
+  success: "border-status-success",
   error: "border-status-error",
   info: "",
 };

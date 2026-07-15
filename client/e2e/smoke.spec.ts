@@ -1,12 +1,20 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 import { loginAsAdmin } from "./helpers/auth";
+
+async function expectNoCriticalA11yViolations(pageUrl: string, page: import("@playwright/test").Page): Promise<void> {
+  const results = await new AxeBuilder({ page }).include("main").analyze();
+  const critical = results.violations.filter((v) => v.impact === "critical" || v.impact === "serious");
+  expect(critical, `a11y violations on ${pageUrl}`).toEqual([]);
+}
 
 test.describe("public pages", () => {
   test("portfolio page loads", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("link", { name: /back to portfolio/i })).toHaveCount(0);
     await expect(page.locator("body")).toBeVisible();
+    await expectNoCriticalA11yViolations("/", page);
   });
 
   test("portfolio shows resume hero content", async ({ page }) => {
@@ -21,6 +29,7 @@ test.describe("public pages", () => {
     await expect(page.getByRole("heading", { name: /login/i })).toBeVisible();
     await expect(page.getByPlaceholder("you@example.com")).toBeVisible();
     await expect(page.getByRole("button", { name: /login/i })).toBeVisible();
+    await expectNoCriticalA11yViolations("/login", page);
   });
 
   test("guest sees tools nav and public tools catalog", async ({ page }) => {

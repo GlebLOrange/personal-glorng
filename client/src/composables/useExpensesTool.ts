@@ -57,7 +57,7 @@ export function useExpensesTool(
   );
 
   const filtersRef = shallowRef<ReturnType<typeof useExpenseFilters> | null>(null);
-  const { sortParam, toggleSort, sortIndicator } = useExpenseSort();
+  const { sortParam, toggleSort, sortIndicator, sortAriaSort } = useExpenseSort();
 
   function expenseQueryParams(): Record<string, string> {
     return {
@@ -577,6 +577,7 @@ export function useExpensesTool(
     transactionFilterLabel,
     productSuggestions,
     sortIndicator,
+    sortAriaSort,
     handleDatePreset,
     clearTransactionFilters,
     goToExpensePage,

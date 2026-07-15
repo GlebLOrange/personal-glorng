@@ -21,11 +21,16 @@ Use for **grouped content on a surface** — list items, settings sections, summ
 - Variants: `default`, `compact`, `inset`, `ghost`
 - Not a drop-in for every `div`; use when the block needs a border/background
 
-## Marketing CTAs (`cta-primary`, `cta-secondary` in `main.css`)
+## Marketing CTAs vs product buttons
 
-Use on **portfolio/marketing pages** (hero, login, donations) where larger tap targets and gradient primary buttons match the brand.
+**Marketing / auth surfaces** — use `cta-primary` and `cta-secondary` utilities from `main.css` on portfolio pages, login, register, and donations. These use gradient fills and larger tap targets for brand moments.
 
-Inside admin tools and dense product UI, prefer `BaseButton variant="primary"`.
+**Admin tools and dense product UI** — use `BaseButton`:
+
+- `variant="primary"` — flat `accent-blue` fill (no gradient)
+- `variant="secondary"` / `variant="ghost"` — neutral surfaces
+
+Do not use `cta-primary` inside tool screens; do not add gradients to `BaseButton`.
 
 ## Async UI pattern
 

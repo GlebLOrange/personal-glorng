@@ -4,6 +4,8 @@ import { computed, onMounted, ref, watch } from "vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
+import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import {
   NEWS_SUMMARY_MAX_LENGTH,
@@ -389,10 +391,12 @@ watch(page, () => {
       <Card v-for="i in 5" :key="i" class="h-36 animate-pulse" />
     </section>
 
-    <Card v-else-if="listError" as="section" class="!p-8 text-center">
-      <p class="text-sm text-surface-mid mb-4">{{ listError }}</p>
-      <BaseButton variant="ghost" size="sm" @click="loadAdminNews">Retry</BaseButton>
-    </Card>
+    <ErrorState
+      v-else-if="listError"
+      :message="listError"
+      show-retry
+      @retry="loadAdminNews"
+    />
 
     <section v-else-if="articles.length" class="space-y-3 min-w-0">
       <Card
@@ -479,12 +483,11 @@ watch(page, () => {
       </Card>
     </section>
 
-    <Card v-else as="section" role="status" class="!p-8">
-      <h2 class="card-title mb-2">No articles</h2>
-      <p class="text-sm text-surface-mid">
-        No news articles match this filter. Run ingestion after configuring trusted sources.
-      </p>
-    </Card>
+    <EmptyState
+      v-else
+      title="No articles"
+      description="No news articles match this filter. Run ingestion after configuring trusted sources."
+    />
 
     <nav
       v-if="!listLoading && !listError && (articles.length > 0 || page > 1)"

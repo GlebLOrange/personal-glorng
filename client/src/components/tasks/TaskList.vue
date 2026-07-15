@@ -22,7 +22,7 @@ const emptyMessage = (filterStatus: string): string => {
 </script>
 
 <template>
-  <div v-if="loading" class="flex flex-col gap-3">
+  <div v-if="loading" class="flex flex-col gap-3" aria-busy="true" aria-label="Loading tasks">
     <Card v-for="n in skeletonRows" :key="n" variant="compact" class="animate-pulse">
       <div class="h-3 w-24 bg-surface-border rounded mb-2" />
       <div class="h-4 w-48 bg-surface-border rounded mb-3" />

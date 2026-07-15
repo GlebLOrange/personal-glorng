@@ -27,6 +27,8 @@ describe("AdminTabBar", () => {
     expect(wrapper.findAll('[role="tab"]')).toHaveLength(3);
     expect(wrapper.get('[role="tab"]').attributes("aria-selected")).toBe("true");
     expect(wrapper.get('[role="tab"]').attributes("tabindex")).toBe("0");
+    expect(wrapper.get('[role="tab"]').attributes("aria-controls")).toBe("admin-tab-panel-queue");
+    expect(wrapper.get('[role="tab"]').attributes("id")).toBe("admin-tab-tab-queue");
 
     wrapper.unmount();
   });

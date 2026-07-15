@@ -75,6 +75,7 @@ watch(
     await nextTick();
     closeButton.value?.focus();
   },
+  { immediate: true },
 );
 
 onUnmounted(() => document.removeEventListener("keydown", onKeydown));
@@ -87,6 +88,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         <div
           v-if="open"
           class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          aria-hidden="true"
           @click="emit('close')"
         />
       </Transition>

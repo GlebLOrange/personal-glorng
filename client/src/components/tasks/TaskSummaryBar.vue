@@ -25,14 +25,14 @@ const skeletonCards = 4;
         <div class="text-xs text-surface-mid mt-1">Total</div>
       </Card>
       <Card>
-        <div class="text-2xl font-bold text-yellow-400">{{ stats.pending }}</div>
+        <div class="text-2xl font-bold text-status-warning">{{ stats.pending }}</div>
         <div class="text-xs text-surface-mid mt-1">Pending</div>
       </Card>
       <Card>
         <div class="text-2xl font-bold text-status-success">{{ stats.completed }}</div>
         <div class="text-xs text-surface-mid mt-1">Completed</div>
       </Card>
-      <Card :class="stats.failed_syncs > 0 ? 'border-red-400/40' : ''">
+      <Card :class="stats.failed_syncs > 0 ? 'border-status-error/40' : ''">
         <div
           :class="[
             'text-2xl font-bold',
