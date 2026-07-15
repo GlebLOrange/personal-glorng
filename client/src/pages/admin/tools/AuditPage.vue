@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
+import AdminFilterBar from "@/components/admin/AdminFilterBar.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
-import { Card } from "@/components/ui/card";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -121,31 +120,28 @@ onMounted(load);
       <p class="text-xs text-surface-muted">Persistent security and domain change trail</p>
     </header>
 
-    <Card class="mb-6">
-      <div class="flex flex-wrap items-end gap-3">
-        <BaseSelect v-model="category" label="Category" compact>
-          <option value="">All</option>
-          <option value="security">Security</option>
-          <option value="domain">Domain</option>
-        </BaseSelect>
-        <BaseInput
-          v-model="action"
-          label="Action"
-          compact
-          placeholder="e.g. auth.login_success"
-        />
-        <BaseInput v-model="requestId" label="Request ID" compact placeholder="UUID" />
-        <BaseInput v-model="actorId" label="Actor ID" compact placeholder="User ID" />
-        <BaseInput
-          v-model="resourceType"
-          label="Resource type"
-          compact
-          placeholder="e.g. recipe"
-        />
-        <BaseInput v-model="resourceId" label="Resource ID" compact placeholder="Numeric ID" />
-        <BaseButton size="sm" @click="applyFilters">Filter</BaseButton>
-      </div>
-    </Card>
+    <AdminFilterBar @apply="applyFilters">
+      <BaseSelect v-model="category" label="Category" compact>
+        <option value="">All</option>
+        <option value="security">Security</option>
+        <option value="domain">Domain</option>
+      </BaseSelect>
+      <BaseInput
+        v-model="action"
+        label="Action"
+        compact
+        placeholder="e.g. auth.login_success"
+      />
+      <BaseInput v-model="requestId" label="Request ID" compact placeholder="UUID" />
+      <BaseInput v-model="actorId" label="Actor ID" compact placeholder="User ID" />
+      <BaseInput
+        v-model="resourceType"
+        label="Resource type"
+        compact
+        placeholder="e.g. recipe"
+      />
+      <BaseInput v-model="resourceId" label="Resource ID" compact placeholder="Numeric ID" />
+    </AdminFilterBar>
 
     <AdminListSkeleton v-if="loading" label="Loading audit events" />
 
