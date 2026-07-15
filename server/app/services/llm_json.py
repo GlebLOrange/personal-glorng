@@ -13,6 +13,7 @@ from app.services.ai_chat import (
     GEMINI_MAX_RETRIES,
     _headers,
     _retry_after_seconds,
+    _should_retry_gemini_429,
     _sleep_for_retry,
     raise_gemini_http_error,
 )
@@ -81,7 +82,11 @@ async def complete_json(
                 response.raise_for_status()
             break
         except httpx.HTTPStatusError as exc:
-            if exc.response.status_code == 429 and attempt < max_attempts - 1:
+            if (
+                exc.response.status_code == 429
+                and _should_retry_gemini_429(exc.response)
+                and attempt < max_attempts - 1
+            ):
                 logger.warning(
                     "Gemini rate limit hit; retrying JSON request",
                     context={

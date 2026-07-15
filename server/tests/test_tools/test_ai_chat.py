@@ -14,6 +14,8 @@ from app.services.ai_chat import (
     GEMINI_MAX_RETRIES,
     GeminiChatService,
     _gemini_rate_limit_message,
+    _retry_after_seconds,
+    _should_retry_gemini_429,
     detect_llm_provider,
 )
 from app.services.ai_search import AiSearchService
@@ -277,9 +279,39 @@ def test_gemini_rate_limit_message_includes_retry_after() -> None:
     )
 
 
+def test_retry_after_seconds_reads_retry_delay_from_body() -> None:
+    request = httpx.Request("POST", "https://example.test/v1beta/interactions")
+    response = httpx.Response(
+        429,
+        request=request,
+        json={
+            "error": {
+                "details": [
+                    {
+                        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+                        "retryDelay": "45s",
+                    }
+                ]
+            }
+        },
+    )
+    assert _retry_after_seconds(response) == 45
+
+
+def test_should_retry_gemini_429_only_for_short_retry_after() -> None:
+    request = httpx.Request("POST", "https://example.test/v1beta/interactions")
+    short_wait = httpx.Response(429, request=request, headers={"Retry-After": "30"})
+    long_wait = httpx.Response(429, request=request, headers={"Retry-After": "31"})
+    no_hint = httpx.Response(429, request=request)
+
+    assert _should_retry_gemini_429(short_wait) is True
+    assert _should_retry_gemini_429(long_wait) is False
+    assert _should_retry_gemini_429(no_hint) is False
+
+
 @pytest.mark.asyncio
 async def test_gemini_service_retries_on_429_then_succeeds() -> None:
-    """Retry transient Gemini 429 before streaming text."""
+    """Retry short-lived Gemini 429 when Retry-After is present."""
     lines = ['data: {"event_type":"step.delta","delta":{"type":"text","text":"Hi"}}']
     service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
 
@@ -297,7 +329,7 @@ async def test_gemini_service_retries_on_429_then_succeeds() -> None:
 
 @pytest.mark.asyncio
 async def test_gemini_service_raises_after_retry_exhausted() -> None:
-    """Surface quota error after all Gemini retry attempts fail."""
+    """Surface quota error after short-lived 429 retries are exhausted."""
     service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
     max_attempts = GEMINI_MAX_RETRIES + 1
 
@@ -312,6 +344,36 @@ async def test_gemini_service_raises_after_retry_exhausted() -> None:
         _ = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
 
 
+@pytest.mark.asyncio
+async def test_gemini_service_fails_fast_on_429_without_retry_after() -> None:
+    """Do not burn extra quota when Google omits a short retry hint."""
+    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
+    client_cls, call_state = _quota_error_client(retry_after=None)
+
+    with (
+        patch("app.services.ai_chat.httpx.AsyncClient", client_cls),
+        pytest.raises(ApiError, match="Google Gemini quota exceeded"),
+    ):
+        _ = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
+
+    assert call_state["calls"] == 1
+
+
+@pytest.mark.asyncio
+async def test_gemini_service_fails_fast_on_429_long_retry_after() -> None:
+    """Do not wait out long daily quota windows inside one request."""
+    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
+    client_cls, call_state = _quota_error_client(retry_after="120")
+
+    with (
+        patch("app.services.ai_chat.httpx.AsyncClient", client_cls),
+        pytest.raises(ApiError, match="Google Gemini quota exceeded"),
+    ):
+        _ = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
+
+    assert call_state["calls"] == 1
+
+
 class _RateLimitedFakeGeminiResponse:
     """Stream response that can fail with HTTP 429."""
 
@@ -320,9 +382,11 @@ class _RateLimitedFakeGeminiResponse:
         lines: list[str],
         *,
         status_code: int | None = None,
+        retry_after: str | None = "1",
     ) -> None:
         self._lines = lines
         self._status_code = status_code
+        self._retry_after = retry_after
 
     async def __aenter__(self) -> _RateLimitedFakeGeminiResponse:
         return self
@@ -334,10 +398,11 @@ class _RateLimitedFakeGeminiResponse:
         if self._status_code != 429:
             return
         request = httpx.Request("POST", "https://example.test/v1beta/interactions")
+        headers = {"Retry-After": self._retry_after} if self._retry_after else {}
         response = httpx.Response(
             429,
             request=request,
-            headers={"Retry-After": "1"},
+            headers=headers,
         )
         raise httpx.HTTPStatusError("429", request=request, response=response)
 
@@ -393,6 +458,38 @@ def _rate_limited_client(
             return _RateLimitedFakeGeminiResponse(lines)
 
     return BoundRateLimitedClient
+
+
+def _quota_error_client(
+    *,
+    retry_after: str | None,
+) -> tuple[type, dict[str, int]]:
+    """Build a fake Gemini client that always returns one quota error."""
+    call_state = {"calls": 0}
+
+    class BoundQuotaErrorClient:
+        def __init__(self, *, timeout: float) -> None:
+            self.timeout = timeout
+
+        async def __aenter__(self) -> BoundQuotaErrorClient:
+            return self
+
+        async def __aexit__(self, *_args: object) -> None:
+            return None
+
+        def stream(
+            self,
+            *_args: object,
+            **_kwargs: object,
+        ) -> _RateLimitedFakeGeminiResponse:
+            call_state["calls"] += 1
+            return _RateLimitedFakeGeminiResponse(
+                [],
+                status_code=429,
+                retry_after=retry_after,
+            )
+
+    return BoundQuotaErrorClient, call_state
 
 
 class _FakeGeminiResponse:

@@ -199,7 +199,7 @@ onMounted(() => {
         <ul class="text-surface-mid text-sm leading-relaxed list-disc pl-5 space-y-2">
           <li>
             <strong class="text-surface-light font-medium">Quota or rate limit</strong> — wait for
-            the retry window, then try again. Check usage in
+            the retry window, then try again. Check RPM and daily (RPD) limits in
             <a
               class="text-accent-blue hover:text-accent-violet transition-colors"
               href="https://aistudio.google.com/"
@@ -208,7 +208,11 @@ onMounted(() => {
             >
               Google AI Studio
             </a>
-            . Free-tier keys exhaust quickly during testing.
+            (daily caps reset at midnight Pacific). Free-tier keys exhaust quickly during testing.
+            Disable competing features in <code class="text-surface-sage">.env</code> while testing
+            chat: <code class="text-surface-sage">AI_SEARCH_ENABLED=false</code>,
+            <code class="text-surface-sage">TASK_INTAKE_AI_ENABLED=false</code>,
+            <code class="text-surface-sage">NEWS_INGEST_ENABLED=false</code>.
           </li>
           <li>
             <strong class="text-surface-light font-medium">No sources / empty answers</strong> —
