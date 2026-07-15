@@ -72,10 +72,10 @@ const persistenceHint = computed(() => {
         <p class="text-sm text-surface-mid">{{ persistenceHint }}</p>
         <div v-if="isSuperuser" class="flex flex-wrap gap-2">
           <BaseButton variant="ghost" size="sm" :disabled="loadingState" @click="loadState">
-            {{ loadingState ? "Loading..." : "Load" }}
+            {{ loadingState ? "loading..." : "load" }}
           </BaseButton>
           <BaseButton variant="primary" size="sm" :disabled="saving || !stateDirty" @click="saveState">
-            {{ saving ? "Saving..." : "Save" }}
+            {{ saving ? "saving..." : "save" }}
           </BaseButton>
         </div>
       </Card>

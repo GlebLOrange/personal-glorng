@@ -69,8 +69,6 @@ const drawerCloseButton = ref<HTMLButtonElement | null>(null);
 let returnFocusTarget: HTMLElement | null = null;
 
 const superuserCount = computed(() => userStats.value?.superuser_count ?? 0);
-const protectedCount = computed(() => userStats.value?.protected_count ?? 0);
-const unverifiedCount = computed(() => userStats.value?.unverified_count ?? 0);
 const hasNextPage = computed(() => page.value < totalPages.value);
 const hasPreviousPage = computed(() => page.value > 1);
 const hasActiveFilters = computed(
@@ -296,30 +294,6 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
 <template>
   <AdminPageLayout title="users" max-width="xl">
-    <div class="mb-6 min-w-0 space-y-4">
-
-      <Card>
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="rounded-lg border border-surface-border/70 bg-surface-dark/60 p-3">
-            <p class="text-xs text-surface-muted">Total users</p>
-            <p class="text-2xl font-semibold text-surface-light">{{ userStats?.total ?? total }}</p>
-          </div>
-          <div class="rounded-lg border border-surface-border/70 bg-surface-dark/60 p-3">
-            <p class="text-xs text-surface-muted">Superusers</p>
-            <p class="text-2xl font-semibold text-surface-light">{{ superuserCount }}</p>
-          </div>
-          <div class="rounded-lg border border-surface-border/70 bg-surface-dark/60 p-3">
-            <p class="text-xs text-surface-muted">Protected</p>
-            <p class="text-2xl font-semibold text-surface-light">{{ protectedCount }}</p>
-          </div>
-          <div class="rounded-lg border border-surface-border/70 bg-surface-dark/60 p-3">
-            <p class="text-xs text-surface-muted">Unverified</p>
-            <p class="text-2xl font-semibold text-surface-light">{{ unverifiedCount }}</p>
-          </div>
-        </div>
-      </Card>
-    </div>
-
     <div v-if="loading" class="space-y-4" aria-busy="true" aria-label="Loading users">
       <Card v-for="index in 3" :key="index">
         <div class="animate-pulse space-y-4">
@@ -338,7 +312,14 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
     <template v-else>
       <AdminListToolbar>
         <template #start>
-          <div class="flex flex-wrap items-center justify-start gap-3">
+          <div class="flex w-full min-w-0 flex-col gap-3">
+            <BaseInput
+              v-model="searchQuery"
+              type="search"
+              placeholder="search users by name or email"
+              aria-label="search users by name or email"
+              class="w-full"
+            />
             <AdminFilterDropdown
               ref="filterDropdown"
               :has-active-filters="hasActiveFilters"
@@ -373,13 +354,6 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                 </div>
               </div>
             </AdminFilterDropdown>
-            <BaseInput
-              v-model="searchQuery"
-              type="search"
-              compact
-              placeholder="search users by name or email"
-              aria-label="search users by name or email"
-            />
           </div>
         </template>
       </AdminListToolbar>

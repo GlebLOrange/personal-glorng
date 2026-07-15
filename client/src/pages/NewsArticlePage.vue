@@ -92,7 +92,7 @@ watch(slug, () => {
           rel="noopener noreferrer"
           class="text-sm text-accent-blue hover:underline"
         >
-          Open original source
+          open original source
         </a>
       </Card>
     </article>

@@ -42,13 +42,13 @@ const EXPENSE_TABS: ExpenseTab[] = [
 ];
 
 const TAB_LABELS: Record<ExpenseTab, string> = {
-  transactions: "Transactions",
-  insights: "Insights",
-  convert: "Convert",
-  sum: "Sum",
-  budget: "Budget",
-  whatif: "What-if",
-  settings: "Settings",
+  transactions: "transactions",
+  insights: "insights",
+  convert: "convert",
+  sum: "sum",
+  budget: "budget",
+  whatif: "what-if",
+  settings: "settings",
 };
 
 export const expenseTabItems = EXPENSE_TABS.map((tab) => ({
@@ -215,8 +215,8 @@ export function useExpensesTool(
   const hasNextExpensePage = computed(() => expensePage.value < expensePages.value);
   const transactionFilterLabel = computed(() => {
     const count = [productFilter.value.trim(), categoryFilter.value].filter(Boolean).length;
-    if (count === 0) return "Filters";
-    return `Filters (${count})`;
+    if (count === 0) return "filters";
+    return `filters (${count})`;
   });
 
   const productSuggestions = computed(

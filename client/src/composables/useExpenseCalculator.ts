@@ -88,7 +88,7 @@ export function useExpenseCalculator() {
   const modeTabs = computed(() =>
     MODES.map((mode) => ({
       id: mode,
-      label: mode === "whatif" ? "What-if" : mode[0].toUpperCase() + mode.slice(1),
+      label: mode === "whatif" ? "what-if" : mode,
     })),
   );
 

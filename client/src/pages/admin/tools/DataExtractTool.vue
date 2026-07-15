@@ -352,40 +352,59 @@ function downloadResult(): void {
 
 <template>
   <AdminPageLayout title="data extract">
-    <header class="page-intro">
-      <p class="text-sm text-surface-mid">
-        Upload CSV, JSON, XML, or delimited text. Preview records or import them into staging storage.
-      </p>
-    </header>
-
     <div class="min-w-0">
 
-    <div
-      role="button"
-      tabindex="0"
-      aria-label="Choose a file to extract"
-      :class="[
-        'border-2 border-dashed rounded-lg p-8 text-center mb-6 transition-colors cursor-pointer',
-        dragOver
-          ? 'border-accent-blue bg-accent-blue/10'
-          : 'border-surface-border hover:border-accent-blue',
-      ]"
-      @dragover.prevent="dragOver = true"
-      @dragleave="dragOver = false"
-      @drop.prevent="onDrop"
-      @click="fileInputRef?.click()"
-      @keydown.enter.prevent="fileInputRef?.click()"
-      @keydown.space.prevent="fileInputRef?.click()"
-    >
-      <input
-        ref="fileInputRef"
-        type="file"
-        class="hidden"
-        accept=".csv,.tsv,.json,.xml,.txt,.pipe"
-        @change="onFileSelect"
-      />
-      <p v-if="selectedName" class="text-surface-light text-sm">{{ selectedName }}</p>
-      <p v-else class="text-surface-mid text-sm">Drop a file here or click to browse</p>
+    <div class="mb-6 space-y-2">
+      <div class="flex items-center justify-between gap-2">
+        <BaseButton
+          v-if="canWrite"
+          variant="secondary"
+          size="sm"
+          class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+          :disabled="loading || !selectedFile"
+          @click="importFile"
+        >
+          {{ loading ? "working..." : "import to db" }}
+        </BaseButton>
+        <span v-else aria-hidden="true" />
+        <BaseButton
+          variant="primary"
+          size="sm"
+          class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+          :disabled="loading || !selectedFile"
+          @click="extractFile"
+        >
+          {{ loading ? "working..." : "extract" }}
+        </BaseButton>
+      </div>
+
+      <div
+        role="button"
+        tabindex="0"
+        aria-label="Choose a file to extract"
+        :class="[
+          'border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
+          dragOver
+            ? 'border-accent-blue bg-accent-blue/10'
+            : 'border-surface-border hover:border-accent-blue',
+        ]"
+        @dragover.prevent="dragOver = true"
+        @dragleave="dragOver = false"
+        @drop.prevent="onDrop"
+        @click="fileInputRef?.click()"
+        @keydown.enter.prevent="fileInputRef?.click()"
+        @keydown.space.prevent="fileInputRef?.click()"
+      >
+        <input
+          ref="fileInputRef"
+          type="file"
+          class="hidden"
+          accept=".csv,.tsv,.json,.xml,.txt,.pipe"
+          @change="onFileSelect"
+        />
+        <p v-if="selectedName" class="text-surface-light text-sm">{{ selectedName }}</p>
+        <p v-else class="text-surface-mid text-sm">drop a file here or click to browse</p>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -440,20 +459,6 @@ function downloadResult(): void {
         <option value="rows">rows</option>
         <option value="tree">tree</option>
       </select>
-    </div>
-
-    <div class="flex flex-wrap gap-3 mb-10">
-      <BaseButton variant="primary" :disabled="loading || !selectedFile" @click="extractFile">
-        {{ loading ? "working..." : "extract" }}
-      </BaseButton>
-      <BaseButton
-        v-if="canWrite"
-        variant="secondary"
-        :disabled="loading || !selectedFile"
-        @click="importFile"
-      >
-        {{ loading ? "working..." : "import to DB" }}
-      </BaseButton>
     </div>
 
     <Card v-if="batchHistory.length" class="space-y-3 mb-6">

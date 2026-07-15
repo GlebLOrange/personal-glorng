@@ -15,11 +15,11 @@ const route = useRoute();
 const router = useRouter();
 
 const sectionLinks = [
-  { href: "#about", label: "About" },
-  { href: "#skills", label: "Skills" },
-  { href: "#experience", label: "Experience" },
-  { href: "#projects", label: "Projects" },
-  { href: "#contact", label: "Contact" },
+  { href: "#about", label: "about" },
+  { href: "#skills", label: "skills" },
+  { href: "#experience", label: "experience" },
+  { href: "#projects", label: "projects" },
+  { href: "#contact", label: "contact" },
 ];
 
 function onKeydown(event: KeyboardEvent): void {
@@ -72,14 +72,14 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         @click="emit('close')"
       >
-        Portfolio
+        portfolio
       </RouterLink>
       <RouterLink
         to="/news"
         class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         @click="emit('close')"
       >
-        News
+        news
       </RouterLink>
 
       <RouterLink
@@ -88,7 +88,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         @click="emit('close')"
       >
-        Tools
+        tools
       </RouterLink>
       <RouterLink
         v-else
@@ -96,7 +96,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         @click="emit('close')"
       >
-        Tools
+        tools
       </RouterLink>
 
       <RouterLink
@@ -105,7 +105,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         @click="emit('close')"
       >
-        Settings
+        settings
       </RouterLink>
 
       <button
@@ -114,7 +114,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         class="nav-link-violet text-base px-3 py-3 rounded-lg hover:bg-surface-card text-left"
         @click="handleLogout"
       >
-        Logout
+        logout
       </button>
       <RouterLink
         v-else
@@ -122,7 +122,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         @click="emit('close')"
       >
-        Login
+        login
       </RouterLink>
     </div>
   </div>

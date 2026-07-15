@@ -120,10 +120,6 @@ onMounted(load);
 
 <template>
   <AdminPageLayout title="audit log">
-    <header class="page-intro">
-      <p class="text-xs text-surface-muted">Persistent security and domain change trail</p>
-    </header>
-
     <AdminListSkeleton v-if="loading && items.length === 0 && !listError" label="Loading audit events" />
 
     <template v-else>

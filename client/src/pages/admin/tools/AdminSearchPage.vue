@@ -70,12 +70,6 @@ function sourceLabel(type: string): string {
 
 <template>
   <AdminPageLayout title="search">
-    <header class="page-intro">
-      <p class="text-xs text-surface-muted">
-        Keyword search across tasks, expenses, feedback, and short URLs
-      </p>
-    </header>
-
     <Card class="mb-6">
       <form class="flex flex-wrap gap-3 items-end" @submit.prevent="search">
         <BaseInput

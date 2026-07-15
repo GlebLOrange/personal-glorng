@@ -28,7 +28,7 @@ const emit = defineEmits<{
 }>();
 
 const sortButtonClass =
-  "text-left hover:text-surface-light transition-colors uppercase tracking-wider text-xs";
+  "text-left hover:text-surface-light transition-colors tracking-wider text-xs";
 
 const skeletonRows = 5;
 </script>
@@ -81,11 +81,11 @@ const skeletonRows = 5;
         </div>
         <div class="flex gap-2 justify-end flex-wrap mt-3">
           <BaseButton variant="ghost" size="sm" @click="emit('duplicate', expense)">
-            Again
+            again
           </BaseButton>
           <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">edit</BaseButton>
           <BaseButton variant="ghost" size="sm" @click="emit('delete', expense.id)">
-            Delete
+            delete
           </BaseButton>
         </div>
       </Card>
@@ -98,17 +98,17 @@ const skeletonRows = 5;
           <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card/80">
             <th class="px-3 py-2" :aria-sort="sortAriaSort('date')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'date')">
-                Date{{ sortIndicator("date") }}
+                date{{ sortIndicator("date") }}
               </button>
             </th>
             <th class="px-3 py-2" :aria-sort="sortAriaSort('category')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'category')">
-                Category{{ sortIndicator("category") }}
+                category{{ sortIndicator("category") }}
               </button>
             </th>
             <th class="px-3 py-2" :aria-sort="sortAriaSort('product')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'product')">
-                Product{{ sortIndicator("product") }}
+                product{{ sortIndicator("product") }}
               </button>
             </th>
             <th class="px-3 py-2 text-right" :aria-sort="sortAriaSort('amount')">
@@ -117,12 +117,12 @@ const skeletonRows = 5;
                 :class="[sortButtonClass, 'w-full text-right']"
                 @click="emit('sort', 'amount')"
               >
-                Price{{ sortIndicator("amount") }}
+                price{{ sortIndicator("amount") }}
               </button>
             </th>
-            <th class="px-3 py-2">Source</th>
-            <th class="px-3 py-2">Notes</th>
-            <th class="px-3 py-2 text-right">Actions</th>
+            <th class="px-3 py-2">source</th>
+            <th class="px-3 py-2">notes</th>
+            <th class="px-3 py-2 text-right">actions</th>
           </tr>
         </thead>
         <tbody>
@@ -163,13 +163,13 @@ const skeletonRows = 5;
             </td>
             <td class="px-3 py-2 text-right whitespace-nowrap">
               <BaseButton variant="ghost" size="sm" @click="emit('duplicate', expense)">
-                Again
+                again
               </BaseButton>
               <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">
-                Edit
+                edit
               </BaseButton>
               <BaseButton variant="ghost" size="sm" @click="emit('delete', expense.id)">
-                Delete
+                delete
               </BaseButton>
             </td>
           </tr>

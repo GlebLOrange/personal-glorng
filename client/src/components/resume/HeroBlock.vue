@@ -90,12 +90,12 @@ async function downloadCv(): Promise<void> {
     </div>
 
     <div class="mt-8 flex flex-col sm:flex-row flex-wrap justify-center gap-4 print:hidden">
-      <a href="#about" class="cta-secondary"> About </a>
-      <a href="#experience" class="cta-primary"> Experience </a>
-      <a href="#projects" class="cta-secondary"> Projects </a>
-      <a href="#contact" class="cta-secondary"> Contact </a>
+      <a href="#about" class="cta-secondary"> about </a>
+      <a href="#experience" class="cta-primary"> experience </a>
+      <a href="#projects" class="cta-secondary"> projects </a>
+      <a href="#contact" class="cta-secondary"> contact </a>
       <button type="button" class="cta-secondary" :disabled="isDownloadingCv" @click="downloadCv">
-        {{ isDownloadingCv ? "Downloading..." : "Download CV" }}
+        {{ isDownloadingCv ? "downloading..." : "download cv" }}
       </button>
     </div>
 

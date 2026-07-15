@@ -69,12 +69,34 @@ async function preview(): Promise<void> {
 <template>
   <AdminPageLayout title="email">
     <form class="space-y-3 mb-8" @submit.prevent="send">
-      <BaseInput
-        v-model="to"
-        type="email"
-        placeholder="to (recipient@example.com)"
-        aria-label="to (recipient@example.com)"
-      />
+      <div class="space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <BaseButton
+            type="button"
+            variant="ghost"
+            size="sm"
+            class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+            :disabled="!subject || !body"
+            @click="preview"
+          >
+            preview
+          </BaseButton>
+          <BaseButton
+            variant="primary"
+            size="sm"
+            class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+            :disabled="!canSend || loading"
+          >
+            {{ loading ? "sending..." : "send" }}
+          </BaseButton>
+        </div>
+        <BaseInput
+          v-model="to"
+          type="email"
+          placeholder="to (recipient@example.com)"
+          aria-label="to (recipient@example.com)"
+        />
+      </div>
       <BaseInput
         v-model="subject"
         placeholder="subject"
@@ -86,14 +108,6 @@ async function preview(): Promise<void> {
         placeholder="body (write your message...)"
         aria-label="body (write your message...)"
       />
-      <div class="flex gap-3">
-        <BaseButton variant="primary" :disabled="!canSend || loading">
-          {{ loading ? "sending..." : "send" }}
-        </BaseButton>
-        <BaseButton type="button" variant="ghost" :disabled="!subject || !body" @click="preview">
-          preview
-        </BaseButton>
-      </div>
     </form>
 
     <div v-if="previewHtml" class="space-y-2">

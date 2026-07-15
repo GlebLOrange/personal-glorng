@@ -143,12 +143,6 @@ onMounted(load);
 
 <template>
   <AdminPageLayout title="app logs">
-    <header class="page-intro">
-      <p class="text-xs text-surface-muted">
-        Structured application logs persisted from the API server.
-      </p>
-    </header>
-
     <AdminListSkeleton v-if="loading && items.length === 0 && !listError" label="Loading app logs" />
 
     <template v-else>

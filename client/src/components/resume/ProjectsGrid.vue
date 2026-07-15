@@ -29,7 +29,7 @@ defineProps<{
         rel="noopener noreferrer"
         class="text-sm font-medium text-accent-blue hover:text-accent-violet transition-colors"
       >
-        View Project &rarr;
+        view project &rarr;
       </a>
     </Card>
   </div>

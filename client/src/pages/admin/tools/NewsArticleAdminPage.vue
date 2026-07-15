@@ -242,7 +242,7 @@ watch(articleId, () => {
     <header v-if="canWrite && article" class="page-intro">
       <div class="flex flex-wrap gap-2">
         <BaseButton variant="primary" :disabled="actionLoading" @click="saveArticle">
-          {{ actionLoading ? "Saving..." : "Save article" }}
+          {{ actionLoading ? "saving..." : "save article" }}
         </BaseButton>
       </div>
     </header>
