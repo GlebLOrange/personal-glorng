@@ -33,8 +33,19 @@ async def test_list_users_as_superuser(
 ) -> None:
     resp = await auth_client.get("/api/admin/users")
     assert resp.status_code == 200
-    emails = {row["email"] for row in resp.json()}
+    data = resp.json()
+    emails = {row["email"] for row in data["items"]}
     assert "admin@admin.admin" in emails
+    assert data["per_page"] == 9
+
+
+@pytest.mark.asyncio
+async def test_admin_users_stats(auth_client: AsyncClient, admin_user: object) -> None:
+    resp = await auth_client.get("/api/admin/users/stats")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] >= 1
+    assert data["superuser_count"] >= 1
 
 
 @pytest.mark.asyncio

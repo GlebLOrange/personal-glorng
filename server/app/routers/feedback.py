@@ -1,18 +1,26 @@
 import asyncio
 from html import escape
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import AuthorizedUser, require_capability
 from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.rate_limit import RateLimiter
 from app.core.telegram import notify_admin
+from app.core.utils import DEFAULT_PER_PAGE
 from app.db.deps import DbRegistry
 from app.db.documents.audit import AuditActorType, AuditCategory, AuditSource
 from app.db.documents.feedback import Feedback
 from app.openapi import requires_capability
-from app.schemas.feedback import FeedbackCreate, FeedbackResponse, FeedbackStatusUpdate
+from app.schemas.feedback import (
+    FeedbackCreate,
+    FeedbackListResponse,
+    FeedbackResponse,
+    FeedbackStatusUpdate,
+)
+from app.services import feedback as feedback_svc
 from app.services.audit import AuditRecord, AuditService
 from app.services.auth import _auth_log_email
 from app.services.search_indexers.feedback import index_feedback
@@ -58,7 +66,7 @@ async def create_feedback(data: FeedbackCreate, registry: DbRegistry) -> Feedbac
 
 @router.get(
     "",
-    response_model=list[FeedbackResponse],
+    response_model=FeedbackListResponse,
     summary="List feedback",
     description=requires_capability("feedback", "read"),
     dependencies=[Depends(require_capability("feedback", "read"))],
@@ -66,10 +74,21 @@ async def create_feedback(data: FeedbackCreate, registry: DbRegistry) -> Feedbac
 async def list_feedback(
     registry: DbRegistry,
     _user: AuthorizedUser,
-) -> list[Feedback]:
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
+    status: Annotated[
+        Literal["unread", "read", "archived"] | None,
+        Query(description="Filter by feedback status"),
+    ] = None,
+) -> FeedbackListResponse:
     if registry.feedback is None:
         raise ApiError(503, "Feedback repository is not initialized")
-    return await registry.feedback.list(limit=500, sort=[("created_at", -1)])
+    return await feedback_svc.list_feedback(
+        registry,
+        page=page,
+        per_page=per_page,
+        status=status,
+    )
 
 
 @router.patch(

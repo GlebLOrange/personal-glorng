@@ -5,16 +5,20 @@ import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
+import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
 import { usePermissions } from "@/composables/usePermissions";
-import type { UrlItem } from "@/types";
+import type { PaginatedList, UrlItem } from "@/types";
 import { publicUrl } from "@/utils/publicLinks";
 
 const urls = ref<UrlItem[]>([]);
+const page = ref(1);
+const totalPages = ref(0);
 const newUrl = ref("");
 const newTitle = ref("");
 const lastCreatedLink = ref<string | null>(null);
@@ -29,14 +33,31 @@ const { loading, run: runCreate } = useApiAction();
 const { run: runUpdate } = useApiAction();
 const { run: runDelete } = useApiAction();
 
+const hasNextPage = computed(() => page.value < totalPages.value);
+const hasPreviousPage = computed(() => page.value > 1);
+
 async function loadUrls(): Promise<void> {
   if (!canManage.value) return;
-  const data = await runList(() => api.get<UrlItem[]>("/tools/url-shortener"), {
-    errorFallback: "Failed to load URLs",
-  });
+  const data = await runList(
+    () =>
+      api.get<PaginatedList<UrlItem>>("/tools/url-shortener", {
+        params: { page: page.value, per_page: LIST_PAGE_SIZE },
+      }),
+    {
+      errorFallback: "Failed to load URLs",
+    },
+  );
   if (data) {
-    urls.value = data.data;
+    urls.value = data.data.items;
+    totalPages.value = data.data.pages;
   }
+}
+
+function goToPage(nextPage: number): void {
+  if (nextPage < 1) return;
+  if (totalPages.value > 0 && nextPage > totalPages.value) return;
+  page.value = nextPage;
+  void loadUrls();
 }
 
 async function createUrl(): Promise<void> {
@@ -55,6 +76,7 @@ async function createUrl(): Promise<void> {
     newUrl.value = "";
     newTitle.value = "";
     if (canManage.value) {
+      page.value = 1;
       await loadUrls();
     }
   }
@@ -143,6 +165,19 @@ onMounted(loadUrls);
         />
 
         <EmptyState v-if="urls.length === 0">No shortened URLs yet. Create one above.</EmptyState>
+
+        <BasePagination
+          v-if="totalPages > 1"
+          class="pt-2"
+          aria-label="Short URLs pagination"
+          :page="page"
+          :total-pages="totalPages"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          :loading="listLoading"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+        />
       </template>
     </div>
   </PageShell>

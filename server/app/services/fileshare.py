@@ -6,9 +6,11 @@ from pathlib import Path
 
 from app.core.exceptions import ApiError, NotFoundError
 from app.core.logging import logger
-from app.core.utils import as_utc, generate_short_code, utc_now
+from app.core.pagination import build_paginated
+from app.core.utils import DEFAULT_PER_PAGE, as_utc, generate_short_code, paginate_params, utc_now
 from app.db.documents.fileshare import SharedFile
 from app.db.registry import DatabaseRegistry
+from app.schemas.fileshare import SharedFileListResponse, SharedFileResponse
 from app.services.audit import AuditService
 from app.settings import get_settings
 
@@ -168,15 +170,25 @@ async def upload(
 async def list_files(
     registry: DatabaseRegistry,
     *,
-    offset: int = 0,
-    limit: int = 20,
+    page: int = 1,
+    per_page: int = DEFAULT_PER_PAGE,
     user_id: int,
-) -> list[SharedFile]:
-    return await _files(registry).list(
+) -> SharedFileListResponse:
+    offset, limit = paginate_params(page, per_page)
+    files = await _files(registry).list(
         offset=offset,
         limit=limit,
         created_by=user_id,
         sort=[("created_at", -1)],
+    )
+    total = await _files(registry).count(created_by=user_id)
+    items = [SharedFileResponse.model_validate(f) for f in files]
+    safe_page = max(1, page)
+    return build_paginated(
+        items,
+        total=total,
+        page=safe_page,
+        per_page=limit,
     )
 
 

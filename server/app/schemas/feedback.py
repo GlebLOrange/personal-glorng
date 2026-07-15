@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
+from app.schemas.common import PaginatedResponse
 from app.schemas.validators import validate_clean_required
 
 
@@ -45,3 +46,7 @@ class FeedbackResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class FeedbackListResponse(PaginatedResponse[FeedbackResponse]):
+    """Paginated feedback list."""

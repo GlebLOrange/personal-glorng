@@ -62,6 +62,16 @@ const {
   saving,
   statusUpdating,
   hasNextPage,
+  hasPreviousPage,
+  hasNextIntakePage,
+  hasPreviousIntakePage,
+  hasNextSyncPage,
+  hasPreviousSyncPage,
+  intakePage,
+  syncPage,
+  totalPages,
+  intakeTotalPages,
+  syncTotalPages,
   taskCountLabel,
   loadTasks,
   loadStats,
@@ -74,6 +84,8 @@ const {
   openCreate,
   createTask,
   goToPage,
+  goToIntakePage,
+  goToSyncPage,
 } = useTasks();
 
 useScrollListFingerprint(
@@ -126,10 +138,13 @@ onMounted(() => {
         @select="openDetail"
       />
       <BasePagination
+        v-if="totalPages > 1"
         class="pt-4"
         aria-label="Tasks pagination"
         :page="page"
+        :total-pages="totalPages"
         :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
       />
@@ -147,6 +162,17 @@ onMounted(() => {
         :intakes="intakes"
         :loading="intakesLoading"
       />
+      <BasePagination
+        v-if="intakeTotalPages > 1"
+        class="pt-4"
+        aria-label="Task intakes pagination"
+        :page="intakePage"
+        :total-pages="intakeTotalPages"
+        :has-next-page="hasNextIntakePage"
+        :has-previous-page="hasPreviousIntakePage"
+        @prev="goToIntakePage(intakePage - 1)"
+        @next="goToIntakePage(intakePage + 1)"
+      />
     </section>
 
     <section
@@ -162,6 +188,17 @@ onMounted(() => {
         :loading="syncLoading"
         :can-mutate="isSuperuser"
         @retry="retrySync"
+      />
+      <BasePagination
+        v-if="syncTotalPages > 1"
+        class="pt-4"
+        aria-label="Task sync queue pagination"
+        :page="syncPage"
+        :total-pages="syncTotalPages"
+        :has-next-page="hasNextSyncPage"
+        :has-previous-page="hasPreviousSyncPage"
+        @prev="goToSyncPage(syncPage - 1)"
+        @next="goToSyncPage(syncPage + 1)"
       />
     </section>
 

@@ -213,6 +213,7 @@ async def test_list_import_batches(auth_client: AsyncClient) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["total"] >= 1
+    assert payload["per_page"] == 9
     assert payload["items"][0]["filename"] == "sample.csv"
 
 

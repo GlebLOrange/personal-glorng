@@ -1,5 +1,6 @@
 import { computed, ref } from "vue";
 
+import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import type {
@@ -12,8 +13,6 @@ import type {
   NewsStatus,
   PaginatedNews,
 } from "@/types";
-
-const PER_PAGE = 20;
 
 export function formatNewsDate(value: string | null): string {
   if (!value) return "not published";
@@ -47,7 +46,7 @@ export function useNews() {
   async function loadNews(options: { admin?: boolean; status?: NewsStatus | null } = {}) {
     const params: Record<string, string | number> = {
       page: page.value,
-      per_page: PER_PAGE,
+      per_page: LIST_PAGE_SIZE,
     };
     if (options.status) params.status = options.status;
     const endpoint = options.admin ? "/tools/news/admin" : "/tools/news";

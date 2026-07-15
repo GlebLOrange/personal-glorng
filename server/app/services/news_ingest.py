@@ -297,7 +297,7 @@ class NewsIngestService:
     ) -> list[NewsSourceConfig]:
         """Load DB-managed sources, falling back to settings JSON when empty."""
         if self.news_svc.registry.news_sources is not None:
-            stored_sources = await self.news_svc.list_sources()
+            stored_sources = await self.news_svc.list_all_sources()
             if source_ids:
                 allowed_ids = set(source_ids)
                 stored_sources = [

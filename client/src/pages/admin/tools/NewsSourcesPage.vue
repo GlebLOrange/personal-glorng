@@ -4,11 +4,13 @@ import { computed, onMounted, ref, watch } from "vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import { Card } from "@/components/ui/card";
+import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
-import type { NewsSource } from "@/types";
+import type { NewsSource, PaginatedList } from "@/types";
 import { formatDate } from "@/utils/format";
 import { normalizeHttpUrl, sourceFromMarkedUrl } from "@/utils/newsForms";
 
@@ -35,6 +37,8 @@ const blankForm = (): NewsSourceForm => ({
 });
 
 const sources = ref<NewsSource[]>([]);
+const page = ref(1);
+const totalPages = ref(0);
 const selectedSourceIds = ref<number[]>([]);
 const form = ref<NewsSourceForm>(blankForm());
 const drawerOpen = ref(false);
@@ -56,14 +60,20 @@ const refreshButtonText = computed(() => {
   return "Queue parser";
 });
 
+const hasNextPage = computed(() => page.value < totalPages.value);
+const hasPreviousPage = computed(() => page.value > 1);
+
 async function loadSources(): Promise<void> {
   loading.value = true;
   loadError.value = false;
   try {
-    const { data } = await api.get<NewsSource[]>("/tools/news-sources");
-    sources.value = data;
+    const { data } = await api.get<PaginatedList<NewsSource>>("/tools/news-sources", {
+      params: { page: page.value, per_page: LIST_PAGE_SIZE },
+    });
+    sources.value = data.items;
+    totalPages.value = data.pages;
     selectedSourceIds.value = selectedSourceIds.value.filter((id) =>
-      data.some((source) => source.id === id && source.enabled),
+      data.items.some((source) => source.id === id && source.enabled),
     );
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
@@ -72,6 +82,13 @@ async function loadSources(): Promise<void> {
   } finally {
     loading.value = false;
   }
+}
+
+function goToPage(nextPage: number): void {
+  if (nextPage < 1) return;
+  if (totalPages.value > 0 && nextPage > totalPages.value) return;
+  page.value = nextPage;
+  void loadSources();
 }
 
 function openCreate(): void {
@@ -298,6 +315,18 @@ onMounted(loadSources);
             </div>
           </div>
         </Card>
+
+        <BasePagination
+          v-if="totalPages > 1"
+          aria-label="News sources pagination"
+          :page="page"
+          :total-pages="totalPages"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          :loading="loading"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+        />
       </template>
     </div>
 

@@ -266,6 +266,14 @@ export type RecipeSort =
   | "prep_asc"
   | "total_time_asc";
 
+export interface PaginatedList<T> {
+  items: T[];
+  total: number;
+  page: number;
+  per_page: number;
+  pages: number;
+}
+
 export interface PaginatedRecipes {
   items: Recipe[];
   total: number;

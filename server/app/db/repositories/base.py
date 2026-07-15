@@ -6,6 +6,7 @@ from typing import Any, TypeVar
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from app.core.exceptions import NotFoundError
+from app.core.utils import DEFAULT_PER_PAGE
 from app.db.documents.base import TimestampedDocument, document_to_dict, utc_now
 from app.db.mongo.counter import next_sequence_id
 
@@ -56,7 +57,7 @@ class MongoRepository[DocT: TimestampedDocument]:
         self,
         *,
         offset: int = 0,
-        limit: int = 20,
+        limit: int = DEFAULT_PER_PAGE,
         sort: list[tuple[str, int]] | None = None,
         **filters: Any,
     ) -> list[DocT]:

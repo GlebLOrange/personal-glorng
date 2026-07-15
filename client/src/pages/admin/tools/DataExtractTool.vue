@@ -3,7 +3,9 @@ import { computed, onMounted, ref } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import { Card } from "@/components/ui/card";
+import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
@@ -19,6 +21,7 @@ import type {
   PromoteBatchResult,
   XmlExtractMode,
 } from "@/types/dataExtract";
+import type { PaginatedList } from "@/types";
 
 type FormatChoice = "auto" | DataExtractFormat;
 
@@ -34,6 +37,8 @@ const showRawJson = ref(false);
 const result = ref<ExtractionResult | null>(null);
 const importResult = ref<ImportResult | null>(null);
 const batchHistory = ref<ImportBatchSummary[]>([]);
+const batchPage = ref(1);
+const batchTotalPages = ref(0);
 const selectedBatchId = ref<number | null>(null);
 const batchDetail = ref<ImportBatchDetail | null>(null);
 const promoteResult = ref<PromoteBatchResult | null>(null);
@@ -147,9 +152,22 @@ function batchLabel(batch: ImportBatchSummary): string {
   return parts.join(" · ");
 }
 
+const hasNextBatchPage = computed(() => batchPage.value < batchTotalPages.value);
+const hasPreviousBatchPage = computed(() => batchPage.value > 1);
+
 async function loadBatchHistory(): Promise<void> {
-  const response = await api.get<{ items: ImportBatchSummary[] }>("/tools/data-extract/batches");
+  const response = await api.get<PaginatedList<ImportBatchSummary>>("/tools/data-extract/batches", {
+    params: { page: batchPage.value, per_page: LIST_PAGE_SIZE },
+  });
   batchHistory.value = response.data.items;
+  batchTotalPages.value = response.data.pages;
+}
+
+function goToBatchPage(nextPage: number): void {
+  if (nextPage < 1) return;
+  if (batchTotalPages.value > 0 && nextPage > batchTotalPages.value) return;
+  batchPage.value = nextPage;
+  void loadBatchHistory();
 }
 
 async function loadBatchDetail(batchId: number): Promise<void> {
@@ -468,6 +486,16 @@ function downloadResult(): void {
           </button>
         </li>
       </ul>
+      <BasePagination
+        v-if="batchTotalPages > 1"
+        aria-label="Import batches pagination"
+        :page="batchPage"
+        :total-pages="batchTotalPages"
+        :has-next-page="hasNextBatchPage"
+        :has-previous-page="hasPreviousBatchPage"
+        @prev="goToBatchPage(batchPage - 1)"
+        @next="goToBatchPage(batchPage + 1)"
+      />
     </Card>
 
     <Card v-if="importResult" class="space-y-3 mb-6">

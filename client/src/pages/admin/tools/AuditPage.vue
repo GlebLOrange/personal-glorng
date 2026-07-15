@@ -9,6 +9,7 @@ import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
+import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { formatDate } from "@/utils/format";
@@ -27,7 +28,6 @@ interface AuditEvent {
   request_id: string | null;
 }
 
-const PER_PAGE = 50;
 const items = ref<AuditEvent[]>([]);
 const total = ref(0);
 const loading = ref(false);
@@ -36,7 +36,7 @@ const category = ref("");
 const action = ref("");
 const page = ref(1);
 const expandedEventIds = ref<Set<number>>(new Set());
-const totalPages = computed(() => Math.ceil(total.value / PER_PAGE));
+const totalPages = computed(() => Math.ceil(total.value / LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
 
@@ -49,7 +49,7 @@ async function load(): Promise<void> {
   loading.value = true;
   listError.value = null;
   try {
-    const params: Record<string, string | number> = { page: page.value, per_page: PER_PAGE };
+    const params: Record<string, string | number> = { page: page.value, per_page: LIST_PAGE_SIZE };
     if (category.value) params.category = category.value;
     if (action.value) params.action = action.value;
     const { data } = await api.get<{ items: AuditEvent[]; total: number }>("/tools/audit", {

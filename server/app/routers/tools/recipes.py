@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import AuthorizedUser, RecipeServiceDep, require_capability
 from app.core.rate_limit import rate_limit_api
+from app.core.utils import DEFAULT_PER_PAGE
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.recipe import (
@@ -44,7 +45,7 @@ async def list_recipes(
     tags: Annotated[str | None, Query(max_length=1000)] = None,
     sort: RecipeSort = "updated_desc",
     page: int = 1,
-    per_page: int = 24,
+    per_page: int = DEFAULT_PER_PAGE,
 ) -> RecipeListResponse:
     selected_tags = [
         value.strip() for value in (tags or "").split(",") if value.strip()

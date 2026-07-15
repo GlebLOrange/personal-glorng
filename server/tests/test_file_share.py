@@ -70,8 +70,10 @@ async def test_list_files(auth_client: AsyncClient) -> None:
     await auth_client.post("/api/tools/file-share", files=_make_file("a.txt", b"data"))
     resp = await auth_client.get("/api/tools/file-share")
     assert resp.status_code == 200
-    assert isinstance(resp.json(), list)
-    assert len(resp.json()) >= 1
+    data = resp.json()
+    assert isinstance(data["items"], list)
+    assert len(data["items"]) >= 1
+    assert data["per_page"] == 9
 
 
 @pytest.mark.asyncio
@@ -230,7 +232,7 @@ async def test_delete_file(auth_client: AsyncClient) -> None:
     assert resp.status_code == 200
 
     list_resp = await auth_client.get("/api/tools/file-share")
-    ids = [f["id"] for f in list_resp.json()]
+    ids = [f["id"] for f in list_resp.json()["items"]]
     assert file_id not in ids
 
 

@@ -138,7 +138,9 @@ async def test_apply_clarification_appends_turn(registry: DatabaseRegistry) -> N
 async def test_list_intakes_admin(auth_client: AsyncClient) -> None:
     resp = await auth_client.get("/api/tools/tasks/intakes")
     assert resp.status_code == 200
-    assert isinstance(resp.json(), list)
+    data = resp.json()
+    assert data["items"] == []
+    assert data["per_page"] == 9
 
 
 @pytest.mark.asyncio

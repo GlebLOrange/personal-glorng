@@ -30,7 +30,7 @@ class PaginatedResponse[T](BaseModel):
                 "items": [],
                 "total": 0,
                 "page": 1,
-                "per_page": 20,
+                "per_page": 9,
                 "pages": 0,
             }
         }

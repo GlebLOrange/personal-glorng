@@ -2,11 +2,10 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useApiAction } from "@/composables/useApiAction";
+import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import type { PaginatedRecipes, Recipe, RecipeSort } from "@/types";
-
-const PER_PAGE = 24;
 
 export interface RecipeFormData {
   title: string;
@@ -113,7 +112,7 @@ export function useRecipes() {
     const generation = ++loadGeneration;
     const params: Record<string, string | number> = {
       page: page.value,
-      per_page: PER_PAGE,
+      per_page: LIST_PAGE_SIZE,
       sort: sort.value,
     };
     if (search.value.trim()) params.search = search.value.trim();

@@ -3,7 +3,9 @@
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.schemas.common import PaginatedResponse
 
 
 class ExtractionResultResponse(BaseModel):
@@ -41,10 +43,11 @@ class ImportBatchResponse(BaseModel):
     promoted_at: datetime | None = None
     meta: dict[str, Any] = Field(default_factory=dict)
 
+    model_config = ConfigDict(from_attributes=True)
 
-class ImportBatchListResponse(BaseModel):
-    items: list[ImportBatchResponse]
-    total: int
+
+class ImportBatchListResponse(PaginatedResponse[ImportBatchResponse]):
+    """Paginated import batch list."""
 
 
 class PromoteBatchResponse(BaseModel):
@@ -61,6 +64,8 @@ class ImportRowResponse(BaseModel):
     fields: dict[str, Any] = Field(default_factory=dict)
     raw_line: str | None = None
     error: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ImportBatchDetailResponse(BaseModel):

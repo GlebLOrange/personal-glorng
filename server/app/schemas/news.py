@@ -260,6 +260,10 @@ class NewsSourceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class NewsSourceListResponse(PaginatedResponse[NewsSourceResponse]):
+    """Paginated news source list."""
+
+
 class NewsSourcesRefreshRequest(BaseModel):
     """Request payload for running source ingestion."""
 

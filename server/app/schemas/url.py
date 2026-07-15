@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 from app.core.url_safety import validate_redirect_url
+from app.schemas.common import PaginatedResponse
 from app.schemas.validators import validate_clean_optional
 
 
@@ -69,3 +70,7 @@ class UrlResponse(BaseModel):
             }
         },
     )
+
+
+class UrlListResponse(PaginatedResponse[UrlResponse]):
+    """Paginated URL shortener list."""

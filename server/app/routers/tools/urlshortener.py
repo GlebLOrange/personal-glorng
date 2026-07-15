@@ -13,11 +13,11 @@ from app.core.permissions import (
     user_has_permission,
 )
 from app.core.rate_limit import rate_limit_api, rate_limit_shortener_create
-from app.core.utils import paginate_params
+from app.core.utils import DEFAULT_PER_PAGE
 from app.db.deps import DbRegistry
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
-from app.schemas.url import UrlCreate, UrlResponse, UrlUpdate
+from app.schemas.url import UrlCreate, UrlListResponse, UrlResponse, UrlUpdate
 from app.services.url import UrlService
 
 router = APIRouter(prefix="/url-shortener", tags=["url-shortener"])
@@ -55,7 +55,7 @@ async def create_url(
 
 @router.get(
     "",
-    response_model=list[UrlResponse],
+    response_model=UrlListResponse,
     summary="List short URLs",
     description=requires_capability("url-shortener", "read"),
     dependencies=[Depends(require_capability("url-shortener", "read"))],
@@ -64,12 +64,10 @@ async def list_urls(
     registry: DbRegistry,
     user: AuthorizedUser,
     page: int = 1,
-    per_page: int = 20,
-) -> list[UrlResponse]:
-    offset, limit = paginate_params(page, per_page)
+    per_page: int = DEFAULT_PER_PAGE,
+) -> UrlListResponse:
     svc = UrlService(registry)
-    urls = await svc.list_by_owner(created_by=user.id, offset=offset, limit=limit)
-    return [UrlResponse.model_validate(u) for u in urls]
+    return await svc.list_by_owner(created_by=user.id, page=page, per_page=per_page)
 
 
 @router.patch(
