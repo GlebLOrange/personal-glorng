@@ -128,6 +128,17 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         public=True,
     ),
     PlatformService(
+        slug="expense-calculator",
+        name="expense calculator",
+        category="utilities",
+        description="Convert currencies, sum items, and plan budgets",
+        api_prefix="/expense-calculator",
+        admin_route="/expense-calculator",
+        icon="∑",
+        capabilities=("read",),
+        public=True,
+    ),
+    PlatformService(
         slug="password-generator",
         name="password generator",
         category="utilities",

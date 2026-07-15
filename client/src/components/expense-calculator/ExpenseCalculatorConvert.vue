@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
-import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import { Card } from "@/components/ui/card";
 import {
   convertCurrency,
   EXPENSE_CURRENCIES,
@@ -11,56 +11,77 @@ import {
   EXPENSE_EXCHANGE_RATE_TARGETS,
   formatMoney,
   formatRate,
-  type ConvertResult,
 } from "@/composables/useExpenseCurrency";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
-import { useApiAction } from "@/composables/useApiAction";
 import type { ExchangeRates } from "@/types";
 
 const props = defineProps<{
   exchangeRates: ExchangeRates | null;
+  ratesLoading: boolean;
 }>();
 
 const amount = ref("100");
 const fromCurrency = ref<CurrencyCode>("EUR");
 const toCurrency = ref<CurrencyCode>(EXPENSE_DEFAULT_CURRENCY);
-const result = ref<ConvertResult | null>(null);
-const { loading, run } = useApiAction();
-
-const canConvert = computed(() => {
-  const value = parseFloat(amount.value);
-  return Number.isFinite(value) && value > 0 && fromCurrency.value && toCurrency.value;
-});
-
-async function convert(): Promise<void> {
-  if (!canConvert.value) return;
-  const data = await run(
-    async () => convertCurrency(parseFloat(amount.value), fromCurrency.value, toCurrency.value),
-    { errorMessage: "Conversion failed" },
-  );
-  if (data) result.value = data;
-}
-
-function swapCurrencies(): void {
-  const prevFrom = fromCurrency.value;
-  fromCurrency.value = toCurrency.value;
-  toCurrency.value = prevFrom;
-  result.value = null;
-}
+const converted = ref<string | null>(null);
+const converting = ref(false);
+const ratesUpdatedAt = ref<string | null>(null);
 
 const selectClass =
   "w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm " +
   "focus:outline-none focus:border-accent-blue transition-colors h-[42px]";
+
+const canConvert = computed(() => {
+  const value = parseFloat(amount.value);
+  return Number.isFinite(value) && value > 0;
+});
+
+let convertTimer: ReturnType<typeof setTimeout> | null = null;
+
+async function runConvert(): Promise<void> {
+  if (!canConvert.value) {
+    converted.value = null;
+    return;
+  }
+  converting.value = true;
+  try {
+    const result = await convertCurrency(
+      parseFloat(amount.value),
+      fromCurrency.value,
+      toCurrency.value,
+    );
+    if (result) {
+      converted.value = result.converted;
+      ratesUpdatedAt.value = result.rates_updated_at;
+    }
+  } finally {
+    converting.value = false;
+  }
+}
+
+function scheduleConvert(): void {
+  if (convertTimer) clearTimeout(convertTimer);
+  convertTimer = setTimeout(() => {
+    void runConvert();
+  }, 300);
+}
+
+function swapCurrencies(): void {
+  const prev = fromCurrency.value;
+  fromCurrency.value = toCurrency.value;
+  toCurrency.value = prev;
+  converted.value = null;
+  scheduleConvert();
+}
+
+watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
 </script>
 
 <template>
   <Card class="space-y-4">
-    <div class="flex items-center justify-between gap-3">
-      <p class="text-xs text-surface-mid">Convert between EUR, USD, PLN, and BYN using live rates.</p>
-      <RouterLink to="/expense-calculator?mode=convert" class="text-xs text-accent-blue hover:underline shrink-0">
-        Open full expense calculator →
-      </RouterLink>
-    </div>
+    <p class="text-xs text-surface-mid">
+      Convert between EUR, USD, PLN, and BYN using live rates. Results update as you type.
+    </p>
 
     <BaseInput
       v-model="amount"
@@ -87,26 +108,30 @@ const selectClass =
     </div>
 
     <div class="flex gap-2">
-      <BaseButton variant="primary" :disabled="!canConvert || loading" @click="convert">
-        {{ loading ? "Converting..." : "Convert" }}
-      </BaseButton>
       <BaseButton variant="ghost" size="sm" aria-label="Swap currencies" @click="swapCurrencies">
         Swap
       </BaseButton>
     </div>
 
-    <div v-if="result" class="border-t border-surface-border pt-4">
+    <div
+      class="border-t border-surface-border pt-4"
+      role="status"
+      aria-live="polite"
+      :aria-busy="converting || ratesLoading"
+    >
       <p class="text-xs text-surface-mid uppercase tracking-wider mb-2">Result</p>
-      <p class="text-2xl font-bold font-data text-surface-light">
-        {{ formatMoney(result.converted, result.to_currency) }}
+      <p v-if="converted" class="text-3xl font-bold font-data text-surface-light">
+        {{ formatMoney(converted, toCurrency) }}
       </p>
-      <p class="text-sm text-surface-mid mt-1">
-        {{ formatMoney(result.amount, result.from_currency) }}
-        →
-        {{ result.to_currency }}
+      <p v-else-if="converting || ratesLoading" class="text-3xl font-bold text-surface-border animate-pulse">
+        —
       </p>
-      <p v-if="result.rates_updated_at" class="text-[10px] text-surface-mid mt-2">
-        Rates updated {{ result.rates_updated_at }}
+      <p v-else class="text-sm text-surface-mid">Enter an amount to convert.</p>
+      <p v-if="converted && canConvert" class="text-sm text-surface-mid mt-1">
+        {{ formatMoney(amount, fromCurrency) }} → {{ toCurrency }}
+      </p>
+      <p v-if="ratesUpdatedAt" class="text-[10px] text-surface-mid mt-2">
+        Rates updated {{ ratesUpdatedAt }}
       </p>
     </div>
 
