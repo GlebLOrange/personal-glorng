@@ -101,14 +101,36 @@ function createStreamEventApplier(
   return { apply, flush };
 }
 
+const ASSISTANT_ERROR_PREFIX = "I couldn't get an AI response: ";
+const GOOGLE_AI_STUDIO_HINT = "or check usage in Google AI Studio";
+
+function isGeminiQuotaMessage(message: string): boolean {
+  return (
+    message.includes("Google Gemini quota") ||
+    message.includes("Gemini rate limit") ||
+    message.includes("Gemini quota")
+  );
+}
+
+function formatGeminiQuotaError(message: string): string {
+  const retryMatch = message.match(/~(\d+)s/);
+  if (retryMatch) {
+    return (
+      `Google API quota reached — try again in ~${retryMatch[1]}s, ${GOOGLE_AI_STUDIO_HINT}`
+    );
+  }
+  return `Google API quota reached — wait a minute and try again, ${GOOGLE_AI_STUDIO_HINT}`;
+}
+
 function showAssistantError(messages: ChatMessage[], message: string): void {
-  const content = `I couldn't get an AI response: ${message}`;
+  const content = `${ASSISTANT_ERROR_PREFIX}${message}`;
   const last = messages.at(-1);
   if (last?.role === "assistant") {
     last.content = content;
+    last.error = true;
     return;
   }
-  messages.push({ role: "assistant", content, sources: [] });
+  messages.push({ role: "assistant", content, sources: [], error: true });
 }
 
 export function normalizeStreamError(message: string, endpoint: string): string {
@@ -123,15 +145,8 @@ export function normalizeStreamError(message: string, endpoint: string): string 
   if (message.includes("Too many requests")) {
     return "You're sending messages too quickly — wait a few minutes";
   }
-  if (
-    message.includes("Google Gemini quota") ||
-    message.includes("Gemini rate limit") ||
-    message.includes("Gemini quota")
-  ) {
-    return (
-      "Google API quota reached — wait a minute and try again, " +
-      "or check usage in Google AI Studio"
-    );
+  if (isGeminiQuotaMessage(message)) {
+    return formatGeminiQuotaError(message);
   }
   return message;
 }

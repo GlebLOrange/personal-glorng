@@ -10,6 +10,7 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   sources?: SearchSource[];
+  error?: boolean;
 }
 
 export interface BaseChatConfig {
