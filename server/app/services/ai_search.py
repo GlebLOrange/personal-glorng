@@ -4,7 +4,7 @@ from enum import StrEnum
 from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.db.documents.search import SearchVisibility
-from app.services.ai_chat import GeminiChatService
+from app.services.ai_chat import GroqChatService
 from app.services.search_index import SearchIndexService
 from app.settings import Settings
 
@@ -63,16 +63,16 @@ class AiSearchService:
     ) -> None:
         self._search = search_svc
         self._settings = settings
-        self._llm: GeminiChatService | None = None
+        self._llm: GroqChatService | None = None
 
-    def _require_llm(self) -> GeminiChatService:
+    def _require_llm(self) -> GroqChatService:
         if self._llm is None:
-            if not self._settings.GEMINI_API_KEY.strip():
+            if not self._settings.GROQ_API_KEY.strip():
                 raise ApiError(503, "LLM is not configured")
-            self._llm = GeminiChatService(
-                api_key=self._settings.GEMINI_API_KEY,
-                model=self._settings.GEMINI_CHAT_MODEL,
-                base_url=self._settings.GEMINI_API_BASE_URL,
+            self._llm = GroqChatService(
+                api_key=self._settings.GROQ_API_KEY,
+                model=self._settings.GROQ_CHAT_MODEL,
+                base_url=self._settings.GROQ_API_BASE_URL,
             )
         return self._llm
 

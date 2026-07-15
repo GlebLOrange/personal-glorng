@@ -1,4 +1,4 @@
-"""Gemini JSON completion helper."""
+"""Groq JSON completion helper."""
 
 import json
 from typing import Any
@@ -9,38 +9,30 @@ from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.text import sanitize_required_text
 from app.services.ai_chat import (
-    GEMINI_API_BASE_URL,
-    GEMINI_MAX_RETRIES,
+    GROQ_API_BASE_URL,
+    GROQ_MAX_RETRIES,
     _headers,
     _retry_after_seconds,
-    _should_retry_gemini_429,
+    _should_retry_rate_limit_429,
     _sleep_for_retry,
-    raise_gemini_http_error,
+    raise_llm_http_error,
 )
 from app.settings import get_settings
 
-_JSON_OBJECT_SCHEMA = {"type": "object", "additionalProperties": True}
 
-
-def _extract_output_text(payload: dict[str, Any]) -> str:
-    """Extract generated text from a Gemini REST interaction response."""
-    output_text = payload.get("output_text")
-    if isinstance(output_text, str):
-        return output_text
-
-    steps = payload.get("steps")
-    if not isinstance(steps, list):
+def _extract_message_content(payload: dict[str, Any]) -> str:
+    """Extract generated text from an OpenAI-compatible chat completion."""
+    choices = payload.get("choices")
+    if not isinstance(choices, list) or not choices:
         return "{}"
-    for step in reversed(steps):
-        if not isinstance(step, dict) or step.get("type") != "model_output":
-            continue
-        content = step.get("content")
-        if not isinstance(content, list):
-            continue
-        for item in content:
-            if isinstance(item, dict) and isinstance(item.get("text"), str):
-                return item["text"]
-    return "{}"
+    first = choices[0]
+    if not isinstance(first, dict):
+        return "{}"
+    message = first.get("message")
+    if not isinstance(message, dict):
+        return "{}"
+    content = message.get("content")
+    return content if isinstance(content, str) else "{}"
 
 
 async def complete_json(
@@ -50,32 +42,28 @@ async def complete_json(
     system_prompt: str,
     user_content: str,
     temperature: float = 0.0,
-    api_base_url: str = GEMINI_API_BASE_URL,
+    api_base_url: str = GROQ_API_BASE_URL,
 ) -> dict[str, Any]:
-    """Return a parsed JSON object from a Gemini interaction."""
+    """Return a parsed JSON object from a Groq chat completion."""
     cleaned = sanitize_required_text(user_content)
     payload: dict[str, Any] = {
         "model": model,
-        "store": False,
-        "input": f"{system_prompt}\n\nInput:\n{cleaned}",
-        "generation_config": {
-            "temperature": temperature,
-            "max_output_tokens": 1024,
-        },
-        "response_format": {
-            "type": "text",
-            "mime_type": "application/json",
-            "schema": _JSON_OBJECT_SCHEMA,
-        },
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": cleaned},
+        ],
+        "temperature": temperature,
+        "max_tokens": 1024,
+        "response_format": {"type": "json_object"},
     }
 
-    max_attempts = GEMINI_MAX_RETRIES + 1
+    max_attempts = GROQ_MAX_RETRIES + 1
     response: httpx.Response | None = None
     for attempt in range(max_attempts):
         try:
             async with httpx.AsyncClient(timeout=45.0) as client:
                 response = await client.post(
-                    f"{api_base_url.rstrip('/')}/interactions",
+                    f"{api_base_url.rstrip('/')}/chat/completions",
                     headers=_headers(api_key),
                     json=payload,
                 )
@@ -84,11 +72,11 @@ async def complete_json(
         except httpx.HTTPStatusError as exc:
             if (
                 exc.response.status_code == 429
-                and _should_retry_gemini_429(exc.response)
+                and _should_retry_rate_limit_429(exc.response)
                 and attempt < max_attempts - 1
             ):
                 logger.warning(
-                    "Gemini rate limit hit; retrying JSON request",
+                    "Groq rate limit hit; retrying JSON request",
                     context={
                         "attempt": attempt + 1,
                         "max_attempts": max_attempts,
@@ -98,7 +86,7 @@ async def complete_json(
                 )
                 await _sleep_for_retry(exc.response, attempt)
                 continue
-            raise_gemini_http_error(exc)
+            raise_llm_http_error(exc)
         except httpx.TimeoutException:
             logger.warning("LLM JSON timeout", context={"model": model})
             raise ApiError(504, "AI API timed out") from None
@@ -109,7 +97,7 @@ async def complete_json(
     if response is None:
         raise ApiError(502, "AI API unreachable")
 
-    raw = _extract_output_text(response.json())
+    raw = _extract_message_content(response.json())
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError as exc:
@@ -123,7 +111,7 @@ async def complete_json(
     return parsed
 
 
-def gemini_api_key() -> str | None:
-    """Return configured Gemini API key, or None if unset."""
-    value = get_settings().GEMINI_API_KEY
+def groq_api_key() -> str | None:
+    """Return configured Groq API key, or None if unset."""
+    value = get_settings().GROQ_API_KEY
     return value or None

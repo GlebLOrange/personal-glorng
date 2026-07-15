@@ -26,7 +26,7 @@ rate_limit_ai_chat = RateLimiter(requests=5, window=300, fail_open=False)
 def _require_ai_chat_ready(settings: Settings) -> None:
     if not settings.AI_CHAT_ENABLED:
         raise ApiError(503, "AI chat is disabled")
-    if not settings.GEMINI_API_KEY.strip():
+    if not settings.GROQ_API_KEY.strip():
         raise ApiError(503, "AI chat is not configured")
 
 
@@ -37,11 +37,11 @@ def _require_ai_chat_ready(settings: Settings) -> None:
     description=requires_capability("ai-chat", "read"),
 )
 async def chat_config(settings: AppSettings) -> ChatConfigResponse:
-    base_url = settings.GEMINI_API_BASE_URL.strip()
+    base_url = settings.GROQ_API_BASE_URL.strip()
     return ChatConfigResponse(
         enabled=is_ai_chat_enabled(),
-        configured=bool(settings.GEMINI_API_KEY.strip()),
-        model=settings.GEMINI_CHAT_MODEL,
+        configured=bool(settings.GROQ_API_KEY.strip()),
+        model=settings.GROQ_CHAT_MODEL,
         provider=detect_llm_provider(base_url),
         base_url=base_url or None,
     )

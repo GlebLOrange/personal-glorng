@@ -14,7 +14,7 @@ from app.db.deps import DbRegistry, get_postgres_db
 from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
 from app.platform.registry import Capability, ServiceSlug
-from app.services.ai_chat import GeminiChatService
+from app.services.ai_chat import GroqChatService
 from app.services.ai_search import AiSearchService
 from app.services.audit import AuditService
 from app.services.currency import CurrencyService
@@ -157,20 +157,20 @@ async def require_admin(user: CurrentUser) -> User:
 AdminUser = Annotated[User, Depends(require_admin)]
 
 
-def get_gemini_chat_service(settings: AppSettings) -> GeminiChatService:
-    """Build Gemini chat service or raise when the API key is missing."""
-    if not settings.GEMINI_API_KEY.strip():
+def get_groq_chat_service(settings: AppSettings) -> GroqChatService:
+    """Build Groq chat service or raise when the API key is missing."""
+    if not settings.GROQ_API_KEY.strip():
         from app.core.exceptions import ApiError
 
-        raise ApiError(503, "Gemini API key is not configured")
-    return GeminiChatService(
-        api_key=settings.GEMINI_API_KEY,
-        model=settings.GEMINI_CHAT_MODEL,
-        base_url=settings.GEMINI_API_BASE_URL,
+        raise ApiError(503, "Groq API key is not configured")
+    return GroqChatService(
+        api_key=settings.GROQ_API_KEY,
+        model=settings.GROQ_CHAT_MODEL,
+        base_url=settings.GROQ_API_BASE_URL,
     )
 
 
-GeminiChatServiceDep = Annotated[GeminiChatService, Depends(get_gemini_chat_service)]
+GroqChatServiceDep = Annotated[GroqChatService, Depends(get_groq_chat_service)]
 
 
 def get_search_index_service(

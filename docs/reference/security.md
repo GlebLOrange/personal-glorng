@@ -98,8 +98,8 @@ Portfolio search uses the configured search backend with a visibility model. Mon
 
 Both chat paths use retrieve-then-generate (`AiSearchService`): the LLM receives only indexed context blocks and is instructed to cite sources without inventing facts. Feature flags gate LLM usage:
 
-- `AI_SEARCH_ENABLED` + `GEMINI_API_KEY` for public search chat
-- `AI_CHAT_ENABLED` + `GEMINI_API_KEY` for admin AI chat
+- `AI_SEARCH_ENABLED` + `GROQ_API_KEY` for public search chat
+- `AI_CHAT_ENABLED` + `GROQ_API_KEY` for admin AI chat
 
 Client-side `VITE_*` flags hide UI only; server flags and auth are authoritative.
 

@@ -63,7 +63,7 @@ Resume chunks upsert on API startup when `AI_SEARCH_ENABLED=true`. Other sources
 Set in `.env`:
 
 - `AI_SEARCH_ENABLED=true`
-- `GEMINI_API_KEY=...`
+- `GROQ_API_KEY=...`
 - `VITE_AI_SEARCH_ENABLED=true` (UI only)
 
 Run `make reindex-search` after deploy or schema changes.

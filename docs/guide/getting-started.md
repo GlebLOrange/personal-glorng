@@ -46,7 +46,7 @@ make db-init
 make reindex-search
 ```
 
-Set `AI_SEARCH_ENABLED`, `GEMINI_API_KEY`, and `VITE_AI_SEARCH_ENABLED` in `.env`. Full variable reference: [Configuration](/reference/configuration).
+Set `AI_SEARCH_ENABLED`, `GROQ_API_KEY`, and `VITE_AI_SEARCH_ENABLED` in `.env`. Full variable reference: [Configuration](/reference/configuration).
 
 ## Next steps
 

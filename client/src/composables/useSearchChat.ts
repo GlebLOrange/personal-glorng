@@ -102,24 +102,23 @@ function createStreamEventApplier(
 }
 
 const ASSISTANT_ERROR_PREFIX = "I couldn't get an AI response: ";
-const GOOGLE_AI_STUDIO_HINT = "or check usage in Google AI Studio";
+const GROQ_CONSOLE_HINT = "or check usage in the Groq console";
 
-function isGeminiQuotaMessage(message: string): boolean {
+function isGroqQuotaMessage(message: string): boolean {
   return (
-    message.includes("Google Gemini quota") ||
-    message.includes("Gemini rate limit") ||
-    message.includes("Gemini quota")
+    message.includes("Groq rate limit") ||
+    message.includes("Groq quota")
   );
 }
 
-function formatGeminiQuotaError(message: string): string {
+function formatGroqQuotaError(message: string): string {
   const retryMatch = message.match(/~(\d+)s/);
   if (retryMatch) {
     return (
-      `Google API quota reached — try again in ~${retryMatch[1]}s, ${GOOGLE_AI_STUDIO_HINT}`
+      `Groq rate limit reached — try again in ~${retryMatch[1]}s, ${GROQ_CONSOLE_HINT}`
     );
   }
-  return `Google API quota reached — wait a minute and try again, ${GOOGLE_AI_STUDIO_HINT}`;
+  return `Groq rate limit reached — wait a minute and try again, ${GROQ_CONSOLE_HINT}`;
 }
 
 function showAssistantError(messages: ChatMessage[], message: string): void {
@@ -139,14 +138,14 @@ export function normalizeStreamError(message: string, endpoint: string): string 
     message === "LLM is not configured"
   ) {
     if (endpoint.includes("/tools/ai-chat")) {
-      return "AI chat is not configured — add GEMINI_API_KEY and restart the server";
+      return "AI chat is not configured — add GROQ_API_KEY and restart the server";
     }
   }
   if (message.includes("Too many requests")) {
     return "You're sending messages too quickly — wait a few minutes";
   }
-  if (isGeminiQuotaMessage(message)) {
-    return formatGeminiQuotaError(message);
+  if (isGroqQuotaMessage(message)) {
+    return formatGroqQuotaError(message);
   }
   return message;
 }
