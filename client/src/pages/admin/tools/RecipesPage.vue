@@ -12,7 +12,7 @@ import RecipeCookMode from "@/components/recipes/RecipeCookMode.vue";
 import RecipeDetailDrawer from "@/components/recipes/RecipeDetailDrawer.vue";
 import RecipeFilters from "@/components/recipes/RecipeFilters.vue";
 import RecipeFormDrawer from "@/components/recipes/RecipeFormDrawer.vue";
-import TaskPagination from "@/components/tasks/TaskPagination.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import { useRecipes } from "@/composables/useRecipes";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -39,6 +39,7 @@ const {
   saving,
   deleting,
   hasNextPage,
+  totalPages,
   hasFilters,
   recipeCountLabel,
   formTitle,
@@ -157,9 +158,11 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
         </template>
       </EmptyState>
 
-      <TaskPagination
+      <BasePagination
         v-if="!listLoading && !listError && (recipes.length > 0 || page > 1)"
+        aria-label="Recipes pagination"
         :page="page"
+        :total-pages="totalPages"
         :has-next-page="hasNextPage"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"

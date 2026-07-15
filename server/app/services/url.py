@@ -74,6 +74,28 @@ class UrlService:
             sort=[("created_at", -1)],
         )
 
+    async def update_url(
+        self,
+        url_id: int,
+        *,
+        title: str | None,
+        actor_id: int,
+        is_superuser: bool = False,
+    ) -> ShortenedUrl:
+        url = await self._urls().get(url_id)
+        if not is_superuser and (url.created_by is None or url.created_by != actor_id):
+            raise ApiError(403, "You do not have permission to update this URL")
+        url = await self._urls().update_fields(url_id, title=title)
+        await index_url(self.registry, url)
+        await AuditService(self.registry).record_domain(
+            action="url.updated",
+            resource_type="url",
+            resource_id=url_id,
+            actor_id=actor_id,
+            metadata={"code": url.code},
+        )
+        return url
+
     async def delete_url(
         self,
         url_id: int,

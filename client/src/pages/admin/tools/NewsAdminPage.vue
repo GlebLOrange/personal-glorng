@@ -4,6 +4,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
@@ -44,6 +45,7 @@ const {
   sources,
   page,
   total,
+  totalPages,
   listLoading,
   listError,
   actionLoading,
@@ -489,19 +491,16 @@ watch(page, () => {
       description="No news articles match this filter. Run ingestion after configuring trusted sources."
     />
 
-    <nav
+    <BasePagination
       v-if="!listLoading && !listError && (articles.length > 0 || page > 1)"
-      class="mt-8 flex items-center justify-between"
+      class="mt-8"
       aria-label="Admin news pagination"
-    >
-      <BaseButton variant="ghost" size="sm" :disabled="page <= 1" @click="goToPage(page - 1)">
-        Previous
-      </BaseButton>
-      <span class="text-xs text-surface-muted">page {{ page }}</span>
-      <BaseButton variant="ghost" size="sm" :disabled="!hasNextPage" @click="goToPage(page + 1)">
-        Next
-      </BaseButton>
-    </nav>
+      :page="page"
+      :total-pages="totalPages"
+      :has-next-page="hasNextPage"
+      @prev="goToPage(page - 1)"
+      @next="goToPage(page + 1)"
+    />
 
     <NewsArticleDrawer
       v-if="canWrite"
