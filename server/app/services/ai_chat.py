@@ -9,6 +9,7 @@ from app.core.logging import logger
 
 GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 GEMINI_MAX_RETRIES = 2
+GEMINI_429_MAX_RETRY_AFTER = 30
 SYSTEM_PROMPT = (
     "You are a concise, helpful assistant embedded in a developer"
     " portfolio admin panel. Keep responses short and technical"
@@ -102,15 +103,57 @@ def _stream_text_chunk(line: str) -> str | None:
     return None
 
 
-def _retry_after_seconds(response: httpx.Response) -> int | None:
-    """Parse Retry-After header as seconds, when present."""
-    raw = response.headers.get("Retry-After")
-    if not raw:
-        return None
+def _retry_delay_from_body(response: httpx.Response) -> int | None:
+    """Parse retryDelay from a Gemini error JSON body, when present."""
     try:
-        return max(1, int(raw))
-    except ValueError:
+        payload = response.json()
+    except (json.JSONDecodeError, ValueError):
         return None
+    if not isinstance(payload, dict):
+        return None
+    error = payload.get("error")
+    if not isinstance(error, dict):
+        return None
+    details = error.get("details")
+    if not isinstance(details, list):
+        return None
+    for detail in details:
+        if not isinstance(detail, dict):
+            continue
+        retry_delay = detail.get("retryDelay")
+        if not isinstance(retry_delay, str):
+            continue
+        raw_seconds = retry_delay.removesuffix("s").strip()
+        try:
+            return max(1, int(float(raw_seconds)))
+        except ValueError:
+            continue
+    return None
+
+
+def _retry_after_seconds(response: httpx.Response) -> int | None:
+    """Parse Retry-After header or Gemini retryDelay as seconds."""
+    raw = response.headers.get("Retry-After")
+    if raw:
+        try:
+            return max(1, int(raw))
+        except ValueError:
+            pass
+    return _retry_delay_from_body(response)
+
+
+def _should_retry_gemini_429(response: httpx.Response) -> bool:
+    """Retry 429 only when Google signals a short transient wait."""
+    retry_after = _retry_after_seconds(response)
+    return retry_after is not None and retry_after <= GEMINI_429_MAX_RETRY_AFTER
+
+
+def _truncate_response_body(response: httpx.Response, limit: int = 500) -> str:
+    """Return a truncated Gemini error body for logs."""
+    try:
+        return response.text[:limit]
+    except (httpx.StreamConsumed, UnicodeDecodeError):
+        return ""
 
 
 async def _sleep_for_retry(response: httpx.Response, attempt: int) -> None:
@@ -134,6 +177,14 @@ def raise_gemini_http_error(exc: httpx.HTTPStatusError) -> None:
     if status_code in {401, 403}:
         raise ApiError(502, "Invalid Gemini API key") from None
     if status_code == 429:
+        logger.warning(
+            "Gemini quota exceeded",
+            context={
+                "status_code": status_code,
+                "retry_after": _retry_after_seconds(exc.response),
+                "body": _truncate_response_body(exc.response),
+            },
+        )
         raise ApiError(429, _gemini_rate_limit_message(exc.response)) from None
     if status_code >= 500:
         raise ApiError(502, "Gemini API unreachable") from None
@@ -214,7 +265,11 @@ class GeminiChatService:
                         yield content
                 break
             except httpx.HTTPStatusError as exc:
-                if exc.response.status_code == 429 and attempt < max_attempts - 1:
+                if (
+                    exc.response.status_code == 429
+                    and _should_retry_gemini_429(exc.response)
+                    and attempt < max_attempts - 1
+                ):
                     logger.warning(
                         "Gemini rate limit hit; retrying",
                         context={
