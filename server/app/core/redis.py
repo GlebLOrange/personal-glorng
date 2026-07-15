@@ -1,4 +1,5 @@
 from typing import Any
+from urllib.parse import urlparse
 
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
@@ -10,9 +11,31 @@ from app.settings import get_settings
 _redis: Redis | None = None
 
 
+def _redis_endpoint(url: str) -> str:
+    """Return host:port for logs without credentials."""
+    parsed = urlparse(url)
+    host = parsed.hostname or "unknown"
+    port = parsed.port or 6379
+    return f"{host}:{port}"
+
+
 async def init_redis(url: str) -> None:
+    """Initialize Redis and verify connectivity before accepting traffic."""
     global _redis
-    _redis = Redis.from_url(url, decode_responses=True)
+    client = Redis.from_url(url, decode_responses=True)
+    endpoint = _redis_endpoint(url)
+    try:
+        await client.ping()
+    except RedisError as exc:
+        await client.aclose()
+        logger.error(
+            "Redis connection failed at startup",
+            error=exc,
+            context={"endpoint": endpoint},
+        )
+        raise
+    _redis = client
+    logger.info("Redis connected", context={"endpoint": endpoint})
 
 
 async def close_redis() -> None:
