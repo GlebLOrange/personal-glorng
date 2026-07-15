@@ -15,7 +15,13 @@ async def test_init_redis_pings_on_startup() -> None:
     mock_client.ping = AsyncMock(return_value=True)
     with patch("app.core.redis.Redis.from_url", return_value=mock_client) as from_url:
         await init_redis("redis://:pass@redis:6379/0")
-    from_url.assert_called_once_with("redis://:pass@redis:6379/0", decode_responses=True)
+    from_url.assert_called_once_with(
+        "redis://:pass@redis:6379/0",
+        decode_responses=True,
+        socket_connect_timeout=5,
+        socket_timeout=5,
+    )
+
     mock_client.ping.assert_awaited_once()
     await close_redis()
 

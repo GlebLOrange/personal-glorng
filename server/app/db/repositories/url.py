@@ -13,3 +13,8 @@ class UrlRepository(MongoRepository[ShortenedUrl]):
         if data is None:
             return None
         return _parse_doc(ShortenedUrl, data)
+
+    async def delete_for_created_by(self, user_id: int) -> int:
+        """Delete all shortened URLs owned by the given user."""
+        result = await self._col().delete_many({"created_by": user_id})
+        return int(result.deleted_count)

@@ -15,7 +15,6 @@ from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
 from app.platform.registry import Capability, ServiceSlug
 from app.services.ai_chat import GroqChatService
-from app.services.ai_search import AiSearchService
 from app.services.audit import AuditService
 from app.services.currency import CurrencyService
 from app.services.expense import ExpenseService
@@ -181,16 +180,6 @@ def get_search_index_service(
 
 
 SearchIndexServiceDep = Annotated[SearchIndexService, Depends(get_search_index_service)]
-
-
-def get_ai_search_service(
-    search_svc: SearchIndexServiceDep,
-    settings: AppSettings,
-) -> AiSearchService:
-    return AiSearchService(search_svc, settings)
-
-
-AiSearchServiceDep = Annotated[AiSearchService, Depends(get_ai_search_service)]
 
 
 def get_job_queue_dep() -> JobQueue:

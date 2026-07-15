@@ -11,6 +11,7 @@ from app.core.security import (
 from app.db.documents.audit import AuditActorType, AuditCategory, AuditSource
 from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
+from app.services import fileshare as fileshare_svc
 from app.services.audit import AuditRecord, AuditService
 from app.services.user import (
     default_display_name,
@@ -192,6 +193,26 @@ async def delete_account(
             await registry.weather.delete(location.id)
     if registry.credentials is not None:
         await registry.credentials.delete_github_for_user(user_id)
+    if registry.files is not None:
+        shared_files = await registry.files.list(
+            created_by=user_id,
+            limit=10_000,
+        )
+        for shared in shared_files:
+            await fileshare_svc.delete(
+                registry,
+                file_id=shared.id,
+                user_id=user_id,
+            )
+    if registry.urls is not None:
+        await registry.urls.delete_for_created_by(user_id)
+    if registry.data_imports is not None:
+        batches = await registry.data_imports.batches.list_for_user(
+            user_id,
+            limit=10_000,
+        )
+        for batch in batches:
+            await registry.data_imports.delete_batch(batch.id)
     await registry.users.delete(user_id)  # type: ignore[union-attr]
 
     audit = AuditService(registry)

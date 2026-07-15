@@ -1,3 +1,4 @@
+import re
 import uuid
 from typing import Any, Literal
 
@@ -49,8 +50,9 @@ class UserRepository(MongoRepository[User]):
     ) -> dict[str, Any]:
         query: dict[str, Any] = {}
         if search:
-            pattern = {"$regex": search.strip(), "$options": "i"}
+            pattern = {"$regex": re.escape(search.strip()), "$options": "i"}
             query["$or"] = [{"email": pattern}, {"display_name": pattern}]
+
         if role == "superuser":
             query["permissions"] = SUPERUSER_PERMISSION
         elif role == "custom":

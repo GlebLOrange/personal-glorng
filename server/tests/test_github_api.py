@@ -77,11 +77,14 @@ async def test_auth_github_status_returns_503_when_credentials_unavailable(
     auth_client: AsyncClient,
     registry: DatabaseRegistry,
 ) -> None:
+    original = registry.credentials
     registry.credentials = None
-
-    resp = await auth_client.get("/api/auth/github/status")
-    assert resp.status_code == 503
-    assert resp.json()["detail"] == "Credential store unavailable"
+    try:
+        resp = await auth_client.get("/api/auth/github/status")
+        assert resp.status_code == 503
+        assert resp.json()["detail"] == "Credential store unavailable"
+    finally:
+        registry.credentials = original
 
 
 @pytest.mark.asyncio
@@ -128,3 +131,34 @@ async def test_auth_github_repos_with_token(
     resp = await auth_client.get("/api/auth/github/repos")
     assert resp.status_code == 200
     assert resp.json()[0]["private"] is True
+
+
+@pytest.mark.asyncio
+async def test_auth_github_unlink(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+    admin_user: User,
+) -> None:
+    encrypted = encrypt_secret("gh-token", get_settings().JWT_SECRET)
+    assert registry.credentials is not None
+    await registry.credentials.upsert_github(
+        GitHubCredential(
+            user_id=admin_user.id,
+            github_user_id=1,
+            github_username="octocat",
+            access_token=encrypted,
+        ),
+    )
+
+    status_before = await auth_client.get("/api/auth/github/status")
+    assert status_before.status_code == 200
+    assert status_before.json()["linked"] is True
+
+    unlink = await auth_client.delete("/api/auth/github")
+    assert unlink.status_code == 200
+    assert unlink.json()["linked"] is False
+    assert unlink.json().get("github_username") is None
+
+    status_after = await auth_client.get("/api/auth/github/status")
+    assert status_after.status_code == 200
+    assert status_after.json()["linked"] is False

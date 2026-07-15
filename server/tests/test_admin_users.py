@@ -28,15 +28,39 @@ async def test_list_users_requires_superuser(client: AsyncClient, db) -> None:
 
 
 @pytest.mark.asyncio
-async def test_list_users_as_superuser(
-    auth_client: AsyncClient, admin_user: object
+async def test_list_users_search_escapes_regex_metacharacters(
+    auth_client: AsyncClient,
+    db,
 ) -> None:
-    resp = await auth_client.get("/api/admin/users")
+    await create_user(
+        db,
+        email="literal.plus+user@glorng.dev",
+        password=STRONG_PASSWORD,
+        permissions=[],
+    )
+    await create_user(
+        db,
+        email="regex-bait@glorng.dev",
+        password=STRONG_PASSWORD,
+        permissions=[],
+    )
+
+    resp = await auth_client.get(
+        "/api/admin/users",
+        params={"search": "literal.plus+user"},
+    )
     assert resp.status_code == 200
-    data = resp.json()
-    emails = {row["email"] for row in data["items"]}
-    assert "admin@admin.admin" in emails
-    assert data["per_page"] == 9
+    emails = {row["email"] for row in resp.json()["items"]}
+    assert "literal.plus+user@glorng.dev" in emails
+    assert "regex-bait@glorng.dev" not in emails
+
+    meta_resp = await auth_client.get(
+        "/api/admin/users",
+        params={"search": ".*"},
+    )
+    assert meta_resp.status_code == 200
+    meta_emails = {row["email"] for row in meta_resp.json()["items"]}
+    assert "regex-bait@glorng.dev" not in meta_emails
 
 
 @pytest.mark.asyncio

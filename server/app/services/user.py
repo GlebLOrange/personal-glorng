@@ -35,7 +35,12 @@ def default_display_name(email: str) -> str:
 
 
 def ensure_user_mutable(user: User) -> None:
-    """Raise when a protected account must not be modified."""
+    """Raise when a protected account must not be modified.
+
+    Scope is intentional and narrow: blocks account deletion and admin
+    permission changes only. Self-service profile, email, password, and
+    preferences updates remain allowed so the seeded owner can use Settings.
+    """
     if user.is_protected:
         raise ConflictError("This account is protected and cannot be modified")
 

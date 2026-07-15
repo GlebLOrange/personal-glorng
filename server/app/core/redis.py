@@ -22,7 +22,13 @@ def _redis_endpoint(url: str) -> str:
 async def init_redis(url: str) -> None:
     """Initialize Redis and verify connectivity before accepting traffic."""
     global _redis
-    client = Redis.from_url(url, decode_responses=True)
+    client = Redis.from_url(
+        url,
+        decode_responses=True,
+        socket_connect_timeout=5,
+        socket_timeout=5,
+    )
+
     endpoint = _redis_endpoint(url)
     try:
         await client.ping()
