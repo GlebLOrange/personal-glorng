@@ -15,6 +15,9 @@ export function userSafeStreamError(
   if (status === 503 && options?.adminChat) {
     return "AI chat is unavailable — check Settings";
   }
+  if (status === 429 && options?.adminChat) {
+    return "You're sending messages too quickly — wait a few minutes";
+  }
   return USER_SAFE_ERRORS[status] ?? detail ?? "Failed to get AI response";
 }
 

@@ -2,6 +2,7 @@ from collections.abc import AsyncIterator
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
 from httpx import AsyncClient
 
@@ -10,7 +11,9 @@ from app.core.exceptions import ApiError
 from app.main import app
 from app.services.ai_chat import (
     GEMINI_API_BASE_URL,
+    GEMINI_MAX_RETRIES,
     GeminiChatService,
+    _gemini_rate_limit_message,
     detect_llm_provider,
 )
 from app.services.ai_search import AiSearchService
@@ -264,6 +267,132 @@ async def test_gemini_service_rejects_stream_without_text() -> None:
         patch("app.services.ai_chat.httpx.AsyncClient", _fake_client(lines)),
     ):
         _ = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
+
+
+def test_gemini_rate_limit_message_includes_retry_after() -> None:
+    request = httpx.Request("POST", "https://example.test/v1beta/interactions")
+    response = httpx.Response(429, request=request, headers={"Retry-After": "60"})
+    assert _gemini_rate_limit_message(response) == (
+        "Google Gemini quota exceeded — try again in ~60s"
+    )
+
+
+@pytest.mark.asyncio
+async def test_gemini_service_retries_on_429_then_succeeds() -> None:
+    """Retry transient Gemini 429 before streaming text."""
+    lines = ['data: {"event_type":"step.delta","delta":{"type":"text","text":"Hi"}}']
+    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
+
+    with (
+        patch("app.services.ai_chat.asyncio.sleep", new_callable=AsyncMock),
+        patch(
+            "app.services.ai_chat.httpx.AsyncClient",
+            _rate_limited_client(fail_count=1, lines=lines),
+        ),
+    ):
+        chunks = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
+
+    assert chunks == ["Hi"]
+
+
+@pytest.mark.asyncio
+async def test_gemini_service_raises_after_retry_exhausted() -> None:
+    """Surface quota error after all Gemini retry attempts fail."""
+    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
+    max_attempts = GEMINI_MAX_RETRIES + 1
+
+    with (
+        patch("app.services.ai_chat.asyncio.sleep", new_callable=AsyncMock),
+        patch(
+            "app.services.ai_chat.httpx.AsyncClient",
+            _rate_limited_client(fail_count=max_attempts, lines=[]),
+        ),
+        pytest.raises(ApiError, match="Google Gemini quota exceeded"),
+    ):
+        _ = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
+
+
+class _RateLimitedFakeGeminiResponse:
+    """Stream response that can fail with HTTP 429."""
+
+    def __init__(
+        self,
+        lines: list[str],
+        *,
+        status_code: int | None = None,
+    ) -> None:
+        self._lines = lines
+        self._status_code = status_code
+
+    async def __aenter__(self) -> _RateLimitedFakeGeminiResponse:
+        return self
+
+    async def __aexit__(self, *_args: object) -> None:
+        return None
+
+    def raise_for_status(self) -> None:
+        if self._status_code != 429:
+            return
+        request = httpx.Request("POST", "https://example.test/v1beta/interactions")
+        response = httpx.Response(
+            429,
+            request=request,
+            headers={"Retry-After": "1"},
+        )
+        raise httpx.HTTPStatusError("429", request=request, response=response)
+
+    async def aiter_lines(self) -> AsyncIterator[str]:
+        for line in self._lines:
+            yield line
+
+
+class _RateLimitedFakeGeminiClient:
+    """HTTP client that returns 429 for the first N stream calls."""
+
+    def __init__(
+        self,
+        *,
+        fail_count: int,
+        lines: list[str],
+        timeout: float,
+    ) -> None:
+        self._fail_count = fail_count
+        self._lines = lines
+        self._calls = 0
+        self.timeout = timeout
+
+    async def __aenter__(self) -> _RateLimitedFakeGeminiClient:
+        return self
+
+    async def __aexit__(self, *_args: object) -> None:
+        return None
+
+    def stream(self, *_args: object, **_kwargs: object) -> _RateLimitedFakeGeminiResponse:
+        self._calls += 1
+        if self._calls <= self._fail_count:
+            return _RateLimitedFakeGeminiResponse([], status_code=429)
+        return _RateLimitedFakeGeminiResponse(self._lines)
+
+
+def _rate_limited_client(
+    *,
+    fail_count: int,
+    lines: list[str],
+) -> type[_RateLimitedFakeGeminiClient]:
+    """Build a fake Gemini client that 429s for the first N stream calls."""
+    call_state = {"calls": 0}
+
+    class BoundRateLimitedClient(_RateLimitedFakeGeminiClient):
+        def __init__(self, *, timeout: float) -> None:
+            super().__init__(fail_count=fail_count, lines=lines, timeout=timeout)
+
+        def stream(self, *_args: object, **_kwargs: object) -> _RateLimitedFakeGeminiResponse:
+            call_state["calls"] += 1
+            if call_state["calls"] <= fail_count:
+                return _RateLimitedFakeGeminiResponse([], status_code=429)
+            return _RateLimitedFakeGeminiResponse(lines)
+
+    return BoundRateLimitedClient
 
 
 class _FakeGeminiResponse:

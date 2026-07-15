@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseSseEvents } from "./useSearchChat";
+import { parseSseEvents, normalizeStreamError } from "./useSearchChat";
 
 describe("parseSseEvents", () => {
   it("parses complete SSE frames", () => {
@@ -22,5 +22,22 @@ describe("parseSseEvents", () => {
     const { events, rest } = parseSseEvents(buffer);
     expect(events).toEqual([{ delta: "ok" }]);
     expect(rest).toBe("");
+  });
+});
+
+describe("normalizeStreamError", () => {
+  it("maps app rate limit errors for admin chat", () => {
+    expect(
+      normalizeStreamError("Too many requests. Please try again later.", "/api/tools/ai-chat"),
+    ).toBe("You're sending messages too quickly — wait a few minutes");
+  });
+
+  it("maps Gemini quota errors to a clearer message", () => {
+    expect(
+      normalizeStreamError(
+        "Google Gemini quota exceeded — try again in ~60s",
+        "/api/tools/ai-chat",
+      ),
+    ).toContain("Google API quota reached");
   });
 });
