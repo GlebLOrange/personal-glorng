@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import { Card } from "@/components/ui/card";
+import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import type { PaginatedList } from "@/types";
 import { formatDate } from "@/utils/format";
 
 interface FeedbackItem {
@@ -21,6 +24,9 @@ interface FeedbackItem {
 const items = ref<FeedbackItem[]>([]);
 const expandedId = ref<number | null>(null);
 const filter = ref<"all" | "unread" | "archived">("all");
+const page = ref(1);
+const totalPages = ref(0);
+const loading = ref(false);
 const { toast } = useNotify();
 const router = useRouter();
 
@@ -32,19 +38,36 @@ function reply(item: FeedbackItem): void {
   });
 }
 
-const filtered = computed(() => {
-  if (filter.value === "all") return items.value;
-  return items.value.filter((i) => i.status === filter.value);
-});
-
 async function load(): Promise<void> {
+  loading.value = true;
   try {
-    const { data } = await api.get<FeedbackItem[]>("/feedback");
-    items.value = data;
+    const params: Record<string, string | number> = {
+      page: page.value,
+      per_page: LIST_PAGE_SIZE,
+    };
+    if (filter.value !== "all") {
+      params.status = filter.value;
+    }
+    const { data } = await api.get<PaginatedList<FeedbackItem>>("/feedback", { params });
+    items.value = data.items;
+    totalPages.value = data.pages;
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
     toast("Failed to load feedback", "error");
+  } finally {
+    loading.value = false;
   }
+}
+
+function setFilter(next: "all" | "unread" | "archived"): void {
+  filter.value = next;
+  page.value = 1;
+}
+
+function goToPage(nextPage: number): void {
+  if (nextPage < 1) return;
+  if (totalPages.value > 0 && nextPage > totalPages.value) return;
+  page.value = nextPage;
 }
 
 async function setStatus(id: number, status: string): Promise<void> {
@@ -73,6 +96,10 @@ const statusColors: Record<string, string> = {
   archived: "bg-surface-dark text-surface-muted",
 };
 
+watch([filter, page], () => {
+  void load();
+});
+
 onMounted(load);
 </script>
 
@@ -85,16 +112,16 @@ onMounted(load);
           :key="f"
           :variant="filter === f ? 'primary' : 'ghost'"
           size="sm"
-          @click="filter = f"
+          @click="setFilter(f)"
         >
           {{ f.charAt(0).toUpperCase() + f.slice(1) }}
         </BaseButton>
       </div>
     </header>
 
-    <div class="min-w-0 space-y-3">
+    <div class="min-w-0 space-y-3" :aria-busy="loading || undefined">
       <Card
-        v-for="item in filtered"
+        v-for="item in items"
         :key="item.id"
         hoverable
         class="min-w-0 cursor-pointer"
@@ -128,9 +155,21 @@ onMounted(load);
         </div>
       </Card>
 
-      <p v-if="filtered.length === 0" class="text-surface-mid text-sm text-center py-8">
+      <p v-if="!loading && items.length === 0" class="text-surface-mid text-sm text-center py-8">
         No feedback messages{{ filter !== "all" ? ` with status "${filter}"` : "" }}.
       </p>
+
+      <BasePagination
+        v-if="totalPages > 1"
+        aria-label="Feedback pagination"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="page < totalPages"
+        :has-previous-page="page > 1"
+        :loading="loading"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+      />
     </div>
   </AdminPageLayout>
 </template>

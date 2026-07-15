@@ -7,11 +7,11 @@ from app.core.deps import AuthorizedUser, require_capability
 from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
 from app.core.uploads import read_upload_bounded
-from app.core.utils import attachment_content_disposition, iter_file, paginate_params
+from app.core.utils import DEFAULT_PER_PAGE, attachment_content_disposition, iter_file
 from app.db.deps import DbRegistry
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
-from app.schemas.fileshare import SharedFileResponse
+from app.schemas.fileshare import SharedFileListResponse, SharedFileResponse
 from app.services import fileshare as fileshare_svc
 
 router = APIRouter(
@@ -51,7 +51,7 @@ async def upload_file(
 
 @router.get(
     "",
-    response_model=list[SharedFileResponse],
+    response_model=SharedFileListResponse,
     summary="List shared files",
     description=requires_capability("file-share", "read"),
 )
@@ -59,13 +59,14 @@ async def list_files(
     registry: DbRegistry,
     user: AuthorizedUser,
     page: int = 1,
-    per_page: int = 20,
-) -> list[SharedFileResponse]:
-    offset, limit = paginate_params(page, per_page)
-    files = await fileshare_svc.list_files(
-        registry, offset=offset, limit=limit, user_id=user.id
+    per_page: int = DEFAULT_PER_PAGE,
+) -> SharedFileListResponse:
+    return await fileshare_svc.list_files(
+        registry,
+        page=page,
+        per_page=per_page,
+        user_id=user.id,
     )
-    return [SharedFileResponse.model_validate(f) for f in files]
 
 
 @router.delete(

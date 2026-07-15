@@ -3,6 +3,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
 import { DEFAULT_EXPENSE_CATEGORY } from "@/constants/expenseCategories";
+import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { useCategoryManager } from "@/composables/useCategoryManager";
 import {
   EXPENSE_CURRENCIES,
@@ -32,7 +33,6 @@ export type ExpenseTab =
   | ExpenseCalculatorTab
   | "settings";
 
-const EXPENSE_PER_PAGE = 20;
 const CALCULATOR_TABS: ExpenseCalculatorTab[] = ["convert", "sum", "budget", "whatif"];
 const EXPENSE_TABS: ExpenseTab[] = [
   "transactions",
@@ -89,7 +89,7 @@ export function useExpensesTool(
     return {
       ...(filtersRef.value?.queryParams() ?? {}),
       page: String(expensePage.value),
-      per_page: String(EXPENSE_PER_PAGE),
+      per_page: String(LIST_PAGE_SIZE),
       sort: sortParam.value,
     };
   }

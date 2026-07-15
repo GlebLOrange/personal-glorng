@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 import AdminUserPermissionsEditor from "@/components/admin/AdminUserPermissionsEditor.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { FIELD_INPUT_CLASS, SELECT_CLASS_COMPACT } from "@/constants/formClasses";
+import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { usePlatformCatalog } from "@/composables/usePlatformCatalog";
-import type { AdminUserSummary } from "@/types";
+import type { AdminUserSummary, PaginatedList } from "@/types";
 import { getApiErrorMessage } from "@/types/api";
 import { formatDate } from "@/utils/format";
 import { SUPERUSER_PERMISSION } from "@/utils/permissions";
@@ -20,6 +22,13 @@ import { SUPERUSER_PERMISSION } from "@/utils/permissions";
 type RoleFilter = "all" | "superuser" | "custom";
 type StatusFilter = "all" | "verified" | "unverified" | "protected";
 type BadgeView = { id: string; label: string; className: string };
+
+interface AdminUsersStats {
+  total: number;
+  superuser_count: number;
+  protected_count: number;
+  unverified_count: number;
+}
 
 const ROLE_BADGE_CLASSES = {
   superuser: "bg-accent-violet/15 text-accent-violet border-accent-violet/30",
@@ -33,11 +42,16 @@ const STATUS_BADGE_CLASSES = {
 
 const { toast } = useNotify();
 const users = ref<AdminUserSummary[]>([]);
+const userStats = ref<AdminUsersStats | null>(null);
+const page = ref(1);
+const total = ref(0);
+const totalPages = ref(0);
 const { services, load: loadPlatformCatalog } = usePlatformCatalog();
 const loading = ref(false);
 const savingId = ref<string | null>(null);
 const draftPermissions = ref<Record<string, string[]>>({});
 const searchQuery = ref("");
+const debouncedSearch = ref("");
 const roleFilter = ref<RoleFilter>("all");
 const statusFilter = ref<StatusFilter>("all");
 const selectedUserId = ref<string | null>(null);
@@ -45,41 +59,19 @@ const drawerPanel = ref<HTMLElement | null>(null);
 const drawerCloseButton = ref<HTMLButtonElement | null>(null);
 let returnFocusTarget: HTMLElement | null = null;
 
-const superuserCount = computed(
-  () => users.value.filter((u) => u.permissions.includes(SUPERUSER_PERMISSION)).length,
-);
-const protectedCount = computed(() => users.value.filter((u) => u.is_protected).length);
-const unverifiedCount = computed(() => users.value.filter((u) => !u.is_verified).length);
+const superuserCount = computed(() => userStats.value?.superuser_count ?? 0);
+const protectedCount = computed(() => userStats.value?.protected_count ?? 0);
+const unverifiedCount = computed(() => userStats.value?.unverified_count ?? 0);
+const hasNextPage = computed(() => page.value < totalPages.value);
+const hasPreviousPage = computed(() => page.value > 1);
 
-const filteredUsers = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase();
-
-  return users.value.filter((user) => {
-    const matchesSearch =
-      !query ||
-      user.email.toLowerCase().includes(query) ||
-      (user.display_name ?? "").toLowerCase().includes(query);
-    const isSuperuser = user.permissions.includes(SUPERUSER_PERMISSION);
-    const matchesRole =
-      roleFilter.value === "all" ||
-      (roleFilter.value === "superuser" && isSuperuser) ||
-      (roleFilter.value === "custom" && !isSuperuser);
-    const matchesStatus =
-      statusFilter.value === "all" ||
-      (statusFilter.value === "verified" && user.is_verified) ||
-      (statusFilter.value === "unverified" && !user.is_verified) ||
-      (statusFilter.value === "protected" && user.is_protected);
-
-    return matchesSearch && matchesRole && matchesStatus;
-  });
-});
 const selectedUser = computed(
   () => users.value.find((user) => user.id === selectedUserId.value) ?? null,
 );
 
 useScrollListFingerprint(
   () =>
-    `${searchQuery.value}:${roleFilter.value}:${statusFilter.value}:${filteredUsers.value.length}:${filteredUsers.value[0]?.id ?? ""}`,
+    `${debouncedSearch.value}:${roleFilter.value}:${statusFilter.value}:${page.value}:${users.value[0]?.id ?? ""}`,
 );
 
 function isLastSuperuser(user: AdminUserSummary): boolean {
@@ -175,13 +167,33 @@ function onKeydown(event: KeyboardEvent): void {
   if (event.key === "Escape" && selectedUser.value) requestCloseUserDrawer();
 }
 
+async function loadUserStats(): Promise<void> {
+  try {
+    const { data } = await api.get<AdminUsersStats>("/admin/users/stats");
+    userStats.value = data;
+  } catch (err) {
+    toast(getApiErrorMessage(err, "Failed to load user stats"), "error");
+  }
+}
+
 async function loadUsers(): Promise<void> {
   loading.value = true;
   try {
-    const { data } = await api.get<AdminUserSummary[]>("/admin/users");
-    users.value = data;
-    for (const user of data) {
-      draftPermissions.value[user.id] = [...user.permissions];
+    const params: Record<string, string | number> = {
+      page: page.value,
+      per_page: LIST_PAGE_SIZE,
+      role: roleFilter.value,
+      status: statusFilter.value,
+    };
+    const query = debouncedSearch.value.trim();
+    if (query) params.search = query;
+
+    const { data } = await api.get<PaginatedList<AdminUserSummary>>("/admin/users", { params });
+    users.value = data.items;
+    total.value = data.total;
+    totalPages.value = data.pages;
+    for (const user of data.items) {
+      draftPermissions.value[user.id] = draftPermissions.value[user.id] ?? [...user.permissions];
     }
   } catch (err) {
     toast(getApiErrorMessage(err, "Failed to load users"), "error");
@@ -189,6 +201,29 @@ async function loadUsers(): Promise<void> {
     loading.value = false;
   }
 }
+
+function goToPage(nextPage: number): void {
+  if (nextPage < 1) return;
+  if (totalPages.value > 0 && nextPage > totalPages.value) return;
+  page.value = nextPage;
+}
+
+let searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+watch(searchQuery, (value) => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    debouncedSearch.value = value;
+    page.value = 1;
+  }, 300);
+});
+
+watch([debouncedSearch, roleFilter, statusFilter], () => {
+  page.value = 1;
+});
+
+watch([page, debouncedSearch, roleFilter, statusFilter], () => {
+  void loadUsers();
+});
 
 async function savePermissions(user: AdminUserSummary): Promise<void> {
   savingId.value = user.id;
@@ -203,6 +238,7 @@ async function savePermissions(user: AdminUserSummary): Promise<void> {
       draftPermissions.value[user.id] = [...data.permissions];
     }
     toast("Permissions updated", "success");
+    await loadUserStats();
   } catch (err) {
     draftPermissions.value[user.id] = [...user.permissions];
     toast(getApiErrorMessage(err, "Failed to update permissions"), "error");
@@ -213,7 +249,7 @@ async function savePermissions(user: AdminUserSummary): Promise<void> {
 
 onMounted(() => {
   document.addEventListener("keydown", onKeydown);
-  void Promise.all([loadUsers(), loadPlatformCatalog()]);
+  void Promise.all([loadUsers(), loadUserStats(), loadPlatformCatalog()]);
 });
 
 onUnmounted(() => document.removeEventListener("keydown", onKeydown));
@@ -227,7 +263,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div class="rounded-lg border border-surface-border/70 bg-surface-dark/60 p-3">
             <p class="text-xs text-surface-muted">Total users</p>
-            <p class="text-2xl font-semibold text-surface-light">{{ users.length }}</p>
+            <p class="text-2xl font-semibold text-surface-light">{{ userStats?.total ?? total }}</p>
           </div>
           <div class="rounded-lg border border-surface-border/70 bg-surface-dark/60 p-3">
             <p class="text-xs text-surface-muted">Superusers</p>
@@ -300,20 +336,18 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       </Card>
     </div>
 
-    <EmptyState v-else-if="users.length === 0">No users found.</EmptyState>
-
-    <EmptyState v-else-if="filteredUsers.length === 0">
+    <EmptyState v-else-if="users.length === 0">
       No users match the current filters.
     </EmptyState>
 
     <div v-else class="space-y-5">
       <p class="text-xs text-surface-muted">
-        Showing {{ filteredUsers.length }} of {{ users.length }} users
+        Showing {{ users.length }} of {{ total }} users
       </p>
 
       <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <button
-          v-for="user in filteredUsers"
+          v-for="user in users"
           :key="user.id"
           type="button"
           class="interactive-surface h-full w-full p-4 text-left transition-colors"
@@ -349,6 +383,18 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
           </span>
         </button>
       </div>
+
+      <BasePagination
+        v-if="totalPages > 1"
+        aria-label="Users pagination"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="loading"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+      />
     </div>
 
     <Teleport to="body">

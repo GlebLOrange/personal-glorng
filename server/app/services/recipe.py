@@ -4,7 +4,7 @@ from typing import Any
 
 from app.core.json_lists import parse_json_string_list
 from app.core.logging import logger
-from app.core.utils import paginate_params
+from app.core.utils import DEFAULT_PER_PAGE, paginate_params
 from app.db.documents.recipe import Recipe
 from app.db.documents.search import SearchVisibility
 from app.db.registry import DatabaseRegistry
@@ -151,7 +151,7 @@ class RecipeService:
         tags: list[str] | None = None,
         sort: RecipeSort = "updated_desc",
         page: int = 1,
-        per_page: int = 24,
+        per_page: int = DEFAULT_PER_PAGE,
     ) -> RecipeListResponse:
         offset, limit = paginate_params(page, per_page)
         recipe_ids: list[int] | None = None

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 
 from app.core.deps import AuthorizedUser, NewsServiceDep, require_capability
 from app.core.rate_limit import rate_limit_api
+from app.core.utils import DEFAULT_PER_PAGE
 from app.db.documents.news import NewsStatus
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
@@ -30,7 +31,7 @@ router = APIRouter(prefix="/news", tags=["news"])
 async def list_news(
     svc: NewsServiceDep,
     page: int = 1,
-    per_page: int = 20,
+    per_page: int = DEFAULT_PER_PAGE,
 ) -> NewsArticleListResponse:
     """List published news articles."""
     return await svc.list_articles(
@@ -52,7 +53,7 @@ async def list_news_admin(
     user: AuthorizedUser,
     status: NewsStatus | None = None,
     page: int = 1,
-    per_page: int = 20,
+    per_page: int = DEFAULT_PER_PAGE,
 ) -> NewsArticleListResponse:
     """List news articles for admin tools."""
     del user

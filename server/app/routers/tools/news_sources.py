@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from app.core.utils import DEFAULT_PER_PAGE
 from app.core.deps import (
     AuthorizedUser,
     NewsServiceDep,
@@ -10,6 +11,7 @@ from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.news import (
     NewsSourceCreate,
+    NewsSourceListResponse,
     NewsSourceResponse,
     NewsSourcesRefreshRequest,
     NewsSourceUpdate,
@@ -24,7 +26,7 @@ router = APIRouter(
 
 @router.get(
     "",
-    response_model=list[NewsSourceResponse],
+    response_model=NewsSourceListResponse,
     summary="List RSS news sources",
     description=requires_capability("news-sources", "read"),
     dependencies=[Depends(require_capability("news-sources", "read"))],
@@ -32,10 +34,12 @@ router = APIRouter(
 async def list_news_sources(
     svc: NewsServiceDep,
     user: AuthorizedUser,
-) -> list[NewsSource]:
+    page: int = 1,
+    per_page: int = DEFAULT_PER_PAGE,
+) -> NewsSourceListResponse:
     """List admin-managed RSS sources."""
     del user
-    return await svc.list_sources()
+    return await svc.list_sources(page=page, per_page=per_page)
 
 
 @router.post(

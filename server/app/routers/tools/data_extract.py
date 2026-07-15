@@ -9,9 +9,10 @@ from fastapi import APIRouter, Depends, Path, Query, UploadFile
 from app.core.data_extractor.types import ExtractOptions
 from app.core.deps import AuthorizedUser, require_capability
 from app.core.exceptions import ApiError, ValidationError
-from app.core.pagination import paginate_params
+from app.core.pagination import build_paginated, paginate_params
 from app.core.rate_limit import rate_limit_api
 from app.core.uploads import read_upload_bounded
+from app.core.utils import DEFAULT_PER_PAGE
 from app.db.deps import DbRegistry
 from app.openapi import requires_capability
 from app.schemas.data_extract import (
@@ -216,7 +217,7 @@ async def list_import_batches(
     registry: DbRegistry,
     user: AuthorizedUser,
     page: Annotated[int, Query(ge=1)] = 1,
-    per_page: Annotated[int, Query(ge=1, le=100)] = 20,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> ImportBatchListResponse:
     offset, limit = paginate_params(page, per_page)
     result = await data_import_svc.list_batches(
@@ -225,9 +226,13 @@ async def list_import_batches(
         offset=offset,
         limit=limit,
     )
-    return ImportBatchListResponse(
-        items=[ImportBatchResponse.model_validate(batch) for batch in result.items],
+    items = [ImportBatchResponse.model_validate(batch) for batch in result.items]
+    safe_page = max(1, page)
+    return build_paginated(
+        items,
         total=result.total,
+        page=safe_page,
+        per_page=limit,
     )
 
 

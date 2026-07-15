@@ -10,6 +10,13 @@ from app.core.catalogs import (
     DEFAULT_EXPENSE_CURRENCY,
     EXCHANGE_RATE_TARGETS,
 )
+from app.core.catalogs import (
+    ALLOWED_CURRENCIES,
+    DEFAULT_EXPENSE_CATEGORY,
+    DEFAULT_EXPENSE_CATEGORY_NAMES,
+    DEFAULT_EXPENSE_CURRENCY,
+    EXCHANGE_RATE_TARGETS,
+)
 from app.core.deps import (
     AuthorizedUser,
     CurrencyServiceDep,
@@ -17,6 +24,7 @@ from app.core.deps import (
     ExpenseServiceDep,
     require_capability,
 )
+from app.core.utils import DEFAULT_PER_PAGE
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
@@ -224,7 +232,7 @@ async def list_expenses(
     tool_name: str | None = None,
     category: str | None = None,
     page: Annotated[int, Query(ge=1)] = 1,
-    per_page: Annotated[int, Query(ge=1, le=100)] = 20,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
     sort: Annotated[
         str,
         Query(pattern=("^(date|category|product|amount)_(asc|desc)$")),

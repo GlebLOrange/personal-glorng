@@ -277,6 +277,12 @@ class TaskRepository(MongoRepository[Task]):
         )
         return [_sync_from_doc(row) async for row in cursor]
 
+    async def count_sync_queue(self) -> int:
+        return await self.db.google_sync_queue.count_documents({})
+
+    async def count_intakes(self) -> int:
+        return await self.db.task_intakes.count_documents({})
+
     async def count_sync_by_status(self, status: SyncStatus) -> int:
         return await self.db.google_sync_queue.count_documents(
             {"status": status.value},

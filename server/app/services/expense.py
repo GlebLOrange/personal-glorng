@@ -8,7 +8,7 @@ from typing import Any
 
 from app.core.catalogs import ALLOWED_CURRENCIES, DEFAULT_EXPENSE_CURRENCY
 from app.core.exceptions import ValidationError
-from app.core.utils import paginate_params
+from app.core.utils import DEFAULT_PER_PAGE, paginate_params
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.db.documents.expense import Expense
 from app.db.registry import DatabaseRegistry
@@ -117,7 +117,7 @@ class ExpenseService:
         tool_name: str | None = None,
         category: str | None = None,
         page: int = 1,
-        per_page: int = 20,
+        per_page: int = DEFAULT_PER_PAGE,
         sort: str = "date_desc",
     ) -> ExpenseListResponse:
         offset, limit = paginate_params(page, per_page)

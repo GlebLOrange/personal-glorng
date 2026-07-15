@@ -2,6 +2,7 @@
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.core.utils import DEFAULT_PER_PAGE
 from app.db.documents.news import NewsArticle, NewsSource, NewsStatus
 from app.db.repositories.base import MongoRepository, _parse_doc
 
@@ -105,7 +106,27 @@ class NewsSourceRepository(MongoRepository[NewsSource]):
         data = await self._col().find_one({"host": host})
         return _parse_doc(NewsSource, data) if data else None
 
-    async def list_sources(self) -> list[NewsSource]:
+    async def list_sources(
+        self,
+        *,
+        offset: int = 0,
+        limit: int = DEFAULT_PER_PAGE,
+    ) -> list[NewsSource]:
         """List sources ordered for admin display."""
+        cursor = (
+            self._col()
+            .find({})
+            .sort([("name", 1), ("id", 1)])
+            .skip(offset)
+            .limit(limit)
+        )
+        return [_parse_doc(NewsSource, row) async for row in cursor]
+
+    async def count_sources(self) -> int:
+        """Count all news sources."""
+        return await self._col().count_documents({})
+
+    async def list_all_sources(self) -> list[NewsSource]:
+        """List all sources ordered for admin display."""
         cursor = self._col().find({}).sort([("name", 1), ("id", 1)])
         return [_parse_doc(NewsSource, row) async for row in cursor]

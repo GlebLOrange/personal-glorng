@@ -4,6 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.schemas.common import PaginatedResponse
 from app.schemas.validators import validate_clean_optional, validate_clean_required
 
 
@@ -77,3 +78,7 @@ class TaskIntakeResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TaskIntakeListResponse(PaginatedResponse[TaskIntakeResponse]):
+    """Paginated task intake list."""

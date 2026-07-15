@@ -8,7 +8,8 @@ from typing import Any
 
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.feature_flags import is_task_intake_ai_enabled
-from app.core.utils import as_utc, paginate_params
+from app.core.utils import DEFAULT_PER_PAGE, as_utc, paginate_params
+from app.core.pagination import build_paginated
 from app.db.documents.task import IntakeStatus, Task, TaskIntake
 from app.db.documents.telegram import TelegramInboundMessage
 from app.db.registry import DatabaseRegistry
@@ -18,6 +19,7 @@ from app.schemas.task_intake import (
     ExtractionResult,
     FieldConfidence,
     TaskDraft,
+    TaskIntakeListResponse,
     TaskIntakeResponse,
 )
 from app.services.llm_json import complete_json, groq_api_key
@@ -284,10 +286,11 @@ class TaskIntakeService:
         self,
         *,
         page: int = 1,
-        per_page: int = 20,
-    ) -> list[TaskIntakeResponse]:
+        per_page: int = DEFAULT_PER_PAGE,
+    ) -> TaskIntakeListResponse:
         offset, limit = paginate_params(page, per_page)
         rows = await self._tasks().list_intakes_with_text(offset=offset, limit=limit)
+        total = await self._tasks().count_intakes()
         responses: list[TaskIntakeResponse] = []
         for intake, inbound_text in rows:
             responses.append(
@@ -304,7 +307,13 @@ class TaskIntakeService:
                     updated_at=intake.updated_at,
                 ),
             )
-        return responses
+        safe_page = max(1, page)
+        return build_paginated(
+            responses,
+            total=total,
+            page=safe_page,
+            per_page=limit,
+        )
 
     async def _load_inbound(self, intake: TaskIntake) -> TelegramInboundMessage:
         inbound = await self._telegram().get(intake.inbound_message_id)

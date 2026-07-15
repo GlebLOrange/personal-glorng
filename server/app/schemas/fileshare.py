@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.common import PaginatedResponse
+
 
 class SharedFileResponse(BaseModel):
     id: int
@@ -14,3 +16,7 @@ class SharedFileResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class SharedFileListResponse(PaginatedResponse[SharedFileResponse]):
+    """Paginated shared file list."""

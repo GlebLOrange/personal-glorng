@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.permissions import validate_permissions
+from app.schemas.common import PaginatedResponse
 
 
 class AdminUserSummary(BaseModel):
@@ -25,3 +26,14 @@ class UpdateUserPermissionsRequest(BaseModel):
     @classmethod
     def check_permissions(cls, value: list[str]) -> list[str]:
         return validate_permissions(value)
+
+
+class AdminUserListResponse(PaginatedResponse[AdminUserSummary]):
+    """Paginated admin user list."""
+
+
+class AdminUsersStatsResponse(BaseModel):
+    total: int
+    superuser_count: int
+    protected_count: int
+    unverified_count: int

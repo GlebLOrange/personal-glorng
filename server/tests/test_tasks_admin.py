@@ -82,7 +82,7 @@ async def test_create_task(auth_client: AsyncClient) -> None:
     assert data["status"] == "pending"
 
     listed = await auth_client.get("/api/tools/tasks")
-    assert any(t["id"] == data["id"] for t in listed.json())
+    assert any(t["id"] == data["id"] for t in listed.json()["items"])
 
 
 @pytest.mark.asyncio
@@ -182,7 +182,7 @@ async def test_tasks_reader_can_list(
     await create_task(registry, title="Visible task")
     resp = await tasks_reader_client.get("/api/tools/tasks")
     assert resp.status_code == 200
-    assert any(t["title"] == "Visible task" for t in resp.json())
+    assert any(t["title"] == "Visible task" for t in resp.json()["items"])
 
 
 @pytest.mark.asyncio

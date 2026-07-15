@@ -3,11 +3,17 @@ import { computed, ref, watch } from "vue";
 import { useApiAction } from "@/composables/useApiAction";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { statusLabel, type TaskStatus } from "@/constants/taskStatus";
 import { datetimeLocalValue, parseDatetimeLocalToIso } from "@/utils/dates";
-import type { SyncQueueItem, TaskDetail, TaskIntakeItem, TaskItem, TaskStats } from "@/types";
-
-const PER_PAGE = 20;
+import type {
+  PaginatedList,
+  SyncQueueItem,
+  TaskDetail,
+  TaskIntakeItem,
+  TaskItem,
+  TaskStats,
+} from "@/types";
 
 export interface TaskCreateForm {
   title: string;
@@ -24,6 +30,11 @@ export function useTasks() {
   const selectedTask = ref<TaskDetail | null>(null);
   const filterStatus = ref("");
   const page = ref(1);
+  const intakePage = ref(1);
+  const syncPage = ref(1);
+  const totalPages = ref(0);
+  const intakeTotalPages = ref(0);
+  const syncTotalPages = ref(0);
   const showCreateForm = ref(false);
   const createForm = ref<TaskCreateForm>({
     title: "",
@@ -42,7 +53,13 @@ export function useTasks() {
   const { run: runRetry } = useApiAction();
   const { toast } = useNotify();
 
-  const hasNextPage = computed(() => tasks.value.length >= PER_PAGE);
+  const hasNextPage = computed(() => page.value < totalPages.value);
+  const hasPreviousPage = computed(() => page.value > 1);
+  const hasNextIntakePage = computed(() => intakePage.value < intakeTotalPages.value);
+  const hasPreviousIntakePage = computed(() => intakePage.value > 1);
+  const hasNextSyncPage = computed(() => syncPage.value < syncTotalPages.value);
+  const hasPreviousSyncPage = computed(() => syncPage.value > 1);
+
   const taskCountLabel = computed(() => {
     const n = tasks.value.length;
     const filter = filterStatus.value ? ` · ${filterStatus.value.replaceAll("_", " ")}` : "";
@@ -52,7 +69,7 @@ export function useTasks() {
   async function loadTasks(): Promise<void> {
     const params: Record<string, string | number> = {
       page: page.value,
-      per_page: PER_PAGE,
+      per_page: LIST_PAGE_SIZE,
     };
     if (filterStatus.value) {
       params.status = filterStatus.value;
@@ -60,13 +77,14 @@ export function useTasks() {
 
     const data = await runList(
       async () => {
-        const response = await api.get<TaskItem[]>("/tools/tasks", { params });
+        const response = await api.get<PaginatedList<TaskItem>>("/tools/tasks", { params });
         return response.data;
       },
       { errorFallback: "Failed to load tasks" },
     );
     if (data) {
-      tasks.value = data;
+      tasks.value = data.items;
+      totalPages.value = data.pages;
     }
   }
 
@@ -86,26 +104,32 @@ export function useTasks() {
   async function loadIntakes(): Promise<void> {
     const data = await runIntakes(
       async () => {
-        const response = await api.get<TaskIntakeItem[]>("/tools/tasks/intakes");
+        const response = await api.get<PaginatedList<TaskIntakeItem>>("/tools/tasks/intakes", {
+          params: { page: intakePage.value, per_page: LIST_PAGE_SIZE },
+        });
         return response.data;
       },
       { errorFallback: "Failed to load intakes" },
     );
     if (data) {
-      intakes.value = data;
+      intakes.value = data.items;
+      intakeTotalPages.value = data.pages;
     }
   }
 
   async function loadSyncQueue(): Promise<void> {
     const data = await runSync(
       async () => {
-        const response = await api.get<SyncQueueItem[]>("/tools/tasks/sync-queue");
+        const response = await api.get<PaginatedList<SyncQueueItem>>("/tools/tasks/sync-queue", {
+          params: { page: syncPage.value, per_page: LIST_PAGE_SIZE },
+        });
         return response.data;
       },
       { errorFallback: "Failed to load sync queue" },
     );
     if (data) {
-      syncQueue.value = data;
+      syncQueue.value = data.items;
+      syncTotalPages.value = data.pages;
     }
   }
 
@@ -195,7 +219,20 @@ export function useTasks() {
 
   function goToPage(nextPage: number): void {
     if (nextPage < 1) return;
+    if (totalPages.value > 0 && nextPage > totalPages.value) return;
     page.value = nextPage;
+  }
+
+  function goToIntakePage(nextPage: number): void {
+    if (nextPage < 1) return;
+    if (intakeTotalPages.value > 0 && nextPage > intakeTotalPages.value) return;
+    intakePage.value = nextPage;
+  }
+
+  function goToSyncPage(nextPage: number): void {
+    if (nextPage < 1) return;
+    if (syncTotalPages.value > 0 && nextPage > syncTotalPages.value) return;
+    syncPage.value = nextPage;
   }
 
   watch([filterStatus], () => {
@@ -207,6 +244,14 @@ export function useTasks() {
     void loadTasks();
   });
 
+  watch(intakePage, () => {
+    void loadIntakes();
+  });
+
+  watch(syncPage, () => {
+    void loadSyncQueue();
+  });
+
   return {
     tasks,
     stats,
@@ -215,6 +260,11 @@ export function useTasks() {
     selectedTask,
     filterStatus,
     page,
+    intakePage,
+    syncPage,
+    totalPages,
+    intakeTotalPages,
+    syncTotalPages,
     showCreateForm,
     createForm,
     listLoading,
@@ -225,6 +275,11 @@ export function useTasks() {
     saving,
     statusUpdating,
     hasNextPage,
+    hasPreviousPage,
+    hasNextIntakePage,
+    hasPreviousIntakePage,
+    hasNextSyncPage,
+    hasPreviousSyncPage,
     taskCountLabel,
     loadTasks,
     loadStats,
@@ -237,5 +292,7 @@ export function useTasks() {
     openCreate,
     createTask,
     goToPage,
+    goToIntakePage,
+    goToSyncPage,
   };
 }

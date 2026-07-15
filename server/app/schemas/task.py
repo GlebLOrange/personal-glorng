@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.db.documents.task import TaskStatus
+from app.schemas.common import PaginatedResponse
 from app.schemas.validators import (
     UtcDatetime,
     validate_clean_optional,
@@ -126,3 +127,11 @@ class TaskStatsResponse(BaseModel):
     completed: int
     total: int
     failed_syncs: int
+
+
+class TaskListResponse(PaginatedResponse[TaskResponse]):
+    """Paginated task list."""
+
+
+class SyncQueueListResponse(PaginatedResponse[SyncQueueResponse]):
+    """Paginated calendar sync queue."""

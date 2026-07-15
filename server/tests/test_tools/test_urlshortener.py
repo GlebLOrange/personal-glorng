@@ -61,7 +61,9 @@ async def test_list_urls_unauthenticated(client: AsyncClient) -> None:
 async def test_list_urls_empty(auth_client: AsyncClient) -> None:
     resp = await auth_client.get("/api/tools/url-shortener")
     assert resp.status_code == 200
-    assert resp.json() == []
+    data = resp.json()
+    assert data["items"] == []
+    assert data["per_page"] == 9
 
 
 @pytest.mark.asyncio
@@ -85,8 +87,8 @@ async def test_list_urls_scoped_to_owner(
     )
     assert resp.status_code == 200
     data = resp.json()
-    assert len(data) == 1
-    assert data[0]["title"] == "Other link"
+    assert len(data["items"]) == 1
+    assert data["items"][0]["title"] == "Other link"
 
 
 @pytest.mark.asyncio

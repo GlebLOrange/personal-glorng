@@ -4,16 +4,20 @@ import { computed, onMounted, ref } from "vue";
 import ShareableListItem from "@/components/admin/ShareableListItem.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
+import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
-import type { SharedFile } from "@/types";
+import type { PaginatedList, SharedFile } from "@/types";
 import { formatBytes, formatTimeRemaining } from "@/utils/format";
 import { publicUrl } from "@/utils/publicLinks";
 
 const files = ref<SharedFile[]>([]);
+const page = ref(1);
+const totalPages = ref(0);
 const selectedFile = ref<File | null>(null);
 const dragOver = ref(false);
 const { copy } = useClipboard();
@@ -25,13 +29,30 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 
 const selectedName = computed(() => selectedFile.value?.name ?? "");
 
+const hasNextPage = computed(() => page.value < totalPages.value);
+const hasPreviousPage = computed(() => page.value > 1);
+
 async function loadFiles(): Promise<void> {
-  const data = await runList(() => api.get<SharedFile[]>("/tools/file-share"), {
-    errorFallback: "Failed to load files",
-  });
+  const data = await runList(
+    () =>
+      api.get<PaginatedList<SharedFile>>("/tools/file-share", {
+        params: { page: page.value, per_page: LIST_PAGE_SIZE },
+      }),
+    {
+      errorFallback: "Failed to load files",
+    },
+  );
   if (data) {
-    files.value = data.data;
+    files.value = data.data.items;
+    totalPages.value = data.data.pages;
   }
+}
+
+function goToPage(nextPage: number): void {
+  if (nextPage < 1) return;
+  if (totalPages.value > 0 && nextPage > totalPages.value) return;
+  page.value = nextPage;
+  void loadFiles();
 }
 
 function onFileSelect(e: Event): void {
@@ -60,6 +81,7 @@ async function upload(): Promise<void> {
   if (result) {
     selectedFile.value = null;
     if (fileInputRef.value) fileInputRef.value.value = "";
+    page.value = 1;
     await loadFiles();
   }
 }
@@ -135,6 +157,19 @@ onMounted(loadFiles);
           v-if="files.length === 0"
           title="No shared files"
           description="Upload a file above to get a shareable link."
+        />
+
+        <BasePagination
+          v-if="totalPages > 1"
+          class="pt-2"
+          aria-label="Shared files pagination"
+          :page="page"
+          :total-pages="totalPages"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          :loading="listLoading"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
         />
       </template>
     </div>

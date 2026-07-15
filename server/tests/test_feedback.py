@@ -94,14 +94,31 @@ class TestListFeedback:
         resp = await auth_client.get("/api/feedback")
         assert resp.status_code == 200
         data = resp.json()
-        assert len(data) == 2
-        themes = {item["theme"] for item in data}
+        assert len(data["items"]) == 2
+        themes = {item["theme"] for item in data["items"]}
         assert themes == {"First", "Second"}
 
     async def test_list_empty(self, auth_client: AsyncClient):
         resp = await auth_client.get("/api/feedback")
         assert resp.status_code == 200
-        assert resp.json() == []
+        data = resp.json()
+        assert data["items"] == []
+        assert data["per_page"] == 9
+
+    async def test_list_pagination_and_status_filter(
+        self, auth_client: AsyncClient, registry: DatabaseRegistry
+    ):
+        await create_feedback(registry, theme="Unread", status="unread")
+        await create_feedback(registry, theme="Archived", status="archived")
+        resp = await auth_client.get(
+            "/api/feedback",
+            params={"status": "unread", "page": 1, "per_page": 1},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
+        assert data["items"][0]["theme"] == "Unread"
 
 
 class TestUpdateFeedbackStatus:

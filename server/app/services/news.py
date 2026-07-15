@@ -15,7 +15,8 @@ from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.core.json_lists import parse_json_string_list
 from app.core.logging import logger
 from app.core.url_safety import is_public_http_url
-from app.core.utils import paginate_params, utc_now
+from app.core.pagination import build_paginated
+from app.core.utils import DEFAULT_PER_PAGE, paginate_params, utc_now
 from app.db.documents.news import NewsArticle, NewsSource, NewsStatus
 from app.db.registry import DatabaseRegistry
 from app.db.repositories.news import NewsRepository, NewsSourceRepository
@@ -26,6 +27,8 @@ from app.schemas.news import (
     NewsArticleResponse,
     NewsArticleUpdate,
     NewsSourceCreate,
+    NewsSourceListResponse,
+    NewsSourceResponse,
     NewsSourceUpdate,
 )
 from app.services.audit import AuditService
@@ -551,9 +554,28 @@ class NewsService:
             actor_id=actor_id,
         )
 
-    async def list_sources(self) -> list[NewsSource]:
-        """List admin-managed RSS sources."""
-        return await self._sources().list_sources()
+    async def list_sources(
+        self,
+        *,
+        page: int = 1,
+        per_page: int = DEFAULT_PER_PAGE,
+    ) -> NewsSourceListResponse:
+        """List admin-managed RSS sources with pagination."""
+        offset, limit = paginate_params(page, per_page)
+        sources = await self._sources().list_sources(offset=offset, limit=limit)
+        total = await self._sources().count_sources()
+        items = [NewsSourceResponse.model_validate(source) for source in sources]
+        safe_page = max(1, page)
+        return build_paginated(
+            items,
+            total=total,
+            page=safe_page,
+            per_page=limit,
+        )
+
+    async def list_all_sources(self) -> list[NewsSource]:
+        """List all RSS sources (internal use)."""
+        return await self._sources().list_all_sources()
 
     async def create_source(
         self,
@@ -649,7 +671,7 @@ class NewsService:
         *,
         status: NewsStatus | None = "published",
         page: int = 1,
-        per_page: int = 20,
+        per_page: int = DEFAULT_PER_PAGE,
     ) -> NewsArticleListResponse:
         """List articles with pagination."""
         offset, limit = paginate_params(page, per_page)

@@ -56,7 +56,7 @@ class TestRecipesCRUD:
         assert data["total"] == 1
         assert len(data["items"]) == 1
         assert data["page"] == 1
-        assert data["per_page"] == 24
+        assert data["per_page"] == 9
 
     async def test_get_recipe(self, auth_client: AsyncClient):
         create_resp = await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)

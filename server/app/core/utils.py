@@ -35,9 +35,12 @@ def generate_short_code(length: int = 8) -> str:
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
+DEFAULT_PER_PAGE = 9
+
+
 def paginate_params(
     page: int = 1,
-    per_page: int = 20,
+    per_page: int = DEFAULT_PER_PAGE,
 ) -> tuple[int, int]:
     page = max(1, page)
     per_page = min(max(1, per_page), 100)

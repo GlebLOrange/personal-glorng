@@ -4,7 +4,8 @@ from datetime import UTC, datetime, timedelta
 
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import logger
-from app.core.utils import as_utc, paginate_params
+from app.core.utils import DEFAULT_PER_PAGE, as_utc, paginate_params
+from app.core.pagination import build_paginated
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.db.documents.task import (
     GoogleSyncQueue,
@@ -18,8 +19,10 @@ from app.db.registry import DatabaseRegistry
 from app.schemas.task import (
     ReminderResponse,
     StatusHistoryResponse,
+    SyncQueueListResponse,
     SyncQueueResponse,
     TaskDetailResponse,
+    TaskListResponse,
     TaskResponse,
     TaskStatsResponse,
     TaskTextFields,
@@ -264,9 +267,9 @@ class TaskService:
         self,
         *,
         page: int = 1,
-        per_page: int = 20,
+        per_page: int = DEFAULT_PER_PAGE,
         status: str | None = None,
-    ) -> list[TaskResponse]:
+    ) -> TaskListResponse:
         offset, limit = paginate_params(page, per_page)
         if status:
             try:
@@ -278,7 +281,15 @@ class TaskService:
             limit=limit,
             status=status,
         )
-        return [TaskResponse.model_validate(t) for t in tasks]
+        total = await self._tasks().count_all(status=status)
+        items = [TaskResponse.model_validate(t) for t in tasks]
+        safe_page = max(1, page)
+        return build_paginated(
+            items,
+            total=total,
+            page=safe_page,
+            per_page=limit,
+        )
 
     async def task_stats(self) -> TaskStatsResponse:
         total = await self._tasks().count_all()
@@ -296,11 +307,19 @@ class TaskService:
         self,
         *,
         page: int = 1,
-        per_page: int = 20,
-    ) -> list[SyncQueueResponse]:
+        per_page: int = DEFAULT_PER_PAGE,
+    ) -> SyncQueueListResponse:
         offset, limit = paginate_params(page, per_page)
-        items = await self._tasks().list_sync_queue(offset=offset, limit=limit)
-        return [SyncQueueResponse.model_validate(q) for q in items]
+        items_raw = await self._tasks().list_sync_queue(offset=offset, limit=limit)
+        total = await self._tasks().count_sync_queue()
+        items = [SyncQueueResponse.model_validate(q) for q in items_raw]
+        safe_page = max(1, page)
+        return build_paginated(
+            items,
+            total=total,
+            page=safe_page,
+            per_page=limit,
+        )
 
     async def task_detail(self, task_id: int) -> TaskDetailResponse:
         task = await self.get_task(task_id=task_id)

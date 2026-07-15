@@ -11,21 +11,23 @@ from app.core.deps import (
     require_capability,
 )
 from app.core.exceptions import ValidationError
+from app.core.utils import DEFAULT_PER_PAGE
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.task import (
     ReminderResponse,
-    SyncQueueResponse,
+    SyncQueueListResponse,
     TaskCreate,
     TaskDetailResponse,
     TaskReminderCreate,
     TaskReschedule,
+    TaskListResponse,
     TaskResponse,
     TaskStatsResponse,
     TaskStatusUpdate,
 )
-from app.schemas.task_intake import TaskIntakeResponse
+from app.schemas.task_intake import TaskIntakeListResponse
 from app.settings import Settings
 
 router = APIRouter(
@@ -67,7 +69,7 @@ async def create_task(
 
 @router.get(
     "",
-    response_model=list[TaskResponse],
+    response_model=TaskListResponse,
     summary="List tasks",
     description=requires_capability("tasks", "read"),
 )
@@ -75,9 +77,9 @@ async def list_tasks(
     svc: TaskServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
     page: int = 1,
-    per_page: int = 20,
+    per_page: int = DEFAULT_PER_PAGE,
     status: str | None = None,
-) -> list[TaskResponse]:
+) -> TaskListResponse:
     return await svc.list_tasks(page=page, per_page=per_page, status=status)
 
 
@@ -96,7 +98,7 @@ async def task_stats(
 
 @router.get(
     "/intakes",
-    response_model=list[TaskIntakeResponse],
+    response_model=TaskIntakeListResponse,
     summary="List task intakes",
     description=requires_capability("tasks", "read"),
 )
@@ -104,14 +106,14 @@ async def list_intakes(
     svc: TaskIntakeServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
     page: int = 1,
-    per_page: int = 20,
-) -> list[TaskIntakeResponse]:
+    per_page: int = DEFAULT_PER_PAGE,
+) -> TaskIntakeListResponse:
     return await svc.list_intakes(page=page, per_page=per_page)
 
 
 @router.get(
     "/sync-queue",
-    response_model=list[SyncQueueResponse],
+    response_model=SyncQueueListResponse,
     summary="List calendar sync queue",
     description=requires_capability("tasks", "read"),
 )
@@ -119,8 +121,8 @@ async def list_sync_queue(
     svc: TaskServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
     page: int = 1,
-    per_page: int = 20,
-) -> list[SyncQueueResponse]:
+    per_page: int = DEFAULT_PER_PAGE,
+) -> SyncQueueListResponse:
     return await svc.list_sync_queue(page=page, per_page=per_page)
 
 

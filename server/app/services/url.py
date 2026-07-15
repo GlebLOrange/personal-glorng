@@ -1,7 +1,9 @@
 from app.core.exceptions import ApiError, NotFoundError
-from app.core.utils import generate_short_code
+from app.core.pagination import build_paginated
+from app.core.utils import DEFAULT_PER_PAGE, generate_short_code, paginate_params
 from app.db.documents.url import ShortenedUrl
 from app.db.registry import DatabaseRegistry
+from app.schemas.url import UrlListResponse, UrlResponse
 from app.services.audit import AuditService
 from app.services.search_indexers.url import index_url, remove_url
 
@@ -64,14 +66,25 @@ class UrlService:
     async def list_by_owner(
         self,
         created_by: int,
-        offset: int = 0,
-        limit: int = 20,
-    ) -> list[ShortenedUrl]:
-        return await self._urls().list(
+        *,
+        page: int = 1,
+        per_page: int = DEFAULT_PER_PAGE,
+    ) -> UrlListResponse:
+        offset, limit = paginate_params(page, per_page)
+        urls = await self._urls().list(
             offset=offset,
             limit=limit,
             created_by=created_by,
             sort=[("created_at", -1)],
+        )
+        total = await self._urls().count(created_by=created_by)
+        items = [UrlResponse.model_validate(url) for url in urls]
+        safe_page = max(1, page)
+        return build_paginated(
+            items,
+            total=total,
+            page=safe_page,
+            per_page=limit,
         )
 
     async def update_url(
