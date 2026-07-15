@@ -144,6 +144,12 @@ async def _flush_batch(entries: list[dict[str, Any]]) -> None:
         repo = AppLogRepository(get_mongodb_database())
         logs = [_entry_to_app_log(entry) for entry in entries]
         await repo.insert_many(logs)
+        try:
+            from app.services import elasticsearch_app_logs
+
+            await elasticsearch_app_logs.index_app_logs(logs)
+        except Exception as exc:
+            _write_persist_error("App log Elasticsearch index failed", exc)
     except Exception as exc:
         _write_persist_error("App log persist failed", exc)
 

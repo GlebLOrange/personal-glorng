@@ -367,6 +367,8 @@ class Settings(BaseSettings):
     # Elasticsearch (optional; empty disables the external search backend)
     ELASTICSEARCH_URL: str
     ELASTICSEARCH_INDEX: str
+    ELASTICSEARCH_APP_LOGS_INDEX: str = "app_logs"
+    APP_LOG_ES_ENABLED: bool = True
 
     @model_validator(mode="after")
     def _normalize_elasticsearch_url(self) -> Settings:
@@ -376,6 +378,9 @@ class Settings(BaseSettings):
 
     def elasticsearch_enabled(self) -> bool:
         return bool(self.ELASTICSEARCH_URL.strip())
+
+    def app_log_es_enabled(self) -> bool:
+        return self.elasticsearch_enabled() and self.APP_LOG_ES_ENABLED
 
     # MongoDB (primary document store)
     MONGODB_USER: str

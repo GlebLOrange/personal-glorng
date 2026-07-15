@@ -20,6 +20,7 @@ ServiceSlug = Literal[
     "news-sources",
     "audit",
     "app-logs",
+    "search",
     "api-docs",
 ]
 
@@ -210,6 +211,16 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         api_prefix="/app-logs",
         admin_route="/admin/tools/app-logs",
         icon="≡",
+        capabilities=("read",),
+    ),
+    PlatformService(
+        slug="search",
+        name="search",
+        category="operations",
+        description="Keyword search across admin indexed content",
+        api_prefix="/search",
+        admin_route="/admin/tools/search",
+        icon="⌕",
         capabilities=("read",),
     ),
     PlatformService(

@@ -216,6 +216,18 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     external: false,
   },
   {
+    slug: "search",
+    name: "search",
+    category: "operations",
+    categoryLabel: "operations",
+    description: "Keyword search across admin indexed content",
+    apiPrefix: "/search",
+    adminRoute: "/admin/tools/search",
+    icon: "⌕",
+    capabilities: ["read"],
+    external: false,
+  },
+  {
     slug: "api-docs",
     name: "api docs",
     category: "operations",

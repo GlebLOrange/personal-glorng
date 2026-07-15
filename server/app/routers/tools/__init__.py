@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.routers.tools import (
+    admin_search,
     ai_chat,
     app_logs,
     audit,
@@ -22,6 +23,7 @@ from app.routers.tools import (
 tools_router = APIRouter(prefix="/tools")
 
 for router_module in (
+    admin_search,
     ai_chat,
     app_logs,
     audit,
