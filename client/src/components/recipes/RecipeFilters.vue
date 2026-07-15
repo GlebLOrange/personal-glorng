@@ -28,7 +28,7 @@ const tagFilterLabel = computed(() => {
 
 <template>
   <div class="mb-6 space-y-4">
-    <div class="flex flex-wrap items-center justify-start gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <AdminFilterDropdown
         v-if="allTags.length"
         :has-active-filters="hasActiveFilters"
@@ -66,10 +66,12 @@ const tagFilterLabel = computed(() => {
         :model-value="search"
         type="search"
         compact
+        class="min-w-0 flex-1"
         placeholder="search recipe"
         aria-label="search recipe"
         @update:model-value="emit('update:search', String($event ?? ''))"
       />
+      <slot name="actions" />
     </div>
     <slot />
   </div>

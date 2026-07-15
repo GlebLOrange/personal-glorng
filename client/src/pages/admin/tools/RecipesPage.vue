@@ -98,12 +98,6 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
     max-width="xl"
     :narrow="false"
   >
-    <header class="page-intro">
-      <div v-if="canWrite" class="flex flex-wrap gap-2">
-        <BaseButton variant="primary" @click="openCreate">+ New recipe</BaseButton>
-      </div>
-    </header>
-
     <RecipeFilters
       v-model:search="search"
       :active-tags="activeTags"
@@ -111,6 +105,16 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
       @set-tag="setTag"
       @clear-filters="clearFilters"
     >
+      <template v-if="canWrite" #actions>
+        <BaseButton
+          variant="primary"
+          size="sm"
+          class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+          @click="openCreate"
+        >
+          + new recipe
+        </BaseButton>
+      </template>
       <div
         v-if="listLoading"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"

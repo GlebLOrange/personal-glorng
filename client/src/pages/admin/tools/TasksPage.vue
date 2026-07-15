@@ -10,7 +10,6 @@ import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import TaskCreateModal from "@/components/tasks/TaskCreateModal.vue";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
-import TaskFilters from "@/components/tasks/TaskFilters.vue";
 import TaskIntakeList from "@/components/tasks/TaskIntakeList.vue";
 import TaskList from "@/components/tasks/TaskList.vue";
 import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
@@ -138,10 +137,6 @@ onMounted(() => {
 <template>
   <AdminPageLayout title="tasks" max-width="xl">
     <div class="min-w-0">
-      <div class="mb-3 flex justify-end">
-        <TaskFilters :can-mutate="isSuperuser" @create="openCreate" />
-      </div>
-
       <AdminTabBar
         panel-id-prefix="tasks-tab"
         :model-value="activeTab"
@@ -159,30 +154,41 @@ onMounted(() => {
       >
         <AdminListToolbar v-if="!listLoading">
           <template #start>
-            <AdminFilterDropdown
-              ref="filterDropdown"
-              :has-active-filters="Boolean(filterStatus)"
-              :active-label="activeFilterLabel"
-              @clear="clearFilters"
-            >
-              <template #chips>
-                <AdminFilterChip
-                  v-for="chip in STATUS_FILTERS"
-                  :key="chip.value"
-                  :label="chip.label"
-                  :active="filterStatus === chip.value"
-                  :color-class="statusBadgeClass(chip.value)"
-                  @click="setStatusFilter(chip.value)"
-                />
-              </template>
-              <template #footer>
-                <div class="mt-3 border-t border-surface-border pt-3">
-                  <BaseButton variant="ghost" size="sm" @click="onFailedSyncs">
-                    failed syncs
-                  </BaseButton>
-                </div>
-              </template>
-            </AdminFilterDropdown>
+            <div class="flex w-full min-w-0 flex-wrap items-center gap-3">
+              <AdminFilterDropdown
+                ref="filterDropdown"
+                :has-active-filters="Boolean(filterStatus)"
+                :active-label="activeFilterLabel"
+                @clear="clearFilters"
+              >
+                <template #chips>
+                  <AdminFilterChip
+                    v-for="chip in STATUS_FILTERS"
+                    :key="chip.value"
+                    :label="chip.label"
+                    :active="filterStatus === chip.value"
+                    :color-class="statusBadgeClass(chip.value)"
+                    @click="setStatusFilter(chip.value)"
+                  />
+                </template>
+                <template #footer>
+                  <div class="mt-3 border-t border-surface-border pt-3">
+                    <BaseButton variant="ghost" size="sm" @click="onFailedSyncs">
+                      failed syncs
+                    </BaseButton>
+                  </div>
+                </template>
+              </AdminFilterDropdown>
+              <BaseButton
+                v-if="isSuperuser"
+                variant="primary"
+                size="sm"
+                class="ml-auto inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+                @click="openCreate"
+              >
+                + new task
+              </BaseButton>
+            </div>
           </template>
         </AdminListToolbar>
         <TaskList

@@ -124,21 +124,30 @@ onMounted(loadUrls);
     :narrow="false"
   >
     <form class="mb-10 space-y-3" @submit.prevent="createUrl">
-      <BaseInput
-        v-model="newUrl"
-        compact
-        placeholder="url: https://example.com/very-long-url..."
-        aria-label="url"
-      />
+      <div class="flex flex-wrap items-center gap-3">
+        <BaseInput
+          v-model="newUrl"
+          compact
+          class="min-w-0 flex-1"
+          placeholder="url: https://example.com/very-long-url..."
+          aria-label="url"
+        />
+        <BaseButton
+          variant="primary"
+          size="sm"
+          type="submit"
+          class="ml-auto inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+          :disabled="loading"
+        >
+          {{ loading ? "creating..." : "shorten" }}
+        </BaseButton>
+      </div>
       <BaseInput
         v-model="newTitle"
         compact
         placeholder="optional title (uses url if empty)"
         aria-label="optional title"
       />
-      <BaseButton variant="primary" :disabled="loading">
-        {{ loading ? "Creating..." : "Shorten" }}
-      </BaseButton>
     </form>
 
     <Card v-if="lastCreatedLink" variant="compact" class="mb-10">
