@@ -160,7 +160,7 @@ onMounted(load);
             :active-label="activeFilterLabel"
             @clear="clearFilters"
           >
-            <div class="flex flex-wrap justify-center gap-2">
+            <template #chips>
               <AdminFilterChip
                 v-for="chip in LEVEL_FILTERS"
                 :key="chip.value"
@@ -169,7 +169,7 @@ onMounted(load);
                 :color-class="logLevelClass(chip.value)"
                 @click="setLevelFilter(chip.value)"
               />
-            </div>
+            </template>
             <BaseInput
               :model-value="requestId"
               compact

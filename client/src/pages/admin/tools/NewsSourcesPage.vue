@@ -310,7 +310,7 @@ onMounted(loadSources);
               :active-label="activeFilterLabel"
               @clear="clearFilters"
             >
-              <div class="flex flex-wrap justify-center gap-2">
+              <template #chips>
                 <AdminFilterChip
                   v-for="chip in ENABLED_FILTERS"
                   :key="chip.value"
@@ -319,7 +319,7 @@ onMounted(loadSources);
                   :color-class="newsSourceEnabledClass(chip.value === 'enabled')"
                   @click="setEnabledFilter(chip.value)"
                 />
-              </div>
+              </template>
             </AdminFilterDropdown>
           </template>
         </AdminListToolbar>

@@ -165,7 +165,7 @@ onMounted(() => {
               :active-label="activeFilterLabel"
               @clear="clearFilters"
             >
-              <div class="flex flex-wrap justify-center gap-2">
+              <template #chips>
                 <AdminFilterChip
                   v-for="chip in STATUS_FILTERS"
                   :key="chip.value"
@@ -174,7 +174,7 @@ onMounted(() => {
                   :color-class="statusBadgeClass(chip.value)"
                   @click="setStatusFilter(chip.value)"
                 />
-              </div>
+              </template>
               <template #footer>
                 <div class="mt-3 border-t border-surface-border pt-3">
                   <BaseButton variant="ghost" size="sm" @click="onFailedSyncs">

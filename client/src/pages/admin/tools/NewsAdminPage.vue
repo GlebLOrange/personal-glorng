@@ -443,7 +443,7 @@ watch(page, () => {
           :active-label="activeFilterLabel"
           @clear="clearFilters"
         >
-          <div class="flex flex-wrap justify-center gap-2">
+          <template #chips>
             <AdminFilterChip
               v-for="chip in STATUS_FILTERS"
               :key="chip.value"
@@ -452,7 +452,7 @@ watch(page, () => {
               :color-class="newsStatusClass(chip.value)"
               @click="setStatusFilter(chip.value)"
             />
-          </div>
+          </template>
         </AdminFilterDropdown>
       </template>
     </AdminListToolbar>

@@ -347,7 +347,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
             >
               <div>
                 <p class="text-xs font-medium text-surface-mid mb-2">role</p>
-                <div class="flex flex-wrap justify-center gap-2">
+                <div class="grid grid-cols-3 gap-2">
                   <AdminFilterChip
                     v-for="chip in ROLE_FILTERS"
                     :key="chip.value"
@@ -361,7 +361,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
               <div>
                 <p class="text-xs font-medium text-surface-mid mb-2">status</p>
-                <div class="flex flex-wrap justify-center gap-2">
+                <div class="grid grid-cols-3 gap-2">
                   <AdminFilterChip
                     v-for="chip in STATUS_FILTERS"
                     :key="chip.value"

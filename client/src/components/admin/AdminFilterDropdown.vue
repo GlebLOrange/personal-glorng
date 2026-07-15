@@ -73,10 +73,13 @@ defineExpose({ close });
       v-if="open"
       role="dialog"
       aria-label="filters"
-      class="absolute left-0 top-full z-10 mt-1 min-w-[18rem] rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
+      class="absolute left-0 top-full z-10 mt-1 w-[18rem] rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
       @click.stop
     >
       <div class="space-y-3">
+        <div v-if="$slots.chips" class="grid grid-cols-3 gap-2">
+          <slot name="chips" />
+        </div>
         <slot />
       </div>
       <slot name="footer" />

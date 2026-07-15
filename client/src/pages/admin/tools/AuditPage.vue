@@ -135,7 +135,7 @@ onMounted(load);
             :active-label="activeFilterLabel"
             @clear="clearFilters"
           >
-            <div class="flex flex-wrap justify-center gap-2">
+            <template #chips>
               <AdminFilterChip
                 v-for="chip in CATEGORY_FILTERS"
                 :key="chip.value"
@@ -144,7 +144,7 @@ onMounted(load);
                 :color-class="auditCategoryClass(chip.value)"
                 @click="setCategoryFilter(chip.value)"
               />
-            </div>
+            </template>
           </AdminFilterDropdown>
         </template>
       </AdminListToolbar>

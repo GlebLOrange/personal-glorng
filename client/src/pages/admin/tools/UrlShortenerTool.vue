@@ -124,8 +124,18 @@ onMounted(loadUrls);
     :narrow="false"
   >
     <form class="mb-10 space-y-3" @submit.prevent="createUrl">
-      <BaseInput v-model="newUrl" placeholder="https://example.com/very-long-url..." label="URL" />
-      <BaseInput v-model="newTitle" placeholder="Optional title" label="Title" />
+      <BaseInput
+        v-model="newUrl"
+        compact
+        placeholder="url: https://example.com/very-long-url..."
+        aria-label="url"
+      />
+      <BaseInput
+        v-model="newTitle"
+        compact
+        placeholder="optional title (uses url if empty)"
+        aria-label="optional title"
+      />
       <BaseButton variant="primary" :disabled="loading">
         {{ loading ? "Creating..." : "Shorten" }}
       </BaseButton>
