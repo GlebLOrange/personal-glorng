@@ -16,6 +16,7 @@ from app.schemas.news import (
     NewsArticleResponse,
     NewsArticleUpdate,
     NewsIngestResponse,
+    NewsStatsResponse,
 )
 
 router = APIRouter(prefix="/news", tags=["news"])
@@ -39,6 +40,22 @@ async def list_news(
         page=page,
         per_page=per_page,
     )
+
+
+@router.get(
+    "/admin/stats",
+    response_model=NewsStatsResponse,
+    summary="Get news article stats",
+    description=requires_capability("news", "read"),
+    dependencies=[Depends(require_capability("news", "read"))],
+)
+async def get_news_stats(
+    svc: NewsServiceDep,
+    user: AuthorizedUser,
+) -> NewsStatsResponse:
+    """Return article counts by status for admin tools."""
+    del user
+    return await svc.news_stats()
 
 
 @router.get(

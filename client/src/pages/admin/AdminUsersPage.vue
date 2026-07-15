@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
 
+import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminUserPermissionsEditor from "@/components/admin/AdminUserPermissionsEditor.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
@@ -8,7 +10,11 @@ import BasePagination from "@/components/ui/BasePagination.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
-import { FIELD_INPUT_CLASS, SELECT_CLASS_COMPACT } from "@/constants/formClasses";
+import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
+import {
+  userRoleClass,
+  userStatusClass,
+} from "@/constants/filterColors";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
@@ -30,15 +36,16 @@ interface AdminUsersStats {
   unverified_count: number;
 }
 
-const ROLE_BADGE_CLASSES = {
-  superuser: "bg-accent-violet/15 text-accent-violet border-accent-violet/30",
-  custom: "bg-surface-dark text-surface-mid border-surface-border",
-} as const;
-const STATUS_BADGE_CLASSES = {
-  protected: "bg-accent-blue/15 text-accent-blue border-accent-blue/30",
-  verified: "bg-accent-golden/15 text-accent-golden border-accent-golden/30",
-  unverified: "bg-surface-dark text-surface-mid border-surface-border",
-} as const;
+const ROLE_FILTERS: { label: string; value: Exclude<RoleFilter, "all"> }[] = [
+  { label: "superusers", value: "superuser" },
+  { label: "custom access", value: "custom" },
+];
+
+const STATUS_FILTERS: { label: string; value: Exclude<StatusFilter, "all"> }[] = [
+  { label: "verified", value: "verified" },
+  { label: "unverified", value: "unverified" },
+  { label: "protected", value: "protected" },
+];
 
 const { toast } = useNotify();
 const users = ref<AdminUserSummary[]>([]);
@@ -54,6 +61,7 @@ const searchQuery = ref("");
 const debouncedSearch = ref("");
 const roleFilter = ref<RoleFilter>("all");
 const statusFilter = ref<StatusFilter>("all");
+const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 const selectedUserId = ref<string | null>(null);
 const drawerPanel = ref<HTMLElement | null>(null);
 const drawerCloseButton = ref<HTMLButtonElement | null>(null);
@@ -64,6 +72,17 @@ const protectedCount = computed(() => userStats.value?.protected_count ?? 0);
 const unverifiedCount = computed(() => userStats.value?.unverified_count ?? 0);
 const hasNextPage = computed(() => page.value < totalPages.value);
 const hasPreviousPage = computed(() => page.value > 1);
+const hasActiveFilters = computed(
+  () => roleFilter.value !== "all" || statusFilter.value !== "all",
+);
+const activeFilterLabel = computed(() => {
+  const parts: string[] = [];
+  const role = ROLE_FILTERS.find((chip) => chip.value === roleFilter.value)?.label;
+  const status = STATUS_FILTERS.find((chip) => chip.value === statusFilter.value)?.label;
+  if (role) parts.push(role);
+  if (status) parts.push(status);
+  return parts.length ? parts.join(", ") : undefined;
+});
 
 const selectedUser = computed(
   () => users.value.find((user) => user.id === selectedUserId.value) ?? null,
@@ -96,19 +115,38 @@ function roleBadge(user: AdminUserSummary): BadgeView {
   return {
     id: "role",
     label: isSuperuser ? "superuser" : "custom access",
-    className: isSuperuser ? ROLE_BADGE_CLASSES.superuser : ROLE_BADGE_CLASSES.custom,
+    className: isSuperuser ? userRoleClass("superuser") : userRoleClass("custom"),
   };
 }
 
 function statusBadges(user: AdminUserSummary): BadgeView[] {
   return [
     ...(user.is_protected
-      ? [{ id: "protected", label: "protected", className: STATUS_BADGE_CLASSES.protected }]
+      ? [{ id: "protected", label: "protected", className: userStatusClass("protected") }]
       : []),
     user.is_verified
-      ? { id: "verified", label: "verified", className: STATUS_BADGE_CLASSES.verified }
-      : { id: "unverified", label: "unverified", className: STATUS_BADGE_CLASSES.unverified },
+      ? { id: "verified", label: "verified", className: userStatusClass("verified") }
+      : { id: "unverified", label: "unverified", className: userStatusClass("unverified") },
   ];
+}
+
+function setRoleFilter(next: Exclude<RoleFilter, "all">): void {
+  roleFilter.value = next;
+  page.value = 1;
+  filterDropdownRef.value?.close();
+}
+
+function setUserStatusFilter(next: Exclude<StatusFilter, "all">): void {
+  statusFilter.value = next;
+  page.value = 1;
+  filterDropdownRef.value?.close();
+}
+
+function clearFilters(): void {
+  roleFilter.value = "all";
+  statusFilter.value = "all";
+  page.value = 1;
+  filterDropdownRef.value?.close();
 }
 
 function setDraftPermissions(userId: string, permissions: string[]): void {
@@ -279,8 +317,8 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
           </div>
         </div>
 
-        <div class="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
-          <label class="text-xs font-medium text-surface-mid">
+        <div class="mt-5 space-y-3">
+          <label class="text-xs font-medium text-surface-mid block">
             Search users
             <input
               v-model="searchQuery"
@@ -291,32 +329,40 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
             />
           </label>
 
-          <label class="text-xs font-medium text-surface-mid">
-            Role
-            <select
-              v-model="roleFilter"
-              :class="[SELECT_CLASS_COMPACT, 'mt-1 block w-full lg:w-auto']"
-              aria-label="Filter users by role"
-            >
-              <option value="all">All roles</option>
-              <option value="superuser">Superusers</option>
-              <option value="custom">Custom access</option>
-            </select>
-          </label>
+          <AdminFilterDropdown
+            ref="filterDropdown"
+            :has-active-filters="hasActiveFilters"
+            :active-label="activeFilterLabel"
+            @clear="clearFilters"
+          >
+            <div>
+              <p class="text-xs font-medium text-surface-mid mb-2">Role</p>
+              <div class="flex flex-wrap gap-2">
+                <AdminFilterChip
+                  v-for="chip in ROLE_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="roleFilter === chip.value"
+                  :color-class="userRoleClass(chip.value)"
+                  @click="setRoleFilter(chip.value)"
+                />
+              </div>
+            </div>
 
-          <label class="text-xs font-medium text-surface-mid">
-            Status
-            <select
-              v-model="statusFilter"
-              :class="[SELECT_CLASS_COMPACT, 'mt-1 block w-full lg:w-auto']"
-              aria-label="Filter users by status"
-            >
-              <option value="all">All statuses</option>
-              <option value="verified">Verified</option>
-              <option value="unverified">Unverified</option>
-              <option value="protected">Protected</option>
-            </select>
-          </label>
+            <div>
+              <p class="text-xs font-medium text-surface-mid mb-2">Status</p>
+              <div class="flex flex-wrap gap-2">
+                <AdminFilterChip
+                  v-for="chip in STATUS_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="statusFilter === chip.value"
+                  :color-class="userStatusClass(chip.value)"
+                  @click="setUserStatusFilter(chip.value)"
+                />
+              </div>
+            </div>
+          </AdminFilterDropdown>
         </div>
       </Card>
     </div>
@@ -386,7 +432,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
       <BasePagination
         v-if="totalPages > 1"
-        aria-label="Users pagination"
+        ariaLabel="Users pagination"
         :page="page"
         :total-pages="totalPages"
         :has-next-page="hasNextPage"

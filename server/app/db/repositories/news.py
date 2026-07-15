@@ -109,22 +109,29 @@ class NewsSourceRepository(MongoRepository[NewsSource]):
     async def list_sources(
         self,
         *,
+        enabled: bool | None = None,
         offset: int = 0,
         limit: int = DEFAULT_PER_PAGE,
     ) -> list[NewsSource]:
         """List sources ordered for admin display."""
+        query: dict[str, bool] = {}
+        if enabled is not None:
+            query["enabled"] = enabled
         cursor = (
             self._col()
-            .find({})
+            .find(query)
             .sort([("name", 1), ("id", 1)])
             .skip(offset)
             .limit(limit)
         )
         return [_parse_doc(NewsSource, row) async for row in cursor]
 
-    async def count_sources(self) -> int:
-        """Count all news sources."""
-        return await self._col().count_documents({})
+    async def count_sources(self, *, enabled: bool | None = None) -> int:
+        """Count news sources with optional enabled filter."""
+        query: dict[str, bool] = {}
+        if enabled is not None:
+            query["enabled"] = enabled
+        return await self._col().count_documents(query)
 
     async def list_all_sources(self) -> list[NewsSource]:
         """List all sources ordered for admin display."""

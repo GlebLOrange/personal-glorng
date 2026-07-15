@@ -30,6 +30,7 @@ from app.schemas.news import (
     NewsSourceListResponse,
     NewsSourceResponse,
     NewsSourceUpdate,
+    NewsStatsResponse,
 )
 from app.services.audit import AuditService
 from app.services.search_indexers.news import index_news_article, remove_news_article
@@ -557,13 +558,18 @@ class NewsService:
     async def list_sources(
         self,
         *,
+        enabled: bool | None = None,
         page: int = 1,
         per_page: int = DEFAULT_PER_PAGE,
     ) -> NewsSourceListResponse:
         """List admin-managed RSS sources with pagination."""
         offset, limit = paginate_params(page, per_page)
-        sources = await self._sources().list_sources(offset=offset, limit=limit)
-        total = await self._sources().count_sources()
+        sources = await self._sources().list_sources(
+            enabled=enabled,
+            offset=offset,
+            limit=limit,
+        )
+        total = await self._sources().count_sources(enabled=enabled)
         items = [NewsSourceResponse.model_validate(source) for source in sources]
         safe_page = max(1, page)
         return build_paginated(
@@ -697,3 +703,19 @@ class NewsService:
         for raw in await self._news().list_themes():
             themes.update(_loads_json_list("themes", raw))
         return sorted(themes)
+
+    async def news_stats(self) -> NewsStatsResponse:
+        """Return article counts grouped by status for admin dashboards."""
+        repo = self._news()
+        total = await repo.count_articles()
+        draft = await repo.count_articles(status="draft")
+        published = await repo.count_articles(status="published")
+        unpublished = await repo.count_articles(status="unpublished")
+        failed = await repo.count_articles(status="failed")
+        return NewsStatsResponse(
+            total=total,
+            draft=draft,
+            published=published,
+            unpublished=unpublished,
+            failed=failed,
+        )

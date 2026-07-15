@@ -5,10 +5,10 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 
 defineProps<{
   hasActiveFilters?: boolean;
+  activeLabel?: string;
 }>();
 
 const emit = defineEmits<{
-  apply: [];
   clear: [];
 }>();
 
@@ -21,11 +21,6 @@ function toggle(): void {
 
 function close(): void {
   open.value = false;
-}
-
-function onApply(): void {
-  emit("apply");
-  close();
 }
 
 function onClear(): void {
@@ -57,6 +52,8 @@ onUnmounted(() => {
   document.removeEventListener("click", onDocumentClick);
   document.removeEventListener("keydown", onKeydown);
 });
+
+defineExpose({ close });
 </script>
 
 <template>
@@ -69,7 +66,7 @@ onUnmounted(() => {
       :aria-expanded="open"
       @click.stop="toggle"
     >
-      filters
+      filters<span v-if="activeLabel" class="text-surface-muted"> · {{ activeLabel }}</span>
     </BaseButton>
 
     <div
@@ -82,11 +79,9 @@ onUnmounted(() => {
       <div class="space-y-3">
         <slot />
       </div>
-      <div class="mt-3 flex flex-wrap gap-2">
-        <BaseButton size="sm" @click="onApply">filter</BaseButton>
-        <BaseButton v-if="hasActiveFilters" variant="ghost" size="sm" @click="onClear">
-          clear
-        </BaseButton>
+      <slot name="footer" />
+      <div v-if="hasActiveFilters" class="mt-3 flex flex-wrap gap-2">
+        <BaseButton variant="ghost" size="sm" @click="onClear">clear</BaseButton>
       </div>
     </div>
   </div>

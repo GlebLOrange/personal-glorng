@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 
+import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
+import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { Card } from "@/components/ui/card";
 import {
   NEWS_SUMMARY_MAX_LENGTH,
@@ -14,6 +17,7 @@ import {
   NEWS_THEME_SET,
   NEWS_TITLE_MAX_LENGTH,
 } from "@/constants/news";
+import { newsStatusClass } from "@/constants/filterColors";
 import { formatNewsDate, useNews } from "@/composables/useNews";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
@@ -29,6 +33,14 @@ import { normalizeHttpUrl, titleFromNewsLink } from "@/utils/newsForms";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
 type DrawerMode = "create" | "edit";
+type StatusFilter = "" | NewsStatus;
+
+const STATUS_FILTERS: { label: string; value: NewsStatus }[] = [
+  { label: "draft", value: "draft" },
+  { label: "published", value: "published" },
+  { label: "unpublished", value: "unpublished" },
+  { label: "failed", value: "failed" },
+];
 
 const { can } = usePermissions();
 const { toast } = useNotify();
@@ -39,6 +51,8 @@ const editingArticleId = ref<number | null>(null);
 const form = ref<NewsArticleFormData>(emptyForm());
 const lastAutoTitle = ref<string | null>(null);
 const metadataRequestId = ref(0);
+const statusFilter = ref<StatusFilter>("");
+const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
 const {
   articles,
@@ -50,7 +64,7 @@ const {
   listError,
   actionLoading,
   hasNextPage,
-  countLabel,
+  hasPreviousPage,
   loadNews,
   loadSources,
   goToPage,
@@ -62,8 +76,39 @@ const {
   repostToTelegram,
 } = useNews();
 
+const hasActiveFilters = computed(() => Boolean(statusFilter.value));
+const activeFilterLabel = computed(
+  () => STATUS_FILTERS.find((chip) => chip.value === statusFilter.value)?.label,
+);
+
+function setStatusFilter(next: StatusFilter): void {
+  statusFilter.value = next;
+  page.value = 1;
+  filterDropdownRef.value?.close();
+  void loadAdminNews();
+}
+
+function clearFilters(): void {
+  statusFilter.value = "";
+  page.value = 1;
+  filterDropdownRef.value?.close();
+  void loadAdminNews();
+}
+
+const emptyFilterDescription = computed(() => {
+  if (!statusFilter.value) {
+    return "No news articles yet. Run ingestion after configuring trusted sources.";
+  }
+  return `No ${statusFilter.value} articles match this filter.`;
+});
+
+async function reloadAdminNews(): Promise<void> {
+  await loadNews({ admin: true, status: statusFilter.value || undefined });
+}
+
 useScrollListFingerprint(
-  () => `${page.value}:${total.value}:${articles.value[0]?.id ?? ""}`,
+  () =>
+    `${statusFilter.value}:${page.value}:${total.value}:${articles.value[0]?.id ?? ""}`,
 );
 
 function emptyForm(): NewsArticleFormData {
@@ -291,22 +336,22 @@ function buildUpdatePayload(): NewsArticleUpdate {
 }
 
 async function loadAdminNews(): Promise<void> {
-  await loadNews({ admin: true });
+  await loadNews({ admin: true, status: statusFilter.value || undefined });
 }
 
 async function runIngest(): Promise<void> {
   await ingestNews();
-  await loadAdminNews();
+  await reloadAdminNews();
 }
 
 async function setStatus(articleId: number, status: NewsStatus): Promise<void> {
   await updateArticle(articleId, { status });
-  await loadAdminNews();
+  await reloadAdminNews();
 }
 
 async function repost(articleId: number): Promise<void> {
   await repostToTelegram(articleId);
-  await loadAdminNews();
+  await reloadAdminNews();
 }
 
 function openCreate(): void {
@@ -351,7 +396,7 @@ async function saveDrawer(): Promise<void> {
     if (!updated) return;
   }
   closeDrawer();
-  await loadAdminNews();
+  await reloadAdminNews();
 }
 
 async function deleteDrawerArticle(): Promise<void> {
@@ -360,11 +405,11 @@ async function deleteDrawerArticle(): Promise<void> {
   if (!window.confirm(`Delete "${title}"? This cannot be undone.`)) return;
   if (!(await deleteArticle(editingArticleId.value))) return;
   closeDrawer();
-  await loadAdminNews();
+  await reloadAdminNews();
 }
 
 onMounted(async () => {
-  await Promise.all([loadAdminNews(), loadSources()]);
+  await Promise.all([reloadAdminNews(), loadSources()]);
 });
 
 watch(page, () => {
@@ -374,11 +419,11 @@ watch(page, () => {
 
 <template>
   <AdminPageLayout title="news" max-width="xl">
-    <header class="page-intro">
-      <p class="text-sm text-surface-mid mb-2">
+    <header class="page-intro mb-4">
+      <p class="text-sm text-surface-mid mb-4">
         Manage curated news articles, ingestion, and Telegram delivery.
       </p>
-      <p class="text-xs text-surface-muted mb-4">{{ countLabel }}</p>
+
       <div v-if="canWrite" class="flex flex-wrap gap-2">
         <BaseButton variant="ghost" size="sm" :disabled="actionLoading" @click="runIngest">
           Run ingest
@@ -389,6 +434,41 @@ watch(page, () => {
       </div>
     </header>
 
+    <AdminListToolbar
+      v-if="!listLoading && !listError"
+      class="mb-3"
+      :total="total"
+      :page="page"
+      :total-pages="totalPages"
+      :has-next-page="hasNextPage"
+      :has-previous-page="hasPreviousPage"
+      :loading="listLoading"
+      item-label="articles"
+      ariaLabel="News pagination"
+      @prev="goToPage(page - 1)"
+      @next="goToPage(page + 1)"
+    >
+      <template #start>
+        <AdminFilterDropdown
+          ref="filterDropdown"
+          :has-active-filters="hasActiveFilters"
+          :active-label="activeFilterLabel"
+          @clear="clearFilters"
+        >
+          <div class="flex flex-wrap gap-2">
+            <AdminFilterChip
+              v-for="chip in STATUS_FILTERS"
+              :key="chip.value"
+              :label="chip.label"
+              :active="statusFilter === chip.value"
+              :color-class="newsStatusClass(chip.value)"
+              @click="setStatusFilter(chip.value)"
+            />
+          </div>
+        </AdminFilterDropdown>
+      </template>
+    </AdminListToolbar>
+
     <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading news">
       <Card v-for="i in 5" :key="i" class="h-36 animate-pulse" />
     </section>
@@ -397,7 +477,7 @@ watch(page, () => {
       v-else-if="listError"
       :message="listError"
       show-retry
-      @retry="loadAdminNews"
+      @retry="reloadAdminNews"
     />
 
     <section v-else-if="articles.length" class="space-y-3 min-w-0">
@@ -416,7 +496,7 @@ watch(page, () => {
         @keydown="onArticleKeydown($event, item)"
       >
         <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
-          <span>{{ item.status }}</span>
+          <StatusBadge :label="item.status" :class-name="newsStatusClass(item.status)" />
           <span aria-hidden="true">/</span>
           <span>{{ item.source_name }}</span>
           <span aria-hidden="true">/</span>
@@ -486,20 +566,9 @@ watch(page, () => {
     </section>
 
     <EmptyState
-      v-else
+      v-else-if="!listLoading && !listError"
       title="No articles"
-      description="No news articles match this filter. Run ingestion after configuring trusted sources."
-    />
-
-    <BasePagination
-      v-if="!listLoading && !listError && (articles.length > 0 || page > 1)"
-      class="mt-8"
-      aria-label="Admin news pagination"
-      :page="page"
-      :total-pages="totalPages"
-      :has-next-page="hasNextPage"
-      @prev="goToPage(page - 1)"
-      @next="goToPage(page + 1)"
+      :description="emptyFilterDescription"
     />
 
     <NewsArticleDrawer

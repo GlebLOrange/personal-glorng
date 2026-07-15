@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
@@ -10,6 +11,7 @@ import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import { feedbackStatusClass } from "@/constants/filterColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
@@ -25,24 +27,29 @@ interface FeedbackItem {
   created_at: string;
 }
 
-const FILTER_OPTIONS = ["all", "unread", "archived"] as const;
+type StatusFilter = "" | "unread" | "archived";
+
+const STATUS_FILTERS: { label: string; value: Exclude<StatusFilter, ""> }[] = [
+  { label: "unread", value: "unread" },
+  { label: "archived", value: "archived" },
+];
 
 const items = ref<FeedbackItem[]>([]);
 const selectedItem = ref<FeedbackItem | null>(null);
 const drawerOpen = ref(false);
-const filter = ref<"all" | "unread" | "archived">("all");
+const filter = ref<StatusFilter>("");
 const page = ref(1);
 const total = ref(0);
 const totalPages = ref(0);
 const loading = ref(false);
+const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 const { toast } = useNotify();
 const router = useRouter();
 
-const statusColors: Record<string, string> = {
-  unread: "bg-accent-blue/20 text-accent-blue border-accent-blue/30",
-  read: "bg-surface-border text-surface-mid border-surface-border",
-  archived: "bg-surface-dark text-surface-muted border-surface-border",
-};
+const hasActiveFilters = computed(() => Boolean(filter.value));
+const activeFilterLabel = computed(
+  () => STATUS_FILTERS.find((chip) => chip.value === filter.value)?.label,
+);
 
 function reply(item: FeedbackItem): void {
   const body = `\n\n--- Original ---\n${item.message}`;
@@ -59,9 +66,7 @@ async function load(): Promise<void> {
       page: page.value,
       per_page: ADMIN_LIST_PAGE_SIZE,
     };
-    if (filter.value !== "all") {
-      params.status = filter.value;
-    }
+    if (filter.value) params.status = filter.value;
     const { data } = await api.get<PaginatedList<FeedbackItem>>("/feedback", { params });
     items.value = data.items;
     total.value = data.total;
@@ -74,9 +79,16 @@ async function load(): Promise<void> {
   }
 }
 
-function setFilter(next: "all" | "unread" | "archived"): void {
+function setFilter(next: Exclude<StatusFilter, "">): void {
   filter.value = next;
   page.value = 1;
+  filterDropdownRef.value?.close();
+}
+
+function clearFilters(): void {
+  filter.value = "";
+  page.value = 1;
+  filterDropdownRef.value?.close();
 }
 
 function goToPage(nextPage: number): void {
@@ -145,16 +157,23 @@ onMounted(load);
         @next="goToPage(page + 1)"
       >
         <template #start>
-          <div class="flex flex-wrap gap-2">
-            <AdminFilterChip
-              v-for="f in FILTER_OPTIONS"
-              :key="f"
-              :label="f"
-              :active="filter === f"
-              color-class="text-surface-light bg-surface-dark"
-              @click="setFilter(f)"
-            />
-          </div>
+          <AdminFilterDropdown
+            ref="filterDropdown"
+            :has-active-filters="hasActiveFilters"
+            :active-label="activeFilterLabel"
+            @clear="clearFilters"
+          >
+            <div class="flex flex-wrap gap-2">
+              <AdminFilterChip
+                v-for="chip in STATUS_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :active="filter === chip.value"
+                :color-class="feedbackStatusClass(chip.value)"
+                @click="setFilter(chip.value)"
+              />
+            </div>
+          </AdminFilterDropdown>
         </template>
       </AdminListToolbar>
 
@@ -162,7 +181,7 @@ onMounted(load);
         v-if="items.length === 0"
         class="mt-4"
         :description="
-          filter !== 'all' ? `No feedback messages with status '${filter}'.` : 'No feedback messages.'
+          filter ? `No feedback messages with status '${filter}'.` : 'No feedback messages.'
         "
       />
 
@@ -174,7 +193,7 @@ onMounted(load);
           @click="openItem(item)"
         >
           <template #badge>
-            <StatusBadge :label="item.status" :class-name="statusColors[item.status]" />
+            <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
           </template>
           <template #primary>
             <span :title="item.theme">{{ item.theme }}</span>

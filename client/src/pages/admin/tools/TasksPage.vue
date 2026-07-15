@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
@@ -12,7 +13,8 @@ import TaskFilters from "@/components/tasks/TaskFilters.vue";
 import TaskIntakeList from "@/components/tasks/TaskIntakeList.vue";
 import TaskList from "@/components/tasks/TaskList.vue";
 import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
-import { statusBadgeClass } from "@/constants/taskStatus";
+import BaseButton from "@/components/ui/BaseButton.vue";
+import { statusBadgeClass } from "@/constants/filterColors";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { useTasks } from "@/composables/useTasks";
@@ -26,7 +28,6 @@ const TASK_TABS: { id: Tab; label: string }[] = [
 ];
 
 const STATUS_FILTERS = [
-  { label: "all", value: "" },
   { label: "pending", value: "pending" },
   { label: "completed", value: "completed" },
   { label: "not completed", value: "not_completed" },
@@ -37,20 +38,7 @@ const STATUS_FILTERS = [
 const route = useRoute();
 const router = useRouter();
 const activeTab = ref<Tab>("queue");
-
-function parseTaskTab(value: unknown): Tab | null {
-  return typeof value === "string" && TASK_TABS.some((item) => item.id === value)
-    ? (value as Tab)
-    : null;
-}
-
-function switchTab(tab: string): void {
-  if (!TASK_TABS.some((item) => item.id === tab)) return;
-  activeTab.value = tab as Tab;
-  void router.replace({ query: { ...route.query, tab } });
-  if (tab === "intakes") void loadIntakes();
-  if (tab === "sync") void loadSyncQueue();
-}
+const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
 const { isSuperuser } = usePermissions();
 
@@ -97,8 +85,37 @@ const {
   goToSyncPage,
 } = useTasks();
 
-function setFilter(status: string): void {
+const activeFilterLabel = computed(
+  () => STATUS_FILTERS.find((chip) => chip.value === filterStatus.value)?.label,
+);
+
+function parseTaskTab(value: unknown): Tab | null {
+  return typeof value === "string" && TASK_TABS.some((item) => item.id === value)
+    ? (value as Tab)
+    : null;
+}
+
+function switchTab(tab: string): void {
+  if (!TASK_TABS.some((item) => item.id === tab)) return;
+  activeTab.value = tab as Tab;
+  void router.replace({ query: { ...route.query, tab } });
+  if (tab === "intakes") void loadIntakes();
+  if (tab === "sync") void loadSyncQueue();
+}
+
+function setStatusFilter(status: string): void {
   filterStatus.value = status;
+  filterDropdownRef.value?.close();
+}
+
+function clearFilters(): void {
+  filterStatus.value = "";
+  filterDropdownRef.value?.close();
+}
+
+function onFailedSyncs(): void {
+  filterDropdownRef.value?.close();
+  switchTab("sync");
 }
 
 useScrollListFingerprint(
@@ -154,24 +171,30 @@ onMounted(() => {
           @next="goToPage(page + 1)"
         >
           <template #start>
-            <div class="flex flex-wrap gap-2">
-              <AdminFilterChip
-                v-for="chip in STATUS_FILTERS"
-                :key="chip.value"
-                :label="chip.label"
-                :active="filterStatus === chip.value"
-                :color-class="
-                  chip.value ? statusBadgeClass(chip.value) : 'text-surface-light bg-surface-dark'
-                "
-                @click="setFilter(chip.value)"
-              />
-              <AdminFilterChip
-                label="failed syncs"
-                :active="false"
-                color-class="text-status-error bg-status-error/10 border-status-error/30"
-                @click="switchTab('sync')"
-              />
-            </div>
+            <AdminFilterDropdown
+              ref="filterDropdown"
+              :has-active-filters="Boolean(filterStatus)"
+              :active-label="activeFilterLabel"
+              @clear="clearFilters"
+            >
+              <div class="flex flex-wrap gap-2">
+                <AdminFilterChip
+                  v-for="chip in STATUS_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="filterStatus === chip.value"
+                  :color-class="statusBadgeClass(chip.value)"
+                  @click="setStatusFilter(chip.value)"
+                />
+              </div>
+              <template #footer>
+                <div class="mt-3 border-t border-surface-border pt-3">
+                  <BaseButton variant="ghost" size="sm" @click="onFailedSyncs">
+                    failed syncs
+                  </BaseButton>
+                </div>
+              </template>
+            </AdminFilterDropdown>
           </template>
         </AdminListToolbar>
         <TaskList

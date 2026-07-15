@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, useTemplateRef } from "vue";
 
+import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import { logLevelClass } from "@/constants/filterColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -35,19 +36,31 @@ const loading = ref(false);
 const listError = ref<string | null>(null);
 const level = ref("");
 const requestId = ref("");
-const message = ref("");
 const page = ref(1);
 const expandedEntryIds = ref<Set<number>>(new Set());
+const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
+
+const LEVEL_FILTERS = [
+  { label: "debug", value: "debug" },
+  { label: "info", value: "info" },
+  { label: "warning", value: "warning" },
+  { label: "error", value: "error" },
+] as const;
+
 const totalPages = computed(() => Math.ceil(total.value / ADMIN_LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
-const hasActiveFilters = computed(
-  () => Boolean(level.value || requestId.value.trim() || message.value.trim()),
-);
+const hasActiveFilters = computed(() => Boolean(level.value || requestId.value.trim()));
+const activeFilterLabel = computed(() => {
+  const parts: string[] = [];
+  if (level.value) parts.push(level.value);
+  if (requestId.value.trim()) parts.push("UUID");
+  return parts.length ? parts.join(", ") : undefined;
+});
 
 useScrollListFingerprint(
   () =>
-    `${page.value}:${total.value}:${level.value}:${requestId.value}:${message.value}:${items.value[0]?.id ?? ""}`,
+    `${page.value}:${total.value}:${level.value}:${requestId.value}:${items.value[0]?.id ?? ""}`,
 );
 
 async function load(): Promise<void> {
@@ -60,7 +73,6 @@ async function load(): Promise<void> {
     };
     if (level.value) params.level = level.value;
     if (requestId.value.trim()) params.request_id = requestId.value.trim();
-    if (message.value.trim()) params.message = message.value.trim();
     const { data } = await api.get<{ items: AppLogEntry[]; total: number }>("/tools/app-logs", {
       params,
     });
@@ -75,15 +87,28 @@ async function load(): Promise<void> {
   }
 }
 
-function applyFilters(): void {
+function setLevelFilter(next: string): void {
+  level.value = next;
   page.value = 1;
+  filterDropdownRef.value?.close();
   void load();
 }
 
+let requestIdTimer: ReturnType<typeof setTimeout> | undefined;
+
+function onRequestIdChange(value: string | number | null): void {
+  requestId.value = String(value ?? "");
+  clearTimeout(requestIdTimer);
+  requestIdTimer = setTimeout(() => {
+    page.value = 1;
+    void load();
+  }, 300);
+}
+
 function clearFilters(): void {
+  clearTimeout(requestIdTimer);
   level.value = "";
   requestId.value = "";
-  message.value = "";
   page.value = 1;
   void load();
 }
@@ -112,19 +137,6 @@ function hasDetails(entry: AppLogEntry): boolean {
   return Boolean(entry.context || entry.traceback || entry.error || entry.request_id);
 }
 
-function levelClass(logLevel: string): string {
-  switch (logLevel) {
-    case "error":
-      return "bg-accent-red/20 text-accent-red border-accent-red/30";
-    case "warning":
-      return "bg-accent-amber/20 text-accent-amber border-accent-amber/30";
-    case "debug":
-      return "bg-surface-border text-surface-mid border-surface-border";
-    default:
-      return "bg-accent-blue/20 text-accent-blue border-accent-blue/30";
-  }
-}
-
 onMounted(load);
 </script>
 
@@ -132,8 +144,7 @@ onMounted(load);
   <AdminPageLayout title="app logs">
     <header class="page-intro">
       <p class="text-xs text-surface-muted">
-        Structured application logs persisted from the API server. Message search uses
-        Elasticsearch when enabled.
+        Structured application logs persisted from the API server.
       </p>
     </header>
 
@@ -154,19 +165,28 @@ onMounted(load);
       >
         <template #start>
           <AdminFilterDropdown
+            ref="filterDropdown"
             :has-active-filters="hasActiveFilters"
-            @apply="applyFilters"
+            :active-label="activeFilterLabel"
             @clear="clearFilters"
           >
-            <BaseSelect v-model="level" label="level" compact>
-              <option value="">All</option>
-              <option value="debug">debug</option>
-              <option value="info">info</option>
-              <option value="warning">warning</option>
-              <option value="error">error</option>
-            </BaseSelect>
-            <BaseInput v-model="requestId" label="request id" compact placeholder="UUID" />
-            <BaseInput v-model="message" label="message" compact placeholder="substring" />
+            <div class="flex flex-wrap gap-2">
+              <AdminFilterChip
+                v-for="chip in LEVEL_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :active="level === chip.value"
+                :color-class="logLevelClass(chip.value)"
+                @click="setLevelFilter(chip.value)"
+              />
+            </div>
+            <BaseInput
+              :model-value="requestId"
+              label="request id"
+              compact
+              placeholder="UUID"
+              @update:model-value="onRequestIdChange"
+            />
           </AdminFilterDropdown>
         </template>
       </AdminListToolbar>
@@ -186,7 +206,7 @@ onMounted(load);
           @click="onRowClick(entry)"
         >
           <template #badge>
-            <StatusBadge :label="entry.level" :class-name="levelClass(entry.level)" />
+            <StatusBadge :label="entry.level" :class-name="logLevelClass(entry.level)" />
           </template>
           <template #primary>
             <span :title="entry.message">{{ entry.message }}</span>

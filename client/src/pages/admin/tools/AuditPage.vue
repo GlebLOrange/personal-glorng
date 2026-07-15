@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, useTemplateRef } from "vue";
 
+import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import { auditCategoryClass } from "@/constants/filterColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -35,31 +35,25 @@ const total = ref(0);
 const loading = ref(false);
 const listError = ref<string | null>(null);
 const category = ref("");
-const action = ref("");
-const requestId = ref("");
-const actorId = ref("");
-const resourceType = ref("");
-const resourceId = ref("");
 const page = ref(1);
 const expandedEventIds = ref<Set<number>>(new Set());
+const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
+
+const CATEGORY_FILTERS = [
+  { label: "security", value: "security" },
+  { label: "domain", value: "domain" },
+] as const;
+
 const totalPages = computed(() => Math.ceil(total.value / ADMIN_LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
-const hasActiveFilters = computed(
-  () =>
-    Boolean(
-      category.value ||
-        action.value.trim() ||
-        requestId.value.trim() ||
-        actorId.value.trim() ||
-        resourceType.value.trim() ||
-        resourceId.value.trim(),
-    ),
+const hasActiveFilters = computed(() => Boolean(category.value));
+const activeFilterLabel = computed(
+  () => CATEGORY_FILTERS.find((chip) => chip.value === category.value)?.label,
 );
 
 useScrollListFingerprint(
-  () =>
-    `${page.value}:${total.value}:${category.value}:${action.value}:${requestId.value}:${actorId.value}:${resourceType.value}:${resourceId.value}:${items.value[0]?.id ?? ""}`,
+  () => `${page.value}:${total.value}:${category.value}:${items.value[0]?.id ?? ""}`,
 );
 
 async function load(): Promise<void> {
@@ -71,11 +65,6 @@ async function load(): Promise<void> {
       per_page: ADMIN_LIST_PAGE_SIZE,
     };
     if (category.value) params.category = category.value;
-    if (action.value) params.action = action.value;
-    if (requestId.value.trim()) params.request_id = requestId.value.trim();
-    if (actorId.value.trim()) params.actor_id = Number(actorId.value.trim());
-    if (resourceType.value.trim()) params.resource_type = resourceType.value.trim();
-    if (resourceId.value.trim()) params.resource_id = Number(resourceId.value.trim());
     const { data } = await api.get<{ items: AuditEvent[]; total: number }>("/tools/audit", {
       params,
     });
@@ -90,19 +79,17 @@ async function load(): Promise<void> {
   }
 }
 
-function applyFilters(): void {
+function setCategoryFilter(next: string): void {
+  category.value = next;
   page.value = 1;
+  filterDropdownRef.value?.close();
   void load();
 }
 
 function clearFilters(): void {
   category.value = "";
-  action.value = "";
-  requestId.value = "";
-  actorId.value = "";
-  resourceType.value = "";
-  resourceId.value = "";
   page.value = 1;
+  filterDropdownRef.value?.close();
   void load();
 }
 
@@ -125,12 +112,6 @@ function toggleExpanded(eventId: number): void {
 function actorLabel(event: AuditEvent): string {
   const actor = event.actor_id ? `${event.actor_type}#${event.actor_id}` : event.actor_type;
   return actor;
-}
-
-function categoryClass(cat: string): string {
-  return cat === "security"
-    ? "bg-accent-red/20 text-accent-red border-accent-red/30"
-    : "bg-accent-blue/20 text-accent-blue border-accent-blue/30";
 }
 
 onMounted(load);
@@ -159,30 +140,21 @@ onMounted(load);
       >
         <template #start>
           <AdminFilterDropdown
+            ref="filterDropdown"
             :has-active-filters="hasActiveFilters"
-            @apply="applyFilters"
+            :active-label="activeFilterLabel"
             @clear="clearFilters"
           >
-            <BaseSelect v-model="category" label="category" compact>
-              <option value="">All</option>
-              <option value="security">Security</option>
-              <option value="domain">Domain</option>
-            </BaseSelect>
-            <BaseInput
-              v-model="action"
-              label="action"
-              compact
-              placeholder="e.g. auth.login_success"
-            />
-            <BaseInput v-model="requestId" label="request id" compact placeholder="UUID" />
-            <BaseInput v-model="actorId" label="actor id" compact placeholder="User ID" />
-            <BaseInput
-              v-model="resourceType"
-              label="resource type"
-              compact
-              placeholder="e.g. recipe"
-            />
-            <BaseInput v-model="resourceId" label="resource id" compact placeholder="Numeric ID" />
+            <div class="flex flex-wrap gap-2">
+              <AdminFilterChip
+                v-for="chip in CATEGORY_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :active="category === chip.value"
+                :color-class="auditCategoryClass(chip.value)"
+                @click="setCategoryFilter(chip.value)"
+              />
+            </div>
           </AdminFilterDropdown>
         </template>
       </AdminListToolbar>
@@ -201,7 +173,7 @@ onMounted(load);
           @click="toggleExpanded(event.id)"
         >
           <template #badge>
-            <StatusBadge :label="event.category" :class-name="categoryClass(event.category)" />
+            <StatusBadge :label="event.category" :class-name="auditCategoryClass(event.category)" />
           </template>
           <template #primary>
             <span :title="event.action">{{ event.action }}</span>
