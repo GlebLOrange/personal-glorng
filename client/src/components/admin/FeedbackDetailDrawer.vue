@@ -2,6 +2,7 @@
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import { feedbackStatusClass } from "@/constants/filterColors";
 import { formatDate } from "@/utils/format";
 
 interface FeedbackItem {
@@ -24,11 +25,6 @@ const emit = defineEmits<{
   archive: [];
 }>();
 
-const statusColors: Record<string, string> = {
-  unread: "bg-accent-blue/20 text-accent-blue border-accent-blue/30",
-  read: "bg-surface-border text-surface-mid border-surface-border",
-  archived: "bg-surface-dark text-surface-muted border-surface-border",
-};
 </script>
 
 <template>
@@ -40,7 +36,7 @@ const statusColors: Record<string, string> = {
   >
     <template v-if="item">
       <div class="mb-4 flex flex-wrap items-center gap-2">
-        <StatusBadge :label="item.status" :class-name="statusColors[item.status] ?? statusColors.read" />
+        <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
         <span class="text-xs text-surface-muted">{{ item.email }} · {{ formatDate(item.created_at) }}</span>
       </div>
       <p class="whitespace-pre-wrap break-words text-sm text-surface-sage">{{ item.message }}</p>

@@ -34,6 +34,8 @@
   --color-status-error: #e57373;
   --color-status-warning: #d4a574;
   --color-status-success: #6ebf8a;
+  --color-accent-red: #e57373;
+  --color-accent-amber: #d4a574;
   --radius-interactive: 0.5rem;
   --spacing-grid-gap: 0.5rem;
 }

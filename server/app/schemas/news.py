@@ -302,3 +302,13 @@ class NewsIngestResponse(BaseModel):
     created: int
     skipped: int
     failed: int
+
+
+class NewsStatsResponse(BaseModel):
+    """Admin summary counts for news articles by status."""
+
+    total: int
+    draft: int
+    published: int
+    unpublished: int
+    failed: int

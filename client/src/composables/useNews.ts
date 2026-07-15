@@ -14,6 +14,14 @@ import type {
   PaginatedNews,
 } from "@/types";
 
+export interface NewsStats {
+  total: number;
+  draft: number;
+  published: number;
+  unpublished: number;
+  failed: number;
+}
+
 export function formatNewsDate(value: string | null): string {
   if (!value) return "not published";
   return new Intl.DateTimeFormat(undefined, {
@@ -30,15 +38,18 @@ export function useNews() {
   const articles = ref<NewsArticle[]>([]);
   const article = ref<NewsArticle | null>(null);
   const sources = ref<NewsSource[]>([]);
+  const newsStats = ref<NewsStats | null>(null);
   const page = ref(1);
   const total = ref(0);
   const totalPages = ref(0);
 
   const { loading: listLoading, lastError: listError, run: runList } = useApiAction();
+  const { loading: statsLoading, run: runStats } = useApiAction();
   const { loading: detailLoading, lastError: detailError, run: runDetail } = useApiAction();
   const { loading: actionLoading, run: runAction } = useApiAction();
 
   const hasNextPage = computed(() => page.value < totalPages.value);
+  const hasPreviousPage = computed(() => page.value > 1);
   const countLabel = computed(() => {
     return `${total.value} article${total.value === 1 ? "" : "s"}`;
   });
@@ -62,6 +73,17 @@ export function useNews() {
       total.value = data.total;
       totalPages.value = data.pages;
     }
+  }
+
+  async function loadNewsStats(): Promise<void> {
+    const data = await runStats(
+      async () => {
+        const response = await api.get<NewsStats>("/tools/news/admin/stats");
+        return response.data;
+      },
+      { errorFallback: "Failed to load news stats", logContext: "news.loadStats" },
+    );
+    if (data) newsStats.value = data;
   }
 
   async function loadArticle(slug: string): Promise<void> {
@@ -174,17 +196,21 @@ export function useNews() {
     articles,
     article,
     sources,
+    newsStats,
     page,
     total,
     totalPages,
     listLoading,
     listError,
+    statsLoading,
     detailLoading,
     detailError,
     actionLoading,
     hasNextPage,
+    hasPreviousPage,
     countLabel,
     loadNews,
+    loadNewsStats,
     loadArticle,
     loadAdminArticle,
     loadSources,

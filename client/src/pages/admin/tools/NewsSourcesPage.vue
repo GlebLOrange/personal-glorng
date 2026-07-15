@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 
+import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
@@ -10,6 +12,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { Card } from "@/components/ui/card";
+import { newsSourceEnabledClass } from "@/constants/filterColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
@@ -31,6 +34,12 @@ interface MessageResponse {
 }
 
 type DrawerMode = "create" | "edit";
+type EnabledFilter = "" | "enabled" | "disabled";
+
+const ENABLED_FILTERS: { label: string; value: Exclude<EnabledFilter, ""> }[] = [
+  { label: "enabled", value: "enabled" },
+  { label: "disabled", value: "disabled" },
+];
 
 const blankForm = (): NewsSourceForm => ({
   name: "",
@@ -42,6 +51,8 @@ const blankForm = (): NewsSourceForm => ({
 
 const sources = ref<NewsSource[]>([]);
 const page = ref(1);
+const enabledFilter = ref<EnabledFilter>("");
+const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 const total = ref(0);
 const totalPages = ref(0);
 const selectedSourceIds = ref<number[]>([]);
@@ -67,11 +78,35 @@ const refreshButtonText = computed(() => {
 
 const hasNextPage = computed(() => page.value < totalPages.value);
 const hasPreviousPage = computed(() => page.value > 1);
+const hasActiveFilters = computed(() => Boolean(enabledFilter.value));
+const activeFilterLabel = computed(
+  () => ENABLED_FILTERS.find((chip) => chip.value === enabledFilter.value)?.label,
+);
 
-function enabledClass(enabled: boolean): string {
-  return enabled
-    ? "bg-accent-blue/20 text-accent-blue border-accent-blue/30"
-    : "bg-surface-border text-surface-mid border-surface-border";
+const emptyFilterDescription = computed(() => {
+  if (enabledFilter.value === "enabled") return "No enabled news sources.";
+  if (enabledFilter.value === "disabled") return "No disabled news sources.";
+  return "No news sources yet.";
+});
+
+function enabledQueryParam(): boolean | undefined {
+  if (enabledFilter.value === "enabled") return true;
+  if (enabledFilter.value === "disabled") return false;
+  return undefined;
+}
+
+function setEnabledFilter(next: Exclude<EnabledFilter, "">): void {
+  enabledFilter.value = next;
+  page.value = 1;
+  filterDropdownRef.value?.close();
+  void loadSources();
+}
+
+function clearFilters(): void {
+  enabledFilter.value = "";
+  page.value = 1;
+  filterDropdownRef.value?.close();
+  void loadSources();
 }
 
 function sourceMeta(source: NewsSource): string {
@@ -86,8 +121,14 @@ async function loadSources(): Promise<void> {
   loading.value = true;
   loadError.value = false;
   try {
+    const params: Record<string, string | number | boolean> = {
+      page: page.value,
+      per_page: ADMIN_LIST_PAGE_SIZE,
+    };
+    const enabled = enabledQueryParam();
+    if (enabled !== undefined) params.enabled = enabled;
     const { data } = await api.get<PaginatedList<NewsSource>>("/tools/news-sources", {
-      params: { page: page.value, per_page: ADMIN_LIST_PAGE_SIZE },
+      params,
     });
     sources.value = data.items;
     total.value = data.total;
@@ -259,8 +300,6 @@ onMounted(loadSources);
         </div>
       </Card>
 
-      <EmptyState v-else-if="sources.length === 0" description="No news sources yet." />
-
       <template v-else>
         <AdminListToolbar
           :total="total"
@@ -273,9 +312,32 @@ onMounted(loadSources);
           ariaLabel="News sources pagination"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"
-        />
+        >
+          <template #start>
+            <AdminFilterDropdown
+              ref="filterDropdown"
+              :has-active-filters="hasActiveFilters"
+              :active-label="activeFilterLabel"
+              @clear="clearFilters"
+            >
+              <div class="flex flex-wrap gap-2">
+                <AdminFilterChip
+                  v-for="chip in ENABLED_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="enabledFilter === chip.value"
+                  :color-class="newsSourceEnabledClass(chip.value === 'enabled')"
+                  @click="setEnabledFilter(chip.value)"
+                />
+              </div>
+            </AdminFilterDropdown>
+          </template>
+        </AdminListToolbar>
 
-        <AdminListRow
+        <EmptyState v-if="sources.length === 0" :description="emptyFilterDescription" />
+
+        <template v-else>
+          <AdminListRow
           v-for="source in sources"
           :key="source.id"
           :interactive="canWrite"
@@ -298,7 +360,7 @@ onMounted(loadSources);
           <template #badge>
             <StatusBadge
               :label="source.enabled ? 'enabled' : 'disabled'"
-              :class-name="enabledClass(source.enabled)"
+              :class-name="newsSourceEnabledClass(source.enabled)"
             />
           </template>
           <template #primary>
@@ -316,18 +378,19 @@ onMounted(loadSources);
             >
               ⚠
             </span>
-            <BaseButton
+            <button
               v-if="canWrite"
-              variant="ghost"
-              size="sm"
+              type="button"
+              class="rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-status-error transition-colors hover:border-status-error/40 hover:bg-status-error/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-status-error/50 disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Delete source"
               :disabled="deletingId === source.id"
               @click="deleteSource(source, $event)"
             >
               ✕
-            </BaseButton>
+            </button>
           </template>
         </AdminListRow>
+        </template>
       </template>
     </div>
 

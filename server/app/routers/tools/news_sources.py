@@ -34,12 +34,13 @@ router = APIRouter(
 async def list_news_sources(
     svc: NewsServiceDep,
     user: AuthorizedUser,
+    enabled: bool | None = None,
     page: int = 1,
     per_page: int = DEFAULT_PER_PAGE,
 ) -> NewsSourceListResponse:
     """List admin-managed RSS sources."""
     del user
-    return await svc.list_sources(page=page, per_page=per_page)
+    return await svc.list_sources(enabled=enabled, page=page, per_page=per_page)
 
 
 @router.post(
