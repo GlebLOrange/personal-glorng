@@ -5,7 +5,6 @@ import { useLiveLocalTime } from "@/composables/useLiveLocalTime";
 import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
 import {
-  weatherAnchorUnixtime,
   weatherConditionEmoji,
   weatherIanaTimezone,
   weatherLocationLabel,
@@ -105,14 +104,9 @@ const ianaTimezone = computed(() =>
   weather.value ? weatherIanaTimezone(weather.value) : null,
 );
 
-const anchorUnixtime = computed(() =>
-  weather.value ? weatherAnchorUnixtime(weather.value) : null,
-);
-
 const { liveTime, liveDate, liveDateTime, liveDateIso } = useLiveLocalTime(
   utcOffset,
   computed(() => "time" as const),
-  anchorUnixtime,
   ianaTimezone,
 );
 
