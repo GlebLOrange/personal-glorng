@@ -3,14 +3,15 @@ import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch 
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
+import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminUserPermissionsEditor from "@/components/admin/AdminUserPermissionsEditor.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
-import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import {
   userRoleClass,
   userStatusClass,
@@ -316,54 +317,6 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
             <p class="text-2xl font-semibold text-surface-light">{{ unverifiedCount }}</p>
           </div>
         </div>
-
-        <div class="mt-5 space-y-3">
-          <label class="text-xs font-medium text-surface-mid block">
-            Search users
-            <input
-              v-model="searchQuery"
-              type="search"
-              :class="[FIELD_INPUT_CLASS, 'mt-1']"
-              placeholder="Search by name or email"
-              aria-label="Search users by name or email"
-            />
-          </label>
-
-          <AdminFilterDropdown
-            ref="filterDropdown"
-            :has-active-filters="hasActiveFilters"
-            :active-label="activeFilterLabel"
-            @clear="clearFilters"
-          >
-            <div>
-              <p class="text-xs font-medium text-surface-mid mb-2">Role</p>
-              <div class="flex flex-wrap gap-2">
-                <AdminFilterChip
-                  v-for="chip in ROLE_FILTERS"
-                  :key="chip.value"
-                  :label="chip.label"
-                  :active="roleFilter === chip.value"
-                  :color-class="userRoleClass(chip.value)"
-                  @click="setRoleFilter(chip.value)"
-                />
-              </div>
-            </div>
-
-            <div>
-              <p class="text-xs font-medium text-surface-mid mb-2">Status</p>
-              <div class="flex flex-wrap gap-2">
-                <AdminFilterChip
-                  v-for="chip in STATUS_FILTERS"
-                  :key="chip.value"
-                  :label="chip.label"
-                  :active="statusFilter === chip.value"
-                  :color-class="userStatusClass(chip.value)"
-                  @click="setUserStatusFilter(chip.value)"
-                />
-              </div>
-            </div>
-          </AdminFilterDropdown>
-        </div>
       </Card>
     </div>
 
@@ -382,16 +335,60 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       </Card>
     </div>
 
-    <EmptyState v-else-if="users.length === 0">
-      No users match the current filters.
-    </EmptyState>
+    <template v-else>
+      <AdminListToolbar>
+        <template #start>
+          <div class="flex flex-wrap items-center justify-start gap-3">
+            <AdminFilterDropdown
+              ref="filterDropdown"
+              :has-active-filters="hasActiveFilters"
+              :active-label="activeFilterLabel"
+              @clear="clearFilters"
+            >
+              <div>
+                <p class="text-xs font-medium text-surface-mid mb-2">role</p>
+                <div class="grid grid-cols-3 gap-2">
+                  <AdminFilterChip
+                    v-for="chip in ROLE_FILTERS"
+                    :key="chip.value"
+                    :label="chip.label"
+                    :active="roleFilter === chip.value"
+                    :color-class="userRoleClass(chip.value)"
+                    @click="setRoleFilter(chip.value)"
+                  />
+                </div>
+              </div>
 
-    <div v-else class="space-y-5">
-      <p class="text-xs text-surface-muted">
-        Showing {{ users.length }} of {{ total }} users
-      </p>
+              <div>
+                <p class="text-xs font-medium text-surface-mid mb-2">status</p>
+                <div class="grid grid-cols-3 gap-2">
+                  <AdminFilterChip
+                    v-for="chip in STATUS_FILTERS"
+                    :key="chip.value"
+                    :label="chip.label"
+                    :active="statusFilter === chip.value"
+                    :color-class="userStatusClass(chip.value)"
+                    @click="setUserStatusFilter(chip.value)"
+                  />
+                </div>
+              </div>
+            </AdminFilterDropdown>
+            <BaseInput
+              v-model="searchQuery"
+              type="search"
+              compact
+              placeholder="search users by name or email"
+              aria-label="search users by name or email"
+            />
+          </div>
+        </template>
+      </AdminListToolbar>
 
-      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <EmptyState v-if="users.length === 0">
+        No users match the current filters.
+      </EmptyState>
+
+      <div v-else class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <button
           v-for="user in users"
           :key="user.id"
@@ -430,18 +427,20 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         </button>
       </div>
 
-      <BasePagination
-        v-if="totalPages > 1"
-        ariaLabel="Users pagination"
+      <AdminListFooter
+        :total="total"
         :page="page"
         :total-pages="totalPages"
         :has-next-page="hasNextPage"
         :has-previous-page="hasPreviousPage"
         :loading="loading"
+        :visible-count="users.length"
+        item-label="users"
+        ariaLabel="Users pagination"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
       />
-    </div>
+    </template>
 
     <Teleport to="body">
       <div v-if="selectedUser" class="fixed inset-0 z-50 flex justify-end">

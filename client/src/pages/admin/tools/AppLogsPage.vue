@@ -5,6 +5,7 @@ import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -54,7 +55,7 @@ const hasActiveFilters = computed(() => Boolean(level.value || requestId.value.t
 const activeFilterLabel = computed(() => {
   const parts: string[] = [];
   if (level.value) parts.push(level.value);
-  if (requestId.value.trim()) parts.push("UUID");
+  if (requestId.value.trim()) parts.push(requestId.value.trim());
   return parts.length ? parts.join(", ") : undefined;
 });
 
@@ -96,7 +97,7 @@ function setLevelFilter(next: string): void {
 
 let requestIdTimer: ReturnType<typeof setTimeout> | undefined;
 
-function onRequestIdChange(value: string | number | null): void {
+function onRequestIdChange(value: string | number | null | undefined): void {
   requestId.value = String(value ?? "");
   clearTimeout(requestIdTimer);
   requestIdTimer = setTimeout(() => {
@@ -151,18 +152,7 @@ onMounted(load);
     <AdminListSkeleton v-if="loading && items.length === 0 && !listError" label="Loading app logs" />
 
     <template v-else>
-      <AdminListToolbar
-        :total="total"
-        :page="page"
-        :total-pages="totalPages"
-        :has-next-page="hasNextPage"
-        :has-previous-page="hasPreviousPage"
-        :loading="loading"
-        item-label="entries"
-        ariaLabel="App logs pagination"
-        @prev="goToPage(page - 1)"
-        @next="goToPage(page + 1)"
-      >
+      <AdminListToolbar>
         <template #start>
           <AdminFilterDropdown
             ref="filterDropdown"
@@ -170,7 +160,7 @@ onMounted(load);
             :active-label="activeFilterLabel"
             @clear="clearFilters"
           >
-            <div class="flex flex-wrap gap-2">
+            <template #chips>
               <AdminFilterChip
                 v-for="chip in LEVEL_FILTERS"
                 :key="chip.value"
@@ -179,12 +169,11 @@ onMounted(load);
                 :color-class="logLevelClass(chip.value)"
                 @click="setLevelFilter(chip.value)"
               />
-            </div>
+            </template>
             <BaseInput
               :model-value="requestId"
-              label="request id"
               compact
-              placeholder="UUID"
+              placeholder="request id uuid"
               @update:model-value="onRequestIdChange"
             />
           </AdminFilterDropdown>
@@ -231,6 +220,20 @@ onMounted(load);
           </template>
         </AdminListRow>
       </div>
+
+      <AdminListFooter
+        v-if="!listError"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="loading"
+        item-label="entries"
+        ariaLabel="App logs pagination"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+      />
     </template>
   </AdminPageLayout>
 </template>

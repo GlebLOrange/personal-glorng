@@ -2,7 +2,7 @@
 import { onMounted, watch } from "vue";
 
 import PageShell from "@/components/layout/PageShell.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
@@ -20,7 +20,6 @@ const {
   listLoading,
   listError,
   hasNextPage,
-  countLabel,
   loadNews,
   goToPage,
 } = useNews();
@@ -46,13 +45,8 @@ watch(page, () => {
         Short worldwide news summaries with source attribution. Every item links back to the
         original publisher.
       </p>
-      <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-surface-muted">
-        <span>{{ countLabel }}</span>
-        <RouterLink
-          v-if="isSuperuser"
-          to="/admin/tools/news"
-          class="text-accent-blue hover:underline"
-        >
+      <div v-if="isSuperuser" class="mt-3">
+        <RouterLink to="/admin/tools/news" class="text-xs text-accent-blue hover:underline">
           Manage news
         </RouterLink>
       </div>
@@ -118,13 +112,17 @@ watch(page, () => {
       description="The digest has not published anything yet. Check back after the next ingestion run."
     />
 
-    <BasePagination
-      v-if="!listLoading && !listError && (articles.length > 0 || page > 1)"
+    <AdminListFooter
+      v-if="!listLoading && !listError && articles.length > 0"
       class="mt-8"
-      aria-label="News pagination"
+      :total="total"
       :page="page"
       :total-pages="totalPages"
       :has-next-page="hasNextPage"
+      :has-previous-page="page > 1"
+      :loading="listLoading"
+      item-label="articles"
+      ariaLabel="News pagination"
       @prev="goToPage(page - 1)"
       @next="goToPage(page + 1)"
     />

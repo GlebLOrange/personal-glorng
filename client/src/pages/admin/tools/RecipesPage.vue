@@ -10,9 +10,9 @@ import { Card } from "@/components/ui/card";
 import RecipeCard from "@/components/recipes/RecipeCard.vue";
 import RecipeCookMode from "@/components/recipes/RecipeCookMode.vue";
 import RecipeDetailDrawer from "@/components/recipes/RecipeDetailDrawer.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import RecipeFilters from "@/components/recipes/RecipeFilters.vue";
 import RecipeFormDrawer from "@/components/recipes/RecipeFormDrawer.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import { useRecipes } from "@/composables/useRecipes";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -25,7 +25,6 @@ const {
   allTags,
   search,
   activeTags,
-  sort,
   page,
   selectedRecipe,
   drawerOpen,
@@ -39,6 +38,7 @@ const {
   saving,
   deleting,
   hasNextPage,
+  total,
   totalPages,
   hasFilters,
   recipeCountLabel,
@@ -62,7 +62,7 @@ const {
 } = useRecipes();
 
 useScrollListFingerprint(
-  () => `${sort.value}:${activeTags.value.join(",")}:${recipes.value.length}`,
+  () => `${activeTags.value.join(",")}:${recipes.value.length}`,
 );
 
 onMounted(async () => {
@@ -98,21 +98,23 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
     max-width="xl"
     :narrow="false"
   >
-    <header class="page-intro">
-      <div v-if="canWrite" class="flex flex-wrap gap-2">
-        <BaseButton variant="primary" @click="openCreate">+ New recipe</BaseButton>
-      </div>
-    </header>
-
     <RecipeFilters
       v-model:search="search"
-      v-model:sort="sort"
       :active-tags="activeTags"
       :all-tags="allTags"
-      :recipe-count-label="recipeCountLabel"
       @set-tag="setTag"
       @clear-filters="clearFilters"
     >
+      <template v-if="canWrite" #actions>
+        <BaseButton
+          variant="primary"
+          size="sm"
+          class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+          @click="openCreate"
+        >
+          + new recipe
+        </BaseButton>
+      </template>
       <div
         v-if="listLoading"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
@@ -150,7 +152,7 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
       >
         <template v-if="hasFilters || canWrite" #action>
           <BaseButton v-if="hasFilters" variant="ghost" size="sm" @click="clearFilters">
-            Clear filters
+            clear filters
           </BaseButton>
           <BaseButton v-else-if="canWrite" variant="ghost" size="sm" @click="openCreate">
             + Add your first recipe
@@ -158,12 +160,15 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
         </template>
       </EmptyState>
 
-      <BasePagination
+      <AdminListFooter
         v-if="!listLoading && !listError && (recipes.length > 0 || page > 1)"
-        aria-label="Recipes pagination"
+        :count-label="recipeCountLabel"
+        :total="total"
         :page="page"
         :total-pages="totalPages"
         :has-next-page="hasNextPage"
+        :has-previous-page="page > 1"
+        ariaLabel="Recipes pagination"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
       />

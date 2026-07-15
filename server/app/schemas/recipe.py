@@ -11,7 +11,6 @@ from app.schemas.validators import (
 )
 
 RecipeSort = Literal[
-    "updated_desc",
     "title_asc",
     "title_desc",
     "prep_asc",

@@ -9,16 +9,16 @@ export const TASK_STATUSES = [
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: "Pending",
-  completed: "Completed",
-  not_completed: "Not completed",
-  postponed: "Postponed",
-  cancelled: "Cancelled",
-  failed: "Failed",
-  parsing: "Parsing",
-  clarifying: "Clarifying",
-  ready: "Ready",
-  confirmed: "Confirmed",
+  pending: "pending",
+  completed: "completed",
+  not_completed: "not completed",
+  postponed: "postponed",
+  cancelled: "cancelled",
+  failed: "failed",
+  parsing: "parsing",
+  clarifying: "clarifying",
+  ready: "ready",
+  confirmed: "confirmed",
 };
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
@@ -35,11 +35,11 @@ const STATUS_BADGE_CLASS: Record<string, string> = {
 };
 
 const STATUS_ACTION_LABELS: Record<TaskStatus, string> = {
-  pending: "Reopen",
-  completed: "Mark complete",
-  not_completed: "Didn't finish",
-  postponed: "Postpone",
-  cancelled: "Cancel task",
+  pending: "reopen",
+  completed: "mark complete",
+  not_completed: "didn't finish",
+  postponed: "postpone",
+  cancelled: "cancel task",
 };
 
 /** Human-readable label for a task or intake status. */

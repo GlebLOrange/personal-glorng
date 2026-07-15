@@ -3,6 +3,7 @@ import { computed } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseModal from "@/components/ui/BaseModal.vue";
+import StatusBadge from "@/components/ui/StatusBadge.vue";
 import {
   statusActionLabel,
   statusBadgeClass,
@@ -50,81 +51,102 @@ function actionVariant(status: TaskStatus): "primary" | "ghost" {
     </div>
 
     <div v-else class="space-y-5 max-h-[70vh] overflow-y-auto">
-      <span
-        :class="[
-          'text-xs px-2 py-1 rounded-full border inline-block',
-          statusBadgeClass(task.status),
-        ]"
-      >
-        {{ statusLabel(task.status) }}
-      </span>
+      <StatusBadge :label="statusLabel(task.status)" :class-name="statusBadgeClass(task.status)" />
 
-      <section>
-        <h3 class="text-sm font-medium text-surface-mid mb-1">When</h3>
-        <p class="text-sm text-surface-light">{{ schedule.headline }}</p>
-        <p v-if="schedule.detail" class="text-xs text-surface-mid mt-0.5">{{ schedule.detail }}</p>
-      </section>
+      <section class="space-y-2">
+        <div class="flex min-w-0 items-baseline gap-2 text-sm">
+          <span class="shrink-0 text-surface-mid">when</span>
+          <span
+            class="min-w-4 flex-1 translate-y-[-0.15em] border-b border-dotted border-surface-border/50"
+            aria-hidden="true"
+          />
+          <span class="shrink-0 text-right text-surface-light">{{ schedule.headline }}</span>
+        </div>
+        <p v-if="schedule.detail" class="text-right text-xs text-surface-mid">{{ schedule.detail }}</p>
 
-      <section v-if="task.location">
-        <h3 class="text-sm font-medium text-surface-mid mb-1">Where</h3>
-        <p class="text-sm text-surface-light">@ {{ task.location }}</p>
+        <div v-if="task.location" class="flex min-w-0 items-baseline gap-2 text-sm">
+          <span class="shrink-0 text-surface-mid">where</span>
+          <span
+            class="min-w-4 flex-1 translate-y-[-0.15em] border-b border-dotted border-surface-border/50"
+            aria-hidden="true"
+          />
+          <span class="shrink-0 text-right text-surface-light">@{{ task.location }}</span>
+        </div>
       </section>
 
       <section v-if="task.description">
-        <h3 class="text-sm font-medium text-surface-mid mb-1">About</h3>
+        <div class="mb-1 flex min-w-0 items-baseline gap-2 text-sm">
+          <span class="shrink-0 text-surface-mid">about</span>
+          <span
+            class="min-w-4 flex-1 translate-y-[-0.15em] border-b border-dotted border-surface-border/50"
+            aria-hidden="true"
+          />
+        </div>
         <p class="text-sm text-surface-light whitespace-pre-wrap">{{ task.description }}</p>
       </section>
 
       <section v-if="task.reminders.length" class="border-t border-surface-border pt-4">
-        <h3 class="text-sm font-medium text-surface-mid mb-2">Reminders</h3>
+        <h3 class="mb-2 text-sm font-medium text-surface-mid">reminders</h3>
         <ul class="space-y-2">
           <li
             v-for="reminder in task.reminders"
             :key="reminder.id"
-            class="text-sm flex justify-between gap-3"
+            class="flex min-w-0 items-baseline gap-2 text-sm"
           >
-            <span class="text-surface-light">
+            <span class="min-w-0 flex-1 text-surface-light">
               {{ formatScheduleDate(reminder.remind_at).headline }}
             </span>
             <span
               :class="[
-                'text-xs px-2 py-0.5 rounded-full shrink-0',
+                'shrink-0 text-xs px-2 py-0.5 rounded-full',
                 reminder.sent
                   ? 'text-status-success bg-status-success/10'
                   : 'text-status-warning bg-status-warning/10',
               ]"
             >
-              {{ reminder.sent ? "Delivered" : "Upcoming" }}
+              {{ reminder.sent ? "delivered" : "upcoming" }}
             </span>
           </li>
         </ul>
       </section>
 
       <section v-if="task.status_history.length" class="border-t border-surface-border pt-4">
-        <h3 class="text-sm font-medium text-surface-mid mb-2">What changed</h3>
+        <h3 class="mb-2 text-sm font-medium text-surface-mid">what changed</h3>
         <ul class="space-y-2">
-          <li v-for="entry in task.status_history" :key="entry.id" class="text-sm text-surface-mid">
-            <span class="text-surface-light">{{ statusLabel(entry.old_status) }}</span>
-            <span class="mx-1">&rarr;</span>
-            <span class="text-surface-light">{{ statusLabel(entry.new_status) }}</span>
-            <span class="ml-2 text-xs opacity-70">{{ formatRelativeTime(entry.changed_at) }}</span>
+          <li
+            v-for="entry in task.status_history"
+            :key="entry.id"
+            class="flex flex-wrap items-center gap-2 text-sm"
+          >
+            <StatusBadge
+              :label="statusLabel(entry.old_status)"
+              :class-name="statusBadgeClass(entry.old_status)"
+            />
+            <span class="text-surface-mid">&rarr;</span>
+            <StatusBadge
+              :label="statusLabel(entry.new_status)"
+              :class-name="statusBadgeClass(entry.new_status)"
+            />
+            <span class="ml-auto text-xs text-surface-mid">{{
+              formatRelativeTime(entry.changed_at)
+            }}</span>
           </li>
         </ul>
       </section>
 
-      <section v-if="canMutate" class="border-t border-surface-border pt-4 space-y-3">
+      <section v-if="canMutate" class="space-y-3 border-t border-surface-border pt-4">
         <div v-if="task.google_event_id" class="flex items-center gap-2">
-          <span class="text-xs px-2 py-0.5 rounded-full text-accent-blue bg-accent-blue/10">
-            Synced to Google Calendar
+          <span class="rounded-full bg-accent-blue/10 px-2 py-0.5 text-xs text-accent-blue">
+            synced to google calendar
           </span>
         </div>
         <BaseButton variant="ghost" size="sm" @click="emit('retrySync', task.id)">
-          Try syncing again
+          try syncing again
         </BaseButton>
       </section>
 
       <section v-if="canMutate" class="border-t border-surface-border pt-4">
-        <h3 class="text-sm font-medium text-surface-mid mb-2">Actions</h3>
+        <h3 class="mb-2 text-sm font-medium text-surface-mid">actions</h3>
         <div class="flex flex-wrap gap-2">
           <BaseButton
             v-for="status in availableStatuses"
@@ -143,17 +165,17 @@ function actionVariant(status: TaskStatus): "primary" | "ghost" {
         v-if="canMutate"
         class="border-t border-surface-border pt-4 text-sm text-surface-mid"
       >
-        <summary class="cursor-pointer hover:text-surface-light select-none">
-          Technical details
+        <summary class="cursor-pointer select-none hover:text-surface-light">
+          technical details
         </summary>
         <dl class="mt-2 space-y-1 text-xs">
           <div v-if="task.google_event_id">
-            <dt class="inline font-medium">Event ID:</dt>
-            <dd class="inline ml-1 break-all">{{ task.google_event_id }}</dd>
+            <dt class="inline font-medium">event id:</dt>
+            <dd class="ml-1 inline break-all">{{ task.google_event_id }}</dd>
           </div>
           <div>
-            <dt class="inline font-medium">Created:</dt>
-            <dd class="inline ml-1">{{ formatDate(task.created_at) }}</dd>
+            <dt class="inline font-medium">created:</dt>
+            <dd class="ml-1 inline">{{ formatDate(task.created_at) }}</dd>
           </div>
         </dl>
       </details>

@@ -16,7 +16,7 @@ import ExpenseSummaryCard from "@/components/expenses/ExpenseSummaryCard.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
@@ -84,7 +84,7 @@ const {
   quickAdd,
   form,
   formTitle,
-  expenseCountLabel,
+  expenseTotal,
   hasPreviousExpensePage,
   hasNextExpensePage,
   transactionFilterLabel,
@@ -241,10 +241,7 @@ const persistenceHint = computed(() => {
       class="flex flex-col gap-4 outline-none"
     >
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div>
-          <h2 class="text-lg font-semibold text-surface-light">Transactions</h2>
-          <p class="text-xs text-surface-mid">{{ expenseCountLabel }}</p>
-        </div>
+        <h2 class="text-lg font-semibold text-surface-light">Transactions</h2>
         <div class="flex flex-wrap gap-2">
           <BaseButton
             variant="ghost"
@@ -324,14 +321,16 @@ const persistenceHint = computed(() => {
         @sort="handleExpenseSort"
       />
 
-      <BasePagination
-        v-if="expensePages > 1"
-        aria-label="Expenses pagination"
+      <AdminListFooter
+        v-if="expenses.length > 0"
+        :total="expenseTotal"
         :page="expensePage"
         :total-pages="expensePages"
         :has-next-page="hasNextExpensePage"
         :has-previous-page="hasPreviousExpensePage"
         :loading="listLoading"
+        item-label="expenses"
+        ariaLabel="Expenses pagination"
         @prev="goToExpensePage(expensePage - 1)"
         @next="goToExpensePage(expensePage + 1)"
       />

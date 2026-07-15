@@ -11,7 +11,7 @@ defineProps<{
     type="button"
     :aria-pressed="active"
     :class="[
-      'text-xs px-3 py-1 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
+      'w-full min-w-0 truncate text-center text-xs px-2 py-1 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
       active
         ? 'ring-2 ring-accent-blue/50 border-accent-blue/40'
         : 'border-surface-border hover:border-accent-blue/40',

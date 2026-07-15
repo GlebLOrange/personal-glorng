@@ -3,6 +3,7 @@ import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
@@ -419,53 +420,47 @@ watch(page, () => {
 
 <template>
   <AdminPageLayout title="news" max-width="xl">
-    <header class="page-intro mb-4">
-      <p class="text-sm text-surface-mid mb-4">
-        Manage curated news articles, ingestion, and Telegram delivery.
-      </p>
-
-      <div v-if="canWrite" class="flex flex-wrap gap-2">
-        <BaseButton variant="ghost" size="sm" :disabled="actionLoading" @click="runIngest">
-          Run ingest
-        </BaseButton>
-        <BaseButton variant="primary" size="sm" :disabled="actionLoading" @click="openCreate">
-          New article
-        </BaseButton>
-      </div>
-    </header>
-
-    <AdminListToolbar
-      v-if="!listLoading && !listError"
-      class="mb-3"
-      :total="total"
-      :page="page"
-      :total-pages="totalPages"
-      :has-next-page="hasNextPage"
-      :has-previous-page="hasPreviousPage"
-      :loading="listLoading"
-      item-label="articles"
-      ariaLabel="News pagination"
-      @prev="goToPage(page - 1)"
-      @next="goToPage(page + 1)"
-    >
+    <AdminListToolbar v-if="!listLoading && !listError">
       <template #start>
-        <AdminFilterDropdown
-          ref="filterDropdown"
-          :has-active-filters="hasActiveFilters"
-          :active-label="activeFilterLabel"
-          @clear="clearFilters"
-        >
-          <div class="flex flex-wrap gap-2">
-            <AdminFilterChip
-              v-for="chip in STATUS_FILTERS"
-              :key="chip.value"
-              :label="chip.label"
-              :active="statusFilter === chip.value"
-              :color-class="newsStatusClass(chip.value)"
-              @click="setStatusFilter(chip.value)"
-            />
+        <div class="flex w-full min-w-0 flex-wrap items-center gap-3">
+          <AdminFilterDropdown
+            ref="filterDropdown"
+            :has-active-filters="hasActiveFilters"
+            :active-label="activeFilterLabel"
+            @clear="clearFilters"
+          >
+            <template #chips>
+              <AdminFilterChip
+                v-for="chip in STATUS_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :active="statusFilter === chip.value"
+                :color-class="newsStatusClass(chip.value)"
+                @click="setStatusFilter(chip.value)"
+              />
+            </template>
+          </AdminFilterDropdown>
+          <div v-if="canWrite" class="ml-auto flex shrink-0 flex-wrap items-center gap-2">
+            <BaseButton
+              variant="ghost"
+              size="sm"
+              class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+              :disabled="actionLoading"
+              @click="runIngest"
+            >
+              run ingest
+            </BaseButton>
+            <BaseButton
+              variant="primary"
+              size="sm"
+              class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+              :disabled="actionLoading"
+              @click="openCreate"
+            >
+              + new article
+            </BaseButton>
           </div>
-        </AdminFilterDropdown>
+        </div>
       </template>
     </AdminListToolbar>
 
@@ -569,6 +564,20 @@ watch(page, () => {
       v-else-if="!listLoading && !listError"
       title="No articles"
       :description="emptyFilterDescription"
+    />
+
+    <AdminListFooter
+      v-if="!listLoading && !listError"
+      :total="total"
+      :page="page"
+      :total-pages="totalPages"
+      :has-next-page="hasNextPage"
+      :has-previous-page="hasPreviousPage"
+      :loading="listLoading"
+      item-label="articles"
+      ariaLabel="News pagination"
+      @prev="goToPage(page - 1)"
+      @next="goToPage(page + 1)"
     />
 
     <NewsArticleDrawer

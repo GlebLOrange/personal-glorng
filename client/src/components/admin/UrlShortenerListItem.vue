@@ -26,7 +26,7 @@ const draftTitle = ref("");
 const showDeleteConfirm = ref(false);
 
 const shortLink = computed(() => publicUrl("s", props.url.code));
-const displayTitle = computed(() => props.url.title || "Untitled");
+const displayTitle = computed(() => props.url.title || props.url.original_url);
 const deleteMessage = computed(
   () => `Delete ${shortLink.value}? This cannot be undone.`,
 );
@@ -89,8 +89,9 @@ function confirmDelete(): void {
     <template #primary>
       <BaseInput
         v-model="draftTitle"
-        label="Title"
-        placeholder="Optional title"
+        compact
+        placeholder="optional title (uses url if empty)"
+        aria-label="optional title"
         @keydown="onTitleKeydown"
       />
     </template>

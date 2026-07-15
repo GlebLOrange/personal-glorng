@@ -6,6 +6,7 @@ import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
@@ -145,17 +146,7 @@ onMounted(load);
     <AdminListSkeleton v-if="loading" label="Loading feedback" />
 
     <template v-else>
-      <AdminListToolbar
-        :total="total"
-        :page="page"
-        :total-pages="totalPages"
-        :has-next-page="page < totalPages"
-        :has-previous-page="page > 1"
-        item-label="messages"
-        ariaLabel="Feedback pagination"
-        @prev="goToPage(page - 1)"
-        @next="goToPage(page + 1)"
-      >
+      <AdminListToolbar>
         <template #start>
           <AdminFilterDropdown
             ref="filterDropdown"
@@ -163,7 +154,7 @@ onMounted(load);
             :active-label="activeFilterLabel"
             @clear="clearFilters"
           >
-            <div class="flex flex-wrap gap-2">
+            <template #chips>
               <AdminFilterChip
                 v-for="chip in STATUS_FILTERS"
                 :key="chip.value"
@@ -172,7 +163,7 @@ onMounted(load);
                 :color-class="feedbackStatusClass(chip.value)"
                 @click="setFilter(chip.value)"
               />
-            </div>
+            </template>
           </AdminFilterDropdown>
         </template>
       </AdminListToolbar>
@@ -204,6 +195,18 @@ onMounted(load);
           <template #time>{{ formatDate(item.created_at) }}</template>
         </AdminListRow>
       </div>
+
+      <AdminListFooter
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="page < totalPages"
+        :has-previous-page="page > 1"
+        item-label="messages"
+        ariaLabel="Feedback pagination"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+      />
     </template>
 
     <FeedbackDetailDrawer

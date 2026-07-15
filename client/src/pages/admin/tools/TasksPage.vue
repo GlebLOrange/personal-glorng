@@ -4,12 +4,12 @@ import { useRoute, useRouter } from "vue-router";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import TaskCreateModal from "@/components/tasks/TaskCreateModal.vue";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
-import TaskFilters from "@/components/tasks/TaskFilters.vue";
 import TaskIntakeList from "@/components/tasks/TaskIntakeList.vue";
 import TaskList from "@/components/tasks/TaskList.vue";
 import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
@@ -137,10 +137,6 @@ onMounted(() => {
 <template>
   <AdminPageLayout title="tasks" max-width="xl">
     <div class="min-w-0">
-      <div class="mb-3 flex justify-end">
-        <TaskFilters :can-mutate="isSuperuser" @create="openCreate" />
-      </div>
-
       <AdminTabBar
         panel-id-prefix="tasks-tab"
         :model-value="activeTab"
@@ -156,9 +152,53 @@ onMounted(() => {
         tabindex="0"
         class="outline-none"
       >
-        <AdminListToolbar
+        <AdminListToolbar v-if="!listLoading">
+          <template #start>
+            <div class="flex w-full min-w-0 flex-wrap items-center gap-3">
+              <AdminFilterDropdown
+                ref="filterDropdown"
+                :has-active-filters="Boolean(filterStatus)"
+                :active-label="activeFilterLabel"
+                @clear="clearFilters"
+              >
+                <template #chips>
+                  <AdminFilterChip
+                    v-for="chip in STATUS_FILTERS"
+                    :key="chip.value"
+                    :label="chip.label"
+                    :active="filterStatus === chip.value"
+                    :color-class="statusBadgeClass(chip.value)"
+                    @click="setStatusFilter(chip.value)"
+                  />
+                </template>
+                <template #footer>
+                  <div class="mt-3 border-t border-surface-border pt-3">
+                    <BaseButton variant="ghost" size="sm" @click="onFailedSyncs">
+                      failed syncs
+                    </BaseButton>
+                  </div>
+                </template>
+              </AdminFilterDropdown>
+              <BaseButton
+                v-if="isSuperuser"
+                variant="primary"
+                size="sm"
+                class="ml-auto inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+                @click="openCreate"
+              >
+                + new task
+              </BaseButton>
+            </div>
+          </template>
+        </AdminListToolbar>
+        <TaskList
+          :tasks="tasks"
+          :loading="listLoading"
+          :filter-status="filterStatus"
+          @select="openDetail"
+        />
+        <AdminListFooter
           v-if="!listLoading"
-          class="mb-1"
           :total="total"
           :page="page"
           :total-pages="totalPages"
@@ -169,39 +209,6 @@ onMounted(() => {
           ariaLabel="Tasks pagination"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"
-        >
-          <template #start>
-            <AdminFilterDropdown
-              ref="filterDropdown"
-              :has-active-filters="Boolean(filterStatus)"
-              :active-label="activeFilterLabel"
-              @clear="clearFilters"
-            >
-              <div class="flex flex-wrap gap-2">
-                <AdminFilterChip
-                  v-for="chip in STATUS_FILTERS"
-                  :key="chip.value"
-                  :label="chip.label"
-                  :active="filterStatus === chip.value"
-                  :color-class="statusBadgeClass(chip.value)"
-                  @click="setStatusFilter(chip.value)"
-                />
-              </div>
-              <template #footer>
-                <div class="mt-3 border-t border-surface-border pt-3">
-                  <BaseButton variant="ghost" size="sm" @click="onFailedSyncs">
-                    failed syncs
-                  </BaseButton>
-                </div>
-              </template>
-            </AdminFilterDropdown>
-          </template>
-        </AdminListToolbar>
-        <TaskList
-          :tasks="tasks"
-          :loading="listLoading"
-          :filter-status="filterStatus"
-          @select="openDetail"
         />
       </section>
 
@@ -213,21 +220,20 @@ onMounted(() => {
         tabindex="0"
         class="outline-none"
       >
-        <div v-if="!intakesLoading && intakes.length > 0" class="mb-1">
-          <AdminListToolbar
-            :total="intakeTotal"
-            :page="intakePage"
-            :total-pages="intakeTotalPages"
-            :has-next-page="hasNextIntakePage"
-            :has-previous-page="hasPreviousIntakePage"
-            :loading="intakesLoading"
-            item-label="intakes"
-            ariaLabel="Task intakes pagination"
-            @prev="goToIntakePage(intakePage - 1)"
-            @next="goToIntakePage(intakePage + 1)"
-          />
-        </div>
         <TaskIntakeList :intakes="intakes" :loading="intakesLoading" />
+        <AdminListFooter
+          v-if="!intakesLoading"
+          :total="intakeTotal"
+          :page="intakePage"
+          :total-pages="intakeTotalPages"
+          :has-next-page="hasNextIntakePage"
+          :has-previous-page="hasPreviousIntakePage"
+          :loading="intakesLoading"
+          item-label="intakes"
+          ariaLabel="Task intakes pagination"
+          @prev="goToIntakePage(intakePage - 1)"
+          @next="goToIntakePage(intakePage + 1)"
+        />
       </section>
 
       <section
@@ -238,25 +244,24 @@ onMounted(() => {
         tabindex="0"
         class="outline-none"
       >
-        <div v-if="!syncLoading && syncQueue.length > 0" class="mb-1">
-          <AdminListToolbar
-            :total="syncTotal"
-            :page="syncPage"
-            :total-pages="syncTotalPages"
-            :has-next-page="hasNextSyncPage"
-            :has-previous-page="hasPreviousSyncPage"
-            :loading="syncLoading"
-            item-label="items"
-            ariaLabel="Task sync queue pagination"
-            @prev="goToSyncPage(syncPage - 1)"
-            @next="goToSyncPage(syncPage + 1)"
-          />
-        </div>
         <TaskSyncQueue
           :items="syncQueue"
           :loading="syncLoading"
           :can-mutate="isSuperuser"
           @retry="retrySync"
+        />
+        <AdminListFooter
+          v-if="!syncLoading"
+          :total="syncTotal"
+          :page="syncPage"
+          :total-pages="syncTotalPages"
+          :has-next-page="hasNextSyncPage"
+          :has-previous-page="hasPreviousSyncPage"
+          :loading="syncLoading"
+          item-label="items"
+          ariaLabel="Task sync queue pagination"
+          @prev="goToSyncPage(syncPage - 1)"
+          @next="goToSyncPage(syncPage + 1)"
         />
       </section>
 
