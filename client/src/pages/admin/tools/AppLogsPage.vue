@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
-import AdminFilterBar from "@/components/admin/AdminFilterBar.vue";
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
@@ -41,6 +41,9 @@ const expandedEntryIds = ref<Set<number>>(new Set());
 const totalPages = computed(() => Math.ceil(total.value / ADMIN_LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
+const hasActiveFilters = computed(
+  () => Boolean(level.value || requestId.value.trim() || message.value.trim()),
+);
 
 useScrollListFingerprint(
   () =>
@@ -73,6 +76,14 @@ async function load(): Promise<void> {
 }
 
 function applyFilters(): void {
+  page.value = 1;
+  void load();
+}
+
+function clearFilters(): void {
+  level.value = "";
+  requestId.value = "";
+  message.value = "";
   page.value = 1;
   void load();
 }
@@ -126,70 +137,80 @@ onMounted(load);
       </p>
     </header>
 
-    <AdminFilterBar @apply="applyFilters">
-      <BaseSelect v-model="level" label="Level" compact>
-        <option value="">All</option>
-        <option value="debug">debug</option>
-        <option value="info">info</option>
-        <option value="warning">warning</option>
-        <option value="error">error</option>
-      </BaseSelect>
-      <BaseInput v-model="requestId" label="Request ID" compact placeholder="UUID" />
-      <BaseInput v-model="message" label="Message" compact placeholder="substring" />
-    </AdminFilterBar>
+    <AdminListSkeleton v-if="loading && items.length === 0 && !listError" label="Loading app logs" />
 
-    <AdminListSkeleton v-if="loading" label="Loading app logs" />
-
-    <ErrorState v-else-if="listError" :message="listError" show-retry @retry="load" />
-
-    <EmptyState v-else-if="items.length === 0" description="No log entries found." />
-
-    <div v-else class="min-w-0 space-y-1">
+    <template v-else>
       <AdminListToolbar
         :total="total"
         :page="page"
         :total-pages="totalPages"
         :has-next-page="hasNextPage"
         :has-previous-page="hasPreviousPage"
+        :loading="loading"
         item-label="entries"
         ariaLabel="App logs pagination"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
-      />
-      <AdminListRow
-        v-for="entry in items"
-        :key="entry.id"
-        :interactive="hasDetails(entry)"
-        :expandable="hasDetails(entry)"
-        :expanded="expandedEntryIds.has(entry.id)"
-        :hoverable="hasDetails(entry)"
-        @click="onRowClick(entry)"
       >
-        <template #badge>
-          <StatusBadge :label="entry.level" :class-name="levelClass(entry.level)" />
-        </template>
-        <template #primary>
-          <span :title="entry.message">{{ entry.message }}</span>
-        </template>
-        <template #meta>
-          <span class="font-data">{{ entry.logger }}</span>
-        </template>
-        <template #time>{{ formatDate(entry.occurred_at) }}</template>
-        <template #detail>
-          <p v-if="entry.request_id" class="font-data">Request: {{ entry.request_id }}</p>
-          <p v-if="entry.error_type">Error: {{ entry.error_type }} — {{ entry.error }}</p>
-          <pre
-            v-if="entry.context"
-            class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
-            >{{ JSON.stringify(entry.context, null, 2) }}</pre
+        <template #start>
+          <AdminFilterDropdown
+            :has-active-filters="hasActiveFilters"
+            @apply="applyFilters"
+            @clear="clearFilters"
           >
-          <pre
-            v-if="entry.traceback"
-            class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs text-accent-red/80"
-            >{{ entry.traceback }}</pre
-          >
+            <BaseSelect v-model="level" label="level" compact>
+              <option value="">All</option>
+              <option value="debug">debug</option>
+              <option value="info">info</option>
+              <option value="warning">warning</option>
+              <option value="error">error</option>
+            </BaseSelect>
+            <BaseInput v-model="requestId" label="request id" compact placeholder="UUID" />
+            <BaseInput v-model="message" label="message" compact placeholder="substring" />
+          </AdminFilterDropdown>
         </template>
-      </AdminListRow>
-    </div>
+      </AdminListToolbar>
+
+      <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
+
+      <EmptyState v-else-if="items.length === 0" class="mt-4" description="No log entries found." />
+
+      <div v-else class="min-w-0 mt-1 space-y-1">
+        <AdminListRow
+          v-for="entry in items"
+          :key="entry.id"
+          :interactive="hasDetails(entry)"
+          :expandable="hasDetails(entry)"
+          :expanded="expandedEntryIds.has(entry.id)"
+          :hoverable="hasDetails(entry)"
+          @click="onRowClick(entry)"
+        >
+          <template #badge>
+            <StatusBadge :label="entry.level" :class-name="levelClass(entry.level)" />
+          </template>
+          <template #primary>
+            <span :title="entry.message">{{ entry.message }}</span>
+          </template>
+          <template #meta>
+            <span class="font-data">{{ entry.logger }}</span>
+          </template>
+          <template #time>{{ formatDate(entry.occurred_at) }}</template>
+          <template #detail>
+            <p v-if="entry.request_id" class="font-data">Request: {{ entry.request_id }}</p>
+            <p v-if="entry.error_type">Error: {{ entry.error_type }} — {{ entry.error }}</p>
+            <pre
+              v-if="entry.context"
+              class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
+              >{{ JSON.stringify(entry.context, null, 2) }}</pre
+            >
+            <pre
+              v-if="entry.traceback"
+              class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs text-accent-red/80"
+              >{{ entry.traceback }}</pre
+            >
+          </template>
+        </AdminListRow>
+      </div>
+    </template>
   </AdminPageLayout>
 </template>
