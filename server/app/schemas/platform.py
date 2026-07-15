@@ -13,6 +13,7 @@ class PlatformServiceResponse(BaseModel):
     capabilities: list[str]
     external: bool
     public: bool = False
+    public_route: str | None = None
 
 
 class PlatformCatalogResponse(BaseModel):
