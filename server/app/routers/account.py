@@ -1,7 +1,13 @@
-from fastapi import APIRouter, Response
+from datetime import UTC, datetime
+from typing import Annotated
 
-from app.core.deps import CurrentUser, JobQueueDep
+from fastapi import APIRouter, Depends, Request, Response
+
+from app.core.deps import CurrentUser, JobQueueDep, oauth2_scheme
 from app.core.logging import logger
+from app.core.rate_limit import rate_limit_auth
+from app.core.redis import blacklist_token
+from app.core.security import decode_token
 from app.db.deps import DbRegistry
 from app.schemas.auth import (
     ChangeEmailRequest,
@@ -24,6 +30,37 @@ from app.services.account import (
 from app.workers.job_names import JobName
 
 router = APIRouter()
+
+_ACCESS_COOKIE = "access_token"
+_REFRESH_COOKIE = "refresh_token"
+
+
+async def _blacklist_request_tokens(
+    *,
+    bearer_token: str | None,
+    request: Request,
+) -> None:
+    """Revoke the access/refresh tokens presented with this request."""
+    for raw_token in [
+        bearer_token,
+        request.cookies.get(_ACCESS_COOKIE),
+        request.cookies.get(_REFRESH_COOKIE),
+    ]:
+        if not raw_token:
+            continue
+        try:
+            payload = decode_token(raw_token)
+            jti = payload.get("jti", "")
+            exp = payload.get("exp", 0)
+            now = int(datetime.now(UTC).timestamp())
+            await blacklist_token(jti, max(exp - now, 0))
+        except ValueError:
+            pass
+
+
+def _clear_auth_cookies(response: Response) -> None:
+    response.delete_cookie(_ACCESS_COOKIE, path="/")
+    response.delete_cookie(_REFRESH_COOKIE, path="/")
 
 
 @router.patch(
@@ -51,6 +88,7 @@ async def patch_me(
     response_model=MessageResponse,
     summary="Change email",
     description="Change email address and send a new verification link.",
+    dependencies=[Depends(rate_limit_auth)],
 )
 async def patch_email(
     data: ChangeEmailRequest,
@@ -78,12 +116,19 @@ async def patch_email(
     "/change-password",
     response_model=MessageResponse,
     summary="Change password",
-    description="Change password for the authenticated user.",
+    description=(
+        "Change password for the authenticated user. "
+        "Existing session tokens are revoked; the client must log in again."
+    ),
+    dependencies=[Depends(rate_limit_auth)],
 )
 async def post_change_password(
     data: ChangePasswordRequest,
     user: CurrentUser,
     registry: DbRegistry,
+    request: Request,
+    response: Response,
+    token: Annotated[str | None, Depends(oauth2_scheme)] = None,
 ) -> MessageResponse:
     await change_password(
         registry,
@@ -91,6 +136,8 @@ async def post_change_password(
         current_password=data.current_password,
         new_password=data.new_password,
     )
+    await _blacklist_request_tokens(bearer_token=token, request=request)
+    _clear_auth_cookies(response)
     return MessageResponse(message="Password changed successfully")
 
 
@@ -128,6 +175,7 @@ async def patch_me_preferences(
     response_model=MessageResponse,
     summary="Delete account",
     description="Permanently delete the authenticated user's account.",
+    dependencies=[Depends(rate_limit_auth)],
 )
 async def delete_me(
     data: DeleteAccountRequest,
@@ -136,6 +184,5 @@ async def delete_me(
     response: Response,
 ) -> MessageResponse:
     await delete_account(registry, user, current_password=data.current_password)
-    response.delete_cookie("access_token", path="/")
-    response.delete_cookie("refresh_token", path="/")
+    _clear_auth_cookies(response)
     return MessageResponse(message="Account deleted successfully")

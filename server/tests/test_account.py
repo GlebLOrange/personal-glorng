@@ -43,6 +43,41 @@ async def test_change_password(auth_client: AsyncClient, client: AsyncClient) ->
 
 
 @pytest.mark.asyncio
+async def test_change_password_revokes_old_token(
+    client: AsyncClient,
+    db,
+) -> None:
+    user = await create_user(
+        db,
+        email="revoke-me@glorng.dev",
+        password=STRONG_PASSWORD,
+        permissions=[],
+    )
+    login = await client.post(
+        "/api/auth/login",
+        json={"email": user.email, "password": STRONG_PASSWORD},
+    )
+    assert login.status_code == 200
+    old_token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {old_token}"}
+
+    new_password = "NewStrongPass1!"
+    change = await client.post(
+        "/api/auth/change-password",
+        headers=headers,
+        json={
+            "current_password": STRONG_PASSWORD,
+            "new_password": new_password,
+            "password_confirm": new_password,
+        },
+    )
+    assert change.status_code == 200
+
+    me = await client.get("/api/auth/me", headers=headers)
+    assert me.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_change_password_wrong_current(auth_client: AsyncClient) -> None:
     resp = await auth_client.post(
         "/api/auth/change-password",
@@ -148,3 +183,29 @@ async def test_cannot_delete_protected_account(
     )
     assert delete.status_code == 409
     assert "protected" in delete.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_cannot_delete_last_superuser(client: AsyncClient, db) -> None:
+    user = await create_user(
+        db,
+        email="last-super@glorng.dev",
+        password=STRONG_PASSWORD,
+        permissions=default_owner_permissions(),
+        is_protected=False,
+    )
+    login = await client.post(
+        "/api/auth/login",
+        json={"email": user.email, "password": STRONG_PASSWORD},
+    )
+    assert login.status_code == 200
+    token = login.json()["access_token"]
+
+    delete = await client.request(
+        "DELETE",
+        "/api/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"current_password": STRONG_PASSWORD, "confirm": True},
+    )
+    assert delete.status_code == 409
+    assert "last superuser" in delete.json()["detail"].lower()
