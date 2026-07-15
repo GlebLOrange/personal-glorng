@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import { Card, CardBody, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import { EXPENSE_CURRENCIES } from "@/composables/useExpenseFilters";
@@ -12,12 +12,10 @@ import { useUserPreferences } from "@/composables/useUserPreferences";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
-import { PLATFORM_SERVICES } from "@/platform/services";
 import { useAuthStore } from "@/stores/auth";
 import { getApiErrorMessage } from "@/types/api";
 import type { GitHubStatus } from "@/types";
 import { passwordStrength } from "@/utils/passwordPolicy";
-import { SUPERUSER_PERMISSION } from "@/utils/permissions";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -79,24 +77,6 @@ const canSaveCurrency = computed(() => !!displayCurrency.value && !savingPrefs.v
 const canDeleteAccount = computed(
   () => !!deletePassword.value && deleteConfirm.value && !deleting.value,
 );
-const permissionSummary = computed(() => {
-  if (permissions.value.includes(SUPERUSER_PERMISSION)) {
-    return "Platform superuser: full access to admin tools and user management.";
-  }
-
-  const serviceNames = new Set<string>();
-  for (const permission of permissions.value) {
-    const [serviceSlug] = permission.split(":");
-    const service = PLATFORM_SERVICES.find((item) => item.slug === serviceSlug);
-    if (service) serviceNames.add(service.name);
-  }
-
-  if (serviceNames.size === 0) {
-    return "No tool permissions assigned yet.";
-  }
-
-  return `Access to ${Array.from(serviceNames).join(", ")}.`;
-});
 
 function syncFormFromUser(): void {
   displayName.value = auth.user?.display_name ?? "";
@@ -217,12 +197,6 @@ async function deleteAccount(): Promise<void> {
     max-width="5xl"
     :narrow="false"
   >
-    <header class="page-intro">
-      <p class="text-sm text-surface-mid">
-        Manage your profile, security, preferences, and connected accounts.
-      </p>
-    </header>
-
     <div class="min-w-0 space-y-8">
       <section class="space-y-5">
         <h2 class="mb-3 text-xs uppercase tracking-wider text-surface-muted">Account</h2>
@@ -230,7 +204,6 @@ async function deleteAccount(): Promise<void> {
       <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
-          <CardDescription>Set how your name and local time appear across the app.</CardDescription>
         </CardHeader>
         <CardBody>
         <form class="space-y-4" @submit.prevent="saveProfile">
@@ -241,20 +214,14 @@ async function deleteAccount(): Promise<void> {
             placeholder="display name (optional)"
             aria-label="display name (optional)"
           />
-          <div class="space-y-1">
-            <BaseInput
-              v-model="timezone"
-              name="timezone"
-              autocomplete="off"
-              placeholder="timezone (e.g. Europe/Warsaw)"
-              aria-label="timezone (e.g. Europe/Warsaw)"
-              aria-describedby="timezone-help"
-              required
-            />
-            <p id="timezone-help" class="text-xs text-surface-muted">
-              Use an IANA timezone such as Europe/Warsaw or America/New_York.
-            </p>
-          </div>
+          <BaseInput
+            v-model="timezone"
+            name="timezone"
+            autocomplete="off"
+            placeholder="timezone (e.g. Europe/Warsaw)"
+            aria-label="timezone (e.g. Europe/Warsaw)"
+            required
+          />
           <BaseButton type="submit" variant="primary" :disabled="!canSaveProfile">
             {{ savingProfile ? "saving..." : "save profile" }}
           </BaseButton>
@@ -265,12 +232,6 @@ async function deleteAccount(): Promise<void> {
       <Card>
         <CardHeader>
           <CardTitle>Email</CardTitle>
-          <CardDescription>
-            Signed in as
-            <span class="text-surface-light">{{ auth.user?.email }}</span>
-            <span v-if="auth.user?.is_verified" class="text-status-success"> · verified</span>
-            <span v-else class="text-status-warning"> · unverified</span>
-          </CardDescription>
         </CardHeader>
         <CardBody>
         <form class="space-y-4" @submit.prevent="saveEmail">
@@ -283,22 +244,15 @@ async function deleteAccount(): Promise<void> {
             aria-label="email address"
             required
           />
-          <div class="space-y-1">
-            <BaseInput
-              v-model="emailPassword"
-              type="password"
-              name="current-password-for-email"
-              autocomplete="current-password"
-              placeholder="current password"
-              aria-label="current password"
-              aria-describedby="email-help"
-              required
-            />
-            <p id="email-help" class="text-xs text-surface-muted">
-              Changing email requires your current password and may ask you to verify the new
-              address.
-            </p>
-          </div>
+          <BaseInput
+            v-model="emailPassword"
+            type="password"
+            name="current-password-for-email"
+            autocomplete="current-password"
+            placeholder="current password"
+            aria-label="current password"
+            required
+          />
           <BaseButton type="submit" variant="secondary" :disabled="!canSaveEmail">
             {{ savingEmail ? "saving..." : "change email" }}
           </BaseButton>
@@ -309,7 +263,6 @@ async function deleteAccount(): Promise<void> {
       <Card>
         <CardHeader>
           <CardTitle>Password</CardTitle>
-          <CardDescription>Keep your account protected with a strong password.</CardDescription>
           <template #actions>
             <RouterLink to="/forgot-password" class="text-sm text-accent-blue hover:underline">
               forgot password?
@@ -327,44 +280,24 @@ async function deleteAccount(): Promise<void> {
             aria-label="current password"
             required
           />
-          <div class="space-y-1">
-            <BaseInput
-              v-model="newPassword"
-              type="password"
-              name="new-password"
-              autocomplete="new-password"
-              placeholder="new password"
-              aria-label="new password"
-              aria-describedby="password-help"
-              required
-            />
-            <p
-              id="password-help"
-              class="text-xs"
-              :class="passwordCheck.valid ? 'text-status-success' : 'text-surface-mid'"
-            >
-              {{ passwordCheck.message }}
-            </p>
-          </div>
-          <div class="space-y-1">
-            <BaseInput
-              v-model="newPasswordConfirm"
-              type="password"
-              name="confirm-new-password"
-              autocomplete="new-password"
-              placeholder="confirm new password"
-              aria-label="confirm new password"
-              aria-describedby="password-confirm-help"
-              required
-            />
-            <p
-              v-if="newPasswordConfirm && !passwordsMatch"
-              id="password-confirm-help"
-              class="text-xs text-status-warning"
-            >
-              Passwords do not match yet.
-            </p>
-          </div>
+          <BaseInput
+            v-model="newPassword"
+            type="password"
+            name="new-password"
+            autocomplete="new-password"
+            placeholder="new password"
+            aria-label="new password"
+            required
+          />
+          <BaseInput
+            v-model="newPasswordConfirm"
+            type="password"
+            name="confirm-new-password"
+            autocomplete="new-password"
+            placeholder="confirm new password"
+            aria-label="confirm new password"
+            required
+          />
           <BaseButton type="submit" variant="primary" :disabled="!canSavePassword">
             {{ savingPassword ? "saving..." : "change password" }}
           </BaseButton>
@@ -381,7 +314,6 @@ async function deleteAccount(): Promise<void> {
       <Card>
         <CardHeader>
           <CardTitle>Preferences</CardTitle>
-          <CardDescription>Choose defaults that make tools feel local to you.</CardDescription>
         </CardHeader>
         <CardBody>
         <form class="space-y-4" @submit.prevent="saveCurrency">
@@ -400,21 +332,10 @@ async function deleteAccount(): Promise<void> {
       <Card>
         <CardHeader>
           <CardTitle>Integrations</CardTitle>
-          <CardDescription>Connect external accounts used by tools.</CardDescription>
         </CardHeader>
         <CardBody>
         <section class="space-y-4">
-          <p v-if="githubLoading" class="text-sm text-surface-mid">Checking GitHub status...</p>
-          <p v-else-if="githubError" class="text-sm text-status-warning">{{ githubError }}</p>
-          <p v-else-if="githubStatus.linked" class="text-sm text-surface-mid">
-            GitHub linked as
-            <span
-              class="rounded border border-surface-border bg-surface-dark/60 px-2 py-0.5 font-medium text-surface-light"
-            >
-              {{ githubStatus.github_username }}
-            </span>
-          </p>
-          <p v-else class="text-sm text-surface-mid">GitHub is not linked.</p>
+          <p v-if="githubError" class="text-sm text-status-warning">{{ githubError }}</p>
           <div class="flex flex-wrap gap-3">
             <BaseButton
               v-if="!githubStatus.linked"
@@ -452,13 +373,9 @@ async function deleteAccount(): Promise<void> {
       <Card>
         <CardHeader>
           <CardTitle>Access</CardTitle>
-          <CardDescription>
-            Tool permissions are managed by an administrator. Contact them if you need access.
-          </CardDescription>
         </CardHeader>
         <CardBody>
         <section class="space-y-4">
-          <p class="text-sm text-surface-light">{{ permissionSummary }}</p>
           <div v-if="permissions.length" class="flex flex-wrap gap-2">
             <span
               v-for="perm in permissions"
@@ -479,9 +396,6 @@ async function deleteAccount(): Promise<void> {
       <Card tint="danger">
         <CardHeader>
           <h2 class="card-title text-status-error">Delete account</h2>
-          <CardDescription>
-            Account deletion is permanent. Your password and confirmation are required.
-          </CardDescription>
         </CardHeader>
         <CardBody>
         <form class="space-y-4" @submit.prevent="deleteAccount">
