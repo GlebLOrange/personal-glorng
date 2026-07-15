@@ -510,7 +510,7 @@ class Settings(BaseSettings):
     SPOTIFY_REFRESH_TOKEN: str
 
     # Groq API
-    GROQ_API_KEY: str
+    GROQ_API_KEY: str = ""
     GROQ_CHAT_MODEL: str = "llama-3.3-70b-versatile"
     GROQ_API_BASE_URL: str = "https://api.groq.com/openai/v1"
     AI_CHAT_ENABLED: bool
