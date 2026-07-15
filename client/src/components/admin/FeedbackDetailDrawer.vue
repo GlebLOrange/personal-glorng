@@ -52,7 +52,7 @@ const emit = defineEmits<{
         >
           Archive
         </BaseButton>
-        <BaseButton variant="ghost" @click="emit('close')">Close</BaseButton>
+        <BaseButton variant="ghost" @click="emit('close')">close</BaseButton>
       </div>
     </template>
   </BaseDrawer>

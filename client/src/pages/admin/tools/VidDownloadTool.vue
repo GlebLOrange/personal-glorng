@@ -70,29 +70,27 @@ async function download(): Promise<void> {
     <form class="space-y-4 mb-8" @submit.prevent="download">
       <BaseInput
         v-model="url"
-        placeholder="https://www.youtube.com/watch?v=..."
-        label="YouTube URL"
+        placeholder="youtube url (https://www.youtube.com/watch?v=...)"
+        aria-label="youtube url (https://www.youtube.com/watch?v=...)"
       />
 
-      <div class="flex flex-col gap-1">
-        <label class="text-sm text-surface-mid">Format</label>
-        <select
-          v-model="format"
-          class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors"
-        >
+      <select
+        v-model="format"
+        aria-label="format"
+        class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors"
+      >
           <option v-for="f in formats" :key="f.value" :value="f.value">
             {{ f.label }}
           </option>
         </select>
-      </div>
 
       <label class="flex items-center gap-2 text-sm text-surface-mid cursor-pointer">
         <input v-model="audioOnly" type="checkbox" class="accent-accent-blue" />
-        Audio only (extract as MP3)
+        audio only (extract as MP3)
       </label>
 
       <BaseButton variant="primary" :disabled="loading || !url.trim()">
-        {{ loading ? "Downloading..." : "Download" }}
+        {{ loading ? "downloading..." : "download" }}
       </BaseButton>
     </form>
 

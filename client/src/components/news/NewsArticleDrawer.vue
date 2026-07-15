@@ -23,7 +23,7 @@ const emit = defineEmits<{
   "update:form": [value: NewsArticleFormData];
 }>();
 
-const title = computed(() => (props.mode === "create" ? "New article" : "Edit article"));
+const title = computed(() => (props.mode === "create" ? "new article" : "edit article"));
 const selectedThemes = computed(() =>
   props.form.themes
     .split(",")
@@ -63,92 +63,88 @@ function toggleTheme(theme: string): void {
   <BaseDrawer :open="open" :title="title" max-width="xl" @close="emit('close')">
     <form class="space-y-6" @submit.prevent="emit('save')">
       <section class="space-y-4">
-        <h3 class="text-sm font-medium text-surface-mid">Publishing</h3>
-        <label class="flex flex-col gap-1 text-sm text-surface-mid">
-          Source
-          <select
-            :value="form.source_id ?? ''"
-            class="rounded-lg border border-surface-border bg-surface-dark px-4 py-2 text-sm text-surface-light focus:outline-none focus:border-accent-blue"
-            @change="patch({ source_id: toSourceId(($event.target as HTMLSelectElement).value) })"
-          >
-            <option value="">Auto from URL host</option>
-            <option v-for="source in sources" :key="source.id" :value="source.id">
-              {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
-            </option>
-          </select>
-        </label>
+        <h3 class="text-sm font-medium text-surface-mid">publishing</h3>
+        <select
+          :value="form.source_id ?? ''"
+          aria-label="source"
+          class="rounded-lg border border-surface-border bg-surface-dark px-4 py-2 text-sm text-surface-light focus:outline-none focus:border-accent-blue"
+          @change="patch({ source_id: toSourceId(($event.target as HTMLSelectElement).value) })"
+        >
+          <option value="">auto from URL host</option>
+          <option v-for="source in sources" :key="source.id" :value="source.id">
+            {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
+          </option>
+        </select>
         <BaseInput
           :model-value="form.source_url"
-          label="Article URL"
+          placeholder="article url (https://...)"
+          aria-label="article url (https://...)"
           type="url"
-          placeholder="https://..."
           @update:model-value="patch({ source_url: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_name"
-          label="Source name"
-          placeholder="DW"
+          placeholder="source name (e.g. DW)"
+          aria-label="source name (e.g. DW)"
           @update:model-value="patch({ source_name: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_feed_url"
-          label="Source feed/home URL"
+          placeholder="source feed/home url (https://www.dw.com/)"
+          aria-label="source feed/home url (https://www.dw.com/)"
           type="url"
-          placeholder="https://www.dw.com/"
           @update:model-value="patch({ source_feed_url: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_published_at"
-          label="Source published at"
           type="datetime-local"
+          aria-label="source published at"
           @update:model-value="patch({ source_published_at: toStringValue($event) })"
         />
-        <label class="flex flex-col gap-1 text-sm text-surface-mid">
-          Status
-          <select
-            :value="form.status"
-            class="rounded-lg border border-surface-border bg-surface-dark px-4 py-2 text-sm text-surface-light focus:outline-none focus:border-accent-blue"
-            @change="patch({ status: ($event.target as HTMLSelectElement).value as NewsStatus })"
-          >
-            <option value="draft">draft</option>
-            <option value="published">published</option>
-            <option value="unpublished">unpublished</option>
-            <option value="failed">failed</option>
-          </select>
-        </label>
+        <select
+          :value="form.status"
+          aria-label="status"
+          class="rounded-lg border border-surface-border bg-surface-dark px-4 py-2 text-sm text-surface-light focus:outline-none focus:border-accent-blue"
+          @change="patch({ status: ($event.target as HTMLSelectElement).value as NewsStatus })"
+        >
+          <option value="draft">draft</option>
+          <option value="published">published</option>
+          <option value="unpublished">unpublished</option>
+          <option value="failed">failed</option>
+        </select>
       </section>
 
       <section class="space-y-4">
-        <h3 class="text-sm font-medium text-surface-mid">Article</h3>
+        <h3 class="text-sm font-medium text-surface-mid">article</h3>
         <BaseInput
           v-if="mode === 'edit'"
           :model-value="form.slug"
-          label="Slug"
-          placeholder="article-url-slug"
+          placeholder="slug (article-url-slug)"
+          aria-label="slug (article-url-slug)"
           @update:model-value="patch({ slug: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.title"
-          label="Title"
-          placeholder="Readable news title"
+          placeholder="title"
+          aria-label="title"
           @update:model-value="patch({ title: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.original_title"
-          label="Original title"
-          placeholder="Original publisher title"
+          placeholder="original title"
+          aria-label="original title"
           @update:model-value="patch({ original_title: toStringValue($event) })"
         />
         <BaseTextarea
           :model-value="form.summary"
-          label="Summary"
           :rows="4"
-          placeholder="Short readable summary"
+          placeholder="summary"
+          aria-label="summary"
           @update:model-value="patch({ summary: toStringValue($event) })"
         />
         <fieldset class="space-y-2">
           <legend class="text-sm text-surface-mid">
-            Themes
+            themes
             <span class="text-xs text-surface-muted">
               ({{ selectedThemes.length }}/{{ NEWS_THEME_LIMIT }})
             </span>
@@ -176,8 +172,8 @@ function toggleTheme(theme: string): void {
         </fieldset>
         <BaseInput
           :model-value="form.language"
-          label="Language"
-          placeholder="en"
+          placeholder="language (en)"
+          aria-label="language (en)"
           @update:model-value="patch({ language: toStringValue($event) })"
         />
       </section>
@@ -192,13 +188,13 @@ function toggleTheme(theme: string): void {
           :disabled="loading"
           @click="emit('delete')"
         >
-          Delete
+          delete
         </BaseButton>
         <div class="flex gap-3">
           <BaseButton variant="primary" :disabled="loading" @click="emit('save')">
-            {{ loading ? "Saving..." : "Save" }}
+            {{ loading ? "saving..." : "save" }}
           </BaseButton>
-          <BaseButton variant="ghost" type="button" @click="emit('close')">Cancel</BaseButton>
+          <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>
         </div>
       </div>
     </template>

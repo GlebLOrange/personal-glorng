@@ -83,7 +83,7 @@ const skeletonRows = 5;
           <BaseButton variant="ghost" size="sm" @click="emit('duplicate', expense)">
             Again
           </BaseButton>
-          <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">Edit</BaseButton>
+          <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">edit</BaseButton>
           <BaseButton variant="ghost" size="sm" @click="emit('delete', expense.id)">
             Delete
           </BaseButton>

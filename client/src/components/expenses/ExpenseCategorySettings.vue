@@ -36,9 +36,8 @@ const selectClass =
 <template>
   <div class="flex flex-col gap-6">
     <Card>
-      <p class="text-xs text-surface-mid uppercase tracking-wider mb-3">Display</p>
-      <label class="text-sm text-surface-mid block mb-1">Show totals in</label>
-      <select v-model="displayCurrency" :class="selectClass">
+      <p class="text-xs text-surface-mid uppercase tracking-wider mb-3">display</p>
+      <select v-model="displayCurrency" :class="selectClass" aria-label="show totals in">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </select>
     </Card>
@@ -73,14 +72,15 @@ const selectClass =
               type="number"
               min="0"
               step="0.01"
-              placeholder="Budget"
+              placeholder="budget"
+              aria-label="budget"
               class="w-28 bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light text-sm focus:outline-none focus:border-accent-blue"
             />
             <BaseButton variant="primary" size="sm" @click="emit('saveCategoryRename')">
-              Save
+              save
             </BaseButton>
             <BaseButton variant="ghost" size="sm" @click="emit('cancelEditCategory')">
-              Cancel
+              cancel
             </BaseButton>
           </template>
           <template v-else>
@@ -91,10 +91,10 @@ const selectClass =
               </span>
             </span>
             <BaseButton variant="ghost" size="sm" @click="emit('startEditCategory', category)">
-              Rename
+              rename
             </BaseButton>
             <BaseButton variant="ghost" size="sm" @click="emit('removeCategory', category)">
-              Delete
+              delete
             </BaseButton>
           </template>
         </li>
@@ -103,10 +103,11 @@ const selectClass =
       <form class="flex flex-col sm:flex-row gap-2" @submit.prevent="emit('addCategory')">
         <input
           v-model="newCategoryName"
-          placeholder="New category name"
+          placeholder="new category name"
+          aria-label="new category name"
           class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue h-[42px]"
         />
-        <BaseButton variant="primary" type="submit">Add category</BaseButton>
+        <BaseButton variant="primary" type="submit">add category</BaseButton>
       </form>
       <p class="text-xs text-surface-mid mt-3">
         Renaming updates all expenses in that category. Optional monthly budget uses display

@@ -26,7 +26,6 @@ const textareaAttrs = computed(() => {
 
 <template>
   <div class="flex flex-col gap-1" :class="$attrs.class" :style="$attrs.style">
-    <label v-if="label" :for="textareaId" class="text-sm text-surface-mid">{{ label }}</label>
     <textarea
       :id="textareaId"
       v-bind="textareaAttrs"

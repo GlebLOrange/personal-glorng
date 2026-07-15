@@ -43,12 +43,12 @@ async function handleSubmit(): Promise<void> {
         <BaseInput
           v-model="email"
           type="email"
-          label="Email"
-          placeholder="you@example.com"
+          placeholder="email (you@example.com)"
+          aria-label="email (you@example.com)"
           required
         />
         <BaseButton variant="primary" class="w-full" :disabled="loading">
-          {{ loading ? "Sending..." : "Send reset link" }}
+          {{ loading ? "sending..." : "send reset link" }}
         </BaseButton>
       </form>
 

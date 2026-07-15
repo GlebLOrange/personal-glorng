@@ -39,13 +39,26 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <BaseModal title="Send Feedback" @close="$emit('close')">
+  <BaseModal title="send feedback" @close="$emit('close')">
     <form class="space-y-3" @submit.prevent="submit">
-      <BaseInput v-model="email" type="email" label="Email" placeholder="your@email.com" />
-      <BaseInput v-model="theme" label="Subject" placeholder="What is this about?" />
-      <BaseTextarea v-model="message" label="Feedback" placeholder="Your message..." />
+      <BaseInput
+        v-model="email"
+        type="email"
+        placeholder="email (your@email.com)"
+        aria-label="email (your@email.com)"
+      />
+      <BaseInput
+        v-model="theme"
+        placeholder="subject (what is this about?)"
+        aria-label="subject (what is this about?)"
+      />
+      <BaseTextarea
+        v-model="message"
+        placeholder="feedback (your message...)"
+        aria-label="feedback (your message...)"
+      />
       <BaseButton variant="primary" :disabled="!canSubmit || loading" class="w-full">
-        {{ loading ? "Sending..." : "Send Feedback" }}
+        {{ loading ? "sending..." : "send feedback" }}
       </BaseButton>
     </form>
   </BaseModal>

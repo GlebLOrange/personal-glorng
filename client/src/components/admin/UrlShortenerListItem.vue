@@ -90,17 +90,17 @@ function confirmDelete(): void {
       <BaseInput
         v-model="draftTitle"
         compact
-        placeholder="optional title (uses url if empty)"
-        aria-label="optional title"
+        placeholder="title (optional)"
+        aria-label="title (optional)"
         @keydown="onTitleKeydown"
       />
     </template>
     <template #actions>
       <BaseButton variant="primary" size="sm" :disabled="saving" @click="saveEdit">
-        {{ saving ? "…" : "Save" }}
+        {{ saving ? "…" : "save" }}
       </BaseButton>
       <BaseButton variant="ghost" size="sm" :disabled="saving" @click="cancelEdit">
-        Cancel
+        cancel
       </BaseButton>
     </template>
   </AdminListRow>
@@ -117,19 +117,19 @@ function confirmDelete(): void {
         v-if="canWrite"
         variant="ghost"
         size="sm"
-        aria-label="Edit title"
+        aria-label="edit title"
         @click="startEdit"
       >
         ✎
       </BaseButton>
-      <BaseButton variant="ghost" size="sm" aria-label="Copy short link" @click="emit('copy')">
+      <BaseButton variant="ghost" size="sm" aria-label="copy short link" @click="emit('copy')">
         ⎘
       </BaseButton>
       <BaseButton
         v-if="canWrite"
         variant="ghost"
         size="sm"
-        aria-label="Delete short URL"
+        aria-label="delete short URL"
         @click="showDeleteConfirm = true"
       >
         ✕
@@ -139,9 +139,9 @@ function confirmDelete(): void {
 
   <ExpenseConfirmDialog
     :open="showDeleteConfirm"
-    title="Delete short URL"
+    title="delete short URL"
     :message="deleteMessage"
-    confirm-label="Delete"
+    confirm-label="delete"
     :loading="deleting"
     @confirm="confirmDelete"
     @cancel="showDeleteConfirm = false"

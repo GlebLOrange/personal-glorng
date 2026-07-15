@@ -25,8 +25,8 @@ const emit = defineEmits<{
         <code class="text-xs text-accent-blue mt-2 block truncate">{{ link }}</code>
       </div>
       <div class="flex gap-2 ml-4">
-        <BaseButton variant="ghost" size="sm" @click="emit('copy')">Copy</BaseButton>
-        <BaseButton variant="ghost" size="sm" @click="emit('delete')">Delete</BaseButton>
+        <BaseButton variant="ghost" size="sm" @click="emit('copy')">copy</BaseButton>
+        <BaseButton variant="ghost" size="sm" @click="emit('delete')">delete</BaseButton>
       </div>
     </div>
   </Card>

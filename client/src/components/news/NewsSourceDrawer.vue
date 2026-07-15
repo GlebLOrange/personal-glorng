@@ -26,7 +26,7 @@ const emit = defineEmits<{
   "update:form": [value: NewsSourceForm];
 }>();
 
-const title = computed(() => (props.mode === "create" ? "Add source" : "Edit source"));
+const title = computed(() => (props.mode === "create" ? "add source" : "edit source"));
 
 function patch(patchValue: Partial<NewsSourceForm>): void {
   emit("update:form", { ...props.form, ...patchValue });
@@ -42,26 +42,30 @@ function toStringValue(value: string | number | null | undefined): string {
     <form id="news-source-form" class="space-y-4" @submit.prevent="emit('save')">
       <BaseInput
         :model-value="form.name"
-        label="Name"
+        placeholder="name"
+        aria-label="name"
         required
         @update:model-value="patch({ name: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.feed_url"
-        label="Feed URL"
+        placeholder="feed url"
+        aria-label="feed url"
         type="url"
         required
         @update:model-value="patch({ feed_url: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.category"
-        label="Category"
+        placeholder="category"
+        aria-label="category"
         required
         @update:model-value="patch({ category: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.region"
-        label="Region"
+        placeholder="region"
+        aria-label="region"
         required
         @update:model-value="patch({ region: toStringValue($event) })"
       />
@@ -72,16 +76,16 @@ function toStringValue(value: string | number | null | undefined): string {
           class="size-4 accent-accent-blue"
           @change="patch({ enabled: ($event.target as HTMLInputElement).checked })"
         />
-        Enabled
+        enabled
       </label>
     </form>
 
     <template #footer>
       <div class="flex gap-3">
         <BaseButton type="submit" form="news-source-form" variant="primary" :disabled="loading">
-          {{ loading ? "Saving..." : "Save" }}
+          {{ loading ? "saving..." : "save" }}
         </BaseButton>
-        <BaseButton type="button" variant="ghost" @click="emit('close')">Cancel</BaseButton>
+        <BaseButton type="button" variant="ghost" @click="emit('close')">cancel</BaseButton>
       </div>
     </template>
   </BaseDrawer>

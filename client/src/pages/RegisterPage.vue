@@ -58,7 +58,7 @@ async function handleRegister(): Promise<void> {
           >. Open it to activate your account, then log in.
         </p>
         <BaseButton variant="primary" class="w-full" @click="router.push('/login')">
-          Go to login
+          go to login
         </BaseButton>
       </div>
 
@@ -66,22 +66,27 @@ async function handleRegister(): Promise<void> {
         <BaseInput
           v-model="email"
           type="email"
-          label="Email"
-          placeholder="you@example.com"
+          placeholder="email (you@example.com)"
+          aria-label="email (you@example.com)"
           required
         />
         <BaseInput
           v-model="displayName"
           type="text"
-          label="Display name (optional)"
-          placeholder="How we greet you"
+          placeholder="display name (optional)"
+          aria-label="display name (optional)"
         />
-        <BaseInput v-model="timezone" type="text" label="Timezone" placeholder="Europe/Warsaw" />
+        <BaseInput
+          v-model="timezone"
+          type="text"
+          placeholder="timezone (e.g. Europe/Warsaw)"
+          aria-label="timezone (e.g. Europe/Warsaw)"
+        />
         <BaseInput
           v-model="password"
           type="password"
-          label="Password"
-          placeholder="••••••••••••"
+          placeholder="password"
+          aria-label="password"
           required
         />
         <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
@@ -90,8 +95,8 @@ async function handleRegister(): Promise<void> {
         <BaseInput
           v-model="passwordConfirm"
           type="password"
-          label="Confirm password"
-          placeholder="••••••••••••"
+          placeholder="confirm password"
+          aria-label="confirm password"
           required
         />
         <label class="flex items-start gap-2 text-xs text-surface-mid">
@@ -104,13 +109,13 @@ async function handleRegister(): Promise<void> {
           </span>
         </label>
         <BaseButton variant="primary" class="w-full" :disabled="loading || !strength.valid">
-          {{ loading ? "Creating account..." : "Create account" }}
+          {{ loading ? "creating account..." : "create account" }}
         </BaseButton>
       </form>
 
       <p class="text-center text-xs text-surface-mid mt-6">
         Already have an account?
-        <RouterLink to="/login" class="text-accent-blue hover:underline">Log in</RouterLink>
+        <RouterLink to="/login" class="text-accent-blue hover:underline">log in</RouterLink>
       </p>
     </div>
   </div>

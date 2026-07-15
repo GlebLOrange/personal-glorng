@@ -68,36 +68,36 @@ const emit = defineEmits<{
     <Card class="space-y-4">
       <div class="flex items-center justify-between gap-3">
         <p class="text-xs text-surface-mid uppercase tracking-wider">Categories</p>
-        <BaseButton variant="primary" size="sm" @click="emit('add')">+ Add category</BaseButton>
+        <BaseButton variant="primary" size="sm" @click="emit('add')">+ add category</BaseButton>
       </div>
 
       <ul role="list" class="space-y-4">
         <li
-          v-for="(row, index) in budgetRows"
+          v-for="row in budgetRows"
           :key="row.id"
           class="space-y-2 border-b border-surface-border pb-4 last:border-0 last:pb-0"
         >
           <div class="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-3 items-end">
             <BaseInput
               v-model="row.name"
-              :label="index === 0 ? 'Category' : undefined"
-              placeholder="Food, transport..."
+              placeholder="category (food, transport...)"
+              aria-label="category (food, transport...)"
             />
             <BaseInput
               v-model="row.budget"
-              :label="index === 0 ? 'Budget' : undefined"
               type="number"
               step="0.01"
               min="0"
-              placeholder="0.00"
+              placeholder="budget (0.00)"
+              aria-label="budget (0.00)"
             />
             <BaseInput
               v-model="row.spent"
-              :label="index === 0 ? 'Spent' : undefined"
               type="number"
               step="0.01"
               min="0"
-              placeholder="0.00"
+              placeholder="spent (0.00)"
+              aria-label="spent (0.00)"
             />
             <BaseButton
               variant="ghost"
@@ -106,7 +106,7 @@ const emit = defineEmits<{
               class="md:mb-0.5"
               @click="emit('remove', row.id)"
             >
-              Remove
+              remove
             </BaseButton>
           </div>
 

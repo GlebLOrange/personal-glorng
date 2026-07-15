@@ -203,7 +203,7 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
       :open="showDeleteConfirm"
       title="Delete recipe"
       :message="deleteConfirmMessage"
-      confirm-label="Delete"
+      confirm-label="delete"
       :loading="deleting"
       @confirm="confirmDelete"
       @cancel="cancelDelete"

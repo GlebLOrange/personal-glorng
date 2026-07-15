@@ -28,10 +28,10 @@ const listError = ref<string | null>(null);
 const hasSearched = ref(false);
 
 const sourceTypeOptions = [
-  { value: "", label: "All admin content" },
-  { value: "task", label: "Tasks" },
-  { value: "expense", label: "Expenses" },
-  { value: "feedback", label: "Feedback" },
+  { value: "", label: "all admin content" },
+  { value: "task", label: "tasks" },
+  { value: "expense", label: "expenses" },
+  { value: "feedback", label: "feedback" },
   { value: "url", label: "URLs" },
 ];
 
@@ -80,18 +80,18 @@ function sourceLabel(type: string): string {
       <form class="flex flex-wrap gap-3 items-end" @submit.prevent="search">
         <BaseInput
           v-model="query"
-          label="Query"
           compact
-          placeholder="Search admin content"
+          placeholder="search (admin content)"
+          aria-label="search (admin content)"
           class="min-w-[16rem] flex-1"
         />
-        <BaseSelect v-model="sourceType" label="Source" compact>
+        <BaseSelect v-model="sourceType" compact aria-label="source">
           <option v-for="option in sourceTypeOptions" :key="option.value" :value="option.value">
             {{ option.label }}
           </option>
         </BaseSelect>
         <BaseButton size="sm" type="submit" :disabled="loading || !query.trim()">
-          Search
+          search
         </BaseButton>
       </form>
     </Card>

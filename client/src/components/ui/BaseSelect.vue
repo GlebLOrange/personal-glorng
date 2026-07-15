@@ -18,7 +18,6 @@ const selectClass = computed(() => (props.compact ? SELECT_CLASS_COMPACT : SELEC
 
 <template>
   <div class="flex flex-col gap-1">
-    <label v-if="label" :for="selectId" class="text-sm text-surface-mid">{{ label }}</label>
     <select :id="selectId" v-model="model" :class="selectClass">
       <slot />
     </select>

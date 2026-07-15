@@ -39,23 +39,24 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
     </p>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <div>
-        <label class="text-sm text-surface-mid block mb-1">Category</label>
-        <select v-model="categoryId" :class="SELECT_CLASS_COMPACT">
-          <option value="overall">Overall</option>
-          <option v-for="option in budgetOptions" :key="option.id" :value="option.id">
-            {{ option.name }}
-          </option>
-        </select>
-      </div>
+      <select v-model="categoryId" :class="SELECT_CLASS_COMPACT" aria-label="category">
+        <option value="overall">overall</option>
+        <option v-for="option in budgetOptions" :key="option.id" :value="option.id">
+          {{ option.name }}
+        </option>
+      </select>
       <div class="grid grid-cols-[1fr_100px] gap-2 items-end">
-        <BaseInput v-model="amount" label="Purchase amount" type="number" step="0.01" min="0" />
-        <div>
-          <label class="text-sm text-surface-mid block mb-1">Currency</label>
-          <select v-model="currency" :class="SELECT_CLASS_COMPACT">
+        <BaseInput
+          v-model="amount"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="purchase amount"
+          aria-label="purchase amount"
+        />
+        <select v-model="currency" :class="SELECT_CLASS_COMPACT" aria-label="currency">
             <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
           </select>
-        </div>
       </div>
     </div>
 
@@ -67,7 +68,7 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
       <div class="flex items-center justify-between gap-3">
         <p class="text-xs text-surface-mid uppercase tracking-wider">Projection</p>
         <StatusBadge
-          :label="projection.overBudget ? 'Over budget' : 'Within budget'"
+          :label="projection.overBudget ? 'over budget' : 'within budget'"
           :class-name="
             projection.overBudget
               ? 'border-status-error text-status-error'

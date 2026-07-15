@@ -16,25 +16,35 @@ const emit = defineEmits<{ submit: []; close: [] }>();
 </script>
 
 <template>
-  <BaseModal v-if="open" title="New task" @close="emit('close')">
+  <BaseModal v-if="open" title="new task" @close="emit('close')">
     <form class="space-y-4" @submit.prevent="emit('submit')">
-      <BaseInput v-model="form.title" label="Title" placeholder="What needs doing?" />
-      <BaseInput v-model="form.scheduled_at" label="Scheduled at" type="datetime-local" />
-      <BaseInput v-model="form.location" label="Location" placeholder="Optional" />
-      <div>
-        <label class="text-sm text-surface-mid block mb-1">Notes</label>
-        <textarea
-          v-model="form.description"
-          rows="3"
-          placeholder="Optional details"
-          :class="[FIELD_INPUT_CLASS, 'h-auto resize-none']"
-        />
-      </div>
+      <BaseInput
+        v-model="form.title"
+        placeholder="title (what needs doing?)"
+        aria-label="title (what needs doing?)"
+      />
+      <BaseInput
+        v-model="form.scheduled_at"
+        type="datetime-local"
+        aria-label="scheduled at"
+      />
+      <BaseInput
+        v-model="form.location"
+        placeholder="location (optional)"
+        aria-label="location (optional)"
+      />
+      <textarea
+        v-model="form.description"
+        rows="3"
+        placeholder="notes (optional)"
+        aria-label="notes (optional)"
+        :class="[FIELD_INPUT_CLASS, 'h-auto resize-none']"
+      />
       <div class="flex gap-3 pt-2">
         <BaseButton variant="primary" :disabled="saving">
-          {{ saving ? "Creating..." : "Create" }}
+          {{ saving ? "creating..." : "create" }}
         </BaseButton>
-        <BaseButton variant="ghost" type="button" @click="emit('close')">Cancel</BaseButton>
+        <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>
       </div>
     </form>
   </BaseModal>

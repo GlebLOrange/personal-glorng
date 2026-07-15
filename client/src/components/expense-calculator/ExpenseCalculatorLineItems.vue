@@ -39,12 +39,12 @@ function onAmountEnter(event: KeyboardEvent, index: number): void {
           <p class="text-xs text-surface-mid uppercase tracking-wider">Itemized sum</p>
           <p class="text-xs text-surface-muted mt-1">Add line items and see a running total.</p>
         </div>
-        <BaseButton variant="primary" size="sm" @click="emit('add')">+ Add item</BaseButton>
+        <BaseButton variant="primary" size="sm" @click="emit('add')">+ add item</BaseButton>
       </div>
 
       <div v-if="lineItems.length === 0" class="text-center py-8">
-        <p class="text-sm text-surface-mid">No items yet.</p>
-        <BaseButton class="mt-3" variant="primary" @click="emit('add')">Add your first item</BaseButton>
+        <p class="text-sm text-surface-mid">no items yet.</p>
+        <BaseButton class="mt-3" variant="primary" @click="emit('add')">add your first item</BaseButton>
       </div>
 
       <ul v-else role="list" class="space-y-3">
@@ -55,25 +55,22 @@ function onAmountEnter(event: KeyboardEvent, index: number): void {
         >
           <BaseInput
             v-model="item.label"
-            :label="index === 0 ? 'Label' : undefined"
-            placeholder="Coffee, taxi..."
+            placeholder="label (coffee, taxi...)"
+            aria-label="label (coffee, taxi...)"
             data-line-label
           />
           <BaseInput
             v-model="item.amount"
-            :label="index === 0 ? 'Amount' : undefined"
             type="number"
             step="0.01"
             min="0"
-            placeholder="0.00"
+            placeholder="amount (0.00)"
+            aria-label="amount (0.00)"
             @keydown="onAmountEnter($event, index)"
           />
-          <div>
-            <label v-if="index === 0" class="text-sm text-surface-mid block mb-1">Currency</label>
-            <select v-model="item.currency" :class="SELECT_CLASS_COMPACT">
+          <select v-model="item.currency" :class="SELECT_CLASS_COMPACT" aria-label="currency">
               <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
             </select>
-          </div>
           <BaseButton
             variant="ghost"
             size="sm"
@@ -81,14 +78,14 @@ function onAmountEnter(event: KeyboardEvent, index: number): void {
             class="md:mb-0.5"
             @click="emit('remove', item.id)"
           >
-            Remove
+            remove
           </BaseButton>
         </li>
       </ul>
 
       <div class="flex flex-wrap gap-2 border-t border-surface-border pt-4">
         <BaseButton variant="ghost" size="sm" :disabled="sumTotal <= 0" @click="emit('applyToBudget')">
-          Use total as budget spent
+          use total as budget spent
         </BaseButton>
       </div>
     </Card>

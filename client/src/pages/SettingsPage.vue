@@ -236,18 +236,18 @@ async function deleteAccount(): Promise<void> {
         <form class="space-y-4" @submit.prevent="saveProfile">
           <BaseInput
             v-model="displayName"
-            label="Display name"
             name="display-name"
             autocomplete="name"
-            placeholder="How should we call you?"
+            placeholder="display name (optional)"
+            aria-label="display name (optional)"
           />
           <div class="space-y-1">
             <BaseInput
               v-model="timezone"
-              label="Timezone"
               name="timezone"
               autocomplete="off"
-              placeholder="Europe/Warsaw"
+              placeholder="timezone (e.g. Europe/Warsaw)"
+              aria-label="timezone (e.g. Europe/Warsaw)"
               aria-describedby="timezone-help"
               required
             />
@@ -256,7 +256,7 @@ async function deleteAccount(): Promise<void> {
             </p>
           </div>
           <BaseButton type="submit" variant="primary" :disabled="!canSaveProfile">
-            {{ savingProfile ? "Saving..." : "Save profile" }}
+            {{ savingProfile ? "saving..." : "save profile" }}
           </BaseButton>
         </form>
         </CardBody>
@@ -277,18 +277,20 @@ async function deleteAccount(): Promise<void> {
           <BaseInput
             v-model="newEmail"
             type="email"
-            label="Email address"
             name="email"
             autocomplete="email"
+            placeholder="email address"
+            aria-label="email address"
             required
           />
           <div class="space-y-1">
             <BaseInput
               v-model="emailPassword"
               type="password"
-              label="Current password"
               name="current-password-for-email"
               autocomplete="current-password"
+              placeholder="current password"
+              aria-label="current password"
               aria-describedby="email-help"
               required
             />
@@ -298,7 +300,7 @@ async function deleteAccount(): Promise<void> {
             </p>
           </div>
           <BaseButton type="submit" variant="secondary" :disabled="!canSaveEmail">
-            {{ savingEmail ? "Saving..." : "Change email" }}
+            {{ savingEmail ? "saving..." : "change email" }}
           </BaseButton>
         </form>
         </CardBody>
@@ -310,7 +312,7 @@ async function deleteAccount(): Promise<void> {
           <CardDescription>Keep your account protected with a strong password.</CardDescription>
           <template #actions>
             <RouterLink to="/forgot-password" class="text-sm text-accent-blue hover:underline">
-              Forgot password?
+              forgot password?
             </RouterLink>
           </template>
         </CardHeader>
@@ -319,18 +321,20 @@ async function deleteAccount(): Promise<void> {
           <BaseInput
             v-model="currentPassword"
             type="password"
-            label="Current password"
             name="current-password"
             autocomplete="current-password"
+            placeholder="current password"
+            aria-label="current password"
             required
           />
           <div class="space-y-1">
             <BaseInput
               v-model="newPassword"
               type="password"
-              label="New password"
               name="new-password"
               autocomplete="new-password"
+              placeholder="new password"
+              aria-label="new password"
               aria-describedby="password-help"
               required
             />
@@ -346,9 +350,10 @@ async function deleteAccount(): Promise<void> {
             <BaseInput
               v-model="newPasswordConfirm"
               type="password"
-              label="Confirm new password"
               name="confirm-new-password"
               autocomplete="new-password"
+              placeholder="confirm new password"
+              aria-label="confirm new password"
               aria-describedby="password-confirm-help"
               required
             />
@@ -361,7 +366,7 @@ async function deleteAccount(): Promise<void> {
             </p>
           </div>
           <BaseButton type="submit" variant="primary" :disabled="!canSavePassword">
-            {{ savingPassword ? "Saving..." : "Change password" }}
+            {{ savingPassword ? "saving..." : "change password" }}
           </BaseButton>
         </form>
         </CardBody>
@@ -380,13 +385,13 @@ async function deleteAccount(): Promise<void> {
         </CardHeader>
         <CardBody>
         <form class="space-y-4" @submit.prevent="saveCurrency">
-          <BaseSelect v-model="displayCurrency" label="Expense display currency">
+          <BaseSelect v-model="displayCurrency" aria-label="expense display currency">
             <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
               {{ code }}
             </option>
           </BaseSelect>
           <BaseButton type="submit" variant="secondary" :disabled="!canSaveCurrency">
-            {{ savingPrefs ? "Saving..." : "Save preferences" }}
+            {{ savingPrefs ? "saving..." : "save preferences" }}
           </BaseButton>
         </form>
         </CardBody>
@@ -483,9 +488,10 @@ async function deleteAccount(): Promise<void> {
           <BaseInput
             v-model="deletePassword"
             type="password"
-            label="Current password"
             name="delete-current-password"
             autocomplete="current-password"
+            placeholder="current password"
+            aria-label="current password"
             required
           />
           <label class="flex items-start gap-2 text-xs text-surface-mid">
@@ -493,7 +499,7 @@ async function deleteAccount(): Promise<void> {
             <span>I understand this permanently deletes my account.</span>
           </label>
           <BaseButton type="submit" variant="secondary" :disabled="!canDeleteAccount">
-            {{ deleting ? "Deleting..." : "Delete account" }}
+            {{ deleting ? "deleting..." : "delete account" }}
           </BaseButton>
         </form>
         </CardBody>
