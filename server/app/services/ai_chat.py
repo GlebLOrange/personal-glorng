@@ -32,6 +32,28 @@ def _headers(api_key: str) -> dict[str, str]:
     }
 
 
+def _stream_headers(api_key: str) -> dict[str, str]:
+    """Return Gemini REST headers for SSE streaming."""
+    return {
+        **_headers(api_key),
+        "Accept": "text/event-stream",
+    }
+
+
+def _text_from_content(content: object) -> str | None:
+    """Join text blocks from a Gemini step content array."""
+    if not isinstance(content, list):
+        return None
+    parts: list[str] = []
+    for item in content:
+        if not isinstance(item, dict) or item.get("type") != "text":
+            continue
+        text = item.get("text")
+        if isinstance(text, str) and text:
+            parts.append(text)
+    return "".join(parts) if parts else None
+
+
 def _format_chat_input(
     messages: list[dict[str, str]],
     *,
@@ -46,8 +68,8 @@ def _format_chat_input(
     return f"{system_prompt}\n\nConversation:\n{turns}\n\nAssistant:"
 
 
-def _stream_delta(line: str) -> str | None:
-    """Extract a text delta from one Gemini SSE data line."""
+def _stream_text_chunk(line: str) -> str | None:
+    """Extract assistant text from one Gemini SSE data line."""
     if not line.startswith("data: "):
         return None
     raw = line.removeprefix("data: ").strip()
@@ -58,13 +80,24 @@ def _stream_delta(line: str) -> str | None:
     except json.JSONDecodeError:
         logger.warning("Gemini stream returned invalid JSON chunk")
         return None
-    if event.get("event_type") != "step.delta":
+    if not isinstance(event, dict):
         return None
-    delta = event.get("delta")
-    if not isinstance(delta, dict):
-        return None
-    text = delta.get("text")
-    return text if isinstance(text, str) else None
+
+    event_type = event.get("event_type")
+    if event_type == "step.delta":
+        delta = event.get("delta")
+        if not isinstance(delta, dict) or delta.get("type") != "text":
+            return None
+        text = delta.get("text")
+        return text if isinstance(text, str) else None
+
+    if event_type == "step.start":
+        step = event.get("step")
+        if not isinstance(step, dict) or step.get("type") != "model_output":
+            return None
+        return _text_from_content(step.get("content"))
+
+    return None
 
 
 def raise_gemini_http_error(exc: httpx.HTTPStatusError) -> None:
@@ -138,13 +171,13 @@ class GeminiChatService:
                 client.stream(
                     "POST",
                     f"{self._base_url}/interactions?alt=sse",
-                    headers=_headers(self._api_key),
+                    headers=_stream_headers(self._api_key),
                     json=payload,
                 ) as response,
             ):
                 response.raise_for_status()
                 async for line in response.aiter_lines():
-                    content = _stream_delta(line)
+                    content = _stream_text_chunk(line)
                     if not content:
                         continue
                     has_text = True

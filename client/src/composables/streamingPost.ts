@@ -7,7 +7,14 @@ const USER_SAFE_ERRORS: Record<number, string> = {
   503: "Search is unavailable right now.",
 };
 
-export function userSafeStreamError(status: number, detail?: string): string {
+export function userSafeStreamError(
+  status: number,
+  detail?: string,
+  options?: { adminChat?: boolean },
+): string {
+  if (status === 503 && options?.adminChat) {
+    return "AI chat is unavailable — check Settings";
+  }
   return USER_SAFE_ERRORS[status] ?? detail ?? "Failed to get AI response";
 }
 

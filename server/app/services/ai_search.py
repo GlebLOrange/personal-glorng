@@ -67,8 +67,8 @@ class AiSearchService:
 
     def _require_llm(self) -> GeminiChatService:
         if self._llm is None:
-            if not self._settings.GEMINI_API_KEY:
-                raise ApiError(503, "AI search is disabled or not configured")
+            if not self._settings.GEMINI_API_KEY.strip():
+                raise ApiError(503, "LLM is not configured")
             self._llm = GeminiChatService(
                 api_key=self._settings.GEMINI_API_KEY,
                 model=self._settings.GEMINI_CHAT_MODEL,
