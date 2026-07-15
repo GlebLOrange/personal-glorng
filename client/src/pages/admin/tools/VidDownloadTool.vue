@@ -64,7 +64,7 @@ async function download(): Promise<void> {
     title="vid-download"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'vid-download' }]"
     back-to="/tools"
-    max-width="md"
+    max-width="xl"
     :narrow="false"
   >
     <form class="space-y-4 mb-8" @submit.prevent="download">

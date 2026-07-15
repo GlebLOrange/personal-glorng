@@ -74,7 +74,7 @@ onMounted(loadUrls);
     title="url-shortener"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'url-shortener' }]"
     back-to="/tools"
-    max-width="md"
+    max-width="xl"
     :narrow="false"
   >
     <form class="space-y-3 mb-10" @submit.prevent="createUrl">
