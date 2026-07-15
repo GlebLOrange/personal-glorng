@@ -2,7 +2,7 @@
 import { onMounted, watch } from "vue";
 
 import PageShell from "@/components/layout/PageShell.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
@@ -12,8 +12,18 @@ import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint
 import { safeNavigationHref } from "@/utils/safeUrl";
 
 const { isSuperuser } = usePermissions();
-const { articles, page, total, listLoading, listError, hasNextPage, countLabel, loadNews, goToPage } =
-  useNews();
+const {
+  articles,
+  page,
+  total,
+  totalPages,
+  listLoading,
+  listError,
+  hasNextPage,
+  countLabel,
+  loadNews,
+  goToPage,
+} = useNews();
 
 useScrollListFingerprint(
   () => `${page.value}:${total.value}:${articles.value[0]?.id ?? ""}`,
@@ -108,18 +118,15 @@ watch(page, () => {
       description="The digest has not published anything yet. Check back after the next ingestion run."
     />
 
-    <nav
+    <BasePagination
       v-if="!listLoading && !listError && (articles.length > 0 || page > 1)"
-      class="mt-8 flex items-center justify-between"
+      class="mt-8"
       aria-label="News pagination"
-    >
-      <BaseButton variant="ghost" size="sm" :disabled="page <= 1" @click="goToPage(page - 1)">
-        Previous
-      </BaseButton>
-      <span class="text-xs text-surface-muted">page {{ page }}</span>
-      <BaseButton variant="ghost" size="sm" :disabled="!hasNextPage" @click="goToPage(page + 1)">
-        Next
-      </BaseButton>
-    </nav>
+      :page="page"
+      :total-pages="totalPages"
+      :has-next-page="hasNextPage"
+      @prev="goToPage(page - 1)"
+      @next="goToPage(page + 1)"
+    />
   </PageShell>
 </template>

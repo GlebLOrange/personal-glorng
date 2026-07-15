@@ -13,6 +13,7 @@ import ExpenseSummaryCard from "@/components/expenses/ExpenseSummaryCard.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
@@ -241,28 +242,17 @@ const {
         @sort="handleExpenseSort"
       />
 
-      <div
+      <BasePagination
         v-if="expensePages > 1"
-        class="flex items-center justify-between gap-3 text-xs text-surface-mid"
-      >
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          :disabled="!hasPreviousExpensePage || listLoading"
-          @click="goToExpensePage(expensePage - 1)"
-        >
-          Previous
-        </BaseButton>
-        <span>Page {{ expensePage }} of {{ expensePages }}</span>
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          :disabled="!hasNextExpensePage || listLoading"
-          @click="goToExpensePage(expensePage + 1)"
-        >
-          Next
-        </BaseButton>
-      </div>
+        aria-label="Expenses pagination"
+        :page="expensePage"
+        :total-pages="expensePages"
+        :has-next-page="hasNextExpensePage"
+        :has-previous-page="hasPreviousExpensePage"
+        :loading="listLoading"
+        @prev="goToExpensePage(expensePage - 1)"
+        @next="goToExpensePage(expensePage + 1)"
+      />
     </section>
 
     <section
