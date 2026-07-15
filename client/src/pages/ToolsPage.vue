@@ -3,9 +3,20 @@ import { computed } from "vue";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import { Card } from "@/components/ui/card";
-import { groupServicesByCategory, publicToolsAsServices } from "@/platform/services";
+import { usePermissions } from "@/composables/usePermissions";
+import {
+  groupServicesByCategory,
+  publicToolsAsServices,
+  resolveToolRoute,
+  type PlatformService,
+} from "@/platform/services";
 
+const { can } = usePermissions();
 const sections = computed(() => groupServicesByCategory(publicToolsAsServices()));
+
+function toolRoute(tool: PlatformService): string {
+  return resolveToolRoute(tool, can);
+}
 </script>
 
 <template>
@@ -19,8 +30,8 @@ const sections = computed(() => groupServicesByCategory(publicToolsAsServices())
       <div class="page-tool-grid">
         <RouterLink
           v-for="tool in section.services"
-          :key="tool.adminRoute"
-          :to="tool.adminRoute"
+          :key="tool.slug"
+          :to="toolRoute(tool)"
           class="page-tile"
         >
           <Card hoverable class="page-tile-card h-full">

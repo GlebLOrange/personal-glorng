@@ -22,6 +22,7 @@ function mapApiService(s: PlatformCatalog["services"][number]): PlatformService 
     capabilities: s.capabilities,
     external: s.external,
     public: s.public,
+    publicRoute: s.publicRoute,
   };
 }
 
@@ -37,6 +38,7 @@ type ApiPlatformService = {
   capabilities: string[];
   external: boolean;
   public?: boolean;
+  public_route?: string | null;
 };
 
 /** Load platform catalog from API with static fallback. */
@@ -65,6 +67,7 @@ export function usePlatformCatalog(): {
             capabilities: s.capabilities,
             external: s.external,
             public: s.public,
+            publicRoute: s.public_route ?? undefined,
           }),
         ),
       );

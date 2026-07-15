@@ -10,6 +10,7 @@ export interface PlatformService {
   capabilities: string[];
   external: boolean;
   public?: boolean;
+  publicRoute?: string;
 }
 
 /** Static fallback when API is unavailable; kept in sync with server registry. */
@@ -43,12 +44,14 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     name: "expenses",
     category: "productivity",
     categoryLabel: "productivity",
-    description: "Monthly personal spending ledger, charts, and currency converter",
+    description: "Track spending, convert currencies, sum items, and plan budgets",
     apiPrefix: "/expenses",
     adminRoute: "/admin/tools/expenses",
+    publicRoute: "/expense-calculator",
     icon: "¤",
     capabilities: ["read", "write"],
     external: false,
+    public: true,
   },
   {
     slug: "recipes",
@@ -110,19 +113,6 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     apiPrefix: "/calculator",
     adminRoute: "/calculator",
     icon: "⊞",
-    capabilities: ["read"],
-    external: false,
-    public: true,
-  },
-  {
-    slug: "expense-calculator",
-    name: "expense calculator",
-    category: "utilities",
-    categoryLabel: "utilities",
-    description: "Convert currencies, sum items, and plan budgets",
-    apiPrefix: "/expense-calculator",
-    adminRoute: "/expense-calculator",
-    icon: "∑",
     capabilities: ["read"],
     external: false,
     public: true,
@@ -247,6 +237,17 @@ export interface PlatformCatalog {
 /** Public tools shown on /tools for guests. */
 export function publicToolsAsServices(): PlatformService[] {
   return PLATFORM_SERVICES.filter((s) => s.public);
+}
+
+/** Resolve tile link: public route for guests, admin route when user has read access. */
+export function resolveToolRoute(
+  tool: PlatformService,
+  canRead: (slug: string) => boolean,
+): string {
+  if (tool.publicRoute && !canRead(tool.slug)) {
+    return tool.publicRoute;
+  }
+  return tool.adminRoute;
 }
 
 export const PLATFORM_CATEGORIES: Record<string, string> = {

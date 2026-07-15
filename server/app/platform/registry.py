@@ -40,6 +40,7 @@ class PlatformService:
     capabilities: tuple[str, ...]
     external: bool = False
     public: bool = False
+    public_route: str | None = None
 
 
 PLATFORM_SERVICES: tuple[PlatformService, ...] = (
@@ -67,11 +68,13 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         slug="expenses",
         name="expenses",
         category="productivity",
-        description="Monthly personal spending ledger, charts, and currency converter",
+        description="Track spending, convert currencies, sum items, and plan budgets",
         api_prefix="/expenses",
         admin_route="/admin/tools/expenses",
         icon="¤",
         capabilities=("read", "write"),
+        public=True,
+        public_route="/expense-calculator",
     ),
     PlatformService(
         slug="recipes",
@@ -124,17 +127,6 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         api_prefix="/calculator",
         admin_route="/calculator",
         icon="⊞",
-        capabilities=("read",),
-        public=True,
-    ),
-    PlatformService(
-        slug="expense-calculator",
-        name="expense calculator",
-        category="utilities",
-        description="Convert currencies, sum items, and plan budgets",
-        api_prefix="/expense-calculator",
-        admin_route="/expense-calculator",
-        icon="∑",
         capabilities=("read",),
         public=True,
     ),
