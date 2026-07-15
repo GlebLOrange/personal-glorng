@@ -389,73 +389,62 @@ function downloadResult(): void {
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <label class="flex flex-col gap-2 text-sm text-surface-mid">
-        Format
-        <select v-model="formatChoice" :class="SELECT_CLASS">
-          <option value="auto">Auto</option>
-          <option value="csv">CSV</option>
-          <option value="json">JSON</option>
-          <option value="xml">XML</option>
-          <option value="delimited">Delimited</option>
-        </select>
-      </label>
+      <select v-model="formatChoice" :class="SELECT_CLASS" aria-label="format">
+        <option value="auto">auto</option>
+        <option value="csv">CSV</option>
+        <option value="json">JSON</option>
+        <option value="xml">XML</option>
+        <option value="delimited">delimited</option>
+      </select>
 
-      <label v-if="showDelimitedOptions" class="flex flex-col gap-2 text-sm text-surface-mid">
-        Profile
-        <select v-model="profileChoice" :class="SELECT_CLASS">
-          <option value="custom">Custom delimiters</option>
-          <option value="pipe_embed">Pipe embed (13 fields)</option>
-        </select>
-      </label>
-
-      <label
-        v-if="showDelimitedOptions && profileChoice === 'custom'"
-        class="flex flex-col gap-2 text-sm text-surface-mid"
+      <select
+        v-if="showDelimitedOptions"
+        v-model="profileChoice"
+        :class="SELECT_CLASS"
+        aria-label="profile"
       >
-        Field delimiter
-        <input
-          v-model="fieldDelimiter"
-          type="text"
-          maxlength="4"
-          class="rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-        />
-      </label>
+        <option value="custom">custom delimiters</option>
+        <option value="pipe_embed">pipe embed (13 fields)</option>
+      </select>
 
-      <label
+      <input
         v-if="showDelimitedOptions && profileChoice === 'custom'"
-        class="flex flex-col gap-2 text-sm text-surface-mid"
-      >
-        List delimiter
-        <input
-          v-model="listDelimiter"
-          type="text"
-          maxlength="4"
-          class="rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-        />
-      </label>
+        v-model="fieldDelimiter"
+        type="text"
+        maxlength="4"
+        placeholder="field delimiter"
+        aria-label="field delimiter"
+        class="rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
+      />
 
-      <label v-if="showXmlOptions" class="flex flex-col gap-2 text-sm text-surface-mid">
-        XML row tag
-        <input
-          v-model="rowTag"
-          type="text"
-          placeholder="item (optional)"
-          class="rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-        />
-      </label>
+      <input
+        v-if="showDelimitedOptions && profileChoice === 'custom'"
+        v-model="listDelimiter"
+        type="text"
+        maxlength="4"
+        placeholder="list delimiter"
+        aria-label="list delimiter"
+        class="rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
+      />
 
-      <label v-if="showXmlOptions" class="flex flex-col gap-2 text-sm text-surface-mid">
-        XML mode
-        <select v-model="xmlMode" :class="SELECT_CLASS">
-          <option value="rows">Rows</option>
-          <option value="tree">Tree</option>
-        </select>
-      </label>
+      <input
+        v-if="showXmlOptions"
+        v-model="rowTag"
+        type="text"
+        placeholder="xml row tag (optional)"
+        aria-label="xml row tag (optional)"
+        class="rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
+      />
+
+      <select v-if="showXmlOptions" v-model="xmlMode" :class="SELECT_CLASS" aria-label="xml mode">
+        <option value="rows">rows</option>
+        <option value="tree">tree</option>
+      </select>
     </div>
 
     <div class="flex flex-wrap gap-3 mb-10">
       <BaseButton variant="primary" :disabled="loading || !selectedFile" @click="extractFile">
-        {{ loading ? "Working..." : "Extract" }}
+        {{ loading ? "working..." : "extract" }}
       </BaseButton>
       <BaseButton
         v-if="canWrite"
@@ -463,7 +452,7 @@ function downloadResult(): void {
         :disabled="loading || !selectedFile"
         @click="importFile"
       >
-        {{ loading ? "Working..." : "Import to DB" }}
+        {{ loading ? "working..." : "import to DB" }}
       </BaseButton>
     </div>
 
@@ -537,7 +526,7 @@ function downloadResult(): void {
           <p class="text-xs text-surface-mid mt-1">{{ metaSummary }}</p>
         </div>
         <div class="flex gap-2">
-          <BaseButton variant="ghost" @click="copyResult">Copy JSON</BaseButton>
+          <BaseButton variant="ghost" @click="copyResult">copy json</BaseButton>
           <BaseButton variant="ghost" @click="downloadResult">Download JSON</BaseButton>
           <BaseButton variant="ghost" @click="showRawJson = !showRawJson">
             {{ showRawJson ? "Hide raw JSON" : "Show raw JSON" }}

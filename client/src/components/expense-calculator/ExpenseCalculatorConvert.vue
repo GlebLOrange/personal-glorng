@@ -85,31 +85,25 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
 
     <BaseInput
       v-model="amount"
-      label="Amount"
       type="number"
       step="0.01"
       min="0.01"
-      placeholder="100.00"
+      placeholder="amount (100.00)"
+      aria-label="amount (100.00)"
     />
 
     <div class="grid grid-cols-2 gap-3">
-      <div>
-        <label class="text-sm text-surface-mid block mb-1">From</label>
-        <select v-model="fromCurrency" :class="selectClass">
-          <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-sm text-surface-mid block mb-1">To</label>
-        <select v-model="toCurrency" :class="selectClass">
-          <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
-        </select>
-      </div>
+      <select v-model="fromCurrency" :class="selectClass" aria-label="from">
+        <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
+      </select>
+      <select v-model="toCurrency" :class="selectClass" aria-label="to">
+        <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
+      </select>
     </div>
 
     <div class="flex gap-2">
-      <BaseButton variant="ghost" size="sm" aria-label="Swap currencies" @click="swapCurrencies">
-        Swap
+      <BaseButton variant="ghost" size="sm" aria-label="swap currencies" @click="swapCurrencies">
+        swap
       </BaseButton>
     </div>
 
@@ -119,7 +113,7 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
       aria-live="polite"
       :aria-busy="converting || ratesLoading"
     >
-      <p class="text-xs text-surface-mid uppercase tracking-wider mb-2">Result</p>
+      <p class="text-xs text-surface-mid uppercase tracking-wider mb-2">result</p>
       <p v-if="converted" class="text-3xl font-bold font-data text-surface-light">
         {{ formatMoney(converted, toCurrency) }}
       </p>

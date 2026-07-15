@@ -219,9 +219,9 @@ const persistenceHint = computed(() => {
       </Card>
 
       <div class="md:w-36">
-        <label class="text-sm text-surface-mid block mb-1">Display currency</label>
         <select
           v-model="calculatorDisplayCurrency"
+          aria-label="display currency"
           class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue h-[42px]"
         >
           <option value="PLN">PLN</option>
@@ -462,7 +462,7 @@ const persistenceHint = computed(() => {
       :open="deleteTargetId !== null"
       title="Delete expense"
       message="This expense will be permanently removed."
-      confirm-label="Delete"
+      confirm-label="delete"
       :loading="loading"
       @confirm="confirmDeleteExpense"
       @cancel="deleteTargetId = null"
@@ -472,7 +472,7 @@ const persistenceHint = computed(() => {
       :open="deleteCategoryTarget !== null"
       title="Delete category"
       :message="deleteCategoryTarget ? `Delete category '${deleteCategoryTarget.name}'?` : ''"
-      confirm-label="Delete"
+      confirm-label="delete"
       :loading="loading"
       @confirm="confirmDeleteCategory"
       @cancel="deleteCategoryTarget = null"

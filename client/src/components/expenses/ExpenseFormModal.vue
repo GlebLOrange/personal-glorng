@@ -40,51 +40,47 @@ const selectClass =
           </h2>
 
           <form class="space-y-4" @submit.prevent="emit('submit')">
-            <div>
-              <label class="text-sm text-surface-mid block mb-1">Category</label>
-              <select v-model="category" :class="[selectClass, 'w-full']">
-                <option value="">—</option>
-                <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-              </select>
-            </div>
+            <select v-model="category" :class="[selectClass, 'w-full']" aria-label="category">
+              <option value="">—</option>
+              <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
+            </select>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <BaseInput v-model="toolName" label="Product" placeholder="Milk, dinner, Shell..." />
+              <BaseInput
+                v-model="toolName"
+                placeholder="product (milk, dinner, shell...)"
+                aria-label="product (milk, dinner, shell...)"
+              />
               <BaseInput
                 v-model="amount"
-                label="Price"
                 type="number"
                 step="0.01"
                 min="0.01"
-                placeholder="20.00"
+                placeholder="price (0.00)"
+                aria-label="price (0.00)"
               />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-              <BaseInput v-model="expenseDate" label="Date" type="date" />
-              <div>
-                <label class="text-sm text-surface-mid block mb-1">Currency</label>
-                <select v-model="currency" :class="[selectClass, 'w-full']">
-                  <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
-                </select>
-              </div>
+              <BaseInput v-model="expenseDate" type="date" aria-label="date" />
+              <select v-model="currency" :class="[selectClass, 'w-full']" aria-label="currency">
+                <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
+              </select>
             </div>
 
-            <div>
-              <label class="text-sm text-surface-mid block mb-1">Notes</label>
-              <textarea
-                v-model="notes"
-                rows="3"
-                placeholder="Invoice ref, billing period..."
-                class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
-              />
-            </div>
+            <textarea
+              v-model="notes"
+              rows="3"
+              placeholder="notes (invoice ref, billing period...)"
+              aria-label="notes (invoice ref, billing period...)"
+              class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
+            />
 
             <div class="flex gap-3 pt-2">
               <BaseButton variant="primary" :disabled="loading">
-                {{ loading ? "Saving..." : "Save" }}
+                {{ loading ? "saving..." : "save" }}
               </BaseButton>
-              <BaseButton variant="ghost" type="button" @click="emit('close')">Cancel</BaseButton>
+              <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>
             </div>
           </form>
         </div>

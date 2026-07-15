@@ -43,7 +43,7 @@ watch(slug, () => {
 
     <Card v-else-if="detailError" as="section" class="!p-8 text-center">
       <p class="text-sm text-surface-mid mb-4">{{ detailError }}</p>
-      <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">Retry</BaseButton>
+      <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">retry</BaseButton>
     </Card>
 
     <article v-else-if="article" class="min-w-0">

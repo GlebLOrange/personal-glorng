@@ -33,10 +33,10 @@ describe("EmailTool", () => {
     });
 
     const wrapper = mount(EmailTool);
-    await wrapper.find('input[placeholder="Email subject"]').setValue("Subject");
+    await wrapper.find('input[placeholder="subject"]').setValue("Subject");
     await wrapper.find("textarea").setValue("Body text");
 
-    const previewBtn = wrapper.findAll("button").find((b) => b.text().trim() === "Preview");
+    const previewBtn = wrapper.findAll("button").find((b) => b.text().trim() === "preview");
     expect(previewBtn).toBeDefined();
     await previewBtn!.trigger("click");
 

@@ -129,8 +129,8 @@ onMounted(loadUrls);
           v-model="newUrl"
           compact
           class="min-w-0 flex-1"
-          placeholder="url: https://example.com/very-long-url..."
-          aria-label="url"
+          placeholder="url (https://example.com/very-long-url...)"
+          aria-label="url (https://example.com/very-long-url...)"
         />
         <BaseButton
           variant="primary"
@@ -145,13 +145,13 @@ onMounted(loadUrls);
       <BaseInput
         v-model="newTitle"
         compact
-        placeholder="optional title (uses url if empty)"
-        aria-label="optional title"
+        placeholder="title (optional)"
+        aria-label="title (optional)"
       />
     </form>
 
     <Card v-if="lastCreatedLink" variant="compact" class="mb-10">
-      <p class="mb-2 text-sm text-surface-mid">Your short link</p>
+      <p class="mb-2 text-sm text-surface-mid">your short link</p>
       <div class="flex flex-wrap items-center gap-3">
         <a
           :href="lastCreatedLink"
@@ -161,12 +161,12 @@ onMounted(loadUrls);
         >
           {{ lastCreatedLink }}
         </a>
-        <BaseButton variant="ghost" size="sm" @click="copy(lastCreatedLink)">Copy</BaseButton>
+        <BaseButton variant="ghost" size="sm" @click="copy(lastCreatedLink)">copy</BaseButton>
       </div>
     </Card>
 
     <div v-if="canManage" class="space-y-1">
-      <AdminListSkeleton v-if="listLoading" label="Loading shortened URLs" />
+      <AdminListSkeleton v-if="listLoading" label="loading shortened URLs" />
 
       <template v-else>
         <UrlShortenerListItem
@@ -181,7 +181,7 @@ onMounted(loadUrls);
           @delete="deleteUrl(url.id)"
         />
 
-        <EmptyState v-if="urls.length === 0">No shortened URLs yet. Create one above.</EmptyState>
+        <EmptyState v-if="urls.length === 0">no shortened URLs yet. create one above.</EmptyState>
 
         <AdminListFooter
           v-if="urls.length > 0"

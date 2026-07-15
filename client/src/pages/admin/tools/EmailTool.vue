@@ -69,21 +69,35 @@ async function preview(): Promise<void> {
 <template>
   <AdminPageLayout title="email">
     <form class="space-y-3 mb-8" @submit.prevent="send">
-      <BaseInput v-model="to" type="email" label="To" placeholder="recipient@example.com" />
-      <BaseInput v-model="subject" label="Subject" placeholder="Email subject" />
-      <BaseTextarea v-model="body" label="Body" :rows="6" placeholder="Write your message..." />
+      <BaseInput
+        v-model="to"
+        type="email"
+        placeholder="to (recipient@example.com)"
+        aria-label="to (recipient@example.com)"
+      />
+      <BaseInput
+        v-model="subject"
+        placeholder="subject"
+        aria-label="subject"
+      />
+      <BaseTextarea
+        v-model="body"
+        :rows="6"
+        placeholder="body (write your message...)"
+        aria-label="body (write your message...)"
+      />
       <div class="flex gap-3">
         <BaseButton variant="primary" :disabled="!canSend || loading">
-          {{ loading ? "Sending..." : "Send" }}
+          {{ loading ? "sending..." : "send" }}
         </BaseButton>
         <BaseButton type="button" variant="ghost" :disabled="!subject || !body" @click="preview">
-          Preview
+          preview
         </BaseButton>
       </div>
     </form>
 
     <div v-if="previewHtml" class="space-y-2">
-      <h3 class="text-sm text-surface-mid">Preview</h3>
+      <h3 class="text-sm text-surface-mid">preview</h3>
       <!-- eslint-disable-next-line vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
       <div
         class="border border-surface-border rounded-lg p-4 bg-white"

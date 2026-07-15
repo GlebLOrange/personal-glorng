@@ -30,7 +30,6 @@ const inputAttrs = computed(() => {
 
 <template>
   <div class="flex flex-col gap-1" :class="$attrs.class" :style="$attrs.style">
-    <label v-if="label" :for="inputId" class="text-sm text-surface-mid">{{ label }}</label>
     <input
       v-if="type === 'number'"
       :id="inputId"

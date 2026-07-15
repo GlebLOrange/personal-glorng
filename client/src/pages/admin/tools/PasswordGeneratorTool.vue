@@ -71,29 +71,34 @@ async function generatePassword(): Promise<void> {
   >
     <Card>
       <form class="space-y-4" @submit.prevent="generatePassword">
-        <BaseInput v-model.number="length" type="number" label="Length" />
+        <BaseInput
+          v-model.number="length"
+          type="number"
+          placeholder="length (8–128)"
+          aria-label="length (8–128)"
+        />
 
         <fieldset class="space-y-2">
-          <legend class="text-sm text-surface-mid mb-1">Character sets</legend>
+          <legend class="text-sm text-surface-mid mb-1">character sets</legend>
           <label class="flex items-center gap-2 text-sm text-surface-light">
             <input v-model="uppercase" type="checkbox" class="rounded" />
-            Uppercase (A–Z)
+            uppercase (A–Z)
           </label>
           <label class="flex items-center gap-2 text-sm text-surface-light">
             <input v-model="lowercase" type="checkbox" class="rounded" />
-            Lowercase (a–z)
+            lowercase (a–z)
           </label>
           <label class="flex items-center gap-2 text-sm text-surface-light">
             <input v-model="digits" type="checkbox" class="rounded" />
-            Numbers (0–9)
+            numbers (0–9)
           </label>
           <label class="flex items-center gap-2 text-sm text-surface-light">
             <input v-model="symbols" type="checkbox" class="rounded" />
-            Symbols (!@#$…)
+            symbols (!@#$…)
           </label>
           <label class="flex items-center gap-2 text-sm text-surface-light">
             <input v-model="excludeAmbiguous" type="checkbox" class="rounded" />
-            Exclude ambiguous (0, O, 1, l, I)
+            exclude ambiguous (0, O, 1, l, I)
           </label>
         </fieldset>
 
@@ -103,7 +108,7 @@ async function generatePassword(): Promise<void> {
           class="w-full"
           :disabled="loading || !hasCharset"
         >
-          {{ loading ? "Generating..." : "Generate" }}
+          {{ loading ? "generating..." : "generate" }}
         </BaseButton>
       </form>
 
@@ -111,14 +116,15 @@ async function generatePassword(): Promise<void> {
         <div class="flex flex-wrap items-end gap-2">
           <BaseInput
             :model-value="displayPassword"
-            label="Password"
             readonly
+            placeholder="password"
+            aria-label="password"
             class="flex-1 min-w-[12rem] font-mono"
           />
           <BaseButton variant="ghost" size="sm" @click="showPassword = !showPassword">
-            {{ showPassword ? "Hide" : "Show" }}
+            {{ showPassword ? "hide" : "show" }}
           </BaseButton>
-          <BaseButton variant="ghost" size="sm" @click="copy(generated)">Copy</BaseButton>
+          <BaseButton variant="ghost" size="sm" @click="copy(generated)">copy</BaseButton>
         </div>
         <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
           {{ strength.message }}

@@ -117,17 +117,17 @@ const inputClass =
   <BaseDrawer :open="open" :title="formTitle" max-width="xl" @close="emit('close')">
     <form id="recipe-form-drawer-form" class="space-y-6" @submit.prevent="emit('save')">
       <section class="space-y-4">
-        <h3 class="text-sm font-medium text-surface-mid">Basics</h3>
+        <h3 class="text-sm font-medium text-surface-mid">basics</h3>
         <BaseInput
           :model-value="form.title"
-          label="Title"
-          placeholder="Recipe title"
+          placeholder="title"
+          aria-label="title"
           @update:model-value="patch({ title: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.image_url"
-          label="Image URL"
-          placeholder="https://..."
+          placeholder="image url (https://...)"
+          aria-label="image url (https://...)"
           @update:model-value="patch({ image_url: toStringValue($event) })"
         />
         <BaseImage
@@ -139,34 +139,34 @@ const inputClass =
       </section>
 
       <section class="space-y-4">
-        <h3 class="text-sm font-medium text-surface-mid">Timing</h3>
+        <h3 class="text-sm font-medium text-surface-mid">timing</h3>
         <div class="grid grid-cols-3 gap-3">
           <BaseInput
             :model-value="form.prep_time"
-            label="Prep (min)"
             type="number"
-            placeholder="15"
+            placeholder="prep (min)"
+            aria-label="prep (min)"
             @update:model-value="patch({ prep_time: toNullableNumber($event) })"
           />
           <BaseInput
             :model-value="form.cook_time"
-            label="Cook (min)"
             type="number"
-            placeholder="30"
+            placeholder="cook (min)"
+            aria-label="cook (min)"
             @update:model-value="patch({ cook_time: toNullableNumber($event) })"
           />
           <BaseInput
             :model-value="form.servings"
-            label="Servings"
             type="number"
-            placeholder="4"
+            placeholder="servings"
+            aria-label="servings"
             @update:model-value="patch({ servings: toNullableNumber($event) })"
           />
         </div>
       </section>
 
       <section class="space-y-3">
-        <h3 class="text-sm font-medium text-surface-mid">Tags</h3>
+        <h3 class="text-sm font-medium text-surface-mid">tags</h3>
         <div v-if="parsedTags.length" class="flex flex-wrap gap-1.5">
           <button
             v-for="tag in parsedTags"
@@ -187,8 +187,8 @@ const inputClass =
         </div>
         <BaseInput
           :model-value="form.tags"
-          label="Add tags"
-          placeholder="dinner, pasta, quick"
+          placeholder="tags (dinner, pasta, quick)"
+          aria-label="tags (dinner, pasta, quick)"
           @update:model-value="patch({ tags: toStringValue($event) })"
         />
         <div v-if="tagSuggestions.length" class="flex flex-wrap gap-1.5">
@@ -203,13 +203,14 @@ const inputClass =
       </section>
 
       <section class="space-y-3">
-        <h3 class="text-sm font-medium text-surface-mid">Ingredients</h3>
+        <h3 class="text-sm font-medium text-surface-mid">ingredients</h3>
         <div class="space-y-2">
           <div v-for="(_, idx) in form.ingredients" :key="idx" class="flex gap-2 items-start">
             <input
               :value="form.ingredients[idx]"
               :class="inputClass"
-              :placeholder="`Ingredient ${idx + 1}`"
+              :placeholder="`ingredient ${idx + 1}`"
+              :aria-label="`ingredient ${idx + 1}`"
               @input="updateIngredient(idx, ($event.target as HTMLInputElement).value)"
             />
             <div class="flex flex-col gap-1 shrink-0">
@@ -252,7 +253,7 @@ const inputClass =
       </section>
 
       <section class="space-y-3">
-        <h3 class="text-sm font-medium text-surface-mid">Steps</h3>
+        <h3 class="text-sm font-medium text-surface-mid">steps</h3>
         <div class="space-y-2">
           <div v-for="(_, idx) in form.steps" :key="idx" class="flex gap-2 items-start">
             <div class="text-surface-mid text-sm pt-2 w-6 text-right shrink-0">{{ idx + 1 }}.</div>
@@ -260,7 +261,8 @@ const inputClass =
               <BaseTextarea
                 :model-value="form.steps[idx]"
                 :rows="2"
-                :placeholder="`Step ${idx + 1}`"
+                :placeholder="`step ${idx + 1}`"
+                :aria-label="`step ${idx + 1}`"
                 @update:model-value="updateStep(idx, String($event ?? ''))"
               />
             </div>
@@ -302,11 +304,12 @@ const inputClass =
       </section>
 
       <section class="space-y-3">
-        <h3 class="text-sm font-medium text-surface-mid">Notes</h3>
+        <h3 class="text-sm font-medium text-surface-mid">notes</h3>
         <BaseTextarea
           :model-value="form.notes"
           :rows="3"
-          placeholder="Tips, variations, source link..."
+          placeholder="notes (tips, variations, source link...)"
+          aria-label="notes (tips, variations, source link...)"
           @update:model-value="patch({ notes: String($event ?? '') })"
         />
       </section>
@@ -320,9 +323,9 @@ const inputClass =
           variant="primary"
           :disabled="loading"
         >
-          {{ loading ? "Saving..." : "Save" }}
+          {{ loading ? "saving..." : "save" }}
         </BaseButton>
-        <BaseButton variant="ghost" type="button" @click="emit('close')">Cancel</BaseButton>
+        <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>
       </div>
     </template>
   </BaseDrawer>

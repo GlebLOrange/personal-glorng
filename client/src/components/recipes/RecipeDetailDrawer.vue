@@ -44,7 +44,7 @@ const emit = defineEmits<{
               emit('edit', recipe);
             "
           >
-            Edit
+            edit
           </BaseDropdownMenuItem>
           <BaseDropdownMenuItem
             destructive
@@ -53,7 +53,7 @@ const emit = defineEmits<{
               emit('delete');
             "
           >
-            Delete
+            delete
           </BaseDropdownMenuItem>
         </template>
       </BaseDropdownMenu>
@@ -98,7 +98,7 @@ const emit = defineEmits<{
       </div>
 
       <section>
-        <h3 class="text-sm font-medium text-surface-mid mb-2">Ingredients</h3>
+        <h3 class="text-sm font-medium text-surface-mid mb-2">ingredients</h3>
         <ul class="text-sm text-surface-light space-y-1">
           <li v-for="(ing, i) in recipe.ingredients" :key="i" class="flex gap-2">
             <span class="text-accent-blue shrink-0">·</span>
@@ -108,7 +108,7 @@ const emit = defineEmits<{
       </section>
 
       <section>
-        <h3 class="text-sm font-medium text-surface-mid mb-2">Steps</h3>
+        <h3 class="text-sm font-medium text-surface-mid mb-2">steps</h3>
         <ol class="text-sm text-surface-light space-y-2">
           <li v-for="(step, i) in recipe.steps" :key="i" class="flex gap-2">
             <span class="text-accent-blue font-mono shrink-0 w-5">{{ i + 1 }}.</span>
@@ -118,13 +118,13 @@ const emit = defineEmits<{
       </section>
 
       <section v-if="recipe.notes">
-        <h3 class="text-sm font-medium text-surface-mid mb-2">Notes</h3>
+        <h3 class="text-sm font-medium text-surface-mid mb-2">notes</h3>
         <p class="text-sm text-surface-light whitespace-pre-line">{{ recipe.notes }}</p>
       </section>
     </div>
 
     <template v-if="recipe && !loading" #footer>
-      <BaseButton variant="primary" class="w-full" @click="emit('cook')"> Cook </BaseButton>
+      <BaseButton variant="primary" class="w-full" @click="emit('cook')">cook</BaseButton>
     </template>
   </BaseDrawer>
 </template>

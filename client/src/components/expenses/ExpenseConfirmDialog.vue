@@ -21,9 +21,9 @@ const emit = defineEmits<{
     <p class="text-sm text-surface-mid mb-6">{{ message }}</p>
     <div class="flex gap-3">
       <BaseButton variant="primary" :disabled="loading" @click="emit('confirm')">
-        {{ loading ? "Working..." : (confirmLabel ?? "Confirm") }}
+        {{ loading ? "working..." : (confirmLabel ?? "confirm") }}
       </BaseButton>
-      <BaseButton variant="ghost" :disabled="loading" @click="emit('cancel')">Cancel</BaseButton>
+      <BaseButton variant="ghost" :disabled="loading" @click="emit('cancel')">cancel</BaseButton>
     </div>
   </BaseModal>
 </template>

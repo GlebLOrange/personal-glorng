@@ -531,7 +531,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
                   }}
                 </p>
                 <div class="flex gap-2">
-                  <BaseButton variant="ghost" @click="requestCloseUserDrawer">Cancel</BaseButton>
+                  <BaseButton variant="ghost" @click="requestCloseUserDrawer">cancel</BaseButton>
                   <BaseButton
                     variant="primary"
                     :disabled="

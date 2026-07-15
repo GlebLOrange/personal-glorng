@@ -54,8 +54,8 @@ defineExpose({ focusEntry });
   <Card>
     <div class="flex items-center justify-between gap-3 mb-3">
       <div>
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Quick add</p>
-        <p class="text-xs text-surface-muted mt-1">Smart text first; fields stay ready below.</p>
+        <p class="text-xs text-surface-mid uppercase tracking-wider">quick add</p>
+        <p class="text-xs text-surface-muted mt-1">smart text first; fields stay ready below.</p>
       </div>
       <span class="text-xs text-surface-mid font-data">{{ currencyLabel }}</span>
     </div>
@@ -63,20 +63,20 @@ defineExpose({ focusEntry });
     <form class="flex flex-col gap-4" @submit.prevent="emit('submit')">
       <div class="flex flex-col md:flex-row md:items-end gap-3">
         <div class="flex-1">
-          <label class="text-sm text-surface-mid block mb-1">Transaction</label>
           <input
             ref="smartInputRef"
             v-model="smartText"
-            placeholder="89.50 biedronka or 12 lunch"
+            placeholder="transaction (89.50 biedronka or 12 lunch)"
+            aria-label="transaction (89.50 biedronka or 12 lunch)"
             :class="FIELD_INPUT_CLASS"
           />
         </div>
         <BaseButton variant="primary" type="submit" :disabled="loading" class="md:mb-0.5">
-          {{ loading ? "Saving..." : "Save" }}
+          {{ loading ? "saving..." : "save" }}
         </BaseButton>
       </div>
 
-      <p v-if="parsing" class="text-xs text-surface-mid">Parsing...</p>
+      <p v-if="parsing" class="text-xs text-surface-mid">parsing...</p>
       <p v-else-if="parsedPreview" class="text-xs text-accent-blue font-data">
         {{ parsedPreview }}
       </p>
@@ -84,39 +84,30 @@ defineExpose({ focusEntry });
 
       <div class="rounded-lg border border-surface-border bg-surface-dark/40 p-3">
         <div class="grid grid-cols-1 md:grid-cols-[180px_1fr_120px] md:items-end gap-3">
-          <div>
-            <label class="text-xs text-surface-mid uppercase tracking-wider block mb-1">
-              Category
-            </label>
-            <select v-model="category" :class="SELECT_CLASS_COMPACT">
-              <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-            </select>
-          </div>
-          <div class="flex-1">
-            <label class="text-sm text-surface-mid block mb-1">Product</label>
-            <input
-              v-model="product"
-              list="expense-product-suggestions"
-              placeholder="Milk, fuel, rent..."
-              :class="FIELD_INPUT_CLASS"
-            />
-            <datalist id="expense-product-suggestions">
-              <option v-for="name in productSuggestions" :key="name" :value="name" />
-            </datalist>
-          </div>
-          <div>
-            <BaseInput
-              v-model="price"
-              label="Price"
-              type="number"
-              step="0.01"
-              min="0.01"
-              placeholder="0.00"
-            />
-          </div>
+          <select v-model="category" :class="SELECT_CLASS_COMPACT" aria-label="category">
+            <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
+          </select>
+          <input
+            v-model="product"
+            list="expense-product-suggestions"
+            placeholder="product (milk, fuel, rent...)"
+            aria-label="product (milk, fuel, rent...)"
+            :class="FIELD_INPUT_CLASS"
+          />
+          <BaseInput
+            v-model="price"
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder="price (0.00)"
+            aria-label="price (0.00)"
+          />
         </div>
+        <datalist id="expense-product-suggestions">
+          <option v-for="name in productSuggestions" :key="name" :value="name" />
+        </datalist>
         <p class="text-xs text-surface-mid mt-2">
-          Today by default. Use Add for date, currency, and notes.
+          today by default. use add for date, currency, and notes.
         </p>
       </div>
     </form>

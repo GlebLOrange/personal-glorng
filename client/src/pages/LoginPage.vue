@@ -58,10 +58,20 @@ async function handleGoogleLogin(): Promise<void> {
       </h1>
 
       <form class="space-y-4" @submit.prevent="handleLogin">
-        <BaseInput v-model="email" type="email" label="Email" placeholder="you@example.com" />
-        <BaseInput v-model="password" type="password" label="Password" placeholder="••••••••••••" />
+        <BaseInput
+          v-model="email"
+          type="email"
+          placeholder="email (you@example.com)"
+          aria-label="email (you@example.com)"
+        />
+        <BaseInput
+          v-model="password"
+          type="password"
+          placeholder="password"
+          aria-label="password"
+        />
         <BaseButton variant="primary" class="w-full" :disabled="loading">
-          {{ loading ? "Authenticating..." : "Login" }}
+          {{ loading ? "authenticating..." : "login" }}
         </BaseButton>
       </form>
 
@@ -78,17 +88,17 @@ async function handleGoogleLogin(): Promise<void> {
           @click="handleGoogleLogin"
         >
           <span class="font-data text-sm" aria-hidden="true">G</span>
-          {{ googleLoading ? "Connecting..." : "Continue with Google" }}
+          {{ googleLoading ? "connecting..." : "continue with Google" }}
         </BaseButton>
       </div>
 
       <p class="text-center text-xs text-surface-mid mt-4 space-x-3">
         <RouterLink to="/register" class="hover:text-accent-blue transition-colors">
-          Create account
+          create account
         </RouterLink>
         <span>·</span>
         <RouterLink to="/forgot-password" class="hover:text-accent-blue transition-colors">
-          Forgot password?
+          forgot password?
         </RouterLink>
       </p>
 

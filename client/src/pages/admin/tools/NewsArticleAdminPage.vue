@@ -263,7 +263,7 @@ watch(articleId, () => {
     <Card v-else-if="detailError" role="alert">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-accent-golden">{{ detailError }}</p>
-        <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">Retry</BaseButton>
+        <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">retry</BaseButton>
       </div>
     </Card>
 
@@ -274,25 +274,47 @@ watch(articleId, () => {
     >
       <div class="space-y-6">
         <Card>
-          <h2 class="card-title mb-4">Article</h2>
+          <h2 class="card-title mb-4">article</h2>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <BaseInput v-model="form.slug" label="Slug" :disabled="!canWrite" />
-            <label class="flex flex-col gap-1 text-sm text-surface-mid">
-              Status
-              <select v-model="form.status" :class="SELECT_CLASS" :disabled="!canWrite">
-                <option value="draft">draft</option>
-                <option value="published">published</option>
-                <option value="unpublished">unpublished</option>
-                <option value="failed">failed</option>
-              </select>
-            </label>
-            <BaseInput v-model="form.title" label="Title" :disabled="!canWrite" />
-            <BaseInput v-model="form.original_title" label="Original title" :disabled="!canWrite" />
-            <BaseInput v-model="form.language" label="Language" :disabled="!canWrite" />
+            <BaseInput
+              v-model="form.slug"
+              placeholder="slug"
+              aria-label="slug"
+              :disabled="!canWrite"
+            />
+            <select
+              v-model="form.status"
+              :class="SELECT_CLASS"
+              aria-label="status"
+              :disabled="!canWrite"
+            >
+              <option value="draft">draft</option>
+              <option value="published">published</option>
+              <option value="unpublished">unpublished</option>
+              <option value="failed">failed</option>
+            </select>
+            <BaseInput
+              v-model="form.title"
+              placeholder="title"
+              aria-label="title"
+              :disabled="!canWrite"
+            />
+            <BaseInput
+              v-model="form.original_title"
+              placeholder="original title"
+              aria-label="original title"
+              :disabled="!canWrite"
+            />
+            <BaseInput
+              v-model="form.language"
+              placeholder="language (en)"
+              aria-label="language (en)"
+              :disabled="!canWrite"
+            />
           </div>
           <fieldset class="mt-4 space-y-2">
             <legend class="text-sm text-surface-mid">
-              Themes
+              themes
               <span class="text-xs text-surface-muted">
                 ({{ parsedThemes().length }}/{{ NEWS_THEME_LIMIT }})
               </span>
@@ -323,44 +345,55 @@ watch(articleId, () => {
             </div>
           </fieldset>
           <div class="mt-4">
-            <BaseTextarea v-model="form.summary" label="Summary" :rows="4" :disabled="!canWrite" />
+            <BaseTextarea
+              v-model="form.summary"
+              :rows="4"
+              placeholder="summary"
+              aria-label="summary"
+              :disabled="!canWrite"
+            />
           </div>
         </Card>
 
         <Card>
-          <h2 class="card-title mb-4">Source</h2>
+          <h2 class="card-title mb-4">source</h2>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <label class="flex flex-col gap-1 text-sm text-surface-mid">
-              Source
-              <select
-                :value="form.source_id ?? ''"
-                :class="SELECT_CLASS"
-                :disabled="!canWrite"
-                @change="applySource(Number(($event.target as HTMLSelectElement).value) || null)"
-              >
-                <option value="">Auto from URL host</option>
-                <option v-for="source in sources" :key="source.id" :value="source.id">
-                  {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
-                </option>
-              </select>
-            </label>
-            <BaseInput v-model="form.source_name" label="Source name" :disabled="!canWrite" />
+            <select
+              :value="form.source_id ?? ''"
+              :class="SELECT_CLASS"
+              aria-label="source"
+              :disabled="!canWrite"
+              @change="applySource(Number(($event.target as HTMLSelectElement).value) || null)"
+            >
+              <option value="">auto from URL host</option>
+              <option v-for="source in sources" :key="source.id" :value="source.id">
+                {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
+              </option>
+            </select>
+            <BaseInput
+              v-model="form.source_name"
+              placeholder="source name"
+              aria-label="source name"
+              :disabled="!canWrite"
+            />
             <BaseInput
               v-model="form.source_url"
-              label="Article URL"
+              placeholder="article url"
+              aria-label="article url"
               type="url"
               :disabled="!canWrite"
             />
             <BaseInput
               v-model="form.source_feed_url"
-              label="Source feed/home URL"
+              placeholder="source feed/home url"
+              aria-label="source feed/home url"
               type="url"
               :disabled="!canWrite"
             />
             <BaseInput
               v-model="form.source_published_at"
-              label="Source published at"
               type="datetime-local"
+              aria-label="source published at"
               :disabled="!canWrite"
             />
           </div>
@@ -369,7 +402,7 @@ watch(articleId, () => {
 
       <aside class="space-y-6">
         <Card>
-          <h2 class="card-title mb-4">System fields</h2>
+          <h2 class="card-title mb-4">system fields</h2>
           <dl class="space-y-3 text-sm">
             <div>
               <dt class="text-surface-muted">ID</dt>
@@ -397,7 +430,7 @@ watch(articleId, () => {
         </Card>
 
         <Card>
-          <h2 class="card-title mb-4">Current preview</h2>
+          <h2 class="card-title mb-4">current preview</h2>
           <p class="mb-2 text-xs text-surface-muted">
             {{ form.status }} / {{ form.source_name || "unknown source" }}
           </p>

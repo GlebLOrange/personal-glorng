@@ -60,8 +60,8 @@ async function handleSubmit(): Promise<void> {
         <BaseInput
           v-model="password"
           type="password"
-          label="New password"
-          placeholder="••••••••••••"
+          placeholder="new password"
+          aria-label="new password"
           required
         />
         <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
@@ -70,12 +70,12 @@ async function handleSubmit(): Promise<void> {
         <BaseInput
           v-model="passwordConfirm"
           type="password"
-          label="Confirm password"
-          placeholder="••••••••••••"
+          placeholder="confirm password"
+          aria-label="confirm password"
           required
         />
         <BaseButton variant="primary" class="w-full" :disabled="loading || !strength.valid">
-          {{ loading ? "Saving..." : "Set new password" }}
+          {{ loading ? "saving..." : "set new password" }}
         </BaseButton>
       </form>
 

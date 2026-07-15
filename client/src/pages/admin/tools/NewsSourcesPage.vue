@@ -297,7 +297,7 @@ onMounted(loadSources);
       <Card v-else-if="loadError" role="alert">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-sm text-accent-golden">News sources could not be loaded.</p>
-          <BaseButton variant="ghost" size="sm" @click="loadSources">Retry</BaseButton>
+          <BaseButton variant="ghost" size="sm" @click="loadSources">retry</BaseButton>
         </div>
       </Card>
 
