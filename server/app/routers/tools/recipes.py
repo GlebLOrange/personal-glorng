@@ -43,7 +43,7 @@ async def list_recipes(
     search: Annotated[str | None, Query(max_length=200)] = None,
     tag: Annotated[str | None, Query(max_length=100)] = None,
     tags: Annotated[str | None, Query(max_length=1000)] = None,
-    sort: RecipeSort = "updated_desc",
+    sort: RecipeSort = "title_asc",
     page: int = 1,
     per_page: int = DEFAULT_PER_PAGE,
 ) -> RecipeListResponse:

@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import { Card } from "@/components/ui/card";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
@@ -38,6 +38,7 @@ const result = ref<ExtractionResult | null>(null);
 const importResult = ref<ImportResult | null>(null);
 const batchHistory = ref<ImportBatchSummary[]>([]);
 const batchPage = ref(1);
+const batchTotal = ref(0);
 const batchTotalPages = ref(0);
 const selectedBatchId = ref<number | null>(null);
 const batchDetail = ref<ImportBatchDetail | null>(null);
@@ -160,6 +161,7 @@ async function loadBatchHistory(): Promise<void> {
     params: { page: batchPage.value, per_page: LIST_PAGE_SIZE },
   });
   batchHistory.value = response.data.items;
+  batchTotal.value = response.data.total;
   batchTotalPages.value = response.data.pages;
 }
 
@@ -486,13 +488,15 @@ function downloadResult(): void {
           </button>
         </li>
       </ul>
-      <BasePagination
-        v-if="batchTotalPages > 1"
-        aria-label="Import batches pagination"
+      <AdminListFooter
+        v-if="batchHistory.length > 0"
+        :total="batchTotal"
         :page="batchPage"
         :total-pages="batchTotalPages"
         :has-next-page="hasNextBatchPage"
         :has-previous-page="hasPreviousBatchPage"
+        item-label="batches"
+        ariaLabel="Import batches pagination"
         @prev="goToBatchPage(batchPage - 1)"
         @next="goToBatchPage(batchPage + 1)"
       />

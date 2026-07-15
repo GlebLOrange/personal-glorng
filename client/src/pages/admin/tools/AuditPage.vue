@@ -5,6 +5,7 @@ import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -126,18 +127,7 @@ onMounted(load);
     <AdminListSkeleton v-if="loading && items.length === 0 && !listError" label="Loading audit events" />
 
     <template v-else>
-      <AdminListToolbar
-        :total="total"
-        :page="page"
-        :total-pages="totalPages"
-        :has-next-page="hasNextPage"
-        :has-previous-page="hasPreviousPage"
-        :loading="loading"
-        item-label="events"
-        ariaLabel="Audit pagination"
-        @prev="goToPage(page - 1)"
-        @next="goToPage(page + 1)"
-      >
+      <AdminListToolbar>
         <template #start>
           <AdminFilterDropdown
             ref="filterDropdown"
@@ -145,7 +135,7 @@ onMounted(load);
             :active-label="activeFilterLabel"
             @clear="clearFilters"
           >
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap justify-center gap-2">
               <AdminFilterChip
                 v-for="chip in CATEGORY_FILTERS"
                 :key="chip.value"
@@ -201,6 +191,20 @@ onMounted(load);
           </template>
         </AdminListRow>
       </div>
+
+      <AdminListFooter
+        v-if="!listError"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="loading"
+        item-label="events"
+        ariaLabel="Audit pagination"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+      />
     </template>
   </AdminPageLayout>
 </template>

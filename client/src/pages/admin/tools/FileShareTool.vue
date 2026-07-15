@@ -4,7 +4,7 @@ import { computed, onMounted, ref } from "vue";
 import ShareableListItem from "@/components/admin/ShareableListItem.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
@@ -17,6 +17,7 @@ import { publicUrl } from "@/utils/publicLinks";
 
 const files = ref<SharedFile[]>([]);
 const page = ref(1);
+const total = ref(0);
 const totalPages = ref(0);
 const selectedFile = ref<File | null>(null);
 const dragOver = ref(false);
@@ -44,6 +45,7 @@ async function loadFiles(): Promise<void> {
   );
   if (data) {
     files.value = data.data.items;
+    total.value = data.data.total;
     totalPages.value = data.data.pages;
   }
 }
@@ -159,15 +161,16 @@ onMounted(loadFiles);
           description="Upload a file above to get a shareable link."
         />
 
-        <BasePagination
-          v-if="totalPages > 1"
-          class="pt-2"
-          aria-label="Shared files pagination"
+        <AdminListFooter
+          v-if="files.length > 0"
+          :total="total"
           :page="page"
           :total-pages="totalPages"
           :has-next-page="hasNextPage"
           :has-previous-page="hasPreviousPage"
           :loading="listLoading"
+          item-label="files"
+          ariaLabel="Shared files pagination"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"
         />

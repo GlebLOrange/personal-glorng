@@ -3,6 +3,7 @@ import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
@@ -434,20 +435,7 @@ watch(page, () => {
       </div>
     </header>
 
-    <AdminListToolbar
-      v-if="!listLoading && !listError"
-      class="mb-3"
-      :total="total"
-      :page="page"
-      :total-pages="totalPages"
-      :has-next-page="hasNextPage"
-      :has-previous-page="hasPreviousPage"
-      :loading="listLoading"
-      item-label="articles"
-      ariaLabel="News pagination"
-      @prev="goToPage(page - 1)"
-      @next="goToPage(page + 1)"
-    >
+    <AdminListToolbar v-if="!listLoading && !listError">
       <template #start>
         <AdminFilterDropdown
           ref="filterDropdown"
@@ -455,7 +443,7 @@ watch(page, () => {
           :active-label="activeFilterLabel"
           @clear="clearFilters"
         >
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap justify-center gap-2">
             <AdminFilterChip
               v-for="chip in STATUS_FILTERS"
               :key="chip.value"
@@ -569,6 +557,20 @@ watch(page, () => {
       v-else-if="!listLoading && !listError"
       title="No articles"
       :description="emptyFilterDescription"
+    />
+
+    <AdminListFooter
+      v-if="!listLoading && !listError"
+      :total="total"
+      :page="page"
+      :total-pages="totalPages"
+      :has-next-page="hasNextPage"
+      :has-previous-page="hasPreviousPage"
+      :loading="listLoading"
+      item-label="articles"
+      ariaLabel="News pagination"
+      @prev="goToPage(page - 1)"
+      @next="goToPage(page + 1)"
     />
 
     <NewsArticleDrawer

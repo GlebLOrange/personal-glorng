@@ -211,12 +211,6 @@ export function useExpensesTool(
   const { toast } = useNotify();
 
   const formTitle = computed(() => (editingId.value ? "edit expense" : "new expense"));
-  const expenseCountLabel = computed(() => {
-    const count = expenseTotal.value;
-    const pageLabel =
-      expensePages.value > 0 ? ` · page ${expensePage.value} of ${expensePages.value}` : "";
-    return `${count} expense${count === 1 ? "" : "s"}${pageLabel}`;
-  });
   const hasPreviousExpensePage = computed(() => expensePage.value > 1);
   const hasNextExpensePage = computed(() => expensePage.value < expensePages.value);
   const transactionFilterLabel = computed(() => {
@@ -598,7 +592,7 @@ export function useExpensesTool(
     quickAdd,
     form,
     formTitle,
-    expenseCountLabel,
+    expenseTotal,
     hasPreviousExpensePage,
     hasNextExpensePage,
     transactionFilterLabel,

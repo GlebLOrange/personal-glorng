@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
-import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
@@ -150,20 +150,6 @@ onMounted(loadUrls);
       <AdminListSkeleton v-if="listLoading" label="Loading shortened URLs" />
 
       <template v-else>
-        <AdminListToolbar
-          v-if="urls.length > 0"
-          :total="total"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          :loading="listLoading"
-          item-label="URLs"
-          ariaLabel="Short URLs pagination"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-        />
-
         <UrlShortenerListItem
           v-for="url in urls"
           :key="url.id"
@@ -177,6 +163,20 @@ onMounted(loadUrls);
         />
 
         <EmptyState v-if="urls.length === 0">No shortened URLs yet. Create one above.</EmptyState>
+
+        <AdminListFooter
+          v-if="urls.length > 0"
+          :total="total"
+          :page="page"
+          :total-pages="totalPages"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          :loading="listLoading"
+          item-label="URLs"
+          ariaLabel="Short URLs pagination"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+        />
       </template>
     </div>
   </PageShell>

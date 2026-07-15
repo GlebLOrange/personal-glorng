@@ -8,7 +8,6 @@ from app.db.documents.recipe import Recipe
 from app.db.repositories.base import MongoRepository, _parse_doc
 
 RECIPE_SORTS: dict[str, list[tuple[str, int]]] = {
-    "updated_desc": [("updated_at", -1)],
     "title_asc": [("title", 1)],
     "title_desc": [("title", -1)],
 }
@@ -57,7 +56,7 @@ class RecipeRepository(MongoRepository[Recipe]):
         tags: list[str] | None = None,
         offset: int = 0,
         limit: int = 24,
-        sort: str = "updated_desc",
+        sort: str = "title_asc",
     ) -> list[Recipe]:
         if recipe_ids == []:
             return []
@@ -85,6 +84,6 @@ class RecipeRepository(MongoRepository[Recipe]):
             )
             return [_parse_doc(Recipe, row) async for row in cursor]
 
-        sort_spec = RECIPE_SORTS.get(sort, RECIPE_SORTS["updated_desc"])
+        sort_spec = RECIPE_SORTS.get(sort, RECIPE_SORTS["title_asc"])
         cursor = self._col().find(query).sort(sort_spec).skip(offset).limit(limit)
         return [_parse_doc(Recipe, row) async for row in cursor]

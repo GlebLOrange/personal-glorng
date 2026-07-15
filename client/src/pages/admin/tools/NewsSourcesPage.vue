@@ -5,6 +5,7 @@ import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
@@ -301,18 +302,7 @@ onMounted(loadSources);
       </Card>
 
       <template v-else>
-        <AdminListToolbar
-          :total="total"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          :loading="loading"
-          item-label="sources"
-          ariaLabel="News sources pagination"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-        >
+        <AdminListToolbar>
           <template #start>
             <AdminFilterDropdown
               ref="filterDropdown"
@@ -320,7 +310,7 @@ onMounted(loadSources);
               :active-label="activeFilterLabel"
               @clear="clearFilters"
             >
-              <div class="flex flex-wrap gap-2">
+              <div class="flex flex-wrap justify-center gap-2">
                 <AdminFilterChip
                   v-for="chip in ENABLED_FILTERS"
                   :key="chip.value"
@@ -391,6 +381,19 @@ onMounted(loadSources);
           </template>
         </AdminListRow>
         </template>
+
+        <AdminListFooter
+          :total="total"
+          :page="page"
+          :total-pages="totalPages"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          :loading="loading"
+          item-label="sources"
+          ariaLabel="News sources pagination"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+        />
       </template>
     </div>
 

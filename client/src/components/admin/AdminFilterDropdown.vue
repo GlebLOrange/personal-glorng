@@ -80,7 +80,7 @@ defineExpose({ close });
         <slot />
       </div>
       <slot name="footer" />
-      <div v-if="hasActiveFilters" class="mt-3 flex flex-wrap gap-2">
+      <div v-if="hasActiveFilters" class="mt-3 flex flex-wrap justify-center gap-2">
         <BaseButton variant="ghost" size="sm" @click="onClear">clear</BaseButton>
       </div>
     </div>

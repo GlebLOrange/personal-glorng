@@ -260,7 +260,6 @@ export interface Recipe {
 }
 
 export type RecipeSort =
-  | "updated_desc"
   | "title_asc"
   | "title_desc"
   | "prep_asc"

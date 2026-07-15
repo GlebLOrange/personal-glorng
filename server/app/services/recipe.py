@@ -149,7 +149,7 @@ class RecipeService:
         self,
         search: str | None = None,
         tags: list[str] | None = None,
-        sort: RecipeSort = "updated_desc",
+        sort: RecipeSort = "title_asc",
         page: int = 1,
         per_page: int = DEFAULT_PER_PAGE,
     ) -> RecipeListResponse:

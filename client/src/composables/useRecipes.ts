@@ -52,7 +52,7 @@ export function useRecipes() {
   const totalPages = ref(0);
   const search = ref("");
   const activeTags = ref<string[]>([]);
-  const sort = ref<RecipeSort>("updated_desc");
+  const sort = ref<RecipeSort>("title_asc");
   const page = ref(1);
   const selectedRecipe = ref<Recipe | null>(null);
   const selectedRecipeId = ref<number | null>(null);
@@ -78,9 +78,6 @@ export function useRecipes() {
     const n = total.value;
     const parts = [`${n} recipe${n === 1 ? "" : "s"}`];
     if (activeTags.value.length) parts.push(`tags: ${activeTags.value.join(", ")}`);
-    if (totalPages.value > 0) {
-      parts.push(`page ${page.value} of ${totalPages.value}`);
-    }
     return parts.join(" · ");
   });
   const formTitle = computed(() => (editingId.value ? "edit recipe" : "new recipe"));
@@ -336,7 +333,7 @@ export function useRecipes() {
     }, 300);
   });
 
-  watch([activeTags, sort], () => {
+  watch(activeTags, () => {
     if (page.value !== 1) {
       page.value = 1;
       return;
