@@ -23,6 +23,10 @@ export function formatNewsDate(value: string | null): string {
   }).format(new Date(value));
 }
 
+export function newsArticleDisplayDate(article: NewsArticle): string {
+  return article.source_published_at ?? article.published_at ?? article.created_at;
+}
+
 export function useNews() {
   const articles = ref<NewsArticle[]>([]);
   const article = ref<NewsArticle | null>(null);
