@@ -20,14 +20,14 @@ dependencies = [
     "python-multipart==0.0.*",
     "aiogram==3.29.*",
     "dateparser==1.4.*",
-    "google-auth==2.55.*",
+    "google-auth==2.56.*",
     "google-auth-oauthlib==1.4.*",
     "google-api-python-client==2.198.*",
-    "yt-dlp>=2026.3.17",
+    "yt-dlp>=2026.7.4",
     "elasticsearch[async]==9.4.*",
     "motor==3.7.*",
     "weasyprint==69.*",
-    "firebase-admin>=7.4.0",
+    "firebase-admin>=7.5.0",
 ]
 
 [dependency-groups]
@@ -37,7 +37,7 @@ dev = [
     "pytest-asyncio==1.4.*",
     "aiosqlite==0.22.*",
     "mongomock-motor==0.0.*",
-    "mypy>=1.15.0",
+    "mypy>=2.3.0",
 ]
 
 [tool.ruff]
