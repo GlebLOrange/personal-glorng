@@ -210,10 +210,10 @@ const persistenceHint = computed(() => {
         <p class="text-sm text-surface-mid">{{ persistenceHint }}</p>
         <div v-if="isSuperuser" class="flex flex-wrap gap-2">
           <BaseButton variant="ghost" size="sm" :disabled="loadingState" @click="loadState">
-            {{ loadingState ? "Loading..." : "Load" }}
+            {{ loadingState ? "loading..." : "load" }}
           </BaseButton>
           <BaseButton variant="primary" size="sm" :disabled="saving || !stateDirty" @click="saveState">
-            {{ saving ? "Saving..." : "Save" }}
+            {{ saving ? "saving..." : "save" }}
           </BaseButton>
         </div>
       </Card>
@@ -241,7 +241,7 @@ const persistenceHint = computed(() => {
       class="flex flex-col gap-4 outline-none"
     >
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <h2 class="text-lg font-semibold text-surface-light">Transactions</h2>
+        <h2 class="text-lg font-semibold text-surface-light">transactions</h2>
         <div class="flex flex-wrap gap-2">
           <BaseButton
             variant="ghost"
@@ -252,8 +252,8 @@ const persistenceHint = computed(() => {
           >
             {{ transactionFilterLabel }}
           </BaseButton>
-          <BaseButton variant="ghost" :disabled="loading" @click="exportCsv">Export CSV</BaseButton>
-          <BaseButton variant="primary" @click="openCreate">+ Add</BaseButton>
+          <BaseButton variant="ghost" :disabled="loading" @click="exportCsv">export csv</BaseButton>
+          <BaseButton variant="primary" @click="openCreate">+ add</BaseButton>
         </div>
       </div>
 
@@ -280,14 +280,14 @@ const persistenceHint = computed(() => {
       >
         <div class="flex flex-col md:flex-row md:items-end gap-3">
           <div class="flex-1">
-            <BaseInput v-model="productFilter" placeholder="Filter by product..." />
+            <BaseInput v-model="productFilter" placeholder="filter by product..." />
           </div>
           <BaseButton
             v-if="productFilter || categoryFilter"
             variant="ghost"
             @click="clearTransactionFilters"
           >
-            Clear transaction filters
+            clear transaction filters
           </BaseButton>
         </div>
 
@@ -460,7 +460,7 @@ const persistenceHint = computed(() => {
 
     <ExpenseConfirmDialog
       :open="deleteTargetId !== null"
-      title="Delete expense"
+      title="delete expense"
       message="This expense will be permanently removed."
       confirm-label="delete"
       :loading="loading"
@@ -470,8 +470,8 @@ const persistenceHint = computed(() => {
 
     <ExpenseConfirmDialog
       :open="deleteCategoryTarget !== null"
-      title="Delete category"
-      :message="deleteCategoryTarget ? `Delete category '${deleteCategoryTarget.name}'?` : ''"
+      title="delete category"
+      :message="deleteCategoryTarget ? `delete category '${deleteCategoryTarget.name}'?` : ''"
       confirm-label="delete"
       :loading="loading"
       @confirm="confirmDeleteCategory"

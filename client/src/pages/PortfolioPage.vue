@@ -146,7 +146,7 @@ onUnmounted(() => {
           @click="showFeedback = true"
         >
           <ContactIcon id="feedback" class="size-4 shrink-0" />
-          Send Feedback
+          send feedback
         </button>
       </div>
       <FeedbackModal v-if="showFeedback" @close="showFeedback = false" />

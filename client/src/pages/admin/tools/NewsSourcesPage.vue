@@ -72,9 +72,9 @@ const { can } = usePermissions();
 const canWrite = computed(() => can("news-sources", "write"));
 const selectedSourceCount = computed(() => selectedSourceIds.value.length);
 const refreshButtonText = computed(() => {
-  if (refreshing.value) return "Queueing...";
-  if (selectedSourceCount.value) return `Queue parser (${selectedSourceCount.value})`;
-  return "Queue parser";
+  if (refreshing.value) return "queueing...";
+  if (selectedSourceCount.value) return `queue parser (${selectedSourceCount.value})`;
+  return "queue parser";
 });
 
 const hasNextPage = computed(() => page.value < totalPages.value);
@@ -283,15 +283,6 @@ onMounted(loadSources);
 <template>
   <AdminPageLayout title="news sources" max-width="xl">
     <div class="min-w-0 space-y-1">
-      <header v-if="canWrite" class="page-intro">
-        <div class="flex flex-wrap gap-2">
-          <BaseButton variant="ghost" :disabled="refreshing" @click="refreshSources">
-            {{ refreshButtonText }}
-          </BaseButton>
-          <BaseButton variant="primary" @click="openCreate">Add source</BaseButton>
-        </div>
-      </header>
-
       <AdminListSkeleton v-if="loading" label="Loading sources" />
 
       <Card v-else-if="loadError" role="alert">
@@ -304,23 +295,44 @@ onMounted(loadSources);
       <template v-else>
         <AdminListToolbar>
           <template #start>
-            <AdminFilterDropdown
-              ref="filterDropdown"
-              :has-active-filters="hasActiveFilters"
-              :active-label="activeFilterLabel"
-              @clear="clearFilters"
-            >
-              <template #chips>
-                <AdminFilterChip
-                  v-for="chip in ENABLED_FILTERS"
-                  :key="chip.value"
-                  :label="chip.label"
-                  :active="enabledFilter === chip.value"
-                  :color-class="newsSourceEnabledClass(chip.value === 'enabled')"
-                  @click="setEnabledFilter(chip.value)"
-                />
-              </template>
-            </AdminFilterDropdown>
+            <div class="flex w-full min-w-0 flex-wrap items-center gap-3">
+              <AdminFilterDropdown
+                ref="filterDropdown"
+                :has-active-filters="hasActiveFilters"
+                :active-label="activeFilterLabel"
+                @clear="clearFilters"
+              >
+                <template #chips>
+                  <AdminFilterChip
+                    v-for="chip in ENABLED_FILTERS"
+                    :key="chip.value"
+                    :label="chip.label"
+                    :active="enabledFilter === chip.value"
+                    :color-class="newsSourceEnabledClass(chip.value === 'enabled')"
+                    @click="setEnabledFilter(chip.value)"
+                  />
+                </template>
+              </AdminFilterDropdown>
+              <div v-if="canWrite" class="ml-auto flex shrink-0 flex-wrap items-center gap-2">
+                <BaseButton
+                  variant="ghost"
+                  size="sm"
+                  class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+                  :disabled="refreshing"
+                  @click="refreshSources"
+                >
+                  {{ refreshButtonText }}
+                </BaseButton>
+                <BaseButton
+                  variant="primary"
+                  size="sm"
+                  class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+                  @click="openCreate"
+                >
+                  add source
+                </BaseButton>
+              </div>
+            </div>
           </template>
         </AdminListToolbar>
 

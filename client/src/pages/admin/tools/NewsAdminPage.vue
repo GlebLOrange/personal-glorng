@@ -526,7 +526,7 @@ watch(page, () => {
             :disabled="actionLoading"
             @click="setStatus(item.id, 'published')"
           >
-            Publish
+            publish
           </BaseButton>
           <BaseButton
             v-if="canWrite && item.status === 'published'"
@@ -535,7 +535,7 @@ watch(page, () => {
             :disabled="actionLoading"
             @click="setStatus(item.id, 'unpublished')"
           >
-            Unpublish
+            unpublish
           </BaseButton>
           <BaseButton
             v-if="canWrite"
@@ -544,7 +544,7 @@ watch(page, () => {
             :disabled="actionLoading"
             @click="repost(item.id)"
           >
-            Repost Telegram
+            repost telegram
           </BaseButton>
           <a
             v-if="safeNavigationHref(item.source_url)"
@@ -554,7 +554,7 @@ watch(page, () => {
             class="inline-flex items-center px-3 py-1.5 text-xs text-accent-blue hover:underline"
             @click.stop
           >
-            Source
+            source
           </a>
         </div>
       </Card>

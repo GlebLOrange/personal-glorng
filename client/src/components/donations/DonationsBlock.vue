@@ -54,7 +54,7 @@ async function startStripeCheckout(): Promise<void> {
         target="_blank"
         rel="noopener noreferrer"
       >
-        Donate by Card
+        donate by card
       </a>
 
       <BaseButton
@@ -64,7 +64,7 @@ async function startStripeCheckout(): Promise<void> {
         :disabled="isStartingCheckout"
         @click="startStripeCheckout"
       >
-        {{ isStartingCheckout ? "Opening..." : "Donate by Card" }}
+        {{ isStartingCheckout ? "opening..." : "donate by card" }}
       </BaseButton>
 
       <a
@@ -74,7 +74,7 @@ async function startStripeCheckout(): Promise<void> {
         target="_blank"
         rel="noopener noreferrer"
       >
-        Donate with PayPal
+        donate with paypal
       </a>
 
       <a
@@ -84,7 +84,7 @@ async function startStripeCheckout(): Promise<void> {
         target="_blank"
         rel="noopener noreferrer"
       >
-        Monthly Support
+        monthly support
       </a>
     </div>
 

@@ -108,33 +108,36 @@ onMounted(loadFiles);
 
 <template>
   <AdminPageLayout title="file-share">
-    <div
-      :class="[
-        'border-2 border-dashed rounded-lg p-8 text-center mb-6 transition-colors cursor-pointer',
-        dragOver
-          ? 'border-accent-blue bg-accent-blue/10'
-          : 'border-surface-border hover:border-accent-blue',
-      ]"
-      @dragover.prevent="dragOver = true"
-      @dragleave="dragOver = false"
-      @drop.prevent="onDrop"
-      @click="fileInputRef?.click()"
-    >
-      <input ref="fileInputRef" type="file" class="hidden" @change="onFileSelect" />
-      <p v-if="selectedName" class="text-surface-light text-sm">
-        {{ selectedName }}
-      </p>
-      <p v-else class="text-surface-mid text-sm">Drop a file here or click to browse</p>
-    </div>
+    <div class="mb-10 flex items-start gap-3">
+      <div
+        :class="[
+          'min-w-0 flex-1 border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
+          dragOver
+            ? 'border-accent-blue bg-accent-blue/10'
+            : 'border-surface-border hover:border-accent-blue',
+        ]"
+        @dragover.prevent="dragOver = true"
+        @dragleave="dragOver = false"
+        @drop.prevent="onDrop"
+        @click="fileInputRef?.click()"
+      >
+        <input ref="fileInputRef" type="file" class="hidden" @change="onFileSelect" />
+        <p v-if="selectedName" class="text-surface-light text-sm">
+          {{ selectedName }}
+        </p>
+        <p v-else class="text-surface-mid text-sm">drop a file here or click to browse</p>
+      </div>
 
-    <BaseButton
-      variant="primary"
-      :disabled="uploading || !selectedFile"
-      class="mb-10"
-      @click="upload"
-    >
-      {{ uploading ? "Uploading..." : "Upload & Share" }}
-    </BaseButton>
+      <BaseButton
+        variant="primary"
+        size="sm"
+        class="inline-flex h-[42px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+        :disabled="uploading || !selectedFile"
+        @click="upload"
+      >
+        {{ uploading ? "uploading..." : "upload & share" }}
+      </BaseButton>
+    </div>
 
     <div class="space-y-3">
       <div v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading shared files">
@@ -157,8 +160,8 @@ onMounted(loadFiles);
 
         <EmptyState
           v-if="files.length === 0"
-          title="No shared files"
-          description="Upload a file above to get a shareable link."
+          title="no shared files"
+          description="upload a file above to get a shareable link."
         />
 
         <AdminListFooter

@@ -47,7 +47,7 @@ watch(page, () => {
       </p>
       <div v-if="isSuperuser" class="mt-3">
         <RouterLink to="/admin/tools/news" class="text-xs text-accent-blue hover:underline">
-          Manage news
+          manage news
         </RouterLink>
       </div>
     </header>

@@ -68,11 +68,23 @@ async function download(): Promise<void> {
     :narrow="false"
   >
     <form class="space-y-4 mb-8" @submit.prevent="download">
-      <BaseInput
-        v-model="url"
-        placeholder="youtube url (https://www.youtube.com/watch?v=...)"
-        aria-label="youtube url (https://www.youtube.com/watch?v=...)"
-      />
+      <div class="flex items-start gap-2">
+        <BaseInput
+          v-model="url"
+          placeholder="youtube url (https://www.youtube.com/watch?v=...)"
+          aria-label="youtube url (https://www.youtube.com/watch?v=...)"
+          class="min-w-0 flex-1"
+        />
+        <BaseButton
+          type="submit"
+          variant="primary"
+          size="sm"
+          class="inline-flex h-[42px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+          :disabled="loading || !url.trim()"
+        >
+          {{ loading ? "downloading..." : "download" }}
+        </BaseButton>
+      </div>
 
       <select
         v-model="format"
@@ -88,10 +100,6 @@ async function download(): Promise<void> {
         <input v-model="audioOnly" type="checkbox" class="accent-accent-blue" />
         audio only (extract as MP3)
       </label>
-
-      <BaseButton variant="primary" :disabled="loading || !url.trim()">
-        {{ loading ? "downloading..." : "download" }}
-      </BaseButton>
     </form>
 
     <button
