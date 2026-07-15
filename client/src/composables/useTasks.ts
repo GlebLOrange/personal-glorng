@@ -3,7 +3,7 @@ import { computed, ref, watch } from "vue";
 import { useApiAction } from "@/composables/useApiAction";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
-import { LIST_PAGE_SIZE } from "@/constants/pagination";
+import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { statusLabel, type TaskStatus } from "@/constants/taskStatus";
 import { datetimeLocalValue, parseDatetimeLocalToIso } from "@/utils/dates";
 import type {
@@ -35,6 +35,9 @@ export function useTasks() {
   const totalPages = ref(0);
   const intakeTotalPages = ref(0);
   const syncTotalPages = ref(0);
+  const total = ref(0);
+  const intakeTotal = ref(0);
+  const syncTotal = ref(0);
   const showCreateForm = ref(false);
   const createForm = ref<TaskCreateForm>({
     title: "",
@@ -69,7 +72,7 @@ export function useTasks() {
   async function loadTasks(): Promise<void> {
     const params: Record<string, string | number> = {
       page: page.value,
-      per_page: LIST_PAGE_SIZE,
+      per_page: ADMIN_LIST_PAGE_SIZE,
     };
     if (filterStatus.value) {
       params.status = filterStatus.value;
@@ -85,6 +88,7 @@ export function useTasks() {
     if (data) {
       tasks.value = data.items;
       totalPages.value = data.pages;
+      total.value = data.total;
     }
   }
 
@@ -105,7 +109,7 @@ export function useTasks() {
     const data = await runIntakes(
       async () => {
         const response = await api.get<PaginatedList<TaskIntakeItem>>("/tools/tasks/intakes", {
-          params: { page: intakePage.value, per_page: LIST_PAGE_SIZE },
+          params: { page: intakePage.value, per_page: ADMIN_LIST_PAGE_SIZE },
         });
         return response.data;
       },
@@ -114,6 +118,7 @@ export function useTasks() {
     if (data) {
       intakes.value = data.items;
       intakeTotalPages.value = data.pages;
+      intakeTotal.value = data.total;
     }
   }
 
@@ -121,7 +126,7 @@ export function useTasks() {
     const data = await runSync(
       async () => {
         const response = await api.get<PaginatedList<SyncQueueItem>>("/tools/tasks/sync-queue", {
-          params: { page: syncPage.value, per_page: LIST_PAGE_SIZE },
+          params: { page: syncPage.value, per_page: ADMIN_LIST_PAGE_SIZE },
         });
         return response.data;
       },
@@ -130,6 +135,7 @@ export function useTasks() {
     if (data) {
       syncQueue.value = data.items;
       syncTotalPages.value = data.pages;
+      syncTotal.value = data.total;
     }
   }
 
@@ -265,6 +271,9 @@ export function useTasks() {
     totalPages,
     intakeTotalPages,
     syncTotalPages,
+    total,
+    intakeTotal,
+    syncTotal,
     showCreateForm,
     createForm,
     listLoading,

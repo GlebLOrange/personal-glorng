@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 
+import AdminListRow from "@/components/admin/AdminListRow.vue";
+import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
+import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { Card } from "@/components/ui/card";
-import { LIST_PAGE_SIZE } from "@/constants/pagination";
+import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
@@ -38,6 +42,7 @@ const blankForm = (): NewsSourceForm => ({
 
 const sources = ref<NewsSource[]>([]);
 const page = ref(1);
+const total = ref(0);
 const totalPages = ref(0);
 const selectedSourceIds = ref<number[]>([]);
 const form = ref<NewsSourceForm>(blankForm());
@@ -63,14 +68,29 @@ const refreshButtonText = computed(() => {
 const hasNextPage = computed(() => page.value < totalPages.value);
 const hasPreviousPage = computed(() => page.value > 1);
 
+function enabledClass(enabled: boolean): string {
+  return enabled
+    ? "bg-accent-blue/20 text-accent-blue border-accent-blue/30"
+    : "bg-surface-border text-surface-mid border-surface-border";
+}
+
+function sourceMeta(source: NewsSource): string {
+  const parts = [source.category, source.region];
+  if (source.last_fetched_at) {
+    parts.push(`fetched ${formatDate(source.last_fetched_at)}`);
+  }
+  return parts.join(" · ");
+}
+
 async function loadSources(): Promise<void> {
   loading.value = true;
   loadError.value = false;
   try {
     const { data } = await api.get<PaginatedList<NewsSource>>("/tools/news-sources", {
-      params: { page: page.value, per_page: LIST_PAGE_SIZE },
+      params: { page: page.value, per_page: ADMIN_LIST_PAGE_SIZE },
     });
     sources.value = data.items;
+    total.value = data.total;
     totalPages.value = data.pages;
     selectedSourceIds.value = selectedSourceIds.value.filter((id) =>
       data.items.some((source) => source.id === id && source.enabled),
@@ -115,12 +135,6 @@ function openEdit(source: NewsSource): void {
 
 function openEditableSource(source: NewsSource): void {
   if (!canWrite.value) return;
-  openEdit(source);
-}
-
-function onSourceKeydown(event: KeyboardEvent, source: NewsSource): void {
-  if (!canWrite.value || (event.key !== "Enter" && event.key !== " ")) return;
-  event.preventDefault();
   openEdit(source);
 }
 
@@ -190,7 +204,8 @@ async function refreshSources(): Promise<void> {
   }
 }
 
-async function deleteSource(source: NewsSource): Promise<void> {
+async function deleteSource(source: NewsSource, event?: Event): Promise<void> {
+  event?.stopPropagation();
   if (!canWrite.value) return;
   if (!window.confirm(`Delete ${source.name}?`)) return;
   deletingId.value = source.id;
@@ -225,7 +240,7 @@ onMounted(loadSources);
 
 <template>
   <AdminPageLayout title="news sources" max-width="xl">
-    <div class="min-w-0 space-y-4">
+    <div class="min-w-0 space-y-1">
       <header v-if="canWrite" class="page-intro">
         <div class="flex flex-wrap gap-2">
           <BaseButton variant="ghost" :disabled="refreshing" @click="refreshSources">
@@ -235,9 +250,7 @@ onMounted(loadSources);
         </div>
       </header>
 
-      <div v-if="loading" class="space-y-3" aria-busy="true" aria-label="Loading sources">
-        <Card v-for="i in 5" :key="i" class="h-28 animate-pulse" />
-      </div>
+      <AdminListSkeleton v-if="loading" label="Loading sources" />
 
       <Card v-else-if="loadError" role="alert">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -246,87 +259,75 @@ onMounted(loadSources);
         </div>
       </Card>
 
-      <Card v-else-if="sources.length === 0">
-        <p class="text-sm text-surface-mid">No news sources yet.</p>
-      </Card>
+      <EmptyState v-else-if="sources.length === 0" description="No news sources yet." />
 
       <template v-else>
-        <Card
-          v-for="source in sources"
-          :key="source.id"
-          :hoverable="canWrite"
-          :role="canWrite ? 'button' : undefined"
-          :tabindex="canWrite ? 0 : undefined"
-          :class="
-            canWrite
-              ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50'
-              : ''
-          "
-          @click="openEditableSource(source)"
-          @keydown="onSourceKeydown($event, source)"
-        >
-          <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div class="min-w-0 flex-1">
-              <div class="mb-2 flex flex-wrap items-center gap-2">
-                <input
-                  v-if="canWrite"
-                  v-model="selectedSourceIds"
-                  type="checkbox"
-                  class="size-4 accent-accent-blue"
-                  :value="source.id"
-                  :disabled="refreshing || !source.enabled"
-                  :aria-label="`Select ${source.name} for parser refresh`"
-                  @click.stop
-                  @keydown.stop
-                />
-                <h2 class="break-words text-base font-bold text-surface-light">{{ source.name }}</h2>
-                <span
-                  class="rounded px-2 py-0.5 text-[10px]"
-                  :class="
-                    source.enabled
-                      ? 'bg-accent-blue/20 text-accent-blue'
-                      : 'bg-surface-border text-surface-mid'
-                  "
-                >
-                  {{ source.enabled ? "enabled" : "disabled" }}
-                </span>
-              </div>
-              <p class="break-all text-xs text-surface-mid">{{ source.feed_url }}</p>
-              <p class="mt-2 text-xs text-surface-muted">
-                {{ source.category }} · {{ source.region }}
-                <span v-if="source.last_fetched_at">
-                  · fetched {{ formatDate(source.last_fetched_at) }}
-                </span>
-              </p>
-              <p v-if="source.last_error" class="mt-2 text-xs text-accent-golden">
-                Last error: {{ source.last_error }}
-              </p>
-            </div>
-            <div class="flex shrink-0 gap-2" @click.stop @keydown.stop>
-              <BaseButton
-                v-if="canWrite"
-                variant="ghost"
-                size="sm"
-                :disabled="deletingId === source.id"
-                @click="deleteSource(source)"
-              >
-                Delete
-              </BaseButton>
-            </div>
-          </div>
-        </Card>
-
-        <BasePagination
-          v-if="totalPages > 1"
-          aria-label="News sources pagination"
+        <AdminListToolbar
+          :total="total"
           :page="page"
           :total-pages="totalPages"
           :has-next-page="hasNextPage"
           :has-previous-page="hasPreviousPage"
           :loading="loading"
+          item-label="sources"
+          ariaLabel="News sources pagination"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"
         />
+
+        <AdminListRow
+          v-for="source in sources"
+          :key="source.id"
+          :interactive="canWrite"
+          :nested-interactive="canWrite"
+          @click="openEditableSource(source)"
+        >
+          <template #leading>
+            <input
+              v-if="canWrite"
+              v-model="selectedSourceIds"
+              type="checkbox"
+              class="size-4 accent-accent-blue"
+              :value="source.id"
+              :disabled="refreshing || !source.enabled"
+              :aria-label="`Select ${source.name} for parser refresh`"
+              @click.stop
+              @keydown.stop
+            />
+          </template>
+          <template #badge>
+            <StatusBadge
+              :label="source.enabled ? 'enabled' : 'disabled'"
+              :class-name="enabledClass(source.enabled)"
+            />
+          </template>
+          <template #primary>
+            <span :title="source.name">{{ source.name }}</span>
+          </template>
+          <template #meta>
+            <span>{{ sourceMeta(source) }}</span>
+          </template>
+          <template #actions>
+            <span
+              v-if="source.last_error"
+              class="text-xs text-accent-golden"
+              :title="source.last_error"
+              aria-label="Source has fetch error"
+            >
+              ⚠
+            </span>
+            <BaseButton
+              v-if="canWrite"
+              variant="ghost"
+              size="sm"
+              aria-label="Delete source"
+              :disabled="deletingId === source.id"
+              @click="deleteSource(source, $event)"
+            >
+              ✕
+            </BaseButton>
+          </template>
+        </AdminListRow>
       </template>
     </div>
 

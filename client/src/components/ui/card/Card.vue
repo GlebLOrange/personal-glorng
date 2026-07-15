@@ -5,7 +5,7 @@ defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
-    variant?: "default" | "compact" | "inset" | "ghost";
+    variant?: "default" | "compact" | "dense" | "inset" | "ghost";
     tint?: "default" | "danger";
     hoverable?: boolean;
     interactive?: boolean;
@@ -24,6 +24,7 @@ const rootClass = computed(() => [
   "border rounded-lg",
   props.variant === "default" && "p-6 bg-surface-card border-surface-border",
   props.variant === "compact" && "p-4 bg-surface-card border-surface-border",
+  props.variant === "dense" && "px-3 py-2 bg-surface-card border-surface-border rounded-md",
   props.variant === "inset" && "p-3 bg-surface-dark/40 border-surface-border",
   props.variant === "ghost" && "p-0 bg-transparent border-transparent",
   props.tint === "danger" && "border-status-error/60 bg-status-error/10",
