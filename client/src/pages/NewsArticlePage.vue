@@ -5,7 +5,7 @@ import { useRoute } from "vue-router";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
-import { formatNewsDate, useNews } from "@/composables/useNews";
+import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
 const route = useRoute();
@@ -51,8 +51,8 @@ watch(slug, () => {
         <div class="mb-4 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
           <span>{{ article.source_name }}</span>
           <span aria-hidden="true">/</span>
-          <time :datetime="article.published_at ?? article.created_at">
-            {{ formatNewsDate(article.published_at ?? article.created_at) }}
+          <time :datetime="newsArticleDisplayDate(article)">
+            {{ formatNewsDate(newsArticleDisplayDate(article)) }}
           </time>
         </div>
         <p class="text-body break-words">{{ article.summary }}</p>

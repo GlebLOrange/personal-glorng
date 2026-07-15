@@ -6,7 +6,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
-import { formatNewsDate, useNews } from "@/composables/useNews";
+import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { safeNavigationHref } from "@/utils/safeUrl";
@@ -64,8 +64,8 @@ watch(page, () => {
         <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
           <span>{{ item.source_name }}</span>
           <span aria-hidden="true">/</span>
-          <time :datetime="item.published_at ?? item.created_at">
-            {{ formatNewsDate(item.published_at ?? item.created_at) }}
+          <time :datetime="newsArticleDisplayDate(item)">
+            {{ formatNewsDate(newsArticleDisplayDate(item)) }}
           </time>
         </div>
 
