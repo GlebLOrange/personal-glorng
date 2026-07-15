@@ -175,7 +175,7 @@ const routes: RouteRecordRaw[] = [
     path: "/admin/tools/ai-chat",
     name: "tool-ai-chat",
     component: () => import("@/pages/admin/tools/AiChatTool.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresSuperuser: true },
   },
   {
     path: "/admin/tools/audit",
@@ -240,7 +240,6 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-news": "news",
   "tool-news-article": "news",
   "tool-news-sources": "news-sources",
-  "tool-ai-chat": "ai-chat",
   "tool-data-extract": "data-extract",
   "tool-audit": "audit",
   "tool-app-logs": "app-logs",

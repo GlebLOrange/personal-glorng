@@ -2,10 +2,14 @@ import { ref, type Ref } from "vue";
 
 import { api } from "@/composables/useApi";
 import { PLATFORM_SERVICES, type PlatformCatalog, type PlatformService } from "@/platform/services";
+import { useAuthStore } from "@/stores/auth";
 import { isAiChatEnabled } from "@/utils/featureFlags";
+import { SUPERUSER_PERMISSION } from "@/utils/permissions";
 
 function filterAiChat(services: PlatformService[]): PlatformService[] {
-  if (isAiChatEnabled()) return services;
+  const auth = useAuthStore();
+  const isSuperuser = auth.user?.permissions.includes(SUPERUSER_PERMISSION) ?? false;
+  if (isAiChatEnabled() && isSuperuser) return services;
   return services.filter((s) => s.slug !== "ai-chat");
 }
 

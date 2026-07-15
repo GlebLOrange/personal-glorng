@@ -45,7 +45,6 @@ These appear on **`/tools`** in the UI ([`client/src/pages/ToolsPage.vue`](../..
 |---------|-----------|
 | **Portfolio resume** | `GET /api/resume` — static public resume JSON, with a client fallback mirror for offline rendering |
 | **Keyword search** | `GET /api/search?q=...` (PUBLIC index only) |
-| **Public AI search chat** | `GET /api/search/config`, `POST /api/search/chat` (SSE) — needs `AI_SEARCH_ENABLED=true` + `GROQ_API_KEY` |
 | **Feedback** | `POST /api/feedback` (5/5min) |
 | **Donations config** | `GET /api/donations/config` — Stripe, PayPal, Patreon links |
 | **Donations Checkout** | `POST /api/donations/checkout` — needs `STRIPE_SECRET_KEY` |
@@ -69,19 +68,15 @@ Available in **`/admin/tools/*`** after login. API prefix is always **`/api/tool
 | Content | **File share** | `file-share:read`, `file-share:write` | `/api/tools/file-share` | `/admin/tools/file-share` |
 | Content | **URL shortener (manage)** | `url-shortener:read`, `url-shortener:write` | list/delete on same prefix | `/shortener` (UI adapts to permissions) |
 | Content | **Recipes (write)** | `recipes:write` | POST/PUT/DELETE on `/api/tools/recipes` | `/recipes` |
-| Utilities | **AI chat** | `ai-chat:read`, `ai-chat:write` | `/api/tools/ai-chat` | `/admin/tools/ai-chat` |
+| Utilities | **AI chat** | `platform:superuser` only | `/api/tools/ai-chat` | `/admin/tools/ai-chat` |
 | Operations | **Feedback inbox** | `feedback:read`, `feedback:write` | `GET/PATCH /api/feedback` | `/admin/tools/feedback` |
 | Operations | **Audit log** | `audit:read` | `/api/tools/audit` | `/admin/tools/audit` |
 
-### AI: public vs admin
+### AI chat (superuser only)
 
-- **Public:** `POST /api/search/chat` — retrieval scoped to **PUBLIC** content (resume, public recipes).
-- **Admin:** `POST /api/tools/ai-chat` — requires `ai-chat:write`; retrieval includes **PUBLIC + ADMIN** (tasks, expenses, feedback, etc.).
+- **Admin:** `POST /api/tools/ai-chat` — requires `platform:superuser`; plain LLM stream (no RAG).
 
-Both need LLM config; flags are independent:
-
-- Public search: `AI_SEARCH_ENABLED` + `GROQ_API_KEY`
-- Admin chat: `AI_CHAT_ENABLED` + `GROQ_API_KEY` (also hides `ai-chat` from catalog when disabled)
+Needs `AI_CHAT_ENABLED` + `GROQ_API_KEY` (also hides `ai-chat` from catalog when disabled or user is not superuser).
 
 ### How to call admin APIs programmatically
 

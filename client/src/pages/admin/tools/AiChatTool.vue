@@ -31,8 +31,8 @@ GROQ_CHAT_MODEL=llama-3.3-70b-versatile`,
 const activeTab = ref<AiChatTab>("chat");
 const chatEnd = ref<HTMLElement | null>(null);
 const { toast } = useNotify();
-const { can } = usePermissions();
-const canSend = computed(() => can("ai-chat", "write"));
+const { isSuperuser } = usePermissions();
+const canSend = computed(() => isSuperuser.value);
 
 const {
   config: chatConfig,
@@ -61,7 +61,7 @@ const { messages, input, loading, send, clear } = useSearchChat({
       return false;
     }
     if (!canSend.value) {
-      toast("You don't have permission to send messages", "error");
+      toast("Superuser access required", "error");
       return false;
     }
     if (!isReady.value) {
@@ -109,12 +109,11 @@ onMounted(() => {
         </span>
         <span class="text-surface-mid/60 text-xs">·</span>
         <span class="text-surface-mid text-xs">{{ modelLabel }}</span>
-        <span class="text-surface-mid/60 text-xs">· personal search</span>
         <span v-if="!configLoading && !isReady" class="ml-auto text-xs text-status-warning/90">
           not configured
         </span>
         <span v-else-if="!canSend" class="ml-auto text-xs text-status-warning/90">
-          read-only
+          superuser only
         </span>
       </div>
 
@@ -123,12 +122,9 @@ onMounted(() => {
           :messages="messages"
           :loading="loading"
           show-role-labels
-          empty-message="Search your indexed content — tasks, recipes, expenses, and more."
-          sources-label="Searching your indexed content"
+          empty-message="Ask anything — responses stream from the configured Groq model."
           user-class="bg-accent-blue/10 border border-accent-blue/20 text-surface-light ml-8"
           assistant-class="bg-surface-dark border border-surface-border text-surface-sage mr-8"
-          source-link-class="block rounded-md border border-surface-border/80 bg-surface-card/60 px-3 py-2 hover:border-accent-violet/40 transition-colors"
-          source-title-class="text-xs text-accent-violet font-medium"
         >
           <template #end>
             <div ref="chatEnd" />
@@ -140,7 +136,7 @@ onMounted(() => {
         <textarea
           v-model="input"
           rows="2"
-          placeholder="Search tasks, recipes, projects..."
+          placeholder="Message the assistant..."
           class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
           @keydown.enter.exact.prevent="handleSend"
         />
@@ -209,20 +205,13 @@ onMounted(() => {
               Groq Console
             </a>
             . Disable competing features in <code class="text-surface-sage">.env</code> while testing
-            chat: <code class="text-surface-sage">AI_SEARCH_ENABLED=false</code>,
+            chat:
             <code class="text-surface-sage">TASK_INTAKE_AI_ENABLED=false</code>,
             <code class="text-surface-sage">NEWS_INGEST_ENABLED=false</code>.
           </li>
           <li>
-            <strong class="text-surface-light font-medium">No sources / empty answers</strong> —
-            backfill the search index with
-            <code class="text-surface-sage">make reindex-search</code> (or
-            <code class="text-surface-sage">python scripts/reindex_search.py</code> in the API
-            container), then ask about indexed tasks, recipes, or expenses.
-          </li>
-          <li>
             <strong class="text-surface-light font-medium">App rate limit</strong> — this tool caps
-            chat to 5 messages per 5 minutes per signed-in user.
+            chat to 5 messages per 5 minutes per signed-in superuser.
           </li>
           <li>
             <strong class="text-surface-light font-medium">After .env changes</strong> — set
@@ -238,19 +227,14 @@ onMounted(() => {
           How it works
         </h2>
         <p class="text-surface-mid text-sm leading-relaxed">
-          AI chat searches your indexed content first (portfolio, recipes, tasks, expenses, and
-          more), then streams a grounded answer with citations. Set
-          <code class="text-surface-sage">GROQ_API_KEY</code> and
+          Superuser-only plain LLM chat. Set <code class="text-surface-sage">GROQ_API_KEY</code> and
           <code class="text-surface-sage">GROQ_CHAT_MODEL</code> in your server
-          <code class="text-surface-sage">.env</code>, run
-          <code class="text-surface-sage">python scripts/reindex_search.py</code> after deploy, then
-          restart the backend. Set <code class="text-surface-sage">AI_CHAT_ENABLED=false</code>
-          to hide this tool entirely.
+          <code class="text-surface-sage">.env</code>, then restart the backend. Set
+          <code class="text-surface-sage">AI_CHAT_ENABLED=false</code> to hide this tool entirely.
         </p>
         <p class="text-surface-mid text-sm leading-relaxed">
-          The same Groq key is shared by AI chat, public search, news ingest, and task intake.
-          Groq enforces per-model RPM limits. This app also caps chat to 5 messages
-          per 5 minutes per IP.
+          The same Groq key is shared by AI chat, news ingest, and task intake. Groq enforces
+          per-model RPM limits. This app also caps chat to 5 messages per 5 minutes per superuser.
         </p>
       </section>
 

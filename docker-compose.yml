@@ -275,7 +275,7 @@ services:
     environment:
       VITE_API_PROXY_TARGET: http://server:8000
       VITE_BEHIND_NGINX: "true"
-      VITE_AI_SEARCH_ENABLED: ${VITE_AI_SEARCH_ENABLED:-true}
+      VITE_AI_SEARCH_ENABLED: ${VITE_AI_SEARCH_ENABLED:-false}
     volumes:
       - ./client:/app
       - client_node_modules:/app/node_modules
