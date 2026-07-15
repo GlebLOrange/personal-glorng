@@ -73,6 +73,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
   },
   {
+    path: "/expense-calculator",
+    name: "expense-calculator",
+    component: () => import("@/pages/admin/tools/ExpenseCalculatorTool.vue"),
+  },
+  {
     path: "/admin/tools/calculator",
     redirect: { name: "calculator" },
   },
