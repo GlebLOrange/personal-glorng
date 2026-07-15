@@ -9,7 +9,7 @@ import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
 import TaskFilters from "@/components/tasks/TaskFilters.vue";
 import TaskIntakeList from "@/components/tasks/TaskIntakeList.vue";
 import TaskList from "@/components/tasks/TaskList.vue";
-import TaskPagination from "@/components/tasks/TaskPagination.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import TaskSummaryBar from "@/components/tasks/TaskSummaryBar.vue";
 import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
 import { usePermissions } from "@/composables/usePermissions";
@@ -125,7 +125,9 @@ onMounted(() => {
         :filter-status="filterStatus"
         @select="openDetail"
       />
-      <TaskPagination
+      <BasePagination
+        class="pt-4"
+        aria-label="Tasks pagination"
         :page="page"
         :has-next-page="hasNextPage"
         @prev="goToPage(page - 1)"

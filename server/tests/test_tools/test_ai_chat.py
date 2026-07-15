@@ -71,8 +71,8 @@ async def test_ai_chat_no_api_key(
     ai_search_service: None,
 ) -> None:
     resp = await auth_client.post(CHAT_URL, json=CHAT_PAYLOAD)
-    assert resp.status_code == 200
-    assert "not configured" in resp.text.lower()
+    assert resp.status_code == 503
+    assert "not configured" in resp.json()["detail"].lower()
 
 
 @pytest.mark.asyncio
@@ -170,7 +170,9 @@ async def test_ai_chat_config_not_configured_without_key(
 ) -> None:
     resp = await auth_client.get(CONFIG_URL)
     assert resp.status_code == 200
-    assert resp.json()["configured"] is False
+    body = resp.json()
+    assert body["configured"] is False
+    assert body["enabled"] is False
 
 
 @pytest.mark.asyncio
@@ -211,6 +213,25 @@ def test_gemini_service_normalizes_base_url() -> None:
     assert service.provider == "gemini"
     assert service.model == "gemini-test"
     assert service.base_url == "https://example.test/v1beta"
+
+
+@pytest.mark.asyncio
+async def test_gemini_service_reads_text_from_step_start() -> None:
+    """Capture initial model_output text delivered on step.start."""
+    lines = [
+        'data: {"event_type":"interaction.created"}',
+        (
+            'data: {"event_type":"step.start","index":1,'
+            '"step":{"type":"model_output","content":[{"type":"text","text":"Hello"}]}}'
+        ),
+        'data: {"event_type":"step.delta","index":1,"delta":{"type":"text","text":" world"}}',
+    ]
+    service = GeminiChatService(api_key="test-key", model="gemini-3.5-flash")
+
+    with patch("app.services.ai_chat.httpx.AsyncClient", _fake_client(lines)):
+        chunks = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
+
+    assert chunks == ["Hello", " world"]
 
 
 @pytest.mark.asyncio

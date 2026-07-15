@@ -31,6 +31,23 @@ class UrlCreate(BaseModel):
     )
 
 
+class UrlUpdate(BaseModel):
+    title: str | None = Field(None, max_length=255)
+
+    @field_validator("title")
+    @classmethod
+    def clean_title(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=255)
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "title": "Updated title",
+            }
+        }
+    )
+
+
 class UrlResponse(BaseModel):
     id: int
     code: str

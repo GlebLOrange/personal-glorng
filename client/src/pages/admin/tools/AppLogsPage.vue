@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -144,24 +145,15 @@ onMounted(load);
         <p class="text-xs text-surface-muted">
           {{ total }} entries total · page {{ page }} of {{ Math.max(totalPages, 1) }}
         </p>
-        <div class="flex items-center gap-2">
-          <BaseButton
-            size="sm"
-            variant="ghost"
-            :disabled="!hasPreviousPage"
-            @click="goToPage(page - 1)"
-          >
-            Previous
-          </BaseButton>
-          <BaseButton
-            size="sm"
-            variant="ghost"
-            :disabled="!hasNextPage"
-            @click="goToPage(page + 1)"
-          >
-            Next
-          </BaseButton>
-        </div>
+        <BasePagination
+          layout="compact"
+          aria-label="App logs pagination"
+          :page="page"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+        />
       </div>
       <Card v-for="entry in items" :key="entry.id" class="text-sm">
         <div class="flex flex-wrap items-center gap-2 mb-2">

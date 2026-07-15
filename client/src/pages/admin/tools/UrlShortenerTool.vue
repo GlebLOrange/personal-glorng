@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
-import ShareableListItem from "@/components/admin/ShareableListItem.vue";
+import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -18,11 +18,15 @@ const urls = ref<UrlItem[]>([]);
 const newUrl = ref("");
 const newTitle = ref("");
 const lastCreatedLink = ref<string | null>(null);
+const savingId = ref<number | null>(null);
+const deletingId = ref<number | null>(null);
 const { copy } = useClipboard();
 const { can } = usePermissions();
 const canManage = computed(() => can("url-shortener", "read"));
-const { run: runList } = useApiAction();
+const canWrite = computed(() => can("url-shortener", "write"));
+const { loading: listLoading, run: runList } = useApiAction();
 const { loading, run: runCreate } = useApiAction();
+const { run: runUpdate } = useApiAction();
 const { run: runDelete } = useApiAction();
 
 async function loadUrls(): Promise<void> {
@@ -56,11 +60,28 @@ async function createUrl(): Promise<void> {
   }
 }
 
+async function updateUrl(id: number, title: string | null): Promise<void> {
+  savingId.value = id;
+  const result = await runUpdate(
+    () => api.patch<UrlItem>(`/tools/url-shortener/${id}`, { title }),
+    { successMessage: "Title updated", errorFallback: "Failed to update title" },
+  );
+  savingId.value = null;
+  if (result) {
+    const index = urls.value.findIndex((url) => url.id === id);
+    if (index !== -1) {
+      urls.value[index] = result.data;
+    }
+  }
+}
+
 async function deleteUrl(id: number): Promise<void> {
+  deletingId.value = id;
   const result = await runDelete(() => api.delete(`/tools/url-shortener/${id}`), {
     successMessage: "URL deleted",
     errorFallback: "Failed to delete URL",
   });
+  deletingId.value = null;
   if (result) {
     await loadUrls();
   }
@@ -101,18 +122,28 @@ onMounted(loadUrls);
     </Card>
 
     <div v-if="canManage" class="space-y-3">
-      <ShareableListItem
-        v-for="url in urls"
-        :key="url.id"
-        :title="url.title || url.original_url"
-        :subtitle="url.original_url"
-        :link="publicUrl('s', url.code)"
-        :meta="`${url.clicks} clicks`"
-        @copy="copy(publicUrl('s', url.code))"
-        @delete="deleteUrl(url.id)"
-      />
+      <div v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading shortened URLs">
+        <Card v-for="n in 3" :key="n" variant="compact" class="animate-pulse">
+          <div class="h-4 w-48 bg-surface-border rounded mb-2" />
+          <div class="h-3 w-32 bg-surface-border rounded" />
+        </Card>
+      </div>
 
-      <EmptyState v-if="urls.length === 0">No shortened URLs yet. Create one above.</EmptyState>
+      <template v-else>
+        <UrlShortenerListItem
+          v-for="url in urls"
+          :key="url.id"
+          :url="url"
+          :can-write="canWrite"
+          :saving="savingId === url.id"
+          :deleting="deletingId === url.id"
+          @copy="copy(publicUrl('s', url.code))"
+          @save="updateUrl(url.id, $event)"
+          @delete="deleteUrl(url.id)"
+        />
+
+        <EmptyState v-if="urls.length === 0">No shortened URLs yet. Create one above.</EmptyState>
+      </template>
     </div>
   </PageShell>
 </template>
