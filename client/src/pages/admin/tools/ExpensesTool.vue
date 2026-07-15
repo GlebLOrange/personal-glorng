@@ -14,6 +14,7 @@ import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import { useExpensesTool } from "@/composables/useExpensesTool";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
@@ -84,6 +85,7 @@ const {
   transactionFilterLabel,
   productSuggestions,
   sortIndicator,
+  sortAriaSort,
   handleDatePreset,
   clearTransactionFilters,
   goToExpensePage,
@@ -140,9 +142,21 @@ const {
       </div>
     </section>
 
-    <AdminTabBar :model-value="activeTab" :tabs="expenseTabItems" @update:model-value="switchTab" />
+    <AdminTabBar
+      panel-id-prefix="expenses-tab"
+      :model-value="activeTab"
+      :tabs="expenseTabItems"
+      @update:model-value="switchTab"
+    />
 
-    <div v-if="activeTab === 'transactions'" class="flex flex-col gap-4">
+    <section
+      v-if="activeTab === 'transactions'"
+      id="expenses-tab-panel-transactions"
+      role="tabpanel"
+      aria-labelledby="expenses-tab-tab-transactions"
+      tabindex="0"
+      class="flex flex-col gap-4 outline-none"
+    >
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
           <h2 class="text-lg font-semibold text-surface-light">Transactions</h2>
@@ -203,14 +217,18 @@ const {
         />
       </Card>
 
-      <div v-if="listError" class="alert-surface-error" role="alert">
-        {{ listError }}
-      </div>
+      <ErrorState
+        v-if="listError"
+        :message="listError"
+        show-retry
+        @retry="goToExpensePage(expensePage)"
+      />
 
       <ExpenseList
         :expenses="expenses"
         :loading="listLoading"
         :sort-indicator="sortIndicator"
+        :sort-aria-sort="sortAriaSort"
         :month-label="monthLabel"
         :display-currency="displayCurrency as CurrencyCode"
         :exchange-rates="exchangeRates"
@@ -245,36 +263,60 @@ const {
           Next
         </BaseButton>
       </div>
-    </div>
+    </section>
 
-    <ExpenseInsights
+    <section
       v-else-if="activeTab === 'insights'"
-      :has-chart-data="hasChartData"
-      :line-chart="lineChart"
-      :bar-chart="barChart"
-      :doughnut-chart="doughnutChart"
-    />
+      id="expenses-tab-panel-insights"
+      role="tabpanel"
+      aria-labelledby="expenses-tab-tab-insights"
+      tabindex="0"
+      class="outline-none"
+    >
+      <ExpenseInsights
+        :has-chart-data="hasChartData"
+        :line-chart="lineChart"
+        :bar-chart="barChart"
+        :doughnut-chart="doughnutChart"
+      />
+    </section>
 
-    <ExpenseCurrencyConverter
+    <section
       v-else-if="activeTab === 'converter'"
-      :exchange-rates="exchangeRates"
-    />
+      id="expenses-tab-panel-converter"
+      role="tabpanel"
+      aria-labelledby="expenses-tab-tab-converter"
+      tabindex="0"
+      class="outline-none"
+    >
+      <ExpenseCurrencyConverter
+        :exchange-rates="exchangeRates"
+      />
+    </section>
 
-    <ExpenseCategorySettings
+    <section
       v-else-if="activeTab === 'settings'"
-      v-model:display-currency="displayCurrency"
-      v-model:new-category-name="newCategoryName"
-      v-model:editing-category-name="editingCategoryName"
-      v-model:editing-category-budget="editingCategoryBudget"
-      :expense-categories="expenseCategories"
-      :editing-category-id="editingCategoryId"
-      :exchange-rates="exchangeRates"
-      @add-category="addCategory"
-      @start-edit-category="startEditCategory"
-      @cancel-edit-category="cancelEditCategory"
-      @save-category-rename="saveCategoryRename"
-      @remove-category="requestDeleteCategory"
-    />
+      id="expenses-tab-panel-settings"
+      role="tabpanel"
+      aria-labelledby="expenses-tab-tab-settings"
+      tabindex="0"
+      class="outline-none"
+    >
+      <ExpenseCategorySettings
+        v-model:display-currency="displayCurrency"
+        v-model:new-category-name="newCategoryName"
+        v-model:editing-category-name="editingCategoryName"
+        v-model:editing-category-budget="editingCategoryBudget"
+        :expense-categories="expenseCategories"
+        :editing-category-id="editingCategoryId"
+        :exchange-rates="exchangeRates"
+        @add-category="addCategory"
+        @start-edit-category="startEditCategory"
+        @cancel-edit-category="cancelEditCategory"
+        @save-category-rename="saveCategoryRename"
+        @remove-category="requestDeleteCategory"
+      />
+    </section>
 
     <ExpenseFormModal
       v-model:category="form.category"

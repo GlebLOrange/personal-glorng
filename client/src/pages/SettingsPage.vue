@@ -269,7 +269,7 @@ async function deleteAccount(): Promise<void> {
             Signed in as
             <span class="text-surface-light">{{ auth.user?.email }}</span>
             <span v-if="auth.user?.is_verified" class="text-status-success"> · verified</span>
-            <span v-else class="text-yellow-300"> · unverified</span>
+            <span v-else class="text-status-warning"> · unverified</span>
           </CardDescription>
         </CardHeader>
         <CardBody>
@@ -355,7 +355,7 @@ async function deleteAccount(): Promise<void> {
             <p
               v-if="newPasswordConfirm && !passwordsMatch"
               id="password-confirm-help"
-              class="text-xs text-yellow-300"
+              class="text-xs text-status-warning"
             >
               Passwords do not match yet.
             </p>
@@ -400,7 +400,7 @@ async function deleteAccount(): Promise<void> {
         <CardBody>
         <section class="space-y-4">
           <p v-if="githubLoading" class="text-sm text-surface-mid">Checking GitHub status...</p>
-          <p v-else-if="githubError" class="text-sm text-yellow-300">{{ githubError }}</p>
+          <p v-else-if="githubError" class="text-sm text-status-warning">{{ githubError }}</p>
           <p v-else-if="githubStatus.linked" class="text-sm text-surface-mid">
             GitHub linked as
             <span
@@ -489,7 +489,7 @@ async function deleteAccount(): Promise<void> {
             required
           />
           <label class="flex items-start gap-2 text-xs text-surface-mid">
-            <input v-model="deleteConfirm" type="checkbox" class="mt-0.5 accent-red-500" />
+            <input v-model="deleteConfirm" type="checkbox" class="mt-0.5 accent-status-error" />
             <span>I understand this permanently deletes my account.</span>
           </label>
           <BaseButton type="submit" variant="secondary" :disabled="!canDeleteAccount">

@@ -29,7 +29,7 @@ describe("Card", () => {
     });
 
     expect(wrapper.classes()).toEqual(
-      expect.arrayContaining(["border-red-900/60", "bg-red-950/10"]),
+      expect.arrayContaining(["border-status-error/60", "bg-status-error/10"]),
     );
   });
 

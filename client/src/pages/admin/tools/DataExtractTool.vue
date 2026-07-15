@@ -541,9 +541,9 @@ function downloadResult(): void {
 
       <div
         v-if="importResult?.errors.length"
-        class="rounded-md border border-amber-500/40 bg-amber-500/5 p-4 space-y-2"
+        class="alert-surface-warning p-4 space-y-2"
       >
-        <h3 class="text-sm font-medium text-amber-300">Parse errors</h3>
+        <h3 class="text-sm font-medium">Parse errors</h3>
         <ul class="text-xs text-surface-mid space-y-1">
           <li v-for="(error, index) in importResult.errors.slice(0, 10)" :key="index">
             Line {{ error.line_number ?? "?" }}: {{ error.message }}

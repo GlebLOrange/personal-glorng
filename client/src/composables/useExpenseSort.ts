@@ -22,5 +22,10 @@ export function useExpenseSort() {
     return sortDir.value === "asc" ? " ↑" : " ↓";
   }
 
-  return { sortKey, sortDir, sortParam, toggleSort, sortIndicator };
+  function sortAriaSort(key: ExpenseSortKey): "ascending" | "descending" | "none" {
+    if (sortKey.value !== key) return "none";
+    return sortDir.value === "asc" ? "ascending" : "descending";
+  }
+
+  return { sortKey, sortDir, sortParam, toggleSort, sortIndicator, sortAriaSort };
 }

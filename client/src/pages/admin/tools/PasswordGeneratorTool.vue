@@ -109,15 +109,12 @@ async function generatePassword(): Promise<void> {
 
       <div v-if="generated" class="mt-6 space-y-3">
         <div class="flex flex-wrap items-end gap-2">
-          <div class="flex flex-col gap-1 flex-1 min-w-[12rem]">
-            <label class="text-sm text-surface-mid">Password</label>
-            <input
-              :value="displayPassword"
-              type="text"
-              readonly
-              class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm font-mono focus:outline-none"
-            />
-          </div>
+          <BaseInput
+            :model-value="displayPassword"
+            label="Password"
+            readonly
+            class="flex-1 min-w-[12rem] font-mono"
+          />
           <BaseButton variant="ghost" size="sm" @click="showPassword = !showPassword">
             {{ showPassword ? "Hide" : "Show" }}
           </BaseButton>

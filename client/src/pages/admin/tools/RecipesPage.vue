@@ -4,6 +4,8 @@ import { computed, onMounted } from "vue";
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
+import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import RecipeCard from "@/components/recipes/RecipeCard.vue";
 import RecipeCookMode from "@/components/recipes/RecipeCookMode.vue";
@@ -110,14 +112,21 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
       @set-tag="setTag"
       @clear-filters="clearFilters"
     >
-      <div v-if="listLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div
+        v-if="listLoading"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        aria-busy="true"
+        aria-label="Loading recipes"
+      >
         <Card v-for="i in 6" :key="i" class="h-64 animate-pulse" />
       </div>
 
-      <Card v-else-if="listError" class="py-12 text-center">
-        <p class="text-surface-mid text-sm mb-4">{{ listError }}</p>
-        <BaseButton variant="ghost" size="sm" @click="loadRecipes">Retry</BaseButton>
-      </Card>
+      <ErrorState
+        v-else-if="listError"
+        :message="listError"
+        show-retry
+        @retry="loadRecipes"
+      />
 
       <div v-else-if="recipes.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <RecipeCard
@@ -130,26 +139,23 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
         />
       </div>
 
-      <div v-else class="text-center py-12">
-        <p class="text-surface-mid text-sm mb-4">
-          {{
-            hasFilters
-              ? "No recipes match your filters."
-              : "No recipes yet. Add your first one to get started."
-          }}
-        </p>
-        <BaseButton v-if="hasFilters" variant="ghost" size="sm" @click="clearFilters">
-          Clear filters
-        </BaseButton>
-        <button
-          v-else-if="canWrite"
-          type="button"
-          class="text-accent-blue text-sm hover:underline"
-          @click="openCreate"
-        >
-          + Add your first recipe
-        </button>
-      </div>
+      <EmptyState
+        v-else
+        :description="
+          hasFilters
+            ? 'No recipes match your filters.'
+            : 'No recipes yet. Add your first one to get started.'
+        "
+      >
+        <template v-if="hasFilters || canWrite" #action>
+          <BaseButton v-if="hasFilters" variant="ghost" size="sm" @click="clearFilters">
+            Clear filters
+          </BaseButton>
+          <BaseButton v-else-if="canWrite" variant="ghost" size="sm" @click="openCreate">
+            + Add your first recipe
+          </BaseButton>
+        </template>
+      </EmptyState>
 
       <TaskPagination
         v-if="!listLoading && !listError && (recipes.length > 0 || page > 1)"

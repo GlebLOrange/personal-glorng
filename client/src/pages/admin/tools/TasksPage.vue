@@ -98,9 +98,21 @@ onMounted(() => {
     <div class="min-w-0">
     <TaskSummaryBar :stats="stats" :loading="statsLoading" />
 
-    <AdminTabBar :model-value="activeTab" :tabs="TASK_TABS" @update:model-value="switchTab" />
+    <AdminTabBar
+      panel-id-prefix="tasks-tab"
+      :model-value="activeTab"
+      :tabs="TASK_TABS"
+      @update:model-value="switchTab"
+    />
 
-    <div v-if="activeTab === 'queue'">
+    <section
+      v-if="activeTab === 'queue'"
+      id="tasks-tab-panel-queue"
+      role="tabpanel"
+      aria-labelledby="tasks-tab-tab-queue"
+      tabindex="0"
+      class="outline-none"
+    >
       <TaskFilters
         v-model:filter-status="filterStatus"
         :task-count-label="taskCountLabel"
@@ -119,21 +131,37 @@ onMounted(() => {
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
       />
-    </div>
+    </section>
 
-    <TaskIntakeList
+    <section
       v-else-if="activeTab === 'intakes'"
-      :intakes="intakes"
-      :loading="intakesLoading"
-    />
+      id="tasks-tab-panel-intakes"
+      role="tabpanel"
+      aria-labelledby="tasks-tab-tab-intakes"
+      tabindex="0"
+      class="outline-none"
+    >
+      <TaskIntakeList
+        :intakes="intakes"
+        :loading="intakesLoading"
+      />
+    </section>
 
-    <TaskSyncQueue
+    <section
       v-else-if="activeTab === 'sync'"
-      :items="syncQueue"
-      :loading="syncLoading"
-      :can-mutate="isSuperuser"
-      @retry="retrySync"
-    />
+      id="tasks-tab-panel-sync"
+      role="tabpanel"
+      aria-labelledby="tasks-tab-tab-sync"
+      tabindex="0"
+      class="outline-none"
+    >
+      <TaskSyncQueue
+        :items="syncQueue"
+        :loading="syncLoading"
+        :can-mutate="isSuperuser"
+        @retry="retrySync"
+      />
+    </section>
 
     <TaskCreateModal
       v-if="isSuperuser"
