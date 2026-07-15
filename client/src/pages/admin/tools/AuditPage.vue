@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
+import AdminListRow from "@/components/admin/AdminListRow.vue";
+import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
+import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { Card } from "@/components/ui/card";
-import { LIST_PAGE_SIZE } from "@/constants/pagination";
+import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { formatDate } from "@/utils/format";
@@ -34,24 +37,35 @@ const loading = ref(false);
 const listError = ref<string | null>(null);
 const category = ref("");
 const action = ref("");
+const requestId = ref("");
+const actorId = ref("");
+const resourceType = ref("");
+const resourceId = ref("");
 const page = ref(1);
 const expandedEventIds = ref<Set<number>>(new Set());
-const totalPages = computed(() => Math.ceil(total.value / LIST_PAGE_SIZE));
+const totalPages = computed(() => Math.ceil(total.value / ADMIN_LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
 
 useScrollListFingerprint(
   () =>
-    `${page.value}:${total.value}:${category.value}:${action.value}:${items.value[0]?.id ?? ""}`,
+    `${page.value}:${total.value}:${category.value}:${action.value}:${requestId.value}:${actorId.value}:${resourceType.value}:${resourceId.value}:${items.value[0]?.id ?? ""}`,
 );
 
 async function load(): Promise<void> {
   loading.value = true;
   listError.value = null;
   try {
-    const params: Record<string, string | number> = { page: page.value, per_page: LIST_PAGE_SIZE };
+    const params: Record<string, string | number> = {
+      page: page.value,
+      per_page: ADMIN_LIST_PAGE_SIZE,
+    };
     if (category.value) params.category = category.value;
     if (action.value) params.action = action.value;
+    if (requestId.value.trim()) params.request_id = requestId.value.trim();
+    if (actorId.value.trim()) params.actor_id = Number(actorId.value.trim());
+    if (resourceType.value.trim()) params.resource_type = resourceType.value.trim();
+    if (resourceId.value.trim()) params.resource_id = Number(resourceId.value.trim());
     const { data } = await api.get<{ items: AuditEvent[]; total: number }>("/tools/audit", {
       params,
     });
@@ -87,10 +101,15 @@ function toggleExpanded(eventId: number): void {
   expandedEventIds.value = next;
 }
 
+function actorLabel(event: AuditEvent): string {
+  const actor = event.actor_id ? `${event.actor_type}#${event.actor_id}` : event.actor_type;
+  return actor;
+}
+
 function categoryClass(cat: string): string {
   return cat === "security"
-    ? "bg-accent-red/20 text-accent-red"
-    : "bg-accent-blue/20 text-accent-blue";
+    ? "bg-accent-red/20 text-accent-red border-accent-red/30"
+    : "bg-accent-blue/20 text-accent-blue border-accent-blue/30";
 }
 
 onMounted(load);
@@ -103,7 +122,7 @@ onMounted(load);
     </header>
 
     <Card class="mb-6">
-      <div class="flex flex-wrap gap-3 items-end">
+      <div class="flex flex-wrap items-end gap-3">
         <BaseSelect v-model="category" label="Category" compact>
           <option value="">All</option>
           <option value="security">Security</option>
@@ -115,49 +134,56 @@ onMounted(load);
           compact
           placeholder="e.g. auth.login_success"
         />
+        <BaseInput v-model="requestId" label="Request ID" compact placeholder="UUID" />
+        <BaseInput v-model="actorId" label="Actor ID" compact placeholder="User ID" />
+        <BaseInput
+          v-model="resourceType"
+          label="Resource type"
+          compact
+          placeholder="e.g. recipe"
+        />
+        <BaseInput v-model="resourceId" label="Resource ID" compact placeholder="Numeric ID" />
         <BaseButton size="sm" @click="applyFilters">Filter</BaseButton>
       </div>
     </Card>
 
-    <section v-if="loading" class="space-y-3" aria-busy="true" aria-label="Loading audit events">
-      <Card v-for="i in 5" :key="i" class="h-24 animate-pulse" />
-    </section>
+    <AdminListSkeleton v-if="loading" label="Loading audit events" />
 
-    <ErrorState
-      v-else-if="listError"
-      :message="listError"
-      show-retry
-      @retry="load"
-    />
+    <ErrorState v-else-if="listError" :message="listError" show-retry @retry="load" />
 
     <EmptyState v-else-if="items.length === 0" description="No audit events found." />
 
-    <div v-else class="min-w-0 space-y-3">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <p class="text-xs text-surface-muted">
-          {{ total }} events total · page {{ page }} of {{ Math.max(totalPages, 1) }}
-        </p>
-        <BasePagination
-          layout="compact"
-          aria-label="Audit pagination"
-          :page="page"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-        />
-      </div>
-      <Card v-for="event in items" :key="event.id" class="text-sm">
-        <div class="flex flex-wrap items-center gap-2 mb-2">
-          <span class="text-xs px-2 py-0.5 rounded" :class="categoryClass(event.category)">
-            {{ event.category }}
-          </span>
-          <span class="min-w-0 break-words text-surface-light">{{ event.action }}</span>
-          <span class="text-xs text-surface-muted ml-auto">
-            {{ formatDate(event.occurred_at) }}
-          </span>
-        </div>
-        <div class="text-xs text-surface-mid space-y-1">
+    <div v-else class="min-w-0 space-y-1">
+      <AdminListToolbar
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        item-label="events"
+        ariaLabel="Audit pagination"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+      />
+      <AdminListRow
+        v-for="event in items"
+        :key="event.id"
+        interactive
+        expandable
+        :expanded="expandedEventIds.has(event.id)"
+        @click="toggleExpanded(event.id)"
+      >
+        <template #badge>
+          <StatusBadge :label="event.category" :class-name="categoryClass(event.category)" />
+        </template>
+        <template #primary>
+          <span :title="event.action">{{ event.action }}</span>
+        </template>
+        <template #meta>
+          <span>{{ actorLabel(event) }}</span>
+        </template>
+        <template #time>{{ formatDate(event.occurred_at) }}</template>
+        <template #detail>
           <p>
             Actor: {{ event.actor_type }}
             <span v-if="event.actor_id">#{{ event.actor_id }}</span>
@@ -167,22 +193,14 @@ onMounted(load);
             Resource: {{ event.resource_type }}
             <span v-if="event.resource_id">#{{ event.resource_id }}</span>
           </p>
-          <p v-if="event.request_id" class="font-data text-xs">Request: {{ event.request_id }}</p>
-          <BaseButton
-            v-if="event.metadata"
-            size="sm"
-            variant="ghost"
-            @click="toggleExpanded(event.id)"
-          >
-            {{ expandedEventIds.has(event.id) ? "Hide metadata" : "Show metadata" }}
-          </BaseButton>
+          <p v-if="event.request_id" class="font-data">Request: {{ event.request_id }}</p>
           <pre
-            v-if="event.metadata && expandedEventIds.has(event.id)"
-            class="mt-2 p-2 bg-surface-dark rounded text-xs overflow-x-auto"
+            v-if="event.metadata"
+            class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
             >{{ JSON.stringify(event.metadata, null, 2) }}</pre
           >
-        </div>
-      </Card>
+        </template>
+      </AdminListRow>
     </div>
   </AdminPageLayout>
 </template>

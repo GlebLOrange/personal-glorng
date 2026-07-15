@@ -2,11 +2,15 @@
 import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
+import AdminListRow from "@/components/admin/AdminListRow.vue";
+import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
+import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
-import { Card } from "@/components/ui/card";
-import { LIST_PAGE_SIZE } from "@/constants/pagination";
+import EmptyState from "@/components/ui/EmptyState.vue";
+import StatusBadge from "@/components/ui/StatusBadge.vue";
+import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import type { PaginatedList } from "@/types";
@@ -22,13 +26,21 @@ interface FeedbackItem {
 }
 
 const items = ref<FeedbackItem[]>([]);
-const expandedId = ref<number | null>(null);
+const selectedItem = ref<FeedbackItem | null>(null);
+const drawerOpen = ref(false);
 const filter = ref<"all" | "unread" | "archived">("all");
 const page = ref(1);
+const total = ref(0);
 const totalPages = ref(0);
 const loading = ref(false);
 const { toast } = useNotify();
 const router = useRouter();
+
+const statusColors: Record<string, string> = {
+  unread: "bg-accent-blue/20 text-accent-blue border-accent-blue/30",
+  read: "bg-surface-border text-surface-mid border-surface-border",
+  archived: "bg-surface-dark text-surface-muted border-surface-border",
+};
 
 function reply(item: FeedbackItem): void {
   const body = `\n\n--- Original ---\n${item.message}`;
@@ -43,13 +55,14 @@ async function load(): Promise<void> {
   try {
     const params: Record<string, string | number> = {
       page: page.value,
-      per_page: LIST_PAGE_SIZE,
+      per_page: ADMIN_LIST_PAGE_SIZE,
     };
     if (filter.value !== "all") {
       params.status = filter.value;
     }
     const { data } = await api.get<PaginatedList<FeedbackItem>>("/feedback", { params });
     items.value = data.items;
+    total.value = data.total;
     totalPages.value = data.pages;
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
@@ -75,26 +88,36 @@ async function setStatus(id: number, status: string): Promise<void> {
     await api.patch(`/feedback/${id}/status`, { status });
     const item = items.value.find((i) => i.id === id);
     if (item) item.status = status;
+    if (selectedItem.value?.id === id) {
+      selectedItem.value = { ...selectedItem.value, status };
+    }
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
     toast("Failed to update status", "error");
   }
 }
 
-function toggle(item: FeedbackItem): void {
-  if (expandedId.value === item.id) {
-    expandedId.value = null;
-    return;
-  }
-  expandedId.value = item.id;
-  if (item.status === "unread") setStatus(item.id, "read");
+function openItem(item: FeedbackItem): void {
+  selectedItem.value = item;
+  drawerOpen.value = true;
+  if (item.status === "unread") void setStatus(item.id, "read");
 }
 
-const statusColors: Record<string, string> = {
-  unread: "bg-accent-blue/20 text-accent-blue",
-  read: "bg-surface-border text-surface-mid",
-  archived: "bg-surface-dark text-surface-muted",
-};
+function closeDrawer(): void {
+  drawerOpen.value = false;
+  selectedItem.value = null;
+}
+
+function handleReply(): void {
+  if (!selectedItem.value) return;
+  reply(selectedItem.value);
+}
+
+async function handleArchive(): Promise<void> {
+  if (!selectedItem.value) return;
+  await setStatus(selectedItem.value.id, "archived");
+  closeDrawer();
+}
 
 watch([filter, page], () => {
   void load();
@@ -119,57 +142,53 @@ onMounted(load);
       </div>
     </header>
 
-    <div class="min-w-0 space-y-3" :aria-busy="loading || undefined">
-      <Card
-        v-for="item in items"
-        :key="item.id"
-        hoverable
-        class="min-w-0 cursor-pointer"
-        @click="toggle(item)"
-      >
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="break-words text-sm font-bold text-surface-light">{{ item.theme }}</span>
-              <span class="text-[10px] px-1.5 py-0.5 rounded" :class="statusColors[item.status]">
-                {{ item.status }}
-              </span>
-            </div>
-            <div class="text-xs text-surface-mid">
-              {{ item.email }} · {{ formatDate(item.created_at) }}
-            </div>
-          </div>
-          <BaseButton
-            v-if="item.status !== 'archived'"
-            variant="ghost"
-            size="sm"
-            @click.stop="setStatus(item.id, 'archived')"
-          >
-            Archive
-          </BaseButton>
-        </div>
+    <AdminListSkeleton v-if="loading" label="Loading feedback" />
 
-        <div v-if="expandedId === item.id" class="mt-3 pt-3 border-t border-surface-border">
-          <p class="mb-3 whitespace-pre-wrap break-words text-sm text-surface-sage">{{ item.message }}</p>
-          <BaseButton variant="ghost" size="sm" @click.stop="reply(item)"> Reply </BaseButton>
-        </div>
-      </Card>
+    <EmptyState
+      v-else-if="items.length === 0"
+      :description="
+        filter !== 'all' ? `No feedback messages with status '${filter}'.` : 'No feedback messages.'
+      "
+    />
 
-      <p v-if="!loading && items.length === 0" class="text-surface-mid text-sm text-center py-8">
-        No feedback messages{{ filter !== "all" ? ` with status "${filter}"` : "" }}.
-      </p>
-
-      <BasePagination
-        v-if="totalPages > 1"
-        aria-label="Feedback pagination"
+    <div v-else class="min-w-0 space-y-1">
+      <AdminListToolbar
+        :total="total"
         :page="page"
         :total-pages="totalPages"
         :has-next-page="page < totalPages"
         :has-previous-page="page > 1"
         :loading="loading"
+        item-label="messages"
+        ariaLabel="Feedback pagination"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
       />
+      <AdminListRow
+        v-for="item in items"
+        :key="item.id"
+        interactive
+        @click="openItem(item)"
+      >
+        <template #badge>
+          <StatusBadge :label="item.status" :class-name="statusColors[item.status]" />
+        </template>
+        <template #primary>
+          <span :title="item.theme">{{ item.theme }}</span>
+        </template>
+        <template #meta>
+          <span>{{ item.email }}</span>
+        </template>
+        <template #time>{{ formatDate(item.created_at) }}</template>
+      </AdminListRow>
     </div>
+
+    <FeedbackDetailDrawer
+      :open="drawerOpen"
+      :item="selectedItem"
+      @close="closeDrawer"
+      @reply="handleReply"
+      @archive="handleArchive"
+    />
   </AdminPageLayout>
 </template>

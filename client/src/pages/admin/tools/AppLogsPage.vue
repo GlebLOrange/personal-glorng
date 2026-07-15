@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
+import AdminListRow from "@/components/admin/AdminListRow.vue";
+import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
+import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { Card } from "@/components/ui/card";
-import { LIST_PAGE_SIZE } from "@/constants/pagination";
+import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { formatDate } from "@/utils/format";
@@ -36,7 +39,7 @@ const requestId = ref("");
 const message = ref("");
 const page = ref(1);
 const expandedEntryIds = ref<Set<number>>(new Set());
-const totalPages = computed(() => Math.ceil(total.value / LIST_PAGE_SIZE));
+const totalPages = computed(() => Math.ceil(total.value / ADMIN_LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
 
@@ -49,7 +52,10 @@ async function load(): Promise<void> {
   loading.value = true;
   listError.value = null;
   try {
-    const params: Record<string, string | number> = { page: page.value, per_page: LIST_PAGE_SIZE };
+    const params: Record<string, string | number> = {
+      page: page.value,
+      per_page: ADMIN_LIST_PAGE_SIZE,
+    };
     if (level.value) params.level = level.value;
     if (requestId.value.trim()) params.request_id = requestId.value.trim();
     if (message.value.trim()) params.message = message.value.trim();
@@ -88,16 +94,24 @@ function toggleExpanded(entryId: number): void {
   expandedEntryIds.value = next;
 }
 
+function onRowClick(entry: AppLogEntry): void {
+  if (hasDetails(entry)) toggleExpanded(entry.id);
+}
+
+function hasDetails(entry: AppLogEntry): boolean {
+  return Boolean(entry.context || entry.traceback || entry.error || entry.request_id);
+}
+
 function levelClass(logLevel: string): string {
   switch (logLevel) {
     case "error":
-      return "bg-accent-red/20 text-accent-red";
+      return "bg-accent-red/20 text-accent-red border-accent-red/30";
     case "warning":
-      return "bg-accent-amber/20 text-accent-amber";
+      return "bg-accent-amber/20 text-accent-amber border-accent-amber/30";
     case "debug":
-      return "bg-surface-border text-surface-mid";
+      return "bg-surface-border text-surface-mid border-surface-border";
     default:
-      return "bg-accent-blue/20 text-accent-blue";
+      return "bg-accent-blue/20 text-accent-blue border-accent-blue/30";
   }
 }
 
@@ -108,12 +122,13 @@ onMounted(load);
   <AdminPageLayout title="app logs">
     <header class="page-intro">
       <p class="text-xs text-surface-muted">
-        Structured application logs persisted from the API server
+        Structured application logs persisted from the API server. Message search uses
+        Elasticsearch when enabled.
       </p>
     </header>
 
     <Card class="mb-6">
-      <div class="flex flex-wrap gap-3 items-end">
+      <div class="flex flex-wrap items-end gap-3">
         <BaseSelect v-model="level" label="Level" compact>
           <option value="">All</option>
           <option value="debug">debug</option>
@@ -127,68 +142,58 @@ onMounted(load);
       </div>
     </Card>
 
-    <section v-if="loading" class="space-y-3" aria-busy="true" aria-label="Loading app logs">
-      <Card v-for="i in 5" :key="i" class="h-24 animate-pulse" />
-    </section>
+    <AdminListSkeleton v-if="loading" label="Loading app logs" />
 
-    <ErrorState
-      v-else-if="listError"
-      :message="listError"
-      show-retry
-      @retry="load"
-    />
+    <ErrorState v-else-if="listError" :message="listError" show-retry @retry="load" />
 
     <EmptyState v-else-if="items.length === 0" description="No log entries found." />
 
-    <div v-else class="min-w-0 space-y-3">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <p class="text-xs text-surface-muted">
-          {{ total }} entries total · page {{ page }} of {{ Math.max(totalPages, 1) }}
-        </p>
-        <BasePagination
-          layout="compact"
-          aria-label="App logs pagination"
-          :page="page"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-        />
-      </div>
-      <Card v-for="entry in items" :key="entry.id" class="text-sm">
-        <div class="flex flex-wrap items-center gap-2 mb-2">
-          <span class="text-xs px-2 py-0.5 rounded" :class="levelClass(entry.level)">
-            {{ entry.level }}
-          </span>
-          <span class="min-w-0 break-words text-surface-light">{{ entry.message }}</span>
-          <span class="text-xs text-surface-muted ml-auto">
-            {{ formatDate(entry.occurred_at) }}
-          </span>
-        </div>
-        <div class="text-xs text-surface-mid space-y-1">
-          <p>Logger: {{ entry.logger }}</p>
-          <p v-if="entry.request_id" class="font-data text-xs">Request: {{ entry.request_id }}</p>
+    <div v-else class="min-w-0 space-y-1">
+      <AdminListToolbar
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        item-label="entries"
+        ariaLabel="App logs pagination"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+      />
+      <AdminListRow
+        v-for="entry in items"
+        :key="entry.id"
+        :interactive="hasDetails(entry)"
+        :expandable="hasDetails(entry)"
+        :expanded="expandedEntryIds.has(entry.id)"
+        :hoverable="hasDetails(entry)"
+        @click="onRowClick(entry)"
+      >
+        <template #badge>
+          <StatusBadge :label="entry.level" :class-name="levelClass(entry.level)" />
+        </template>
+        <template #primary>
+          <span :title="entry.message">{{ entry.message }}</span>
+        </template>
+        <template #meta>
+          <span class="font-data">{{ entry.logger }}</span>
+        </template>
+        <template #time>{{ formatDate(entry.occurred_at) }}</template>
+        <template #detail>
+          <p v-if="entry.request_id" class="font-data">Request: {{ entry.request_id }}</p>
           <p v-if="entry.error_type">Error: {{ entry.error_type }} — {{ entry.error }}</p>
-          <BaseButton
-            v-if="entry.context || entry.traceback"
-            size="sm"
-            variant="ghost"
-            @click="toggleExpanded(entry.id)"
-          >
-            {{ expandedEntryIds.has(entry.id) ? "Hide details" : "Show details" }}
-          </BaseButton>
           <pre
-            v-if="entry.context && expandedEntryIds.has(entry.id)"
-            class="mt-2 p-2 bg-surface-dark rounded text-xs overflow-x-auto"
+            v-if="entry.context"
+            class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
             >{{ JSON.stringify(entry.context, null, 2) }}</pre
           >
           <pre
-            v-if="entry.traceback && expandedEntryIds.has(entry.id)"
-            class="mt-2 p-2 bg-surface-dark rounded text-xs overflow-x-auto text-accent-red/80"
+            v-if="entry.traceback"
+            class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs text-accent-red/80"
             >{{ entry.traceback }}</pre
           >
-        </div>
-      </Card>
+        </template>
+      </AdminListRow>
     </div>
   </AdminPageLayout>
 </template>

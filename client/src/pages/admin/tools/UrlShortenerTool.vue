@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
+import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import BasePagination from "@/components/ui/BasePagination.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
-import { LIST_PAGE_SIZE } from "@/constants/pagination";
+import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
@@ -18,6 +19,7 @@ import { publicUrl } from "@/utils/publicLinks";
 
 const urls = ref<UrlItem[]>([]);
 const page = ref(1);
+const total = ref(0);
 const totalPages = ref(0);
 const newUrl = ref("");
 const newTitle = ref("");
@@ -41,7 +43,7 @@ async function loadUrls(): Promise<void> {
   const data = await runList(
     () =>
       api.get<PaginatedList<UrlItem>>("/tools/url-shortener", {
-        params: { page: page.value, per_page: LIST_PAGE_SIZE },
+        params: { page: page.value, per_page: ADMIN_LIST_PAGE_SIZE },
       }),
     {
       errorFallback: "Failed to load URLs",
@@ -49,6 +51,7 @@ async function loadUrls(): Promise<void> {
   );
   if (data) {
     urls.value = data.data.items;
+    total.value = data.data.total;
     totalPages.value = data.data.pages;
   }
 }
@@ -120,7 +123,7 @@ onMounted(loadUrls);
     max-width="xl"
     :narrow="false"
   >
-    <form class="space-y-3 mb-10" @submit.prevent="createUrl">
+    <form class="mb-10 space-y-3" @submit.prevent="createUrl">
       <BaseInput v-model="newUrl" placeholder="https://example.com/very-long-url..." label="URL" />
       <BaseInput v-model="newTitle" placeholder="Optional title" label="Title" />
       <BaseButton variant="primary" :disabled="loading">
@@ -129,11 +132,11 @@ onMounted(loadUrls);
     </form>
 
     <Card v-if="lastCreatedLink" variant="compact" class="mb-10">
-      <p class="text-sm text-surface-mid mb-2">Your short link</p>
+      <p class="mb-2 text-sm text-surface-mid">Your short link</p>
       <div class="flex flex-wrap items-center gap-3">
         <a
           :href="lastCreatedLink"
-          class="text-accent-blue text-sm break-all hover:underline"
+          class="break-all text-sm text-accent-blue hover:underline"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -143,15 +146,24 @@ onMounted(loadUrls);
       </div>
     </Card>
 
-    <div v-if="canManage" class="space-y-3">
-      <div v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading shortened URLs">
-        <Card v-for="n in 3" :key="n" variant="compact" class="animate-pulse">
-          <div class="h-4 w-48 bg-surface-border rounded mb-2" />
-          <div class="h-3 w-32 bg-surface-border rounded" />
-        </Card>
-      </div>
+    <div v-if="canManage" class="space-y-1">
+      <AdminListSkeleton v-if="listLoading" label="Loading shortened URLs" />
 
       <template v-else>
+        <AdminListToolbar
+          v-if="urls.length > 0"
+          :total="total"
+          :page="page"
+          :total-pages="totalPages"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          :loading="listLoading"
+          item-label="URLs"
+          ariaLabel="Short URLs pagination"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+        />
+
         <UrlShortenerListItem
           v-for="url in urls"
           :key="url.id"
@@ -165,19 +177,6 @@ onMounted(loadUrls);
         />
 
         <EmptyState v-if="urls.length === 0">No shortened URLs yet. Create one above.</EmptyState>
-
-        <BasePagination
-          v-if="totalPages > 1"
-          class="pt-2"
-          aria-label="Short URLs pagination"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          :loading="listLoading"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-        />
       </template>
     </div>
   </PageShell>

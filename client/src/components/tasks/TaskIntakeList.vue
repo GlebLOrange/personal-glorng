@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { Card } from "@/components/ui/card";
+import AdminListRow from "@/components/admin/AdminListRow.vue";
+import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import TaskIntakeDetailDrawer from "@/components/tasks/TaskIntakeDetailDrawer.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
+import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/format";
 import type { TaskIntakeItem } from "@/types";
@@ -12,105 +15,46 @@ defineProps<{
   loading: boolean;
 }>();
 
-const showDebug = ref<Record<number, boolean>>({});
+const selectedIntake = ref<TaskIntakeItem | null>(null);
+const drawerOpen = ref(false);
 
-interface DraftFields {
-  title?: string | null;
-  scheduled_date?: string | null;
-  scheduled_time?: string | null;
-  description?: string | null;
-  location?: string | null;
-  reminder_minutes?: number | null;
-  assignee_hint?: string | null;
+function openIntake(item: TaskIntakeItem): void {
+  selectedIntake.value = item;
+  drawerOpen.value = true;
 }
 
-function draftFields(draft: Record<string, unknown> | null): DraftFields {
-  if (!draft) return {};
-  return draft as DraftFields;
+function closeDrawer(): void {
+  drawerOpen.value = false;
+  selectedIntake.value = null;
 }
-
-const draftEntries = [
-  { key: "title", label: "Title" },
-  { key: "scheduled_date", label: "Date" },
-  { key: "scheduled_time", label: "Time" },
-  { key: "location", label: "Location" },
-  { key: "description", label: "Notes" },
-  { key: "reminder_minutes", label: "Reminder (min)" },
-  { key: "assignee_hint", label: "Assignee" },
-] as const;
-
-function toggleDebug(id: number): void {
-  showDebug.value[id] = !showDebug.value[id];
-}
-
-const skeletonRows = 3;
 </script>
 
 <template>
-  <div v-if="loading" class="flex flex-col gap-3" aria-busy="true" aria-label="Loading task intakes">
-    <Card v-for="n in skeletonRows" :key="n" class="animate-pulse">
-      <div class="h-4 w-32 bg-surface-border rounded mb-3" />
-      <div class="h-3 w-full bg-surface-border rounded mb-2" />
-      <div class="h-3 w-2/3 bg-surface-border rounded" />
-    </Card>
-  </div>
+  <AdminListSkeleton v-if="loading" label="Loading task intakes" />
 
   <EmptyState v-else-if="intakes.length === 0" description="No task intakes yet." />
 
-  <div v-else class="space-y-3">
-    <Card v-for="item in intakes" :key="item.id">
-      <div class="flex justify-between items-start gap-4">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-2 flex-wrap">
-            <span class="text-surface-light font-bold text-sm">Intake #{{ item.id }}</span>
-            <span
-              :class="[
-                'text-[10px] px-2 py-0.5 rounded-full border',
-                statusBadgeClass(item.status),
-              ]"
-            >
-              {{ statusLabel(item.status) }}
-            </span>
-            <span v-if="item.task_id" class="text-xs text-accent-blue">
-              → Task #{{ item.task_id }}
-            </span>
-          </div>
-
-          <p v-if="item.inbound_text" class="text-xs text-surface-mid mb-3">
-            {{ item.inbound_text }}
-          </p>
-
-          <dl v-if="item.draft_json" class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-3">
-            <template v-for="entry in draftEntries" :key="entry.key">
-              <template v-if="draftFields(item.draft_json)[entry.key] != null">
-                <dt class="text-[10px] uppercase tracking-wide text-surface-mid">
-                  {{ entry.label }}
-                </dt>
-                <dd class="text-xs text-surface-light mb-1 sm:mb-0">
-                  {{ draftFields(item.draft_json)[entry.key] }}
-                </dd>
-              </template>
-            </template>
-          </dl>
-
-          <button
-            v-if="item.draft_json"
-            type="button"
-            class="text-[10px] text-accent-blue hover:underline"
-            @click="toggleDebug(item.id)"
-          >
-            {{ showDebug[item.id] ? "Hide debug JSON" : "Show debug JSON" }}
-          </button>
-          <pre
-            v-if="item.draft_json && showDebug[item.id]"
-            class="text-[10px] text-surface-mid bg-surface-dark/50 rounded p-2 overflow-x-auto mt-2"
-            >{{ JSON.stringify(item.draft_json, null, 2) }}</pre
-          >
-        </div>
-        <span class="text-[10px] text-surface-mid shrink-0">
-          {{ formatDate(item.created_at) }}
-        </span>
-      </div>
-    </Card>
+  <div v-else class="space-y-1">
+    <AdminListRow
+      v-for="item in intakes"
+      :key="item.id"
+      interactive
+      @click="openIntake(item)"
+    >
+      <template #badge>
+        <StatusBadge
+          :label="statusLabel(item.status)"
+          :class-name="statusBadgeClass(item.status)"
+        />
+      </template>
+      <template #primary>Intake #{{ item.id }}</template>
+      <template #meta>
+        <span v-if="item.task_id">→ Task #{{ item.task_id }}</span>
+        <span v-else-if="item.inbound_text" :title="item.inbound_text">{{ item.inbound_text }}</span>
+      </template>
+      <template #time>{{ formatDate(item.created_at) }}</template>
+    </AdminListRow>
   </div>
+
+  <TaskIntakeDetailDrawer :open="drawerOpen" :intake="selectedIntake" @close="closeDrawer" />
 </template>
