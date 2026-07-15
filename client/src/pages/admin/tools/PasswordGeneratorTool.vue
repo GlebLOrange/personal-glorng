@@ -66,7 +66,7 @@ async function generatePassword(): Promise<void> {
     title="password generator"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'password generator' }]"
     back-to="/tools"
-    max-width="md"
+    max-width="xl"
     :narrow="false"
   >
     <Card>

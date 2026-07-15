@@ -13,6 +13,7 @@ const props = withDefaults(
   }>(),
   {
     backTo: "/admin",
+    maxWidth: "xl",
   },
 );
 
@@ -21,8 +22,7 @@ const breadcrumbLabel = computed(() => formatBreadcrumbLabel(props.title));
 const shellMaxWidth = computed((): "sm" | "md" | "5xl" => {
   if (props.maxWidth === "sm") return "sm";
   if (props.maxWidth === "md") return "md";
-  if (props.maxWidth === "xl") return "5xl";
-  return "md";
+  return "5xl";
 });
 </script>
 

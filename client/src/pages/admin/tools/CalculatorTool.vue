@@ -104,10 +104,10 @@ function buttonAriaLabel(val: string): string | undefined {
     title="calculator"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'calculator' }]"
     back-to="/tools"
-    max-width="sm"
+    max-width="xl"
     :narrow="false"
   >
-    <Card>
+    <Card class="mx-auto max-w-sm w-full">
       <div
         class="bg-surface-dark rounded-lg p-4 mb-4 text-right"
         role="status"
