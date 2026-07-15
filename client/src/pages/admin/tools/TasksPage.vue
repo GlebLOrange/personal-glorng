@@ -75,7 +75,6 @@ const {
   total,
   intakeTotal,
   syncTotal,
-  taskCountLabel,
   loadTasks,
   loadStats,
   loadIntakes,
@@ -111,7 +110,16 @@ onMounted(() => {
 <template>
   <AdminPageLayout title="tasks" max-width="xl">
     <div class="min-w-0">
-      <TaskSummaryBar :stats="stats" :loading="statsLoading" />
+      <TaskSummaryBar
+        v-model:filter-status="filterStatus"
+        :stats="stats"
+        :loading="statsLoading"
+        @switch-tab="switchTab"
+      >
+        <template #actions>
+          <TaskFilters :can-mutate="isSuperuser" @create="openCreate" />
+        </template>
+      </TaskSummaryBar>
 
       <AdminTabBar
         panel-id-prefix="tasks-tab"
@@ -128,12 +136,6 @@ onMounted(() => {
         tabindex="0"
         class="outline-none"
       >
-        <TaskFilters
-          v-model:filter-status="filterStatus"
-          :task-count-label="taskCountLabel"
-          :can-mutate="isSuperuser"
-          @create="openCreate"
-        />
         <div v-if="!listLoading && tasks.length > 0" class="mb-1">
           <AdminListToolbar
             :total="total"

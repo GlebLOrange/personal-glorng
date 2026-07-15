@@ -63,12 +63,6 @@ export function useTasks() {
   const hasNextSyncPage = computed(() => syncPage.value < syncTotalPages.value);
   const hasPreviousSyncPage = computed(() => syncPage.value > 1);
 
-  const taskCountLabel = computed(() => {
-    const n = tasks.value.length;
-    const filter = filterStatus.value ? ` · ${filterStatus.value.replaceAll("_", " ")}` : "";
-    return `${n} task${n === 1 ? "" : "s"} on page ${page.value}${filter}`;
-  });
-
   async function loadTasks(): Promise<void> {
     const params: Record<string, string | number> = {
       page: page.value,
@@ -289,7 +283,6 @@ export function useTasks() {
     hasPreviousIntakePage,
     hasNextSyncPage,
     hasPreviousSyncPage,
-    taskCountLabel,
     loadTasks,
     loadStats,
     loadIntakes,

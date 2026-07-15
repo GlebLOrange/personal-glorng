@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
+import AdminFilterBar from "@/components/admin/AdminFilterBar.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
-import { Card } from "@/components/ui/card";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -127,20 +126,17 @@ onMounted(load);
       </p>
     </header>
 
-    <Card class="mb-6">
-      <div class="flex flex-wrap items-end gap-3">
-        <BaseSelect v-model="level" label="Level" compact>
-          <option value="">All</option>
-          <option value="debug">debug</option>
-          <option value="info">info</option>
-          <option value="warning">warning</option>
-          <option value="error">error</option>
-        </BaseSelect>
-        <BaseInput v-model="requestId" label="Request ID" compact placeholder="UUID" />
-        <BaseInput v-model="message" label="Message" compact placeholder="substring" />
-        <BaseButton size="sm" @click="applyFilters">Filter</BaseButton>
-      </div>
-    </Card>
+    <AdminFilterBar @apply="applyFilters">
+      <BaseSelect v-model="level" label="Level" compact>
+        <option value="">All</option>
+        <option value="debug">debug</option>
+        <option value="info">info</option>
+        <option value="warning">warning</option>
+        <option value="error">error</option>
+      </BaseSelect>
+      <BaseInput v-model="requestId" label="Request ID" compact placeholder="UUID" />
+      <BaseInput v-model="message" label="Message" compact placeholder="substring" />
+    </AdminFilterBar>
 
     <AdminListSkeleton v-if="loading" label="Loading app logs" />
 
