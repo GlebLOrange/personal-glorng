@@ -63,7 +63,7 @@ Redis fixed-window limits — [`server/app/core/rate_limit.py`](../../server/app
 | Auth | 5/min | All `/api/auth/*` | Fail closed |
 | API general | 30/min | Most public APIs | Fail open |
 | Search query | 30/min | `GET /api/search` | Fail open |
-| Search chat | 5/5min | `POST /api/search/chat` | Fail closed |
+| Search query | 30/min | `GET /api/search` | Fail closed |
 | Feedback | 5/5min | `POST /api/feedback` | Fail closed |
 | Checkout | 10/hour | `POST /api/donations/checkout` | Fail closed |
 | AI chat (admin) | 5/5min | `POST /api/tools/ai-chat` | Fail closed |
@@ -79,31 +79,28 @@ Inbound webhooks and Stripe webhooks read bodies via [`read_request_body_bounded
 
 ## Search and AI chat
 
-Portfolio search uses the configured search backend with a visibility model. MongoDB text search is the default local path; optional Postgres FTS or Elasticsearch can back the same indexed documents when enabled:
+Portfolio keyword search uses the configured search backend with a visibility model. MongoDB text search is the default local path; optional Postgres FTS or Elasticsearch can back the same indexed documents when enabled:
 
 | Visibility | Indexed content (examples) | Who can retrieve |
 |------------|---------------------------|------------------|
-| `PUBLIC` | Static resume content, public recipes | Anyone (keyword search + public AI chat) |
-| `ADMIN` | Tasks, expenses, feedback bodies | Admin AI chat only (`ai-chat:write`) |
+| `PUBLIC` | Static resume content, public recipes | Anyone (keyword search) |
+| `ADMIN` | Tasks, expenses, feedback bodies | Indexed for internal tooling only |
 
-**Public endpoints** ([`server/app/routers/search.py`](../../server/app/routers/search.py)):
+**Public endpoint** ([`server/app/routers/search.py`](../../server/app/routers/search.py)):
 
 - `GET /api/search` — keyword lookup over `PUBLIC` documents only (no LLM)
-- `GET /api/search/config` — reports whether AI search is enabled and configured
-- `POST /api/search/chat` — unauthenticated grounded AI chat; retrieval scoped to `PUBLIC` only
 
-**Admin endpoint** ([`server/app/routers/tools/ai_chat.py`](../../server/app/routers/tools/ai_chat.py)):
+**Superuser endpoint** ([`server/app/routers/tools/ai_chat.py`](../../server/app/routers/tools/ai_chat.py)):
 
-- `POST /api/tools/ai-chat` — requires `ai-chat:write`; retrieval includes `PUBLIC` + `ADMIN`
+- `POST /api/tools/ai-chat` — requires `platform:superuser`; plain LLM stream (no retrieval/RAG)
 
-Both chat paths use retrieve-then-generate (`AiSearchService`): the LLM receives only indexed context blocks and is instructed to cite sources without inventing facts. Feature flags gate LLM usage:
+Feature flags gate LLM usage:
 
-- `AI_SEARCH_ENABLED` + `GROQ_API_KEY` for public search chat
-- `AI_CHAT_ENABLED` + `GROQ_API_KEY` for admin AI chat
+- `AI_CHAT_ENABLED` + `GROQ_API_KEY` for superuser AI chat
 
-Client-side `VITE_*` flags hide UI only; server flags and auth are authoritative.
+Client-side `VITE_AI_CHAT_ENABLED` hides the admin UI only; server flags and auth are authoritative.
 
-**Chat UI hardening:** message content is rendered as plain text (no `v-html`). Source citation links pass through [`safeUrl.ts`](../../client/src/utils/safeUrl.ts) — relative paths and same-origin or external `https:` URLs only.
+**Chat UI hardening:** message content is rendered as plain text (no `v-html`).
 
 ## Input sanitization
 
@@ -167,7 +164,6 @@ Decisions for known risks. **Accept** = intentional tradeoff; **Mitigated** = co
 
 | Priority | Risk | Status | Notes |
 |----------|------|--------|-------|
-| Medium | Public unauthenticated LLM (`POST /api/search/chat`) | **Accept** | Cost/abuse limited by 5/5min IP rate limit; feature flag + API key required; retrieval limited to `PUBLIC` index |
 | Medium | Open registration | **Accept** | New users get zero permissions; email verification required; suitable for portfolio use |
 | Medium | GitHub tokens in DB | **Addressed** | Encrypted at rest via Fernet; legacy plaintext decrypted on read until re-linked |
 | Medium | CSP `unsafe-inline` | **Accept** | Documented tradeoff; Vue escaping + DOMPurify are primary XSS defenses |
@@ -176,7 +172,7 @@ Decisions for known risks. **Accept** = intentional tradeoff; **Mitigated** = co
 | Low | Client feature flags bypassable | **Mitigated** | Server auth, flags, and rate limits are authoritative |
 | Low | Dev-lite API on all interfaces | **Accept** | Local development only; use firewall or bind to localhost |
 | Low | No in-repo TLS | **Accept** | HTTPS expected at external reverse proxy |
-| By design | Admin AI RAG scope | **Mitigated** | Requires `ai-chat:write`; DB-level visibility filter |
+| By design | Superuser AI chat | **Mitigated** | Requires `platform:superuser`; plain LLM only |
 
 ## Testing
 

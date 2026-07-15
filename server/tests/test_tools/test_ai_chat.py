@@ -1,13 +1,14 @@
 from collections.abc import AsyncIterator
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import httpx
 import pytest
 from httpx import AsyncClient
 
-from app.core.deps import get_ai_search_service
+from app.core.deps import get_groq_chat_service
 from app.core.exceptions import ApiError
+from app.core.security import create_access_token
 from app.main import app
 from app.services.ai_chat import (
     GROQ_API_BASE_URL,
@@ -18,10 +19,9 @@ from app.services.ai_chat import (
     _should_retry_rate_limit_429,
     detect_llm_provider,
 )
-from app.services.ai_search import AiSearchService
-from app.services.search_index import SearchIndexService
 from app.settings import get_settings
 from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file, scenario_env
+from tests.factories import create_user
 
 CHAT_URL = "/api/tools/ai-chat"
 CONFIG_URL = "/api/tools/ai-chat/config"
@@ -37,16 +37,16 @@ def enable_ai_chat(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture
-def ai_search_service() -> None:
-    search_svc = MagicMock(spec=SearchIndexService)
-    search_svc.search = AsyncMock(return_value=[])
+def groq_chat_service() -> None:
+    def _service() -> GroqChatService:
+        return GroqChatService(
+            api_key="test-key",
+            model="llama-3.3-70b-versatile",
+        )
 
-    def _service() -> AiSearchService:
-        return AiSearchService(search_svc, get_settings())
-
-    app.dependency_overrides[get_ai_search_service] = _service
+    app.dependency_overrides[get_groq_chat_service] = _service
     yield
-    app.dependency_overrides.pop(get_ai_search_service, None)
+    app.dependency_overrides.pop(get_groq_chat_service, None)
 
 
 @pytest.fixture
@@ -73,7 +73,7 @@ async def test_ai_chat_unauthenticated(client: AsyncClient) -> None:
 async def test_ai_chat_no_api_key(
     auth_client: AsyncClient,
     missing_api_key: None,
-    ai_search_service: None,
+    groq_chat_service: None,
 ) -> None:
     resp = await auth_client.post(CHAT_URL, json=CHAT_PAYLOAD)
     assert resp.status_code == 503
@@ -83,7 +83,7 @@ async def test_ai_chat_no_api_key(
 @pytest.mark.asyncio
 async def test_ai_chat_rejects_system_role(
     auth_client: AsyncClient,
-    ai_search_service: None,
+    groq_chat_service: None,
 ) -> None:
     resp = await auth_client.post(
         CHAT_URL,
@@ -98,7 +98,7 @@ async def test_ai_chat_rejects_system_role(
 @pytest.mark.asyncio
 async def test_ai_chat_rejects_empty_content(
     auth_client: AsyncClient,
-    ai_search_service: None,
+    groq_chat_service: None,
 ) -> None:
     resp = await auth_client.post(
         CHAT_URL,
@@ -113,7 +113,7 @@ async def test_ai_chat_rejects_empty_content(
 @pytest.mark.asyncio
 async def test_ai_chat_disabled_when_flag_off(
     auth_client: AsyncClient,
-    ai_search_service: None,
+    groq_chat_service: None,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -126,12 +126,12 @@ async def test_ai_chat_disabled_when_flag_off(
 @pytest.mark.asyncio
 async def test_ai_chat_streams_sse(
     auth_client: AsyncClient,
-    ai_search_service: None,
+    groq_chat_service: None,
 ) -> None:
     with patch.object(
-        AiSearchService,
-        "stream_events",
-        side_effect=_mock_search_events,
+        GroqChatService,
+        "stream",
+        side_effect=_mock_stream,
     ):
         resp = await auth_client.post(CHAT_URL, json=CHAT_PAYLOAD)
 
@@ -139,11 +139,38 @@ async def test_ai_chat_streams_sse(
     assert resp.headers["content-type"].startswith("text/event-stream")
 
     body = resp.text
-    assert '"sources"' in body
+    assert '"sources"' not in body
     assert 'data: {"delta": "Hi "}' in body
     assert 'data: {"delta": "there"}' in body
     assert '"done": true' in body
     assert '"model": "llama-3.3-70b-versatile"' in body
+
+
+@pytest.fixture
+async def limited_auth_client(
+    client: AsyncClient,
+    registry,
+) -> AsyncClient:
+    user = await create_user(
+        registry,
+        email="reader@example.com",
+        permissions=["ai-chat:read", "ai-chat:write"],
+    )
+    token = create_access_token(str(user.public_id))
+    client.headers["Authorization"] = f"Bearer {token}"
+    return client
+
+
+@pytest.mark.asyncio
+async def test_ai_chat_requires_superuser(
+    limited_auth_client: AsyncClient,
+    groq_chat_service: None,
+) -> None:
+    chat_resp = await limited_auth_client.post(CHAT_URL, json=CHAT_PAYLOAD)
+    assert chat_resp.status_code == 403
+
+    config_resp = await limited_auth_client.get(CONFIG_URL)
+    assert config_resp.status_code == 403
 
 
 @pytest.mark.asyncio
@@ -526,24 +553,3 @@ async def _mock_stream(*_args: object, **_kwargs: object) -> AsyncIterator[str]:
     """Yield sample chat text chunks."""
     for part in ("Hi ", "there"):
         yield part
-
-
-async def _mock_search_events(
-    *_args: object,
-    **_kwargs: object,
-) -> AsyncIterator[dict[str, object]]:
-    """Yield sample retrieve-then-generate SSE events."""
-    yield {
-        "sources": [
-            {
-                "id": 1,
-                "title": "Task",
-                "url": "/admin/tools/tasks",
-                "source_type": "task",
-                "snippet": "demo",
-            },
-        ],
-    }
-    async for delta in _mock_stream():
-        yield {"delta": delta}
-    yield {"done": True, "model": "llama-3.3-70b-versatile"}

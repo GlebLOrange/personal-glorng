@@ -14,7 +14,6 @@ import { useSpotifyNowPlaying } from "@/composables/useSpotifyNowPlaying";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import type { DonationsConfig, ResumeData } from "@/types";
-import { isAiSearchEnabled } from "@/utils/featureFlags";
 
 const ExperienceList = defineAsyncComponent(
   () => import("@/components/resume/ExperienceList.vue"),
@@ -24,9 +23,6 @@ const DonationsBlock = defineAsyncComponent(
   () => import("@/components/donations/DonationsBlock.vue"),
 );
 const FeedbackModal = defineAsyncComponent(() => import("@/components/feedback/FeedbackModal.vue"));
-const PortfolioSearchChat = defineAsyncComponent(
-  () => import("@/components/search/PortfolioSearchChat.vue"),
-);
 
 const { data: resumeApi, fetch: fetchResume } = useCachedApi<ResumeData>("/resume");
 const { data: donations, fetch: fetchDonations } =
@@ -164,7 +160,5 @@ onUnmounted(() => {
         <DonationsBlock v-if="donations" :config="donations" />
       </SectionWrapper>
     </div>
-
-    <PortfolioSearchChat v-if="isAiSearchEnabled()" />
   </div>
 </template>
