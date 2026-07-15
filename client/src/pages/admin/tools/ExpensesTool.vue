@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { defineAsyncComponent, useTemplateRef } from "vue";
+import { computed, defineAsyncComponent, useTemplateRef } from "vue";
 
+import ExpenseCalculatorBudget from "@/components/expense-calculator/ExpenseCalculatorBudget.vue";
+import ExpenseCalculatorConvert from "@/components/expense-calculator/ExpenseCalculatorConvert.vue";
+import ExpenseCalculatorLineItems from "@/components/expense-calculator/ExpenseCalculatorLineItems.vue";
+import ExpenseCalculatorWhatIf from "@/components/expense-calculator/ExpenseCalculatorWhatIf.vue";
 import ExpenseCategoryChips from "@/components/expenses/ExpenseCategoryChips.vue";
 import ExpenseCategorySettings from "@/components/expenses/ExpenseCategorySettings.vue";
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
-import ExpenseCurrencyConverter from "@/components/expenses/ExpenseCurrencyConverter.vue";
 import ExpenseDateFilters from "@/components/expenses/ExpenseDateFilters.vue";
 import ExpenseFormModal from "@/components/expenses/ExpenseFormModal.vue";
 import ExpenseList from "@/components/expenses/ExpenseList.vue";
@@ -17,7 +20,8 @@ import BasePagination from "@/components/ui/BasePagination.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
-import { useExpensesTool } from "@/composables/useExpensesTool";
+import { useExpenseCalculator } from "@/composables/useExpenseCalculator";
+import { isCalculatorTab, useExpensesTool } from "@/composables/useExpensesTool";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 
 const ExpenseInsights = defineAsyncComponent(
@@ -103,12 +107,60 @@ const {
   saveExpense,
   quickSaveExpense,
 } = useExpensesTool(quickAddRef);
+
+const {
+  exchangeRates: calculatorRates,
+  ratesLoading,
+  displayCurrency: calculatorDisplayCurrency,
+  lineItems,
+  budgetRows,
+  whatIfCategoryId,
+  whatIfAmount,
+  whatIfCurrency,
+  sumTotal,
+  budgetSummary,
+  whatIfProjection,
+  isSuperuser,
+  stateDirty,
+  lastSavedAt,
+  saving,
+  loadingState,
+  formatMoney: formatCalculatorMoney,
+  addLineItem,
+  removeLineItem,
+  addBudgetRow,
+  removeBudgetRow,
+  applySumToBudget,
+  saveState,
+  loadState,
+} = useExpenseCalculator();
+
+const showLedgerHeader = computed(() => !isCalculatorTab(activeTab.value));
+
+const showCalculatorChrome = computed(() => isCalculatorTab(activeTab.value));
+
+const budgetOptions = computed(() =>
+  budgetRows.value
+    .filter((row) => row.name.trim())
+    .map((row) => ({ id: row.id, name: row.name.trim() })),
+);
+
+const persistenceHint = computed(() => {
+  if (isSuperuser.value) {
+    if (lastSavedAt.value && !stateDirty.value) {
+      return `Saved ${new Date(lastSavedAt.value).toLocaleString()}`;
+    }
+    if (stateDirty.value) return "Unsaved changes";
+    return "Superuser: save to keep data across sessions";
+  }
+  return "Calculations reset when you leave this page.";
+});
 </script>
 
 <template>
   <AdminPageLayout title="expenses" max-width="xl">
     <div class="min-w-0">
-    <section class="mb-6 flex flex-col gap-4">
+    <section v-if="showLedgerHeader" class="mb-6 flex flex-col gap-4">
       <Card variant="compact" class="flex flex-col gap-3">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
@@ -149,6 +201,36 @@ const {
       :tabs="expenseTabItems"
       @update:model-value="switchTab"
     />
+
+    <section
+      v-if="showCalculatorChrome"
+      class="mb-6 flex flex-col gap-4"
+    >
+      <Card variant="compact" class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <p class="text-sm text-surface-mid">{{ persistenceHint }}</p>
+        <div v-if="isSuperuser" class="flex flex-wrap gap-2">
+          <BaseButton variant="ghost" size="sm" :disabled="loadingState" @click="loadState">
+            {{ loadingState ? "Loading..." : "Load" }}
+          </BaseButton>
+          <BaseButton variant="primary" size="sm" :disabled="saving || !stateDirty" @click="saveState">
+            {{ saving ? "Saving..." : "Save" }}
+          </BaseButton>
+        </div>
+      </Card>
+
+      <div class="md:w-36">
+        <label class="text-sm text-surface-mid block mb-1">Display currency</label>
+        <select
+          v-model="calculatorDisplayCurrency"
+          class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue h-[42px]"
+        >
+          <option value="PLN">PLN</option>
+          <option value="EUR">EUR</option>
+          <option value="USD">USD</option>
+          <option value="BYN">BYN</option>
+        </select>
+      </div>
+    </section>
 
     <section
       v-if="activeTab === 'transactions'"
@@ -272,15 +354,69 @@ const {
     </section>
 
     <section
-      v-else-if="activeTab === 'converter'"
-      id="expenses-tab-panel-converter"
+      v-else-if="activeTab === 'convert'"
+      id="expenses-tab-panel-convert"
       role="tabpanel"
-      aria-labelledby="expenses-tab-tab-converter"
+      aria-labelledby="expenses-tab-tab-convert"
       tabindex="0"
       class="outline-none"
     >
-      <ExpenseCurrencyConverter
-        :exchange-rates="exchangeRates"
+      <ExpenseCalculatorConvert :exchange-rates="calculatorRates" :rates-loading="ratesLoading" />
+    </section>
+
+    <section
+      v-else-if="activeTab === 'sum'"
+      id="expenses-tab-panel-sum"
+      role="tabpanel"
+      aria-labelledby="expenses-tab-tab-sum"
+      tabindex="0"
+      class="outline-none"
+    >
+      <ExpenseCalculatorLineItems
+        :line-items="lineItems"
+        :display-currency="calculatorDisplayCurrency"
+        :sum-total="sumTotal"
+        :format-money="formatCalculatorMoney"
+        @add="addLineItem"
+        @remove="removeLineItem"
+        @apply-to-budget="applySumToBudget"
+      />
+    </section>
+
+    <section
+      v-else-if="activeTab === 'budget'"
+      id="expenses-tab-panel-budget"
+      role="tabpanel"
+      aria-labelledby="expenses-tab-tab-budget"
+      tabindex="0"
+      class="outline-none"
+    >
+      <ExpenseCalculatorBudget
+        :budget-rows="budgetRows"
+        :budget-summary="budgetSummary"
+        :display-currency="calculatorDisplayCurrency"
+        :format-money="formatCalculatorMoney"
+        @add="addBudgetRow"
+        @remove="removeBudgetRow"
+      />
+    </section>
+
+    <section
+      v-else-if="activeTab === 'whatif'"
+      id="expenses-tab-panel-whatif"
+      role="tabpanel"
+      aria-labelledby="expenses-tab-tab-whatif"
+      tabindex="0"
+      class="outline-none"
+    >
+      <ExpenseCalculatorWhatIf
+        v-model:what-if-category-id="whatIfCategoryId"
+        v-model:what-if-amount="whatIfAmount"
+        v-model:what-if-currency="whatIfCurrency"
+        :budget-options="budgetOptions"
+        :display-currency="calculatorDisplayCurrency"
+        :projection="whatIfProjection"
+        :format-money="formatCalculatorMoney"
       />
     </section>
 

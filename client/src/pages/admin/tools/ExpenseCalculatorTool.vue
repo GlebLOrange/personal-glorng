@@ -167,11 +167,6 @@ const persistenceHint = computed(() => {
           :format-money="formatMoney"
         />
       </section>
-
-      <p class="text-xs text-surface-muted">
-        <RouterLink to="/login" class="text-accent-blue hover:underline">Sign in</RouterLink>
-        to track expenses over time in the admin ledger.
-      </p>
     </div>
   </PageShell>
 </template>

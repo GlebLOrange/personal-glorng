@@ -21,10 +21,6 @@ function toolRoute(tool: PlatformService): string {
 
 <template>
   <PageShell title="tools" :breadcrumbs="[{ label: 'tools' }]" :narrow="false">
-    <header class="page-intro">
-      <p class="text-sm text-surface-mid">Public utilities available without signing in.</p>
-    </header>
-
     <section v-for="section in sections" :key="section.category" class="mb-10 min-w-0">
       <h2 class="text-lg font-bold text-surface-light mb-4">{{ section.label }}</h2>
       <div class="page-tool-grid">
@@ -42,10 +38,5 @@ function toolRoute(tool: PlatformService): string {
         </RouterLink>
       </div>
     </section>
-
-    <p class="text-xs text-surface-muted">
-      <RouterLink to="/login" class="text-accent-blue hover:underline">Sign in</RouterLink>
-      to unlock limited demo tools.
-    </p>
   </PageShell>
 </template>

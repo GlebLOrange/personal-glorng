@@ -24,15 +24,41 @@ import { getApiErrorMessage } from "@/types/api";
 import { isoDateLocal } from "@/utils/dates";
 import type { Expense } from "@/types";
 
-export type ExpenseTab = "transactions" | "insights" | "converter" | "settings";
+export type ExpenseCalculatorTab = "convert" | "sum" | "budget" | "whatif";
+
+export type ExpenseTab =
+  | "transactions"
+  | "insights"
+  | ExpenseCalculatorTab
+  | "settings";
 
 const EXPENSE_PER_PAGE = 20;
-const EXPENSE_TABS: ExpenseTab[] = ["transactions", "insights", "converter", "settings"];
+const CALCULATOR_TABS: ExpenseCalculatorTab[] = ["convert", "sum", "budget", "whatif"];
+const EXPENSE_TABS: ExpenseTab[] = [
+  "transactions",
+  "insights",
+  ...CALCULATOR_TABS,
+  "settings",
+];
+
+const TAB_LABELS: Record<ExpenseTab, string> = {
+  transactions: "Transactions",
+  insights: "Insights",
+  convert: "Convert",
+  sum: "Sum",
+  budget: "Budget",
+  whatif: "What-if",
+  settings: "Settings",
+};
 
 export const expenseTabItems = EXPENSE_TABS.map((tab) => ({
   id: tab,
-  label: tab[0].toUpperCase() + tab.slice(1),
+  label: TAB_LABELS[tab],
 }));
+
+export function isCalculatorTab(tab: string): tab is ExpenseCalculatorTab {
+  return CALCULATOR_TABS.includes(tab as ExpenseCalculatorTab);
+}
 
 /** Orchestrates expense tool state: filters, list, charts, forms, and mutations. */
 export function useExpensesTool(
@@ -478,15 +504,16 @@ export function useExpensesTool(
   }
 
   function parseExpenseTab(value: unknown): ExpenseTab | null {
-    return typeof value === "string" && EXPENSE_TABS.includes(value as ExpenseTab)
-      ? (value as ExpenseTab)
-      : null;
+    if (typeof value !== "string") return null;
+    if (value === "converter") return "convert";
+    return EXPENSE_TABS.includes(value as ExpenseTab) ? (value as ExpenseTab) : null;
   }
 
   function switchTab(tab: string): void {
     if (!EXPENSE_TABS.includes(tab as ExpenseTab)) return;
     activeTab.value = tab as ExpenseTab;
-    void router.replace({ query: { ...route.query, tab } });
+    const { mode: _legacyMode, ...rest } = route.query;
+    void router.replace({ query: { ...rest, tab } });
   }
 
   watch(displayCurrency, (currency) => {
