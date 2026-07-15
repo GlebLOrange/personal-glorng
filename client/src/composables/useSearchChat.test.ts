@@ -32,12 +32,22 @@ describe("normalizeStreamError", () => {
     ).toBe("You're sending messages too quickly — wait a few minutes");
   });
 
-  it("maps Gemini quota errors to a clearer message", () => {
+  it("preserves Gemini retry-after seconds in quota errors", () => {
     expect(
       normalizeStreamError(
         "Google Gemini quota exceeded — try again in ~60s",
         "/api/tools/ai-chat",
       ),
-    ).toContain("Google API quota reached");
+    ).toBe(
+      "Google API quota reached — try again in ~60s, or check usage in Google AI Studio",
+    );
+  });
+
+  it("uses generic quota message when server omits retry-after", () => {
+    expect(
+      normalizeStreamError("Google Gemini quota exceeded — try again shortly", "/api/tools/ai-chat"),
+    ).toBe(
+      "Google API quota reached — wait a minute and try again, or check usage in Google AI Studio",
+    );
   });
 });

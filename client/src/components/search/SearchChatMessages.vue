@@ -53,6 +53,16 @@ function sourceLink(url: string): SourceLink | null {
 const messageSourceLinks = computed(() =>
   props.messages.map((message) => message.sources?.map((source) => sourceLink(source.url)) ?? []),
 );
+
+function showEmptySourcesWarning(msg: ChatMessage): boolean {
+  if (msg.role !== "assistant" || msg.error || !msg.content) {
+    return false;
+  }
+  if (msg.content.startsWith("I couldn't get an AI response:")) {
+    return false;
+  }
+  return !msg.sources?.length;
+}
 </script>
 
 <template>
@@ -110,7 +120,7 @@ const messageSourceLinks = computed(() =>
       </div>
 
       <p
-        v-else-if="msg.role === 'assistant' && !loading && !msg.sources?.length && msg.content"
+        v-else-if="!loading && showEmptySourcesWarning(msg)"
         class="mt-2 text-[11px] text-status-warning/90"
       >
         No matching documents — answer may be limited.

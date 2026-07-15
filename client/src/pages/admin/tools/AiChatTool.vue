@@ -192,6 +192,44 @@ onMounted(() => {
         </BaseButton>
       </section>
 
+      <section v-if="chatConfig?.configured" class="space-y-3">
+        <h2 class="text-sm font-semibold text-surface-light uppercase tracking-wider">
+          Troubleshooting
+        </h2>
+        <ul class="text-surface-mid text-sm leading-relaxed list-disc pl-5 space-y-2">
+          <li>
+            <strong class="text-surface-light font-medium">Quota or rate limit</strong> — wait for
+            the retry window, then try again. Check usage in
+            <a
+              class="text-accent-blue hover:text-accent-violet transition-colors"
+              href="https://aistudio.google.com/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Google AI Studio
+            </a>
+            . Free-tier keys exhaust quickly during testing.
+          </li>
+          <li>
+            <strong class="text-surface-light font-medium">No sources / empty answers</strong> —
+            backfill the search index with
+            <code class="text-surface-sage">make reindex-search</code> (or
+            <code class="text-surface-sage">python scripts/reindex_search.py</code> in the API
+            container), then ask about indexed tasks, recipes, or expenses.
+          </li>
+          <li>
+            <strong class="text-surface-light font-medium">App rate limit</strong> — this tool caps
+            chat to 5 messages per 5 minutes per signed-in user.
+          </li>
+          <li>
+            <strong class="text-surface-light font-medium">After .env changes</strong> — set
+            <code class="text-surface-sage">GEMINI_API_KEY</code>,
+            <code class="text-surface-sage">GEMINI_CHAT_MODEL</code>, and
+            <code class="text-surface-sage">AI_CHAT_ENABLED=true</code>, then restart the backend.
+          </li>
+        </ul>
+      </section>
+
       <section class="space-y-3">
         <h2 class="text-sm font-semibold text-surface-light uppercase tracking-wider">
           How it works
