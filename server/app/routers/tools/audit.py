@@ -26,10 +26,18 @@ async def list_audit_events(
     pagination: Annotated[PaginationParams, Depends(audit_pagination_params)],
     category: str | None = None,
     action: str | None = None,
+    request_id: str | None = None,
+    actor_id: int | None = None,
+    resource_type: str | None = None,
+    resource_id: int | None = None,
 ) -> AuditEventListResponse:
     items, total = await svc.list_events(
         category=category,
         action=action,
+        request_id=request_id,
+        actor_id=actor_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
         date_from=filters.date_from,
         date_to=filters.date_to,
         offset=pagination.offset,

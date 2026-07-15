@@ -190,6 +190,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, scrollRestore: "volatile" },
   },
   {
+    path: "/admin/tools/search",
+    name: "tool-search",
+    component: () => import("@/pages/admin/tools/AdminSearchPage.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/admin/tools/news",
     redirect: { name: "news" },
   },
@@ -243,6 +249,7 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-data-extract": "data-extract",
   "tool-audit": "audit",
   "tool-app-logs": "app-logs",
+  "tool-search": "search",
 };
 
 const router = createRouter({

@@ -67,6 +67,13 @@ INDEX_SPECS: list[tuple[str, list[tuple[str, int | str]], dict[str, Any] | None]
     ("search_documents", [("source_type", 1), ("source_id", 1)], {"unique": True}),
     ("audit_events", [("occurred_at", -1)], None),
     ("audit_events", [("category", 1)], None),
+    ("audit_events", [("request_id", 1)], {"sparse": True}),
+    ("audit_events", [("actor_id", 1)], {"sparse": True}),
+    (
+        "audit_events",
+        [("resource_type", 1), ("resource_id", 1)],
+        {"sparse": True},
+    ),
     ("app_logs", [("occurred_at", -1)], None),
     ("app_logs", [("level", 1)], None),
     ("app_logs", [("request_id", 1)], None),

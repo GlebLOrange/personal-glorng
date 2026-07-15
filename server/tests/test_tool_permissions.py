@@ -13,6 +13,7 @@ _DENIED_ENDPOINTS: list[tuple[str, str]] = [
     ("GET", "/api/feedback"),
     ("GET", "/api/tools/audit"),
     ("GET", "/api/tools/app-logs"),
+    ("GET", "/api/tools/search"),
     ("POST", "/api/tools/email/preview"),
 ]
 

@@ -2,6 +2,7 @@ from datetime import date
 
 from app.db.documents.app_log import AppLog
 from app.db.registry import DatabaseRegistry
+from app.services import elasticsearch_app_logs
 
 
 class AppLogService:
@@ -25,6 +26,19 @@ class AppLogService:
         offset: int = 0,
         limit: int = 50,
     ) -> tuple[list[AppLog], int]:
+        if message and message.strip():
+            es_result = await elasticsearch_app_logs.search_app_logs(
+                message=message,
+                level=level,
+                request_id=request_id,
+                date_from=date_from,
+                date_to=date_to,
+                offset=offset,
+                limit=limit,
+            )
+            if es_result is not None:
+                return es_result
+
         return await self._repo().list_events(
             level=level,
             request_id=request_id,

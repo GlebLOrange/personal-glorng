@@ -19,6 +19,7 @@ from app.core.redis import close_redis, init_redis
 from app.db.init_service import DatabaseInitService
 from app.db.registry import DatabaseRegistry
 from app.openapi import configure_openapi
+from app.services.elasticsearch_app_logs import ensure_app_logs_index
 from app.services.elasticsearch_search import ensure_index
 from app.services.search_bootstrap import bootstrap_resume_index
 from app.settings import get_settings
@@ -55,6 +56,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
         if is_elasticsearch_enabled():
             try:
                 await ensure_index()
+                await ensure_app_logs_index()
             except Exception as exc:
                 logger.error(
                     "Elasticsearch index setup failed; external search disabled",

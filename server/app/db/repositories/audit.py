@@ -58,6 +58,10 @@ class AuditRepository:
         *,
         category: str | None = None,
         action: str | None = None,
+        request_id: str | None = None,
+        actor_id: int | None = None,
+        resource_type: str | None = None,
+        resource_id: int | None = None,
         date_from: date | None = None,
         date_to: date | None = None,
         offset: int = 0,
@@ -68,6 +72,14 @@ class AuditRepository:
             query["category"] = category
         if action:
             query["action"] = action
+        if request_id:
+            query["request_id"] = request_id.strip()
+        if actor_id is not None:
+            query["actor_id"] = actor_id
+        if resource_type:
+            query["resource_type"] = resource_type.strip()
+        if resource_id is not None:
+            query["resource_id"] = resource_id
         if date_from or date_to:
             occurred: dict[str, datetime] = {}
             if date_from:

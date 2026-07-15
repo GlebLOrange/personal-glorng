@@ -123,3 +123,64 @@ async def test_audit_list_uses_mongo_when_postgres_mirror_fails(
     assert saved.action == "audit.mirror_failed"
     assert total == 1
     assert events[0].action == "audit.mirror_failed"
+
+
+@pytest.mark.asyncio
+async def test_audit_filter_by_request_id(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+) -> None:
+    svc = AuditService(registry)
+    await svc.record(
+        AuditRecord(
+            category=AuditCategory.SECURITY,
+            action="auth.login_success",
+            actor_type=AuditActorType.USER,
+            actor_id=1,
+            source=AuditSource.PUBLIC,
+            resource_type="user",
+            resource_id=1,
+            request_id="req-audit-filter-1",
+        ),
+    )
+
+    resp = await auth_client.get(
+        "/api/tools/audit",
+        params={"request_id": "req-audit-filter-1"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] >= 1
+    assert all(item["request_id"] == "req-audit-filter-1" for item in data["items"])
+
+
+@pytest.mark.asyncio
+async def test_audit_filter_by_actor_and_resource(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+) -> None:
+    svc = AuditService(registry)
+    await svc.record(
+        AuditRecord(
+            category=AuditCategory.DOMAIN,
+            action="recipe.updated",
+            actor_type=AuditActorType.USER,
+            actor_id=42,
+            source=AuditSource.WEB_ADMIN,
+            resource_type="recipe",
+            resource_id=7,
+        ),
+    )
+
+    resp = await auth_client.get(
+        "/api/tools/audit",
+        params={
+            "actor_id": 42,
+            "resource_type": "recipe",
+            "resource_id": 7,
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert any(item["action"] == "recipe.updated" for item in data["items"])
+    assert all(item["actor_id"] == 42 for item in data["items"])
