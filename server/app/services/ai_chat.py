@@ -1,3 +1,4 @@
+import asyncio
 import json
 from collections.abc import AsyncIterator
 
@@ -7,6 +8,7 @@ from app.core.exceptions import ApiError
 from app.core.logging import logger
 
 GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+GEMINI_MAX_RETRIES = 2
 SYSTEM_PROMPT = (
     "You are a concise, helpful assistant embedded in a developer"
     " portfolio admin panel. Keep responses short and technical"
@@ -100,13 +102,39 @@ def _stream_text_chunk(line: str) -> str | None:
     return None
 
 
+def _retry_after_seconds(response: httpx.Response) -> int | None:
+    """Parse Retry-After header as seconds, when present."""
+    raw = response.headers.get("Retry-After")
+    if not raw:
+        return None
+    try:
+        return max(1, int(raw))
+    except ValueError:
+        return None
+
+
+async def _sleep_for_retry(response: httpx.Response, attempt: int) -> None:
+    """Wait before retrying a Gemini request after HTTP 429."""
+    retry_after = _retry_after_seconds(response)
+    delay = retry_after if retry_after is not None else 2**attempt
+    await asyncio.sleep(delay)
+
+
+def _gemini_rate_limit_message(response: httpx.Response) -> str:
+    """Return a user-facing Gemini quota error with optional wait hint."""
+    retry_after = _retry_after_seconds(response)
+    if retry_after is not None:
+        return f"Google Gemini quota exceeded — try again in ~{retry_after}s"
+    return "Google Gemini quota exceeded — try again shortly"
+
+
 def raise_gemini_http_error(exc: httpx.HTTPStatusError) -> None:
     """Map Gemini HTTP errors to local API errors."""
     status_code = exc.response.status_code
     if status_code in {401, 403}:
         raise ApiError(502, "Invalid Gemini API key") from None
     if status_code == 429:
-        raise ApiError(429, "Gemini rate limit exceeded — try again shortly") from None
+        raise ApiError(429, _gemini_rate_limit_message(exc.response)) from None
     if status_code >= 500:
         raise ApiError(502, "Gemini API unreachable") from None
     logger.error("Gemini API request failed", context={"status_code": status_code})
@@ -164,32 +192,46 @@ class GeminiChatService:
             },
         }
 
-        try:
-            has_text = False
-            async with (
-                httpx.AsyncClient(timeout=30.0) as client,
-                client.stream(
-                    "POST",
-                    f"{self._base_url}/interactions?alt=sse",
-                    headers=_stream_headers(self._api_key),
-                    json=payload,
-                ) as response,
-            ):
-                response.raise_for_status()
-                async for line in response.aiter_lines():
-                    content = _stream_text_chunk(line)
-                    if not content:
-                        continue
-                    has_text = True
-                    yield content
-        except httpx.HTTPStatusError as exc:
-            raise_gemini_http_error(exc)
-        except httpx.TimeoutException:
-            logger.warning("Gemini API timeout")
-            raise ApiError(504, "Gemini API timed out") from None
-        except httpx.HTTPError as exc:
-            logger.error("Gemini API connection error", error=exc)
-            raise ApiError(502, "Gemini API unreachable") from None
+        has_text = False
+        max_attempts = GEMINI_MAX_RETRIES + 1
+        for attempt in range(max_attempts):
+            try:
+                async with (
+                    httpx.AsyncClient(timeout=30.0) as client,
+                    client.stream(
+                        "POST",
+                        f"{self._base_url}/interactions?alt=sse",
+                        headers=_stream_headers(self._api_key),
+                        json=payload,
+                    ) as response,
+                ):
+                    response.raise_for_status()
+                    async for line in response.aiter_lines():
+                        content = _stream_text_chunk(line)
+                        if not content:
+                            continue
+                        has_text = True
+                        yield content
+                break
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code == 429 and attempt < max_attempts - 1:
+                    logger.warning(
+                        "Gemini rate limit hit; retrying",
+                        context={
+                            "attempt": attempt + 1,
+                            "max_attempts": max_attempts,
+                            "retry_after": _retry_after_seconds(exc.response),
+                        },
+                    )
+                    await _sleep_for_retry(exc.response, attempt)
+                    continue
+                raise_gemini_http_error(exc)
+            except httpx.TimeoutException:
+                logger.warning("Gemini API timeout")
+                raise ApiError(504, "Gemini API timed out") from None
+            except httpx.HTTPError as exc:
+                logger.error("Gemini API connection error", error=exc)
+                raise ApiError(502, "Gemini API unreachable") from None
 
         if not has_text:
             raise ApiError(502, "Gemini returned no response text")

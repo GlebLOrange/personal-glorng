@@ -8,7 +8,14 @@ import httpx
 from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.text import sanitize_required_text
-from app.services.ai_chat import GEMINI_API_BASE_URL, _headers, raise_gemini_http_error
+from app.services.ai_chat import (
+    GEMINI_API_BASE_URL,
+    GEMINI_MAX_RETRIES,
+    _headers,
+    _retry_after_seconds,
+    _sleep_for_retry,
+    raise_gemini_http_error,
+)
 from app.settings import get_settings
 
 _JSON_OBJECT_SCHEMA = {"type": "object", "additionalProperties": True}
@@ -61,22 +68,41 @@ async def complete_json(
         },
     }
 
-    try:
-        async with httpx.AsyncClient(timeout=45.0) as client:
-            response = await client.post(
-                f"{api_base_url.rstrip('/')}/interactions",
-                headers=_headers(api_key),
-                json=payload,
-            )
-            response.raise_for_status()
-    except httpx.HTTPStatusError as exc:
-        raise_gemini_http_error(exc)
-    except httpx.TimeoutException:
-        logger.warning("LLM JSON timeout", context={"model": model})
-        raise ApiError(504, "AI API timed out") from None
-    except httpx.HTTPError as exc:
-        logger.error("LLM JSON connection error", error=exc)
-        raise ApiError(502, "AI API unreachable") from None
+    max_attempts = GEMINI_MAX_RETRIES + 1
+    response: httpx.Response | None = None
+    for attempt in range(max_attempts):
+        try:
+            async with httpx.AsyncClient(timeout=45.0) as client:
+                response = await client.post(
+                    f"{api_base_url.rstrip('/')}/interactions",
+                    headers=_headers(api_key),
+                    json=payload,
+                )
+                response.raise_for_status()
+            break
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 429 and attempt < max_attempts - 1:
+                logger.warning(
+                    "Gemini rate limit hit; retrying JSON request",
+                    context={
+                        "attempt": attempt + 1,
+                        "max_attempts": max_attempts,
+                        "model": model,
+                        "retry_after": _retry_after_seconds(exc.response),
+                    },
+                )
+                await _sleep_for_retry(exc.response, attempt)
+                continue
+            raise_gemini_http_error(exc)
+        except httpx.TimeoutException:
+            logger.warning("LLM JSON timeout", context={"model": model})
+            raise ApiError(504, "AI API timed out") from None
+        except httpx.HTTPError as exc:
+            logger.error("LLM JSON connection error", error=exc)
+            raise ApiError(502, "AI API unreachable") from None
+
+    if response is None:
+        raise ApiError(502, "AI API unreachable")
 
     raw = _extract_output_text(response.json())
     try:

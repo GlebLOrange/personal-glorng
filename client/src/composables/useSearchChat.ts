@@ -111,7 +111,7 @@ function showAssistantError(messages: ChatMessage[], message: string): void {
   messages.push({ role: "assistant", content, sources: [] });
 }
 
-function normalizeStreamError(message: string, endpoint: string): string {
+export function normalizeStreamError(message: string, endpoint: string): string {
   if (
     message === "AI search is disabled or not configured" ||
     message === "LLM is not configured"
@@ -119,6 +119,19 @@ function normalizeStreamError(message: string, endpoint: string): string {
     if (endpoint.includes("/tools/ai-chat")) {
       return "AI chat is not configured — add GEMINI_API_KEY and restart the server";
     }
+  }
+  if (message.includes("Too many requests")) {
+    return "You're sending messages too quickly — wait a few minutes";
+  }
+  if (
+    message.includes("Google Gemini quota") ||
+    message.includes("Gemini rate limit") ||
+    message.includes("Gemini quota")
+  ) {
+    return (
+      "Google API quota reached — wait a minute and try again, " +
+      "or check usage in Google AI Studio"
+    );
   }
   return message;
 }

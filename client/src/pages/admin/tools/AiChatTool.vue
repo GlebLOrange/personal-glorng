@@ -206,6 +206,11 @@ onMounted(() => {
           restart the backend. Set <code class="text-surface-sage">AI_CHAT_ENABLED=false</code>
           to hide this tool entirely.
         </p>
+        <p class="text-surface-mid text-sm leading-relaxed">
+          The same Gemini key is shared by AI chat, public search, news ingest, and task intake.
+          Free-tier keys have low requests-per-minute limits. This app also caps chat to 5 messages
+          per 5 minutes per IP.
+        </p>
       </section>
 
       <section class="space-y-4">
