@@ -76,6 +76,7 @@ const routes: RouteRecordRaw[] = [
     path: "/expense-calculator",
     name: "expense-calculator",
     component: () => import("@/pages/admin/tools/ExpenseCalculatorTool.vue"),
+    meta: { resolveSession: true },
   },
   {
     path: "/admin/tools/calculator",
@@ -126,7 +127,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/admin/tools/currency",
-    redirect: { name: "tool-expenses", query: { tab: "converter" } },
+    redirect: { name: "tool-expenses", query: { tab: "convert" } },
   },
   {
     path: "/admin/tools/file-share",
@@ -279,6 +280,20 @@ router.beforeEach(async (to, _from, next) => {
   if (to.name === "login" && auth.isAuthenticated) {
     next({ path: safeRedirectPath(to.query.redirect), replace: true });
     return;
+  }
+  if (to.name === "expense-calculator" && auth.isAuthenticated) {
+    const { can } = usePermissions();
+    if (can("expenses", "read")) {
+      const rawTab =
+        typeof to.query.tab === "string"
+          ? to.query.tab
+          : typeof to.query.mode === "string"
+            ? to.query.mode
+            : "convert";
+      const tab = rawTab === "converter" ? "convert" : rawTab;
+      next({ name: "tool-expenses", query: { tab }, replace: true });
+      return;
+    }
   }
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     next({

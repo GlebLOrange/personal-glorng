@@ -74,6 +74,10 @@ export function useExpenseCalculator() {
   const initialized = ref(false);
 
   const activeMode = computed<ExpenseCalculatorMode>(() => {
+    const tab = route.query.tab;
+    if (typeof tab === "string" && MODES.includes(tab as ExpenseCalculatorMode)) {
+      return tab as ExpenseCalculatorMode;
+    }
     const mode = route.query.mode;
     if (typeof mode === "string" && MODES.includes(mode as ExpenseCalculatorMode)) {
       return mode as ExpenseCalculatorMode;
@@ -89,7 +93,8 @@ export function useExpenseCalculator() {
   );
 
   function switchMode(mode: ExpenseCalculatorMode): void {
-    void router.replace({ query: { ...route.query, mode } });
+    const { mode: _legacyMode, ...rest } = route.query;
+    void router.replace({ query: { ...rest, tab: mode } });
   }
 
   async function loadRates(): Promise<void> {
@@ -283,6 +288,15 @@ export function useExpenseCalculator() {
   }, { deep: true });
 
   onMounted(async () => {
+    const legacyMode = route.query.mode;
+    if (
+      typeof legacyMode === "string" &&
+      MODES.includes(legacyMode as ExpenseCalculatorMode) &&
+      route.query.tab !== legacyMode
+    ) {
+      const { mode: _m, ...rest } = route.query;
+      void router.replace({ query: { ...rest, tab: legacyMode } });
+    }
     await loadRates();
     if (isSuperuser.value) {
       await loadState();
