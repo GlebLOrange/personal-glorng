@@ -5,23 +5,17 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import {
-  crossRate,
+  convertCurrency,
   EXPENSE_CURRENCIES,
   EXPENSE_DEFAULT_CURRENCY,
   EXPENSE_EXCHANGE_RATE_TARGETS,
-  type CurrencyCode,
-} from "@/composables/useExpenseFilters";
-import { api } from "@/composables/useApi";
+  formatMoney,
+  formatRate,
+  type ConvertResult,
+} from "@/composables/useExpenseCurrency";
+import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import { useApiAction } from "@/composables/useApiAction";
 import type { ExchangeRates } from "@/types";
-
-interface ConvertResult {
-  amount: string;
-  from_currency: CurrencyCode;
-  to_currency: CurrencyCode;
-  converted: string;
-  rates_updated_at: string | null;
-}
 
 const props = defineProps<{
   exchangeRates: ExchangeRates | null;
@@ -38,27 +32,10 @@ const canConvert = computed(() => {
   return Number.isFinite(value) && value > 0 && fromCurrency.value && toCurrency.value;
 });
 
-function formatMoney(value: string | number, currency: string): string {
-  const num = typeof value === "string" ? parseFloat(value) : value;
-  if (!Number.isFinite(num)) return "N/A";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-  }).format(num);
-}
-
 async function convert(): Promise<void> {
   if (!canConvert.value) return;
   const data = await run(
-    async () => {
-      const response = await api.post<ConvertResult>("/tools/expenses/convert", {
-        amount: parseFloat(amount.value).toFixed(2),
-        from_currency: fromCurrency.value,
-        to_currency: toCurrency.value,
-      });
-      return response.data;
-    },
+    async () => convertCurrency(parseFloat(amount.value), fromCurrency.value, toCurrency.value),
     { errorMessage: "Conversion failed" },
   );
   if (data) result.value = data;
@@ -71,13 +48,6 @@ function swapCurrencies(): void {
   result.value = null;
 }
 
-function formatRate(from: CurrencyCode, to: CurrencyCode): string {
-  const rates = props.exchangeRates?.rates;
-  if (!rates) return "N/A";
-  const rate = crossRate(rates, from, to);
-  return Number.isFinite(rate) ? rate.toFixed(4) : "N/A";
-}
-
 const selectClass =
   "w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm " +
   "focus:outline-none focus:border-accent-blue transition-colors h-[42px]";
@@ -85,7 +55,12 @@ const selectClass =
 
 <template>
   <Card class="space-y-4">
-    <p class="text-xs text-surface-mid">Convert between EUR, USD, PLN, and BYN using live rates.</p>
+    <div class="flex items-center justify-between gap-3">
+      <p class="text-xs text-surface-mid">Convert between EUR, USD, PLN, and BYN using live rates.</p>
+      <RouterLink to="/expense-calculator?mode=convert" class="text-xs text-accent-blue hover:underline shrink-0">
+        Open full expense calculator →
+      </RouterLink>
+    </div>
 
     <BaseInput
       v-model="amount"
@@ -116,27 +91,13 @@ const selectClass =
         {{ loading ? "Converting..." : "Convert" }}
       </BaseButton>
       <BaseButton variant="ghost" size="sm" aria-label="Swap currencies" @click="swapCurrencies">
-        <svg
-          class="w-4 h-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M8 3 4 7l4 4" />
-          <path d="M4 7h16" />
-          <path d="m16 21 4-4-4-4" />
-          <path d="M20 17H4" />
-        </svg>
+        Swap
       </BaseButton>
     </div>
 
     <div v-if="result" class="border-t border-surface-border pt-4">
       <p class="text-xs text-surface-mid uppercase tracking-wider mb-2">Result</p>
-      <p class="text-2xl font-bold text-surface-light">
+      <p class="text-2xl font-bold font-data text-surface-light">
         {{ formatMoney(result.converted, result.to_currency) }}
       </p>
       <p class="text-sm text-surface-mid mt-1">
@@ -155,7 +116,7 @@ const selectClass =
     >
       <span class="text-surface-light">1 {{ EXPENSE_DEFAULT_CURRENCY }} =</span>
       <span v-for="c in EXPENSE_EXCHANGE_RATE_TARGETS" :key="c">
-        {{ formatRate(EXPENSE_DEFAULT_CURRENCY, c) }} {{ c }}
+        {{ formatRate(props.exchangeRates.rates, EXPENSE_DEFAULT_CURRENCY, c) }} {{ c }}
       </span>
     </div>
   </Card>

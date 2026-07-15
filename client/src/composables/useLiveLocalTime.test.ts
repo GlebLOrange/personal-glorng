@@ -4,19 +4,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useLiveLocalTime } from "@/composables/useLiveLocalTime";
 
-const ANCHOR_UNIXTIME = 1_780_833_600;
-const OFFSET_HOURS = 2;
-
 const ClockHarness = defineComponent({
   props: {
-    offsetHours: { type: Number, required: true },
-    anchorUnixtime: { type: Number, default: null },
+    offsetHours: { type: Number, default: null },
+    ianaTimezone: { type: String, default: null },
   },
   setup(props) {
     const { liveTime } = useLiveLocalTime(
       () => props.offsetHours,
       "time-seconds",
-      () => props.anchorUnixtime,
+      () => props.ianaTimezone,
     );
     return { liveTime };
   },
@@ -24,12 +21,8 @@ const ClockHarness = defineComponent({
 });
 
 describe("useLiveLocalTime", () => {
-  let perfNow = 1_000;
-
   beforeEach(() => {
     vi.useFakeTimers();
-    perfNow = 1_000;
-    vi.spyOn(performance, "now").mockImplementation(() => perfNow);
   });
 
   afterEach(() => {
@@ -37,25 +30,37 @@ describe("useLiveLocalTime", () => {
     vi.restoreAllMocks();
   });
 
-  it("advances seconds from anchored unixtime", async () => {
+  it("ticks seconds via IANA timezone", async () => {
+    vi.setSystemTime(new Date("2026-07-14T01:35:00Z"));
+
     const wrapper = mount(ClockHarness, {
-      props: { offsetHours: OFFSET_HOURS, anchorUnixtime: ANCHOR_UNIXTIME },
+      props: { offsetHours: 2, ianaTimezone: "Europe/Warsaw" },
     });
     await nextTick();
-    expect(wrapper.text()).toBe("14:00:00");
+    expect(wrapper.text()).toBe("03:35:00");
 
-    perfNow += 5_000;
     vi.advanceTimersByTime(5_000);
     await nextTick();
-    expect(wrapper.text()).toBe("14:00:05");
+    expect(wrapper.text()).toBe("03:35:05");
   });
 
-  it("falls back to offset-only clock without anchor", async () => {
+  it("falls back to offset-only clock without IANA timezone", async () => {
     vi.setSystemTime(new Date("2025-06-07T12:00:00Z"));
     vi.spyOn(Date.prototype, "getTimezoneOffset").mockReturnValue(0);
 
     const wrapper = mount(ClockHarness, {
-      props: { offsetHours: 3, anchorUnixtime: null },
+      props: { offsetHours: 3, ianaTimezone: null },
+    });
+    await nextTick();
+    expect(wrapper.text()).toBe("15:00:00");
+  });
+
+  it("falls back to offset clock when IANA timezone is invalid", async () => {
+    vi.setSystemTime(new Date("2025-06-07T12:00:00Z"));
+    vi.spyOn(Date.prototype, "getTimezoneOffset").mockReturnValue(0);
+
+    const wrapper = mount(ClockHarness, {
+      props: { offsetHours: 3, ianaTimezone: "Foo/Bar" },
     });
     await nextTick();
     expect(wrapper.text()).toBe("15:00:00");

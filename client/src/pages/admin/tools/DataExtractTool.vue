@@ -332,9 +332,13 @@ function downloadResult(): void {
 
 <template>
   <AdminPageLayout title="data extract">
-    <p class="text-surface-mid text-sm mb-6">
-      Upload CSV, JSON, XML, or delimited text. Preview records or import them into staging storage.
-    </p>
+    <header class="page-intro">
+      <p class="text-sm text-surface-mid">
+        Upload CSV, JSON, XML, or delimited text. Preview records or import them into staging storage.
+      </p>
+    </header>
+
+    <div class="min-w-0">
 
     <div
       role="button"
@@ -471,10 +475,10 @@ function downloadResult(): void {
         <div>
           <h2 class="text-lg font-semibold text-surface-light">Import batch</h2>
           <p class="text-sm text-surface-mid">{{ importSummary }}</p>
-          <p v-if="importResult.error_count > 0" class="text-xs text-amber-400">
+          <p v-if="importResult.error_count > 0" class="text-xs text-status-warning">
             {{ importResult.error_count }} row(s) failed parsing and were stored with errors.
           </p>
-          <p v-if="selectedBatch?.promoted_count" class="text-xs text-emerald-400 mt-1">
+          <p v-if="selectedBatch?.promoted_count" class="text-xs text-status-success mt-1">
             {{ selectedBatch.promoted_count }} row(s) promoted to embed storage.
           </p>
         </div>
@@ -537,9 +541,9 @@ function downloadResult(): void {
 
       <div
         v-if="importResult?.errors.length"
-        class="rounded-md border border-amber-500/40 bg-amber-500/5 p-4 space-y-2"
+        class="alert-surface-warning p-4 space-y-2"
       >
-        <h3 class="text-sm font-medium text-amber-300">Parse errors</h3>
+        <h3 class="text-sm font-medium">Parse errors</h3>
         <ul class="text-xs text-surface-mid space-y-1">
           <li v-for="(error, index) in importResult.errors.slice(0, 10)" :key="index">
             Line {{ error.line_number ?? "?" }}: {{ error.message }}
@@ -553,5 +557,6 @@ function downloadResult(): void {
         >{{ resultJson }}</pre
       >
     </Card>
+    </div>
   </AdminPageLayout>
 </template>

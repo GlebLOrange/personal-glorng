@@ -64,7 +64,7 @@ async function handleSubmit(): Promise<void> {
           placeholder="••••••••••••"
           required
         />
-        <p class="text-xs" :class="strength.valid ? 'text-green-400' : 'text-surface-mid'">
+        <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
           {{ strength.message }}
         </p>
         <BaseInput
@@ -79,7 +79,7 @@ async function handleSubmit(): Promise<void> {
         </BaseButton>
       </form>
 
-      <p v-else class="text-red-400 text-sm text-center">Invalid or missing reset link.</p>
+      <p v-else class="text-status-error text-sm text-center">Invalid or missing reset link.</p>
 
       <p class="flex justify-center mt-6">
         <BackLink to="/login" />

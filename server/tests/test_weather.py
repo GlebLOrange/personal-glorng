@@ -283,9 +283,51 @@ async def test_enrich_weather_timezone_fallback_when_world_time_fails() -> None:
 
 
 @pytest.mark.asyncio
-async def test_enrich_weather_timezone_skips_when_unixtime_present() -> None:
+async def test_enrich_weather_timezone_reenriches_incomplete_wttr_zone() -> None:
     payload = {
         "time_zone": [{"utcOffset": "+1.0", "unixtime": 1_749_300_000}],
+        "nearest_area": [{"latitude": "51.100", "longitude": "17.033"}],
+    }
+    world_time = WorldTimePayload(
+        timezone="Europe/Warsaw",
+        datetime="2026-06-07T14:00:00+02:00",
+        utc_datetime="2026-06-07T12:00:00+00:00",
+        utc_offset="+02:00",
+        unixtime=1_780_833_600,
+        dst=True,
+        abbreviation="CEST",
+    )
+    with (
+        patch(
+            "app.services.weather._resolve_timezone_info",
+            new=AsyncMock(
+                return_value=TimezoneInfo(iana="Europe/Warsaw", offset_hours=2.0),
+            ),
+        ) as mock_resolve,
+        patch(
+            "app.services.weather.WorldTimeService.fetch_timezone_time",
+            new=AsyncMock(return_value=world_time),
+        ),
+    ):
+        result = await enrich_weather_timezone(payload)
+
+    mock_resolve.assert_awaited_once()
+    zone = result["time_zone"][0]
+    assert zone["utcOffset"] == "+2.0"
+    assert zone["timezone"] == "Europe/Warsaw"
+    assert zone["unixtime"] == 1_780_833_600
+
+
+@pytest.mark.asyncio
+async def test_enrich_weather_timezone_skips_when_fully_enriched() -> None:
+    payload = {
+        "time_zone": [
+            {
+                "utcOffset": "+2.0",
+                "timezone": "Europe/Warsaw",
+                "unixtime": 1_749_300_000,
+            }
+        ],
         "nearest_area": [{"latitude": "51.100", "longitude": "17.033"}],
     }
     with patch(

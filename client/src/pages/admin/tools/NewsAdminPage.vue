@@ -4,6 +4,9 @@ import { computed, onMounted, ref, watch } from "vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
+import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import {
   NEWS_SUMMARY_MAX_LENGTH,
@@ -42,6 +45,7 @@ const {
   sources,
   page,
   total,
+  totalPages,
   listLoading,
   listError,
   actionLoading,
@@ -370,13 +374,11 @@ watch(page, () => {
 
 <template>
   <AdminPageLayout title="news" max-width="xl">
-    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-      <div>
-        <p class="text-sm text-surface-mid mb-2">
-          Manage curated news articles, ingestion, and Telegram delivery.
-        </p>
-        <p class="text-xs text-surface-muted">{{ countLabel }}</p>
-      </div>
+    <header class="page-intro">
+      <p class="text-sm text-surface-mid mb-2">
+        Manage curated news articles, ingestion, and Telegram delivery.
+      </p>
+      <p class="text-xs text-surface-muted mb-4">{{ countLabel }}</p>
       <div v-if="canWrite" class="flex flex-wrap gap-2">
         <BaseButton variant="ghost" size="sm" :disabled="actionLoading" @click="runIngest">
           Run ingest
@@ -385,23 +387,26 @@ watch(page, () => {
           New article
         </BaseButton>
       </div>
-    </div>
+    </header>
 
     <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading news">
       <Card v-for="i in 5" :key="i" class="h-36 animate-pulse" />
     </section>
 
-    <Card v-else-if="listError" as="section" class="!p-8 text-center">
-      <p class="text-sm text-surface-mid mb-4">{{ listError }}</p>
-      <BaseButton variant="ghost" size="sm" @click="loadAdminNews">Retry</BaseButton>
-    </Card>
+    <ErrorState
+      v-else-if="listError"
+      :message="listError"
+      show-retry
+      @retry="loadAdminNews"
+    />
 
-    <section v-else-if="articles.length" class="space-y-3">
+    <section v-else-if="articles.length" class="space-y-3 min-w-0">
       <Card
         v-for="item in articles"
         :key="item.id"
         as="article"
         variant="compact"
+        class="min-w-0"
         :hoverable="canWrite"
         :interactive="canWrite"
         :role="canWrite ? 'button' : undefined"
@@ -423,10 +428,10 @@ watch(page, () => {
           </span>
         </div>
 
-        <h2 class="card-title mb-2">
+        <h2 class="card-title mb-2 break-words">
           {{ item.title }}
         </h2>
-        <p class="text-sm text-surface-mid mb-3">{{ item.summary }}</p>
+        <p class="text-sm text-surface-mid mb-3 break-words">{{ item.summary }}</p>
 
         <div class="mb-4 flex flex-wrap gap-2">
           <span
@@ -480,26 +485,22 @@ watch(page, () => {
       </Card>
     </section>
 
-    <Card v-else as="section" role="status" class="!p-8">
-      <h2 class="card-title mb-2">No articles</h2>
-      <p class="text-sm text-surface-mid">
-        No news articles match this filter. Run ingestion after configuring trusted sources.
-      </p>
-    </Card>
+    <EmptyState
+      v-else
+      title="No articles"
+      description="No news articles match this filter. Run ingestion after configuring trusted sources."
+    />
 
-    <nav
+    <BasePagination
       v-if="!listLoading && !listError && (articles.length > 0 || page > 1)"
-      class="mt-8 flex items-center justify-between"
+      class="mt-8"
       aria-label="Admin news pagination"
-    >
-      <BaseButton variant="ghost" size="sm" :disabled="page <= 1" @click="goToPage(page - 1)">
-        Previous
-      </BaseButton>
-      <span class="text-xs text-surface-muted">page {{ page }}</span>
-      <BaseButton variant="ghost" size="sm" :disabled="!hasNextPage" @click="goToPage(page + 1)">
-        Next
-      </BaseButton>
-    </nav>
+      :page="page"
+      :total-pages="totalPages"
+      :has-next-page="hasNextPage"
+      @prev="goToPage(page - 1)"
+      @next="goToPage(page + 1)"
+    />
 
     <NewsArticleDrawer
       v-if="canWrite"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
 import type { DateFilterMode, MonthPreset } from "@/composables/useExpenseFilters";
 
 defineProps<{
@@ -16,14 +17,11 @@ const emit = defineEmits<{
   applyPreset: [preset: MonthPreset];
   clearFilters: [];
 }>();
-
-const monthInputClass =
-  "bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light text-sm focus:outline-none focus:border-accent-blue h-[34px]";
 </script>
 
 <template>
   <div class="flex flex-col gap-3">
-    <div class="flex flex-wrap gap-2 items-center">
+    <div class="flex flex-wrap gap-2 items-end">
       <BaseButton
         v-for="preset in ['this_month', 'last_month', 'custom', 'range'] as MonthPreset[]"
         :key="preset"
@@ -42,18 +40,19 @@ const monthInputClass =
         }}
       </BaseButton>
 
-      <input
+      <BaseInput
         v-if="dateFilterMode === 'month'"
         v-model="selectedMonth"
         type="month"
-        :class="monthInputClass"
+        compact
+        aria-label="Month"
         @change="monthPreset = 'custom'"
       />
 
       <template v-else>
-        <input v-model="dateFrom" type="date" :class="monthInputClass" aria-label="From date" />
-        <span class="text-surface-mid text-xs">to</span>
-        <input v-model="dateTo" type="date" :class="monthInputClass" aria-label="To date" />
+        <BaseInput v-model="dateFrom" type="date" compact aria-label="From date" />
+        <span class="text-surface-mid text-xs pb-2">to</span>
+        <BaseInput v-model="dateTo" type="date" compact aria-label="To date" />
       </template>
 
       <BaseButton v-if="hasActiveFilters" variant="ghost" size="sm" @click="emit('clearFilters')">

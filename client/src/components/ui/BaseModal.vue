@@ -92,7 +92,7 @@ onUnmounted(() => {
         :aria-labelledby="title ? 'modal-title' : undefined"
         tabindex="-1"
         :class="[
-          'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-2xl focus:outline-none',
+          'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-sm focus:outline-none',
           widthClass[maxWidth ?? 'lg'],
         ]"
       >
@@ -101,7 +101,7 @@ onUnmounted(() => {
             {{ title }}
           </h2>
           <button
-            class="ml-auto text-surface-mid hover:text-surface-light transition-colors text-xl leading-none"
+            class="ml-auto rounded text-xl leading-none text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
             aria-label="Close"
             @click="$emit('close')"
           >

@@ -19,7 +19,7 @@ function onClick(): void {
     :class="[
       'w-full text-left px-3 py-2 text-sm transition-colors',
       destructive
-        ? 'text-red-400 hover:bg-red-400/10'
+        ? 'text-status-error hover:bg-status-error/10'
         : 'text-surface-light hover:bg-surface-border/40',
     ]"
     @click="onClick"

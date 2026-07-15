@@ -159,7 +159,7 @@ AdminUser = Annotated[User, Depends(require_admin)]
 
 def get_gemini_chat_service(settings: AppSettings) -> GeminiChatService:
     """Build Gemini chat service or raise when the API key is missing."""
-    if not settings.GEMINI_API_KEY:
+    if not settings.GEMINI_API_KEY.strip():
         from app.core.exceptions import ApiError
 
         raise ApiError(503, "Gemini API key is not configured")

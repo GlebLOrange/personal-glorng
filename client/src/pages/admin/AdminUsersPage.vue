@@ -221,11 +221,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
 <template>
   <AdminPageLayout title="users" max-width="xl">
-    <div class="mb-6 space-y-4">
-      <p class="text-sm text-surface-mid">
-        Manage tool permissions and promote users to platform superuser. Users cannot change these
-        themselves.
-      </p>
+    <div class="mb-6 min-w-0 space-y-4">
 
       <Card>
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

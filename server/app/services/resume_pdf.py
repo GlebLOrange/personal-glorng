@@ -60,10 +60,13 @@ def _skills_html(resume: dict[str, Any]) -> str:
     blocks: list[str] = []
     for group in resume.get("skills", []):
         items = ", ".join(_esc(item) for item in group.get("items", []))
+        summary = str(group.get("summary", "")).strip()
+        summary_html = f'<p class="skill-summary">{_esc(summary)}</p>' if summary else ""
         blocks.append(
             f"""
         <div class="skill-group">
           <h3>{_esc(group["category"])}</h3>
+          {summary_html}
           <p>{items}</p>
         </div>""",
         )
@@ -272,7 +275,13 @@ def render_resume_html(resume: dict[str, Any]) -> str:
       content: ": ";
       color: #607086;
     }}
-    .skill-group p {{
+    .skill-summary {{
+      display: block;
+      font-size: 8.5pt;
+      color: #607086;
+      margin: 0.02rem 0 0.04rem;
+    }}
+    .skill-group p:not(.skill-summary) {{
       display: inline;
       color: #263447;
     }}

@@ -12,6 +12,7 @@ from app.routers.sse import stream_search_sse
 from app.schemas.ai_chat import ChatConfigResponse, ChatRequest
 from app.services.ai_chat import detect_llm_provider
 from app.services.ai_search import SearchScope
+from app.settings import Settings
 
 router = APIRouter(
     prefix="/ai-chat",
@@ -22,9 +23,11 @@ router = APIRouter(
 rate_limit_ai_chat = RateLimiter(requests=5, window=300, fail_open=False)
 
 
-def _require_ai_chat_enabled() -> None:
-    if not is_ai_chat_enabled():
+def _require_ai_chat_ready(settings: Settings) -> None:
+    if not settings.AI_CHAT_ENABLED:
         raise ApiError(503, "AI chat is disabled")
+    if not settings.GEMINI_API_KEY.strip():
+        raise ApiError(503, "AI chat is not configured")
 
 
 @router.get(
@@ -37,7 +40,7 @@ async def chat_config(settings: AppSettings) -> ChatConfigResponse:
     base_url = settings.GEMINI_API_BASE_URL.strip()
     return ChatConfigResponse(
         enabled=is_ai_chat_enabled(),
-        configured=bool(settings.GEMINI_API_KEY),
+        configured=bool(settings.GEMINI_API_KEY.strip()),
         model=settings.GEMINI_CHAT_MODEL,
         provider=detect_llm_provider(base_url),
         base_url=base_url or None,
@@ -53,8 +56,12 @@ async def chat_config(settings: AppSettings) -> ChatConfigResponse:
         Depends(rate_limit_ai_chat),
     ],
 )
-async def chat(body: ChatRequest, service: AiSearchServiceDep) -> StreamingResponse:
-    _require_ai_chat_enabled()
+async def chat(
+    body: ChatRequest,
+    service: AiSearchServiceDep,
+    settings: AppSettings,
+) -> StreamingResponse:
+    _require_ai_chat_ready(settings)
     messages = [m.model_dump() for m in body.messages]
     return StreamingResponse(
         stream_search_sse(

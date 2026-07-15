@@ -3,9 +3,13 @@ import { computed, onMounted, ref } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
+import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
-import { useNotify } from "@/composables/useNotify";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { formatDate } from "@/utils/format";
 
@@ -26,12 +30,12 @@ const PER_PAGE = 50;
 const items = ref<AppLogEntry[]>([]);
 const total = ref(0);
 const loading = ref(false);
+const listError = ref<string | null>(null);
 const level = ref("");
 const requestId = ref("");
 const message = ref("");
 const page = ref(1);
 const expandedEntryIds = ref<Set<number>>(new Set());
-const { toast } = useNotify();
 const totalPages = computed(() => Math.ceil(total.value / PER_PAGE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
@@ -43,6 +47,7 @@ useScrollListFingerprint(
 
 async function load(): Promise<void> {
   loading.value = true;
+  listError.value = null;
   try {
     const params: Record<string, string | number> = { page: page.value, per_page: PER_PAGE };
     if (level.value) params.level = level.value;
@@ -56,7 +61,7 @@ async function load(): Promise<void> {
     expandedEntryIds.value = new Set();
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
-    toast("Failed to load app logs", "error");
+    listError.value = "Failed to load app logs.";
   } finally {
     loading.value = false;
   }
@@ -101,81 +106,61 @@ onMounted(load);
 
 <template>
   <AdminPageLayout title="app logs">
-    <p class="text-surface-muted text-xs mb-6 -mt-4">
-      Structured application logs persisted from the API server
-    </p>
+    <header class="page-intro">
+      <p class="text-xs text-surface-muted">
+        Structured application logs persisted from the API server
+      </p>
+    </header>
 
     <Card class="mb-6">
       <div class="flex flex-wrap gap-3 items-end">
-        <label class="text-xs text-surface-mid">
-          Level
-          <select
-            v-model="level"
-            class="block mt-1 bg-surface-dark border border-surface-border rounded px-2 py-1 text-sm"
-          >
-            <option value="">All</option>
-            <option value="debug">debug</option>
-            <option value="info">info</option>
-            <option value="warning">warning</option>
-            <option value="error">error</option>
-          </select>
-        </label>
-        <label class="text-xs text-surface-mid">
-          Request ID
-          <input
-            v-model="requestId"
-            type="text"
-            placeholder="UUID"
-            class="block mt-1 bg-surface-dark border border-surface-border rounded px-2 py-1 text-sm"
-          />
-        </label>
-        <label class="text-xs text-surface-mid">
-          Message
-          <input
-            v-model="message"
-            type="text"
-            placeholder="substring"
-            class="block mt-1 bg-surface-dark border border-surface-border rounded px-2 py-1 text-sm"
-          />
-        </label>
+        <BaseSelect v-model="level" label="Level" compact>
+          <option value="">All</option>
+          <option value="debug">debug</option>
+          <option value="info">info</option>
+          <option value="warning">warning</option>
+          <option value="error">error</option>
+        </BaseSelect>
+        <BaseInput v-model="requestId" label="Request ID" compact placeholder="UUID" />
+        <BaseInput v-model="message" label="Message" compact placeholder="substring" />
         <BaseButton size="sm" @click="applyFilters">Filter</BaseButton>
       </div>
     </Card>
 
-    <p v-if="loading" class="text-surface-mid text-sm animate-pulse">Loading...</p>
+    <section v-if="loading" class="space-y-3" aria-busy="true" aria-label="Loading app logs">
+      <Card v-for="i in 5" :key="i" class="h-24 animate-pulse" />
+    </section>
 
-    <div v-else-if="items.length === 0" class="text-surface-mid text-sm">No log entries found.</div>
+    <ErrorState
+      v-else-if="listError"
+      :message="listError"
+      show-retry
+      @retry="load"
+    />
 
-    <div v-else class="space-y-3">
+    <EmptyState v-else-if="items.length === 0" description="No log entries found." />
+
+    <div v-else class="min-w-0 space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <p class="text-xs text-surface-muted">
           {{ total }} entries total · page {{ page }} of {{ Math.max(totalPages, 1) }}
         </p>
-        <div class="flex items-center gap-2">
-          <BaseButton
-            size="sm"
-            variant="ghost"
-            :disabled="!hasPreviousPage"
-            @click="goToPage(page - 1)"
-          >
-            Previous
-          </BaseButton>
-          <BaseButton
-            size="sm"
-            variant="ghost"
-            :disabled="!hasNextPage"
-            @click="goToPage(page + 1)"
-          >
-            Next
-          </BaseButton>
-        </div>
+        <BasePagination
+          layout="compact"
+          aria-label="App logs pagination"
+          :page="page"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+        />
       </div>
       <Card v-for="entry in items" :key="entry.id" class="text-sm">
         <div class="flex flex-wrap items-center gap-2 mb-2">
           <span class="text-xs px-2 py-0.5 rounded" :class="levelClass(entry.level)">
             {{ entry.level }}
           </span>
-          <span class="text-surface-light">{{ entry.message }}</span>
+          <span class="min-w-0 break-words text-surface-light">{{ entry.message }}</span>
           <span class="text-xs text-surface-muted ml-auto">
             {{ formatDate(entry.occurred_at) }}
           </span>

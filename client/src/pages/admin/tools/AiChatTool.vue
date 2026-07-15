@@ -8,6 +8,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import { useChatConfig } from "@/composables/useChatConfig";
 import { useNotify } from "@/composables/useNotify";
+import { usePermissions } from "@/composables/usePermissions";
 import { useSearchChat } from "@/composables/useSearchChat";
 import { useAuthStore } from "@/stores/auth";
 import type { AdminChatConfig } from "@/types/search";
@@ -30,6 +31,8 @@ GEMINI_CHAT_MODEL=gemini-3.5-flash`,
 const activeTab = ref<AiChatTab>("chat");
 const chatEnd = ref<HTMLElement | null>(null);
 const { toast } = useNotify();
+const { can } = usePermissions();
+const canSend = computed(() => can("ai-chat", "write"));
 
 const {
   config: chatConfig,
@@ -55,6 +58,10 @@ const { messages, input, loading, send, clear } = useSearchChat({
     const auth = useAuthStore();
     if (!auth.isAuthenticated) {
       toast("Not authenticated", "error");
+      return false;
+    }
+    if (!canSend.value) {
+      toast("You don't have permission to send messages", "error");
       return false;
     }
     if (!isReady.value) {
@@ -83,7 +90,11 @@ async function handleSend(): Promise<void> {
 }
 
 onMounted(() => {
-  void loadConfig();
+  void loadConfig().then(() => {
+    if (chatConfig.value && !chatConfig.value.configured) {
+      activeTab.value = "settings";
+    }
+  });
 });
 </script>
 
@@ -99,8 +110,11 @@ onMounted(() => {
         <span class="text-surface-mid/60 text-xs">·</span>
         <span class="text-surface-mid text-xs">{{ modelLabel }}</span>
         <span class="text-surface-mid/60 text-xs">· personal search</span>
-        <span v-if="!configLoading && !isReady" class="ml-auto text-xs text-amber-400/90">
+        <span v-if="!configLoading && !isReady" class="ml-auto text-xs text-status-warning/90">
           not configured
+        </span>
+        <span v-else-if="!canSend" class="ml-auto text-xs text-status-warning/90">
+          read-only
         </span>
       </div>
 
@@ -131,7 +145,7 @@ onMounted(() => {
           @keydown.enter.exact.prevent="handleSend"
         />
         <div class="flex flex-col gap-2">
-          <BaseButton variant="primary" :disabled="loading || !input.trim() || !isReady">
+          <BaseButton variant="primary" :disabled="loading || !input.trim() || !isReady || !canSend">
             {{ loading ? "..." : "Send" }}
           </BaseButton>
           <BaseButton variant="ghost" size="sm" type="button" :disabled="loading" @click="clear">
@@ -164,7 +178,7 @@ onMounted(() => {
           </div>
           <div class="flex gap-2">
             <dt class="text-surface-mid w-28 shrink-0">API key</dt>
-            <dd :class="chatConfig.configured ? 'text-emerald-400' : 'text-amber-400'">
+            <dd :class="chatConfig.configured ? 'text-status-success' : 'text-status-warning'">
               {{ chatConfig.configured ? "configured" : "missing" }}
             </dd>
           </div>

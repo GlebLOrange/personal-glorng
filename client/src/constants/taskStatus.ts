@@ -22,16 +22,16 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
-  pending: "text-yellow-400 bg-yellow-400/10 border-yellow-400/30",
-  completed: "text-green-400 bg-green-400/10 border-green-400/30",
-  not_completed: "text-red-400 bg-red-400/10 border-red-400/30",
-  postponed: "text-blue-400 bg-blue-400/10 border-blue-400/30",
+  pending: "text-status-warning bg-status-warning/10 border-status-warning/30",
+  completed: "text-status-success bg-status-success/10 border-status-success/30",
+  not_completed: "text-status-error bg-status-error/10 border-status-error/30",
+  postponed: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
   cancelled: "text-surface-mid bg-surface-mid/10 border-surface-border",
-  failed: "text-red-400 bg-red-400/10 border-red-400/30",
+  failed: "text-status-error bg-status-error/10 border-status-error/30",
   parsing: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
   clarifying: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
-  ready: "text-green-400 bg-green-400/10 border-green-400/30",
-  confirmed: "text-green-400 bg-green-400/10 border-green-400/30",
+  ready: "text-status-success bg-status-success/10 border-status-success/30",
+  confirmed: "text-status-success bg-status-success/10 border-status-success/30",
 };
 
 const STATUS_ACTION_LABELS: Record<TaskStatus, string> = {

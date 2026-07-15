@@ -41,7 +41,13 @@ class NewsRepository(MongoRepository[NewsArticle]):
         cursor = (
             self._col()
             .find(query)
-            .sort([("published_at", -1), ("created_at", -1)])
+            .sort(
+                [
+                    ("source_published_at", -1),
+                    ("published_at", -1),
+                    ("created_at", -1),
+                ]
+            )
             .skip(offset)
             .limit(limit)
         )

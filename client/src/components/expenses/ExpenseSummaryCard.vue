@@ -77,7 +77,7 @@ const budgetTotals = computed(() => {
         <p
           v-if="periodChange"
           class="text-xl font-bold font-data mt-1"
-          :class="periodChange.increased ? 'text-red-400' : 'text-green-400'"
+          :class="periodChange.increased ? 'text-status-error' : 'text-status-success'"
         >
           {{ periodChange.increased ? "+" : "" }}{{ periodChange.delta }}%
         </p>
@@ -90,7 +90,7 @@ const budgetTotals = computed(() => {
         <p
           v-if="budgetTotals && summary"
           class="text-xl font-bold font-data mt-1"
-          :class="budgetTotals.overBudget ? 'text-red-400' : 'text-accent-blue'"
+          :class="budgetTotals.overBudget ? 'text-status-error' : 'text-accent-blue'"
         >
           {{ budgetTotals.percent }}%
         </p>
@@ -122,7 +122,7 @@ const budgetTotals = computed(() => {
         <div class="h-1.5 bg-surface-border rounded-full overflow-hidden">
           <div
             class="h-full rounded-full transition-all"
-            :class="item.overBudget ? 'bg-red-400' : 'bg-accent-blue'"
+            :class="item.overBudget ? 'bg-status-error' : 'bg-accent-blue'"
             :style="{
               width: `${Math.min(item.budgetPercent ?? item.percent, 100)}%`,
             }"

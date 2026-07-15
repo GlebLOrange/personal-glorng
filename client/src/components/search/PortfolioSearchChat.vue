@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 
 import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
@@ -45,17 +45,15 @@ async function handleSend(): Promise<void> {
 }
 
 function toggle(): void {
-  open.value = !open.value;
-  if (open.value) {
+  const opening = !open.value;
+  open.value = opening;
+  if (opening) {
+    if (!isReady.value && !configLoading.value) {
+      void loadConfig();
+    }
     scrollToBottom();
   }
 }
-
-onMounted(() => {
-  if (showWidget.value) {
-    void loadConfig();
-  }
-});
 </script>
 
 <template>
@@ -102,7 +100,7 @@ onMounted(() => {
 
       <div class="px-3 pb-3 flex justify-between items-center">
         <span v-if="configLoading" class="text-xs text-surface-mid">Loading…</span>
-        <span v-else-if="!isAvailable" class="text-xs text-amber-400/90">Search unavailable</span>
+        <span v-else-if="!isAvailable" class="text-xs text-status-warning/90">Search unavailable</span>
         <span v-else class="text-xs text-surface-mid">Indexed public content only</span>
         <BaseButton variant="ghost" size="sm" type="button" :disabled="loading" @click="clear">
           Clear
@@ -115,7 +113,7 @@ onMounted(() => {
       variant="primary"
       type="button"
       class="shadow-lg"
-      :disabled="configLoading || !isAvailable"
+      :disabled="configLoading"
       @click="toggle"
     >
       Ask portfolio

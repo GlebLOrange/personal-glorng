@@ -45,7 +45,10 @@ function cancelStreamFlush(id: number): void {
   window.clearTimeout(id);
 }
 
-function createStreamEventApplier(messages: ChatMessage[]): {
+function createStreamEventApplier(
+  messages: ChatMessage[],
+  endpoint: string,
+): {
   apply: (events: StreamEvent[]) => void;
   flush: () => void;
 } {
@@ -82,7 +85,7 @@ function createStreamEventApplier(messages: ChatMessage[]): {
   function apply(events: StreamEvent[]): void {
     for (const event of events) {
       if (event.error) {
-        throw new Error(event.error);
+        throw new Error(normalizeStreamError(event.error, endpoint));
       }
       if (event.sources) {
         pendingSources = event.sources;
@@ -108,6 +111,18 @@ function showAssistantError(messages: ChatMessage[], message: string): void {
   messages.push({ role: "assistant", content, sources: [] });
 }
 
+function normalizeStreamError(message: string, endpoint: string): string {
+  if (
+    message === "AI search is disabled or not configured" ||
+    message === "LLM is not configured"
+  ) {
+    if (endpoint.includes("/tools/ai-chat")) {
+      return "AI chat is not configured — add GEMINI_API_KEY and restart the server";
+    }
+  }
+  return message;
+}
+
 interface UseSearchChatOptions {
   endpoint: string;
   onError?: (message: string) => void;
@@ -127,6 +142,8 @@ export function useSearchChat(options: UseSearchChatOptions) {
   async function send(): Promise<void> {
     const text = input.value.trim();
     if (!text || loading.value) return;
+
+    const adminChat = options.endpoint.includes("/tools/ai-chat");
 
     if (options.beforeSend) {
       const allowed = await options.beforeSend();
@@ -161,7 +178,7 @@ export function useSearchChat(options: UseSearchChatOptions) {
         } catch {
           // ignore non-JSON error bodies
         }
-        throw new Error(userSafeStreamError(response.status, detail));
+        throw new Error(userSafeStreamError(response.status, detail, { adminChat }));
       }
 
       const reader = response.body?.getReader();
@@ -171,7 +188,7 @@ export function useSearchChat(options: UseSearchChatOptions) {
 
       const decoder = new TextDecoder();
       let buffer = "";
-      const streamEvents = createStreamEventApplier(messages.value);
+      const streamEvents = createStreamEventApplier(messages.value, options.endpoint);
 
       while (true) {
         const { done, value } = await reader.read();

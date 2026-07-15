@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card, CardBody, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -211,8 +211,22 @@ async function deleteAccount(): Promise<void> {
 </script>
 
 <template>
-  <AdminPageLayout title="settings" max-width="md">
-    <div class="space-y-5">
+  <PageShell
+    title="settings"
+    :breadcrumbs="[{ label: 'settings' }]"
+    max-width="5xl"
+    :narrow="false"
+  >
+    <header class="page-intro">
+      <p class="text-sm text-surface-mid">
+        Manage your profile, security, preferences, and connected accounts.
+      </p>
+    </header>
+
+    <div class="min-w-0 space-y-8">
+      <section class="space-y-5">
+        <h2 class="mb-3 text-xs uppercase tracking-wider text-surface-muted">Account</h2>
+
       <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
@@ -254,8 +268,8 @@ async function deleteAccount(): Promise<void> {
           <CardDescription>
             Signed in as
             <span class="text-surface-light">{{ auth.user?.email }}</span>
-            <span v-if="auth.user?.is_verified" class="text-green-400"> · verified</span>
-            <span v-else class="text-yellow-300"> · unverified</span>
+            <span v-if="auth.user?.is_verified" class="text-status-success"> · verified</span>
+            <span v-else class="text-status-warning"> · unverified</span>
           </CardDescription>
         </CardHeader>
         <CardBody>
@@ -323,7 +337,7 @@ async function deleteAccount(): Promise<void> {
             <p
               id="password-help"
               class="text-xs"
-              :class="passwordCheck.valid ? 'text-green-400' : 'text-surface-mid'"
+              :class="passwordCheck.valid ? 'text-status-success' : 'text-surface-mid'"
             >
               {{ passwordCheck.message }}
             </p>
@@ -341,7 +355,7 @@ async function deleteAccount(): Promise<void> {
             <p
               v-if="newPasswordConfirm && !passwordsMatch"
               id="password-confirm-help"
-              class="text-xs text-yellow-300"
+              class="text-xs text-status-warning"
             >
               Passwords do not match yet.
             </p>
@@ -352,6 +366,12 @@ async function deleteAccount(): Promise<void> {
         </form>
         </CardBody>
       </Card>
+      </section>
+
+      <section class="space-y-5">
+        <h2 class="mb-3 text-xs uppercase tracking-wider text-surface-muted">
+          Preferences & connections
+        </h2>
 
       <Card>
         <CardHeader>
@@ -380,10 +400,14 @@ async function deleteAccount(): Promise<void> {
         <CardBody>
         <section class="space-y-4">
           <p v-if="githubLoading" class="text-sm text-surface-mid">Checking GitHub status...</p>
-          <p v-else-if="githubError" class="text-sm text-yellow-300">{{ githubError }}</p>
+          <p v-else-if="githubError" class="text-sm text-status-warning">{{ githubError }}</p>
           <p v-else-if="githubStatus.linked" class="text-sm text-surface-mid">
             GitHub linked as
-            <strong class="text-surface-light">{{ githubStatus.github_username }}</strong>
+            <span
+              class="rounded border border-surface-border bg-surface-dark/60 px-2 py-0.5 font-medium text-surface-light"
+            >
+              {{ githubStatus.github_username }}
+            </span>
           </p>
           <p v-else class="text-sm text-surface-mid">GitHub is not linked.</p>
           <div class="flex flex-wrap gap-3">
@@ -415,6 +439,10 @@ async function deleteAccount(): Promise<void> {
         </section>
         </CardBody>
       </Card>
+      </section>
+
+      <section class="space-y-5">
+        <h2 class="mb-3 text-xs uppercase tracking-wider text-surface-muted">Access</h2>
 
       <Card>
         <CardHeader>
@@ -430,7 +458,7 @@ async function deleteAccount(): Promise<void> {
             <span
               v-for="perm in permissions"
               :key="perm"
-              class="rounded-full border border-surface-border px-2 py-1 text-xs text-surface-muted"
+              class="break-words rounded-full border border-surface-border px-2 py-1 text-xs text-surface-muted"
             >
               {{ perm }}
             </span>
@@ -438,10 +466,14 @@ async function deleteAccount(): Promise<void> {
         </section>
         </CardBody>
       </Card>
+      </section>
+
+      <section class="mt-4 space-y-5">
+        <h2 class="mb-3 text-xs uppercase tracking-wider text-status-error/80">Danger zone</h2>
 
       <Card tint="danger">
         <CardHeader>
-          <h2 class="card-title text-red-400">Danger zone</h2>
+          <h2 class="card-title text-status-error">Delete account</h2>
           <CardDescription>
             Account deletion is permanent. Your password and confirmation are required.
           </CardDescription>
@@ -457,7 +489,7 @@ async function deleteAccount(): Promise<void> {
             required
           />
           <label class="flex items-start gap-2 text-xs text-surface-mid">
-            <input v-model="deleteConfirm" type="checkbox" class="mt-0.5 accent-red-500" />
+            <input v-model="deleteConfirm" type="checkbox" class="mt-0.5 accent-status-error" />
             <span>I understand this permanently deletes my account.</span>
           </label>
           <BaseButton type="submit" variant="secondary" :disabled="!canDeleteAccount">
@@ -466,6 +498,7 @@ async function deleteAccount(): Promise<void> {
         </form>
         </CardBody>
       </Card>
+      </section>
     </div>
-  </AdminPageLayout>
+  </PageShell>
 </template>

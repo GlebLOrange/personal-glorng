@@ -17,7 +17,7 @@ from app.core.utils import paginate_params
 from app.db.deps import DbRegistry
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
-from app.schemas.url import UrlCreate, UrlResponse
+from app.schemas.url import UrlCreate, UrlResponse, UrlUpdate
 from app.services.url import UrlService
 
 router = APIRouter(prefix="/url-shortener", tags=["url-shortener"])
@@ -70,6 +70,29 @@ async def list_urls(
     svc = UrlService(registry)
     urls = await svc.list_by_owner(created_by=user.id, offset=offset, limit=limit)
     return [UrlResponse.model_validate(u) for u in urls]
+
+
+@router.patch(
+    "/{url_id}",
+    response_model=UrlResponse,
+    summary="Update short URL",
+    description=requires_capability("url-shortener", "write"),
+    dependencies=[Depends(require_capability("url-shortener", "write"))],
+)
+async def update_url(
+    url_id: int,
+    data: UrlUpdate,
+    registry: DbRegistry,
+    user: AuthorizedUser,
+) -> UrlResponse:
+    svc = UrlService(registry)
+    url = await svc.update_url(
+        url_id,
+        title=data.title,
+        actor_id=user.id,
+        is_superuser=user_has_permission(user, SUPERUSER_PERMISSION),
+    )
+    return UrlResponse.model_validate(url)
 
 
 @router.delete(

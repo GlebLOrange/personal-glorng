@@ -73,6 +73,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
   },
   {
+    path: "/expense-calculator",
+    name: "expense-calculator",
+    component: () => import("@/pages/admin/tools/ExpenseCalculatorTool.vue"),
+  },
+  {
     path: "/admin/tools/calculator",
     redirect: { name: "calculator" },
   },
@@ -94,7 +99,8 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/news/:slug",
     name: "news-article",
-    redirect: { name: "news" },
+    component: () => import("@/pages/NewsArticlePage.vue"),
+    meta: { scrollRestore: "volatile" },
   },
   {
     path: "/admin/tools/recipes",

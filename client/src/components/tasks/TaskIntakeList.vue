@@ -2,6 +2,7 @@
 import { ref } from "vue";
 
 import { Card } from "@/components/ui/card";
+import EmptyState from "@/components/ui/EmptyState.vue";
 import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/format";
 import type { TaskIntakeItem } from "@/types";
@@ -46,7 +47,7 @@ const skeletonRows = 3;
 </script>
 
 <template>
-  <div v-if="loading" class="flex flex-col gap-3">
+  <div v-if="loading" class="flex flex-col gap-3" aria-busy="true" aria-label="Loading task intakes">
     <Card v-for="n in skeletonRows" :key="n" class="animate-pulse">
       <div class="h-4 w-32 bg-surface-border rounded mb-3" />
       <div class="h-3 w-full bg-surface-border rounded mb-2" />
@@ -54,9 +55,7 @@ const skeletonRows = 3;
     </Card>
   </div>
 
-  <div v-else-if="intakes.length === 0" class="text-surface-mid text-sm text-center py-8">
-    No task intakes yet.
-  </div>
+  <EmptyState v-else-if="intakes.length === 0" description="No task intakes yet." />
 
   <div v-else class="space-y-3">
     <Card v-for="item in intakes" :key="item.id">

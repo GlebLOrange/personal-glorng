@@ -208,13 +208,15 @@ onMounted(loadSources);
 
 <template>
   <AdminPageLayout title="news sources" max-width="xl">
-    <div class="space-y-4">
-      <div v-if="canWrite" class="flex flex-wrap justify-end gap-2">
-        <BaseButton variant="ghost" :disabled="refreshing" @click="refreshSources">
-          {{ refreshButtonText }}
-        </BaseButton>
-        <BaseButton variant="primary" @click="openCreate">Add source</BaseButton>
-      </div>
+    <div class="min-w-0 space-y-4">
+      <header v-if="canWrite" class="page-intro">
+        <div class="flex flex-wrap gap-2">
+          <BaseButton variant="ghost" :disabled="refreshing" @click="refreshSources">
+            {{ refreshButtonText }}
+          </BaseButton>
+          <BaseButton variant="primary" @click="openCreate">Add source</BaseButton>
+        </div>
+      </header>
 
       <div v-if="loading" class="space-y-3" aria-busy="true" aria-label="Loading sources">
         <Card v-for="i in 5" :key="i" class="h-28 animate-pulse" />
@@ -260,7 +262,7 @@ onMounted(loadSources);
                   @click.stop
                   @keydown.stop
                 />
-                <h2 class="truncate text-base font-bold text-surface-light">{{ source.name }}</h2>
+                <h2 class="break-words text-base font-bold text-surface-light">{{ source.name }}</h2>
                 <span
                   class="rounded px-2 py-0.5 text-[10px]"
                   :class="

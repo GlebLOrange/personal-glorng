@@ -226,6 +226,13 @@ class Settings(BaseSettings):
     def _parse_webhook_secrets(cls, value: Any) -> dict[str, str]:
         return _parse_env_dict(value)
 
+    @field_validator("GEMINI_API_KEY", mode="before")
+    @classmethod
+    def _strip_gemini_api_key(cls, value: Any) -> str:
+        if value is None:
+            return ""
+        return str(value).strip()
+
     @model_validator(mode="after")
     def _check_production_secrets(self) -> Settings:
         if self.APP_ENV == "production" and (

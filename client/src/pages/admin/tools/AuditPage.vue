@@ -3,9 +3,13 @@ import { computed, onMounted, ref } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BasePagination from "@/components/ui/BasePagination.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
+import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
-import { useNotify } from "@/composables/useNotify";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { formatDate } from "@/utils/format";
 
@@ -27,11 +31,11 @@ const PER_PAGE = 50;
 const items = ref<AuditEvent[]>([]);
 const total = ref(0);
 const loading = ref(false);
+const listError = ref<string | null>(null);
 const category = ref("");
 const action = ref("");
 const page = ref(1);
 const expandedEventIds = ref<Set<number>>(new Set());
-const { toast } = useNotify();
 const totalPages = computed(() => Math.ceil(total.value / PER_PAGE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
@@ -43,6 +47,7 @@ useScrollListFingerprint(
 
 async function load(): Promise<void> {
   loading.value = true;
+  listError.value = null;
   try {
     const params: Record<string, string | number> = { page: page.value, per_page: PER_PAGE };
     if (category.value) params.category = category.value;
@@ -55,7 +60,7 @@ async function load(): Promise<void> {
     expandedEventIds.value = new Set();
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
-    toast("Failed to load audit events", "error");
+    listError.value = "Failed to load audit events.";
   } finally {
     loading.value = false;
   }
@@ -93,70 +98,61 @@ onMounted(load);
 
 <template>
   <AdminPageLayout title="audit log">
-    <p class="text-surface-muted text-xs mb-6 -mt-4">Persistent security and domain change trail</p>
+    <header class="page-intro">
+      <p class="text-xs text-surface-muted">Persistent security and domain change trail</p>
+    </header>
 
     <Card class="mb-6">
       <div class="flex flex-wrap gap-3 items-end">
-        <label class="text-xs text-surface-mid">
-          Category
-          <select
-            v-model="category"
-            class="block mt-1 bg-surface-dark border border-surface-border rounded px-2 py-1 text-sm"
-          >
-            <option value="">All</option>
-            <option value="security">Security</option>
-            <option value="domain">Domain</option>
-          </select>
-        </label>
-        <label class="text-xs text-surface-mid">
-          Action
-          <input
-            v-model="action"
-            type="text"
-            placeholder="e.g. auth.login_success"
-            class="block mt-1 bg-surface-dark border border-surface-border rounded px-2 py-1 text-sm"
-          />
-        </label>
+        <BaseSelect v-model="category" label="Category" compact>
+          <option value="">All</option>
+          <option value="security">Security</option>
+          <option value="domain">Domain</option>
+        </BaseSelect>
+        <BaseInput
+          v-model="action"
+          label="Action"
+          compact
+          placeholder="e.g. auth.login_success"
+        />
         <BaseButton size="sm" @click="applyFilters">Filter</BaseButton>
       </div>
     </Card>
 
-    <p v-if="loading" class="text-surface-mid text-sm animate-pulse">Loading...</p>
+    <section v-if="loading" class="space-y-3" aria-busy="true" aria-label="Loading audit events">
+      <Card v-for="i in 5" :key="i" class="h-24 animate-pulse" />
+    </section>
 
-    <div v-else-if="items.length === 0" class="text-surface-mid text-sm">
-      No audit events found.
-    </div>
+    <ErrorState
+      v-else-if="listError"
+      :message="listError"
+      show-retry
+      @retry="load"
+    />
 
-    <div v-else class="space-y-3">
+    <EmptyState v-else-if="items.length === 0" description="No audit events found." />
+
+    <div v-else class="min-w-0 space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <p class="text-xs text-surface-muted">
           {{ total }} events total · page {{ page }} of {{ Math.max(totalPages, 1) }}
         </p>
-        <div class="flex items-center gap-2">
-          <BaseButton
-            size="sm"
-            variant="ghost"
-            :disabled="!hasPreviousPage"
-            @click="goToPage(page - 1)"
-          >
-            Previous
-          </BaseButton>
-          <BaseButton
-            size="sm"
-            variant="ghost"
-            :disabled="!hasNextPage"
-            @click="goToPage(page + 1)"
-          >
-            Next
-          </BaseButton>
-        </div>
+        <BasePagination
+          layout="compact"
+          aria-label="Audit pagination"
+          :page="page"
+          :has-next-page="hasNextPage"
+          :has-previous-page="hasPreviousPage"
+          @prev="goToPage(page - 1)"
+          @next="goToPage(page + 1)"
+        />
       </div>
       <Card v-for="event in items" :key="event.id" class="text-sm">
         <div class="flex flex-wrap items-center gap-2 mb-2">
           <span class="text-xs px-2 py-0.5 rounded" :class="categoryClass(event.category)">
             {{ event.category }}
           </span>
-          <span class="text-surface-light">{{ event.action }}</span>
+          <span class="min-w-0 break-words text-surface-light">{{ event.action }}</span>
           <span class="text-xs text-surface-muted ml-auto">
             {{ formatDate(event.occurred_at) }}
           </span>

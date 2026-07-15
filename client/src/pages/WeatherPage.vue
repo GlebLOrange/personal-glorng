@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
-
-import BackLink from "@/components/ui/BackLink.vue";
-import { Card } from "@/components/ui/card";
-import WeatherLocationCard from "@/components/weather/WeatherLocationCard.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
-import WeatherSummaryContent from "@/components/weather/WeatherSummaryContent.vue";
+import WeatherPinnedCitiesRow from "@/components/weather/WeatherPinnedCitiesRow.vue";
+import { useActiveWeatherQuery } from "@/composables/useActiveWeatherQuery";
 import { WEATHER_TOOL_NAME } from "@/constants/weather";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
@@ -20,13 +17,8 @@ const {
   canAddLocation,
   guestLimitMessage,
 } = useWeatherLocations();
+const { activeQuery, setActiveQuery } = useActiveWeatherQuery();
 const { toast } = useNotify();
-
-const defaultLocation = computed(() => locations.value.find((loc) => isDefaultLocation(loc)));
-
-const trackerLocations = computed(() =>
-  locations.value.filter((loc) => !isDefaultLocation(loc)),
-);
 
 async function handleAdd(label: string, query: string): Promise<void> {
   try {
@@ -48,33 +40,27 @@ async function handleRemove(id: number | string): Promise<void> {
     toast(message, "error");
   }
 }
+
+function handleSelect(query: string): void {
+  setActiveQuery(query);
+}
 </script>
 
 <template>
-  <main class="max-w-5xl mx-auto px-6 py-12 font-mono">
-    <header class="mb-10">
-      <div class="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <h1 class="text-3xl font-bold accent-gradient">{{ WEATHER_TOOL_NAME }}</h1>
-        <BackLink to="/tools" />
-      </div>
-      <p class="text-sm text-surface-mid">Local time and conditions for your cities.</p>
+  <PageShell
+    :title="WEATHER_TOOL_NAME"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'weather' }]"
+    :narrow="false"
+    body-class="font-mono"
+  >
+    <header class="page-intro">
+      <p class="text-sm text-surface-mid">
+        Local time and conditions for your cities. Click a city tile to make it active.
+      </p>
     </header>
 
-    <section class="mb-10">
-      <h2 class="text-lg font-bold text-surface-light mb-4">current</h2>
-      <Card
-        v-if="loading || seeding"
-        class="text-sm text-surface-mid animate-pulse font-mono"
-      >
-        Loading...
-      </Card>
-      <Card v-else class="font-mono">
-        <WeatherSummaryContent :query="defaultLocation?.query ?? ''" />
-      </Card>
-    </section>
-
-    <section class="mb-10">
-      <h2 class="text-lg font-bold text-surface-light mb-4">add city</h2>
+    <section class="mb-8 min-w-0">
+      <h2 class="text-lg font-bold text-surface-light mb-4">your cities</h2>
       <WeatherLocationForm
         :add-location="handleAdd"
         :disabled="!canAddLocation"
@@ -82,27 +68,14 @@ async function handleRemove(id: number | string): Promise<void> {
       />
     </section>
 
-    <section v-if="trackerLocations.length > 0 || (!loading && !seeding && locations.length > 0)">
-      <h2 class="text-lg font-bold text-surface-light mb-4">trackers</h2>
-
-      <div v-if="loading || seeding" class="text-sm text-surface-mid animate-pulse mb-4">
-        Loading cities...
-      </div>
-
-      <div v-else-if="trackerLocations.length === 0" class="text-sm text-surface-mid mb-4">
-        No extra cities yet. Search above to track more locations.
-      </div>
-
-      <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <WeatherLocationCard
-          v-for="loc in trackerLocations"
-          :key="loc.id"
-          :label="loc.label"
-          :query="loc.query"
-          removable
-          @remove="handleRemove(loc.id)"
-        />
-      </div>
-    </section>
-  </main>
+    <WeatherPinnedCitiesRow
+      :locations="locations"
+      :active-query="activeQuery"
+      :loading="loading"
+      :seeding="seeding"
+      :is-default-location="isDefaultLocation"
+      @select="handleSelect"
+      @remove="handleRemove"
+    />
+  </PageShell>
 </template>

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import AdminBreadcrumbs from "@/components/layout/AdminBreadcrumbs.vue";
-import BackLink from "@/components/ui/BackLink.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -63,12 +62,13 @@ async function generatePassword(): Promise<void> {
 </script>
 
 <template>
-  <div class="max-w-md mx-auto px-6 py-10">
-    <AdminBreadcrumbs current-label="password generator" />
-    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <h1 class="text-3xl font-bold accent-gradient">password generator</h1>
-      <BackLink to="/tools" />
-    </div>
+  <PageShell
+    title="password generator"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'password generator' }]"
+    back-to="/tools"
+    max-width="xl"
+    :narrow="false"
+  >
     <Card>
       <form class="space-y-4" @submit.prevent="generatePassword">
         <BaseInput v-model.number="length" type="number" label="Length" />
@@ -109,24 +109,21 @@ async function generatePassword(): Promise<void> {
 
       <div v-if="generated" class="mt-6 space-y-3">
         <div class="flex flex-wrap items-end gap-2">
-          <div class="flex flex-col gap-1 flex-1 min-w-[12rem]">
-            <label class="text-sm text-surface-mid">Password</label>
-            <input
-              :value="displayPassword"
-              type="text"
-              readonly
-              class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm font-mono focus:outline-none"
-            />
-          </div>
+          <BaseInput
+            :model-value="displayPassword"
+            label="Password"
+            readonly
+            class="flex-1 min-w-[12rem] font-mono"
+          />
           <BaseButton variant="ghost" size="sm" @click="showPassword = !showPassword">
             {{ showPassword ? "Hide" : "Show" }}
           </BaseButton>
           <BaseButton variant="ghost" size="sm" @click="copy(generated)">Copy</BaseButton>
         </div>
-        <p class="text-xs" :class="strength.valid ? 'text-green-400' : 'text-surface-mid'">
+        <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
           {{ strength.message }}
         </p>
       </div>
     </Card>
-  </div>
+  </PageShell>
 </template>

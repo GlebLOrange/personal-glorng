@@ -75,6 +75,7 @@ watch(
     await nextTick();
     closeButton.value?.focus();
   },
+  { immediate: true },
 );
 
 onUnmounted(() => document.removeEventListener("keydown", onKeydown));
@@ -87,6 +88,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         <div
           v-if="open"
           class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          aria-hidden="true"
           @click="emit('close')"
         />
       </Transition>
@@ -107,17 +109,22 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
             class="flex shrink-0 items-start justify-between gap-3 border-b border-surface-border px-6 py-4"
           >
             <h2 class="min-w-0 flex-1 truncate text-lg font-bold text-surface-light">
-              {{ title }}
+              <slot name="title">
+                {{ title }}
+              </slot>
             </h2>
-            <button
-              ref="closeButton"
-              type="button"
-              class="rounded p-1 text-xl leading-none text-surface-mid hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-              aria-label="Close drawer"
-              @click="emit('close')"
-            >
-              &times;
-            </button>
+            <div class="flex shrink-0 items-center gap-1">
+              <slot name="header-actions" />
+              <button
+                ref="closeButton"
+                type="button"
+                class="rounded p-1 text-xl leading-none text-surface-mid hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+                aria-label="Close drawer"
+                @click="emit('close')"
+              >
+                &times;
+              </button>
+            </div>
           </header>
 
           <div class="flex-1 overflow-y-auto px-6 py-5">

@@ -9,7 +9,8 @@ from app.settings import get_settings
 
 
 def is_ai_chat_enabled() -> bool:
-    return get_settings().AI_CHAT_ENABLED
+    settings = get_settings()
+    return settings.AI_CHAT_ENABLED and bool(settings.GEMINI_API_KEY.strip())
 
 
 def is_ai_search_enabled() -> bool:

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import AdminBreadcrumbs from "@/components/layout/AdminBreadcrumbs.vue";
-import BackLink from "@/components/ui/BackLink.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
@@ -101,13 +100,14 @@ function buttonAriaLabel(val: string): string | undefined {
 </script>
 
 <template>
-  <div class="max-w-sm mx-auto px-6 py-10">
-    <AdminBreadcrumbs current-label="calculator" />
-    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <h1 class="text-3xl font-bold accent-gradient">calculator</h1>
-      <BackLink to="/tools" />
-    </div>
-    <Card>
+  <PageShell
+    title="calculator"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'calculator' }]"
+    back-to="/tools"
+    max-width="xl"
+    :narrow="false"
+  >
+    <Card class="mx-auto max-w-sm w-full">
       <div
         class="bg-surface-dark rounded-lg p-4 mb-4 text-right"
         role="status"
@@ -148,5 +148,5 @@ function buttonAriaLabel(val: string): string | undefined {
         </BaseButton>
       </div>
     </Card>
-  </div>
+  </PageShell>
 </template>

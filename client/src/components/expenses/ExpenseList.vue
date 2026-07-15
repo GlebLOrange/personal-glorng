@@ -17,6 +17,7 @@ defineProps<{
   formatExpenseDate: (iso: string) => string;
   convertAmount: (amount: string, from: CurrencyCode, to: CurrencyCode) => number;
   sortIndicator: (key: ExpenseSortKey) => string;
+  sortAriaSort: (key: ExpenseSortKey) => "ascending" | "descending" | "none";
 }>();
 
 const emit = defineEmits<{
@@ -34,7 +35,7 @@ const skeletonRows = 5;
 
 <template>
   <!-- Loading skeleton -->
-  <div v-if="loading" class="flex flex-col gap-2">
+  <div v-if="loading" class="flex flex-col gap-2" aria-busy="true" aria-label="Loading expenses">
     <Card v-for="n in skeletonRows" :key="n" variant="compact" class="animate-pulse">
       <div class="h-3 w-24 bg-surface-border rounded mb-2" />
       <div class="h-4 w-40 bg-surface-border rounded mb-3" />
@@ -95,22 +96,22 @@ const skeletonRows = 5;
       <table class="w-full text-sm font-data">
         <thead>
           <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card/80">
-            <th class="px-3 py-2">
+            <th class="px-3 py-2" :aria-sort="sortAriaSort('date')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'date')">
                 Date{{ sortIndicator("date") }}
               </button>
             </th>
-            <th class="px-3 py-2">
+            <th class="px-3 py-2" :aria-sort="sortAriaSort('category')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'category')">
                 Category{{ sortIndicator("category") }}
               </button>
             </th>
-            <th class="px-3 py-2">
+            <th class="px-3 py-2" :aria-sort="sortAriaSort('product')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'product')">
                 Product{{ sortIndicator("product") }}
               </button>
             </th>
-            <th class="px-3 py-2 text-right">
+            <th class="px-3 py-2 text-right" :aria-sort="sortAriaSort('amount')">
               <button
                 type="button"
                 :class="[sortButtonClass, 'w-full text-right']"

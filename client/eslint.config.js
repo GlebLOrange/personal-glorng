@@ -1,5 +1,6 @@
 import js from "@eslint/js";
 import pluginVue from "eslint-plugin-vue";
+import pluginVueA11y from "eslint-plugin-vuejs-accessibility";
 import tseslint from "typescript-eslint";
 import vueTsConfig from "@vue/eslint-config-typescript";
 import prettier from "eslint-config-prettier";
@@ -20,10 +21,16 @@ export default tseslint.config(
   prettier,
   {
     files: ["**/*.{ts,vue}"],
+    plugins: {
+      "vuejs-accessibility": pluginVueA11y,
+    },
     rules: {
       "vue/multi-word-component-names": "off",
       "vue/require-default-prop": "warn",
       "vue/attributes-order": "warn",
+      "vuejs-accessibility/label-has-for": "warn",
+      "vuejs-accessibility/click-events-have-key-events": "warn",
+      "vuejs-accessibility/no-autofocus": "warn",
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
