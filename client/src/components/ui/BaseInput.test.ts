@@ -51,4 +51,24 @@ describe("BaseInput", () => {
     expect(wrapper.get("input").element).toHaveProperty("value", "Pasta Carbonara");
     expect(wrapper.get("#title-tip").text()).toBe("enter title");
   });
+
+  it("renders a suffix slot inside the shell and hides the tip", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "ingredient",
+        placeholder: "ingredient",
+        modelValue: "pasta",
+      },
+      attrs: {
+        "aria-label": "ingredient 1",
+      },
+      slots: {
+        suffix: '<button type="button">↑</button>',
+      },
+    });
+
+    expect(wrapper.find("#ingredient-tip").exists()).toBe(false);
+    expect(wrapper.get("input").element).toHaveProperty("value", "pasta");
+    expect(wrapper.text()).toContain("↑");
+  });
 });

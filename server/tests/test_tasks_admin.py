@@ -79,7 +79,7 @@ async def test_create_task(auth_client: AsyncClient) -> None:
     data = resp.json()
     assert data["title"] == "Buy milk"
     assert data["telegram_user_id"] == 123456789
-    assert data["status"] == "pending"
+    assert data["status"] == "not_completed"
 
     listed = await auth_client.get("/api/tools/tasks")
     assert any(t["id"] == data["id"] for t in listed.json()["items"])

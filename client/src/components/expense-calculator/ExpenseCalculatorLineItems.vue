@@ -2,6 +2,7 @@
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import { SELECT_CLASS_COMPACT } from "@/constants/formClasses";
 import type { ExpenseCalculatorLineItem } from "@/composables/useExpenseCalculator";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
@@ -47,7 +48,7 @@ function onAddItem(): void {
           <p class="text-xs text-surface-mid uppercase tracking-wider">Itemized sum</p>
           <p class="text-xs text-surface-muted mt-1">Add line items and see a running total.</p>
         </div>
-        <BaseButton variant="primary" size="sm" @click="onAddItem">+ add item</BaseButton>
+        <BaseButton variant="primary" size="sm" @click="onAddItem">+ item</BaseButton>
       </div>
 
       <div v-if="lineItems.length === 0" class="text-center py-8">
@@ -79,16 +80,11 @@ function onAddItem(): void {
           <select v-model="item.currency" :class="SELECT_CLASS_COMPACT" aria-label="currency">
               <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
             </select>
-          <BaseButton
-            variant="ghost"
-            danger
-            size="sm"
+          <IconCloseButton
             :aria-label="`Remove ${item.label || 'item'}`"
             class="md:mb-0.5"
             @click="emit('remove', item.id)"
-          >
-            remove
-          </BaseButton>
+          />
         </li>
       </ul>
 

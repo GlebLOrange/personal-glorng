@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
-import RecipeTagChip from "@/components/recipes/RecipeTagChip.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -15,7 +14,6 @@ const props = defineProps<{
   form: RecipeFormData;
   formTitle: string;
   loading: boolean;
-  allTags: string[];
 }>();
 
 const emit = defineEmits<{
@@ -24,41 +22,10 @@ const emit = defineEmits<{
   "update:form": [value: RecipeFormData];
 }>();
 
-const parsedTags = computed(() =>
-  props.form.tags
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean),
-);
-
-const tagSuggestions = computed(() =>
-  props.allTags.filter((tag) => !parsedTags.value.includes(tag)),
-);
-
-const tagsActiveLabel = computed(() => {
-  if (parsedTags.value.length === 0) return "none";
-  if (parsedTags.value.length === 1) return parsedTags.value[0];
-  return `${parsedTags.value.length} tags`;
-});
-
 const showImagePreview = computed(() => Boolean(props.form.image_url.trim()));
 
 function patch(patch: Partial<RecipeFormData>): void {
   emit("update:form", { ...props.form, ...patch });
-}
-
-function setTagsFromList(tags: string[]): void {
-  patch({ tags: tags.join(", ") });
-}
-
-function removeTag(tag: string): void {
-  setTagsFromList(parsedTags.value.filter((item) => item !== tag));
-}
-
-function addTag(tag: string): void {
-  const trimmed = tag.trim();
-  if (!trimmed || parsedTags.value.includes(trimmed)) return;
-  setTagsFromList([...parsedTags.value, trimmed]);
 }
 
 function addIngredient(): void {
@@ -163,49 +130,6 @@ function toNullableNumber(value: string | number | null | undefined): number | n
         />
       </div>
 
-      <AdminFilterDropdown
-        label="tags"
-        :active-label="tagsActiveLabel"
-        :has-active-filters="parsedTags.length > 0"
-        @clear="setTagsFromList([])"
-      >
-        <div class="space-y-2">
-          <div v-if="parsedTags.length" class="flex flex-wrap gap-1.5">
-            <button
-              v-for="tag in parsedTags"
-              :key="tag"
-              type="button"
-              class="group inline-flex items-center gap-1"
-              @click="removeTag(tag)"
-            >
-              <RecipeTagChip :tag="tag" compact />
-              <span
-                class="text-surface-mid text-xs leading-none group-hover:text-status-error"
-                aria-hidden="true"
-              >
-                &times;
-              </span>
-              <span class="sr-only">remove {{ tag }}</span>
-            </button>
-          </div>
-          <BaseInput
-            :model-value="form.tags"
-            placeholder="tags · dinner, pasta"
-            aria-label="tags"
-            @update:model-value="patch({ tags: toStringValue($event) })"
-          />
-          <div v-if="tagSuggestions.length" class="flex flex-wrap gap-1.5">
-            <RecipeTagChip
-              v-for="tag in tagSuggestions"
-              :key="tag"
-              :tag="tag"
-              compact
-              @click="addTag(tag)"
-            />
-          </div>
-        </div>
-      </AdminFilterDropdown>
-
       <div class="space-y-2">
         <div
           v-for="(_, idx) in form.ingredients"
@@ -215,6 +139,7 @@ function toNullableNumber(value: string | number | null | undefined): number | n
           <BaseButton
             v-if="idx === 0"
             variant="ghost"
+            quiet
             type="button"
             class="w-11 px-0"
             aria-label="add ingredient"
@@ -226,41 +151,40 @@ function toNullableNumber(value: string | number | null | undefined): number | n
           <BaseInput
             :model-value="form.ingredients[idx]"
             class="min-w-0 flex-1"
-            placeholder="ingredient"
             :aria-label="`ingredient ${idx + 1}`"
             @update:model-value="updateIngredient(idx, toStringValue($event))"
-          />
-          <BaseButton
-            variant="ghost"
-            type="button"
-            class="w-11 px-0"
-            :disabled="idx === 0"
-            aria-label="move ingredient up"
-            @click="moveIngredient(idx, -1)"
           >
-            ↑
-          </BaseButton>
-          <BaseButton
-            variant="ghost"
-            type="button"
-            class="w-11 px-0"
-            :disabled="idx === form.ingredients.length - 1"
-            aria-label="move ingredient down"
-            @click="moveIngredient(idx, 1)"
-          >
-            ↓
-          </BaseButton>
-          <BaseButton
-            variant="ghost"
-            danger
-            type="button"
-            class="w-11 px-0"
-            :disabled="form.ingredients.length <= 1"
-            aria-label="remove ingredient"
-            @click="removeIngredient(idx)"
-          >
-            &times;
-          </BaseButton>
+            <template #suffix>
+              <BaseButton
+                variant="ghost"
+                quiet
+                type="button"
+                class="!h-8 !w-8 !px-0"
+                :disabled="idx === 0"
+                aria-label="move ingredient up"
+                @click="moveIngredient(idx, -1)"
+              >
+                ↑
+              </BaseButton>
+              <BaseButton
+                variant="ghost"
+                quiet
+                type="button"
+                class="!h-8 !w-8 !px-0"
+                :disabled="idx === form.ingredients.length - 1"
+                aria-label="move ingredient down"
+                @click="moveIngredient(idx, 1)"
+              >
+                ↓
+              </BaseButton>
+              <IconCloseButton
+                class="!h-8 !min-w-8 !w-8"
+                :disabled="form.ingredients.length <= 1"
+                aria-label="remove ingredient"
+                @click="removeIngredient(idx)"
+              />
+            </template>
+          </BaseInput>
         </div>
       </div>
 
@@ -269,6 +193,7 @@ function toNullableNumber(value: string | number | null | undefined): number | n
           <BaseButton
             v-if="idx === 0"
             variant="ghost"
+            quiet
             type="button"
             class="w-11 px-0"
             aria-label="add step"
@@ -280,41 +205,40 @@ function toNullableNumber(value: string | number | null | undefined): number | n
           <BaseInput
             :model-value="form.steps[idx]"
             class="min-w-0 flex-1"
-            placeholder="step"
             :aria-label="`step ${idx + 1}`"
             @update:model-value="updateStep(idx, toStringValue($event))"
-          />
-          <BaseButton
-            variant="ghost"
-            type="button"
-            class="w-11 px-0"
-            :disabled="idx === 0"
-            aria-label="move step up"
-            @click="moveStep(idx, -1)"
           >
-            ↑
-          </BaseButton>
-          <BaseButton
-            variant="ghost"
-            type="button"
-            class="w-11 px-0"
-            :disabled="idx === form.steps.length - 1"
-            aria-label="move step down"
-            @click="moveStep(idx, 1)"
-          >
-            ↓
-          </BaseButton>
-          <BaseButton
-            variant="ghost"
-            danger
-            type="button"
-            class="w-11 px-0"
-            :disabled="form.steps.length <= 1"
-            aria-label="remove step"
-            @click="removeStep(idx)"
-          >
-            &times;
-          </BaseButton>
+            <template #suffix>
+              <BaseButton
+                variant="ghost"
+                quiet
+                type="button"
+                class="!h-8 !w-8 !px-0"
+                :disabled="idx === 0"
+                aria-label="move step up"
+                @click="moveStep(idx, -1)"
+              >
+                ↑
+              </BaseButton>
+              <BaseButton
+                variant="ghost"
+                quiet
+                type="button"
+                class="!h-8 !w-8 !px-0"
+                :disabled="idx === form.steps.length - 1"
+                aria-label="move step down"
+                @click="moveStep(idx, 1)"
+              >
+                ↓
+              </BaseButton>
+              <IconCloseButton
+                class="!h-8 !min-w-8 !w-8"
+                :disabled="form.steps.length <= 1"
+                aria-label="remove step"
+                @click="removeStep(idx)"
+              />
+            </template>
+          </BaseInput>
         </div>
       </div>
 

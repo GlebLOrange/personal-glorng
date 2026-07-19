@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref, watch } from "vue";
 
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import { useScrollLock } from "@/composables/useScrollLock";
 import { focusEditableField } from "@/utils/focusField";
 
@@ -18,7 +19,7 @@ const props = withDefaults(
 const emit = defineEmits<{ close: [] }>();
 
 const panel = ref<HTMLElement | null>(null);
-const closeButton = ref<HTMLButtonElement | null>(null);
+const closeButton = ref<InstanceType<typeof IconCloseButton> | null>(null);
 let returnFocusTarget: HTMLElement | null = null;
 
 useScrollLock(() => props.open);
@@ -28,6 +29,11 @@ const panelWidth = computed(() => {
   if (props.maxWidth === "xl") return "max-w-2xl";
   return "max-w-lg";
 });
+
+function closeButtonEl(): HTMLElement | null {
+  const el = closeButton.value?.$el;
+  return el instanceof HTMLElement ? el : null;
+}
 
 function focusableElements(): HTMLElement[] {
   const root = panel.value;
@@ -78,7 +84,7 @@ watch(
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.addEventListener("keydown", onKeydown);
     await nextTick();
-    focusEditableField(panel.value, closeButton.value);
+    focusEditableField(panel.value, closeButtonEl());
   },
   { immediate: true },
 );
@@ -120,15 +126,11 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
             </h2>
             <div class="flex shrink-0 items-center gap-1">
               <slot name="header-actions" />
-              <button
+              <IconCloseButton
                 ref="closeButton"
-                type="button"
-                class="min-h-11 min-w-11 rounded text-xl leading-none text-status-error hover:text-status-error/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-status-error/50"
                 aria-label="Close drawer"
                 @click="emit('close')"
-              >
-                &times;
-              </button>
+              />
             </div>
           </header>
 

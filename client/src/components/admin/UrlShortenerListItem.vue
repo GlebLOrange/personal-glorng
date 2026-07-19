@@ -5,6 +5,7 @@ import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import type { UrlItem } from "@/types";
 import { publicUrl } from "@/utils/publicLinks";
 
@@ -127,25 +128,27 @@ function confirmDelete(): void {
       <BaseButton
         v-if="canWrite"
         variant="ghost"
+        quiet
         size="sm"
         aria-label="edit title"
         @click="startEdit"
       >
         ✎
       </BaseButton>
-      <BaseButton variant="ghost" size="sm" aria-label="copy short link" @click="emit('copy')">
+      <BaseButton
+        variant="ghost"
+        quiet
+        size="sm"
+        aria-label="copy short link"
+        @click="emit('copy')"
+      >
         ⎘
       </BaseButton>
-      <BaseButton
+      <IconCloseButton
         v-if="canWrite"
-        variant="ghost"
-        danger
-        size="sm"
         aria-label="delete short URL"
         @click="showDeleteConfirm = true"
-      >
-        ✕
-      </BaseButton>
+      />
     </template>
   </AdminListRow>
 

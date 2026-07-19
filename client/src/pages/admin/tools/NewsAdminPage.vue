@@ -512,7 +512,9 @@ watch(page, () => {
           <BaseButton
             v-if="canWrite && item.status !== 'published'"
             variant="ghost"
+            quiet
             size="sm"
+            class="!text-status-success hover:enabled:!border-status-success/20 hover:enabled:!bg-status-success/10 focus-visible:!border-status-success/20"
             :disabled="actionLoading"
             @click="setStatus(item.id, 'published')"
           >
@@ -521,7 +523,9 @@ watch(page, () => {
           <BaseButton
             v-if="canWrite && item.status === 'published'"
             variant="ghost"
+            quiet
             size="sm"
+            class="!text-accent-golden hover:enabled:!border-accent-golden/20 hover:enabled:!bg-accent-golden/10 focus-visible:!border-accent-golden/20"
             :disabled="actionLoading"
             @click="setStatus(item.id, 'unpublished')"
           >
@@ -530,6 +534,7 @@ watch(page, () => {
           <BaseButton
             v-if="canWrite"
             variant="ghost"
+            quiet
             size="sm"
             :disabled="actionLoading"
             @click="repost(item.id)"

@@ -38,7 +38,7 @@ class Task(TimestampedDocument):
     description: str | None = None
     location: str | None = None
     scheduled_at: datetime
-    status: TaskStatus = TaskStatus.PENDING
+    status: TaskStatus = TaskStatus.NOT_COMPLETED
     google_event_id: str | None = None
     intake_id: int | None = None
     jira_issue_key: str | None = None

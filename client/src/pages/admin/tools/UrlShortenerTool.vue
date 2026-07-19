@@ -117,8 +117,8 @@ onMounted(loadUrls);
 
 <template>
   <PageShell
-    title="url-shortener"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'shortener' }]"
+    title="url shortener"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'url shortener' }]"
     back-to="/tools"
     max-width="xl"
     :narrow="false"

@@ -4,6 +4,7 @@ import { computed } from "vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import type { ExpenseCalculatorBudgetRow } from "@/composables/useExpenseCalculator";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 
@@ -86,7 +87,7 @@ function onAddCategory(): void {
     <Card class="space-y-4">
       <div class="flex items-center justify-between gap-3">
         <p class="text-xs text-surface-mid uppercase tracking-wider">Categories</p>
-        <BaseButton variant="primary" size="sm" @click="onAddCategory">+ add category</BaseButton>
+        <BaseButton variant="primary" size="sm" @click="onAddCategory">+ category</BaseButton>
       </div>
 
       <ul role="list" class="space-y-4">
@@ -118,16 +119,11 @@ function onAddCategory(): void {
               placeholder="spent (0.00)"
               aria-label="spent (0.00)"
             />
-            <BaseButton
-              variant="ghost"
-              danger
-              size="sm"
+            <IconCloseButton
               :aria-label="`Remove ${row.name || 'category'}`"
               class="md:mb-0.5"
               @click="emit('remove', row.id)"
-            >
-              remove
-            </BaseButton>
+            />
           </div>
 
           <template

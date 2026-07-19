@@ -2,6 +2,7 @@
 import { computed, onMounted } from "vue";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import ToolIcon from "@/components/icons/ToolIcon.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 import { usePlatformCatalog } from "@/composables/usePlatformCatalog";
@@ -48,7 +49,7 @@ onMounted(() => load());
           :aria-label="tool.external ? `${tool.name} (opens in new tab)` : undefined"
         >
           <Card hoverable class="page-tile-card h-full">
-            <div class="text-2xl mb-3" aria-hidden="true">{{ tool.icon }}</div>
+            <ToolIcon :slug="tool.slug" class="mb-3 h-8 w-8 text-surface-light" />
             <h3 class="text-surface-light font-bold mb-1 break-words">
               {{ tool.name }}
               <span v-if="tool.external" class="text-surface-mid font-normal"> ↗</span>

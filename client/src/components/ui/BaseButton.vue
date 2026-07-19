@@ -12,6 +12,8 @@ const props = withDefaults(
     size?: "sm" | "md" | "lg" | "field";
     /** Destructive action — red border/text on hover. */
     danger?: boolean;
+    /** Ghost only: muted text; border only on hover / focus-visible. */
+    quiet?: boolean;
     disabled?: boolean;
     loading?: boolean;
     type?: "button" | "submit" | "reset";
@@ -39,8 +41,11 @@ const resolvedSize = computed(() => (props.size === "field" ? "md" : props.size)
         ? 'border-transparent bg-accent-blue text-surface-dark hover:enabled:bg-accent-blue/90'
         : variant === 'ghost'
           ? danger
-            ? 'border-surface-border bg-transparent text-surface-light hover:enabled:border-status-error hover:enabled:bg-status-error/10 hover:enabled:text-status-error'
-            : 'border-surface-border bg-transparent text-surface-light hover:enabled:border-accent-blue'
+            ? // ponytail: danger ghost is always quiet (muted until hover/focus)
+              'border-transparent bg-transparent text-surface-light/60 hover:enabled:border-status-error/20 hover:enabled:bg-status-error/10 hover:enabled:text-status-error focus-visible:border-status-error/20 focus-visible:text-status-error'
+            : quiet
+              ? 'border-transparent bg-transparent text-surface-light/60 hover:enabled:border-surface-border/20 hover:enabled:text-surface-light focus-visible:border-surface-border/20 focus-visible:text-surface-light'
+              : 'border-surface-border bg-transparent text-surface-light hover:enabled:border-accent-blue'
           : danger
             ? 'border-surface-border bg-surface-card text-surface-light hover:enabled:border-status-error hover:enabled:bg-status-error/10 hover:enabled:text-status-error'
             : 'border-surface-border bg-surface-card text-surface-light hover:enabled:border-accent-blue',

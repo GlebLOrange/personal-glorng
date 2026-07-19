@@ -49,11 +49,9 @@ export function useRecipes() {
   const { can } = usePermissions();
 
   const recipes = ref<Recipe[]>([]);
-  const allTags = ref<string[]>([]);
   const total = ref(0);
   const totalPages = ref(0);
   const search = ref("");
-  const activeTags = ref<string[]>([]);
   const sort = ref<RecipeSort>("title_asc");
   const page = ref(1);
   const selectedRecipe = ref<Recipe | null>(null);
@@ -69,18 +67,15 @@ export function useRecipes() {
   const { loading: detailLoading, run: runDetail } = useApiAction();
   const { loading: saving, run: runSave } = useApiAction();
   const { loading: deleting, run: runDelete } = useApiAction();
-  const { run: runTags } = useApiAction();
 
   const drawerOpen = computed(
     () => selectedRecipeId.value !== null || selectedRecipe.value !== null,
   );
   const hasNextPage = computed(() => page.value < totalPages.value);
-  const hasFilters = computed(() => Boolean(search.value.trim() || activeTags.value.length));
+  const hasFilters = computed(() => Boolean(search.value.trim()));
   const recipeCountLabel = computed(() => {
     const n = total.value;
-    const parts = [`${n} recipe${n === 1 ? "" : "s"}`];
-    if (activeTags.value.length) parts.push(`tags: ${activeTags.value.join(", ")}`);
-    return parts.join(" · ");
+    return `${n} recipe${n === 1 ? "" : "s"}`;
   });
   const formTitle = computed(() => (editingId.value ? "edit recipe" : "new recipe"));
   const deleteConfirmMessage = computed(() =>
@@ -115,7 +110,6 @@ export function useRecipes() {
       sort: sort.value,
     };
     if (search.value.trim()) params.search = search.value.trim();
-    if (activeTags.value.length) params.tags = activeTags.value.join(",");
 
     const data = await runList(
       async () => {
@@ -129,19 +123,6 @@ export function useRecipes() {
       recipes.value = data.items;
       total.value = data.total;
       totalPages.value = data.pages;
-    }
-  }
-
-  async function loadTags(): Promise<void> {
-    const data = await runTags(
-      async () => {
-        const response = await api.get<string[]>("/tools/recipes/tags");
-        return response.data;
-      },
-      { errorFallback: "Failed to load tags", silent: true, logContext: "recipes.loadTags" },
-    );
-    if (data) {
-      allTags.value = data;
     }
   }
 
@@ -178,18 +159,6 @@ export function useRecipes() {
 
   function closeCookMode(): void {
     showCookMode.value = false;
-  }
-
-  function setTag(tag: string | null): void {
-    if (tag === null) {
-      activeTags.value = [];
-      page.value = 1;
-      return;
-    }
-    activeTags.value = activeTags.value.includes(tag)
-      ? activeTags.value.filter((activeTag) => activeTag !== tag)
-      : [...activeTags.value, tag];
-    page.value = 1;
   }
 
   function goToPage(nextPage: number): void {
@@ -283,7 +252,7 @@ export function useRecipes() {
     showForm.value = false;
     const savedId = editingId.value;
     resetForm();
-    await Promise.all([loadRecipes(), loadTags()]);
+    await loadRecipes();
 
     if (savedId && selectedRecipe.value?.id === savedId) {
       await openDetail(savedId);
@@ -316,7 +285,7 @@ export function useRecipes() {
 
     showDeleteConfirm.value = false;
     closeDetail();
-    await Promise.all([loadRecipes(), loadTags()]);
+    await loadRecipes();
   }
 
   async function openWriterEdit(recipeId: number): Promise<void> {
@@ -357,14 +326,6 @@ export function useRecipes() {
     clearTimeout(debounceTimer);
   });
 
-  watch(activeTags, () => {
-    if (page.value !== 1) {
-      page.value = 1;
-      return;
-    }
-    void loadRecipes();
-  });
-
   watch(page, () => {
     void loadRecipes();
   });
@@ -397,11 +358,9 @@ export function useRecipes() {
 
   return {
     recipes,
-    allTags,
     total,
     totalPages,
     search,
-    activeTags,
     sort,
     page,
     selectedRecipe,
@@ -423,12 +382,10 @@ export function useRecipes() {
     formTitle,
     deleteConfirmMessage,
     loadRecipes,
-    loadTags,
     openDetail,
     closeDetail,
     openCookMode,
     closeCookMode,
-    setTag,
     goToPage,
     openCreate,
     openEdit,

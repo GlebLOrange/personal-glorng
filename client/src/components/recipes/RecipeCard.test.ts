@@ -20,11 +20,10 @@ const recipe: Recipe = {
 };
 
 describe("RecipeCard", () => {
-  it("selects via a dedicated button without wrapping tag chips", async () => {
+  it("selects via a dedicated button", async () => {
     const wrapper = mount(RecipeCard, {
       props: {
         recipe,
-        activeTags: [],
       },
       global: {
         stubs: {
@@ -38,11 +37,6 @@ describe("RecipeCard", () => {
     const openButton = wrapper.get('button[aria-label="Open recipe Tomato Soup"]');
     await openButton.trigger("click");
     expect(wrapper.emitted("select")).toEqual([[42]]);
-
-    const tagChip = wrapper.findAll("button").find((btn) => btn.text() === "quick");
-    expect(tagChip).toBeTruthy();
-    await tagChip!.trigger("click");
-    expect(wrapper.emitted("tagClick")).toEqual([["quick"]]);
-    expect(openButton.element.contains(tagChip!.element)).toBe(false);
+    expect(wrapper.text()).not.toContain("quick");
   });
 });

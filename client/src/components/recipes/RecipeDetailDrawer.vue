@@ -6,7 +6,6 @@ import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
 import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
-import RecipeTagChip from "@/components/recipes/RecipeTagChip.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import { formatRecipeTime } from "@/utils/recipe";
 import type { Recipe } from "@/types";
@@ -84,10 +83,6 @@ const emit = defineEmits<{
         >
           {{ recipe.servings }} servings
         </span>
-      </div>
-
-      <div v-if="recipe.tags.length" class="flex flex-wrap gap-1.5">
-        <RecipeTagChip v-for="tag in recipe.tags" :key="tag" :tag="tag" compact />
       </div>
 
       <section>

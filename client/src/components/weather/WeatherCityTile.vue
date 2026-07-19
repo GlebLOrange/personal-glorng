@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Card } from "@/components/ui/card";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import WeatherSummaryContent from "@/components/weather/WeatherSummaryContent.vue";
 
 defineProps<{
@@ -31,14 +32,11 @@ function handleRemove(event: MouseEvent): void {
         <WeatherSummaryContent :query="query" align="center" dense interactive />
       </Card>
     </button>
-    <button
+    <IconCloseButton
       v-if="removable"
-      type="button"
-      class="absolute right-2 top-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-transparent text-xs text-surface-mid transition-all duration-200 hover:enabled:border-status-error hover:enabled:bg-status-error/10 hover:enabled:text-status-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+      class="absolute right-2 top-2"
       :aria-label="`Remove ${label}`"
       @click="handleRemove"
-    >
-      Remove
-    </button>
+    />
   </div>
 </template>

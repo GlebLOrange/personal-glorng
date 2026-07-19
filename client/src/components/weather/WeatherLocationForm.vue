@@ -58,7 +58,7 @@ async function submit(): Promise<void> {
       :loading="saving"
       :disabled="!city.trim() || props.disabled"
     >
-      {{ saving ? "adding…" : "add" }}
+      {{ saving ? "adding…" : "+ add" }}
     </BaseButton>
   </form>
   <p v-if="props.helperText" class="text-xs text-surface-mid mt-2">{{ props.helperText }}</p>

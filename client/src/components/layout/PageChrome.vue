@@ -5,7 +5,7 @@ import type { RouteLocationRaw } from "vue-router";
 import BackLink from "@/components/ui/BackLink.vue";
 import PageBreadcrumbs from "@/components/layout/PageBreadcrumbs.vue";
 import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
-import { formatBreadcrumbLabel } from "@/utils/format";
+import { formatBreadcrumbLabel, truncateBreadcrumbTitle } from "@/utils/format";
 
 const props = withDefaults(
   defineProps<{
@@ -33,6 +33,10 @@ const soleSectionCrumb = computed(() => {
 });
 
 const showTitle = computed(() => !soleSectionCrumb.value);
+
+const displayTitle = computed(
+  () => `${props.titlePrefix}${truncateBreadcrumbTitle(props.title)}`,
+);
 </script>
 
 <template>
@@ -46,7 +50,7 @@ const showTitle = computed(() => !soleSectionCrumb.value);
         >
           <PageBreadcrumbs
             :segments="displaySegments"
-            :elevated="soleSectionCrumb"
+            :elevated="true"
             class="min-w-0"
           />
         </div>
@@ -56,7 +60,7 @@ const showTitle = computed(() => !soleSectionCrumb.value);
           class="mt-0.5 min-w-0 truncate text-lg font-bold leading-tight text-surface-light"
           :title="`${titlePrefix}${title}`"
         >
-          <span class="accent-gradient">{{ titlePrefix }}{{ title }}</span>
+          <span class="accent-gradient">{{ displayTitle }}</span>
         </h1>
       </div>
     </div>

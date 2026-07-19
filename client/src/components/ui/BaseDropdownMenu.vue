@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
 
 const props = withDefaults(
   defineProps<{
     /** Accessible name for the icon trigger (required for icon-only defaults). */
     ariaLabel?: string;
+    /** Menu opens below (default) or above the trigger. */
+    placement?: "bottom" | "top";
   }>(),
   {
     ariaLabel: "Actions",
+    placement: "bottom",
   },
 );
 
@@ -16,6 +19,10 @@ const rootRef = useTemplateRef<HTMLElement>("root");
 const triggerRef = useTemplateRef<HTMLButtonElement>("trigger");
 const menuRef = useTemplateRef<HTMLElement>("menu");
 let previouslyFocused: HTMLElement | null = null;
+
+const menuPositionClass = computed(() =>
+  props.placement === "top" ? "bottom-full mb-1" : "top-full mt-1",
+);
 
 function getMenuItems(): HTMLElement[] {
   const menu = menuRef.value;
@@ -126,7 +133,10 @@ defineExpose({ close });
       v-if="open"
       ref="menu"
       role="menu"
-      class="absolute right-0 top-full mt-1 z-10 bg-surface-card border border-surface-border rounded-lg shadow-lg py-1 min-w-[10rem]"
+      :class="[
+        'absolute right-0 z-10 min-w-[10rem] rounded-lg border border-surface-border bg-surface-card py-1 shadow-lg',
+        menuPositionClass,
+      ]"
       @click.stop
     >
       <slot :close="onItemSelect" />

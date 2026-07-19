@@ -4,6 +4,7 @@ import { nextTick, watch } from "vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import { Card } from "@/components/ui/card";
 import {
   crossRate,
@@ -114,19 +115,18 @@ function onCategoryRowClick(category: ExpenseCategory): void {
             </span>
             <BaseButton
               variant="ghost"
+              quiet
               size="sm"
+              class="min-w-11 px-0"
+              :aria-label="`Rename ${category.name}`"
               @click.stop="emit('startEditCategory', category)"
             >
-              rename
+              ✎
             </BaseButton>
-            <BaseButton
-              variant="ghost"
-              danger
-              size="sm"
+            <IconCloseButton
+              :aria-label="`Delete ${category.name}`"
               @click.stop="emit('removeCategory', category)"
-            >
-              delete
-            </BaseButton>
+            />
           </template>
         </li>
       </ul>
@@ -135,10 +135,10 @@ function onCategoryRowClick(category: ExpenseCategory): void {
         <BaseInput
           v-model="newCategoryName"
           label="new category"
-          placeholder="name"
+          placeholder="category name"
           class="flex-1"
         />
-        <BaseButton variant="primary" type="submit" size="field">add category</BaseButton>
+        <BaseButton variant="primary" type="submit" size="field">+ category</BaseButton>
       </form>
       <p class="text-xs text-surface-mid mt-3">
         Renaming updates all expenses in that category. Optional monthly budget uses display

@@ -214,12 +214,19 @@ onMounted(load);
             <BaseButton
               v-if="item.status === 'archived'"
               variant="ghost"
+              quiet
               size="sm"
               @click="unarchiveItem(item)"
             >
               unarchive
             </BaseButton>
-            <BaseButton v-else variant="ghost" size="sm" @click="archiveItem(item)">
+            <BaseButton
+              v-else
+              variant="ghost"
+              quiet
+              size="sm"
+              @click="archiveItem(item)"
+            >
               archive
             </BaseButton>
           </template>

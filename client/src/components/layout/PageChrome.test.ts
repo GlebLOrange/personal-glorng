@@ -11,7 +11,7 @@ const stubs = {
   PageBreadcrumbs: {
     props: ["segments", "elevated"],
     template:
-      '<nav data-testid="crumbs"><span v-for="(s, i) in segments" :key="i" :data-elevated="elevated">{{ s.label }}</span></nav>',
+      '<nav data-testid="crumbs"><span v-for="(s, i) in segments" :key="i" :data-elevated="elevated ? \'true\' : \'false\'">{{ s.label }}</span></nav>',
   },
 };
 
@@ -68,7 +68,8 @@ describe("PageChrome", () => {
 
     const crumbs = wrapper.findAll("[data-testid=crumbs] span");
     expect(crumbs.map((c) => c.text())).toEqual(["news"]);
-    expect(crumbs[0].attributes("data-elevated")).toBe("false");
-    expect(wrapper.get("h1").text()).toContain("Some Article");
+    expect(crumbs[0].attributes("data-elevated")).toBe("true");
+    expect(wrapper.get("h1").text()).toContain("Some...");
+    expect(wrapper.get("h1").attributes("title")).toBe("Some Article");
   });
 });

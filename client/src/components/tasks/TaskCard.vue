@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdminListRow from "@/components/admin/AdminListRow.vue";
+import ToolIcon from "@/components/icons/ToolIcon.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/format";
@@ -30,10 +31,11 @@ const emit = defineEmits<{ select: [id: number] }>();
     <template #actions>
       <span
         v-if="task.google_event_id"
-        class="text-xs text-accent-blue"
+        class="inline-flex text-accent-blue"
         title="Synced to Google Calendar"
+        aria-label="Synced to Google Calendar"
       >
-        GCal
+        <ToolIcon slug="sync" class="h-4 w-4" />
       </span>
     </template>
   </AdminListRow>

@@ -45,7 +45,7 @@ test.describe("public pages", () => {
     await expect(page.getByRole("link", { name: /password generator/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /recipes/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /url shortener/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /video download/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /video downloader/i })).toBeVisible();
   });
 
   test("guest sees weather tile on tools page", async ({ page }) => {
@@ -96,13 +96,13 @@ test.describe("public pages", () => {
 
   test("guest can open public shortener page", async ({ page }) => {
     await page.goto("/shortener");
-    await expect(page.getByRole("heading", { name: /url-shortener/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /url shortener/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /shorten/i })).toBeVisible();
   });
 
   test("guest can open public video download page", async ({ page }) => {
     await page.goto("/vid-download");
-    await expect(page.getByRole("heading", { name: /vid-download/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /video downloader/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /download/i })).toBeVisible();
   });
 

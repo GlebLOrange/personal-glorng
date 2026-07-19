@@ -62,8 +62,8 @@ async function download(): Promise<void> {
 
 <template>
   <PageShell
-    title="vid-download"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'vid' }]"
+    title="video downloader"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'video downloader' }]"
     back-to="/tools"
     max-width="xl"
     :narrow="false"

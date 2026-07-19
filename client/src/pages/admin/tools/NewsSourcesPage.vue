@@ -11,6 +11,7 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { Card } from "@/components/ui/card";
 import { newsSourceEnabledClass } from "@/constants/filterColors";
@@ -379,16 +380,12 @@ onMounted(loadSources);
             >
               ⚠
             </span>
-            <button
+            <IconCloseButton
               v-if="canWrite"
-              type="button"
-              class="rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-status-error transition-colors hover:border-status-error/40 hover:bg-status-error/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-status-error/50 disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Delete source"
               :disabled="deletingId === source.id"
               @click="deleteSource(source, $event)"
-            >
-              ✕
-            </button>
+            />
           </template>
         </AdminListRow>
         </template>
