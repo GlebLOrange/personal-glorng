@@ -72,7 +72,7 @@ Redis fixed-window limits — [`server/app/core/rate_limit.py`](../../server/app
 | Video download | 5/hour | `POST /api/tools/vid-download` | Fail closed |
 | Inbound webhooks | 30/min | `POST /api/webhooks/{slug}` | Fail closed |
 
-Rate-limit keys prefer nginx-set `X-Real-IP` over client-supplied `X-Forwarded-For`.
+Rate-limit keys prefer nginx-set `X-Real-IP` over client-supplied `X-Forwarded-For`. Behind Cloudflare (`make prod-cloudflare`), nginx restores the visitor IP from `CF-Connecting-IP` before setting `X-Real-IP` — see [Cloudflare](/operations/cloudflare#real-visitor-ip).
 
 ## Request body limits
 
