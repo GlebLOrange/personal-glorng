@@ -64,7 +64,7 @@
 }
 
 @utility page-breadcrumb-row {
-  @apply flex h-4 items-center justify-between gap-2 pr-1;
+  @apply flex min-h-11 items-center justify-between gap-2 pr-1;
 }
 
 @utility page-intro {

@@ -1,8 +1,17 @@
+/** Single-word breadcrumb label from a page title (last token). */
 export function formatBreadcrumbLabel(title: string): string {
-  return title
-    .split(/[\s-]+/)
-    .filter(Boolean)
-    .join(" ");
+  const parts = title
+    .trim()
+    .replace(/^§+\s*/, "")
+    .toLowerCase()
+    .split(/[\s/_-]+/)
+    .filter(Boolean);
+  return parts.at(-1) ?? title.trim().toLowerCase();
+}
+
+/** Visible breadcrumb text: § as the first character of the page name. */
+export function displayBreadcrumbLabel(title: string): string {
+  return `§ ${formatBreadcrumbLabel(title)}`;
 }
 
 /** First word of a title for compact breadcrumbs; appends "..." when truncated. */

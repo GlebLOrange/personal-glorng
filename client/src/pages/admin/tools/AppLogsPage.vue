@@ -146,7 +146,7 @@ onMounted(load);
 </script>
 
 <template>
-  <AdminPageLayout title="app logs">
+  <AdminPageLayout hub="tools" title="app logs">
     <AdminListSkeleton v-if="loading && items.length === 0 && !listError" label="Loading app logs" />
 
     <template v-else>
@@ -229,8 +229,10 @@ onMounted(load);
         :loading="loading"
         item-label="entries"
         ariaLabel="App logs pagination"
+        @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
       />
     </template>
   </AdminPageLayout>

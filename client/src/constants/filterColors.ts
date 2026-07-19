@@ -41,7 +41,7 @@ const USER_ROLE_CLASS: Record<string, string> = {
 };
 
 const AUDIT_CATEGORY_CLASS: Record<string, string> = {
-  security: SEMANTIC.security,
+  security: SEMANTIC.success,
   domain: SEMANTIC.info,
 };
 

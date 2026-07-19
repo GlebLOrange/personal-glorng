@@ -14,12 +14,13 @@ const props = defineProps<{
 const innerClass = computed(() => {
   const resolvedWidth = props.width ?? (props.centered ? "full" : "content");
   if (resolvedWidth === "full") {
-    return "mx-auto w-full";
+    return "w-full";
   }
   if (resolvedWidth === "prose") {
-    return "mx-auto w-full max-w-3xl";
+    // Left-align column under section titles (same shell edge); do not center
+    return "w-full max-w-3xl";
   }
-  return "page-body-narrow mx-auto w-full";
+  return "page-body-narrow w-full";
 });
 </script>
 
@@ -32,12 +33,12 @@ const innerClass = computed(() => {
       dark ? 'text-surface-light' : 'text-surface-dark',
     ]"
   >
-    <div class="page-tile-scope mx-auto w-full max-w-5xl">
+    <div class="page-tile-scope mx-auto w-full max-w-5xl xl:max-w-6xl">
+      <h2 v-if="title" class="section-title mb-8">
+        <span aria-hidden="true" class="text-accent-blue">§ </span>
+        {{ title }}
+      </h2>
       <div :class="innerClass">
-        <h2 v-if="title" class="section-title mb-8">
-          <span aria-hidden="true" class="text-accent-blue">€ </span>
-          {{ title }}
-        </h2>
         <slot />
       </div>
     </div>

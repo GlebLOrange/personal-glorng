@@ -184,7 +184,7 @@ test.describe("authenticated admin", () => {
     await loginAsAdmin(page);
 
     await page.goto("/admin");
-    await expect(page.getByRole("heading", { name: /^€ tools$/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^§ tools$/i })).toBeVisible();
     await expect(page.locator('a[href="/admin/users"]')).toBeVisible();
     await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
   });

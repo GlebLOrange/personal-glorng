@@ -23,6 +23,29 @@ describe("PageBreadcrumbs", () => {
     });
 
     expect(wrapper.get("a").attributes("href")).toBe("/tools");
-    expect(wrapper.text()).toContain("calculator");
+    expect(wrapper.text()).toContain("§ tools");
+    expect(wrapper.text()).toContain("§ calculator");
+  });
+
+  it("applies elevated accent classes for sole section crumbs", () => {
+    const wrapper = mount(PageBreadcrumbs, {
+      props: {
+        segments: [{ label: "admin", to: "/admin" }],
+        elevated: true,
+      },
+      global: {
+        stubs: {
+          RouterLink: {
+            props: ["to"],
+            template: '<a :href="to" :class="$attrs.class"><slot /></a>',
+          },
+        },
+      },
+    });
+
+    expect(wrapper.get("a").classes()).toContain("cursor-pointer");
+    expect(wrapper.get("a span").classes()).toContain("accent-gradient");
+    expect(wrapper.get("a span").classes()).toContain("text-lg");
+    expect(wrapper.get("a span").text()).toBe("§ admin");
   });
 });

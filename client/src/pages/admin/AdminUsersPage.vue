@@ -377,8 +377,10 @@ onUnmounted(() => {
         :visible-count="users.length"
         item-label="users"
         ariaLabel="Users pagination"
+        @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
       />
     </template>
 

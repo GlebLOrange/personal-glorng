@@ -16,7 +16,9 @@ const props = defineProps<{
   countLabel?: string;
 }>();
 
-const emit = defineEmits<{ prev: []; next: [] }>();
+const emit = defineEmits<{ prev: []; next: []; first: []; last: [] }>();
+
+const showPagination = computed(() => props.totalPages > 1);
 
 const totalLabel = computed(() => {
   if (props.countLabel) return props.countLabel;
@@ -27,9 +29,7 @@ const totalLabel = computed(() => {
   return `${props.total} ${label}`;
 });
 
-const pageLabel = computed(
-  () => `page ${props.page} of ${Math.max(props.totalPages, 1)}`,
-);
+const pageLabel = computed(() => `page ${props.page} of ${props.totalPages}`);
 
 const prevDisabled = computed(() => props.loading || !props.hasPreviousPage);
 const nextDisabled = computed(() => props.loading || !props.hasNextPage);
@@ -37,19 +37,42 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
 
 <template>
   <nav
+    v-if="showPagination"
     class="mt-4 grid grid-cols-[auto_1fr_auto] items-center gap-3"
     :aria-label="ariaLabel"
   >
-    <BaseButton variant="ghost" :disabled="prevDisabled" @click="emit('prev')">
-      previous
-    </BaseButton>
-    <p class="flex flex-wrap items-center justify-center gap-x-2 text-center text-xs text-surface-muted">
+    <div class="flex flex-wrap items-center gap-1">
+      <BaseButton
+        variant="ghost"
+        :disabled="prevDisabled"
+        aria-label="to start"
+        @click="emit('first')"
+      >
+        &lt;&lt;
+      </BaseButton>
+      <BaseButton variant="ghost" :disabled="prevDisabled" @click="emit('prev')">
+        previous
+      </BaseButton>
+    </div>
+    <p
+      class="flex flex-wrap items-center justify-center gap-x-2 text-center text-xs text-surface-muted"
+    >
       <span>{{ totalLabel }}</span>
       <span aria-hidden="true">·</span>
       <span>{{ pageLabel }}</span>
     </p>
-    <BaseButton variant="ghost" :disabled="nextDisabled" @click="emit('next')">
-      next
-    </BaseButton>
+    <div class="flex flex-wrap items-center justify-end gap-1">
+      <BaseButton variant="ghost" :disabled="nextDisabled" @click="emit('next')">
+        next
+      </BaseButton>
+      <BaseButton
+        variant="ghost"
+        :disabled="nextDisabled"
+        aria-label="to end"
+        @click="emit('last')"
+      >
+        &gt;&gt;
+      </BaseButton>
+    </div>
   </nav>
 </template>

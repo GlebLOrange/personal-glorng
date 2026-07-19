@@ -107,7 +107,7 @@ onMounted(loadFiles);
 </script>
 
 <template>
-  <AdminPageLayout title="file-share">
+  <AdminPageLayout hub="tools" title="file-share">
     <div class="mb-10 flex items-stretch gap-3">
       <div
         :class="[
@@ -174,8 +174,10 @@ onMounted(loadFiles);
           :loading="listLoading"
           item-label="files"
           ariaLabel="Shared files pagination"
+          @first="goToPage(1)"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"
+          @last="goToPage(totalPages)"
         />
       </template>
     </div>

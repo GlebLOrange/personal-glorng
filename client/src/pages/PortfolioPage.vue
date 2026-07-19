@@ -104,7 +104,7 @@ onUnmounted(() => {
 
 <template>
   <div class="portfolio-cv" :aria-busy="resumeLoading && !resumeApi">
-    <div v-if="apiError" class="mx-auto max-w-5xl px-6 pt-4 print:hidden">
+    <div v-if="apiError" class="mx-auto max-w-5xl xl:max-w-6xl px-6 pt-4 print:hidden">
       <ErrorState
         message="Using cached portfolio data — live sync unavailable."
         show-retry
@@ -171,22 +171,22 @@ onUnmounted(() => {
       <EducationList :education="education" />
     </SectionWrapper>
 
-    <SectionWrapper id="contact" title="contact" width="prose" dark :alternate="education.length === 0">
-      <p class="text-body text-center mb-2">
+    <SectionWrapper id="contacts" title="contacts" width="prose" dark :alternate="education.length === 0">
+      <p class="text-body mb-2">
         Open to full-time and contract — usually reply within 24h (EU timezone).
       </p>
-      <p class="text-meta text-center mb-6">
+      <p class="text-meta mb-6">
         Fastest: Telegram or email. Or send a short inquiry below.
       </p>
-      <div class="flex flex-wrap justify-center gap-4 mb-6">
+      <div class="flex flex-wrap gap-4 mb-6">
         <button type="button" class="cta-primary print:hidden" @click="contactModal = 'inquiry'">
           send inquiry
         </button>
       </div>
-      <div class="flex flex-wrap justify-center gap-4">
+      <div class="flex flex-wrap gap-4">
         <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
       </div>
-      <div class="mt-6 flex justify-center print:hidden">
+      <div class="mt-6 flex print:hidden">
         <button
           type="button"
           class="text-meta text-surface-sage underline-offset-4 hover:underline inline-flex items-center gap-2 min-h-11 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"

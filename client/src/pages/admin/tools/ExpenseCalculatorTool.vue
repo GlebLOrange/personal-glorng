@@ -63,7 +63,7 @@ const persistenceHint = computed(() => {
 <template>
   <PageShell
     title="expense calculator"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'expense calculator' }]"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'expense' }]"
     back-to="/tools"
     max-width="xl"
     :narrow="false"

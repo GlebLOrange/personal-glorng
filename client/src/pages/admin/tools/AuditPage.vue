@@ -119,7 +119,7 @@ onMounted(load);
 </script>
 
 <template>
-  <AdminPageLayout title="audit log">
+  <AdminPageLayout hub="tools" title="audit log">
     <AdminListSkeleton v-if="loading && items.length === 0 && !listError" label="Loading audit events" />
 
     <template v-else>
@@ -170,15 +170,15 @@ onMounted(load);
           <template #time>{{ formatDate(event.occurred_at) }}</template>
           <template #detail>
             <p>
-              Actor: {{ event.actor_type }}
+              actor: {{ event.actor_type }}
               <span v-if="event.actor_id">#{{ event.actor_id }}</span>
-              · Source: {{ event.source }}
+              · source: {{ event.source }}
             </p>
             <p v-if="event.resource_type">
-              Resource: {{ event.resource_type }}
+              resource: {{ event.resource_type }}
               <span v-if="event.resource_id">#{{ event.resource_id }}</span>
             </p>
-            <p v-if="event.request_id" class="font-data">Request: {{ event.request_id }}</p>
+            <p v-if="event.request_id" class="font-data">request: {{ event.request_id }}</p>
             <pre
               v-if="event.metadata"
               class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
@@ -198,8 +198,10 @@ onMounted(load);
         :loading="loading"
         item-label="events"
         ariaLabel="Audit pagination"
+        @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
       />
     </template>
   </AdminPageLayout>

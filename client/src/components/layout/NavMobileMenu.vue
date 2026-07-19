@@ -23,7 +23,7 @@ const sectionLinks = [
   { href: "#skills", label: "skills" },
   { href: "#experience", label: "experience" },
   { href: "#projects", label: "projects" },
-  { href: "#contact", label: "contact" },
+  { href: "#contacts", label: "contacts" },
 ];
 
 useScrollLock(() => props.open);
@@ -102,7 +102,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
     ref="menuRoot"
     class="md:hidden border-t border-surface-border bg-surface-dark/95 backdrop-blur-md"
   >
-    <div class="max-w-5xl mx-auto px-6 py-4 flex flex-col gap-1">
+    <div class="max-w-5xl xl:max-w-6xl mx-auto px-6 py-4 flex flex-col gap-1">
       <template v-if="isPortfolio">
         <p class="text-label text-surface-mid px-2 py-1 mb-1">On this page</p>
         <a

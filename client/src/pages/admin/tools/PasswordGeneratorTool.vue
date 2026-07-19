@@ -64,7 +64,7 @@ async function generatePassword(): Promise<void> {
 <template>
   <PageShell
     title="password generator"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'password generator' }]"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'password' }]"
     back-to="/tools"
     max-width="xl"
     :narrow="false"

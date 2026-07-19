@@ -355,7 +355,7 @@ function downloadResult(): void {
 </script>
 
 <template>
-  <AdminPageLayout title="data extract">
+  <AdminPageLayout hub="tools" title="data extract">
     <div class="min-w-0">
 
     <div class="mb-6 space-y-2">
@@ -493,8 +493,10 @@ function downloadResult(): void {
         :has-previous-page="hasPreviousBatchPage"
         item-label="batches"
         ariaLabel="Import batches pagination"
+        @first="goToBatchPage(1)"
         @prev="goToBatchPage(batchPage - 1)"
         @next="goToBatchPage(batchPage + 1)"
+        @last="goToBatchPage(batchTotalPages)"
       />
     </Card>
 

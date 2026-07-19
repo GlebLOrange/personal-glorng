@@ -413,7 +413,7 @@ watch(page, () => {
 </script>
 
 <template>
-  <AdminPageLayout title="news" max-width="xl">
+  <AdminPageLayout hub="tools" title="news" max-width="xl">
     <AdminListToolbar v-if="!listLoading && !listError">
       <template #start>
         <div class="flex w-full min-w-0 flex-wrap items-center gap-3">
@@ -565,8 +565,10 @@ watch(page, () => {
       :loading="listLoading"
       item-label="articles"
       ariaLabel="News pagination"
+      @first="goToPage(1)"
       @prev="goToPage(page - 1)"
       @next="goToPage(page + 1)"
+      @last="goToPage(totalPages)"
     />
 
     <NewsArticleDrawer

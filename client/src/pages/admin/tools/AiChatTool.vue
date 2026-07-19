@@ -100,7 +100,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout title="ai chat">
+  <AdminPageLayout hub="tools" title="ai chat">
     <AdminTabBar v-model="activeTab" :tabs="[...AI_CHAT_TABS]" />
 
     <Card v-if="activeTab === 'chat'" class="flex flex-col h-[65vh]">

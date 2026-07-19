@@ -167,8 +167,10 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
         :has-next-page="hasNextPage"
         :has-previous-page="page > 1"
         ariaLabel="Recipes pagination"
+        @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
       />
     </RecipeFilters>
 

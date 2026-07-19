@@ -50,6 +50,7 @@ function handleSelect(query: string): void {
   <PageShell
     :title="WEATHER_TOOL_NAME"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'weather' }]"
+    back-to="/tools"
     :narrow="false"
     body-class="font-mono"
   >
