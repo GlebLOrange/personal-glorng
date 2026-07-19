@@ -1,13 +1,14 @@
 """Curated news API. Public reads; admin routes use news capabilities."""
 
-from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import AuthorizedUser, NewsServiceDep, require_capability
 from app.core.rate_limit import rate_limit_api
 from app.core.utils import DEFAULT_PER_PAGE
 from app.db.documents.news import NewsStatus
 from app.openapi import requires_capability
-from app.schemas.common import MessageResponse
 from app.schemas.news import (
     NewsArticleCreate,
     NewsArticleListResponse,
@@ -31,8 +32,8 @@ router = APIRouter(prefix="/news", tags=["news"])
 )
 async def list_news(
     svc: NewsServiceDep,
-    page: int = 1,
-    per_page: int = DEFAULT_PER_PAGE,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> NewsArticleListResponse:
     """List published news articles."""
     return await svc.list_articles(
@@ -69,8 +70,8 @@ async def list_news_admin(
     svc: NewsServiceDep,
     user: AuthorizedUser,
     status: NewsStatus | None = None,
-    page: int = 1,
-    per_page: int = DEFAULT_PER_PAGE,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> NewsArticleListResponse:
     """List news articles for admin tools."""
     del user
@@ -141,6 +142,7 @@ async def get_news_article(slug: str, svc: NewsServiceDep) -> NewsArticleRespons
 @router.post(
     "",
     response_model=NewsArticleResponse,
+    status_code=201,
     summary="Create news article",
     description=requires_capability("news", "write"),
     dependencies=[Depends(require_capability("news", "write"))],
@@ -211,7 +213,7 @@ async def update_news_article(
 
 @router.delete(
     "/{article_id}",
-    response_model=MessageResponse,
+    status_code=204,
     summary="Delete news article",
     description=requires_capability("news", "write"),
     dependencies=[Depends(require_capability("news", "write"))],
@@ -220,7 +222,6 @@ async def delete_news_article(
     article_id: int,
     svc: NewsServiceDep,
     user: AuthorizedUser,
-) -> MessageResponse:
+) -> None:
     """Delete a news article."""
     await svc.delete_article(article_id, actor_id=user.id)
-    return MessageResponse(message="News article deleted")

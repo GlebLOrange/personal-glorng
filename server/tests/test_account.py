@@ -193,7 +193,7 @@ async def test_delete_regular_user(client: AsyncClient, db) -> None:
         headers={"Authorization": f"Bearer {token}"},
         json={"current_password": STRONG_PASSWORD, "confirm": True},
     )
-    assert delete.status_code == 200
+    assert delete.status_code == 204
 
     me = await client.get("/api/auth/me")
     assert me.status_code == 401

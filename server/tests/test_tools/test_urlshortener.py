@@ -12,7 +12,7 @@ async def test_create_url_unauthenticated(client: AsyncClient) -> None:
         "/api/tools/url-shortener",
         json={"original_url": "https://example.com"},
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     data = resp.json()
     assert data["original_url"] == "https://example.com/"
     assert "code" in data
@@ -34,7 +34,7 @@ async def test_create_url(auth_client: AsyncClient) -> None:
         "/api/tools/url-shortener",
         json={"original_url": "https://example.com", "title": "Example"},
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     data = resp.json()
     assert data["original_url"] == "https://example.com/"
     assert data["title"] == "Example"
@@ -159,8 +159,7 @@ async def test_delete_url_via_api(auth_client: AsyncClient) -> None:
     )
     url_id = create_resp.json()["id"]
     resp = await auth_client.delete(f"/api/tools/url-shortener/{url_id}")
-    assert resp.status_code == 200
-    assert "deleted" in resp.json()["message"].lower()
+    assert resp.status_code == 204
 
 
 @pytest.mark.asyncio
@@ -169,8 +168,7 @@ async def test_delete_url(
 ) -> None:
     url = await create_short_url(registry, created_by=admin_user.id)  # type: ignore[union-attr]
     resp = await auth_client.delete(f"/api/tools/url-shortener/{url.id}")
-    assert resp.status_code == 200
-    assert "deleted" in resp.json()["message"].lower()
+    assert resp.status_code == 204
 
 
 @pytest.mark.asyncio

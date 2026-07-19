@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
+
+from app.schemas.common import PaginatedResponse
 
 
 class AppLogResponse(BaseModel):
@@ -19,6 +21,4 @@ class AppLogResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class AppLogListResponse(BaseModel):
-    items: list[AppLogResponse]
-    total: int = Field(ge=0)
+AppLogListResponse = PaginatedResponse[AppLogResponse]

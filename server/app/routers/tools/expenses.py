@@ -10,13 +10,6 @@ from app.core.catalogs import (
     DEFAULT_EXPENSE_CURRENCY,
     EXCHANGE_RATE_TARGETS,
 )
-from app.core.catalogs import (
-    ALLOWED_CURRENCIES,
-    DEFAULT_EXPENSE_CATEGORY,
-    DEFAULT_EXPENSE_CATEGORY_NAMES,
-    DEFAULT_EXPENSE_CURRENCY,
-    EXCHANGE_RATE_TARGETS,
-)
 from app.core.deps import (
     AuthorizedUser,
     CurrencyServiceDep,
@@ -26,7 +19,6 @@ from app.core.deps import (
 )
 from app.core.utils import DEFAULT_PER_PAGE
 from app.openapi import requires_capability
-from app.schemas.common import MessageResponse
 from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
 from app.schemas.date_filters import ExpenseDateFilter, expense_date_filter
 from app.schemas.expense import (
@@ -88,6 +80,7 @@ async def list_categories(
 @router.post(
     "/categories",
     response_model=ExpenseCategoryResponse,
+    status_code=201,
     summary="Create expense category",
     description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
@@ -118,7 +111,7 @@ async def update_category(
 
 @router.delete(
     "/categories/{category_id}",
-    response_model=MessageResponse,
+    status_code=204,
     summary="Delete expense category",
     description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
@@ -127,9 +120,8 @@ async def delete_category(
     category_id: int,
     svc: ExpenseCategoryServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
-) -> MessageResponse:
+) -> None:
     await svc.delete_category(category_id)
-    return MessageResponse(message="Category deleted")
 
 
 @router.get(
@@ -292,6 +284,7 @@ async def get_expense(
 @router.post(
     "",
     response_model=ExpenseResponse,
+    status_code=201,
     summary="Create expense",
     description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
@@ -322,7 +315,7 @@ async def update_expense(
 
 @router.delete(
     "/{expense_id}",
-    response_model=MessageResponse,
+    status_code=204,
     summary="Delete expense",
     description=requires_capability("expenses", "write"),
     dependencies=[Depends(require_capability("expenses", "write"))],
@@ -331,6 +324,5 @@ async def delete_expense(
     expense_id: int,
     svc: ExpenseServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
-) -> MessageResponse:
+) -> None:
     await svc.delete_expense(expense_id)
-    return MessageResponse(message="Expense deleted")

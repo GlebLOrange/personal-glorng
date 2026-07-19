@@ -40,7 +40,7 @@ async def test_register_open_email(
             "accept_terms": True,
         },
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     assert "Registration successful" in resp.json()["message"]
 
     user = await get_user_by_email(registry, "new.user@glorng.dev")
@@ -62,7 +62,7 @@ async def test_register_normalizes_email(
             "accept_terms": True,
         },
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 201
 
     user = await get_user_by_email(registry, "mixedcase@glorng.dev")
     assert user is not None
@@ -509,7 +509,7 @@ async def test_register_enqueues_verification_email(
                 "accept_terms": True,
             },
         )
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         mock_queue.enqueue.assert_awaited_once()
         assert mock_queue.enqueue.await_args.args[0] == JobName.SEND_VERIFICATION_EMAIL
         assert mock_queue.enqueue.await_args.args[1] == email

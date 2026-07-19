@@ -17,7 +17,7 @@ class TestExpensesCRUD:
 
     async def test_create_expense(self, auth_client: AsyncClient):
         resp = await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         data = resp.json()
         assert data["tool_name"] == "Cursor"
         assert data["amount"] == "20.00"
@@ -33,7 +33,7 @@ class TestExpensesCRUD:
             "notes": "  Pro\x00 subscription  ",
         }
         resp = await auth_client.post("/api/tools/expenses", json=payload)
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         data = resp.json()
         assert data["tool_name"] == "Cursor"
         assert data["notes"] == "Pro subscription"
@@ -42,7 +42,7 @@ class TestExpensesCRUD:
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
         resp = await auth_client.get("/api/tools/expenses")
         assert resp.status_code == 200
-        assert len(resp.json()) == 1
+        assert len(resp.json()["items"]) == 1
 
     async def test_get_expense(self, auth_client: AsyncClient):
         create_resp = await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
@@ -67,7 +67,7 @@ class TestExpensesCRUD:
         create_resp = await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
         expense_id = create_resp.json()["id"]
         resp = await auth_client.delete(f"/api/tools/expenses/{expense_id}")
-        assert resp.status_code == 200
+        assert resp.status_code == 204
 
         get_resp = await auth_client.get(f"/api/tools/expenses/{expense_id}")
         assert get_resp.status_code == 404
@@ -80,7 +80,7 @@ class TestExpensesCRUD:
         )
         resp = await auth_client.get("/api/tools/expenses?tool_name=cursor")
         assert resp.status_code == 200
-        assert len(resp.json()) == 1
+        assert len(resp.json()["items"]) == 1
 
     async def test_filter_by_category(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
@@ -90,7 +90,7 @@ class TestExpensesCRUD:
         )
         resp = await auth_client.get("/api/tools/expenses?category=AI")
         assert resp.status_code == 200
-        assert len(resp.json()) == 1
+        assert len(resp.json()["items"]) == 1
 
     async def test_list_categories(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
@@ -140,7 +140,7 @@ class TestExpensesCRUD:
         )
         resp = await auth_client.get("/api/tools/expenses", params={"month": "2025-03"})
         assert resp.status_code == 200
-        assert len(resp.json()) == 1
+        assert len(resp.json()["items"]) == 1
 
     async def test_summary_month_param(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)

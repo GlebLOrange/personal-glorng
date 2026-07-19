@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 import sentry_sdk
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -115,6 +116,25 @@ def create_app() -> FastAPI:
             status_code=exc.status_code,
             content={"detail": exc.message},
         )
+
+    @application.exception_handler(RequestValidationError)
+    async def request_validation_handler(
+        _request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        """Normalize FastAPI/Pydantic 422 bodies to `{"detail": "<string>"}`."""
+        errors = exc.errors()
+        if not errors:
+            detail = "Validation failed"
+        else:
+            first = errors[0]
+            loc_parts = [
+                str(part)
+                for part in first.get("loc", ())
+                if part not in {"body", "query", "path", "header"}
+            ]
+            msg = str(first.get("msg", "Validation failed"))
+            detail = f"{'.'.join(loc_parts)}: {msg}" if loc_parts else msg
+        return JSONResponse(status_code=422, content={"detail": detail})
 
     @application.exception_handler(Exception)
     async def unhandled_exception_handler(

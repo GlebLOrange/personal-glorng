@@ -34,6 +34,7 @@ rate_limit_feedback = RateLimiter(requests=5, window=300, fail_open=False)
 @router.post(
     "",
     response_model=FeedbackResponse,
+    status_code=201,
     summary="Submit feedback",
     description="Public endpoint — visitors can submit feedback.",
     dependencies=[Depends(rate_limit_feedback)],

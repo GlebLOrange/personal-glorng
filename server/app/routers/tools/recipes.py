@@ -8,7 +8,6 @@ from app.core.deps import AuthorizedUser, RecipeServiceDep, require_capability
 from app.core.rate_limit import rate_limit_api
 from app.core.utils import DEFAULT_PER_PAGE
 from app.openapi import requires_capability
-from app.schemas.common import MessageResponse
 from app.schemas.recipe import (
     RecipeCreate,
     RecipeListResponse,
@@ -44,8 +43,8 @@ async def list_recipes(
     tag: Annotated[str | None, Query(max_length=100)] = None,
     tags: Annotated[str | None, Query(max_length=1000)] = None,
     sort: RecipeSort = "title_asc",
-    page: int = 1,
-    per_page: int = DEFAULT_PER_PAGE,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> RecipeListResponse:
     selected_tags = [
         value.strip() for value in (tags or "").split(",") if value.strip()
@@ -75,6 +74,7 @@ async def get_recipe(recipe_id: int, svc: RecipeServiceDep) -> RecipeResponse:
 @router.post(
     "",
     response_model=RecipeResponse,
+    status_code=201,
     summary="Create recipe",
     description=requires_capability("recipes", "write"),
     dependencies=[Depends(require_capability("recipes", "write"))],
@@ -105,7 +105,7 @@ async def update_recipe(
 
 @router.delete(
     "/{recipe_id}",
-    response_model=MessageResponse,
+    status_code=204,
     summary="Delete recipe",
     description=requires_capability("recipes", "write"),
     dependencies=[Depends(require_capability("recipes", "write"))],
@@ -114,6 +114,5 @@ async def delete_recipe(
     recipe_id: int,
     svc: RecipeServiceDep,
     user: AuthorizedUser,
-) -> MessageResponse:
+) -> None:
     await svc.delete_recipe(recipe_id, actor_id=user.id)
-    return MessageResponse(message="Recipe deleted")

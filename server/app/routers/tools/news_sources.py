@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends
+from typing import Annotated
 
-from app.core.utils import DEFAULT_PER_PAGE
+from fastapi import APIRouter, Depends, Query
+
 from app.core.deps import (
     AuthorizedUser,
     NewsServiceDep,
     require_capability,
 )
+from app.core.utils import DEFAULT_PER_PAGE
 from app.db.documents.news import NewsSource
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
@@ -35,8 +37,8 @@ async def list_news_sources(
     svc: NewsServiceDep,
     user: AuthorizedUser,
     enabled: bool | None = None,
-    page: int = 1,
-    per_page: int = DEFAULT_PER_PAGE,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> NewsSourceListResponse:
     """List admin-managed RSS sources."""
     del user
@@ -46,6 +48,7 @@ async def list_news_sources(
 @router.post(
     "",
     response_model=NewsSourceResponse,
+    status_code=201,
     summary="Create RSS news source",
     description=requires_capability("news-sources", "write"),
     dependencies=[Depends(require_capability("news-sources", "write"))],
@@ -104,7 +107,7 @@ async def update_source(
 
 @router.delete(
     "/{source_id}",
-    response_model=MessageResponse,
+    status_code=204,
     summary="Delete RSS news source",
     description=requires_capability("news-sources", "write"),
     dependencies=[Depends(require_capability("news-sources", "write"))],
@@ -113,7 +116,6 @@ async def delete_source(
     source_id: int,
     svc: NewsServiceDep,
     user: AuthorizedUser,
-) -> MessageResponse:
+) -> None:
     """Delete an RSS source."""
     await svc.delete_source(source_id, actor_id=user.id)
-    return MessageResponse(message="News source deleted")
