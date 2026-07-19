@@ -152,10 +152,9 @@ async def test_login_verified(client: AsyncClient, admin_user: object) -> None:
         json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
     )
     assert resp.status_code == 200
-    data = resp.json()
-    assert "access_token" in data
-    assert "refresh_token" in data
-    assert data["token_type"] == "bearer"
+    assert resp.json()["message"] == "Login successful"
+    assert resp.cookies.get("access_token")
+    assert resp.cookies.get("refresh_token")
 
 
 @pytest.mark.asyncio
@@ -274,6 +273,36 @@ async def test_firebase_login_existing_user_does_not_grant_permissions_or_email(
 
 
 @pytest.mark.asyncio
+
+@pytest.mark.asyncio
+async def test_firebase_login_rejects_unverified_password_account(
+    client: AsyncClient,
+    registry: DatabaseRegistry,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    await firebase_auth_service.create_user(
+        registry,
+        email="preaccount@glorng.dev",
+        password=STRONG_PASSWORD,
+        permissions=[],
+        is_verified=False,
+    )
+    _mock_firebase_token(
+        monkeypatch,
+        {
+            "email": "preaccount@glorng.dev",
+            "email_verified": True,
+            "name": "Victim",
+            "firebase": {"sign_in_provider": "google.com"},
+        },
+    )
+    resp = await client.post("/api/auth/firebase", json={"id_token": "x" * 24})
+    assert resp.status_code == 409
+    user = await get_user_by_email(registry, "preaccount@glorng.dev")
+    assert user is not None
+    assert user.is_verified is False
+
+
 async def test_firebase_login_rejects_when_disabled(client: AsyncClient) -> None:
     settings = get_settings()
     settings.FIREBASE_AUTH_ENABLED = False
@@ -458,14 +487,14 @@ async def test_verify_email(client: AsyncClient) -> None:
         },
     )
     token = create_verification_token(email)
-    resp = await client.get(f"/api/auth/verify?token={token}")
+    resp = await client.post("/api/auth/verify", json={"token": token})
     assert resp.status_code == 200
     assert "verified" in resp.json()["message"].lower()
 
 
 @pytest.mark.asyncio
 async def test_verify_invalid_token(client: AsyncClient) -> None:
-    resp = await client.get("/api/auth/verify?token=invalidtoken")
+    resp = await client.post("/api/auth/verify", json={"token": "invalidtoken"})
     assert resp.status_code == 401
 
 
@@ -483,8 +512,8 @@ async def test_verify_reuse_prevented(client: AsyncClient) -> None:
         },
     )
     token = create_verification_token(email)
-    await client.get(f"/api/auth/verify?token={token}")
-    resp = await client.get(f"/api/auth/verify?token={token}")
+    await client.post("/api/auth/verify", json={"token": token})
+    resp = await client.post("/api/auth/verify", json={"token": token})
     assert resp.status_code == 401
 
 
@@ -596,7 +625,7 @@ async def test_reset_password_success(
         json={"email": ADMIN_EMAIL, "password": new_password},
     )
     assert login.status_code == 200
-    assert "access_token" in login.json()
+    assert login.cookies.get("access_token")
 
 
 @pytest.mark.asyncio
@@ -617,8 +646,8 @@ async def test_reset_password_revokes_prior_sessions(
         json={"email": user.email, "password": STRONG_PASSWORD},
     )
     assert login.status_code == 200
-    old_access = login.json()["access_token"]
-    old_refresh = login.json()["refresh_token"]
+    old_access = login.cookies["access_token"]
+    old_refresh = login.cookies["refresh_token"]
 
     new_password = "ResetTestPass456!"
     reset = await client.post(

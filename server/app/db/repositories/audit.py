@@ -1,3 +1,4 @@
+import asyncio
 from datetime import date, datetime
 from typing import Any
 
@@ -88,12 +89,17 @@ class AuditRepository:
                 occurred["$lte"] = datetime.combine(date_to, datetime.max.time())
             query["occurred_at"] = occurred
 
-        total = await self.db.audit_events.count_documents(query)
-        cursor = (
-            self.db.audit_events.find(query)
-            .sort("occurred_at", -1)
-            .skip(offset)
-            .limit(limit)
+        async def _fetch_items() -> list[AuditEvent]:
+            cursor = (
+                self.db.audit_events.find(query)
+                .sort("occurred_at", -1)
+                .skip(offset)
+                .limit(limit)
+            )
+            return [_from_doc(row) async for row in cursor]
+
+        items, total = await asyncio.gather(
+            _fetch_items(),
+            self.db.audit_events.count_documents(query),
         )
-        items = [_from_doc(row) async for row in cursor]
         return items, total

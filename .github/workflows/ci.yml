@@ -38,7 +38,7 @@ jobs:
       - name: Pytest (P0 — exclude integration tier)
         env:
           GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.test
-        run: uv run pytest -m "not integration" -v
+        run: uv run pytest -m "not integration" -v --cov=app --cov-report=term-missing:skip-covered
 
   frontend:
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
           wait "$lint_pid"; lint_exit=$?
           wait "$format_pid"; format_exit=$?
           exit $((lint_exit || format_exit))
-      - run: npm run test
+      - run: npm run test:coverage
       - run: npm run build:check
       - uses: actions/upload-artifact@v7
         with:

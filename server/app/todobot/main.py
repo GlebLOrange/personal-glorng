@@ -48,20 +48,32 @@ def _build_dispatcher(registry) -> Dispatcher:
 
 
 async def _recover_reminders(registry) -> None:
-    """Re-enqueue unsent future reminders after restart."""
+    """Re-enqueue unsent future reminders after restart (batched)."""
     try:
-        reminders = await get_unsent_reminders(registry)
-        if not reminders:
-            return
-
-        for rem in reminders:
-            if rem.job_id:
-                continue
-            await schedule_reminder(registry, rem)
-        logger.info(
-            "Recovered reminders on startup",
-            context={"count": len(reminders)},
-        )
+        recovered = 0
+        offset = 0
+        batch_size = 100
+        while True:
+            reminders = await get_unsent_reminders(
+                registry,
+                limit=batch_size,
+                offset=offset,
+            )
+            if not reminders:
+                break
+            for rem in reminders:
+                if rem.job_id:
+                    continue
+                await schedule_reminder(registry, rem)
+                recovered += 1
+            if len(reminders) < batch_size:
+                break
+            offset += batch_size
+        if recovered:
+            logger.info(
+                "Recovered reminders on startup",
+                context={"count": recovered},
+            )
     except Exception as exc:
         logger.warning("Skipping reminder recovery", context={"error": str(exc)})
 

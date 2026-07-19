@@ -9,7 +9,7 @@ defineProps<{
 
 <template>
   <div class="space-y-4">
-    <Card v-for="(entry, i) in education" :key="i">
+    <Card v-for="(entry, i) in education" :key="i" variant="ghost">
       <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-2">
         <div class="min-w-0">
           <h3 class="card-title">{{ entry.degree }}</h3>

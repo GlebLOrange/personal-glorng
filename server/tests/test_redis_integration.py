@@ -7,6 +7,7 @@ from app.settings import get_settings
 
 
 @pytest.mark.redis
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_real_redis_ping() -> None:
     redis_url = get_settings().REDIS_URL
@@ -22,6 +23,7 @@ async def test_real_redis_ping() -> None:
 
 
 @pytest.mark.redis
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_real_redis_set_get_roundtrip() -> None:
     redis_url = get_settings().REDIS_URL

@@ -158,9 +158,6 @@ onUnmounted(() => {
           <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
         </template>
       </Suspense>
-      <div class="mt-8 flex justify-center print:hidden">
-        <a href="#contact" class="cta-secondary"> get in touch </a>
-      </div>
     </SectionWrapper>
 
     <SectionWrapper

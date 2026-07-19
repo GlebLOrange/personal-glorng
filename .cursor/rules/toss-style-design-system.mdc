@@ -44,6 +44,10 @@ alwaysApply: false
 - Keep disabled and secondary states in grayscale.
 - Ensure status is never communicated by color alone.
 
+## Marketing / portfolio exception
+
+Portfolio and marketing surfaces may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI stays on a single `accent-blue` accent — no decorative gradients on buttons or tool screens.
+
 ## Dark Mode
 
 - Rebuild the grayscale scale for dark mode rather than inverting colors.

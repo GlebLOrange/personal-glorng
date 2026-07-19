@@ -19,5 +19,6 @@ const isExternal = computed(() => /^https?:/i.test(props.link.href));
   >
     <ContactIcon :id="link.id" class="size-4 shrink-0" />
     {{ link.label }}
+    <span v-if="isExternal" class="sr-only">(opens in new tab)</span>
   </a>
 </template>
