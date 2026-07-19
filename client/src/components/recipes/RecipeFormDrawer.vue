@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import RecipeTagChip from "@/components/recipes/RecipeTagChip.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
@@ -33,6 +34,12 @@ const parsedTags = computed(() =>
 const tagSuggestions = computed(() =>
   props.allTags.filter((tag) => !parsedTags.value.includes(tag)),
 );
+
+const tagsActiveLabel = computed(() => {
+  if (parsedTags.value.length === 0) return "none";
+  if (parsedTags.value.length === 1) return parsedTags.value[0];
+  return `${parsedTags.value.length} tags`;
+});
 
 const showImagePreview = computed(() => Boolean(props.form.image_url.trim()));
 
@@ -156,41 +163,48 @@ function toNullableNumber(value: string | number | null | undefined): number | n
         />
       </div>
 
-      <div class="space-y-2">
-        <div v-if="parsedTags.length" class="flex flex-wrap gap-1.5">
-          <button
-            v-for="tag in parsedTags"
-            :key="tag"
-            type="button"
-            class="group inline-flex items-center gap-1"
-            @click="removeTag(tag)"
-          >
-            <RecipeTagChip :tag="tag" compact />
-            <span
-              class="text-surface-mid text-xs leading-none group-hover:text-status-error"
-              aria-hidden="true"
+      <AdminFilterDropdown
+        label="tags"
+        :active-label="tagsActiveLabel"
+        :has-active-filters="parsedTags.length > 0"
+        @clear="setTagsFromList([])"
+      >
+        <div class="space-y-2">
+          <div v-if="parsedTags.length" class="flex flex-wrap gap-1.5">
+            <button
+              v-for="tag in parsedTags"
+              :key="tag"
+              type="button"
+              class="group inline-flex items-center gap-1"
+              @click="removeTag(tag)"
             >
-              &times;
-            </span>
-            <span class="sr-only">remove {{ tag }}</span>
-          </button>
-        </div>
-        <BaseInput
-          :model-value="form.tags"
-          placeholder="tags · dinner, pasta"
-          aria-label="tags"
-          @update:model-value="patch({ tags: toStringValue($event) })"
-        />
-        <div v-if="tagSuggestions.length" class="flex flex-wrap gap-1.5">
-          <RecipeTagChip
-            v-for="tag in tagSuggestions"
-            :key="tag"
-            :tag="tag"
-            compact
-            @click="addTag(tag)"
+              <RecipeTagChip :tag="tag" compact />
+              <span
+                class="text-surface-mid text-xs leading-none group-hover:text-status-error"
+                aria-hidden="true"
+              >
+                &times;
+              </span>
+              <span class="sr-only">remove {{ tag }}</span>
+            </button>
+          </div>
+          <BaseInput
+            :model-value="form.tags"
+            placeholder="tags · dinner, pasta"
+            aria-label="tags"
+            @update:model-value="patch({ tags: toStringValue($event) })"
           />
+          <div v-if="tagSuggestions.length" class="flex flex-wrap gap-1.5">
+            <RecipeTagChip
+              v-for="tag in tagSuggestions"
+              :key="tag"
+              :tag="tag"
+              compact
+              @click="addTag(tag)"
+            />
+          </div>
         </div>
-      </div>
+      </AdminFilterDropdown>
 
       <div class="space-y-2">
         <div

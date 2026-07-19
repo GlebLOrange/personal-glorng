@@ -269,6 +269,7 @@ class TaskService:
         page: int = 1,
         per_page: int = DEFAULT_PER_PAGE,
         status: str | None = None,
+        q: str | None = None,
     ) -> TaskListResponse:
         offset, limit = paginate_params(page, per_page)
         if status:
@@ -276,12 +277,16 @@ class TaskService:
                 TaskStatus(status)
             except ValueError as exc:
                 raise ValidationError(f"Invalid task status: {status}") from exc
+        search = q.strip() if q else None
+        if search == "":
+            search = None
         tasks = await self._tasks().list_admin(
             offset=offset,
             limit=limit,
             status=status,
+            q=search,
         )
-        total = await self._tasks().count_all(status=status)
+        total = await self._tasks().count_all(status=status, q=search)
         items = [TaskResponse.model_validate(t) for t in tasks]
         safe_page = max(1, page)
         return build_paginated(
@@ -312,7 +317,15 @@ class TaskService:
         offset, limit = paginate_params(page, per_page)
         items_raw = await self._tasks().list_sync_queue(offset=offset, limit=limit)
         total = await self._tasks().count_sync_queue()
-        items = [SyncQueueResponse.model_validate(q) for q in items_raw]
+        titles = await self._tasks().titles_by_ids(
+            list({entry.task_id for entry in items_raw}),
+        )
+        items = [
+            SyncQueueResponse.model_validate(entry).model_copy(
+                update={"task_title": titles.get(entry.task_id)},
+            )
+            for entry in items_raw
+        ]
         safe_page = max(1, page)
         return build_paginated(
             items,

@@ -8,6 +8,8 @@ const props = defineProps<{
   title?: string;
   maxWidth?: "md" | "lg" | "2xl";
   ariaLabel?: string;
+  /** When true, close control uses error-red hover (destructive dialogs). */
+  closeDanger?: boolean;
 }>();
 
 const widthClass: Record<string, string> = {
@@ -114,7 +116,12 @@ onUnmounted(() => {
           </h2>
           <button
             type="button"
-            class="ml-auto min-h-11 min-w-11 rounded text-xl leading-none text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+            :class="[
+              'ml-auto min-h-11 min-w-11 rounded text-xl leading-none text-surface-mid transition-colors focus-visible:outline-none focus-visible:ring-2',
+              closeDanger
+                ? 'hover:text-status-error focus-visible:ring-status-error/50'
+                : 'hover:text-surface-light focus-visible:ring-accent-blue/50',
+            ]"
             aria-label="Close"
             @click="$emit('close')"
           >

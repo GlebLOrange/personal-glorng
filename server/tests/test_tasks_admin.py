@@ -5,7 +5,7 @@ from app.core.security import create_access_token
 from app.db.documents.task import TaskStatus
 from app.db.registry import DatabaseRegistry
 from app.services.task import complete_past_due_tasks
-from tests.factories import create_task, create_user
+from tests.factories import create_sync_queue_item, create_task, create_user
 
 
 @pytest.mark.asyncio
@@ -89,6 +89,40 @@ async def test_create_task(auth_client: AsyncClient) -> None:
 async def test_list_tasks_rejects_invalid_status(auth_client: AsyncClient) -> None:
     resp = await auth_client.get("/api/tools/tasks", params={"status": "bogus"})
     assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_list_tasks_filters_by_title_query(auth_client: AsyncClient) -> None:
+    """Title search matches substring case-insensitively."""
+    await auth_client.post(
+        "/api/tools/tasks",
+        json={"title": "Buy milk", "scheduled_at": "2026-06-01T10:00:00"},
+    )
+    await auth_client.post(
+        "/api/tools/tasks",
+        json={"title": "Walk dog", "scheduled_at": "2026-06-01T11:00:00"},
+    )
+
+    resp = await auth_client.get("/api/tools/tasks", params={"q": "milk"})
+    assert resp.status_code == 200
+    titles = [item["title"] for item in resp.json()["items"]]
+    assert titles == ["Buy milk"]
+
+
+@pytest.mark.asyncio
+async def test_sync_queue_includes_task_title(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+) -> None:
+    """Sync queue rows expose the linked task title for admin scanability."""
+    task = await create_task(registry, title="Sync me please")
+    await create_sync_queue_item(registry, task_id=task.id)
+
+    resp = await auth_client.get("/api/tools/tasks/sync-queue")
+    assert resp.status_code == 200
+    items = resp.json()["items"]
+    match = next(item for item in items if item["task_id"] == task.id)
+    assert match["task_title"] == "Sync me please"
 
 
 @pytest.mark.asyncio

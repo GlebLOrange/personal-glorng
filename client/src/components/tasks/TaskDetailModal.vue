@@ -2,6 +2,8 @@
 import { computed } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
+import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseModal from "@/components/ui/BaseModal.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import {
@@ -37,9 +39,9 @@ const primaryActionStatus = computed((): TaskStatus | null =>
   props.task.status === "pending" ? "completed" : null,
 );
 
-function actionVariant(status: TaskStatus): "primary" | "ghost" {
-  return status === primaryActionStatus.value ? "primary" : "ghost";
-}
+const menuStatuses = computed(() =>
+  availableStatuses.value.filter((status) => status !== primaryActionStatus.value),
+);
 </script>
 
 <template>
@@ -152,17 +154,34 @@ function actionVariant(status: TaskStatus): "primary" | "ghost" {
 
       <section v-if="canMutate" class="border-t border-surface-border pt-4">
         <h3 class="mb-2 text-sm font-medium text-surface-mid">actions</h3>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <BaseButton
-            v-for="status in availableStatuses"
-            :key="status"
-            :variant="actionVariant(status)"
+            v-if="primaryActionStatus"
+            variant="primary"
             size="sm"
             :disabled="statusUpdating"
-            @click="emit('updateStatus', status)"
+            @click="emit('updateStatus', primaryActionStatus)"
           >
-            {{ statusActionLabel(status) }}
+            {{ statusActionLabel(primaryActionStatus) }}
           </BaseButton>
+          <BaseDropdownMenu v-if="menuStatuses.length" aria-label="more actions">
+            <template #trigger>
+              <span class="px-2 text-sm">more actions</span>
+            </template>
+            <template #default="{ close: closeMenu }">
+              <BaseDropdownMenuItem
+                v-for="status in menuStatuses"
+                :key="status"
+                :destructive="status === 'cancelled' || status === 'not_completed'"
+                @select="
+                  closeMenu();
+                  if (!statusUpdating) emit('updateStatus', status);
+                "
+              >
+                {{ statusActionLabel(status) }}
+              </BaseDropdownMenuItem>
+            </template>
+          </BaseDropdownMenu>
         </div>
       </section>
 

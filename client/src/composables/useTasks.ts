@@ -27,6 +27,7 @@ export function useTasks() {
   const intakes = ref<TaskIntakeItem[]>([]);
   const selectedTask = ref<TaskDetail | null>(null);
   const filterStatus = ref("");
+  const searchQuery = ref("");
   const page = ref(1);
   const intakePage = ref(1);
   const syncPage = ref(1);
@@ -67,6 +68,10 @@ export function useTasks() {
     };
     if (filterStatus.value) {
       params.status = filterStatus.value;
+    }
+    const q = searchQuery.value.trim();
+    if (q) {
+      params.q = q;
     }
 
     const data = await runList(
@@ -219,9 +224,18 @@ export function useTasks() {
     syncPage.value = nextPage;
   }
 
-  watch([filterStatus], () => {
+  watch(filterStatus, () => {
     page.value = 1;
     void loadTasks();
+  });
+
+  let searchDebounce: ReturnType<typeof setTimeout> | undefined;
+  watch(searchQuery, () => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+      page.value = 1;
+      void loadTasks();
+    }, 300);
   });
 
   watch(page, () => {
@@ -242,6 +256,7 @@ export function useTasks() {
     intakes,
     selectedTask,
     filterStatus,
+    searchQuery,
     page,
     intakePage,
     syncPage,
