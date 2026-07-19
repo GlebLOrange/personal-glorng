@@ -38,10 +38,6 @@ async function handleSubmit(): Promise<void> {
     toast("Missing reset token", "error");
     return;
   }
-  if (!passwordsMatch.value) {
-    formError.value = "Passwords do not match";
-    return;
-  }
   if (!canSubmit.value) return;
 
   loading.value = true;
@@ -79,7 +75,6 @@ async function handleSubmit(): Promise<void> {
           label="new password"
           placeholder="new password"
           aria-describedby="reset-password-strength"
-          :error="formError || undefined"
           required
         />
         <p
@@ -99,6 +94,7 @@ async function handleSubmit(): Promise<void> {
           :error="passwordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
           required
         />
+        <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
         <BaseButton type="submit" variant="primary" class="w-full" :loading="loading" :disabled="!canSubmit">
           {{ loading ? "saving..." : "set new password" }}
         </BaseButton>

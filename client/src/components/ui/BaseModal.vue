@@ -62,7 +62,7 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 const labelledBy = computed(() => (props.title ? titleId : undefined));
-const ariaLabelAttr = computed(() => (props.title ? undefined : (props.ariaLabel ?? "Dialog")));
+const dialogLabel = computed(() => (props.title ? undefined : (props.ariaLabel ?? "Dialog")));
 
 onMounted(() => {
   document.addEventListener("keydown", onKeydown);
@@ -102,7 +102,7 @@ onUnmounted(() => {
         role="dialog"
         aria-modal="true"
         :aria-labelledby="labelledBy"
-        :aria-label="ariaLabelAttr"
+        :aria-label="dialogLabel"
         tabindex="-1"
         :class="[
           'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-sm focus:outline-none',

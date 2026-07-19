@@ -372,7 +372,7 @@ onMounted(() => {
         :loading="loading"
         :visible-count="users.length"
         item-label="users"
-        aria-label="Users pagination"
+        ariaLabel="Users pagination"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
       />
@@ -380,14 +380,15 @@ onMounted(() => {
 
     <BaseDrawer
       :open="selectedUser !== null"
-      :title="selectedUser ? selectedUser.display_name || selectedUser.email : 'User permissions'"
+      :title="
+        selectedUser
+          ? `Permissions · ${selectedUser.display_name || selectedUser.email}`
+          : 'User permissions'
+      "
       max-width="xl"
       @close="requestCloseUserDrawer"
     >
       <template v-if="selectedUser">
-        <p class="mb-1 text-xs font-medium uppercase tracking-wide text-surface-muted">
-          User permissions
-        </p>
         <p class="mb-5 break-all text-xs text-surface-mid">{{ selectedUser.email }}</p>
 
         <div class="mb-5 space-y-3">

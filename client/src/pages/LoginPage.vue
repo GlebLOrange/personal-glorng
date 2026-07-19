@@ -73,7 +73,6 @@ async function handleGoogleLogin(): Promise<void> {
           autocomplete="email"
           label="email"
           placeholder="you@example.com"
-          :error="formError || undefined"
           required
         />
         <BaseInput
@@ -85,6 +84,7 @@ async function handleGoogleLogin(): Promise<void> {
           placeholder="password"
           required
         />
+        <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
         <BaseButton type="submit" variant="primary" class="w-full" :loading="loading" :disabled="!canSubmit">
           {{ loading ? "signing in..." : "login" }}
         </BaseButton>

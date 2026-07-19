@@ -38,10 +38,6 @@ const canSubmit = computed(
 );
 
 async function handleRegister(): Promise<void> {
-  if (!passwordsMatch.value) {
-    formError.value = "Passwords do not match";
-    return;
-  }
   if (!canSubmit.value) return;
   loading.value = true;
   formError.value = "";
@@ -90,7 +86,6 @@ async function handleRegister(): Promise<void> {
           autocomplete="email"
           label="email"
           placeholder="you@example.com"
-          :error="formError || undefined"
           required
         />
         <BaseInput
@@ -149,6 +144,7 @@ async function handleRegister(): Promise<void> {
             and terms of use
           </span>
         </label>
+        <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
         <BaseButton type="submit" variant="primary" class="w-full" :loading="loading" :disabled="!canSubmit">
           {{ loading ? "creating account..." : "create account" }}
         </BaseButton>
