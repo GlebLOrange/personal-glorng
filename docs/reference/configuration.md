@@ -202,16 +202,20 @@ Defaults in `client/.env.development`. Override via commented `VITE_*` block in 
 
 ## Backups
 
-Used by [`scripts/db_maintenance.sh`](../../scripts/db_maintenance.sh):
+Used by [`scripts/db_maintenance.sh`](../../scripts/db_maintenance.sh). Always dumps MongoDB (primary), Redis, and media; Postgres only when `ENABLE_POSTGRES=true`.
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
+| `MONGODB_USER` / `MONGODB_PASSWORD` | — | Required for Mongo dump/verify |
+| `REDIS_PASSWORD` | — | Required for Redis dump |
 | `BACKUP_DIR` | `./backups` | Backup root |
 | `BACKUP_RETENTION_DAYS` | `7` | Daily retention |
-| `BACKUP_RETENTION_WEEKS` | `4` | Weekly Sunday keepers |
+| `BACKUP_RETENTION_WEEKS` | `4` | Weekly Sunday keepers (Mongo/Postgres) |
 | `BACKUP_COMPOSE_FILE` | `docker-compose.prod.yml` | Compose file for backup |
 | `BACKUP_NOTIFY` | `true` | Notify on result |
 | `BACKUP_TIMEZONE` | `Europe/Warsaw` | Cron timezone |
+
+See [Backup & restore](/operations/backup-restore).
 
 ## Prod → dev pull
 

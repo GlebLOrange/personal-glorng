@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Daily DB maintenance: migrate, backup Postgres/Redis/media, rotate, verify, notify.
+# Daily DB maintenance: migrate, backup MongoDB/Redis/media (+ Postgres if enabled),
+# rotate, verify, notify.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -14,6 +15,10 @@ fail() {
   exit 1
 }
 
+postgres_enabled() {
+  [[ "${ENABLE_POSTGRES:-false}" == "true" ]]
+}
+
 load_env() {
   if [[ -f .env ]]; then
     set -a
@@ -22,10 +27,15 @@ load_env() {
     set +a
   fi
 
-  : "${POSTGRES_USER:?POSTGRES_USER is required}"
-  : "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
-  : "${POSTGRES_DB:?POSTGRES_DB is required}"
+  : "${MONGODB_USER:?MONGODB_USER is required}"
+  : "${MONGODB_PASSWORD:?MONGODB_PASSWORD is required}"
   : "${REDIS_PASSWORD:?REDIS_PASSWORD is required}"
+
+  if postgres_enabled; then
+    : "${POSTGRES_USER:?POSTGRES_USER is required when ENABLE_POSTGRES=true}"
+    : "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required when ENABLE_POSTGRES=true}"
+    : "${POSTGRES_DB:?POSTGRES_DB is required when ENABLE_POSTGRES=true}"
+  fi
 
   BACKUP_DIR="${BACKUP_DIR:-./backups}"
   BACKUP_COMPOSE_FILE="${BACKUP_COMPOSE_FILE:-docker-compose.prod.yml}"
@@ -39,14 +49,50 @@ compose() {
   docker compose -f "$BACKUP_COMPOSE_FILE" "$@"
 }
 
+compose_postgres() {
+  compose --profile postgres "$@"
+}
+
 ensure_stack_ready() {
-  compose up -d db redis
-  compose exec -T db pg_isready -U "$POSTGRES_USER" >/dev/null
+  compose up -d mongodb redis
+  compose exec -T mongodb mongosh \
+    --username "$MONGODB_USER" \
+    --password "$MONGODB_PASSWORD" \
+    --authenticationDatabase admin \
+    --quiet \
+    --eval "db.adminCommand('ping').ok" >/dev/null
+
+  if postgres_enabled; then
+    compose_postgres up -d db
+    compose_postgres exec -T db pg_isready -U "$POSTGRES_USER" >/dev/null
+  fi
 }
 
 run_migrate() {
-  log "Running Alembic migrations"
+  log "Running migrate service (Mongo indexes; Alembic if Postgres enabled)"
   compose run --rm migrate
+}
+
+backup_mongodb() {
+  local stamp="$1"
+  local out_dir="$BACKUP_DIR/mongodb"
+  local dump_path="$out_dir/proj_portfolio_mongo_${stamp}.archive.gz"
+  mkdir -p "$out_dir"
+
+  log "Backing up MongoDB to $dump_path"
+  # Full instance archive (all DBs) for disaster recovery of the primary store.
+  compose exec -T mongodb mongodump \
+    --username "$MONGODB_USER" \
+    --password "$MONGODB_PASSWORD" \
+    --authenticationDatabase admin \
+    --archive | gzip >"$dump_path"
+
+  if [[ ! -s "$dump_path" ]]; then
+    fail "MongoDB dump is empty: $dump_path"
+  fi
+
+  ln -sf "$(basename "$dump_path")" "$out_dir/proj_portfolio_mongo_latest.archive.gz"
+  echo "$dump_path"
 }
 
 backup_postgres() {
@@ -56,7 +102,7 @@ backup_postgres() {
   mkdir -p "$out_dir"
 
   log "Backing up Postgres to $dump_path"
-  compose exec -T db pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB" | gzip >"$dump_path"
+  compose_postgres exec -T db pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB" | gzip >"$dump_path"
   ln -sf "$(basename "$dump_path")" "$out_dir/proj_portfolio_latest.dump.gz"
   echo "$dump_path"
 }
@@ -108,16 +154,17 @@ is_weekly_keeper() {
   [[ "$file_ts" -ge "$cutoff_ts" ]]
 }
 
-rotate_backups() {
-  local dir="$BACKUP_DIR/postgres"
+rotate_dated_backups() {
+  local dir="$1"
+  local glob_pattern="$2"
+  local latest_name="$3"
   local keep_days="$BACKUP_RETENTION_DAYS"
   local keep_weeks="$BACKUP_RETENTION_WEEKS"
   local file age_days
 
-  log "Rotating backups (keep ${keep_days} days, ${keep_weeks} weekly Sunday copies)"
   shopt -s nullglob
-  for file in "$dir"/proj_portfolio_*.dump.gz; do
-    [[ "$(basename "$file")" == "proj_portfolio_latest.dump.gz" ]] && continue
+  for file in "$dir"/$glob_pattern; do
+    [[ "$(basename "$file")" == "$latest_name" ]] && continue
     age_days=$(( ( $(date +%s) - $(stat -f %m "$file" 2>/dev/null || stat -c %Y "$file") ) / 86400 ))
     if (( age_days <= keep_days )); then
       continue
@@ -129,15 +176,36 @@ rotate_backups() {
     rm -f "$file"
   done
   shopt -u nullglob
+}
 
-  find "$BACKUP_DIR/redis" -name 'proj_portfolio_redis_*.rdb' -mtime +"$keep_days" ! -name 'proj_portfolio_redis_latest.rdb' -delete 2>/dev/null || true
-  find "$BACKUP_DIR/media" -name 'proj_portfolio_media_*.tar.gz' -mtime +"$keep_days" ! -name 'proj_portfolio_media_latest.tar.gz' -delete 2>/dev/null || true
+rotate_backups() {
+  log "Rotating backups (keep ${BACKUP_RETENTION_DAYS} days, ${BACKUP_RETENTION_WEEKS} weekly Sunday copies)"
+  rotate_dated_backups "$BACKUP_DIR/mongodb" "proj_portfolio_mongo_*.archive.gz" "proj_portfolio_mongo_latest.archive.gz"
+
+  if postgres_enabled; then
+    rotate_dated_backups "$BACKUP_DIR/postgres" "proj_portfolio_*.dump.gz" "proj_portfolio_latest.dump.gz"
+  fi
+
+  find "$BACKUP_DIR/redis" -name 'proj_portfolio_redis_*.rdb' -mtime +"$BACKUP_RETENTION_DAYS" ! -name 'proj_portfolio_redis_latest.rdb' -delete 2>/dev/null || true
+  find "$BACKUP_DIR/media" -name 'proj_portfolio_media_*.tar.gz' -mtime +"$BACKUP_RETENTION_DAYS" ! -name 'proj_portfolio_media_latest.tar.gz' -delete 2>/dev/null || true
+}
+
+verify_mongodb_backup() {
+  local dump_path="$1"
+  log "Verifying MongoDB backup integrity (mongorestore --dryRun)"
+  gunzip -c "$dump_path" | compose exec -T mongodb mongorestore \
+    --username "$MONGODB_USER" \
+    --password "$MONGODB_PASSWORD" \
+    --authenticationDatabase admin \
+    --archive \
+    --dryRun \
+    >/dev/null
 }
 
 verify_postgres_backup() {
   local dump_path="$1"
   log "Verifying Postgres backup integrity"
-  gunzip -c "$dump_path" | compose exec -T db pg_restore --list >/dev/null
+  gunzip -c "$dump_path" | compose_postgres exec -T db pg_restore --list >/dev/null
 }
 
 notify_result() {
@@ -174,12 +242,15 @@ release_lock() {
 
 main() {
   load_env
-  mkdir -p "$BACKUP_DIR/postgres" "$BACKUP_DIR/redis" "$BACKUP_DIR/media" logs
+  mkdir -p "$BACKUP_DIR/mongodb" "$BACKUP_DIR/redis" "$BACKUP_DIR/media" logs
+  if postgres_enabled; then
+    mkdir -p "$BACKUP_DIR/postgres"
+  fi
 
   acquire_lock
   trap release_lock EXIT
 
-  local stamp dump_path detail
+  local stamp mongo_dump_path pg_dump_path detail
   stamp="$(date +"%Y-%m-%d_%H%M")"
   detail="stamp=${stamp}"
 
@@ -187,11 +258,17 @@ main() {
 
   ensure_stack_ready
   run_migrate
-  dump_path="$(backup_postgres "$stamp")"
+  mongo_dump_path="$(backup_mongodb "$stamp")"
+  if postgres_enabled; then
+    pg_dump_path="$(backup_postgres "$stamp")"
+  fi
   backup_redis "$stamp"
   backup_media "$stamp"
   rotate_backups
-  verify_postgres_backup "$dump_path"
+  verify_mongodb_backup "$mongo_dump_path"
+  if postgres_enabled; then
+    verify_postgres_backup "$pg_dump_path"
+  fi
 
   log "DB maintenance completed successfully"
   notify_result success "$detail"
