@@ -68,16 +68,30 @@ class _FakeIncrExpireScript:
 
 
 class FakeRedis:
-    """Minimal in-memory Redis substitute for tests."""
+    """Minimal in-memory Redis substitute for tests.
+
+    Stores absolute expiry deadlines (time.monotonic) so TTL behaves like Redis.
+    """
 
     def __init__(self) -> None:
         self._store: dict[str, str] = {}
-        self._expiry: dict[str, int] = {}
+        self._expiry: dict[str, float] = {}
+
+    def _expired(self, key: str) -> bool:
+        deadline = self._expiry.get(key)
+        return deadline is not None and time.monotonic() >= deadline
+
+    async def _purge_if_expired(self, key: str) -> None:
+        if self._expired(key):
+            self._store.pop(key, None)
+            self._expiry.pop(key, None)
 
     async def get(self, key: str) -> str | None:
+        await self._purge_if_expired(key)
         return self._store.get(key)
 
     async def getdel(self, key: str) -> str | None:
+        await self._purge_if_expired(key)
         value = self._store.pop(key, None)
         self._expiry.pop(key, None)
         return value
@@ -85,15 +99,19 @@ class FakeRedis:
     async def set(self, key: str, value: Any, ex: int | None = None) -> None:
         self._store[key] = str(value)
         if ex is not None:
-            self._expiry[key] = ex
+            self._expiry[key] = time.monotonic() + ex
+        else:
+            self._expiry.pop(key, None)
 
     async def incr(self, key: str) -> int:
+        await self._purge_if_expired(key)
         val = int(self._store.get(key, "0")) + 1
         self._store[key] = str(val)
         return val
 
     async def expire(self, key: str, seconds: int) -> None:
-        self._expiry[key] = seconds
+        if key in self._store and not self._expired(key):
+            self._expiry[key] = time.monotonic() + seconds
 
     def register_script(self, _script: str) -> _FakeIncrExpireScript:
         return _FakeIncrExpireScript(self)
@@ -348,7 +366,10 @@ async def auth_client(
     client: AsyncClient, admin_token: str
 ) -> AsyncGenerator[AsyncClient]:
     client.headers["Authorization"] = f"Bearer {admin_token}"
-    return client
+    try:
+        yield client
+    finally:
+        client.headers.pop("Authorization", None)
 
 
 @pytest.fixture

@@ -22,7 +22,7 @@ _DENIED_ENDPOINTS: list[tuple[str, str]] = [
 async def no_perms_client(
     client: AsyncClient,
     registry: DatabaseRegistry,
-) -> AsyncClient:
+):
     user = await create_user(
         registry,
         email="noperms@glorng.dev",
@@ -30,7 +30,10 @@ async def no_perms_client(
     )
     token = create_access_token(str(user.public_id), user_id=user.id)
     client.headers["Authorization"] = f"Bearer {token}"
-    return client
+    try:
+        yield client
+    finally:
+        client.headers.pop("Authorization", None)
 
 
 @pytest.mark.asyncio

@@ -150,7 +150,7 @@ async def test_ai_chat_streams_sse(
 async def limited_auth_client(
     client: AsyncClient,
     registry,
-) -> AsyncClient:
+):
     user = await create_user(
         registry,
         email="reader@example.com",
@@ -158,7 +158,10 @@ async def limited_auth_client(
     )
     token = create_access_token(str(user.public_id))
     client.headers["Authorization"] = f"Bearer {token}"
-    return client
+    try:
+        yield client
+    finally:
+        client.headers.pop("Authorization", None)
 
 
 @pytest.mark.asyncio

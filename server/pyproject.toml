@@ -39,6 +39,7 @@ dev = [
     "aiosqlite==0.22.*",
     "mongomock-motor==0.0.*",
     "mypy>=2.3.0",
+    "pytest-cov==7.1.*",
 ]
 
 [tool.ruff]
@@ -128,4 +129,24 @@ markers = [
     "redis: integration tests requiring a real Redis instance at REDIS_URL",
     "integration: slow multi-service tests excluded from the P0 PR gate",
     "e2e_api: full HTTP pipeline tests including middleware",
+]
+
+[tool.coverage.run]
+source = ["app"]
+branch = false
+omit = [
+    "app/todobot/*",
+    "app/db/migrations/*",
+    "app/db/seed/*",
+    "app/db/seed_*.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 65
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
 ]
