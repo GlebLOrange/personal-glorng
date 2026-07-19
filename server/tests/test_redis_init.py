@@ -20,6 +20,7 @@ async def test_init_redis_pings_on_startup() -> None:
         decode_responses=True,
         socket_connect_timeout=5,
         socket_timeout=5,
+        max_connections=50,
     )
 
     mock_client.ping.assert_awaited_once()

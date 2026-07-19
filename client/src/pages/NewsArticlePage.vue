@@ -63,9 +63,13 @@ watch(slug, () => {
       <section v-if="article.bullets.length" class="mb-8 min-w-0">
         <h2 class="card-title mb-4">Key points</h2>
         <ul class="space-y-3 text-sm text-surface-mid">
-          <Card v-for="bullet in article.bullets" :key="bullet" as="li" variant="compact">
+          <li
+            v-for="bullet in article.bullets"
+            :key="bullet"
+            class="border-l-2 border-accent-blue/40 pl-3 text-body"
+          >
             {{ bullet }}
-          </Card>
+          </li>
         </ul>
       </section>
 
