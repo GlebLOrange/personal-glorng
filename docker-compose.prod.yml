@@ -147,7 +147,7 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    command: celery -A app.workers.celery_app worker --loglevel=info
+    command: celery -A app.workers.celery_app worker --loglevel=info -Q celery
     restart: unless-stopped
     volumes:
       - ./.env:/run/glorng/.env:ro

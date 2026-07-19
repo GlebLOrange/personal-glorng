@@ -109,7 +109,7 @@ async def cache_set_nx(key: str, value: str, ttl: int) -> bool | None:
                 return False
             await client.set(key, value, ex=ttl)
             return True
-    except RedisError as exc:
+    except (RedisError, RuntimeError) as exc:
         logger.warning("Redis cache_set_nx failed", error=exc, context={"key": key})
         return None
 
@@ -117,7 +117,7 @@ async def cache_set_nx(key: str, value: str, ttl: int) -> bool | None:
 async def cache_delete(key: str) -> None:
     try:
         await get_redis_client().delete(key)
-    except RedisError as exc:
+    except (RedisError, RuntimeError) as exc:
         logger.warning("Redis cache_delete failed", error=exc, context={"key": key})
 
 

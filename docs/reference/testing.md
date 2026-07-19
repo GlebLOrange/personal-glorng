@@ -46,7 +46,7 @@ Not yet in pre-release CI (manual / follow-up):
 These are intentionally **not** automated in CI — flaky, vendor-dependent, or require live credentials:
 
 - **Beat schedule firing** — verify cron tasks run on schedule in staging (not in CI)
-- **RabbitMQ dead-letter queue** — only if DLQ is configured in broker policy
+- **RabbitMQ dead-letter queue** — inspect `celery.dlq` after a deliberate poison task; see [Deployment](/operations/deployment#celery-dead-letter-queue)
 - **Telegram bot E2E** — `app/todobot/` has no CI container; validate via staging bot
 - **Live Sentry** — trigger one deliberate 500 in staging; confirm issue in Sentry UI
 - **Stripe live mode** — use test mode in CI; live keys only in staging manual

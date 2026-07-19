@@ -44,7 +44,7 @@ jobs:
         env:
           APP_ENV: test
           JWT_SECRET: ci-jwt-secret-at-least-32-characters-long
-        run: uv run pytest tests/test_celery_schedule.py -v
+        run: uv run pytest tests/test_celery_schedule.py tests/test_celery_conf.py -v
 
   stack-smoke:
     runs-on: ubuntu-latest

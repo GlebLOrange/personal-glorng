@@ -32,7 +32,7 @@ Elasticsearch is optional for search (`make dev-search`).
 | Store | Role |
 |-------|------|
 | **MongoDB** | Primary — users, tasks, recipes, expenses, files, etc. |
-| **Redis** | Token blacklist, rate limits, response cache, Telegram FSM |
+| **Redis** | Token blacklist, rate limits, response cache, Telegram FSM, email dispatch claims |
 | **PostgreSQL** | Optional secondary — FTS search + audit (`--profile postgres`) |
 | **Elasticsearch** | Optional search backend (`make dev-search`) |
 
