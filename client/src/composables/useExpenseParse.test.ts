@@ -81,4 +81,33 @@ describe("useExpenseParse", () => {
     });
     expect(parsed.value).toEqual({ valid: true, amount: 42, description: "tea" });
   });
+
+  it("clears parsed immediately when text changes so confirm cannot use a stale result", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      data: { valid: true, amount: "10", tool_name: "Coffee" },
+    });
+
+    const smartText = ref("");
+    const defaultCurrency = ref<CurrencyCode>("PLN");
+    const { parsed, parsing } = useExpenseParse(smartText, defaultCurrency);
+
+    smartText.value = "10 coffee";
+    await vi.advanceTimersByTimeAsync(300);
+    await nextTick();
+    expect(parsed.value).toEqual({ valid: true, amount: "10", tool_name: "Coffee" });
+    expect(parsing.value).toBe(false);
+
+    smartText.value = "100 rent";
+    await nextTick();
+    expect(parsed.value).toBeNull();
+    expect(parsing.value).toBe(true);
+
+    vi.mocked(api.post).mockResolvedValue({
+      data: { valid: true, amount: "100", tool_name: "Rent" },
+    });
+    await vi.advanceTimersByTimeAsync(300);
+    await nextTick();
+    expect(parsed.value).toEqual({ valid: true, amount: "100", tool_name: "Rent" });
+    expect(parsing.value).toBe(false);
+  });
 });

@@ -57,6 +57,7 @@ const previewLabel = computed(() => {
 });
 
 const canConfirmSmart = computed(() => {
+  if (parsing.value) return false;
   const result = parsed.value;
   if (!result?.valid || !result.amount || !result.tool_name) return false;
   const amount = parseFloat(result.amount);
@@ -74,6 +75,7 @@ async function focusSmartText(): Promise<void> {
 }
 
 async function confirmSmart(): Promise<void> {
+  if (parsing.value || props.loading) return;
   const result = parsed.value;
   if (!result?.valid || !canConfirmSmart.value) return;
 
@@ -180,7 +182,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         variant="primary"
         size="sm"
         class="self-start"
-        :disabled="loading || !canConfirmSmart"
+        :disabled="loading || parsing || !canConfirmSmart"
         @click="confirmSmart"
       >
         {{ loading ? "saving..." : "add parsed expense" }}
