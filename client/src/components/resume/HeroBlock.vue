@@ -72,7 +72,7 @@ async function downloadCv(): Promise<void> {
       <span v-if="location && availability" aria-hidden="true">·</span>
       <a
         v-if="availability"
-        href="#contact"
+        href="#contacts"
         class="text-meta underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         {{ availability }}

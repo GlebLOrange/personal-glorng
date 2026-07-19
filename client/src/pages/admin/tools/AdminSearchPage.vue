@@ -69,7 +69,7 @@ function sourceLabel(type: string): string {
 </script>
 
 <template>
-  <AdminPageLayout title="search">
+  <AdminPageLayout hub="tools" title="search">
     <Card class="mb-6">
       <form class="flex flex-wrap items-center gap-3" @submit.prevent="search">
         <BaseInput

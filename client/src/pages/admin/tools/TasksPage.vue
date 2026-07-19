@@ -135,7 +135,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout title="tasks" max-width="xl">
+  <AdminPageLayout hub="tools" title="tasks" max-width="xl">
     <div class="min-w-0">
       <AdminTabBar
         panel-id-prefix="tasks-tab"
@@ -211,8 +211,10 @@ onMounted(() => {
           :loading="listLoading"
           item-label="tasks"
           ariaLabel="Tasks pagination"
+          @first="goToPage(1)"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"
+          @last="goToPage(totalPages)"
         />
       </section>
 
@@ -235,8 +237,10 @@ onMounted(() => {
           :loading="intakesLoading"
           item-label="intakes"
           ariaLabel="Task intakes pagination"
+          @first="goToIntakePage(1)"
           @prev="goToIntakePage(intakePage - 1)"
           @next="goToIntakePage(intakePage + 1)"
+          @last="goToIntakePage(intakeTotalPages)"
         />
       </section>
 
@@ -264,8 +268,10 @@ onMounted(() => {
           :loading="syncLoading"
           item-label="items"
           ariaLabel="Task sync queue pagination"
+          @first="goToSyncPage(1)"
           @prev="goToSyncPage(syncPage - 1)"
           @next="goToSyncPage(syncPage + 1)"
+          @last="goToSyncPage(syncTotalPages)"
         />
       </section>
 

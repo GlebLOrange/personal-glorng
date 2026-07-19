@@ -10,6 +10,7 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { feedbackStatusClass } from "@/constants/filterColors";
@@ -28,17 +29,18 @@ interface FeedbackItem {
   created_at: string;
 }
 
-type StatusFilter = "" | "unread" | "archived";
+type StatusFilter = "unread" | "read" | "archived";
 
-const STATUS_FILTERS: { label: string; value: Exclude<StatusFilter, ""> }[] = [
+const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
   { label: "unread", value: "unread" },
+  { label: "read", value: "read" },
   { label: "archived", value: "archived" },
 ];
 
 const items = ref<FeedbackItem[]>([]);
 const selectedItem = ref<FeedbackItem | null>(null);
 const drawerOpen = ref(false);
-const filter = ref<StatusFilter>("");
+const filter = ref<StatusFilter>("unread");
 const page = ref(1);
 const total = ref(0);
 const totalPages = ref(0);
@@ -47,7 +49,7 @@ const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown"
 const { toast } = useNotify();
 const router = useRouter();
 
-const hasActiveFilters = computed(() => Boolean(filter.value));
+const hasActiveFilters = computed(() => filter.value !== "unread");
 const activeFilterLabel = computed(
   () => STATUS_FILTERS.find((chip) => chip.value === filter.value)?.label,
 );
@@ -60,15 +62,23 @@ function reply(item: FeedbackItem): void {
   });
 }
 
+function removeFromList(id: number): void {
+  const idx = items.value.findIndex((item) => item.id === id);
+  if (idx === -1) return;
+  items.value.splice(idx, 1);
+  total.value = Math.max(0, total.value - 1);
+}
+
 async function load(): Promise<void> {
   loading.value = true;
   try {
-    const params: Record<string, string | number> = {
-      page: page.value,
-      per_page: ADMIN_LIST_PAGE_SIZE,
-    };
-    if (filter.value) params.status = filter.value;
-    const { data } = await api.get<PaginatedList<FeedbackItem>>("/feedback", { params });
+    const { data } = await api.get<PaginatedList<FeedbackItem>>("/feedback", {
+      params: {
+        page: page.value,
+        per_page: ADMIN_LIST_PAGE_SIZE,
+        status: filter.value,
+      },
+    });
     items.value = data.items;
     total.value = data.total;
     totalPages.value = data.pages;
@@ -80,14 +90,14 @@ async function load(): Promise<void> {
   }
 }
 
-function setFilter(next: Exclude<StatusFilter, "">): void {
+function setFilter(next: StatusFilter): void {
   filter.value = next;
   page.value = 1;
   filterDropdownRef.value?.close();
 }
 
 function clearFilters(): void {
-  filter.value = "";
+  filter.value = "unread";
   page.value = 1;
   filterDropdownRef.value?.close();
 }
@@ -106,6 +116,9 @@ async function setStatus(id: number, status: string): Promise<void> {
     if (selectedItem.value?.id === id) {
       selectedItem.value = { ...selectedItem.value, status };
     }
+    if (status !== filter.value) {
+      removeFromList(id);
+    }
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
     toast("Failed to update status", "error");
@@ -115,7 +128,8 @@ async function setStatus(id: number, status: string): Promise<void> {
 function openItem(item: FeedbackItem): void {
   selectedItem.value = item;
   drawerOpen.value = true;
-  if (item.status === "unread") void setStatus(item.id, "read");
+  // ponytail: opening = read; archive in the same step (no separate read linger)
+  if (item.status !== "archived") void setStatus(item.id, "archived");
 }
 
 function closeDrawer(): void {
@@ -128,10 +142,14 @@ function handleReply(): void {
   reply(selectedItem.value);
 }
 
-async function handleArchive(): Promise<void> {
-  if (!selectedItem.value) return;
-  await setStatus(selectedItem.value.id, "archived");
-  closeDrawer();
+async function archiveItem(item: FeedbackItem): Promise<void> {
+  await setStatus(item.id, "archived");
+  if (selectedItem.value?.id === item.id) closeDrawer();
+}
+
+async function unarchiveItem(item: FeedbackItem): Promise<void> {
+  await setStatus(item.id, "read");
+  if (selectedItem.value?.id === item.id) closeDrawer();
 }
 
 watch([filter, page], () => {
@@ -142,7 +160,7 @@ onMounted(load);
 </script>
 
 <template>
-  <AdminPageLayout title="feedback">
+  <AdminPageLayout hub="tools" title="feedback">
     <AdminListSkeleton v-if="loading" label="Loading feedback" />
 
     <template v-else>
@@ -171,9 +189,7 @@ onMounted(load);
       <EmptyState
         v-if="items.length === 0"
         class="mt-4"
-        :description="
-          filter ? `No feedback messages with status '${filter}'.` : 'No feedback messages.'
-        "
+        :description="`No feedback messages with status '${filter}'.`"
       />
 
       <div v-else class="min-w-0 mt-1 space-y-1">
@@ -181,6 +197,7 @@ onMounted(load);
           v-for="item in items"
           :key="item.id"
           interactive
+          nested-interactive
           @click="openItem(item)"
         >
           <template #badge>
@@ -193,6 +210,19 @@ onMounted(load);
             <span>{{ item.email }}</span>
           </template>
           <template #time>{{ formatDate(item.created_at) }}</template>
+          <template #actions>
+            <BaseButton
+              v-if="item.status === 'archived'"
+              variant="ghost"
+              size="sm"
+              @click="unarchiveItem(item)"
+            >
+              unarchive
+            </BaseButton>
+            <BaseButton v-else variant="ghost" size="sm" @click="archiveItem(item)">
+              archive
+            </BaseButton>
+          </template>
         </AdminListRow>
       </div>
 
@@ -204,8 +234,10 @@ onMounted(load);
         :has-previous-page="page > 1"
         item-label="messages"
         ariaLabel="Feedback pagination"
+        @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
       />
     </template>
 
@@ -214,7 +246,6 @@ onMounted(load);
       :item="selectedItem"
       @close="closeDrawer"
       @reply="handleReply"
-      @archive="handleArchive"
     />
   </AdminPageLayout>
 </template>

@@ -42,7 +42,7 @@ watch(page, () => {
 </script>
 
 <template>
-  <PageShell title="news" :breadcrumbs="[{ label: 'news' }]" :narrow="false">
+  <PageShell title="news" :breadcrumbs="[{ label: 'news', to: '/news' }]" back-to="/" :narrow="false">
     <div v-if="isSuperuser" class="mb-4 flex min-w-0 items-center">
       <BaseButton
         variant="primary"
@@ -134,8 +134,10 @@ watch(page, () => {
       :loading="listLoading"
       item-label="articles"
       ariaLabel="News pagination"
+      @first="goToPage(1)"
       @prev="goToPage(page - 1)"
       @next="goToPage(page + 1)"
+      @last="goToPage(totalPages)"
     />
   </PageShell>
 </template>

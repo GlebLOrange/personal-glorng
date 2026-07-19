@@ -44,7 +44,7 @@ watch(
 <template>
   <PageShell
     :title="articleTitle"
-    :breadcrumbs="[{ label: 'news', to: '/news' }, { label: articleTitle }]"
+    :breadcrumbs="[{ label: 'news', to: '/news' }]"
     back-to="/news"
     :narrow="false"
   >

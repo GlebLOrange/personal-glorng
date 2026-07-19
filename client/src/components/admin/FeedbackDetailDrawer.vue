@@ -22,9 +22,7 @@ defineProps<{
 const emit = defineEmits<{
   close: [];
   reply: [];
-  archive: [];
 }>();
-
 </script>
 
 <template>
@@ -36,8 +34,14 @@ const emit = defineEmits<{
   >
     <template v-if="item">
       <div class="mb-4 flex flex-wrap items-center gap-2">
-        <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
-        <span class="text-xs text-surface-muted">{{ item.email }} · {{ formatDate(item.created_at) }}</span>
+        <StatusBadge
+          :label="item.status"
+          size="md"
+          :class-name="feedbackStatusClass(item.status)"
+        />
+        <span class="text-xs text-surface-muted"
+          >{{ item.email }} · {{ formatDate(item.created_at) }}</span
+        >
       </div>
       <p class="whitespace-pre-wrap break-words text-sm text-surface-sage">{{ item.message }}</p>
     </template>
@@ -45,14 +49,6 @@ const emit = defineEmits<{
     <template #footer>
       <div class="flex gap-3">
         <BaseButton variant="primary" size="sm" @click="emit('reply')">reply</BaseButton>
-        <BaseButton
-          v-if="item && item.status !== 'archived'"
-          variant="ghost"
-          size="sm"
-          @click="emit('archive')"
-        >
-          archive
-        </BaseButton>
         <BaseButton variant="ghost" size="sm" @click="emit('close')">close</BaseButton>
       </div>
     </template>

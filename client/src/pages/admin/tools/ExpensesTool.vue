@@ -78,10 +78,7 @@ const {
   hasActiveFilters,
   rangeError,
   clearFilters,
-  smartText,
   quickAddCurrency,
-  parsed,
-  parsing,
   quickAdd,
   form,
   formTitle,
@@ -159,7 +156,7 @@ const persistenceHint = computed(() => {
 </script>
 
 <template>
-  <AdminPageLayout title="expenses" title-prefix="€ " max-width="xl">
+  <AdminPageLayout hub="tools" title="expenses" max-width="xl">
     <div class="min-w-0">
     <section v-if="showLedgerHeader" class="mb-6 flex flex-col gap-4">
       <Card variant="compact" class="flex flex-col gap-3">
@@ -260,13 +257,10 @@ const persistenceHint = computed(() => {
 
       <ExpenseQuickAdd
         ref="quickAddRef"
-        v-model:smart-text="smartText"
         v-model:category="quickAdd.category"
         v-model:product="quickAdd.product"
         v-model:price="quickAdd.price"
         :loading="loading"
-        :parsing="parsing"
-        :parsed="parsed"
         :category-options="categoryOptions"
         :product-suggestions="productSuggestions"
         :currency-label="quickAddCurrency"
@@ -336,8 +330,10 @@ const persistenceHint = computed(() => {
         :loading="listLoading"
         item-label="expenses"
         ariaLabel="Expenses pagination"
+        @first="goToExpensePage(1)"
         @prev="goToExpensePage(expensePage - 1)"
         @next="goToExpensePage(expensePage + 1)"
+        @last="goToExpensePage(expensePages)"
       />
     </section>
 

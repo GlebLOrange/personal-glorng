@@ -282,7 +282,7 @@ onMounted(loadSources);
 </script>
 
 <template>
-  <AdminPageLayout title="news sources" max-width="xl">
+  <AdminPageLayout hub="tools" title="news sources" max-width="xl">
     <div class="min-w-0 space-y-1">
       <AdminListSkeleton v-if="loading" label="Loading sources" />
 
@@ -402,8 +402,10 @@ onMounted(loadSources);
           :loading="loading"
           item-label="sources"
           ariaLabel="News sources pagination"
+          @first="goToPage(1)"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"
+          @last="goToPage(totalPages)"
         />
       </template>
     </div>

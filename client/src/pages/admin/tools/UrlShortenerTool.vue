@@ -118,7 +118,7 @@ onMounted(loadUrls);
 <template>
   <PageShell
     title="url-shortener"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'url-shortener' }]"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'shortener' }]"
     back-to="/tools"
     max-width="xl"
     :narrow="false"
@@ -190,8 +190,10 @@ onMounted(loadUrls);
           :loading="listLoading"
           item-label="URLs"
           ariaLabel="Short URLs pagination"
+          @first="goToPage(1)"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"
+          @last="goToPage(totalPages)"
         />
       </template>
     </div>

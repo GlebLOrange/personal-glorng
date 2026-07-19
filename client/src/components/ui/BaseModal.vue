@@ -114,7 +114,7 @@ onUnmounted(() => {
           </h2>
           <button
             type="button"
-            class="ml-auto min-h-11 min-w-11 rounded text-xl leading-none text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+            class="ml-auto min-h-11 min-w-11 rounded text-xl leading-none text-status-error transition-colors hover:text-status-error/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-status-error/50"
             aria-label="Close"
             @click="$emit('close')"
           >

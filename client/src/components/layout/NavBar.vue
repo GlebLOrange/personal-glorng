@@ -105,7 +105,7 @@ async function handleGoHome(): Promise<void> {
       :class="isHeaderHidden ? '-translate-y-full' : 'translate-y-0'"
     >
       <nav aria-label="Main navigation" class="border-b border-surface-border">
-        <div class="max-w-5xl mx-auto px-6 py-4 md:py-5 flex items-center justify-between gap-4">
+        <div class="max-w-5xl xl:max-w-6xl mx-auto px-6 py-4 md:py-5 flex items-center justify-between gap-4">
           <RouterLink
             to="/"
             class="text-xl font-bold text-surface-light"
@@ -179,7 +179,7 @@ async function handleGoHome(): Promise<void> {
           <button
             ref="menuToggleButton"
             type="button"
-            class="md:hidden interactive-surface inline-flex min-h-11 min-w-11 items-center justify-center text-surface-light"
+            class="md:hidden interactive-surface inline-flex h-11 min-h-11 min-w-11 shrink-0 items-center justify-center self-center text-surface-light"
             :aria-expanded="mobileOpen"
             aria-controls="nav-mobile-menu"
             aria-label="Toggle navigation menu"

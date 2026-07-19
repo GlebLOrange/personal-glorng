@@ -67,7 +67,7 @@ async function preview(): Promise<void> {
 </script>
 
 <template>
-  <AdminPageLayout title="email">
+  <AdminPageLayout hub="tools" title="email">
     <form class="space-y-3 mb-8" @submit.prevent="send">
       <div class="space-y-2">
         <div class="flex items-center justify-between gap-2">

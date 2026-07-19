@@ -1,6 +1,33 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { formatRelativeTime, formatScheduleDate } from "@/utils/format";
+import { formatBreadcrumbLabel, displayBreadcrumbLabel, formatRelativeTime, formatScheduleDate } from "@/utils/format";
+
+describe("formatBreadcrumbLabel", () => {
+  it("returns a single lowercase word from multi-word titles", () => {
+    expect(formatBreadcrumbLabel("app logs")).toBe("logs");
+    expect(formatBreadcrumbLabel("news sources")).toBe("sources");
+    expect(formatBreadcrumbLabel("edit news article")).toBe("article");
+    expect(formatBreadcrumbLabel("password generator")).toBe("generator");
+  });
+
+  it("strips hyphenated compounds to one word", () => {
+    expect(formatBreadcrumbLabel("url-shortener")).toBe("shortener");
+    expect(formatBreadcrumbLabel("vid-download")).toBe("download");
+  });
+
+  it("strips an existing section mark before normalizing", () => {
+    expect(formatBreadcrumbLabel("§ tools")).toBe("tools");
+    expect(formatBreadcrumbLabel("§expenses")).toBe("expenses");
+  });
+});
+
+describe("displayBreadcrumbLabel", () => {
+  it("prefixes the page name with § and a space", () => {
+    expect(displayBreadcrumbLabel("calculator")).toBe("§ calculator");
+    expect(displayBreadcrumbLabel("app logs")).toBe("§ logs");
+    expect(displayBreadcrumbLabel("§ tools")).toBe("§ tools");
+  });
+});
 
 describe("formatScheduleDate", () => {
   beforeEach(() => {

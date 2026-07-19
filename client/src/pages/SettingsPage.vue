@@ -193,7 +193,8 @@ async function deleteAccount(): Promise<void> {
 <template>
   <PageShell
     title="settings"
-    :breadcrumbs="[{ label: 'settings' }]"
+    :breadcrumbs="[{ label: 'settings', to: '/settings' }]"
+    back-to="/"
     max-width="5xl"
     :narrow="false"
   >

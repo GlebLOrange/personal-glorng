@@ -14,7 +14,6 @@ import {
   type MonthPreset,
 } from "@/composables/useExpenseFilters";
 import { useUserPreferences } from "@/composables/useUserPreferences";
-import { useExpenseParse } from "@/composables/useExpenseParse";
 import { useExpenseSort, type ExpenseSortKey } from "@/composables/useExpenseSort";
 import { useExpenseSummary } from "@/composables/useExpenseSummary";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -189,9 +188,7 @@ export function useExpensesTool(
     queryParams,
   } = filters;
 
-  const smartText = ref("");
   const quickAddCurrency = computed(() => displayCurrency.value as CurrencyCode);
-  const { parsed, parsing } = useExpenseParse(smartText, quickAddCurrency);
 
   const quickAdd = ref({
     price: "",
@@ -248,7 +245,6 @@ export function useExpensesTool(
   }
 
   function resetQuickAdd(): void {
-    smartText.value = "";
     quickAdd.value = {
       price: "",
       category: resolvedCategory(lastCategory.value),
@@ -316,37 +312,9 @@ export function useExpensesTool(
   }
 
   async function quickSaveExpense(): Promise<void> {
-    if (smartText.value.trim()) {
-      if (!parsed.value?.valid) {
-        toast(parsed.value?.error ?? "Could not parse expense", "error");
-        return;
-      }
-
-      loading.value = true;
-      try {
-        await postExpense({
-          tool_name: parsed.value.tool_name ?? "",
-          amount: String(parsed.value.amount),
-          currency: (parsed.value.currency as CurrencyCode) ?? defaultCurrency(),
-          expense_date: parsed.value.expense_date ?? isoDateLocal(),
-          category: resolvedCategory(parsed.value.category ?? lastCategory.value),
-          notes: null,
-        });
-        resetQuickAdd();
-        await reloadAfterMutation();
-        focusQuickAdd();
-      } catch (err) {
-        if (import.meta.env.DEV) console.error(err);
-        toast(getApiErrorMessage(err, "Failed to save expense"), "error");
-      } finally {
-        loading.value = false;
-      }
-      return;
-    }
-
     const product = quickAdd.value.product.trim();
     if (!product) {
-      toast("Enter smart text or a product name", "error");
+      toast("Enter a product name", "error");
       return;
     }
 
@@ -418,7 +386,6 @@ export function useExpensesTool(
   }
 
   async function duplicateExpense(expense: Expense): Promise<void> {
-    smartText.value = "";
     quickAdd.value = {
       product: expense.tool_name,
       price: expense.amount,
@@ -585,10 +552,7 @@ export function useExpensesTool(
     hasActiveFilters,
     rangeError,
     clearFilters,
-    smartText,
     quickAddCurrency,
-    parsed,
-    parsing,
     quickAdd,
     form,
     formTitle,

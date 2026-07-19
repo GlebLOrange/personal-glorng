@@ -238,7 +238,7 @@ watch(articleId, () => {
 </script>
 
 <template>
-  <AdminPageLayout title="edit news article" max-width="xl" back-to="/admin/tools/news">
+  <AdminPageLayout hub="tools" title="edit news article" max-width="xl" back-to="/admin/tools/news">
     <header v-if="canWrite && article" class="page-intro">
       <div class="flex flex-wrap gap-2">
         <BaseButton variant="primary" :disabled="actionLoading" @click="saveArticle">

@@ -123,7 +123,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
               <button
                 ref="closeButton"
                 type="button"
-                class="min-h-11 min-w-11 rounded text-xl leading-none text-surface-mid hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+                class="min-h-11 min-w-11 rounded text-xl leading-none text-status-error hover:text-status-error/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-status-error/50"
                 aria-label="Close drawer"
                 @click="emit('close')"
               >
