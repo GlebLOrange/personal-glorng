@@ -54,7 +54,13 @@ export default defineConfig({
       "/specs/": [
         {
           text: "Specs",
-          items: [{ text: "News", link: "/specs/news" }],
+          items: [
+            { text: "News", link: "/specs/news" },
+            {
+              text: "Platform hardening",
+              link: "/specs/platform-hardening",
+            },
+          ],
         },
       ],
     },

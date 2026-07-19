@@ -36,7 +36,7 @@ const emit = defineEmits<{
     @close="emit('close')"
   >
     <template v-if="canWrite && recipe" #header-actions>
-      <BaseDropdownMenu>
+      <BaseDropdownMenu aria-label="Recipe actions">
         <template #default="{ close: closeMenu }">
           <BaseDropdownMenuItem
             @select="

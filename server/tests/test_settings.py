@@ -73,3 +73,20 @@ def test_process_env_overrides_dotenv(
     assert settings.APP_NAME == "FromProcessEnv"
     get_settings.cache_clear()
     monkeypatch.delenv("APP_NAME", raising=False)
+
+
+def test_production_forbids_request_body_logging(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    env_file = scenario_env(
+        tmp_path,
+        base=ENV_SCENARIOS_DIR / "production-csrf.env",
+        LOG_REQUEST_BODIES="true",
+    )
+    activate_env_file(monkeypatch, env_file)
+
+    with pytest.raises(ValueError, match="LOG_REQUEST_BODIES"):
+        Settings()
+
+    get_settings.cache_clear()

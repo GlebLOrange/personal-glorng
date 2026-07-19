@@ -115,8 +115,15 @@ async def login_with_firebase_google(
     elif not user.is_verified:
         user = await registry.users.update_fields(user.id, is_verified=True)  # type: ignore[union-attr]
 
-    access_token = create_access_token(str(user.public_id), user_id=user.id)
-    refresh_token = create_refresh_token(str(user.public_id))
+    access_token = create_access_token(
+        str(user.public_id),
+        user_id=user.id,
+        session_version=user.session_version,
+    )
+    refresh_token = create_refresh_token(
+        str(user.public_id),
+        session_version=user.session_version,
+    )
 
     await audit.record(
         AuditRecord(

@@ -78,6 +78,7 @@ async def change_email(
         user.id,
         email=normalized,
         is_verified=False,
+        session_version=int(user.session_version or 0) + 1,
     )
 
     audit = AuditService(registry)
@@ -111,6 +112,7 @@ async def change_password(
     user = await registry.users.update_fields(  # type: ignore[union-attr]
         user.id,
         hashed_password=hash_password(new_password),
+        session_version=int(user.session_version or 0) + 1,
     )
 
     audit = AuditService(registry)

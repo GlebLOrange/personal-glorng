@@ -115,6 +115,10 @@ Postgres tables (optional secondary): `expenses`, `expense_categories` — see A
 
 Domain types: `Expense`, `ExpenseCategory` in [`documents/expense.py`](../../server/app/db/documents/expense.py). The expense field `tool_name` is the vendor/product label (e.g. Cursor, groceries), not a platform-tool slug.
 
+## Backups
+
+Primary data lives in MongoDB. Daily `make backup` writes a `mongodump` archive under `backups/mongodb/` (plus Redis/media; Postgres only if enabled). Restore steps: [Backup & restore](/operations/backup-restore).
+
 ## Related
 
 - [Backup & restore](/operations/backup-restore)
