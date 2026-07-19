@@ -13,6 +13,14 @@ router = APIRouter(tags=["seo"])
 _PUBLIC_PATHS: tuple[tuple[str, str], ...] = (
     ("/", "weekly"),
     ("/news", "daily"),
+    ("/tools", "weekly"),
+    ("/calculator", "monthly"),
+    ("/expense-calculator", "monthly"),
+    ("/password-generator", "monthly"),
+    ("/recipes", "weekly"),
+    ("/shortener", "monthly"),
+    ("/vid-download", "monthly"),
+    ("/weather", "daily"),
     ("/privacy", "monthly"),
 )
 

@@ -19,6 +19,15 @@ const props = withDefaults(
 
 const safeSrc = computed(() => safeImageSrc(props.src));
 
+const aspectStyle = computed(() => {
+  const w = Number(props.width);
+  const h = Number(props.height);
+  if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) {
+    return { aspectRatio: `${w} / ${h}` };
+  }
+  return undefined;
+});
+
 const imgRef = ref<HTMLImageElement | null>(null);
 const loaded = ref(false);
 const failed = ref(false);
@@ -54,7 +63,7 @@ function onError(): void {
 </script>
 
 <template>
-  <div class="relative overflow-hidden">
+  <div class="relative overflow-hidden" :style="aspectStyle">
     <img
       :src="IMAGE_PLACEHOLDER_SRC"
       alt=""

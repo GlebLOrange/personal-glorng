@@ -39,6 +39,8 @@ test.describe("public pages", () => {
     await page.getByRole("link", { name: /^tools$/i }).click();
     await expect(page).toHaveURL(/\/tools$/);
     await expect(page.getByRole("heading", { name: /^tools$/i })).toBeVisible();
+    await expect(page).toHaveTitle(/Tools/i);
+    await expectNoCriticalA11yViolations("/tools", page);
     await expect(page.getByRole("link", { name: /calculator/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /password generator/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /recipes/i })).toBeVisible();

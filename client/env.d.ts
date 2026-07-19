@@ -15,8 +15,23 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
-declare module '*.vue' {
-  import type { DefineComponent } from 'vue'
-  const component: DefineComponent<object, object, unknown>
-  export default component
+declare module "*.vue" {
+  import type { DefineComponent } from "vue";
+  const component: DefineComponent<object, object, unknown>;
+  export default component;
+}
+
+export {};
+
+declare module "vue-router" {
+  interface RouteMeta {
+    title?: string;
+    description?: string;
+    /** When true, emit robots noindex for auth / private shells. */
+    noindex?: boolean;
+    requiresAuth?: boolean;
+    requiresSuperuser?: boolean;
+    resolveSession?: boolean;
+    scrollRestore?: "volatile" | "live" | string;
+  }
 }

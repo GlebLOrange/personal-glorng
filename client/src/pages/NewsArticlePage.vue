@@ -6,6 +6,7 @@ import PageShell from "@/components/layout/PageShell.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
+import { applyPageSeo } from "@/utils/pageSeo";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
 const route = useRoute();
@@ -25,6 +26,19 @@ onMounted(loadCurrentArticle);
 watch(slug, () => {
   void loadCurrentArticle();
 });
+
+watch(
+  article,
+  (value) => {
+    if (!value) return;
+    applyPageSeo({
+      title: value.title,
+      description: value.summary || undefined,
+      path: route.fullPath,
+    });
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
