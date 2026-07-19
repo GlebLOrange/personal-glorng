@@ -1,5 +1,8 @@
-"""Celery / RabbitMQ queue declarations and dead-letter publishing."""
+"""Dead-letter queue helpers for Celery task failures."""
 
+from __future__ import annotations
+
+import re
 from typing import Any
 
 from kombu import Exchange, Queue
@@ -31,6 +34,46 @@ celery_dlq = Queue(
     durable=True,
 )
 
+_SENSITIVE_KEYS = frozenset(
+    {
+        "token",
+        "password",
+        "secret",
+        "access_token",
+        "refresh_token",
+        "authorization",
+        "api_key",
+        "apikey",
+    }
+)
+_JWT_RE = re.compile(r"^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$")
+
+
+def _redact_value(key: str | None, value: object) -> object:
+    if key is not None and key.lower() in _SENSITIVE_KEYS:
+        return "[redacted]"
+    if isinstance(value, str) and _JWT_RE.match(value) and len(value) > 40:
+        return "[redacted]"
+    if isinstance(value, dict):
+        return {str(k): _redact_value(str(k), v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_redact_value(None, item) for item in value]
+    if isinstance(value, tuple):
+        return [_redact_value(None, item) for item in value]
+    return value
+
+
+def redact_task_payload(
+    args: tuple[Any, ...] | list[Any] | None,
+    kwargs: dict[str, Any] | None,
+) -> tuple[list[object], dict[str, object]]:
+    """Strip JWTs and known secret fields before DLQ / log persistence."""
+    safe_args = [_redact_value(None, item) for item in (args or ())]
+    safe_kwargs = {
+        str(k): _redact_value(str(k), v) for k, v in dict(kwargs or {}).items()
+    }
+    return safe_args, safe_kwargs
+
 
 def publish_dead_letter(
     *,
@@ -44,11 +87,12 @@ def publish_dead_letter(
     """Persist a failed task payload on the DLQ (workers do not consume it)."""
     from app.workers.celery_app import celery_app
 
+    safe_args, safe_kwargs = redact_task_payload(args, kwargs)
     payload = {
         "task": task_name,
         "id": task_id,
-        "args": list(args or ()),
-        "kwargs": dict(kwargs or {}),
+        "args": safe_args,
+        "kwargs": safe_kwargs,
         "retries": retries,
         "exception": f"{type(exc).__name__}: {exc}",
     }

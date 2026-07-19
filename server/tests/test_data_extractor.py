@@ -221,7 +221,7 @@ async def test_import_api_csv(auth_client: AsyncClient) -> None:
         "/api/tools/data-extract/import",
         files={"file": ("sample.csv", BytesIO(CSV_SAMPLE.encode()), "text/csv")},
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     payload = response.json()
     assert payload["row_count"] == 2
     assert payload["batch_id"] > 0
@@ -299,7 +299,7 @@ async def test_promote_pipe_embed_batch(auth_client: AsyncClient) -> None:
         "/api/tools/data-extract/import?profile=pipe_embed&format=delimited",
         files={"file": ("feed.pipe", BytesIO(PIPE_EMBED_LINE.encode()), "text/plain")},
     )
-    assert created.status_code == 200
+    assert created.status_code == 201
     batch_id = created.json()["batch_id"]
 
     promoted = await auth_client.post(

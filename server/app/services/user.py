@@ -20,13 +20,20 @@ def _users(registry: DatabaseRegistry):
 async def get_user_by_public_id(
     registry: DatabaseRegistry,
     public_id: str | uuid.UUID,
+    *,
+    use_cache: bool = True,
 ) -> User | None:
-    """Load a user by public UUID (short-TTL Redis cache)."""
-    cached = await get_cached_user(public_id)
-    if cached is not None:
-        return cached
+    """Load a user by public UUID.
+
+    Auth paths pass ``use_cache=False`` so session_version / permissions
+    stay fresh after revoke (cache is still used for non-auth lookups).
+    """
+    if use_cache:
+        cached = await get_cached_user(public_id)
+        if cached is not None:
+            return cached
     user = await _users(registry).get_by_public_id(public_id)
-    if user is not None:
+    if user is not None and use_cache:
         await set_cached_user(user)
     return user
 

@@ -72,7 +72,10 @@ def _on_task_failure(
     retries: int = 0,
     **extra: object,
 ) -> None:
+    from app.workers.queues import redact_task_payload
+
     task_name = getattr(sender, "name", "unknown")
+    safe_args, safe_kwargs = redact_task_payload(args, kwargs)
     logger.error(
         "Celery task failed",
         error=exception,
@@ -80,8 +83,8 @@ def _on_task_failure(
             "task_id": task_id,
             "task_name": task_name,
             "retries": retries,
-            "args": str(args)[:500] if args else None,
-            "kwargs": str(kwargs)[:500] if kwargs else None,
+            "args": str(safe_args)[:500] if safe_args else None,
+            "kwargs": str(safe_kwargs)[:500] if safe_kwargs else None,
         },
     )
 
@@ -96,6 +99,9 @@ def create_celery_app() -> Celery:
         task_ignore_result=True,
         task_acks_late=True,
         task_reject_on_worker_lost=True,
+        # SoftTimeLimitExceeded is caught in tasks and routed to retry/DLQ.
+        # Hard task_time_limit kills the worker child; that path cannot DLQ
+        # (message is acked). Keep soft limit below hard so handlers can run.
         task_acks_on_failure_or_timeout=True,
         worker_prefetch_multiplier=1,
         task_soft_time_limit=300,

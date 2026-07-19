@@ -94,7 +94,8 @@ async def _resolve_user_from_token(
             raise UnauthorizedError("Invalid token payload")
         return None
 
-    user = await get_user_by_public_id(registry, str(user_sub))
+    # Skip Redis user cache on the auth path so revoke/demote is immediate.
+    user = await get_user_by_public_id(registry, str(user_sub), use_cache=False)
     if not user:
         if strict:
             raise UnauthorizedError("User not found")

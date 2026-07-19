@@ -70,7 +70,7 @@ async def _claim_payload(payload: dict[str, object]) -> None:
 
 
 async def _get_user_by_sub(registry: DatabaseRegistry, subject: str) -> User:
-    user = await get_user_by_public_id(registry, subject)
+    user = await get_user_by_public_id(registry, subject, use_cache=False)
     if not user:
         raise UnauthorizedError("User not found")
     return user

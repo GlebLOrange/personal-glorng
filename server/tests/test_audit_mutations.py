@@ -31,7 +31,7 @@ async def test_expense_create_emits_audit(
     registry: DatabaseRegistry,
 ) -> None:
     resp = await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     expense_id = resp.json()["id"]
 
     row = await _audit_action(registry, "expense.created")
@@ -68,7 +68,7 @@ async def test_expense_delete_emits_audit(
     expense_id = create.json()["id"]
 
     resp = await auth_client.delete(f"/api/tools/expenses/{expense_id}")
-    assert resp.status_code == 200
+    assert resp.status_code == 204
 
     row = await _audit_action(registry, "expense.deleted")
     assert row is not None
@@ -81,7 +81,7 @@ async def test_file_upload_emits_audit(
     registry: DatabaseRegistry,
 ) -> None:
     resp = await auth_client.post("/api/tools/file-share", files=_make_file())
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     file_id = resp.json()["id"]
 
     row = await _audit_action(registry, "file.uploaded")
@@ -99,7 +99,7 @@ async def test_file_delete_emits_audit(
     file_id = upload.json()["id"]
 
     resp = await auth_client.delete(f"/api/tools/file-share/{file_id}")
-    assert resp.status_code == 200
+    assert resp.status_code == 204
 
     row = await _audit_action(registry, "file.deleted")
     assert row is not None
@@ -115,7 +115,7 @@ async def test_url_create_emits_audit(
         "/api/tools/url-shortener",
         json={"original_url": "https://audit-example.com", "title": "Audit"},
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     url_id = resp.json()["id"]
 
     row = await _audit_action(registry, "url.created")
@@ -136,7 +136,7 @@ async def test_url_delete_emits_audit(
     url_id = create.json()["id"]
 
     resp = await auth_client.delete(f"/api/tools/url-shortener/{url_id}")
-    assert resp.status_code == 200
+    assert resp.status_code == 204
 
     row = await _audit_action(registry, "url.deleted")
     assert row is not None

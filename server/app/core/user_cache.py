@@ -11,6 +11,9 @@ from app.db.documents.user import User
 
 USER_CACHE_TTL_SECONDS = 45
 
+# Placeholder so User validates; never used for password checks from cache.
+_CACHED_PASSWORD_PLACEHOLDER = ""
+
 
 def _cache_key(public_id: str | uuid.UUID) -> str:
     return f"{USER_CACHE_PREFIX}{public_id}"
@@ -23,6 +26,8 @@ async def get_cached_user(public_id: str | uuid.UUID) -> User | None:
     payload = safe_cache_json_loads(raw)
     if not isinstance(payload, dict):
         return None
+    payload.pop("hashed_password", None)
+    payload["hashed_password"] = _CACHED_PASSWORD_PLACEHOLDER
     try:
         return User.model_validate(payload)
     except (TypeError, ValueError):
@@ -30,9 +35,10 @@ async def get_cached_user(public_id: str | uuid.UUID) -> User | None:
 
 
 async def set_cached_user(user: User) -> None:
+    # Never persist credential material in Redis.
     await cache_set(
         _cache_key(user.public_id),
-        user.model_dump_json(),
+        user.model_dump_json(exclude={"hashed_password"}),
         ttl=USER_CACHE_TTL_SECONDS,
     )
 

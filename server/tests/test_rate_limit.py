@@ -17,7 +17,7 @@ class TestFeedbackRateLimit:
                         "message": "Hello",
                     },
                 )
-                assert resp.status_code == 200
+                assert resp.status_code == 201
 
     async def test_blocks_over_limit(self, client: AsyncClient):
         with patch("app.routers.feedback.notify_admin", new_callable=AsyncMock):

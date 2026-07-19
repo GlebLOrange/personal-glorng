@@ -305,7 +305,9 @@ async def logout(
             payload = decode_token(raw_token)
             sub = payload.get("sub")
             if sub and user_id is None:
-                user = await get_user_by_public_id(registry, str(sub))
+                user = await get_user_by_public_id(
+                    registry, str(sub), use_cache=False
+                )
                 if user:
                     user_id = user.id
             jti = payload.get("jti", "")
