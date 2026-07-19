@@ -376,12 +376,6 @@ function openEditableArticle(article: NewsArticle): void {
   openEdit(article);
 }
 
-function onArticleKeydown(event: KeyboardEvent, article: NewsArticle): void {
-  if (!canWrite.value || (event.key !== "Enter" && event.key !== " ")) return;
-  event.preventDefault();
-  openEdit(article);
-}
-
 function closeDrawer(): void {
   drawerOpen.value = false;
   editingArticleId.value = null;
@@ -482,13 +476,6 @@ watch(page, () => {
         as="article"
         variant="compact"
         class="min-w-0"
-        :hoverable="canWrite"
-        :interactive="canWrite"
-        :role="canWrite ? 'button' : undefined"
-        :tabindex="canWrite ? 0 : undefined"
-        :class="canWrite ? 'cursor-pointer' : undefined"
-        @click="openEditableArticle(item)"
-        @keydown="onArticleKeydown($event, item)"
       >
         <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
           <StatusBadge :label="item.status" :class-name="newsStatusClass(item.status)" />
@@ -504,7 +491,15 @@ watch(page, () => {
         </div>
 
         <h2 class="card-title mb-2 break-words">
-          {{ item.title }}
+          <button
+            v-if="canWrite"
+            type="button"
+            class="text-left hover:text-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+            @click="openEditableArticle(item)"
+          >
+            {{ item.title }}
+          </button>
+          <span v-else>{{ item.title }}</span>
         </h2>
         <p class="text-sm text-surface-mid mb-3 break-words">{{ item.summary }}</p>
 
@@ -518,7 +513,7 @@ watch(page, () => {
           </span>
         </div>
 
-        <div class="flex flex-wrap gap-2" @click.stop @keydown.stop>
+        <div class="flex flex-wrap gap-2">
           <BaseButton
             v-if="canWrite && item.status !== 'published'"
             variant="ghost"
@@ -552,7 +547,6 @@ watch(page, () => {
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center px-3 py-1.5 text-xs text-accent-blue hover:underline"
-            @click.stop
           >
             source
           </a>

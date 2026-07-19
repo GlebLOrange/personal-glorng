@@ -111,7 +111,7 @@ defineExpose({ close });
     <button
       ref="trigger"
       type="button"
-      class="text-surface-mid hover:text-surface-light transition-colors p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+      class="inline-flex min-h-11 min-w-11 items-center justify-center text-surface-mid hover:text-surface-light transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 active:opacity-80"
       aria-haspopup="menu"
       :aria-expanded="open"
       :aria-label="props.ariaLabel"

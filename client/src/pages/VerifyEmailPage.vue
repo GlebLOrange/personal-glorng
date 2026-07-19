@@ -2,7 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import BaseButton from "@/components/ui/BaseButton.vue";
+import BackLink from "@/components/ui/BackLink.vue";
 import { api } from "@/composables/useApi";
 import { getApiErrorMessage } from "@/types/api";
 
@@ -40,19 +40,33 @@ onMounted(async () => {
         <span class="accent-gradient">email verification</span>
       </h1>
 
-      <p v-if="status === 'loading'" class="text-surface-mid text-sm">Verifying your email...</p>
-      <p v-else class="text-sm" :class="status === 'success' ? 'text-status-success' : 'text-status-error'">
-        {{ message }}
-      </p>
+      <div
+        role="status"
+        aria-live="polite"
+        :aria-busy="status === 'loading'"
+        class="text-sm"
+        :class="{
+          'text-surface-mid': status === 'loading',
+          'text-status-success': status === 'success',
+          'text-status-error': status === 'error',
+        }"
+      >
+        <p v-if="status === 'loading'">Verifying your email...</p>
+        <p v-else>{{ message }}</p>
+      </div>
 
-      <BaseButton
+      <button
         v-if="status !== 'loading'"
-        variant="primary"
-        class="w-full"
+        type="button"
+        class="cta-primary w-full"
         @click="router.push('/login')"
       >
-        Continue to login
-      </BaseButton>
+        continue to login
+      </button>
+
+      <p v-if="status === 'error'" class="flex justify-center">
+        <BackLink to="/login" />
+      </p>
     </div>
   </div>
 </template>

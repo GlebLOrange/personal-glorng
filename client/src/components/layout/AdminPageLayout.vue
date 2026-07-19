@@ -10,10 +10,13 @@ const props = withDefaults(
     title: string;
     maxWidth?: "sm" | "md" | "xl";
     backTo?: RouteLocationRaw;
+    /** Brand/money prefix; empty by default (use € on expense surfaces). */
+    titlePrefix?: string;
   }>(),
   {
     backTo: "/admin",
     maxWidth: "xl",
+    titlePrefix: "",
   },
 );
 
@@ -29,9 +32,9 @@ const shellMaxWidth = computed((): "sm" | "md" | "5xl" => {
 <template>
   <PageShell
     :title="title"
-    title-prefix="€ "
+    :title-prefix="titlePrefix"
     :breadcrumbs="[
-      { label: 'tools', to: '/admin' },
+      { label: 'admin', to: '/admin' },
       { label: breadcrumbLabel },
     ]"
     :back-to="backTo"

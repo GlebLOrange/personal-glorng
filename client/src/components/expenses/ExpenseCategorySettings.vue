@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import { Card } from "@/components/ui/card";
 import {
   crossRate,
@@ -7,6 +9,7 @@ import {
   EXPENSE_DEFAULT_CURRENCY,
   EXPENSE_EXCHANGE_RATE_TARGETS,
 } from "@/composables/useExpenseFilters";
+import { FIELD_INPUT_CLASS_COMPACT } from "@/constants/formClasses";
 import type { ExchangeRates, ExpenseCategory } from "@/types";
 
 defineProps<{
@@ -27,19 +30,14 @@ const emit = defineEmits<{
   saveCategoryRename: [];
   removeCategory: [category: ExpenseCategory];
 }>();
-
-const selectClass =
-  "bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm " +
-  "focus:outline-none focus:border-accent-blue transition-colors h-[42px]";
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
     <Card>
-      <p class="text-xs text-surface-mid uppercase tracking-wider mb-3">display</p>
-      <select v-model="displayCurrency" :class="selectClass" aria-label="show totals in">
+      <BaseSelect v-model="displayCurrency" label="Ledger totals currency">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
-      </select>
+      </BaseSelect>
     </Card>
 
     <Card v-if="exchangeRates">
@@ -64,7 +62,8 @@ const selectClass =
           <template v-if="editingCategoryId === category.id">
             <input
               v-model="editingCategoryName"
-              class="flex-1 min-w-[8rem] bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light text-sm focus:outline-none focus:border-accent-blue"
+              :class="[FIELD_INPUT_CLASS_COMPACT, 'flex-1 min-w-[8rem]']"
+              aria-label="Category name"
               @keyup.enter="emit('saveCategoryRename')"
             />
             <input
@@ -74,7 +73,7 @@ const selectClass =
               step="0.01"
               placeholder="budget"
               aria-label="budget"
-              class="w-28 bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light text-sm focus:outline-none focus:border-accent-blue"
+              :class="[FIELD_INPUT_CLASS_COMPACT, 'w-28']"
             />
             <BaseButton variant="primary" size="sm" @click="emit('saveCategoryRename')">
               save
@@ -100,12 +99,12 @@ const selectClass =
         </li>
       </ul>
 
-      <form class="flex flex-col sm:flex-row gap-2" @submit.prevent="emit('addCategory')">
-        <input
+      <form class="flex flex-col sm:flex-row sm:items-end gap-2" @submit.prevent="emit('addCategory')">
+        <BaseInput
           v-model="newCategoryName"
-          placeholder="new category name"
-          aria-label="new category name"
-          class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue h-[42px]"
+          label="New category"
+          placeholder="name"
+          class="flex-1"
         />
         <BaseButton variant="primary" type="submit">add category</BaseButton>
       </form>

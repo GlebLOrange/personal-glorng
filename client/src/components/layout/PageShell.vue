@@ -30,6 +30,7 @@ const props = withDefaults(
 );
 
 const shellClass = computed(() => {
+  // "xl" and "5xl" both map to max-w-5xl (content column); modal/drawer sizes are separate
   const widthClass =
     props.maxWidth === "sm"
       ? "max-w-sm"

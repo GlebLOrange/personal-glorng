@@ -152,7 +152,7 @@ onMounted(() => {
         tabindex="0"
         class="outline-none"
       >
-        <AdminListToolbar v-if="!listLoading">
+        <AdminListToolbar>
           <template #start>
             <div class="flex w-full min-w-0 flex-wrap items-center gap-3">
               <AdminFilterDropdown
@@ -174,7 +174,7 @@ onMounted(() => {
                 <template #footer>
                   <div class="mt-3 border-t border-surface-border pt-3">
                     <BaseButton variant="ghost" size="sm" @click="onFailedSyncs">
-                      failed syncs
+                      open sync queue
                     </BaseButton>
                   </div>
                 </template>
@@ -184,10 +184,14 @@ onMounted(() => {
                 variant="primary"
                 size="sm"
                 class="ml-auto inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+                :disabled="listLoading"
                 @click="openCreate"
               >
                 + new task
               </BaseButton>
+              <p v-else class="ml-auto text-xs text-surface-mid">
+                View only — creating and status changes need superuser.
+              </p>
             </div>
           </template>
         </AdminListToolbar>

@@ -140,7 +140,12 @@ function actionVariant(status: TaskStatus): "primary" | "ghost" {
             synced to google calendar
           </span>
         </div>
-        <BaseButton variant="ghost" size="sm" @click="emit('retrySync', task.id)">
+        <BaseButton
+          v-else
+          variant="ghost"
+          size="sm"
+          @click="emit('retrySync', task.id)"
+        >
           try syncing again
         </BaseButton>
       </section>

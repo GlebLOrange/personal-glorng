@@ -5,6 +5,7 @@ import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessageFromBlob } from "@/types/api";
@@ -86,15 +87,11 @@ async function download(): Promise<void> {
         </BaseButton>
       </div>
 
-      <select
-        v-model="format"
-        aria-label="format"
-        class="bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors"
-      >
+      <BaseSelect v-model="format" label="Format">
           <option v-for="f in formats" :key="f.value" :value="f.value">
             {{ f.label }}
           </option>
-        </select>
+      </BaseSelect>
 
       <label class="flex items-center gap-2 text-sm text-surface-mid cursor-pointer">
         <input v-model="audioOnly" type="checkbox" class="accent-accent-blue" />

@@ -13,8 +13,9 @@ const emit = defineEmits<{
 <template>
   <button
     type="button"
+    :aria-pressed="Boolean(active)"
     :class="[
-      'rounded-full border transition-colors',
+      'rounded-full border transition-colors min-h-9',
       compact ? 'text-[10px] px-2 py-0.5' : 'text-xs px-2 py-1',
       active
         ? 'border-accent-blue bg-accent-blue/15 text-accent-blue'

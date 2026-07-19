@@ -80,8 +80,13 @@ const skeletonRows = 5;
           </p>
         </div>
         <div class="flex gap-2 justify-end flex-wrap mt-3">
-          <BaseButton variant="ghost" size="sm" @click="emit('duplicate', expense)">
-            again
+          <BaseButton
+            variant="ghost"
+            size="sm"
+            :aria-label="`Duplicate ${expense.tool_name || 'expense'}`"
+            @click="emit('duplicate', expense)"
+          >
+            duplicate
           </BaseButton>
           <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">edit</BaseButton>
           <BaseButton variant="ghost" size="sm" @click="emit('delete', expense.id)">
@@ -93,7 +98,7 @@ const skeletonRows = 5;
 
     <!-- Desktop table -->
     <div class="hidden md:block overflow-x-auto rounded-lg border border-surface-border">
-      <table class="w-full text-sm font-data">
+      <table class="w-full text-sm font-data" :aria-label="`Expenses for ${monthLabel}`">
         <thead>
           <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card/80">
             <th class="px-3 py-2" :aria-sort="sortAriaSort('date')">
@@ -162,8 +167,13 @@ const skeletonRows = 5;
               {{ expense.notes ?? "—" }}
             </td>
             <td class="px-3 py-2 text-right whitespace-nowrap">
-              <BaseButton variant="ghost" size="sm" @click="emit('duplicate', expense)">
-                again
+              <BaseButton
+                variant="ghost"
+                size="sm"
+                :aria-label="`Duplicate ${expense.tool_name || 'expense'}`"
+                @click="emit('duplicate', expense)"
+              >
+                duplicate
               </BaseButton>
               <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">
                 edit

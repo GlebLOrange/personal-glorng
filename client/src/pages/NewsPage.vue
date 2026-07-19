@@ -5,6 +5,7 @@ import PageShell from "@/components/layout/PageShell.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
+import ListSkeleton from "@/components/ui/ListSkeleton.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
 import { usePermissions } from "@/composables/usePermissions";
@@ -52,9 +53,13 @@ watch(page, () => {
       </div>
     </header>
 
-    <section v-if="listLoading" class="space-y-4" aria-busy="true" aria-label="Loading news">
-      <Card v-for="i in 5" :key="i" class="h-40 animate-pulse" />
-    </section>
+    <ListSkeleton
+      v-if="listLoading"
+      :rows="5"
+      label="Loading news"
+      row-class="h-40"
+      gap-class="space-y-4"
+    />
 
     <ErrorState
       v-else-if="listError"

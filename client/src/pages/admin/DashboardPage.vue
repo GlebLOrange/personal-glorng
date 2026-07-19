@@ -26,9 +26,9 @@ onMounted(() => load());
 </script>
 
 <template>
-  <AdminPageLayout title="tools" max-width="xl" back-to="/">
+  <AdminPageLayout title="admin" max-width="xl" back-to="/">
     <section v-for="section in sections" :key="section.category" class="mb-10 min-w-0">
-      <h2 class="text-lg font-bold text-surface-light mb-4">{{ section.label }}</h2>
+      <h2 class="text-meta mb-4 uppercase tracking-wider">{{ section.label }}</h2>
       <div class="page-tool-grid">
         <component
           :is="tool.external ? 'a' : 'RouterLink'"
@@ -38,11 +38,15 @@ onMounted(() => load());
           :to="tool.external ? undefined : tool.adminRoute"
           :href="tool.external ? tool.adminRoute : undefined"
           :target="tool.external ? '_blank' : undefined"
-          :rel="tool.external ? 'noopener' : undefined"
+          :rel="tool.external ? 'noopener noreferrer' : undefined"
+          :aria-label="tool.external ? `${tool.name} (opens in new tab)` : undefined"
         >
           <Card hoverable class="page-tile-card h-full">
-            <div class="text-2xl mb-3">{{ tool.icon }}</div>
-            <h3 class="text-surface-light font-bold mb-1 break-words">{{ tool.name }}</h3>
+            <div class="text-2xl mb-3" aria-hidden="true">{{ tool.icon }}</div>
+            <h3 class="text-surface-light font-bold mb-1 break-words">
+              {{ tool.name }}
+              <span v-if="tool.external" class="text-surface-mid font-normal"> ↗</span>
+            </h3>
             <p class="text-xs text-surface-mid break-words">{{ tool.description }}</p>
           </Card>
         </component>

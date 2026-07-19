@@ -34,6 +34,7 @@
   --color-status-error: #e57373;
   --color-status-warning: #d4a574;
   --color-status-success: #6ebf8a;
+  /* Legacy aliases of status-* — prefer status-error / status-warning in new code */
   --color-accent-red: #e57373;
   --color-accent-amber: #d4a574;
   --radius-interactive: 0.5rem;
@@ -59,7 +60,7 @@
 }
 
 @utility page-breadcrumb {
-  @apply text-[11px] leading-none font-normal;
+  @apply text-xs leading-none font-normal;
 }
 
 @utility page-breadcrumb-row {
@@ -143,6 +144,9 @@
   &:hover {
     @apply border-accent-blue;
   }
+  &:active {
+    @apply border-accent-blue opacity-90;
+  }
   &:focus-visible {
     @apply outline-none ring-2 ring-accent-blue/50;
   }
@@ -173,9 +177,16 @@
 }
 
 @utility cta-primary {
-  @apply px-6 py-3 min-h-11 rounded-lg bg-gradient-to-r from-accent-blue to-accent-violet text-white text-base font-medium transition-opacity inline-flex items-center justify-center;
-  &:hover {
+  /* Solid accent-blue for AA contrast (white on violet gradient end failed WCAG) */
+  @apply px-6 py-3 min-h-11 rounded-lg bg-accent-blue text-surface-dark text-base font-medium transition-opacity inline-flex items-center justify-center;
+  &:hover:not(:disabled) {
     @apply opacity-90;
+  }
+  &:active:not(:disabled) {
+    @apply opacity-80;
+  }
+  &:disabled {
+    @apply opacity-50 cursor-not-allowed;
   }
   &:focus-visible {
     @apply outline-none ring-2 ring-accent-blue/50;
@@ -184,8 +195,14 @@
 
 @utility cta-secondary {
   @apply px-6 py-3 min-h-11 rounded-lg border border-surface-border text-surface-mid text-base font-medium transition-colors inline-flex items-center justify-center;
-  &:hover {
+  &:hover:not(:disabled) {
     @apply border-accent-blue text-accent-blue;
+  }
+  &:active:not(:disabled) {
+    @apply border-accent-blue text-accent-blue opacity-90;
+  }
+  &:disabled {
+    @apply opacity-50 cursor-not-allowed;
   }
   &:focus-visible {
     @apply outline-none ring-2 ring-accent-blue/50;

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, useId } from "vue";
 
-defineProps<{ title?: string; maxWidth?: "md" | "lg" | "2xl" }>();
+import { useScrollLock } from "@/composables/useScrollLock";
+
+const props = defineProps<{ title?: string; maxWidth?: "md" | "lg" | "2xl" }>();
 
 const widthClass: Record<string, string> = {
   md: "max-w-md",
@@ -11,7 +13,10 @@ const widthClass: Record<string, string> = {
 const emit = defineEmits<{ close: [] }>();
 
 const modalRef = ref<HTMLElement | null>(null);
+const titleId = useId();
 let previouslyFocusedElement: HTMLElement | null = null;
+
+useScrollLock(() => true);
 
 function getFocusableElements(el: HTMLElement): HTMLElement[] {
   return Array.from(
@@ -52,6 +57,8 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
+const labelledBy = computed(() => (props.title ? titleId : undefined));
+
 onMounted(() => {
   document.addEventListener("keydown", onKeydown);
   previouslyFocusedElement = document.activeElement as HTMLElement;
@@ -89,7 +96,7 @@ onUnmounted(() => {
         ref="modalRef"
         role="dialog"
         aria-modal="true"
-        :aria-labelledby="title ? 'modal-title' : undefined"
+        :aria-labelledby="labelledBy"
         tabindex="-1"
         :class="[
           'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-sm focus:outline-none',
@@ -97,11 +104,12 @@ onUnmounted(() => {
         ]"
       >
         <div class="flex items-center justify-between px-6 pt-5 pb-3">
-          <h2 v-if="title" id="modal-title" class="text-lg font-bold text-surface-light">
+          <h2 v-if="title" :id="titleId" class="text-lg font-bold text-surface-light">
             {{ title }}
           </h2>
           <button
-            class="ml-auto rounded text-xl leading-none text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+            type="button"
+            class="ml-auto min-h-11 min-w-11 rounded text-xl leading-none text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
             aria-label="Close"
             @click="$emit('close')"
           >
