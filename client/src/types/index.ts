@@ -216,6 +216,7 @@ export interface SyncQueueItem {
   next_retry_at: string | null;
   status: string;
   created_at: string;
+  task_title?: string | null;
 }
 
 export interface TaskStats {

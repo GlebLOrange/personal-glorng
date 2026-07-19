@@ -3,10 +3,17 @@ import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vu
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 
-defineProps<{
-  hasActiveFilters?: boolean;
-  activeLabel?: string;
-}>();
+withDefaults(
+  defineProps<{
+    hasActiveFilters?: boolean;
+    activeLabel?: string;
+    /** Trigger prefix text (e.g. "filters", "tags"). */
+    label?: string;
+  }>(),
+  {
+    label: "filters",
+  },
+);
 
 const emit = defineEmits<{
   clear: [];
@@ -139,14 +146,14 @@ defineExpose({ close });
       :aria-expanded="open"
       @click.stop="toggle"
     >
-      filters<span v-if="activeLabel" class="text-surface-muted"> · {{ activeLabel }}</span>
+      {{ label }}<span v-if="activeLabel" class="text-surface-muted"> · {{ activeLabel }}</span>
     </BaseButton>
 
     <div
       v-if="open"
       ref="panel"
       role="dialog"
-      aria-label="filters"
+      :aria-label="label"
       tabindex="-1"
       class="absolute left-0 top-full z-10 mt-1 w-[18rem] rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
       @click.stop

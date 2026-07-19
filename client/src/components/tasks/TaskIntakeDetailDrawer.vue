@@ -66,11 +66,15 @@ const draftEntries = [
         </template>
       </dl>
 
-      <pre
+      <details
         v-if="intake.draft_json"
-        class="mt-4 overflow-x-auto rounded bg-surface-dark/50 p-2 text-[10px] text-surface-mid"
-        >{{ JSON.stringify(intake.draft_json, null, 2) }}</pre
+        class="mt-4 text-sm text-surface-mid"
       >
+        <summary class="cursor-pointer select-none hover:text-surface-light">raw draft</summary>
+        <pre
+          class="mt-2 overflow-x-auto rounded bg-surface-dark/50 p-2 text-[10px] text-surface-mid"
+        >{{ JSON.stringify(intake.draft_json, null, 2) }}</pre>
+      </details>
     </template>
   </BaseDrawer>
 </template>
