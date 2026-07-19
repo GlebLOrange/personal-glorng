@@ -2,6 +2,7 @@
 import { computed, nextTick, onUnmounted, ref, watch } from "vue";
 
 import { useScrollLock } from "@/composables/useScrollLock";
+import { focusEditableField } from "@/utils/focusField";
 
 const props = withDefaults(
   defineProps<{
@@ -77,7 +78,7 @@ watch(
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.addEventListener("keydown", onKeydown);
     await nextTick();
-    closeButton.value?.focus();
+    focusEditableField(panel.value, closeButton.value);
   },
   { immediate: true },
 );

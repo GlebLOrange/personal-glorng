@@ -79,15 +79,14 @@ async function download(): Promise<void> {
         <BaseButton
           type="submit"
           variant="primary"
-          size="sm"
-          class="inline-flex h-[42px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+          size="field"
           :disabled="loading || !url.trim()"
         >
           {{ loading ? "downloading..." : "download" }}
         </BaseButton>
       </div>
 
-      <BaseSelect v-model="format" label="Format">
+      <BaseSelect v-model="format">
           <option v-for="f in formats" :key="f.value" :value="f.value">
             {{ f.label }}
           </option>

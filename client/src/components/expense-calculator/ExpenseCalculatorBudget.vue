@@ -43,6 +43,14 @@ const summaryById = computed(() => {
   }
   return map;
 });
+
+function onAddCategory(): void {
+  emit("add");
+  requestAnimationFrame(() => {
+    const inputs = document.querySelectorAll<HTMLInputElement>("[data-budget-name]");
+    inputs[inputs.length - 1]?.focus();
+  });
+}
 </script>
 
 <template>
@@ -78,7 +86,7 @@ const summaryById = computed(() => {
     <Card class="space-y-4">
       <div class="flex items-center justify-between gap-3">
         <p class="text-xs text-surface-mid uppercase tracking-wider">Categories</p>
-        <BaseButton variant="primary" size="sm" @click="emit('add')">+ add category</BaseButton>
+        <BaseButton variant="primary" size="sm" @click="onAddCategory">+ add category</BaseButton>
       </div>
 
       <ul role="list" class="space-y-4">
@@ -90,6 +98,7 @@ const summaryById = computed(() => {
           <div class="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-3 items-end">
             <BaseInput
               v-model="row.name"
+              data-budget-name
               placeholder="category (food, transport...)"
               aria-label="category (food, transport...)"
             />
@@ -111,6 +120,7 @@ const summaryById = computed(() => {
             />
             <BaseButton
               variant="ghost"
+              danger
               size="sm"
               :aria-label="`Remove ${row.name || 'category'}`"
               class="md:mb-0.5"

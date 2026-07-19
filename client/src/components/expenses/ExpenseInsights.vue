@@ -31,17 +31,17 @@ const doughnutSummary = computed(() =>
 <template>
   <div v-if="hasChartData" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
     <Card>
-      <h3 class="text-xs text-surface-mid uppercase tracking-wider mb-3">Monthly trend</h3>
+      <h3 class="mb-3 text-xs text-surface-mid">monthly trend</h3>
       <ExpenseLineChart :labels="lineChart.labels" :values="lineChart.values" />
       <p class="sr-only">{{ lineSummary }}</p>
     </Card>
     <Card>
-      <h3 class="text-xs text-surface-mid uppercase tracking-wider mb-3">By category</h3>
+      <h3 class="mb-3 text-xs text-surface-mid">by category</h3>
       <ExpenseBarChart :labels="barChart.labels" :values="barChart.values" />
       <p class="sr-only">{{ barSummary }}</p>
     </Card>
     <Card>
-      <h3 class="text-xs text-surface-mid uppercase tracking-wider mb-3">By product</h3>
+      <h3 class="mb-3 text-xs text-surface-mid">by product</h3>
       <ExpenseDoughnutChart :labels="doughnutChart.labels" :values="doughnutChart.values" />
       <p class="sr-only">{{ doughnutSummary }}</p>
     </Card>

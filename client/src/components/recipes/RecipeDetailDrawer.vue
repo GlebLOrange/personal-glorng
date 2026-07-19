@@ -36,16 +36,9 @@ const emit = defineEmits<{
     @close="emit('close')"
   >
     <template v-if="canWrite && recipe" #header-actions>
+      <BaseButton variant="ghost" size="sm" @click="emit('edit', recipe)">edit</BaseButton>
       <BaseDropdownMenu aria-label="Recipe actions">
         <template #default="{ close: closeMenu }">
-          <BaseDropdownMenuItem
-            @select="
-              closeMenu();
-              emit('edit', recipe);
-            "
-          >
-            edit
-          </BaseDropdownMenuItem>
           <BaseDropdownMenuItem
             destructive
             @select="

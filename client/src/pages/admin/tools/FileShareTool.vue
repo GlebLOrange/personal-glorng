@@ -108,7 +108,7 @@ onMounted(loadFiles);
 
 <template>
   <AdminPageLayout title="file-share">
-    <div class="mb-10 flex items-start gap-3">
+    <div class="mb-10 flex items-stretch gap-3">
       <div
         :class="[
           'min-w-0 flex-1 border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
@@ -131,7 +131,7 @@ onMounted(loadFiles);
       <BaseButton
         variant="primary"
         size="sm"
-        class="inline-flex h-[42px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+        class="!h-auto self-stretch"
         :disabled="uploading || !selectedFile"
         @click="upload"
       >

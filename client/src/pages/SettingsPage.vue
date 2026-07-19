@@ -211,14 +211,14 @@ async function deleteAccount(): Promise<void> {
             v-model="displayName"
             name="display-name"
             autocomplete="name"
-            label="Display name"
+            label="display name"
             placeholder="optional"
           />
           <BaseInput
             v-model="timezone"
             name="timezone"
             autocomplete="off"
-            label="Timezone"
+            label="timezone"
             placeholder="e.g. Europe/Warsaw"
             required
           />
@@ -240,7 +240,7 @@ async function deleteAccount(): Promise<void> {
             type="email"
             name="email"
             autocomplete="email"
-            label="Email address"
+            label="email address"
             placeholder="you@example.com"
             required
           />
@@ -249,7 +249,7 @@ async function deleteAccount(): Promise<void> {
             type="password"
             name="current-password-for-email"
             autocomplete="current-password"
-            label="Current password"
+            label="current password"
             placeholder="••••••••"
             required
           />
@@ -277,7 +277,7 @@ async function deleteAccount(): Promise<void> {
             name="current-password"
             autocomplete="current-password"
             label="current password"
-            placeholder="current password"
+            placeholder="••••••••"
             required
           />
           <BaseInput
@@ -285,7 +285,7 @@ async function deleteAccount(): Promise<void> {
             type="password"
             name="new-password"
             autocomplete="new-password"
-            label="New password"
+            label="new password"
             placeholder="••••••••"
             :hint="newPassword && passwordCheck.valid ? passwordCheck.message : undefined"
             :error="newPassword && !passwordCheck.valid ? passwordCheck.message : undefined"
@@ -296,7 +296,7 @@ async function deleteAccount(): Promise<void> {
             type="password"
             name="confirm-new-password"
             autocomplete="new-password"
-            label="Confirm new password"
+            label="confirm new password"
             placeholder="••••••••"
             :error="newPasswordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
             required
@@ -320,7 +320,7 @@ async function deleteAccount(): Promise<void> {
         </CardHeader>
         <CardBody>
         <form class="space-y-4" @submit.prevent="saveCurrency">
-          <BaseSelect v-model="displayCurrency" label="Expense display currency">
+          <BaseSelect v-model="displayCurrency">
             <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
               {{ code }}
             </option>
@@ -346,7 +346,7 @@ async function deleteAccount(): Promise<void> {
               :disabled="githubLoading"
               @click="connectGithub"
             >
-              Connect GitHub
+              connect github
             </BaseButton>
             <template v-else>
               <p class="text-sm text-surface-mid">
@@ -356,7 +356,7 @@ async function deleteAccount(): Promise<void> {
                 >
               </p>
               <BaseButton variant="secondary" :disabled="unlinkingGithub" @click="unlinkGithub">
-                {{ unlinkingGithub ? "Unlinking..." : "Unlink GitHub" }}
+                {{ unlinkingGithub ? "unlinking..." : "unlink github" }}
               </BaseButton>
             </template>
             <BaseButton
@@ -365,7 +365,7 @@ async function deleteAccount(): Promise<void> {
               :disabled="githubLoading"
               @click="loadGithubStatus"
             >
-              Retry
+              retry
             </BaseButton>
           </div>
         </section>
@@ -410,7 +410,7 @@ async function deleteAccount(): Promise<void> {
             type="password"
             name="delete-current-password"
             autocomplete="current-password"
-            label="Current password"
+            label="current password"
             placeholder="••••••••"
             required
           />
@@ -418,7 +418,7 @@ async function deleteAccount(): Promise<void> {
             <input v-model="deleteConfirm" type="checkbox" class="mt-1 accent-status-error" />
             <span>I understand this permanently deletes my account.</span>
           </label>
-          <BaseButton type="submit" variant="secondary" :loading="deleting" :disabled="!canDeleteAccount">
+          <BaseButton type="submit" variant="secondary" danger :loading="deleting" :disabled="!canDeleteAccount">
             {{ deleting ? "deleting..." : "delete account" }}
           </BaseButton>
         </form>

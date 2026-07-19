@@ -41,7 +41,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
         :class="[FIELD_INPUT_CLASS, 'h-auto resize-none']"
       />
       <div class="flex gap-3 pt-2">
-        <BaseButton variant="primary" :disabled="saving">
+        <BaseButton type="submit" variant="primary" :disabled="saving">
           {{ saving ? "creating..." : "create" }}
         </BaseButton>
         <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>

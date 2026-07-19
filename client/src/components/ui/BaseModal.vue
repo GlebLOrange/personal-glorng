@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, useId } from "vue";
 
 import { useScrollLock } from "@/composables/useScrollLock";
+import { focusEditableField } from "@/utils/focusField";
 
 const props = defineProps<{
   title?: string;
@@ -73,11 +74,7 @@ onMounted(() => {
     if (!modalRef.value) return;
     if (!modalRef.value.contains(document.activeElement)) {
       const focusables = getFocusableElements(modalRef.value);
-      if (focusables.length > 0) {
-        focusables[0].focus();
-      } else {
-        modalRef.value.focus();
-      }
+      focusEditableField(modalRef.value, focusables[0] ?? modalRef.value);
     }
   });
 });

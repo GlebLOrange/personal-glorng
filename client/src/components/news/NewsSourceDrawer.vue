@@ -41,19 +41,19 @@ function toStringValue(value: string | number | null | undefined): string {
   <BaseDrawer :open="open" :title="title" max-width="md" @close="emit('close')">
     <form id="news-source-form" class="space-y-4" @submit.prevent="emit('save')">
       <BaseInput
-        :model-value="form.name"
-        placeholder="name"
-        aria-label="name"
-        required
-        @update:model-value="patch({ name: toStringValue($event) })"
-      />
-      <BaseInput
         :model-value="form.feed_url"
         placeholder="feed url"
         aria-label="feed url"
         type="url"
         required
         @update:model-value="patch({ feed_url: toStringValue($event) })"
+      />
+      <BaseInput
+        :model-value="form.name"
+        placeholder="name"
+        aria-label="name"
+        required
+        @update:model-value="patch({ name: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.category"

@@ -603,7 +603,6 @@ class Settings(BaseSettings):
     # Weather
     WEATHER_DEFAULT_LABEL: str
     WEATHER_DEFAULT_QUERY: str
-    WORLD_TIME_API_BASE: str
 
     def stripe_checkout_enabled(self) -> bool:
         """Whether Stripe Checkout sessions can be created."""

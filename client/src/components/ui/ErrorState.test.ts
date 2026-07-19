@@ -17,7 +17,7 @@ describe("ErrorState", () => {
       props: {
         message: "Network error",
         showRetry: true,
-        retryLabel: "Try again",
+        retryLabel: "try again",
       },
     });
 

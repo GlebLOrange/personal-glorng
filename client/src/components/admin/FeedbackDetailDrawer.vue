@@ -44,15 +44,16 @@ const emit = defineEmits<{
 
     <template #footer>
       <div class="flex gap-3">
-        <BaseButton variant="primary" @click="emit('reply')">Reply</BaseButton>
+        <BaseButton variant="primary" size="sm" @click="emit('reply')">reply</BaseButton>
         <BaseButton
           v-if="item && item.status !== 'archived'"
           variant="ghost"
+          size="sm"
           @click="emit('archive')"
         >
-          Archive
+          archive
         </BaseButton>
-        <BaseButton variant="ghost" @click="emit('close')">close</BaseButton>
+        <BaseButton variant="ghost" size="sm" @click="emit('close')">close</BaseButton>
       </div>
     </template>
   </BaseDrawer>

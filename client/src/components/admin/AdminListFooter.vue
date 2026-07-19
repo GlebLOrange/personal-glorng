@@ -40,7 +40,7 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
     class="mt-4 grid grid-cols-[auto_1fr_auto] items-center gap-3"
     :aria-label="ariaLabel"
   >
-    <BaseButton variant="ghost" size="sm" :disabled="prevDisabled" @click="emit('prev')">
+    <BaseButton variant="ghost" :disabled="prevDisabled" @click="emit('prev')">
       previous
     </BaseButton>
     <p class="flex flex-wrap items-center justify-center gap-x-2 text-center text-xs text-surface-muted">
@@ -48,7 +48,7 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
       <span aria-hidden="true">·</span>
       <span>{{ pageLabel }}</span>
     </p>
-    <BaseButton variant="ghost" size="sm" :disabled="nextDisabled" @click="emit('next')">
+    <BaseButton variant="ghost" :disabled="nextDisabled" @click="emit('next')">
       next
     </BaseButton>
   </nav>

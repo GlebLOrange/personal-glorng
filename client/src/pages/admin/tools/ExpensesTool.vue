@@ -165,7 +165,7 @@ const persistenceHint = computed(() => {
       <Card variant="compact" class="flex flex-col gap-3">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
-            <p class="text-xs text-surface-mid uppercase tracking-wider">Period</p>
+            <p class="text-xs text-surface-mid">period</p>
             <p class="text-surface-light text-lg font-semibold">{{ monthLabel }}</p>
           </div>
           <ExpenseDateFilters
@@ -210,10 +210,10 @@ const persistenceHint = computed(() => {
       <Card variant="compact" class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <p class="text-sm text-surface-mid">{{ persistenceHint }}</p>
         <div v-if="isSuperuser" class="flex flex-wrap gap-2">
-          <BaseButton variant="ghost" size="sm" :disabled="loadingState" @click="loadState">
+          <BaseButton variant="ghost" :disabled="loadingState" @click="loadState">
             {{ loadingState ? "loading..." : "load" }}
           </BaseButton>
-          <BaseButton variant="primary" size="sm" :disabled="saving || !stateDirty" @click="saveState">
+          <BaseButton variant="primary" :disabled="saving || !stateDirty" @click="saveState">
             {{ saving ? "saving..." : "save" }}
           </BaseButton>
         </div>
@@ -223,7 +223,7 @@ const persistenceHint = computed(() => {
         <BaseSelect
           id="expenses-calculator-currency"
           v-model="calculatorDisplayCurrency"
-          label="Calculator currency"
+          label="calculator currency"
         >
           <option value="PLN">PLN</option>
           <option value="EUR">EUR</option>

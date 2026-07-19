@@ -183,7 +183,7 @@ onMounted(() => {
                 v-if="isSuperuser"
                 variant="primary"
                 size="sm"
-                class="ml-auto inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+                class="ml-auto"
                 :disabled="listLoading"
                 @click="openCreate"
               >

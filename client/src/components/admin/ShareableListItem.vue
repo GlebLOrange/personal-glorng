@@ -26,7 +26,7 @@ const emit = defineEmits<{
       </div>
       <div class="flex gap-2 ml-4">
         <BaseButton variant="ghost" size="sm" @click="emit('copy')">copy</BaseButton>
-        <BaseButton variant="ghost" size="sm" @click="emit('delete')">delete</BaseButton>
+        <BaseButton variant="ghost" danger size="sm" @click="emit('delete')">delete</BaseButton>
       </div>
     </div>
   </Card>

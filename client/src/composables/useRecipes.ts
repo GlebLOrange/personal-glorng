@@ -5,6 +5,7 @@ import { useApiAction } from "@/composables/useApiAction";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import { usePermissions } from "@/composables/usePermissions";
 import type { PaginatedRecipes, Recipe, RecipeSort } from "@/types";
 
 export interface RecipeFormData {
@@ -45,6 +46,7 @@ export function useRecipes() {
   const route = useRoute();
   const router = useRouter();
   const { toast } = useNotify();
+  const { can } = usePermissions();
 
   const recipes = ref<Recipe[]>([]);
   const allTags = ref<string[]>([]);
@@ -317,10 +319,28 @@ export function useRecipes() {
     await Promise.all([loadRecipes(), loadTags()]);
   }
 
+  async function openWriterEdit(recipeId: number): Promise<void> {
+    const listed = recipes.value.find((item) => item.id === recipeId);
+    if (listed) {
+      openEdit(listed);
+      return;
+    }
+    await openDetail(recipeId);
+    const loaded = selectedRecipe.value;
+    if (loaded) {
+      closeDetail();
+      openEdit(loaded);
+    }
+  }
+
   async function tryOpenFromQuery(): Promise<void> {
     const id = recipeQueryId();
     if (!id) return;
-    if (selectedRecipe.value?.id === id) return;
+    if (selectedRecipe.value?.id === id || editingId.value === id) return;
+    if (can("recipes", "write")) {
+      await openWriterEdit(id);
+      return;
+    }
     await openDetail(id);
   }
 
@@ -360,9 +380,18 @@ export function useRecipes() {
         }
         return;
       }
-      if (selectedRecipe.value?.id !== id && selectedRecipeId.value !== id) {
-        void openDetail(id);
+      if (
+        selectedRecipe.value?.id === id ||
+        selectedRecipeId.value === id ||
+        editingId.value === id
+      ) {
+        return;
       }
+      if (can("recipes", "write")) {
+        void openWriterEdit(id);
+        return;
+      }
+      void openDetail(id);
     },
   );
 

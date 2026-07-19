@@ -145,12 +145,12 @@ onUnmounted(() => {
           class="flex items-center justify-between gap-4 px-4 py-4 border-t border-surface-border"
         >
           <BaseButton variant="ghost" :disabled="stepIndex === 0" @click="goPrev">
-            Previous
+            previous
           </BaseButton>
           <BaseButton v-if="stepIndex < totalSteps - 1" variant="primary" @click="goNext">
-            Next
+            next
           </BaseButton>
-          <BaseButton v-else variant="primary" @click="emit('close')">Done</BaseButton>
+          <BaseButton v-else variant="primary" @click="emit('close')">done</BaseButton>
         </footer>
       </div>
     </Transition>

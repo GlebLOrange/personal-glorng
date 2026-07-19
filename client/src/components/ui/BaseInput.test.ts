@@ -31,4 +31,24 @@ describe("BaseInput", () => {
     expect(wrapper.get("#email-error").attributes("role")).toBe("alert");
     expect(wrapper.get("#email-error").text()).toBe("Required");
   });
+
+  it("keeps a faint full-width tip behind the value", async () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "title",
+        placeholder: "enter title",
+        modelValue: "",
+      },
+    });
+
+    expect(wrapper.find("label").exists()).toBe(false);
+    expect(wrapper.get("input").attributes("placeholder")).toBeUndefined();
+    expect(wrapper.get("#title-tip").text()).toBe("enter title");
+    expect(wrapper.get("#title-tip").classes()).toContain("absolute");
+    expect(wrapper.get("input").attributes("aria-label")).toBe("enter title");
+
+    await wrapper.setProps({ modelValue: "Pasta Carbonara" });
+    expect(wrapper.get("input").element).toHaveProperty("value", "Pasta Carbonara");
+    expect(wrapper.get("#title-tip").text()).toBe("enter title");
+  });
 });

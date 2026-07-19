@@ -364,7 +364,6 @@ function downloadResult(): void {
           v-if="canWrite"
           variant="secondary"
           size="sm"
-          class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
           :disabled="loading || !selectedFile"
           @click="importFile"
         >
@@ -374,7 +373,6 @@ function downloadResult(): void {
         <BaseButton
           variant="primary"
           size="sm"
-          class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
           :disabled="loading || !selectedFile"
           @click="extractFile"
         >
@@ -468,7 +466,7 @@ function downloadResult(): void {
     <Card v-if="batchHistory.length" class="space-y-3 mb-6">
       <div class="flex items-center justify-between gap-3">
         <h2 class="text-lg font-semibold text-surface-light">Recent imports</h2>
-        <BaseButton variant="ghost" @click="loadBatchHistory">Refresh</BaseButton>
+        <BaseButton variant="ghost" @click="loadBatchHistory">refresh</BaseButton>
       </div>
       <ul class="space-y-2">
         <li v-for="batch in batchHistory" :key="batch.id">
@@ -518,7 +516,7 @@ function downloadResult(): void {
           :disabled="loading"
           @click="promoteSelectedBatch"
         >
-          {{ loading ? "Working..." : "Promote pipe embed rows" }}
+          {{ loading ? "working..." : "promote pipe embed rows" }}
         </BaseButton>
       </div>
       <p v-if="promoteResult" class="text-xs text-surface-mid">
@@ -536,9 +534,9 @@ function downloadResult(): void {
         </div>
         <div class="flex gap-2">
           <BaseButton variant="ghost" @click="copyResult">copy json</BaseButton>
-          <BaseButton variant="ghost" @click="downloadResult">Download JSON</BaseButton>
+          <BaseButton variant="ghost" @click="downloadResult">download json</BaseButton>
           <BaseButton variant="ghost" @click="showRawJson = !showRawJson">
-            {{ showRawJson ? "Hide raw JSON" : "Show raw JSON" }}
+            {{ showRawJson ? "hide raw json" : "show raw json" }}
           </BaseButton>
         </div>
       </div>

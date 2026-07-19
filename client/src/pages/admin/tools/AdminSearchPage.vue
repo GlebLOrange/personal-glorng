@@ -71,20 +71,19 @@ function sourceLabel(type: string): string {
 <template>
   <AdminPageLayout title="search">
     <Card class="mb-6">
-      <form class="flex flex-wrap gap-3 items-end" @submit.prevent="search">
+      <form class="flex flex-wrap items-center gap-3" @submit.prevent="search">
         <BaseInput
           v-model="query"
-          compact
           placeholder="search (admin content)"
           aria-label="search (admin content)"
           class="min-w-[16rem] flex-1"
         />
-        <BaseSelect v-model="sourceType" compact aria-label="source">
+        <BaseSelect v-model="sourceType" aria-label="source">
           <option v-for="option in sourceTypeOptions" :key="option.value" :value="option.value">
             {{ option.label }}
           </option>
         </BaseSelect>
-        <BaseButton size="sm" type="submit" :disabled="loading || !query.trim()">
+        <BaseButton type="submit" :disabled="loading || !query.trim()">
           search
         </BaseButton>
       </form>

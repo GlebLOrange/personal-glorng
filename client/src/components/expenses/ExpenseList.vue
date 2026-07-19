@@ -28,7 +28,7 @@ const emit = defineEmits<{
 }>();
 
 const sortButtonClass =
-  "text-left hover:text-surface-light transition-colors tracking-wider text-xs";
+  "inline-flex h-11 items-center text-left hover:text-surface-light transition-colors tracking-wider text-xs";
 
 const skeletonRows = 5;
 </script>
@@ -46,7 +46,18 @@ const skeletonRows = 5;
   <template v-else>
     <!-- Mobile cards -->
     <div class="flex flex-col gap-3 md:hidden">
-      <Card v-for="expense in expenses" :key="expense.id" variant="compact">
+      <Card
+        v-for="expense in expenses"
+        :key="expense.id"
+        variant="compact"
+        interactive
+        hoverable
+        role="button"
+        tabindex="0"
+        class="cursor-pointer"
+        @click="emit('edit', expense)"
+        @keydown.enter.prevent="emit('edit', expense)"
+      >
         <div class="flex justify-between items-start gap-3">
           <div class="min-w-0">
             <p class="text-surface-light text-sm font-semibold truncate">{{ expense.tool_name }}</p>
@@ -79,7 +90,7 @@ const skeletonRows = 5;
             {{ expense.notes }}
           </p>
         </div>
-        <div class="flex gap-2 justify-end flex-wrap mt-3">
+        <div class="flex gap-2 justify-end flex-wrap mt-3" @click.stop @keydown.stop>
           <BaseButton
             variant="ghost"
             size="sm"
@@ -89,7 +100,7 @@ const skeletonRows = 5;
             duplicate
           </BaseButton>
           <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">edit</BaseButton>
-          <BaseButton variant="ghost" size="sm" @click="emit('delete', expense.id)">
+          <BaseButton variant="ghost" danger size="sm" @click="emit('delete', expense.id)">
             delete
           </BaseButton>
         </div>
@@ -101,40 +112,50 @@ const skeletonRows = 5;
       <table class="w-full text-sm font-data" :aria-label="`Expenses for ${monthLabel}`">
         <thead>
           <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card/80">
-            <th class="px-3 py-2" :aria-sort="sortAriaSort('date')">
+            <th class="px-3" :aria-sort="sortAriaSort('date')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'date')">
                 date{{ sortIndicator("date") }}
               </button>
             </th>
-            <th class="px-3 py-2" :aria-sort="sortAriaSort('category')">
+            <th class="px-3" :aria-sort="sortAriaSort('category')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'category')">
                 category{{ sortIndicator("category") }}
               </button>
             </th>
-            <th class="px-3 py-2" :aria-sort="sortAriaSort('product')">
+            <th class="px-3" :aria-sort="sortAriaSort('product')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'product')">
                 product{{ sortIndicator("product") }}
               </button>
             </th>
-            <th class="px-3 py-2 text-right" :aria-sort="sortAriaSort('amount')">
+            <th class="px-3 text-right" :aria-sort="sortAriaSort('amount')">
               <button
                 type="button"
-                :class="[sortButtonClass, 'w-full text-right']"
+                :class="[sortButtonClass, 'w-full justify-end text-right']"
                 @click="emit('sort', 'amount')"
               >
                 price{{ sortIndicator("amount") }}
               </button>
             </th>
-            <th class="px-3 py-2">source</th>
-            <th class="px-3 py-2">notes</th>
-            <th class="px-3 py-2 text-right">actions</th>
+            <th class="px-3">
+              <span class="inline-flex h-11 items-center text-xs tracking-wider">source</span>
+            </th>
+            <th class="px-3">
+              <span class="inline-flex h-11 items-center text-xs tracking-wider">notes</span>
+            </th>
+            <th class="px-3 text-right">
+              <span class="inline-flex h-11 items-center text-xs tracking-wider">actions</span>
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr
             v-for="expense in expenses"
             :key="expense.id"
-            class="border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50"
+            class="border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50 cursor-pointer"
+            role="button"
+            tabindex="0"
+            @click="emit('edit', expense)"
+            @keydown.enter.prevent="emit('edit', expense)"
           >
             <td class="px-3 py-2 whitespace-nowrap">
               {{ formatExpenseDate(expense.expense_date) }}
@@ -166,7 +187,7 @@ const skeletonRows = 5;
             <td class="px-3 py-2 text-surface-mid max-w-[200px] truncate font-sans">
               {{ expense.notes ?? "—" }}
             </td>
-            <td class="px-3 py-2 text-right whitespace-nowrap">
+            <td class="px-3 py-2 text-right whitespace-nowrap" @click.stop @keydown.stop>
               <BaseButton
                 variant="ghost"
                 size="sm"
@@ -178,7 +199,7 @@ const skeletonRows = 5;
               <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">
                 edit
               </BaseButton>
-              <BaseButton variant="ghost" size="sm" @click="emit('delete', expense.id)">
+              <BaseButton variant="ghost" danger size="sm" @click="emit('delete', expense.id)">
                 delete
               </BaseButton>
             </td>

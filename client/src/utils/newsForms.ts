@@ -84,6 +84,24 @@ export function sourceFromNewsLink(link: string, availableSources: NewsSource[])
   );
 }
 
+/** Derive a display name from a feed or article URL (host slug / aliases / {{markers}}). */
+export function sourceFromUrl(url: string): string | null {
+  const markedSource = sourceFromMarkedUrl(url);
+  if (markedSource) return markedSource;
+  try {
+    const sanitized = sanitizeNewsLink(url.trim());
+    if (!sanitized) return null;
+    const withProtocol = /^[a-z][a-z0-9+.-]*:\/\//i.test(sanitized)
+      ? sanitized
+      : `https://${sanitized}`;
+    const labels = new URL(withProtocol).hostname.toLowerCase().split(".").filter(Boolean);
+    const slug = labels.find((label) => !SOURCE_HOST_PREFIXES.has(label));
+    return slug ? sourceNameFromSlug(slug) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function normalizeHttpUrl(value: string): string | null {
   const trimmed = sanitizeNewsLink(value.trim());
   try {
@@ -97,18 +115,6 @@ export function normalizeHttpUrl(value: string): string | null {
 
 export function sourceKey(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
-}
-
-function sourceFromUrl(url: string): string | null {
-  const markedSource = sourceFromMarkedUrl(url);
-  if (markedSource) return markedSource;
-  try {
-    const labels = new URL(sanitizeNewsLink(url)).hostname.toLowerCase().split(".").filter(Boolean);
-    const slug = labels.find((label) => !SOURCE_HOST_PREFIXES.has(label));
-    return slug ? sourceNameFromSlug(slug) : null;
-  } catch {
-    return null;
-  }
 }
 
 function withoutHostSourceMarker(link: string): string {

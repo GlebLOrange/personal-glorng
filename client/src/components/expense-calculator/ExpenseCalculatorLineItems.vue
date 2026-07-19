@@ -29,6 +29,14 @@ function onAmountEnter(event: KeyboardEvent, index: number): void {
     inputs[index + 1]?.focus();
   });
 }
+
+function onAddItem(): void {
+  emit("add");
+  requestAnimationFrame(() => {
+    const inputs = document.querySelectorAll<HTMLInputElement>("[data-line-label]");
+    inputs[inputs.length - 1]?.focus();
+  });
+}
 </script>
 
 <template>
@@ -39,12 +47,12 @@ function onAmountEnter(event: KeyboardEvent, index: number): void {
           <p class="text-xs text-surface-mid uppercase tracking-wider">Itemized sum</p>
           <p class="text-xs text-surface-muted mt-1">Add line items and see a running total.</p>
         </div>
-        <BaseButton variant="primary" size="sm" @click="emit('add')">+ add item</BaseButton>
+        <BaseButton variant="primary" size="sm" @click="onAddItem">+ add item</BaseButton>
       </div>
 
       <div v-if="lineItems.length === 0" class="text-center py-8">
         <p class="text-sm text-surface-mid">no items yet.</p>
-        <BaseButton class="mt-3" variant="primary" @click="emit('add')">add your first item</BaseButton>
+        <BaseButton class="mt-3" variant="primary" @click="onAddItem">add your first item</BaseButton>
       </div>
 
       <ul v-else role="list" class="space-y-3">
@@ -73,6 +81,7 @@ function onAmountEnter(event: KeyboardEvent, index: number): void {
             </select>
           <BaseButton
             variant="ghost"
+            danger
             size="sm"
             :aria-label="`Remove ${item.label || 'item'}`"
             class="md:mb-0.5"

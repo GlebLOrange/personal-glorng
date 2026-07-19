@@ -1,48 +1,37 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+"""Tests for local World Time payloads."""
+
+from datetime import datetime
+from unittest.mock import AsyncMock, patch
+from zoneinfo import ZoneInfo
 
 import pytest
 from httpx import AsyncClient
 
 from app.services.world_time import WorldTimePayload, WorldTimeService
 
-WORLD_TIME_API_JSON = {
-    "timezone": "Europe/Warsaw",
-    "datetime": "2026-06-07T14:00:00+02:00",
-    "utc_datetime": "2026-06-07T12:00:00+00:00",
-    "utc_offset": "+02:00",
-    "unixtime": 1_780_833_600,
-    "dst": True,
-    "abbreviation": "CEST",
-}
-
-
-def _mock_world_time_client(payload: dict | None = None) -> MagicMock:
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = payload or WORLD_TIME_API_JSON
-
-    mock_client = MagicMock()
-    mock_client.get = AsyncMock(return_value=mock_response)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=None)
-    return mock_client
-
 
 @pytest.mark.asyncio
-async def test_fetch_timezone_time_parses_response() -> None:
-    with (
-        patch("app.services.world_time.cache_get", new=AsyncMock(return_value=None)),
-        patch("app.services.world_time.cache_set", new=AsyncMock()),
-        patch(
-            "app.services.world_time.httpx.AsyncClient",
-            return_value=_mock_world_time_client(),
-        ),
-    ):
-        result = await WorldTimeService().fetch_timezone_time("Europe/Warsaw")
+async def test_fetch_timezone_time_from_zoneinfo() -> None:
+    """IANA zones resolve to a full clock payload without an HTTP call."""
+    result = await WorldTimeService().fetch_timezone_time("Europe/Warsaw")
 
     assert isinstance(result, WorldTimePayload)
     assert result.timezone == "Europe/Warsaw"
-    assert result.unixtime == 1_780_833_600
+    assert result.utc_offset.startswith(("+", "-"))
+    assert ":" in result.utc_offset
+    assert result.unixtime > 0
+    assert result.datetime
+    assert result.utc_datetime
+    # Matches wall clock for that zone within a second of "now".
+    expected = int(datetime.now(ZoneInfo("Europe/Warsaw")).timestamp())
+    assert abs(result.unixtime - expected) <= 1
+
+
+@pytest.mark.asyncio
+async def test_fetch_timezone_time_rejects_unknown_zone() -> None:
+    """Unknown IANA ids return None."""
+    assert await WorldTimeService().fetch_timezone_time("Not/ARealZone") is None
+    assert await WorldTimeService().fetch_timezone_time("UTC") is None
 
 
 @pytest.mark.asyncio

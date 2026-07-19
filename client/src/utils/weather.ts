@@ -64,7 +64,7 @@ export function weatherUtcOffsetHours(data: WeatherData): number | null {
   return parseUtcOffsetHours(offset);
 }
 
-/** World Time API unix anchor from weather payload. */
+/** Unix time anchor from enriched weather payload. */
 export function weatherAnchorUnixtime(data: WeatherData): number | null {
   const unixtime = data.time_zone?.[0]?.unixtime;
   if (typeof unixtime !== "number" || !Number.isFinite(unixtime)) {

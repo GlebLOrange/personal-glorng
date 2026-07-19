@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { nextTick, watch } from "vue";
+
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
@@ -12,7 +14,7 @@ import {
 import { FIELD_INPUT_CLASS_COMPACT } from "@/constants/formClasses";
 import type { ExchangeRates, ExpenseCategory } from "@/types";
 
-defineProps<{
+const props = defineProps<{
   expenseCategories: ExpenseCategory[];
   editingCategoryId: number | null;
   exchangeRates: ExchangeRates | null;
@@ -30,18 +32,34 @@ const emit = defineEmits<{
   saveCategoryRename: [];
   removeCategory: [category: ExpenseCategory];
 }>();
+
+watch(
+  () => props.editingCategoryId,
+  async (id) => {
+    if (id == null) return;
+    await nextTick();
+    document
+      .querySelector<HTMLInputElement>(`[data-category-edit="${id}"]`)
+      ?.focus();
+  },
+);
+
+function onCategoryRowClick(category: ExpenseCategory): void {
+  if (props.editingCategoryId === category.id) return;
+  emit("startEditCategory", category);
+}
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
     <Card>
-      <BaseSelect v-model="displayCurrency" label="Ledger totals currency">
+      <BaseSelect v-model="displayCurrency" label="ledger totals currency">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>
     </Card>
 
     <Card v-if="exchangeRates">
-      <p class="text-xs text-surface-mid uppercase tracking-wider mb-3">Exchange rates</p>
+      <p class="text-xs text-surface-mid mb-3">exchange rates</p>
       <div class="flex flex-wrap gap-3 text-xs text-surface-mid">
         <span class="text-surface-light">1 {{ EXPENSE_DEFAULT_CURRENCY }} =</span>
         <span v-for="c in EXPENSE_EXCHANGE_RATE_TARGETS" :key="c">
@@ -51,20 +69,24 @@ const emit = defineEmits<{
     </Card>
 
     <Card>
-      <p class="text-xs text-surface-mid uppercase tracking-wider mb-3">Categories</p>
+      <p class="text-xs text-surface-mid mb-3">categories</p>
 
       <ul class="divide-y divide-surface-border rounded-lg border border-surface-border mb-3">
         <li
           v-for="category in expenseCategories"
           :key="category.id"
           class="flex flex-wrap items-center gap-2 px-3 py-2"
+          :class="editingCategoryId === category.id ? undefined : 'cursor-pointer'"
+          @click="onCategoryRowClick(category)"
         >
           <template v-if="editingCategoryId === category.id">
             <input
               v-model="editingCategoryName"
+              :data-category-edit="category.id"
               :class="[FIELD_INPUT_CLASS_COMPACT, 'flex-1 min-w-[8rem]']"
               aria-label="Category name"
               @keyup.enter="emit('saveCategoryRename')"
+              @click.stop
             />
             <input
               v-model="editingCategoryBudget"
@@ -74,11 +96,12 @@ const emit = defineEmits<{
               placeholder="budget"
               aria-label="budget"
               :class="[FIELD_INPUT_CLASS_COMPACT, 'w-28']"
+              @click.stop
             />
-            <BaseButton variant="primary" size="sm" @click="emit('saveCategoryRename')">
+            <BaseButton variant="primary" size="sm" @click.stop="emit('saveCategoryRename')">
               save
             </BaseButton>
-            <BaseButton variant="ghost" size="sm" @click="emit('cancelEditCategory')">
+            <BaseButton variant="ghost" size="sm" @click.stop="emit('cancelEditCategory')">
               cancel
             </BaseButton>
           </template>
@@ -89,10 +112,19 @@ const emit = defineEmits<{
                 budget {{ category.monthly_budget }}
               </span>
             </span>
-            <BaseButton variant="ghost" size="sm" @click="emit('startEditCategory', category)">
+            <BaseButton
+              variant="ghost"
+              size="sm"
+              @click.stop="emit('startEditCategory', category)"
+            >
               rename
             </BaseButton>
-            <BaseButton variant="ghost" size="sm" @click="emit('removeCategory', category)">
+            <BaseButton
+              variant="ghost"
+              danger
+              size="sm"
+              @click.stop="emit('removeCategory', category)"
+            >
               delete
             </BaseButton>
           </template>
@@ -102,11 +134,11 @@ const emit = defineEmits<{
       <form class="flex flex-col sm:flex-row sm:items-end gap-2" @submit.prevent="emit('addCategory')">
         <BaseInput
           v-model="newCategoryName"
-          label="New category"
+          label="new category"
           placeholder="name"
           class="flex-1"
         />
-        <BaseButton variant="primary" type="submit">add category</BaseButton>
+        <BaseButton variant="primary" type="submit" size="field">add category</BaseButton>
       </form>
       <p class="text-xs text-surface-mid mt-3">
         Renaming updates all expenses in that category. Optional monthly budget uses display

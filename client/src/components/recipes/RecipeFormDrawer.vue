@@ -7,7 +7,6 @@ import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
-import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import type { RecipeFormData } from "@/composables/useRecipes";
 
 const props = defineProps<{
@@ -109,64 +108,55 @@ function toNullableNumber(value: string | number | null | undefined): number | n
   if (value === "" || value == null) return null;
   return Number(value);
 }
-
-const inputClass = FIELD_INPUT_CLASS + " flex-1";
 </script>
 
 <template>
   <BaseDrawer :open="open" :title="formTitle" max-width="xl" @close="emit('close')">
-    <form id="recipe-form-drawer-form" class="space-y-6" @submit.prevent="emit('save')">
-      <section class="space-y-4">
-        <h3 class="text-sm font-medium text-surface-mid">basics</h3>
-        <BaseInput
-          :model-value="form.title"
-          placeholder="title"
-          aria-label="title"
-          @update:model-value="patch({ title: toStringValue($event) })"
-        />
-        <BaseInput
-          :model-value="form.image_url"
-          placeholder="image url (https://...)"
-          aria-label="image url (https://...)"
-          @update:model-value="patch({ image_url: toStringValue($event) })"
-        />
-        <BaseImage
-          v-if="showImagePreview"
-          :src="form.image_url"
-          :alt="form.title || 'Recipe preview'"
-          class="w-full h-40 rounded-md object-cover"
-        />
-      </section>
+    <form id="recipe-form-drawer-form" class="space-y-4" @submit.prevent="emit('save')">
+      <BaseInput
+        :model-value="form.title"
+        placeholder="enter title"
+        aria-label="title"
+        @update:model-value="patch({ title: toStringValue($event) })"
+      />
+      <BaseInput
+        :model-value="form.image_url"
+        placeholder="image url"
+        aria-label="image url"
+        @update:model-value="patch({ image_url: toStringValue($event) })"
+      />
+      <BaseImage
+        v-if="showImagePreview"
+        :src="form.image_url"
+        :alt="form.title || 'Recipe preview'"
+        class="w-full h-40 rounded-md object-cover"
+      />
 
-      <section class="space-y-4">
-        <h3 class="text-sm font-medium text-surface-mid">timing</h3>
-        <div class="grid grid-cols-3 gap-3">
-          <BaseInput
-            :model-value="form.prep_time"
-            type="number"
-            placeholder="prep (min)"
-            aria-label="prep (min)"
-            @update:model-value="patch({ prep_time: toNullableNumber($event) })"
-          />
-          <BaseInput
-            :model-value="form.cook_time"
-            type="number"
-            placeholder="cook (min)"
-            aria-label="cook (min)"
-            @update:model-value="patch({ cook_time: toNullableNumber($event) })"
-          />
-          <BaseInput
-            :model-value="form.servings"
-            type="number"
-            placeholder="servings"
-            aria-label="servings"
-            @update:model-value="patch({ servings: toNullableNumber($event) })"
-          />
-        </div>
-      </section>
+      <div class="grid grid-cols-3 gap-3">
+        <BaseInput
+          :model-value="form.prep_time"
+          type="number"
+          placeholder="prep · min"
+          aria-label="prep time in minutes"
+          @update:model-value="patch({ prep_time: toNullableNumber($event) })"
+        />
+        <BaseInput
+          :model-value="form.cook_time"
+          type="number"
+          placeholder="cook · min"
+          aria-label="cook time in minutes"
+          @update:model-value="patch({ cook_time: toNullableNumber($event) })"
+        />
+        <BaseInput
+          :model-value="form.servings"
+          type="number"
+          placeholder="servings"
+          aria-label="servings"
+          @update:model-value="patch({ servings: toNullableNumber($event) })"
+        />
+      </div>
 
-      <section class="space-y-3">
-        <h3 class="text-sm font-medium text-surface-mid">tags</h3>
+      <div class="space-y-2">
         <div v-if="parsedTags.length" class="flex flex-wrap gap-1.5">
           <button
             v-for="tag in parsedTags"
@@ -177,18 +167,18 @@ const inputClass = FIELD_INPUT_CLASS + " flex-1";
           >
             <RecipeTagChip :tag="tag" compact />
             <span
-              class="text-surface-mid group-hover:text-surface-light text-xs leading-none"
+              class="text-surface-mid text-xs leading-none group-hover:text-status-error"
               aria-hidden="true"
             >
               &times;
             </span>
-            <span class="sr-only">Remove {{ tag }}</span>
+            <span class="sr-only">remove {{ tag }}</span>
           </button>
         </div>
         <BaseInput
           :model-value="form.tags"
-          placeholder="tags (dinner, pasta, quick)"
-          aria-label="tags (dinner, pasta, quick)"
+          placeholder="tags · dinner, pasta"
+          aria-label="tags"
           @update:model-value="patch({ tags: toStringValue($event) })"
         />
         <div v-if="tagSuggestions.length" class="flex flex-wrap gap-1.5">
@@ -200,119 +190,127 @@ const inputClass = FIELD_INPUT_CLASS + " flex-1";
             @click="addTag(tag)"
           />
         </div>
-      </section>
+      </div>
 
-      <section class="space-y-3">
-        <h3 class="text-sm font-medium text-surface-mid">ingredients</h3>
-        <div class="space-y-2">
-          <div v-for="(_, idx) in form.ingredients" :key="idx" class="flex gap-2 items-start">
-            <input
-              :value="form.ingredients[idx]"
-              :class="inputClass"
-              :placeholder="`ingredient ${idx + 1}`"
-              :aria-label="`ingredient ${idx + 1}`"
-              @input="updateIngredient(idx, ($event.target as HTMLInputElement).value)"
-            />
-            <div class="flex flex-col gap-1 shrink-0">
-              <BaseButton
-                variant="ghost"
-                size="sm"
-                type="button"
-                :disabled="idx === 0"
-                aria-label="Move ingredient up"
-                @click="moveIngredient(idx, -1)"
-              >
-                ↑
-              </BaseButton>
-              <BaseButton
-                variant="ghost"
-                size="sm"
-                type="button"
-                :disabled="idx === form.ingredients.length - 1"
-                aria-label="Move ingredient down"
-                @click="moveIngredient(idx, 1)"
-              >
-                ↓
-              </BaseButton>
-            </div>
-            <BaseButton
-              v-if="form.ingredients.length > 1"
-              variant="ghost"
-              size="sm"
-              type="button"
-              aria-label="Remove ingredient"
-              @click="removeIngredient(idx)"
-            >
-              &times;
-            </BaseButton>
-          </div>
-          <BaseButton variant="ghost" size="sm" type="button" @click="addIngredient">
-            + ingredient
+      <div class="space-y-2">
+        <div
+          v-for="(_, idx) in form.ingredients"
+          :key="idx"
+          class="flex min-w-0 items-center gap-1"
+        >
+          <BaseButton
+            v-if="idx === 0"
+            variant="ghost"
+            type="button"
+            class="w-11 px-0"
+            aria-label="add ingredient"
+            @click="addIngredient"
+          >
+            +
+          </BaseButton>
+          <span v-else class="inline-flex h-11 w-11 shrink-0" aria-hidden="true" />
+          <BaseInput
+            :model-value="form.ingredients[idx]"
+            class="min-w-0 flex-1"
+            placeholder="ingredient"
+            :aria-label="`ingredient ${idx + 1}`"
+            @update:model-value="updateIngredient(idx, toStringValue($event))"
+          />
+          <BaseButton
+            variant="ghost"
+            type="button"
+            class="w-11 px-0"
+            :disabled="idx === 0"
+            aria-label="move ingredient up"
+            @click="moveIngredient(idx, -1)"
+          >
+            ↑
+          </BaseButton>
+          <BaseButton
+            variant="ghost"
+            type="button"
+            class="w-11 px-0"
+            :disabled="idx === form.ingredients.length - 1"
+            aria-label="move ingredient down"
+            @click="moveIngredient(idx, 1)"
+          >
+            ↓
+          </BaseButton>
+          <BaseButton
+            variant="ghost"
+            danger
+            type="button"
+            class="w-11 px-0"
+            :disabled="form.ingredients.length <= 1"
+            aria-label="remove ingredient"
+            @click="removeIngredient(idx)"
+          >
+            &times;
           </BaseButton>
         </div>
-      </section>
+      </div>
 
-      <section class="space-y-3">
-        <h3 class="text-sm font-medium text-surface-mid">steps</h3>
-        <div class="space-y-2">
-          <div v-for="(_, idx) in form.steps" :key="idx" class="flex gap-2 items-start">
-            <div class="text-surface-mid text-sm pt-2 w-6 text-right shrink-0">{{ idx + 1 }}.</div>
-            <div class="flex-1 min-w-0">
-              <BaseTextarea
-                :model-value="form.steps[idx]"
-                :rows="2"
-                :placeholder="`step ${idx + 1}`"
-                :aria-label="`step ${idx + 1}`"
-                @update:model-value="updateStep(idx, String($event ?? ''))"
-              />
-            </div>
-            <div class="flex flex-col gap-1 shrink-0">
-              <BaseButton
-                variant="ghost"
-                size="sm"
-                type="button"
-                :disabled="idx === 0"
-                aria-label="Move step up"
-                @click="moveStep(idx, -1)"
-              >
-                ↑
-              </BaseButton>
-              <BaseButton
-                variant="ghost"
-                size="sm"
-                type="button"
-                :disabled="idx === form.steps.length - 1"
-                aria-label="Move step down"
-                @click="moveStep(idx, 1)"
-              >
-                ↓
-              </BaseButton>
-            </div>
-            <BaseButton
-              v-if="form.steps.length > 1"
-              variant="ghost"
-              size="sm"
-              type="button"
-              aria-label="Remove step"
-              @click="removeStep(idx)"
-            >
-              &times;
-            </BaseButton>
-          </div>
-          <BaseButton variant="ghost" size="sm" type="button" @click="addStep"> + step </BaseButton>
+      <div class="space-y-2">
+        <div v-for="(_, idx) in form.steps" :key="idx" class="flex min-w-0 items-center gap-1">
+          <BaseButton
+            v-if="idx === 0"
+            variant="ghost"
+            type="button"
+            class="w-11 px-0"
+            aria-label="add step"
+            @click="addStep"
+          >
+            +
+          </BaseButton>
+          <span v-else class="inline-flex h-11 w-11 shrink-0" aria-hidden="true" />
+          <BaseInput
+            :model-value="form.steps[idx]"
+            class="min-w-0 flex-1"
+            placeholder="step"
+            :aria-label="`step ${idx + 1}`"
+            @update:model-value="updateStep(idx, toStringValue($event))"
+          />
+          <BaseButton
+            variant="ghost"
+            type="button"
+            class="w-11 px-0"
+            :disabled="idx === 0"
+            aria-label="move step up"
+            @click="moveStep(idx, -1)"
+          >
+            ↑
+          </BaseButton>
+          <BaseButton
+            variant="ghost"
+            type="button"
+            class="w-11 px-0"
+            :disabled="idx === form.steps.length - 1"
+            aria-label="move step down"
+            @click="moveStep(idx, 1)"
+          >
+            ↓
+          </BaseButton>
+          <BaseButton
+            variant="ghost"
+            danger
+            type="button"
+            class="w-11 px-0"
+            :disabled="form.steps.length <= 1"
+            aria-label="remove step"
+            @click="removeStep(idx)"
+          >
+            &times;
+          </BaseButton>
         </div>
-      </section>
+      </div>
 
-      <section class="space-y-3">
-        <h3 class="text-sm font-medium text-surface-mid">notes</h3>
-        <BaseTextarea
-          :model-value="form.notes"
-          :rows="3"
-          placeholder="notes (tips, variations, source link...)"
-          aria-label="notes (tips, variations, source link...)"
-          @update:model-value="patch({ notes: String($event ?? '') })"
-        />
-      </section>
+      <BaseTextarea
+        :model-value="form.notes"
+        :rows="3"
+        placeholder="notes · tips, variations"
+        aria-label="notes"
+        @update:model-value="patch({ notes: String($event ?? '') })"
+      />
     </form>
 
     <template #footer>

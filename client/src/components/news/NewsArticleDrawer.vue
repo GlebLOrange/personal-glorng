@@ -185,6 +185,7 @@ function toggleTheme(theme: string): void {
         <BaseButton
           v-if="mode === 'edit'"
           variant="ghost"
+          danger
           type="button"
           :disabled="loading"
           @click="emit('delete')"
