@@ -40,7 +40,7 @@ async function submit(): Promise<void> {
     <BaseInput
       id="weather-city"
       v-model="city"
-      placeholder="City"
+      placeholder="city"
       class="flex-1"
       :error="error ?? undefined"
       required
@@ -48,7 +48,7 @@ async function submit(): Promise<void> {
     <BaseInput
       id="weather-label"
       v-model="label"
-      placeholder="Label (optional)"
+      placeholder="label (optional)"
       class="sm:max-w-48"
     />
     <BaseButton
