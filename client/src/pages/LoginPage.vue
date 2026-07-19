@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { isFirebaseEnabled } from "@/constants/firebase";
 import { useNotify } from "@/composables/useNotify";
@@ -84,9 +85,9 @@ async function handleGoogleLogin(): Promise<void> {
           required
         />
         <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
-        <button type="submit" class="cta-primary w-full" :disabled="!canSubmit">
+        <BaseButton type="submit" variant="primary" class="w-full" :loading="loading" :disabled="!canSubmit">
           {{ loading ? "signing in..." : "login" }}
-        </button>
+        </BaseButton>
       </form>
 
       <div v-if="isFirebaseEnabled" class="mt-5">
@@ -95,15 +96,16 @@ async function handleGoogleLogin(): Promise<void> {
           <span>or</span>
           <span class="h-px flex-1 bg-surface-border" />
         </div>
-        <button
+        <BaseButton
           type="button"
-          class="cta-secondary w-full flex items-center justify-center gap-2"
-          :disabled="googleLoading"
+          variant="secondary"
+          class="w-full gap-2"
+          :loading="googleLoading"
           @click="handleGoogleLogin"
         >
           <span class="font-data text-sm" aria-hidden="true">G</span>
           {{ googleLoading ? "connecting..." : "continue with Google" }}
-        </button>
+        </BaseButton>
       </div>
 
       <p class="text-center text-xs text-surface-mid mt-4 space-x-3">

@@ -36,8 +36,23 @@ Symlinks `*_latest.*` point to the newest dump per type. Mongo and Postgres keep
 | `BACKUP_RETENTION_WEEKS` | `4` | Weekly Sunday copies kept longer |
 | `BACKUP_NOTIFY` | `true` | Telegram notify on result |
 | `BACKUP_TIMEZONE` | `Europe/Warsaw` | Cron timezone |
+| `BACKUP_OFFSITE_CMD` | _(empty)_ | Optional shell command after verify (e.g. rsync); failure fails the run |
 
 The script brings up `mongodb` and `redis` before dumping. With Postgres enabled it uses `--profile postgres` for the `db` service.
+
+### Offsite copy (optional)
+
+Local disk alone is not durable. Set `BACKUP_OFFSITE_CMD` to any command that copies `$BACKUP_DIR` (or the latest dumps) elsewhere. Examples:
+
+```bash
+# .env — rsync to another host
+BACKUP_OFFSITE_CMD='rsync -az --delete ./backups/ user@offsite:/var/backups/glorng/'
+
+# Dry-run / CI smoke: succeed without copying
+BACKUP_OFFSITE_CMD='true'
+```
+
+If the command exits non-zero, maintenance fails and Telegram (when enabled) reports failure. No S3/restic dependency is baked in — use whatever the host already has.
 
 ## Restore MongoDB (primary)
 
@@ -61,7 +76,9 @@ Then restart app services and confirm `/api/health`. Prefer restoring onto a thr
 1. Take a fresh `make backup` (or copy `*_latest.archive.gz`).
 2. Restore into a non-production Mongo (empty volume or separate compose project).
 3. Point a throwaway API at that DB and confirm login + one domain read (e.g. recipes or tasks).
-4. Record date and outcome in the deploy notes / PR that changes backup tooling.
+4. Record date and outcome below (and in the deploy notes / PR that changes backup tooling).
+
+**Last restore drill:** _yyyy-mm-dd — operator fills after drill_
 
 ## Pull prod backup to local dev
 

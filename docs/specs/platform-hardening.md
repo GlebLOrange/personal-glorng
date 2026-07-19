@@ -266,7 +266,8 @@ Do not pull into phases above unless idle:
 | Shared `httpx.AsyncClient` | Perf nicety |
 | Type-aware ESLint / typecheck tests | Tooling; separate PR |
 | VitePress `ignoreDeadLinks: false` | Needs link cleanup pass first |
-| Cloudflare real visitor IP + origin allowlist | Partly outside repo; track in ops issue |
+| Cloudflare real visitor IP (nginx overlay) | Done — `nginx/cloudflare_real_ip.conf` + `make prod-cloudflare` |
+| Origin allowlist (host firewall) | Operator-owned — documented in [Cloudflare](/operations/cloudflare#origin-allowlist-host-firewall) |
 | Full CodeQL/Trivy/SBOM | Security CI expansion; after Dependabot |
 
 ---

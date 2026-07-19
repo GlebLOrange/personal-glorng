@@ -77,6 +77,11 @@ class FakeRedis:
     async def get(self, key: str) -> str | None:
         return self._store.get(key)
 
+    async def getdel(self, key: str) -> str | None:
+        value = self._store.pop(key, None)
+        self._expiry.pop(key, None)
+        return value
+
     async def set(self, key: str, value: Any, ex: int | None = None) -> None:
         self._store[key] = str(value)
         if ex is not None:

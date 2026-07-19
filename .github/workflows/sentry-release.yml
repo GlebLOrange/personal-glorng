@@ -1,0 +1,40 @@
+# P2 — optional Sentry client release / sourcemap upload
+#
+# Runs only when repo secrets SENTRY_AUTH_TOKEN, SENTRY_ORG, and SENTRY_PROJECT
+# are set. Does not deploy; uploads source maps for the built SPA so client
+# stack traces resolve in Sentry.
+name: sentry-release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  client-sourcemaps:
+    if: ${{ secrets.SENTRY_AUTH_TOKEN != '' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      - name: Build client with Sentry upload
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_RELEASE: ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
+          # Align with SERVER_SENTRY_RELEASE / VITE_CLIENT_SENTRY_RELEASE at deploy
+          VITE_CLIENT_SENTRY_RELEASE: ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
+        run: npm run build

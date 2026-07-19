@@ -32,7 +32,7 @@ Elasticsearch is optional for search (`make dev-search`).
 | Store | Role |
 |-------|------|
 | **MongoDB** | Primary — users, tasks, recipes, expenses, files, etc. |
-| **Redis** | Token blacklist, rate limits, response cache, Celery results |
+| **Redis** | Token blacklist, rate limits, response cache, Telegram FSM |
 | **PostgreSQL** | Optional secondary — FTS search + audit (`--profile postgres`) |
 | **Elasticsearch** | Optional search backend (`make dev-search`) |
 
@@ -48,6 +48,14 @@ Channel adapter (Vue page, bot handler) → Service
 - Registry: [`server/app/platform/registry.py`](../../server/app/platform/registry.py)
 - Business logic: `server/app/services/`
 - HTTP routers: `server/app/routers/tools/`
+
+## Generated inventory
+
+The live platform catalog and Compose service list are exported by `make docs-generate`:
+
+- [Architecture inventory (generated)](/generated/architecture-inventory) — `PLATFORM_SERVICES` + `docker-compose.yml` services
+- [API endpoints (generated)](/generated/api-endpoints) — OpenAPI path table
+- [ADRs](/adr/) — architecture decision records
 
 ## Request hardening pipeline
 
@@ -119,3 +127,4 @@ Two complementary streams:
 - [Platform overview](/reference/platform)
 - [Security](/reference/security)
 - [API & tools](/reference/api-tools)
+- [Architecture inventory (generated)](/generated/architecture-inventory)

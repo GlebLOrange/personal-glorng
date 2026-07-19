@@ -3,7 +3,11 @@ import { computed, onMounted, onUnmounted, ref, useId } from "vue";
 
 import { useScrollLock } from "@/composables/useScrollLock";
 
-const props = defineProps<{ title?: string; maxWidth?: "md" | "lg" | "2xl" }>();
+const props = defineProps<{
+  title?: string;
+  maxWidth?: "md" | "lg" | "2xl";
+  ariaLabel?: string;
+}>();
 
 const widthClass: Record<string, string> = {
   md: "max-w-md",
@@ -59,6 +63,7 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 const labelledBy = computed(() => (props.title ? titleId : undefined));
+const dialogLabel = computed(() => (props.title ? undefined : (props.ariaLabel ?? "Dialog")));
 
 onMounted(() => {
   document.addEventListener("keydown", onKeydown);
@@ -99,6 +104,7 @@ onUnmounted(() => {
         role="dialog"
         aria-modal="true"
         :aria-labelledby="labelledBy"
+        :aria-label="dialogLabel"
         tabindex="-1"
         :class="[
           'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-sm focus:outline-none',

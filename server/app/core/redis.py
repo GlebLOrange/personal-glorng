@@ -10,6 +10,9 @@ from app.settings import get_settings
 
 _redis: Redis | None = None
 
+# Cap pool size so multi-worker API processes cannot unbounded-open connections.
+_MAX_CONNECTIONS = 50
+
 
 def _redis_endpoint(url: str) -> str:
     """Return host:port for logs without credentials."""
@@ -27,6 +30,7 @@ async def init_redis(url: str) -> None:
         decode_responses=True,
         socket_connect_timeout=5,
         socket_timeout=5,
+        max_connections=_MAX_CONNECTIONS,
     )
 
     endpoint = _redis_endpoint(url)
@@ -94,6 +98,16 @@ async def cache_delete(key: str) -> None:
         await get_redis_client().delete(key)
     except RedisError as exc:
         logger.warning("Redis cache_delete failed", error=exc, context={"key": key})
+
+
+async def cache_getdel(key: str) -> str | None:
+    """Atomically get and delete a key (one-time consume)."""
+    try:
+        result: Any = await get_redis_client().getdel(key)
+        return result
+    except RedisError as exc:
+        logger.warning("Redis cache_getdel failed", error=exc, context={"key": key})
+        return None
 
 
 async def blacklist_token(jti: str, ttl: int) -> None:

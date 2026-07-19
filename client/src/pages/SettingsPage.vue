@@ -203,7 +203,7 @@ async function deleteAccount(): Promise<void> {
 
       <Card>
         <CardHeader>
-          <CardTitle>Profile</CardTitle>
+          <CardTitle as="h3">Profile</CardTitle>
         </CardHeader>
         <CardBody>
         <form class="space-y-4" @submit.prevent="saveProfile">
@@ -231,7 +231,7 @@ async function deleteAccount(): Promise<void> {
 
       <Card>
         <CardHeader>
-          <CardTitle>Email</CardTitle>
+          <CardTitle as="h3">Email</CardTitle>
         </CardHeader>
         <CardBody>
         <form class="space-y-4" @submit.prevent="saveEmail">
@@ -262,7 +262,7 @@ async function deleteAccount(): Promise<void> {
 
       <Card>
         <CardHeader>
-          <CardTitle>Password</CardTitle>
+          <CardTitle as="h3">Password</CardTitle>
           <template #actions>
             <RouterLink to="/forgot-password" class="text-sm text-accent-blue hover:underline">
               forgot password?
@@ -316,7 +316,7 @@ async function deleteAccount(): Promise<void> {
 
       <Card>
         <CardHeader>
-          <CardTitle>Preferences</CardTitle>
+          <CardTitle as="h3">Preferences</CardTitle>
         </CardHeader>
         <CardBody>
         <form class="space-y-4" @submit.prevent="saveCurrency">
@@ -334,7 +334,7 @@ async function deleteAccount(): Promise<void> {
 
       <Card>
         <CardHeader>
-          <CardTitle>Integrations</CardTitle>
+          <CardTitle as="h3">Integrations</CardTitle>
         </CardHeader>
         <CardBody>
         <section class="space-y-4">
@@ -401,7 +401,7 @@ async function deleteAccount(): Promise<void> {
 
       <Card tint="danger">
         <CardHeader>
-          <h2 class="card-title text-status-error">Delete account</h2>
+          <CardTitle as="h3" class="text-status-error">Delete account</CardTitle>
         </CardHeader>
         <CardBody>
         <form class="space-y-4" @submit.prevent="deleteAccount">
@@ -414,8 +414,8 @@ async function deleteAccount(): Promise<void> {
             placeholder="••••••••"
             required
           />
-          <label class="flex items-start gap-2 text-xs text-surface-mid">
-            <input v-model="deleteConfirm" type="checkbox" class="mt-0.5 accent-status-error" />
+          <label class="flex items-start gap-3 min-h-11 text-xs text-surface-mid cursor-pointer">
+            <input v-model="deleteConfirm" type="checkbox" class="mt-1 accent-status-error" />
             <span>I understand this permanently deletes my account.</span>
           </label>
           <BaseButton type="submit" variant="secondary" :loading="deleting" :disabled="!canDeleteAccount">

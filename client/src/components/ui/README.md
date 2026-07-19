@@ -36,6 +36,8 @@ Use for **grouped content on a surface** — list items, settings sections, summ
 
 Do not use `cta-primary` inside tool screens; do not add gradients to `BaseButton`.
 
+**Marketing vs product accents** — portfolio/marketing pages may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI stays single `accent-blue`; no decorative gradients on buttons.
+
 ## Async UI pattern
 
 For data lists:
