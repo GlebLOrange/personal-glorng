@@ -2,7 +2,7 @@
 
 import secrets
 
-from app.core.redis import cache_delete, cache_get, cache_set
+from app.core.redis import cache_getdel, cache_set
 from app.core.redis_keys import OAUTH_GOOGLE_STATE_PREFIX
 
 _STATE_TTL_SECONDS = 600
@@ -29,11 +29,9 @@ async def store_google_oauth_state(*, state: str, telegram_user_id: int) -> None
 
 async def consume_google_oauth_state(state: str) -> int | None:
     """Validate and delete a one-time OAuth state; return Telegram user id."""
-    key = google_oauth_state_key(state)
-    telegram_user_id_str = await cache_get(key)
+    telegram_user_id_str = await cache_getdel(google_oauth_state_key(state))
     if not telegram_user_id_str:
         return None
-    await cache_delete(key)
     try:
         return int(telegram_user_id_str)
     except ValueError:

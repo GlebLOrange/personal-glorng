@@ -6,10 +6,40 @@ import pytest
 from httpx import AsyncClient
 
 from app.core.google_oauth_state import (
+    consume_google_oauth_state,
     generate_google_oauth_state,
     store_google_oauth_state,
 )
+from app.core.redis import cache_get, cache_getdel, cache_set
 from app.db.registry import DatabaseRegistry
+
+
+@pytest.mark.asyncio
+async def test_cache_getdel_returns_value_and_removes_key() -> None:
+    """GETDEL must be one-shot: second call is a miss."""
+    key = "test:getdel:once"
+    await cache_set(key, "payload", ttl=60)
+
+    first = await cache_getdel(key)
+    second = await cache_getdel(key)
+    leftover = await cache_get(key)
+
+    assert first == "payload"
+    assert second is None
+    assert leftover is None
+
+
+@pytest.mark.asyncio
+async def test_consume_google_oauth_state_is_atomic_one_time() -> None:
+    """Concurrent-style double consume must only succeed once."""
+    state = generate_google_oauth_state()
+    await store_google_oauth_state(state=state, telegram_user_id=42)
+
+    first = await consume_google_oauth_state(state)
+    second = await consume_google_oauth_state(state)
+
+    assert first == 42
+    assert second is None
 
 
 @pytest.mark.asyncio
