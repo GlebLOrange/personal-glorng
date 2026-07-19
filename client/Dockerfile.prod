@@ -9,7 +9,7 @@ RUN --mount=type=cache,target=/root/.npm \
 COPY . .
 RUN npm run build
 
-FROM nginx:1.30.2-alpine
+FROM nginx:1.31.3-alpine
 RUN adduser -D appuser
 USER appuser
 COPY --from=build /app/dist /dist
