@@ -38,7 +38,7 @@ jobs:
       - name: Pytest (P0 — exclude integration tier)
         env:
           GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.test
-        run: uv run pytest -m "not integration" -v
+        run: uv run pytest -m "not integration" -v --cov=app --cov-report=term-missing:skip-covered
 
   frontend:
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
           wait "$lint_pid"; lint_exit=$?
           wait "$format_pid"; format_exit=$?
           exit $((lint_exit || format_exit))
-      - run: npm run test
+      - run: npm run test:coverage
       - run: npm run build:check
       - uses: actions/upload-artifact@v7
         with:
@@ -169,15 +169,36 @@ jobs:
 
   docs:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: docs
     steps:
       - uses: actions/checkout@v7
+
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: npm
           cache-dependency-path: docs/package-lock.json
-      - run: npm ci
-      - run: npm run build
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Generate docs artifacts
+        working-directory: server
+        env:
+          GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.test
+          UV_PROJECT_ENVIRONMENT: /tmp/glorng-server-venv
+        run: |
+          uv sync --frozen
+          uv run python ../scripts/generate_docs.py
+
+      - name: Check generated docs are committed
+        run: |
+          git add --intent-to-add docs/generated docs/public/openapi.json
+          git diff --exit-code -- docs/generated docs/public/openapi.json \
+            || (echo "::error::docs/generated is stale — run make docs-generate and commit" && exit 1)
+
+      - name: Build VitePress
+        working-directory: docs
+        run: |
+          npm ci
+          npm run build

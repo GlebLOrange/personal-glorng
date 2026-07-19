@@ -9,7 +9,7 @@ from app.core.exceptions import ApiError
 from app.core.rate_limit import RateLimiter, rate_limit_auth
 from app.routers.donations import rate_limit_checkout
 from app.routers.feedback import rate_limit_feedback
-from app.routers.search import rate_limit_search_chat
+from app.routers.search import rate_limit_search_query
 from app.routers.tools.ai_chat import rate_limit_ai_chat
 from app.routers.tools.urlshortener import rate_limit_shortener_create
 from app.routers.tools.viddownload import rate_limit_vid_download
@@ -105,7 +105,7 @@ def test_abuse_sensitive_public_limiters_are_fail_closed() -> None:
     assert rate_limit_feedback.fail_open is False
     assert rate_limit_checkout.fail_open is False
     assert rate_limit_ai_chat.fail_open is False
-    assert rate_limit_search_chat.fail_open is False
+    assert rate_limit_search_query.fail_open is True
     assert rate_limit_shortener_create.fail_open is False
     assert rate_limit_vid_download.fail_open is False
     assert rate_limit_webhook.fail_open is False

@@ -9,7 +9,8 @@ from fastapi.responses import RedirectResponse
 from app.core.deps import CurrentUser
 from app.core.exceptions import ApiError, UnauthorizedError
 from app.core.logging import logger
-from app.core.redis import cache_delete, cache_get, cache_set
+from app.core.redis import cache_getdel, cache_set
+from app.core.redis_keys import OAUTH_GITHUB_STATE_PREFIX
 from app.db.deps import DbRegistry
 from app.db.documents.credential import GitHubCredential
 from app.schemas.github import (
@@ -39,7 +40,7 @@ _STATE_TTL_SECONDS = 600
 
 
 def _github_oauth_state_key(*, user_public_id: str) -> str:
-    return f"oauth:github:state:{user_public_id}"
+    return f"{OAUTH_GITHUB_STATE_PREFIX}{user_public_id}"
 
 
 @router.get(
@@ -122,12 +123,10 @@ async def github_callback(
         raise ApiError(503, "Credential store unavailable")
 
     state_key = _github_oauth_state_key(user_public_id=str(user.public_id))
-    expected_state = await cache_get(state_key)
+    expected_state = await cache_getdel(state_key)
     if not expected_state or expected_state != body.state:
         logger.warning("GitHub OAuth state mismatch", context={"user_id": user.id})
         raise UnauthorizedError("GitHub OAuth verification failed. Please retry.")
-
-    await cache_delete(state_key)
 
     access_token = await exchange_code_for_token(body.code)
     gh_user = await get_github_user(access_token)

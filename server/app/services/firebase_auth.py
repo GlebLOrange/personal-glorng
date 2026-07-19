@@ -7,7 +7,7 @@ import firebase_admin
 from firebase_admin import auth as firebase_auth
 from firebase_admin import credentials
 
-from app.core.exceptions import ForbiddenError, UnauthorizedError
+from app.core.exceptions import ConflictError, ForbiddenError, UnauthorizedError
 from app.core.security import create_access_token, create_refresh_token
 from app.db.documents.audit import AuditActorType, AuditCategory, AuditSource
 from app.db.documents.user import User
@@ -113,7 +113,12 @@ async def login_with_firebase_google(
             ),
         )
     elif not user.is_verified:
-        user = await registry.users.update_fields(user.id, is_verified=True)  # type: ignore[union-attr]
+        # Refuse linking: auto-verify would let an attacker who registered the
+        # email (unverified) take over when the real owner signs in with Google.
+        raise ConflictError(
+            "An unverified account already exists for this email. "
+            "Verify your email or reset your password before using Google sign-in."
+        )
 
     access_token = create_access_token(
         str(user.public_id),

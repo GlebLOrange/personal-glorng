@@ -340,12 +340,18 @@ class TaskRepository(MongoRepository[Task]):
         )
         return [_parse_doc(Task, row) async for row in cursor]
 
-    async def list_unsent_future_reminders(self, *, now: datetime) -> list[Reminder]:
-        cursor = self.db.reminders.find(
-            {"sent": False, "remind_at": {"$gt": now}}
-        ).sort(
-            "remind_at",
-            1,
+    async def list_unsent_future_reminders(
+        self,
+        *,
+        now: datetime,
+        limit: int = 500,
+        offset: int = 0,
+    ) -> list[Reminder]:
+        cursor = (
+            self.db.reminders.find({"sent": False, "remind_at": {"$gt": now}})
+            .sort("remind_at", 1)
+            .skip(offset)
+            .limit(limit)
         )
         return [_parse_doc(Reminder, row) async for row in cursor]
 

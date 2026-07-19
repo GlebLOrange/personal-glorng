@@ -13,22 +13,20 @@ Tests are organized into four tiers by CI cost and release risk.
 
 ### P0 — PR gate (default)
 
-- `uv run pytest -m "not integration"` — mongomock + FakeRedis (~375 cases)
-- `npm run test` — Vitest unit/component tests
+- `uv run pytest -m "not integration" -v --cov=app` — mongomock + FakeRedis (~430 cases) with coverage gate
+- `npm run test:coverage` — Vitest unit/component tests with statement threshold
 - `npm run lint` / `npm run build:check`
-- Playwright smoke (`client/e2e/smoke.spec.ts`)
+- Playwright E2E (`client/e2e/*.spec.ts`, including smoke + admin-tools)
 - Ruff check/format
 
 ### P1 — Nightly
 
 Automated today ([`nightly.yml`](../../.github/workflows/nightly.yml)):
 
-- `pytest -m postgres` — audit/search Postgres dual-write paths (requires migrations)
-- `pytest -m redis` — real Redis rate-limit and health checks
+- `pytest -m postgres` — audit/search Postgres dual-write paths (requires migrations; also marked `integration`)
+- `pytest -m redis` — real Redis rate-limit and health checks (also marked `integration`)
 
-Not yet in nightly CI (run locally / before release when needed):
-
-- Expanded admin Playwright flows (`client/e2e/admin-tools.spec.ts`)
+CI also runs `pytest -m postgres` on every PR via the `postgres-tests` job.
 
 ### P2 — Pre-release
 
@@ -61,14 +59,23 @@ Defined in [`server/pyproject.toml`](../../server/pyproject.toml):
 |--------|---------|
 | `postgres` | Requires `POSTGRES_TEST_URL` and Alembic migrations |
 | `redis` | Requires reachable `REDIS_URL` (real instance, not FakeRedis) |
-| `integration` | Slow multi-service tests (excluded from P0 default job) |
+| `integration` | Slow multi-service / real-infra tests (excluded from P0 default job) |
 | `e2e_api` | Full HTTP pipeline including middleware |
+
+Postgres and Redis integration modules carry both their specific marker and `integration`, so `-m "not integration"` keeps them out of the P0 gate.
+
+## Coverage
+
+- **Backend:** `pytest-cov` with `[tool.coverage.*]` in `server/pyproject.toml` (`fail_under = 65` on `app`, omitting todobot/migrations/seed). P0 CI passes `--cov=app`.
+- **Frontend:** Vitest `@vitest/coverage-v8` gates statements on well-tested paths (`components/ui`, `composables`, `utils`, `stores`, `platform`) with `statements: 25` in `client/vitest.config.ts`. P0 CI runs `npm run test:coverage`.
+
+Line coverage is a regression floor, not a substitute for the feature coverage map below.
 
 ## Running tests locally
 
 ```bash
 # Backend (CI-style, fast)
-cd server && uv run pytest -m "not integration" -v
+cd server && uv run pytest -m "not integration" -v --cov=app --cov-report=term-missing:skip-covered
 
 # Postgres integration
 POSTGRES_TEST_URL=postgresql+asyncpg://glorng:pass@127.0.0.1:5433/glorng \
@@ -79,7 +86,7 @@ POSTGRES_TEST_URL=postgresql+asyncpg://glorng:pass@127.0.0.1:5433/glorng \
 REDIS_URL=redis://:local@127.0.0.1:6379/0 uv run pytest -m redis -v
 
 # Frontend
-cd client && npm run test
+cd client && npm run test:coverage
 
 # E2E (API must be up)
 cd client && npm run build:check && \
@@ -107,7 +114,7 @@ npm run e2e
 | Registry parity | Maintain | `test_platform_parity.py`, `services.parity.test.ts` |
 | Portfolio / resume UI | Built | `resumeGlance.test.ts`, E2E smoke |
 | Admin UI harness | Built | `adminToolHarness.test.ts` |
-| Admin Playwright flows | Built (local / release) | `admin-tools.spec.ts` — not yet in nightly CI |
+| Admin Playwright flows | Built (P0 E2E) | `admin-tools.spec.ts` |
 
 ## Related
 

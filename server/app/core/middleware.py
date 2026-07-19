@@ -11,7 +11,7 @@ from starlette.responses import JSONResponse, Response
 from app.core.csrf import csrf_origin_rejected
 from app.core.logging import logger
 from app.core.request_context import request_id_var, user_id_var
-from app.core.security import access_token_from_request, user_id_from_access_token
+from app.core.security import access_token_from_request, decode_token
 from app.settings import get_settings
 
 _BODY_LOG_MAX_CHARS = 2048
@@ -25,7 +25,16 @@ _SKIP_BODY_LOG_CONTENT_TYPES = (
     "video/",
 )
 _SENSITIVE_BODY_KEYS = frozenset(
-    {"password", "token", "authorization", "secret", "cookie", "access_token"},
+    {
+        "password",
+        "token",
+        "authorization",
+        "secret",
+        "cookie",
+        "access_token",
+        "api_key",
+        "apikey",
+    },
 )
 
 
@@ -60,7 +69,28 @@ def _optional_user_id(request: Request) -> int | None:
     raw_token = access_token_from_request(request)
     if not raw_token:
         return None
-    return user_id_from_access_token(raw_token)
+    try:
+        payload = decode_token(raw_token)
+    except ValueError:
+        return None
+    # Stash for deps so authenticated requests decode JWT once.
+    request.state.access_token_raw = raw_token
+    request.state.access_token_payload = payload
+    if payload.get("type") != "access":
+        return None
+    uid = payload.get("uid")
+    if uid is not None:
+        try:
+            return int(uid)
+        except (ValueError, TypeError):
+            pass
+    sub = payload.get("sub")
+    if sub is None:
+        return None
+    try:
+        return int(sub)
+    except (ValueError, TypeError):
+        return None
 
 
 def _sanitize_body_for_log(
@@ -88,7 +118,8 @@ def _redact_body_dict(payload: dict[str, object]) -> dict[str, object]:
     redacted: dict[str, object] = {}
     for key, value in payload.items():
         if key.lower() in _SENSITIVE_BODY_KEYS or any(
-            marker in key.lower() for marker in ("password", "token", "secret")
+            marker in key.lower()
+            for marker in ("password", "token", "secret", "api_key", "apikey")
         ):
             redacted[key] = "[REDACTED]"
         else:

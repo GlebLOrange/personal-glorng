@@ -1,5 +1,6 @@
 """Superuser user management."""
 
+import asyncio
 import uuid
 from typing import Literal
 
@@ -35,17 +36,19 @@ async def list_users_paginated(
     status: StatusQuery = "all",
 ) -> AdminUserListResponse:
     offset, limit = paginate_params(page, per_page)
-    users = await registry.users.list_admin(  # type: ignore[union-attr]
-        offset=offset,
-        limit=limit,
-        search=search,
-        role=role,  # type: ignore[arg-type]
-        status=status,  # type: ignore[arg-type]
-    )
-    total = await registry.users.count_admin(  # type: ignore[union-attr]
-        search=search,
-        role=role,  # type: ignore[arg-type]
-        status=status,  # type: ignore[arg-type]
+    users, total = await asyncio.gather(
+        registry.users.list_admin(  # type: ignore[union-attr]
+            offset=offset,
+            limit=limit,
+            search=search,
+            role=role,  # type: ignore[arg-type]
+            status=status,  # type: ignore[arg-type]
+        ),
+        registry.users.count_admin(  # type: ignore[union-attr]
+            search=search,
+            role=role,  # type: ignore[arg-type]
+            status=status,  # type: ignore[arg-type]
+        ),
     )
     items = [AdminUserSummary.model_validate(user) for user in users]
     safe_page = max(1, page)

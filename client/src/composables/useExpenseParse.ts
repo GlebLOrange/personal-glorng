@@ -1,4 +1,4 @@
-import { ref, watch, type Ref } from "vue";
+import { onUnmounted, ref, watch, type Ref } from "vue";
 
 import { api } from "@/composables/useApi";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
@@ -29,10 +29,14 @@ export function useExpenseParse(smartText: Ref<string>, defaultCurrency: Ref<Cur
     }
   }
 
-  let debounceTimer: ReturnType<typeof setTimeout>;
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined;
   watch([smartText, defaultCurrency], () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => parseNow(smartText.value), 300);
+  });
+
+  onUnmounted(() => {
+    clearTimeout(debounceTimer);
   });
 
   return { parsed, parsing, parseNow };

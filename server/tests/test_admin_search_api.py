@@ -16,7 +16,7 @@ ADMIN_SEARCH_URL = "/api/tools/search"
 async def no_perms_client(
     client: AsyncClient,
     registry: DatabaseRegistry,
-) -> AsyncClient:
+):
     user = await create_user(
         registry,
         email="noperms-search@glorng.dev",
@@ -24,7 +24,10 @@ async def no_perms_client(
     )
     token = create_access_token(str(user.public_id), user_id=user.id)
     client.headers["Authorization"] = f"Bearer {token}"
-    return client
+    try:
+        yield client
+    finally:
+        client.headers.pop("Authorization", None)
 
 
 @pytest.mark.asyncio

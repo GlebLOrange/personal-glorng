@@ -42,6 +42,7 @@ load_env() {
   BACKUP_RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-7}"
   BACKUP_RETENTION_WEEKS="${BACKUP_RETENTION_WEEKS:-4}"
   BACKUP_NOTIFY="${BACKUP_NOTIFY:-true}"
+  BACKUP_OFFSITE_CMD="${BACKUP_OFFSITE_CMD:-}"
   LOCK_DIR="${BACKUP_DIR}/.db_maintenance.lock.d"
 }
 
@@ -223,6 +224,16 @@ notify_result() {
   compose exec -T server python -m app.scripts.notify_backup_result "$status" "$detail" || true
 }
 
+# Optional offsite copy after local verify. Operator supplies the full command
+# (e.g. rsync). Fail the run if it exits non-zero so Telegram notify sees failure.
+run_offsite_backup() {
+  if [[ -z "$BACKUP_OFFSITE_CMD" ]]; then
+    return 0
+  fi
+  log "Running offsite backup: $BACKUP_OFFSITE_CMD"
+  bash -c "$BACKUP_OFFSITE_CMD" || fail "offsite backup failed"
+}
+
 acquire_lock() {
   if command -v flock >/dev/null 2>&1; then
     exec 200>"${BACKUP_DIR}/.db_maintenance.flock"
@@ -269,6 +280,7 @@ main() {
   if postgres_enabled; then
     verify_postgres_backup "$pg_dump_path"
   fi
+  run_offsite_backup
 
   log "DB maintenance completed successfully"
   notify_result success "$detail"

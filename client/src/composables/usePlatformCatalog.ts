@@ -45,39 +45,52 @@ type ApiPlatformService = {
   public_route?: string | null;
 };
 
-/** Load platform catalog from API with static fallback. */
+const services = ref<PlatformService[]>(filterAiChat(PLATFORM_SERVICES));
+const loaded = ref(false);
+let loadPromise: Promise<void> | null = null;
+
+/** Load platform catalog from API with static fallback (module-level cache). */
 export function usePlatformCatalog(): {
   services: Ref<PlatformService[]>;
   load: () => Promise<void>;
 } {
-  const services = ref<PlatformService[]>(filterAiChat(PLATFORM_SERVICES));
-
   async function load(): Promise<void> {
-    try {
-      const { data } = await api.get<{
-        services: ApiPlatformService[];
-      }>("/platform/catalog");
-      services.value = filterAiChat(
-        data.services.map((s) =>
-          mapApiService({
-            slug: s.slug,
-            name: s.name,
-            category: s.category,
-            categoryLabel: s.category_label,
-            description: s.description,
-            apiPrefix: s.api_prefix,
-            adminRoute: s.admin_route,
-            icon: s.icon,
-            capabilities: s.capabilities,
-            external: s.external,
-            public: s.public,
-            publicRoute: s.public_route ?? undefined,
-          }),
-        ),
-      );
-    } catch {
-      services.value = filterAiChat(PLATFORM_SERVICES);
+    if (loaded.value) {
+      services.value = filterAiChat(services.value);
+      return;
     }
+    if (!loadPromise) {
+      loadPromise = (async () => {
+        try {
+          const { data } = await api.get<{
+            services: ApiPlatformService[];
+          }>("/platform/catalog");
+          services.value = filterAiChat(
+            data.services.map((s) =>
+              mapApiService({
+                slug: s.slug,
+                name: s.name,
+                category: s.category,
+                categoryLabel: s.category_label,
+                description: s.description,
+                apiPrefix: s.api_prefix,
+                adminRoute: s.admin_route,
+                icon: s.icon,
+                capabilities: s.capabilities,
+                external: s.external,
+                public: s.public,
+                publicRoute: s.public_route ?? undefined,
+              }),
+            ),
+          );
+        } catch {
+          services.value = filterAiChat(PLATFORM_SERVICES);
+        } finally {
+          loaded.value = true;
+        }
+      })();
+    }
+    await loadPromise;
   }
 
   return { services, load };

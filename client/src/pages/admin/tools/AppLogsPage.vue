@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useTemplateRef } from "vue";
+import { computed, onMounted, onUnmounted, ref, useTemplateRef } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
@@ -113,6 +113,10 @@ function clearFilters(): void {
   page.value = 1;
   void load();
 }
+
+onUnmounted(() => {
+  clearTimeout(requestIdTimer);
+});
 
 function goToPage(nextPage: number): void {
   if (nextPage < 1 || (totalPages.value > 0 && nextPage > totalPages.value)) return;

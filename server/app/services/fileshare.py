@@ -7,7 +7,13 @@ from pathlib import Path
 from app.core.exceptions import ApiError, NotFoundError
 from app.core.logging import logger
 from app.core.pagination import build_paginated
-from app.core.utils import DEFAULT_PER_PAGE, as_utc, generate_short_code, paginate_params, utc_now
+from app.core.utils import (
+    DEFAULT_PER_PAGE,
+    as_utc,
+    generate_short_code,
+    paginate_params,
+    utc_now,
+)
 from app.db.documents.fileshare import SharedFile
 from app.db.registry import DatabaseRegistry
 from app.schemas.fileshare import SharedFileListResponse, SharedFileResponse
@@ -236,8 +242,7 @@ async def get_by_code(
 async def cleanup_expired(registry: DatabaseRegistry) -> dict[str, int]:
     """Remove expired shared files from disk and database."""
     now = utc_now()
-    all_files = await _files(registry).list(limit=10_000)
-    expired = [shared for shared in all_files if as_utc(shared.expires_at) < now]
+    expired = await _files(registry).list_expired(before=now, limit=10_000)
 
     deleted_rows = 0
     deleted_files = 0

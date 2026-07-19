@@ -24,6 +24,20 @@ make prod-cloudflare   # + origin TLS on :443 for Cloudflare Full (strict)
 
 Cloudflare edge setup: [Cloudflare](/operations/cloudflare).
 
+## Sentry releases (optional CI)
+
+Client sourcemap upload is gated on GitHub Actions secrets (workflow [`sentry-release.yml`](../../.github/workflows/sentry-release.yml)):
+
+| Secret / env | Purpose |
+|--------------|---------|
+| `SENTRY_AUTH_TOKEN` | Auth for `@sentry/vite-plugin` (required to run the job) |
+| `SENTRY_ORG` / `SENTRY_PROJECT` | Sentry org and project slugs |
+| `VITE_CLIENT_SENTRY_DSN` | Runtime DSN (build-time Vite env on the deploy host, not the upload token) |
+| `SERVER_SENTRY_DSN` | Server/worker DSN on the API host |
+| `SERVER_SENTRY_RELEASE` / `VITE_CLIENT_SENTRY_RELEASE` | Same release string on client build and server so events group |
+
+Trigger: **Actions → sentry-release → Run workflow**, or push a `v*` tag. Without `SENTRY_AUTH_TOKEN`, the job is skipped (CI stays green). Staging still needs a manual deliberate-500 check after deploy.
+
 ## First-deploy checklist
 
 ```bash
@@ -117,3 +131,4 @@ Full tier matrix: [Testing — P3](/reference/testing#p3-staging-manual-deferred
 - [Database](/operations/database) — migrations and seeds
 - [Backup & restore](/operations/backup-restore)
 - [Security](/reference/security)
+- [DevOps checklist](/operations/devops-checklist)

@@ -2,6 +2,7 @@
 
 RATE_LIMIT_PREFIX = "rl:"
 BLACKLIST_PREFIX = "bl:"
+USER_CACHE_PREFIX = "user:v1:"
 CURRENCY_RATES_KEY = "currency:rates:USD"
 WEATHER_PREFIX = "weather:"
 TIMEZONE_PREFIX = "tz_info:"

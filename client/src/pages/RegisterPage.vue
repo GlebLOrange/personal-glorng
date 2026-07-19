@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { useNotify } from "@/composables/useNotify";
 import { useAuthStore } from "@/stores/auth";
@@ -37,10 +38,6 @@ const canSubmit = computed(
 );
 
 async function handleRegister(): Promise<void> {
-  if (!passwordsMatch.value) {
-    formError.value = "Passwords do not match";
-    return;
-  }
   if (!canSubmit.value) return;
   loading.value = true;
   formError.value = "";
@@ -76,9 +73,9 @@ async function handleRegister(): Promise<void> {
           We sent a verification link to <strong class="text-surface-light">{{ email }}</strong
           >. Open it to activate your account, then log in.
         </p>
-        <button type="button" class="cta-primary w-full" @click="router.push('/login')">
+        <BaseButton type="button" variant="primary" class="w-full" @click="router.push('/login')">
           go to login
-        </button>
+        </BaseButton>
       </div>
 
       <form v-else class="space-y-4" @submit.prevent="handleRegister">
@@ -131,15 +128,9 @@ async function handleRegister(): Promise<void> {
           autocomplete="new-password"
           label="confirm password"
           placeholder="confirm password"
+          :error="passwordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
           required
         />
-        <p
-          v-if="passwordConfirm && !passwordsMatch"
-          class="text-xs text-status-error"
-          role="alert"
-        >
-          Passwords do not match
-        </p>
         <label class="flex items-start gap-3 min-h-11 text-xs text-surface-mid cursor-pointer">
           <input
             v-model="acceptTerms"
@@ -154,9 +145,9 @@ async function handleRegister(): Promise<void> {
           </span>
         </label>
         <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
-        <button type="submit" class="cta-primary w-full" :disabled="!canSubmit">
+        <BaseButton type="submit" variant="primary" class="w-full" :loading="loading" :disabled="!canSubmit">
           {{ loading ? "creating account..." : "create account" }}
-        </button>
+        </BaseButton>
       </form>
 
       <p class="text-center text-xs text-surface-mid mt-6">
