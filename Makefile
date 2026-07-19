@@ -1,8 +1,9 @@
-.PHONY: dev dev-lite dev-lite-client docs-dev docs-build
+.PHONY: dev dev-lite dev-lite-client docs-dev docs-build docs-generate adr-new
 .PHONY: dev-ultra-lite-infra dev-ultra-lite-server dev-search dev-postgres dev-worker dev-bot dev-full
 .PHONY: prod prod-cloudflare test lint lint-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed seed-ultra-lite seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
 
 msg ?=
+TITLE ?=
 CHECK_DB ?= 1
 COMPOSE_ULTRA = docker compose -f docker-compose.yml -f docker-compose.ultra-lite.yml
 COMPOSE_CACHE = -f docker-compose.cache.yml
@@ -132,8 +133,16 @@ backup-install:
 db-pull-prod:
 	bash scripts/pull_prod_db.sh
 
-docs-dev:
+docs-generate:
+	cd server && GLORNG_ENV_FILE=$(CURDIR)/server/tests/.env.test \
+		UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv \
+		uv run python ../scripts/generate_docs.py
+
+docs-dev: docs-generate
 	cd docs && npm run dev
 
-docs-build:
+docs-build: docs-generate
 	cd docs && npm run build
+
+adr-new:
+	TITLE="$(TITLE)" bash scripts/adr-new.sh

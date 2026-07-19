@@ -18,12 +18,16 @@ Open [http://localhost](http://localhost) or [http://localhost:3000](http://loca
 
 | Resource | Link |
 |----------|------|
+| **Handbook (published)** | [gleblorange.github.io/portfolio-glorng](https://gleblorange.github.io/portfolio-glorng/) |
 | **Handbook (local)** | `make docs-dev` → [http://localhost:5173](http://localhost:5173) |
-| **Handbook (GitHub)** | [docs/index.md](docs/index.md) |
+| **Handbook (source)** | [docs/index.md](docs/index.md) |
 | **API / Postman** | [docs/reference/postman.md](docs/reference/postman.md) |
+| **ADRs** | [docs/adr/](docs/adr/) |
 | **Cursor / agents** | [AGENTS.md](AGENTS.md) |
 
 Topics: [getting started](docs/guide/getting-started.md), [architecture](docs/guide/architecture.md), [development](docs/guide/development.md), [deployment](docs/operations/deployment.md), [API reference](docs/reference/api-tools.md), [Postman](docs/reference/postman.md), [configuration](docs/reference/configuration.md), [security](docs/reference/security.md).
+
+After API or platform-registry changes, refresh generated docs: `make docs-generate`.
 
 ## Tech stack
 
@@ -48,7 +52,8 @@ docs/      VitePress handbook
 | `make dev-lite` + `make dev-lite-client` | Default dev workflow |
 | `make prod` | Production stack |
 | `make check` | CI-equivalent lint + tests + client build |
-| `make docs-dev` / `make docs-build` | Documentation site |
+| `make docs-dev` / `make docs-build` | Documentation site (`docs-generate` first) |
+| `make docs-generate` | Export OpenAPI + architecture inventory |
 
 See [Development](docs/guide/development.md) for all `make` targets.
 

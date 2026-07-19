@@ -49,6 +49,14 @@ Channel adapter (Vue page, bot handler) → Service
 - Business logic: `server/app/services/`
 - HTTP routers: `server/app/routers/tools/`
 
+## Generated inventory
+
+The live platform catalog and Compose service list are exported by `make docs-generate`:
+
+- [Architecture inventory (generated)](/generated/architecture-inventory) — `PLATFORM_SERVICES` + `docker-compose.yml` services
+- [API endpoints (generated)](/generated/api-endpoints) — OpenAPI path table
+- [ADRs](/adr/) — architecture decision records
+
 ## Request hardening pipeline
 
 Every HTTP request passes through `RequestIdMiddleware` before route handlers. Rate limits attach per-route via FastAPI `Depends`.
@@ -119,3 +127,4 @@ Two complementary streams:
 - [Platform overview](/reference/platform)
 - [Security](/reference/security)
 - [API & tools](/reference/api-tools)
+- [Architecture inventory (generated)](/generated/architecture-inventory)

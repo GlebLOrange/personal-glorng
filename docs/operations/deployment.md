@@ -24,6 +24,8 @@ make prod-cloudflare   # + origin TLS on :443 for Cloudflare Full (strict)
 
 Cloudflare edge setup: [Cloudflare](/operations/cloudflare).
 
+Compose service names for the base stack are listed in the [architecture inventory (generated)](/generated/architecture-inventory).
+
 ## First-deploy checklist
 
 ```bash

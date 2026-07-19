@@ -28,7 +28,13 @@ Re-import after router changes to pick up new endpoints. For an offline snapshot
 curl -sf http://127.0.0.1:8000/api/openapi.json -o /tmp/glorng-openapi.json
 ```
 
-Then Import → File. Do not commit generated JSON to git — it goes stale quickly.
+Then Import → File. Prefer the committed snapshot from `make docs-generate` when the API is not running:
+
+```bash
+# docs/public/openapi.json (also docs/generated/openapi.json)
+```
+
+Re-run `make docs-generate` after router changes so the handbook schema stays current.
 
 ## Environment
 
