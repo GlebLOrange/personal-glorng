@@ -20,7 +20,7 @@ const recipe: Recipe = {
 };
 
 describe("RecipeCard", () => {
-  it("is keyboard-selectable", async () => {
+  it("selects via a dedicated button without wrapping tag chips", async () => {
     const wrapper = mount(RecipeCard, {
       props: {
         recipe,
@@ -29,16 +29,20 @@ describe("RecipeCard", () => {
       global: {
         stubs: {
           BaseImage: true,
-          RecipeTagChip: true,
         },
       },
     });
 
-    const card = wrapper.get('[role="button"]');
-    expect(card.attributes("tabindex")).toBe("0");
+    expect(wrapper.find('[role="button"]').exists()).toBe(false);
 
-    await card.trigger("keydown.enter");
-
+    const openButton = wrapper.get('button[aria-label="Open recipe Tomato Soup"]');
+    await openButton.trigger("click");
     expect(wrapper.emitted("select")).toEqual([[42]]);
+
+    const tagChip = wrapper.findAll("button").find((btn) => btn.text() === "quick");
+    expect(tagChip).toBeTruthy();
+    await tagChip!.trigger("click");
+    expect(wrapper.emitted("tagClick")).toEqual([["quick"]]);
+    expect(openButton.element.contains(tagChip!.element)).toBe(false);
   });
 });

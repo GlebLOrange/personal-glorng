@@ -17,40 +17,38 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <Card
-    hoverable
-    interactive
-    class="cursor-pointer flex flex-col"
-    role="button"
-    tabindex="0"
-    :aria-label="`Open recipe ${recipe.title}`"
-    @click="emit('select', recipe.id)"
-    @keydown.enter.prevent="emit('select', recipe.id)"
-    @keydown.space.prevent="emit('select', recipe.id)"
-  >
-    <BaseImage
-      :src="recipe.image_url"
-      :alt="recipe.title"
-      class="w-full h-40 rounded-md mb-3 -mt-1 object-cover"
-    />
+  <Card hoverable class="flex flex-col">
+    <!-- Select target is a real button; tags stay sibling controls (no nested interactives). -->
+    <button
+      type="button"
+      class="text-left w-full rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+      :aria-label="`Open recipe ${recipe.title}`"
+      @click="emit('select', recipe.id)"
+    >
+      <BaseImage
+        :src="recipe.image_url"
+        :alt="recipe.title"
+        class="w-full h-40 rounded-md mb-3 -mt-1 object-cover"
+      />
 
-    <h3 class="text-surface-light font-bold text-sm mb-2 line-clamp-2">{{ recipe.title }}</h3>
+      <h3 class="text-surface-light font-bold text-sm mb-2 line-clamp-2">{{ recipe.title }}</h3>
 
-    <div v-if="recipe.tags.length" class="flex flex-wrap gap-1.5 mb-3">
+      <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-surface-mid">
+        <span v-if="recipe.prep_time">{{ formatRecipeTime(recipe.prep_time) }} prep</span>
+        <span v-if="recipe.cook_time">{{ formatRecipeTime(recipe.cook_time) }} cook</span>
+        <span v-if="recipe.servings">{{ recipe.servings }} servings</span>
+      </div>
+    </button>
+
+    <div v-if="recipe.tags.length" class="flex flex-wrap gap-1.5 mt-3">
       <RecipeTagChip
         v-for="tag in recipe.tags"
         :key="tag"
         :tag="tag"
         :active="activeTags.includes(tag)"
         compact
-        @click.stop="emit('tagClick', tag)"
+        @click="emit('tagClick', tag)"
       />
-    </div>
-
-    <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-surface-mid mt-auto">
-      <span v-if="recipe.prep_time">{{ formatRecipeTime(recipe.prep_time) }} prep</span>
-      <span v-if="recipe.cook_time">{{ formatRecipeTime(recipe.cook_time) }} cook</span>
-      <span v-if="recipe.servings">{{ recipe.servings }} servings</span>
     </div>
   </Card>
 </template>
