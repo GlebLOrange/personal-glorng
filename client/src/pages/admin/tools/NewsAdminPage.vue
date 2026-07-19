@@ -449,7 +449,7 @@ watch(page, () => {
               :disabled="actionLoading"
               @click="openCreate"
             >
-              + new article
+              + article
             </BaseButton>
           </div>
         </div>
