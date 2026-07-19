@@ -17,7 +17,7 @@ import httpx
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
-from app.core.url_safety import is_public_http_url
+from app.core.url_safety import get_public_http_url, is_public_http_url
 from app.core.xml_security import has_unsafe_xml_declaration
 from app.db.documents.news import NewsSource
 from app.schemas.news import (
@@ -320,20 +320,25 @@ class NewsIngestService:
         ]
         processed = created = skipped = failed = 0
         remaining = max(1, settings.NEWS_INGEST_MAX_ITEMS_PER_RUN)
-        async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
+        async with httpx.AsyncClient(timeout=15) as client:
             for source in sources:
                 if remaining <= 0:
                     break
                 try:
-                    response = await client.get(source.feed_url)
-                    response.raise_for_status()
-                    if len(response.content) > _MAX_FEED_BYTES:
-                        raise ValueError("Feed response is too large")
-                    if not is_public_http_url(str(response.url)):
-                        raise ValueError("Feed redirect target is not allowed")
-                    items = parse_feed(response.text, source)[
-                        : source.max_items_per_run
-                    ]
+                    if not is_public_http_url(source.feed_url):
+                        raise ValueError("Feed URL is not allowed")
+                    response = await get_public_http_url(client, source.feed_url)
+                    try:
+                        response.raise_for_status()
+                        if len(response.content) > _MAX_FEED_BYTES:
+                            raise ValueError("Feed response is too large")
+                        if not is_public_http_url(str(response.url)):
+                            raise ValueError("Feed redirect target is not allowed")
+                        items = parse_feed(response.text, source)[
+                            : source.max_items_per_run
+                        ]
+                    finally:
+                        await response.aclose()
                 except Exception as exc:
                     failed += 1
                     logger.warning(

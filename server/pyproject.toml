@@ -28,6 +28,7 @@ dependencies = [
     "motor==3.7.*",
     "weasyprint==69.*",
     "firebase-admin>=7.5.0",
+    "defusedxml==0.7.*",
 ]
 
 [dependency-groups]

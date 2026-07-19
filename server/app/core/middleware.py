@@ -15,9 +15,45 @@ from app.core.security import access_token_from_request, user_id_from_access_tok
 from app.settings import get_settings
 
 _BODY_LOG_MAX_CHARS = 2048
+_BODY_LOG_MAX_BYTES = 64 * 1024
+_SKIP_BODY_LOG_CONTENT_TYPES = (
+    "multipart/form-data",
+    "application/octet-stream",
+    "application/pdf",
+    "image/",
+    "audio/",
+    "video/",
+)
 _SENSITIVE_BODY_KEYS = frozenset(
     {"password", "token", "authorization", "secret", "cookie", "access_token"},
 )
+
+
+def _should_skip_body_log(content_type: str | None) -> bool:
+    if not content_type:
+        return False
+    lowered = content_type.lower()
+    return any(marker in lowered for marker in _SKIP_BODY_LOG_CONTENT_TYPES)
+
+
+async def _read_body_for_log(request: Request) -> bytes | None:
+    """Read a bounded body for logging, or None when logging should be skipped."""
+    content_type = request.headers.get("content-type")
+    if _should_skip_body_log(content_type):
+        return None
+
+    content_length = request.headers.get("content-length")
+    if content_length is not None:
+        try:
+            if int(content_length) > _BODY_LOG_MAX_BYTES:
+                return None
+        except ValueError:
+            return None
+
+    body_bytes = await request.body()
+    if len(body_bytes) > _BODY_LOG_MAX_BYTES:
+        return None
+    return body_bytes
 
 
 def _optional_user_id(request: Request) -> int | None:
@@ -91,16 +127,21 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
 
         body_log: str | None = None
         if settings.LOG_REQUEST_BODIES and request.method in {"POST", "PUT", "PATCH"}:
-            body_bytes = await request.body()
+            body_bytes = await _read_body_for_log(request)
+            if body_bytes is not None:
 
-            async def receive() -> dict[str, object]:
-                return {"type": "http.request", "body": body_bytes, "more_body": False}
+                async def receive() -> dict[str, object]:
+                    return {
+                        "type": "http.request",
+                        "body": body_bytes,
+                        "more_body": False,
+                    }
 
-            request = Request(request.scope, receive)
-            body_log = _sanitize_body_for_log(
-                body_bytes,
-                content_type=request.headers.get("content-type"),
-            )
+                request = Request(request.scope, receive)
+                body_log = _sanitize_body_for_log(
+                    body_bytes,
+                    content_type=request.headers.get("content-type"),
+                )
 
         if settings.LOG_REQUESTS:
             started_context = dict(log_ctx)
