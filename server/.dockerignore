@@ -1,0 +1,13 @@
+.venv
+.mypy_cache
+.pytest_cache
+.ruff_cache
+tests
+media
+celerybeat-schedule
+.env
+.env.*
+**/__pycache__
+__pycache__
+*.pyc
+.python-version
