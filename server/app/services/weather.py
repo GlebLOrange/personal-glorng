@@ -11,11 +11,13 @@ from app.core.cache_json import safe_cache_json_loads
 from app.core.exceptions import ApiError, ValidationError
 from app.core.logging import logger
 from app.core.redis import cache_get, cache_set
+from app.core.redis_keys import TIMEZONE_PREFIX, WEATHER_PREFIX
 from app.services.world_time import WorldTimePayload, WorldTimeService
 
 WEATHER_API_URL = "https://wttr.in"
 OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 TZ_INFO_CACHE_TTL = 86_400
+_MAX_CITY_LEN = 64
 _CITY_PATTERN = re.compile(r"^[a-zA-Z\s\-'.]+$")
 _COORD_PATTERN = re.compile(r"^-?\d{1,3}(\.\d+)?,-?\d{1,3}(\.\d+)?$")
 
@@ -29,16 +31,20 @@ class TimezoneInfo:
 def is_valid_location(location: str) -> bool:
     """Return True when location is a valid city name or lat,lon pair."""
     trimmed = location.strip()
-    if not trimmed:
+    if not trimmed or len(trimmed) > _MAX_CITY_LEN:
         return False
     return bool(_CITY_PATTERN.match(trimmed) or _COORD_PATTERN.match(trimmed))
 
 
 def normalize_location(location: str) -> str:
-    """Normalize location for cache keys and wttr.in requests."""
+    """Normalize location for cache keys and wttr.in requests.
+
+    Coordinate pairs are rounded to 2 decimal places to bound Redis key cardinality.
+    """
     trimmed = location.strip()
     if _COORD_PATTERN.match(trimmed):
-        return trimmed
+        lat_s, lon_s = trimmed.split(",", 1)
+        return f"{float(lat_s):.2f},{float(lon_s):.2f}"
     return trimmed.lower()
 
 
@@ -129,14 +135,12 @@ def _needs_time_enrichment(data: dict[str, Any]) -> bool:
     if not isinstance(timezone, str) or not timezone.strip():
         return True
     utc_offset = zone.get("utcOffset")
-    if not isinstance(utc_offset, str) or not utc_offset.strip():
-        return True
-    return False
+    return not isinstance(utc_offset, str) or not utc_offset.strip()
 
 
 async def _resolve_timezone_info(lat: float, lon: float) -> TimezoneInfo | None:
     """Resolve IANA timezone and UTC offset for coordinates via Open-Meteo."""
-    cache_key = f"tz_info:{lat:.2f},{lon:.2f}"
+    cache_key = f"{TIMEZONE_PREFIX}{lat:.2f},{lon:.2f}"
     cached = await cache_get(cache_key)
     if cached is not None:
         try:
@@ -222,7 +226,7 @@ class WeatherService:
             raise ValidationError("Location contains invalid characters")
 
         normalized = normalize_location(trimmed)
-        cache_key = f"weather:{normalized}"
+        cache_key = f"{WEATHER_PREFIX}{normalized}"
         cached = await cache_get(cache_key)
         if cached:
             logger.debug("Weather cache hit", context={"location": normalized})

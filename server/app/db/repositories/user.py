@@ -1,3 +1,4 @@
+import asyncio
 import re
 import uuid
 from typing import Any, Literal
@@ -89,10 +90,12 @@ class UserRepository(MongoRepository[User]):
         return await self._col().count_documents(query)
 
     async def admin_stats(self) -> dict[str, int]:
-        total = await self._col().count_documents({})
-        superuser_count = await self.count_superusers(SUPERUSER_PERMISSION)
-        protected_count = await self._col().count_documents({"is_protected": True})
-        unverified_count = await self._col().count_documents({"is_verified": False})
+        total, superuser_count, protected_count, unverified_count = await asyncio.gather(
+            self._col().count_documents({}),
+            self.count_superusers(SUPERUSER_PERMISSION),
+            self._col().count_documents({"is_protected": True}),
+            self._col().count_documents({"is_verified": False}),
+        )
         return {
             "total": total,
             "superuser_count": superuser_count,
@@ -102,3 +105,19 @@ class UserRepository(MongoRepository[User]):
 
     async def count_superusers(self, permission: str) -> int:
         return await self._col().count_documents({"permissions": permission})
+
+    async def update_fields(self, doc_id: int, **fields: Any) -> User:
+        user = await super().update_fields(doc_id, **fields)
+        # Lazy import: user_cache → documents.user → app.db package init → this module.
+        from app.core.user_cache import invalidate_user_cache
+
+        await invalidate_user_cache(user.public_id)
+        return user
+
+    async def delete(self, doc_id: int) -> None:
+        user = await self.get_or_none(doc_id)
+        await super().delete(doc_id)
+        if user is not None:
+            from app.core.user_cache import invalidate_user_cache
+
+            await invalidate_user_cache(user.public_id)

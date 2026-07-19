@@ -57,13 +57,25 @@ async def _resolve_user_from_token(
     raw_token: str,
     *,
     strict: bool = False,
+    request: Request | None = None,
 ) -> User | None:
-    try:
-        payload = decode_token(raw_token)
-    except ValueError:
-        if strict:
-            raise UnauthorizedError("Invalid token") from None
-        return None
+    payload: dict | None = None
+    if request is not None:
+        cached_raw = getattr(request.state, "access_token_raw", None)
+        cached_payload = getattr(request.state, "access_token_payload", None)
+        if cached_raw == raw_token and isinstance(cached_payload, dict):
+            payload = cached_payload
+
+    if payload is None:
+        try:
+            payload = decode_token(raw_token)
+        except ValueError:
+            if strict:
+                raise UnauthorizedError("Invalid token") from None
+            return None
+        if request is not None:
+            request.state.access_token_raw = raw_token
+            request.state.access_token_payload = payload
 
     if payload.get("type") != "access":
         if strict:
@@ -112,7 +124,12 @@ async def get_current_user(
     if not raw_token:
         raise UnauthorizedError("Not authenticated")
 
-    user = await _resolve_user_from_token(registry, raw_token, strict=True)
+    user = await _resolve_user_from_token(
+        registry,
+        raw_token,
+        strict=True,
+        request=request,
+    )
     return user  # strict=True raises before returning None
 
 
@@ -129,7 +146,7 @@ async def get_optional_current_user(
     if not raw_token:
         return None
 
-    return await _resolve_user_from_token(registry, raw_token)
+    return await _resolve_user_from_token(registry, raw_token, request=request)
 
 
 OptionalUser = Annotated[User | None, Depends(get_optional_current_user)]

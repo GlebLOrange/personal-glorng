@@ -31,6 +31,9 @@ export function useUserPreferences() {
   const loading = ref(false);
 
   async function loadPreferences(): Promise<void> {
+    if (preferencesLoaded.value) {
+      return;
+    }
     if (!auth.isAuthenticated) {
       displayCurrency.value = readLocalCurrency();
       preferencesLoaded.value = true;

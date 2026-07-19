@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -62,6 +62,10 @@ function scheduleConvert(): void {
     void runConvert();
   }, 300);
 }
+
+onUnmounted(() => {
+  if (convertTimer) clearTimeout(convertTimer);
+});
 
 function swapCurrencies(): void {
   const prev = fromCurrency.value;

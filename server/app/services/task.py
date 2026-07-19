@@ -4,8 +4,8 @@ from datetime import UTC, datetime, timedelta
 
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import logger
-from app.core.utils import DEFAULT_PER_PAGE, as_utc, paginate_params
 from app.core.pagination import build_paginated
+from app.core.utils import DEFAULT_PER_PAGE, as_utc, paginate_params
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.db.documents.task import (
     GoogleSyncQueue,
@@ -360,8 +360,17 @@ class TaskService:
             status=TaskStatus.PENDING,
         )
 
-    async def get_unsent_reminders(self) -> list[Reminder]:
-        return await self._tasks().list_unsent_future_reminders(now=datetime.now(UTC))
+    async def get_unsent_reminders(
+        self,
+        *,
+        limit: int = _TASK_WORKER_BATCH_LIMIT,
+        offset: int = 0,
+    ) -> list[Reminder]:
+        return await self._tasks().list_unsent_future_reminders(
+            now=datetime.now(UTC),
+            limit=limit,
+            offset=offset,
+        )
 
     async def get_overdue_pending_tasks(
         self,
@@ -460,8 +469,16 @@ async def get_pending_tasks(registry: DatabaseRegistry, **kwargs: object) -> lis
     return await TaskService(registry).get_pending_tasks(**kwargs)  # type: ignore[arg-type]
 
 
-async def get_unsent_reminders(registry: DatabaseRegistry) -> list[Reminder]:
-    return await TaskService(registry).get_unsent_reminders()
+async def get_unsent_reminders(
+    registry: DatabaseRegistry,
+    *,
+    limit: int = _TASK_WORKER_BATCH_LIMIT,
+    offset: int = 0,
+) -> list[Reminder]:
+    return await TaskService(registry).get_unsent_reminders(
+        limit=limit,
+        offset=offset,
+    )
 
 
 async def get_overdue_pending_tasks(registry: DatabaseRegistry) -> list[Task]:

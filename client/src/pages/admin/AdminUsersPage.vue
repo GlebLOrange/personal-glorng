@@ -289,7 +289,10 @@ onMounted(() => {
   void Promise.all([loadUsers(), loadUserStats(), loadPlatformCatalog()]);
 });
 
-onUnmounted(() => document.removeEventListener("keydown", onKeydown));
+onUnmounted(() => {
+  document.removeEventListener("keydown", onKeydown);
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+});
 </script>
 
 <template>

@@ -63,7 +63,7 @@ async def change_email(
     current_password: str,
 ) -> tuple[User, str]:
     """Change email and require re-verification."""
-    if not verify_password(current_password, user.hashed_password):
+    if not await verify_password(current_password, user.hashed_password):
         raise UnauthorizedError("Current password is incorrect")
 
     normalized = new_email.strip().lower()
@@ -106,12 +106,12 @@ async def change_password(
     new_password: str,
 ) -> User:
     """Change password for the authenticated user."""
-    if not verify_password(current_password, user.hashed_password):
+    if not await verify_password(current_password, user.hashed_password):
         raise UnauthorizedError("Current password is incorrect")
 
     user = await registry.users.update_fields(  # type: ignore[union-attr]
         user.id,
-        hashed_password=hash_password(new_password),
+        hashed_password=await hash_password(new_password),
         session_version=int(user.session_version or 0) + 1,
     )
 
@@ -185,7 +185,7 @@ async def delete_account(
         if superuser_count <= 1:
             raise ConflictError("Cannot delete the last superuser account")
 
-    if not verify_password(current_password, user.hashed_password):
+    if not await verify_password(current_password, user.hashed_password):
         raise UnauthorizedError("Current password is incorrect")
 
     user_id = user.id

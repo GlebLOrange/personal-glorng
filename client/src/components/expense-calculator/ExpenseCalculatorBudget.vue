@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -15,7 +17,7 @@ interface BudgetRowView {
   overBudget: boolean;
 }
 
-defineProps<{
+const props = defineProps<{
   budgetRows: ExpenseCalculatorBudgetRow[];
   budgetSummary: {
     totalBudget: number;
@@ -33,6 +35,14 @@ const emit = defineEmits<{
   add: [];
   remove: [id: string];
 }>();
+
+const summaryById = computed(() => {
+  const map = new Map<string, BudgetRowView>();
+  for (const row of props.budgetSummary.rows) {
+    map.set(row.id, row);
+  }
+  return map;
+});
 </script>
 
 <template>
@@ -110,12 +120,11 @@ const emit = defineEmits<{
             </BaseButton>
           </div>
 
-          <template v-if="row.name.trim()">
-            <div
-              v-for="view in budgetSummary.rows.filter((item) => item.id === row.id)"
-              :key="view.id"
-              class="flex flex-col gap-1"
-            >
+          <template
+            v-for="view in [summaryById.get(row.id)]"
+            :key="`${row.id}-summary`"
+          >
+            <div v-if="row.name.trim() && view" class="flex flex-col gap-1">
               <div class="flex justify-between text-xs">
                 <span class="text-surface-mid">
                   {{ view.percent }}% ·

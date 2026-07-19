@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.db.documents.fileshare import SharedFile
@@ -13,3 +15,18 @@ class FileShareRepository(MongoRepository[SharedFile]):
         if data is None:
             return None
         return _parse_doc(SharedFile, data)
+
+    async def list_expired(
+        self,
+        *,
+        before: datetime,
+        limit: int = 10_000,
+    ) -> list[SharedFile]:
+        """Return shares whose expires_at is strictly before ``before``."""
+        cursor = (
+            self._col()
+            .find({"expires_at": {"$lt": before}})
+            .sort("expires_at", 1)
+            .limit(limit)
+        )
+        return [_parse_doc(SharedFile, row) async for row in cursor]

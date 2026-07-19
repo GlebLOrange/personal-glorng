@@ -97,6 +97,9 @@ async def cache_delete(key: str) -> None:
 
 
 async def blacklist_token(jti: str, ttl: int) -> None:
+    # Redis rejects EX 0; skip already-expired tokens.
+    if ttl <= 0:
+        return
     await get_redis_client().set(f"{BLACKLIST_PREFIX}{jti}", "1", ex=ttl)
 
 
