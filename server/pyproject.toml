@@ -14,7 +14,7 @@ dependencies = [
     "redis[hiredis]==8.0.*",
     "celery==5.6.*",
     "kombu==5.6.*",
-    "sentry-sdk[fastapi]==2.64.*",
+    "sentry-sdk[fastapi]==2.66.*",
     "httpx==0.28.*",
     "loguru==0.7.*",
     "python-multipart==0.0.*",
