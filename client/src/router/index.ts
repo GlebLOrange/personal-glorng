@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled } from "@/utils/featureFlags";
 import { installScrollRestore, resolveScrollBehavior } from "@/utils/scrollRestore";
+import { applyRouteSeo } from "@/composables/useRouteSeo";
 import { safeRedirectPath } from "@/utils/safeUrl";
 
 const routes: RouteRecordRaw[] = [
@@ -12,71 +13,101 @@ const routes: RouteRecordRaw[] = [
     path: "/",
     name: "portfolio",
     component: () => import("@/pages/PortfolioPage.vue"),
+    meta: {
+      title: "Developer Portfolio",
+      description:
+        "Gleb.Y — developer portfolio, tools, and curated news. Full-stack delivery of web apps, APIs, and product platforms.",
+    },
   },
   {
     path: "/login",
     name: "login",
     component: () => import("@/pages/LoginPage.vue"),
+    meta: { title: "Login", noindex: true },
   },
   {
     path: "/register",
     name: "register",
     component: () => import("@/pages/RegisterPage.vue"),
+    meta: { title: "Create account", noindex: true },
   },
   {
     path: "/verify-email",
     name: "verify-email",
     component: () => import("@/pages/VerifyEmailPage.vue"),
+    meta: { title: "Verify email", noindex: true },
   },
   {
     path: "/forgot-password",
     name: "forgot-password",
     component: () => import("@/pages/ForgotPasswordPage.vue"),
+    meta: { title: "Forgot password", noindex: true },
   },
   {
     path: "/reset-password",
     name: "reset-password",
     component: () => import("@/pages/ResetPasswordPage.vue"),
+    meta: { title: "Reset password", noindex: true },
   },
   {
     path: "/settings",
     name: "settings",
     component: () => import("@/pages/SettingsPage.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, title: "Settings", noindex: true },
   },
   {
     path: "/admin",
     name: "admin",
     component: () => import("@/pages/admin/DashboardPage.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, title: "Admin", noindex: true },
   },
   {
     path: "/admin/users",
     name: "admin-users",
     component: () => import("@/pages/admin/AdminUsersPage.vue"),
-    meta: { requiresAuth: true, requiresSuperuser: true, scrollRestore: "volatile" },
+    meta: {
+      requiresAuth: true,
+      requiresSuperuser: true,
+      scrollRestore: "volatile",
+      title: "Users",
+      noindex: true,
+    },
   },
   {
     path: "/tools",
     name: "tools",
     component: () => import("@/pages/ToolsPage.vue"),
+    meta: {
+      title: "Tools",
+      description: "Public utilities — calculator, password generator, recipes, weather, and more.",
+    },
   },
   {
     path: "/news",
     name: "news",
     component: () => import("@/pages/NewsRoutePage.vue"),
-    meta: { resolveSession: true, scrollRestore: "volatile" },
+    meta: {
+      resolveSession: true,
+      scrollRestore: "volatile",
+      title: "News",
+      description: "Curated worldwide news digest with source attribution.",
+    },
   },
   {
     path: "/calculator",
     name: "calculator",
     component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
+    meta: { title: "Calculator", description: "Quick math calculations." },
   },
   {
     path: "/expense-calculator",
     name: "expense-calculator",
     component: () => import("@/pages/admin/tools/ExpenseCalculatorTool.vue"),
-    meta: { resolveSession: true },
+    meta: {
+      resolveSession: true,
+      title: "Expense calculator",
+      description: "Convert currencies, sum line items, and plan budgets.",
+    },
   },
   {
     path: "/admin/tools/calculator",
@@ -86,6 +117,7 @@ const routes: RouteRecordRaw[] = [
     path: "/password-generator",
     name: "password-generator",
     component: () => import("@/pages/admin/tools/PasswordGeneratorTool.vue"),
+    meta: { title: "Password generator", description: "Generate strong random passwords." },
   },
   {
     path: "/admin/tools/password-generator",
@@ -95,13 +127,21 @@ const routes: RouteRecordRaw[] = [
     path: "/recipes",
     name: "recipes",
     component: () => import("@/pages/admin/tools/RecipesPage.vue"),
-    meta: { scrollRestore: "volatile" },
+    meta: {
+      scrollRestore: "volatile",
+      title: "Recipes",
+      description: "Personal recipe book and food notes.",
+    },
   },
   {
     path: "/news/:slug",
     name: "news-article",
     component: () => import("@/pages/NewsArticlePage.vue"),
-    meta: { scrollRestore: "volatile" },
+    meta: {
+      scrollRestore: "volatile",
+      title: "Article",
+      description: "Curated news summary with source attribution.",
+    },
   },
   {
     path: "/admin/tools/recipes",
@@ -111,6 +151,7 @@ const routes: RouteRecordRaw[] = [
     path: "/shortener",
     name: "shortener",
     component: () => import("@/pages/admin/tools/UrlShortenerTool.vue"),
+    meta: { title: "URL shortener", description: "Create and manage short URLs." },
   },
   {
     path: "/admin/tools/url-shortener",
@@ -120,6 +161,7 @@ const routes: RouteRecordRaw[] = [
     path: "/vid-download",
     name: "vid-download",
     component: () => import("@/pages/admin/tools/VidDownloadTool.vue"),
+    meta: { title: "Video download", description: "Download videos with yt-dlp." },
   },
   {
     path: "/admin/tools/vid-download",
@@ -217,7 +259,11 @@ const routes: RouteRecordRaw[] = [
     path: "/weather",
     name: WEATHER_ROUTE_NAME,
     component: () => import("@/pages/WeatherPage.vue"),
-    meta: { scrollRestore: "live" },
+    meta: {
+      scrollRestore: "live",
+      title: "Weather",
+      description: "Weather lookup, saved locations, and local time.",
+    },
   },
   {
     path: "/time-date-weather-location",
@@ -231,11 +277,13 @@ const routes: RouteRecordRaw[] = [
     path: "/privacy",
     name: "privacy",
     component: () => import("@/pages/PrivacyPage.vue"),
+    meta: { title: "Privacy policy" },
   },
   {
     path: "/:pathMatch(.*)*",
     name: "not-found",
     component: () => import("@/pages/NotFoundPage.vue"),
+    meta: { title: "Not found", noindex: true },
   },
 ];
 
@@ -327,6 +375,10 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
   next();
+});
+
+router.afterEach((to) => {
+  applyRouteSeo(to);
 });
 
 export default router;

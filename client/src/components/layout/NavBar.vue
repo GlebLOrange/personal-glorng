@@ -8,7 +8,8 @@ import { useAuthStore } from "@/stores/auth";
 
 const headerEl = ref<HTMLElement | null>(null);
 const menuToggleButton = ref<HTMLButtonElement | null>(null);
-const headerSpacerHeight = ref(0);
+/* Reserve chrome height before ResizeObserver to reduce CLS */
+const headerSpacerHeight = ref(72);
 let resizeObserver: ResizeObserver | null = null;
 let mobileNavMq: MediaQueryList | null = null;
 let syncMobileNav: (() => void) | null = null;
