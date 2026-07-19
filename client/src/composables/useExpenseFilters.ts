@@ -1,4 +1,4 @@
-import { computed, ref, watch, type Ref } from "vue";
+import { computed, onUnmounted, ref, watch, type Ref } from "vue";
 
 import {
   isValidDateRange,
@@ -162,7 +162,7 @@ export function useExpenseFilters(
     return params;
   }
 
-  let debounceTimer: ReturnType<typeof setTimeout>;
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined;
   watch(productFilter, () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(onProductFilterChange, 300);
@@ -176,6 +176,10 @@ export function useExpenseFilters(
     if (!bounds) return;
     dateFrom.value = bounds.from;
     dateTo.value = bounds.to;
+  });
+
+  onUnmounted(() => {
+    clearTimeout(debounceTimer);
   });
 
   return {

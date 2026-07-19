@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
@@ -7,6 +7,7 @@ import { useScrollDirection } from "@/composables/useScrollDirection";
 import { useAuthStore } from "@/stores/auth";
 
 const headerEl = ref<HTMLElement | null>(null);
+const menuToggleButton = ref<HTMLButtonElement | null>(null);
 const headerSpacerHeight = ref(0);
 let resizeObserver: ResizeObserver | null = null;
 let mobileNavMq: MediaQueryList | null = null;
@@ -21,8 +22,26 @@ const { isHidden: isHeaderHidden, show: showHeader } = useScrollDirection({
   disabled: () => mobileOpen.value || isMobileNav.value,
 });
 
-watch(mobileOpen, (open) => {
-  if (open) showHeader();
+function setPageInert(open: boolean): void {
+  const main = document.getElementById("main-content");
+  const footer = document.querySelector("footer");
+  if (open) {
+    main?.setAttribute("inert", "");
+    footer?.setAttribute("inert", "");
+  } else {
+    main?.removeAttribute("inert");
+    footer?.removeAttribute("inert");
+  }
+}
+
+watch(mobileOpen, async (open) => {
+  if (open) {
+    showHeader();
+  } else {
+    await nextTick();
+    menuToggleButton.value?.focus();
+  }
+  setPageInert(open);
 });
 
 onMounted(() => {
@@ -51,6 +70,7 @@ onBeforeUnmount(() => {
   syncMobileNav = null;
   resizeObserver?.disconnect();
   resizeObserver = null;
+  setPageInert(false);
 });
 
 function handleLogout(): void {
@@ -143,6 +163,7 @@ function closeMobileMenu(): void {
           </div>
 
           <button
+            ref="menuToggleButton"
             type="button"
             class="md:hidden interactive-surface inline-flex min-h-11 min-w-11 items-center justify-center text-surface-light"
             :aria-expanded="mobileOpen"
@@ -168,5 +189,12 @@ function closeMobileMenu(): void {
 
       <NavMobileMenu :open="mobileOpen" @close="closeMobileMenu" />
     </header>
+
+    <div
+      v-if="mobileOpen"
+      class="fixed inset-0 z-30 bg-surface-dark/50 md:hidden"
+      aria-hidden="true"
+      @click="closeMobileMenu"
+    />
   </div>
 </template>

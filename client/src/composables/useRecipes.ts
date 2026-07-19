@@ -1,4 +1,4 @@
-import { computed, ref, watch } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useApiAction } from "@/composables/useApiAction";
@@ -324,13 +324,17 @@ export function useRecipes() {
     await openDetail(id);
   }
 
-  let debounceTimer: ReturnType<typeof setTimeout>;
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined;
   watch(search, () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       page.value = 1;
       void loadRecipes();
     }, 300);
+  });
+
+  onUnmounted(() => {
+    clearTimeout(debounceTimer);
   });
 
   watch(activeTags, () => {

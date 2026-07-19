@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import { api } from "@/composables/useApi";
 import { getApiErrorMessage } from "@/types/api";
 
@@ -41,8 +42,8 @@ onMounted(async () => {
       </h1>
 
       <div
-        role="status"
-        aria-live="polite"
+        :role="status === 'error' ? 'alert' : 'status'"
+        :aria-live="status === 'error' ? 'assertive' : 'polite'"
         :aria-busy="status === 'loading'"
         class="text-sm"
         :class="{
@@ -55,14 +56,16 @@ onMounted(async () => {
         <p v-else>{{ message }}</p>
       </div>
 
-      <button
+      <BaseButton
         v-if="status !== 'loading'"
         type="button"
-        class="cta-primary w-full"
+        variant="primary"
+        size="lg"
+        class="w-full"
         @click="router.push('/login')"
       >
         continue to login
-      </button>
+      </BaseButton>
 
       <p v-if="status === 'error'" class="flex justify-center">
         <BackLink to="/login" />

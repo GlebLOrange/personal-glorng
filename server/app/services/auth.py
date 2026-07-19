@@ -123,7 +123,7 @@ async def login_user(
     password: str,
 ) -> tuple[str, str]:
     user = await get_user_by_email(registry, email.strip().lower())
-    if not user or not verify_password(password, user.hashed_password):
+    if not user or not await verify_password(password, user.hashed_password):
         logger.warning("Login failed", context={"email": _auth_log_email(email)})
         await audit.record(
             AuditRecord(
@@ -266,7 +266,7 @@ async def reset_user_password(
 
     user = await registry.users.update_fields(  # type: ignore[union-attr]
         user.id,
-        hashed_password=hash_password(new_password),
+        hashed_password=await hash_password(new_password),
         session_version=int(user.session_version or 0) + 1,
     )
 

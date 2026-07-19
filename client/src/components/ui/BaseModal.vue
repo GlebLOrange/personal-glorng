@@ -3,7 +3,11 @@ import { computed, onMounted, onUnmounted, ref, useId } from "vue";
 
 import { useScrollLock } from "@/composables/useScrollLock";
 
-const props = defineProps<{ title?: string; maxWidth?: "md" | "lg" | "2xl" }>();
+const props = defineProps<{
+  title?: string;
+  maxWidth?: "md" | "lg" | "2xl";
+  ariaLabel?: string;
+}>();
 
 const widthClass: Record<string, string> = {
   md: "max-w-md",
@@ -15,6 +19,7 @@ const emit = defineEmits<{ close: [] }>();
 const modalRef = ref<HTMLElement | null>(null);
 const titleId = useId();
 let previouslyFocusedElement: HTMLElement | null = null;
+let focusRafId = 0;
 
 useScrollLock(() => true);
 
@@ -58,12 +63,13 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 const labelledBy = computed(() => (props.title ? titleId : undefined));
+const dialogLabel = computed(() => (props.title ? undefined : (props.ariaLabel ?? "Dialog")));
 
 onMounted(() => {
   document.addEventListener("keydown", onKeydown);
   previouslyFocusedElement = document.activeElement as HTMLElement;
 
-  requestAnimationFrame(() => {
+  focusRafId = requestAnimationFrame(() => {
     if (!modalRef.value) return;
     if (!modalRef.value.contains(document.activeElement)) {
       const focusables = getFocusableElements(modalRef.value);
@@ -77,6 +83,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  cancelAnimationFrame(focusRafId);
   document.removeEventListener("keydown", onKeydown);
   if (previouslyFocusedElement) {
     previouslyFocusedElement.focus();
@@ -97,6 +104,7 @@ onUnmounted(() => {
         role="dialog"
         aria-modal="true"
         :aria-labelledby="labelledBy"
+        :aria-label="dialogLabel"
         tabindex="-1"
         :class="[
           'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-sm focus:outline-none',

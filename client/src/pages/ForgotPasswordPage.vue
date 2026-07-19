@@ -2,6 +2,7 @@
 import { ref } from "vue";
 
 import BackLink from "@/components/ui/BackLink.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
@@ -12,15 +13,18 @@ const { toast } = useNotify();
 const email = ref("");
 const loading = ref(false);
 const submitted = ref(false);
+const formError = ref("");
 
 async function handleSubmit(): Promise<void> {
   loading.value = true;
+  formError.value = "";
   try {
     await api.post("/auth/forgot-password", { email: email.value });
     submitted.value = true;
     toast("If the email exists, a reset link was sent", "success");
   } catch (err) {
-    toast(getApiErrorMessage(err, "Request failed"), "error");
+    formError.value = getApiErrorMessage(err, "Request failed");
+    toast(formError.value, "error");
   } finally {
     loading.value = false;
   }
@@ -51,9 +55,10 @@ async function handleSubmit(): Promise<void> {
           placeholder="you@example.com"
           required
         />
-        <button type="submit" class="cta-primary w-full" :disabled="loading">
+        <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
+        <BaseButton type="submit" variant="primary" class="w-full" :loading="loading">
           {{ loading ? "sending..." : "send reset link" }}
-        </button>
+        </BaseButton>
       </form>
 
       <p class="flex justify-center mt-6">

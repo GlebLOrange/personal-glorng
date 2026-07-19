@@ -1,3 +1,5 @@
+# Applies only when build context is repo root (e.g. .devcontainer).
+# server/ and client/ builds use their own context .dockerignore files.
 **/__pycache__
 **/.venv
 **/.classpath

@@ -49,6 +49,8 @@ Default E2E credentials: `admin@admin.admin` / `MyTestPass123!`
 
 See `README.md` for canonical commands. Agents prefer targeted checks in dev by default; CI runs the full suite on pull requests. Use the commands below manually when you want local full-suite verification.
 
+Docs: published handbook at https://gleblorange.github.io/portfolio-glorng/ ; regenerate OpenAPI/inventory with `make docs-generate` after router or registry changes.
+
 Cloud-specific notes:
 
 - **Backend lint/tests (host, matches CI backend job):** use an isolated venv because Docker mounts `server/.venv`:

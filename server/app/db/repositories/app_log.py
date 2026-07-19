@@ -5,7 +5,7 @@ from typing import Any
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.db.documents.app_log import AppLog
-from app.db.mongo.counter import next_sequence_id
+from app.db.mongo.counter import next_sequence_ids
 
 
 def _from_doc(data: dict[str, Any]) -> AppLog:
@@ -32,10 +32,13 @@ class AppLogRepository:
     async def insert_many(self, entries: list[AppLog]) -> None:
         if not entries:
             return
+        missing = [entry for entry in entries if not entry.id]
+        if missing:
+            ids = await next_sequence_ids(self.db, "app_logs", len(missing))
+            for entry, entry_id in zip(missing, ids, strict=True):
+                entry.id = entry_id
         docs: list[dict[str, Any]] = []
         for entry in entries:
-            if not entry.id:
-                entry.id = await next_sequence_id(self.db, "app_logs")
             docs.append(
                 {
                     "id": entry.id,

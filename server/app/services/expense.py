@@ -1,3 +1,4 @@
+import asyncio
 import csv
 import io
 from collections import defaultdict
@@ -121,20 +122,22 @@ class ExpenseService:
         sort: str = "date_desc",
     ) -> ExpenseListResponse:
         offset, limit = paginate_params(page, per_page)
-        expenses = await self._expenses().list_expenses(
-            date_from=date_from,
-            date_to=date_to,
-            tool_name=tool_name,
-            category=category,
-            offset=offset,
-            limit=limit,
-            sort=sort,
-        )
-        total = await self._expenses().count_expenses(
-            date_from=date_from,
-            date_to=date_to,
-            tool_name=tool_name,
-            category=category,
+        expenses, total = await asyncio.gather(
+            self._expenses().list_expenses(
+                date_from=date_from,
+                date_to=date_to,
+                tool_name=tool_name,
+                category=category,
+                offset=offset,
+                limit=limit,
+                sort=sort,
+            ),
+            self._expenses().count_expenses(
+                date_from=date_from,
+                date_to=date_to,
+                tool_name=tool_name,
+                category=category,
+            ),
         )
         return ExpenseListResponse(
             items=[self._to_response(e) for e in expenses],

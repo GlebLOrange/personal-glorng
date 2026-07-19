@@ -220,6 +220,7 @@ Used by [`scripts/db_maintenance.sh`](../../scripts/db_maintenance.sh). Always d
 | `BACKUP_COMPOSE_FILE` | `docker-compose.prod.yml` | Compose file for backup |
 | `BACKUP_NOTIFY` | `true` | Notify on result |
 | `BACKUP_TIMEZONE` | `Europe/Warsaw` | Cron timezone |
+| `BACKUP_OFFSITE_CMD` | | Optional shell command after verify (e.g. rsync); failure fails the run |
 
 See [Backup & restore](/operations/backup-restore).
 

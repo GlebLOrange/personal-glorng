@@ -212,8 +212,10 @@ async function promoteSelectedBatch(): Promise<void> {
   );
   if (response) {
     promoteResult.value = response.data;
-    await loadBatchHistory();
-    await loadBatchDetail(selectedBatchId.value);
+    await Promise.all([
+      loadBatchHistory(),
+      loadBatchDetail(selectedBatchId.value),
+    ]);
   }
 }
 
@@ -327,8 +329,10 @@ async function importFile(): Promise<void> {
       },
     };
     showRawJson.value = false;
-    await loadBatchHistory();
-    await loadBatchDetail(response.data.batch_id);
+    await Promise.all([
+      loadBatchHistory(),
+      loadBatchDetail(response.data.batch_id),
+    ]);
   }
 }
 

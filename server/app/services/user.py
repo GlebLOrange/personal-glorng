@@ -5,6 +5,7 @@ import uuid
 from app.core.exceptions import ConflictError
 from app.core.permissions import SUPERUSER_PERMISSION, validate_permissions
 from app.core.security import hash_password
+from app.core.user_cache import get_cached_user, set_cached_user
 from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
 
@@ -20,8 +21,14 @@ async def get_user_by_public_id(
     registry: DatabaseRegistry,
     public_id: str | uuid.UUID,
 ) -> User | None:
-    """Load a user by public UUID."""
-    return await _users(registry).get_by_public_id(public_id)
+    """Load a user by public UUID (short-TTL Redis cache)."""
+    cached = await get_cached_user(public_id)
+    if cached is not None:
+        return cached
+    user = await _users(registry).get_by_public_id(public_id)
+    if user is not None:
+        await set_cached_user(user)
+    return user
 
 
 def default_user_permissions() -> list[str]:
@@ -65,7 +72,7 @@ async def create_user(
     perms = validate_permissions(permissions or [])
     user = User(
         email=email.strip().lower(),
-        hashed_password=hash_password(password),
+        hashed_password=await hash_password(password),
         is_verified=is_verified,
         is_protected=is_protected,
         permissions=perms,
