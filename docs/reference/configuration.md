@@ -70,7 +70,8 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 | Variable | Purpose |
 |----------|---------|
 | `REDIS_PASSWORD` | Auth (validated in production) |
-| `REDIS_URL` | `redis://:password@redis:6379/0` |
+| `REDIS_URL` | Security Redis (`noeviction`): blacklist, rate limits, OAuth state |
+| `REDIS_CACHE_URL` | Optional cache Redis (`allkeys-lru`). Empty = share `REDIS_URL` |
 
 ## RabbitMQ / Celery
 
@@ -84,7 +85,8 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `JWT_SECRET` | — | **Required.** 32+ chars in production |
+| `JWT_SECRET` | — | **Required.** 32+ chars in production (JWT signing only) |
+| `FERNET_SECRET` | empty | OAuth token encryption at rest; required and distinct from `JWT_SECRET` in production |
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access token TTL |
 | `JWT_REFRESH_TOKEN_EXPIRE_DAYS` | `7` | Refresh token TTL |
 | `JWT_ALGORITHM` | `HS256` | Signing algorithm |

@@ -61,10 +61,9 @@ async def schedule_reminder(
         reminder.id,
         eta=remind_at,
     )
-    if job_id:
-        reminder = await registry.tasks.update_reminder(reminder.id, job_id=job_id)
-        logger.info(
-            "Reminder scheduled",
-            context={"reminder_id": reminder.id, "job_id": job_id},
-        )
+    reminder = await registry.tasks.update_reminder(reminder.id, job_id=job_id)
+    logger.info(
+        "Reminder scheduled",
+        context={"reminder_id": reminder.id, "job_id": job_id},
+    )
     return reminder

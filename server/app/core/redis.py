@@ -9,6 +9,7 @@ from app.core.redis_keys import BLACKLIST_PREFIX
 from app.settings import get_settings
 
 _redis: Redis | None = None
+_redis_cache: Redis | None = None
 
 # Cap pool size so multi-worker API processes cannot unbounded-open connections.
 _MAX_CONNECTIONS = 50
@@ -22,9 +23,7 @@ def _redis_endpoint(url: str) -> str:
     return f"{host}:{port}"
 
 
-async def init_redis(url: str) -> None:
-    """Initialize Redis and verify connectivity before accepting traffic."""
-    global _redis
+async def _connect_redis(url: str, *, label: str) -> Redis:
     client = Redis.from_url(
         url,
         decode_responses=True,
@@ -32,7 +31,6 @@ async def init_redis(url: str) -> None:
         socket_timeout=5,
         max_connections=_MAX_CONNECTIONS,
     )
-
     endpoint = _redis_endpoint(url)
     try:
         await client.ping()
@@ -41,28 +39,61 @@ async def init_redis(url: str) -> None:
         logger.error(
             "Redis connection failed at startup",
             error=exc,
-            context={"endpoint": endpoint},
+            context={"endpoint": endpoint, "role": label},
         )
         raise
-    _redis = client
-    logger.info("Redis connected", context={"endpoint": endpoint})
+    logger.info(
+        "Redis connected",
+        context={"endpoint": endpoint, "role": label},
+    )
+    return client
+
+
+async def init_redis(url: str, cache_url: str | None = None) -> None:
+    """Initialize security Redis and optional cache Redis before accepting traffic.
+
+    When ``cache_url`` is empty or equals ``url``, cache helpers share the security
+    client. Production should point ``REDIS_CACHE_URL`` at a separate Redis with
+    ``allkeys-lru`` so cache pressure cannot block blacklist or rate-limit writes
+    on the ``noeviction`` security instance.
+    """
+    global _redis, _redis_cache
+    _redis = await _connect_redis(url, label="security")
+    resolved_cache = (cache_url or "").strip() or url
+    if resolved_cache == url:
+        _redis_cache = _redis
+    else:
+        _redis_cache = await _connect_redis(resolved_cache, label="cache")
 
 
 async def close_redis() -> None:
-    global _redis
-    if _redis:
-        await _redis.aclose()
-        _redis = None
+    global _redis, _redis_cache
+    cache = _redis_cache
+    security = _redis
+    _redis_cache = None
+    _redis = None
+    if cache is not None and cache is not security:
+        await cache.aclose()
+    if security is not None:
+        await security.aclose()
 
 
 def get_redis_client() -> Redis:
+    """Return the security Redis client (blacklist, rate limits, OAuth, locks)."""
     if _redis is None:
         raise RuntimeError("Redis not initialized. Call init_redis() first.")
     return _redis
 
 
+def get_redis_cache_client() -> Redis:
+    """Return the cache Redis client (may share the security client)."""
+    if _redis_cache is None:
+        raise RuntimeError("Redis not initialized. Call init_redis() first.")
+    return _redis_cache
+
+
 async def get_redis_memory_info() -> dict[str, Any]:
-    """Return Redis memory stats for readiness probes."""
+    """Return Redis memory stats for readiness probes (security instance)."""
     client = get_redis_client()
     info = await client.info("memory")
     used = int(info.get("used_memory", 0))
@@ -80,7 +111,7 @@ async def get_redis_memory_info() -> dict[str, Any]:
 
 async def cache_get(key: str) -> str | None:
     try:
-        return await get_redis_client().get(key)
+        return await get_redis_cache_client().get(key)
     except RedisError as exc:
         logger.warning("Redis cache_get failed", error=exc, context={"key": key})
         return None
@@ -88,13 +119,13 @@ async def cache_get(key: str) -> str | None:
 
 async def cache_set(key: str, value: str, ttl: int = 300) -> None:
     try:
-        await get_redis_client().set(key, value, ex=ttl)
+        await get_redis_cache_client().set(key, value, ex=ttl)
     except RedisError as exc:
         logger.warning("Redis cache_set failed", error=exc, context={"key": key})
 
 
 async def cache_set_nx(key: str, value: str, ttl: int) -> bool | None:
-    """Set key only if absent.
+    """Set key only if absent on the security Redis (locks / idempotency).
 
     Returns True if set, False if existed, None on Redis error.
     """
@@ -116,19 +147,29 @@ async def cache_set_nx(key: str, value: str, ttl: int) -> bool | None:
 
 async def cache_delete(key: str) -> None:
     try:
-        await get_redis_client().delete(key)
+        await get_redis_cache_client().delete(key)
     except (RedisError, RuntimeError) as exc:
         logger.warning("Redis cache_delete failed", error=exc, context={"key": key})
 
 
 async def cache_getdel(key: str) -> str | None:
-    """Atomically get and delete a key (one-time consume)."""
+    """Atomically get and delete a security key (one-time OAuth consume)."""
     try:
         result: Any = await get_redis_client().getdel(key)
         return result
     except RedisError as exc:
         logger.warning("Redis cache_getdel failed", error=exc, context={"key": key})
         return None
+
+
+async def security_set(key: str, value: str, ttl: int) -> None:
+    """Set a security-critical key on the noeviction Redis (OAuth state, etc.)."""
+    await get_redis_client().set(key, value, ex=ttl)
+
+
+async def security_delete(key: str) -> None:
+    """Delete a security-critical key (locks, OAuth leftovers)."""
+    await get_redis_client().delete(key)
 
 
 async def blacklist_token(jti: str, ttl: int) -> None:

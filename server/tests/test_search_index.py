@@ -74,7 +74,7 @@ async def test_public_search_query(
             "tags": ["quick"],
         },
     )
-    assert create_resp.status_code == 200
+    assert create_resp.status_code == 201
 
     resp = await client.get(SEARCH_QUERY_URL, params={"q": "Vue"})
     assert resp.status_code == 200
@@ -106,3 +106,44 @@ async def test_task_status_change_reindexes(registry: DatabaseRegistry) -> None:
     assert hits[0].source_type == "task"
     assert hits[0].title == "Buy groceries"
     assert "completed" in hits[0].body.lower()
+
+
+@pytest.mark.asyncio
+async def test_search_postgres_mirror_failure_keeps_mongo(
+    registry: DatabaseRegistry,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Postgres mirror failures must not fail the request after Mongo upsert."""
+
+    async def fail_upsert_postgres(
+        self: SearchIndexService,
+        document: SearchDocumentInput,
+    ) -> None:
+        raise RuntimeError("mirror unavailable")
+
+    class _PostgresEnabledSettings:
+        def enable_postgres(self) -> bool:
+            return True
+
+    monkeypatch.setattr(SearchIndexService, "_upsert_postgres", fail_upsert_postgres)
+    monkeypatch.setattr(
+        "app.services.search_index.get_settings",
+        lambda: _PostgresEnabledSettings(),
+    )
+
+    svc = SearchIndexService(registry, postgres_db=object())  # type: ignore[arg-type]
+    saved = await svc.upsert(
+        SearchDocumentInput(
+            source_type="resume",
+            source_id=99,
+            title="Mirror Probe",
+            body="FastAPI portfolio probe",
+            url="/",
+            visibility=SearchVisibility.PUBLIC,
+        ),
+    )
+
+    hits = await svc.search("probe", visibilities=[SearchVisibility.PUBLIC])
+    assert saved.title == "Mirror Probe"
+    assert len(hits) == 1
+    assert hits[0].source_id == 99

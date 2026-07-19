@@ -11,4 +11,9 @@ def store_google_refresh_token(plaintext: str) -> str:
 
 def read_google_refresh_token(stored: str) -> str:
     """Return a usable Google OAuth refresh token from stored value."""
-    return decrypt_secret(stored, get_settings().resolved_fernet_secret())
+    settings = get_settings()
+    primary = settings.resolved_fernet_secret()
+    fallback = ()
+    if settings.FERNET_SECRET.strip() and primary != settings.JWT_SECRET:
+        fallback = (settings.JWT_SECRET,)
+    return decrypt_secret(stored, primary, fallback_secrets=fallback)

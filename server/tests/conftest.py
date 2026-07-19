@@ -316,6 +316,7 @@ def fake_redis(request: pytest.FixtureRequest) -> Generator[FakeRedis | None]:
         return
     fake = FakeRedis()
     redis_module._redis = fake  # type: ignore[assignment]
+    redis_module._redis_cache = fake  # type: ignore[assignment]
     yield fake
 
 

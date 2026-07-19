@@ -76,8 +76,20 @@ class SearchIndexService:
             },
         )
 
+        # Mongo is the source of truth; Postgres/ES mirrors are best-effort so a
+        # secondary-store failure never breaks the request after Mongo wrote.
         if self.postgres_db is not None and get_settings().enable_postgres():
-            await self._upsert_postgres(document)
+            try:
+                await self._upsert_postgres(document)
+            except Exception as exc:
+                logger.error(
+                    "Postgres search mirror failed; Mongo record retained",
+                    error=exc,
+                    context={
+                        "source_type": document.source_type,
+                        "source_id": document.source_id,
+                    },
+                )
 
         if is_elasticsearch_enabled():
             try:
@@ -130,15 +142,24 @@ class SearchIndexService:
         )
 
         if self.postgres_db is not None and get_settings().enable_postgres():
-            from app.db.models.search_document import SearchDocument as PgSearchDocument
+            try:
+                from app.db.models.search_document import (
+                    SearchDocument as PgSearchDocument,
+                )
 
-            await self.postgres_db.execute(
-                delete(PgSearchDocument).where(
-                    PgSearchDocument.source_type == source_type,
-                    PgSearchDocument.source_id == source_id,
-                ),
-            )
-            await self.postgres_db.flush()
+                await self.postgres_db.execute(
+                    delete(PgSearchDocument).where(
+                        PgSearchDocument.source_type == source_type,
+                        PgSearchDocument.source_id == source_id,
+                    ),
+                )
+                await self.postgres_db.flush()
+            except Exception as exc:
+                logger.error(
+                    "Postgres search delete mirror failed; Mongo delete retained",
+                    error=exc,
+                    context={"source_type": source_type, "source_id": source_id},
+                )
 
         if is_elasticsearch_enabled():
             try:
@@ -158,15 +179,26 @@ class SearchIndexService:
         await self._search_repo().delete_stale_by_source(source_type, keep_source_ids)
 
         if self.postgres_db is not None and get_settings().enable_postgres():
-            from app.db.models.search_document import SearchDocument as PgSearchDocument
+            try:
+                from app.db.models.search_document import (
+                    SearchDocument as PgSearchDocument,
+                )
 
-            stmt = delete(PgSearchDocument).where(
-                PgSearchDocument.source_type == source_type,
-            )
-            if keep_source_ids:
-                stmt = stmt.where(PgSearchDocument.source_id.not_in(keep_source_ids))
-            await self.postgres_db.execute(stmt)
-            await self.postgres_db.flush()
+                stmt = delete(PgSearchDocument).where(
+                    PgSearchDocument.source_type == source_type,
+                )
+                if keep_source_ids:
+                    stmt = stmt.where(
+                        PgSearchDocument.source_id.not_in(keep_source_ids),
+                    )
+                await self.postgres_db.execute(stmt)
+                await self.postgres_db.flush()
+            except Exception as exc:
+                logger.error(
+                    "Postgres search stale delete mirror failed; Mongo delete retained",
+                    error=exc,
+                    context={"source_type": source_type},
+                )
 
         if is_elasticsearch_enabled():
             try:

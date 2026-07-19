@@ -19,7 +19,7 @@ from app.core.email import (
     render_verification_email_plain,
 )
 from app.core.logging import logger
-from app.core.redis import cache_delete, cache_set_nx
+from app.core.redis import cache_set_nx, security_delete
 from app.core.redis_keys import EMAIL_DISPATCH_PREFIX
 from app.core.utils import format_scheduled_at
 from app.db.documents.task import SyncStatus, TaskStatus
@@ -109,7 +109,7 @@ async def _send_email(
     try:
         await backend.send(email, subject, html, plain)
     except Exception:
-        await cache_delete(key)
+        await security_delete(key)
         raise
     logger.info("Email sent", context={"to": email, "subject": subject})
 

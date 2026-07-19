@@ -12,7 +12,7 @@ Production serves the SPA and API through nginx with:
 
 CSP currently allows `'unsafe-inline'` for scripts and styles so Vite dev HMR, Google Tag Manager, and inline bootstrapping work. Tightening CSP (nonces or hashes for built assets) is a planned hardening step; until then, XSS defenses rely on Vue escaping, minimal `v-html`, and DOMPurify on email previews.
 
-**Dev caveat:** Lite mode (Vite → API on `:8000`, no nginx) skips CSP/HSTS. CSRF origin checks are production-only.
+**Dev caveat:** Lite mode (Vite → API on `:8000`, no nginx) skips CSP/HSTS. CSRF origin checks are off in `development`/`test` only (enforced in staging/production).
 
 HTTPS termination is expected upstream of compose nginx (port 80 by default); `secure` cookies require HTTPS at the edge. For the minimal Cloudflare path with strict origin TLS, see [Cloudflare](/operations/cloudflare).
 
@@ -28,7 +28,7 @@ HTTPS termination is expected upstream of compose nginx (port 80 by default); `s
 - Password policy: 12+ chars, upper, lower, digit, special; common passwords rejected
 - `ALLOWED_EMAIL` is seed-only for the bootstrap superuser; GitHub OAuth uses `GITHUB_ALLOWED_USERS`
 - Users manage profile, password, email, and preferences via `/settings`; permissions are admin-only
-- GitHub/Google OAuth tokens are **encrypted at rest** (Fernet, key from `FERNET_SECRET` or fallback `JWT_SECRET`) — see [`core/fernet_secrets.py`](../../server/app/core/fernet_secrets.py)
+- GitHub/Google OAuth tokens are **encrypted at rest** (Fernet, key from `FERNET_SECRET`; decrypt falls back to `JWT_SECRET` for pre-split ciphertext). Production requires a dedicated `FERNET_SECRET` distinct from `JWT_SECRET` — see [`core/fernet_secrets.py`](../../server/app/core/fernet_secrets.py)
 
 ## CSRF and CORS {#csrf-and-cors}
 
@@ -159,7 +159,7 @@ Audit events ([`audit_events`](../../server/app/db/repositories/audit.py)) remai
 ## Secrets and CI
 
 - Never commit `.env` (see [Configuration](/reference/configuration))
-- Production startup validates strength of `JWT_SECRET`, `RABBITMQ_PASSWORD`, `POSTGRES_PASSWORD`, and the password embedded in `REDIS_URL` — see [`server/app/settings.py`](../../server/app/settings.py)
+- Production startup validates strength of `JWT_SECRET`, `FERNET_SECRET` (must differ from `JWT_SECRET`), `RABBITMQ_PASSWORD`, `POSTGRES_PASSWORD`, and the password embedded in `REDIS_URL` — see [`server/app/settings.py`](../../server/app/settings.py)
 - Weekly Dependabot updates for `/server` (uv + Docker), `/client` (npm + Docker), `/docs` (npm), and GitHub Actions; [`security.yml`](../../.github/workflows/security.yml) runs gitleaks, pip-audit, and npm audit
 
 ## Risk register

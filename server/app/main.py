@@ -50,7 +50,7 @@ def _init_sentry() -> None:
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     settings = get_settings()
 
-    await init_redis(settings.REDIS_URL)
+    await init_redis(settings.REDIS_URL, settings.REDIS_CACHE_URL or None)
 
     if settings.elasticsearch_enabled():
         await init_elasticsearch(settings.ELASTICSEARCH_URL)

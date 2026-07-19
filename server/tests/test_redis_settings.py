@@ -22,3 +22,22 @@ def test_resolve_redis_url_maps_compose_host_to_localhost(
     assert settings.REDIS_URL == "redis://:pass@127.0.0.1:6379/0"
 
     get_settings.cache_clear()
+
+
+def test_resolve_redis_cache_url_maps_compose_host_to_localhost(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    activate_env_file(
+        monkeypatch,
+        scenario_env(
+            tmp_path,
+            REDIS_URL="redis://:pass@redis:6379/0",
+            REDIS_CACHE_URL="redis://:pass@redis-cache:6379/0",
+        ),
+    )
+
+    settings = get_settings()
+    assert settings.REDIS_CACHE_URL == "redis://:pass@127.0.0.1:6380/0"
+
+    get_settings.cache_clear()

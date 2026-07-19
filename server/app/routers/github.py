@@ -9,7 +9,7 @@ from fastapi.responses import RedirectResponse
 from app.core.deps import CurrentUser
 from app.core.exceptions import ApiError, UnauthorizedError
 from app.core.logging import logger
-from app.core.redis import cache_getdel, cache_set
+from app.core.redis import cache_getdel, security_set
 from app.core.redis_keys import OAUTH_GITHUB_STATE_PREFIX
 from app.db.deps import DbRegistry
 from app.db.documents.credential import GitHubCredential
@@ -86,7 +86,7 @@ async def github_unlink(
 async def github_authorize(user: CurrentUser) -> RedirectResponse:
     settings = get_settings()
     state = secrets.token_urlsafe(32)
-    await cache_set(
+    await security_set(
         _github_oauth_state_key(user_public_id=str(user.public_id)),
         state,
         ttl=_STATE_TTL_SECONDS,

@@ -33,7 +33,8 @@ def _origin_allowed(request: Request, allowed_origins: list[str]) -> bool:
 def csrf_origin_rejected(request: Request) -> bool:
     """Return True when a cookie-auth mutating request fails origin checks."""
     settings = get_settings()
-    if settings.APP_ENV != "production":
+    # Skip only for local/unit environments; staging and production enforce CSRF.
+    if settings.APP_ENV in {"development", "test"}:
         return False
     if request.method not in _MUTATING_METHODS:
         return False

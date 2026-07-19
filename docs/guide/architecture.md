@@ -73,7 +73,7 @@ sequenceDiagram
   Client->>Nginx: HTTP
   Nginx->>Middleware: proxy
   Middleware->>Middleware: request_id, optional body log redaction
-  Middleware->>CSRF: production cookie mutating /api
+  Middleware->>CSRF: cookie mutating /api (non-dev)
   alt rejected
     CSRF-->>Client: 403 Origin not allowed
   end
@@ -89,12 +89,12 @@ sequenceDiagram
 1. Assigns `X-Request-ID` (from header or new UUID)
 2. Optionally resolves `user_id` from access token for log correlation
 3. Optionally logs sanitized request bodies when `LOG_REQUEST_BODIES=true`
-4. Runs CSRF origin check (production only)
+4. Runs CSRF origin check (staging/production cookie auth)
 5. Logs request duration; adds `X-Request-ID` to the response
 
 Context vars (`request_id`, `user_id`) feed structured logs and audit correlation.
 
-### CSRF (production, cookie auth)
+### CSRF (staging/production, cookie auth)
 
 [`server/app/core/csrf.py`](../../server/app/core/csrf.py) — origin/referer allowlist, not double-submit tokens:
 
