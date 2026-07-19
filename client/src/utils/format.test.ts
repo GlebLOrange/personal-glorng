@@ -1,6 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { formatRelativeTime, formatScheduleDate } from "@/utils/format";
+import { formatRelativeTime, formatScheduleDate, truncateBreadcrumbTitle } from "@/utils/format";
+
+describe("truncateBreadcrumbTitle", () => {
+  it("returns the only word unchanged", () => {
+    expect(truncateBreadcrumbTitle("Breaking")).toBe("Breaking");
+  });
+
+  it("keeps the first word and appends ellipsis", () => {
+    expect(truncateBreadcrumbTitle("Breaking news about space")).toBe("Breaking...");
+  });
+
+  it("trims surrounding whitespace", () => {
+    expect(truncateBreadcrumbTitle("  Hello world  ")).toBe("Hello...");
+  });
+});
 
 describe("formatScheduleDate", () => {
   beforeEach(() => {
