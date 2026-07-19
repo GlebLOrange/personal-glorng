@@ -6,6 +6,7 @@ import PageShell from "@/components/layout/PageShell.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
+import { truncateBreadcrumbTitle } from "@/utils/format";
 import { applyPageSeo } from "@/utils/pageSeo";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
@@ -15,6 +16,7 @@ const slug = computed(() => String(route.params.slug ?? ""));
 const { article, detailLoading, detailError, loadArticle } = useNews();
 
 const articleTitle = computed(() => article.value?.title ?? "article");
+const breadcrumbTitle = computed(() => truncateBreadcrumbTitle(articleTitle.value));
 
 async function loadCurrentArticle(): Promise<void> {
   if (slug.value) {
@@ -44,7 +46,7 @@ watch(
 <template>
   <PageShell
     :title="articleTitle"
-    :breadcrumbs="[{ label: 'news', to: '/news' }, { label: articleTitle }]"
+    :breadcrumbs="[{ label: 'news', to: '/news' }, { label: breadcrumbTitle }]"
     back-to="/news"
     :narrow="false"
   >
