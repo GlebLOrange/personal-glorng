@@ -7,7 +7,7 @@
 | Section | Topics |
 |---------|--------|
 | [Guide](/guide/getting-started) | Setup, architecture, dev workflow, frontend, contributing |
-| [Operations](/operations/deployment) | Production deploy, database, backups, Cloudflare |
+| [Operations](/operations/deployment) | Production deploy, database, backups, Cloudflare, DevOps checklist |
 | [Reference](/reference/platform) | API catalog, Postman, env vars, security, testing, automation |
 
 ## Browse locally
