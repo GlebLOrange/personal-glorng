@@ -12,14 +12,7 @@ defineProps<{
 
 const isStartingCheckout = ref(false);
 const checkoutError = ref(false);
-const linkButtonBase =
-  "inline-flex items-center font-medium transition-all duration-200 rounded-lg border " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 " +
-  "px-6 py-3 text-base";
-const primaryLinkButton =
-  "bg-gradient-to-r from-accent-blue to-accent-violet text-white border-transparent hover:opacity-90";
-const secondaryLinkButton =
-  "bg-surface-card text-surface-light border-surface-border hover:border-accent-blue";
+const secondaryLinkButton = "cta-secondary inline-flex items-center";
 
 function safeHref(value: string | null | undefined): string | null {
   return value ? safeNavigationHref(value) : null;
@@ -50,7 +43,7 @@ async function startStripeCheckout(): Promise<void> {
       <a
         v-if="config.stripe.enabled && safeHref(config.stripe.url)"
         :href="safeHref(config.stripe.url) ?? '#'"
-        :class="[linkButtonBase, primaryLinkButton]"
+        class="cta-primary"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -61,7 +54,7 @@ async function startStripeCheckout(): Promise<void> {
         v-else-if="config.stripe.checkout_enabled"
         variant="primary"
         size="lg"
-        :disabled="isStartingCheckout"
+        :loading="isStartingCheckout"
         @click="startStripeCheckout"
       >
         {{ isStartingCheckout ? "opening..." : "donate by card" }}
@@ -70,7 +63,7 @@ async function startStripeCheckout(): Promise<void> {
       <a
         v-if="config.paypal.enabled && safeHref(config.paypal.url)"
         :href="safeHref(config.paypal.url) ?? '#'"
-        :class="[linkButtonBase, secondaryLinkButton]"
+        :class="secondaryLinkButton"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -80,7 +73,7 @@ async function startStripeCheckout(): Promise<void> {
       <a
         v-if="config.patreon.enabled && safeHref(config.patreon.url)"
         :href="safeHref(config.patreon.url) ?? '#'"
-        :class="[linkButtonBase, secondaryLinkButton]"
+        :class="secondaryLinkButton"
         target="_blank"
         rel="noopener noreferrer"
       >

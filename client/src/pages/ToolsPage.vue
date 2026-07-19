@@ -31,7 +31,7 @@ function toolRoute(tool: PlatformService): string {
           class="page-tile"
         >
           <Card hoverable class="page-tile-card h-full">
-            <div class="text-2xl mb-3">{{ tool.icon }}</div>
+            <div class="text-2xl mb-3" aria-hidden="true">{{ tool.icon }}</div>
             <h3 class="text-surface-light font-bold mb-1 break-words">{{ tool.name }}</h3>
             <p class="text-xs text-surface-mid break-words">{{ tool.description }}</p>
           </Card>

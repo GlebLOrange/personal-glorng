@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
@@ -78,6 +79,7 @@ async function handleSubmit(): Promise<void> {
           label="new password"
           placeholder="new password"
           aria-describedby="reset-password-strength"
+          :error="formError || undefined"
           required
         />
         <p
@@ -94,19 +96,12 @@ async function handleSubmit(): Promise<void> {
           autocomplete="new-password"
           label="confirm password"
           placeholder="confirm password"
+          :error="passwordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
           required
         />
-        <p
-          v-if="passwordConfirm && !passwordsMatch"
-          class="text-xs text-status-error"
-          role="alert"
-        >
-          Passwords do not match
-        </p>
-        <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
-        <button type="submit" class="cta-primary w-full" :disabled="!canSubmit">
+        <BaseButton type="submit" variant="primary" class="w-full" :loading="loading" :disabled="!canSubmit">
           {{ loading ? "saving..." : "set new password" }}
-        </button>
+        </BaseButton>
       </form>
 
       <div v-else class="space-y-3 text-center" role="alert">
