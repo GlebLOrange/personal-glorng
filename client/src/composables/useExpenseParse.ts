@@ -38,6 +38,11 @@ export function useExpenseParse(smartText: Ref<string>, defaultCurrency: Ref<Cur
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
   watch([smartText, defaultCurrency], () => {
     clearTimeout(debounceTimer);
+    // Invalidate immediately so confirm cannot use a stale parse during debounce / in-flight.
+    requestId += 1;
+    parsed.value = null;
+    const pending = Boolean(smartText.value.trim());
+    parsing.value = pending;
     debounceTimer = setTimeout(() => parseNow(smartText.value), 300);
   });
 
