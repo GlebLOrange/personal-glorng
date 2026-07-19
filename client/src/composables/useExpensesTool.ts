@@ -24,29 +24,17 @@ import { getApiErrorMessage } from "@/types/api";
 import { isoDateLocal } from "@/utils/dates";
 import type { Expense } from "@/types";
 
-export type ExpenseCalculatorTab = "convert" | "sum" | "budget" | "whatif";
+export type ExpenseCalculatorMode = "convert" | "sum" | "budget" | "whatif";
 
-export type ExpenseTab =
-  | "transactions"
-  | "insights"
-  | ExpenseCalculatorTab
-  | "settings";
+export type ExpenseTab = "transactions" | "insights" | "calculator" | "settings";
 
-const CALCULATOR_TABS: ExpenseCalculatorTab[] = ["convert", "sum", "budget", "whatif"];
-const EXPENSE_TABS: ExpenseTab[] = [
-  "transactions",
-  "insights",
-  ...CALCULATOR_TABS,
-  "settings",
-];
+const CALCULATOR_MODES: ExpenseCalculatorMode[] = ["convert", "sum", "budget", "whatif"];
+const EXPENSE_TABS: ExpenseTab[] = ["transactions", "insights", "calculator", "settings"];
 
 const TAB_LABELS: Record<ExpenseTab, string> = {
   transactions: "transactions",
   insights: "insights",
-  convert: "convert",
-  sum: "sum",
-  budget: "budget",
-  whatif: "what-if",
+  calculator: "calculator",
   settings: "settings",
 };
 
@@ -55,8 +43,18 @@ export const expenseTabItems = EXPENSE_TABS.map((tab) => ({
   label: TAB_LABELS[tab],
 }));
 
-export function isCalculatorTab(tab: string): tab is ExpenseCalculatorTab {
-  return CALCULATOR_TABS.includes(tab as ExpenseCalculatorTab);
+export function isCalculatorMode(value: string): value is ExpenseCalculatorMode {
+  return CALCULATOR_MODES.includes(value as ExpenseCalculatorMode);
+}
+
+/** True when the top-level expenses tab is the nested calculator panel. */
+export function isCalculatorTab(tab: string): boolean {
+  return tab === "calculator";
+}
+
+function normalizeCalculatorMode(value: string): ExpenseCalculatorMode {
+  if (value === "converter") return "convert";
+  return isCalculatorMode(value) ? value : "convert";
 }
 
 /** Orchestrates expense tool state: filters, list, charts, forms, and mutations. */
@@ -66,7 +64,11 @@ export function useExpensesTool(
   const route = useRoute();
   const router = useRouter();
   const activeTab = ref<ExpenseTab>("transactions");
-  const loading = ref(false);
+  const savingExpense = ref(false);
+  const exporting = ref(false);
+  const deletingExpense = ref(false);
+  const deletingCategory = ref(false);
+  const smartTextOpen = ref(false);
   const filtersOpen = ref(false);
   const showForm = ref(false);
   const editingId = ref<number | null>(null);
@@ -145,6 +147,14 @@ export function useExpensesTool(
 
   function focusQuickAdd(): void {
     quickAddRef.value?.focusEntry();
+  }
+
+  function openSmartText(): void {
+    smartTextOpen.value = true;
+    switchTab("transactions");
+    void nextTick(() => {
+      quickAddRef.value?.focusSmartText();
+    });
   }
 
   const categoryManager = useCategoryManager(reloadAfterMutation);
@@ -288,7 +298,7 @@ export function useExpensesTool(
       return;
     }
 
-    loading.value = true;
+    savingExpense.value = true;
     const payload = {
       tool_name: form.value.tool_name.trim(),
       amount: amount.toFixed(2),
@@ -307,7 +317,7 @@ export function useExpensesTool(
       if (import.meta.env.DEV) console.error(err);
       toast(getApiErrorMessage(err, "Failed to save expense"), "error");
     } finally {
-      loading.value = false;
+      savingExpense.value = false;
     }
   }
 
@@ -324,7 +334,7 @@ export function useExpensesTool(
       return;
     }
 
-    loading.value = true;
+    savingExpense.value = true;
     const category = resolvedCategory(quickAdd.value.category);
     try {
       await postExpense({
@@ -342,7 +352,32 @@ export function useExpensesTool(
       if (import.meta.env.DEV) console.error(err);
       toast(getApiErrorMessage(err, "Failed to save expense"), "error");
     } finally {
-      loading.value = false;
+      savingExpense.value = false;
+    }
+  }
+
+  async function saveSmartExpense(payload: {
+    tool_name: string;
+    amount: string;
+    currency: CurrencyCode;
+    expense_date: string;
+    category: string | null;
+  }): Promise<void> {
+    savingExpense.value = true;
+    try {
+      await postExpense({
+        ...payload,
+        category: payload.category ? resolvedCategory(payload.category) : resolvedCategory(""),
+        notes: null,
+      });
+      quickAddRef.value?.clearSmartText();
+      await reloadAfterMutation();
+      focusQuickAdd();
+    } catch (err) {
+      if (import.meta.env.DEV) console.error(err);
+      toast(getApiErrorMessage(err, "Failed to save expense"), "error");
+    } finally {
+      savingExpense.value = false;
     }
   }
 
@@ -391,14 +426,14 @@ export function useExpensesTool(
       price: expense.amount,
       category: resolvedCategory(expense.category ?? lastCategory.value),
     };
-    activeTab.value = "transactions";
+    switchTab("transactions");
     toast("Ready to add again — adjust if needed", "success");
     await nextTick();
     focusQuickAdd();
   }
 
   async function exportCsv(): Promise<void> {
-    loading.value = true;
+    exporting.value = true;
     try {
       const { data } = await api.get<Blob>("/tools/expenses/export", {
         params: queryParams(),
@@ -418,7 +453,7 @@ export function useExpensesTool(
       if (import.meta.env.DEV) console.error(err);
       toast(getApiErrorMessage(err, "Failed to export CSV"), "error");
     } finally {
-      loading.value = false;
+      exporting.value = false;
     }
   }
 
@@ -429,7 +464,7 @@ export function useExpensesTool(
   async function confirmDeleteExpense(): Promise<void> {
     if (deleteTargetId.value === null) return;
 
-    loading.value = true;
+    deletingExpense.value = true;
     try {
       await api.delete(`/tools/expenses/${deleteTargetId.value}`);
       toast("Expense deleted", "success");
@@ -439,7 +474,7 @@ export function useExpensesTool(
       if (import.meta.env.DEV) console.error(err);
       toast(getApiErrorMessage(err, "Failed to delete expense"), "error");
     } finally {
-      loading.value = false;
+      deletingExpense.value = false;
     }
   }
 
@@ -455,25 +490,42 @@ export function useExpensesTool(
       return;
     }
 
-    loading.value = true;
+    deletingCategory.value = true;
     try {
       await removeCategoryRaw(category);
       deleteCategoryTarget.value = null;
     } finally {
-      loading.value = false;
+      deletingCategory.value = false;
     }
   }
 
   function parseExpenseTab(value: unknown): ExpenseTab | null {
     if (typeof value !== "string") return null;
-    if (value === "converter") return "convert";
     return EXPENSE_TABS.includes(value as ExpenseTab) ? (value as ExpenseTab) : null;
+  }
+
+  function syncTabFromRoute(): void {
+    const raw = route.query.tab;
+    if (typeof raw === "string" && (isCalculatorMode(raw) || raw === "converter")) {
+      const mode = normalizeCalculatorMode(raw);
+      activeTab.value = "calculator";
+      void router.replace({ query: { ...route.query, tab: "calculator", mode } });
+      return;
+    }
+    const tab = parseExpenseTab(raw);
+    if (tab) activeTab.value = tab;
   }
 
   function switchTab(tab: string): void {
     if (!EXPENSE_TABS.includes(tab as ExpenseTab)) return;
     activeTab.value = tab as ExpenseTab;
-    const { mode: _legacyMode, ...rest } = route.query;
+    if (tab === "calculator") {
+      const existing =
+        typeof route.query.mode === "string" ? normalizeCalculatorMode(route.query.mode) : "convert";
+      void router.replace({ query: { ...route.query, tab: "calculator", mode: existing } });
+      return;
+    }
+    const { mode: _mode, ...rest } = route.query;
     void router.replace({ query: { ...rest, tab } });
   }
 
@@ -497,9 +549,15 @@ export function useExpensesTool(
     },
   );
 
+  watch(
+    () => route.query.tab,
+    () => {
+      syncTabFromRoute();
+    },
+  );
+
   onMounted(() => {
-    const tab = parseExpenseTab(route.query.tab);
-    if (tab) activeTab.value = tab;
+    syncTabFromRoute();
     applyMonthPreset("this_month");
     quickAdd.value.category = resolvedCategory(lastCategory.value);
     void Promise.all([loadPreferences(), loadRates(), reloadListAndSummary(), loadCategories()]);
@@ -508,7 +566,11 @@ export function useExpensesTool(
   return {
     activeTab,
     expenseTabItems,
-    loading,
+    savingExpense,
+    exporting,
+    deletingExpense,
+    deletingCategory,
+    smartTextOpen,
     filtersOpen,
     showForm,
     deleteTargetId,
@@ -531,6 +593,8 @@ export function useExpensesTool(
     listError,
     summaryError,
     ratesError,
+    loadSummary,
+    loadRates,
     expenseCategories,
     newCategoryName,
     editingCategoryId,
@@ -569,6 +633,7 @@ export function useExpensesTool(
     handleExpenseSort,
     openEdit,
     openCreate,
+    openSmartText,
     duplicateExpense,
     exportCsv,
     requestDeleteExpense,
@@ -578,5 +643,6 @@ export function useExpensesTool(
     switchTab,
     saveExpense,
     quickSaveExpense,
+    saveSmartExpense,
   };
 }

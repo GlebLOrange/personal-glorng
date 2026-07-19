@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
@@ -11,7 +12,7 @@ interface BudgetOption {
   name: string;
 }
 
-defineProps<{
+const props = defineProps<{
   budgetOptions: BudgetOption[];
   displayCurrency: CurrencyCode;
   projection: {
@@ -27,6 +28,10 @@ defineProps<{
   formatMoney: (amount: string | number, currency: string) => string;
 }>();
 
+const emit = defineEmits<{
+  goToBudget: [];
+}>();
+
 const categoryId = defineModel<string | "overall">("whatIfCategoryId", { required: true });
 const amount = defineModel<string>("whatIfAmount", { required: true });
 const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true });
@@ -34,9 +39,20 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
 
 <template>
   <Card class="space-y-4">
-    <p class="text-xs text-surface-mid">
-      Simulate a purchase against your budget rows. Set categories on the Budget tab first.
-    </p>
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-xs text-surface-mid">
+        Simulate a purchase against your budget rows. Set categories on the Budget tab first.
+      </p>
+      <BaseButton
+        v-if="props.budgetOptions.length === 0"
+        variant="ghost"
+        size="sm"
+        class="self-start"
+        @click="emit('goToBudget')"
+      >
+        go to budget
+      </BaseButton>
+    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
       <select v-model="categoryId" :class="SELECT_CLASS_COMPACT" aria-label="category">
@@ -55,8 +71,8 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
           aria-label="purchase amount"
         />
         <select v-model="currency" :class="SELECT_CLASS_COMPACT" aria-label="currency">
-            <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
-          </select>
+          <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
+        </select>
       </div>
     </div>
 

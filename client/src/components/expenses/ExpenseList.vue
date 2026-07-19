@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 import type { ExchangeRates, Expense } from "@/types";
 import { expenseSourceLabel } from "@/utils/expenseSource";
@@ -25,6 +26,7 @@ const emit = defineEmits<{
   delete: [id: number];
   duplicate: [expense: Expense];
   sort: [key: ExpenseSortKey];
+  smartText: [];
 }>();
 
 const sortButtonClass =
@@ -208,17 +210,16 @@ const skeletonRows = 5;
       </table>
     </div>
 
-    <Card
+    <EmptyState
       v-if="expenses.length === 0"
-      variant="compact"
-      class="border-dashed bg-surface-card/40 py-10 text-center"
+      :title="`No expenses in ${monthLabel || 'this period'}`"
+      description="Add one above, paste smart text, or log from Telegram: /spend 20 coffee"
     >
-      <p class="text-surface-light text-sm font-semibold">
-        No expenses in {{ monthLabel || "this period" }}
-      </p>
-      <p class="text-surface-mid text-xs mt-2">
-        Add one above, import from smart text, or log from Telegram: /spend 20 coffee
-      </p>
-    </Card>
+      <template #action>
+        <BaseButton variant="primary" size="sm" @click="emit('smartText')">
+          paste smart text
+        </BaseButton>
+      </template>
+    </EmptyState>
   </template>
 </template>

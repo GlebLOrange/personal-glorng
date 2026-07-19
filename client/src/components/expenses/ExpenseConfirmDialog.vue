@@ -9,10 +9,12 @@ withDefaults(
     message?: string;
     confirmLabel?: string;
     loading?: boolean;
+    danger?: boolean;
   }>(),
   {
     message: "",
     confirmLabel: "confirm",
+    danger: false,
   },
 );
 
@@ -30,7 +32,12 @@ const emit = defineEmits<{
       </slot>
     </div>
     <div class="flex gap-3">
-      <BaseButton variant="primary" :disabled="loading" @click="emit('confirm')">
+      <BaseButton
+        :variant="danger ? 'secondary' : 'primary'"
+        :danger="danger"
+        :disabled="loading"
+        @click="emit('confirm')"
+      >
         {{ loading ? "working..." : (confirmLabel ?? "confirm") }}
       </BaseButton>
       <BaseButton variant="ghost" :disabled="loading" @click="emit('cancel')">cancel</BaseButton>

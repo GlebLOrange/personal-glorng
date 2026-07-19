@@ -169,7 +169,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/admin/tools/currency",
-    redirect: { name: "tool-expenses", query: { tab: "convert" } },
+    redirect: { name: "tool-expenses", query: { tab: "calculator", mode: "convert" } },
   },
   {
     path: "/admin/tools/file-share",
@@ -346,8 +346,17 @@ router.beforeEach(async (to, _from, next) => {
           : typeof to.query.mode === "string"
             ? to.query.mode
             : "convert";
-      const tab = rawTab === "converter" ? "convert" : rawTab;
-      next({ name: "tool-expenses", query: { tab }, replace: true });
+      const mode = rawTab === "converter" ? "convert" : rawTab;
+      const calculatorModes = ["convert", "sum", "budget", "whatif"];
+      if (calculatorModes.includes(mode)) {
+        next({
+          name: "tool-expenses",
+          query: { tab: "calculator", mode },
+          replace: true,
+        });
+        return;
+      }
+      next({ name: "tool-expenses", query: { tab: mode }, replace: true });
       return;
     }
   }

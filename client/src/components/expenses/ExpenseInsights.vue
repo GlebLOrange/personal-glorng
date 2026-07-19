@@ -4,6 +4,8 @@ import { computed } from "vue";
 import ExpenseBarChart from "@/components/charts/ExpenseBarChart.vue";
 import ExpenseDoughnutChart from "@/components/charts/ExpenseDoughnutChart.vue";
 import ExpenseLineChart from "@/components/charts/ExpenseLineChart.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 
 const props = defineProps<{
@@ -11,6 +13,10 @@ const props = defineProps<{
   lineChart: { labels: string[]; values: number[] };
   barChart: { labels: string[]; values: number[] };
   doughnutChart: { labels: string[]; values: number[] };
+}>();
+
+const emit = defineEmits<{
+  addExpense: [];
 }>();
 
 function chartSummary(labels: string[], values: number[]): string {
@@ -46,5 +52,15 @@ const doughnutSummary = computed(() =>
       <p class="sr-only">{{ doughnutSummary }}</p>
     </Card>
   </div>
-  <p v-else class="text-surface-mid text-sm text-center py-8">No chart data for this period yet.</p>
+  <EmptyState
+    v-else
+    title="No chart data yet"
+    description="Add expenses for this period to see trends and breakdowns."
+  >
+    <template #action>
+      <BaseButton variant="primary" size="sm" @click="emit('addExpense')">
+        go to transactions
+      </BaseButton>
+    </template>
+  </EmptyState>
 </template>
