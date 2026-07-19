@@ -1,11 +1,19 @@
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
 
+import jwt
 import pytest
 from httpx import AsyncClient
 
 import app.services.firebase_auth as firebase_auth_service
 from app.core.deps import get_job_queue_dep
-from app.core.security import create_reset_token, create_verification_token
+from app.core.security import (
+    create_access_token,
+    create_reset_token,
+    create_verification_token,
+    decode_token,
+    require_matching_session_version,
+)
 from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
 from app.main import app
@@ -181,10 +189,13 @@ def _mock_firebase_token(
     monkeypatch.setattr(
         firebase_auth_service, "_firebase_app", lambda _settings: object()
     )
+    def _verify_id_token(_token: str, **_kwargs: object) -> dict[str, object]:
+        return payload
+
     monkeypatch.setattr(
         firebase_auth_service.firebase_auth,
         "verify_id_token",
-        lambda _token, _app: payload,
+        _verify_id_token,
     )
 
 
@@ -586,6 +597,87 @@ async def test_reset_password_success(
     )
     assert login.status_code == 200
     assert "access_token" in login.json()
+
+
+@pytest.mark.asyncio
+async def test_reset_password_revokes_prior_sessions(
+    client: AsyncClient,
+    db,
+) -> None:
+    from tests.factories import create_user
+
+    user = await create_user(
+        db,
+        email="reset-revoke@glorng.dev",
+        password=STRONG_PASSWORD,
+        permissions=[],
+    )
+    login = await client.post(
+        "/api/auth/login",
+        json={"email": user.email, "password": STRONG_PASSWORD},
+    )
+    assert login.status_code == 200
+    old_access = login.json()["access_token"]
+    old_refresh = login.json()["refresh_token"]
+
+    new_password = "ResetTestPass456!"
+    reset = await client.post(
+        "/api/auth/reset-password",
+        json={
+            "token": create_reset_token(user.email),
+            "new_password": new_password,
+            "password_confirm": new_password,
+        },
+    )
+    assert reset.status_code == 200
+
+    me = await client.get(
+        "/api/auth/me",
+        headers={"Authorization": f"Bearer {old_access}"},
+    )
+    assert me.status_code == 401
+
+    refresh = await client.post(
+        "/api/auth/refresh",
+        json={"refresh_token": old_refresh},
+    )
+    assert refresh.status_code == 401
+
+
+def test_access_token_includes_session_version() -> None:
+    token = create_access_token("subject", user_id=1, session_version=3)
+    payload = decode_token(token)
+    assert payload["sv"] == 3
+    assert payload["uid"] == 1
+
+
+def test_require_matching_session_version_fail_closed() -> None:
+    with pytest.raises(ValueError, match="missing session version"):
+        require_matching_session_version({"type": "access"}, 0)
+
+    require_matching_session_version({"sv": 2}, 2)
+
+    with pytest.raises(ValueError, match="revoked"):
+        require_matching_session_version({"sv": 1}, 2)
+
+
+def test_legacy_access_token_without_sv_is_rejected_by_matcher() -> None:
+    """Tokens minted before session_version must not validate (D1 fail closed)."""
+    settings = get_settings()
+    legacy = jwt.encode(
+        {
+            "sub": "subject",
+            "exp": datetime.now(UTC) + timedelta(minutes=5),
+            "iat": datetime.now(UTC),
+            "type": "access",
+            "jti": "legacy-jti",
+        },
+        settings.JWT_SECRET,
+        algorithm=settings.JWT_ALGORITHM,
+    )
+    payload = decode_token(legacy)
+    with pytest.raises(ValueError, match="missing session version"):
+        require_matching_session_version(payload, 0)
 
 
 @pytest.mark.asyncio

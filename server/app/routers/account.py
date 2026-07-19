@@ -87,7 +87,10 @@ async def patch_me(
     "/me/email",
     response_model=MessageResponse,
     summary="Change email",
-    description="Change email address and send a new verification link.",
+    description=(
+        "Change email address and send a new verification link. "
+        "Existing session tokens are revoked; log in again after verifying."
+    ),
     dependencies=[Depends(rate_limit_auth)],
 )
 async def patch_email(
@@ -95,14 +98,23 @@ async def patch_email(
     user: CurrentUser,
     registry: DbRegistry,
     job_queue: JobQueueDep,
+    request: Request,
+    response: Response,
+    token: Annotated[str | None, Depends(oauth2_scheme)] = None,
 ) -> MessageResponse:
-    updated, token = await change_email(
+    updated, verify_token = await change_email(
         registry,
         user,
         new_email=str(data.email),
         current_password=data.current_password,
     )
-    await job_queue.enqueue(JobName.SEND_VERIFICATION_EMAIL, updated.email, token)
+    await job_queue.enqueue(
+        JobName.SEND_VERIFICATION_EMAIL,
+        updated.email,
+        verify_token,
+    )
+    await _blacklist_request_tokens(bearer_token=token, request=request)
+    _clear_auth_cookies(response)
     logger.info(
         "Verification email queued after email change",
         context={"user_id": user.id},
@@ -181,8 +193,11 @@ async def delete_me(
     data: DeleteAccountRequest,
     user: CurrentUser,
     registry: DbRegistry,
+    request: Request,
     response: Response,
+    token: Annotated[str | None, Depends(oauth2_scheme)] = None,
 ) -> MessageResponse:
     await delete_account(registry, user, current_password=data.current_password)
+    await _blacklist_request_tokens(bearer_token=token, request=request)
     _clear_auth_cookies(response)
     return MessageResponse(message="Account deleted successfully")

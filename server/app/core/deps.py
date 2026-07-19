@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import ForbiddenError, UnauthorizedError
 from app.core.permissions import permission_key, user_has_permission
 from app.core.redis import get_redis_client, is_token_blacklisted
-from app.core.security import decode_token
+from app.core.security import decode_token, require_matching_session_version
 from app.db.deps import DbRegistry, get_postgres_db
 from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
@@ -87,6 +87,14 @@ async def _resolve_user_from_token(
         if strict:
             raise UnauthorizedError("User not found")
         return None
+
+    try:
+        require_matching_session_version(payload, user.session_version)
+    except ValueError:
+        if strict:
+            raise UnauthorizedError("Token has been revoked") from None
+        return None
+
     if not user.is_verified:
         if strict:
             raise ForbiddenError("Email not verified")

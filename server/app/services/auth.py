@@ -9,6 +9,7 @@ from app.core.security import (
     create_reset_token,
     decode_token,
     hash_password,
+    require_matching_session_version,
     verify_password,
 )
 from app.db.documents.audit import AuditActorType, AuditCategory, AuditSource
@@ -136,8 +137,15 @@ async def login_user(
     if not user.is_verified:
         raise ForbiddenError("Email not verified. Check your inbox.")
 
-    access_token = create_access_token(str(user.public_id), user_id=user.id)
-    refresh_token = create_refresh_token(str(user.public_id))
+    access_token = create_access_token(
+        str(user.public_id),
+        user_id=user.id,
+        session_version=user.session_version,
+    )
+    refresh_token = create_refresh_token(
+        str(user.public_id),
+        session_version=user.session_version,
+    )
     await audit.record(
         AuditRecord(
             category=AuditCategory.SECURITY,
@@ -160,8 +168,19 @@ async def refresh_access_token(
     payload = await _decode_and_validate(refresh_token, "refresh")
     await _blacklist_payload(payload)
     user = await _get_user_by_sub(registry, str(payload["sub"]))
-    new_access = create_access_token(str(user.public_id), user_id=user.id)
-    new_refresh = create_refresh_token(str(user.public_id))
+    try:
+        require_matching_session_version(payload, user.session_version)
+    except ValueError:
+        raise UnauthorizedError("Token has been revoked") from None
+    new_access = create_access_token(
+        str(user.public_id),
+        user_id=user.id,
+        session_version=user.session_version,
+    )
+    new_refresh = create_refresh_token(
+        str(user.public_id),
+        session_version=user.session_version,
+    )
 
     await audit.record(
         AuditRecord(
@@ -246,6 +265,7 @@ async def reset_user_password(
     user = await registry.users.update_fields(  # type: ignore[union-attr]
         user.id,
         hashed_password=hash_password(new_password),
+        session_version=int(user.session_version or 0) + 1,
     )
 
     await _blacklist_payload(payload)

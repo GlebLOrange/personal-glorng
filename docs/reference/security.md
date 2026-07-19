@@ -21,6 +21,7 @@ HTTPS termination is expected upstream of compose nginx (port 80 by default); `s
 - JWT access/refresh tokens (HS256) with bcrypt passwords
 - HttpOnly cookies in production (`secure`, `SameSite=Lax`) plus optional Bearer header
 - Refresh rotation and Redis token blacklist on logout
+- Per-user `session_version` claim (`sv`) on access/refresh tokens — bumped on password change/reset and email change; missing or stale `sv` fails closed (401). Deploying this invalidates tokens issued before the claim existed (one re-login).
 - Open self-service registration with email verification; new users start with no tool permissions
 - Password policy: 12+ chars, upper, lower, digit, special; common passwords rejected
 - `ALLOWED_EMAIL` is seed-only for the bootstrap superuser; GitHub OAuth uses `GITHUB_ALLOWED_USERS`
