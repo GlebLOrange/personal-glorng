@@ -18,7 +18,7 @@ dependencies = [
     "httpx==0.28.*",
     "loguru==0.7.*",
     "python-multipart==0.0.*",
-    "aiogram==3.29.*",
+    "aiogram==3.30.*",
     "dateparser==1.4.*",
     "google-auth==2.56.*",
     "google-auth-oauthlib==1.4.*",
