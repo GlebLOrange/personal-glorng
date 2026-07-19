@@ -117,9 +117,14 @@ async def handle_stripe_event(event: dict[str, Any]) -> dict[str, str]:
         return {"status": "ignored", "type": event_type}
 
     event_id = event.get("id")
-    if isinstance(event_id, str) and event_id:
+    dedup_key = (
+        f"{STRIPE_EVENT_PREFIX}{event_id}"
+        if isinstance(event_id, str) and event_id
+        else None
+    )
+    if dedup_key is not None:
         claimed = await cache_set_nx(
-            f"{STRIPE_EVENT_PREFIX}{event_id}",
+            dedup_key,
             "1",
             _STRIPE_EVENT_DEDUP_TTL_SECONDS,
         )
@@ -140,7 +145,15 @@ async def handle_stripe_event(event: dict[str, Any]) -> dict[str, str]:
         f"Amount: {amount} {str(currency).upper()}\n"
         f"Email: {customer_email}"
     )
-    await notify_admin(text)
+    try:
+        await notify_admin(text)
+    except Exception:
+        # Release claim so Stripe retries can redeliver after a crash/raise.
+        if dedup_key is not None:
+            from app.core.redis import security_delete
+
+            await security_delete(dedup_key)
+        raise
     logger.info(
         "Stripe donation completed",
         context={"amount": amount, "currency": currency, "event_id": event_id},

@@ -33,6 +33,15 @@ def _make_request(path: str = "/test", ip: str = "127.0.0.1") -> Request:
     return Request(scope)
 
 
+def _assert_ttl_about(fake_redis: FakeRedis, key: str, seconds: float) -> None:
+    """FakeRedis stores absolute monotonic deadlines, not remaining TTL."""
+    import time
+
+    deadline = fake_redis._expiry[key]
+    remaining = deadline - time.monotonic()
+    assert seconds - 1.0 <= remaining <= seconds + 1.0
+
+
 @pytest.mark.asyncio
 async def test_incr_expire_sets_ttl_on_first_hit(
     rate_limiter: RateLimiter,
@@ -42,7 +51,7 @@ async def test_incr_expire_sets_ttl_on_first_hit(
 
     await rate_limiter(request)
 
-    assert fake_redis._expiry["rl:/test:127.0.0.1"] == 60
+    _assert_ttl_about(fake_redis, "rl:/test:127.0.0.1", 60)
 
 
 @pytest.mark.asyncio
@@ -50,13 +59,16 @@ async def test_incr_expire_does_not_reset_ttl_on_subsequent_hits(
     rate_limiter: RateLimiter,
     fake_redis: FakeRedis,
 ) -> None:
+    import time
+
     request = _make_request()
 
     await rate_limiter(request)
-    fake_redis._expiry["rl:/test:127.0.0.1"] = 30
+    # Force a near-expiry deadline; subsequent incr must not refresh TTL.
+    fake_redis._expiry["rl:/test:127.0.0.1"] = time.monotonic() + 30
     await rate_limiter(request)
 
-    assert fake_redis._expiry["rl:/test:127.0.0.1"] == 30
+    _assert_ttl_about(fake_redis, "rl:/test:127.0.0.1", 30)
 
 
 @pytest.mark.asyncio

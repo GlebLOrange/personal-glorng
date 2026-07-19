@@ -27,7 +27,7 @@ class TestExpenseCategories:
             "/api/tools/expenses/categories",
             json={"name": "Pets"},
         )
-        assert create_resp.status_code == 200
+        assert create_resp.status_code == 201
         category_id = create_resp.json()["id"]
 
         rename_resp = await auth_client.put(
@@ -46,7 +46,7 @@ class TestExpenseCategories:
         delete_resp = await auth_client.delete(
             f"/api/tools/expenses/categories/{category_id}",
         )
-        assert delete_resp.status_code == 200
+        assert delete_resp.status_code == 204
 
     async def test_cannot_delete_category_in_use(self, auth_client: AsyncClient):
         await auth_client.post("/api/tools/expenses", json=EXPENSE_DATA)
@@ -82,7 +82,7 @@ class TestExpenseCategories:
             json={"name": "Shopping"},
         )
         expenses = await auth_client.get("/api/tools/expenses")
-        assert expenses.json()[0]["category"] == "Shopping"
+        assert expenses.json()["items"][0]["category"] == "Shopping"
 
     async def test_ensure_category_on_expense_create(self, registry: DatabaseRegistry):
         svc = ExpenseCategoryService(registry)

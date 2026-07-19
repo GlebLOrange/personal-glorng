@@ -8,6 +8,7 @@ from app.workers.queues import (
     CELERY_QUEUE_NAME,
     celery_dlq,
     celery_queue,
+    redact_task_payload,
 )
 from app.workers.tasks import MAX_JOB_TRIES, _retry_countdown
 
@@ -52,3 +53,19 @@ def test_retry_countdown_is_exponential_and_capped() -> None:
     assert 120 <= second <= 135
     huge = _retry_countdown(10)
     assert 600 <= huge <= 615
+
+
+def test_dlq_payload_redacts_jwt_tokens() -> None:
+    jwt = (
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+        "eyJzdWIiOiIxMjM0NTY3ODkwIn0."
+        "signaturepaddingvaluehereXXXX"
+    )
+    args, kwargs = redact_task_payload(
+        ("user@example.com", jwt),
+        {"token": jwt, "reminder_id": 7},
+    )
+    assert args[0] == "user@example.com"
+    assert args[1] == "[redacted]"
+    assert kwargs["token"] == "[redacted]"
+    assert kwargs["reminder_id"] == 7

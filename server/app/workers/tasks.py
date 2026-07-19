@@ -9,6 +9,7 @@ from typing import Any
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
+from billiard.exceptions import SoftTimeLimitExceeded
 from celery import Task
 
 from app.core.email import (
@@ -145,7 +146,7 @@ async def send_reset_email(email: str, token: str) -> None:
 def send_verification_email_task(self: Task, email: str, token: str) -> None:
     try:
         run_async(send_verification_email(email, token))
-    except (smtplib.SMTPException, OSError) as exc:
+    except (smtplib.SMTPException, OSError, SoftTimeLimitExceeded) as exc:
         _retry_or_fail(self, JobName.SEND_VERIFICATION_EMAIL, exc)
 
 
@@ -158,7 +159,7 @@ def send_verification_email_task(self: Task, email: str, token: str) -> None:
 def send_reset_email_task(self: Task, email: str, token: str) -> None:
     try:
         run_async(send_reset_email(email, token))
-    except (smtplib.SMTPException, OSError) as exc:
+    except (smtplib.SMTPException, OSError, SoftTimeLimitExceeded) as exc:
         _retry_or_fail(self, JobName.SEND_RESET_EMAIL, exc)
 
 
@@ -216,7 +217,7 @@ async def send_reminder(reminder_id: int) -> None:
 def send_reminder_task(self: Task, reminder_id: int) -> None:
     try:
         run_async(send_reminder(reminder_id))
-    except TelegramAPIError as exc:
+    except (TelegramAPIError, SoftTimeLimitExceeded) as exc:
         _retry_or_fail(self, JobName.SEND_REMINDER, exc)
 
 
