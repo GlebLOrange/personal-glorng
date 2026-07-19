@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useAttrs, useId } from "vue";
+import { computed, ref, useAttrs, useId, useSlots } from "vue";
 
 import { FIELD_INPUT_CLASS, FIELD_INPUT_CLASS_COMPACT } from "@/constants/formClasses";
 
@@ -21,12 +21,15 @@ const props = defineProps<{
 }>();
 
 const attrs = useAttrs();
+const slots = useSlots();
 const inputEl = ref<HTMLInputElement | null>(null);
 const fallbackId = useId();
 const inputId = computed(() => props.id ?? `base-input-${fallbackId}`);
 const hintId = computed(() => `${inputId.value}-hint`);
 const errorId = computed(() => `${inputId.value}-error`);
 const tipId = computed(() => `${inputId.value}-tip`);
+const hasSuffix = computed(() => Boolean(slots.suffix));
+const showTip = computed(() => Boolean(props.placeholder) && !hasSuffix.value);
 const describedBy = computed(() => {
   const ids: string[] = [];
   const fromAttrs = attrs["aria-describedby"];
@@ -35,10 +38,10 @@ const describedBy = computed(() => {
   }
   if (props.error) ids.push(errorId.value);
   else if (props.hint) ids.push(hintId.value);
-  if (props.placeholder) ids.push(tipId.value);
+  if (showTip.value) ids.push(tipId.value);
   return ids.length ? [...new Set(ids)].join(" ") : undefined;
 });
-const useShell = computed(() => Boolean(props.prefix || props.placeholder));
+const useShell = computed(() => Boolean(props.prefix || props.placeholder || hasSuffix.value));
 const bareInputClass = computed(() => [
   props.compact ? FIELD_INPUT_CLASS_COMPACT : FIELD_INPUT_CLASS,
   props.type === "number" && "font-data",
@@ -114,13 +117,16 @@ defineExpose({ focus });
         :class="shellInputClass"
       />
       <span
-        v-if="placeholder"
+        v-if="showTip"
         :id="tipId"
         class="pointer-events-none absolute inset-y-0 right-3 z-0 flex items-center text-right text-xs text-surface-mid/40"
         aria-hidden="true"
       >
         {{ placeholder }}
       </span>
+      <div v-if="hasSuffix" class="relative z-10 flex shrink-0 items-center gap-0.5 pr-1">
+        <slot name="suffix" />
+      </div>
     </div>
 
     <template v-else>

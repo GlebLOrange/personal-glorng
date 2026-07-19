@@ -1,24 +1,20 @@
 <script setup lang="ts">
 import { Card } from "@/components/ui/card";
 import BaseImage from "@/components/ui/BaseImage.vue";
-import RecipeTagChip from "@/components/recipes/RecipeTagChip.vue";
 import { formatRecipeTime } from "@/utils/recipe";
 import type { Recipe } from "@/types";
 
 defineProps<{
   recipe: Recipe;
-  activeTags: string[];
 }>();
 
 const emit = defineEmits<{
   select: [id: number];
-  tagClick: [tag: string];
 }>();
 </script>
 
 <template>
   <Card hoverable class="flex flex-col">
-    <!-- Select target is a real button; tags stay sibling controls (no nested interactives). -->
     <button
       type="button"
       class="text-left w-full rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
@@ -39,16 +35,5 @@ const emit = defineEmits<{
         <span v-if="recipe.servings">{{ recipe.servings }} servings</span>
       </div>
     </button>
-
-    <div v-if="recipe.tags.length" class="flex flex-wrap gap-1.5 mt-3">
-      <RecipeTagChip
-        v-for="tag in recipe.tags"
-        :key="tag"
-        :tag="tag"
-        :active="activeTags.includes(tag)"
-        compact
-        @click="emit('tagClick', tag)"
-      />
-    </div>
   </Card>
 </template>

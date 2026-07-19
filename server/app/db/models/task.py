@@ -29,7 +29,7 @@ class Task(BaseModelMixin, Base):
             name="task_status",
             values_callable=lambda e: [x.value for x in e],
         ),
-        default=TaskStatus.PENDING,
+        default=TaskStatus.NOT_COMPLETED,
         server_default="pending",
     )
     google_event_id: Mapped[str | None] = mapped_column(

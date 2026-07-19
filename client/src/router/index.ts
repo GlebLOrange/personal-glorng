@@ -161,7 +161,7 @@ const routes: RouteRecordRaw[] = [
     path: "/vid-download",
     name: "vid-download",
     component: () => import("@/pages/admin/tools/VidDownloadTool.vue"),
-    meta: { title: "Video download", description: "Download videos with yt-dlp." },
+    meta: { title: "Video downloader", description: "Download videos with yt-dlp." },
   },
   {
     path: "/admin/tools/vid-download",

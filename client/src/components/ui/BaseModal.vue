@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, useId } from "vue";
 
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import { useScrollLock } from "@/composables/useScrollLock";
 import { focusEditableField } from "@/utils/focusField";
 
@@ -8,8 +9,6 @@ const props = defineProps<{
   title?: string;
   maxWidth?: "md" | "lg" | "2xl";
   ariaLabel?: string;
-  /** When true, close control uses error-red hover (destructive dialogs). */
-  closeDanger?: boolean;
 }>();
 
 const widthClass: Record<string, string> = {
@@ -106,29 +105,25 @@ onUnmounted(() => {
         :aria-label="dialogLabel"
         tabindex="-1"
         :class="[
-          'relative w-full bg-surface-card border border-surface-border rounded-xl shadow-sm focus:outline-none',
+          'relative flex max-h-[calc(100dvh-2rem)] w-full flex-col bg-surface-card border border-surface-border rounded-xl shadow-sm focus:outline-none',
           widthClass[maxWidth ?? 'lg'],
         ]"
       >
-        <div class="flex items-center justify-between px-6 pt-5 pb-3">
-          <h2 v-if="title" :id="titleId" class="text-lg font-bold text-surface-light">
-            {{ title }}
-          </h2>
-          <button
-            type="button"
-            :class="[
-              'ml-auto min-h-11 min-w-11 rounded text-xl leading-none text-surface-mid transition-colors focus-visible:outline-none focus-visible:ring-2',
-              closeDanger
-                ? 'hover:text-status-error focus-visible:ring-status-error/50'
-                : 'hover:text-surface-light focus-visible:ring-accent-blue/50',
-            ]"
+        <div class="flex shrink-0 items-center gap-2 px-6 pt-5 pb-3">
+          <div class="min-w-0 flex-1">
+            <slot name="header" :title-id="titleId">
+              <h2 v-if="title" :id="titleId" class="text-lg font-bold text-surface-light">
+                {{ title }}
+              </h2>
+            </slot>
+          </div>
+          <IconCloseButton
+            class="w-[10%] shrink-0"
             aria-label="Close"
             @click="$emit('close')"
-          >
-            ×
-          </button>
+          />
         </div>
-        <div class="px-6 pb-6">
+        <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-8 [scrollbar-gutter:stable]">
           <slot />
         </div>
       </div>

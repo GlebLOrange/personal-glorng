@@ -1,64 +1,18 @@
 <script setup lang="ts">
-import { computed } from "vue";
-
-import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import RecipeTagChip from "@/components/recipes/RecipeTagChip.vue";
 
-const props = defineProps<{
+defineProps<{
   search: string;
-  activeTags: string[];
-  allTags: string[];
 }>();
 
 const emit = defineEmits<{
   "update:search": [value: string];
-  setTag: [tag: string | null];
-  clearFilters: [];
 }>();
-
-const hasActiveFilters = computed(() => Boolean(props.search.trim() || props.activeTags.length));
-
-const tagFilterLabel = computed(() => {
-  if (props.activeTags.length === 0) return "all tags";
-  if (props.activeTags.length === 1) return props.activeTags[0];
-  return `${props.activeTags.length} tags`;
-});
 </script>
 
 <template>
   <div class="mb-6 space-y-4">
     <div class="flex flex-wrap items-center gap-3">
-      <AdminFilterDropdown
-        v-if="allTags.length"
-        :has-active-filters="hasActiveFilters"
-        :active-label="tagFilterLabel"
-        @clear="emit('clearFilters')"
-      >
-        <template #chips>
-          <button
-            type="button"
-            :aria-pressed="activeTags.length === 0"
-            :class="[
-              'w-full min-w-0 min-h-9 truncate text-center text-xs px-2 py-1 rounded-full border transition-colors',
-              activeTags.length === 0
-                ? 'border-accent-blue bg-accent-blue/15 text-accent-blue'
-                : 'border-surface-border text-surface-mid hover:border-accent-blue/40 hover:text-surface-light',
-            ]"
-            @click="emit('setTag', null)"
-          >
-            all
-          </button>
-          <RecipeTagChip
-            v-for="tag in allTags"
-            :key="tag"
-            class="!w-full min-w-0 truncate text-center"
-            :tag="tag"
-            :active="activeTags.includes(tag)"
-            @click="emit('setTag', tag)"
-          />
-        </template>
-      </AdminFilterDropdown>
       <BaseInput
         :model-value="search"
         type="search"

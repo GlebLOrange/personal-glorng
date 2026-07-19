@@ -57,13 +57,13 @@ describe("AdminPageLayout", () => {
     expect(wrapper.findAll("span").map((c) => c.text())).toEqual(["admin", "users"]);
   });
 
-  it("collapses multi-word admin titles to one crumb word", () => {
+  it("keeps multi-word admin titles as a phrase crumb", () => {
     const wrapper = mount(AdminPageLayout, {
       props: { title: "app logs", hub: "tools" },
       global: { stubs: { PageShell: pageShellStub } },
       slots: { default: "content" },
     });
 
-    expect(wrapper.findAll("span").map((c) => c.text())).toEqual(["tools", "logs"]);
+    expect(wrapper.findAll("span").map((c) => c.text())).toEqual(["tools", "app logs"]);
   });
 });

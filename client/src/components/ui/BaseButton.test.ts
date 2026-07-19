@@ -25,12 +25,13 @@ describe("BaseButton", () => {
     expect(mount(BaseButton, { props: { size: "lg" } }).get("button").classes()).toContain("h-12");
   });
 
-  it("applies red hover styles when danger", () => {
+  it("applies muted quiet danger styles on ghost danger", () => {
     const button = mount(BaseButton, {
       props: { variant: "ghost", danger: true },
     }).get("button");
 
     expect(button.classes()).toContain("hover:enabled:text-status-error");
-    expect(button.classes()).toContain("hover:enabled:border-status-error");
+    expect(button.classes()).toContain("hover:enabled:border-status-error/20");
+    expect(button.classes()).toContain("text-surface-light/60");
   });
 });

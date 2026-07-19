@@ -197,7 +197,7 @@ onMounted(() => {
                 :disabled="listLoading"
                 @click="openCreate"
               >
-                + new task
+                + task
               </BaseButton>
               <p v-else class="ml-auto text-xs text-surface-mid">
                 View only — creating and status changes need superuser.

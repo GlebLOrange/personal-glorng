@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import { Card } from "@/components/ui/card";
 
 defineProps<{
@@ -26,7 +27,7 @@ const emit = defineEmits<{
       </div>
       <div class="flex gap-2 ml-4">
         <BaseButton variant="ghost" size="sm" @click="emit('copy')">copy</BaseButton>
-        <BaseButton variant="ghost" danger size="sm" @click="emit('delete')">delete</BaseButton>
+        <IconCloseButton aria-label="delete" @click="emit('delete')" />
       </div>
     </div>
   </Card>

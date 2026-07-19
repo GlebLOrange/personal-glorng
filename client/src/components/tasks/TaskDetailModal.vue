@@ -5,6 +5,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
 import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseModal from "@/components/ui/BaseModal.vue";
+import ToolIcon from "@/components/icons/ToolIcon.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import {
   statusActionLabel,
@@ -36,7 +37,9 @@ const availableStatuses = computed(() =>
 const schedule = computed(() => formatScheduleDate(props.task.scheduled_at));
 
 const primaryActionStatus = computed((): TaskStatus | null =>
-  props.task.status === "pending" ? "completed" : null,
+  props.task.status === "pending" || props.task.status === "not_completed"
+    ? "completed"
+    : null,
 );
 
 const menuStatuses = computed(() =>
@@ -46,18 +49,30 @@ const menuStatuses = computed(() =>
 
 <template>
   <BaseModal :title="task.title" max-width="md" @close="emit('close')">
+    <template #header="{ titleId }">
+      <div class="grid w-full grid-cols-2 items-center gap-2">
+        <div class="min-w-0">
+          <StatusBadge
+            size="lg"
+            :label="statusLabel(task.status)"
+            :class-name="statusBadgeClass(task.status)"
+          />
+        </div>
+        <h2 :id="titleId" class="min-w-0 truncate text-lg font-bold text-surface-light">
+          {{ task.title }}
+        </h2>
+      </div>
+    </template>
+
     <div v-if="loading" class="space-y-3 animate-pulse">
-      <div class="h-6 w-24 bg-surface-border rounded" />
       <div class="h-4 w-full bg-surface-border rounded" />
       <div class="h-4 w-3/4 bg-surface-border rounded" />
     </div>
 
-    <div v-else class="space-y-5 max-h-[70vh] overflow-y-auto">
-      <StatusBadge :label="statusLabel(task.status)" :class-name="statusBadgeClass(task.status)" />
-
+    <div v-else class="space-y-5">
       <section class="space-y-2">
         <div class="flex min-w-0 items-baseline gap-2 text-sm">
-          <span class="shrink-0 text-surface-mid">when</span>
+          <span class="shrink-0 text-surface-mid">deadline</span>
           <span
             class="min-w-4 flex-1 translate-y-[-0.15em] border-b border-dotted border-surface-border/50"
             aria-hidden="true"
@@ -67,7 +82,7 @@ const menuStatuses = computed(() =>
         <p v-if="schedule.detail" class="text-right text-xs text-surface-mid">{{ schedule.detail }}</p>
 
         <div v-if="task.location" class="flex min-w-0 items-baseline gap-2 text-sm">
-          <span class="shrink-0 text-surface-mid">where</span>
+          <span class="shrink-0 text-surface-mid">location</span>
           <span
             class="min-w-4 flex-1 translate-y-[-0.15em] border-b border-dotted border-surface-border/50"
             aria-hidden="true"
@@ -113,7 +128,6 @@ const menuStatuses = computed(() =>
       </section>
 
       <section v-if="task.status_history.length" class="border-t border-surface-border pt-4">
-        <h3 class="mb-2 text-sm font-medium text-surface-mid">what changed</h3>
         <ul class="space-y-2">
           <li
             v-for="entry in task.status_history"
@@ -138,7 +152,11 @@ const menuStatuses = computed(() =>
 
       <section v-if="canMutate" class="space-y-3 border-t border-surface-border pt-4">
         <div v-if="task.google_event_id" class="flex items-center gap-2">
-          <span class="rounded-full bg-accent-blue/10 px-2 py-0.5 text-xs text-accent-blue">
+          <span
+            class="inline-flex items-center gap-1.5 rounded-full bg-accent-blue/10 px-2 py-0.5 text-xs text-accent-blue"
+            title="Synced to Google Calendar"
+          >
+            <ToolIcon slug="sync" class="h-3.5 w-3.5" />
             synced to google calendar
           </span>
         </div>
@@ -146,14 +164,16 @@ const menuStatuses = computed(() =>
           v-else
           variant="ghost"
           size="sm"
+          class="gap-1.5"
+          title="Try syncing again"
           @click="emit('retrySync', task.id)"
         >
+          <ToolIcon slug="sync" class="h-4 w-4" />
           try syncing again
         </BaseButton>
       </section>
 
       <section v-if="canMutate" class="border-t border-surface-border pt-4">
-        <h3 class="mb-2 text-sm font-medium text-surface-mid">actions</h3>
         <div class="flex flex-wrap items-center gap-2">
           <BaseButton
             v-if="primaryActionStatus"
@@ -164,7 +184,11 @@ const menuStatuses = computed(() =>
           >
             {{ statusActionLabel(primaryActionStatus) }}
           </BaseButton>
-          <BaseDropdownMenu v-if="menuStatuses.length" aria-label="more actions">
+          <BaseDropdownMenu
+            v-if="menuStatuses.length"
+            placement="top"
+            aria-label="more actions"
+          >
             <template #trigger>
               <span class="px-2 text-sm">more actions</span>
             </template>
@@ -200,6 +224,10 @@ const menuStatuses = computed(() =>
           <div>
             <dt class="inline font-medium">created:</dt>
             <dd class="ml-1 inline">{{ formatDate(task.created_at) }}</dd>
+          </div>
+          <div>
+            <dt class="inline font-medium">updated:</dt>
+            <dd class="ml-1 inline">{{ formatDate(task.updated_at) }}</dd>
           </div>
         </dl>
       </details>

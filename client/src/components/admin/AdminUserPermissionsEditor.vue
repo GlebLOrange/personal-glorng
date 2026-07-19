@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import ToolIcon from "@/components/icons/ToolIcon.vue";
 import { groupServicesByCategory, type PlatformService } from "@/platform/services";
 import { permissionKey, SUPERUSER_PERMISSION } from "@/utils/permissions";
 
@@ -108,7 +109,7 @@ function servicePermissionSummary(service: PlatformService): string {
       </div>
 
       <section v-for="section in sections" :key="section.category" class="space-y-2">
-        <h3 class="text-xs font-medium text-surface-light uppercase tracking-wide">
+        <h3 class="text-meta mb-2 uppercase tracking-wider">
           {{ section.label }}
         </h3>
         <div
@@ -118,8 +119,8 @@ function servicePermissionSummary(service: PlatformService): string {
         >
           <div class="mb-3 flex flex-wrap items-start justify-between gap-2">
             <div class="min-w-0">
-              <p class="text-sm font-medium text-surface-light">
-                <span aria-hidden="true">{{ service.icon }}</span>
+              <p class="flex items-center gap-2 text-sm font-medium text-surface-light">
+                <ToolIcon :slug="service.slug" class="h-4 w-4 shrink-0 text-surface-light" />
                 {{ service.name }}
               </p>
               <p class="mt-0.5 text-xs text-surface-mid">{{ service.description }}</p>

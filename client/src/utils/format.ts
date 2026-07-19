@@ -1,4 +1,4 @@
-/** Single-word breadcrumb label from a page title (last token). */
+/** Normalized breadcrumb label from a page title (slug separators become spaces). */
 export function formatBreadcrumbLabel(title: string): string {
   const parts = title
     .trim()
@@ -6,7 +6,7 @@ export function formatBreadcrumbLabel(title: string): string {
     .toLowerCase()
     .split(/[\s/_-]+/)
     .filter(Boolean);
-  return parts.at(-1) ?? title.trim().toLowerCase();
+  return parts.join(" ") || title.trim().toLowerCase();
 }
 
 /** Visible breadcrumb text: § as the first character of the page name. */

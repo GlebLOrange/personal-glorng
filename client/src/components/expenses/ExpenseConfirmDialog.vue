@@ -9,12 +9,10 @@ withDefaults(
     message?: string;
     confirmLabel?: string;
     loading?: boolean;
-    closeDanger?: boolean;
   }>(),
   {
     message: "",
     confirmLabel: "confirm",
-    closeDanger: true,
   },
 );
 
@@ -25,12 +23,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <BaseModal
-    v-if="open"
-    :title="title"
-    :close-danger="closeDanger"
-    @close="emit('cancel')"
-  >
+  <BaseModal v-if="open" :title="title" @close="emit('cancel')">
     <div class="mb-6 text-sm text-surface-mid">
       <slot>
         <p>{{ message }}</p>

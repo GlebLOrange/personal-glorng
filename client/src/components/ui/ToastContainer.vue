@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import { useNotify } from "@/composables/useNotify";
 
 import type { Toast } from "@/types";
@@ -34,14 +35,11 @@ const typeBorderClass: Record<Toast["type"], string> = {
       <p class="min-w-0 max-w-[18rem] flex-1 break-words text-sm leading-snug sm:max-w-[22rem]">
         {{ t.message }}
       </p>
-      <button
-        type="button"
-        class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-base leading-none text-surface-mid hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+      <IconCloseButton
+        class="!h-8 !min-w-8 !w-8"
         aria-label="Dismiss notification"
         @click="dismiss(t.id)"
-      >
-        ×
-      </button>
+      />
     </div>
   </div>
 </template>

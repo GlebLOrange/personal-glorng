@@ -22,9 +22,7 @@ const canWrite = computed(() => can("recipes", "write"));
 
 const {
   recipes,
-  allTags,
   search,
-  activeTags,
   page,
   selectedRecipe,
   drawerOpen,
@@ -45,12 +43,10 @@ const {
   formTitle,
   deleteConfirmMessage,
   loadRecipes,
-  loadTags,
   openDetail,
   closeDetail,
   openCookMode,
   closeCookMode,
-  setTag,
   goToPage,
   openCreate,
   openEdit,
@@ -61,18 +57,15 @@ const {
   tryOpenFromQuery,
 } = useRecipes();
 
-useScrollListFingerprint(
-  () => `${activeTags.value.join(",")}:${recipes.value.length}`,
-);
+useScrollListFingerprint(() => `${search.value}:${recipes.value.length}`);
 
 onMounted(async () => {
-  await Promise.all([loadRecipes(), loadTags()]);
+  await loadRecipes();
   await tryOpenFromQuery();
 });
 
 function clearFilters(): void {
   search.value = "";
-  setTag(null);
 }
 
 function openRecipeFromCard(recipeId: number): void {
@@ -98,19 +91,13 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
     max-width="xl"
     :narrow="false"
   >
-    <RecipeFilters
-      v-model:search="search"
-      :active-tags="activeTags"
-      :all-tags="allTags"
-      @set-tag="setTag"
-      @clear-filters="clearFilters"
-    >
+    <RecipeFilters v-model:search="search">
       <template v-if="canWrite" #actions>
         <BaseButton
           variant="primary"
           @click="openCreate"
         >
-          + new recipe
+          + recipe
         </BaseButton>
       </template>
       <div
@@ -134,9 +121,7 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
           v-for="recipe in recipes"
           :key="recipe.id"
           :recipe="recipe"
-          :active-tags="activeTags"
           @select="openRecipeFromCard"
-          @tag-click="setTag"
         />
       </div>
 
@@ -180,7 +165,6 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
       :form="form"
       :form-title="formTitle"
       :loading="saving"
-      :all-tags="allTags"
       @update:form="form = $event"
       @close="showForm = false"
       @save="saveRecipe"

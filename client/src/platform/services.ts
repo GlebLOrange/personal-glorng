@@ -132,7 +132,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "vid-download",
-    name: "video download",
+    name: "video downloader",
     category: "utilities",
     categoryLabel: "utilities",
     description: "Download videos with yt-dlp",

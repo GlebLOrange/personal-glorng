@@ -9,16 +9,16 @@ import {
 } from "@/utils/format";
 
 describe("formatBreadcrumbLabel", () => {
-  it("returns a single lowercase word from multi-word titles", () => {
-    expect(formatBreadcrumbLabel("app logs")).toBe("logs");
-    expect(formatBreadcrumbLabel("news sources")).toBe("sources");
-    expect(formatBreadcrumbLabel("edit news article")).toBe("article");
-    expect(formatBreadcrumbLabel("password generator")).toBe("generator");
+  it("keeps multi-word titles as a lowercase phrase", () => {
+    expect(formatBreadcrumbLabel("app logs")).toBe("app logs");
+    expect(formatBreadcrumbLabel("news sources")).toBe("news sources");
+    expect(formatBreadcrumbLabel("edit news article")).toBe("edit news article");
+    expect(formatBreadcrumbLabel("password generator")).toBe("password generator");
   });
 
-  it("strips hyphenated compounds to one word", () => {
-    expect(formatBreadcrumbLabel("url-shortener")).toBe("shortener");
-    expect(formatBreadcrumbLabel("vid-download")).toBe("download");
+  it("turns hyphenated compounds into spaced phrases", () => {
+    expect(formatBreadcrumbLabel("url-shortener")).toBe("url shortener");
+    expect(formatBreadcrumbLabel("vid-download")).toBe("vid download");
   });
 
   it("strips an existing section mark before normalizing", () => {
@@ -30,7 +30,7 @@ describe("formatBreadcrumbLabel", () => {
 describe("displayBreadcrumbLabel", () => {
   it("prefixes the page name with § and a space", () => {
     expect(displayBreadcrumbLabel("calculator")).toBe("§ calculator");
-    expect(displayBreadcrumbLabel("app logs")).toBe("§ logs");
+    expect(displayBreadcrumbLabel("app logs")).toBe("§ app logs");
     expect(displayBreadcrumbLabel("§ tools")).toBe("§ tools");
   });
 });
