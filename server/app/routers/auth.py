@@ -1,7 +1,9 @@
 from datetime import UTC, datetime
 from typing import Annotated
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, Request, Response
+from fastapi.responses import RedirectResponse
 
 from app.core.deps import (
     AppSettings,
@@ -26,6 +28,7 @@ from app.schemas.auth import (
     ResetPasswordRequest,
     TokenResponse,
     UserResponse,
+    VerifyEmailRequest,
 )
 from app.schemas.common import MessageResponse
 from app.services.auth import (
@@ -123,11 +126,11 @@ async def register(
 
 @router.post(
     "/login",
-    response_model=TokenResponse,
+    response_model=MessageResponse,
     summary="Log in",
     description=(
-        "Authenticate with email and password. Returns JWT tokens and sets "
-        "HttpOnly cookies. Use `access_token` as Bearer in Swagger."
+        "Authenticate with email and password. Sets HttpOnly auth cookies "
+        "(tokens are not returned in the JSON body)."
     ),
     dependencies=[Depends(rate_limit_auth)],
 )
@@ -137,7 +140,7 @@ async def login(
     audit_svc: AuditServiceDep,
     response: Response,
     settings: AppSettings,
-) -> TokenResponse:
+) -> MessageResponse:
     access_token, refresh_token = await login_user(
         registry,
         audit_svc,
@@ -150,16 +153,17 @@ async def login(
         refresh_token=refresh_token,
         settings=settings,
     )
-    return TokenResponse(access_token=access_token, refresh_token=refresh_token)
+    return MessageResponse(message="Login successful")
 
 
 @router.post(
     "/firebase",
-    response_model=TokenResponse,
+    response_model=MessageResponse,
     summary="Log in with Firebase Google auth",
     description=(
         "Verify a Firebase Google ID token, create a restricted app account "
-        "when needed, and set HttpOnly auth cookies."
+        "when needed, and set HttpOnly auth cookies "
+        "(tokens are not returned in the JSON body)."
     ),
     dependencies=[Depends(rate_limit_auth)],
 )
@@ -170,7 +174,7 @@ async def firebase_login(
     job_queue: JobQueueDep,
     response: Response,
     settings: AppSettings,
-) -> TokenResponse:
+) -> MessageResponse:
     identity = verify_firebase_google_token(data.id_token, settings)
     result = await login_with_firebase_google(registry, audit_svc, identity)
     _set_auth_cookies(
@@ -187,13 +191,31 @@ async def firebase_login(
                 identity.email,
                 reset_token,
             )
-    return TokenResponse(
-        access_token=result.access_token,
-        refresh_token=result.refresh_token,
-    )
+    return MessageResponse(message="Login successful")
 
 
 @router.get(
+    "/verify",
+    summary="Verify email (redirect)",
+    description=(
+        "Legacy link target: redirects to the SPA verify page without consuming "
+        "the token. Prefer POST /auth/verify from the SPA."
+    ),
+    dependencies=[Depends(rate_limit_auth)],
+    response_model=None,
+)
+async def verify_redirect(
+    token: str,
+    settings: AppSettings,
+) -> RedirectResponse:
+    base = settings.BASE_URL.rstrip("/")
+    return RedirectResponse(
+        url=f"{base}/verify-email?token={quote(token, safe='')}",
+        status_code=302,
+    )
+
+
+@router.post(
     "/verify",
     response_model=MessageResponse,
     summary="Verify email",
@@ -201,22 +223,24 @@ async def firebase_login(
     dependencies=[Depends(rate_limit_auth)],
 )
 async def verify(
-    token: str,
+    data: VerifyEmailRequest,
     registry: DbRegistry,
     audit_svc: AuditServiceDep,
 ) -> MessageResponse:
-    await verify_user_email(registry, audit_svc, token)
+    await verify_user_email(registry, audit_svc, data.token)
     return MessageResponse(message="Email verified successfully")
 
 
 @router.post(
     "/refresh",
-    response_model=TokenResponse,
     summary="Refresh access token",
     description=(
-        "Exchange a refresh token (body or cookie) for new access and refresh tokens."
+        "Exchange a refresh token (body or cookie) for new access and refresh "
+        "tokens. Cookie-only clients get cookies set and a message body; "
+        "body refresh returns tokens in JSON for scripts/Bearer clients."
     ),
     dependencies=[Depends(rate_limit_auth)],
+    response_model=None,
 )
 async def refresh(
     registry: DbRegistry,
@@ -225,10 +249,9 @@ async def refresh(
     request: Request,
     settings: AppSettings,
     data: RefreshRequest | None = None,
-) -> TokenResponse:
-    refresh_token = (data.refresh_token if data else None) or request.cookies.get(
-        _REFRESH_COOKIE
-    )
+) -> TokenResponse | MessageResponse:
+    body_refresh = data.refresh_token if data else None
+    refresh_token = body_refresh or request.cookies.get(_REFRESH_COOKIE)
     if not refresh_token:
         raise UnauthorizedError("Missing refresh token")
 
@@ -243,10 +266,12 @@ async def refresh(
         refresh_token=new_refresh_token,
         settings=settings,
     )
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=new_refresh_token,
-    )
+    if body_refresh:
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=new_refresh_token,
+        )
+    return MessageResponse(message="Tokens refreshed")
 
 
 @router.post(

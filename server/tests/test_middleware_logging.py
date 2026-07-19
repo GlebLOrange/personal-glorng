@@ -83,3 +83,14 @@ async def test_read_body_for_log_skips_oversized_content_length() -> None:
             raise AssertionError("body should not be read when Content-Length is large")
 
     assert await _read_body_for_log(_Req()) is None  # type: ignore[arg-type]
+
+
+def test_body_log_redacts_api_key_fields() -> None:
+    body = b'{"api_key": "sk-live", "apikey": "x", "nested": {"api_key": "y"}}'
+
+    sanitized = _sanitize_body_for_log(body, content_type="application/json")
+
+    assert sanitized is not None
+    assert "sk-live" not in sanitized
+    assert sanitized.count("[REDACTED]") >= 3
+

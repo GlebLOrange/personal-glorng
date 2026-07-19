@@ -18,7 +18,7 @@ async def test_list_users_requires_superuser(client: AsyncClient, db) -> None:
         "/api/auth/login",
         json={"email": user.email, "password": STRONG_PASSWORD},
     )
-    token = login.json()["access_token"]
+    token = login.cookies["access_token"]
 
     resp = await client.get(
         "/api/admin/users",
@@ -102,7 +102,7 @@ async def test_cannot_remove_last_superuser(client: AsyncClient, db) -> None:
         "/api/auth/login",
         json={"email": user.email, "password": STRONG_PASSWORD},
     )
-    token = login.json()["access_token"]
+    token = login.cookies["access_token"]
 
     resp = await client.patch(
         f"/api/admin/users/{user.public_id}/permissions",

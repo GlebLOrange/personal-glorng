@@ -21,8 +21,8 @@ onMounted(async () => {
   }
 
   try {
-    const { data } = await api.get<{ message: string }>("/auth/verify", {
-      params: { token },
+    const { data } = await api.post<{ message: string }>("/auth/verify", {
+      token,
     });
     status.value = "success";
     message.value = data.message;

@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 from app.core.exceptions import ConflictError, ForbiddenError, UnauthorizedError
 from app.core.logging import logger
-from app.core.redis import blacklist_token, is_token_blacklisted
+from app.core.redis import is_token_blacklisted, try_blacklist_token
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -57,14 +57,16 @@ async def _decode_and_validate(token: str, expected_type: str) -> dict[str, obje
     return payload
 
 
-async def _blacklist_payload(payload: dict[str, object]) -> None:
-    """Blacklist a token's JTI for its remaining lifetime."""
+async def _claim_payload(payload: dict[str, object]) -> None:
+    """Atomically blacklist a token's JTI; raise if already used."""
     jti = payload.get("jti")
     if not jti:
         return
     exp = payload.get("exp", 0)
     now = int(datetime.now(UTC).timestamp())
-    await blacklist_token(jti, max(exp - now, 0))
+    claimed = await try_blacklist_token(str(jti), max(int(exp) - now, 0))
+    if not claimed:
+        raise UnauthorizedError("Token has already been used")
 
 
 async def _get_user_by_sub(registry: DatabaseRegistry, subject: str) -> User:
@@ -166,7 +168,7 @@ async def refresh_access_token(
     refresh_token: str,
 ) -> tuple[str, str]:
     payload = await _decode_and_validate(refresh_token, "refresh")
-    await _blacklist_payload(payload)
+    await _claim_payload(payload)
     user = await _get_user_by_sub(registry, str(payload["sub"]))
     try:
         require_matching_session_version(payload, user.session_version)
@@ -202,6 +204,7 @@ async def verify_user_email(
     token: str,
 ) -> User:
     payload = await _decode_and_validate(token, "verify")
+    await _claim_payload(payload)
     user = await get_user_by_email(registry, str(payload["sub"]))
     if not user:
         raise UnauthorizedError("User not found")
@@ -210,8 +213,6 @@ async def verify_user_email(
     user = await get_user_by_email(registry, str(payload["sub"]))
     if not user:
         raise UnauthorizedError("User not found")
-
-    await _blacklist_payload(payload)
 
     await audit.record(
         AuditRecord(
@@ -258,6 +259,7 @@ async def reset_user_password(
     new_password: str,
 ) -> User:
     payload = await _decode_and_validate(token, "reset")
+    await _claim_payload(payload)
     user = await get_user_by_email(registry, str(payload["sub"]))
     if not user:
         raise UnauthorizedError("User not found")
@@ -267,8 +269,6 @@ async def reset_user_password(
         hashed_password=hash_password(new_password),
         session_version=int(user.session_version or 0) + 1,
     )
-
-    await _blacklist_payload(payload)
 
     await audit.record(
         AuditRecord(

@@ -77,10 +77,19 @@ class FakeRedis:
     async def get(self, key: str) -> str | None:
         return self._store.get(key)
 
-    async def set(self, key: str, value: Any, ex: int | None = None) -> None:
+    async def set(
+        self,
+        key: str,
+        value: Any,
+        ex: int | None = None,
+        nx: bool = False,
+    ) -> bool | None:
+        if nx and key in self._store:
+            return None
         self._store[key] = str(value)
         if ex is not None:
             self._expiry[key] = ex
+        return True
 
     async def incr(self, key: str) -> int:
         val = int(self._store.get(key, "0")) + 1
@@ -353,4 +362,7 @@ async def login_tokens(client: AsyncClient, admin_user: User) -> dict[str, str]:
         json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
     )
     assert resp.status_code == 200
-    return resp.json()
+    access = resp.cookies.get("access_token")
+    refresh = resp.cookies.get("refresh_token")
+    assert access and refresh
+    return {"access_token": access, "refresh_token": refresh}

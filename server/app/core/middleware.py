@@ -25,7 +25,16 @@ _SKIP_BODY_LOG_CONTENT_TYPES = (
     "video/",
 )
 _SENSITIVE_BODY_KEYS = frozenset(
-    {"password", "token", "authorization", "secret", "cookie", "access_token"},
+    {
+        "password",
+        "token",
+        "authorization",
+        "secret",
+        "cookie",
+        "access_token",
+        "api_key",
+        "apikey",
+    },
 )
 
 
@@ -88,7 +97,8 @@ def _redact_body_dict(payload: dict[str, object]) -> dict[str, object]:
     redacted: dict[str, object] = {}
     for key, value in payload.items():
         if key.lower() in _SENSITIVE_BODY_KEYS or any(
-            marker in key.lower() for marker in ("password", "token", "secret")
+            marker in key.lower()
+            for marker in ("password", "token", "secret", "api_key", "apikey")
         ):
             redacted[key] = "[REDACTED]"
         else:
