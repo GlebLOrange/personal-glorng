@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 
 from app.settings import Settings, get_settings
 from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file, scenario_env
@@ -56,3 +57,19 @@ def test_production_requires_strong_redis_password(
         Settings()
 
     get_settings.cache_clear()
+
+
+def test_process_env_overrides_dotenv(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Process environment wins over the dotenv file (D3)."""
+    env_file = scenario_env(tmp_path, APP_NAME="FromDotEnv")
+    activate_env_file(monkeypatch, env_file)
+    monkeypatch.setenv("APP_NAME", "FromProcessEnv")
+
+    settings = Settings()
+
+    assert settings.APP_NAME == "FromProcessEnv"
+    get_settings.cache_clear()
+    monkeypatch.delenv("APP_NAME", raising=False)

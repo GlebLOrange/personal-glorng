@@ -156,7 +156,7 @@ Audit events ([`audit_events`](../../server/app/db/repositories/audit.py)) remai
 
 - Never commit `.env` (see [Configuration](/reference/configuration))
 - Production startup validates strength of `JWT_SECRET`, `RABBITMQ_PASSWORD`, `POSTGRES_PASSWORD`, and the password embedded in `REDIS_URL` — see [`server/app/settings.py`](../../server/app/settings.py)
-- Weekly Dependabot updates; [`security.yml`](../../.github/workflows/security.yml) runs gitleaks, pip-audit, and npm audit
+- Weekly Dependabot updates for `/server` (uv + Docker), `/client` (npm + Docker), `/docs` (npm), and GitHub Actions; [`security.yml`](../../.github/workflows/security.yml) runs gitleaks, pip-audit, and npm audit
 
 ## Risk register
 

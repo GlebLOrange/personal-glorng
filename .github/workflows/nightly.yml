@@ -1,4 +1,4 @@
-# P1 nightly tier — postgres + redis integration (see docs/reference/testing.md).
+# P1 nightly tier — postgres + redis integration only (see docs/reference/testing.md).
 name: nightly
 
 on:

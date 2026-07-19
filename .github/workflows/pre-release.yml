@@ -76,10 +76,10 @@ jobs:
           EOF
       - name: Start API stack (P2 smoke)
         run: |
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d redis mongodb rabbitmq
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml build migrate server
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm migrate
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d server
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml -f docker-compose.lite.yml up -d redis mongodb rabbitmq
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml -f docker-compose.lite.yml build migrate server
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml -f docker-compose.lite.yml run --rm migrate
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml -f docker-compose.lite.yml up -d server nginx
       - name: Health through exposed API port
         run: |
           for i in $(seq 1 30); do
@@ -87,3 +87,10 @@ jobs:
             sleep 2
           done
           curl -sf http://127.0.0.1:8000/api/ready | grep -q '"mongodb":"ok"'
+      - name: Health through nginx (:80)
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1/api/health && break
+            sleep 2
+          done
+          curl -sf http://127.0.0.1/api/health | grep -qi ok
