@@ -33,12 +33,6 @@ export interface GitHubStatus {
   github_username: string | null;
 }
 
-export interface TokenResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-}
-
 export interface ResumeData {
   name: string;
   title: string;
