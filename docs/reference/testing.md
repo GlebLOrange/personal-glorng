@@ -21,16 +21,27 @@ Tests are organized into four tiers by CI cost and release risk.
 
 ### P1 — Nightly
 
+Automated today ([`nightly.yml`](../../.github/workflows/nightly.yml)):
+
 - `pytest -m postgres` — audit/search Postgres dual-write paths (requires migrations)
 - `pytest -m redis` — real Redis rate-limit and health checks
-- Expanded admin Playwright flows (`admin-tools.spec.ts`)
+
+Not yet in nightly CI (run locally / before release when needed):
+
+- Expanded admin Playwright flows (`client/e2e/admin-tools.spec.ts`)
 
 ### P2 — Pre-release
 
+Automated today ([`pre-release.yml`](../../.github/workflows/pre-release.yml)):
+
+- Beat schedule registry unit tests (`tests/test_celery_schedule.py`)
+- Compose stack smoke: migrate + API `:8000/api/health` + `/api/ready`
+- Nginx (dev-lite overlay) `:80/api/health` through the reverse proxy
+
+Not yet in pre-release CI (manual / follow-up):
+
 - Docker Compose `worker` profile smoke (one Celery task round-trip)
-- Nginx compose profile health (`:80/api/health`)
 - `make reindex-search` smoke
-- Beat schedule registry unit tests (cron definitions, not live firing)
 
 ### P3 — Staging manual (deferred from CI) {#p3-staging-manual-deferred-from-ci}
 
@@ -96,7 +107,7 @@ npm run e2e
 | Registry parity | Maintain | `test_platform_parity.py`, `services.parity.test.ts` |
 | Portfolio / resume UI | Built | `resumeGlance.test.ts`, E2E smoke |
 | Admin UI harness | Built | `adminToolHarness.test.ts` |
-| Admin Playwright flows | Built (P1) | `admin-tools.spec.ts` |
+| Admin Playwright flows | Built (local / release) | `admin-tools.spec.ts` — not yet in nightly CI |
 
 ## Related
 

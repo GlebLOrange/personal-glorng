@@ -194,7 +194,7 @@ def _parse_env_dict(value: Any) -> dict[str, str]:
 
 
 class Settings(BaseSettings):
-    """Application settings loaded exclusively from a .env file."""
+    """Application settings from process env, optional secrets dir, then .env."""
 
     model_config = SettingsConfigDict(extra="ignore")
 
@@ -207,8 +207,13 @@ class Settings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
-        del init_settings, env_settings, dotenv_settings, file_secret_settings
+        del dotenv_settings
+        # Process env / Docker secrets win over dotenv so containers need not
+        # mount a mega-.env for every override (dotenv still covers local/dev).
         return (
+            init_settings,
+            env_settings,
+            file_secret_settings,
             DotEnvSettingsSource(
                 settings_cls,
                 env_file=_env_file_path(),

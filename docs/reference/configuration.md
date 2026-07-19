@@ -1,6 +1,12 @@
 # Configuration
 
-Environment variable reference. Canonical template: [`.env.example`](../../.env.example). Validation logic: [`server/app/settings.py`](../../server/app/settings.py).
+Environment variable reference. Canonical templates: [`.env.example`](../../.env.example) (dev) and [`.env.production.example`](../../.env.production.example) (prod-shaped blanks). Validation logic: [`server/app/settings.py`](../../server/app/settings.py).
+
+Settings load order (later sources do not override earlier ones):
+
+1. Constructor / init kwargs
+2. **Process environment** (and Docker secrets under `/run/secrets` when present)
+3. Dotenv file from `GLORNG_ENV_FILE` or repo-root `.env`
 
 Copy for local dev:
 
@@ -8,7 +14,7 @@ Copy for local dev:
 cp .env.example .env
 ```
 
-`RUN_MIGRATIONS` and `RUN_SEED` are read from `.env` only — not Docker Compose overrides.
+Keep `RUN_MIGRATIONS` / `RUN_SEED` in `.env` (or secrets) — avoid setting them in Compose `environment:` blocks so a shared compose file cannot accidentally re-seed production.
 
 ## App
 
