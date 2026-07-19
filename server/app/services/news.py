@@ -14,8 +14,8 @@ from pymongo.errors import DuplicateKeyError
 from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.core.json_lists import parse_json_string_list
 from app.core.logging import logger
-from app.core.url_safety import is_public_http_url
 from app.core.pagination import build_paginated
+from app.core.url_safety import get_public_http_url, is_public_http_url
 from app.core.utils import DEFAULT_PER_PAGE, paginate_params, utc_now
 from app.db.documents.news import NewsArticle, NewsSource, NewsStatus
 from app.db.registry import DatabaseRegistry
@@ -389,33 +389,23 @@ class NewsService:
         normalized_url = _canonical_url(source_url)
         _require_public_feed_url(normalized_url)
         try:
-            async with (
-                httpx.AsyncClient(
-                    follow_redirects=True,
-                    timeout=_METADATA_TIMEOUT_SECONDS,
-                ) as client,
-                client.stream(
-                    "GET",
+            async with httpx.AsyncClient(timeout=_METADATA_TIMEOUT_SECONDS) as client:
+                response = await get_public_http_url(
+                    client,
                     normalized_url,
                     headers={"Accept": "text/html,application/xhtml+xml"},
-                ) as response,
-            ):
+                )
+            try:
                 response.raise_for_status()
                 final_url = _canonical_url(str(response.url))
                 _require_public_feed_url(final_url)
-                chunks: list[bytes] = []
-                total = 0
-                async for chunk in response.aiter_bytes():
-                    total += len(chunk)
-                    if total > _METADATA_MAX_BYTES:
-                        remaining = _METADATA_MAX_BYTES - (total - len(chunk))
-                        chunks.append(chunk[: max(0, remaining)])
-                        break
-                    chunks.append(chunk)
-        except httpx.HTTPError as exc:
+                content = response.content[:_METADATA_MAX_BYTES]
+                encoding = response.encoding or "utf-8"
+            finally:
+                await response.aclose()
+        except (httpx.HTTPError, ValueError) as exc:
             raise ValidationError("Could not load article URL") from exc
-        encoding = response.encoding or "utf-8"
-        document = b"".join(chunks).decode(encoding, errors="replace")
+        document = content.decode(encoding, errors="replace")
         host = _normalized_host(final_url)
         source = await self._get_or_create_source_for_url(final_url, actor_id=actor_id)
         title = _extract_title(document) or _source_name_from_host(host)

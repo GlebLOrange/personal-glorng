@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from collections import Counter
 from typing import Any
-from xml.etree import ElementTree as ET
+from xml.etree.ElementTree import Element, ParseError
+
+from defusedxml.common import DefusedXmlException
 
 from app.core.data_extractor.types import ExtractOptions
 from app.core.exceptions import ValidationError
-from app.core.xml_security import has_unsafe_xml_declaration
+from app.core.xml_security import has_unsafe_xml_declaration, parse_xml
 
 HandlerResult = tuple[list[Any], dict[str, Any]]
 
@@ -20,8 +22,8 @@ def extract_xml(content: str, options: ExtractOptions) -> HandlerResult:
         raise ValidationError("XML DTD and entity declarations are not supported")
 
     try:
-        root = ET.fromstring(content, parser=_safe_parser())  # noqa: S314
-    except ET.ParseError as exc:
+        root = parse_xml(content)
+    except (ParseError, DefusedXmlException, ValueError) as exc:
         raise ValidationError(f"Invalid XML: {exc}") from exc
 
     root_tag = _local_name(root.tag)
@@ -52,17 +54,13 @@ def extract_xml(content: str, options: ExtractOptions) -> HandlerResult:
     return rows, meta
 
 
-def _safe_parser() -> ET.XMLParser:
-    return ET.XMLParser()  # noqa: S314
-
-
 def _local_name(tag: str) -> str:
     if "}" in tag:
         return tag.rsplit("}", maxsplit=1)[-1]
     return tag
 
 
-def _detect_row_tag(root: ET.Element) -> str:
+def _detect_row_tag(root: Element) -> str:
     counts = Counter(_local_name(child.tag) for child in root)
     if not counts:
         raise ValidationError("XML root has no child elements for row extraction")
@@ -72,12 +70,12 @@ def _detect_row_tag(root: ET.Element) -> str:
     return row_tag
 
 
-def _element_text(element: ET.Element) -> str | None:
+def _element_text(element: Element) -> str | None:
     text = (element.text or "").strip()
     return text or None
 
 
-def _element_to_row(element: ET.Element) -> dict[str, Any]:
+def _element_to_row(element: Element) -> dict[str, Any]:
     row: dict[str, Any] = dict(element.attrib)
     text = _element_text(element)
     if text is not None:
@@ -97,7 +95,7 @@ def _element_to_row(element: ET.Element) -> dict[str, Any]:
     return row
 
 
-def _child_value(element: ET.Element) -> object:
+def _child_value(element: Element) -> object:
     if len(element):
         return _element_to_tree(element)
     text = _element_text(element)
@@ -109,7 +107,7 @@ def _child_value(element: ET.Element) -> object:
     return text
 
 
-def _element_to_tree(element: ET.Element) -> dict[str, Any]:
+def _element_to_tree(element: Element) -> dict[str, Any]:
     node: dict[str, Any] = dict(element.attrib)
     text = _element_text(element)
     if text is not None:

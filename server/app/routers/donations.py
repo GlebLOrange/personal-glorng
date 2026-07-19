@@ -23,6 +23,7 @@ router = APIRouter()
 STRIPE_WEBHOOK_MAX_BODY_BYTES = 1024 * 1024
 
 rate_limit_checkout = RateLimiter(requests=10, window=3600, fail_open=False)
+rate_limit_stripe_webhook = RateLimiter(requests=30, window=60, fail_open=False)
 
 
 @router.get(
@@ -69,6 +70,7 @@ async def create_donation_checkout() -> CheckoutSessionResponse:
     response_model=WebhookAckResponse,
     summary="Stripe webhook",
     description="Receives signed Stripe events (checkout.session.completed).",
+    dependencies=[Depends(rate_limit_stripe_webhook)],
 )
 async def stripe_webhook(request: Request) -> WebhookAckResponse:
     settings = get_settings()

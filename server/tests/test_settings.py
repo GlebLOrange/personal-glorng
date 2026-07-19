@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 
 from app.settings import Settings, get_settings
 from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file, scenario_env
@@ -53,6 +54,23 @@ def test_production_requires_strong_redis_password(
     activate_env_file(monkeypatch, ENV_SCENARIOS_DIR / "production-weak-redis.env")
 
     with pytest.raises(ValueError, match="REDIS_PASSWORD"):
+        Settings()
+
+    get_settings.cache_clear()
+
+
+def test_production_forbids_request_body_logging(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    env_file = scenario_env(
+        tmp_path,
+        base=ENV_SCENARIOS_DIR / "production-csrf.env",
+        LOG_REQUEST_BODIES="true",
+    )
+    activate_env_file(monkeypatch, env_file)
+
+    with pytest.raises(ValueError, match="LOG_REQUEST_BODIES"):
         Settings()
 
     get_settings.cache_clear()

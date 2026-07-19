@@ -6,7 +6,11 @@ import pytest
 from httpx import AsyncClient
 
 from app.core.app_log_persist import _drain_queue
-from app.core.middleware import _sanitize_body_for_log
+from app.core.middleware import (
+    _read_body_for_log,
+    _sanitize_body_for_log,
+    _should_skip_body_log,
+)
 from app.settings import get_settings
 from tests.env_helpers import activate_env_file, scenario_env
 
@@ -58,3 +62,24 @@ def test_body_log_omits_raw_non_json_body() -> None:
     )
     assert "secret" not in sanitized
     assert "token=abc" not in sanitized
+
+
+def test_body_log_skips_multipart_and_binary_content_types() -> None:
+    assert _should_skip_body_log("multipart/form-data; boundary=abc") is True
+    assert _should_skip_body_log("application/octet-stream") is True
+    assert _should_skip_body_log("application/json") is False
+
+
+@pytest.mark.asyncio
+async def test_read_body_for_log_skips_oversized_content_length() -> None:
+    class _Req:
+        def __init__(self) -> None:
+            self.headers = {
+                "content-type": "application/json",
+                "content-length": "999999",
+            }
+
+        async def body(self) -> bytes:
+            raise AssertionError("body should not be read when Content-Length is large")
+
+    assert await _read_body_for_log(_Req()) is None  # type: ignore[arg-type]

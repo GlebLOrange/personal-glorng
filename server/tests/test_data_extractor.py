@@ -121,6 +121,31 @@ def test_extract_invalid_xml() -> None:
         extract(b"<root>", filename="broken.xml")
 
 
+def test_extract_xml_rejects_dtd() -> None:
+    xml = (
+        '<?xml version="1.0"?>'
+        "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]>"
+        "<root>&xxe;</root>"
+    )
+    with pytest.raises(ValidationError, match=r"DTD|entity|Invalid XML"):
+        extract(xml.encode(), filename="xxe.xml")
+
+
+def test_extract_xml_rejects_entity_after_padding() -> None:
+    # Pre-check only scans first 4k; parser-level defusedxml must still reject.
+    padding = "<!--" + ("x" * 5000) + "-->"
+    xml = (
+        f"{padding}"
+        "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]>"
+        "<root>&xxe;</root>"
+    )
+    with pytest.raises(
+        ValidationError,
+        match=r"DTD|entity|Invalid XML|not supported",
+    ):
+        extract(xml.encode(), filename="padded-xxe.xml")
+
+
 def test_extract_csv_without_header() -> None:
     with pytest.raises(ValidationError, match="no header row"):
         extract(b"1,2\n3,4", filename="data.csv")

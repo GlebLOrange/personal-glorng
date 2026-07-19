@@ -135,6 +135,8 @@ Client-side `VITE_AI_CHAT_ENABLED` hides the admin UI only; server flags and aut
 
 **URL shortener:** Creating short links is public (10 creates/hour/IP) with URL safety checks that block localhost and private-network targets. Public `/s/{code}` redirects to stored URLs — open redirects are an accepted risk for shorteners; your domain lends trust to destination sites.
 
+**Server-side URL fetch:** News metadata/ingest and similar fetchers use `is_public_http_url` with DNS resolution (fail closed) and manual redirect re-validation so names/hops that resolve to private or link-local addresses are rejected.
+
 **Vid download:** The download endpoint is public with strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). yt-dlp runs server-side; URLs are restricted to known YouTube hosts only.
 
 ## Application log persistence
@@ -149,7 +151,7 @@ Structured API logs (Loguru / [`logging.py`](../../server/app/core/logging.py)) 
 | Admin access | `GET /api/tools/app-logs` requires `app-logs:read` |
 | Health noise | `/api/health` request logs are not persisted |
 | Failure mode | Queue is bounded; overflow drops oldest entries; DB errors never crash the app |
-| Body logging | `LOG_REQUEST_BODIES` logs redacted JSON only; non-JSON bodies omitted |
+| Body logging | `LOG_REQUEST_BODIES` logs redacted JSON only; skips multipart/binary and bodies over 64 KiB; forbidden in production |
 
 Audit events ([`audit_events`](../../server/app/db/repositories/audit.py)) remain a separate, intentional change trail — not general application logs.
 

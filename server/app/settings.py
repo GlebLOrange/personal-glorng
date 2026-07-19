@@ -246,6 +246,9 @@ class Settings(BaseSettings):
         ):
             msg = "CORS_ORIGINS cannot include '*' when allow_credentials is enabled"
             raise ValueError(msg)
+        if self.APP_ENV == "production" and self.LOG_REQUEST_BODIES:
+            msg = "LOG_REQUEST_BODIES must be false in production"
+            raise ValueError(msg)
         if self.APP_ENV == "production" and (
             len(self.RABBITMQ_PASSWORD) < 16
             or any(m in self.RABBITMQ_PASSWORD.lower() for m in _WEAK_SECRET_MARKERS)
