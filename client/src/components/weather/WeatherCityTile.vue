@@ -34,7 +34,7 @@ function handleRemove(event: MouseEvent): void {
     <button
       v-if="removable"
       type="button"
-      class="absolute right-3 top-3 text-xs text-surface-mid hover:text-accent-golden"
+      class="absolute right-2 top-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-xs text-surface-mid hover:text-accent-golden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
       :aria-label="`Remove ${label}`"
       @click="handleRemove"
     >

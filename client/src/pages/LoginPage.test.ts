@@ -38,9 +38,7 @@ describe("LoginPage", () => {
   it("shows email password login and Google sign-in", () => {
     const wrapper = mount(LoginPage);
 
-    expect(wrapper.get('input[placeholder="email (you@example.com)"]').attributes("type")).toBe(
-      "email",
-    );
+    expect(wrapper.get('input[type="email"]').attributes("placeholder")).toBe("you@example.com");
     expect(wrapper.get('input[type="password"]').exists()).toBe(true);
     expect(wrapper.text()).toContain("login");
     expect(wrapper.text()).toContain("continue with Google");
@@ -54,7 +52,7 @@ describe("LoginPage", () => {
     const auth = useAuthStore();
     const login = vi.spyOn(auth, "login").mockResolvedValue();
 
-    await wrapper.get('input[placeholder="email (you@example.com)"]').setValue("admin@example.com");
+    await wrapper.get('input[type="email"]').setValue("admin@example.com");
     await wrapper.get('input[type="password"]').setValue("password-123");
     await wrapper.get("form").trigger("submit");
 

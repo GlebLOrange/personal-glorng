@@ -5,6 +5,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
+import { SELECT_CLASS } from "@/constants/formClasses";
 import { NEWS_THEME_LIMIT, NEWS_THEMES } from "@/constants/news";
 import type { NewsArticleFormData, NewsSource, NewsStatus } from "@/types";
 
@@ -67,7 +68,7 @@ function toggleTheme(theme: string): void {
         <select
           :value="form.source_id ?? ''"
           aria-label="source"
-          class="rounded-lg border border-surface-border bg-surface-dark px-4 py-2 text-sm text-surface-light focus:outline-none focus:border-accent-blue"
+          :class="SELECT_CLASS"
           @change="patch({ source_id: toSourceId(($event.target as HTMLSelectElement).value) })"
         >
           <option value="">auto from URL host</option>
@@ -104,7 +105,7 @@ function toggleTheme(theme: string): void {
         <select
           :value="form.status"
           aria-label="status"
-          class="rounded-lg border border-surface-border bg-surface-dark px-4 py-2 text-sm text-surface-light focus:outline-none focus:border-accent-blue"
+          :class="SELECT_CLASS"
           @change="patch({ status: ($event.target as HTMLSelectElement).value as NewsStatus })"
         >
           <option value="draft">draft</option>

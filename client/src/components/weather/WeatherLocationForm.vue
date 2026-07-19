@@ -18,6 +18,7 @@ const saving = ref(false);
 async function submit(): Promise<void> {
   const trimmed = city.value.trim();
   if (!trimmed) {
+    error.value = "Enter a city to search";
     return;
   }
   saving.value = true;
@@ -35,23 +36,26 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <form class="flex flex-col sm:flex-row gap-3" @submit.prevent="submit">
+  <form class="flex flex-col sm:flex-row sm:items-end gap-3" @submit.prevent="submit">
     <BaseInput
+      id="weather-city"
       v-model="city"
-      placeholder="Search city (e.g. Wroclaw)"
+      label="City"
+      placeholder="e.g. Wroclaw"
       class="flex-1"
+      :error="error ?? undefined"
       required
-      aria-label="Search city to add"
     />
-    <BaseInput v-model="label" placeholder="Label (optional)" class="sm:max-w-48" />
-    <BaseButton
-      type="submit"
-      variant="primary"
-      :disabled="saving || !city.trim() || props.disabled"
-    >
-      {{ saving ? "..." : "Add" }}
+    <BaseInput
+      id="weather-label"
+      v-model="label"
+      label="Label"
+      placeholder="optional"
+      class="sm:max-w-48"
+    />
+    <BaseButton type="submit" variant="primary" :loading="saving" :disabled="!city.trim() || props.disabled">
+      {{ saving ? "Adding…" : "Add" }}
     </BaseButton>
   </form>
   <p v-if="props.helperText" class="text-xs text-surface-mid mt-2">{{ props.helperText }}</p>
-  <p v-if="error" class="text-xs text-accent-golden mt-2">{{ error }}</p>
 </template>

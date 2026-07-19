@@ -121,7 +121,7 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
         aria-busy="true"
         aria-label="Loading recipes"
       >
-        <Card v-for="i in 6" :key="i" class="h-64 animate-pulse" />
+        <Card v-for="i in 6" :key="i" variant="dense" class="h-64 animate-pulse" />
       </div>
 
       <ErrorState

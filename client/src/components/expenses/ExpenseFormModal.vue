@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseModal from "@/components/ui/BaseModal.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
+import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { EXPENSE_CURRENCIES, type CurrencyCode } from "@/composables/useExpenseFilters";
 
 defineProps<{
@@ -18,73 +21,52 @@ const expenseDate = defineModel<string>("expenseDate", { required: true });
 const notes = defineModel<string>("notes", { required: true });
 
 const emit = defineEmits<{ submit: []; close: [] }>();
-
-const selectClass =
-  "bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-surface-light text-sm " +
-  "focus:outline-none focus:border-accent-blue transition-colors h-[42px]";
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="fade">
-      <div
-        v-if="open"
-        class="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4 bg-black/60"
-        @click.self="emit('close')"
-      >
-        <div
-          class="bg-surface-card border border-surface-border rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto"
-        >
-          <h2 class="text-lg font-bold text-surface-light mb-6">
-            <span class="accent-gradient">€ {{ title }}</span>
-          </h2>
+  <BaseModal v-if="open" :title="title" @close="emit('close')">
+    <form class="space-y-4" @submit.prevent="emit('submit')">
+      <BaseSelect v-model="category" label="category">
+        <option value="">—</option>
+        <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
+      </BaseSelect>
 
-          <form class="space-y-4" @submit.prevent="emit('submit')">
-            <select v-model="category" :class="[selectClass, 'w-full']" aria-label="category">
-              <option value="">—</option>
-              <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-            </select>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <BaseInput
-                v-model="toolName"
-                placeholder="product (milk, dinner, shell...)"
-                aria-label="product (milk, dinner, shell...)"
-              />
-              <BaseInput
-                v-model="amount"
-                type="number"
-                step="0.01"
-                min="0.01"
-                placeholder="price (0.00)"
-                aria-label="price (0.00)"
-              />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <BaseInput v-model="expenseDate" type="date" aria-label="date" />
-              <select v-model="currency" :class="[selectClass, 'w-full']" aria-label="currency">
-                <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
-              </select>
-            </div>
-
-            <textarea
-              v-model="notes"
-              rows="3"
-              placeholder="notes (invoice ref, billing period...)"
-              aria-label="notes (invoice ref, billing period...)"
-              class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
-            />
-
-            <div class="flex gap-3 pt-2">
-              <BaseButton variant="primary" :disabled="loading">
-                {{ loading ? "saving..." : "save" }}
-              </BaseButton>
-              <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>
-            </div>
-          </form>
-        </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <BaseInput
+          v-model="toolName"
+          label="product"
+          placeholder="milk, dinner, shell..."
+        />
+        <BaseInput
+          v-model="amount"
+          type="number"
+          step="0.01"
+          min="0.01"
+          label="price"
+          placeholder="0.00"
+        />
       </div>
-    </Transition>
-  </Teleport>
+
+      <div class="grid grid-cols-2 gap-3">
+        <BaseInput v-model="expenseDate" type="date" label="date" />
+        <BaseSelect v-model="currency" label="currency">
+          <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
+        </BaseSelect>
+      </div>
+
+      <BaseTextarea
+        v-model="notes"
+        :rows="3"
+        label="notes"
+        placeholder="invoice ref, billing period..."
+      />
+
+      <div class="flex gap-3 pt-2">
+        <BaseButton variant="primary" :disabled="loading">
+          {{ loading ? "saving..." : "save" }}
+        </BaseButton>
+        <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>
+      </div>
+    </form>
+  </BaseModal>
 </template>

@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import BaseButton from "@/components/ui/BaseButton.vue";
+import BackLink from "@/components/ui/BackLink.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { useNotify } from "@/composables/useNotify";
 import { useAuthStore } from "@/stores/auth";
@@ -21,11 +21,29 @@ const timezone = ref(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
 const acceptTerms = ref(false);
 const loading = ref(false);
 const submitted = ref(false);
+const formError = ref("");
 
 const strength = computed(() => passwordStrength(password.value));
+const passwordsMatch = computed(
+  () => !!passwordConfirm.value && password.value === passwordConfirm.value,
+);
+const canSubmit = computed(
+  () =>
+    !!email.value.trim() &&
+    strength.value.valid &&
+    passwordsMatch.value &&
+    acceptTerms.value &&
+    !loading.value,
+);
 
 async function handleRegister(): Promise<void> {
+  if (!passwordsMatch.value) {
+    formError.value = "Passwords do not match";
+    return;
+  }
+  if (!canSubmit.value) return;
   loading.value = true;
+  formError.value = "";
   try {
     await auth.register({
       email: email.value,
@@ -38,7 +56,8 @@ async function handleRegister(): Promise<void> {
     submitted.value = true;
     toast("Check your email to verify your account", "success");
   } catch (err) {
-    toast(getApiErrorMessage(err, "Registration failed"), "error");
+    formError.value = getApiErrorMessage(err, "Registration failed");
+    toast(formError.value, "error");
   } finally {
     loading.value = false;
   }
@@ -52,70 +71,101 @@ async function handleRegister(): Promise<void> {
         <span class="accent-gradient">create account</span>
       </h1>
 
-      <div v-if="submitted" class="text-center space-y-4">
+      <div v-if="submitted" class="text-center space-y-4" role="status">
         <p class="text-surface-mid text-sm">
           We sent a verification link to <strong class="text-surface-light">{{ email }}</strong
           >. Open it to activate your account, then log in.
         </p>
-        <BaseButton variant="primary" class="w-full" @click="router.push('/login')">
+        <button type="button" class="cta-primary w-full" @click="router.push('/login')">
           go to login
-        </BaseButton>
+        </button>
       </div>
 
       <form v-else class="space-y-4" @submit.prevent="handleRegister">
         <BaseInput
           v-model="email"
           type="email"
-          placeholder="email (you@example.com)"
-          aria-label="email (you@example.com)"
+          name="email"
+          autocomplete="email"
+          label="email"
+          placeholder="you@example.com"
           required
         />
         <BaseInput
           v-model="displayName"
           type="text"
-          placeholder="display name (optional)"
-          aria-label="display name (optional)"
+          name="name"
+          autocomplete="nickname"
+          label="display name"
+          placeholder="optional"
         />
         <BaseInput
           v-model="timezone"
           type="text"
-          placeholder="timezone (e.g. Europe/Warsaw)"
-          aria-label="timezone (e.g. Europe/Warsaw)"
+          name="timezone"
+          autocomplete="off"
+          label="timezone"
+          placeholder="Europe/Warsaw"
         />
         <BaseInput
           v-model="password"
           type="password"
+          name="password"
+          autocomplete="new-password"
+          label="password"
           placeholder="password"
-          aria-label="password"
+          aria-describedby="register-password-strength"
           required
         />
-        <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
+        <p
+          id="register-password-strength"
+          class="text-xs"
+          :class="strength.valid ? 'text-status-success' : 'text-surface-mid'"
+        >
           {{ strength.message }}
         </p>
         <BaseInput
           v-model="passwordConfirm"
           type="password"
+          name="password-confirm"
+          autocomplete="new-password"
+          label="confirm password"
           placeholder="confirm password"
-          aria-label="confirm password"
           required
         />
-        <label class="flex items-start gap-2 text-xs text-surface-mid">
-          <input v-model="acceptTerms" type="checkbox" class="mt-0.5" required />
+        <p
+          v-if="passwordConfirm && !passwordsMatch"
+          class="text-xs text-status-error"
+          role="alert"
+        >
+          Passwords do not match
+        </p>
+        <label class="flex items-start gap-3 min-h-11 text-xs text-surface-mid cursor-pointer">
+          <input
+            v-model="acceptTerms"
+            type="checkbox"
+            class="mt-1 h-4 w-4 accent-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+            required
+          />
           <span>
             I accept the
-            <RouterLink to="/privacy" class="text-accent-blue hover:underline"
-              >privacy policy</RouterLink
-            >
+            <RouterLink to="/privacy" class="nav-link inline">privacy policy</RouterLink>
+            and terms of use
           </span>
         </label>
-        <BaseButton variant="primary" class="w-full" :disabled="loading || !strength.valid">
+        <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
+        <button type="submit" class="cta-primary w-full" :disabled="!canSubmit">
           {{ loading ? "creating account..." : "create account" }}
-        </BaseButton>
+        </button>
       </form>
 
       <p class="text-center text-xs text-surface-mid mt-6">
         Already have an account?
-        <RouterLink to="/login" class="text-accent-blue hover:underline">log in</RouterLink>
+        <RouterLink to="/login" class="nav-link inline">log in</RouterLink>
+      </p>
+
+      <p class="flex justify-center mt-4">
+        <BackLink to="/login" />
       </p>
     </div>
   </div>

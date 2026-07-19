@@ -14,7 +14,7 @@ withDefaults(
 
 const backLabels: Record<string, string> = {
   "/": "Back to portfolio",
-  "/admin": "Back to admin tools",
+  "/admin": "Back to admin",
   "/tools": "Back to tools",
   "/news": "Back to news",
 };
@@ -30,11 +30,10 @@ function backAriaLabel(to: RouteLocationRaw, label?: string): string {
   <RouterLink
     :to="to"
     :aria-label="backAriaLabel(to, label)"
-    class="inline-flex items-center justify-center rounded-lg border border-surface-border bg-surface-card text-surface-light transition-all duration-200 hover:border-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-    :class="size === 'compact' ? 'h-8 w-8' : 'h-10 w-10'"
+    class="inline-flex min-h-11 min-w-11 h-11 w-11 items-center justify-center rounded-lg border border-surface-border bg-surface-card text-surface-light transition-all duration-200 hover:border-accent-blue active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
   >
     <svg
-      :class="size === 'compact' ? 'h-5 w-5' : 'h-10 w-10'"
+      class="h-5 w-5"
       viewBox="0 0 40 40"
       fill="none"
       stroke="currentColor"
