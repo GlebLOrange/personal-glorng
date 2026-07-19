@@ -26,6 +26,8 @@ make prod-cloudflare   # + origin TLS on :443 for Cloudflare Full (strict)
 
 Cloudflare edge setup: [Cloudflare](/operations/cloudflare).
 
+Compose service names for the base stack are listed in the [architecture inventory (generated)](/generated/architecture-inventory).
+
 ## Sentry releases (optional CI)
 
 Client sourcemap upload is gated on GitHub Actions secrets (workflow [`sentry-release.yml`](../../.github/workflows/sentry-release.yml)):
