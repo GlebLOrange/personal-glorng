@@ -19,6 +19,7 @@ const emit = defineEmits<{ close: [] }>();
 const modalRef = ref<HTMLElement | null>(null);
 const titleId = useId();
 let previouslyFocusedElement: HTMLElement | null = null;
+let focusRafId = 0;
 
 useScrollLock(() => true);
 
@@ -68,7 +69,7 @@ onMounted(() => {
   document.addEventListener("keydown", onKeydown);
   previouslyFocusedElement = document.activeElement as HTMLElement;
 
-  requestAnimationFrame(() => {
+  focusRafId = requestAnimationFrame(() => {
     if (!modalRef.value) return;
     if (!modalRef.value.contains(document.activeElement)) {
       const focusables = getFocusableElements(modalRef.value);
@@ -82,6 +83,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  cancelAnimationFrame(focusRafId);
   document.removeEventListener("keydown", onKeydown);
   if (previouslyFocusedElement) {
     previouslyFocusedElement.focus();

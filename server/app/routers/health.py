@@ -23,6 +23,52 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+async def _check_mongodb(settings: Settings) -> str:
+    if settings.enable_mongodb() and is_mongodb_enabled():
+        try:
+            await get_mongodb_client().admin.command("ping")
+            return "ok"
+        except Exception:
+            return "error"
+    if settings.enable_mongodb():
+        return "error"
+    return "skipped"
+
+
+async def _check_redis() -> tuple[str, dict[str, Any] | None]:
+    try:
+        pong = await get_redis_client().ping()
+        if not pong:
+            return "error", None
+        memory = await get_redis_memory_info()
+        status_value = "warn" if memory.get("warning") else "ok"
+        return status_value, memory
+    except RedisError:
+        return "error", None
+
+
+async def _check_broker(settings: Settings) -> str | None:
+    if not settings.CELERY_BROKER_URL:
+        return None
+    broker_ok = await asyncio.to_thread(check_broker_connection)
+    return "ok" if broker_ok else "degraded"
+
+
+async def _check_postgres(request: Request, settings: Settings) -> str | None:
+    if not settings.enable_postgres():
+        return None
+    registry = getattr(request.app.state, "db_registry", None)
+    if registry is not None and registry.has_postgres():
+        try:
+            factory = registry.require_postgres_factory()
+            async with factory() as session:
+                await session.execute(text("SELECT 1"))
+            return "ok"
+        except Exception:
+            return "error"
+    return "error"
+
+
 @router.get(
     "/ready",
     summary="Readiness check",
@@ -34,44 +80,25 @@ async def ready(
     request: Request,
     settings: Settings = Depends(get_settings),
 ) -> JSONResponse:
+    mongo_status, (redis_status, redis_memory), broker_status, postgres_status = (
+        await asyncio.gather(
+            _check_mongodb(settings),
+            _check_redis(),
+            _check_broker(settings),
+            _check_postgres(request, settings),
+        )
+    )
+
     checks: dict[str, Any] = {}
-
-    if settings.enable_mongodb() and is_mongodb_enabled():
-        try:
-            await get_mongodb_client().admin.command("ping")
-            checks["mongodb"] = "ok"
-        except Exception:
-            checks["mongodb"] = "error"
-    elif settings.enable_mongodb():
-        checks["mongodb"] = "error"
-
-    try:
-        pong = await get_redis_client().ping()
-        if not pong:
-            checks["redis"] = "error"
-        else:
-            memory = await get_redis_memory_info()
-            checks["redis"] = "warn" if memory.get("warning") else "ok"
-            checks["redis_memory"] = memory
-    except RedisError:
-        checks["redis"] = "error"
-
-    if settings.CELERY_BROKER_URL:
-        broker_ok = await asyncio.to_thread(check_broker_connection)
-        checks["rabbitmq"] = "ok" if broker_ok else "degraded"
-
-    if settings.enable_postgres():
-        registry = getattr(request.app.state, "db_registry", None)
-        if registry is not None and registry.has_postgres():
-            try:
-                factory = registry.require_postgres_factory()
-                async with factory() as session:
-                    await session.execute(text("SELECT 1"))
-                checks["postgres"] = "ok"
-            except Exception:
-                checks["postgres"] = "error"
-        else:
-            checks["postgres"] = "error"
+    if mongo_status != "skipped":
+        checks["mongodb"] = mongo_status
+    checks["redis"] = redis_status
+    if redis_memory is not None:
+        checks["redis_memory"] = redis_memory
+    if broker_status is not None:
+        checks["rabbitmq"] = broker_status
+    if postgres_status is not None:
+        checks["postgres"] = postgres_status
 
     critical_checks = {
         key: value

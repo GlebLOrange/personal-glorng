@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
@@ -251,6 +251,10 @@ async function savePermissions(user: AdminUserSummary): Promise<void> {
 
 onMounted(() => {
   void Promise.all([loadUsers(), loadUserStats(), loadPlatformCatalog()]);
+});
+
+onUnmounted(() => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
 });
 </script>
 

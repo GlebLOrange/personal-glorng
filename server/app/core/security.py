@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -7,12 +8,22 @@ import jwt
 from app.settings import get_settings
 
 
-def hash_password(password: str) -> str:
+def _hash_password_sync(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
-def verify_password(plain: str, hashed: str) -> bool:
+def _verify_password_sync(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode(), hashed.encode())
+
+
+async def hash_password(password: str) -> str:
+    """Hash a password off the event loop (bcrypt is CPU-bound)."""
+    return await asyncio.to_thread(_hash_password_sync, password)
+
+
+async def verify_password(plain: str, hashed: str) -> bool:
+    """Verify a password off the event loop (bcrypt is CPU-bound)."""
+    return await asyncio.to_thread(_verify_password_sync, plain, hashed)
 
 
 def _create_token(
