@@ -1,5 +1,7 @@
 """Celery worker tasks: emails, reminders, sync queue, cleanup."""
 
+import hashlib
+import secrets
 import smtplib
 from collections.abc import Callable, Coroutine
 from datetime import UTC, datetime, timedelta
@@ -17,6 +19,8 @@ from app.core.email import (
     render_verification_email_plain,
 )
 from app.core.logging import logger
+from app.core.redis import cache_delete, cache_set_nx
+from app.core.redis_keys import EMAIL_DISPATCH_PREFIX
 from app.core.utils import format_scheduled_at
 from app.db.documents.task import SyncStatus, TaskStatus
 from app.db.worker_registry import get_worker_registry
@@ -26,8 +30,13 @@ from app.todobot.keyboards.task import reminder_actions
 from app.workers.async_runner import run_async
 from app.workers.celery_app import celery_app
 from app.workers.job_names import JobName
+from app.workers.queues import publish_dead_letter
 
 MAX_JOB_TRIES = 3
+_EMAIL_DISPATCH_TTL = {
+    "verify": 60 * 60 * 25,  # verification JWT is 24h
+    "reset": 60 * 60 * 2,  # reset JWT is 1h
+}
 
 
 def log_job_failure(job_name: str, job_try: int, exc: BaseException) -> None:
@@ -39,16 +48,36 @@ def log_job_failure(job_name: str, job_try: int, exc: BaseException) -> None:
     )
 
 
+def _retry_countdown(job_try: int) -> int:
+    """Exponential backoff with jitter, capped at 10 minutes."""
+    base = min(600, (2**job_try) * 30)
+    return base + secrets.randbelow(16)
+
+
 def _retry_or_fail(task: Task, job_name: str, exc: Exception) -> None:
     job_try = task.request.retries + 1
     if job_try >= MAX_JOB_TRIES:
         log_job_failure(job_name, job_try, exc)
+        publish_dead_letter(
+            task_name=job_name,
+            task_id=task.request.id,
+            args=task.request.args,
+            kwargs=task.request.kwargs,
+            retries=task.request.retries,
+            exc=exc,
+        )
         raise
+    countdown = _retry_countdown(job_try)
     logger.warning(
         "Retrying background job",
-        context={"job": job_name, "job_try": job_try, "defer_seconds": 60 * job_try},
+        context={"job": job_name, "job_try": job_try, "defer_seconds": countdown},
     )
-    raise task.retry(exc=exc, countdown=60 * job_try) from exc
+    raise task.retry(exc=exc, countdown=countdown) from exc
+
+
+def _email_dispatch_key(purpose: str, token: str) -> str:
+    digest = hashlib.sha256(token.encode()).hexdigest()
+    return f"{EMAIL_DISPATCH_PREFIX}{purpose}:{digest}"
 
 
 # --- Email tasks ---
@@ -57,15 +86,31 @@ def _retry_or_fail(task: Task, job_name: str, exc: Exception) -> None:
 async def _send_email(
     email: str,
     token: str,
+    purpose: str,
     subject: str,
     render_html_fn: Callable[[str, str], str],
     render_plain_fn: Callable[[str, str], str],
 ) -> None:
+    """Send email once per token. Claim before send; release claim on failure."""
+    key = _email_dispatch_key(purpose, token)
+    ttl = _EMAIL_DISPATCH_TTL[purpose]
+    claimed = await cache_set_nx(key, "1", ttl)
+    if not claimed:
+        logger.info(
+            "Skipping duplicate email dispatch",
+            context={"to": email, "purpose": purpose},
+        )
+        return
+
     settings = get_settings()
     backend = get_email_backend()
     html = render_html_fn(token, settings.BASE_URL)
     plain = render_plain_fn(token, settings.BASE_URL)
-    await backend.send(email, subject, html, plain)
+    try:
+        await backend.send(email, subject, html, plain)
+    except Exception:
+        await cache_delete(key)
+        raise
     logger.info("Email sent", context={"to": email, "subject": subject})
 
 
@@ -73,6 +118,7 @@ async def send_verification_email(email: str, token: str) -> None:
     await _send_email(
         email,
         token,
+        "verify",
         "Verify your email - Gleb.Y",
         render_verification_email,
         render_verification_email_plain,
@@ -83,6 +129,7 @@ async def send_reset_email(email: str, token: str) -> None:
     await _send_email(
         email,
         token,
+        "reset",
         "Password reset - Gleb.Y",
         render_reset_email,
         render_reset_email_plain,
@@ -268,6 +315,15 @@ async def publish_news_telegram(article_id: int) -> None:
     registry = await get_worker_registry()
     news_svc = NewsService(registry, AuditService(registry))
     article = await news_svc.require_article(article_id)
+    if article.telegram_message_id is not None:
+        logger.info(
+            "Skipping duplicate Telegram news publish",
+            context={
+                "article_id": article_id,
+                "telegram_message_id": article.telegram_message_id,
+            },
+        )
+        return
     message_id = await publish_news_article_to_telegram(article)
     await news_svc.set_telegram_message_id(article_id, message_id)
 

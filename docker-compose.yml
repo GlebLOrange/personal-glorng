@@ -174,7 +174,7 @@ services:
       context: ./server
       dockerfile: Dockerfile
       target: dev
-    command: celery -A app.workers.celery_app worker --loglevel=info
+    command: celery -A app.workers.celery_app worker --loglevel=info -Q celery
     restart: unless-stopped
     volumes:
       - ./server:/app

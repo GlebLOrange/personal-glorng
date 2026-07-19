@@ -89,10 +89,21 @@ async def cache_set(key: str, value: str, ttl: int = 300) -> None:
         logger.warning("Redis cache_set failed", error=exc, context={"key": key})
 
 
+async def cache_set_nx(key: str, value: str, ttl: int) -> bool:
+    """Set key only if missing. Returns True when the claim was acquired."""
+    try:
+        result = await get_redis_client().set(key, value, nx=True, ex=ttl)
+        return bool(result)
+    except (RedisError, RuntimeError) as exc:
+        logger.warning("Redis cache_set_nx failed", error=exc, context={"key": key})
+        # Fail open so email still sends when Redis is down / not initialized.
+        return True
+
+
 async def cache_delete(key: str) -> None:
     try:
         await get_redis_client().delete(key)
-    except RedisError as exc:
+    except (RedisError, RuntimeError) as exc:
         logger.warning("Redis cache_delete failed", error=exc, context={"key": key})
 
 

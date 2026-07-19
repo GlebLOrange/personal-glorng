@@ -8,6 +8,13 @@ from celery.signals import task_failure, worker_init, worker_ready
 from app.core.logging import logger
 from app.settings import get_settings
 from app.workers.job_names import JobName
+from app.workers.queues import (
+    CELERY_DLQ_NAME,
+    CELERY_QUEUE_NAME,
+    celery_dlq,
+    celery_dlx,
+    celery_queue,
+)
 
 
 def _init_worker_sentry() -> None:
@@ -31,9 +38,27 @@ def _on_worker_init(**_kwargs: object) -> None:
 @worker_ready.connect
 def _on_worker_ready(sender: object | None = None, **kwargs: object) -> None:
     hostname = getattr(sender, "hostname", "unknown")
+    # Declare DLQ without consuming it (worker listens only to CELERY_QUEUE_NAME).
+    app = getattr(sender, "app", None)
+    if app is not None:
+        try:
+            with app.connection_or_acquire() as conn:
+                celery_dlx(conn).declare()
+                celery_dlq(conn).declare()
+        except Exception as exc:
+            logger.warning(
+                "Failed to declare Celery DLQ",
+                error=exc,
+                context={"dlq": CELERY_DLQ_NAME},
+            )
     logger.info(
         "Celery worker ready",
-        context={"hostname": hostname, "broker_connected": True},
+        context={
+            "hostname": hostname,
+            "broker_connected": True,
+            "queue": CELERY_QUEUE_NAME,
+            "dlq": CELERY_DLQ_NAME,
+        },
     )
 
 
@@ -70,7 +95,14 @@ def create_celery_app() -> Celery:
         result_backend=None,
         task_ignore_result=True,
         task_acks_late=True,
+        task_reject_on_worker_lost=True,
+        task_acks_on_failure_or_timeout=True,
         worker_prefetch_multiplier=1,
+        task_soft_time_limit=300,
+        task_time_limit=360,
+        task_default_delivery_mode=2,
+        task_default_queue=CELERY_QUEUE_NAME,
+        task_queues=(celery_queue,),
         task_always_eager=eager,
         timezone="UTC",
         enable_utc=True,

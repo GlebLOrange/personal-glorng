@@ -77,6 +77,38 @@ Not automated in CI — run after deploy when credentials are available:
 - Telegram bot E2E (`app/todobot/`)
 - Live Sentry — deliberate 500 in staging
 - Stripe live mode (test mode in CI)
+- Celery DLQ inspect/replay (below)
+
+## Celery dead-letter queue
+
+Workers consume only the durable `celery` queue (`-Q celery`). Final task failures publish a JSON payload to `celery.dlq` (also used as the RabbitMQ DLX target for rejected messages). Workers never consume the DLQ.
+
+**Upgrade note:** Changing queue arguments requires recreating the queue once if an old `celery` queue already exists without DLX args:
+
+```bash
+docker compose exec rabbitmq rabbitmqctl delete_queue celery
+# restart worker so Celery redeclares the queue with DLX args
+```
+
+**Inspect:**
+
+```bash
+docker compose exec rabbitmq rabbitmqctl list_queues name messages consumers
+```
+
+Management UI (when exposed): queue `celery.dlq` → get messages; copy `task` / `args` / `kwargs` from the JSON body.
+
+**Replay a DLQ payload** (manual):
+
+```bash
+docker compose exec server python -c "
+from app.workers.celery_app import celery_app
+celery_app.send_task('TASK_NAME', args=[...], kwargs={...})
+"
+```
+
+Replace `TASK_NAME` / args from the DLQ message. After a successful replay, ack/purge that DLQ message in the management UI.
+
 
 Full tier matrix: [Testing — P3](/reference/testing#p3-staging-manual-deferred-from-ci).
 
