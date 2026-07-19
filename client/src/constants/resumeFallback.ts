@@ -94,7 +94,7 @@ export const RESUME_FALLBACK: ResumeData = {
         "Built background workers for scheduled jobs, data processing, and async tasks. " +
         "Created internal CLI tools for deployments, migrations, and maintenance.",
       tech: ["Telegram", "Celery", "Redis", "Python"],
-      url: "",
+      url: "/tools",
     },
     {
       name: "Client Web Applications",
@@ -103,7 +103,7 @@ export const RESUME_FALLBACK: ResumeData = {
         "Implemented secure authentication, RBAC, and audit logging. " +
         "Optimized database queries, caching layers, and API performance.",
       tech: ["FastAPI", "Vue 3", "PostgreSQL", "Redis"],
-      url: "",
+      url: "/",
     },
   ],
   education: [],

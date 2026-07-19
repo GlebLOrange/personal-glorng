@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { buildContactLinks } from "@/constants/contactMeta";
 
 describe("buildContactLinks", () => {
-  it("returns links in stable order with mailto for email", () => {
+  it("returns links in stable order with mailto inquiry prefills for email", () => {
     const result = buildContactLinks({
       github: "https://github.com/glorange",
       email: "hello@example.com",
@@ -12,11 +12,14 @@ describe("buildContactLinks", () => {
     });
 
     expect(result.map((link) => link.id)).toEqual(["email", "telegram", "linkedin", "github"]);
-    expect(result[0]).toEqual({
-      id: "email",
-      label: "Email",
-      href: "mailto:hello@example.com",
-    });
+    expect(result[0]?.id).toBe("email");
+    expect(result[0]?.label).toBe("Email");
+    expect(result[0]?.href).toMatch(/^mailto:hello@example\.com\?/);
+    expect(result[0]?.href).toContain("subject=Work");
+    expect(result[0]?.href).toContain("body=");
+
+    expect(result[1]?.href).toContain("t.me/glorange");
+    expect(result[1]?.href).toContain("text=");
   });
 
   it("skips empty or whitespace-only values", () => {

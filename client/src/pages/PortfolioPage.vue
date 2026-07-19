@@ -41,7 +41,7 @@ const apiError = ref(false);
 const donationsError = ref(false);
 const donationsFetched = ref(false);
 const donationsStarted = ref(false);
-const showFeedback = ref(false);
+const contactModal = ref<"inquiry" | "feedback" | null>(null);
 const supportSectionRef = ref<HTMLElement | null>(null);
 let supportObserver: IntersectionObserver | null = null;
 
@@ -121,6 +121,7 @@ onUnmounted(() => {
         :location="resume.location"
         :availability="resume.availability"
         :bio="resume.bio"
+        @inquire="contactModal = 'inquiry'"
       >
         <template #after-actions>
           <NowPlayingEmbed
@@ -157,6 +158,9 @@ onUnmounted(() => {
           <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
         </template>
       </Suspense>
+      <div class="mt-8 flex justify-center print:hidden">
+        <a href="#contact" class="cta-secondary"> get in touch </a>
+      </div>
     </SectionWrapper>
 
     <SectionWrapper
@@ -171,18 +175,35 @@ onUnmounted(() => {
     </SectionWrapper>
 
     <SectionWrapper id="contact" title="contact" width="prose" dark :alternate="education.length === 0">
-      <div class="flex flex-wrap justify-center gap-4">
-        <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
-        <button
-          type="button"
-          class="interactive-surface inline-flex items-center gap-2 px-5 py-3 text-base text-surface-sage min-h-11 print:hidden"
-          @click="showFeedback = true"
-        >
-          <ContactIcon id="feedback" class="size-4 shrink-0" />
-          send feedback
+      <p class="text-body text-center mb-2">
+        Open to full-time and contract — usually reply within 24h (EU timezone).
+      </p>
+      <p class="text-meta text-center mb-6">
+        Fastest: Telegram or email. Or send a short inquiry below.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4 mb-6">
+        <button type="button" class="cta-primary print:hidden" @click="contactModal = 'inquiry'">
+          send inquiry
         </button>
       </div>
-      <FeedbackModal v-if="showFeedback" @close="showFeedback = false" />
+      <div class="flex flex-wrap justify-center gap-4">
+        <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
+      </div>
+      <div class="mt-6 flex justify-center print:hidden">
+        <button
+          type="button"
+          class="text-meta text-surface-sage underline-offset-4 hover:underline inline-flex items-center gap-2 min-h-11 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+          @click="contactModal = 'feedback'"
+        >
+          <ContactIcon id="feedback" class="size-4 shrink-0" />
+          send feedback instead
+        </button>
+      </div>
+      <FeedbackModal
+        v-if="contactModal"
+        :intent="contactModal"
+        @close="contactModal = null"
+      />
     </SectionWrapper>
 
     <div ref="supportSectionRef" class="print:hidden">
