@@ -133,7 +133,7 @@ RESUME_DATA: dict[str, Any] = {
                 " and maintenance."
             ),
             "tech": ["Telegram", "Celery", "Redis", "Python"],
-            "url": "",
+            "url": "/tools",
         },
         {
             "name": "Client Web Applications",
@@ -144,7 +144,7 @@ RESUME_DATA: dict[str, Any] = {
                 " database queries, caching layers, and API performance."
             ),
             "tech": ["FastAPI", "Vue 3", "PostgreSQL", "Redis"],
-            "url": "",
+            "url": "/",
         },
     ],
     "education": [],

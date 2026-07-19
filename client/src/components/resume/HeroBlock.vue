@@ -16,6 +16,8 @@ defineProps<{
   bio: string;
 }>();
 
+const emit = defineEmits<{ inquire: [] }>();
+
 const isDownloadingCv = ref(false);
 const { toast } = useNotify();
 
@@ -44,7 +46,9 @@ async function downloadCv(): Promise<void> {
     URL.revokeObjectURL(url);
   } catch (err) {
     const message = await getApiErrorMessageFromBlob(err, "Failed to download CV");
-    toast(message, "error");
+    // ponytail: no static PDF asset — print stylesheet is the offline fallback
+    toast(`${message}. Opening print dialog as a fallback.`, "error");
+    window.print();
   } finally {
     isDownloadingCv.value = false;
   }
@@ -66,14 +70,20 @@ async function downloadCv(): Promise<void> {
     >
       <span v-if="location">{{ location }}</span>
       <span v-if="location && availability" aria-hidden="true">·</span>
-      <span v-if="availability" class="text-accent-golden">{{ availability }}</span>
+      <a
+        v-if="availability"
+        href="#contact"
+        class="text-accent-golden underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+      >
+        {{ availability }}
+      </a>
     </p>
     <p class="text-lg md:text-xl max-w-2xl mx-auto text-surface-sage leading-relaxed text-pretty">
       {{ bio }}
     </p>
 
     <div class="mt-8 flex flex-col sm:flex-row flex-wrap justify-center gap-4 print:hidden">
-      <a href="#contact" class="cta-primary"> contact </a>
+      <button type="button" class="cta-primary" @click="emit('inquire')">get in touch</button>
       <button type="button" class="cta-secondary" :disabled="isDownloadingCv" @click="downloadCv">
         {{ isDownloadingCv ? "downloading..." : "download cv" }}
       </button>
