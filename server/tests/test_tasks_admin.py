@@ -124,9 +124,7 @@ async def test_reschedule_task(auth_client: AsyncClient) -> None:
 
 
 @pytest.fixture
-async def tasks_reader_client(
-    client: AsyncClient, registry: DatabaseRegistry
-) -> AsyncClient:
+async def tasks_reader_client(client: AsyncClient, registry: DatabaseRegistry):
     user = await create_user(
         registry,
         email="reader@example.com",
@@ -134,7 +132,10 @@ async def tasks_reader_client(
     )
     token = create_access_token(str(user.public_id))
     client.headers["Authorization"] = f"Bearer {token}"
-    return client
+    try:
+        yield client
+    finally:
+        client.headers.pop("Authorization", None)
 
 
 @pytest.mark.asyncio

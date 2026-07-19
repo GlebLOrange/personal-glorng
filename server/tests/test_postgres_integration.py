@@ -37,6 +37,7 @@ async def postgres_session() -> AsyncSession:
 
 
 @pytest.mark.postgres
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_postgres_connection() -> None:
     database_url = _postgres_url()
@@ -53,6 +54,7 @@ async def test_postgres_connection() -> None:
 
 
 @pytest.mark.postgres
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_audit_dual_write_postgres(
     registry: DatabaseRegistry,
@@ -89,6 +91,7 @@ async def test_audit_dual_write_postgres(
 
 
 @pytest.mark.postgres
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_search_upsert_and_query_postgres(
     registry: DatabaseRegistry,
