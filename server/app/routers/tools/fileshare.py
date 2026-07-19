@@ -1,6 +1,8 @@
 """Temporary file sharing. Default: `file-share:read`; writes: `file-share:write`."""
 
-from fastapi import APIRouter, Depends, Path, UploadFile
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Path, Query, UploadFile
 from fastapi.responses import StreamingResponse
 
 from app.core.deps import AuthorizedUser, require_capability
@@ -10,7 +12,6 @@ from app.core.uploads import read_upload_bounded
 from app.core.utils import DEFAULT_PER_PAGE, attachment_content_disposition, iter_file
 from app.db.deps import DbRegistry
 from app.openapi import requires_capability
-from app.schemas.common import MessageResponse
 from app.schemas.fileshare import SharedFileListResponse, SharedFileResponse
 from app.services import fileshare as fileshare_svc
 
@@ -27,6 +28,7 @@ router = APIRouter(
 @router.post(
     "",
     response_model=SharedFileResponse,
+    status_code=201,
     summary="Upload shared file",
     description=requires_capability("file-share", "write"),
     dependencies=[Depends(require_capability("file-share", "write"))],
@@ -58,8 +60,8 @@ async def upload_file(
 async def list_files(
     registry: DbRegistry,
     user: AuthorizedUser,
-    page: int = 1,
-    per_page: int = DEFAULT_PER_PAGE,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> SharedFileListResponse:
     return await fileshare_svc.list_files(
         registry,
@@ -71,7 +73,7 @@ async def list_files(
 
 @router.delete(
     "/{file_id}",
-    response_model=MessageResponse,
+    status_code=204,
     summary="Delete shared file",
     description=requires_capability("file-share", "write"),
     dependencies=[Depends(require_capability("file-share", "write"))],
@@ -80,9 +82,8 @@ async def delete_file(
     file_id: int,
     registry: DbRegistry,
     user: AuthorizedUser,
-) -> MessageResponse:
+) -> None:
     await fileshare_svc.delete(registry, file_id=file_id, user_id=user.id)
-    return MessageResponse(message="File deleted")
 
 
 download_router = APIRouter()

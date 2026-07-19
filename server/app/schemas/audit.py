@@ -3,6 +3,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from app.schemas.common import PaginatedResponse
+
 
 class AuditEventResponse(BaseModel):
     id: int
@@ -20,6 +22,4 @@ class AuditEventResponse(BaseModel):
     model_config = {"from_attributes": True, "populate_by_name": True}
 
 
-class AuditEventListResponse(BaseModel):
-    items: list[AuditEventResponse]
-    total: int
+AuditEventListResponse = PaginatedResponse[AuditEventResponse]

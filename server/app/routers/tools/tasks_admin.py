@@ -1,6 +1,8 @@
 """Todobot task admin API. Default: `tasks:read`; writes: `tasks:write`."""
 
-from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import (
     AdminUser,
@@ -20,9 +22,9 @@ from app.schemas.task import (
     SyncQueueListResponse,
     TaskCreate,
     TaskDetailResponse,
+    TaskListResponse,
     TaskReminderCreate,
     TaskReschedule,
-    TaskListResponse,
     TaskResponse,
     TaskStatsResponse,
     TaskStatusUpdate,
@@ -46,7 +48,7 @@ def _resolve_telegram_user_id(data: TaskCreate, settings: Settings) -> int:
     return telegram_user_id
 
 
-@router.post("", response_model=TaskResponse)
+@router.post("", response_model=TaskResponse, status_code=201)
 async def create_task(
     data: TaskCreate,
     user: AdminUser,
@@ -76,8 +78,8 @@ async def create_task(
 async def list_tasks(
     svc: TaskServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
-    page: int = 1,
-    per_page: int = DEFAULT_PER_PAGE,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
     status: str | None = None,
 ) -> TaskListResponse:
     return await svc.list_tasks(page=page, per_page=per_page, status=status)
@@ -105,8 +107,8 @@ async def task_stats(
 async def list_intakes(
     svc: TaskIntakeServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
-    page: int = 1,
-    per_page: int = DEFAULT_PER_PAGE,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> TaskIntakeListResponse:
     return await svc.list_intakes(page=page, per_page=per_page)
 
@@ -120,8 +122,8 @@ async def list_intakes(
 async def list_sync_queue(
     svc: TaskServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
-    page: int = 1,
-    per_page: int = DEFAULT_PER_PAGE,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> SyncQueueListResponse:
     return await svc.list_sync_queue(page=page, per_page=per_page)
 
@@ -174,7 +176,7 @@ async def reschedule_task(
     return TaskResponse.model_validate(task)
 
 
-@router.post("/{task_id}/reminders", response_model=ReminderResponse)
+@router.post("/{task_id}/reminders", response_model=ReminderResponse, status_code=201)
 async def add_task_reminder(
     task_id: int,
     data: TaskReminderCreate,

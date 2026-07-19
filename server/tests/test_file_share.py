@@ -21,7 +21,7 @@ def _make_file(
 @pytest.mark.asyncio
 async def test_upload_file(auth_client: AsyncClient) -> None:
     resp = await auth_client.post("/api/tools/file-share", files=_make_file())
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     data = resp.json()
     assert data["original_filename"] == "test.txt"
     assert data["file_size"] == 11
@@ -55,7 +55,7 @@ async def test_upload_retries_when_share_code_collides(
 
     resp = await auth_client.post("/api/tools/file-share", files=_make_file())
 
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     assert resp.json()["code"] == "def456"
 
 
@@ -229,7 +229,7 @@ async def test_delete_file(auth_client: AsyncClient) -> None:
     )
     file_id = upload_resp.json()["id"]
     resp = await auth_client.delete(f"/api/tools/file-share/{file_id}")
-    assert resp.status_code == 200
+    assert resp.status_code == 204
 
     list_resp = await auth_client.get("/api/tools/file-share")
     ids = [f["id"] for f in list_resp.json()["items"]]

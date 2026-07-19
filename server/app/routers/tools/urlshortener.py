@@ -3,7 +3,9 @@
 Public create; list/delete require `url-shortener` capabilities.
 """
 
-from fastapi import APIRouter, Depends, Path
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import RedirectResponse
 
 from app.core.deps import AuthorizedUser, OptionalUser, require_capability
@@ -16,7 +18,6 @@ from app.core.rate_limit import rate_limit_api, rate_limit_shortener_create
 from app.core.utils import DEFAULT_PER_PAGE
 from app.db.deps import DbRegistry
 from app.openapi import requires_capability
-from app.schemas.common import MessageResponse
 from app.schemas.url import UrlCreate, UrlListResponse, UrlResponse, UrlUpdate
 from app.services.url import UrlService
 
@@ -26,6 +27,7 @@ router = APIRouter(prefix="/url-shortener", tags=["url-shortener"])
 @router.post(
     "",
     response_model=UrlResponse,
+    status_code=201,
     summary="Create short URL",
     description="Public short URL creation (rate limited).",
     dependencies=[
@@ -63,8 +65,8 @@ async def create_url(
 async def list_urls(
     registry: DbRegistry,
     user: AuthorizedUser,
-    page: int = 1,
-    per_page: int = DEFAULT_PER_PAGE,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> UrlListResponse:
     svc = UrlService(registry)
     return await svc.list_by_owner(created_by=user.id, page=page, per_page=per_page)
@@ -95,7 +97,7 @@ async def update_url(
 
 @router.delete(
     "/{url_id}",
-    response_model=MessageResponse,
+    status_code=204,
     summary="Delete short URL",
     description=requires_capability("url-shortener", "write"),
     dependencies=[Depends(require_capability("url-shortener", "write"))],
@@ -104,14 +106,13 @@ async def delete_url(
     url_id: int,
     registry: DbRegistry,
     user: AuthorizedUser,
-) -> MessageResponse:
+) -> None:
     svc = UrlService(registry)
     await svc.delete_url(
         url_id,
         actor_id=user.id,
         is_superuser=user_has_permission(user, SUPERUSER_PERMISSION),
     )
-    return MessageResponse(message="URL deleted")
 
 
 redirect_router = APIRouter()

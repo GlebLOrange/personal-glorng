@@ -3,7 +3,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import AuthorizedUser, require_capability
-from app.core.pagination import PaginationParams, audit_pagination_params
+from app.core.pagination import (
+    PaginationParams,
+    audit_pagination_params,
+    build_paginated,
+)
 from app.db.deps import DbRegistry
 from app.schemas.app_log import AppLogListResponse, AppLogResponse
 from app.schemas.date_filters import AuditDateFilter, audit_date_filter
@@ -46,7 +50,9 @@ async def list_app_logs(
         offset=pagination.offset,
         limit=pagination.limit,
     )
-    return AppLogListResponse(
-        items=[AppLogResponse.model_validate(item) for item in items],
+    return build_paginated(
+        [AppLogResponse.model_validate(item) for item in items],
         total=total,
+        page=pagination.page,
+        per_page=pagination.per_page,
     )

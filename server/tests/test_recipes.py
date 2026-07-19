@@ -28,7 +28,7 @@ class TestRecipesCRUD:
 
     async def test_create_recipe(self, auth_client: AsyncClient):
         resp = await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         data = resp.json()
         assert data["title"] == "Pasta Carbonara"
         assert data["tags"] == ["italian", "quick"]
@@ -43,7 +43,7 @@ class TestRecipesCRUD:
             "ingredients": ["  eggs\x00  ", "pasta"],
         }
         resp = await auth_client.post("/api/tools/recipes", json=payload)
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         data = resp.json()
         assert data["title"] == "Pasta Carbonara"
         assert data["ingredients"] == ["eggs", "pasta"]
@@ -81,7 +81,7 @@ class TestRecipesCRUD:
         create_resp = await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
         recipe_id = create_resp.json()["id"]
         resp = await auth_client.delete(f"/api/tools/recipes/{recipe_id}")
-        assert resp.status_code == 200
+        assert resp.status_code == 204
 
         get_resp = await auth_client.get(f"/api/tools/recipes/{recipe_id}")
         assert get_resp.status_code == 404
@@ -108,7 +108,7 @@ class TestRecipesCRUD:
         admin_user: User,
     ):
         resp = await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         recipe_id = resp.json()["id"]
 
         row = await registry.mongo_db.audit_events.find_one(
@@ -126,7 +126,7 @@ class TestRecipesCRUD:
         create_resp = await auth_client.post("/api/tools/recipes", json=RECIPE_DATA)
         recipe_id = create_resp.json()["id"]
         resp = await auth_client.delete(f"/api/tools/recipes/{recipe_id}")
-        assert resp.status_code == 200
+        assert resp.status_code == 204
 
         row = await registry.mongo_db.audit_events.find_one(
             {"action": "recipe.deleted", "resource_id": recipe_id},
