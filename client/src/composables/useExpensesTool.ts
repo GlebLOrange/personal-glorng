@@ -6,6 +6,11 @@ import { DEFAULT_EXPENSE_CATEGORY } from "@/constants/expenseCategories";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { useCategoryManager } from "@/composables/useCategoryManager";
 import {
+  isCalculatorMode,
+  normalizeCalculatorMode,
+  type ExpenseCalculatorMode,
+} from "@/composables/useExpenseCalculator";
+import {
   EXPENSE_CURRENCIES,
   EXPENSE_DEFAULT_CURRENCY,
   EXPENSE_LAST_CATEGORY_STORAGE_KEY,
@@ -24,11 +29,11 @@ import { getApiErrorMessage } from "@/types/api";
 import { isoDateLocal } from "@/utils/dates";
 import type { Expense } from "@/types";
 
-export type ExpenseCalculatorMode = "convert" | "sum" | "budget" | "whatif";
+export type { ExpenseCalculatorMode };
+export { isCalculatorMode, normalizeCalculatorMode };
 
 export type ExpenseTab = "transactions" | "insights" | "calculator" | "settings";
 
-const CALCULATOR_MODES: ExpenseCalculatorMode[] = ["convert", "sum", "budget", "whatif"];
 const EXPENSE_TABS: ExpenseTab[] = ["transactions", "insights", "calculator", "settings"];
 
 const TAB_LABELS: Record<ExpenseTab, string> = {
@@ -43,18 +48,9 @@ export const expenseTabItems = EXPENSE_TABS.map((tab) => ({
   label: TAB_LABELS[tab],
 }));
 
-export function isCalculatorMode(value: string): value is ExpenseCalculatorMode {
-  return CALCULATOR_MODES.includes(value as ExpenseCalculatorMode);
-}
-
 /** True when the top-level expenses tab is the nested calculator panel. */
 export function isCalculatorTab(tab: string): boolean {
   return tab === "calculator";
-}
-
-function normalizeCalculatorMode(value: string): ExpenseCalculatorMode {
-  if (value === "converter") return "convert";
-  return isCalculatorMode(value) ? value : "convert";
 }
 
 /** Orchestrates expense tool state: filters, list, charts, forms, and mutations. */

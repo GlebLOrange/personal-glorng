@@ -7,25 +7,31 @@ import type { ExpenseParseResult } from "@/types";
 export function useExpenseParse(smartText: Ref<string>, defaultCurrency: Ref<CurrencyCode>) {
   const parsed = ref<ExpenseParseResult | null>(null);
   const parsing = ref(false);
+  let requestId = 0;
 
   async function parseNow(text: string): Promise<void> {
     const trimmed = text.trim();
     if (!trimmed) {
+      requestId += 1;
       parsed.value = null;
+      parsing.value = false;
       return;
     }
 
+    const id = ++requestId;
     parsing.value = true;
     try {
       const { data } = await api.post<ExpenseParseResult>("/tools/expenses/parse", {
         text: trimmed,
         default_currency: defaultCurrency.value,
       });
+      if (id !== requestId) return;
       parsed.value = data;
     } catch {
+      if (id !== requestId) return;
       parsed.value = { valid: false, error: "Failed to parse expense" };
     } finally {
-      parsing.value = false;
+      if (id === requestId) parsing.value = false;
     }
   }
 
@@ -37,6 +43,7 @@ export function useExpenseParse(smartText: Ref<string>, defaultCurrency: Ref<Cur
 
   onUnmounted(() => {
     clearTimeout(debounceTimer);
+    requestId += 1;
   });
 
   return { parsed, parsing, parseNow };

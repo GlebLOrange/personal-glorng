@@ -169,7 +169,7 @@ function retrySummaryAndRates(): void {
 }
 
 function goToBudgetMode(): void {
-  switchTab("calculator");
+  // Already under calculator (what-if); only switchMode — switchTab would re-assert mode=whatif and race.
   switchMode("budget");
 }
 
@@ -420,7 +420,7 @@ function goToTransactions(): void {
         @remove="removeBudgetRow"
       />
       <ExpenseCalculatorWhatIf
-        v-else
+        v-else-if="activeMode === 'whatif'"
         v-model:what-if-category-id="whatIfCategoryId"
         v-model:what-if-amount="whatIfAmount"
         v-model:what-if-currency="whatIfCurrency"
