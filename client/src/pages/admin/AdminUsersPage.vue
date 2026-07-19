@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
+import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
@@ -8,6 +8,7 @@ import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminUserPermissionsEditor from "@/components/admin/AdminUserPermissionsEditor.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -64,9 +65,6 @@ const roleFilter = ref<RoleFilter>("all");
 const statusFilter = ref<StatusFilter>("all");
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 const selectedUserId = ref<string | null>(null);
-const drawerPanel = ref<HTMLElement | null>(null);
-const drawerCloseButton = ref<HTMLButtonElement | null>(null);
-let returnFocusTarget: HTMLElement | null = null;
 
 const superuserCount = computed(() => userStats.value?.superuser_count ?? 0);
 const hasNextPage = computed(() => page.value < totalPages.value);
@@ -152,19 +150,15 @@ function setDraftPermissions(userId: string, permissions: string[]): void {
   draftPermissions.value[userId] = permissions;
 }
 
-async function openUserDrawer(user: AdminUserSummary): Promise<void> {
-  returnFocusTarget = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+function openUserDrawer(user: AdminUserSummary): void {
   selectedUserId.value = user.id;
   draftPermissions.value[user.id] = draftPermissions.value[user.id] ?? [...user.permissions];
-  await nextTick();
-  drawerCloseButton.value?.focus();
 }
 
 function closeUserDrawer(): void {
   const user = selectedUser.value;
   if (user) draftPermissions.value[user.id] = [...user.permissions];
   selectedUserId.value = null;
-  void nextTick(() => returnFocusTarget?.focus());
 }
 
 function requestCloseUserDrawer(): void {
@@ -173,35 +167,6 @@ function requestCloseUserDrawer(): void {
     return;
   }
   closeUserDrawer();
-}
-
-function trapDrawerFocus(event: KeyboardEvent): void {
-  const panel = drawerPanel.value;
-  if (!panel) return;
-
-  const focusable = Array.from(
-    panel.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ),
-  );
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (!first || !last) return;
-
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-    return;
-  }
-
-  if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
-}
-
-function onKeydown(event: KeyboardEvent): void {
-  if (event.key === "Escape" && selectedUser.value) requestCloseUserDrawer();
 }
 
 async function loadUserStats(): Promise<void> {
@@ -285,11 +250,8 @@ async function savePermissions(user: AdminUserSummary): Promise<void> {
 }
 
 onMounted(() => {
-  document.addEventListener("keydown", onKeydown);
   void Promise.all([loadUsers(), loadUserStats(), loadPlatformCatalog()]);
 });
-
-onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 </script>
 
 <template>
@@ -416,113 +378,75 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       />
     </template>
 
-    <Teleport to="body">
-      <div v-if="selectedUser" class="fixed inset-0 z-50 flex justify-end">
-        <Transition name="fade">
-          <div
-            v-if="selectedUser"
-            class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            @click="requestCloseUserDrawer"
-          />
-        </Transition>
+    <BaseDrawer
+      :open="selectedUser !== null"
+      :title="
+        selectedUser
+          ? `Permissions · ${selectedUser.display_name || selectedUser.email}`
+          : 'User permissions'
+      "
+      max-width="xl"
+      @close="requestCloseUserDrawer"
+    >
+      <template v-if="selectedUser">
+        <p class="mb-5 break-all text-xs text-surface-mid">{{ selectedUser.email }}</p>
 
-        <Transition name="drawer-slide" appear>
-          <aside
-            v-if="selectedUser"
-            ref="drawerPanel"
-            class="drawer-panel relative flex h-full w-full max-w-2xl flex-col border-l border-surface-border bg-surface-dark"
-            aria-modal="true"
-            role="dialog"
-            :aria-label="`Edit permissions for ${selectedUser.display_name || selectedUser.email}`"
-            @click.stop
-            @keydown.tab="trapDrawerFocus"
+        <div class="mb-5 space-y-3">
+          <div class="flex flex-wrap gap-2">
+            <StatusBadge
+              :label="roleBadge(selectedUser).label"
+              :class-name="roleBadge(selectedUser).className"
+            />
+            <StatusBadge
+              v-for="badge in statusBadges(selectedUser)"
+              :key="badge.id"
+              :label="badge.label"
+              :class-name="badge.className"
+            />
+          </div>
+          <p class="text-xs text-surface-muted">
+            Joined {{ formatDate(selectedUser.created_at) }} ·
+            {{ permissionCount(selectedUser) }} tool permissions selected
+          </p>
+          <p
+            v-if="selectedUser.is_protected"
+            class="rounded-lg border border-accent-blue/30 bg-accent-blue/10 px-3 py-2 text-xs text-accent-blue"
           >
-            <header
-              class="flex shrink-0 items-start justify-between gap-3 border-b border-surface-border px-6 py-4"
+            Protected accounts are managed by the system and cannot be edited here.
+          </p>
+        </div>
+
+        <AdminUserPermissionsEditor
+          :permissions="draftPermissions[selectedUser.id] ?? []"
+          :disabled="selectedUser.is_protected"
+          :lock-superuser="isLastSuperuser(selectedUser)"
+          :services="services"
+          @update:permissions="setDraftPermissions(selectedUser.id, $event)"
+        />
+      </template>
+
+      <template v-if="selectedUser" #footer>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-xs text-surface-muted">
+            {{
+              hasDraftChanges(selectedUser)
+                ? "Unsaved permission changes"
+                : "Permissions are up to date"
+            }}
+          </p>
+          <div class="flex gap-2">
+            <BaseButton variant="ghost" @click="requestCloseUserDrawer">cancel</BaseButton>
+            <BaseButton
+              variant="primary"
+              :loading="savingId === selectedUser.id"
+              :disabled="selectedUser.is_protected || !hasDraftChanges(selectedUser)"
+              @click="savePermissions(selectedUser)"
             >
-              <div class="min-w-0">
-                <p class="text-xs font-medium uppercase tracking-wide text-surface-muted">
-                  User permissions
-                </p>
-                <h2 class="mt-1 truncate text-lg font-bold text-surface-light">
-                  {{ selectedUser.display_name || selectedUser.email }}
-                </h2>
-                <p class="mt-1 break-all text-xs text-surface-mid">{{ selectedUser.email }}</p>
-              </div>
-              <button
-                ref="drawerCloseButton"
-                type="button"
-                class="rounded p-1 text-xl leading-none text-surface-mid hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-                aria-label="Close user permissions panel"
-                @click="requestCloseUserDrawer"
-              >
-                &times;
-              </button>
-            </header>
-
-            <div class="flex-1 overflow-y-auto px-6 py-5">
-              <div class="mb-5 space-y-3">
-                <div class="flex flex-wrap gap-2">
-                  <StatusBadge
-                    :label="roleBadge(selectedUser).label"
-                    :class-name="roleBadge(selectedUser).className"
-                  />
-                  <StatusBadge
-                    v-for="badge in statusBadges(selectedUser)"
-                    :key="badge.id"
-                    :label="badge.label"
-                    :class-name="badge.className"
-                  />
-                </div>
-                <p class="text-xs text-surface-muted">
-                  Joined {{ formatDate(selectedUser.created_at) }} ·
-                  {{ permissionCount(selectedUser) }} tool permissions selected
-                </p>
-                <p
-                  v-if="selectedUser.is_protected"
-                  class="rounded-lg border border-accent-blue/30 bg-accent-blue/10 px-3 py-2 text-xs text-accent-blue"
-                >
-                  Protected accounts are managed by the system and cannot be edited here.
-                </p>
-              </div>
-
-              <AdminUserPermissionsEditor
-                :permissions="draftPermissions[selectedUser.id] ?? []"
-                :disabled="selectedUser.is_protected"
-                :lock-superuser="isLastSuperuser(selectedUser)"
-                :services="services"
-                @update:permissions="setDraftPermissions(selectedUser.id, $event)"
-              />
-            </div>
-
-            <footer class="shrink-0 border-t border-surface-border bg-surface-dark px-6 py-4">
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-xs text-surface-muted">
-                  {{
-                    hasDraftChanges(selectedUser)
-                      ? "Unsaved permission changes"
-                      : "Permissions are up to date"
-                  }}
-                </p>
-                <div class="flex gap-2">
-                  <BaseButton variant="ghost" @click="requestCloseUserDrawer">cancel</BaseButton>
-                  <BaseButton
-                    variant="primary"
-                    :disabled="
-                      savingId === selectedUser.id ||
-                      selectedUser.is_protected ||
-                      !hasDraftChanges(selectedUser)
-                    "
-                    @click="savePermissions(selectedUser)"
-                  >
-                    {{ savingId === selectedUser.id ? "Saving..." : "Save permissions" }}
-                  </BaseButton>
-                </div>
-              </div>
-            </footer>
-          </aside>
-        </Transition>
-      </div>
-    </Teleport>
+              {{ savingId === selectedUser.id ? "Saving..." : "Save permissions" }}
+            </BaseButton>
+          </div>
+        </div>
+      </template>
+    </BaseDrawer>
   </AdminPageLayout>
 </template>

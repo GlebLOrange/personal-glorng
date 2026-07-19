@@ -4,7 +4,9 @@ import { nextTick } from "vue";
 
 import BaseModal from "@/components/ui/BaseModal.vue";
 
-function mountModal(title = "Test modal"): { wrapper: VueWrapper; trigger: HTMLButtonElement } {
+function mountModal(
+  props: { title?: string; ariaLabel?: string } = { title: "Test modal" },
+): { wrapper: VueWrapper; trigger: HTMLButtonElement } {
   const trigger = document.createElement("button");
   trigger.type = "button";
   trigger.textContent = "Open";
@@ -13,7 +15,7 @@ function mountModal(title = "Test modal"): { wrapper: VueWrapper; trigger: HTMLB
 
   const wrapper = mount(BaseModal, {
     attachTo: document.body,
-    props: { title },
+    props,
     slots: {
       default: '<input type="text" aria-label="Sample field" />',
     },
@@ -65,6 +67,26 @@ describe("BaseModal", () => {
       new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }),
     );
     expect(document.activeElement).toBe(focusables[0]);
+
+    wrapper.unmount();
+  });
+
+  it("uses ariaLabel when no title is provided", () => {
+    const { wrapper } = mountModal({ ariaLabel: "Confirm delete" });
+
+    const dialog = document.body.querySelector('[role="dialog"]');
+    expect(dialog?.getAttribute("aria-label")).toBe("Confirm delete");
+    expect(dialog?.getAttribute("aria-labelledby")).toBeNull();
+
+    wrapper.unmount();
+  });
+
+  it("falls back to Dialog aria-label when no title or ariaLabel", () => {
+    const { wrapper } = mountModal({});
+
+    const dialog = document.body.querySelector('[role="dialog"]');
+    expect(dialog?.getAttribute("aria-label")).toBe("Dialog");
+    expect(dialog?.getAttribute("aria-labelledby")).toBeNull();
 
     wrapper.unmount();
   });
