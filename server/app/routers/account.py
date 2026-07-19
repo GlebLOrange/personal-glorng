@@ -184,7 +184,7 @@ async def patch_me_preferences(
 
 @router.delete(
     "/me",
-    response_model=MessageResponse,
+    status_code=204,
     summary="Delete account",
     description="Permanently delete the authenticated user's account.",
     dependencies=[Depends(rate_limit_auth)],
@@ -196,8 +196,7 @@ async def delete_me(
     request: Request,
     response: Response,
     token: Annotated[str | None, Depends(oauth2_scheme)] = None,
-) -> MessageResponse:
+) -> None:
     await delete_account(registry, user, current_password=data.current_password)
     await _blacklist_request_tokens(bearer_token=token, request=request)
     _clear_auth_cookies(response)
-    return MessageResponse(message="Account deleted successfully")

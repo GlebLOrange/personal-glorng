@@ -3,7 +3,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.core.deps import AuditServiceDep, AuthorizedUser, require_capability
-from app.core.pagination import PaginationParams, audit_pagination_params
+from app.core.pagination import (
+    PaginationParams,
+    audit_pagination_params,
+    build_paginated,
+)
 from app.schemas.audit import AuditEventListResponse, AuditEventResponse
 from app.schemas.date_filters import AuditDateFilter, audit_date_filter
 
@@ -43,7 +47,9 @@ async def list_audit_events(
         offset=pagination.offset,
         limit=pagination.limit,
     )
-    return AuditEventListResponse(
-        items=[AuditEventResponse.model_validate(i) for i in items],
+    return build_paginated(
+        [AuditEventResponse.model_validate(i) for i in items],
         total=total,
+        page=pagination.page,
+        per_page=pagination.per_page,
     )

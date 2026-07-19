@@ -23,7 +23,7 @@ class TestCreateFeedback:
                 "message": "Great site!",
             },
         )
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         data = resp.json()
         assert data["email"] == "test@example.com"
         assert data["theme"] == "Hello"
@@ -74,7 +74,7 @@ class TestCreateFeedback:
                 "message": "  Great\x00 site!  ",
             },
         )
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         data = resp.json()
         assert data["theme"] == "Hello world"
         assert data["message"] == "Great site!"

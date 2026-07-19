@@ -95,7 +95,7 @@ async def _send_email(
     key = _email_dispatch_key(purpose, token)
     ttl = _EMAIL_DISPATCH_TTL[purpose]
     claimed = await cache_set_nx(key, "1", ttl)
-    if not claimed:
+    if claimed is False:
         logger.info(
             "Skipping duplicate email dispatch",
             context={"to": email, "purpose": purpose},

@@ -69,6 +69,7 @@ async def test_stripe_webhook_checkout_completed(
     )
 
     event = {
+        "id": "evt_test_checkout_1",
         "type": "checkout.session.completed",
         "data": {
             "object": {
@@ -87,6 +88,45 @@ async def test_stripe_webhook_checkout_completed(
     assert resp.status_code == 200
     assert resp.json()["status"] == "processed"
     assert notified
+
+
+@pytest.mark.asyncio
+async def test_stripe_webhook_deduplicates_replay(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    notified: list[str] = []
+
+    async def fake_notify(text: str) -> None:
+        notified.append(text)
+
+    monkeypatch.setattr(
+        "app.services.stripe_donations.notify_admin",
+        fake_notify,
+    )
+
+    event = {
+        "id": "evt_test_dup_1",
+        "type": "checkout.session.completed",
+        "data": {
+            "object": {
+                "amount_total": 500,
+                "currency": "usd",
+                "customer_details": {"email": "donor@example.com"},
+            },
+        },
+    }
+    body = json.dumps(event).encode()
+    headers = {"Stripe-Signature": _stripe_signature(body, "whsec_test")}
+
+    first = await client.post("/api/donations/webhook", content=body, headers=headers)
+    second = await client.post("/api/donations/webhook", content=body, headers=headers)
+
+    assert first.status_code == 200
+    assert first.json()["status"] == "processed"
+    assert second.status_code == 200
+    assert second.json()["status"] == "duplicate"
+    assert len(notified) == 1
 
 
 @pytest.mark.asyncio

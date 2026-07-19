@@ -10,11 +10,15 @@ import httpx
 
 from app.core.exceptions import ApiError, ForbiddenError
 from app.core.logging import logger
+from app.core.redis import cache_set_nx
+from app.core.redis_keys import STRIPE_EVENT_PREFIX
 from app.core.telegram import notify_admin
 from app.settings import Settings, get_settings
 
 _STRIPE_API_BASE = "https://api.stripe.com/v1"
 _SIGNATURE_TOLERANCE_SECONDS = 300
+# Stripe retries webhooks for up to ~3 days; keep a buffer for late deliveries.
+_STRIPE_EVENT_DEDUP_TTL_SECONDS = 60 * 60 * 24 * 7
 
 
 async def create_checkout_session(settings: Settings | None = None) -> dict[str, str]:
@@ -112,6 +116,20 @@ async def handle_stripe_event(event: dict[str, Any]) -> dict[str, str]:
     if event_type != "checkout.session.completed":
         return {"status": "ignored", "type": event_type}
 
+    event_id = event.get("id")
+    if isinstance(event_id, str) and event_id:
+        claimed = await cache_set_nx(
+            f"{STRIPE_EVENT_PREFIX}{event_id}",
+            "1",
+            _STRIPE_EVENT_DEDUP_TTL_SECONDS,
+        )
+        if claimed is False:
+            logger.info(
+                "Stripe webhook duplicate ignored",
+                context={"event_id": event_id, "type": event_type},
+            )
+            return {"status": "duplicate", "type": event_type}
+
     session = event.get("data", {}).get("object", {})
     amount = session.get("amount_total")
     currency = session.get("currency", "")
@@ -125,7 +143,7 @@ async def handle_stripe_event(event: dict[str, Any]) -> dict[str, str]:
     await notify_admin(text)
     logger.info(
         "Stripe donation completed",
-        context={"amount": amount, "currency": currency},
+        context={"amount": amount, "currency": currency, "event_id": event_id},
     )
     return {"status": "processed", "type": event_type}
 

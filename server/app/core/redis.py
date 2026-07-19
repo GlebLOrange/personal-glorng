@@ -93,15 +93,25 @@ async def cache_set(key: str, value: str, ttl: int = 300) -> None:
         logger.warning("Redis cache_set failed", error=exc, context={"key": key})
 
 
-async def cache_set_nx(key: str, value: str, ttl: int) -> bool:
-    """Set key only if missing. Returns True when the claim was acquired."""
+async def cache_set_nx(key: str, value: str, ttl: int) -> bool | None:
+    """Set key only if absent.
+
+    Returns True if set, False if existed, None on Redis error.
+    """
     try:
-        result = await get_redis_client().set(key, value, nx=True, ex=ttl)
-        return bool(result)
+        client = get_redis_client()
+        try:
+            return bool(await client.set(key, value, ex=ttl, nx=True))
+        except TypeError:
+            # ponytail: FakeRedis in tests lacks nx=; race-y fallback is fine there.
+            existing = await client.get(key)
+            if existing is not None:
+                return False
+            await client.set(key, value, ex=ttl)
+            return True
     except (RedisError, RuntimeError) as exc:
         logger.warning("Redis cache_set_nx failed", error=exc, context={"key": key})
-        # Fail open so email still sends when Redis is down / not initialized.
-        return True
+        return None
 
 
 async def cache_delete(key: str) -> None:

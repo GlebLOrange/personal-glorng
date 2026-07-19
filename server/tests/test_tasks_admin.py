@@ -27,7 +27,7 @@ async def test_create_task_sanitizes_title(auth_client: AsyncClient) -> None:
             "description": "From admin",
         },
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     assert resp.json()["title"] == "buy milk"
 
 
@@ -44,7 +44,7 @@ async def test_create_task_sanitizes_description_and_location(
             "location": f"  shop\x00 {'x' * 240}",
         },
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     data = resp.json()
     assert data["description"] == "pick up"
     assert data["location"].startswith("shop ")
@@ -75,7 +75,7 @@ async def test_create_task(auth_client: AsyncClient) -> None:
             "description": "From admin",
         },
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     data = resp.json()
     assert data["title"] == "Buy milk"
     assert data["telegram_user_id"] == 123456789

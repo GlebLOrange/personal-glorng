@@ -97,6 +97,7 @@ def _clear_auth_cookies(response: Response) -> None:
 @router.post(
     "/register",
     response_model=MessageResponse,
+    status_code=201,
     summary="Register new account",
     description="Create a user account and send a verification email.",
     dependencies=[Depends(rate_limit_auth)],

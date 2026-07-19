@@ -137,6 +137,7 @@ async def extract_file(
 @router.post(
     "/import",
     response_model=ImportResultResponse,
+    status_code=201,
     summary="Import uploaded file into staging storage",
     description=requires_capability("data-extract", "write"),
     dependencies=[Depends(require_capability("data-extract", "write"))],
