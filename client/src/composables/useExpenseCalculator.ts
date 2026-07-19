@@ -15,6 +15,22 @@ import type { ExchangeRates } from "@/types";
 
 export type ExpenseCalculatorMode = "convert" | "sum" | "budget" | "whatif";
 
+export const EXPENSE_CALCULATOR_MODES: ExpenseCalculatorMode[] = [
+  "convert",
+  "sum",
+  "budget",
+  "whatif",
+];
+
+export function isCalculatorMode(value: string): value is ExpenseCalculatorMode {
+  return EXPENSE_CALCULATOR_MODES.includes(value as ExpenseCalculatorMode);
+}
+
+export function normalizeCalculatorMode(value: string): ExpenseCalculatorMode {
+  if (value === "converter") return "convert";
+  return isCalculatorMode(value) ? value : "convert";
+}
+
 export interface ExpenseCalculatorLineItem {
   id: string;
   label: string;
@@ -34,8 +50,6 @@ export interface ExpenseCalculatorStatePayload {
   line_items: Array<{ label: string; amount: string; currency?: CurrencyCode | null }>;
   budget_rows: Array<{ name: string; budget: string; spent: string }>;
 }
-
-const MODES: ExpenseCalculatorMode[] = ["convert", "sum", "budget", "whatif"];
 
 function newId(): string {
   return crypto.randomUUID();
@@ -79,21 +93,21 @@ export function useExpenseCalculator() {
     if (
       tab === "calculator" &&
       typeof mode === "string" &&
-      MODES.includes(mode as ExpenseCalculatorMode)
+      isCalculatorMode(mode)
     ) {
-      return mode as ExpenseCalculatorMode;
+      return mode;
     }
-    if (typeof tab === "string" && MODES.includes(tab as ExpenseCalculatorMode)) {
-      return tab as ExpenseCalculatorMode;
+    if (typeof tab === "string" && isCalculatorMode(tab)) {
+      return tab;
     }
-    if (typeof mode === "string" && MODES.includes(mode as ExpenseCalculatorMode)) {
-      return mode as ExpenseCalculatorMode;
+    if (typeof mode === "string" && isCalculatorMode(mode)) {
+      return mode;
     }
     return "convert";
   });
 
   const modeTabs = computed(() =>
-    MODES.map((mode) => ({
+    EXPENSE_CALCULATOR_MODES.map((mode) => ({
       id: mode,
       label: mode === "whatif" ? "what-if" : mode,
     })),
@@ -304,7 +318,7 @@ export function useExpenseCalculator() {
       const legacyMode = route.query.mode;
       if (
         typeof legacyMode === "string" &&
-        MODES.includes(legacyMode as ExpenseCalculatorMode) &&
+        isCalculatorMode(legacyMode) &&
         route.query.tab !== legacyMode
       ) {
         const { mode: _m, ...rest } = route.query;

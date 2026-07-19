@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router"
 
 import { WEATHER_ROUTE_NAME } from "@/constants/weather";
 import { useAuthStore } from "@/stores/auth";
+import { isCalculatorMode, normalizeCalculatorMode } from "@/composables/useExpenseCalculator";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled } from "@/utils/featureFlags";
 import { installScrollRestore, resolveScrollBehavior } from "@/utils/scrollRestore";
@@ -346,17 +347,15 @@ router.beforeEach(async (to, _from, next) => {
           : typeof to.query.mode === "string"
             ? to.query.mode
             : "convert";
-      const mode = rawTab === "converter" ? "convert" : rawTab;
-      const calculatorModes = ["convert", "sum", "budget", "whatif"];
-      if (calculatorModes.includes(mode)) {
+      if (rawTab === "converter" || isCalculatorMode(rawTab)) {
         next({
           name: "tool-expenses",
-          query: { tab: "calculator", mode },
+          query: { tab: "calculator", mode: normalizeCalculatorMode(rawTab) },
           replace: true,
         });
         return;
       }
-      next({ name: "tool-expenses", query: { tab: mode }, replace: true });
+      next({ name: "tool-expenses", query: { tab: rawTab }, replace: true });
       return;
     }
   }
