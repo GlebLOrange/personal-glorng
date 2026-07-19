@@ -11,11 +11,17 @@ Success looks like: Mongo can be restored from backup; compromised or rotated cr
 1. MongoDB remains the primary datastore; Postgres stays optional secondary.
 2. Cookie + JWT auth stays; we extend revocation rather than replace the auth model.
 3. Work ships as stacked thin PRs (one theme each), not one mega-PR.
-4. New dependencies need approval (`defusedxml` for XML hardening is the only likely add).
-5. Cloudflare origin IP allowlisting may need host/DNS access outside this repo — document + nginx/app hooks first; infra firewall is a follow-up if not controllable here.
-6. Nice-to-have items (httpx pooling, dead-link CI, admin UI splits beyond a11y) are deferred unless a phase finishes early.
+4. Cloudflare origin IP allowlisting may need host/DNS access outside this repo — document + nginx/app hooks first; infra firewall is a follow-up if not controllable here.
+5. Nice-to-have items (httpx pooling, dead-link CI, admin UI splits beyond a11y) are deferred unless a phase finishes early.
 
-→ Correct these before implementation if wrong.
+## Decisions (locked)
+
+| # | Decision | Choice | Rationale |
+|---|----------|--------|-----------|
+| D1 | JWT `session_version` migration | **Fail closed** — missing `sv` ⇒ invalid token | One forced re-login on deploy; no “half-revoked” window |
+| D2 | XML hardening | **Approve `defusedxml`** | Parser-level protection; stdlib scan is bypassable |
+| D3 | Settings / secrets (Phase 4) | **Read process env** (dotenv still for local/dev) | Unblocks not mounting mega-`.env` everywhere; vault later |
+| D4 | Phase 5 admin split | **Skip optional split** | Ship a11y + dead `TokenResponse` only; split later if needed |
 
 ## Out of scope (this program)
 
@@ -126,11 +132,12 @@ Security-sensitive account events invalidate outstanding access/refresh tokens o
 3. In `_resolve_user_from_token`, reject tokens whose `sv` ≠ current user value.
 4. Bump `session_version` on: password reset, password change, email change, account delete (delete may only need blacklist + bump if soft-delete; hard-delete already removes user — still blacklist current tokens).
 5. Keep Redis `jti` blacklist for logout/reuse detection; version is the coarse revoke.
+6. **D1:** Missing `sv` claim ⇒ reject (fail closed). Existing users start at `session_version=0`; only newly issued tokens after deploy validate.
 
 ### Tasks
 
 - [ ] Task: User field + token issue/validate
-  - Acceptance: Tokens without matching `sv` get 401; old tokens without claim treated as revoked (or migrate with default `0` only for one release — prefer fail closed: missing `sv` ⇒ invalid)
+  - Acceptance: Tokens without matching `sv` get 401; missing `sv` claim is invalid (D1)
   - Verify: `pytest` auth/account tests for issue + reject
   - Files: `server/app/db/documents/user.py`, `server/app/core/security.py`, `server/app/core/deps.py`, repositories as needed
 
@@ -169,10 +176,9 @@ Tighten SSRF, webhook abuse, XML bombs, and accidental body logging.
   - Files: `server/app/routers/donations.py`, tests
 
 - [ ] Task: Harden XML extraction
-  - Acceptance: DTD/entity payloads rejected; no `# noqa: S314` on unsafe parser
+  - Acceptance: DTD/entity payloads rejected via `defusedxml` (D2); no `# noqa: S314` on unsafe parser
   - Verify: `server/tests/test_data_extractor.py` cases for entity expansion
-  - Files: `server/app/core/xml_security.py`, `server/app/core/data_extractor/handlers/xml_handler.py`, `server/pyproject.toml` if adding `defusedxml`
-  - Ask first: dependency add
+  - Files: `server/app/core/xml_security.py`, `server/app/core/data_extractor/handlers/xml_handler.py`, `server/pyproject.toml`
 
 - [ ] Task: Cap / skip request-body logging
   - Acceptance: Middleware skips multipart/octet-stream; respects Content-Length + hard cap; production validator warns or forbids `LOG_REQUEST_BODIES=true`
@@ -209,7 +215,7 @@ Docs match automation; dependency bots cover the real surface; prod posture impr
   - Files: `docker-compose.prod.yml`, `docs/operations/deployment.md`
 
 - [ ] Task: Settings secret sources (incremental)
-  - Acceptance: Settings can read process env (and optional file secrets) without requiring a mounted mega-`.env` for every field; dotenv remains supported for local/dev
+  - Acceptance: Settings reads process env with dotenv fallback for local/dev (D3); optional file secrets if cheap
   - Verify: Settings unit tests for env override
   - Files: `server/app/settings.py`, `.env.example` or `.env.production.example`, docs
 
@@ -237,13 +243,8 @@ Fix the highest-cost accessibility issues and one maintainability hotspot withou
   - Verify: Component test or manual keyboard check
   - Files: `client/src/components/recipes/RecipeCard.vue`
 
-- [ ] Task (optional): Extract one oversized admin tool composable
-  - Acceptance: One of `DataExtractTool` / `NewsAdminPage` / `AdminUsersPage` loses ~150+ lines to a composable without behavior change
-  - Verify: Existing unit tests + smoke; no visual redesign
-  - Files: chosen page + new composable
-
-- [ ] Task (optional): Remove dead `TokenResponse` type
-  - Acceptance: Unused export gone; cookie-auth types remain accurate
+- [ ] Task: Remove dead `TokenResponse` type
+  - Acceptance: Unused export gone; cookie-auth types remain accurate (D4: no admin page split in this program)
   - Verify: `npm run build:check`
   - Files: `client/src/types/index.ts`
 
@@ -284,10 +285,7 @@ Prefer ~100–300 LOC intentional change per PR; split Phase 3 into SSRF / Strip
 
 ## Open questions
 
-1. For JWT migration: fail closed on missing `session_version` (forces re-login for everyone on deploy) — **recommended** — or accept `sv=0` default for one release?
-2. Is `defusedxml` approved, or prefer rejecting DTD with stdlib-only checks?
-3. Should Phase 4 change Settings to read process env now, or only add `.env.production.example` + document Docker secrets later?
-4. Which single admin page should Phase 5 optional split target first?
+None — decisions D1–D4 are locked (see above). Re-open only if a phase hits a deploy blocker.
 
 ---
 
