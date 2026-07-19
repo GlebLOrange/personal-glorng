@@ -111,10 +111,24 @@ async def cache_getdel(key: str) -> str | None:
 
 
 async def blacklist_token(jti: str, ttl: int) -> None:
+    """Blacklist a JTI (overwrites). Used by logout and forced revoke."""
     # Redis rejects EX 0; skip already-expired tokens.
     if ttl <= 0:
         return
     await get_redis_client().set(f"{BLACKLIST_PREFIX}{jti}", "1", ex=ttl)
+
+
+async def try_blacklist_token(jti: str, ttl: int) -> bool:
+    """Atomically blacklist a JTI. Returns False if it was already blacklisted."""
+    if ttl <= 0:
+        return False
+    result = await get_redis_client().set(
+        f"{BLACKLIST_PREFIX}{jti}",
+        "1",
+        ex=ttl,
+        nx=True,
+    )
+    return result is True
 
 
 async def is_token_blacklisted(jti: str) -> bool:

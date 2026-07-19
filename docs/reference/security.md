@@ -18,15 +18,17 @@ HTTPS termination is expected upstream of compose nginx (port 80 by default); `s
 
 ## Authentication
 
-- JWT access/refresh tokens (HS256) with bcrypt passwords
-- HttpOnly cookies in production (`secure`, `SameSite=Lax`) plus optional Bearer header
-- Refresh rotation and Redis token blacklist on logout
+- JWT access/refresh tokens (HS256) with bcrypt passwords (cost factor 12)
+- HttpOnly cookies (`secure` in production, `SameSite=Lax`); login/Firebase set cookies only — tokens are **not** returned in the JSON body
+- Body-based `/api/auth/refresh` still returns tokens for scripts/Bearer clients; cookie-only refresh returns a message body
+- Refresh rotation uses atomic Redis `SET NX` on JTI (concurrent reuse fails closed) plus blacklist on logout
 - Per-user `session_version` claim (`sv`) on access/refresh tokens — bumped on password change/reset and email change; missing or stale `sv` fails closed (401). Deploying this invalidates tokens issued before the claim existed (one re-login).
-- Open self-service registration with email verification; new users start with no tool permissions
+- Open self-service registration with email verification (`POST /api/auth/verify`); `GET /api/auth/verify` only redirects to the SPA without consuming the token
+- Firebase Google sign-in refuses to auto-verify an existing unverified password account (pre-account takeover mitigation)
 - Password policy: 12+ chars, upper, lower, digit, special; common passwords rejected
 - `ALLOWED_EMAIL` is seed-only for the bootstrap superuser; GitHub OAuth uses `GITHUB_ALLOWED_USERS`
 - Users manage profile, password, email, and preferences via `/settings`; permissions are admin-only
-- GitHub OAuth access tokens are **encrypted at rest** (Fernet, key derived from `JWT_SECRET`) — see [`core/fernet_secrets.py`](../../server/app/core/fernet_secrets.py)
+- GitHub/Google OAuth tokens are **encrypted at rest** (Fernet, key from `FERNET_SECRET` or fallback `JWT_SECRET`) — see [`core/fernet_secrets.py`](../../server/app/core/fernet_secrets.py)
 
 ## CSRF and CORS {#csrf-and-cors}
 
@@ -37,7 +39,7 @@ The API uses `CORSMiddleware` with `allow_credentials=True`. In **production**:
 
 **Refresh token split:** `/api/auth/refresh` with a `refresh_token` **cookie** requires a valid origin. Body-only refresh (`{"refresh_token": "..."}`) is exempt — typical for scripts and Bearer clients.
 
-Public auth and feedback routes are exempt. Bearer-only clients (typical admin SPA with in-memory tokens) are unaffected.
+Public auth and feedback routes are exempt. Cookie-authenticated SPA requests need a matching Origin in production; body-only refresh remains available for scripts.
 
 ## Redis
 
@@ -64,7 +66,6 @@ Redis fixed-window limits — [`server/app/core/rate_limit.py`](../../server/app
 | Auth | 5/min | All `/api/auth/*` | Fail closed |
 | API general | 30/min | Most public APIs | Fail open |
 | Search query | 30/min | `GET /api/search` | Fail open |
-| Search query | 30/min | `GET /api/search` | Fail closed |
 | Feedback | 5/5min | `POST /api/feedback` | Fail closed |
 | Checkout | 10/hour | `POST /api/donations/checkout` | Fail closed |
 | AI chat (admin) | 5/5min | `POST /api/tools/ai-chat` | Fail closed |

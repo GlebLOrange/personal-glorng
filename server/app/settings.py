@@ -453,6 +453,16 @@ class Settings(BaseSettings):
         "ES384",
         "ES512",
     ]
+    # Symmetric encryption for OAuth tokens at rest (falls back to JWT_SECRET)
+    FERNET_SECRET: str = ""
+
+    def resolved_fernet_secret(self) -> str:
+        """Return FERNET_SECRET, or JWT_SECRET with a one-time deprecation warning."""
+        secret = self.FERNET_SECRET.strip()
+        if secret:
+            return secret
+        _warn_fernet_fallback()
+        return self.JWT_SECRET
 
     # Auth
     ALLOWED_EMAIL: str
@@ -602,3 +612,19 @@ def load_settings_from(env_file: Path) -> Settings:
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+_FERNET_FALLBACK_WARNED = False
+
+
+def _warn_fernet_fallback() -> None:
+    global _FERNET_FALLBACK_WARNED
+    if _FERNET_FALLBACK_WARNED:
+        return
+    _FERNET_FALLBACK_WARNED = True
+    import logging
+
+    logging.getLogger("app.settings").warning(
+        "FERNET_SECRET unset; falling back to JWT_SECRET "
+        "(set a dedicated FERNET_SECRET to separate encryption from JWT signing)"
+    )

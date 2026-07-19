@@ -96,12 +96,22 @@ class FakeRedis:
         self._expiry.pop(key, None)
         return value
 
-    async def set(self, key: str, value: Any, ex: int | None = None) -> None:
+    async def set(
+        self,
+        key: str,
+        value: Any,
+        ex: int | None = None,
+        nx: bool = False,
+    ) -> bool | None:
+        await self._purge_if_expired(key)
+        if nx and key in self._store:
+            return None
         self._store[key] = str(value)
         if ex is not None:
             self._expiry[key] = time.monotonic() + ex
         else:
             self._expiry.pop(key, None)
+        return True
 
     async def incr(self, key: str) -> int:
         await self._purge_if_expired(key)
@@ -379,4 +389,7 @@ async def login_tokens(client: AsyncClient, admin_user: User) -> dict[str, str]:
         json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
     )
     assert resp.status_code == 200
-    return resp.json()
+    access = resp.cookies.get("access_token")
+    refresh = resp.cookies.get("refresh_token")
+    assert access and refresh
+    return {"access_token": access, "refresh_token": refresh}

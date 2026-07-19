@@ -58,7 +58,7 @@ async def test_change_password_revokes_old_token(
         json={"email": user.email, "password": STRONG_PASSWORD},
     )
     assert login.status_code == 200
-    old_token = login.json()["access_token"]
+    old_token = login.cookies["access_token"]
     headers = {"Authorization": f"Bearer {old_token}"}
 
     new_password = "NewStrongPass1!"
@@ -137,12 +137,12 @@ async def test_change_password_revokes_other_device_refresh(
         json={"email": user.email, "password": STRONG_PASSWORD},
     )
     assert device_b.status_code == 200
-    other_refresh = device_b.json()["refresh_token"]
+    other_refresh = device_b.cookies["refresh_token"]
 
     new_password = "NewStrongPass1!"
     change = await client.post(
         "/api/auth/change-password",
-        headers={"Authorization": f"Bearer {device_a.json()['access_token']}"},
+        headers={"Authorization": f"Bearer {device_a.cookies['access_token']}"},
         json={
             "current_password": STRONG_PASSWORD,
             "new_password": new_password,
@@ -185,7 +185,7 @@ async def test_delete_regular_user(client: AsyncClient, db) -> None:
         json={"email": user.email, "password": STRONG_PASSWORD},
     )
     assert login.status_code == 200
-    token = login.json()["access_token"]
+    token = login.cookies["access_token"]
 
     delete = await client.request(
         "DELETE",
@@ -217,7 +217,7 @@ async def test_cannot_delete_protected_account(
         json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
     )
     assert login.status_code == 200
-    token = login.json()["access_token"]
+    token = login.cookies["access_token"]
 
     delete = await client.request(
         "DELETE",
@@ -243,7 +243,7 @@ async def test_cannot_delete_last_superuser(client: AsyncClient, db) -> None:
         json={"email": user.email, "password": STRONG_PASSWORD},
     )
     assert login.status_code == 200
-    token = login.json()["access_token"]
+    token = login.cookies["access_token"]
 
     delete = await client.request(
         "DELETE",
