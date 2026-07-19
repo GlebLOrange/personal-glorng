@@ -30,8 +30,12 @@ function toggleExpanded(id: number): void {
   expandedIds.value = next;
 }
 
+function syncPrimary(item: SyncQueueItem): string {
+  return item.task_title?.trim() || `Task #${item.task_id}`;
+}
+
 function syncMeta(item: SyncQueueItem): string {
-  const parts = [`${item.action}`, `attempts ${item.attempts}`];
+  const parts = [`Task #${item.task_id}`, `${item.action}`, `attempts ${item.attempts}`];
   if (item.next_retry_at) {
     parts.push(`retry ${formatDate(item.next_retry_at)}`);
   }
@@ -60,7 +64,7 @@ function syncMeta(item: SyncQueueItem): string {
           :class-name="statusBadgeClass(item.status)"
         />
       </template>
-      <template #primary>Task #{{ item.task_id }}</template>
+      <template #primary>{{ syncPrimary(item) }}</template>
       <template #meta>
         <span>{{ syncMeta(item) }}</span>
       </template>

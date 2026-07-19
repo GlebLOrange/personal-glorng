@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import Any
 
@@ -294,26 +295,48 @@ class TaskRepository(MongoRepository[Task]):
         )
         return [_sync_from_doc(row) async for row in cursor]
 
+    async def titles_by_ids(self, task_ids: list[int]) -> dict[int, str]:
+        """Return ``{task_id: title}`` for the given ids."""
+        if not task_ids:
+            return {}
+        cursor = self._col().find({"id": {"$in": task_ids}}, {"id": 1, "title": 1})
+        return {row["id"]: row["title"] async for row in cursor if "title" in row}
+
     async def list_admin(
         self,
         *,
         offset: int = 0,
         limit: int = 20,
         status: str | None = None,
+        q: str | None = None,
     ) -> list[Task]:
-        query: dict[str, Any] = {}
-        if status:
-            query["status"] = status
+        query = self._admin_list_query(status=status, q=q)
         cursor = (
             self._col().find(query).sort("created_at", -1).skip(offset).limit(limit)
         )
         return [_parse_doc(Task, row) async for row in cursor]
 
-    async def count_all(self, *, status: str | None = None) -> int:
+    async def count_all(
+        self,
+        *,
+        status: str | None = None,
+        q: str | None = None,
+    ) -> int:
+        query = self._admin_list_query(status=status, q=q)
+        return await self._col().count_documents(query)
+
+    @staticmethod
+    def _admin_list_query(
+        *,
+        status: str | None = None,
+        q: str | None = None,
+    ) -> dict[str, Any]:
         query: dict[str, Any] = {}
         if status:
             query["status"] = status
-        return await self._col().count_documents(query)
+        if q:
+            query["title"] = {"$regex": re.escape(q), "$options": "i"}
+        return query
 
     async def list_overdue_pending(
         self,

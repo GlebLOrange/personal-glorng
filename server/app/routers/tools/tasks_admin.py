@@ -81,8 +81,9 @@ async def list_tasks(
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
     status: str | None = None,
+    q: Annotated[str | None, Query(max_length=200)] = None,
 ) -> TaskListResponse:
-    return await svc.list_tasks(page=page, per_page=per_page, status=status)
+    return await svc.list_tasks(page=page, per_page=per_page, status=status, q=q)
 
 
 @router.get(

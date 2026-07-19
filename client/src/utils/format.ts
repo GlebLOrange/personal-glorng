@@ -14,6 +14,14 @@ export function displayBreadcrumbLabel(title: string): string {
   return `§ ${formatBreadcrumbLabel(title)}`;
 }
 
+/** First word of a title for compact breadcrumbs; appends "..." when truncated. */
+export function truncateBreadcrumbTitle(title: string): string {
+  const words = title.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return title;
+  if (words.length === 1) return words[0]!;
+  return `${words[0]}...`;
+}
+
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleString("en-GB", {
     day: "numeric",

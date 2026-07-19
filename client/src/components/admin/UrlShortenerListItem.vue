@@ -28,11 +28,6 @@ const titleInput = ref<{ focus: () => void } | null>(null);
 
 const shortLink = computed(() => publicUrl("s", props.url.code));
 const displayTitle = computed(() => props.url.title || props.url.original_url);
-const deleteMessage = computed(
-  () => `Delete ${shortLink.value}? This cannot be undone.`,
-);
-
-const collapsedMeta = computed(() => shortLink.value);
 
 watch(
   () => props.url.id,
@@ -117,7 +112,16 @@ function confirmDelete(): void {
       <span :title="displayTitle">{{ displayTitle }}</span>
     </template>
     <template #meta>
-      <span :title="`${url.original_url} · ${shortLink}`">{{ collapsedMeta }}</span>
+      <a
+        :href="shortLink"
+        :title="`${url.original_url} · ${shortLink}`"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-accent-blue underline-offset-2 hover:underline"
+        @click.stop
+      >
+        {{ shortLink }}
+      </a>
     </template>
     <template #actions>
       <BaseButton
@@ -148,10 +152,23 @@ function confirmDelete(): void {
   <ExpenseConfirmDialog
     :open="showDeleteConfirm"
     title="delete short URL"
-    :message="deleteMessage"
     confirm-label="delete"
     :loading="deleting"
     @confirm="confirmDelete"
     @cancel="showDeleteConfirm = false"
-  />
+  >
+    <p>
+      Delete
+      <a
+        :href="shortLink"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-accent-blue underline underline-offset-2"
+        @click.stop
+      >
+        {{ shortLink }}
+      </a>
+      ? This cannot be undone.
+    </p>
+  </ExpenseConfirmDialog>
 </template>

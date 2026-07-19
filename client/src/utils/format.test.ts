@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { formatBreadcrumbLabel, displayBreadcrumbLabel, formatRelativeTime, formatScheduleDate } from "@/utils/format";
+import {
+  displayBreadcrumbLabel,
+  formatBreadcrumbLabel,
+  formatRelativeTime,
+  formatScheduleDate,
+  truncateBreadcrumbTitle,
+} from "@/utils/format";
 
 describe("formatBreadcrumbLabel", () => {
   it("returns a single lowercase word from multi-word titles", () => {
@@ -26,6 +32,20 @@ describe("displayBreadcrumbLabel", () => {
     expect(displayBreadcrumbLabel("calculator")).toBe("§ calculator");
     expect(displayBreadcrumbLabel("app logs")).toBe("§ logs");
     expect(displayBreadcrumbLabel("§ tools")).toBe("§ tools");
+  });
+});
+
+describe("truncateBreadcrumbTitle", () => {
+  it("returns the only word unchanged", () => {
+    expect(truncateBreadcrumbTitle("Breaking")).toBe("Breaking");
+  });
+
+  it("keeps the first word and appends ellipsis", () => {
+    expect(truncateBreadcrumbTitle("Breaking news about space")).toBe("Breaking...");
+  });
+
+  it("trims surrounding whitespace", () => {
+    expect(truncateBreadcrumbTitle("  Hello world  ")).toBe("Hello...");
   });
 });
 

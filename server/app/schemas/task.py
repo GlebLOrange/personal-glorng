@@ -113,6 +113,7 @@ class SyncQueueResponse(BaseModel):
     next_retry_at: datetime | None
     status: str
     created_at: datetime
+    task_title: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

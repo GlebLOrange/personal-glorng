@@ -2,13 +2,21 @@
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseModal from "@/components/ui/BaseModal.vue";
 
-defineProps<{
-  open: boolean;
-  title: string;
-  message: string;
-  confirmLabel?: string;
-  loading?: boolean;
-}>();
+withDefaults(
+  defineProps<{
+    open: boolean;
+    title: string;
+    message?: string;
+    confirmLabel?: string;
+    loading?: boolean;
+    closeDanger?: boolean;
+  }>(),
+  {
+    message: "",
+    confirmLabel: "confirm",
+    closeDanger: true,
+  },
+);
 
 const emit = defineEmits<{
   confirm: [];
@@ -17,8 +25,17 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <BaseModal v-if="open" :title="title" @close="emit('cancel')">
-    <p class="text-sm text-surface-mid mb-6">{{ message }}</p>
+  <BaseModal
+    v-if="open"
+    :title="title"
+    :close-danger="closeDanger"
+    @close="emit('cancel')"
+  >
+    <div class="mb-6 text-sm text-surface-mid">
+      <slot>
+        <p>{{ message }}</p>
+      </slot>
+    </div>
     <div class="flex gap-3">
       <BaseButton variant="primary" :disabled="loading" @click="emit('confirm')">
         {{ loading ? "working..." : (confirmLabel ?? "confirm") }}

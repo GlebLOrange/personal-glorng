@@ -14,6 +14,7 @@ import TaskIntakeList from "@/components/tasks/TaskIntakeList.vue";
 import TaskList from "@/components/tasks/TaskList.vue";
 import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
 import { statusBadgeClass } from "@/constants/filterColors";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -48,6 +49,7 @@ const {
   intakes,
   selectedTask,
   filterStatus,
+  searchQuery,
   page,
   showCreateForm,
   createForm,
@@ -110,6 +112,7 @@ function setStatusFilter(status: string): void {
 
 function clearFilters(): void {
   filterStatus.value = "";
+  searchQuery.value = "";
   filterDropdownRef.value?.close();
 }
 
@@ -120,7 +123,7 @@ function onFailedSyncs(): void {
 
 useScrollListFingerprint(
   () =>
-    `${activeTab.value}:${filterStatus.value}:${page.value}:${tasks.value[0]?.id ?? ""}:${intakes.value[0]?.id ?? ""}:${syncQueue.value[0]?.id ?? ""}`,
+    `${activeTab.value}:${filterStatus.value}:${searchQuery.value}:${page.value}:${tasks.value[0]?.id ?? ""}:${intakes.value[0]?.id ?? ""}:${syncQueue.value[0]?.id ?? ""}`,
 );
 
 onMounted(() => {
@@ -157,7 +160,7 @@ onMounted(() => {
             <div class="flex w-full min-w-0 flex-wrap items-center gap-3">
               <AdminFilterDropdown
                 ref="filterDropdown"
-                :has-active-filters="Boolean(filterStatus)"
+                :has-active-filters="Boolean(filterStatus || searchQuery.trim())"
                 :active-label="activeFilterLabel"
                 @clear="clearFilters"
               >
@@ -179,6 +182,13 @@ onMounted(() => {
                   </div>
                 </template>
               </AdminFilterDropdown>
+              <BaseInput
+                v-model="searchQuery"
+                type="search"
+                class="min-w-0 flex-1"
+                placeholder="search tasks"
+                aria-label="search tasks"
+              />
               <BaseButton
                 v-if="isSuperuser"
                 variant="primary"
