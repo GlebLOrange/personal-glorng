@@ -28,7 +28,8 @@ API docs (dev only): [http://localhost:8000/api/docs](http://localhost:8000/api/
 
 | Variable | Requirement |
 |----------|-------------|
-| `JWT_SECRET` | 32+ random characters |
+| `JWT_SECRET` | 32+ random characters (JWT signing) |
+| `FERNET_SECRET` | 32+ random characters in production, different from `JWT_SECRET` |
 | `REDIS_PASSWORD` | Strong password |
 | `MONGODB_PASSWORD` | Strong password |
 | `SEED_PASSWORD` | Password for bootstrap admin |

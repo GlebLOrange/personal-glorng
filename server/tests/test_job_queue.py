@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from app.core.exceptions import ServiceUnavailableError
 from app.workers.job_names import JobName
 from app.workers.queue import CeleryJobQueue
 
@@ -16,14 +17,14 @@ def queue() -> CeleryJobQueue:
 
 @pytest.mark.asyncio
 async def test_enqueue_rejects_invalid_email(queue: CeleryJobQueue) -> None:
-    result = await queue.enqueue(JobName.SEND_VERIFICATION_EMAIL, "", "token")
-    assert result is None
+    with pytest.raises(ServiceUnavailableError):
+        await queue.enqueue(JobName.SEND_VERIFICATION_EMAIL, "", "token")
 
 
 @pytest.mark.asyncio
 async def test_enqueue_rejects_invalid_reminder_id(queue: CeleryJobQueue) -> None:
-    result = await queue.enqueue(JobName.SEND_REMINDER, 0)
-    assert result is None
+    with pytest.raises(ServiceUnavailableError):
+        await queue.enqueue(JobName.SEND_REMINDER, 0)
 
 
 @pytest.mark.asyncio
@@ -57,3 +58,15 @@ async def test_enqueue_sanitizes_email_args(
 
     assert result == "task-email"
     mock_to_thread.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch("app.workers.queue.asyncio.to_thread")
+async def test_enqueue_surfaces_broker_failure(
+    mock_to_thread: MagicMock,
+    queue: CeleryJobQueue,
+) -> None:
+    mock_to_thread.side_effect = RuntimeError("broker down")
+
+    with pytest.raises(ServiceUnavailableError, match="Unable to queue"):
+        await queue.enqueue(JobName.SEND_REMINDER, 42)

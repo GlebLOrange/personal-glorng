@@ -28,6 +28,29 @@ async def test_init_redis_pings_on_startup() -> None:
 
 
 @pytest.mark.asyncio
+async def test_init_redis_separate_cache_client() -> None:
+    """When REDIS_CACHE_URL differs, init_redis opens a second client."""
+    security = AsyncMock()
+    security.ping = AsyncMock(return_value=True)
+    cache = AsyncMock()
+    cache.ping = AsyncMock(return_value=True)
+    with patch(
+        "app.core.redis.Redis.from_url",
+        side_effect=[security, cache],
+    ) as from_url:
+        await init_redis(
+            "redis://:pass@redis:6379/0",
+            "redis://:pass@redis-cache:6379/0",
+        )
+    assert from_url.call_count == 2
+    assert security.ping.await_count == 1
+    assert cache.ping.await_count == 1
+    await close_redis()
+    cache.aclose.assert_awaited_once()
+    security.aclose.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_init_redis_raises_when_ping_fails() -> None:
     """init_redis should fail fast and close the client when ping fails."""
     mock_client = AsyncMock()

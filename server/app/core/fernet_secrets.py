@@ -19,13 +19,28 @@ def encrypt_secret(plaintext: str, secret: str) -> str:
     return f"{_ENCRYPTED_PREFIX}{token.decode()}"
 
 
-def decrypt_secret(stored: str, secret: str) -> str:
-    """Decrypt a stored secret; return legacy plaintext values unchanged."""
+def decrypt_secret(
+    stored: str,
+    secret: str,
+    *,
+    fallback_secrets: tuple[str, ...] = (),
+) -> str:
+    """Decrypt a stored secret; return legacy plaintext values unchanged.
+
+    Tries ``secret`` first, then each entry in ``fallback_secrets`` (e.g. legacy
+    JWT_SECRET ciphertext after rotating to FERNET_SECRET).
+    """
     if not stored.startswith(_ENCRYPTED_PREFIX):
         return stored
-    try:
-        payload = stored[len(_ENCRYPTED_PREFIX) :].encode()
-        return Fernet(_fernet_key(secret)).decrypt(payload).decode()
-    except InvalidToken as exc:
-        msg = "Failed to decrypt stored secret"
-        raise ValueError(msg) from exc
+    payload = stored[len(_ENCRYPTED_PREFIX) :].encode()
+    candidates = (secret, *fallback_secrets)
+    last_error: InvalidToken | None = None
+    for candidate in candidates:
+        if not candidate:
+            continue
+        try:
+            return Fernet(_fernet_key(candidate)).decrypt(payload).decode()
+        except InvalidToken as exc:
+            last_error = exc
+    msg = "Failed to decrypt stored secret"
+    raise ValueError(msg) from last_error

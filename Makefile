@@ -20,23 +20,23 @@ dev-lite:
 	@echo "  http://localhost needs host Vite — run in another terminal: make dev-lite-client"
 	@echo "  Or use http://localhost:3000 after Vite is up (API docs: http://127.0.0.1:8000/api/docs)"
 	@echo ""
-	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml $(COMPOSE_CACHE) up --build mongodb redis server nginx
+	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml $(COMPOSE_CACHE) up --build mongodb redis redis-cache server nginx
 
 dev-lite-client:
 	cd client && npm run dev
 
 dev-ultra-lite-infra:
-	$(DOCKER_BUILD) $(COMPOSE_ULTRA) $(COMPOSE_CACHE) up -d mongodb redis
+	$(DOCKER_BUILD) $(COMPOSE_ULTRA) $(COMPOSE_CACHE) up -d mongodb redis redis-cache
 	$(DOCKER_BUILD) $(COMPOSE_ULTRA) $(COMPOSE_CACHE) run --rm migrate
 
 dev-ultra-lite-server:
 	cd server && $(ULTRA_LITE_ENV) uv sync --frozen && $(ULTRA_LITE_ENV) uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir app --forwarded-allow-ips=127.0.0.1
 
 dev-search:
-	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.search.yml $(COMPOSE_CACHE) --profile search up --build mongodb redis elasticsearch server
+	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.search.yml $(COMPOSE_CACHE) --profile search up --build mongodb redis redis-cache elasticsearch server
 
 dev-postgres:
-	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml $(COMPOSE_CACHE) --profile postgres up --build mongodb redis db server
+	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml $(COMPOSE_CACHE) --profile postgres up --build mongodb redis redis-cache db server
 
 dev-worker:
 	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) --profile worker up --build

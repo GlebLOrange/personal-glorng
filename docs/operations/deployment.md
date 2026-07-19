@@ -6,9 +6,11 @@ Production runbook for the Docker Compose stack.
 
 1. Copy [`.env.production.example`](../../.env.production.example) (or `.env.example`) to `.env` and fill blanks (`APP_ENV=production`).
 2. Set strong secrets — production startup validates:
-   - `JWT_SECRET` — 32+ chars, no weak markers
+   - `JWT_SECRET` — 32+ chars, no weak markers (JWT signing only)
+   - `FERNET_SECRET` — 32+ chars, must differ from `JWT_SECRET`
    - `REDIS_PASSWORD`, `MONGODB_PASSWORD`, `POSTGRES_PASSWORD` (if Postgres enabled)
    - `RABBITMQ_PASSWORD` — 16+ chars when Celery is used
+   - Set `REDIS_CACHE_URL` to the `redis-cache` service for cache isolation
 3. Set `CORS_ORIGINS` to explicit HTTPS origins (no `*`).
 4. Set `RUN_MIGRATIONS=false` and `RUN_SEED=false` (migrations run via `migrate` service only).
 5. Prod compose enables log rotation (`10m` × 3), `no-new-privileges`, and `init` on services. Process env overrides dotenv when you inject secrets without editing `.env`.

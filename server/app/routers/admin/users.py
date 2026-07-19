@@ -1,9 +1,10 @@
 import uuid
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import AdminUser
+from app.core.rate_limit import rate_limit_admin
 from app.core.utils import DEFAULT_PER_PAGE
 from app.db.deps import DbRegistry
 from app.schemas.admin_users import (
@@ -19,7 +20,7 @@ from app.services.admin_users import (
     update_user_permissions,
 )
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(rate_limit_admin)])
 
 RoleQuery = Literal["all", "superuser", "custom"]
 StatusQuery = Literal["all", "verified", "unverified", "protected"]

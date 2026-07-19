@@ -2,7 +2,7 @@
 
 import secrets
 
-from app.core.redis import cache_getdel, cache_set
+from app.core.redis import cache_getdel, security_set
 from app.core.redis_keys import OAUTH_GOOGLE_STATE_PREFIX
 
 _STATE_TTL_SECONDS = 600
@@ -20,7 +20,7 @@ def generate_google_oauth_state() -> str:
 
 async def store_google_oauth_state(*, state: str, telegram_user_id: int) -> None:
     """Persist OAuth state until callback or TTL expiry."""
-    await cache_set(
+    await security_set(
         google_oauth_state_key(state),
         str(telegram_user_id),
         ttl=_STATE_TTL_SECONDS,

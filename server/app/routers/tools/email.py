@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 
 from app.core.deps import AuthorizedUser, require_capability
 from app.core.email import get_email_backend
+from app.core.rate_limit import rate_limit_email_tool
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.email import EmailPreview, EmailSend, render_email_html
@@ -11,7 +12,10 @@ from app.schemas.email import EmailPreview, EmailSend, render_email_html
 router = APIRouter(
     prefix="/email",
     tags=["email"],
-    dependencies=[Depends(require_capability("email", "write"))],
+    dependencies=[
+        Depends(require_capability("email", "write")),
+        Depends(rate_limit_email_tool),
+    ],
 )
 
 

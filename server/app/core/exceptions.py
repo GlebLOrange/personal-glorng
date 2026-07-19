@@ -49,3 +49,10 @@ class ConflictError(ApiError):
 
     def __init__(self, message: str = "Conflict") -> None:
         super().__init__(409, message)
+
+
+class ServiceUnavailableError(ApiError):
+    """Upstream/service unavailable (503)."""
+
+    def __init__(self, message: str = "Service temporarily unavailable") -> None:
+        super().__init__(503, message)

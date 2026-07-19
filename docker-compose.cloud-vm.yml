@@ -7,6 +7,9 @@ services:
   redis:
     cgroup: host
     deploy: !reset null
+  redis-cache:
+    cgroup: host
+    deploy: !reset null
   migrate:
     cgroup: host
   server:

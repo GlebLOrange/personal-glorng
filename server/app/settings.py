@@ -61,6 +61,9 @@ _COMPOSE_REDIS_HOST = "redis"
 _COMPOSE_REDIS_PORT = 6379
 _HOST_REDIS_HOST = "127.0.0.1"
 _HOST_REDIS_PORT = 6379
+_COMPOSE_REDIS_CACHE_HOST = "redis-cache"
+_COMPOSE_REDIS_CACHE_PORT = 6379
+_HOST_REDIS_CACHE_PORT = 6380
 
 
 def _scrub_url_credentials(url: str) -> str:
@@ -138,20 +141,28 @@ def _resolve_mongodb_url(url: str) -> str:
 
 
 def _resolve_redis_url(url: str) -> str:
-    """Map Docker Compose Redis host to localhost when running on the host."""
+    """Map Docker Compose Redis hosts to localhost when running on the host."""
     if Path("/.dockerenv").exists():
         return url
     parsed = urlparse(url)
     port = parsed.port or _COMPOSE_REDIS_PORT
+    host_port: int | None = None
     if parsed.hostname == _COMPOSE_REDIS_HOST and port == _COMPOSE_REDIS_PORT:
-        auth = ""
-        if parsed.username or parsed.password is not None:
-            user = parsed.username or ""
-            password = parsed.password or ""
-            auth = f"{user}:{password}@"
-        netloc = f"{auth}{_HOST_REDIS_HOST}:{_HOST_REDIS_PORT}"
-        return parsed._replace(netloc=netloc).geturl()
-    return url
+        host_port = _HOST_REDIS_PORT
+    elif (
+        parsed.hostname == _COMPOSE_REDIS_CACHE_HOST
+        and port == _COMPOSE_REDIS_CACHE_PORT
+    ):
+        host_port = _HOST_REDIS_CACHE_PORT
+    if host_port is None:
+        return url
+    auth = ""
+    if parsed.username or parsed.password is not None:
+        user = parsed.username or ""
+        password = parsed.password or ""
+        auth = f"{user}:{password}@"
+    netloc = f"{auth}{_HOST_REDIS_HOST}:{host_port}"
+    return parsed._replace(netloc=netloc).geturl()
 
 
 def _parse_env_list(value: Any) -> list[str]:
@@ -246,6 +257,17 @@ class Settings(BaseSettings):
         ):
             msg = "JWT_SECRET is too weak for production; use 32+ chars"
             raise ValueError(msg)
+        if self.APP_ENV == "production":
+            fernet = self.FERNET_SECRET.strip()
+            if (
+                len(fernet) < 32
+                or any(m in fernet.lower() for m in _WEAK_SECRET_MARKERS)
+            ):
+                msg = "FERNET_SECRET is too weak for production; use 32+ chars"
+                raise ValueError(msg)
+            if fernet == self.JWT_SECRET:
+                msg = "FERNET_SECRET must differ from JWT_SECRET in production"
+                raise ValueError(msg)
         if self.APP_ENV == "production" and any(
             origin.strip() == "*" for origin in self.CORS_ORIGINS
         ):
@@ -426,11 +448,15 @@ class Settings(BaseSettings):
 
     # Redis
     REDIS_URL: str
+    # Optional dedicated cache Redis (allkeys-lru). Empty = share REDIS_URL.
+    REDIS_CACHE_URL: str = ""
 
     @model_validator(mode="after")
     def _normalize_redis_url(self) -> Settings:
         if self.REDIS_URL:
             self.REDIS_URL = _resolve_redis_url(self.REDIS_URL)
+        if self.REDIS_CACHE_URL:
+            self.REDIS_CACHE_URL = _resolve_redis_url(self.REDIS_CACHE_URL)
         return self
 
     # RabbitMQ / Celery

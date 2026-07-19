@@ -11,4 +11,9 @@ def store_github_access_token(plaintext: str) -> str:
 
 def read_github_access_token(stored: str) -> str:
     """Return a usable GitHub OAuth access token from stored value."""
-    return decrypt_secret(stored, get_settings().resolved_fernet_secret())
+    settings = get_settings()
+    primary = settings.resolved_fernet_secret()
+    fallback = ()
+    if settings.FERNET_SECRET.strip() and primary != settings.JWT_SECRET:
+        fallback = (settings.JWT_SECRET,)
+    return decrypt_secret(stored, primary, fallback_secrets=fallback)

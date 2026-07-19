@@ -6,6 +6,7 @@ from typing import Any, Protocol
 
 from celery import Celery
 
+from app.core.exceptions import ServiceUnavailableError
 from app.core.logging import logger
 from app.workers.job_names import JobName
 from app.workers.tasks import (
@@ -24,7 +25,7 @@ class JobQueue(Protocol):
         job: JobName,
         *args: object,
         eta: datetime | None = None,
-    ) -> str | None: ...
+    ) -> str: ...
 
     async def revoke(self, task_id: str) -> None: ...
 
@@ -74,7 +75,7 @@ class CeleryJobQueue:
         job: JobName,
         *args: object,
         eta: datetime | None = None,
-    ) -> str | None:
+    ) -> str:
         try:
             task = self._tasks[job]
             sanitized = _sanitize_enqueue_args(job, args)
@@ -90,14 +91,20 @@ class CeleryJobQueue:
                 error=exc,
                 context={"job": job},
             )
-            return None
+            raise ServiceUnavailableError(
+                "Unable to queue background job",
+            ) from exc
+        except ServiceUnavailableError:
+            raise
         except Exception as exc:
             logger.error(
                 "Failed to enqueue job",
                 error=exc,
                 context={"job": job},
             )
-            return None
+            raise ServiceUnavailableError(
+                "Unable to queue background job",
+            ) from exc
 
     async def revoke(self, task_id: str) -> None:
         if not task_id.strip():
