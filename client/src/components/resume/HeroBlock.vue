@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import ContactIcon from "@/components/contact/ContactIcon.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
-import type { ContactLink } from "@/constants/contactMeta";
 import { getApiErrorMessageFromBlob } from "@/types/api";
 
 const CV_FILENAME = "gleb.y.cv.pdf";
@@ -16,7 +14,6 @@ defineProps<{
   location?: string;
   availability?: string;
   bio: string;
-  contactLinks?: ContactLink[];
 }>();
 
 const isDownloadingCv = ref(false);
@@ -75,25 +72,8 @@ async function downloadCv(): Promise<void> {
       {{ bio }}
     </p>
 
-    <div v-if="contactLinks?.length" class="mt-6 flex flex-wrap justify-center gap-3 print:hidden">
-      <a
-        v-for="link in contactLinks"
-        :key="link.id"
-        :href="link.href"
-        :aria-label="link.label"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="interactive-surface inline-flex items-center justify-center size-11 text-surface-sage"
-      >
-        <ContactIcon :id="link.id" class="size-5 shrink-0" />
-      </a>
-    </div>
-
     <div class="mt-8 flex flex-col sm:flex-row flex-wrap justify-center gap-4 print:hidden">
-      <a href="#about" class="cta-secondary"> about </a>
-      <a href="#experience" class="cta-primary"> experience </a>
-      <a href="#projects" class="cta-secondary"> projects </a>
-      <a href="#contact" class="cta-secondary"> contact </a>
+      <a href="#contact" class="cta-primary"> contact </a>
       <button type="button" class="cta-secondary" :disabled="isDownloadingCv" @click="downloadCv">
         {{ isDownloadingCv ? "downloading..." : "download cv" }}
       </button>

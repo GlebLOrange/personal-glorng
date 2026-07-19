@@ -15,19 +15,21 @@ const chipClass = (active: boolean) =>
 </script>
 
 <template>
-  <div class="flex flex-wrap gap-2">
+  <div class="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
     <button
       type="button"
       :class="chipClass(categoryFilter === null)"
+      :aria-pressed="categoryFilter === null"
       @click="categoryFilter = null"
     >
-      All
+      all
     </button>
     <button
       v-for="category in categoryOptions"
       :key="category"
       type="button"
       :class="chipClass(categoryFilter === category)"
+      :aria-pressed="categoryFilter === category"
       @click="categoryFilter = category"
     >
       {{ category }}

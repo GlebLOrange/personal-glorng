@@ -44,20 +44,13 @@ async function submit(): Promise<void> {
       <BaseInput
         v-model="email"
         type="email"
-        placeholder="email (your@email.com)"
-        aria-label="email (your@email.com)"
+        label="Email"
+        placeholder="your@email.com"
+        autocomplete="email"
       />
-      <BaseInput
-        v-model="theme"
-        placeholder="subject (what is this about?)"
-        aria-label="subject (what is this about?)"
-      />
-      <BaseTextarea
-        v-model="message"
-        placeholder="feedback (your message...)"
-        aria-label="feedback (your message...)"
-      />
-      <BaseButton variant="primary" :disabled="!canSubmit || loading" class="w-full">
+      <BaseInput v-model="theme" label="Subject" placeholder="What is this about?" />
+      <BaseTextarea v-model="message" label="Message" placeholder="Your feedback…" rows="5" />
+      <BaseButton variant="primary" type="submit" :loading="loading" :disabled="!canSubmit" class="w-full">
         {{ loading ? "sending..." : "send feedback" }}
       </BaseButton>
     </form>

@@ -7,6 +7,7 @@ import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
+import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import type { RecipeFormData } from "@/composables/useRecipes";
 
 const props = defineProps<{
@@ -109,8 +110,7 @@ function toNullableNumber(value: string | number | null | undefined): number | n
   return Number(value);
 }
 
-const inputClass =
-  "flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50";
+const inputClass = FIELD_INPUT_CLASS + " flex-1";
 </script>
 
 <template>

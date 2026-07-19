@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 
 describe("AdminPageLayout", () => {
-  it("renders admin tools breadcrumb linking to /admin", () => {
+  it("renders admin breadcrumb linking to /admin", () => {
     const wrapper = mount(AdminPageLayout, {
       props: { title: "tasks" },
       global: {
@@ -19,7 +19,7 @@ describe("AdminPageLayout", () => {
     });
 
     expect(wrapper.get("a").attributes("href")).toBe("/admin");
-    expect(wrapper.text()).toContain("tools");
+    expect(wrapper.text()).toContain("admin");
     expect(wrapper.text()).toContain("tasks");
   });
 });

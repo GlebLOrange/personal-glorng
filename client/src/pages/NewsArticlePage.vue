@@ -3,7 +3,7 @@ import { computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import PageShell from "@/components/layout/PageShell.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
+import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
 import { safeNavigationHref } from "@/utils/safeUrl";
@@ -41,10 +41,12 @@ watch(slug, () => {
       aria-label="Loading article"
     />
 
-    <Card v-else-if="detailError" as="section" class="!p-8 text-center">
-      <p class="text-sm text-surface-mid mb-4">{{ detailError }}</p>
-      <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">retry</BaseButton>
-    </Card>
+    <ErrorState
+      v-else-if="detailError"
+      :message="detailError"
+      show-retry
+      @retry="loadCurrentArticle"
+    />
 
     <article v-else-if="article" class="min-w-0">
       <header class="mb-8">
@@ -67,7 +69,7 @@ watch(slug, () => {
         </ul>
       </section>
 
-      <section class="mb-8 min-w-0">
+      <section v-if="article.themes.length" class="mb-8 min-w-0">
         <h2 class="card-title mb-4">Themes</h2>
         <div class="flex flex-wrap gap-2">
           <span

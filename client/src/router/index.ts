@@ -197,7 +197,9 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/admin/tools/news",
-    redirect: { name: "news" },
+    name: "tool-news",
+    component: () => import("@/pages/admin/tools/NewsAdminPage.vue"),
+    meta: { requiresAuth: true, scrollRestore: "volatile" },
   },
   {
     path: "/admin/tools/news/:id",

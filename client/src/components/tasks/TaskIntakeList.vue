@@ -47,10 +47,14 @@ function closeDrawer(): void {
           :class-name="statusBadgeClass(item.status)"
         />
       </template>
-      <template #primary>Intake #{{ item.id }}</template>
+      <template #primary>
+        <span class="line-clamp-1" :title="item.inbound_text || undefined">
+          {{ item.inbound_text?.trim() || `Intake #${item.id}` }}
+        </span>
+      </template>
       <template #meta>
-        <span v-if="item.task_id">→ Task #{{ item.task_id }}</span>
-        <span v-else-if="item.inbound_text" :title="item.inbound_text">{{ item.inbound_text }}</span>
+        <span>Intake #{{ item.id }}</span>
+        <span v-if="item.task_id"> · → Task #{{ item.task_id }}</span>
       </template>
       <template #time>{{ formatDate(item.created_at) }}</template>
     </AdminListRow>

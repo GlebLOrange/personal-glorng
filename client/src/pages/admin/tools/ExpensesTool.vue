@@ -18,6 +18,7 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import { useExpenseCalculator } from "@/composables/useExpenseCalculator";
@@ -158,7 +159,7 @@ const persistenceHint = computed(() => {
 </script>
 
 <template>
-  <AdminPageLayout title="expenses" max-width="xl">
+  <AdminPageLayout title="expenses" title-prefix="€ " max-width="xl">
     <div class="min-w-0">
     <section v-if="showLedgerHeader" class="mb-6 flex flex-col gap-4">
       <Card variant="compact" class="flex flex-col gap-3">
@@ -219,16 +220,16 @@ const persistenceHint = computed(() => {
       </Card>
 
       <div class="md:w-36">
-        <select
+        <BaseSelect
+          id="expenses-calculator-currency"
           v-model="calculatorDisplayCurrency"
-          aria-label="display currency"
-          class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue h-[42px]"
+          label="Calculator currency"
         >
           <option value="PLN">PLN</option>
           <option value="EUR">EUR</option>
           <option value="USD">USD</option>
           <option value="BYN">BYN</option>
-        </select>
+        </BaseSelect>
       </div>
     </section>
 
@@ -280,7 +281,11 @@ const persistenceHint = computed(() => {
       >
         <div class="flex flex-col md:flex-row md:items-end gap-3">
           <div class="flex-1">
-            <BaseInput v-model="productFilter" placeholder="filter by product..." />
+            <BaseInput
+              v-model="productFilter"
+              label="product filter"
+              placeholder="filter by product..."
+            />
           </div>
           <BaseButton
             v-if="productFilter || categoryFilter"

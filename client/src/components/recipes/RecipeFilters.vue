@@ -38,10 +38,9 @@ const tagFilterLabel = computed(() => {
         <template #chips>
           <button
             type="button"
-            role="option"
-            :aria-selected="activeTags.length === 0"
+            :aria-pressed="activeTags.length === 0"
             :class="[
-              'w-full min-w-0 truncate text-center text-xs px-2 py-1 rounded-full border transition-colors',
+              'w-full min-w-0 min-h-9 truncate text-center text-xs px-2 py-1 rounded-full border transition-colors',
               activeTags.length === 0
                 ? 'border-accent-blue bg-accent-blue/15 text-accent-blue'
                 : 'border-surface-border text-surface-mid hover:border-accent-blue/40 hover:text-surface-light',
@@ -53,8 +52,6 @@ const tagFilterLabel = computed(() => {
           <RecipeTagChip
             v-for="tag in allTags"
             :key="tag"
-            role="option"
-            :aria-selected="activeTags.includes(tag)"
             class="!w-full min-w-0 truncate text-center"
             :tag="tag"
             :active="activeTags.includes(tag)"

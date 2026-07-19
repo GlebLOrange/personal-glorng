@@ -20,7 +20,7 @@ const emit = defineEmits<{ retry: [] }>();
 <template>
   <Card as="section" role="alert" class="!p-8 text-center">
     <p class="text-sm text-surface-mid mb-4">{{ message }}</p>
-    <BaseButton v-if="showRetry" variant="ghost" size="sm" @click="emit('retry')">
+    <BaseButton v-if="showRetry" variant="ghost" @click="emit('retry')">
       {{ retryLabel }}
     </BaseButton>
   </Card>

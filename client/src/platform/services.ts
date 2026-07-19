@@ -73,7 +73,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "content",
     description: "Curated worldwide news digest with source attribution",
     apiPrefix: "/tools/news",
-    adminRoute: "/news",
+    adminRoute: "/admin/tools/news",
     icon: "◇",
     capabilities: ["read", "write"],
     external: false,
