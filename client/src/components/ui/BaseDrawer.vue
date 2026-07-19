@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref, watch } from "vue";
 
+import { useScrollLock } from "@/composables/useScrollLock";
+
 const props = withDefaults(
   defineProps<{
     open: boolean;
@@ -17,6 +19,8 @@ const emit = defineEmits<{ close: [] }>();
 const panel = ref<HTMLElement | null>(null);
 const closeButton = ref<HTMLButtonElement | null>(null);
 let returnFocusTarget: HTMLElement | null = null;
+
+useScrollLock(() => props.open);
 
 const panelWidth = computed(() => {
   if (props.maxWidth === "md") return "max-w-md";
@@ -118,7 +122,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
               <button
                 ref="closeButton"
                 type="button"
-                class="rounded p-1 text-xl leading-none text-surface-mid hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+                class="min-h-11 min-w-11 rounded text-xl leading-none text-surface-mid hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
                 aria-label="Close drawer"
                 @click="emit('close')"
               >

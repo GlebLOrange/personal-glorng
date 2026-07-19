@@ -11,7 +11,7 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
   <button
     v-if="showToTop"
     type="button"
-    class="interactive-surface fixed top-32 right-4 md:right-6 z-30 flex size-11 items-center justify-center text-surface-light print:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+    class="interactive-surface fixed top-32 right-4 md:right-6 z-30 flex size-11 items-center justify-center text-surface-light print:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 mr-[env(safe-area-inset-right)]"
     aria-label="To the top"
     @click="scrollToTop"
   >
@@ -21,7 +21,7 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
   <button
     v-if="showArrowDown"
     type="button"
-    class="interactive-surface fixed right-6 bottom-6 z-30 flex size-11 items-center justify-center text-surface-light print:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+    class="interactive-surface fixed right-6 bottom-6 z-30 flex size-11 items-center justify-center text-surface-light print:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 mb-[env(safe-area-inset-bottom)] mr-[env(safe-area-inset-right)]"
     aria-label="Scroll to next section"
     @click="scrollToNextSection"
   >

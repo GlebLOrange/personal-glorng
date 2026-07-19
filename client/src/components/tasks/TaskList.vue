@@ -14,8 +14,8 @@ const emit = defineEmits<{ select: [id: number] }>();
 
 const emptyMessage = (filterStatus: string): string => {
   if (filterStatus === "pending") return "No pending tasks.";
-  if (filterStatus) return `No ${filterStatus.replaceAll("_", " ")} tasks on this page.`;
-  return "No tasks on this page.";
+  if (filterStatus) return `No ${filterStatus.replaceAll("_", " ")} tasks.`;
+  return "No tasks yet.";
 };
 </script>
 

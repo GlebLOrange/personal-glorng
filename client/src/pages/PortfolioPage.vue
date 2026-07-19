@@ -9,6 +9,8 @@ import HeroBlock from "@/components/resume/HeroBlock.vue";
 import NowPlayingEmbed from "@/components/resume/NowPlayingEmbed.vue";
 import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
+import ErrorState from "@/components/ui/ErrorState.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
 import { useSpotifyNowPlaying } from "@/composables/useSpotifyNowPlaying";
 import { buildContactLinks } from "@/constants/contactMeta";
@@ -24,11 +26,21 @@ const DonationsBlock = defineAsyncComponent(
 );
 const FeedbackModal = defineAsyncComponent(() => import("@/components/feedback/FeedbackModal.vue"));
 
-const { data: resumeApi, fetch: fetchResume } = useCachedApi<ResumeData>("/resume");
-const { data: donations, fetch: fetchDonations } =
-  useCachedApi<DonationsConfig>("/donations/config");
+const {
+  data: resumeApi,
+  loading: resumeLoading,
+  fetch: fetchResume,
+} = useCachedApi<ResumeData>("/resume");
+const {
+  data: donations,
+  loading: donationsLoading,
+  fetch: fetchDonations,
+} = useCachedApi<DonationsConfig>("/donations/config");
 const { playback, isVisible } = useSpotifyNowPlaying();
 const apiError = ref(false);
+const donationsError = ref(false);
+const donationsFetched = ref(false);
+const donationsStarted = ref(false);
 const showFeedback = ref(false);
 const supportSectionRef = ref<HTMLElement | null>(null);
 let supportObserver: IntersectionObserver | null = null;
@@ -47,6 +59,19 @@ async function loadResume(): Promise<void> {
   }
 }
 
+async function loadDonations(): Promise<void> {
+  donationsStarted.value = true;
+  donationsError.value = false;
+  try {
+    await fetchDonations();
+  } catch (err) {
+    if (import.meta.env.DEV) console.error(err);
+    donationsError.value = true;
+  } finally {
+    donationsFetched.value = true;
+  }
+}
+
 function observeSupportSection(): void {
   if (supportObserver || !supportSectionRef.value) {
     return;
@@ -59,9 +84,7 @@ function observeSupportSection(): void {
       }
       supportObserver?.disconnect();
       supportObserver = null;
-      void fetchDonations().catch((err) => {
-        if (import.meta.env.DEV) console.error(err);
-      });
+      void loadDonations();
     },
     { rootMargin: "200px 0px" },
   );
@@ -80,14 +103,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="portfolio-cv">
-    <p
-      v-if="apiError"
-      class="mx-auto max-w-5xl px-6 pt-4 text-label text-accent-golden print:hidden"
-      role="status"
-    >
-      Using cached portfolio data — live sync unavailable.
-    </p>
+  <div class="portfolio-cv" :aria-busy="resumeLoading && !resumeApi">
+    <div v-if="apiError" class="mx-auto max-w-5xl px-6 pt-4 print:hidden">
+      <ErrorState
+        message="Using cached portfolio data — live sync unavailable."
+        show-retry
+        retry-label="retry sync"
+        @retry="loadResume"
+      />
+    </div>
 
     <SectionWrapper width="full">
       <HeroBlock
@@ -97,7 +121,6 @@ onUnmounted(() => {
         :location="resume.location"
         :availability="resume.availability"
         :bio="resume.bio"
-        :contact-links="contactLinks"
       >
         <template #after-actions>
           <NowPlayingEmbed
@@ -119,11 +142,21 @@ onUnmounted(() => {
     </SectionWrapper>
 
     <SectionWrapper id="experience" title="experience" width="prose" dark alternate>
-      <ExperienceList :experience="resume.experience" />
+      <Suspense>
+        <ExperienceList :experience="resume.experience" />
+        <template #fallback>
+          <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
+        </template>
+      </Suspense>
     </SectionWrapper>
 
     <SectionWrapper id="projects" title="projects" width="full" dark>
-      <ProjectsGrid :projects="resume.projects" />
+      <Suspense>
+        <ProjectsGrid :projects="resume.projects" />
+        <template #fallback>
+          <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
+        </template>
+      </Suspense>
     </SectionWrapper>
 
     <SectionWrapper
@@ -157,7 +190,24 @@ onUnmounted(() => {
         <p class="text-body mb-6">
           If my tools or writing have helped you, a small contribution keeps the work going.
         </p>
-        <DonationsBlock v-if="donations" :config="donations" />
+        <div
+          v-if="donationsStarted && donationsLoading"
+          class="h-24 animate-pulse rounded-lg bg-surface-card"
+          aria-busy="true"
+        />
+        <DonationsBlock v-else-if="donations" :config="donations" />
+        <ErrorState
+          v-else-if="donationsError"
+          message="Donation options are temporarily unavailable."
+          show-retry
+          retry-label="retry"
+          @retry="loadDonations"
+        />
+        <EmptyState
+          v-else-if="donationsFetched"
+          title="No donation options"
+          description="Support options are not configured right now."
+        />
       </SectionWrapper>
     </div>
   </div>

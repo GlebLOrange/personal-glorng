@@ -9,9 +9,9 @@ defineProps<{
 
 <template>
   <div class="space-y-4">
-    <Card v-for="(entry, i) in education" :key="i" hoverable>
-      <div class="flex justify-between items-start mb-2 gap-4">
-        <div>
+    <Card v-for="(entry, i) in education" :key="i">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-2">
+        <div class="min-w-0">
           <h3 class="card-title">{{ entry.degree }}</h3>
           <p class="text-base text-accent-blue">{{ entry.institution }}</p>
         </div>

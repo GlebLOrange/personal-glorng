@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
@@ -18,8 +17,15 @@ const token = ref("");
 const password = ref("");
 const passwordConfirm = ref("");
 const loading = ref(false);
+const formError = ref("");
 
 const strength = computed(() => passwordStrength(password.value));
+const passwordsMatch = computed(
+  () => !!passwordConfirm.value && password.value === passwordConfirm.value,
+);
+const canSubmit = computed(
+  () => !!token.value && strength.value.valid && passwordsMatch.value && !loading.value,
+);
 
 onMounted(() => {
   const raw = route.query.token;
@@ -31,8 +37,14 @@ async function handleSubmit(): Promise<void> {
     toast("Missing reset token", "error");
     return;
   }
+  if (!passwordsMatch.value) {
+    formError.value = "Passwords do not match";
+    return;
+  }
+  if (!canSubmit.value) return;
 
   loading.value = true;
+  formError.value = "";
   try {
     await api.post("/auth/reset-password", {
       token: token.value,
@@ -42,7 +54,8 @@ async function handleSubmit(): Promise<void> {
     toast("Password reset successfully", "success");
     router.push("/login");
   } catch (err) {
-    toast(getApiErrorMessage(err, "Reset failed"), "error");
+    formError.value = getApiErrorMessage(err, "Reset failed");
+    toast(formError.value, "error");
   } finally {
     loading.value = false;
   }
@@ -60,26 +73,48 @@ async function handleSubmit(): Promise<void> {
         <BaseInput
           v-model="password"
           type="password"
+          name="password"
+          autocomplete="new-password"
+          label="new password"
           placeholder="new password"
-          aria-label="new password"
+          aria-describedby="reset-password-strength"
           required
         />
-        <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
+        <p
+          id="reset-password-strength"
+          class="text-xs"
+          :class="strength.valid ? 'text-status-success' : 'text-surface-mid'"
+        >
           {{ strength.message }}
         </p>
         <BaseInput
           v-model="passwordConfirm"
           type="password"
+          name="password-confirm"
+          autocomplete="new-password"
+          label="confirm password"
           placeholder="confirm password"
-          aria-label="confirm password"
           required
         />
-        <BaseButton variant="primary" class="w-full" :disabled="loading || !strength.valid">
+        <p
+          v-if="passwordConfirm && !passwordsMatch"
+          class="text-xs text-status-error"
+          role="alert"
+        >
+          Passwords do not match
+        </p>
+        <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
+        <button type="submit" class="cta-primary w-full" :disabled="!canSubmit">
           {{ loading ? "saving..." : "set new password" }}
-        </BaseButton>
+        </button>
       </form>
 
-      <p v-else class="text-status-error text-sm text-center">Invalid or missing reset link.</p>
+      <div v-else class="space-y-3 text-center" role="alert">
+        <p class="text-status-error text-sm">Invalid or missing reset link.</p>
+        <RouterLink to="/forgot-password" class="nav-link text-sm">
+          request a new reset link
+        </RouterLink>
+      </div>
 
       <p class="flex justify-center mt-6">
         <BackLink to="/login" />

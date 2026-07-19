@@ -10,7 +10,7 @@ defineProps<{
 
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <Card v-for="(proj, i) in projects" :key="i" hoverable>
+    <Card v-for="proj in projects" :key="proj.name">
       <h3 class="card-title mb-1">{{ proj.name }}</h3>
       <p class="text-body mb-4">{{ proj.description }}</p>
       <div class="flex flex-wrap gap-2 mb-4">
@@ -27,9 +27,11 @@ defineProps<{
         :href="safeNavigationHref(proj.url) ?? '#'"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-sm font-medium text-accent-blue hover:text-accent-violet transition-colors"
+        class="text-sm font-medium text-accent-blue hover:text-accent-violet transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
-        view project &rarr;
+        view project
+        <span class="sr-only"> (opens in new tab)</span>
+        &rarr;
       </a>
     </Card>
   </div>

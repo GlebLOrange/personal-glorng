@@ -9,15 +9,13 @@ defineProps<{
 
 <template>
   <div class="space-y-4">
-    <Card v-for="(exp, i) in experience" :key="i" hoverable>
+    <Card v-for="(exp, i) in experience" :key="i">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
           <h3 class="card-title">{{ exp.role }}</h3>
           <p class="text-base text-accent-blue">{{ exp.company }}</p>
         </div>
-        <span
-          class="inline-flex w-fit shrink-0 rounded-full border border-accent-blue/30 bg-accent-blue/10 px-3 py-1 text-meta text-accent-blue"
-        >
+        <span class="text-meta shrink-0">
           {{ exp.period }}
         </span>
       </div>

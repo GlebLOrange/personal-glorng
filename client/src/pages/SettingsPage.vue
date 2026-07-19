@@ -199,7 +199,7 @@ async function deleteAccount(): Promise<void> {
   >
     <div class="min-w-0 space-y-8">
       <section class="space-y-5">
-        <h2 class="mb-3 text-xs uppercase tracking-wider text-surface-muted">Account</h2>
+        <h2 class="mb-3 text-sm font-medium text-surface-sage">Account</h2>
 
       <Card>
         <CardHeader>
@@ -211,18 +211,18 @@ async function deleteAccount(): Promise<void> {
             v-model="displayName"
             name="display-name"
             autocomplete="name"
-            placeholder="display name (optional)"
-            aria-label="display name (optional)"
+            label="Display name"
+            placeholder="optional"
           />
           <BaseInput
             v-model="timezone"
             name="timezone"
             autocomplete="off"
-            placeholder="timezone (e.g. Europe/Warsaw)"
-            aria-label="timezone (e.g. Europe/Warsaw)"
+            label="Timezone"
+            placeholder="e.g. Europe/Warsaw"
             required
           />
-          <BaseButton type="submit" variant="primary" :disabled="!canSaveProfile">
+          <BaseButton type="submit" variant="primary" :loading="savingProfile" :disabled="!canSaveProfile">
             {{ savingProfile ? "saving..." : "save profile" }}
           </BaseButton>
         </form>
@@ -240,8 +240,8 @@ async function deleteAccount(): Promise<void> {
             type="email"
             name="email"
             autocomplete="email"
-            placeholder="email address"
-            aria-label="email address"
+            label="Email address"
+            placeholder="you@example.com"
             required
           />
           <BaseInput
@@ -249,11 +249,11 @@ async function deleteAccount(): Promise<void> {
             type="password"
             name="current-password-for-email"
             autocomplete="current-password"
-            placeholder="current password"
-            aria-label="current password"
+            label="Current password"
+            placeholder="••••••••"
             required
           />
-          <BaseButton type="submit" variant="secondary" :disabled="!canSaveEmail">
+          <BaseButton type="submit" variant="secondary" :loading="savingEmail" :disabled="!canSaveEmail">
             {{ savingEmail ? "saving..." : "change email" }}
           </BaseButton>
         </form>
@@ -276,8 +276,8 @@ async function deleteAccount(): Promise<void> {
             type="password"
             name="current-password"
             autocomplete="current-password"
+            label="current password"
             placeholder="current password"
-            aria-label="current password"
             required
           />
           <BaseInput
@@ -285,8 +285,10 @@ async function deleteAccount(): Promise<void> {
             type="password"
             name="new-password"
             autocomplete="new-password"
-            placeholder="new password"
-            aria-label="new password"
+            label="New password"
+            placeholder="••••••••"
+            :hint="newPassword && passwordCheck.valid ? passwordCheck.message : undefined"
+            :error="newPassword && !passwordCheck.valid ? passwordCheck.message : undefined"
             required
           />
           <BaseInput
@@ -294,11 +296,12 @@ async function deleteAccount(): Promise<void> {
             type="password"
             name="confirm-new-password"
             autocomplete="new-password"
-            placeholder="confirm new password"
-            aria-label="confirm new password"
+            label="Confirm new password"
+            placeholder="••••••••"
+            :error="newPasswordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
             required
           />
-          <BaseButton type="submit" variant="primary" :disabled="!canSavePassword">
+          <BaseButton type="submit" variant="primary" :loading="savingPassword" :disabled="!canSavePassword">
             {{ savingPassword ? "saving..." : "change password" }}
           </BaseButton>
         </form>
@@ -307,7 +310,7 @@ async function deleteAccount(): Promise<void> {
       </section>
 
       <section class="space-y-5">
-        <h2 class="mb-3 text-xs uppercase tracking-wider text-surface-muted">
+        <h2 class="mb-3 text-sm font-medium text-surface-sage">
           Preferences & connections
         </h2>
 
@@ -317,12 +320,12 @@ async function deleteAccount(): Promise<void> {
         </CardHeader>
         <CardBody>
         <form class="space-y-4" @submit.prevent="saveCurrency">
-          <BaseSelect v-model="displayCurrency" aria-label="expense display currency">
+          <BaseSelect v-model="displayCurrency" label="Expense display currency">
             <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
               {{ code }}
             </option>
           </BaseSelect>
-          <BaseButton type="submit" variant="secondary" :disabled="!canSaveCurrency">
+          <BaseButton type="submit" variant="secondary" :loading="savingPrefs" :disabled="!canSaveCurrency">
             {{ savingPrefs ? "saving..." : "save preferences" }}
           </BaseButton>
         </form>
@@ -336,7 +339,7 @@ async function deleteAccount(): Promise<void> {
         <CardBody>
         <section class="space-y-4">
           <p v-if="githubError" class="text-sm text-status-warning">{{ githubError }}</p>
-          <div class="flex flex-wrap gap-3">
+          <div class="flex flex-wrap items-center gap-3">
             <BaseButton
               v-if="!githubStatus.linked"
               variant="primary"
@@ -345,14 +348,17 @@ async function deleteAccount(): Promise<void> {
             >
               Connect GitHub
             </BaseButton>
-            <BaseButton
-              v-else
-              variant="secondary"
-              :disabled="unlinkingGithub"
-              @click="unlinkGithub"
-            >
-              {{ unlinkingGithub ? "Unlinking..." : "Unlink GitHub" }}
-            </BaseButton>
+            <template v-else>
+              <p class="text-sm text-surface-mid">
+                Connected as
+                <span class="text-surface-light font-medium"
+                  >@{{ githubStatus.github_username ?? "github" }}</span
+                >
+              </p>
+              <BaseButton variant="secondary" :disabled="unlinkingGithub" @click="unlinkGithub">
+                {{ unlinkingGithub ? "Unlinking..." : "Unlink GitHub" }}
+              </BaseButton>
+            </template>
             <BaseButton
               v-if="githubError"
               variant="ghost"
@@ -371,9 +377,6 @@ async function deleteAccount(): Promise<void> {
         <h2 class="mb-3 text-xs uppercase tracking-wider text-surface-muted">Access</h2>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Access</CardTitle>
-        </CardHeader>
         <CardBody>
         <section class="space-y-4">
           <div v-if="permissions.length" class="flex flex-wrap gap-2">
@@ -385,13 +388,16 @@ async function deleteAccount(): Promise<void> {
               {{ perm }}
             </span>
           </div>
+          <p v-else class="text-sm text-surface-mid">
+            No tool permissions — contact an admin.
+          </p>
         </section>
         </CardBody>
       </Card>
       </section>
 
       <section class="mt-4 space-y-5">
-        <h2 class="mb-3 text-xs uppercase tracking-wider text-status-error/80">Danger zone</h2>
+        <h2 class="mb-3 text-sm font-medium text-status-error">Danger zone</h2>
 
       <Card tint="danger">
         <CardHeader>
@@ -404,15 +410,15 @@ async function deleteAccount(): Promise<void> {
             type="password"
             name="delete-current-password"
             autocomplete="current-password"
-            placeholder="current password"
-            aria-label="current password"
+            label="Current password"
+            placeholder="••••••••"
             required
           />
           <label class="flex items-start gap-2 text-xs text-surface-mid">
             <input v-model="deleteConfirm" type="checkbox" class="mt-0.5 accent-status-error" />
             <span>I understand this permanently deletes my account.</span>
           </label>
-          <BaseButton type="submit" variant="secondary" :disabled="!canDeleteAccount">
+          <BaseButton type="submit" variant="secondary" :loading="deleting" :disabled="!canDeleteAccount">
             {{ deleting ? "deleting..." : "delete account" }}
           </BaseButton>
         </form>

@@ -1,8 +1,8 @@
-/** Chart palette aligned with @theme accents in main.css */
+/** Chart palette — hex mirrors @theme accents (canvas APIs need resolved colors). */
 export const CHART_COLORS = [
-  "#7bbde2",
-  "#b8a3c8",
-  "#d4ce94",
+  "#7bbde2", // --color-accent-blue
+  "#b8a3c8", // --color-accent-violet
+  "#d4ce94", // --color-accent-golden
   "#C4B8AC",
   "#8A847E",
   "#5a8fb0",
@@ -10,7 +10,7 @@ export const CHART_COLORS = [
   "#a8a470",
 ] as const;
 
-export const CHART_GRID = "#2e3a4e";
+export const CHART_GRID = "#2e3a4e"; // --color-surface-border
 export const CHART_TEXT = "#C4B8AC";
 
 export const chartDefaults = {

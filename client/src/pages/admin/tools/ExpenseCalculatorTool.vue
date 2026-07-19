@@ -8,6 +8,7 @@ import ExpenseCalculatorModeTabs from "@/components/expense-calculator/ExpenseCa
 import ExpenseCalculatorWhatIf from "@/components/expense-calculator/ExpenseCalculatorWhatIf.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import { Card } from "@/components/ui/card";
 import { useExpenseCalculator } from "@/composables/useExpenseCalculator";
 
@@ -88,16 +89,12 @@ const persistenceHint = computed(() => {
           @change="switchMode"
         />
         <div class="md:w-36">
-          <select
-            v-model="displayCurrency"
-            aria-label="display currency"
-            class="w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue h-[42px]"
-          >
+          <BaseSelect v-model="displayCurrency" label="Currency">
             <option value="PLN">PLN</option>
             <option value="EUR">EUR</option>
             <option value="USD">USD</option>
             <option value="BYN">BYN</option>
-          </select>
+          </BaseSelect>
         </div>
       </div>
 

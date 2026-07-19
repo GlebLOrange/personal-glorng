@@ -6,6 +6,7 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
+import { TEXTAREA_CLASS } from "@/constants/formClasses";
 import { useChatConfig } from "@/composables/useChatConfig";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
@@ -137,7 +138,8 @@ onMounted(() => {
           v-model="input"
           rows="2"
           placeholder="Message the assistant..."
-          class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm focus:outline-none focus:border-accent-blue transition-colors placeholder:text-surface-mid/50 resize-none"
+          aria-label="Message the assistant"
+          :class="[TEXTAREA_CLASS, 'flex-1 resize-none']"
           @keydown.enter.exact.prevent="handleSend"
         />
         <div class="flex flex-col gap-2">
