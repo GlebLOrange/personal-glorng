@@ -103,6 +103,8 @@ services:
       --requirepass ${REDIS_PASSWORD}
       --maxmemory 64mb
       --maxmemory-policy noeviction
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
     deploy:
       resources:
         limits:
@@ -112,7 +114,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -160,6 +162,12 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     develop:
       watch:
         - action: rebuild
@@ -306,9 +314,15 @@ services:
       - backend
     depends_on:
       server:
-        condition: service_started
+        condition: service_healthy
       client:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     develop:
       watch:
         - action: sync+restart
