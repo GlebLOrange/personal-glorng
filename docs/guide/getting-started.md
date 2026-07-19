@@ -53,3 +53,5 @@ Set `AI_SEARCH_ENABLED`, `GROQ_API_KEY`, and `VITE_AI_SEARCH_ENABLED` in `.env`.
 - [Development modes](/guide/development) — all `make dev-*` targets
 - [Architecture](/guide/architecture) — how requests and services fit together
 - [Deployment](/operations/deployment) — production checklist
+- [Handbook site](https://gleblorange.github.io/portfolio-glorng/) — published VitePress docs (enable GitHub Pages → GitHub Actions once)
+- Regenerate API/architecture fragments after backend changes: `make docs-generate`
