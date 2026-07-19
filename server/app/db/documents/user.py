@@ -16,3 +16,5 @@ class User(TimestampedDocument):
     display_name: str | None = None
     timezone: str = "UTC"
     preferences: dict[str, Any] = Field(default_factory=dict)
+    # Bumped on password/email security events; must match JWT ``sv`` claim.
+    session_version: int = 0

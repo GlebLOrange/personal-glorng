@@ -21,6 +21,8 @@ def _create_token(
     expires_delta: timedelta,
     *,
     include_jti: bool = True,
+    session_version: int | None = None,
+    extra: dict | None = None,
 ) -> str:
     settings = get_settings()
     now = datetime.now(UTC)
@@ -32,6 +34,10 @@ def _create_token(
     }
     if include_jti:
         payload["jti"] = str(uuid.uuid4())
+    if session_version is not None:
+        payload["sv"] = int(session_version)
+    if extra:
+        payload.update(extra)
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 
@@ -40,15 +46,20 @@ def create_access_token(
     expires_delta: timedelta | None = None,
     *,
     user_id: int | None = None,
+    session_version: int = 0,
 ) -> str:
     settings = get_settings()
     delta = expires_delta or timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
-    token = _create_token(subject, "access", delta)
-    if user_id is None:
-        return token
-    payload = decode_token(token)
-    payload["uid"] = user_id
-    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+    extra: dict = {}
+    if user_id is not None:
+        extra["uid"] = user_id
+    return _create_token(
+        subject,
+        "access",
+        delta,
+        session_version=session_version,
+        extra=extra or None,
+    )
 
 
 def user_id_from_access_token(raw: str) -> int | None:
@@ -63,14 +74,14 @@ def user_id_from_access_token(raw: str) -> int | None:
     if uid is not None:
         try:
             return int(uid)
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             return None
     sub = payload.get("sub")
     if sub is None:
         return None
     try:
         return int(sub)
-    except ValueError, TypeError:
+    except (ValueError, TypeError):
         return None
 
 
@@ -91,10 +102,13 @@ def access_token_from_request(request: object) -> str | None:
     return None
 
 
-def create_refresh_token(subject: str) -> str:
+def create_refresh_token(subject: str, *, session_version: int = 0) -> str:
     settings = get_settings()
     return _create_token(
-        subject, "refresh", timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
+        subject,
+        "refresh",
+        timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS),
+        session_version=session_version,
     )
 
 
@@ -127,3 +141,18 @@ def decode_token(token: str) -> dict:
         )
     except jwt.PyJWTError as e:
         raise ValueError(f"Invalid token: {e}") from e
+
+
+def require_matching_session_version(
+    payload: dict,
+    session_version: int,
+) -> None:
+    """Fail closed if JWT ``sv`` is missing or does not match the user."""
+    if "sv" not in payload:
+        raise ValueError("Token missing session version")
+    try:
+        token_sv = int(payload["sv"])
+    except (TypeError, ValueError) as e:
+        raise ValueError("Invalid session version") from e
+    if token_sv != int(session_version):
+        raise ValueError("Session has been revoked")

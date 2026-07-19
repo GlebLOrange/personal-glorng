@@ -110,8 +110,52 @@ async def test_change_email_requires_reverify(
     finally:
         app.dependency_overrides.pop(get_job_queue_dep, None)
 
+    # Email change bumps session_version and clears cookies → prior session is dead.
     me = await auth_client.get("/api/auth/me")
-    assert me.status_code == 403
+    assert me.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_change_password_revokes_other_device_refresh(
+    client: AsyncClient,
+    db,
+) -> None:
+    """Password change must invalidate refresh tokens not presented in the request."""
+    user = await create_user(
+        db,
+        email="other-device@glorng.dev",
+        password=STRONG_PASSWORD,
+        permissions=[],
+    )
+    device_a = await client.post(
+        "/api/auth/login",
+        json={"email": user.email, "password": STRONG_PASSWORD},
+    )
+    assert device_a.status_code == 200
+    device_b = await client.post(
+        "/api/auth/login",
+        json={"email": user.email, "password": STRONG_PASSWORD},
+    )
+    assert device_b.status_code == 200
+    other_refresh = device_b.json()["refresh_token"]
+
+    new_password = "NewStrongPass1!"
+    change = await client.post(
+        "/api/auth/change-password",
+        headers={"Authorization": f"Bearer {device_a.json()['access_token']}"},
+        json={
+            "current_password": STRONG_PASSWORD,
+            "new_password": new_password,
+            "password_confirm": new_password,
+        },
+    )
+    assert change.status_code == 200
+
+    reuse = await client.post(
+        "/api/auth/refresh",
+        json={"refresh_token": other_refresh},
+    )
+    assert reuse.status_code == 401
 
 
 @pytest.mark.asyncio
