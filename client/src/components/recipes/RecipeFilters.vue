@@ -62,7 +62,6 @@ const tagFilterLabel = computed(() => {
       <BaseInput
         :model-value="search"
         type="search"
-        compact
         class="min-w-0 flex-1"
         placeholder="search recipe"
         aria-label="search recipe"

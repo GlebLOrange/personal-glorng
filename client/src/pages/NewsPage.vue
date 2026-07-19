@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import ListSkeleton from "@/components/ui/ListSkeleton.vue";
@@ -12,6 +14,7 @@ import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
+const router = useRouter();
 const { isSuperuser } = usePermissions();
 const {
   articles,
@@ -39,19 +42,16 @@ watch(page, () => {
 </script>
 
 <template>
-  <PageShell title="news" :breadcrumbs="[{ label: 'news' }]">
-    <header class="page-intro">
-      <p class="text-label text-surface-mid mb-2">curated from trusted feeds</p>
-      <p class="text-body">
-        Short worldwide news summaries with source attribution. Every item links back to the
-        original publisher.
-      </p>
-      <div v-if="isSuperuser" class="mt-3">
-        <RouterLink to="/admin/tools/news" class="text-xs text-accent-blue hover:underline">
-          manage news
-        </RouterLink>
-      </div>
-    </header>
+  <PageShell title="news" :breadcrumbs="[{ label: 'news' }]" :narrow="false">
+    <div v-if="isSuperuser" class="mb-4 flex min-w-0 items-center">
+      <BaseButton
+        variant="primary"
+        class="ml-auto"
+        @click="router.push('/admin/tools/news')"
+      >
+        manage news
+      </BaseButton>
+    </div>
 
     <ListSkeleton
       v-if="listLoading"
@@ -68,8 +68,21 @@ watch(page, () => {
       @retry="loadNews"
     />
 
-    <section v-else-if="articles.length" class="space-y-4 min-w-0">
-      <Card v-for="item in articles" :key="item.id" as="article" variant="compact" class="min-w-0">
+    <section v-else-if="articles.length" class="min-w-0 space-y-4">
+      <Card
+        v-for="item in articles"
+        :key="item.id"
+        as="article"
+        variant="compact"
+        hoverable
+        class="relative min-w-0"
+      >
+        <RouterLink
+          :to="{ name: 'news-article', params: { slug: item.slug } }"
+          class="absolute inset-0 z-10 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+          :aria-label="item.title"
+        />
+
         <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
           <span>{{ item.source_name }}</span>
           <span aria-hidden="true">/</span>
@@ -78,18 +91,11 @@ watch(page, () => {
           </time>
         </div>
 
-        <h2 class="card-title mb-2 break-words">
-          <RouterLink
-            :to="{ name: 'news-article', params: { slug: item.slug } }"
-            class="hover:text-accent-blue transition-colors"
-          >
-            {{ item.title }}
-          </RouterLink>
-        </h2>
+        <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
 
-        <p class="text-sm text-surface-mid mb-4 break-words">{{ item.summary }}</p>
+        <p class="mb-4 break-words text-sm text-surface-mid">{{ item.summary }}</p>
 
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="relative z-20 flex flex-wrap items-center gap-2">
           <span
             v-for="theme in item.themes"
             :key="theme"

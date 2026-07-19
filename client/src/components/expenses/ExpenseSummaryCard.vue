@@ -64,7 +64,7 @@ const budgetTotals = computed(() => {
   <Card as="section" variant="compact" class="md:!p-5">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div>
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Total</p>
+        <p class="text-xs text-surface-mid">total</p>
         <p v-if="summary" class="text-3xl font-bold text-surface-light font-data mt-1">
           {{ formatMoney(summary.total, summary.currency) }}
         </p>
@@ -73,7 +73,7 @@ const budgetTotals = computed(() => {
       </div>
 
       <Card variant="inset">
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Period change</p>
+        <p class="text-xs text-surface-mid">period change</p>
         <p
           v-if="periodChange"
           class="text-xl font-bold font-data mt-1"
@@ -86,7 +86,7 @@ const budgetTotals = computed(() => {
       </Card>
 
       <Card variant="inset">
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Budget status</p>
+        <p class="text-xs text-surface-mid">budget status</p>
         <p
           v-if="budgetTotals && summary"
           class="text-xl font-bold font-data mt-1"

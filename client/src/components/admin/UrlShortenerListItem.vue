@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
@@ -24,6 +24,7 @@ const emit = defineEmits<{
 const editing = ref(false);
 const draftTitle = ref("");
 const showDeleteConfirm = ref(false);
+const titleInput = ref<{ focus: () => void } | null>(null);
 
 const shortLink = computed(() => publicUrl("s", props.url.code));
 const displayTitle = computed(() => props.url.title || props.url.original_url);
@@ -31,9 +32,7 @@ const deleteMessage = computed(
   () => `Delete ${shortLink.value}? This cannot be undone.`,
 );
 
-const collapsedMeta = computed(() => {
-  return `${props.url.clicks} clicks · ${shortLink.value}`;
-});
+const collapsedMeta = computed(() => shortLink.value);
 
 watch(
   () => props.url.id,
@@ -54,9 +53,11 @@ watch(
   },
 );
 
-function startEdit(): void {
+async function startEdit(): Promise<void> {
   draftTitle.value = props.url.title ?? "";
   editing.value = true;
+  await nextTick();
+  titleInput.value?.focus();
 }
 
 function cancelEdit(): void {
@@ -88,8 +89,8 @@ function confirmDelete(): void {
   <AdminListRow v-if="editing" :hoverable="false">
     <template #primary>
       <BaseInput
+        ref="titleInput"
         v-model="draftTitle"
-        compact
         placeholder="title (optional)"
         aria-label="title (optional)"
         @keydown="onTitleKeydown"
@@ -105,7 +106,13 @@ function confirmDelete(): void {
     </template>
   </AdminListRow>
 
-  <AdminListRow v-else hoverable nested-interactive>
+  <AdminListRow
+    v-else
+    :interactive="canWrite"
+    :nested-interactive="canWrite"
+    hoverable
+    @click="startEdit"
+  >
     <template #primary>
       <span :title="displayTitle">{{ displayTitle }}</span>
     </template>
@@ -128,6 +135,7 @@ function confirmDelete(): void {
       <BaseButton
         v-if="canWrite"
         variant="ghost"
+        danger
         size="sm"
         aria-label="delete short URL"
         @click="showDeleteConfirm = true"

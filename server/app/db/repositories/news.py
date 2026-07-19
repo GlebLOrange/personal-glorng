@@ -3,6 +3,7 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.utils import DEFAULT_PER_PAGE
+from app.db.documents.base import utc_now
 from app.db.documents.news import NewsArticle, NewsSource, NewsStatus
 from app.db.repositories.base import MongoRepository, _parse_doc
 
@@ -65,9 +66,13 @@ class NewsRepository(MongoRepository[NewsArticle]):
             self._query(status=status, source_id=source_id)
         )
 
-    async def count_by_source_id(self, source_id: int) -> int:
-        """Count articles that reference a source."""
-        return await self.count_articles(source_id=source_id)
+    async def clear_source_id(self, source_id: int) -> int:
+        """Detach articles from a deleted source; keep denormalized source fields."""
+        result = await self._col().update_many(
+            {"source_id": source_id},
+            {"$set": {"source_id": None, "updated_at": utc_now()}},
+        )
+        return int(result.modified_count)
 
     async def list_themes(self, *, status: NewsStatus = "published") -> list[str]:
         """Return distinct stored theme JSON values for articles."""

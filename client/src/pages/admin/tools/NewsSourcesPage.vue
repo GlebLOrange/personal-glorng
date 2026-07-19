@@ -19,8 +19,9 @@ import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
 import type { NewsSource, PaginatedList } from "@/types";
+import { getApiErrorMessage } from "@/types/api";
 import { formatDate } from "@/utils/format";
-import { normalizeHttpUrl, sourceFromMarkedUrl } from "@/utils/newsForms";
+import { normalizeHttpUrl, sourceFromUrl } from "@/utils/newsForms";
 
 interface NewsSourceForm {
   name: string;
@@ -223,7 +224,7 @@ async function saveSource(): Promise<void> {
     await loadSources();
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
-    toast("Failed to save news source", "error");
+    toast(getApiErrorMessage(err, "Failed to save news source"), "error");
   } finally {
     saving.value = false;
   }
@@ -258,7 +259,7 @@ async function deleteSource(source: NewsSource, event?: Event): Promise<void> {
     toast("News source deleted", "success");
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
-    toast("Failed to delete news source", "error");
+    toast(getApiErrorMessage(err, "Failed to delete news source"), "error");
   } finally {
     deletingId.value = null;
   }
@@ -268,7 +269,7 @@ watch(
   () => form.value.feed_url,
   (feedUrl) => {
     if (editingId.value) return;
-    const source = sourceFromMarkedUrl(feedUrl);
+    const source = sourceFromUrl(feedUrl);
     if (!source) return;
     const currentName = form.value.name.trim();
     if (currentName && currentName !== lastAutoName.value) return;
@@ -317,7 +318,6 @@ onMounted(loadSources);
                 <BaseButton
                   variant="ghost"
                   size="sm"
-                  class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
                   :disabled="refreshing"
                   @click="refreshSources"
                 >
@@ -326,7 +326,6 @@ onMounted(loadSources);
                 <BaseButton
                   variant="primary"
                   size="sm"
-                  class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
                   @click="openCreate"
                 >
                   add source

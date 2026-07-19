@@ -62,7 +62,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
       />
 
       <div class="flex gap-3 pt-2">
-        <BaseButton variant="primary" :disabled="loading">
+        <BaseButton type="submit" variant="primary" :disabled="loading">
           {{ loading ? "saving..." : "save" }}
         </BaseButton>
         <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>

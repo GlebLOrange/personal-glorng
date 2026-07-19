@@ -37,6 +37,42 @@ describe("BaseDrawer", () => {
     wrapper.unmount();
   });
 
+  it("focuses the first editable field when the drawer opens", async () => {
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    document.body.append(trigger);
+    trigger.focus();
+
+    const wrapper = mount(BaseDrawer, {
+      attachTo: document.body,
+      props: { open: true, title: "Edit item" },
+      slots: {
+        default: '<input type="text" aria-label="Title field" />',
+      },
+    });
+    await nextTick();
+
+    const field = document.body.querySelector(
+      'input[aria-label="Title field"]',
+    ) as HTMLInputElement | null;
+    expect(document.activeElement).toBe(field);
+
+    wrapper.unmount();
+  });
+
+  it("falls back to the close button when there is no editable field", async () => {
+    const { wrapper } = mountDrawer();
+    await nextTick();
+
+    const close = document.body.querySelector(
+      'button[aria-label="Close drawer"]',
+    ) as HTMLButtonElement | null;
+    expect(close).not.toBeNull();
+    expect(document.activeElement).toBe(close);
+
+    wrapper.unmount();
+  });
+
   it("closes on Escape and restores focus when closed", async () => {
     const { wrapper, trigger } = mountDrawer();
     await nextTick();

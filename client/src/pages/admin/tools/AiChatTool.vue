@@ -143,11 +143,16 @@ onMounted(() => {
           @keydown.enter.exact.prevent="handleSend"
         />
         <div class="flex flex-col gap-2">
-          <BaseButton variant="primary" :disabled="loading || !input.trim() || !isReady || !canSend">
-            {{ loading ? "..." : "Send" }}
+          <BaseButton
+            type="submit"
+            variant="primary"
+            size="field"
+            :disabled="loading || !input.trim() || !isReady || !canSend"
+          >
+            {{ loading ? "..." : "send" }}
           </BaseButton>
           <BaseButton variant="ghost" size="sm" type="button" :disabled="loading" @click="clear">
-            Clear
+            clear
           </BaseButton>
         </div>
       </form>
@@ -186,7 +191,7 @@ onMounted(() => {
           </div>
         </dl>
         <BaseButton variant="ghost" size="sm" :disabled="configLoading" @click="loadConfig">
-          Refresh
+          refresh
         </BaseButton>
       </section>
 

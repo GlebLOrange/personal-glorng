@@ -438,7 +438,6 @@ watch(page, () => {
             <BaseButton
               variant="ghost"
               size="sm"
-              class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
               :disabled="actionLoading"
               @click="runIngest"
             >
@@ -447,7 +446,6 @@ watch(page, () => {
             <BaseButton
               variant="primary"
               size="sm"
-              class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
               :disabled="actionLoading"
               @click="openCreate"
             >
@@ -476,6 +474,13 @@ watch(page, () => {
         as="article"
         variant="compact"
         class="min-w-0"
+        :class="canWrite ? 'cursor-pointer' : undefined"
+        :hoverable="canWrite"
+        :interactive="canWrite"
+        :role="canWrite ? 'button' : undefined"
+        :tabindex="canWrite ? 0 : undefined"
+        @click="canWrite ? openEditableArticle(item) : undefined"
+        @keydown.enter.prevent="canWrite ? openEditableArticle(item) : undefined"
       >
         <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
           <StatusBadge :label="item.status" :class-name="newsStatusClass(item.status)" />
@@ -490,17 +495,7 @@ watch(page, () => {
           </span>
         </div>
 
-        <h2 class="card-title mb-2 break-words">
-          <button
-            v-if="canWrite"
-            type="button"
-            class="text-left hover:text-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
-            @click="openEditableArticle(item)"
-          >
-            {{ item.title }}
-          </button>
-          <span v-else>{{ item.title }}</span>
-        </h2>
+        <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
         <p class="text-sm text-surface-mid mb-3 break-words">{{ item.summary }}</p>
 
         <div class="mb-4 flex flex-wrap gap-2">
@@ -513,7 +508,7 @@ watch(page, () => {
           </span>
         </div>
 
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2" @click.stop @keydown.stop>
           <BaseButton
             v-if="canWrite && item.status !== 'published'"
             variant="ghost"

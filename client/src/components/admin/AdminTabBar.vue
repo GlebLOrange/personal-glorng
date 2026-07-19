@@ -21,7 +21,7 @@ const props = withDefaults(
 
 const tabClass = (id: string): string =>
   [
-    "px-3 py-1.5 text-xs rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
+    "inline-flex h-11 items-center px-4 text-sm rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
     activeTab.value === id
       ? "bg-accent-blue/20 text-accent-blue"
       : "text-surface-mid hover:text-surface-light",

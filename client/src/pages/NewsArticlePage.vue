@@ -46,7 +46,7 @@ watch(
     :title="articleTitle"
     :breadcrumbs="[{ label: 'news', to: '/news' }, { label: articleTitle }]"
     back-to="/news"
-    max-width="md"
+    :narrow="false"
   >
     <Card
       v-if="detailLoading"
@@ -62,8 +62,8 @@ watch(
       @retry="loadCurrentArticle"
     />
 
-    <article v-else-if="article" class="min-w-0">
-      <header class="mb-8">
+    <article v-else-if="article" class="min-w-0 w-full">
+      <header class="mb-8 min-w-0">
         <div class="mb-4 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
           <span>{{ article.source_name }}</span>
           <span aria-hidden="true">/</span>
@@ -76,11 +76,11 @@ watch(
 
       <section v-if="article.bullets.length" class="mb-8 min-w-0">
         <h2 class="card-title mb-4">Key points</h2>
-        <ul class="space-y-3 text-sm text-surface-mid">
+        <ul class="min-w-0 space-y-3 text-sm text-surface-mid">
           <li
             v-for="bullet in article.bullets"
             :key="bullet"
-            class="border-l-2 border-accent-blue/40 pl-3 text-body"
+            class="break-words border-l-2 border-accent-blue/40 pl-3 text-body"
           >
             {{ bullet }}
           </li>
@@ -100,8 +100,8 @@ watch(
         </div>
       </section>
 
-      <Card as="footer" variant="compact">
-        <p class="text-sm text-surface-mid mb-3">
+      <Card as="footer" variant="compact" class="min-w-0">
+        <p class="mb-3 break-words text-sm text-surface-mid">
           This is a curated summary. Read the original article from
           {{ article.source_name }} for full context.
         </p>

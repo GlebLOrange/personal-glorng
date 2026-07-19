@@ -53,12 +53,6 @@ function handleSelect(query: string): void {
     :narrow="false"
     body-class="font-mono"
   >
-    <header class="page-intro">
-      <p class="text-sm text-surface-mid">
-        Local time and conditions for your cities. Click a city tile to make it active.
-      </p>
-    </header>
-
     <section class="mb-8 min-w-0">
       <h2 class="text-lg font-bold text-surface-light mb-4">your cities</h2>
       <WeatherLocationForm

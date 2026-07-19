@@ -104,7 +104,7 @@ async function handleGoogleLogin(): Promise<void> {
           @click="handleGoogleLogin"
         >
           <span class="font-data text-sm" aria-hidden="true">G</span>
-          {{ googleLoading ? "connecting..." : "continue with Google" }}
+          {{ googleLoading ? "connecting..." : "continue with google" }}
         </BaseButton>
       </div>
 

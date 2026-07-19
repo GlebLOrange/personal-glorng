@@ -183,7 +183,6 @@ Client mirrors: `VITE_AI_CHAT_ENABLED`, `VITE_AI_SEARCH_ENABLED`.
 |----------|---------|---------|
 | `WEATHER_DEFAULT_LABEL` | `Wrocław` | Default city label |
 | `WEATHER_DEFAULT_QUERY` | `Wroclaw` | API query |
-| `WORLD_TIME_API_BASE` | `https://timeapi.world/api` | Time API base |
 
 ## Seed / E2E
 

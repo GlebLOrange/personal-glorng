@@ -582,10 +582,10 @@ class NewsService:
         """Create an RSS source."""
         feed_url = str(data.feed_url)
         if await self._sources().get_by_feed_url(feed_url):
-            raise ConflictError("News feed URL already exists")
+            raise ConflictError("A news source with this feed URL already exists")
         host = data.host or _normalized_host(feed_url)
         if await self._sources().get_by_host(host):
-            raise ConflictError("News source host already exists")
+            raise ConflictError("A news source for this host already exists")
         source = await self._sources().insert(
             NewsSource.model_validate(_source_payload_from_create(data))
         )
@@ -613,14 +613,14 @@ class NewsService:
             _require_public_feed_url(feed_url)
             existing = await self._sources().get_by_feed_url(feed_url)
             if existing is not None and existing.id != source_id:
-                raise ConflictError("News feed URL already exists")
+                raise ConflictError("A news source with this feed URL already exists")
             updates["feed_url"] = feed_url
             updates.setdefault("host", _normalized_host(feed_url))
         if updates.get("host") is not None:
             host = str(updates["host"])
             existing = await self._sources().get_by_host(host)
             if existing is not None and existing.id != source_id:
-                raise ConflictError("News source host already exists")
+                raise ConflictError("A news source for this host already exists")
         merged = source.model_dump()
         merged.update(updates)
         updated = await self._sources().replace(NewsSource.model_validate(merged))
@@ -638,10 +638,9 @@ class NewsService:
         *,
         actor_id: int | None = None,
     ) -> None:
-        """Delete an RSS source."""
+        """Delete an RSS source; detach article FKs, keep denormalized source text."""
         await self._sources().get(source_id)
-        if await self._news().count_by_source_id(source_id):
-            raise ConflictError("News source is used by existing articles")
+        await self._news().clear_source_id(source_id)
         await self._sources().delete(source_id)
         await self._audit.record_domain(
             action="news_source.deleted",

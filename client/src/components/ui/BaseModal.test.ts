@@ -40,6 +40,18 @@ describe("BaseModal", () => {
     wrapper.unmount();
   });
 
+  it("focuses the first editable field on open, not the close button", async () => {
+    const { wrapper } = mountModal();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const field = document.body.querySelector(
+      'input[aria-label="Sample field"]',
+    ) as HTMLInputElement | null;
+    expect(document.activeElement).toBe(field);
+
+    wrapper.unmount();
+  });
+
   it("closes on Escape and restores focus", async () => {
     const { wrapper, trigger } = mountModal();
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));

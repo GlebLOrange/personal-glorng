@@ -78,10 +78,10 @@ function syncMeta(item: SyncQueueItem): string {
           v-if="canMutate && item.status === 'failed'"
           variant="ghost"
           size="sm"
-          aria-label="Retry sync"
+          aria-label="retry sync"
           @click="emit('retry', item.task_id)"
         >
-          Retry
+          retry
         </BaseButton>
       </template>
       <template #detail>

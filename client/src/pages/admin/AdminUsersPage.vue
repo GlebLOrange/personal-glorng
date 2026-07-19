@@ -446,7 +446,7 @@ onUnmounted(() => {
               :disabled="selectedUser.is_protected || !hasDraftChanges(selectedUser)"
               @click="savePermissions(selectedUser)"
             >
-              {{ savingId === selectedUser.id ? "Saving..." : "Save permissions" }}
+              {{ savingId === selectedUser.id ? "saving..." : "save permissions" }}
             </BaseButton>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { useRouter } from "vue-router";
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
 import { useScrollDirection } from "@/composables/useScrollDirection";
 import { useAuthStore } from "@/stores/auth";
+import { goHome } from "@/utils/goHome";
 
 const headerEl = ref<HTMLElement | null>(null);
 const menuToggleButton = ref<HTMLButtonElement | null>(null);
@@ -86,6 +87,12 @@ function toggleMobileMenu(): void {
 function closeMobileMenu(): void {
   mobileOpen.value = false;
 }
+
+async function handleGoHome(): Promise<void> {
+  closeMobileMenu();
+  showHeader();
+  await goHome(router);
+}
 </script>
 
 <template>
@@ -99,7 +106,12 @@ function closeMobileMenu(): void {
     >
       <nav aria-label="Main navigation" class="border-b border-surface-border">
         <div class="max-w-5xl mx-auto px-6 py-4 md:py-5 flex items-center justify-between gap-4">
-          <RouterLink to="/" class="text-xl font-bold text-surface-light" @click="closeMobileMenu">
+          <RouterLink
+            to="/"
+            class="text-xl font-bold text-surface-light"
+            aria-label="Gleb.Y home"
+            @click.prevent="handleGoHome"
+          >
             Gleb.Y
           </RouterLink>
 
@@ -108,6 +120,7 @@ function closeMobileMenu(): void {
               to="/"
               class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
               active-class="text-surface-light"
+              @click.prevent="handleGoHome"
             >
               portfolio
             </RouterLink>
@@ -188,7 +201,7 @@ function closeMobileMenu(): void {
         </div>
       </nav>
 
-      <NavMobileMenu :open="mobileOpen" @close="closeMobileMenu" />
+      <NavMobileMenu :open="mobileOpen" @close="closeMobileMenu" @go-home="handleGoHome" />
     </header>
 
     <div

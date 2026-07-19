@@ -75,16 +75,15 @@ async function preview(): Promise<void> {
             type="button"
             variant="ghost"
             size="sm"
-            class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
             :disabled="!subject || !body"
             @click="preview"
           >
             preview
           </BaseButton>
           <BaseButton
+            type="submit"
             variant="primary"
             size="sm"
-            class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
             :disabled="!canSend || loading"
           >
             {{ loading ? "sending..." : "send" }}

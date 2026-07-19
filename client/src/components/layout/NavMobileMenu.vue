@@ -9,7 +9,7 @@ const props = defineProps<{
   open: boolean;
 }>();
 
-const emit = defineEmits<{ close: [] }>();
+const emit = defineEmits<{ close: []; "go-home": [] }>();
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -121,7 +121,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         to="/"
         class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        @click="emit('close')"
+        @click.prevent="emit('go-home')"
       >
         portfolio
       </RouterLink>

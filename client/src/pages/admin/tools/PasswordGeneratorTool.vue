@@ -121,10 +121,10 @@ async function generatePassword(): Promise<void> {
             aria-label="password"
             class="flex-1 min-w-[12rem] font-mono"
           />
-          <BaseButton variant="ghost" size="sm" @click="showPassword = !showPassword">
+          <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
             {{ showPassword ? "hide" : "show" }}
           </BaseButton>
-          <BaseButton variant="ghost" size="sm" @click="copy(generated)">copy</BaseButton>
+          <BaseButton variant="ghost" size="field" @click="copy(generated)">copy</BaseButton>
         </div>
         <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
           {{ strength.message }}

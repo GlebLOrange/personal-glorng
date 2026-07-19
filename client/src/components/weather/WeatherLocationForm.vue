@@ -40,8 +40,7 @@ async function submit(): Promise<void> {
     <BaseInput
       id="weather-city"
       v-model="city"
-      label="City"
-      placeholder="e.g. Wroclaw"
+      placeholder="City"
       class="flex-1"
       :error="error ?? undefined"
       required
@@ -49,12 +48,17 @@ async function submit(): Promise<void> {
     <BaseInput
       id="weather-label"
       v-model="label"
-      label="Label"
-      placeholder="optional"
+      placeholder="Label (optional)"
       class="sm:max-w-48"
     />
-    <BaseButton type="submit" variant="primary" :loading="saving" :disabled="!city.trim() || props.disabled">
-      {{ saving ? "Adding…" : "Add" }}
+    <BaseButton
+      type="submit"
+      variant="primary"
+      size="field"
+      :loading="saving"
+      :disabled="!city.trim() || props.disabled"
+    >
+      {{ saving ? "adding…" : "add" }}
     </BaseButton>
   </form>
   <p v-if="props.helperText" class="text-xs text-surface-mid mt-2">{{ props.helperText }}</p>

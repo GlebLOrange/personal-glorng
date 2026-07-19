@@ -108,8 +108,6 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
       <template v-if="canWrite" #actions>
         <BaseButton
           variant="primary"
-          size="sm"
-          class="inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
           @click="openCreate"
         >
           + new recipe
@@ -155,7 +153,7 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
             clear filters
           </BaseButton>
           <BaseButton v-else-if="canWrite" variant="ghost" size="sm" @click="openCreate">
-            + Add your first recipe
+            + add your first recipe
           </BaseButton>
         </template>
       </EmptyState>

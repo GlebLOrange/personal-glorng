@@ -135,7 +135,7 @@ onMounted(async () => {
         class="text-surface-mid hover:text-surface-light underline"
         @click="refresh"
       >
-        Retry
+        retry
       </button>
     </div>
 
@@ -172,7 +172,7 @@ onMounted(async () => {
     <div v-else class="text-sm text-surface-mid" :class="stackClass">
       Weather unavailable.
       <button type="button" class="ml-2 underline hover:text-surface-light" @click="refresh">
-        Retry
+        retry
       </button>
     </div>
   </div>

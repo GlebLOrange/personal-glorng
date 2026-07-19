@@ -127,16 +127,14 @@ onMounted(loadUrls);
       <div class="flex flex-wrap items-center gap-3">
         <BaseInput
           v-model="newUrl"
-          compact
           class="min-w-0 flex-1"
           placeholder="url (https://example.com/very-long-url...)"
           aria-label="url (https://example.com/very-long-url...)"
         />
         <BaseButton
           variant="primary"
-          size="sm"
           type="submit"
-          class="ml-auto inline-flex h-[34px] shrink-0 items-center justify-center px-3 py-0 text-xs leading-none whitespace-nowrap"
+          class="ml-auto"
           :disabled="loading"
         >
           {{ loading ? "creating..." : "shorten" }}
@@ -144,7 +142,6 @@ onMounted(loadUrls);
       </div>
       <BaseInput
         v-model="newTitle"
-        compact
         placeholder="title (optional)"
         aria-label="title (optional)"
       />

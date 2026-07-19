@@ -54,7 +54,7 @@ defineExpose({ focusEntry });
   <Card>
     <div class="flex items-center justify-between gap-3 mb-3">
       <div>
-        <p class="text-xs text-surface-mid uppercase tracking-wider">quick add</p>
+        <p class="text-xs text-surface-mid">quick add</p>
         <p class="text-xs text-surface-muted mt-1">smart text first; fields stay ready below.</p>
       </div>
       <span class="text-xs text-surface-mid font-data">{{ currencyLabel }}</span>
@@ -71,7 +71,7 @@ defineExpose({ focusEntry });
             :class="FIELD_INPUT_CLASS"
           />
         </div>
-        <BaseButton variant="primary" type="submit" :disabled="loading" class="md:mb-0.5">
+        <BaseButton variant="primary" type="submit" size="field" :disabled="loading">
           {{ loading ? "saving..." : "save" }}
         </BaseButton>
       </div>

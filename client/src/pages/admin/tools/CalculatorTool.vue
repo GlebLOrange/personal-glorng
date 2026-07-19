@@ -86,12 +86,12 @@ function clear(): void {
 }
 
 const OPERATOR_LABELS: Record<string, string> = {
-  "/": "Divide",
-  "*": "Multiply",
-  "-": "Subtract",
-  "+": "Add",
-  "=": "Equals",
-  ".": "Decimal point",
+  "/": "divide",
+  "*": "multiply",
+  "-": "subtract",
+  "+": "add",
+  "=": "equals",
+  ".": "decimal point",
 };
 
 function buttonAriaLabel(val: string): string | undefined {
@@ -128,7 +128,7 @@ function buttonAriaLabel(val: string): string | undefined {
           variant="ghost"
           size="sm"
           class="col-span-2"
-          aria-label="All clear"
+          aria-label="all clear"
           @click="clear"
         >
           AC
