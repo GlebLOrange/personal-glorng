@@ -30,7 +30,7 @@
     "chart.js": "^4.5.1",
     "dompurify": "^3.4.12",
     "firebase": "^12.16.0",
-    "pinia": "^3.0.4",
+    "pinia": "^4.0.2",
     "simple-icons": "^16.26.0",
     "vanilla-cookieconsent": "^3.1.0",
     "vue": "^3.5.39",
