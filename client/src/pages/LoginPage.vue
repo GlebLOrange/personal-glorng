@@ -59,11 +59,14 @@ async function handleGoogleLogin(): Promise<void> {
 </script>
 
 <template>
-  <div class="min-h-[80vh] flex items-center justify-center px-6">
-    <div class="w-full max-w-sm">
-      <h1 class="text-2xl font-bold text-surface-light mb-8 text-center">
-        <span class="accent-gradient">login</span>
-      </h1>
+  <div class="flex min-h-[calc(100dvh-8rem)] items-center justify-center px-6 py-12">
+    <div class="relative w-full max-w-sm -translate-y-[15dvh]">
+      <div class="relative mb-8 min-h-11">
+        <h1 class="pr-14 text-2xl font-bold text-surface-light text-left">
+          <span class="accent-gradient">login</span>
+        </h1>
+        <BackLink to="/" class="absolute right-0 top-0" />
+      </div>
 
       <form class="space-y-4" @submit.prevent="handleLogin">
         <BaseInput
@@ -112,10 +115,6 @@ async function handleGoogleLogin(): Promise<void> {
         <RouterLink to="/register" class="nav-link"> create account </RouterLink>
         <span>·</span>
         <RouterLink to="/forgot-password" class="nav-link"> forgot password? </RouterLink>
-      </p>
-
-      <p class="flex justify-center mt-4">
-        <BackLink to="/" />
       </p>
     </div>
   </div>
