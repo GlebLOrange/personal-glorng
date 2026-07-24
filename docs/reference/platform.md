@@ -7,7 +7,8 @@ gLOrng is a **personal platform** where the same domain services power the publi
 | Channel | Entry | Uses |
 |---------|-------|------|
 | Public web | `/` | Resume, donations, feedback |
-| Admin panel | `/admin` | Platform services via `/api/tools/*` |
+| Admin panel | `/admin` | Ops hub (feedback, logs, search, …) via `/api/tools/*` and `/api/admin/*` |
+| Tools | `/tools`, `/tasks`, `/news`, … | Public + capability-gated tools |
 | Telegram bot | `app.todobot.main` | Task creation and reminders |
 | Worker | `celery -A app.workers.celery_app worker` | Reminders, calendar sync, cleanup |
 | Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks |
@@ -41,7 +42,7 @@ Channel adapter (Vue page, bot handler) → Service
 Two complementary streams:
 
 1. **Operational telemetry** — structured JSON logs (Loguru) + Sentry for debugging and incidents. Not queryable as audit.
-2. **Audit trail** — `audit_events` table with `security` and `domain` categories. Reviewable at `/admin/tools/audit`.
+2. **Audit trail** — `audit_events` table with `security` and `domain` categories. Reviewable at `/admin/audit-logs`.
 
 Services emit audit events on mutations and auth flows. HTTP middleware correlates `request_id` and `user_id` in logs.
 

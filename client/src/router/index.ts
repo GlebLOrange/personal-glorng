@@ -75,6 +75,47 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: "/admin/feedback",
+    name: "tool-feedback",
+    component: () => import("@/pages/admin/tools/FeedbackPage.vue"),
+    meta: { requiresAuth: true, title: "Feedback", noindex: true },
+  },
+  {
+    path: "/admin/audit-logs",
+    name: "tool-audit",
+    component: () => import("@/pages/admin/tools/AuditPage.vue"),
+    meta: { requiresAuth: true, scrollRestore: "volatile", title: "Audit", noindex: true },
+  },
+  {
+    path: "/admin/app-logs",
+    name: "tool-app-logs",
+    component: () => import("@/pages/admin/tools/AppLogsPage.vue"),
+    meta: { requiresAuth: true, scrollRestore: "volatile", title: "App logs", noindex: true },
+  },
+  {
+    path: "/admin/search",
+    name: "tool-search",
+    component: () => import("@/pages/admin/tools/AdminSearchPage.vue"),
+    meta: { requiresAuth: true, title: "Search", noindex: true },
+  },
+  {
+    path: "/admin/ai-chat",
+    name: "tool-ai-chat",
+    component: () => import("@/pages/admin/tools/AiChatTool.vue"),
+    meta: { requiresAuth: true, requiresSuperuser: true, title: "AI chat", noindex: true },
+  },
+  {
+    path: "/admin/send-email",
+    name: "tool-email",
+    component: () => import("@/pages/admin/tools/EmailTool.vue"),
+    meta: { requiresAuth: true, title: "Send email", noindex: true },
+  },
+  {
+    path: "/admin/api/docs",
+    name: "admin-api-docs",
+    redirect: "/api/docs",
+  },
+  {
     path: "/tools",
     name: "tools",
     component: () => import("@/pages/ToolsPage.vue"),
@@ -95,6 +136,49 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: "/news/sources",
+    name: "news-sources",
+    component: () => import("@/pages/admin/tools/NewsSourcesPage.vue"),
+    meta: {
+      requiresAuth: true,
+      scrollRestore: "volatile",
+      title: "News sources",
+      noindex: true,
+    },
+  },
+  {
+    path: "/news/sources/:id(\\d+)",
+    name: "news-source",
+    component: () => import("@/pages/admin/tools/NewsSourcesPage.vue"),
+    meta: {
+      requiresAuth: true,
+      scrollRestore: "volatile",
+      title: "News source",
+      noindex: true,
+    },
+  },
+  {
+    path: "/news/:id(\\d+)",
+    name: "news-article-edit",
+    component: () => import("@/pages/admin/tools/NewsArticleAdminPage.vue"),
+    meta: {
+      requiresAuth: true,
+      scrollRestore: "volatile",
+      title: "Edit news article",
+      noindex: true,
+    },
+  },
+  {
+    path: "/news/:slug",
+    name: "news-article",
+    component: () => import("@/pages/NewsArticlePage.vue"),
+    meta: {
+      scrollRestore: "volatile",
+      title: "Article",
+      description: "Curated news summary with source attribution.",
+    },
+  },
+  {
     path: "/calculator",
     name: "calculator",
     component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
@@ -111,18 +195,10 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/admin/tools/calculator",
-    redirect: { name: "calculator" },
-  },
-  {
     path: "/password-generator",
     name: "password-generator",
     component: () => import("@/pages/admin/tools/PasswordGeneratorTool.vue"),
     meta: { title: "Password generator", description: "Generate strong random passwords." },
-  },
-  {
-    path: "/admin/tools/password-generator",
-    redirect: { name: "password-generator" },
   },
   {
     path: "/recipes",
@@ -135,28 +211,10 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/news/:slug",
-    name: "news-article",
-    component: () => import("@/pages/NewsArticlePage.vue"),
-    meta: {
-      scrollRestore: "volatile",
-      title: "Article",
-      description: "Curated news summary with source attribution.",
-    },
-  },
-  {
-    path: "/admin/tools/recipes",
-    redirect: { name: "recipes" },
-  },
-  {
     path: "/shortener",
     name: "shortener",
     component: () => import("@/pages/admin/tools/UrlShortenerTool.vue"),
     meta: { title: "URL shortener", description: "Create and manage short URLs." },
-  },
-  {
-    path: "/admin/tools/url-shortener",
-    redirect: { name: "shortener" },
   },
   {
     path: "/vid-download",
@@ -165,90 +223,54 @@ const routes: RouteRecordRaw[] = [
     meta: { title: "Video downloader", description: "Download videos with yt-dlp." },
   },
   {
-    path: "/admin/tools/vid-download",
-    redirect: { name: "vid-download" },
+    path: "/file-share",
+    name: "tool-file-share",
+    component: () => import("@/pages/admin/tools/FileShareTool.vue"),
+    meta: { requiresAuth: true, title: "File share", noindex: true },
   },
+  {
+    path: "/tasks",
+    name: "tool-tasks",
+    component: () => import("@/pages/admin/tools/TasksPage.vue"),
+    meta: { requiresAuth: true, scrollRestore: "volatile", title: "Tasks", noindex: true },
+  },
+  {
+    path: "/expenses",
+    name: "tool-expenses",
+    component: () => import("@/pages/admin/tools/ExpensesTool.vue"),
+    meta: { requiresAuth: true, scrollRestore: "volatile", title: "Expenses", noindex: true },
+  },
+  {
+    path: "/data-extract",
+    name: "tool-data-extract",
+    component: () => import("@/pages/admin/tools/DataExtractTool.vue"),
+    meta: { requiresAuth: true, title: "Data extract", noindex: true },
+  },
+  // Legacy /admin/tools/* redirects
+  { path: "/admin/tools/calculator", redirect: { name: "calculator" } },
+  { path: "/admin/tools/password-generator", redirect: { name: "password-generator" } },
+  { path: "/admin/tools/recipes", redirect: { name: "recipes" } },
+  { path: "/admin/tools/url-shortener", redirect: { name: "shortener" } },
+  { path: "/admin/tools/vid-download", redirect: { name: "vid-download" } },
   {
     path: "/admin/tools/currency",
     redirect: { name: "tool-expenses", query: { tab: "calculator", mode: "convert" } },
   },
-  {
-    path: "/admin/tools/file-share",
-    name: "tool-file-share",
-    component: () => import("@/pages/admin/tools/FileShareTool.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/admin/tools/tasks",
-    name: "tool-tasks",
-    component: () => import("@/pages/admin/tools/TasksPage.vue"),
-    meta: { requiresAuth: true, scrollRestore: "volatile" },
-  },
-  {
-    path: "/admin/tools/expenses",
-    name: "tool-expenses",
-    component: () => import("@/pages/admin/tools/ExpensesTool.vue"),
-    meta: { requiresAuth: true, scrollRestore: "volatile" },
-  },
-  {
-    path: "/admin/tools/email",
-    name: "tool-email",
-    component: () => import("@/pages/admin/tools/EmailTool.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/admin/tools/data-extract",
-    name: "tool-data-extract",
-    component: () => import("@/pages/admin/tools/DataExtractTool.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/admin/tools/feedback",
-    name: "tool-feedback",
-    component: () => import("@/pages/admin/tools/FeedbackPage.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/admin/tools/news-sources",
-    name: "tool-news-sources",
-    component: () => import("@/pages/admin/tools/NewsSourcesPage.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/admin/tools/ai-chat",
-    name: "tool-ai-chat",
-    component: () => import("@/pages/admin/tools/AiChatTool.vue"),
-    meta: { requiresAuth: true, requiresSuperuser: true },
-  },
-  {
-    path: "/admin/tools/audit",
-    name: "tool-audit",
-    component: () => import("@/pages/admin/tools/AuditPage.vue"),
-    meta: { requiresAuth: true, scrollRestore: "volatile" },
-  },
-  {
-    path: "/admin/tools/app-logs",
-    name: "tool-app-logs",
-    component: () => import("@/pages/admin/tools/AppLogsPage.vue"),
-    meta: { requiresAuth: true, scrollRestore: "volatile" },
-  },
-  {
-    path: "/admin/tools/search",
-    name: "tool-search",
-    component: () => import("@/pages/admin/tools/AdminSearchPage.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/admin/tools/news",
-    name: "tool-news",
-    component: () => import("@/pages/admin/tools/NewsAdminPage.vue"),
-    meta: { requiresAuth: true, scrollRestore: "volatile" },
-  },
+  { path: "/admin/tools/file-share", redirect: { name: "tool-file-share" } },
+  { path: "/admin/tools/tasks", redirect: { name: "tool-tasks" } },
+  { path: "/admin/tools/expenses", redirect: { name: "tool-expenses" } },
+  { path: "/admin/tools/email", redirect: { name: "tool-email" } },
+  { path: "/admin/tools/data-extract", redirect: { name: "tool-data-extract" } },
+  { path: "/admin/tools/feedback", redirect: { name: "tool-feedback" } },
+  { path: "/admin/tools/news-sources", redirect: { name: "news-sources" } },
+  { path: "/admin/tools/ai-chat", redirect: { name: "tool-ai-chat" } },
+  { path: "/admin/tools/audit", redirect: { name: "tool-audit" } },
+  { path: "/admin/tools/app-logs", redirect: { name: "tool-app-logs" } },
+  { path: "/admin/tools/search", redirect: { name: "tool-search" } },
+  { path: "/admin/tools/news", redirect: { name: "news", query: { manage: "1" } } },
   {
     path: "/admin/tools/news/:id",
-    name: "tool-news-article",
-    component: () => import("@/pages/admin/tools/NewsArticleAdminPage.vue"),
-    meta: { requiresAuth: true, scrollRestore: "volatile" },
+    redirect: (to) => ({ name: "news-article-edit", params: { id: to.params.id } }),
   },
   {
     path: "/callback",
@@ -294,9 +316,9 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-file-share": "file-share",
   "tool-email": "email",
   "tool-feedback": "feedback",
-  "tool-news": "news",
-  "tool-news-article": "news",
-  "tool-news-sources": "news-sources",
+  "news-article-edit": "news",
+  "news-sources": "news-sources",
+  "news-source": "news-sources",
   "tool-data-extract": "data-extract",
   "tool-audit": "audit",
   "tool-app-logs": "app-logs",
@@ -376,8 +398,8 @@ router.beforeEach(async (to, _from, next) => {
   }
   const toolSlug = typeof to.name === "string" ? TOOL_ROUTE_SLUGS[to.name] : undefined;
   if (toolSlug && auth.isAuthenticated) {
-    const { can } = usePermissions();
-    if (!can(toolSlug, "read")) {
+    const { canAccess } = usePermissions();
+    if (!canAccess(toolSlug)) {
       next({ name: "admin" });
       return;
     }

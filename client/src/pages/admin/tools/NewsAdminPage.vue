@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
+import { useRouter } from "vue-router";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
@@ -43,9 +44,11 @@ const STATUS_FILTERS: { label: string; value: NewsStatus }[] = [
   { label: "failed", value: "failed" },
 ];
 
+const router = useRouter();
 const { can } = usePermissions();
 const { toast } = useNotify();
 const canWrite = computed(() => can("news", "write"));
+const canManageSources = computed(() => can("news-sources", "read"));
 const drawerOpen = ref(false);
 const drawerMode = ref<DrawerMode>("create");
 const editingArticleId = ref<number | null>(null);
@@ -413,7 +416,7 @@ watch(page, () => {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="news" max-width="xl">
+  <AdminPageLayout hub="tools" title="news" max-width="xl" back-to="/news">
     <AdminListToolbar v-if="!listLoading && !listError">
       <template #start>
         <div class="flex w-full min-w-0 flex-wrap items-center gap-3">
@@ -434,8 +437,20 @@ watch(page, () => {
               />
             </template>
           </AdminFilterDropdown>
-          <div v-if="canWrite" class="ml-auto flex shrink-0 flex-wrap items-center gap-2">
+          <div
+            v-if="canWrite || canManageSources"
+            class="ml-auto flex shrink-0 flex-wrap items-center gap-2"
+          >
             <BaseButton
+              v-if="canManageSources"
+              variant="ghost"
+              size="sm"
+              @click="router.push('/news/sources')"
+            >
+              sources
+            </BaseButton>
+            <BaseButton
+              v-if="canWrite"
               variant="ghost"
               size="sm"
               :disabled="actionLoading"
@@ -444,6 +459,7 @@ watch(page, () => {
               run ingest
             </BaseButton>
             <BaseButton
+              v-if="canWrite"
               variant="primary"
               size="sm"
               :disabled="actionLoading"

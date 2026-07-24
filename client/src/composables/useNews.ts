@@ -11,6 +11,7 @@ import type {
   NewsIngestResult,
   NewsSource,
   NewsStatus,
+  PaginatedList,
   PaginatedNews,
 } from "@/types";
 
@@ -55,15 +56,15 @@ export function useNews() {
   });
 
   async function loadNews(options: { admin?: boolean; status?: NewsStatus | null } = {}) {
-    const params: Record<string, string | number> = {
+    const params: Record<string, string | number | boolean> = {
       page: page.value,
       per_page: LIST_PAGE_SIZE,
     };
+    if (options.admin) params.manage = true;
     if (options.status) params.status = options.status;
-    const endpoint = options.admin ? "/tools/news/admin" : "/tools/news";
     const data = await runList(
       async () => {
-        const response = await api.get<PaginatedNews>(endpoint, { params });
+        const response = await api.get<PaginatedNews>("/tools/news", { params });
         return response.data;
       },
       { errorFallback: "Failed to load news", logContext: "news.loadList" },
@@ -78,7 +79,7 @@ export function useNews() {
   async function loadNewsStats(): Promise<void> {
     const data = await runStats(
       async () => {
-        const response = await api.get<NewsStats>("/tools/news/admin/stats");
+        const response = await api.get<NewsStats>("/tools/news/stats");
         return response.data;
       },
       { errorFallback: "Failed to load news stats", logContext: "news.loadStats" },
@@ -100,7 +101,7 @@ export function useNews() {
   async function loadAdminArticle(articleId: number): Promise<void> {
     const data = await runDetail(
       async () => {
-        const response = await api.get<NewsArticle>(`/tools/news/admin/${articleId}`);
+        const response = await api.get<NewsArticle>(`/tools/news/by-id/${articleId}`);
         return response.data;
       },
       { errorFallback: "Failed to load article", logContext: "news.loadAdminArticle" },
@@ -111,8 +112,10 @@ export function useNews() {
   async function loadSources(): Promise<void> {
     const data = await runAction(
       async () => {
-        const response = await api.get<NewsSource[]>("/tools/news-sources");
-        return response.data;
+        const response = await api.get<PaginatedList<NewsSource>>("/tools/news/sources", {
+          params: { page: 1, per_page: 100 },
+        });
+        return response.data.items;
       },
       { errorFallback: "Failed to load news sources", logContext: "news.loadSources" },
     );

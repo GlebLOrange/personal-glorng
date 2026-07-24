@@ -7,7 +7,7 @@ test.describe("admin tools", () => {
     const uniqueTitle = `E2E task ${Date.now()}`;
     await loginAsAdmin(page);
 
-    await page.goto("/admin/tools/tasks");
+    await page.goto("/tasks");
     await expect(page.getByRole("heading", { name: /^tasks$/i })).toBeVisible();
 
     await page.getByRole("button", { name: /\+ new task/i }).click();
@@ -23,7 +23,7 @@ test.describe("admin tools", () => {
   test("audit log shows login success after admin login", async ({ page }) => {
     await loginAsAdmin(page);
 
-    await page.goto("/admin/tools/audit");
+    await page.goto("/admin/audit-logs");
     await expect(page.getByRole("heading", { name: /audit log/i })).toBeVisible();
 
     await page.getByPlaceholder("e.g. auth.login_success").fill("auth.login_success");
@@ -40,7 +40,7 @@ test.describe("admin tools", () => {
       await fetch("/api/platform/services");
     });
 
-    await page.goto("/admin/tools/app-logs");
+    await page.goto("/admin/app-logs");
     await expect(page.getByRole("heading", { name: /app logs/i })).toBeVisible();
 
     await expect

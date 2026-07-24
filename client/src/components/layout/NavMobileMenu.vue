@@ -3,6 +3,7 @@ import { computed, nextTick, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useAuthStore } from "@/stores/auth";
+import { usePermissions } from "@/composables/usePermissions";
 import { useScrollLock } from "@/composables/useScrollLock";
 
 const props = defineProps<{
@@ -12,6 +13,7 @@ const props = defineProps<{
 const emit = defineEmits<{ close: []; "go-home": [] }>();
 
 const auth = useAuthStore();
+const { canUseAdminHub } = usePermissions();
 const route = useRoute();
 const router = useRouter();
 const menuRoot = ref<HTMLElement | null>(null);
@@ -134,7 +136,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       </RouterLink>
 
       <RouterLink
-        v-if="auth.isAuthenticated"
+        v-if="canUseAdminHub"
         to="/admin"
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         @click="emit('close')"

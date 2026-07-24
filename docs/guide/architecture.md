@@ -22,7 +22,7 @@ Elasticsearch is optional for search (`make dev-search`).
 | Channel | Entry | Uses |
 |---------|-------|------|
 | Public web | `/` | Resume, donations, feedback, public tools |
-| Admin panel | `/admin` | Platform services via `/api/tools/*` |
+| Admin panel | `/admin` | Ops hub via `/api/tools/*` and `/api/admin/*` |
 | Telegram bot | `app.todobot.main` | Tasks, reminders, expense logging |
 | Worker | `celery -A app.workers.celery_app worker` | Reminders, calendar sync, cleanup |
 | Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks |
@@ -120,7 +120,7 @@ Webhook and Stripe endpoints use [`read_request_body_bounded`](../../server/app/
 Two complementary streams:
 
 1. **Operational telemetry** — structured JSON logs (Loguru) + Sentry. Not queryable as audit.
-2. **Audit trail** — `audit_events` with `security` and `domain` categories. Review at `/admin/tools/audit`.
+2. **Audit trail** — `audit_events` with `security` and `domain` categories. Review at `/admin/audit-logs`.
 
 ## Related
 

@@ -119,7 +119,7 @@ onMounted(load);
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="audit log">
+  <AdminPageLayout title="audit log">
     <AdminListSkeleton v-if="loading && items.length === 0 && !listError" label="Loading audit events" />
 
     <template v-else>

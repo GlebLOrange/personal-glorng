@@ -3,6 +3,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
+import { usePermissions } from "@/composables/usePermissions";
 import { useScrollDirection } from "@/composables/useScrollDirection";
 import { useAuthStore } from "@/stores/auth";
 import { goHome } from "@/utils/goHome";
@@ -16,6 +17,7 @@ let mobileNavMq: MediaQueryList | null = null;
 let syncMobileNav: (() => void) | null = null;
 
 const auth = useAuthStore();
+const { canUseAdminHub } = usePermissions();
 const router = useRouter();
 const mobileOpen = ref(false);
 const isMobileNav = ref(false);
@@ -133,7 +135,7 @@ async function handleGoHome(): Promise<void> {
             </RouterLink>
 
             <RouterLink
-              v-if="auth.isAuthenticated"
+              v-if="canUseAdminHub"
               to="/admin"
               class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
               active-class="text-accent-blue"

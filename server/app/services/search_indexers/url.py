@@ -19,7 +19,7 @@ def _url_document(url: ShortenedUrl) -> SearchDocumentInput:
         source_id=url.id,
         title=title,
         body=body,
-        url="/admin/tools/url-shortener",
+        url="/shortener",
         visibility=SearchVisibility.ADMIN,
     )
 

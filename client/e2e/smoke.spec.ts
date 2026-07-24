@@ -163,10 +163,10 @@ test.describe("auth guards", () => {
     expect(new URL(page.url()).searchParams.get("redirect")).toBe("/admin");
   });
 
-  test("admin expenses redirects unauthenticated users to login", async ({ page }) => {
-    await page.goto("/admin/tools/expenses");
+  test("expenses redirects unauthenticated users to login", async ({ page }) => {
+    await page.goto("/expenses");
     await expect(page).toHaveURL(/\/login/);
-    expect(new URL(page.url()).searchParams.get("redirect")).toBe("/admin/tools/expenses");
+    expect(new URL(page.url()).searchParams.get("redirect")).toBe("/expenses");
   });
 });
 

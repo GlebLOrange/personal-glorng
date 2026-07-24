@@ -15,7 +15,7 @@ import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint
 import { safeNavigationHref } from "@/utils/safeUrl";
 
 const router = useRouter();
-const { isSuperuser } = usePermissions();
+const { can } = usePermissions();
 const {
   articles,
   page,
@@ -43,11 +43,21 @@ watch(page, () => {
 
 <template>
   <PageShell title="news" :breadcrumbs="[{ label: 'news', to: '/news' }]" back-to="/" :narrow="false">
-    <div v-if="isSuperuser" class="mb-4 flex min-w-0 items-center">
+    <div
+      v-if="can('news', 'read') || can('news-sources', 'read')"
+      class="mb-4 flex min-w-0 flex-wrap items-center justify-end gap-2"
+    >
       <BaseButton
+        v-if="can('news-sources', 'read')"
+        variant="ghost"
+        @click="router.push('/news/sources')"
+      >
+        sources
+      </BaseButton>
+      <BaseButton
+        v-if="can('news', 'read')"
         variant="primary"
-        class="ml-auto"
-        @click="router.push('/admin/tools/news')"
+        @click="router.push({ name: 'news', query: { manage: '1' } })"
       >
         manage news
       </BaseButton>

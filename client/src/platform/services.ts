@@ -13,6 +13,25 @@ export interface PlatformService {
   publicRoute?: string;
 }
 
+/** Ops hub tiles on /admin (not top-level personal tools). */
+export const ADMIN_HUB_SERVICE_SLUGS = new Set([
+  "feedback",
+  "audit",
+  "app-logs",
+  "search",
+  "api-docs",
+  "ai-chat",
+  "email",
+]);
+
+/** Capability tools listed on /tools for signed-in users (alongside public tools). */
+export const TOOLS_PAGE_EXTRA_SLUGS = new Set([
+  "tasks",
+  "expenses",
+  "file-share",
+  "data-extract",
+]);
+
 /** Static fallback when API is unavailable; kept in sync with server registry. */
 export const PLATFORM_SERVICES: PlatformService[] = [
   {
@@ -22,7 +41,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "productivity",
     description: "Manage todobot tasks and reminders",
     apiPrefix: "/tasks",
-    adminRoute: "/admin/tools/tasks",
+    adminRoute: "/tasks",
     icon: "☐",
     capabilities: ["read", "write", "schedule"],
     external: false,
@@ -34,7 +53,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "productivity",
     description: "Send styled emails",
     apiPrefix: "/email",
-    adminRoute: "/admin/tools/email",
+    adminRoute: "/admin/send-email",
     icon: "✉",
     capabilities: ["write"],
     external: false,
@@ -46,7 +65,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "productivity",
     description: "Track spending, convert currencies, sum items, and plan budgets",
     apiPrefix: "/expenses",
-    adminRoute: "/admin/tools/expenses",
+    adminRoute: "/expenses",
     publicRoute: "/expense-calculator",
     icon: "¤",
     capabilities: ["read", "write"],
@@ -73,7 +92,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "content",
     description: "Curated worldwide news digest with source attribution",
     apiPrefix: "/tools/news",
-    adminRoute: "/admin/tools/news",
+    adminRoute: "/news",
     icon: "◇",
     capabilities: ["read", "write"],
     external: false,
@@ -86,7 +105,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "content",
     description: "Share files between devices",
     apiPrefix: "/file-share",
-    adminRoute: "/admin/tools/file-share",
+    adminRoute: "/file-share",
     icon: "↗",
     capabilities: ["read", "write"],
     external: false,
@@ -150,7 +169,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "utilities",
     description: "Chat with Groq from the admin panel",
     apiPrefix: "/ai-chat",
-    adminRoute: "/admin/tools/ai-chat",
+    adminRoute: "/admin/ai-chat",
     icon: "⊛",
     capabilities: ["read", "write"],
     external: false,
@@ -162,7 +181,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "utilities",
     description: "Extract structured rows from CSV, JSON, XML, and delimited files",
     apiPrefix: "/data-extract",
-    adminRoute: "/admin/tools/data-extract",
+    adminRoute: "/data-extract",
     icon: "⎘",
     capabilities: ["read", "write"],
     external: false,
@@ -174,7 +193,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "operations",
     description: "Read visitor feedback messages",
     apiPrefix: "/feedback",
-    adminRoute: "/admin/tools/feedback",
+    adminRoute: "/admin/feedback",
     icon: "💬",
     capabilities: ["read", "write"],
     external: false,
@@ -185,8 +204,8 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     category: "content",
     categoryLabel: "content",
     description: "Manage RSS sources for the public news page",
-    apiPrefix: "/tools/news-sources",
-    adminRoute: "/admin/tools/news-sources",
+    apiPrefix: "/tools/news/sources",
+    adminRoute: "/news/sources",
     icon: "◇",
     capabilities: ["read", "write"],
     external: false,
@@ -198,7 +217,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "operations",
     description: "Review security and domain change events",
     apiPrefix: "/audit",
-    adminRoute: "/admin/tools/audit",
+    adminRoute: "/admin/audit-logs",
     icon: "◎",
     capabilities: ["read"],
     external: false,
@@ -210,7 +229,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "operations",
     description: "Browse persisted application log entries",
     apiPrefix: "/app-logs",
-    adminRoute: "/admin/tools/app-logs",
+    adminRoute: "/admin/app-logs",
     icon: "≡",
     capabilities: ["read"],
     external: false,
@@ -222,7 +241,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "operations",
     description: "Keyword search across admin indexed content",
     apiPrefix: "/search",
-    adminRoute: "/admin/tools/search",
+    adminRoute: "/admin/search",
     icon: "⌕",
     capabilities: ["read"],
     external: false,
@@ -234,10 +253,10 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "operations",
     description: "Swagger API documentation",
     apiPrefix: "/docs",
-    adminRoute: "/api/docs",
+    adminRoute: "/admin/api/docs",
     icon: "❴❵",
     capabilities: ["read"],
-    external: true,
+    external: false,
   },
 ];
 

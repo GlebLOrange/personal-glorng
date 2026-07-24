@@ -8,7 +8,7 @@ import { isExternalHref, isSafeNavigationUrl, safeNavigationHref } from "@/utils
 describe("safeNavigationHref", () => {
   it("allows same-origin relative paths", () => {
     expect(safeNavigationHref("/recipes")).toBe("/recipes");
-    expect(safeNavigationHref("/admin/tools/tasks")).toBe("/admin/tools/tasks");
+    expect(safeNavigationHref("/tasks")).toBe("/tasks");
   });
 
   it("rejects protocol-relative and dangerous schemes", () => {

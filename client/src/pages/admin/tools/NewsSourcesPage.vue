@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
@@ -23,6 +24,8 @@ import type { NewsSource, PaginatedList } from "@/types";
 import { getApiErrorMessage } from "@/types/api";
 import { formatDate } from "@/utils/format";
 import { normalizeHttpUrl, sourceFromUrl } from "@/utils/newsForms";
+
+const SOURCES_API = "/tools/news/sources";
 
 interface NewsSourceForm {
   name: string;
@@ -52,6 +55,8 @@ const blankForm = (): NewsSourceForm => ({
   enabled: true,
 });
 
+const route = useRoute();
+const router = useRouter();
 const sources = ref<NewsSource[]>([]);
 const page = ref(1);
 const enabledFilter = ref<EnabledFilter>("");
@@ -92,6 +97,13 @@ const emptyFilterDescription = computed(() => {
   return "No news sources yet.";
 });
 
+const routeSourceId = computed(() => {
+  const raw = route.params.id;
+  if (typeof raw !== "string") return null;
+  const id = Number(raw);
+  return Number.isFinite(id) ? id : null;
+});
+
 function enabledQueryParam(): boolean | undefined {
   if (enabledFilter.value === "enabled") return true;
   if (enabledFilter.value === "disabled") return false;
@@ -120,6 +132,17 @@ function sourceMeta(source: NewsSource): string {
   return parts.join(" · ");
 }
 
+function syncRouteSource(): void {
+  const id = routeSourceId.value;
+  if (id == null) return;
+  const source = sources.value.find((item) => item.id === id);
+  if (source) {
+    openEdit(source, false);
+    return;
+  }
+  void router.replace({ name: "news-sources" });
+}
+
 async function loadSources(): Promise<void> {
   loading.value = true;
   loadError.value = false;
@@ -130,7 +153,7 @@ async function loadSources(): Promise<void> {
     };
     const enabled = enabledQueryParam();
     if (enabled !== undefined) params.enabled = enabled;
-    const { data } = await api.get<PaginatedList<NewsSource>>("/tools/news-sources", {
+    const { data } = await api.get<PaginatedList<NewsSource>>(SOURCES_API, {
       params,
     });
     sources.value = data.items;
@@ -139,6 +162,7 @@ async function loadSources(): Promise<void> {
     selectedSourceIds.value = selectedSourceIds.value.filter((id) =>
       data.items.some((source) => source.id === id && source.enabled),
     );
+    syncRouteSource();
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
     loadError.value = true;
@@ -161,9 +185,12 @@ function openCreate(): void {
   lastAutoName.value = null;
   form.value = blankForm();
   drawerOpen.value = true;
+  if (routeSourceId.value != null) {
+    void router.replace({ name: "news-sources" });
+  }
 }
 
-function openEdit(source: NewsSource): void {
+function openEdit(source: NewsSource, syncRoute = true): void {
   drawerMode.value = "edit";
   editingId.value = source.id;
   lastAutoName.value = null;
@@ -175,6 +202,9 @@ function openEdit(source: NewsSource): void {
     enabled: source.enabled,
   };
   drawerOpen.value = true;
+  if (syncRoute && routeSourceId.value !== source.id) {
+    void router.replace({ name: "news-source", params: { id: String(source.id) } });
+  }
 }
 
 function openEditableSource(source: NewsSource): void {
@@ -187,6 +217,9 @@ function closeDrawer(): void {
   editingId.value = null;
   lastAutoName.value = null;
   form.value = blankForm();
+  if (routeSourceId.value != null) {
+    void router.replace({ name: "news-sources" });
+  }
 }
 
 function updateForm(nextForm: NewsSourceForm): void {
@@ -215,10 +248,10 @@ async function saveSource(): Promise<void> {
     const requestPayload = payload();
     if (!requestPayload) return;
     if (editingId.value) {
-      await api.put(`/tools/news-sources/${editingId.value}`, requestPayload);
+      await api.put(`${SOURCES_API}/${editingId.value}`, requestPayload);
       toast("News source updated", "success");
     } else {
-      await api.post("/tools/news-sources", requestPayload);
+      await api.post(SOURCES_API, requestPayload);
       toast("News source created", "success");
     }
     closeDrawer();
@@ -235,7 +268,7 @@ async function refreshSources(): Promise<void> {
   if (!canWrite.value) return;
   refreshing.value = true;
   try {
-    const { data } = await api.post<MessageResponse>("/tools/news-sources/refresh", {
+    const { data } = await api.post<MessageResponse>(`${SOURCES_API}/refresh`, {
       source_ids: selectedSourceIds.value.length ? selectedSourceIds.value : null,
     });
     toast(data.message, "success");
@@ -254,7 +287,7 @@ async function deleteSource(source: NewsSource, event?: Event): Promise<void> {
   if (!window.confirm(`Delete ${source.name}?`)) return;
   deletingId.value = source.id;
   try {
-    await api.delete(`/tools/news-sources/${source.id}`);
+    await api.delete(`${SOURCES_API}/${source.id}`);
     sources.value = sources.value.filter((item) => item.id !== source.id);
     if (editingId.value === source.id) closeDrawer();
     toast("News source deleted", "success");
@@ -279,11 +312,15 @@ watch(
   },
 );
 
+watch(routeSourceId, () => {
+  if (!loading.value) syncRouteSource();
+});
+
 onMounted(loadSources);
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="news sources" max-width="xl">
+  <AdminPageLayout hub="tools" title="news sources" max-width="xl" back-to="/news">
     <div class="min-w-0 space-y-1">
       <AdminListSkeleton v-if="loading" label="Loading sources" />
 
