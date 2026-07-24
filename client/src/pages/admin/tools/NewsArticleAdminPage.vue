@@ -307,6 +307,7 @@ watch(articleId, () => {
                 :label="status"
                 :active="form.status === status"
                 :color-class="newsStatusClass(status)"
+                :disabled="!canWrite"
                 @click="setStatus(status)"
               />
             </div>

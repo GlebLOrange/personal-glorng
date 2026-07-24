@@ -158,7 +158,7 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/news/:id(\\d+)",
+    path: "/news/edit/:id(\\d+)",
     name: "news-article-edit",
     component: () => import("@/pages/admin/tools/NewsArticleAdminPage.vue"),
     meta: {
