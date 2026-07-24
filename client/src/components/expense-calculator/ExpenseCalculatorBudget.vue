@@ -45,7 +45,7 @@ const summaryById = computed(() => {
   return map;
 });
 
-function onAddCategory(): void {
+function onAddBudgetLine(): void {
   emit("add");
   requestAnimationFrame(() => {
     const inputs = document.querySelectorAll<HTMLInputElement>("[data-budget-name]");
@@ -86,8 +86,8 @@ function onAddCategory(): void {
 
     <Card class="space-y-4">
       <div class="flex items-center justify-between gap-3">
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Categories</p>
-        <BaseButton variant="primary" size="sm" @click="onAddCategory">+ category</BaseButton>
+        <p class="text-xs text-surface-mid uppercase tracking-wider">Budget lines</p>
+        <BaseButton variant="primary" size="sm" @click="onAddBudgetLine">+ budget line</BaseButton>
       </div>
 
       <ul role="list" class="space-y-4">
@@ -100,8 +100,8 @@ function onAddCategory(): void {
             <BaseInput
               v-model="row.name"
               data-budget-name
-              placeholder="category (food, transport...)"
-              aria-label="category (food, transport...)"
+              placeholder="name (food, transport...)"
+              aria-label="budget line name"
             />
             <BaseInput
               v-model="row.budget"
@@ -120,7 +120,7 @@ function onAddCategory(): void {
               aria-label="spent (0.00)"
             />
             <IconCloseButton
-              :aria-label="`Remove ${row.name || 'category'}`"
+              :aria-label="`Remove ${row.name || 'budget line'}`"
               class="md:mb-0.5"
               @click="emit('remove', row.id)"
             />

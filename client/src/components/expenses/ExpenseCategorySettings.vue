@@ -131,14 +131,19 @@ function onCategoryRowClick(category: ExpenseCategory): void {
         </li>
       </ul>
 
-      <form class="flex flex-col sm:flex-row sm:items-end gap-2" @submit.prevent="emit('addCategory')">
+      <form
+        class="flex flex-col sm:flex-row sm:items-end gap-2"
+        @submit.prevent="emit('addCategory')"
+      >
         <BaseInput
           v-model="newCategoryName"
           label="new category"
           placeholder="category name"
-          class="flex-1"
+          class="min-w-0 flex-1 w-full"
         />
-        <BaseButton variant="primary" type="submit" size="field">+ category</BaseButton>
+        <BaseButton variant="primary" type="submit" size="field" class="shrink-0">
+          + category
+        </BaseButton>
       </form>
       <p class="text-xs text-surface-mid mt-3">
         Renaming updates all expenses in that category. Optional monthly budget uses display

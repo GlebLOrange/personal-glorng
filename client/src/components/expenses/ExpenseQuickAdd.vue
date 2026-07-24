@@ -105,8 +105,8 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
 </script>
 
 <template>
-  <Card>
-    <div class="mb-3 flex items-end justify-end gap-2">
+  <Card variant="compact">
+    <div class="mb-2 flex items-end justify-end gap-2">
       <div class="w-[6.5rem]">
         <BaseSelect v-model="currency" label="currency">
           <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
@@ -126,7 +126,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
     </div>
 
     <form
-      class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(7rem,10rem)_1fr_minmax(5.5rem,7rem)_auto] sm:items-end"
+      class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(8rem,12rem)_1fr_minmax(5.5rem,7rem)_auto] sm:items-end"
       @submit.prevent="emit('submit')"
     >
       <BaseSelect v-model="category" class="w-full" aria-label="category">
@@ -159,7 +159,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
     <div
       v-if="smartTextOpen"
       id="expense-smart-text"
-      class="mt-4 flex flex-col gap-3 border-t border-surface-border pt-4"
+      class="mt-3 flex flex-col gap-3 border-t border-surface-border pt-3"
     >
       <BaseInput
         ref="smartTextInputRef"

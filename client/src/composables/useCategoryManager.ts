@@ -7,9 +7,40 @@ import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
 import type { ExpenseCategory } from "@/types";
 
+/** Match server normalize: trim + collapse whitespace. */
+export function normalizeCategoryName(name: string): string {
+  return name.trim().split(/\s+/).join(" ");
+}
+
+export function categoryNameExists(
+  categories: Pick<ExpenseCategory, "id" | "name">[],
+  name: string,
+  excludeId: number | null = null,
+): boolean {
+  const key = normalizeCategoryName(name).toLowerCase();
+  if (!key) return false;
+  return categories.some(
+    (category) =>
+      category.id !== excludeId &&
+      normalizeCategoryName(category.name).toLowerCase() === key,
+  );
+}
+
+/** Case-insensitive unique names; keeps first occurrence (API sort order). */
+export function uniqueCategoryNames(categories: Pick<ExpenseCategory, "name">[]): string[] {
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const category of categories) {
+    const key = category.name.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    names.push(category.name);
+  }
+  return names;
+}
+
 export function useCategoryManager(onCategoriesChanged: () => void | Promise<void>) {
   const expenseCategories = ref<ExpenseCategory[]>([]);
-  const showCategoryManager = ref(false);
   const newCategoryName = ref("");
   const editingCategoryId = ref<number | null>(null);
   const editingCategoryName = ref("");
@@ -17,7 +48,7 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
   const { toast } = useNotify();
   const { run: runApi } = useApiAction({ logErrors: false });
 
-  const categoryOptions = computed(() => expenseCategories.value.map((category) => category.name));
+  const categoryOptions = computed(() => uniqueCategoryNames(expenseCategories.value));
 
   const defaultCategoryName = computed(
     () =>
@@ -38,9 +69,13 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
   }
 
   async function addCategory(): Promise<void> {
-    const name = newCategoryName.value.trim();
+    const name = normalizeCategoryName(newCategoryName.value);
     if (!name) {
       toast("Category name is required", "error");
+      return;
+    }
+    if (categoryNameExists(expenseCategories.value, name)) {
+      toast("Category already exists", "error");
       return;
     }
 
@@ -69,9 +104,13 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
 
   async function saveCategoryRename(): Promise<void> {
     if (editingCategoryId.value === null) return;
-    const name = editingCategoryName.value.trim();
+    const name = normalizeCategoryName(editingCategoryName.value);
     if (!name) {
       toast("Category name is required", "error");
+      return;
+    }
+    if (categoryNameExists(expenseCategories.value, name, editingCategoryId.value)) {
+      toast("Category already exists", "error");
       return;
     }
 
@@ -113,7 +152,6 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
 
   return {
     expenseCategories,
-    showCategoryManager,
     newCategoryName,
     editingCategoryId,
     editingCategoryName,

@@ -180,7 +180,7 @@ function goToTransactions(): void {
 <template>
   <AdminPageLayout hub="tools" title="expenses" max-width="xl">
     <div class="min-w-0">
-    <section v-if="showLedgerHeader" class="mb-6 flex flex-col gap-4">
+    <section v-if="showLedgerHeader" class="mb-4 flex flex-col gap-3">
       <Card variant="compact" class="flex flex-col gap-3">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
@@ -220,6 +220,7 @@ function goToTransactions(): void {
       </div>
     </section>
 
+    <div class="flex flex-col gap-3">
     <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <AdminTabBar
         flush
@@ -250,7 +251,7 @@ function goToTransactions(): void {
       role="tabpanel"
       aria-labelledby="expenses-tab-tab-transactions"
       tabindex="0"
-      class="flex flex-col gap-4 outline-none"
+      class="flex flex-col gap-3 outline-none"
     >
       <ExpenseQuickAdd
         ref="quickAddRef"
@@ -453,6 +454,7 @@ function goToTransactions(): void {
         @remove-category="requestDeleteCategory"
       />
     </section>
+    </div>
 
     <ExpenseFormModal
       v-model:category="form.category"

@@ -12,7 +12,7 @@ export const FIELD_INPUT_CLASS_COMPACT =
   `${FIELD_FOCUS} transition-colors placeholder:text-surface-mid/70`;
 
 export const SELECT_CLASS =
-  "h-11 bg-surface-dark border border-surface-border rounded-lg px-4 py-0 text-surface-light text-sm " +
+  "h-11 w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-0 text-surface-light text-sm " +
   `${FIELD_FOCUS} transition-colors`;
 
 export const SELECT_CLASS_COMPACT =

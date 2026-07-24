@@ -41,7 +41,7 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
   <Card class="space-y-4">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-xs text-surface-mid">
-        Simulate a purchase against your budget rows. Set categories on the Budget tab first.
+        Simulate a purchase against your budget rows. Set budget lines on the Budget tab first.
       </p>
       <BaseButton
         v-if="props.budgetOptions.length === 0"
@@ -55,7 +55,7 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <select v-model="categoryId" :class="SELECT_CLASS_COMPACT" aria-label="category">
+      <select v-model="categoryId" :class="SELECT_CLASS_COMPACT" aria-label="budget line">
         <option value="overall">overall</option>
         <option v-for="option in budgetOptions" :key="option.id" :value="option.id">
           {{ option.name }}
