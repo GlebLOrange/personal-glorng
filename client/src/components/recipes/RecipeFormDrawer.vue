@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
@@ -24,6 +24,50 @@ const emit = defineEmits<{
 }>();
 
 const showImagePreview = computed(() => Boolean(props.form.image_url.trim()));
+
+/** Filled (trimmed) lines — same filter as save. */
+function filledLines(items: string[]): string[] {
+  return items.map((item) => item.trim()).filter(Boolean);
+}
+
+function filledCount(items: string[]): number {
+  return filledLines(items).length;
+}
+
+function previewLabel(items: string[], max = 2): string {
+  const filled = filledLines(items);
+  if (filled.length === 0) return "";
+  const shown = filled.slice(0, max).map((line) =>
+    line.length > 40 ? `${line.slice(0, 40)}…` : line,
+  );
+  const extra = filled.length > max ? ` +${filled.length - max}` : "";
+  return ` — ${shown.join(", ")}${extra}`;
+}
+
+const ingredientCount = computed(() => filledCount(props.form.ingredients));
+const ingredientPreview = computed(() => previewLabel(props.form.ingredients));
+const stepCount = computed(() => filledCount(props.form.steps));
+const stepPreview = computed(() => previewLabel(props.form.steps));
+const tagsPreview = computed(() => {
+  const tags = props.form.tags.trim();
+  return tags ? ` — ${tags.length > 48 ? `${tags.slice(0, 48)}…` : tags}` : "";
+});
+
+// Uncontrolled <details>; set .open on drawer open so Vue doesn't fight native toggles.
+const ingredientsDetails = ref<HTMLDetailsElement | null>(null);
+const stepsDetails = ref<HTMLDetailsElement | null>(null);
+const tagsDetails = ref<HTMLDetailsElement | null>(null);
+
+watch(
+  () => props.open,
+  async (isOpen) => {
+    if (!isOpen) return;
+    await nextTick();
+    if (ingredientsDetails.value) ingredientsDetails.value.open = true;
+    if (stepsDetails.value) stepsDetails.value.open = true;
+    if (tagsDetails.value) tagsDetails.value.open = Boolean(props.form.tags.trim());
+  },
+);
 
 function patch(patch: Partial<RecipeFormData>): void {
   emit("update:form", { ...props.form, ...patch });
@@ -158,138 +202,166 @@ function toNullableNumber(value: string | number | null | undefined): number | n
         />
       </div>
 
-      <div class="space-y-2">
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Ingredients</p>
-        <ul role="list" class="space-y-2">
-          <li
-            v-for="(_, idx) in form.ingredients"
-            :key="`ingredient-${idx}`"
-            class="flex min-w-0 items-center gap-1"
-          >
-            <BaseInput
-              :model-value="form.ingredients[idx]"
-              class="min-w-0 flex-1"
-              placeholder="200g flour"
-              :aria-label="`ingredient ${idx + 1}`"
-              data-recipe-ingredient
-              @update:model-value="updateIngredient(idx, toStringValue($event))"
-              @keydown="onIngredientEnter($event, idx)"
-            />
-            <BaseDropdownMenu
-              v-if="form.ingredients.length > 1"
-              :aria-label="`ingredient ${idx + 1} actions`"
-              placement="bottom"
+      <details
+        ref="ingredientsDetails"
+        class="rounded border border-surface-border px-3 py-2"
+        open
+      >
+        <summary class="cursor-pointer text-sm text-surface-mid">
+          ingredients ({{ ingredientCount }})
+          <span v-if="ingredientPreview" class="text-xs text-surface-muted">{{
+            ingredientPreview
+          }}</span>
+        </summary>
+        <div class="mt-3 space-y-2">
+          <ul role="list" class="space-y-2">
+            <li
+              v-for="(_, idx) in form.ingredients"
+              :key="`ingredient-${idx}`"
+              class="flex min-w-0 items-center gap-1"
             >
-              <template #default="{ close: closeMenu }">
-                <BaseDropdownMenuItem
-                  v-if="idx > 0"
-                  @select="
-                    closeMenu();
-                    moveIngredient(idx, -1);
-                  "
-                >
-                  move up
-                </BaseDropdownMenuItem>
-                <BaseDropdownMenuItem
-                  v-if="idx < form.ingredients.length - 1"
-                  @select="
-                    closeMenu();
-                    moveIngredient(idx, 1);
-                  "
-                >
-                  move down
-                </BaseDropdownMenuItem>
-                <BaseDropdownMenuItem
-                  destructive
-                  @select="
-                    closeMenu();
-                    removeIngredient(idx);
-                  "
-                >
-                  remove
-                </BaseDropdownMenuItem>
-              </template>
-            </BaseDropdownMenu>
-          </li>
-        </ul>
-        <BaseButton variant="secondary" size="sm" type="button" @click="addIngredient">
-          + ingredient
-        </BaseButton>
-      </div>
+              <BaseInput
+                :model-value="form.ingredients[idx]"
+                class="min-w-0 flex-1"
+                placeholder="200g flour"
+                :aria-label="`ingredient ${idx + 1}`"
+                data-recipe-ingredient
+                @update:model-value="updateIngredient(idx, toStringValue($event))"
+                @keydown="onIngredientEnter($event, idx)"
+              />
+              <BaseDropdownMenu
+                v-if="form.ingredients.length > 1"
+                :aria-label="`ingredient ${idx + 1} actions`"
+                placement="bottom"
+              >
+                <template #default="{ close: closeMenu }">
+                  <BaseDropdownMenuItem
+                    v-if="idx > 0"
+                    @select="
+                      closeMenu();
+                      moveIngredient(idx, -1);
+                    "
+                  >
+                    move up
+                  </BaseDropdownMenuItem>
+                  <BaseDropdownMenuItem
+                    v-if="idx < form.ingredients.length - 1"
+                    @select="
+                      closeMenu();
+                      moveIngredient(idx, 1);
+                    "
+                  >
+                    move down
+                  </BaseDropdownMenuItem>
+                  <BaseDropdownMenuItem
+                    destructive
+                    @select="
+                      closeMenu();
+                      removeIngredient(idx);
+                    "
+                  >
+                    remove
+                  </BaseDropdownMenuItem>
+                </template>
+              </BaseDropdownMenu>
+            </li>
+          </ul>
+          <BaseButton variant="secondary" size="sm" type="button" @click="addIngredient">
+            + ingredient
+          </BaseButton>
+        </div>
+      </details>
 
-      <div class="space-y-2">
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Steps</p>
-        <ul role="list" class="space-y-2">
-          <li
-            v-for="(_, idx) in form.steps"
-            :key="`step-${idx}`"
-            class="flex min-w-0 items-start gap-2"
-          >
-            <span
-              class="mt-2.5 inline-flex h-6 w-6 shrink-0 items-center justify-center text-xs text-surface-mid"
-              aria-hidden="true"
+      <details
+        ref="stepsDetails"
+        class="rounded border border-surface-border px-3 py-2"
+        open
+      >
+        <summary class="cursor-pointer text-sm text-surface-mid">
+          steps ({{ stepCount }})
+          <span v-if="stepPreview" class="text-xs text-surface-muted">{{ stepPreview }}</span>
+        </summary>
+        <div class="mt-3 space-y-2">
+          <ul role="list" class="space-y-2">
+            <li
+              v-for="(_, idx) in form.steps"
+              :key="`step-${idx}`"
+              class="flex min-w-0 items-start gap-2"
             >
-              {{ idx + 1 }}
-            </span>
-            <BaseTextarea
-              :model-value="form.steps[idx]"
-              class="min-w-0 flex-1"
-              :rows="2"
-              placeholder="Preheat oven to 200°C"
-              :aria-label="`step ${idx + 1}`"
-              data-recipe-step
-              @update:model-value="updateStep(idx, String($event ?? ''))"
-              @keydown="onStepModEnter($event, idx)"
-            />
-            <BaseDropdownMenu
-              v-if="form.steps.length > 1"
-              :aria-label="`step ${idx + 1} actions`"
-              placement="bottom"
-            >
-              <template #default="{ close: closeMenu }">
-                <BaseDropdownMenuItem
-                  v-if="idx > 0"
-                  @select="
-                    closeMenu();
-                    moveStep(idx, -1);
-                  "
-                >
-                  move up
-                </BaseDropdownMenuItem>
-                <BaseDropdownMenuItem
-                  v-if="idx < form.steps.length - 1"
-                  @select="
-                    closeMenu();
-                    moveStep(idx, 1);
-                  "
-                >
-                  move down
-                </BaseDropdownMenuItem>
-                <BaseDropdownMenuItem
-                  destructive
-                  @select="
-                    closeMenu();
-                    removeStep(idx);
-                  "
-                >
-                  remove
-                </BaseDropdownMenuItem>
-              </template>
-            </BaseDropdownMenu>
-          </li>
-        </ul>
-        <p class="text-xs text-surface-muted">Ctrl/⌘ + Enter adds the next step</p>
-        <BaseButton variant="secondary" size="sm" type="button" @click="addStep">
-          + step
-        </BaseButton>
-      </div>
+              <span
+                class="mt-2.5 inline-flex h-6 w-6 shrink-0 items-center justify-center text-xs text-surface-mid"
+                aria-hidden="true"
+              >
+                {{ idx + 1 }}
+              </span>
+              <BaseTextarea
+                :model-value="form.steps[idx]"
+                class="min-w-0 flex-1"
+                :rows="2"
+                placeholder="Preheat oven to 200°C"
+                :aria-label="`step ${idx + 1}`"
+                data-recipe-step
+                @update:model-value="updateStep(idx, String($event ?? ''))"
+                @keydown="onStepModEnter($event, idx)"
+              />
+              <BaseDropdownMenu
+                v-if="form.steps.length > 1"
+                :aria-label="`step ${idx + 1} actions`"
+                placement="bottom"
+              >
+                <template #default="{ close: closeMenu }">
+                  <BaseDropdownMenuItem
+                    v-if="idx > 0"
+                    @select="
+                      closeMenu();
+                      moveStep(idx, -1);
+                    "
+                  >
+                    move up
+                  </BaseDropdownMenuItem>
+                  <BaseDropdownMenuItem
+                    v-if="idx < form.steps.length - 1"
+                    @select="
+                      closeMenu();
+                      moveStep(idx, 1);
+                    "
+                  >
+                    move down
+                  </BaseDropdownMenuItem>
+                  <BaseDropdownMenuItem
+                    destructive
+                    @select="
+                      closeMenu();
+                      removeStep(idx);
+                    "
+                  >
+                    remove
+                  </BaseDropdownMenuItem>
+                </template>
+              </BaseDropdownMenu>
+            </li>
+          </ul>
+          <p class="text-xs text-surface-muted">Ctrl/⌘ + Enter adds the next step</p>
+          <BaseButton variant="secondary" size="sm" type="button" @click="addStep">
+            + step
+          </BaseButton>
+        </div>
+      </details>
 
-      <BaseInput
-        :model-value="form.tags"
-        placeholder="tags · italian, vegetarian"
-        aria-label="tags"
-        @update:model-value="patch({ tags: toStringValue($event) })"
-      />
+      <details ref="tagsDetails" class="rounded border border-surface-border px-3 py-2">
+        <summary class="cursor-pointer text-sm text-surface-mid">
+          tags
+          <span v-if="tagsPreview" class="text-xs text-surface-muted">{{ tagsPreview }}</span>
+        </summary>
+        <div class="mt-3">
+          <BaseInput
+            :model-value="form.tags"
+            placeholder="tags · italian, vegetarian"
+            aria-label="tags"
+            @update:model-value="patch({ tags: toStringValue($event) })"
+          />
+        </div>
+      </details>
 
       <BaseTextarea
         :model-value="form.notes"
