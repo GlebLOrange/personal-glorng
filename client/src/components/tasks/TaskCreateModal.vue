@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseModal from "@/components/ui/BaseModal.vue";
 import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import type { TaskCreateForm } from "@/composables/useTasks";
 
@@ -16,8 +16,8 @@ const emit = defineEmits<{ submit: []; close: [] }>();
 </script>
 
 <template>
-  <BaseModal v-if="open" title="new task" @close="emit('close')">
-    <form class="space-y-4" @submit.prevent="emit('submit')">
+  <BaseDrawer :open="open" title="new task" max-width="md" @close="emit('close')">
+    <form id="task-create-drawer-form" class="space-y-4" @submit.prevent="emit('submit')">
       <BaseInput
         v-model="form.title"
         placeholder="title (what needs doing?)"
@@ -40,12 +40,20 @@ const emit = defineEmits<{ submit: []; close: [] }>();
         aria-label="notes (optional)"
         :class="[FIELD_INPUT_CLASS, 'h-auto resize-none']"
       />
-      <div class="flex gap-3 pt-2">
-        <BaseButton type="submit" variant="primary" :disabled="saving">
+    </form>
+
+    <template #footer>
+      <div class="flex gap-3">
+        <BaseButton
+          type="submit"
+          form="task-create-drawer-form"
+          variant="primary"
+          :disabled="saving"
+        >
           {{ saving ? "creating..." : "create" }}
         </BaseButton>
         <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>
       </div>
-    </form>
-  </BaseModal>
+    </template>
+  </BaseDrawer>
 </template>

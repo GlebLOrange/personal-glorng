@@ -391,7 +391,7 @@ onUnmounted(() => {
           ? `Permissions · ${selectedUser.display_name || selectedUser.email}`
           : 'User permissions'
       "
-      max-width="xl"
+      max-width="2xl"
       @close="requestCloseUserDrawer"
     >
       <template v-if="selectedUser">

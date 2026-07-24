@@ -264,9 +264,18 @@ body {
   opacity: 0;
 }
 
+/* Drawer: fade backdrop + slide panel (single Transition on the overlay root). */
+.drawer-slide-enter-active,
+.drawer-slide-leave-active {
+  transition: opacity 0.2s ease;
+}
 .drawer-slide-enter-active .drawer-panel,
 .drawer-slide-leave-active .drawer-panel {
   transition: transform 0.2s ease;
+}
+.drawer-slide-enter-from,
+.drawer-slide-leave-to {
+  opacity: 0;
 }
 .drawer-slide-enter-from .drawer-panel,
 .drawer-slide-leave-to .drawer-panel {

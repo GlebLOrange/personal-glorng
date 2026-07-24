@@ -85,7 +85,7 @@ function toNullableNumber(value: string | number | null | undefined): number | n
 </script>
 
 <template>
-  <BaseDrawer :open="open" :title="formTitle" max-width="xl" @close="emit('close')">
+  <BaseDrawer :open="open" :title="formTitle" max-width="2xl" @close="emit('close')">
     <form id="recipe-form-drawer-form" class="space-y-4" @submit.prevent="emit('save')">
       <BaseInput
         :model-value="form.title"

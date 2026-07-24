@@ -10,10 +10,11 @@ import { useNotify } from "@/composables/useNotify";
 
 const props = withDefaults(
   defineProps<{
+    open?: boolean;
     /** inquiry = hire/work path; feedback = product notes */
     intent?: "inquiry" | "feedback";
   }>(),
-  { intent: "feedback" },
+  { open: true, intent: "feedback" },
 );
 
 const emit = defineEmits<{ close: [] }>();
@@ -73,7 +74,7 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <BaseModal :title="copy.title" @close="$emit('close')">
+  <BaseModal :open="open" :title="copy.title" @close="$emit('close')">
     <form class="space-y-3" @submit.prevent="submit">
       <BaseInput
         v-model="email"
