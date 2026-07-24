@@ -35,7 +35,7 @@ jobs:
           cache: npm
           cache-dependency-path: docs/package-lock.json
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 

@@ -19,7 +19,7 @@ jobs:
         working-directory: server
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.14"
           enable-cache: true
@@ -90,7 +90,7 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.14"
           enable-cache: true
@@ -178,7 +178,7 @@ jobs:
           cache: npm
           cache-dependency-path: docs/package-lock.json
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
