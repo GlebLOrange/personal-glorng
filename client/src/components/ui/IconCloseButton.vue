@@ -20,7 +20,7 @@ defineEmits<{ click: [MouseEvent] }>();
     variant="ghost"
     danger
     size="sm"
-    class="min-w-11 px-0"
+    class="!h-8 !w-8 !min-w-8 px-0"
     :aria-label="ariaLabel"
     :disabled="disabled"
     @click="$emit('click', $event)"

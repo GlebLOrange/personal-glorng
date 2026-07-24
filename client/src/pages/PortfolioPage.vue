@@ -142,7 +142,7 @@ onUnmounted(() => {
       <SkillsGrid :skills="resume.skills" />
     </SectionWrapper>
 
-    <SectionWrapper id="experience" title="experience" width="prose" dark alternate>
+    <SectionWrapper id="experience" title="experience" width="full" dark alternate>
       <Suspense>
         <ExperienceList :experience="resume.experience" />
         <template #fallback>
@@ -171,7 +171,7 @@ onUnmounted(() => {
       <EducationList :education="education" />
     </SectionWrapper>
 
-    <SectionWrapper id="contacts" title="contacts" width="prose" dark :alternate="education.length === 0">
+    <SectionWrapper id="contacts" title="contacts" width="full" dark :alternate="education.length === 0">
       <p class="text-body mb-2">
         Open to full-time and contract — usually reply within 24h (EU timezone).
       </p>
@@ -204,7 +204,7 @@ onUnmounted(() => {
     </SectionWrapper>
 
     <div ref="supportSectionRef" class="print:hidden">
-      <SectionWrapper id="support" title="support my work" width="prose" dark alternate>
+      <SectionWrapper id="support" title="support my work" width="full" dark alternate>
         <p class="text-body mb-6">
           If my tools or writing have helped you, a small contribution keeps the work going.
         </p>
