@@ -13,9 +13,12 @@ const props = withDefaults(
   defineProps<{
     tabs: AdminTab[];
     panelIdPrefix?: string;
+    /** Drop bottom margin when the bar sits in a shared chrome row. */
+    flush?: boolean;
   }>(),
   {
     panelIdPrefix: "admin-tab",
+    flush: false,
   },
 );
 
@@ -70,7 +73,8 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
 <template>
   <div
     ref="tablistRef"
-    class="flex flex-wrap gap-2 mb-6"
+    class="flex flex-wrap gap-2"
+    :class="flush ? undefined : 'mb-6'"
     role="tablist"
     aria-label="Admin sections"
   >

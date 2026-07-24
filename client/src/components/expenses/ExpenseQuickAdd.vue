@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, toRef, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import { FIELD_INPUT_CLASS, SELECT_CLASS_COMPACT } from "@/constants/formClasses";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
+import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import { useExpenseParse } from "@/composables/useExpenseParse";
 import {
   EXPENSE_CURRENCIES,
@@ -16,12 +17,12 @@ const props = defineProps<{
   loading: boolean;
   categoryOptions: string[];
   productSuggestions: string[];
-  currencyLabel: CurrencyCode;
 }>();
 
 const category = defineModel<string>("category", { required: true });
 const product = defineModel<string>("product", { required: true });
 const price = defineModel<string>("price", { required: true });
+const currency = defineModel<CurrencyCode>("currency", { required: true });
 const smartTextOpen = defineModel<boolean>("smartTextOpen", { default: false });
 
 const emit = defineEmits<{
@@ -41,8 +42,7 @@ const productInputRef = ref<HTMLInputElement | null>(null);
 const smartTextInputRef = ref<{ focus: () => void } | null>(null);
 const smartText = ref("");
 
-const currencyRef = toRef(props, "currencyLabel");
-const { parsed, parsing } = useExpenseParse(smartText, currencyRef);
+const { parsed, parsing } = useExpenseParse(smartText, currency);
 
 const previewLabel = computed(() => {
   const result = parsed.value;
@@ -79,15 +79,15 @@ async function confirmSmart(): Promise<void> {
   const result = parsed.value;
   if (!result?.valid || !canConfirmSmart.value) return;
 
-  const currency =
+  const resolvedCurrency =
     result.currency && EXPENSE_CURRENCIES.includes(result.currency as CurrencyCode)
       ? (result.currency as CurrencyCode)
-      : props.currencyLabel;
+      : currency.value;
 
   emit("smartSubmit", {
     tool_name: result.tool_name!.trim(),
     amount: parseFloat(result.amount!).toFixed(2),
-    currency,
+    currency: resolvedCurrency,
     expense_date: result.expense_date || isoDateLocal(),
     category: result.category?.trim() || null,
   });
@@ -106,31 +106,32 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
 
 <template>
   <Card>
-    <div class="flex items-center justify-between gap-3 mb-3">
-      <p class="text-xs text-surface-mid">quick add</p>
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-surface-light font-data" title="Entries use this currency">
-          currency: {{ currencyLabel }}
-        </span>
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          :aria-expanded="smartTextOpen"
-          aria-controls="expense-smart-text"
-          @click="smartTextOpen = !smartTextOpen"
-        >
-          {{ smartTextOpen ? "hide smart text" : "smart text" }}
-        </BaseButton>
+    <div class="mb-3 flex items-end justify-end gap-2">
+      <div class="w-[6.5rem]">
+        <BaseSelect v-model="currency" label="currency">
+          <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
+            {{ code }}
+          </option>
+        </BaseSelect>
       </div>
+      <BaseButton
+        variant="ghost"
+        size="sm"
+        :aria-expanded="smartTextOpen"
+        aria-controls="expense-smart-text"
+        @click="smartTextOpen = !smartTextOpen"
+      >
+        {{ smartTextOpen ? "hide smart text" : "smart text" }}
+      </BaseButton>
     </div>
 
     <form
       class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(7rem,10rem)_1fr_minmax(5.5rem,7rem)_auto] sm:items-end"
       @submit.prevent="emit('submit')"
     >
-      <select v-model="category" :class="SELECT_CLASS_COMPACT" aria-label="category">
+      <BaseSelect v-model="category" class="w-full" aria-label="category">
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-      </select>
+      </BaseSelect>
       <input
         ref="productInputRef"
         v-model="product"
@@ -164,8 +165,9 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         ref="smartTextInputRef"
         v-model="smartText"
         label="smart text"
-        placeholder="20 coffee · 15 EUR lunch"
+        placeholder="20 coffee"
         aria-label="smart text expense"
+        hint="Amount first — 20 coffee or 50 EUR lunch"
       />
       <p v-if="parsing" class="text-xs text-surface-mid" role="status">parsing…</p>
       <p

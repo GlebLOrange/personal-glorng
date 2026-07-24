@@ -213,11 +213,11 @@ const skeletonRows = 5;
     <EmptyState
       v-if="expenses.length === 0"
       :title="`No expenses in ${monthLabel || 'this period'}`"
-      description="Add one above, paste smart text, or log from Telegram: /spend 20 coffee"
+      description="Add above, or use smart text (20 coffee). Telegram: /spend 20 coffee"
     >
       <template #action>
         <BaseButton variant="primary" size="sm" @click="emit('smartText')">
-          paste smart text
+          use smart text
         </BaseButton>
       </template>
     </EmptyState>
