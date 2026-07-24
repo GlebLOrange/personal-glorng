@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, useId } from "vue";
+import { computed, useAttrs, useId } from "vue";
 
 import { SELECT_CLASS, SELECT_CLASS_COMPACT } from "@/constants/formClasses";
+
+defineOptions({ inheritAttrs: false });
 
 const model = defineModel<string | number | null>();
 
@@ -13,6 +15,7 @@ const props = defineProps<{
   compact?: boolean;
 }>();
 
+const attrs = useAttrs();
 const fallbackId = useId();
 const selectId = computed(() => props.id ?? `base-select-${fallbackId}`);
 const hintId = computed(() => `${selectId.value}-hint`);
@@ -24,19 +27,25 @@ const describedBy = computed(() => {
   return ids.length ? ids.join(" ") : undefined;
 });
 const selectClass = computed(() => (props.compact ? SELECT_CLASS_COMPACT : SELECT_CLASS));
+const ariaLabel = computed(() => {
+  if (props.label) return undefined;
+  const value = attrs["aria-label"];
+  return typeof value === "string" ? value : undefined;
+});
 </script>
 
 <template>
-  <div class="flex flex-col gap-1">
+  <div class="flex flex-col gap-1" :class="attrs.class">
     <label v-if="label" :for="selectId" class="text-label text-surface-sage">
       {{ label }}
     </label>
     <select
       :id="selectId"
       v-model="model"
+      :aria-label="ariaLabel"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="describedBy"
-      :class="[selectClass, error && 'border-status-error']"
+      :class="[selectClass, 'w-full', error && 'border-status-error']"
     >
       <slot />
     </select>

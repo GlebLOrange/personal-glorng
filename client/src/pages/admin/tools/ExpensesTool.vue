@@ -85,7 +85,6 @@ const {
   hasActiveFilters,
   rangeError,
   clearFilters,
-  quickAddCurrency,
   quickAdd,
   form,
   formTitle,
@@ -221,12 +220,29 @@ function goToTransactions(): void {
       </div>
     </section>
 
-    <AdminTabBar
-      panel-id-prefix="expenses-tab"
-      :model-value="activeTab"
-      :tabs="expenseTabItems"
-      @update:model-value="switchTab"
-    />
+    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <AdminTabBar
+        flush
+        panel-id-prefix="expenses-tab"
+        :model-value="activeTab"
+        :tabs="expenseTabItems"
+        @update:model-value="switchTab"
+      />
+      <div v-if="activeTab === 'transactions'" class="flex flex-wrap gap-2">
+        <BaseButton
+          variant="ghost"
+          :aria-expanded="filtersOpen"
+          aria-controls="expense-transaction-filters"
+          @click="filtersOpen = !filtersOpen"
+        >
+          {{ transactionFilterLabel }}
+        </BaseButton>
+        <BaseButton variant="ghost" :disabled="exporting" @click="exportCsv">
+          {{ exporting ? "exporting..." : "export csv" }}
+        </BaseButton>
+        <BaseButton variant="primary" @click="openCreate">+ add</BaseButton>
+      </div>
+    </div>
 
     <section
       v-if="activeTab === 'transactions'"
@@ -236,34 +252,16 @@ function goToTransactions(): void {
       tabindex="0"
       class="flex flex-col gap-4 outline-none"
     >
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <h2 class="text-lg font-semibold text-surface-light">transactions</h2>
-        <div class="flex flex-wrap gap-2">
-          <BaseButton
-            variant="ghost"
-            :aria-expanded="filtersOpen"
-            aria-controls="expense-transaction-filters"
-            @click="filtersOpen = !filtersOpen"
-          >
-            {{ transactionFilterLabel }}
-          </BaseButton>
-          <BaseButton variant="ghost" :disabled="exporting" @click="exportCsv">
-            {{ exporting ? "exporting..." : "export csv" }}
-          </BaseButton>
-          <BaseButton variant="primary" @click="openCreate">+ add</BaseButton>
-        </div>
-      </div>
-
       <ExpenseQuickAdd
         ref="quickAddRef"
         v-model:category="quickAdd.category"
         v-model:product="quickAdd.product"
         v-model:price="quickAdd.price"
+        v-model:currency="displayCurrency"
         v-model:smart-text-open="smartTextOpen"
         :loading="savingExpense"
         :category-options="categoryOptions"
         :product-suggestions="productSuggestions"
-        :currency-label="quickAddCurrency"
         @submit="quickSaveExpense"
         @smart-submit="saveSmartExpense"
       />
