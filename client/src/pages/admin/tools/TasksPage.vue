@@ -295,14 +295,14 @@ onMounted(() => {
       />
 
       <TaskDetailModal
-        v-if="selectedTask"
+        :open="selectedTask !== null"
         :task="selectedTask"
         :loading="detailLoading"
         :can-mutate="isSuperuser"
         :status-updating="statusUpdating"
         @close="closeDetail"
         @retry-sync="retrySync"
-        @update-status="updateTaskStatus(selectedTask.id, $event)"
+        @update-status="selectedTask && updateTaskStatus(selectedTask.id, $event)"
       />
     </div>
   </AdminPageLayout>

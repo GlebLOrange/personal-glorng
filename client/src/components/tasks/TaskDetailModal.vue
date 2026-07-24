@@ -4,7 +4,7 @@ import { computed } from "vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
 import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
-import BaseModal from "@/components/ui/BaseModal.vue";
+import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import ToolIcon from "@/components/icons/ToolIcon.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import {
@@ -18,7 +18,8 @@ import type { TaskDetail } from "@/types";
 import { formatDate, formatRelativeTime, formatScheduleDate } from "@/utils/format";
 
 const props = defineProps<{
-  task: TaskDetail;
+  open: boolean;
+  task: TaskDetail | null;
   loading: boolean;
   canMutate?: boolean;
   statusUpdating?: boolean;
@@ -31,13 +32,17 @@ const emit = defineEmits<{
 }>();
 
 const availableStatuses = computed(() =>
-  TASK_STATUSES.filter((status) => status !== props.task.status),
+  props.task
+    ? TASK_STATUSES.filter((status) => status !== props.task!.status)
+    : [],
 );
 
-const schedule = computed(() => formatScheduleDate(props.task.scheduled_at));
+const schedule = computed(() =>
+  props.task ? formatScheduleDate(props.task.scheduled_at) : null,
+);
 
 const primaryActionStatus = computed((): TaskStatus | null =>
-  props.task.status === "pending" || props.task.status === "not_completed"
+  props.task?.status === "pending" || props.task?.status === "not_completed"
     ? "completed"
     : null,
 );
@@ -48,25 +53,26 @@ const menuStatuses = computed(() =>
 </script>
 
 <template>
-  <BaseModal :title="task.title" max-width="md" @close="emit('close')">
-    <template #header="{ titleId }">
-      <div class="grid w-full grid-cols-2 items-center gap-2">
-        <div class="min-w-0">
-          <StatusBadge
-            size="lg"
-            :label="statusLabel(task.status)"
-            :class-name="statusBadgeClass(task.status)"
-          />
-        </div>
-        <h2 :id="titleId" class="min-w-0 truncate text-lg font-bold text-surface-light">
-          {{ task.title }}
-        </h2>
+  <BaseDrawer
+    :open="open"
+    :title="task?.title ?? 'Task'"
+    max-width="md"
+    @close="emit('close')"
+  >
+    <template v-if="task" #title>
+      <div class="flex min-w-0 flex-col gap-2">
+        <StatusBadge
+          size="lg"
+          :label="statusLabel(task.status)"
+          :class-name="statusBadgeClass(task.status)"
+        />
+        <h2 class="truncate text-lg font-bold text-surface-light">{{ task.title }}</h2>
       </div>
     </template>
 
-    <div v-if="loading" class="space-y-3 animate-pulse">
-      <div class="h-4 w-full bg-surface-border rounded" />
-      <div class="h-4 w-3/4 bg-surface-border rounded" />
+    <div v-if="loading || !task" class="space-y-3 animate-pulse">
+      <div class="h-4 w-full rounded bg-surface-border" />
+      <div class="h-4 w-3/4 rounded bg-surface-border" />
     </div>
 
     <div v-else class="space-y-5">
@@ -77,9 +83,11 @@ const menuStatuses = computed(() =>
             class="min-w-4 flex-1 translate-y-[-0.15em] border-b border-dotted border-surface-border/50"
             aria-hidden="true"
           />
-          <span class="shrink-0 text-right text-surface-light">{{ schedule.headline }}</span>
+          <span class="shrink-0 text-right text-surface-light">{{ schedule?.headline }}</span>
         </div>
-        <p v-if="schedule.detail" class="text-right text-xs text-surface-mid">{{ schedule.detail }}</p>
+        <p v-if="schedule?.detail" class="text-right text-xs text-surface-mid">
+          {{ schedule.detail }}
+        </p>
 
         <div v-if="task.location" class="flex min-w-0 items-baseline gap-2 text-sm">
           <span class="shrink-0 text-surface-mid">location</span>
@@ -99,7 +107,7 @@ const menuStatuses = computed(() =>
             aria-hidden="true"
           />
         </div>
-        <p class="text-sm text-surface-light whitespace-pre-wrap">{{ task.description }}</p>
+        <p class="whitespace-pre-wrap text-sm text-surface-light">{{ task.description }}</p>
       </section>
 
       <section v-if="task.reminders.length" class="border-t border-surface-border pt-4">
@@ -115,10 +123,10 @@ const menuStatuses = computed(() =>
             </span>
             <span
               :class="[
-                'shrink-0 text-xs px-2 py-0.5 rounded-full',
+                'shrink-0 rounded-full px-2 py-0.5 text-xs',
                 reminder.sent
-                  ? 'text-status-success bg-status-success/10'
-                  : 'text-status-warning bg-status-warning/10',
+                  ? 'bg-status-success/10 text-status-success'
+                  : 'bg-status-warning/10 text-status-warning',
               ]"
             >
               {{ reminder.sent ? "delivered" : "upcoming" }}
@@ -173,42 +181,6 @@ const menuStatuses = computed(() =>
         </BaseButton>
       </section>
 
-      <section v-if="canMutate" class="border-t border-surface-border pt-4">
-        <div class="flex flex-wrap items-center gap-2">
-          <BaseButton
-            v-if="primaryActionStatus"
-            variant="primary"
-            size="sm"
-            :disabled="statusUpdating"
-            @click="emit('updateStatus', primaryActionStatus)"
-          >
-            {{ statusActionLabel(primaryActionStatus) }}
-          </BaseButton>
-          <BaseDropdownMenu
-            v-if="menuStatuses.length"
-            placement="top"
-            aria-label="more actions"
-          >
-            <template #trigger>
-              <span class="px-2 text-sm">more actions</span>
-            </template>
-            <template #default="{ close: closeMenu }">
-              <BaseDropdownMenuItem
-                v-for="status in menuStatuses"
-                :key="status"
-                :destructive="status === 'cancelled' || status === 'not_completed'"
-                @select="
-                  closeMenu();
-                  if (!statusUpdating) emit('updateStatus', status);
-                "
-              >
-                {{ statusActionLabel(status) }}
-              </BaseDropdownMenuItem>
-            </template>
-          </BaseDropdownMenu>
-        </div>
-      </section>
-
       <details
         v-if="canMutate"
         class="border-t border-surface-border pt-4 text-sm text-surface-mid"
@@ -232,5 +204,41 @@ const menuStatuses = computed(() =>
         </dl>
       </details>
     </div>
-  </BaseModal>
+
+    <template v-if="canMutate && task" #footer>
+      <div class="flex flex-wrap items-center gap-2">
+        <BaseButton
+          v-if="primaryActionStatus"
+          variant="primary"
+          size="sm"
+          :disabled="statusUpdating"
+          @click="emit('updateStatus', primaryActionStatus)"
+        >
+          {{ statusActionLabel(primaryActionStatus) }}
+        </BaseButton>
+        <BaseDropdownMenu
+          v-if="menuStatuses.length"
+          placement="top"
+          aria-label="more actions"
+        >
+          <template #trigger>
+            <span class="px-2 text-sm">more actions</span>
+          </template>
+          <template #default="{ close: closeMenu }">
+            <BaseDropdownMenuItem
+              v-for="status in menuStatuses"
+              :key="status"
+              :destructive="status === 'cancelled' || status === 'not_completed'"
+              @select="
+                closeMenu();
+                if (!statusUpdating) emit('updateStatus', status);
+              "
+            >
+              {{ statusActionLabel(status) }}
+            </BaseDropdownMenuItem>
+          </template>
+        </BaseDropdownMenu>
+      </div>
+    </template>
+  </BaseDrawer>
 </template>

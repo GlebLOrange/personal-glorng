@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseModal from "@/components/ui/BaseModal.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { EXPENSE_CURRENCIES, type CurrencyCode } from "@/composables/useExpenseFilters";
@@ -24,14 +24,14 @@ const emit = defineEmits<{ submit: []; close: [] }>();
 </script>
 
 <template>
-  <BaseModal v-if="open" :title="title" @close="emit('close')">
-    <form class="space-y-4" @submit.prevent="emit('submit')">
+  <BaseDrawer :open="open" :title="title" max-width="md" @close="emit('close')">
+    <form id="expense-form-drawer" class="space-y-4" @submit.prevent="emit('submit')">
       <BaseSelect v-model="category" label="category">
         <option value="">—</option>
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </BaseSelect>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <BaseInput
           v-model="toolName"
           label="product"
@@ -60,13 +60,20 @@ const emit = defineEmits<{ submit: []; close: [] }>();
         label="notes"
         placeholder="invoice ref, billing period..."
       />
+    </form>
 
-      <div class="flex gap-3 pt-2">
-        <BaseButton type="submit" variant="primary" :disabled="loading">
+    <template #footer>
+      <div class="flex gap-3">
+        <BaseButton
+          type="submit"
+          form="expense-form-drawer"
+          variant="primary"
+          :disabled="loading"
+        >
           {{ loading ? "saving..." : "save" }}
         </BaseButton>
         <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>
       </div>
-    </form>
-  </BaseModal>
+    </template>
+  </BaseDrawer>
 </template>

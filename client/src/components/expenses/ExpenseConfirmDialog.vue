@@ -25,7 +25,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <BaseModal v-if="open" :title="title" @close="emit('cancel')">
+  <BaseModal :open="open" :title="title" @close="emit('cancel')">
     <div class="mb-6 text-sm text-surface-mid">
       <slot>
         <p>{{ message }}</p>

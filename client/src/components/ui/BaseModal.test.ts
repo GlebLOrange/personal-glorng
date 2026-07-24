@@ -4,8 +4,17 @@ import { nextTick } from "vue";
 
 import BaseModal from "@/components/ui/BaseModal.vue";
 
+async function flushFocus(): Promise<void> {
+  await nextTick();
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+}
+
 function mountModal(
-  props: { title?: string; ariaLabel?: string } = { title: "Test modal" },
+  props: {
+    open?: boolean;
+    title?: string;
+    ariaLabel?: string;
+  } = { open: true, title: "Test modal" },
 ): { wrapper: VueWrapper; trigger: HTMLButtonElement } {
   const trigger = document.createElement("button");
   trigger.type = "button";
@@ -15,7 +24,7 @@ function mountModal(
 
   const wrapper = mount(BaseModal, {
     attachTo: document.body,
-    props,
+    props: { open: true, ...props },
     slots: {
       default: '<input type="text" aria-label="Sample field" />',
     },
@@ -29,20 +38,30 @@ afterEach(() => {
 });
 
 describe("BaseModal", () => {
-  it("exposes dialog semantics", () => {
+  it("exposes dialog semantics", async () => {
     const { wrapper } = mountModal();
+    await flushFocus();
 
     const dialog = document.body.querySelector('[role="dialog"]');
     expect(dialog).not.toBeNull();
     expect(dialog?.getAttribute("aria-modal")).toBe("true");
     expect(dialog?.getAttribute("aria-labelledby")).toBeTruthy();
+    expect(document.body.querySelector(".overlay-backdrop")).not.toBeNull();
+
+    wrapper.unmount();
+  });
+
+  it("does not render when closed", () => {
+    const { wrapper } = mountModal({ open: false, title: "Hidden" });
+
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
     wrapper.unmount();
   });
 
   it("focuses the first editable field on open, not the close button", async () => {
     const { wrapper } = mountModal();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await flushFocus();
 
     const field = document.body.querySelector(
       'input[aria-label="Sample field"]',
@@ -54,23 +73,25 @@ describe("BaseModal", () => {
 
   it("closes on Escape and restores focus", async () => {
     const { wrapper, trigger } = mountModal();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await flushFocus();
 
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     expect(wrapper.emitted("close")).toHaveLength(1);
 
-    wrapper.unmount();
+    await wrapper.setProps({ open: false });
     await nextTick();
     expect(document.activeElement).toBe(trigger);
+
+    wrapper.unmount();
   });
 
   it("traps Tab focus inside the dialog", async () => {
     const { wrapper } = mountModal();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await flushFocus();
 
     const dialog = document.body.querySelector('[role="dialog"]') as HTMLElement;
     const focusables = dialog.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), input:not([disabled])',
+      "button:not([disabled]), input:not([disabled])",
     );
     const last = focusables[focusables.length - 1];
     last.focus();
@@ -83,8 +104,9 @@ describe("BaseModal", () => {
     wrapper.unmount();
   });
 
-  it("uses ariaLabel when no title is provided", () => {
-    const { wrapper } = mountModal({ ariaLabel: "Confirm delete" });
+  it("uses ariaLabel when no title is provided", async () => {
+    const { wrapper } = mountModal({ open: true, ariaLabel: "Confirm delete" });
+    await flushFocus();
 
     const dialog = document.body.querySelector('[role="dialog"]');
     expect(dialog?.getAttribute("aria-label")).toBe("Confirm delete");
@@ -93,8 +115,9 @@ describe("BaseModal", () => {
     wrapper.unmount();
   });
 
-  it("falls back to Dialog aria-label when no title or ariaLabel", () => {
-    const { wrapper } = mountModal({});
+  it("falls back to Dialog aria-label when no title or ariaLabel", async () => {
+    const { wrapper } = mountModal({ open: true });
+    await flushFocus();
 
     const dialog = document.body.querySelector('[role="dialog"]');
     expect(dialog?.getAttribute("aria-label")).toBe("Dialog");

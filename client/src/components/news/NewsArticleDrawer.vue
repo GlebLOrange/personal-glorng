@@ -70,7 +70,7 @@ function toggleTheme(theme: string): void {
 </script>
 
 <template>
-  <BaseDrawer :open="open" :title="title" max-width="xl" @close="emit('close')">
+  <BaseDrawer :open="open" :title="title" max-width="2xl" @close="emit('close')">
     <form class="space-y-6" @submit.prevent="emit('save')">
       <section class="space-y-4">
         <h3 class="text-sm font-medium text-surface-mid">publishing</h3>

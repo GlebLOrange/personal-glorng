@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, ref, watch } from "vue";
+import { computed, ref } from "vue";
 
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
-import { useScrollLock } from "@/composables/useScrollLock";
-import { focusEditableField } from "@/utils/focusField";
+import OverlayBackdrop from "@/components/ui/OverlayBackdrop.vue";
+import { useOverlayShell } from "@/composables/useOverlayShell";
+import {
+  OVERLAY_MAX_WIDTH_CLASS,
+  type OverlayMaxWidth,
+} from "@/constants/overlaySizes";
 
 const props = withDefaults(
   defineProps<{
     open: boolean;
     title: string;
-    maxWidth?: "md" | "lg" | "xl";
+    maxWidth?: OverlayMaxWidth;
   }>(),
   {
     maxWidth: "lg",
@@ -20,92 +24,28 @@ const emit = defineEmits<{ close: [] }>();
 
 const panel = ref<HTMLElement | null>(null);
 const closeButton = ref<InstanceType<typeof IconCloseButton> | null>(null);
-let returnFocusTarget: HTMLElement | null = null;
 
-useScrollLock(() => props.open);
-
-const panelWidth = computed(() => {
-  if (props.maxWidth === "md") return "max-w-md";
-  if (props.maxWidth === "xl") return "max-w-2xl";
-  return "max-w-lg";
+useOverlayShell({
+  open: () => props.open,
+  panelRef: panel,
+  onClose: () => emit("close"),
+  initialFocusFallback: () => {
+    const el = closeButton.value?.$el;
+    return el instanceof HTMLElement ? el : null;
+  },
 });
 
-function closeButtonEl(): HTMLElement | null {
-  const el = closeButton.value?.$el;
-  return el instanceof HTMLElement ? el : null;
-}
-
-function focusableElements(): HTMLElement[] {
-  const root = panel.value;
-  if (!root) return [];
-  return Array.from(
-    root.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ),
-  );
-}
-
-function trapFocus(event: KeyboardEvent): void {
-  const focusable = focusableElements();
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (!first || !last) return;
-
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-    return;
-  }
-  if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
-}
-
-function onKeydown(event: KeyboardEvent): void {
-  if (event.key === "Escape") {
-    emit("close");
-    return;
-  }
-  if (event.key === "Tab") trapFocus(event);
-}
-
-watch(
-  () => props.open,
-  async (open) => {
-    if (!open) {
-      document.removeEventListener("keydown", onKeydown);
-      await nextTick();
-      returnFocusTarget?.focus();
-      return;
-    }
-
-    returnFocusTarget =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    document.addEventListener("keydown", onKeydown);
-    await nextTick();
-    focusEditableField(panel.value, closeButtonEl());
-  },
-  { immediate: true },
+const panelWidth = computed(
+  () => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"],
 );
-
-onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 </script>
 
 <template>
   <Teleport to="body">
-    <div v-if="open" class="fixed inset-0 z-50 flex justify-end">
-      <Transition name="fade">
-        <div
-          v-if="open"
-          class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          aria-hidden="true"
-          @click="emit('close')"
-        />
-      </Transition>
-      <Transition name="drawer-slide" appear>
+    <Transition name="drawer-slide">
+      <div v-if="open" class="fixed inset-0 z-50 flex justify-end">
+        <OverlayBackdrop @close="emit('close')" />
         <aside
-          v-if="open"
           ref="panel"
           role="dialog"
           aria-modal="true"
@@ -119,11 +59,13 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
           <header
             class="flex shrink-0 items-start justify-between gap-3 border-b border-surface-border px-6 py-4"
           >
-            <h2 class="min-w-0 flex-1 truncate text-lg font-bold text-surface-light">
+            <div class="min-w-0 flex-1">
               <slot name="title">
-                {{ title }}
+                <h2 class="truncate text-lg font-bold text-surface-light">
+                  {{ title }}
+                </h2>
               </slot>
-            </h2>
+            </div>
             <div class="flex shrink-0 items-center gap-1">
               <slot name="header-actions" />
               <IconCloseButton
@@ -145,7 +87,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
             <slot name="footer" />
           </footer>
         </aside>
-      </Transition>
-    </div>
+      </div>
+    </Transition>
   </Teleport>
 </template>
