@@ -135,20 +135,19 @@ async function handleGoHome(): Promise<void> {
             </RouterLink>
 
             <RouterLink
+              to="/tools"
+              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              active-class="text-accent-blue"
+            >
+              tools
+            </RouterLink>
+            <RouterLink
               v-if="canUseAdminHub"
               to="/admin"
               class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
               active-class="text-accent-blue"
             >
               admin
-            </RouterLink>
-            <RouterLink
-              v-else
-              to="/tools"
-              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              active-class="text-accent-blue"
-            >
-              tools
             </RouterLink>
 
             <RouterLink

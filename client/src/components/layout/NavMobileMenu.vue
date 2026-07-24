@@ -136,20 +136,19 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       </RouterLink>
 
       <RouterLink
+        to="/tools"
+        class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        @click="emit('close')"
+      >
+        tools
+      </RouterLink>
+      <RouterLink
         v-if="canUseAdminHub"
         to="/admin"
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         @click="emit('close')"
       >
         admin
-      </RouterLink>
-      <RouterLink
-        v-else
-        to="/tools"
-        class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        @click="emit('close')"
-      >
-        tools
       </RouterLink>
 
       <RouterLink
