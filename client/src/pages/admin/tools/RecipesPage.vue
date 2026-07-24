@@ -138,7 +138,7 @@ function openRecipeEdit(recipe: NonNullable<typeof selectedRecipe.value>): void 
             clear filters
           </BaseButton>
           <BaseButton v-else-if="canWrite" variant="ghost" size="sm" @click="openCreate">
-            + add your first recipe
+            + your first recipe
           </BaseButton>
         </template>
       </EmptyState>

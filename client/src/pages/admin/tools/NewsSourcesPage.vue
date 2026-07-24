@@ -366,7 +366,7 @@ onMounted(loadSources);
                   size="sm"
                   @click="openCreate"
                 >
-                  add source
+                  + source
                 </BaseButton>
               </div>
             </div>
@@ -417,6 +417,17 @@ onMounted(loadSources);
             >
               ⚠
             </span>
+            <BaseButton
+              v-if="canWrite"
+              variant="ghost"
+              quiet
+              size="sm"
+              class="hover:enabled:!text-accent-blue focus-visible:!text-accent-blue"
+              aria-label="edit source"
+              @click="openEditableSource(source)"
+            >
+              ✎
+            </BaseButton>
             <IconCloseButton
               v-if="canWrite"
               aria-label="Delete source"

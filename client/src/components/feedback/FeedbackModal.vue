@@ -74,8 +74,8 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <BaseModal :open="open" :title="copy.title" @close="$emit('close')">
-    <form class="space-y-3" @submit.prevent="submit">
+  <BaseModal :open="open" :title="copy.title" max-width="md" @close="$emit('close')">
+    <form id="feedback-modal-form" class="space-y-3" @submit.prevent="submit">
       <BaseInput
         v-model="email"
         type="email"
@@ -92,17 +92,23 @@ async function submit(): Promise<void> {
         v-model="message"
         :label="copy.messageLabel"
         :placeholder="copy.messagePlaceholder"
-        rows="5"
+        :rows="5"
       />
-      <BaseButton
-        variant="primary"
-        type="submit"
-        :loading="loading"
-        :disabled="!canSubmit"
-        class="w-full"
-      >
-        {{ loading ? "sending..." : copy.submit }}
-      </BaseButton>
     </form>
+
+    <template #footer>
+      <div class="flex justify-end gap-3">
+        <BaseButton variant="ghost" danger type="button" @click="$emit('close')">cancel</BaseButton>
+        <BaseButton
+          form="feedback-modal-form"
+          variant="success"
+          type="submit"
+          :loading="loading"
+          :disabled="!canSubmit"
+        >
+          {{ loading ? "sending..." : copy.submit }}
+        </BaseButton>
+      </div>
+    </template>
   </BaseModal>
 </template>

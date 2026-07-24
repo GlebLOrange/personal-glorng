@@ -253,10 +253,10 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "operations",
     description: "Swagger API documentation",
     apiPrefix: "/docs",
-    adminRoute: "/admin/api/docs",
+    adminRoute: "/api/docs",
     icon: "❴❵",
     capabilities: ["read"],
-    external: false,
+    external: true,
   },
 ];
 

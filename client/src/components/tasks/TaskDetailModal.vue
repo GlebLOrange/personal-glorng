@@ -209,7 +209,7 @@ const menuStatuses = computed(() =>
       <div class="flex flex-wrap items-center gap-2">
         <BaseButton
           v-if="primaryActionStatus"
-          variant="primary"
+          variant="success"
           size="sm"
           :disabled="statusUpdating"
           @click="emit('updateStatus', primaryActionStatus)"

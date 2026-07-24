@@ -26,7 +26,7 @@ const emit = defineEmits<{
   "update:form": [value: NewsSourceForm];
 }>();
 
-const title = computed(() => (props.mode === "create" ? "add source" : "edit source"));
+const title = computed(() => (props.mode === "create" ? "+ source" : "edit source"));
 
 function patch(patchValue: Partial<NewsSourceForm>): void {
   emit("update:form", { ...props.form, ...patchValue });
@@ -81,11 +81,11 @@ function toStringValue(value: string | number | null | undefined): string {
     </form>
 
     <template #footer>
-      <div class="flex gap-3">
-        <BaseButton type="submit" form="news-source-form" variant="primary" :disabled="loading">
+      <div class="flex justify-end gap-3">
+        <BaseButton type="button" variant="ghost" danger @click="emit('close')">cancel</BaseButton>
+        <BaseButton type="submit" form="news-source-form" variant="success" :disabled="loading">
           {{ loading ? "saving..." : "save" }}
         </BaseButton>
-        <BaseButton type="button" variant="ghost" @click="emit('close')">cancel</BaseButton>
       </div>
     </template>
   </BaseDrawer>

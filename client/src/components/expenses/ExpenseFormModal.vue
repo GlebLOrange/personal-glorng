@@ -63,16 +63,16 @@ const emit = defineEmits<{ submit: []; close: [] }>();
     </form>
 
     <template #footer>
-      <div class="flex gap-3">
+      <div class="flex justify-end gap-3">
+        <BaseButton variant="ghost" danger type="button" @click="emit('close')">cancel</BaseButton>
         <BaseButton
           type="submit"
           form="expense-form-drawer"
-          variant="primary"
+          variant="success"
           :disabled="loading"
         >
           {{ loading ? "saving..." : "save" }}
         </BaseButton>
-        <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>
       </div>
     </template>
   </BaseDrawer>

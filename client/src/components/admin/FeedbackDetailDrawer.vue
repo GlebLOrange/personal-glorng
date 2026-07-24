@@ -47,9 +47,9 @@ const emit = defineEmits<{
     </template>
 
     <template #footer>
-      <div class="flex gap-3">
-        <BaseButton variant="primary" size="sm" @click="emit('reply')">reply</BaseButton>
+      <div class="flex justify-end gap-3">
         <BaseButton variant="ghost" size="sm" @click="emit('close')">close</BaseButton>
+        <BaseButton variant="primary" size="sm" @click="emit('reply')">reply</BaseButton>
       </div>
     </template>
   </BaseDrawer>

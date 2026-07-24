@@ -54,7 +54,7 @@ function onCategoryRowClick(category: ExpenseCategory): void {
 <template>
   <div class="flex flex-col gap-6">
     <Card>
-      <BaseSelect v-model="displayCurrency" label="ledger totals currency">
+      <BaseSelect v-model="displayCurrency" aria-label="ledger totals currency">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>
     </Card>
@@ -99,10 +99,10 @@ function onCategoryRowClick(category: ExpenseCategory): void {
               :class="[FIELD_INPUT_CLASS_COMPACT, 'w-28']"
               @click.stop
             />
-            <BaseButton variant="primary" size="sm" @click.stop="emit('saveCategoryRename')">
+            <BaseButton variant="success" size="sm" @click.stop="emit('saveCategoryRename')">
               save
             </BaseButton>
-            <BaseButton variant="ghost" size="sm" @click.stop="emit('cancelEditCategory')">
+            <BaseButton variant="ghost" danger size="sm" @click.stop="emit('cancelEditCategory')">
               cancel
             </BaseButton>
           </template>
@@ -145,10 +145,6 @@ function onCategoryRowClick(category: ExpenseCategory): void {
           + category
         </BaseButton>
       </form>
-      <p class="text-xs text-surface-mid mt-3">
-        Renaming updates all expenses in that category. Optional monthly budget uses display
-        currency. Delete only works when unused.
-      </p>
     </Card>
   </div>
 </template>

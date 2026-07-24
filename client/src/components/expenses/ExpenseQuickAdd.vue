@@ -106,9 +106,9 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
 
 <template>
   <Card variant="compact">
-    <div class="mb-2 flex items-end justify-end gap-2">
+    <div class="mb-2 flex items-center justify-end gap-2">
       <div class="w-[6.5rem]">
-        <BaseSelect v-model="currency" label="currency">
+        <BaseSelect v-model="currency" aria-label="currency">
           <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
             {{ code }}
           </option>
@@ -148,7 +148,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         placeholder="price"
         aria-label="price"
       />
-      <BaseButton variant="primary" type="submit" size="field" :disabled="loading">
+      <BaseButton variant="success" type="submit" size="field" :disabled="loading">
         {{ loading ? "saving..." : "save" }}
       </BaseButton>
       <datalist id="expense-product-suggestions">
@@ -181,13 +181,13 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         {{ previewLabel }}
       </p>
       <BaseButton
-        variant="primary"
+        variant="success"
         size="sm"
         class="self-start"
         :disabled="loading || parsing || !canConfirmSmart"
         @click="confirmSmart"
       >
-        {{ loading ? "saving..." : "add parsed expense" }}
+        {{ loading ? "saving..." : "+ parsed expense" }}
       </BaseButton>
     </div>
   </Card>

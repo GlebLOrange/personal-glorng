@@ -12,11 +12,11 @@ export const FIELD_INPUT_CLASS_COMPACT =
   `${FIELD_FOCUS} transition-colors placeholder:text-surface-mid/70`;
 
 export const SELECT_CLASS =
-  "h-11 w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-0 text-surface-light text-sm " +
+  "field-select-chevron h-11 w-full border border-surface-border rounded-lg pl-4 pr-10 py-0 text-surface-light text-sm " +
   `${FIELD_FOCUS} transition-colors`;
 
 export const SELECT_CLASS_COMPACT =
-  "h-9 bg-surface-dark border border-surface-border rounded-lg px-2 py-0 text-surface-light text-xs " +
+  "field-select-chevron h-9 border border-surface-border rounded-lg pl-2 pr-8 py-0 text-surface-light text-xs " +
   `${FIELD_FOCUS} transition-colors min-w-[7.5rem]`;
 
 export const TEXTAREA_CLASS =

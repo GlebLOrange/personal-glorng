@@ -34,4 +34,14 @@ describe("BaseButton", () => {
     expect(button.classes()).toContain("hover:enabled:border-status-error/20");
     expect(button.classes()).toContain("text-surface-light/60");
   });
+
+  it("applies success fill and focus ring", () => {
+    const button = mount(BaseButton, {
+      props: { variant: "success" },
+    }).get("button");
+
+    expect(button.classes()).toContain("bg-status-success");
+    expect(button.classes()).toContain("hover:enabled:bg-status-success/90");
+    expect(button.classes()).toContain("focus-visible:ring-status-success/50");
+  });
 });

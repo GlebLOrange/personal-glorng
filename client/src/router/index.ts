@@ -113,7 +113,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/admin/api/docs",
     name: "admin-api-docs",
-    redirect: "/api/docs",
+    // Swagger is a FastAPI page, not a Vue route — leave the SPA.
+    beforeEnter: () => {
+      window.location.assign("/api/docs");
+      return false;
+    },
+    component: () => import("@/pages/admin/DashboardPage.vue"),
+    meta: { requiresAuth: true, requiresSuperuser: true, noindex: true },
   },
   {
     path: "/tools",

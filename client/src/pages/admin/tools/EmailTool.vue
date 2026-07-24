@@ -82,7 +82,7 @@ async function preview(): Promise<void> {
           </BaseButton>
           <BaseButton
             type="submit"
-            variant="primary"
+            variant="success"
             size="sm"
             :disabled="!canSend || loading"
           >
