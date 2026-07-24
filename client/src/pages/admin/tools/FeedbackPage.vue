@@ -57,7 +57,7 @@ const activeFilterLabel = computed(
 function reply(item: FeedbackItem): void {
   const body = `\n\n--- Original ---\n${item.message}`;
   router.push({
-    path: "/admin/tools/email",
+    path: "/admin/send-email",
     query: { to: item.email, subject: `Re: ${item.theme}`, body },
   });
 }
@@ -160,7 +160,7 @@ onMounted(load);
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="feedback">
+  <AdminPageLayout title="feedback">
     <AdminListSkeleton v-if="loading" label="Loading feedback" />
 
     <template v-else>

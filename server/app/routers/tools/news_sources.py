@@ -21,7 +21,7 @@ from app.schemas.news import (
 from app.services.news_ingest import NewsIngestService
 
 router = APIRouter(
-    prefix="/news-sources",
+    prefix="/sources",
     tags=["news"],
 )
 

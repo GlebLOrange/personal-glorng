@@ -53,7 +53,7 @@ async def create_feedback(data: FeedbackCreate, registry: DbRegistry) -> Feedbac
 
     truncated = data.message[:500] + ("..." if len(data.message) > 500 else "")
     base_url = get_settings().BASE_URL.rstrip("/")
-    link = f"{base_url}/admin/tools/feedback"
+    link = f"{base_url}/admin/feedback"
     text = (
         f"<b>New feedback</b> from {escape(data.email)}\n"
         f"<b>Theme:</b> {escape(data.theme)}\n---\n"

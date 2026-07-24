@@ -34,7 +34,8 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `POST` | `/api/auth/refresh` | auth | Refresh access token |
 | `POST` | `/api/auth/register` | auth | Register new account |
 | `POST` | `/api/auth/reset-password` | auth | Reset password |
-| `GET` | `/api/auth/verify` | auth | Verify email |
+| `GET` | `/api/auth/verify` | auth | Verify email (redirect) |
+| `POST` | `/api/auth/verify` | auth | Verify email |
 | `GET` | `/api/callbacks/google` | callbacks | Google OAuth callback |
 | `POST` | `/api/donations/checkout` | donations | Create Stripe Checkout session |
 | `GET` | `/api/donations/config` | donations | Get donation config |
@@ -94,16 +95,15 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `DELETE` | `/api/tools/file-share/{file_id}` | file-share | Delete shared file |
 | `GET` | `/api/tools/news` | news | List news |
 | `POST` | `/api/tools/news` | news | Create news article |
-| `GET` | `/api/tools/news-sources` | news | List RSS news sources |
-| `POST` | `/api/tools/news-sources` | news | Create RSS news source |
-| `POST` | `/api/tools/news-sources/refresh` | news | Parse RSS sources into stored news articles |
-| `DELETE` | `/api/tools/news-sources/{source_id}` | news | Delete RSS news source |
-| `PUT` | `/api/tools/news-sources/{source_id}` | news | Update RSS news source |
-| `GET` | `/api/tools/news/admin` | news | List news for admin |
-| `GET` | `/api/tools/news/admin/stats` | news | Get news article stats |
-| `GET` | `/api/tools/news/admin/{article_id}` | news | Get news article for admin |
+| `GET` | `/api/tools/news/by-id/{article_id}` | news | Get news article by id |
 | `POST` | `/api/tools/news/ingest` | news | Run news ingestion |
 | `POST` | `/api/tools/news/metadata` | news | Load article metadata |
+| `GET` | `/api/tools/news/sources` | news, news | List RSS news sources |
+| `POST` | `/api/tools/news/sources` | news, news | Create RSS news source |
+| `POST` | `/api/tools/news/sources/refresh` | news, news | Parse RSS sources into stored news articles |
+| `DELETE` | `/api/tools/news/sources/{source_id}` | news, news | Delete RSS news source |
+| `PUT` | `/api/tools/news/sources/{source_id}` | news, news | Update RSS news source |
+| `GET` | `/api/tools/news/stats` | news | Get news article stats |
 | `GET` | `/api/tools/news/themes` | news | List news themes |
 | `DELETE` | `/api/tools/news/{article_id}` | news | Delete news article |
 | `PUT` | `/api/tools/news/{article_id}` | news | Update news article |

@@ -146,7 +146,7 @@ onMounted(load);
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="app logs">
+  <AdminPageLayout title="app logs">
     <AdminListSkeleton v-if="loading && items.length === 0 && !listError" label="Loading app logs" />
 
     <template v-else>

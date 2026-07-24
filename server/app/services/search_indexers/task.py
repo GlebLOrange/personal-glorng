@@ -24,7 +24,7 @@ def _task_document(task: Task) -> SearchDocumentInput:
         source_id=task.id,
         title=task.title,
         body="\n".join(body_parts),
-        url="/admin/tools/tasks",
+        url="/tasks",
         visibility=SearchVisibility.ADMIN,
     )
 

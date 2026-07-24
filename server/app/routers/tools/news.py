@@ -1,14 +1,22 @@
-"""Curated news API. Public reads; admin routes use news capabilities."""
+"""Curated news API. Public reads; privileged filters use news capabilities."""
 
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
-from app.core.deps import AuthorizedUser, NewsServiceDep, require_capability
+from app.core.deps import (
+    AuthorizedUser,
+    NewsServiceDep,
+    OptionalUser,
+    require_capability,
+)
+from app.core.exceptions import ForbiddenError
+from app.core.permissions import permission_key, user_has_permission
 from app.core.rate_limit import rate_limit_api
 from app.core.utils import DEFAULT_PER_PAGE
 from app.db.documents.news import NewsStatus
 from app.openapi import requires_capability
+from app.routers.tools.news_sources import router as news_sources_router
 from app.schemas.news import (
     NewsArticleCreate,
     NewsArticleListResponse,
@@ -21,30 +29,46 @@ from app.schemas.news import (
 )
 
 router = APIRouter(prefix="/news", tags=["news"])
+router.include_router(news_sources_router)
 
 
 @router.get(
     "",
     response_model=NewsArticleListResponse,
     summary="List news",
-    description="Public curated news list (rate limited).",
+    description=(
+        "Public curated news list (rate limited). "
+        "Pass manage=true (and optional status) for editorial "
+        "lists (requires news:read)."
+    ),
     dependencies=[Depends(rate_limit_api)],
 )
 async def list_news(
     svc: NewsServiceDep,
+    user: OptionalUser,
+    manage: Annotated[bool, Query()] = False,
+    status: NewsStatus | None = None,
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> NewsArticleListResponse:
-    """List published news articles."""
+    """List published news, or editorial list when manage=true."""
+    if not manage and status is None:
+        return await svc.list_articles(
+            status="published",
+            page=page,
+            per_page=per_page,
+        )
+    if user is None or not user_has_permission(user, permission_key("news", "read")):
+        raise ForbiddenError("Permission required: news:read")
     return await svc.list_articles(
-        status="published",
+        status=status,
         page=page,
         per_page=per_page,
     )
 
 
 @router.get(
-    "/admin/stats",
+    "/stats",
     response_model=NewsStatsResponse,
     summary="Get news article stats",
     description=requires_capability("news", "read"),
@@ -57,29 +81,6 @@ async def get_news_stats(
     """Return article counts by status for admin tools."""
     del user
     return await svc.news_stats()
-
-
-@router.get(
-    "/admin",
-    response_model=NewsArticleListResponse,
-    summary="List news for admin",
-    description=requires_capability("news", "read"),
-    dependencies=[Depends(require_capability("news", "read"))],
-)
-async def list_news_admin(
-    svc: NewsServiceDep,
-    user: AuthorizedUser,
-    status: NewsStatus | None = None,
-    page: Annotated[int, Query(ge=1)] = 1,
-    per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
-) -> NewsArticleListResponse:
-    """List news articles for admin tools."""
-    del user
-    return await svc.list_articles(
-        status=status,
-        page=page,
-        per_page=per_page,
-    )
 
 
 @router.get(
@@ -111,18 +112,18 @@ async def load_article_metadata(
 
 
 @router.get(
-    "/admin/{article_id}",
+    "/by-id/{article_id}",
     response_model=NewsArticleResponse,
-    summary="Get news article for admin",
+    summary="Get news article by id",
     description=requires_capability("news", "read"),
     dependencies=[Depends(require_capability("news", "read"))],
 )
-async def get_news_article_admin(
+async def get_news_article_by_id(
     article_id: int,
     svc: NewsServiceDep,
     user: AuthorizedUser,
 ) -> NewsArticleResponse:
-    """Get any news article by ID for admin tools."""
+    """Get any news article by ID for editorial tools."""
     del user
     return await svc.get_article(article_id)
 

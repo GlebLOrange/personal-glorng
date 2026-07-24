@@ -42,7 +42,7 @@ async def test_admin_search_returns_admin_hits(
             source_id=1,
             title="Feedback: Dark mode",
             body="Please add a dark mode toggle",
-            url="/admin/tools/feedback",
+            url="/admin/feedback",
             visibility=SearchVisibility.ADMIN,
         ),
     )
@@ -67,7 +67,7 @@ async def test_admin_search_filters_by_source_type(
             source_id=1,
             title="Buy milk",
             body="groceries",
-            url="/admin/tools/tasks",
+            url="/tasks",
             visibility=SearchVisibility.ADMIN,
         ),
     )
@@ -77,7 +77,7 @@ async def test_admin_search_filters_by_source_type(
             source_id=2,
             title="Feedback: milk",
             body="allergy note",
-            url="/admin/tools/feedback",
+            url="/admin/feedback",
             visibility=SearchVisibility.ADMIN,
         ),
     )

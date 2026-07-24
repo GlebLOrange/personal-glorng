@@ -17,7 +17,7 @@ def _feedback_document(feedback: Feedback) -> SearchDocumentInput:
         source_id=feedback.id,
         title=f"Feedback: {feedback.theme}",
         body=f"Status: {feedback.status}\n{feedback.message}",
-        url="/admin/tools/feedback",
+        url="/admin/feedback",
         visibility=SearchVisibility.ADMIN,
     )
 

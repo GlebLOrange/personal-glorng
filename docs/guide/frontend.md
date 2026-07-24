@@ -20,7 +20,8 @@ Source: [`client/`](../../client/).
 |------|-------|-------|
 | Public | `/`, `/tools`, `/recipes`, `/news`, … | Portfolio and guest tools |
 | Auth | `/login`, `/register`, `/settings`, … | `meta.requiresAuth` guards |
-| Admin | `/admin`, `/admin/tools/*` | Capability checks via `usePermissions` |
+| Admin | `/admin`, `/admin/*` hub routes | Capability / superuser checks via `usePermissions` |
+| Tools | `/tools`, `/tasks`, `/expenses`, … | Public catalog + capability-gated top-level tools |
 
 Navigation guards restore session from cookies/storage and enforce `requiresSuperuser` on `/admin/users`.
 

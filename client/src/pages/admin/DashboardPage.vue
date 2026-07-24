@@ -6,20 +6,20 @@ import ToolIcon from "@/components/icons/ToolIcon.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 import { usePlatformCatalog } from "@/composables/usePlatformCatalog";
-import { groupServicesByCategory } from "@/platform/services";
+import { ADMIN_HUB_SERVICE_SLUGS, groupServicesByCategory } from "@/platform/services";
 import { usePermissions } from "@/composables/usePermissions";
+import { isAiChatEnabled } from "@/utils/featureFlags";
 
-const { can, isSuperuser } = usePermissions();
+const { canAccess, isSuperuser } = usePermissions();
 const { services, load } = usePlatformCatalog();
 
-const SUPERUSER_ONLY_SERVICES = new Set(["news"]);
-
 const visibleServices = computed(() =>
-  services.value.filter(
-    (service) =>
-      can(service.slug, "read") &&
-      (!SUPERUSER_ONLY_SERVICES.has(service.slug) || isSuperuser.value),
-  ),
+  services.value.filter((service) => {
+    if (!ADMIN_HUB_SERVICE_SLUGS.has(service.slug)) return false;
+    if (service.slug === "ai-chat" && !isAiChatEnabled()) return false;
+    if (service.slug === "api-docs") return isSuperuser.value;
+    return canAccess(service.slug);
+  }),
 );
 
 const sections = computed(() => groupServicesByCategory(visibleServices.value));

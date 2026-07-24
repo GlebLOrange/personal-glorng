@@ -46,7 +46,7 @@ async def test_search_index_visibility_filter(registry: DatabaseRegistry) -> Non
             source_id=1,
             title="Private task",
             body="buy milk",
-            url="/admin/tools/tasks",
+            url="/tasks",
             visibility=SearchVisibility.ADMIN,
         ),
     )

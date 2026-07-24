@@ -9,26 +9,26 @@ Auto-generated from [`server/app/platform/registry.py`](../../server/app/platfor
 
 | Slug | Category | API prefix | Admin route | Public | Public route | Capabilities |
 |------|----------|------------|-------------|--------|--------------|--------------|
-| tasks | productivity | `/tasks` | `/admin/tools/tasks` | no | — | read, write, schedule |
-| email | productivity | `/email` | `/admin/tools/email` | no | — | write |
-| expenses | productivity | `/expenses` | `/admin/tools/expenses` | yes | /expense-calculator | read, write |
+| tasks | productivity | `/tasks` | `/tasks` | no | — | read, write, schedule |
+| email | productivity | `/email` | `/admin/send-email` | no | — | write |
+| expenses | productivity | `/expenses` | `/expenses` | yes | /expense-calculator | read, write |
 | recipes | content | `/recipes` | `/recipes` | yes | — | read, write |
 | news | content | `/tools/news` | `/news` | yes | — | read, write |
-| file-share | content | `/file-share` | `/admin/tools/file-share` | no | — | read, write |
+| file-share | content | `/file-share` | `/file-share` | no | — | read, write |
 | url-shortener | content | `/url-shortener` | `/shortener` | yes | — | read, write |
 | calculator | utilities | `/calculator` | `/calculator` | yes | — | read |
 | password-generator | utilities | `/password-generator` | `/password-generator` | yes | — | read |
 | vid-download | utilities | `/vid-download` | `/vid-download` | yes | — | read, write |
-| ai-chat | utilities | `/ai-chat` | `/admin/tools/ai-chat` | no | — | read, write |
-| data-extract | utilities | `/data-extract` | `/admin/tools/data-extract` | no | — | read, write |
-| feedback | operations | `/feedback` | `/admin/tools/feedback` | no | — | read, write |
-| news-sources | content | `/tools/news-sources` | `/admin/tools/news-sources` | no | — | read, write |
-| audit | operations | `/audit` | `/admin/tools/audit` | no | — | read |
-| app-logs | operations | `/app-logs` | `/admin/tools/app-logs` | no | — | read |
-| search | operations | `/search` | `/admin/tools/search` | no | — | read |
-| api-docs | operations | `/docs` | `/api/docs` | no | — | read |
+| ai-chat | utilities | `/ai-chat` | `/admin/ai-chat` | no | — | read, write |
+| data-extract | utilities | `/data-extract` | `/data-extract` | no | — | read, write |
+| feedback | operations | `/feedback` | `/admin/feedback` | no | — | read, write |
+| news-sources | content | `/tools/news/sources` | `/news/sources` | no | — | read, write |
+| audit | operations | `/audit` | `/admin/audit-logs` | no | — | read |
+| app-logs | operations | `/app-logs` | `/admin/app-logs` | no | — | read |
+| search | operations | `/search` | `/admin/search` | no | — | read |
+| api-docs | operations | `/docs` | `/admin/api/docs` | no | — | read |
 
 ## Compose services (`docker-compose.yml`)
 
-`db`, `rabbitmq`, `elasticsearch`, `mongodb`, `redis`, `migrate`, `server`, `worker`, `beat`, `todobot`, `client`, `nginx`
+`db`, `rabbitmq`, `elasticsearch`, `mongodb`, `redis`, `redis-cache`, `migrate`, `server`, `worker`, `beat`, `todobot`, `client`, `nginx`
 

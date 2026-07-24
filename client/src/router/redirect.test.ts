@@ -4,7 +4,7 @@ import { safeRedirectPath } from "@/utils/safeUrl";
 
 describe("safeRedirectPath", () => {
   it("allows relative in-app paths", () => {
-    expect(safeRedirectPath("/admin/tools/expenses")).toBe("/admin/tools/expenses");
+    expect(safeRedirectPath("/expenses")).toBe("/expenses");
   });
 
   it("normalizes same-origin absolute URLs to paths", () => {

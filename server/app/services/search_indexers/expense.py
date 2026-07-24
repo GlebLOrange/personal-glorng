@@ -27,7 +27,7 @@ def _expense_document(expense: Expense) -> SearchDocumentInput:
         source_id=expense.id,
         title=f"{expense.tool_name} expense",
         body="\n".join(body_parts),
-        url="/admin/tools/expenses",
+        url="/expenses",
         visibility=SearchVisibility.ADMIN,
     )
 

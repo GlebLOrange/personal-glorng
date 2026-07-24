@@ -7,13 +7,29 @@ import { Card } from "@/components/ui/card";
 import { usePermissions } from "@/composables/usePermissions";
 import {
   groupServicesByCategory,
+  PLATFORM_SERVICES,
   publicToolsAsServices,
   resolveToolRoute,
+  TOOLS_PAGE_EXTRA_SLUGS,
   type PlatformService,
 } from "@/platform/services";
 
-const { can } = usePermissions();
-const sections = computed(() => groupServicesByCategory(publicToolsAsServices()));
+const { can, canAccess } = usePermissions();
+
+const tools = computed((): PlatformService[] => {
+  const bySlug = new Map<string, PlatformService>();
+  for (const tool of publicToolsAsServices()) {
+    bySlug.set(tool.slug, tool);
+  }
+  for (const tool of PLATFORM_SERVICES) {
+    if (TOOLS_PAGE_EXTRA_SLUGS.has(tool.slug) && canAccess(tool.slug)) {
+      bySlug.set(tool.slug, tool);
+    }
+  }
+  return [...bySlug.values()];
+});
+
+const sections = computed(() => groupServicesByCategory(tools.value));
 
 function toolRoute(tool: PlatformService): string {
   return resolveToolRoute(tool, can);
