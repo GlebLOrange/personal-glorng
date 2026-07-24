@@ -15,9 +15,14 @@ const chipClass = (active: boolean) =>
 </script>
 
 <template>
-  <div class="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
+  <div
+    class="flex flex-nowrap gap-2 overflow-x-auto pb-1"
+    role="group"
+    aria-label="Filter by category"
+  >
     <button
       type="button"
+      class="shrink-0"
       :class="chipClass(categoryFilter === null)"
       :aria-pressed="categoryFilter === null"
       @click="categoryFilter = null"
@@ -28,6 +33,7 @@ const chipClass = (active: boolean) =>
       v-for="category in categoryOptions"
       :key="category"
       type="button"
+      class="shrink-0"
       :class="chipClass(categoryFilter === category)"
       :aria-pressed="categoryFilter === category"
       @click="categoryFilter = category"

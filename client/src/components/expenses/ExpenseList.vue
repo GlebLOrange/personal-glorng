@@ -110,8 +110,8 @@ const skeletonRows = 5;
     </div>
 
     <!-- Desktop table -->
-    <div class="hidden md:block overflow-x-auto rounded-lg border border-surface-border">
-      <table class="w-full text-sm font-data" :aria-label="`Expenses for ${monthLabel}`">
+    <div class="hidden min-w-0 md:block overflow-x-auto rounded-lg border border-surface-border">
+      <table class="w-full min-w-0 text-sm font-data" :aria-label="`Expenses for ${monthLabel}`">
         <thead>
           <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card/80">
             <th class="px-3" :aria-sort="sortAriaSort('date')">
