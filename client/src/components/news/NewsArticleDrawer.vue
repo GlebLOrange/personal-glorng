@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
+import { newsStatusClass } from "@/constants/filterColors";
 import { SELECT_CLASS } from "@/constants/formClasses";
-import { NEWS_THEME_LIMIT, NEWS_THEMES } from "@/constants/news";
+import { NEWS_STATUSES, NEWS_THEME_LIMIT, NEWS_THEMES } from "@/constants/news";
 import type { NewsArticleFormData, NewsSource, NewsStatus } from "@/types";
 
 const props = defineProps<{
@@ -31,6 +33,9 @@ const selectedThemes = computed(() =>
     .map((theme) => theme.trim())
     .filter(Boolean),
 );
+const selectedThemesLabel = computed(() =>
+  selectedThemes.value.length > 0 ? selectedThemes.value.join(", ") : "none",
+);
 
 function patch(patchValue: Partial<NewsArticleFormData>): void {
   emit("update:form", { ...props.form, ...patchValue });
@@ -43,6 +48,10 @@ function toStringValue(value: string | number | null | undefined): string {
 function toSourceId(value: string): number | null {
   const sourceId = Number(value);
   return Number.isInteger(sourceId) && sourceId > 0 ? sourceId : null;
+}
+
+function setStatus(status: NewsStatus): void {
+  patch({ status });
 }
 
 function themeIsSelected(theme: string): boolean {
@@ -102,17 +111,16 @@ function toggleTheme(theme: string): void {
           aria-label="source published at"
           @update:model-value="patch({ source_published_at: toStringValue($event) })"
         />
-        <select
-          :value="form.status"
-          aria-label="status"
-          :class="SELECT_CLASS"
-          @change="patch({ status: ($event.target as HTMLSelectElement).value as NewsStatus })"
-        >
-          <option value="draft">draft</option>
-          <option value="published">published</option>
-          <option value="unpublished">unpublished</option>
-          <option value="failed">failed</option>
-        </select>
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-4" role="group" aria-label="status">
+          <AdminFilterChip
+            v-for="status in NEWS_STATUSES"
+            :key="status"
+            :label="status"
+            :active="form.status === status"
+            :color-class="newsStatusClass(status)"
+            @click="setStatus(status)"
+          />
+        </div>
       </section>
 
       <section class="space-y-4">
@@ -143,17 +151,16 @@ function toggleTheme(theme: string): void {
           aria-label="summary"
           @update:model-value="patch({ summary: toStringValue($event) })"
         />
-        <fieldset class="space-y-2">
-          <legend class="text-sm text-surface-mid">
-            themes
-            <span class="text-xs text-surface-muted">
-              ({{ selectedThemes.length }}/{{ NEWS_THEME_LIMIT }})
-            </span>
-          </legend>
-          <div class="flex flex-wrap gap-2">
+        <details class="rounded border border-surface-border px-3 py-2">
+          <summary class="cursor-pointer text-sm text-surface-mid">
+            themes ({{ selectedThemes.length }}/{{ NEWS_THEME_LIMIT }})
+            <span class="text-xs text-surface-muted"> — {{ selectedThemesLabel }}</span>
+          </summary>
+          <div class="mt-3 flex flex-wrap gap-2">
             <label
               v-for="theme in NEWS_THEMES"
               :key="theme"
+              :for="`news-drawer-theme-${theme}`"
               class="inline-flex cursor-pointer items-center gap-2 rounded border border-surface-border px-3 py-1.5 text-xs transition-colors"
               :class="{
                 'border-accent-blue text-surface-light': themeIsSelected(theme),
@@ -162,6 +169,7 @@ function toggleTheme(theme: string): void {
               }"
             >
               <input
+                :id="`news-drawer-theme-${theme}`"
                 type="checkbox"
                 :checked="themeIsSelected(theme)"
                 :disabled="!themeIsSelected(theme) && selectedThemes.length >= NEWS_THEME_LIMIT"
@@ -170,7 +178,7 @@ function toggleTheme(theme: string): void {
               {{ theme }}
             </label>
           </div>
-        </fieldset>
+        </details>
         <BaseInput
           :model-value="form.language"
           placeholder="language (en)"

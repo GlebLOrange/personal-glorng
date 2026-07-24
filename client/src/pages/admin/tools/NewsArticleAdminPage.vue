@@ -2,13 +2,16 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
+import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
+import { newsStatusClass } from "@/constants/filterColors";
 import { SELECT_CLASS } from "@/constants/formClasses";
 import {
+  NEWS_STATUSES,
   NEWS_SUMMARY_MAX_LENGTH,
   NEWS_THEME_LIMIT,
   NEWS_THEME_SET,
@@ -19,7 +22,7 @@ import { formatNewsDate, useNews } from "@/composables/useNews";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
-import type { NewsArticle, NewsArticleFormData, NewsArticleUpdate } from "@/types";
+import type { NewsArticle, NewsArticleFormData, NewsArticleUpdate, NewsStatus } from "@/types";
 import { normalizeHttpUrl } from "@/utils/newsForms";
 
 const route = useRoute();
@@ -196,7 +199,18 @@ function themeIsSelected(theme: string): boolean {
   return parsedThemes().includes(theme);
 }
 
+function selectedThemesLabel(): string {
+  const themes = parsedThemes();
+  return themes.length > 0 ? themes.join(", ") : "none";
+}
+
+function setStatus(status: NewsStatus): void {
+  if (!canWrite.value) return;
+  form.value.status = status;
+}
+
 function toggleTheme(theme: string): void {
+  if (!canWrite.value) return;
   const themes = parsedThemes();
   if (themes.includes(theme)) {
     form.value.themes = themes.filter((item) => item !== theme).join(", ");
@@ -282,17 +296,20 @@ watch(articleId, () => {
               aria-label="slug"
               :disabled="!canWrite"
             />
-            <select
-              v-model="form.status"
-              :class="SELECT_CLASS"
+            <div
+              class="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-4"
+              role="group"
               aria-label="status"
-              :disabled="!canWrite"
             >
-              <option value="draft">draft</option>
-              <option value="published">published</option>
-              <option value="unpublished">unpublished</option>
-              <option value="failed">failed</option>
-            </select>
+              <AdminFilterChip
+                v-for="status in NEWS_STATUSES"
+                :key="status"
+                :label="status"
+                :active="form.status === status"
+                :color-class="newsStatusClass(status)"
+                @click="setStatus(status)"
+              />
+            </div>
             <BaseInput
               v-model="form.title"
               placeholder="title"
@@ -312,17 +329,16 @@ watch(articleId, () => {
               :disabled="!canWrite"
             />
           </div>
-          <fieldset class="mt-4 space-y-2">
-            <legend class="text-sm text-surface-mid">
-              themes
-              <span class="text-xs text-surface-muted">
-                ({{ parsedThemes().length }}/{{ NEWS_THEME_LIMIT }})
-              </span>
-            </legend>
-            <div class="flex flex-wrap gap-2">
+          <details class="mt-4 rounded border border-surface-border px-3 py-2">
+            <summary class="cursor-pointer text-sm text-surface-mid">
+              themes ({{ parsedThemes().length }}/{{ NEWS_THEME_LIMIT }})
+              <span class="text-xs text-surface-muted"> — {{ selectedThemesLabel() }}</span>
+            </summary>
+            <div class="mt-3 flex flex-wrap gap-2">
               <label
                 v-for="theme in NEWS_THEMES"
                 :key="theme"
+                :for="`news-edit-theme-${theme}`"
                 class="inline-flex cursor-pointer items-center gap-2 rounded border border-surface-border px-3 py-1.5 text-xs transition-colors"
                 :class="{
                   'border-accent-blue text-surface-light': themeIsSelected(theme),
@@ -332,6 +348,7 @@ watch(articleId, () => {
                 }"
               >
                 <input
+                  :id="`news-edit-theme-${theme}`"
                   type="checkbox"
                   :checked="themeIsSelected(theme)"
                   :disabled="
@@ -343,7 +360,7 @@ watch(articleId, () => {
                 {{ theme }}
               </label>
             </div>
-          </fieldset>
+          </details>
           <div class="mt-4">
             <BaseTextarea
               v-model="form.summary"

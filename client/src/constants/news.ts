@@ -1,3 +1,12 @@
+import type { NewsStatus } from "@/types";
+
+export const NEWS_STATUSES: readonly NewsStatus[] = [
+  "draft",
+  "published",
+  "unpublished",
+  "failed",
+] as const;
+
 export const NEWS_THEMES = [
   "world",
   "business",
