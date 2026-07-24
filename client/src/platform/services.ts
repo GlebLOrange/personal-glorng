@@ -212,7 +212,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "audit",
-    name: "audit log",
+    name: "audit logs",
     category: "operations",
     categoryLabel: "operations",
     description: "Review security and domain change events",

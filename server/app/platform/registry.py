@@ -195,7 +195,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
     ),
     PlatformService(
         slug="audit",
-        name="audit log",
+        name="audit logs",
         category="operations",
         description="Review security and domain change events",
         api_prefix="/audit",
