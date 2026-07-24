@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, nextTick } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
-import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
+import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
+import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
@@ -28,8 +29,15 @@ function patch(patch: Partial<RecipeFormData>): void {
   emit("update:form", { ...props.form, ...patch });
 }
 
+async function focusField(selector: string, index: number): Promise<void> {
+  await nextTick();
+  const fields = document.querySelectorAll<HTMLElement>(selector);
+  fields[index]?.focus();
+}
+
 function addIngredient(): void {
   patch({ ingredients: [...props.form.ingredients, ""] });
+  void focusField("[data-recipe-ingredient]", props.form.ingredients.length);
 }
 
 function removeIngredient(index: number): void {
@@ -51,8 +59,19 @@ function moveIngredient(index: number, direction: -1 | 1): void {
   patch({ ingredients });
 }
 
+function onIngredientEnter(event: KeyboardEvent, index: number): void {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  // Insert after current row so Enter mid-list adds the next line in place.
+  const ingredients = [...props.form.ingredients];
+  ingredients.splice(index + 1, 0, "");
+  patch({ ingredients });
+  void focusField("[data-recipe-ingredient]", index + 1);
+}
+
 function addStep(): void {
   patch({ steps: [...props.form.steps, ""] });
+  void focusField("[data-recipe-step]", props.form.steps.length);
 }
 
 function removeStep(index: number): void {
@@ -72,6 +91,15 @@ function moveStep(index: number, direction: -1 | 1): void {
   const steps = [...props.form.steps];
   [steps[index], steps[nextIndex]] = [steps[nextIndex], steps[index]];
   patch({ steps });
+}
+
+function onStepModEnter(event: KeyboardEvent, index: number): void {
+  if (event.key !== "Enter" || !(event.metaKey || event.ctrlKey)) return;
+  event.preventDefault();
+  const steps = [...props.form.steps];
+  steps.splice(index + 1, 0, "");
+  patch({ steps });
+  void focusField("[data-recipe-step]", index + 1);
 }
 
 function toStringValue(value: string | number | null | undefined): string {
@@ -131,116 +159,137 @@ function toNullableNumber(value: string | number | null | undefined): number | n
       </div>
 
       <div class="space-y-2">
-        <div
-          v-for="(_, idx) in form.ingredients"
-          :key="idx"
-          class="flex min-w-0 items-center gap-1"
-        >
-          <BaseButton
-            v-if="idx === 0"
-            variant="ghost"
-            quiet
-            type="button"
-            class="w-11 px-0"
-            aria-label="add ingredient"
-            @click="addIngredient"
+        <p class="text-xs text-surface-mid uppercase tracking-wider">Ingredients</p>
+        <ul role="list" class="space-y-2">
+          <li
+            v-for="(_, idx) in form.ingredients"
+            :key="`ingredient-${idx}`"
+            class="flex min-w-0 items-center gap-1"
           >
-            +
-          </BaseButton>
-          <span v-else class="inline-flex h-11 w-11 shrink-0" aria-hidden="true" />
-          <BaseInput
-            :model-value="form.ingredients[idx]"
-            class="min-w-0 flex-1"
-            :aria-label="`ingredient ${idx + 1}`"
-            @update:model-value="updateIngredient(idx, toStringValue($event))"
-          >
-            <template #suffix>
-              <BaseButton
-                variant="ghost"
-                quiet
-                type="button"
-                class="!h-8 !w-8 !px-0"
-                :disabled="idx === 0"
-                aria-label="move ingredient up"
-                @click="moveIngredient(idx, -1)"
-              >
-                ↑
-              </BaseButton>
-              <BaseButton
-                variant="ghost"
-                quiet
-                type="button"
-                class="!h-8 !w-8 !px-0"
-                :disabled="idx === form.ingredients.length - 1"
-                aria-label="move ingredient down"
-                @click="moveIngredient(idx, 1)"
-              >
-                ↓
-              </BaseButton>
-              <IconCloseButton
-                class="!h-8 !min-w-8 !w-8"
-                :disabled="form.ingredients.length <= 1"
-                aria-label="remove ingredient"
-                @click="removeIngredient(idx)"
-              />
-            </template>
-          </BaseInput>
-        </div>
+            <BaseInput
+              :model-value="form.ingredients[idx]"
+              class="min-w-0 flex-1"
+              placeholder="200g flour"
+              :aria-label="`ingredient ${idx + 1}`"
+              data-recipe-ingredient
+              @update:model-value="updateIngredient(idx, toStringValue($event))"
+              @keydown="onIngredientEnter($event, idx)"
+            />
+            <BaseDropdownMenu
+              v-if="form.ingredients.length > 1"
+              :aria-label="`ingredient ${idx + 1} actions`"
+              placement="bottom"
+            >
+              <template #default="{ close: closeMenu }">
+                <BaseDropdownMenuItem
+                  v-if="idx > 0"
+                  @select="
+                    closeMenu();
+                    moveIngredient(idx, -1);
+                  "
+                >
+                  move up
+                </BaseDropdownMenuItem>
+                <BaseDropdownMenuItem
+                  v-if="idx < form.ingredients.length - 1"
+                  @select="
+                    closeMenu();
+                    moveIngredient(idx, 1);
+                  "
+                >
+                  move down
+                </BaseDropdownMenuItem>
+                <BaseDropdownMenuItem
+                  destructive
+                  @select="
+                    closeMenu();
+                    removeIngredient(idx);
+                  "
+                >
+                  remove
+                </BaseDropdownMenuItem>
+              </template>
+            </BaseDropdownMenu>
+          </li>
+        </ul>
+        <BaseButton variant="secondary" size="sm" type="button" @click="addIngredient">
+          + ingredient
+        </BaseButton>
       </div>
 
       <div class="space-y-2">
-        <div v-for="(_, idx) in form.steps" :key="idx" class="flex min-w-0 items-center gap-1">
-          <BaseButton
-            v-if="idx === 0"
-            variant="ghost"
-            quiet
-            type="button"
-            class="w-11 px-0"
-            aria-label="add step"
-            @click="addStep"
+        <p class="text-xs text-surface-mid uppercase tracking-wider">Steps</p>
+        <ul role="list" class="space-y-2">
+          <li
+            v-for="(_, idx) in form.steps"
+            :key="`step-${idx}`"
+            class="flex min-w-0 items-start gap-2"
           >
-            +
-          </BaseButton>
-          <span v-else class="inline-flex h-11 w-11 shrink-0" aria-hidden="true" />
-          <BaseInput
-            :model-value="form.steps[idx]"
-            class="min-w-0 flex-1"
-            :aria-label="`step ${idx + 1}`"
-            @update:model-value="updateStep(idx, toStringValue($event))"
-          >
-            <template #suffix>
-              <BaseButton
-                variant="ghost"
-                quiet
-                type="button"
-                class="!h-8 !w-8 !px-0"
-                :disabled="idx === 0"
-                aria-label="move step up"
-                @click="moveStep(idx, -1)"
-              >
-                ↑
-              </BaseButton>
-              <BaseButton
-                variant="ghost"
-                quiet
-                type="button"
-                class="!h-8 !w-8 !px-0"
-                :disabled="idx === form.steps.length - 1"
-                aria-label="move step down"
-                @click="moveStep(idx, 1)"
-              >
-                ↓
-              </BaseButton>
-              <IconCloseButton
-                class="!h-8 !min-w-8 !w-8"
-                :disabled="form.steps.length <= 1"
-                aria-label="remove step"
-                @click="removeStep(idx)"
-              />
-            </template>
-          </BaseInput>
-        </div>
+            <span
+              class="mt-2.5 inline-flex h-6 w-6 shrink-0 items-center justify-center text-xs text-surface-mid"
+              aria-hidden="true"
+            >
+              {{ idx + 1 }}
+            </span>
+            <BaseTextarea
+              :model-value="form.steps[idx]"
+              class="min-w-0 flex-1"
+              :rows="2"
+              placeholder="Preheat oven to 200°C"
+              :aria-label="`step ${idx + 1}`"
+              data-recipe-step
+              @update:model-value="updateStep(idx, String($event ?? ''))"
+              @keydown="onStepModEnter($event, idx)"
+            />
+            <BaseDropdownMenu
+              v-if="form.steps.length > 1"
+              :aria-label="`step ${idx + 1} actions`"
+              placement="bottom"
+            >
+              <template #default="{ close: closeMenu }">
+                <BaseDropdownMenuItem
+                  v-if="idx > 0"
+                  @select="
+                    closeMenu();
+                    moveStep(idx, -1);
+                  "
+                >
+                  move up
+                </BaseDropdownMenuItem>
+                <BaseDropdownMenuItem
+                  v-if="idx < form.steps.length - 1"
+                  @select="
+                    closeMenu();
+                    moveStep(idx, 1);
+                  "
+                >
+                  move down
+                </BaseDropdownMenuItem>
+                <BaseDropdownMenuItem
+                  destructive
+                  @select="
+                    closeMenu();
+                    removeStep(idx);
+                  "
+                >
+                  remove
+                </BaseDropdownMenuItem>
+              </template>
+            </BaseDropdownMenu>
+          </li>
+        </ul>
+        <p class="text-xs text-surface-muted">Ctrl/⌘ + Enter adds the next step</p>
+        <BaseButton variant="secondary" size="sm" type="button" @click="addStep">
+          + step
+        </BaseButton>
       </div>
+
+      <BaseInput
+        :model-value="form.tags"
+        placeholder="tags · italian, vegetarian"
+        aria-label="tags"
+        @update:model-value="patch({ tags: toStringValue($event) })"
+      />
 
       <BaseTextarea
         :model-value="form.notes"
