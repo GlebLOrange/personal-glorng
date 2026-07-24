@@ -217,7 +217,7 @@ async function deleteAccount(): Promise<void> {
               placeholder="e.g. Europe/Warsaw"
               required
             />
-            <BaseButton type="submit" variant="primary" :loading="savingProfile" :disabled="!canSaveProfile">
+            <BaseButton type="submit" variant="success" :loading="savingProfile" :disabled="!canSaveProfile">
               {{ savingProfile ? "saving..." : "save profile" }}
             </BaseButton>
           </form>
@@ -245,7 +245,7 @@ async function deleteAccount(): Promise<void> {
               placeholder="••••••••"
               required
             />
-            <BaseButton type="submit" variant="secondary" :loading="savingEmail" :disabled="!canSaveEmail">
+            <BaseButton type="submit" variant="success" :loading="savingEmail" :disabled="!canSaveEmail">
               {{ savingEmail ? "saving..." : "change email" }}
             </BaseButton>
           </form>
@@ -290,7 +290,7 @@ async function deleteAccount(): Promise<void> {
               :error="newPasswordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
               required
             />
-            <BaseButton type="submit" variant="primary" :loading="savingPassword" :disabled="!canSavePassword">
+            <BaseButton type="submit" variant="success" :loading="savingPassword" :disabled="!canSavePassword">
               {{ savingPassword ? "saving..." : "change password" }}
             </BaseButton>
           </form>
@@ -305,7 +305,7 @@ async function deleteAccount(): Promise<void> {
                 {{ code }}
               </option>
             </BaseSelect>
-            <BaseButton type="submit" variant="secondary" :loading="savingPrefs" :disabled="!canSaveCurrency">
+            <BaseButton type="submit" variant="success" :loading="savingPrefs" :disabled="!canSaveCurrency">
               {{ savingPrefs ? "saving..." : "save preferences" }}
             </BaseButton>
           </form>

@@ -85,8 +85,7 @@ function onAddBudgetLine(): void {
     </Card>
 
     <Card class="space-y-4">
-      <div class="flex items-center justify-between gap-3">
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Budget lines</p>
+      <div class="flex items-center justify-end gap-3">
         <BaseButton variant="primary" size="sm" @click="onAddBudgetLine">+ budget line</BaseButton>
       </div>
 
@@ -121,7 +120,6 @@ function onAddBudgetLine(): void {
             />
             <IconCloseButton
               :aria-label="`Remove ${row.name || 'budget line'}`"
-              class="md:mb-0.5"
               @click="emit('remove', row.id)"
             />
           </div>

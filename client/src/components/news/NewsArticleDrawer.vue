@@ -189,7 +189,10 @@ function toggleTheme(theme: string): void {
     </form>
 
     <template #footer>
-      <div class="flex flex-wrap items-center justify-between gap-3">
+      <div
+        class="flex flex-wrap items-center gap-3"
+        :class="mode === 'edit' ? 'justify-between' : 'justify-end'"
+      >
         <BaseButton
           v-if="mode === 'edit'"
           variant="ghost"
@@ -200,11 +203,11 @@ function toggleTheme(theme: string): void {
         >
           delete
         </BaseButton>
-        <div class="flex gap-3">
-          <BaseButton variant="primary" :disabled="loading" @click="emit('save')">
+        <div class="flex justify-end gap-3">
+          <BaseButton variant="ghost" danger type="button" @click="emit('close')">cancel</BaseButton>
+          <BaseButton variant="success" :disabled="loading" @click="emit('save')">
             {{ loading ? "saving..." : "save" }}
           </BaseButton>
-          <BaseButton variant="ghost" type="button" @click="emit('close')">cancel</BaseButton>
         </div>
       </div>
     </template>

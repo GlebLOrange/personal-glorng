@@ -75,13 +75,13 @@ const persistenceHint = computed(() => {
           <BaseButton variant="ghost" size="sm" :disabled="loadingState" @click="loadState">
             {{ loadingState ? "loading..." : "load" }}
           </BaseButton>
-          <BaseButton variant="primary" size="sm" :disabled="saving || !stateDirty" @click="saveState">
+          <BaseButton variant="success" size="sm" :disabled="saving || !stateDirty" @click="saveState">
             {{ saving ? "saving..." : "save" }}
           </BaseButton>
         </div>
       </Card>
 
-      <div class="flex flex-col md:flex-row md:items-end gap-3">
+      <div class="flex flex-col md:flex-row md:items-center gap-3">
         <ExpenseCalculatorModeTabs
           class="flex-1"
           :active-mode="activeMode"
@@ -89,7 +89,7 @@ const persistenceHint = computed(() => {
           @change="switchMode"
         />
         <div class="md:w-36">
-          <BaseSelect v-model="displayCurrency" label="Currency">
+          <BaseSelect v-model="displayCurrency" aria-label="currency">
             <option value="PLN">PLN</option>
             <option value="EUR">EUR</option>
             <option value="USD">USD</option>

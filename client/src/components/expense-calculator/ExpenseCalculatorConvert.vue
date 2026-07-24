@@ -93,14 +93,14 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
       aria-label="amount (100.00)"
     />
 
-    <div class="flex items-end gap-3">
-      <BaseSelect v-model="fromCurrency" label="From" class="min-w-0 flex-1">
+    <div class="flex items-center gap-3">
+      <BaseSelect v-model="fromCurrency" aria-label="from" class="min-w-0 flex-1">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>
       <BaseButton
         variant="ghost"
         size="sm"
-        class="mb-0.5 shrink-0 px-2"
+        class="shrink-0 px-2"
         aria-label="swap currencies"
         @click="swapCurrencies"
       >
@@ -120,7 +120,7 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
           <path d="M16 8l4 4-4 4" />
         </svg>
       </BaseButton>
-      <BaseSelect v-model="toCurrency" label="To" class="min-w-0 flex-1">
+      <BaseSelect v-model="toCurrency" aria-label="to" class="min-w-0 flex-1">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>
     </div>

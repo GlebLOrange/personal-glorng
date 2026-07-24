@@ -441,9 +441,9 @@ onUnmounted(() => {
             }}
           </p>
           <div class="flex gap-2">
-            <BaseButton variant="ghost" @click="requestCloseUserDrawer">cancel</BaseButton>
+            <BaseButton variant="ghost" danger @click="requestCloseUserDrawer">cancel</BaseButton>
             <BaseButton
-              variant="primary"
+              variant="success"
               :loading="savingId === selectedUser.id"
               :disabled="selectedUser.is_protected || !hasDraftChanges(selectedUser)"
               @click="savePermissions(selectedUser)"

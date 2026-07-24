@@ -55,10 +55,11 @@ async function submit(): Promise<void> {
       type="submit"
       variant="primary"
       size="field"
+      aria-label="add city"
       :loading="saving"
       :disabled="!city.trim() || props.disabled"
     >
-      {{ saving ? "adding…" : "+ add" }}
+      {{ saving ? "adding…" : "+" }}
     </BaseButton>
   </form>
   <p v-if="props.helperText" class="text-xs text-surface-mid mt-2">{{ props.helperText }}</p>

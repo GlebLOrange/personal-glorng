@@ -93,11 +93,11 @@ function confirmDelete(): void {
       />
     </template>
     <template #actions>
-      <BaseButton variant="primary" size="sm" :disabled="saving" @click="saveEdit">
-        {{ saving ? "…" : "save" }}
-      </BaseButton>
-      <BaseButton variant="ghost" size="sm" :disabled="saving" @click="cancelEdit">
+      <BaseButton variant="ghost" danger size="sm" :disabled="saving" @click="cancelEdit">
         cancel
+      </BaseButton>
+      <BaseButton variant="success" size="sm" :disabled="saving" @click="saveEdit">
+        {{ saving ? "…" : "save" }}
       </BaseButton>
     </template>
   </AdminListRow>
@@ -130,6 +130,7 @@ function confirmDelete(): void {
         variant="ghost"
         quiet
         size="sm"
+        class="hover:enabled:!text-accent-blue focus-visible:!text-accent-blue"
         aria-label="edit title"
         @click="startEdit"
       >

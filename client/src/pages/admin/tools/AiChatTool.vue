@@ -145,13 +145,20 @@ onMounted(() => {
         <div class="flex flex-col gap-2">
           <BaseButton
             type="submit"
-            variant="primary"
+            variant="success"
             size="field"
             :disabled="loading || !input.trim() || !isReady || !canSend"
           >
             {{ loading ? "..." : "send" }}
           </BaseButton>
-          <BaseButton variant="ghost" size="sm" type="button" :disabled="loading" @click="clear">
+          <BaseButton
+            variant="ghost"
+            danger
+            size="sm"
+            type="button"
+            :disabled="loading"
+            @click="clear"
+          >
             clear
           </BaseButton>
         </div>

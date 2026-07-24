@@ -83,7 +83,6 @@ const widthClass = computed(
               <slot name="header-actions" />
               <IconCloseButton
                 ref="closeButton"
-                class="w-[10%] shrink-0"
                 aria-label="Close"
                 @click="emit('close')"
               />

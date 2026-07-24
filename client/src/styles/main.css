@@ -178,7 +178,7 @@
 
 @utility cta-primary {
   /* Solid accent-blue for AA contrast (white on violet gradient end failed WCAG) */
-  @apply px-6 py-3 min-h-11 rounded-lg bg-accent-blue text-surface-dark text-base font-medium transition-opacity inline-flex items-center justify-center;
+  @apply h-11 px-4 rounded-lg bg-accent-blue text-surface-dark text-sm font-medium transition-opacity inline-flex items-center justify-center;
   &:hover:not(:disabled) {
     @apply opacity-90;
   }
@@ -194,7 +194,7 @@
 }
 
 @utility cta-secondary {
-  @apply px-6 py-3 min-h-11 rounded-lg border border-surface-border text-surface-mid text-base font-medium transition-colors inline-flex items-center justify-center;
+  @apply h-11 px-4 rounded-lg border border-surface-border text-surface-mid text-sm font-medium transition-colors inline-flex items-center justify-center;
   &:hover:not(:disabled) {
     @apply border-accent-blue text-accent-blue;
   }
@@ -211,6 +211,17 @@
 
 @utility alert-surface-error {
   @apply rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error;
+}
+
+/* Native <select> caret — inset from right, vertically centered (surface-mid).
+   Sets its own background-color so bg-* utilities cannot wipe the chevron image. */
+@utility field-select-chevron {
+  appearance: none;
+  background-color: var(--color-surface-dark);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4%206l4%204%204-4' stroke='%23d4cdc6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.75rem 0.75rem;
 }
 
 @utility alert-surface-warning {

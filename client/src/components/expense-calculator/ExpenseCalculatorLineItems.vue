@@ -2,8 +2,8 @@
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
-import { SELECT_CLASS_COMPACT } from "@/constants/formClasses";
 import type { ExpenseCalculatorLineItem } from "@/composables/useExpenseCalculator";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import { EXPENSE_CURRENCIES } from "@/composables/useExpenseCurrency";
@@ -53,14 +53,16 @@ function onAddItem(): void {
 
       <div v-if="lineItems.length === 0" class="text-center py-8">
         <p class="text-sm text-surface-mid">no items yet.</p>
-        <BaseButton class="mt-3" variant="primary" @click="onAddItem">add your first item</BaseButton>
+        <BaseButton class="mt-3" variant="primary" size="sm" @click="onAddItem">
+          + your first item
+        </BaseButton>
       </div>
 
       <ul v-else role="list" class="space-y-3">
         <li
           v-for="(item, index) in lineItems"
           :key="item.id"
-          class="grid grid-cols-1 md:grid-cols-[1fr_120px_100px_auto] gap-3 items-end"
+          class="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-3 items-end"
         >
           <BaseInput
             v-model="item.label"
@@ -77,12 +79,11 @@ function onAddItem(): void {
             aria-label="amount (0.00)"
             @keydown="onAmountEnter($event, index)"
           />
-          <select v-model="item.currency" :class="SELECT_CLASS_COMPACT" aria-label="currency">
-              <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
-            </select>
+          <BaseSelect v-model="item.currency" aria-label="currency">
+            <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
+          </BaseSelect>
           <IconCloseButton
             :aria-label="`Remove ${item.label || 'item'}`"
-            class="md:mb-0.5"
             @click="emit('remove', item.id)"
           />
         </li>

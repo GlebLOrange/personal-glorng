@@ -241,7 +241,7 @@ function goToTransactions(): void {
         <BaseButton variant="ghost" :disabled="exporting" @click="exportCsv">
           {{ exporting ? "exporting..." : "export csv" }}
         </BaseButton>
-        <BaseButton variant="primary" @click="openCreate">+ add</BaseButton>
+        <BaseButton variant="primary" aria-label="add expense" @click="openCreate">+</BaseButton>
       </div>
     </div>
 
@@ -369,7 +369,7 @@ function goToTransactions(): void {
           <BaseButton variant="ghost" :disabled="loadingState" @click="loadState">
             {{ loadingState ? "loading..." : "load" }}
           </BaseButton>
-          <BaseButton variant="primary" :disabled="saving || !stateDirty" @click="saveState">
+          <BaseButton variant="success" :disabled="saving || !stateDirty" @click="saveState">
             {{ saving ? "saving..." : "save" }}
           </BaseButton>
         </div>
@@ -379,7 +379,7 @@ function goToTransactions(): void {
         <BaseSelect
           id="expenses-calculator-currency"
           v-model="calculatorDisplayCurrency"
-          label="calculator currency"
+          aria-label="calculator currency"
         >
           <option value="PLN">PLN</option>
           <option value="EUR">EUR</option>

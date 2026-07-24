@@ -31,16 +31,16 @@ const emit = defineEmits<{
         <p>{{ message }}</p>
       </slot>
     </div>
-    <div class="flex gap-3">
+    <div class="flex justify-end gap-3">
+      <BaseButton variant="ghost" danger :disabled="loading" @click="emit('cancel')">cancel</BaseButton>
       <BaseButton
-        :variant="danger ? 'secondary' : 'primary'"
+        :variant="danger ? 'secondary' : 'success'"
         :danger="danger"
         :disabled="loading"
         @click="emit('confirm')"
       >
         {{ loading ? "working..." : (confirmLabel ?? "confirm") }}
       </BaseButton>
-      <BaseButton variant="ghost" :disabled="loading" @click="emit('cancel')">cancel</BaseButton>
     </div>
   </BaseModal>
 </template>

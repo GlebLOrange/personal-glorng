@@ -6,7 +6,7 @@ Shared primitives for the gLOrng client. Prefer these over one-off markup.
 
 Use for **interactive controls and overlays** in admin tools and feature UI.
 
-- `BaseButton` — primary/secondary/ghost actions; supports `loading` (`aria-busy` + disabled)
+- `BaseButton` — primary/secondary/ghost/success actions; supports `loading` (`aria-busy` + disabled)
 - `BaseModal` / `BaseDrawer` — dialogs and side panels (focus trap, Escape, focus restore built in)
 - `BaseInput`, `BaseTextarea`, `BaseSelect` — forms; styling from `constants/formClasses.ts`
 - Always pass a visible `label` prop (or an explicit `aria-label` when the label must be hidden)
@@ -15,6 +15,18 @@ Use for **interactive controls and overlays** in admin tools and feature UI.
 - `ListSkeleton` — shared loading skeleton (`aria-busy`); `AdminListSkeleton` wraps it for dense admin rows
 
 Import explicitly per file (only `BaseImage` is global).
+
+### Button action colors
+
+Use existing palette tokens — map API action to variant:
+
+| Action | Variant | Token |
+|---|---|---|
+| Create / add | `primary` | `accent-blue` |
+| Save / update / send | `success` | `status-success` |
+| Cancel / delete / remove | `ghost` + `danger` (or `secondary` + `danger`) | `status-error` |
+
+Auth submits and marketing `cta-*` stay blue/neutral; do not invent new hex colors.
 
 ## Card system (`components/ui/card/`)
 
@@ -31,8 +43,9 @@ Use for **grouped content on a surface** — list items, settings sections, summ
 
 **Auth and product UI** — prefer `BaseButton` (optionally with `loading`). Auth pages may use `cta-primary` / `cta-secondary` when matching marketing weight:
 
-- `variant="primary"` — flat `accent-blue` fill (no gradient)
-- `variant="secondary"` / `variant="ghost"` — neutral surfaces
+- `variant="primary"` — flat `accent-blue` fill (create/add)
+- `variant="success"` — flat `status-success` fill (save/update/send)
+- `variant="secondary"` / `variant="ghost"` — neutral surfaces; add `danger` for cancel/delete
 
 Do not use `cta-primary` inside tool screens; do not add gradients to `BaseButton`.
 

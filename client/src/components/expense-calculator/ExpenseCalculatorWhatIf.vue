@@ -2,8 +2,8 @@
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
-import { SELECT_CLASS_COMPACT } from "@/constants/formClasses";
 import { EXPENSE_CURRENCIES } from "@/composables/useExpenseCurrency";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 
@@ -39,29 +39,20 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
 
 <template>
   <Card class="space-y-4">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <p class="text-xs text-surface-mid">
-        Simulate a purchase against your budget rows. Set budget lines on the Budget tab first.
-      </p>
-      <BaseButton
-        v-if="props.budgetOptions.length === 0"
-        variant="ghost"
-        size="sm"
-        class="self-start"
-        @click="emit('goToBudget')"
-      >
+    <div v-if="props.budgetOptions.length === 0" class="flex justify-end">
+      <BaseButton variant="ghost" size="sm" @click="emit('goToBudget')">
         go to budget
       </BaseButton>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <select v-model="categoryId" :class="SELECT_CLASS_COMPACT" aria-label="budget line">
+      <BaseSelect v-model="categoryId" aria-label="budget line">
         <option value="overall">overall</option>
         <option v-for="option in budgetOptions" :key="option.id" :value="option.id">
           {{ option.name }}
         </option>
-      </select>
-      <div class="grid grid-cols-[1fr_100px] gap-2 items-end">
+      </BaseSelect>
+      <div class="grid grid-cols-[1fr_120px] gap-2 items-end">
         <BaseInput
           v-model="amount"
           type="number"
@@ -70,9 +61,9 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
           placeholder="purchase amount"
           aria-label="purchase amount"
         />
-        <select v-model="currency" :class="SELECT_CLASS_COMPACT" aria-label="currency">
+        <BaseSelect v-model="currency" aria-label="currency">
           <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
-        </select>
+        </BaseSelect>
       </div>
     </div>
 
