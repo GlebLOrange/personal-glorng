@@ -1,4 +1,5 @@
-# Minimal dev stack: db + redis + API + nginx. Run Vite on the host (`make dev-lite-client`).
+# Minimal default stack (used by `make` / `make dev`).
+# Vite runs on the host: `make dev-lite-client`. No RabbitMQ / client container.
 services:
   client:
     profiles:

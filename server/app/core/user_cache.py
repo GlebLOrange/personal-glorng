@@ -30,7 +30,7 @@ async def get_cached_user(public_id: str | uuid.UUID) -> User | None:
     payload["hashed_password"] = _CACHED_PASSWORD_PLACEHOLDER
     try:
         return User.model_validate(payload)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
 
 
