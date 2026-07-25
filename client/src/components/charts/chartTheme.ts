@@ -21,7 +21,7 @@ export const chartDefaults = {
     legend: {
       labels: {
         color: CHART_TEXT,
-        font: { family: "IBM Plex Mono, ui-monospace, monospace", size: 11 },
+        font: { family: "IBM Plex Sans, Segoe UI, system-ui, sans-serif", size: 11 },
       },
     },
   },
@@ -29,14 +29,14 @@ export const chartDefaults = {
     x: {
       ticks: {
         color: CHART_TEXT,
-        font: { family: "IBM Plex Mono, ui-monospace, monospace", size: 10 },
+        font: { family: "IBM Plex Sans, Segoe UI, system-ui, sans-serif", size: 10 },
       },
       grid: { color: CHART_GRID },
     },
     y: {
       ticks: {
         color: CHART_TEXT,
-        font: { family: "IBM Plex Mono, ui-monospace, monospace", size: 10 },
+        font: { family: "IBM Plex Sans, Segoe UI, system-ui, sans-serif", size: 10 },
       },
       grid: { color: CHART_GRID },
     },

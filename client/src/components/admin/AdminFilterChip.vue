@@ -10,17 +10,8 @@ const props = defineProps<{
 
 const hovered = ref(false);
 
-/** Status fill/text only — drop border-* so idle border chrome never fights colorClass. */
-const statusFillClass = computed(() => {
-  if (!props.colorClass) return "";
-  return props.colorClass
-    .split(/\s+/)
-    .filter((token) => token && !token.startsWith("border-"))
-    .join(" ");
-});
-
 const showStatusColor = computed(() =>
-  Boolean((props.active || hovered.value) && statusFillClass.value),
+  Boolean((props.active || hovered.value) && props.colorClass),
 );
 
 function onEnter(): void {
@@ -37,11 +28,11 @@ function onLeave(): void {
     type="button"
     :disabled="disabled"
     :aria-pressed="active"
-    class="w-full whitespace-nowrap rounded-lg border border-transparent px-2 py-1 text-left text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:cursor-not-allowed disabled:opacity-50"
+    class="w-full whitespace-nowrap rounded-lg border px-2 py-1 text-left text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:cursor-not-allowed disabled:opacity-50"
     :class="
       showStatusColor
-        ? [statusFillClass, active ? 'ring-1 ring-inset ring-current/35' : undefined]
-        : 'bg-transparent text-surface-mid'
+        ? [colorClass, active ? 'ring-1 ring-inset ring-current/35' : undefined]
+        : 'border-transparent bg-transparent text-surface-mid hover:border-surface-border/50'
     "
     @mouseenter="onEnter"
     @mouseleave="onLeave"

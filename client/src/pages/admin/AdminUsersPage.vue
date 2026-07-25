@@ -438,7 +438,7 @@ onUnmounted(() => {
             </p>
           </template>
           <template #dismiss>
-            <BaseButton danger @click="requestCloseUserDrawer"> cancel </BaseButton>
+            <BaseButton variant="secondary" @click="requestCloseUserDrawer"> cancel </BaseButton>
           </template>
           <template #primary>
             <ToolbarPillButton

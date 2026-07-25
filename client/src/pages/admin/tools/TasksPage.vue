@@ -188,7 +188,7 @@ onMounted(() => {
           <ToolbarPillButton
             v-if="isSuperuser"
             v-show="activeTab === 'queue'"
-            family="2xx"
+            family="1xx"
             class="ml-auto"
             :disabled="listLoading"
             @click="openCreate"

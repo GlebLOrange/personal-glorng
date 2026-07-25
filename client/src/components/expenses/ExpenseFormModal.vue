@@ -63,7 +63,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton danger type="button" @click="emit('close')"> cancel </BaseButton>
+          <BaseButton variant="secondary" type="button" @click="emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton

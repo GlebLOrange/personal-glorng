@@ -9,7 +9,7 @@ const FAMILY_BADGE: Record<HttpStatusFamily, string> = {
   "5xx": "text-status-critical bg-status-critical/15 border-status-critical/30",
 };
 
-/** Option C: idle fill/3 + matching accent text. Hover/selected: pale /15 bg + matching border. */
+/** Option C: idle = /3 wash + family text, no border; hover/selected = /15 + /40 border. */
 const FAMILY_ACTION: Record<HttpStatusFamily, string> = {
   "1xx":
     "border-transparent bg-accent-blue/3 text-accent-blue hover:enabled:bg-accent-blue/15 hover:enabled:border-accent-blue/40",
@@ -41,22 +41,66 @@ export function httpStatusFamily(code: number): HttpStatusFamily {
   return "5xx";
 }
 
+/** Pale badge classes for an HTTP status family (shared by StatusBadge / filter chips). */
+export function familyBadgeClass(family: HttpStatusFamily): string {
+  return FAMILY_BADGE[family];
+}
+
 /** Pale badge classes for an HTTP status code. */
 export function httpStatusClass(code: number): string {
-  return FAMILY_BADGE[httpStatusFamily(code)];
+  return familyBadgeClass(httpStatusFamily(code));
 }
 
 /** Shared shape for toolbar/tab action pills. */
 export const ACTION_PILL_BASE =
   "inline-flex h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50";
 
+/** h-8 square chrome — overrides ACTION_PILL_BASE height/padding. */
+export const ICON_ACTION_SIZE =
+  "inline-flex !h-8 !w-8 !min-h-8 !min-w-8 shrink-0 items-center justify-center rounded-lg border !px-0 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50";
+
 /**
  * Classes for an action pill in a given HTTP-family color.
- * Idle = fill at 3% opacity + matching accent text; hover/selected = pale /15 + border.
+ * Idle = /3 wash + family text, no border; hover/selected = /15 + /40 border.
  */
 export function actionFamilyClass(family: HttpStatusFamily, selected = false): string {
   if (selected) {
     return `${ACTION_PILL_BASE} ${FAMILY_ACTION_SELECTED[family]}`;
   }
   return `${ACTION_PILL_BASE} ${FAMILY_ACTION[family]}`;
+}
+
+export type IconActionClassOptions = {
+  quiet?: boolean;
+  danger?: boolean;
+  /** Anchors ignore :enabled — use plain hover: */
+  anchor?: boolean;
+};
+
+/**
+ * Classes for h-8 icon chrome (back, pagination, edit, clear).
+ * Same idle/hover/selected paint as pills; size forced to square.
+ */
+export function iconActionClass(
+  family: HttpStatusFamily = "1xx",
+  selected = false,
+  opts: IconActionClassOptions = {},
+): string {
+  const resolved: HttpStatusFamily = opts.danger ? "4xx" : family;
+  if (opts.quiet && !selected) {
+    const hover = opts.anchor ? "hover:" : "hover:enabled:";
+    return [
+      ICON_ACTION_SIZE,
+      "border-transparent bg-transparent text-surface-light/60",
+      `${hover}border-accent-blue/40 ${hover}bg-accent-blue/15 ${hover}text-accent-blue`,
+    ].join(" ");
+  }
+  if (selected) {
+    return `${ICON_ACTION_SIZE} ${FAMILY_ACTION_SELECTED[resolved]}`;
+  }
+  const tone = FAMILY_ACTION[resolved];
+  if (opts.anchor) {
+    return `${ICON_ACTION_SIZE} ${tone.replaceAll("hover:enabled:", "hover:")}`;
+  }
+  return `${ICON_ACTION_SIZE} ${tone}`;
 }

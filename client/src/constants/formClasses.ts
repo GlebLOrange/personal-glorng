@@ -22,3 +22,7 @@ export const SELECT_CLASS_COMPACT =
 export const TEXTAREA_CLASS =
   "min-h-11 w-full bg-surface-dark border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm " +
   `${FIELD_FOCUS} transition-colors placeholder:text-surface-mid/70 resize-y disabled:opacity-60`;
+
+export const TEXTAREA_CLASS_COMPACT =
+  "min-h-9 w-full bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-surface-light text-sm " +
+  `${FIELD_FOCUS} transition-colors placeholder:text-surface-mid/70 resize-y disabled:opacity-60`;

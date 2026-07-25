@@ -1,3 +1,4 @@
+import { familyBadgeClass } from "@/constants/httpStatusColors";
 import { statusBadgeClass } from "@/constants/taskStatus";
 
 /** Neutral styling for unfiltered / "all" chips and tiles. */
@@ -5,11 +6,11 @@ export const FILTER_CHIP_NEUTRAL = "text-surface-light bg-surface-dark";
 
 /** Pale 1xx–5xx + muted/neutral — product chips only (no golden/violet). */
 const SEMANTIC = {
-  info: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
-  success: "text-status-success bg-status-success/10 border-status-success/30",
-  warning: "text-status-cyan bg-status-cyan/10 border-status-cyan/30",
-  error: "text-status-error bg-status-error/10 border-status-error/30",
-  critical: "text-status-critical bg-status-critical/10 border-status-critical/30",
+  info: familyBadgeClass("1xx"),
+  success: familyBadgeClass("2xx"),
+  warning: familyBadgeClass("3xx"),
+  error: familyBadgeClass("4xx"),
+  critical: familyBadgeClass("5xx"),
   muted: "text-surface-mid bg-surface-mid/10 border-surface-border",
   neutral: "bg-surface-border text-surface-mid border-surface-border",
 } as const;
@@ -28,13 +29,13 @@ const FEEDBACK_STATUS_CLASS: Record<string, string> = {
 };
 
 const USER_STATUS_CLASS: Record<string, string> = {
-  verified: "bg-status-cyan/15 text-status-cyan border-status-cyan/30",
+  verified: SEMANTIC.warning,
   unverified: SEMANTIC.neutral,
-  protected: "bg-accent-blue/15 text-accent-blue border-accent-blue/30",
+  protected: SEMANTIC.info,
 };
 
 const USER_ROLE_CLASS: Record<string, string> = {
-  superuser: "bg-status-critical/15 text-status-critical border-status-critical/30",
+  superuser: SEMANTIC.critical,
   custom: "bg-surface-dark text-surface-mid border-surface-border",
 };
 

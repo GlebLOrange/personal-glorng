@@ -67,7 +67,7 @@ const conditionsClass = computed(() => {
 });
 
 const rootClass = computed(() => [
-  "font-mono min-w-0",
+  "font-data min-w-0",
   props.size === "chrome" && "w-full max-w-full",
   props.interactive && "rounded-lg transition-colors",
 ]);

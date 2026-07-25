@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import BaseButton from "@/components/ui/BaseButton.vue";
+import IconActionButton from "@/components/ui/IconActionButton.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -44,12 +44,24 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
     :aria-label="ariaLabel"
     :class="layout === 'compact' ? 'flex items-center gap-2' : 'flex items-center justify-between'"
   >
-    <BaseButton variant="ghost" size="sm" :disabled="prevDisabled" @click="emit('prev')">
-      previous
-    </BaseButton>
+    <IconActionButton
+      family="1xx"
+      :disabled="prevDisabled"
+      aria-label="previous"
+      title="previous"
+      @click="emit('prev')"
+    >
+      &lt;
+    </IconActionButton>
     <span v-if="layout === 'bar'" class="text-xs text-surface-muted">{{ pageLabel }}</span>
-    <BaseButton variant="ghost" size="sm" :disabled="nextDisabled" @click="emit('next')">
-      next
-    </BaseButton>
+    <IconActionButton
+      family="1xx"
+      :disabled="nextDisabled"
+      aria-label="next"
+      title="next"
+      @click="emit('next')"
+    >
+      &gt;
+    </IconActionButton>
   </nav>
 </template>

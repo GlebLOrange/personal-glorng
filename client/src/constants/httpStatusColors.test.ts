@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { actionFamilyClass, httpStatusClass, httpStatusFamily } from "@/constants/httpStatusColors";
+import {
+  actionFamilyClass,
+  familyBadgeClass,
+  httpStatusClass,
+  httpStatusFamily,
+  iconActionClass,
+} from "@/constants/httpStatusColors";
 
 describe("httpStatusColors", () => {
   it("maps codes to families", () => {
@@ -15,9 +21,10 @@ describe("httpStatusColors", () => {
     expect(httpStatusClass(200)).toContain("status-success");
     expect(httpStatusClass(404)).toContain("status-error");
     expect(httpStatusClass(503)).toContain("status-critical");
+    expect(familyBadgeClass("1xx")).toContain("accent-blue");
   });
 
-  it("uses idle fill/3 with matching accent text and selected with bg+border", () => {
+  it("uses /3 idle wash and selected/hover with border", () => {
     const idle = actionFamilyClass("2xx", false);
     expect(idle).toContain("font-medium");
     expect(idle).toContain("leading-none");
@@ -39,5 +46,15 @@ describe("httpStatusColors", () => {
     expect(selected).toContain("leading-none");
     expect(selected).toContain("bg-status-success/15");
     expect(selected).toContain("border-status-success/40");
+  });
+
+  it("builds h-8 icon action classes", () => {
+    const icon = iconActionClass("3xx", false);
+    expect(icon).toContain("!h-8");
+    expect(icon).toContain("bg-status-cyan/3");
+    expect(iconActionClass("1xx", false, { quiet: true })).toContain("text-surface-light/60");
+    expect(iconActionClass("1xx", false, { danger: true })).toContain("bg-status-error/3");
+    expect(iconActionClass("1xx", false, { anchor: true })).toContain("hover:bg-accent-blue/15");
+    expect(iconActionClass("1xx", false, { anchor: true })).not.toContain("hover:enabled:");
   });
 });

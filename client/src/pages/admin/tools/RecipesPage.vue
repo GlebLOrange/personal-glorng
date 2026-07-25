@@ -104,7 +104,7 @@ function editRecipeFromCard(recipe: Recipe): void {
       />
       <ToolbarPillButton
         v-if="canWrite"
-        family="2xx"
+        family="1xx"
         class="ml-auto"
         :disabled="listLoading"
         @click="openCreate"

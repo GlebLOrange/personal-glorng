@@ -7,6 +7,7 @@ import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import ToolIcon from "@/components/icons/ToolIcon.vue";
+import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import {
@@ -67,7 +68,7 @@ watch(
       <div class="flex min-w-0 flex-col gap-2">
         <StatusBadge
           size="sm"
-          class="inline-flex h-8 items-center"
+          class="inline-flex box-border h-8 items-center leading-none"
           :label="statusLabel(task.status)"
           :class-name="statusBadgeClass(task.status)"
         />
@@ -223,38 +224,37 @@ watch(
     </div>
 
     <template v-if="canMutate && task" #footer>
-      <div class="flex w-full flex-wrap items-center gap-2">
-        <BaseDropdownMenu v-if="menuStatuses.length" placement="top" aria-label="more actions">
-          <template #trigger="{ open: menuOpen }">
-            <span class="inline-flex items-center gap-1.5 px-2 text-sm text-surface-mid">
-              more actions
-              <ChevronIcon :open="menuOpen" />
-            </span>
-          </template>
-          <template #default="{ close: closeMenu }">
-            <BaseDropdownMenuItem
-              v-for="status in menuStatuses"
-              :key="status"
-              :color-class="statusMenuItemClass(status)"
-              @select="
-                closeMenu();
-                if (!statusUpdating) emit('updateStatus', status);
-              "
-            >
-              {{ statusActionLabel(status) }}
-            </BaseDropdownMenuItem>
-          </template>
-        </BaseDropdownMenu>
-        <ToolbarPillButton
-          v-if="primaryActionStatus"
-          family="2xx"
-          class="ml-auto"
-          :disabled="statusUpdating"
-          @click="emit('updateStatus', primaryActionStatus)"
-        >
-          {{ statusActionLabel(primaryActionStatus) }}
-        </ToolbarPillButton>
-      </div>
+      <DrawerFooterActions>
+        <template v-if="menuStatuses.length" #dismiss>
+          <BaseDropdownMenu placement="top" aria-label="more actions">
+            <template #trigger>
+              <span>more actions</span>
+            </template>
+            <template #default="{ close: closeMenu }">
+              <BaseDropdownMenuItem
+                v-for="status in menuStatuses"
+                :key="status"
+                :color-class="statusMenuItemClass(status)"
+                @select="
+                  closeMenu();
+                  if (!statusUpdating) emit('updateStatus', status);
+                "
+              >
+                {{ statusActionLabel(status) }}
+              </BaseDropdownMenuItem>
+            </template>
+          </BaseDropdownMenu>
+        </template>
+        <template v-if="primaryActionStatus" #primary>
+          <ToolbarPillButton
+            family="2xx"
+            :disabled="statusUpdating"
+            @click="emit('updateStatus', primaryActionStatus)"
+          >
+            {{ statusActionLabel(primaryActionStatus) }}
+          </ToolbarPillButton>
+        </template>
+      </DrawerFooterActions>
     </template>
   </BaseDrawer>
 </template>

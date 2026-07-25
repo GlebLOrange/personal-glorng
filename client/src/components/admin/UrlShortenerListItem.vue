@@ -95,7 +95,7 @@ function confirmDelete(): void {
       />
     </template>
     <template #actions>
-      <BaseButton variant="ghost" danger size="sm" :disabled="saving" @click="cancelEdit">
+      <BaseButton variant="secondary" size="sm" :disabled="saving" @click="cancelEdit">
         cancel
       </BaseButton>
       <BaseButton variant="success" size="sm" :disabled="saving" @click="saveEdit">

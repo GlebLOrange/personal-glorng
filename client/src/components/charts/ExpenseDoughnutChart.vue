@@ -32,7 +32,7 @@ const chartOptions = {
       position: "right" as const,
       labels: {
         color: CHART_TEXT,
-        font: { family: "IBM Plex Mono, ui-monospace, monospace", size: 10 },
+        font: { family: "IBM Plex Sans, Segoe UI, system-ui, sans-serif", size: 10 },
       },
     },
   },

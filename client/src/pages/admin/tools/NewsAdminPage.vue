@@ -80,7 +80,7 @@ const {
           <ToolbarPillButton family="3xx" :disabled="actionLoading" @click="runIngest">
             run ingest
           </ToolbarPillButton>
-          <ToolbarPillButton family="2xx" :disabled="actionLoading" @click="openCreate">
+          <ToolbarPillButton family="1xx" :disabled="actionLoading" @click="openCreate">
             + article
           </ToolbarPillButton>
         </template>

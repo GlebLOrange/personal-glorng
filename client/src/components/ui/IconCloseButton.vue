@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseButton from "@/components/ui/BaseButton.vue";
+import IconActionButton from "@/components/ui/IconActionButton.vue";
 
 withDefaults(
   defineProps<{
@@ -16,13 +16,12 @@ defineEmits<{ click: [MouseEvent] }>();
 </script>
 
 <template>
-  <BaseButton
+  <IconActionButton
     danger
-    size="icon"
-    :aria-label="ariaLabel"
+    :ariaLabel="ariaLabel"
     :disabled="disabled"
     @click="$emit('click', $event)"
   >
     ✕
-  </BaseButton>
+  </IconActionButton>
 </template>

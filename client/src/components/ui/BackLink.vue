@@ -2,14 +2,14 @@
 import { computed, useAttrs } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 
-import { actionFamilyClass } from "@/constants/httpStatusColors";
+import { iconActionClass } from "@/constants/httpStatusColors";
 
 defineOptions({ inheritAttrs: false });
 
 withDefaults(
   defineProps<{
     to: RouteLocationRaw;
-    /** @deprecated Alias of default — both sizes match BaseButton icon hit target. */
+    /** @deprecated Alias of default — both sizes match IconActionButton. */
     size?: "default" | "compact";
   }>(),
   {
@@ -19,18 +19,8 @@ withDefaults(
 
 const attrs = useAttrs();
 
-/** Match BaseButton size="icon" / IconCloseButton. */
-const sizeClass = "!min-h-8 !min-w-8 !h-8 !w-8 !px-0";
-
 function linkClass(isActive: boolean): string {
-  return [
-    actionFamilyClass("1xx", isActive),
-    // Anchors ignore :enabled — mirror 1xx hover border/bg without it.
-    "hover:border-accent-blue/40 focus-visible:border-accent-blue/40",
-    isActive ? "" : "hover:text-accent-blue hover:bg-accent-blue/15",
-    sizeClass,
-    attrs.class,
-  ]
+  return [iconActionClass("1xx", isActive, { anchor: true }), attrs.class]
     .filter(Boolean)
     .join(" ");
 }

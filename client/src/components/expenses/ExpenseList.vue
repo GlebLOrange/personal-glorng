@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
+import IconEditButton from "@/components/ui/IconEditButton.vue";
 import { Card } from "@/components/ui/card";
 import type { ExchangeRates, Expense } from "@/types";
 import { expenseSourceLabel } from "@/utils/expenseSource";
@@ -92,7 +94,7 @@ const skeletonRows = 5;
             {{ expense.notes }}
           </p>
         </div>
-        <div class="flex gap-2 justify-end flex-wrap mt-3" @click.stop @keydown.stop>
+        <div class="flex gap-1 justify-end flex-wrap mt-3" @click.stop @keydown.stop>
           <BaseButton
             variant="ghost"
             size="sm"
@@ -101,10 +103,14 @@ const skeletonRows = 5;
           >
             duplicate
           </BaseButton>
-          <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">edit</BaseButton>
-          <BaseButton variant="ghost" danger size="sm" @click="emit('delete', expense.id)">
-            delete
-          </BaseButton>
+          <IconEditButton
+            :aria-label="`Edit ${expense.tool_name || 'expense'}`"
+            @click="emit('edit', expense)"
+          />
+          <IconCloseButton
+            :aria-label="`Delete ${expense.tool_name || 'expense'}`"
+            @click="emit('delete', expense.id)"
+          />
         </div>
       </Card>
     </div>
@@ -190,20 +196,24 @@ const skeletonRows = 5;
               {{ expense.notes ?? "—" }}
             </td>
             <td class="px-3 py-2 text-right whitespace-nowrap" @click.stop @keydown.stop>
-              <BaseButton
-                variant="ghost"
-                size="sm"
-                :aria-label="`Duplicate ${expense.tool_name || 'expense'}`"
-                @click="emit('duplicate', expense)"
-              >
-                duplicate
-              </BaseButton>
-              <BaseButton variant="ghost" size="sm" @click="emit('edit', expense)">
-                edit
-              </BaseButton>
-              <BaseButton variant="ghost" danger size="sm" @click="emit('delete', expense.id)">
-                delete
-              </BaseButton>
+              <div class="inline-flex items-center justify-end gap-1">
+                <BaseButton
+                  variant="ghost"
+                  size="sm"
+                  :aria-label="`Duplicate ${expense.tool_name || 'expense'}`"
+                  @click="emit('duplicate', expense)"
+                >
+                  duplicate
+                </BaseButton>
+                <IconEditButton
+                  :aria-label="`Edit ${expense.tool_name || 'expense'}`"
+                  @click="emit('edit', expense)"
+                />
+                <IconCloseButton
+                  :aria-label="`Delete ${expense.tool_name || 'expense'}`"
+                  @click="emit('delete', expense.id)"
+                />
+              </div>
             </td>
           </tr>
         </tbody>

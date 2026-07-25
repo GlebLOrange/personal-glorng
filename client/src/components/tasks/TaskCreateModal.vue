@@ -34,13 +34,13 @@ const emit = defineEmits<{ submit: []; close: [] }>();
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton danger type="button" @click="emit('close')"> cancel </BaseButton>
+          <BaseButton variant="secondary" type="button" @click="emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton
             type="submit"
             form="task-create-drawer-form"
-            family="2xx"
+            family="1xx"
             :disabled="saving"
           >
             {{ saving ? "creating..." : "create" }}
