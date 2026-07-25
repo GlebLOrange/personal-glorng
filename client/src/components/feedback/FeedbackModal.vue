@@ -9,7 +9,7 @@ import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { isValidEmail } from "@/constants/contactMeta";
 import { api } from "@/composables/useApi";
-import { useNotify } from "@/composables/useNotify";
+import { useApiAction } from "@/composables/useApiAction";
 
 const EMAIL_HELP = "Use a full address like name@example.com";
 
@@ -29,8 +29,7 @@ const isInquiry = computed(() => props.intent === "inquiry");
 const email = ref("");
 const theme = ref(isInquiry.value ? "Work inquiry" : "");
 const message = ref("");
-const loading = ref(false);
-const { toast } = useNotify();
+const { run: runSubmit, loading } = useApiAction();
 
 const emailTone = computed<"error" | "success" | undefined>(() => {
   if (!email.value.trim()) return undefined;
@@ -70,21 +69,18 @@ const copy = computed(() =>
 
 async function submit(): Promise<void> {
   if (!canSubmit.value) return;
-  loading.value = true;
-  try {
-    await api.post("/feedback", {
-      email: email.value.trim(),
-      theme: theme.value,
-      message: message.value,
-    });
-    toast(copy.value.success, "success");
-    emit("close");
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    toast(copy.value.error, "error");
-  } finally {
-    loading.value = false;
-  }
+  const ok = await runSubmit(
+    async () => {
+      await api.post("/feedback", {
+        email: email.value.trim(),
+        theme: theme.value,
+        message: message.value,
+      });
+      return true;
+    },
+    { successMessage: copy.value.success, errorMessage: copy.value.error },
+  );
+  if (ok) emit("close");
 }
 </script>
 

@@ -18,11 +18,10 @@ import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { userRoleClass, userStatusClass } from "@/constants/filterColors";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
-import { useNotify } from "@/composables/useNotify";
+import { useApiAction } from "@/composables/useApiAction";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { usePlatformCatalog } from "@/composables/usePlatformCatalog";
 import type { AdminUserSummary, PaginatedList } from "@/types";
-import { getApiErrorMessage } from "@/types/api";
 import { formatDate } from "@/utils/format";
 import { SUPERUSER_PERMISSION } from "@/utils/permissions";
 
@@ -48,14 +47,15 @@ const STATUS_FILTERS: { label: string; value: Exclude<StatusFilter, "all"> }[] =
   { label: "protected", value: "protected" },
 ];
 
-const { toast } = useNotify();
 const users = ref<AdminUserSummary[]>([]);
 const userStats = ref<AdminUsersStats | null>(null);
 const page = ref(1);
 const total = ref(0);
 const totalPages = ref(0);
 const { services, load: loadPlatformCatalog } = usePlatformCatalog();
-const loading = ref(false);
+const { loading, run: runLoadUsers } = useApiAction();
+const { run: runLoadStats } = useApiAction();
+const { run: runSavePermissions } = useApiAction();
 const savingId = ref<string | null>(null);
 const draftPermissions = ref<Record<string, string[]>>({});
 const searchQuery = ref("");
@@ -167,37 +167,39 @@ function requestCloseUserDrawer(): void {
 }
 
 async function loadUserStats(): Promise<void> {
-  try {
-    const { data } = await api.get<AdminUsersStats>("/admin/users/stats");
-    userStats.value = data;
-  } catch (err) {
-    toast(getApiErrorMessage(err, "Failed to load user stats"), "error");
-  }
+  const data = await runLoadStats(
+    async () => {
+      const response = await api.get<AdminUsersStats>("/admin/users/stats");
+      return response.data;
+    },
+    { errorMessage: "Failed to load user stats", logContext: "admin.users.stats" },
+  );
+  if (data) userStats.value = data;
 }
 
 async function loadUsers(): Promise<void> {
-  loading.value = true;
-  try {
-    const params: Record<string, string | number> = {
-      page: page.value,
-      per_page: LIST_PAGE_SIZE,
-      role: roleFilter.value,
-      status: statusFilter.value,
-    };
-    const query = debouncedSearch.value.trim();
-    if (query) params.search = query;
+  const data = await runLoadUsers(
+    async () => {
+      const params: Record<string, string | number> = {
+        page: page.value,
+        per_page: LIST_PAGE_SIZE,
+        role: roleFilter.value,
+        status: statusFilter.value,
+      };
+      const query = debouncedSearch.value.trim();
+      if (query) params.search = query;
 
-    const { data } = await api.get<PaginatedList<AdminUserSummary>>("/admin/users", { params });
-    users.value = data.items;
-    total.value = data.total;
-    totalPages.value = data.pages;
-    for (const user of data.items) {
-      draftPermissions.value[user.id] = draftPermissions.value[user.id] ?? [...user.permissions];
-    }
-  } catch (err) {
-    toast(getApiErrorMessage(err, "Failed to load users"), "error");
-  } finally {
-    loading.value = false;
+      const response = await api.get<PaginatedList<AdminUserSummary>>("/admin/users", { params });
+      return response.data;
+    },
+    { errorMessage: "Failed to load users", logContext: "admin.users.list" },
+  );
+  if (!data) return;
+  users.value = data.items;
+  total.value = data.total;
+  totalPages.value = data.pages;
+  for (const user of data.items) {
+    draftPermissions.value[user.id] = draftPermissions.value[user.id] ?? [...user.permissions];
   }
 }
 
@@ -226,24 +228,32 @@ watch([page, debouncedSearch, roleFilter, statusFilter], () => {
 
 async function savePermissions(user: AdminUserSummary): Promise<void> {
   savingId.value = user.id;
-  try {
-    const permissions = draftPermissions.value[user.id] ?? [];
-    const { data } = await api.patch<AdminUserSummary>(`/admin/users/${user.id}/permissions`, {
-      permissions,
-    });
-    const index = users.value.findIndex((row) => row.id === user.id);
-    if (index >= 0) {
-      users.value[index] = data;
-      draftPermissions.value[user.id] = [...data.permissions];
-    }
-    toast("Permissions updated", "success");
-    await loadUserStats();
-  } catch (err) {
+  const data = await runSavePermissions(
+    async () => {
+      const permissions = draftPermissions.value[user.id] ?? [];
+      const response = await api.patch<AdminUserSummary>(`/admin/users/${user.id}/permissions`, {
+        permissions,
+      });
+      return response.data;
+    },
+    {
+      successMessage: "Permissions updated",
+      errorMessage: "Failed to update permissions",
+      logContext: "admin.users.permissions",
+    },
+  );
+  if (!data) {
     draftPermissions.value[user.id] = [...user.permissions];
-    toast(getApiErrorMessage(err, "Failed to update permissions"), "error");
-  } finally {
     savingId.value = null;
+    return;
   }
+  const index = users.value.findIndex((row) => row.id === user.id);
+  if (index >= 0) {
+    users.value[index] = data;
+    draftPermissions.value[user.id] = [...data.permissions];
+  }
+  savingId.value = null;
+  await loadUserStats();
 }
 
 onMounted(() => {

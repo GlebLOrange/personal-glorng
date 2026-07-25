@@ -5,11 +5,13 @@ const mocks = vi.hoisted(() => ({
     component: vi.fn(),
     mount: vi.fn(),
     use: vi.fn(),
+    config: { errorHandler: undefined as unknown },
   },
   router: {
     isReady: vi.fn(() => Promise.resolve()),
   },
   restoreAuth: vi.fn(),
+  installGlobalErrorHandlers: vi.fn(),
 }));
 
 vi.mock("vue", async (importActual) => {
@@ -24,6 +26,10 @@ vi.mock("@/plugins/auth", () => ({
   restoreAuth: mocks.restoreAuth,
 }));
 
+vi.mock("@/utils/globalErrorHandlers", () => ({
+  installGlobalErrorHandlers: mocks.installGlobalErrorHandlers,
+}));
+
 vi.mock("./router", () => ({
   default: mocks.router,
 }));
@@ -33,6 +39,7 @@ describe("main", () => {
     await import("@/main");
     await mocks.router.isReady.mock.results[0]?.value;
 
+    expect(mocks.installGlobalErrorHandlers).toHaveBeenCalledWith(mocks.app);
     expect(mocks.app.mount).toHaveBeenCalledWith("#app");
     expect(mocks.restoreAuth).toHaveBeenCalledOnce();
   });

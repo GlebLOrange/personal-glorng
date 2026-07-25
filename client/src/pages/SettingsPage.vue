@@ -10,7 +10,7 @@ import BaseSelect from "@/components/ui/BaseSelect.vue";
 import { EXPENSE_CURRENCIES } from "@/composables/useExpenseFilters";
 import { useUserPreferences } from "@/composables/useUserPreferences";
 import { api } from "@/composables/useApi";
-import { useNotify } from "@/composables/useNotify";
+import { useApiAction } from "@/composables/useApiAction";
 import { usePermissions } from "@/composables/usePermissions";
 import { useAuthStore } from "@/stores/auth";
 import { getApiErrorMessage } from "@/types/api";
@@ -19,7 +19,6 @@ import { passwordStrength } from "@/utils/passwordPolicy";
 
 const auth = useAuthStore();
 const router = useRouter();
-const { toast } = useNotify();
 const { permissions } = usePermissions();
 const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPreferences();
 
@@ -35,12 +34,12 @@ const deleteConfirm = ref(false);
 const githubStatus = ref<GitHubStatus>({ linked: false, github_username: null });
 const githubLoading = ref(false);
 const githubError = ref<string | null>(null);
-const unlinkingGithub = ref(false);
-const savingProfile = ref(false);
-const savingEmail = ref(false);
-const savingPassword = ref(false);
-const savingPrefs = ref(false);
-const deleting = ref(false);
+const { run: runProfile, loading: savingProfile } = useApiAction();
+const { run: runEmail, loading: savingEmail } = useApiAction();
+const { run: runPassword, loading: savingPassword } = useApiAction();
+const { run: runPrefs, loading: savingPrefs } = useApiAction();
+const { run: runUnlinkGithub, loading: unlinkingGithub } = useApiAction();
+const { run: runDelete, loading: deleting } = useApiAction();
 
 const passwordCheck = computed(() => passwordStrength(newPassword.value));
 const profilePayload = computed(() => ({
@@ -104,58 +103,56 @@ onMounted(async () => {
 
 async function saveProfile(): Promise<void> {
   if (!canSaveProfile.value) return;
-  savingProfile.value = true;
-  try {
-    await auth.updateProfile(profilePayload.value);
-    toast("Profile updated", "success");
-  } catch (err) {
-    toast(getApiErrorMessage(err, "Profile update failed"), "error");
-  } finally {
-    savingProfile.value = false;
-  }
+  await runProfile(() => auth.updateProfile(profilePayload.value), {
+    successMessage: "Profile updated",
+    errorMessage: "Profile update failed",
+  });
 }
 
 async function saveEmail(): Promise<void> {
   if (!canSaveEmail.value) return;
-  savingEmail.value = true;
-  try {
-    await auth.changeEmail(newEmail.value.trim(), emailPassword.value);
-    toast("Email updated — verify your new address", "success");
-    emailPassword.value = "";
-  } catch (err) {
-    toast(getApiErrorMessage(err, "Email change failed"), "error");
-  } finally {
-    savingEmail.value = false;
-  }
+  const ok = await runEmail(
+    async () => {
+      await auth.changeEmail(newEmail.value.trim(), emailPassword.value);
+      return true;
+    },
+    {
+      successMessage: "Email updated — verify your new address",
+      errorMessage: "Email change failed",
+    },
+  );
+  if (ok) emailPassword.value = "";
 }
 
 async function savePassword(): Promise<void> {
   if (!canSavePassword.value) return;
-  savingPassword.value = true;
-  try {
-    await auth.changePassword(currentPassword.value, newPassword.value, newPasswordConfirm.value);
+  const ok = await runPassword(
+    async () => {
+      await auth.changePassword(
+        currentPassword.value,
+        newPassword.value,
+        newPasswordConfirm.value,
+      );
+      return true;
+    },
+    {
+      successMessage: "Password changed",
+      errorMessage: "Password change failed",
+    },
+  );
+  if (ok) {
     currentPassword.value = "";
     newPassword.value = "";
     newPasswordConfirm.value = "";
-    toast("Password changed", "success");
-  } catch (err) {
-    toast(getApiErrorMessage(err, "Password change failed"), "error");
-  } finally {
-    savingPassword.value = false;
   }
 }
 
 async function saveCurrency(): Promise<void> {
   if (!canSaveCurrency.value) return;
-  savingPrefs.value = true;
-  try {
-    await saveDisplayCurrency(displayCurrency.value);
-    toast("Preferences saved", "success");
-  } catch (err) {
-    toast(getApiErrorMessage(err, "Preferences update failed"), "error");
-  } finally {
-    savingPrefs.value = false;
-  }
+  await runPrefs(() => saveDisplayCurrency(displayCurrency.value), {
+    successMessage: "Preferences saved",
+    errorMessage: "Preferences update failed",
+  });
 }
 
 function connectGithub(): void {
@@ -163,30 +160,32 @@ function connectGithub(): void {
 }
 
 async function unlinkGithub(): Promise<void> {
-  unlinkingGithub.value = true;
-  try {
-    const { data } = await api.delete<GitHubStatus>("/auth/github");
-    githubStatus.value = data;
-    toast("GitHub unlinked", "success");
-  } catch (err) {
-    toast(getApiErrorMessage(err, "Failed to unlink GitHub"), "error");
-  } finally {
-    unlinkingGithub.value = false;
-  }
+  const data = await runUnlinkGithub(
+    async () => {
+      const response = await api.delete<GitHubStatus>("/auth/github");
+      return response.data;
+    },
+    {
+      successMessage: "GitHub unlinked",
+      errorMessage: "Failed to unlink GitHub",
+    },
+  );
+  if (data) githubStatus.value = data;
 }
 
 async function deleteAccount(): Promise<void> {
   if (!canDeleteAccount.value) return;
-  deleting.value = true;
-  try {
-    await auth.deleteAccount(deletePassword.value);
-    toast("Account deleted", "success");
-    router.push("/");
-  } catch (err) {
-    toast(getApiErrorMessage(err, "Account deletion failed"), "error");
-  } finally {
-    deleting.value = false;
-  }
+  const ok = await runDelete(
+    async () => {
+      await auth.deleteAccount(deletePassword.value);
+      return true;
+    },
+    {
+      successMessage: "Account deleted",
+      errorMessage: "Account deletion failed",
+    },
+  );
+  if (ok) router.push("/");
 }
 </script>
 
