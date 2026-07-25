@@ -28,4 +28,20 @@ describe("BaseTextarea", () => {
     expect(wrapper.get("textarea").attributes("aria-describedby")).toBe("message-hint");
     expect(wrapper.get("#message-hint").text()).toBe("Keep it short");
   });
+
+  it("keeps the visual tip out of aria-describedby when label and placeholder are set", () => {
+    const wrapper = mount(BaseTextarea, {
+      props: {
+        id: "notes",
+        label: "Notes",
+        placeholder: "optional tips",
+      },
+    });
+
+    expect(wrapper.get("label").attributes("for")).toBe("notes");
+    expect(wrapper.get("textarea").attributes("aria-label")).toBeUndefined();
+    expect(wrapper.get("textarea").attributes("aria-describedby")).toBeUndefined();
+    expect(wrapper.get("#notes-tip").text()).toBe("optional tips");
+    expect(wrapper.get("#notes-tip").attributes("aria-hidden")).toBe("true");
+  });
 });

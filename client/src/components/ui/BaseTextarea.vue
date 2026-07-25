@@ -35,7 +35,7 @@ const describedBy = computed(() => {
   const ids: string[] = [];
   if (props.error) ids.push(errorId.value);
   else if (props.hint) ids.push(hintId.value);
-  if (showTip.value) ids.push(tipId.value);
+  // Visual tip stays aria-hidden; do not wire into describedby.
   return ids.length ? ids.join(" ") : undefined;
 });
 const bareClass = computed(() => [TEXTAREA_CLASS, props.error && "border-status-error"]);
