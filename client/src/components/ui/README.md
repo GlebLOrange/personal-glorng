@@ -24,13 +24,13 @@ Use the pale **1xx–5xx** family tokens — map API action to variant:
 |---|---|---|---|
 | Create / add / primary / info | 1xx | `BaseButton` `primary`, `ToolbarPillButton` `1xx` | `accent-blue` wash |
 | Save / success / created | 2xx | `BaseButton` `success`, pill `2xx` | `status-success` wash |
-| Update / redirect / caution | 3xx | pill `3xx`, edit chrome | `status-cyan` wash |
+| Update / redirect / caution | 3xx | pill `3xx`, edit chrome | `status-warning` wash |
 | Delete / client error | 4xx | `danger`, pill `4xx` | `status-error` |
 | Critical / server error | 5xx | pill `5xx`, critical badges | `status-critical` |
 | Secondary / cancel (non-destructive) | — | `secondary` | grayscale (`surface-light`) |
 | Quiet chrome / tertiary | — | `ghost` (+ optional `quiet`) | muted until hover accent |
 
-`status-warning` aliases to `status-cyan` (3xx). Prefer `status-cyan` in new product code. Legacy `accent-red` / `accent-amber` map to error / cyan.
+`status-warning` is the 3xx family (pale yellow). Prefer `status-warning` for edit/pending/caution; leave `status-cyan` for legacy callouts only. Legacy `accent-red` / `accent-amber` map to error / warning.
 
 Auth submits and marketing `cta-*` stay blue/neutral; do not invent new hex colors.
 
@@ -75,13 +75,13 @@ Canonical tokens in `@theme` (`client/src/styles/main.css`):
 |---|---|---|
 | 1xx | `accent-blue` | `#8ec4e0` |
 | 2xx | `status-success` | `#7bc49a` |
-| 3xx | `status-cyan` (= `status-warning`) | `#7eb8b0` |
+| 3xx | `status-warning` | `#d4ce94` |
 | 4xx | `status-error` | `#e88a8a` |
 | 5xx | `status-critical` | `#d98aad` |
 
-Use `text-status-*`, `alert-surface-error`, `alert-surface-warning` (cyan), etc. — not raw Tailwind `red-400` / `amber-400`. Wash pattern: idle `/3`, hover/selected `/15` + border `/40`.
+Use `text-status-*`, `alert-surface-error`, `alert-surface-warning` (pale yellow), etc. — not raw Tailwind `red-400` / `amber-400`. Wash pattern: idle `/3`, hover/selected `/15` + border `/40`.
 
-Typography: IBM Plex Sans + Mono; use `font-data` for status codes, counts, and money.
+Typography: IBM Plex Sans; use `font-data` for status codes, counts, and money.
 
 ## Overlay max-width naming
 
