@@ -131,12 +131,7 @@ function editRecipeFromCard(recipe: Recipe): void {
         </div>
       </div>
 
-      <ErrorState
-        v-else-if="listError"
-        :message="listError"
-        show-retry
-        @retry="loadRecipes"
-      />
+      <ErrorState v-else-if="listError" :message="listError" show-retry @retry="loadRecipes" />
 
       <div v-else-if="recipes.length" class="flex flex-col divide-y divide-surface-border/40">
         <RecipeCard
@@ -176,7 +171,7 @@ function editRecipeFromCard(recipe: Recipe): void {
         :total-pages="totalPages"
         :has-next-page="hasNextPage"
         :has-previous-page="page > 1"
-        aria-label="Recipes pagination"
+        ariaLabel="Recipes pagination"
         @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"

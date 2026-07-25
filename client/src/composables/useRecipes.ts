@@ -79,9 +79,7 @@ export function useRecipes() {
     return `${n} recipe${n === 1 ? "" : "s"}`;
   });
   const formTitle = computed(() => (editingId.value ? "edit recipe" : "new recipe"));
-  const deleteTarget = computed(
-    () => pendingDeleteRecipe.value ?? selectedRecipe.value,
-  );
+  const deleteTarget = computed(() => pendingDeleteRecipe.value ?? selectedRecipe.value);
   const deleteConfirmMessage = computed(() =>
     deleteTarget.value
       ? `Delete "${deleteTarget.value.title}"? This cannot be undone.`

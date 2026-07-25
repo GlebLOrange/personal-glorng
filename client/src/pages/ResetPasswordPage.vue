@@ -96,7 +96,13 @@ async function handleSubmit(): Promise<void> {
           required
         />
         <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
-        <BaseButton type="submit" variant="primary" class="w-full" :loading="loading" :disabled="!canSubmit">
+        <BaseButton
+          type="submit"
+          variant="primary"
+          class="w-full"
+          :loading="loading"
+          :disabled="!canSubmit"
+        >
           {{ loading ? "saving..." : "set new password" }}
         </BaseButton>
       </form>

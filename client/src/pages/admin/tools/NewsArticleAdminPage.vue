@@ -274,216 +274,207 @@ watch(articleId, () => {
     </header>
 
     <div class="min-w-0">
+      <Card v-if="!Number.isInteger(articleId) || articleId <= 0" role="alert">
+        <p class="text-sm text-accent-golden">Invalid news article id.</p>
+      </Card>
 
-    <Card v-if="!Number.isInteger(articleId) || articleId <= 0" role="alert">
-      <p class="text-sm text-accent-golden">Invalid news article id.</p>
-    </Card>
+      <Card
+        v-else-if="detailLoading"
+        class="h-96 animate-pulse"
+        aria-busy="true"
+        aria-label="Loading news article"
+      />
 
-    <Card
-      v-else-if="detailLoading"
-      class="h-96 animate-pulse"
-      aria-busy="true"
-      aria-label="Loading news article"
-    />
+      <Card v-else-if="detailError" role="alert">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-sm text-accent-golden">{{ detailError }}</p>
+          <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">retry</BaseButton>
+        </div>
+      </Card>
 
-    <Card v-else-if="detailError" role="alert">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p class="text-sm text-accent-golden">{{ detailError }}</p>
-        <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">retry</BaseButton>
-      </div>
-    </Card>
-
-    <form
-      v-else-if="article"
-      class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]"
-      @submit.prevent="saveArticle"
-    >
-      <div class="space-y-6">
-        <Card>
-          <h2 class="card-title mb-4">article</h2>
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <BaseInput
-              v-model="form.slug"
-              placeholder="slug"
-              :disabled="!canWrite"
-            />
-            <div
-              class="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-4"
-              role="group"
-              aria-label="status"
-            >
-              <AdminFilterChip
-                v-for="status in NEWS_STATUSES"
-                :key="status"
-                :label="status"
-                :active="form.status === status"
-                :color-class="newsStatusClass(status)"
+      <form
+        v-else-if="article"
+        class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]"
+        @submit.prevent="saveArticle"
+      >
+        <div class="space-y-6">
+          <Card>
+            <h2 class="card-title mb-4">article</h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <BaseInput v-model="form.slug" placeholder="slug" :disabled="!canWrite" />
+              <div
+                class="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-4"
+                role="group"
+                aria-label="status"
+              >
+                <AdminFilterChip
+                  v-for="status in NEWS_STATUSES"
+                  :key="status"
+                  :label="status"
+                  :active="form.status === status"
+                  :color-class="newsStatusClass(status)"
+                  :disabled="!canWrite"
+                  @click="setStatus(status)"
+                />
+              </div>
+              <BaseInput v-model="form.title" placeholder="title" :disabled="!canWrite" />
+              <BaseInput
+                v-model="form.original_title"
+                placeholder="original title"
                 :disabled="!canWrite"
-                @click="setStatus(status)"
+              />
+              <BaseInput
+                v-model="form.language"
+                placeholder="language (en)"
+                :disabled="!canWrite"
               />
             </div>
-            <BaseInput
-              v-model="form.title"
-              placeholder="title"
-              :disabled="!canWrite"
-            />
-            <BaseInput
-              v-model="form.original_title"
-              placeholder="original title"
-              :disabled="!canWrite"
-            />
-            <BaseInput
-              v-model="form.language"
-              placeholder="language (en)"
-              :disabled="!canWrite"
-            />
-          </div>
-          <details
-            class="mt-4 rounded border border-surface-border px-3 py-2"
-            @toggle="onThemesToggle"
-          >
-            <summary
-              class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+            <details
+              class="mt-4 rounded border border-surface-border px-3 py-2"
+              @toggle="onThemesToggle"
             >
-              <ChevronIcon :open="themesOpen" />
-              themes ({{ parsedThemes().length }}/{{ NEWS_THEME_LIMIT }})
-              <span class="text-xs text-surface-muted"> — {{ selectedThemesLabel() }}</span>
-            </summary>
-            <div class="mt-3 flex flex-wrap gap-2">
-              <label
-                v-for="theme in NEWS_THEMES"
-                :key="theme"
-                :for="`news-edit-theme-${theme}`"
-                class="inline-flex cursor-pointer items-center gap-2 rounded border border-surface-border px-3 py-1.5 text-xs transition-colors"
-                :class="{
-                  'border-accent-blue text-surface-light': themeIsSelected(theme),
-                  'text-surface-mid': !themeIsSelected(theme),
-                  'opacity-50':
-                    !themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT,
-                }"
+              <summary
+                class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
               >
-                <input
-                  :id="`news-edit-theme-${theme}`"
-                  type="checkbox"
-                  :checked="themeIsSelected(theme)"
-                  :disabled="
-                    !canWrite ||
-                    (!themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT)
-                  "
-                  @change="toggleTheme(theme)"
-                />
+                <ChevronIcon :open="themesOpen" />
+                themes ({{ parsedThemes().length }}/{{ NEWS_THEME_LIMIT }})
+                <span class="text-xs text-surface-muted"> — {{ selectedThemesLabel() }}</span>
+              </summary>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <label
+                  v-for="theme in NEWS_THEMES"
+                  :key="theme"
+                  :for="`news-edit-theme-${theme}`"
+                  class="inline-flex cursor-pointer items-center gap-2 rounded border border-surface-border px-3 py-1.5 text-xs transition-colors"
+                  :class="{
+                    'border-accent-blue text-surface-light': themeIsSelected(theme),
+                    'text-surface-mid': !themeIsSelected(theme),
+                    'opacity-50':
+                      !themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT,
+                  }"
+                >
+                  <input
+                    :id="`news-edit-theme-${theme}`"
+                    type="checkbox"
+                    :checked="themeIsSelected(theme)"
+                    :disabled="
+                      !canWrite ||
+                      (!themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT)
+                    "
+                    @change="toggleTheme(theme)"
+                  />
+                  {{ theme }}
+                </label>
+              </div>
+            </details>
+            <div class="mt-4">
+              <BaseTextarea
+                v-model="form.summary"
+                :rows="4"
+                placeholder="summary"
+                :disabled="!canWrite"
+              />
+            </div>
+          </Card>
+
+          <Card>
+            <h2 class="card-title mb-4">source</h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <select
+                :value="form.source_id ?? ''"
+                :class="SELECT_CLASS"
+                aria-label="source"
+                :disabled="!canWrite"
+                @change="applySource(Number(($event.target as HTMLSelectElement).value) || null)"
+              >
+                <option value="">auto from URL host</option>
+                <option v-for="source in sources" :key="source.id" :value="source.id">
+                  {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
+                </option>
+              </select>
+              <BaseInput
+                v-model="form.source_name"
+                placeholder="source name"
+                :disabled="!canWrite"
+              />
+              <BaseInput
+                v-model="form.source_url"
+                placeholder="article url"
+                type="url"
+                :disabled="!canWrite"
+              />
+              <BaseInput
+                v-model="form.source_feed_url"
+                placeholder="source feed/home url"
+                type="url"
+                :disabled="!canWrite"
+              />
+              <BaseInput
+                v-model="form.source_published_at"
+                type="datetime-local"
+                aria-label="source published at"
+                :disabled="!canWrite"
+              />
+            </div>
+          </Card>
+        </div>
+
+        <aside class="space-y-6">
+          <Card>
+            <h2 class="card-title mb-4">system fields</h2>
+            <dl class="space-y-3 text-sm">
+              <div>
+                <dt class="text-surface-muted">ID</dt>
+                <dd class="font-data text-surface-light">{{ article.id }}</dd>
+              </div>
+              <div>
+                <dt class="text-surface-muted">Created</dt>
+                <dd class="text-surface-light">{{ formatNewsDate(article.created_at) }}</dd>
+              </div>
+              <div>
+                <dt class="text-surface-muted">Updated</dt>
+                <dd class="text-surface-light">{{ formatNewsDate(article.updated_at) }}</dd>
+              </div>
+              <div>
+                <dt class="text-surface-muted">Source ID</dt>
+                <dd class="font-data text-surface-light">{{ article.source_id ?? "none" }}</dd>
+              </div>
+              <div>
+                <dt class="text-surface-muted">Telegram message</dt>
+                <dd class="font-data text-surface-light">
+                  {{ article.telegram_message_id ?? "none" }}
+                </dd>
+              </div>
+            </dl>
+          </Card>
+
+          <Card>
+            <h2 class="card-title mb-4">current preview</h2>
+            <p class="mb-2 text-xs text-surface-muted">
+              {{ form.status }} / {{ form.source_name || "unknown source" }}
+            </p>
+            <h3 class="mb-3 text-lg font-semibold text-surface-light">
+              {{ form.title || "Untitled" }}
+            </h3>
+            <p class="text-sm text-surface-mid">{{ form.summary || "No summary yet." }}</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span
+                v-for="theme in parsedThemes()"
+                :key="theme"
+                class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid"
+              >
                 {{ theme }}
-              </label>
+              </span>
             </div>
-          </details>
-          <div class="mt-4">
-            <BaseTextarea
-              v-model="form.summary"
-              :rows="4"
-              placeholder="summary"
-              :disabled="!canWrite"
-            />
-          </div>
-        </Card>
+          </Card>
 
-        <Card>
-          <h2 class="card-title mb-4">source</h2>
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <select
-              :value="form.source_id ?? ''"
-              :class="SELECT_CLASS"
-              aria-label="source"
-              :disabled="!canWrite"
-              @change="applySource(Number(($event.target as HTMLSelectElement).value) || null)"
-            >
-              <option value="">auto from URL host</option>
-              <option v-for="source in sources" :key="source.id" :value="source.id">
-                {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
-              </option>
-            </select>
-            <BaseInput
-              v-model="form.source_name"
-              placeholder="source name"
-              :disabled="!canWrite"
-            />
-            <BaseInput
-              v-model="form.source_url"
-              placeholder="article url"
-              type="url"
-              :disabled="!canWrite"
-            />
-            <BaseInput
-              v-model="form.source_feed_url"
-              placeholder="source feed/home url"
-              type="url"
-              :disabled="!canWrite"
-            />
-            <BaseInput
-              v-model="form.source_published_at"
-              type="datetime-local"
-              aria-label="source published at"
-              :disabled="!canWrite"
-            />
-          </div>
-        </Card>
-      </div>
-
-      <aside class="space-y-6">
-        <Card>
-          <h2 class="card-title mb-4">system fields</h2>
-          <dl class="space-y-3 text-sm">
-            <div>
-              <dt class="text-surface-muted">ID</dt>
-              <dd class="font-data text-surface-light">{{ article.id }}</dd>
-            </div>
-            <div>
-              <dt class="text-surface-muted">Created</dt>
-              <dd class="text-surface-light">{{ formatNewsDate(article.created_at) }}</dd>
-            </div>
-            <div>
-              <dt class="text-surface-muted">Updated</dt>
-              <dd class="text-surface-light">{{ formatNewsDate(article.updated_at) }}</dd>
-            </div>
-            <div>
-              <dt class="text-surface-muted">Source ID</dt>
-              <dd class="font-data text-surface-light">{{ article.source_id ?? "none" }}</dd>
-            </div>
-            <div>
-              <dt class="text-surface-muted">Telegram message</dt>
-              <dd class="font-data text-surface-light">
-                {{ article.telegram_message_id ?? "none" }}
-              </dd>
-            </div>
-          </dl>
-        </Card>
-
-        <Card>
-          <h2 class="card-title mb-4">current preview</h2>
-          <p class="mb-2 text-xs text-surface-muted">
-            {{ form.status }} / {{ form.source_name || "unknown source" }}
-          </p>
-          <h3 class="mb-3 text-lg font-semibold text-surface-light">
-            {{ form.title || "Untitled" }}
-          </h3>
-          <p class="text-sm text-surface-mid">{{ form.summary || "No summary yet." }}</p>
-          <div class="mt-4 flex flex-wrap gap-2">
-            <span
-              v-for="theme in parsedThemes()"
-              :key="theme"
-              class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid"
-            >
-              {{ theme }}
-            </span>
-          </div>
-        </Card>
-
-        <Card v-if="!canWrite">
-          <p class="text-sm text-surface-mid">
-            You have `news:read`, so this page is read-only. Saving requires `news:write`.
-          </p>
-        </Card>
-      </aside>
-    </form>
+          <Card v-if="!canWrite">
+            <p class="text-sm text-surface-mid">
+              You have `news:read`, so this page is read-only. Saving requires `news:write`.
+            </p>
+          </Card>
+        </aside>
+      </form>
     </div>
   </AdminPageLayout>
 </template>

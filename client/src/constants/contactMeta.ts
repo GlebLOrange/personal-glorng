@@ -27,8 +27,7 @@ export function isValidEmail(value: string): boolean {
 const INQUIRY_SUBJECT = "Work inquiry";
 const INQUIRY_BODY =
   "Hi Gleb,\n\nI'd like to talk about a role / contract. Here's a short brief:\n\n";
-const TELEGRAM_INQUIRY_TEXT =
-  "Hi Gleb, I'd like to talk about a role or contract.";
+const TELEGRAM_INQUIRY_TEXT = "Hi Gleb, I'd like to talk about a role or contract.";
 
 function contactHref(id: ContactLinkId, raw: string): string | null {
   if (id === "email") {

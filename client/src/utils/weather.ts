@@ -84,7 +84,11 @@ export function weatherIanaTimezone(data: WeatherData): string | null {
 
 export type LiveTimeFormatKind = "time" | "time-seconds" | "datetime" | "date";
 
-function intlParts(date: Date, timezone: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormatPart[] {
+function intlParts(
+  date: Date,
+  timezone: string,
+  options: Intl.DateTimeFormatOptions,
+): Intl.DateTimeFormatPart[] {
   return new Intl.DateTimeFormat("en-US", { timeZone: timezone, ...options }).formatToParts(date);
 }
 
@@ -102,7 +106,10 @@ export function formatLiveLocalTimeFromIana(timezone: string, at: Date = new Dat
   return `${partValue(parts, "hour")}:${partValue(parts, "minute")}`;
 }
 
-export function formatLiveLocalTimeWithSecondsFromIana(timezone: string, at: Date = new Date()): string {
+export function formatLiveLocalTimeWithSecondsFromIana(
+  timezone: string,
+  at: Date = new Date(),
+): string {
   const parts = intlParts(at, timezone, {
     hour: "2-digit",
     minute: "2-digit",
@@ -376,10 +383,7 @@ const WEATHER_CODE_EMOJI: Record<number, string> = {
 };
 
 /** Emoji for wttr.in weatherCode; falls back to condition text or generic icon. */
-export function weatherConditionEmoji(
-  code: string | undefined,
-  weatherDesc?: string,
-): string {
+export function weatherConditionEmoji(code: string | undefined, weatherDesc?: string): string {
   if (code) {
     const parsed = Number.parseInt(code, 10);
     if (Number.isFinite(parsed) && WEATHER_CODE_EMOJI[parsed]) {

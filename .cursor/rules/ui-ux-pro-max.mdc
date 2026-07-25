@@ -1,0 +1,7 @@
+---
+description: UI/UX overview, recommendations, and best practices for client UI
+globs: ["client/src/**/*.vue", "client/src/**/*.css", "client/src/**/*.scss", "client/tailwind.config.*"]
+alwaysApply: false
+---
+
+When this rule applies, follow the `ui-ux-pro-max` skill: read `.cursor/skills/ui-ux-pro-max/SKILL.md` and apply it.

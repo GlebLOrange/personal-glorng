@@ -145,7 +145,13 @@ async function handleRegister(): Promise<void> {
           </span>
         </label>
         <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
-        <BaseButton type="submit" variant="primary" class="w-full" :loading="loading" :disabled="!canSubmit">
+        <BaseButton
+          type="submit"
+          variant="primary"
+          class="w-full"
+          :loading="loading"
+          :disabled="!canSubmit"
+        >
           {{ loading ? "creating account..." : "create account" }}
         </BaseButton>
       </form>

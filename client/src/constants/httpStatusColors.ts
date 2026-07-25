@@ -54,10 +54,7 @@ export const ACTION_PILL_BASE =
  * Classes for an action pill in a given HTTP-family color.
  * Idle = fill at 3% opacity + matching accent text; hover/selected = pale /15 + border.
  */
-export function actionFamilyClass(
-  family: HttpStatusFamily,
-  selected = false,
-): string {
+export function actionFamilyClass(family: HttpStatusFamily, selected = false): string {
   if (selected) {
     return `${ACTION_PILL_BASE} ${FAMILY_ACTION_SELECTED[family]}`;
   }

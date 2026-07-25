@@ -4,10 +4,12 @@ import { scrubSensitiveUrl } from "@/utils/sensitiveUrl";
 let sentry: typeof import("@sentry/vue") | null = null;
 let sentryInitialized = false;
 
-function scrubSentryEvent<T extends {
-  request?: { url?: string };
-  breadcrumbs?: Array<{ data?: { url?: string }; message?: string }>;
-}>(event: T): T {
+function scrubSentryEvent<
+  T extends {
+    request?: { url?: string };
+    breadcrumbs?: Array<{ data?: { url?: string }; message?: string }>;
+  },
+>(event: T): T {
   if (event.request?.url) {
     event.request.url = scrubSensitiveUrl(event.request.url);
   }
@@ -62,4 +64,16 @@ export async function disableSentry(): Promise<void> {
 
   await sentry.close(2000);
   sentryInitialized = false;
+}
+
+/** Report to Sentry when consented/initialized; always log in DEV. */
+export function captureClientError(
+  error: unknown,
+  context?: { info?: string; [key: string]: unknown },
+): void {
+  if (import.meta.env.DEV) {
+    console.error("[client]", error, context);
+  }
+  if (!sentryInitialized || !sentry) return;
+  sentry.captureException(error, context ? { extra: context } : undefined);
 }

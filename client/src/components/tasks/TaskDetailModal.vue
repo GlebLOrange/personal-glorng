@@ -36,29 +36,22 @@ const emit = defineEmits<{
 
 const technicalOpen = ref(false);
 
-const availableStatuses = computed(() =>
-  props.task
-    ? TASK_STATUSES.filter((status) => status !== props.task.status)
-    : [],
-);
+const availableStatuses = computed(() => {
+  const task = props.task;
+  return task ? TASK_STATUSES.filter((status) => status !== task.status) : [];
+});
 
-const schedule = computed(() =>
-  props.task ? formatScheduleDate(props.task.scheduled_at) : null,
-);
+const schedule = computed(() => (props.task ? formatScheduleDate(props.task.scheduled_at) : null));
 
 const primaryActionStatus = computed((): TaskStatus | null =>
-  props.task?.status === "pending" || props.task?.status === "not_completed"
-    ? "completed"
-    : null,
+  props.task?.status === "pending" || props.task?.status === "not_completed" ? "completed" : null,
 );
 
 const menuStatuses = computed(() =>
   availableStatuses.value.filter((status) => status !== primaryActionStatus.value),
 );
 
-const recentStatusHistory = computed(() =>
-  (props.task?.status_history ?? []).slice(-4),
-);
+const recentStatusHistory = computed(() => (props.task?.status_history ?? []).slice(-4));
 
 watch(
   () => props.open,
@@ -69,12 +62,7 @@ watch(
 </script>
 
 <template>
-  <BaseDrawer
-    :open="open"
-    :title="task?.title ?? 'Task'"
-    max-width="md"
-    @close="emit('close')"
-  >
+  <BaseDrawer :open="open" :title="task?.title ?? 'Task'" max-width="md" @close="emit('close')">
     <template v-if="task" #title="{ titleId }">
       <div class="flex min-w-0 flex-col gap-2">
         <StatusBadge
@@ -106,10 +94,7 @@ watch(
           </p>
         </div>
 
-        <div
-          v-if="task.location"
-          class="flex min-w-0 items-baseline justify-between gap-3 text-sm"
-        >
+        <div v-if="task.location" class="flex min-w-0 items-baseline justify-between gap-3 text-sm">
           <span class="shrink-0 text-surface-mid">location</span>
           <span class="min-w-0 text-right text-surface-light">@{{ task.location }}</span>
         </div>
@@ -211,11 +196,7 @@ watch(
           technical details
           <ChevronIcon :open="technicalOpen" />
         </BaseButton>
-        <dl
-          v-if="technicalOpen"
-          id="task-technical-details"
-          class="space-y-1 text-xs"
-        >
+        <dl v-if="technicalOpen" id="task-technical-details" class="space-y-1 text-xs">
           <div
             v-if="task.google_event_id"
             class="flex min-w-0 items-baseline justify-between gap-3"
@@ -243,11 +224,7 @@ watch(
 
     <template v-if="canMutate && task" #footer>
       <div class="flex w-full flex-wrap items-center gap-2">
-        <BaseDropdownMenu
-          v-if="menuStatuses.length"
-          placement="top"
-          aria-label="more actions"
-        >
+        <BaseDropdownMenu v-if="menuStatuses.length" placement="top" aria-label="more actions">
           <template #trigger="{ open: menuOpen }">
             <span class="inline-flex items-center gap-1.5 px-2 text-sm text-surface-mid">
               more actions

@@ -20,10 +20,7 @@ export function useActiveWeatherQuery(): {
 
   const activeQuery = computed(() => {
     const stored = storedQuery.value.trim();
-    if (
-      stored &&
-      locations.value.some((loc) => loc.query.toLowerCase() === stored.toLowerCase())
-    ) {
+    if (stored && locations.value.some((loc) => loc.query.toLowerCase() === stored.toLowerCase())) {
       return stored;
     }
 

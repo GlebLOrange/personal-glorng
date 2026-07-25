@@ -23,42 +23,46 @@ const TOAST_TEXT: Record<Toast["type"], string> = {
 
 const hasToasts = computed(() => toasts.value.length > 0);
 
-/** Card chrome: error > success > first toast type. */
-const cardSurfaceClass = computed(() => {
-  const list = toasts.value;
-  if (!list.length) return TOAST_SURFACE.info;
-  if (list.some((t) => t.type === "error")) return TOAST_SURFACE.error;
-  if (list.some((t) => t.type === "success")) return TOAST_SURFACE.success;
-  return TOAST_SURFACE[list[0].type];
-});
+function toastCardClass(type: Toast["type"]): string {
+  if (type === "success") return "border-status-success/40 bg-status-success/10";
+  return "";
+}
+
+function toastTextClass(type: Toast["type"]): string {
+  if (type === "error") return "text-status-error";
+  if (type === "success") return "text-status-success";
+  return "text-surface-light";
+}
 </script>
 
 <template>
   <div
     v-if="hasToasts"
-    class="page-tile md:col-start-2"
+    class="pointer-events-none fixed inset-x-0 top-16 z-50 flex justify-center px-4 sm:justify-end sm:px-6"
     aria-label="Notifications"
   >
-    <Card :class="['page-weather-tile-card h-full w-full gap-3', cardSurfaceClass]">
-      <div
+    <div class="pointer-events-auto flex w-full max-w-sm flex-col gap-2">
+      <Card
         v-for="t in toasts"
         :key="t.id"
+        :tint="t.type === 'error' ? 'danger' : 'default'"
+        variant="dense"
         :role="t.type === 'error' ? 'alert' : 'status'"
         :aria-live="t.type === 'error' ? 'assertive' : 'polite'"
-        :class="['flex w-full max-w-full items-center justify-center gap-2', TOAST_TEXT[t.type]]"
+        :class="['flex w-full items-center gap-2', toastCardClass(t.type)]"
         @mouseenter="pause(t.id)"
         @mouseleave="resume(t.id)"
         @focusin="pause(t.id)"
         @focusout="resume(t.id)"
       >
-        <p class="min-w-0 flex-1 break-words text-center text-sm leading-snug">
+        <p
+          class="min-w-0 flex-1 break-words text-center text-sm leading-snug"
+          :class="toastTextClass(t.type)"
+        >
           {{ t.message }}
         </p>
-        <IconCloseButton
-          aria-label="Dismiss notification"
-          @click="dismiss(t.id)"
-        />
-      </div>
-    </Card>
+        <IconCloseButton aria-label="Dismiss notification" @click="dismiss(t.id)" />
+      </Card>
+    </div>
   </div>
 </template>

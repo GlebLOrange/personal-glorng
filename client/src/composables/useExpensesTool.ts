@@ -23,9 +23,9 @@ import { useExpenseSort, type ExpenseSortKey } from "@/composables/useExpenseSor
 import { useExpenseSummary } from "@/composables/useExpenseSummary";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { api } from "@/composables/useApi";
+import { useApiAction } from "@/composables/useApiAction";
 import { useLocalStorageString } from "@/composables/useLocalStorage";
 import { useNotify } from "@/composables/useNotify";
-import { getApiErrorMessage } from "@/types/api";
 import { isoDateLocal } from "@/utils/dates";
 import type { Expense } from "@/types";
 
@@ -60,9 +60,9 @@ export function useExpensesTool(
   const route = useRoute();
   const router = useRouter();
   const activeTab = ref<ExpenseTab>("transactions");
-  const savingExpense = ref(false);
-  const exporting = ref(false);
-  const deletingExpense = ref(false);
+  const { run: runSaveExpense, loading: savingExpense } = useApiAction();
+  const { run: runExport, loading: exporting } = useApiAction();
+  const { run: runDeleteExpense, loading: deletingExpense } = useApiAction();
   const deletingCategory = ref(false);
   const smartTextOpen = ref(false);
   const filtersOpen = ref(false);
@@ -294,7 +294,6 @@ export function useExpensesTool(
       return;
     }
 
-    savingExpense.value = true;
     const payload = {
       tool_name: form.value.tool_name.trim(),
       amount: amount.toFixed(2),
@@ -304,17 +303,17 @@ export function useExpensesTool(
       notes: form.value.notes.trim() || null,
     };
 
-    try {
-      await postExpense(payload);
-      showForm.value = false;
-      resetForm();
-      await reloadAfterMutation();
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      toast(getApiErrorMessage(err, "Failed to save expense"), "error");
-    } finally {
-      savingExpense.value = false;
-    }
+    const ok = await runSaveExpense(
+      async () => {
+        await postExpense(payload);
+        return true;
+      },
+      { errorMessage: "Failed to save expense" },
+    );
+    if (!ok) return;
+    showForm.value = false;
+    resetForm();
+    await reloadAfterMutation();
   }
 
   async function quickSaveExpense(): Promise<void> {
@@ -330,26 +329,25 @@ export function useExpensesTool(
       return;
     }
 
-    savingExpense.value = true;
     const category = resolvedCategory(quickAdd.value.category);
-    try {
-      await postExpense({
-        tool_name: product,
-        amount: amount.toFixed(2),
-        currency: defaultCurrency(),
-        expense_date: isoDateLocal(),
-        category,
-        notes: null,
-      });
-      resetQuickAdd();
-      await reloadAfterMutation();
-      focusQuickAdd();
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      toast(getApiErrorMessage(err, "Failed to save expense"), "error");
-    } finally {
-      savingExpense.value = false;
-    }
+    const ok = await runSaveExpense(
+      async () => {
+        await postExpense({
+          tool_name: product,
+          amount: amount.toFixed(2),
+          currency: defaultCurrency(),
+          expense_date: isoDateLocal(),
+          category,
+          notes: null,
+        });
+        return true;
+      },
+      { errorMessage: "Failed to save expense" },
+    );
+    if (!ok) return;
+    resetQuickAdd();
+    await reloadAfterMutation();
+    focusQuickAdd();
   }
 
   async function saveSmartExpense(payload: {
@@ -359,22 +357,21 @@ export function useExpensesTool(
     expense_date: string;
     category: string | null;
   }): Promise<void> {
-    savingExpense.value = true;
-    try {
-      await postExpense({
-        ...payload,
-        category: payload.category ? resolvedCategory(payload.category) : resolvedCategory(""),
-        notes: null,
-      });
-      quickAddRef.value?.clearSmartText();
-      await reloadAfterMutation();
-      focusQuickAdd();
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      toast(getApiErrorMessage(err, "Failed to save expense"), "error");
-    } finally {
-      savingExpense.value = false;
-    }
+    const ok = await runSaveExpense(
+      async () => {
+        await postExpense({
+          ...payload,
+          category: payload.category ? resolvedCategory(payload.category) : resolvedCategory(""),
+          notes: null,
+        });
+        return true;
+      },
+      { errorMessage: "Failed to save expense" },
+    );
+    if (!ok) return;
+    quickAddRef.value?.clearSmartText();
+    await reloadAfterMutation();
+    focusQuickAdd();
   }
 
   function handleDatePreset(preset: MonthPreset): void {
@@ -429,28 +426,24 @@ export function useExpensesTool(
   }
 
   async function exportCsv(): Promise<void> {
-    exporting.value = true;
-    try {
-      const { data } = await api.get<Blob>("/tools/expenses/export", {
-        params: queryParams(),
-        responseType: "blob",
-      });
-      const slug = monthLabel.value.replace(/\s+/g, "-").toLowerCase() || "export";
-      const url = URL.createObjectURL(data);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = `expenses-${slug}.csv`;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      URL.revokeObjectURL(url);
-      toast("CSV exported", "success");
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      toast(getApiErrorMessage(err, "Failed to export CSV"), "error");
-    } finally {
-      exporting.value = false;
-    }
+    await runExport(
+      async () => {
+        const { data } = await api.get<Blob>("/tools/expenses/export", {
+          params: queryParams(),
+          responseType: "blob",
+        });
+        const slug = monthLabel.value.replace(/\s+/g, "-").toLowerCase() || "export";
+        const url = URL.createObjectURL(data);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `expenses-${slug}.csv`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+      },
+      { successMessage: "CSV exported", errorMessage: "Failed to export CSV" },
+    );
   }
 
   function requestDeleteExpense(id: number): void {
@@ -460,18 +453,17 @@ export function useExpensesTool(
   async function confirmDeleteExpense(): Promise<void> {
     if (deleteTargetId.value === null) return;
 
-    deletingExpense.value = true;
-    try {
-      await api.delete(`/tools/expenses/${deleteTargetId.value}`);
-      toast("Expense deleted", "success");
-      deleteTargetId.value = null;
-      await reloadAfterMutation();
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      toast(getApiErrorMessage(err, "Failed to delete expense"), "error");
-    } finally {
-      deletingExpense.value = false;
-    }
+    const id = deleteTargetId.value;
+    const ok = await runDeleteExpense(
+      async () => {
+        await api.delete(`/tools/expenses/${id}`);
+        return true;
+      },
+      { successMessage: "Expense deleted", errorMessage: "Failed to delete expense" },
+    );
+    if (!ok) return;
+    deleteTargetId.value = null;
+    await reloadAfterMutation();
   }
 
   function requestDeleteCategory(category: { id: number; name: string }): void {
@@ -517,7 +509,9 @@ export function useExpensesTool(
     activeTab.value = tab as ExpenseTab;
     if (tab === "calculator") {
       const existing =
-        typeof route.query.mode === "string" ? normalizeCalculatorMode(route.query.mode) : "convert";
+        typeof route.query.mode === "string"
+          ? normalizeCalculatorMode(route.query.mode)
+          : "convert";
       void router.replace({ query: { ...route.query, tab: "calculator", mode: existing } });
       return;
     }

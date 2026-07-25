@@ -41,6 +41,8 @@ cd client && npm run e2e   # optional; needs running API
 
 CI workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). Testing tiers: [Testing](/reference/testing).
 
+Merge gates (`ci-ok`, `gitleaks`) are **disabled during development**; turn them on before production — [DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd).
+
 ## Pre-commit
 
 ```bash
@@ -54,7 +56,7 @@ Runs ruff, client eslint/prettier/typecheck, and gitleaks.
 - **Python:** Ruff, type annotations on functions, pytest for tests under `server/tests/`
 - **Vue/TS:** ESLint + Prettier; match existing component and composable patterns
 - **Dependencies:** check `server/pyproject.toml` and `client/package.json` before adding packages
-- **Agents:** see [AGENTS.md](../../AGENTS.md) and [`.cursor/rules/`](../../.cursor/rules/)
+- **Agents:** see [AGENTS.md](../../AGENTS.md), [`.cursor/rules/`](../../.cursor/rules/) (thin triggers), and [`.cursor/skills/`](../../.cursor/skills/) (full guidance). Ecosystem skills: `npx skills add <pkg>@<skill> -g -y`; do not commit `.agents/`, `.claude/`, or `skills-lock.json`.
 
 ## Documentation
 

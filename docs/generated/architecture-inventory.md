@@ -26,7 +26,7 @@ Auto-generated from [`server/app/platform/registry.py`](../../server/app/platfor
 | audit | operations | `/audit` | `/admin/audit-logs` | no | — | read |
 | app-logs | operations | `/app-logs` | `/admin/app-logs` | no | — | read |
 | search | operations | `/search` | `/admin/search` | no | — | read |
-| api-docs | operations | `/docs` | `/admin/api/docs` | no | — | read |
+| api-docs | operations | `/docs` | `/api/docs` | no | — | read |
 
 ## Compose services (`docker-compose.yml`)
 

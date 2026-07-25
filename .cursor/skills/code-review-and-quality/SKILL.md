@@ -1,6 +1,6 @@
 ---
+name: code-review-and-quality
 description: Multi-dimensional code review with quality gates across correctness, readability, architecture, security, and performance.
-alwaysApply: false
 ---
 # Code Review and Quality
 

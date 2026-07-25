@@ -121,10 +121,7 @@ function onAddBudgetLine(): void {
             />
           </div>
 
-          <template
-            v-for="view in [summaryById.get(row.id)]"
-            :key="`${row.id}-summary`"
-          >
+          <template v-for="(view, viewIdx) in [summaryById.get(row.id)]" :key="viewIdx">
             <div v-if="row.name.trim() && view" class="flex flex-col gap-1">
               <div class="flex justify-between text-xs">
                 <span class="text-surface-mid">

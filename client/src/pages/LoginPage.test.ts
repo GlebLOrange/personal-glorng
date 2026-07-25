@@ -18,10 +18,6 @@ vi.mock("@/constants/firebase", () => ({
 vi.mock("vue-router", () => ({
   useRoute: () => ({ query: mocks.routeQuery }),
   useRouter: () => ({ push: mocks.push }),
-  RouterLink: {
-    props: ["to"],
-    template: "<a><slot /></a>",
-  },
 }));
 
 vi.mock("@/composables/useNotify", () => ({
@@ -35,20 +31,31 @@ describe("LoginPage", () => {
     mocks.routeQuery = {};
   });
 
-  it("shows email password login and Google sign-in", () => {
-    const wrapper = mount(LoginPage);
+  function mountPage() {
+    return mount(LoginPage, {
+      global: {
+        // BackLink uses RouterLink custom slots; stub avoids full router setup
+        stubs: { BackLink: true },
+      },
+    });
+  }
 
-    expect(wrapper.get('input[type="email"]').attributes("placeholder")).toBe("you@example.com");
+  it("shows email password login and Google sign-in", () => {
+    const wrapper = mountPage();
+
+    expect(wrapper.get('input[type="email"]').exists()).toBe(true);
     expect(wrapper.get('input[type="password"]').exists()).toBe(true);
+    // BaseInput renders placeholder as tip text, not the native attribute
+    expect(wrapper.text()).toContain("you@example.com");
     expect(wrapper.text()).toContain("login");
-    expect(wrapper.text()).toContain("continue with Google");
+    expect(wrapper.text().toLowerCase()).toContain("continue with google");
     expect(wrapper.text()).toContain("create account");
     expect(wrapper.text()).toContain("forgot password?");
   });
 
   it("submits credentials and redirects after login", async () => {
     mocks.routeQuery.redirect = "/admin";
-    const wrapper = mount(LoginPage);
+    const wrapper = mountPage();
     const auth = useAuthStore();
     const login = vi.spyOn(auth, "login").mockResolvedValue();
 

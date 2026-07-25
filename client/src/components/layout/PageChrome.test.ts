@@ -6,7 +6,8 @@ import PageChrome from "@/components/layout/PageChrome.vue";
 const stubs = {
   BackLink: {
     props: ["to", "size"],
-    template: '<a :href="typeof to === \'string\' ? to : to.path" data-testid="back" :data-size="size">back</a>',
+    template:
+      '<a :href="typeof to === \'string\' ? to : to.path" data-testid="back" :data-size="size">back</a>',
   },
   PageBreadcrumbs: {
     props: ["segments", "elevated"],
@@ -20,10 +21,7 @@ describe("PageChrome", () => {
     const wrapper = mount(PageChrome, {
       props: {
         title: "users",
-        breadcrumbs: [
-          { label: "admin", to: "/admin" },
-          { label: "users" },
-        ],
+        breadcrumbs: [{ label: "admin", to: "/admin" }, { label: "users" }],
         backTo: "/admin",
       },
       global: { stubs },
@@ -44,10 +42,7 @@ describe("PageChrome", () => {
     const wrapper = mount(PageChrome, {
       props: {
         title: "calculator",
-        breadcrumbs: [
-          { label: "tools", to: "/tools" },
-          { label: "calculator" },
-        ],
+        breadcrumbs: [{ label: "tools", to: "/tools" }, { label: "calculator" }],
         backTo: "/tools",
       },
       global: { stubs },

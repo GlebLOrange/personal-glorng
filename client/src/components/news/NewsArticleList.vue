@@ -11,13 +11,7 @@ defineProps<{
 
 <template>
   <div class="space-y-4">
-    <Card
-      v-for="article in articles"
-      :key="article.id"
-      as="article"
-      variant="compact"
-      hoverable
-    >
+    <Card v-for="article in articles" :key="article.id" as="article" variant="compact" hoverable>
       <div class="mb-2 flex flex-wrap items-center gap-2 text-xs text-surface-mid">
         <span class="font-bold text-accent-golden">{{ article.source_name }}</span>
         <span v-for="theme in article.themes" :key="theme">{{ theme }}</span>

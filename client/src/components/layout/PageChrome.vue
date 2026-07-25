@@ -35,9 +35,7 @@ const soleSectionCrumb = computed(() => {
 
 const showTitle = computed(() => !soleSectionCrumb.value);
 
-const displayTitle = computed(
-  () => `${props.titlePrefix}${truncateBreadcrumbTitle(props.title)}`,
-);
+const displayTitle = computed(() => `${props.titlePrefix}${truncateBreadcrumbTitle(props.title)}`);
 </script>
 
 <template>
@@ -46,14 +44,8 @@ const displayTitle = computed(
   >
     <div class="flex min-h-8 min-w-0 items-center gap-3">
       <div class="flex min-w-0 flex-1 flex-col justify-center">
-        <div
-          :class="soleSectionCrumb ? 'flex h-8 items-center' : 'page-breadcrumb-row'"
-        >
-          <PageBreadcrumbs
-            :segments="displaySegments"
-            :elevated="true"
-            class="min-w-0"
-          />
+        <div :class="soleSectionCrumb ? 'flex h-8 items-center' : 'page-breadcrumb-row'">
+          <PageBreadcrumbs :segments="displaySegments" :elevated="true" class="min-w-0" />
         </div>
 
         <h1

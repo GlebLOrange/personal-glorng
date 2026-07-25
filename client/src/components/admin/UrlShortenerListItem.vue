@@ -128,11 +128,7 @@ function confirmDelete(): void {
       </a>
     </template>
     <template #actions>
-      <IconEditButton
-        v-if="canWrite"
-        aria-label="edit title"
-        @click="startEdit"
-      />
+      <IconEditButton v-if="canWrite" aria-label="edit title" @click="startEdit" />
       <IconCopyButton aria-label="copy short link" @click="emit('copy')" />
       <IconCloseButton
         v-if="canWrite"

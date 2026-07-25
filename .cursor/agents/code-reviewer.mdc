@@ -46,7 +46,7 @@ Evaluate every change across these five dimensions:
 
 ## Output Format
 
-Categorize every finding using the same severity scheme as `code-review-and-quality.mdc`:
+Categorize every finding using the same severity scheme as `code-review-and-quality`:
 
 | Prefix | Meaning | Author Action |
 |--------|---------|---------------|
@@ -97,7 +97,7 @@ Categorize every finding using the same severity scheme as `code-review-and-qual
 4. Don't approve code with **Critical:** issues
 5. Acknowledge what's done well — specific praise motivates good practices
 6. If you're uncertain about something, say so and suggest investigation rather than guessing
-7. For Security and Performance depth, consult `security-and-hardening.mdc`, `performance-optimization.mdc`, and the checklists in `references/`
+7. For Security and Performance depth, consult `security-and-hardening`, `performance-optimization`, and the checklists in `references/`
 
 ## Composition
 

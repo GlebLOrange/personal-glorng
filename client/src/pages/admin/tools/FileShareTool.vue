@@ -110,11 +110,7 @@ onMounted(loadFiles);
   <AdminPageLayout hub="tools" title="file-share">
     <div class="mb-10 space-y-3">
       <div class="mb-3 flex w-full min-w-0 items-center justify-end">
-        <ToolbarPillButton
-          family="2xx"
-          :disabled="uploading || !selectedFile"
-          @click="upload"
-        >
+        <ToolbarPillButton family="2xx" :disabled="uploading || !selectedFile" @click="upload">
           {{ uploading ? "uploading..." : "upload & share" }}
         </ToolbarPillButton>
       </div>

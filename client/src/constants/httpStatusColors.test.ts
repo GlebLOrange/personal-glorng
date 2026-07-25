@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  actionFamilyClass,
-  httpStatusClass,
-  httpStatusFamily,
-} from "@/constants/httpStatusColors";
+import { actionFamilyClass, httpStatusClass, httpStatusFamily } from "@/constants/httpStatusColors";
 
 describe("httpStatusColors", () => {
   it("maps codes to families", () => {

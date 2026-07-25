@@ -36,7 +36,10 @@ export function scrubSensitivePath(fullPath: string): string {
 /** Scrub sensitive query keys from an absolute or relative URL string. */
 export function scrubSensitiveUrl(url: string): string {
   try {
-    const parsed = new URL(url, typeof window !== "undefined" ? window.location.origin : "http://local.invalid");
+    const parsed = new URL(
+      url,
+      typeof window !== "undefined" ? window.location.origin : "http://local.invalid",
+    );
     scrubSearchParams(parsed.searchParams);
     if (/^https?:\/\//i.test(url.trim())) {
       return parsed.toString();

@@ -29,6 +29,7 @@ env:
 jobs:
   celery-schedule-unit:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: server
@@ -48,6 +49,7 @@ jobs:
 
   stack-smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       DOCKER_BUILDKIT: 1
       COMPOSE_DOCKER_CLI_BUILD: 1

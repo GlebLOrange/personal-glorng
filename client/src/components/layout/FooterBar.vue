@@ -3,7 +3,9 @@ const year = new Date().getFullYear();
 </script>
 
 <template>
-  <footer class="border-t border-surface-border py-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))]">
+  <footer
+    class="border-t border-surface-border py-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))]"
+  >
     <div class="flex justify-center mb-4">
       <router-link
         to="/privacy"

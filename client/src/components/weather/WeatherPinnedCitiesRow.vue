@@ -22,9 +22,7 @@ const emit = defineEmits<{
 
 const otherCities = computed(() => {
   const active = props.activeQuery.toLowerCase();
-  return props.locations
-    .filter((loc) => loc.query.toLowerCase() !== active)
-    .slice(0, 2);
+  return props.locations.filter((loc) => loc.query.toLowerCase() !== active).slice(0, 2);
 });
 
 const isBusy = computed(() => props.loading || props.seeding);
@@ -32,12 +30,7 @@ const isBusy = computed(() => props.loading || props.seeding);
 
 <template>
   <section class="min-w-0">
-    <div
-      v-if="isBusy"
-      class="page-tool-grid min-w-0"
-      aria-busy="true"
-      aria-label="Loading cities"
-    >
+    <div v-if="isBusy" class="page-tool-grid min-w-0" aria-busy="true" aria-label="Loading cities">
       <Card
         v-for="n in 2"
         :key="n"

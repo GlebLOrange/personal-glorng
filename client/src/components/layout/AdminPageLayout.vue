@@ -29,18 +29,12 @@ const breadcrumbLabel = computed(() => formatBreadcrumbLabel(props.title));
 const breadcrumbs = computed((): BreadcrumbSegment[] => {
   const label = breadcrumbLabel.value;
   if (props.hub === "tools") {
-    return [
-      { label: "tools", to: "/tools" },
-      { label },
-    ];
+    return [{ label: "tools", to: "/tools" }, { label }];
   }
   if (label === "admin") {
     return [{ label: "admin", to: "/admin" }];
   }
-  return [
-    { label: "admin", to: "/admin" },
-    { label },
-  ];
+  return [{ label: "admin", to: "/admin" }, { label }];
 });
 
 const shellMaxWidth = computed((): "sm" | "md" | "5xl" => {

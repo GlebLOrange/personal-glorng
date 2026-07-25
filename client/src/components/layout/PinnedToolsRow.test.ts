@@ -21,21 +21,14 @@ vi.mock("@/components/weather/WeatherBar.vue", () => ({
   },
 }));
 
-vi.mock("@/components/ui/ToastContainer.vue", () => ({
-  default: {
-    name: "ToastContainer",
-    template: '<div data-testid="toast-host" />',
-  },
-}));
-
 describe("PinnedToolsRow", () => {
-  it("shows toast host and weather tile in the tool grid", () => {
+  it("shows weather tile in the tool grid without a local toast host", () => {
     mocks.routeName = "calculator";
 
     const wrapper = mount(PinnedToolsRow);
 
     expect(wrapper.find(".page-tool-grid").exists()).toBe(true);
-    expect(wrapper.find('[data-testid="toast-host"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="toast-host"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="weather-bar"]').attributes("data-wrapper-class")).toBe(
       "page-tile md:col-start-3",
@@ -49,7 +42,7 @@ describe("PinnedToolsRow", () => {
     const wrapper = mount(PinnedToolsRow);
 
     expect(wrapper.find(".page-tool-grid").exists()).toBe(true);
-    expect(wrapper.find('[data-testid="toast-host"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="toast-host"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
   });
 });
