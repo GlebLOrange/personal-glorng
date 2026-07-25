@@ -23,12 +23,14 @@ export interface NewsStats {
   failed: number;
 }
 
+const newsDateFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+
 export function formatNewsDate(value: string | null): string {
   if (!value) return "not published";
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return newsDateFormatter.format(new Date(value));
 }
 
 export function newsArticleDisplayDate(article: NewsArticle): string {

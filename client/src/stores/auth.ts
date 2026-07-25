@@ -31,6 +31,10 @@ export const useAuthStore = defineStore("auth", () => {
   function clearUser(): void {
     user.value = null;
     clearCachedApi();
+    // Dynamic import avoids a static cycle (catalog composable uses this store).
+    void import("@/composables/usePlatformCatalog").then(({ clearPlatformCatalog }) => {
+      clearPlatformCatalog();
+    });
   }
 
   function logout(): void {

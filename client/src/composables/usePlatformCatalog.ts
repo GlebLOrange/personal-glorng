@@ -1,4 +1,4 @@
-import { ref, type Ref } from "vue";
+import { computed, ref, type ComputedRef } from "vue";
 
 import { api } from "@/composables/useApi";
 import { PLATFORM_SERVICES, type PlatformService } from "@/platform/services";
@@ -56,38 +56,39 @@ export function mapApiPlatformService(s: ApiPlatformService): PlatformService | 
   };
 }
 
-const services = ref<PlatformService[]>(PLATFORM_SERVICES);
+/** Unfiltered catalog; AI-chat visibility is derived in usePlatformCatalog. */
+const rawServices = ref<PlatformService[]>(PLATFORM_SERVICES);
 const loaded = ref(false);
 let loadPromise: Promise<void> | null = null;
 
+/** Reset module cache (call on logout so the next session can refetch). */
+export function clearPlatformCatalog(): void {
+  loaded.value = false;
+  loadPromise = null;
+  rawServices.value = PLATFORM_SERVICES;
+}
+
 /** Load platform catalog from API with static fallback (module-level cache). */
 export function usePlatformCatalog(): {
-  services: Ref<PlatformService[]>;
+  services: ComputedRef<PlatformService[]>;
   load: () => Promise<void>;
 } {
-  // Filter when a Vue/Pinia context exists (not at module import time).
-  if (!loaded.value) {
-    services.value = filterAiChat(PLATFORM_SERVICES);
-  }
+  // Derive when a Vue/Pinia context exists (not at module import time).
+  const services = computed(() => filterAiChat(rawServices.value));
 
   async function load(): Promise<void> {
-    if (loaded.value) {
-      services.value = filterAiChat(services.value);
-      return;
-    }
+    if (loaded.value) return;
     if (!loadPromise) {
       loadPromise = (async () => {
         try {
           const { data } = await api.get<{
             services: ApiPlatformService[];
           }>("/platform/catalog");
-          services.value = filterAiChat(
-            data.services
-              .map(mapApiPlatformService)
-              .filter((service): service is PlatformService => service !== null),
-          );
+          rawServices.value = data.services
+            .map(mapApiPlatformService)
+            .filter((service): service is PlatformService => service !== null);
         } catch {
-          services.value = filterAiChat(PLATFORM_SERVICES);
+          rawServices.value = PLATFORM_SERVICES;
         } finally {
           loaded.value = true;
         }
