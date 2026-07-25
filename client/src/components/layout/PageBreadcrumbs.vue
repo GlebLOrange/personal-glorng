@@ -28,12 +28,12 @@ function crumbLabel(label: string): string {
         <RouterLink
           v-if="seg.to"
           :to="seg.to"
-          class="relative z-10 inline-flex min-h-8 cursor-pointer items-center"
+          class="relative z-10 inline-flex h-8 cursor-pointer items-center"
         >
           <span
             :class="
               elevated
-                ? 'truncate text-lg font-bold leading-tight accent-gradient transition-opacity hover:opacity-90'
+                ? 'truncate text-lg font-bold leading-none accent-gradient transition-opacity hover:opacity-90'
                 : 'page-breadcrumb text-surface-mid transition-colors hover:text-accent-blue'
             "
           >
@@ -44,7 +44,7 @@ function crumbLabel(label: string): string {
           v-else
           :class="
             elevated
-              ? 'inline-flex min-h-8 items-center truncate text-lg font-bold leading-tight accent-gradient'
+              ? 'inline-flex h-8 items-center truncate text-lg font-bold leading-none accent-gradient'
               : 'page-breadcrumb text-surface-light'
           "
           aria-current="page"
@@ -53,7 +53,7 @@ function crumbLabel(label: string): string {
         </span>
         <span
           v-if="idx < segments.length - 1"
-          class="page-breadcrumb inline-flex min-h-8 items-center text-surface-muted"
+          class="page-breadcrumb inline-flex h-8 items-center text-surface-muted"
           aria-hidden="true"
           >/</span
         >

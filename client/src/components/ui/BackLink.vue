@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useAttrs } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 
 import { actionFamilyClass } from "@/constants/httpStatusColors";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
@@ -13,6 +15,8 @@ const props = withDefaults(
     size: "default",
   },
 );
+
+const attrs = useAttrs();
 
 const sizeClass = computed(() =>
   props.size === "compact"
@@ -29,15 +33,31 @@ function linkClass(isActive: boolean): string {
     "!border-transparent hover:!border-transparent focus-visible:!border-transparent !px-0",
     isActive ? "" : "hover:text-accent-blue hover:bg-accent-blue/15",
     sizeClass.value,
+    attrs.class,
   ]
     .filter(Boolean)
     .join(" ");
 }
+
+const nativeAttrs = computed(() => {
+  const next: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key !== "class" && key !== "style") next[key] = value;
+  }
+  return next;
+});
 </script>
 
 <template>
   <RouterLink v-slot="{ href, navigate, isActive }" :to="to" custom>
-    <a :href="href" :class="linkClass(isActive)" @click="navigate($event)">
+    <a
+      :href="href"
+      aria-label="Back"
+      :class="linkClass(isActive)"
+      :style="attrs.style"
+      v-bind="nativeAttrs"
+      @click="navigate($event)"
+    >
       <svg
         :class="iconClass"
         viewBox="0 0 40 40"
