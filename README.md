@@ -6,7 +6,7 @@ Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + Mongo
 
 ```bash
 cp .env.example .env
-make dev-lite          # terminal 1: mongodb, redis, API, nginx
+make dev               # terminal 1: mongodb, redis, API, nginx (lite default)
 make dev-lite-client   # terminal 2: Vite on :3000
 make db-init           # if migrate did not run on stack start
 make seed              # admin user (set SEED_PASSWORD in .env)
@@ -49,7 +49,8 @@ docs/      VitePress handbook
 
 | Command | Description |
 |---------|-------------|
-| `make dev-lite` + `make dev-lite-client` | Default dev workflow |
+| `make` / `make dev` + `make dev-lite-client` | Default lite stack (API in Docker, Vite on host) |
+| `make dev-docker` | Full stack in Docker including Vite client |
 | `make prod` | Production stack |
 | `make check` | CI-equivalent lint + tests + client build |
 | `make docs-dev` / `make docs-build` | Documentation site (`docs-generate` first) |

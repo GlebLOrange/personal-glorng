@@ -113,7 +113,7 @@ def _truncate_response_body(response: httpx.Response, limit: int = 500) -> str:
     """Return a truncated LLM error body for logs."""
     try:
         return response.text[:limit]
-    except (httpx.StreamConsumed, UnicodeDecodeError):
+    except httpx.StreamConsumed, UnicodeDecodeError:
         return ""
 
 
