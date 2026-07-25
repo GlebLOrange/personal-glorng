@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  computeIsScrollable,
-  computeScrollProgress,
-} from "@/composables/useScrollProgress";
+import { computeIsScrollable, computeScrollProgress } from "@/composables/useScrollProgress";
 
 describe("computeScrollProgress", () => {
   it("returns 0 at top and 1 at bottom", () => {

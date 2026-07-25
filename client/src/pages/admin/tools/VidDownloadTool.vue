@@ -30,9 +30,7 @@ const formats = [
   { value: "bestaudio/best", label: "Best audio" },
 ];
 
-const hasCustomOptions = computed(
-  () => audioOnly.value || format.value !== "best",
-);
+const hasCustomOptions = computed(() => audioOnly.value || format.value !== "best");
 
 const optionsActiveLabel = computed(() => {
   if (audioOnly.value) return "audio";
@@ -127,7 +125,11 @@ async function download(): Promise<void> {
   >
     <form class="mb-8 space-y-3" @submit.prevent="download">
       <div class="mb-3 flex w-full min-w-0 flex-wrap items-center gap-2">
-        <div ref="optionsRoot" class="relative inline-flex" :class="optionsOpen ? 'z-40' : undefined">
+        <div
+          ref="optionsRoot"
+          class="relative inline-flex"
+          :class="optionsOpen ? 'z-40' : undefined"
+        >
           <ToolbarPillButton
             family="1xx"
             type="button"
@@ -187,11 +189,7 @@ async function download(): Promise<void> {
         </ToolbarPillButton>
       </div>
 
-      <BaseInput
-        v-model="url"
-        placeholder="url (https://....)"
-        class="w-full"
-      />
+      <BaseInput v-model="url" placeholder="url (https://....)" class="w-full" />
     </form>
 
     <button

@@ -120,7 +120,10 @@ onMounted(load);
 
 <template>
   <AdminPageLayout title="audit logs">
-    <AdminListSkeleton v-if="loading && items.length === 0 && !listError" label="Loading audit events" />
+    <AdminListSkeleton
+      v-if="loading && items.length === 0 && !listError"
+      label="Loading audit events"
+    />
 
     <template v-else>
       <AdminListToolbar>
@@ -147,7 +150,11 @@ onMounted(load);
 
       <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
 
-      <EmptyState v-else-if="items.length === 0" class="mt-4" description="No audit events found." />
+      <EmptyState
+        v-else-if="items.length === 0"
+        class="mt-4"
+        description="No audit events found."
+      />
 
       <div v-else class="mt-1 min-w-0 divide-y divide-surface-border/40">
         <AdminListRow
@@ -182,8 +189,7 @@ onMounted(load);
             <pre
               v-if="event.metadata"
               class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
-              >{{ JSON.stringify(event.metadata, null, 2) }}</pre
-            >
+              >{{ JSON.stringify(event.metadata, null, 2) }}</pre>
           </template>
         </AdminListRow>
       </div>

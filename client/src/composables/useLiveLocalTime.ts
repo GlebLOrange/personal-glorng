@@ -98,11 +98,7 @@ export function useLiveLocalTime(
 
   watch(
     () =>
-      [
-        toValue(offsetHours),
-        toValue(format),
-        ianaTimezone ? toValue(ianaTimezone) : null,
-      ] as const,
+      [toValue(offsetHours), toValue(format), ianaTimezone ? toValue(ianaTimezone) : null] as const,
     () => {
       update();
     },

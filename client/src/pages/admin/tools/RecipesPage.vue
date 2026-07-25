@@ -131,12 +131,7 @@ function editRecipeFromCard(recipe: Recipe): void {
         </div>
       </div>
 
-      <ErrorState
-        v-else-if="listError"
-        :message="listError"
-        show-retry
-        @retry="loadRecipes"
-      />
+      <ErrorState v-else-if="listError" :message="listError" show-retry @retry="loadRecipes" />
 
       <div v-else-if="recipes.length" class="flex flex-col divide-y divide-surface-border/40">
         <RecipeCard

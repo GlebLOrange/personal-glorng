@@ -19,8 +19,8 @@ const statusFillClass = computed(() => {
     .join(" ");
 });
 
-const showStatusColor = computed(
-  () => Boolean((props.active || hovered.value) && statusFillClass.value),
+const showStatusColor = computed(() =>
+  Boolean((props.active || hovered.value) && statusFillClass.value),
 );
 
 function onEnter(): void {

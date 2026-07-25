@@ -198,11 +198,7 @@ onMounted(() => {
         </div>
 
         <template v-if="activeTab === 'queue'">
-          <SearchInput
-            v-model="searchQuery"
-            class="w-full"
-            placeholder="search tasks"
-          />
+          <SearchInput v-model="searchQuery" class="w-full" placeholder="search tasks" />
           <p v-if="!isSuperuser" class="text-xs text-surface-mid">
             View only — creating and status changes need superuser.
           </p>

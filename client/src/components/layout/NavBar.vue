@@ -108,7 +108,9 @@ async function handleGoHome(): Promise<void> {
       :class="isHeaderHidden ? '-translate-y-full' : 'translate-y-0'"
     >
       <nav aria-label="Main navigation" class="border-b border-surface-border">
-        <div class="max-w-5xl xl:max-w-6xl mx-auto px-6 py-4 md:py-5 flex items-center justify-between gap-4">
+        <div
+          class="max-w-5xl xl:max-w-6xl mx-auto px-6 py-4 md:py-5 flex items-center justify-between gap-4"
+        >
           <RouterLink
             to="/"
             class="text-xl font-bold text-surface-light"

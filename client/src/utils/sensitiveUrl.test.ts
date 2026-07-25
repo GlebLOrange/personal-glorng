@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  scrubSensitivePath,
-  scrubSensitiveSearch,
-  scrubSensitiveUrl,
-} from "@/utils/sensitiveUrl";
+import { scrubSensitivePath, scrubSensitiveSearch, scrubSensitiveUrl } from "@/utils/sensitiveUrl";
 
 describe("scrubSensitiveSearch", () => {
   it("strips token/code/state and keeps other params", () => {

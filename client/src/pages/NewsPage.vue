@@ -24,9 +24,7 @@ const {
   goToPage,
 } = useNews();
 
-useScrollListFingerprint(
-  () => `${page.value}:${total.value}:${articles.value[0]?.id ?? ""}`,
-);
+useScrollListFingerprint(() => `${page.value}:${total.value}:${articles.value[0]?.id ?? ""}`);
 
 onMounted(async () => {
   await loadNews();
@@ -38,7 +36,12 @@ watch(page, () => {
 </script>
 
 <template>
-  <PageShell title="news" :breadcrumbs="[{ label: 'news', to: '/news' }]" back-to="/" :narrow="false">
+  <PageShell
+    title="news"
+    :breadcrumbs="[{ label: 'news', to: '/news' }]"
+    back-to="/"
+    :narrow="false"
+  >
     <NewsTabs />
 
     <ListSkeleton
@@ -49,12 +52,7 @@ watch(page, () => {
       gap-class="space-y-4"
     />
 
-    <ErrorState
-      v-else-if="listError"
-      :message="listError"
-      show-retry
-      @retry="loadNews"
-    />
+    <ErrorState v-else-if="listError" :message="listError" show-retry @retry="loadNews" />
 
     <section v-else-if="articles.length" class="min-w-0 space-y-4">
       <Card

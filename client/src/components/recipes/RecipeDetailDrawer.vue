@@ -100,21 +100,11 @@ const emit = defineEmits<{
 
     <template v-if="recipe && !loading" #footer>
       <div class="flex w-full items-center gap-3">
-        <BaseButton
-          v-if="canWrite"
-          danger
-          @click="emit('delete')"
-        >
-          delete
-        </BaseButton>
+        <BaseButton v-if="canWrite" danger @click="emit('delete')"> delete </BaseButton>
         <ToolbarPillButton family="2xx" class="min-w-0 flex-1" @click="emit('cook')">
           cook
         </ToolbarPillButton>
-        <IconEditButton
-          v-if="canWrite"
-          aria-label="edit recipe"
-          @click="emit('edit', recipe)"
-        />
+        <IconEditButton v-if="canWrite" aria-label="edit recipe" @click="emit('edit', recipe)" />
       </div>
     </template>
   </BaseDrawer>

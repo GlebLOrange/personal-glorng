@@ -110,18 +110,13 @@ async function submit(): Promise<void> {
         :label="copy.messageLabel"
         :placeholder="copy.messagePlaceholder"
         :rows="5"
-      />    </form>
+      />
+    </form>
 
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton
-            danger
-            type="button"
-            @click="$emit('close')"
-          >
-            cancel
-          </BaseButton>
+          <BaseButton danger type="button" @click="$emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton

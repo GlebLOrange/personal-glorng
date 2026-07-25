@@ -100,9 +100,7 @@ const conditionsAriaLabel = computed(() => {
 
 const utcOffset = computed(() => (weather.value ? weatherUtcOffsetHours(weather.value) : null));
 
-const ianaTimezone = computed(() =>
-  weather.value ? weatherIanaTimezone(weather.value) : null,
-);
+const ianaTimezone = computed(() => (weather.value ? weatherIanaTimezone(weather.value) : null));
 
 const { liveTime, liveDate, liveDateTime, liveDateIso } = useLiveLocalTime(
   utcOffset,
@@ -117,12 +115,7 @@ onMounted(async () => {
 
 <template>
   <div :class="rootClass">
-    <div
-      v-if="loading"
-      class="space-y-1.5 animate-pulse"
-      :class="stackClass"
-      aria-busy="true"
-    >
+    <div v-if="loading" class="space-y-1.5 animate-pulse" :class="stackClass" aria-busy="true">
       <div class="h-8 w-24 rounded bg-surface-border/60" :class="skeletonClass" />
       <div class="h-4 w-28 rounded bg-surface-border/40" :class="skeletonClass" />
       <div class="h-4 w-40 rounded bg-surface-border/40" :class="skeletonClass" />
@@ -145,19 +138,10 @@ onMounted(async () => {
       :class="stackClass"
       :aria-label="liveTime ? `Local time ${liveTime}` : undefined"
     >
-      <time
-        v-if="liveTime"
-        :datetime="liveDateTime ?? undefined"
-        :class="timeClass"
-        role="timer"
-      >
+      <time v-if="liveTime" :datetime="liveDateTime ?? undefined" :class="timeClass" role="timer">
         {{ liveTime }}
       </time>
-      <time
-        v-if="liveDate"
-        :datetime="liveDateIso ?? undefined"
-        :class="dateClass"
-      >
+      <time v-if="liveDate" :datetime="liveDateIso ?? undefined" :class="dateClass">
         {{ liveDate }}
       </time>
       <p :class="conditionsClass" :aria-label="conditionsAriaLabel">

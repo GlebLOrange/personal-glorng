@@ -25,18 +25,14 @@ const props = withDefaults(
 const route = useRoute();
 const { activeQuery } = useActiveWeatherQuery();
 
-const isActivePage = computed(
-  () => props.expanded || route.name === WEATHER_ROUTE_NAME,
-);
+const isActivePage = computed(() => props.expanded || route.name === WEATHER_ROUTE_NAME);
 
 const asideClass = computed(() => [props.wrapperClass]);
 
 const linkClass = computed(() => (props.chrome ? "block h-full w-full" : "block w-full"));
 
 const resolvedCardClass = computed(() =>
-  isActivePage.value
-    ? [props.cardClass, "border-accent-blue bg-accent-blue/10"]
-    : props.cardClass,
+  isActivePage.value ? [props.cardClass, "border-accent-blue bg-accent-blue/10"] : props.cardClass,
 );
 
 const summaryProps = computed(() => ({

@@ -63,9 +63,4 @@ export async function convertCurrency(
   }
 }
 
-export {
-  crossRate,
-  EXPENSE_CURRENCIES,
-  EXPENSE_DEFAULT_CURRENCY,
-  EXPENSE_EXCHANGE_RATE_TARGETS,
-};
+export { crossRate, EXPENSE_CURRENCIES, EXPENSE_DEFAULT_CURRENCY, EXPENSE_EXCHANGE_RATE_TARGETS };

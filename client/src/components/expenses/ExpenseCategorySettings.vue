@@ -39,9 +39,7 @@ watch(
   async (id) => {
     if (id == null) return;
     await nextTick();
-    document
-      .querySelector<HTMLInputElement>(`[data-category-edit="${id}"]`)
-      ?.focus();
+    document.querySelector<HTMLInputElement>(`[data-category-edit="${id}"]`)?.focus();
   },
 );
 

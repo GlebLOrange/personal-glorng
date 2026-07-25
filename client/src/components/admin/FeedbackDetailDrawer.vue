@@ -51,13 +51,7 @@ const emit = defineEmits<{
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton
-            danger
-            size="sm"
-            @click="emit('close')"
-          >
-            close
-          </BaseButton>
+          <BaseButton danger size="sm" @click="emit('close')"> close </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton family="2xx" @click="emit('reply')">reply</ToolbarPillButton>

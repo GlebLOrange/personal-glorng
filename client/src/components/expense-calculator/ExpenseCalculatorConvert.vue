@@ -134,7 +134,10 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
       <p v-if="converted" class="text-3xl font-bold font-data text-surface-light">
         {{ formatMoney(converted, toCurrency) }}
       </p>
-      <p v-else-if="converting || ratesLoading" class="text-3xl font-bold text-surface-border animate-pulse">
+      <p
+        v-else-if="converting || ratesLoading"
+        class="text-3xl font-bold text-surface-border animate-pulse"
+      >
         —
       </p>
       <p v-else class="text-sm text-surface-mid">Enter an amount to convert.</p>

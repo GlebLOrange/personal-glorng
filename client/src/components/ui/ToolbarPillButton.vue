@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed, useAttrs } from "vue";
 
-import {
-  actionFamilyClass,
-  type HttpStatusFamily,
-} from "@/constants/httpStatusColors";
+import { actionFamilyClass, type HttpStatusFamily } from "@/constants/httpStatusColors";
 
 defineOptions({ inheritAttrs: false });
 
@@ -26,10 +23,7 @@ const props = withDefaults(
 defineEmits<{ click: [MouseEvent] }>();
 
 const attrs = useAttrs();
-const classes = computed(() => [
-  actionFamilyClass(props.family, props.selected),
-  attrs.class,
-]);
+const classes = computed(() => [actionFamilyClass(props.family, props.selected), attrs.class]);
 const nativeAttrs = computed(() => {
   const next: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(attrs)) {

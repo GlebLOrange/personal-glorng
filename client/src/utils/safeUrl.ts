@@ -16,7 +16,8 @@ export function isSafeNavigationUrl(url: string): boolean {
 }
 
 function isAuthEntryPath(pathname: string): boolean {
-  const normalized = pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+  const normalized =
+    pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
   return AUTH_ENTRY_PATHS.has(normalized);
 }
 

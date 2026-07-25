@@ -143,12 +143,7 @@ onMounted(() => {
           @keydown.enter.exact.prevent="handleSend"
         />
         <div class="flex flex-col gap-2">
-          <ToolbarPillButton
-            family="4xx"
-            type="button"
-            :disabled="loading"
-            @click="clear"
-          >
+          <ToolbarPillButton family="4xx" type="button" :disabled="loading" @click="clear">
             clear
           </ToolbarPillButton>
           <ToolbarPillButton
@@ -239,9 +234,8 @@ onMounted(() => {
             >
               Groq Console
             </a>
-            . Disable competing features in <code class="text-surface-sage">.env</code> while testing
-            chat:
-            <code class="text-surface-sage">TASK_INTAKE_AI_ENABLED=false</code>,
+            . Disable competing features in <code class="text-surface-sage">.env</code> while
+            testing chat: <code class="text-surface-sage">TASK_INTAKE_AI_ENABLED=false</code>,
             <code class="text-surface-sage">NEWS_INGEST_ENABLED=false</code>.
           </li>
           <li>

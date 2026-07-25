@@ -64,11 +64,7 @@ function onAddItem(): void {
           :key="item.id"
           class="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-3 items-end"
         >
-          <BaseInput
-            v-model="item.label"
-            placeholder="label (coffee, taxi...)"
-            data-line-label
-          />
+          <BaseInput v-model="item.label" placeholder="label (coffee, taxi...)" data-line-label />
           <BaseInput
             v-model="item.amount"
             type="number"
@@ -88,7 +84,12 @@ function onAddItem(): void {
       </ul>
 
       <div class="flex flex-wrap gap-2 border-t border-surface-border pt-4">
-        <BaseButton variant="ghost" size="sm" :disabled="sumTotal <= 0" @click="emit('applyToBudget')">
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          :disabled="sumTotal <= 0"
+          @click="emit('applyToBudget')"
+        >
           use total as budget spent
         </BaseButton>
       </div>
