@@ -22,14 +22,8 @@ const { activeQuery, setActiveQuery } = useActiveWeatherQuery();
 const { toast } = useNotify();
 
 async function handleAdd(query: string): Promise<void> {
-  try {
-    await addLocation(query);
-    toast("Location added", "success");
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to add location";
-    toast(message, "error");
-    throw err;
-  }
+  await addLocation(query);
+  toast("Location added", "success");
 }
 
 async function handleRemove(id: number | string): Promise<void> {

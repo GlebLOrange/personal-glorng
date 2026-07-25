@@ -21,14 +21,14 @@ describe("useNotify", () => {
     vi.useRealTimers();
   });
 
-  it("pushes a lowercased toast and auto-dismisses after duration", () => {
+  it("pushes a toast and auto-dismisses after duration", () => {
     const { toast, toasts } = useNotify();
 
     toast("Hello World", "info", 1000);
 
     expect(toasts.value).toHaveLength(1);
     expect(toasts.value[0]).toMatchObject({
-      message: "hello world",
+      message: "Hello World",
       type: "info",
     });
 

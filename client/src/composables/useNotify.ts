@@ -33,7 +33,7 @@ export function useNotify() {
   function toast(message: string, type: Toast["type"] = "info", duration?: number): void {
     const id = nextId++;
     const ms = duration ?? (type === "error" ? 6000 : 4000);
-    toasts.value.push({ id, message: message.toLowerCase(), type });
+    toasts.value.push({ id, message, type });
     durations.set(id, ms);
     scheduleDismiss(id, ms);
   }
