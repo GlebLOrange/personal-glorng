@@ -11,7 +11,11 @@ async def main() -> None:
     settings = get_settings()
     if not settings.enable_mongodb():
         return
-    client, db = await connect_mongodb(settings.MONGODB_URL, settings.MONGODB_DB)
+    client, db = await connect_mongodb(
+        settings.MONGODB_URL,
+        settings.MONGODB_DB,
+        **settings.mongodb_client_kwargs(),
+    )
     try:
         await ensure_mongo_schema(db)
     finally:

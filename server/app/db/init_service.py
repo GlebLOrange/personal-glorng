@@ -40,6 +40,7 @@ class DatabaseInitService:
         client, database = await connect_mongodb(
             self.settings.MONGODB_URL,
             self.settings.MONGODB_DB,
+            **self.settings.mongodb_client_kwargs(),
         )
         self.registry.mongo_client = client
         self.registry.mongo_db = database

@@ -62,3 +62,32 @@ def test_resolve_mongodb_url_maps_compose_host_to_localhost(
     )
 
     get_settings.cache_clear()
+
+
+def test_mongodb_client_kwargs_defaults(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Local-lite pool defaults stay small for multi-process Docker."""
+    activate_env_file(
+        monkeypatch,
+        scenario_env(
+            tmp_path,
+            MONGODB_URL="mongodb://localhost:27017",
+            MONGODB_USER="",
+            MONGODB_PASSWORD="",
+            MONGODB_DB="test_glorng",
+        ),
+    )
+
+    settings = get_settings()
+    assert settings.mongodb_client_kwargs() == {
+        "maxPoolSize": 10,
+        "minPoolSize": 0,
+        "maxIdleTimeMS": 60_000,
+        "waitQueueTimeoutMS": 5_000,
+        "connectTimeoutMS": 10_000,
+        "serverSelectionTimeoutMS": 5_000,
+    }
+
+    get_settings.cache_clear()

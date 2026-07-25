@@ -417,6 +417,25 @@ class Settings(BaseSettings):
     MONGODB_PASSWORD: str
     MONGODB_DB: str
     MONGODB_URL: str
+    # Motor pool defaults sized for local lite: API + Celery worker/beat + bot
+    # against ~512MB Mongo (≈4×(maxPoolSize+2) sockets worst case).
+    MONGODB_MAX_POOL_SIZE: int = 10
+    MONGODB_MIN_POOL_SIZE: int = 0
+    MONGODB_MAX_IDLE_TIME_MS: int = 60_000
+    MONGODB_WAIT_QUEUE_TIMEOUT_MS: int = 5_000
+    MONGODB_CONNECT_TIMEOUT_MS: int = 10_000
+    MONGODB_SERVER_SELECTION_TIMEOUT_MS: int = 5_000
+
+    def mongodb_client_kwargs(self) -> dict[str, int]:
+        """Keyword args for AsyncIOMotorClient pool/timeouts."""
+        return {
+            "maxPoolSize": self.MONGODB_MAX_POOL_SIZE,
+            "minPoolSize": self.MONGODB_MIN_POOL_SIZE,
+            "maxIdleTimeMS": self.MONGODB_MAX_IDLE_TIME_MS,
+            "waitQueueTimeoutMS": self.MONGODB_WAIT_QUEUE_TIMEOUT_MS,
+            "connectTimeoutMS": self.MONGODB_CONNECT_TIMEOUT_MS,
+            "serverSelectionTimeoutMS": self.MONGODB_SERVER_SELECTION_TIMEOUT_MS,
+        }
 
     @model_validator(mode="after")
     def _normalize_mongodb_url(self) -> Settings:
