@@ -45,7 +45,9 @@ describe("BaseInput", () => {
     expect(wrapper.get("input").attributes("placeholder")).toBeUndefined();
     expect(wrapper.get("#title-tip").text()).toBe("enter title");
     expect(wrapper.get("#title-tip").classes()).toContain("absolute");
-    expect(wrapper.get("#title-tip").classes()).toContain("text-right");
+    expect(wrapper.get("#title-tip").classes()).toContain("left-3");
+    expect(wrapper.get("#title-tip").classes()).toContain("right-3");
+    expect(wrapper.get("#title-tip").find(".truncate").classes()).toContain("text-right");
     expect(wrapper.get("#title-tip").attributes("aria-hidden")).toBe("true");
     expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
     expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
