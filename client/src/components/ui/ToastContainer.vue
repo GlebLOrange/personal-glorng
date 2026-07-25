@@ -36,7 +36,6 @@ const typeBorderClass: Record<Toast["type"], string> = {
         {{ t.message }}
       </p>
       <IconCloseButton
-        class="!h-8 !min-w-8 !w-8"
         aria-label="Dismiss notification"
         @click="dismiss(t.id)"
       />

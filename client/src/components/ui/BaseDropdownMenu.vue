@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
 
+import { actionFamilyClass } from "@/constants/httpStatusColors";
+
 const props = withDefaults(
   defineProps<{
     /** Accessible name for the icon trigger (required for icon-only defaults). */
@@ -22,6 +24,16 @@ let previouslyFocused: HTMLElement | null = null;
 
 const menuPositionClass = computed(() =>
   props.placement === "top" ? "bottom-full mb-1" : "top-full mt-1",
+);
+
+const triggerClass = computed(() =>
+  [
+    actionFamilyClass("1xx", open.value),
+    "!border-transparent hover:!border-transparent focus-visible:!border-transparent",
+    open.value ? undefined : "hover:text-accent-blue hover:bg-accent-blue/15",
+  ]
+    .filter(Boolean)
+    .join(" "),
 );
 
 function getMenuItems(): HTMLElement[] {
@@ -118,13 +130,13 @@ defineExpose({ close });
     <button
       ref="trigger"
       type="button"
-      class="inline-flex min-h-11 min-w-11 items-center justify-center text-surface-mid hover:text-surface-light transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 active:opacity-80"
+      :class="triggerClass"
       aria-haspopup="menu"
       :aria-expanded="open"
       :aria-label="props.ariaLabel"
       @click.stop="toggle"
     >
-      <slot name="trigger">
+      <slot name="trigger" :open="open">
         <span class="text-lg leading-none" aria-hidden="true">⋮</span>
       </slot>
     </button>
