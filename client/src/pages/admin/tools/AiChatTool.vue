@@ -195,7 +195,29 @@ onMounted(() => {
             <dd class="text-surface-light">{{ chatConfig.enabled ? "yes" : "no" }}</dd>
           </div>
         </dl>
-        <BaseButton variant="ghost" size="sm" :disabled="configLoading" @click="loadConfig">
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          class="gap-1.5"
+          :disabled="configLoading"
+          @click="loadConfig"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="size-4"
+            aria-hidden="true"
+          >
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+            <path d="M16 16h5v5" />
+          </svg>
           refresh
         </BaseButton>
       </section>

@@ -28,10 +28,10 @@ const resolvedSize = computed(() => (props.size === "field" ? "md" : props.size)
 
 const variantClass = computed(() => {
   if (props.variant === "success") {
-    return "bg-status-success text-surface-dark hover:enabled:bg-status-success/90 active:enabled:bg-status-success/80 focus-visible:ring-status-success/50";
+    return "bg-transparent text-surface-mid hover:enabled:bg-status-success/15 hover:enabled:text-status-success active:enabled:bg-status-success/25 focus-visible:ring-status-success/50";
   }
   if (props.variant === "primary") {
-    return "bg-accent-blue text-surface-dark hover:enabled:bg-accent-blue/90 active:enabled:bg-accent-blue/80";
+    return "bg-transparent text-surface-mid hover:enabled:bg-accent-blue/15 hover:enabled:text-accent-blue active:enabled:bg-accent-blue/25";
   }
   if (props.variant === "ghost") {
     if (props.danger) {

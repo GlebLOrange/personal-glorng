@@ -43,8 +43,8 @@ Use for **grouped content on a surface** — list items, settings sections, summ
 
 **Auth and product UI** — prefer `BaseButton` (optionally with `loading`). Auth pages may use `cta-primary` / `cta-secondary` when matching marketing weight:
 
-- `variant="primary"` — flat `accent-blue` fill (create/add)
-- `variant="success"` — flat `status-success` fill (save/update/send)
+- `variant="primary"` — pale `accent-blue` hover/active (create/add)
+- `variant="success"` — pale `status-success` hover/active (save/update/send)
 - `variant="secondary"` / `variant="ghost"` — borderless; hover/active use accent (or danger) tint + text
 
 Do not use `cta-primary` inside tool screens; do not add gradients to `BaseButton`.
