@@ -2,7 +2,7 @@
 export const CHART_COLORS = [
   "#8ec4e0", // --color-accent-blue (1xx)
   "#7bc49a", // --color-status-success (2xx)
-  "#7eb8b0", // --color-status-cyan (3xx)
+  "#d4ce94", // --color-status-cyan (3xx)
   "#e88a8a", // --color-status-error (4xx)
   "#d98aad", // --color-status-critical (5xx)
   "#d4cdc6", // --color-surface-mid

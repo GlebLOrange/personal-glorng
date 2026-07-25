@@ -18,5 +18,5 @@ const sizeClass = computed(() => {
 </script>
 
 <template>
-  <span :class="[sizeClass, 'rounded border', className]">{{ label }}</span>
+  <span :class="[sizeClass, 'rounded', className]">{{ label }}</span>
 </template>

@@ -5,13 +5,13 @@ export const FILTER_CHIP_NEUTRAL = "text-surface-light bg-surface-dark";
 
 /** Pale 1xx–5xx + muted/neutral — product chips only (no golden/violet). */
 const SEMANTIC = {
-  info: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
-  success: "text-status-success bg-status-success/10 border-status-success/30",
-  warning: "text-status-cyan bg-status-cyan/10 border-status-cyan/30",
-  error: "text-status-error bg-status-error/10 border-status-error/30",
-  critical: "text-status-critical bg-status-critical/10 border-status-critical/30",
-  muted: "text-surface-mid bg-surface-mid/10 border-surface-border",
-  neutral: "bg-surface-border text-surface-mid border-surface-border",
+  info: "text-accent-blue bg-accent-blue/10",
+  success: "text-status-success bg-status-success/10",
+  warning: "text-status-cyan bg-status-cyan/10",
+  error: "text-status-error bg-status-error/10",
+  critical: "text-status-critical bg-status-critical/10",
+  muted: "text-surface-mid bg-surface-mid/10",
+  neutral: "bg-surface-border text-surface-mid",
 } as const;
 
 const NEWS_STATUS_CLASS: Record<string, string> = {
@@ -28,14 +28,14 @@ const FEEDBACK_STATUS_CLASS: Record<string, string> = {
 };
 
 const USER_STATUS_CLASS: Record<string, string> = {
-  verified: "bg-status-cyan/15 text-status-cyan border-status-cyan/30",
+  verified: "bg-status-cyan/15 text-status-cyan",
   unverified: SEMANTIC.neutral,
-  protected: "bg-accent-blue/15 text-accent-blue border-accent-blue/30",
+  protected: "bg-accent-blue/15 text-accent-blue",
 };
 
 const USER_ROLE_CLASS: Record<string, string> = {
-  superuser: "bg-status-critical/15 text-status-critical border-status-critical/30",
-  custom: "bg-surface-dark text-surface-mid border-surface-border",
+  superuser: "bg-status-critical/15 text-status-critical",
+  custom: "bg-surface-dark text-surface-mid",
 };
 
 const AUDIT_CATEGORY_CLASS: Record<string, string> = {

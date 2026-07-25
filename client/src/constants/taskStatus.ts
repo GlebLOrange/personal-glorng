@@ -22,16 +22,16 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
-  pending: "text-status-cyan bg-status-cyan/10 border-status-cyan/30",
-  completed: "text-status-success bg-status-success/10 border-status-success/30",
-  not_completed: "text-status-error bg-status-error/10 border-status-error/30",
-  postponed: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
-  cancelled: "text-surface-mid bg-surface-mid/10 border-surface-border",
-  failed: "text-status-error bg-status-error/10 border-status-error/30",
-  parsing: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
-  clarifying: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
-  ready: "text-status-success bg-status-success/10 border-status-success/30",
-  confirmed: "text-status-success bg-status-success/10 border-status-success/30",
+  pending: "text-status-cyan bg-status-cyan/10",
+  completed: "text-status-success bg-status-success/10",
+  not_completed: "text-status-error bg-status-error/10",
+  postponed: "text-accent-blue bg-accent-blue/10",
+  cancelled: "text-surface-mid bg-surface-mid/10",
+  failed: "text-status-error bg-status-error/10",
+  parsing: "text-accent-blue bg-accent-blue/10",
+  clarifying: "text-accent-blue bg-accent-blue/10",
+  ready: "text-status-success bg-status-success/10",
+  confirmed: "text-status-success bg-status-success/10",
 };
 
 const STATUS_ACTION_LABELS: Record<TaskStatus, string> = {
@@ -63,7 +63,7 @@ export function statusActionLabel(status: TaskStatus): string {
 
 /** Tailwind classes for a status badge. */
 export function statusBadgeClass(status: string): string {
-  return STATUS_BADGE_CLASS[status] ?? "text-surface-mid bg-surface-mid/10 border-surface-border";
+  return STATUS_BADGE_CLASS[status] ?? "text-surface-mid bg-surface-mid/10";
 }
 
 /** Tailwind classes for a status action in a dropdown menu. */

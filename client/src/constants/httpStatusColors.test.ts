@@ -15,10 +15,12 @@ describe("httpStatusColors", () => {
     expect(httpStatusClass(200)).toContain("status-success");
     expect(httpStatusClass(404)).toContain("status-error");
     expect(httpStatusClass(503)).toContain("status-critical");
+    expect(httpStatusClass(200)).not.toMatch(/border-/);
   });
 
   it("uses idle fill/3 with matching accent text and selected with bg+border", () => {
     const idle = actionFamilyClass("2xx", false);
+    expect(idle).toContain("min-w-28");
     expect(idle).toContain("font-medium");
     expect(idle).toContain("leading-none");
     expect(idle).toContain("border-transparent");

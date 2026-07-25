@@ -24,11 +24,11 @@
   /* Product action families — pale, statuscode-aligned (1xx–5xx) */
   --color-accent-blue: #8ec4e0;
   --color-status-success: #7bc49a;
-  --color-status-cyan: #7eb8b0;
+  --color-status-cyan: #d4ce94;
   --color-status-error: #e88a8a;
   --color-status-critical: #d98aad;
-  /* Warning collapses into 3xx cyan */
-  --color-status-warning: #7eb8b0;
+  /* Warning collapses into 3xx pale yellow */
+  --color-status-warning: #d4ce94;
   /* Surfaces */
   --color-surface-light: #f5f2ec;
   --color-surface-sage: #d5dcd3;
@@ -42,7 +42,7 @@
   --color-accent-golden: #d4ce94;
   /* Legacy aliases → families (prefer status-* / accent-blue in new code) */
   --color-accent-red: #e88a8a;
-  --color-accent-amber: #7eb8b0;
+  --color-accent-amber: #d4ce94;
   --radius-interactive: 0.5rem;
   --spacing-grid-gap: 0.5rem;
 }

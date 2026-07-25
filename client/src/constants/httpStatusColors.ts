@@ -2,11 +2,11 @@
 export type HttpStatusFamily = "1xx" | "2xx" | "3xx" | "4xx" | "5xx";
 
 const FAMILY_BADGE: Record<HttpStatusFamily, string> = {
-  "1xx": "text-accent-blue bg-accent-blue/15 border-accent-blue/30",
-  "2xx": "text-status-success bg-status-success/15 border-status-success/30",
-  "3xx": "text-status-cyan bg-status-cyan/15 border-status-cyan/30",
-  "4xx": "text-status-error bg-status-error/15 border-status-error/30",
-  "5xx": "text-status-critical bg-status-critical/15 border-status-critical/30",
+  "1xx": "text-accent-blue bg-accent-blue/15",
+  "2xx": "text-status-success bg-status-success/15",
+  "3xx": "text-status-cyan bg-status-cyan/15",
+  "4xx": "text-status-error bg-status-error/15",
+  "5xx": "text-status-critical bg-status-critical/15",
 };
 
 /** Option C: idle fill/3 + matching accent text. Hover/selected: pale /15 bg + matching border. */
@@ -48,7 +48,7 @@ export function httpStatusClass(code: number): string {
 
 /** Shared shape for toolbar/tab action pills. */
 export const ACTION_PILL_BASE =
-  "inline-flex h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50";
+  "inline-flex h-11 min-w-28 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50";
 
 /**
  * Classes for an action pill in a given HTTP-family color.
