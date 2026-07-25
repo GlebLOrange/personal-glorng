@@ -9,7 +9,6 @@ import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import ToolIcon from "@/components/icons/ToolIcon.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { actionFamilyClass } from "@/constants/httpStatusColors";
 import {
   statusActionLabel,
   statusBadgeClass,
@@ -36,18 +35,6 @@ const emit = defineEmits<{
 
 const technicalOpen = ref(false);
 
-const technicalSummaryClass = computed(() =>
-  [
-    actionFamilyClass("1xx", technicalOpen.value),
-    "w-max cursor-pointer list-none select-none !px-2 [&::-webkit-details-marker]:hidden",
-    "!border-transparent hover:!border-transparent focus-visible:!border-transparent",
-    // summary ignores :enabled — mirror 1xx hover like BackLink / dropdown triggers
-    technicalOpen.value ? undefined : "hover:text-accent-blue hover:bg-accent-blue/15",
-  ]
-    .filter(Boolean)
-    .join(" "),
-);
-
 const availableStatuses = computed(() =>
   props.task
     ? TASK_STATUSES.filter((status) => status !== props.task!.status)
@@ -71,11 +58,6 @@ const menuStatuses = computed(() =>
 const recentStatusHistory = computed(() =>
   (props.task?.status_history ?? []).slice(-4),
 );
-
-function onTechnicalToggle(event: Event): void {
-  const details = event.currentTarget;
-  technicalOpen.value = details instanceof HTMLDetailsElement ? details.open : false;
-}
 
 watch(
   () => props.open,
@@ -216,16 +198,25 @@ watch(
         </BaseButton>
       </section>
 
-      <details
-        v-if="canMutate"
-        class="border-t border-surface-border pt-4 text-sm text-surface-mid"
-        @toggle="onTechnicalToggle"
-      >
-        <summary :class="technicalSummaryClass">
+      <section v-if="canMutate" class="space-y-2 border-t border-surface-border pt-4">
+        <BaseButton
+          variant="ghost"
+          quiet
+          size="sm"
+          class="gap-1.5"
+          :selected="technicalOpen"
+          :aria-expanded="technicalOpen"
+          aria-controls="task-technical-details"
+          @click="technicalOpen = !technicalOpen"
+        >
           technical details
           <ChevronIcon :open="technicalOpen" />
-        </summary>
-        <dl class="mt-2 space-y-1 text-xs">
+        </BaseButton>
+        <dl
+          v-if="technicalOpen"
+          id="task-technical-details"
+          class="space-y-1 text-xs text-surface-mid"
+        >
           <div v-if="task.google_event_id">
             <dt class="inline font-medium">event id:</dt>
             <dd class="ml-1 inline break-all">{{ task.google_event_id }}</dd>
@@ -239,7 +230,7 @@ watch(
             <dd class="ml-1 inline">{{ formatDate(task.updated_at) }}</dd>
           </div>
         </dl>
-      </details>
+      </section>
     </div>
 
     <template v-if="canMutate && task" #footer>
