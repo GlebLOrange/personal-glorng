@@ -42,6 +42,25 @@ describe("BaseTextarea", () => {
     expect(wrapper.get("textarea").attributes("aria-label")).toBeUndefined();
     expect(wrapper.get("textarea").attributes("aria-describedby")).toBeUndefined();
     expect(wrapper.get("#notes-tip").text()).toBe("optional tips");
+    expect(wrapper.get("#notes-tip").classes()).toContain("text-right");
     expect(wrapper.get("#notes-tip").attributes("aria-hidden")).toBe("true");
+  });
+
+  it("hides the tip and shows Clear when typing", async () => {
+    const wrapper = mount(BaseTextarea, {
+      props: {
+        id: "notes",
+        label: "Notes",
+        placeholder: "optional tips",
+        modelValue: "",
+        "onUpdate:modelValue": (value: string | undefined) =>
+          wrapper.setProps({ modelValue: value }),
+      },
+    });
+
+    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
+    await wrapper.setProps({ modelValue: "hello" });
+    expect(wrapper.find("#notes-tip").exists()).toBe(false);
+    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(true);
   });
 });

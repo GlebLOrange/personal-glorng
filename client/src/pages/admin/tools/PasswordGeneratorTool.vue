@@ -72,7 +72,12 @@ async function generatePassword(): Promise<void> {
   >
     <Card>
       <form class="space-y-4" @submit.prevent="generatePassword">
-        <BaseInput v-model.number="length" type="number" placeholder="length (8–128)" />
+        <BaseInput
+          v-model.number="length"
+          type="number"
+          label="length"
+          placeholder="8–128"
+        />
 
         <fieldset class="space-y-2">
           <legend class="text-sm text-surface-mid mb-1">character sets</legend>
@@ -109,14 +114,15 @@ async function generatePassword(): Promise<void> {
       </form>
 
       <div v-if="generated" class="mt-6 space-y-3">
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-end gap-2">
           <BaseInput
             :model-value="displayPassword"
             readonly
-            placeholder="password"
+            label="password"
+            placeholder="generated password"
             class="flex-1 min-w-[12rem] font-data"
           />
-          <BaseButton variant="ghost" @click="showPassword = !showPassword">
+          <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
             {{ showPassword ? "hide" : "show" }}
           </BaseButton>
           <!-- ponytail: match h-11 field row; IconActionButton default is h-8 -->

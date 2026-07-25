@@ -36,8 +36,8 @@ describe("EmailTool", () => {
     });
 
     const wrapper = mount(EmailTool);
-    await wrapper.find('input[aria-label="subject"]').setValue("Subject");
-    await wrapper.find('textarea[aria-label="body (write your message...)"]').setValue("Body text");
+    await wrapper.get("#email-subject").setValue("Subject");
+    await wrapper.get("#email-body").setValue("Body text");
 
     const previewBtn = wrapper.findAll("button").find((b) => b.text().trim() === "preview");
     expect(previewBtn).toBeDefined();

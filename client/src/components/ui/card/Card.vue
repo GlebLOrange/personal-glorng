@@ -20,6 +20,13 @@ const props = withDefaults(
 
 const attrs = useAttrs();
 
+const isNativeInteractive = computed(() => props.as === "button" || props.as === "a");
+
+/** Non-native interactive cards need role/tabindex so focus rings activate. */
+const needsKeyboardSemantics = computed(
+  () => Boolean(props.interactive) && !isNativeInteractive.value,
+);
+
 const rootClass = computed(() => [
   "border rounded-lg",
   props.variant === "default" && "p-6 bg-surface-card border-surface-border",
@@ -34,10 +41,33 @@ const rootClass = computed(() => [
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 transition-colors duration-200",
   attrs.class,
 ]);
+
+const rootAttrs = computed(() => {
+  const { class: _class, ...rest } = attrs as Record<string, unknown>;
+  void _class;
+  if (!needsKeyboardSemantics.value) {
+    if (props.as === "button" && rest.type == null) {
+      return { ...rest, type: "button" };
+    }
+    return rest;
+  }
+  return {
+    ...rest,
+    role: typeof rest.role === "string" ? rest.role : "button",
+    tabindex: rest.tabindex != null ? rest.tabindex : 0,
+  };
+});
+
+function onKeydown(event: KeyboardEvent): void {
+  if (!needsKeyboardSemantics.value) return;
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  (event.currentTarget as HTMLElement).click();
+}
 </script>
 
 <template>
-  <component :is="as" v-bind="{ ...attrs, class: undefined }" :class="rootClass">
+  <component :is="as" v-bind="rootAttrs" :class="rootClass" @keydown="onKeydown">
     <slot />
   </component>
 </template>

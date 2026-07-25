@@ -76,7 +76,7 @@ const emit = defineEmits<{
         <div>
           <h2 class="text-lg font-semibold text-surface-light">Import batch</h2>
           <p class="text-sm text-surface-mid">{{ importSummary }}</p>
-          <p v-if="importResult.error_count > 0" class="font-data text-xs text-status-yellow">
+          <p v-if="importResult.error_count > 0" class="font-data text-xs text-status-warning">
             {{ importResult.error_count }} row(s) failed parsing and were stored with errors.
           </p>
           <p v-if="selectedBatch?.promoted_count" class="mt-1 text-xs text-status-success">

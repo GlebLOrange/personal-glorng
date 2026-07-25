@@ -96,7 +96,8 @@ function openPreferences() {
       <p class="text-surface-sage leading-relaxed">
         You can change your cookie preferences at any time by opening the
         <button
-          class="text-accent-blue underline underline-offset-2 hover:text-accent-violet transition-colors"
+          type="button"
+          class="text-accent-blue underline underline-offset-2 hover:text-accent-violet focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded transition-colors"
           @click="openPreferences"
         >
           cookie settings</button
@@ -121,7 +122,7 @@ function openPreferences() {
           <a
             href="https://policies.google.com/privacy"
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             class="text-accent-blue hover:text-accent-violet transition-colors"
             >Firebase Analytics</a
           >
@@ -131,7 +132,7 @@ function openPreferences() {
           <a
             href="https://sentry.io/privacy/"
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             class="text-accent-blue hover:text-accent-violet transition-colors"
             >Sentry</a
           >
@@ -150,7 +151,7 @@ function openPreferences() {
           <a
             :href="link.href"
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             class="text-accent-blue hover:text-accent-violet transition-colors"
             >{{ link.label }}</a
           >

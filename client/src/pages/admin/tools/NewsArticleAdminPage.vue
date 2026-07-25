@@ -275,7 +275,7 @@ watch(articleId, () => {
 
     <div class="min-w-0">
       <Card v-if="!Number.isInteger(articleId) || articleId <= 0" role="alert">
-        <p class="text-sm text-status-yellow">Invalid news article id.</p>
+        <p class="text-sm text-status-warning">Invalid news article id.</p>
       </Card>
 
       <Card
@@ -287,7 +287,7 @@ watch(articleId, () => {
 
       <Card v-else-if="detailError" role="alert">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-sm text-status-yellow">{{ detailError }}</p>
+          <p class="text-sm text-status-warning">{{ detailError }}</p>
           <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">retry</BaseButton>
         </div>
       </Card>

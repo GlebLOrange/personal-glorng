@@ -81,7 +81,7 @@ function onRowKeydown(event: KeyboardEvent): void {
           </span>
           <span
             v-if="cookLabel"
-            class="inline-flex items-center gap-0.5 rounded-full border border-status-yellow/30 bg-status-yellow/15 px-1.5 py-0.5 text-[10px] text-status-yellow"
+            class="inline-flex items-center gap-0.5 rounded-full border border-status-warning/30 bg-status-warning/15 px-1.5 py-0.5 text-[10px] text-status-warning"
           >
             <ClockIcon class-name="size-3 shrink-0" />
             cook {{ cookLabel }}

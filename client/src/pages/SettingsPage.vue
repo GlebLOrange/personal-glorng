@@ -204,13 +204,13 @@ async function deleteAccount(): Promise<void> {
               v-model="displayName"
               name="display-name"
               autocomplete="name"
-              placeholder="display name"
+              label="display name"
             />
             <BaseInput
               v-model="timezone"
               name="timezone"
               autocomplete="off"
-              placeholder="timezone"
+              label="timezone"
               required
             />
             <BaseButton
@@ -236,6 +236,7 @@ async function deleteAccount(): Promise<void> {
               type="email"
               name="email"
               autocomplete="email"
+              label="email address"
               placeholder="you@example.com"
               required
             />
@@ -244,7 +245,8 @@ async function deleteAccount(): Promise<void> {
               type="password"
               name="current-password-for-email"
               autocomplete="current-password"
-              placeholder="current password"
+              label="current password"
+              placeholder="••••••••"
               required
             />
             <BaseButton
@@ -266,7 +268,10 @@ async function deleteAccount(): Promise<void> {
           </CardHeader>
           <form class="space-y-4" @submit.prevent="savePassword">
             <div class="flex justify-end">
-              <RouterLink to="/forgot-password" class="text-sm text-accent-blue hover:underline">
+              <RouterLink
+                to="/forgot-password"
+                class="text-sm text-accent-blue hover:underline focus:underline"
+              >
                 forgot password?
               </RouterLink>
             </div>
@@ -275,7 +280,8 @@ async function deleteAccount(): Promise<void> {
               type="password"
               name="current-password"
               autocomplete="current-password"
-              placeholder="current password"
+              label="current password"
+              placeholder="••••••••"
               required
             />
             <BaseInput
@@ -283,7 +289,8 @@ async function deleteAccount(): Promise<void> {
               type="password"
               name="new-password"
               autocomplete="new-password"
-              placeholder="new password"
+              label="new password"
+              placeholder="••••••••"
               :error="newPassword && !passwordCheck.valid ? passwordCheck.message : undefined"
               required
             />
@@ -292,7 +299,8 @@ async function deleteAccount(): Promise<void> {
               type="password"
               name="confirm-new-password"
               autocomplete="new-password"
-              placeholder="confirm new password"
+              label="confirm new password"
+              placeholder="••••••••"
               :error="newPasswordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
               required
             />
@@ -314,7 +322,7 @@ async function deleteAccount(): Promise<void> {
             <CardTitle>preferences</CardTitle>
           </CardHeader>
           <form class="space-y-4" @submit.prevent="saveCurrency">
-            <BaseSelect v-model="displayCurrency" aria-label="display currency">
+            <BaseSelect v-model="displayCurrency" label="display currency">
               <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
                 {{ code }}
               </option>
@@ -337,7 +345,7 @@ async function deleteAccount(): Promise<void> {
             <CardTitle>github</CardTitle>
           </CardHeader>
           <div class="space-y-4">
-            <p v-if="githubError" class="text-sm text-status-yellow">{{ githubError }}</p>
+            <p v-if="githubError" class="text-sm text-status-warning">{{ githubError }}</p>
             <div class="flex flex-wrap items-center gap-3">
               <BaseButton
                 v-if="!githubStatus.linked"
