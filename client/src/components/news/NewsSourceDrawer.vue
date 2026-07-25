@@ -4,6 +4,8 @@ import { computed } from "vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 
 interface NewsSourceForm {
   name: string;
@@ -81,12 +83,29 @@ function toStringValue(value: string | number | null | undefined): string {
     </form>
 
     <template #footer>
-      <div class="flex justify-end gap-3">
-        <BaseButton type="button" variant="ghost" danger @click="emit('close')">cancel</BaseButton>
-        <BaseButton type="submit" form="news-source-form" variant="success" :disabled="loading">
-          {{ loading ? "saving..." : "save" }}
-        </BaseButton>
-      </div>
+      <DrawerFooterActions>
+        <template #dismiss>
+          <BaseButton
+            type="button"
+            variant="ghost"
+            danger
+            class="hover:enabled:border-transparent focus-visible:border-transparent"
+            @click="emit('close')"
+          >
+            cancel
+          </BaseButton>
+        </template>
+        <template #primary>
+          <ToolbarPillButton
+            type="submit"
+            form="news-source-form"
+            family="2xx"
+            :disabled="loading"
+          >
+            {{ loading ? "saving..." : "save" }}
+          </ToolbarPillButton>
+        </template>
+      </DrawerFooterActions>
     </template>
   </BaseDrawer>
 </template>

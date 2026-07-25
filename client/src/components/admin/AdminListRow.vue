@@ -11,6 +11,8 @@ const props = withDefaults(
     expandable?: boolean;
     /** Set when row contains nested buttons/checkboxes (avoids invalid button nesting). */
     nestedInteractive?: boolean;
+    /** Hide row actions until hover or focus-within (keyboard accessible). */
+    revealActionsOnHover?: boolean;
   }>(),
   {
     interactive: false,
@@ -18,6 +20,7 @@ const props = withDefaults(
     hoverable: true,
     expandable: false,
     nestedInteractive: false,
+    revealActionsOnHover: false,
   },
 );
 
@@ -55,7 +58,10 @@ function onKeydown(event: KeyboardEvent): void {
     :interactive="focusable"
     :aria-expanded="expandable ? expanded : undefined"
     v-bind="rowAttrs"
-    :class="interactive ? 'cursor-pointer' : undefined"
+    :class="[
+      interactive ? 'cursor-pointer' : undefined,
+      revealActionsOnHover ? 'group' : undefined,
+    ]"
     class="w-full min-w-0 text-left"
     @click="onClick"
     @keydown="onKeydown"
@@ -84,6 +90,11 @@ function onKeydown(event: KeyboardEvent): void {
       <div
         v-if="$slots.actions"
         class="flex shrink-0 items-center gap-1"
+        :class="
+          revealActionsOnHover
+            ? 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100'
+            : undefined
+        "
         @click.stop
         @keydown.stop
       >

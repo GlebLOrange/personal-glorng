@@ -1,3 +1,6 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
@@ -33,8 +36,8 @@ describe("EmailTool", () => {
     });
 
     const wrapper = mount(EmailTool);
-    await wrapper.find('input[placeholder="subject"]').setValue("Subject");
-    await wrapper.find("textarea").setValue("Body text");
+    await wrapper.find('input[aria-label="subject"]').setValue("Subject");
+    await wrapper.find('textarea[aria-label="body (write your message...)"]').setValue("Body text");
 
     const previewBtn = wrapper.findAll("button").find((b) => b.text().trim() === "preview");
     expect(previewBtn).toBeDefined();

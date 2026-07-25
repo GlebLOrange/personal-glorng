@@ -4,6 +4,8 @@ import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
+import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { EXPENSE_CURRENCIES, type CurrencyCode } from "@/composables/useExpenseFilters";
 
 defineProps<{
@@ -63,17 +65,29 @@ const emit = defineEmits<{ submit: []; close: [] }>();
     </form>
 
     <template #footer>
-      <div class="flex justify-end gap-3">
-        <BaseButton variant="ghost" danger type="button" @click="emit('close')">cancel</BaseButton>
-        <BaseButton
-          type="submit"
-          form="expense-form-drawer"
-          variant="success"
-          :disabled="loading"
-        >
-          {{ loading ? "saving..." : "save" }}
-        </BaseButton>
-      </div>
+      <DrawerFooterActions>
+        <template #dismiss>
+          <BaseButton
+            variant="ghost"
+            danger
+            type="button"
+            class="hover:enabled:border-transparent focus-visible:border-transparent"
+            @click="emit('close')"
+          >
+            cancel
+          </BaseButton>
+        </template>
+        <template #primary>
+          <ToolbarPillButton
+            type="submit"
+            form="expense-form-drawer"
+            family="2xx"
+            :disabled="loading"
+          >
+            {{ loading ? "saving..." : "save" }}
+          </ToolbarPillButton>
+        </template>
+      </DrawerFooterActions>
     </template>
   </BaseDrawer>
 </template>

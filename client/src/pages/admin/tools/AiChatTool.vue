@@ -5,6 +5,7 @@ import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import { TEXTAREA_CLASS } from "@/constants/formClasses";
 import { useChatConfig } from "@/composables/useChatConfig";
@@ -100,7 +101,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout title="ai chat">
+  <AdminPageLayout hub="tools" title="ai chat" back-to="/tools">
     <AdminTabBar v-model="activeTab" :tabs="[...AI_CHAT_TABS]" />
 
     <Card v-if="activeTab === 'chat'" class="flex flex-col h-[65vh]">
@@ -143,24 +144,21 @@ onMounted(() => {
           @keydown.enter.exact.prevent="handleSend"
         />
         <div class="flex flex-col gap-2">
-          <BaseButton
-            type="submit"
-            variant="success"
-            size="field"
-            :disabled="loading || !input.trim() || !isReady || !canSend"
-          >
-            {{ loading ? "..." : "send" }}
-          </BaseButton>
-          <BaseButton
-            variant="ghost"
-            danger
-            size="sm"
+          <ToolbarPillButton
+            family="4xx"
             type="button"
             :disabled="loading"
             @click="clear"
           >
             clear
-          </BaseButton>
+          </ToolbarPillButton>
+          <ToolbarPillButton
+            family="2xx"
+            type="submit"
+            :disabled="loading || !input.trim() || !isReady || !canSend"
+          >
+            {{ loading ? "..." : "send" }}
+          </ToolbarPillButton>
         </div>
       </form>
     </Card>

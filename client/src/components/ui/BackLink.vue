@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     to: RouteLocationRaw;
     size?: "default" | "compact";
@@ -24,16 +25,25 @@ function backAriaLabel(to: RouteLocationRaw, label?: string): string {
   const path = typeof to === "string" ? to : (to.path ?? "");
   return backLabels[path] ?? "Back";
 }
+
+const sizeClass = computed(() =>
+  props.size === "compact"
+    ? "min-h-9 min-w-9 h-9 w-9"
+    : "min-h-11 min-w-11 h-11 w-11",
+);
+
+const iconClass = computed(() => (props.size === "compact" ? "h-4 w-4" : "h-5 w-5"));
 </script>
 
 <template>
   <RouterLink
     :to="to"
     :aria-label="backAriaLabel(to, label)"
-    class="inline-flex min-h-11 min-w-11 h-11 w-11 items-center justify-center rounded-lg border border-surface-border bg-surface-card text-surface-light transition-all duration-200 hover:border-accent-blue active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+    class="inline-flex items-center justify-center rounded-lg border border-surface-border bg-surface-card text-surface-light transition-all duration-200 hover:border-accent-blue active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+    :class="sizeClass"
   >
     <svg
-      class="h-5 w-5"
+      :class="iconClass"
       viewBox="0 0 40 40"
       fill="none"
       stroke="currentColor"

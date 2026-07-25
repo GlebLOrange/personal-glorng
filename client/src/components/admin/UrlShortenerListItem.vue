@@ -107,6 +107,7 @@ function confirmDelete(): void {
     :interactive="canWrite"
     :nested-interactive="canWrite"
     hoverable
+    reveal-actions-on-hover
     @click="startEdit"
   >
     <template #primary>
@@ -130,7 +131,7 @@ function confirmDelete(): void {
         variant="ghost"
         quiet
         size="sm"
-        class="hover:enabled:!text-accent-blue focus-visible:!text-accent-blue"
+        class="!text-accent-blue hover:enabled:!bg-accent-blue/15 hover:enabled:!border-accent-blue/40 focus-visible:!text-accent-blue"
         aria-label="edit title"
         @click="startEdit"
       >

@@ -1,21 +1,17 @@
 <script setup lang="ts">
 import { onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
+import NewsTabs from "@/components/news/NewsTabs.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import ListSkeleton from "@/components/ui/ListSkeleton.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
-import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
-const router = useRouter();
-const { can } = usePermissions();
 const {
   articles,
   page,
@@ -43,25 +39,7 @@ watch(page, () => {
 
 <template>
   <PageShell title="news" :breadcrumbs="[{ label: 'news', to: '/news' }]" back-to="/" :narrow="false">
-    <div
-      v-if="can('news', 'read') || can('news-sources', 'read')"
-      class="mb-4 flex min-w-0 flex-wrap items-center justify-end gap-2"
-    >
-      <BaseButton
-        v-if="can('news-sources', 'read')"
-        variant="ghost"
-        @click="router.push('/news/sources')"
-      >
-        sources
-      </BaseButton>
-      <BaseButton
-        v-if="can('news', 'read')"
-        variant="primary"
-        @click="router.push({ name: 'news', query: { manage: '1' } })"
-      >
-        manage news
-      </BaseButton>
-    </div>
+    <NewsTabs />
 
     <ListSkeleton
       v-if="listLoading"

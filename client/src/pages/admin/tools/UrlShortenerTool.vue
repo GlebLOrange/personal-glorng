@@ -7,6 +7,7 @@ import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
@@ -124,22 +125,17 @@ onMounted(loadUrls);
     :narrow="false"
   >
     <form class="mb-10 space-y-3" @submit.prevent="createUrl">
-      <div class="flex flex-wrap items-center gap-3">
-        <BaseInput
-          v-model="newUrl"
-          class="min-w-0 flex-1"
-          placeholder="url (https://example.com/very-long-url...)"
-          aria-label="url (https://example.com/very-long-url...)"
-        />
-        <BaseButton
-          variant="primary"
-          type="submit"
-          class="ml-auto"
-          :disabled="loading"
-        >
+      <div class="mb-3 flex w-full min-w-0 items-center justify-end">
+        <ToolbarPillButton family="2xx" type="submit" :disabled="loading">
           {{ loading ? "creating..." : "shorten" }}
-        </BaseButton>
+        </ToolbarPillButton>
       </div>
+      <BaseInput
+        v-model="newUrl"
+        class="min-w-0 w-full"
+        placeholder="url (https://example.com/very-long-url...)"
+        aria-label="url (https://example.com/very-long-url...)"
+      />
       <BaseInput
         v-model="newTitle"
         placeholder="title (optional)"

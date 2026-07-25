@@ -40,7 +40,8 @@ const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
 const items = ref<FeedbackItem[]>([]);
 const selectedItem = ref<FeedbackItem | null>(null);
 const drawerOpen = ref(false);
-const filter = ref<StatusFilter>("unread");
+/** null = show all statuses (default). */
+const filter = ref<StatusFilter | null>(null);
 const page = ref(1);
 const total = ref(0);
 const totalPages = ref(0);
@@ -49,7 +50,7 @@ const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown"
 const { toast } = useNotify();
 const router = useRouter();
 
-const hasActiveFilters = computed(() => filter.value !== "unread");
+const hasActiveFilters = computed(() => filter.value !== null);
 const activeFilterLabel = computed(
   () => STATUS_FILTERS.find((chip) => chip.value === filter.value)?.label,
 );
@@ -76,7 +77,7 @@ async function load(): Promise<void> {
       params: {
         page: page.value,
         per_page: ADMIN_LIST_PAGE_SIZE,
-        status: filter.value,
+        ...(filter.value ? { status: filter.value } : {}),
       },
     });
     items.value = data.items;
@@ -97,7 +98,7 @@ function setFilter(next: StatusFilter): void {
 }
 
 function clearFilters(): void {
-  filter.value = "unread";
+  filter.value = null;
   page.value = 1;
   filterDropdownRef.value?.close();
 }
@@ -116,7 +117,7 @@ async function setStatus(id: number, status: string): Promise<void> {
     if (selectedItem.value?.id === id) {
       selectedItem.value = { ...selectedItem.value, status };
     }
-    if (status !== filter.value) {
+    if (filter.value !== null && status !== filter.value) {
       removeFromList(id);
     }
   } catch (err) {
@@ -189,7 +190,11 @@ onMounted(load);
       <EmptyState
         v-if="items.length === 0"
         class="mt-4"
-        :description="`No feedback messages with status '${filter}'.`"
+        :description="
+          filter
+            ? `No feedback messages with status '${filter}'.`
+            : 'No feedback messages.'
+        "
       />
 
       <div v-else class="min-w-0 mt-1 space-y-1">
@@ -214,8 +219,8 @@ onMounted(load);
             <BaseButton
               v-if="item.status === 'archived'"
               variant="ghost"
-              quiet
               size="sm"
+              class="!border-transparent !bg-transparent text-surface-light/60 hover:enabled:!border-transparent hover:enabled:!bg-accent-golden/10 hover:enabled:!text-accent-golden focus-visible:!border-transparent focus-visible:!bg-accent-golden/10 focus-visible:!text-accent-golden"
               @click="unarchiveItem(item)"
             >
               unarchive
@@ -223,8 +228,8 @@ onMounted(load);
             <BaseButton
               v-else
               variant="ghost"
-              quiet
               size="sm"
+              class="!border-transparent !bg-transparent text-surface-light/60 hover:enabled:!border-transparent hover:enabled:!bg-accent-golden/10 hover:enabled:!text-accent-golden focus-visible:!border-transparent focus-visible:!bg-accent-golden/10 focus-visible:!text-accent-golden"
               @click="archiveItem(item)"
             >
               archive

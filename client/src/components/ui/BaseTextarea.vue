@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, useAttrs, useId } from "vue";
 
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import { TEXTAREA_CLASS } from "@/constants/formClasses";
 
 defineOptions({ inheritAttrs: false });
@@ -25,14 +26,18 @@ const textareaId = computed(() => props.id ?? `base-textarea-${fallbackId}`);
 const hintId = computed(() => `${textareaId.value}-hint`);
 const errorId = computed(() => `${textareaId.value}-error`);
 const tipId = computed(() => `${textareaId.value}-tip`);
+const hasClearableValue = computed(() => Boolean(model.value?.length));
+const useShell = computed(() => Boolean(props.prefix || props.placeholder));
+const showClear = computed(() => useShell.value && hasClearableValue.value);
+const showTip = computed(() => Boolean(props.placeholder));
+const tipInsetClass = computed(() => (showClear.value ? "right-11" : "right-3"));
 const describedBy = computed(() => {
   const ids: string[] = [];
   if (props.error) ids.push(errorId.value);
   else if (props.hint) ids.push(hintId.value);
-  if (props.placeholder) ids.push(tipId.value);
+  if (showTip.value) ids.push(tipId.value);
   return ids.length ? ids.join(" ") : undefined;
 });
-const useShell = computed(() => Boolean(props.prefix || props.placeholder));
 const bareClass = computed(() => [TEXTAREA_CLASS, props.error && "border-status-error"]);
 const shellClass = computed(() => [
   "relative flex w-full items-start rounded-lg border bg-surface-dark transition-colors",
@@ -53,8 +58,13 @@ const accessibleName = computed(() => {
   if (typeof attrs["aria-label"] === "string" && attrs["aria-label"].trim()) {
     return attrs["aria-label"];
   }
-  return props.label || props.prefix || props.placeholder || undefined;
+  // Shell tip is the help text — prefer it over the field label for SR naming.
+  return props.placeholder || props.label || props.prefix || undefined;
 });
+
+function clear(): void {
+  model.value = "";
+}
 </script>
 
 <template>
@@ -81,13 +91,17 @@ const accessibleName = computed(() => {
         :class="shellTextareaClass"
       />
       <span
-        v-if="placeholder"
+        v-if="showTip"
         :id="tipId"
-        class="pointer-events-none absolute right-3 top-2.5 z-0 text-right text-xs text-surface-mid/40"
+        class="pointer-events-none absolute top-2.5 z-0 text-right text-xs text-surface-mid/40"
+        :class="tipInsetClass"
         aria-hidden="true"
       >
         {{ placeholder }}
       </span>
+      <div v-if="showClear" class="absolute right-1 top-1 z-10">
+        <IconCloseButton aria-label="Clear" @click="clear" />
+      </div>
     </div>
 
     <textarea

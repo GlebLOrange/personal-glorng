@@ -1,17 +1,25 @@
-/** Normalized breadcrumb label from a page title (slug separators become spaces). */
+/** Normalized breadcrumb label from a page title (spaces/underscores become spaces). */
 export function formatBreadcrumbLabel(title: string): string {
-  const parts = title
-    .trim()
-    .replace(/^§+\s*/, "")
-    .toLowerCase()
-    .split(/[\s/_-]+/)
-    .filter(Boolean);
-  return parts.join(" ") || title.trim().toLowerCase();
+  const cleaned = title.trim().replace(/^§+\s*/, "").toLowerCase();
+  // Path-shaped crumbs keep `/` (e.g. news/my-slug → § news/my-slug).
+  if (cleaned.includes("/")) return cleaned;
+  // Keep kebab-case slugs intact (news article crumbs).
+  if (!/[\s_]/.test(cleaned) && cleaned.includes("-")) return cleaned;
+  const parts = cleaned.split(/[\s_]+/).filter(Boolean);
+  return parts.join(" ") || cleaned;
 }
 
 /** Visible breadcrumb text: § as the first character of the page name. */
 export function displayBreadcrumbLabel(title: string): string {
   return `§ ${formatBreadcrumbLabel(title)}`;
+}
+
+/** Truncate a URL slug for breadcrumb chrome (default 14 characters). */
+export function truncateBreadcrumbSlug(slug: string, maxLen = 14): string {
+  const cleaned = slug.trim().toLowerCase();
+  if (!cleaned) return cleaned;
+  if (cleaned.length <= maxLen) return cleaned;
+  return `${cleaned.slice(0, maxLen)}…`;
 }
 
 /** First word of a title for compact breadcrumbs; appends "..." when truncated. */

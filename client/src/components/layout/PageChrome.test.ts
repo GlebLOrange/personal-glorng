@@ -5,18 +5,18 @@ import PageChrome from "@/components/layout/PageChrome.vue";
 
 const stubs = {
   BackLink: {
-    props: ["to"],
-    template: '<a :href="typeof to === \'string\' ? to : to.path" data-testid="back">back</a>',
+    props: ["to", "size"],
+    template: '<a :href="typeof to === \'string\' ? to : to.path" data-testid="back" :data-size="size">back</a>',
   },
   PageBreadcrumbs: {
     props: ["segments", "elevated"],
     template:
-      '<nav data-testid="crumbs"><span v-for="(s, i) in segments" :key="i" :data-elevated="elevated ? \'true\' : \'false\'">{{ s.label }}</span></nav>',
+      '<nav data-testid="crumbs"><span v-for="(s, i) in segments" :key="i" :data-elevated="elevated ? \'true\' : \'false\'" :data-to="s.to || \'\'">{{ s.label }}</span></nav>',
   },
 };
 
 describe("PageChrome", () => {
-  it("shows only the last crumb elevated when it matches the title (admin child)", () => {
+  it("shows parent + current crumbs elevated when last matches title (admin child)", () => {
     const wrapper = mount(PageChrome, {
       props: {
         title: "users",
@@ -30,14 +30,17 @@ describe("PageChrome", () => {
     });
 
     const crumbs = wrapper.findAll("[data-testid=crumbs] span");
-    expect(crumbs).toHaveLength(1);
-    expect(crumbs[0].text()).toBe("users");
-    expect(crumbs[0].attributes("data-elevated")).toBe("true");
+    expect(crumbs).toHaveLength(2);
+    expect(crumbs[0].text()).toBe("admin");
+    expect(crumbs[0].attributes("data-to")).toBe("/admin");
+    expect(crumbs[1].text()).toBe("users");
+    expect(crumbs[1].attributes("data-elevated")).toBe("true");
     expect(wrapper.find("h1").exists()).toBe(false);
     expect(wrapper.get("[data-testid=back]").attributes("href")).toBe("/admin");
+    expect(wrapper.get("[data-testid=back]").attributes("data-size")).toBe("compact");
   });
 
-  it("shows only the tool crumb for tools trails", () => {
+  it("shows tools parent + tool crumb for tools trails", () => {
     const wrapper = mount(PageChrome, {
       props: {
         title: "calculator",
@@ -51,8 +54,9 @@ describe("PageChrome", () => {
     });
 
     const crumbs = wrapper.findAll("[data-testid=crumbs] span");
-    expect(crumbs.map((c) => c.text())).toEqual(["calculator"]);
-    expect(crumbs[0].attributes("data-elevated")).toBe("true");
+    expect(crumbs.map((c) => c.text())).toEqual(["tools", "calculator"]);
+    expect(crumbs[0].attributes("data-to")).toBe("/tools");
+    expect(crumbs[1].attributes("data-elevated")).toBe("true");
     expect(wrapper.find("h1").exists()).toBe(false);
   });
 

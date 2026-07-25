@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseInput from "@/components/ui/BaseInput.vue";
+import SearchInput from "@/components/ui/SearchInput.vue";
 
 defineProps<{
   search: string;
@@ -13,9 +13,8 @@ const emit = defineEmits<{
 <template>
   <div class="mb-6 space-y-4">
     <div class="flex flex-wrap items-center gap-3">
-      <BaseInput
+      <SearchInput
         :model-value="search"
-        type="search"
         class="min-w-0 flex-1"
         placeholder="search recipe"
         aria-label="search recipe"

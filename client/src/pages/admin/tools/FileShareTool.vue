@@ -3,9 +3,9 @@ import { computed, onMounted, ref } from "vue";
 
 import ShareableListItem from "@/components/admin/ShareableListItem.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
@@ -108,10 +108,20 @@ onMounted(loadFiles);
 
 <template>
   <AdminPageLayout hub="tools" title="file-share">
-    <div class="mb-10 flex items-stretch gap-3">
+    <div class="mb-10 space-y-3">
+      <div class="mb-3 flex w-full min-w-0 items-center justify-end">
+        <ToolbarPillButton
+          family="2xx"
+          :disabled="uploading || !selectedFile"
+          @click="upload"
+        >
+          {{ uploading ? "uploading..." : "upload & share" }}
+        </ToolbarPillButton>
+      </div>
+
       <div
         :class="[
-          'min-w-0 flex-1 border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
+          'w-full border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
           dragOver
             ? 'border-accent-blue bg-accent-blue/10'
             : 'border-surface-border hover:border-accent-blue',
@@ -127,16 +137,6 @@ onMounted(loadFiles);
         </p>
         <p v-else class="text-surface-mid text-sm">drop a file here or click to browse</p>
       </div>
-
-      <BaseButton
-        variant="primary"
-        size="sm"
-        class="!h-auto self-stretch"
-        :disabled="uploading || !selectedFile"
-        @click="upload"
-      >
-        {{ uploading ? "uploading..." : "upload & share" }}
-      </BaseButton>
     </div>
 
     <div class="space-y-3">

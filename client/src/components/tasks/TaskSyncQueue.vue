@@ -81,7 +81,9 @@ function syncMeta(item: SyncQueueItem): string {
         <BaseButton
           v-if="canMutate && item.status === 'failed'"
           variant="ghost"
+          quiet
           size="sm"
+          class="hover:enabled:!border-accent-blue/40 hover:enabled:!bg-accent-blue/10 hover:enabled:!text-accent-blue focus-visible:!border-accent-blue/40 focus-visible:!text-accent-blue"
           aria-label="retry sync"
           @click="emit('retry', item.task_id)"
         >

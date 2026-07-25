@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ScrollArrowIcon from "@/components/icons/ScrollArrowIcon.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { useNextSectionScroll } from "@/composables/useNextSectionScroll";
 import { useScrollProgress } from "@/composables/useScrollProgress";
 
@@ -8,23 +9,25 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
 </script>
 
 <template>
-  <button
+  <ToolbarPillButton
     v-if="showToTop"
+    family="1xx"
     type="button"
-    class="interactive-surface fixed top-32 right-4 md:right-6 z-30 flex size-11 items-center justify-center text-surface-light print:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 mr-[env(safe-area-inset-right)]"
+    class="fixed top-32 right-4 z-30 size-11 !px-0 md:right-6 print:hidden mr-[env(safe-area-inset-right)]"
     aria-label="To the top"
     @click="scrollToTop"
   >
     <ScrollArrowIcon direction="up" />
-  </button>
+  </ToolbarPillButton>
 
-  <button
+  <ToolbarPillButton
     v-if="showArrowDown"
+    family="1xx"
     type="button"
-    class="interactive-surface fixed right-6 bottom-6 z-30 flex size-11 items-center justify-center text-surface-light print:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 mb-[env(safe-area-inset-bottom)] mr-[env(safe-area-inset-right)]"
+    class="fixed right-6 bottom-6 z-30 size-11 !px-0 print:hidden mb-[env(safe-area-inset-bottom)] mr-[env(safe-area-inset-right)]"
     aria-label="Scroll to next section"
     @click="scrollToNextSection"
   >
     <ScrollArrowIcon direction="down" />
-  </button>
+  </ToolbarPillButton>
 </template>

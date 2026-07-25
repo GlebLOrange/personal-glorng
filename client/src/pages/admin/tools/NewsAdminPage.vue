@@ -8,10 +8,12 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
+import NewsTabs from "@/components/news/NewsTabs.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import {
   NEWS_SUMMARY_MAX_LENGTH,
@@ -417,58 +419,39 @@ watch(page, () => {
 
 <template>
   <AdminPageLayout hub="tools" title="news" max-width="xl" back-to="/news">
+    <NewsTabs />
     <AdminListToolbar v-if="!listLoading && !listError">
-      <template #start>
-        <div class="flex w-full min-w-0 flex-wrap items-center gap-3">
-          <AdminFilterDropdown
-            ref="filterDropdown"
-            :has-active-filters="hasActiveFilters"
-            :active-label="activeFilterLabel"
-            @clear="clearFilters"
-          >
-            <template #chips>
-              <AdminFilterChip
-                v-for="chip in STATUS_FILTERS"
-                :key="chip.value"
-                :label="chip.label"
-                :active="statusFilter === chip.value"
-                :color-class="newsStatusClass(chip.value)"
-                @click="setStatusFilter(chip.value)"
-              />
-            </template>
-          </AdminFilterDropdown>
-          <div
-            v-if="canWrite || canManageSources"
-            class="ml-auto flex shrink-0 flex-wrap items-center gap-2"
-          >
-            <BaseButton
-              v-if="canManageSources"
-              variant="ghost"
-              size="sm"
-              @click="router.push('/news/sources')"
-            >
-              sources
-            </BaseButton>
-            <BaseButton
-              v-if="canWrite"
-              variant="ghost"
-              size="sm"
-              :disabled="actionLoading"
-              @click="runIngest"
-            >
-              run ingest
-            </BaseButton>
-            <BaseButton
-              v-if="canWrite"
-              variant="primary"
-              size="sm"
-              :disabled="actionLoading"
-              @click="openCreate"
-            >
-              + article
-            </BaseButton>
-          </div>
-        </div>
+      <template #actions>
+        <AdminFilterDropdown
+          ref="filterDropdown"
+          :has-active-filters="hasActiveFilters"
+          :active-label="activeFilterLabel"
+          @clear="clearFilters"
+        >
+          <template #chips>
+            <AdminFilterChip
+              v-for="chip in STATUS_FILTERS"
+              :key="chip.value"
+              :label="chip.label"
+              :active="statusFilter === chip.value"
+              :color-class="newsStatusClass(chip.value)"
+              @click="setStatusFilter(chip.value)"
+            />
+          </template>
+        </AdminFilterDropdown>
+        <template v-if="canManageSources">
+          <ToolbarPillButton family="1xx" @click="router.push('/news/sources')">
+            sources
+          </ToolbarPillButton>
+        </template>
+        <template v-if="canWrite">
+          <ToolbarPillButton family="3xx" :disabled="actionLoading" @click="runIngest">
+            run ingest
+          </ToolbarPillButton>
+          <ToolbarPillButton family="2xx" :disabled="actionLoading" @click="openCreate">
+            + article
+          </ToolbarPillButton>
+        </template>
       </template>
     </AdminListToolbar>
 
