@@ -92,24 +92,24 @@ async function preview(): Promise<void> {
         id="email-to"
         v-model="to"
         type="email"
-        label="to"
-        placeholder="recipient@example.com"
+        placeholder="to"
+        aria-label="to"
         autocomplete="email"
         spellcheck="false"
       />
       <BaseInput
         id="email-subject"
         v-model="subject"
-        label="subject"
-        placeholder="Subject…"
+        placeholder="subject"
+        aria-label="subject"
         autocomplete="off"
       />
       <BaseTextarea
         id="email-body"
         v-model="body"
         :rows="6"
-        label="body"
-        placeholder="Write your message…"
+        placeholder="body"
+        aria-label="body"
         autocomplete="off"
       />
     </form>
