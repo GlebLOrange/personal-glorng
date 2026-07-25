@@ -17,7 +17,7 @@ import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { feedbackStatusClass } from "@/constants/filterColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
-import { useNotify } from "@/composables/useNotify";
+import { useApiAction } from "@/composables/useApiAction";
 import type { PaginatedList } from "@/types";
 import { formatDate } from "@/utils/format";
 
@@ -46,9 +46,9 @@ const filter = ref<StatusFilter | null>(null);
 const page = ref(1);
 const total = ref(0);
 const totalPages = ref(0);
-const loading = ref(false);
+const { loading, run: runLoad } = useApiAction();
+const { run: runStatus } = useApiAction();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
-const { toast } = useNotify();
 const router = useRouter();
 
 const hasActiveFilters = computed(() => filter.value !== null);
@@ -72,23 +72,23 @@ function removeFromList(id: number): void {
 }
 
 async function load(): Promise<void> {
-  loading.value = true;
-  try {
-    const { data } = await api.get<PaginatedList<FeedbackItem>>("/feedback", {
-      params: {
-        page: page.value,
-        per_page: ADMIN_LIST_PAGE_SIZE,
-        ...(filter.value ? { status: filter.value } : {}),
-      },
-    });
+  const data = await runLoad(
+    async () => {
+      const response = await api.get<PaginatedList<FeedbackItem>>("/feedback", {
+        params: {
+          page: page.value,
+          per_page: ADMIN_LIST_PAGE_SIZE,
+          ...(filter.value ? { status: filter.value } : {}),
+        },
+      });
+      return response.data;
+    },
+    { errorMessage: "Failed to load feedback", logContext: "feedback.load" },
+  );
+  if (data) {
     items.value = data.items;
     total.value = data.total;
     totalPages.value = data.pages;
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    toast("Failed to load feedback", "error");
-  } finally {
-    loading.value = false;
   }
 }
 
@@ -111,19 +111,21 @@ function goToPage(nextPage: number): void {
 }
 
 async function setStatus(id: number, status: string): Promise<void> {
-  try {
-    await api.patch(`/feedback/${id}/status`, { status });
-    const item = items.value.find((i) => i.id === id);
-    if (item) item.status = status;
-    if (selectedItem.value?.id === id) {
-      selectedItem.value = { ...selectedItem.value, status };
-    }
-    if (filter.value !== null && status !== filter.value) {
-      removeFromList(id);
-    }
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    toast("Failed to update status", "error");
+  const ok = await runStatus(
+    async () => {
+      await api.patch(`/feedback/${id}/status`, { status });
+      return true;
+    },
+    { errorMessage: "Failed to update status", logContext: "feedback.setStatus" },
+  );
+  if (!ok) return;
+  const item = items.value.find((i) => i.id === id);
+  if (item) item.status = status;
+  if (selectedItem.value?.id === id) {
+    selectedItem.value = { ...selectedItem.value, status };
+  }
+  if (filter.value !== null && status !== filter.value) {
+    removeFromList(id);
   }
 }
 
