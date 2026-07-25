@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
@@ -33,6 +33,8 @@ const emit = defineEmits<{
   updateStatus: [status: TaskStatus];
 }>();
 
+const technicalOpen = ref(false);
+
 const availableStatuses = computed(() =>
   props.task
     ? TASK_STATUSES.filter((status) => status !== props.task!.status)
@@ -52,6 +54,15 @@ const primaryActionStatus = computed((): TaskStatus | null =>
 const menuStatuses = computed(() =>
   availableStatuses.value.filter((status) => status !== primaryActionStatus.value),
 );
+
+const recentStatusHistory = computed(() =>
+  (props.task?.status_history ?? []).slice(-4),
+);
+
+function onTechnicalToggle(event: Event): void {
+  const details = event.currentTarget;
+  technicalOpen.value = details instanceof HTMLDetailsElement ? details.open : false;
+}
 </script>
 
 <template>
@@ -64,7 +75,8 @@ const menuStatuses = computed(() =>
     <template v-if="task" #title>
       <div class="flex min-w-0 flex-col gap-2">
         <StatusBadge
-          size="lg"
+          size="sm"
+          class="inline-flex h-8 items-center"
           :label="statusLabel(task.status)"
           :class-name="statusBadgeClass(task.status)"
         />
@@ -137,10 +149,10 @@ const menuStatuses = computed(() =>
         </ul>
       </section>
 
-      <section v-if="task.status_history.length" class="border-t border-surface-border pt-4">
+      <section v-if="recentStatusHistory.length" class="border-t border-surface-border pt-4">
         <ul class="space-y-2">
           <li
-            v-for="entry in task.status_history"
+            v-for="entry in recentStatusHistory"
             :key="entry.id"
             class="flex flex-wrap items-center gap-2 text-sm"
           >
@@ -148,7 +160,7 @@ const menuStatuses = computed(() =>
               :label="statusLabel(entry.old_status)"
               :class-name="statusBadgeClass(entry.old_status)"
             />
-            <span class="text-surface-mid">&rarr;</span>
+            <ChevronIcon direction="right" class-name="size-3.5 text-surface-mid" />
             <StatusBadge
               :label="statusLabel(entry.new_status)"
               :class-name="statusBadgeClass(entry.new_status)"
@@ -187,9 +199,13 @@ const menuStatuses = computed(() =>
       <details
         v-if="canMutate"
         class="border-t border-surface-border pt-4 text-sm text-surface-mid"
+        @toggle="onTechnicalToggle"
       >
-        <summary class="cursor-pointer select-none hover:text-surface-light">
+        <summary
+          class="flex cursor-pointer list-none select-none items-center gap-1.5 hover:text-surface-light [&::-webkit-details-marker]:hidden"
+        >
           technical details
+          <ChevronIcon :open="technicalOpen" />
         </summary>
         <dl class="mt-2 space-y-1 text-xs">
           <div v-if="task.google_event_id">
@@ -215,10 +231,10 @@ const menuStatuses = computed(() =>
           placement="top"
           aria-label="more actions"
         >
-          <template #trigger>
-            <span class="inline-flex items-center gap-1.5 px-2 text-sm text-surface-mid">
+          <template #trigger="{ open }">
+            <span class="inline-flex items-center gap-1.5 px-2 text-sm">
               more actions
-              <ChevronIcon />
+              <ChevronIcon :open="open" />
             </span>
           </template>
           <template #default="{ close: closeMenu }">
