@@ -15,6 +15,6 @@ values:
   - key: refresh_token
     value: ""
     enabled: true
-  - key: webhook_task_secret
+  - key: webhook_ping_secret
     value: ""
     enabled: true

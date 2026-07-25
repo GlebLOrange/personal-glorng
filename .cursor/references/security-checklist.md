@@ -1,6 +1,6 @@
 # Security Review Checklist
 
-Use during the Security axis of code review. For workflow guidance, see the `security-and-hardening` rule.
+Use during the Security axis of code review. For workflow guidance, see the `security-and-hardening` skill.
 
 ## OWASP Top 10 (2021) Quick Reference
 

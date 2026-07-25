@@ -94,18 +94,16 @@ When `WEBHOOK_SECRETS` is configured, external systems can POST signed payloads 
 
 | Slug | Action |
 |------|--------|
-| `task-create` | Creates a task (same fields as `POST /api/tools/tasks`) |
-| `feedback` | Creates feedback (same fields as `POST /api/feedback`) |
 | `ping` | Records an audit event; returns `{ "ok": true }` |
 
-Example (task-create):
+Example (ping):
 
 ```bash
-SECRET='your-task-create-secret'
-BODY='{"title":"Deploy check","scheduled_at":"2026-06-08T09:00:00Z"}'
+SECRET='your-ping-secret'
+BODY='{}'
 SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | awk '{print $2}')
 
-curl -s -X POST "$BASE/api/webhooks/task-create" \
+curl -s -X POST "$BASE/api/webhooks/ping" \
   -H 'Content-Type: application/json' \
   -H "X-Glorng-Signature: sha256=$SIG" \
   -d "$BODY"
@@ -114,7 +112,7 @@ curl -s -X POST "$BASE/api/webhooks/task-create" \
 Configure secrets in `.env`:
 
 ```env
-WEBHOOK_SECRETS={"task-create":"replace-me","feedback":"replace-me","ping":"replace-me"}
+WEBHOOK_SECRETS={"ping":"replace-me"}
 ```
 
 ## Donations
@@ -140,7 +138,7 @@ stripe listen --forward-to localhost:8000/api/donations/webhook
 4. **HTTP Request** — GET `/api/time-date-weather-location/lookup/Warsaw` (no auth)
 5. **Merge** — combine into digest; optional Telegram or email node
 
-For webhook-driven flows, use n8n **Webhook** node → sign with `Crypto` node (HMAC SHA256) → POST to `/api/webhooks/task-create`.
+For webhook-driven health checks, use n8n **Webhook** node → sign with `Crypto` node (HMAC SHA256) → POST to `/api/webhooks/ping`.
 
 Token refresh: add a branch that POSTs `/api/auth/refresh` when a tool call returns 401.
 

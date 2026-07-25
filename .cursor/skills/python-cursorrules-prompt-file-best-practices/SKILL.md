@@ -1,0 +1,28 @@
+---
+name: python-cursorrules-prompt-file-best-practices
+description: Python backend quality rules for server code.
+---
+# Python Backend Quality
+
+Use this rule when editing backend Python code or pytest tests.
+
+## Project Fit
+
+- Source lives under `server/app`; tests live under `server/tests`.
+- Dependencies are managed by `uv` in `server/pyproject.toml` and `server/uv.lock`.
+- Ruff is the source of truth for formatting and linting.
+- Configuration belongs in environment-backed settings, not hardcoded constants.
+
+## Python Style
+
+- Add type annotations to new or changed function signatures, including explicit `-> None` where applicable.
+- Add docstrings when they explain non-obvious behavior, public APIs, fixtures, or test intent. Do not add boilerplate docstrings that only repeat the function name.
+- Keep existing comments unless they are stale because of the current change.
+- Prefer standard library and existing helpers before adding dependencies.
+
+## Tests
+
+- Use pytest only; do not introduce `unittest`.
+- Put backend tests under `server/tests`.
+- Keep tests behavior-focused and as small as possible.
+- Import pytest typing helpers under `TYPE_CHECKING` only when a test actually needs them.

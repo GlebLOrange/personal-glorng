@@ -62,7 +62,7 @@ Server flags are authoritative. Client `VITE_*` flags only hide UI:
 
 ## Design system
 
-Shared UI primitives live in `client/src/components/ui/` (`BaseButton`, `BaseInput`, `BaseDrawer`, …). Coding standards for Vue/TS: [`.cursor/rules/`](../../.cursor/rules/) (frontend and design-system rules).
+Shared UI primitives live in `client/src/components/ui/` (`BaseButton`, `BaseInput`, `BaseDrawer`, …). Coding standards for Vue/TS: path-triggered stubs in [`.cursor/rules/`](../../.cursor/rules/) and full guidance in [`.cursor/skills/`](../../.cursor/skills/) (frontend and design-system).
 
 ## Local commands
 
