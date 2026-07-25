@@ -1,6 +1,6 @@
 ---
+name: security-and-hardening
 description: Hardens code against vulnerabilities. Use when handling user input, authentication, data storage, or external integrations.
-alwaysApply: false
 ---
 
 # Security and Hardening

@@ -1,6 +1,6 @@
 ---
+name: test-driven-development
 description: Drives development with tests using RED/GREEN/REFACTOR and reproduction tests for bug fixes.
-alwaysApply: false
 ---
 # Test-Driven Development
 

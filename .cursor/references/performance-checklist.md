@@ -1,6 +1,6 @@
 # Performance Review Checklist
 
-Use during the Performance axis of code review. For workflow guidance, see the `performance-optimization` rule.
+Use during the Performance axis of code review. For workflow guidance, see the `performance-optimization` skill.
 
 ## Database and Queries
 

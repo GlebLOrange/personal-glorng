@@ -1,6 +1,6 @@
 ---
+name: performance-optimization
 description: Performance review and optimization guidance for code changes. Use when assessing N+1 queries, unbounded operations, hot paths, or UI render cost.
-alwaysApply: false
 ---
 
 # Performance Optimization

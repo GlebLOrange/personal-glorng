@@ -1,6 +1,6 @@
 ---
+name: incremental-implementation
 description: Delivers changes incrementally in thin vertical slices with targeted verification between each slice.
-alwaysApply: false
 ---
 # Incremental Implementation
 
