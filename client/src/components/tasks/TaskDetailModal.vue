@@ -58,11 +58,6 @@ const menuStatuses = computed(() =>
 const recentStatusHistory = computed(() =>
   (props.task?.status_history ?? []).slice(-4),
 );
-
-function onTechnicalToggle(event: Event): void {
-  const details = event.currentTarget;
-  technicalOpen.value = details instanceof HTMLDetailsElement ? details.open : false;
-}
 </script>
 
 <template>
@@ -196,18 +191,29 @@ function onTechnicalToggle(event: Event): void {
         </BaseButton>
       </section>
 
-      <details
-        v-if="canMutate"
-        class="border-t border-surface-border pt-4 text-sm text-surface-mid"
-        @toggle="onTechnicalToggle"
-      >
-        <summary
-          class="flex cursor-pointer list-none select-none items-center gap-1.5 hover:text-surface-light [&::-webkit-details-marker]:hidden"
+      <section v-if="canMutate" class="space-y-2 border-t border-surface-border pt-4">
+        <BaseButton
+          variant="ghost"
+          quiet
+          size="sm"
+          class="gap-1.5"
+          :class="
+            technicalOpen
+              ? '!bg-accent-blue/15 !text-accent-blue'
+              : undefined
+          "
+          :aria-expanded="technicalOpen"
+          aria-controls="task-technical-details"
+          @click="technicalOpen = !technicalOpen"
         >
           technical details
           <ChevronIcon :open="technicalOpen" />
-        </summary>
-        <dl class="mt-2 space-y-1 text-xs">
+        </BaseButton>
+        <dl
+          v-if="technicalOpen"
+          id="task-technical-details"
+          class="space-y-1 text-xs text-surface-mid"
+        >
           <div v-if="task.google_event_id">
             <dt class="inline font-medium">event id:</dt>
             <dd class="ml-1 inline break-all">{{ task.google_event_id }}</dd>
@@ -221,7 +227,7 @@ function onTechnicalToggle(event: Event): void {
             <dd class="ml-1 inline">{{ formatDate(task.updated_at) }}</dd>
           </div>
         </dl>
-      </details>
+      </section>
     </div>
 
     <template v-if="canMutate && task" #footer>
