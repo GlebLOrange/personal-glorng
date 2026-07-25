@@ -15,6 +15,7 @@ const { services, load } = usePlatformCatalog();
 
 const visibleServices = computed(() =>
   services.value.filter((service) => {
+    if (!service.adminRoute) return false;
     if (!ADMIN_HUB_SERVICE_SLUGS.has(service.slug)) return false;
     if (service.slug === "ai-chat" && !isAiChatEnabled()) return false;
     if (service.slug === "api-docs") return isSuperuser.value;
@@ -40,7 +41,7 @@ onMounted(() => load());
         <component
           :is="tool.external ? 'a' : 'RouterLink'"
           v-for="tool in section.services"
-          :key="tool.adminRoute"
+          :key="tool.slug"
           class="page-tile"
           :to="tool.external ? undefined : tool.adminRoute"
           :href="tool.external ? tool.adminRoute : undefined"
