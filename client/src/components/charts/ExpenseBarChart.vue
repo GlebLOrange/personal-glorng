@@ -15,10 +15,14 @@ import { CHART_COLORS, chartDefaults } from "@/components/charts/chartTheme";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const props = defineProps<{
-  labels: string[];
-  values: number[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    labels: string[];
+    values: number[];
+    horizontal?: boolean;
+  }>(),
+  { horizontal: false },
+);
 
 const chartData = computed(() => ({
   labels: props.labels,
@@ -31,13 +35,14 @@ const chartData = computed(() => ({
   ],
 }));
 
-const chartOptions = {
+const chartOptions = computed(() => ({
   ...chartDefaults,
+  indexAxis: props.horizontal ? ("y" as const) : ("x" as const),
   plugins: {
     ...chartDefaults.plugins,
     legend: { display: false },
   },
-};
+}));
 </script>
 
 <template>

@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import ExpenseCalculatorBudget from "@/components/expense-calculator/ExpenseCalculatorBudget.vue";
-import ExpenseCalculatorConvert from "@/components/expense-calculator/ExpenseCalculatorConvert.vue";
-import ExpenseCalculatorLineItems from "@/components/expense-calculator/ExpenseCalculatorLineItems.vue";
-import ExpenseCalculatorModeTabs from "@/components/expense-calculator/ExpenseCalculatorModeTabs.vue";
-import ExpenseCalculatorWhatIf from "@/components/expense-calculator/ExpenseCalculatorWhatIf.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseSelect from "@/components/ui/BaseSelect.vue";
-import { Card } from "@/components/ui/card";
+import ExpenseCalculatorShell from "@/components/expense-calculator/ExpenseCalculatorShell.vue";
 import type {
   ExpenseCalculatorBudgetRow,
   ExpenseCalculatorLineItem,
@@ -77,81 +70,37 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section
-    id="expenses-tab-panel-calculator"
-    role="tabpanel"
-    aria-labelledby="expenses-tab-tab-calculator"
-    tabindex="0"
-    class="flex flex-col gap-4 outline-none"
-  >
-    <Card
-      variant="compact"
-      class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
-    >
-      <p class="text-sm text-surface-mid">{{ persistenceHint }}</p>
-      <div v-if="isSuperuser" class="flex flex-wrap gap-2">
-        <BaseButton variant="ghost" :disabled="loadingState" @click="emit('loadState')">
-          {{ loadingState ? "loading..." : "load" }}
-        </BaseButton>
-        <BaseButton variant="success" :disabled="saving || !stateDirty" @click="emit('saveState')">
-          {{ saving ? "saving..." : "save" }}
-        </BaseButton>
-      </div>
-    </Card>
-
-    <div class="md:w-36">
-      <BaseSelect
-        id="expenses-calculator-currency"
-        v-model="displayCurrency"
-        aria-label="calculator currency"
-      >
-        <option value="PLN">PLN</option>
-        <option value="EUR">EUR</option>
-        <option value="USD">USD</option>
-        <option value="BYN">BYN</option>
-      </BaseSelect>
-    </div>
-
-    <ExpenseCalculatorModeTabs
-      :active-mode="activeMode"
-      :tabs="modeTabs"
-      @change="emit('changeMode', $event)"
-    />
-
-    <ExpenseCalculatorConvert
-      v-if="activeMode === 'convert'"
-      :exchange-rates="exchangeRates"
-      :rates-loading="ratesLoading"
-    />
-    <ExpenseCalculatorLineItems
-      v-else-if="activeMode === 'sum'"
-      :line-items="lineItems"
-      :display-currency="displayCurrency"
-      :sum-total="sumTotal"
-      :format-money="formatMoney"
-      @add="emit('addLineItem')"
-      @remove="emit('removeLineItem', $event)"
-      @apply-to-budget="emit('applySumToBudget')"
-    />
-    <ExpenseCalculatorBudget
-      v-else-if="activeMode === 'budget'"
-      :budget-rows="budgetRows"
-      :budget-summary="budgetSummary"
-      :display-currency="displayCurrency"
-      :format-money="formatMoney"
-      @add="emit('addBudgetRow')"
-      @remove="emit('removeBudgetRow', $event)"
-    />
-    <ExpenseCalculatorWhatIf
-      v-else-if="activeMode === 'whatif'"
-      v-model:what-if-category-id="whatIfCategoryId"
-      v-model:what-if-amount="whatIfAmount"
-      v-model:what-if-currency="whatIfCurrency"
-      :budget-options="budgetOptions"
-      :display-currency="displayCurrency"
-      :projection="whatIfProjection"
-      :format-money="formatMoney"
-      @go-to-budget="emit('goToBudget')"
-    />
-  </section>
+  <ExpenseCalculatorShell
+    v-model:display-currency="displayCurrency"
+    v-model:what-if-category-id="whatIfCategoryId"
+    v-model:what-if-amount="whatIfAmount"
+    v-model:what-if-currency="whatIfCurrency"
+    tabpanel-id="expenses-tab-panel-calculator"
+    tabpanel-labelled-by="expenses-tab-tab-calculator"
+    :persistence-hint="persistenceHint"
+    :is-superuser="isSuperuser"
+    :loading-state="loadingState"
+    :saving="saving"
+    :state-dirty="stateDirty"
+    :active-mode="activeMode"
+    :mode-tabs="modeTabs"
+    :exchange-rates="exchangeRates"
+    :rates-loading="ratesLoading"
+    :line-items="lineItems"
+    :sum-total="sumTotal"
+    :budget-rows="budgetRows"
+    :budget-summary="budgetSummary"
+    :budget-options="budgetOptions"
+    :what-if-projection="whatIfProjection"
+    :format-money="formatMoney"
+    @load-state="emit('loadState')"
+    @save-state="emit('saveState')"
+    @change-mode="emit('changeMode', $event)"
+    @add-line-item="emit('addLineItem')"
+    @remove-line-item="emit('removeLineItem', $event)"
+    @apply-sum-to-budget="emit('applySumToBudget')"
+    @add-budget-row="emit('addBudgetRow')"
+    @remove-budget-row="emit('removeBudgetRow', $event)"
+    @go-to-budget="emit('goToBudget')"
+  />
 </template>

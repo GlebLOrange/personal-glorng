@@ -42,6 +42,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
           min="0.01"
           label="price"
           placeholder="0.00"
+          inputmode="decimal"
         />
       </div>
 

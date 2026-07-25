@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { Card } from "@/components/ui/card";
 import type { ExpenseCategory, ExpenseSummary } from "@/types";
 
 const props = defineProps<{
@@ -58,59 +57,82 @@ const budgetTotals = computed(() => {
     overBudget: percent > 100,
   };
 });
+
+defineExpose({ categoryBreakdown, budgetTotals });
 </script>
 
 <template>
-  <Card as="section" variant="compact" class="md:!p-5">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="flex flex-col gap-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
       <div>
         <p class="text-xs text-surface-mid">total</p>
-        <p v-if="summary" class="text-3xl font-bold text-surface-light font-data mt-1">
+        <p v-if="summary" class="mt-1 text-3xl font-bold font-data text-surface-light">
           {{ formatMoney(summary.total, summary.currency) }}
         </p>
-        <p v-else class="text-3xl font-bold text-surface-border animate-pulse mt-1">—</p>
-        <p class="text-xs text-surface-mid mt-1">{{ monthLabel }}</p>
+        <p v-else class="mt-1 animate-pulse text-3xl font-bold text-surface-border">—</p>
+        <p class="mt-1 text-xs text-surface-mid">{{ monthLabel }}</p>
       </div>
 
-      <Card variant="inset">
+      <div>
         <p class="text-xs text-surface-mid">period change</p>
         <p
           v-if="periodChange"
-          class="text-xl font-bold font-data mt-1"
+          class="mt-1 text-xl font-bold font-data"
           :class="periodChange.increased ? 'text-status-error' : 'text-status-success'"
         >
           {{ periodChange.increased ? "+" : "" }}{{ periodChange.delta }}%
+          <span class="sr-only">
+            {{ periodChange.increased ? "increase" : "decrease" }} versus previous period
+          </span>
         </p>
-        <p v-else class="text-xl font-bold text-surface-border font-data mt-1">—</p>
-        <p class="text-xs text-surface-mid mt-1">vs previous period</p>
-      </Card>
+        <p v-else class="mt-1 text-xl font-bold font-data text-surface-border">—</p>
+        <p class="mt-1 text-xs text-surface-mid">vs previous period</p>
+      </div>
 
-      <Card variant="inset">
+      <div>
         <p class="text-xs text-surface-mid">budget status</p>
         <p
           v-if="budgetTotals && summary"
-          class="text-xl font-bold font-data mt-1"
+          class="mt-1 text-xl font-bold font-data"
           :class="budgetTotals.overBudget ? 'text-status-error' : 'text-accent-blue'"
         >
           {{ budgetTotals.percent }}%
+          <span class="sr-only">
+            of budget{{ budgetTotals.overBudget ? ", over budget" : "" }}
+          </span>
         </p>
-        <p v-else class="text-xl font-bold text-surface-border font-data mt-1">—</p>
-        <p v-if="budgetTotals && summary" class="text-xs text-surface-mid mt-1">
+        <p v-else class="mt-1 text-xl font-bold font-data text-surface-border">—</p>
+        <p v-if="budgetTotals && summary" class="mt-1 text-xs text-surface-mid">
           {{ formatMoney(budgetTotals.spent, summary.currency) }} of
           {{ formatMoney(budgetTotals.budget, summary.currency) }}
         </p>
-        <p v-else class="text-xs text-surface-mid mt-1">No category budgets set</p>
-      </Card>
+        <p v-else class="mt-1 text-xs text-surface-mid">No category budgets set</p>
+        <div
+          v-if="budgetTotals"
+          class="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-border"
+          role="progressbar"
+          :aria-valuenow="Math.min(budgetTotals.percent, 100)"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-label="`Budget used ${budgetTotals.percent}%`"
+        >
+          <div
+            class="h-full rounded-full transition-all"
+            :class="budgetTotals.overBudget ? 'bg-status-error' : 'bg-accent-blue'"
+            :style="{ width: `${Math.min(budgetTotals.percent, 100)}%` }"
+          />
+        </div>
+      </div>
     </div>
 
     <div
       v-if="categoryBreakdown.length > 0"
-      class="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-surface-border mt-5 pt-4"
+      class="grid grid-cols-1 gap-3 border-t border-surface-border pt-4 md:grid-cols-2"
     >
       <div v-for="item in categoryBreakdown" :key="item.category" class="flex flex-col gap-1">
-        <div class="flex justify-between text-xs">
+        <div class="flex justify-between gap-2 text-xs">
           <span class="text-surface-light">{{ item.category }}</span>
-          <span class="text-surface-mid font-data">
+          <span class="shrink-0 font-data text-surface-mid">
             {{ formatMoney(item.total, summary!.currency) }}
             <span v-if="item.budget" class="text-surface-mid/70">
               · {{ item.budgetPercent }}% of
@@ -119,7 +141,7 @@ const budgetTotals = computed(() => {
             <span v-else class="text-surface-mid/70">· {{ item.percent }}%</span>
           </span>
         </div>
-        <div class="h-1.5 bg-surface-border rounded-full overflow-hidden">
+        <div class="h-1.5 overflow-hidden rounded-full bg-surface-border">
           <div
             class="h-full rounded-full transition-all"
             :class="item.overBudget ? 'bg-status-error' : 'bg-accent-blue'"
@@ -130,5 +152,5 @@ const budgetTotals = computed(() => {
         </div>
       </div>
     </div>
-  </Card>
+  </div>
 </template>

@@ -1,15 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import ExpenseCalculatorBudget from "@/components/expense-calculator/ExpenseCalculatorBudget.vue";
-import ExpenseCalculatorConvert from "@/components/expense-calculator/ExpenseCalculatorConvert.vue";
-import ExpenseCalculatorLineItems from "@/components/expense-calculator/ExpenseCalculatorLineItems.vue";
-import ExpenseCalculatorModeTabs from "@/components/expense-calculator/ExpenseCalculatorModeTabs.vue";
-import ExpenseCalculatorWhatIf from "@/components/expense-calculator/ExpenseCalculatorWhatIf.vue";
+import ExpenseCalculatorShell from "@/components/expense-calculator/ExpenseCalculatorShell.vue";
 import PageShell from "@/components/layout/PageShell.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseSelect from "@/components/ui/BaseSelect.vue";
-import { Card } from "@/components/ui/card";
 import { useExpenseCalculator } from "@/composables/useExpenseCalculator";
 
 const {
@@ -68,110 +61,36 @@ const persistenceHint = computed(() => {
     max-width="xl"
     :narrow="false"
   >
-    <div class="flex flex-col gap-4 min-w-0">
-      <Card
-        variant="compact"
-        class="flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-      >
-        <p class="text-sm text-surface-mid">{{ persistenceHint }}</p>
-        <div v-if="isSuperuser" class="flex flex-wrap gap-2">
-          <BaseButton variant="ghost" size="sm" :disabled="loadingState" @click="loadState">
-            {{ loadingState ? "loading..." : "load" }}
-          </BaseButton>
-          <BaseButton
-            variant="success"
-            size="sm"
-            :disabled="saving || !stateDirty"
-            @click="saveState"
-          >
-            {{ saving ? "saving..." : "save" }}
-          </BaseButton>
-        </div>
-      </Card>
-
-      <div class="flex flex-col md:flex-row md:items-center gap-3">
-        <ExpenseCalculatorModeTabs
-          class="flex-1"
-          :active-mode="activeMode"
-          :tabs="modeTabs"
-          @change="switchMode"
-        />
-        <div class="md:w-36">
-          <BaseSelect v-model="displayCurrency" aria-label="currency">
-            <option value="PLN">PLN</option>
-            <option value="EUR">EUR</option>
-            <option value="USD">USD</option>
-            <option value="BYN">BYN</option>
-          </BaseSelect>
-        </div>
-      </div>
-
-      <section
-        v-if="activeMode === 'convert'"
-        id="expense-calc-panel-convert"
-        role="tabpanel"
-        aria-labelledby="expense-calc-tab-convert"
-        tabindex="0"
-        class="outline-none"
-      >
-        <ExpenseCalculatorConvert :exchange-rates="exchangeRates" :rates-loading="ratesLoading" />
-      </section>
-
-      <section
-        v-else-if="activeMode === 'sum'"
-        id="expense-calc-panel-sum"
-        role="tabpanel"
-        aria-labelledby="expense-calc-tab-sum"
-        tabindex="0"
-        class="outline-none"
-      >
-        <ExpenseCalculatorLineItems
-          :line-items="lineItems"
-          :display-currency="displayCurrency"
-          :sum-total="sumTotal"
-          :format-money="formatMoney"
-          @add="addLineItem"
-          @remove="removeLineItem"
-          @apply-to-budget="applySumToBudget"
-        />
-      </section>
-
-      <section
-        v-else-if="activeMode === 'budget'"
-        id="expense-calc-panel-budget"
-        role="tabpanel"
-        aria-labelledby="expense-calc-tab-budget"
-        tabindex="0"
-        class="outline-none"
-      >
-        <ExpenseCalculatorBudget
-          :budget-rows="budgetRows"
-          :budget-summary="budgetSummary"
-          :display-currency="displayCurrency"
-          :format-money="formatMoney"
-          @add="addBudgetRow"
-          @remove="removeBudgetRow"
-        />
-      </section>
-
-      <section
-        v-else-if="activeMode === 'whatif'"
-        id="expense-calc-panel-whatif"
-        role="tabpanel"
-        aria-labelledby="expense-calc-tab-whatif"
-        tabindex="0"
-        class="outline-none"
-      >
-        <ExpenseCalculatorWhatIf
-          v-model:what-if-category-id="whatIfCategoryId"
-          v-model:what-if-amount="whatIfAmount"
-          v-model:what-if-currency="whatIfCurrency"
-          :budget-options="budgetOptions"
-          :display-currency="displayCurrency"
-          :projection="whatIfProjection"
-          :format-money="formatMoney"
-        />
-      </section>
-    </div>
+    <ExpenseCalculatorShell
+      v-model:display-currency="displayCurrency"
+      v-model:what-if-category-id="whatIfCategoryId"
+      v-model:what-if-amount="whatIfAmount"
+      v-model:what-if-currency="whatIfCurrency"
+      :persistence-hint="persistenceHint"
+      :is-superuser="isSuperuser"
+      :loading-state="loadingState"
+      :saving="saving"
+      :state-dirty="stateDirty"
+      :active-mode="activeMode"
+      :mode-tabs="modeTabs"
+      :exchange-rates="exchangeRates"
+      :rates-loading="ratesLoading"
+      :line-items="lineItems"
+      :sum-total="sumTotal"
+      :budget-rows="budgetRows"
+      :budget-summary="budgetSummary"
+      :budget-options="budgetOptions"
+      :what-if-projection="whatIfProjection"
+      :format-money="formatMoney"
+      @load-state="loadState"
+      @save-state="saveState"
+      @change-mode="switchMode"
+      @add-line-item="addLineItem"
+      @remove-line-item="removeLineItem"
+      @apply-sum-to-budget="applySumToBudget"
+      @add-budget-row="addBudgetRow"
+      @remove-budget-row="removeBudgetRow"
+      @go-to-budget="switchMode('budget')"
+    />
   </PageShell>
 </template>

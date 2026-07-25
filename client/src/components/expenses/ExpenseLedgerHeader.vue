@@ -32,10 +32,10 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="mb-4 flex flex-col gap-3">
-    <Card variant="compact" class="flex flex-col gap-3">
-      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
+  <section class="mb-4 flex flex-col gap-3" aria-label="Expense period summary">
+    <Card variant="compact" class="flex flex-col gap-4 md:!p-5">
+      <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div class="min-w-0">
           <p class="text-xs text-surface-mid">period</p>
           <p class="text-lg font-semibold text-surface-light">{{ monthLabel }}</p>
         </div>
@@ -50,18 +50,20 @@ const emit = defineEmits<{
           @clear-filters="emit('clearFilters')"
         />
       </div>
+
       <p v-if="rangeError" class="text-sm text-status-error" role="alert">
         {{ rangeError }}
       </p>
+
+      <ExpenseSummaryCard
+        :summary="summary"
+        :month-label="monthLabel"
+        :expense-categories="expenseCategories"
+        :period-change="periodChange"
+        :format-money="formatMoney"
+      />
     </Card>
 
-    <ExpenseSummaryCard
-      :summary="summary"
-      :month-label="monthLabel"
-      :expense-categories="expenseCategories"
-      :period-change="periodChange"
-      :format-money="formatMoney"
-    />
     <div
       v-if="summaryError || ratesError"
       class="alert-surface-error flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"

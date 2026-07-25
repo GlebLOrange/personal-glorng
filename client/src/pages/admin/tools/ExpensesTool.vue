@@ -4,12 +4,12 @@ import { computed, defineAsyncComponent, useTemplateRef } from "vue";
 import ExpenseCategorySettings from "@/components/expenses/ExpenseCategorySettings.vue";
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
 import ExpenseCalculatorPanel from "@/components/expenses/ExpenseCalculatorPanel.vue";
-import ExpenseFormModal from "@/components/expenses/ExpenseFormModal.vue";
+import ExpenseFormDrawer from "@/components/expenses/ExpenseFormDrawer.vue";
 import ExpenseLedgerHeader from "@/components/expenses/ExpenseLedgerHeader.vue";
 import ExpenseTransactionsPanel from "@/components/expenses/ExpenseTransactionsPanel.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { useExpenseCalculator } from "@/composables/useExpenseCalculator";
 import {
   isCalculatorTab,
@@ -201,20 +201,22 @@ function goToTransactions(): void {
             @update:model-value="switchTab"
           />
           <div v-if="activeTab === 'transactions'" class="flex flex-wrap gap-2">
-            <BaseButton
-              variant="ghost"
+            <ToolbarPillButton
+              family="1xx"
+              :selected="filtersOpen"
               :aria-expanded="filtersOpen"
               aria-controls="expense-transaction-filters"
               @click="filtersOpen = !filtersOpen"
             >
               {{ transactionFilterLabel }}
-            </BaseButton>
-            <BaseButton variant="ghost" :disabled="exporting" @click="exportCsv">
+            </ToolbarPillButton>
+            <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
               {{ exporting ? "exporting..." : "export csv" }}
-            </BaseButton>
-            <BaseButton variant="primary" aria-label="add expense" @click="openCreate"
-              >+</BaseButton
-            >
+            </ToolbarPillButton>
+            <ToolbarPillButton family="1xx" aria-label="add expense" @click="openCreate">
+              <span aria-hidden="true">+</span>
+              <span class="hidden sm:inline">add</span>
+            </ToolbarPillButton>
           </div>
         </div>
 
@@ -275,6 +277,9 @@ function goToTransactions(): void {
             :line-chart="lineChart"
             :bar-chart="barChart"
             :doughnut-chart="doughnutChart"
+            :summary="summary"
+            :expense-categories="expenseCategories"
+            :format-money="formatMoney"
             @add-expense="goToTransactions"
           />
         </section>
@@ -337,7 +342,7 @@ function goToTransactions(): void {
         </section>
       </div>
 
-      <ExpenseFormModal
+      <ExpenseFormDrawer
         v-model:category="form.category"
         v-model:tool-name="form.tool_name"
         v-model:amount="form.amount"
