@@ -439,7 +439,6 @@ onUnmounted(() => {
             <BaseButton
               variant="ghost"
               danger
-              class="hover:enabled:border-transparent focus-visible:border-transparent"
               @click="requestCloseUserDrawer"
             >
               cancel

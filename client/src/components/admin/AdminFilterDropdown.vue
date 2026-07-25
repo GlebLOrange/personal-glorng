@@ -172,7 +172,6 @@ defineExpose({ close });
           variant="ghost"
           danger
           size="sm"
-          class="hover:enabled:border-transparent focus-visible:border-transparent"
           :disabled="!hasActiveFilters"
           @click="onClear"
         >

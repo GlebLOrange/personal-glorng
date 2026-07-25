@@ -39,7 +39,7 @@ const iconClass = computed(() => (props.size === "compact" ? "h-4 w-4" : "h-5 w-
   <RouterLink
     :to="to"
     :aria-label="backAriaLabel(to, label)"
-    class="inline-flex items-center justify-center rounded-lg border border-surface-border bg-surface-card text-surface-light transition-all duration-200 hover:border-accent-blue active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+    class="inline-flex items-center justify-center rounded-lg bg-surface-card text-surface-light transition-all duration-200 hover:bg-accent-blue/15 hover:text-accent-blue active:bg-accent-blue/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
     :class="sizeClass"
   >
     <svg

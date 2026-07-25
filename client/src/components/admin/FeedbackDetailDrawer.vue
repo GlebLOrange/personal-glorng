@@ -55,7 +55,6 @@ const emit = defineEmits<{
             variant="ghost"
             danger
             size="sm"
-            class="hover:enabled:border-transparent focus-visible:border-transparent"
             @click="emit('close')"
           >
             close

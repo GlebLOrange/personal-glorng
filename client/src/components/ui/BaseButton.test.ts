@@ -31,8 +31,9 @@ describe("BaseButton", () => {
     }).get("button");
 
     expect(button.classes()).toContain("hover:enabled:text-status-error");
-    expect(button.classes()).toContain("hover:enabled:border-status-error/20");
+    expect(button.classes()).toContain("hover:enabled:bg-status-error/10");
     expect(button.classes()).toContain("text-surface-light/60");
+    expect(button.classes().some((c) => c.includes("border"))).toBe(false);
   });
 
   it("applies success fill and focus ring", () => {
@@ -42,6 +43,18 @@ describe("BaseButton", () => {
 
     expect(button.classes()).toContain("bg-status-success");
     expect(button.classes()).toContain("hover:enabled:bg-status-success/90");
+    expect(button.classes()).toContain("active:enabled:bg-status-success/80");
     expect(button.classes()).toContain("focus-visible:ring-status-success/50");
+  });
+
+  it("colorizes secondary hover without borders", () => {
+    const button = mount(BaseButton, {
+      props: { variant: "secondary" },
+    }).get("button");
+
+    expect(button.classes()).toContain("bg-surface-card");
+    expect(button.classes()).toContain("hover:enabled:bg-accent-blue/15");
+    expect(button.classes()).toContain("hover:enabled:text-accent-blue");
+    expect(button.classes().some((c) => c.includes("border"))).toBe(false);
   });
 });

@@ -425,7 +425,7 @@ onMounted(loadSources);
               variant="ghost"
               quiet
               size="sm"
-              class="!text-accent-blue hover:enabled:!bg-accent-blue/15 hover:enabled:!border-accent-blue/40 focus-visible:!text-accent-blue"
+              class="!text-accent-blue hover:enabled:!bg-accent-blue/15 focus-visible:!text-accent-blue"
               aria-label="edit source"
               @click="openEditableSource(source)"
             >

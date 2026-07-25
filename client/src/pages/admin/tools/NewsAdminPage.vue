@@ -513,7 +513,7 @@ watch(page, () => {
             variant="ghost"
             quiet
             size="sm"
-            class="!text-status-success hover:enabled:!border-status-success/20 hover:enabled:!bg-status-success/10 focus-visible:!border-status-success/20"
+            class="!text-status-success hover:enabled:!bg-status-success/10"
             :disabled="actionLoading"
             @click="setStatus(item.id, 'published')"
           >
@@ -524,7 +524,7 @@ watch(page, () => {
             variant="ghost"
             quiet
             size="sm"
-            class="!text-accent-golden hover:enabled:!border-accent-golden/20 hover:enabled:!bg-accent-golden/10 focus-visible:!border-accent-golden/20"
+            class="!text-accent-golden hover:enabled:!bg-accent-golden/10"
             :disabled="actionLoading"
             @click="setStatus(item.id, 'unpublished')"
           >

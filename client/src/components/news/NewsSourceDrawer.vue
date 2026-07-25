@@ -89,7 +89,6 @@ function toStringValue(value: string | number | null | undefined): string {
             type="button"
             variant="ghost"
             danger
-            class="hover:enabled:border-transparent focus-visible:border-transparent"
             @click="emit('close')"
           >
             cancel
