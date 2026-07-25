@@ -58,14 +58,14 @@ const emit = defineEmits<{
         </span>
         <span
           v-if="recipe.cook_time"
-          class="inline-flex items-center gap-1 rounded-full border border-status-warning/30 bg-status-warning/15 px-2 py-1 text-status-warning"
+          class="inline-flex items-center gap-1 rounded-full border border-status-cyan/30 bg-status-cyan/15 px-2 py-1 text-status-cyan"
         >
           <ClockIcon class-name="size-3.5 shrink-0" />
           {{ formatRecipeTime(recipe.cook_time) }} cook
         </span>
         <span
           v-if="recipe.servings"
-          class="inline-flex items-center gap-1 rounded-full border border-accent-violet/30 bg-accent-violet/15 px-2 py-1 text-accent-violet"
+          class="inline-flex items-center gap-1 rounded-full border border-status-success/30 bg-status-success/15 px-2 py-1 text-status-success"
         >
           <ClockIcon class-name="size-3.5 shrink-0" />
           {{ recipe.servings }} servings

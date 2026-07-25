@@ -111,10 +111,10 @@ onMounted(() => {
         </span>
         <span class="text-surface-mid/60 text-xs">·</span>
         <span class="text-surface-mid text-xs">{{ modelLabel }}</span>
-        <span v-if="!configLoading && !isReady" class="ml-auto text-xs text-status-warning/90">
+        <span v-if="!configLoading && !isReady" class="ml-auto text-xs text-status-cyan/90">
           not configured
         </span>
-        <span v-else-if="!canSend" class="ml-auto text-xs text-status-warning/90">
+        <span v-else-if="!canSend" class="ml-auto text-xs text-status-cyan/90">
           superuser only
         </span>
       </div>
@@ -207,7 +207,7 @@ onMounted(() => {
           </div>
           <div class="flex gap-2">
             <dt class="text-surface-mid w-28 shrink-0">API key</dt>
-            <dd :class="chatConfig.configured ? 'text-status-success' : 'text-status-warning'">
+            <dd :class="chatConfig.configured ? 'text-status-success' : 'text-status-cyan'">
               {{ chatConfig.configured ? "configured" : "missing" }}
             </dd>
           </div>
@@ -227,7 +227,7 @@ onMounted(() => {
             <strong class="text-surface-light font-medium">Quota or rate limit</strong> — wait for
             the retry window, then try again. Check RPM limits in
             <a
-              class="text-accent-blue hover:text-accent-violet transition-colors"
+              class="text-accent-blue hover:text-accent-blue/80 transition-colors"
               href="https://console.groq.com/"
               rel="noopener noreferrer"
               target="_blank"
@@ -284,7 +284,7 @@ onMounted(() => {
         <p class="text-surface-mid text-xs">
           Get a key from
           <a
-            class="text-accent-blue hover:text-accent-violet transition-colors"
+            class="text-accent-blue hover:text-accent-blue/80 transition-colors"
             href="https://console.groq.com/keys"
             rel="noopener noreferrer"
             target="_blank"

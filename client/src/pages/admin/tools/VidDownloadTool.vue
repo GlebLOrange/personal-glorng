@@ -194,7 +194,7 @@ async function download(): Promise<void> {
 
     <button
       type="button"
-      class="mb-4 text-sm text-accent-blue transition-colors hover:text-accent-violet"
+      class="mb-4 text-sm text-accent-blue transition-colors hover:text-accent-blue/80"
       @click="guideOpen = !guideOpen"
     >
       {{ guideOpen ? "▾ Hide" : "▸ Show" }} yt-dlp usage guide
@@ -251,7 +251,7 @@ async function download(): Promise<void> {
           href="https://github.com/yt-dlp/yt-dlp#readme"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-block text-accent-blue transition-colors hover:text-accent-violet"
+          class="inline-block text-accent-blue transition-colors hover:text-accent-blue/80"
         >
           Full yt-dlp documentation &rarr;
         </a>

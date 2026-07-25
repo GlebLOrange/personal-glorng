@@ -223,7 +223,7 @@ onMounted(load);
               v-if="item.status === 'archived'"
               variant="ghost"
               size="sm"
-              class="!bg-transparent text-surface-light/60 hover:enabled:!bg-accent-golden/10 hover:enabled:!text-accent-golden focus-visible:!bg-accent-golden/10 focus-visible:!text-accent-golden"
+              class="!bg-transparent text-surface-light/60 hover:enabled:!bg-status-cyan/10 hover:enabled:!text-status-cyan focus-visible:!bg-status-cyan/10 focus-visible:!text-status-cyan"
               @click="unarchiveItem(item)"
             >
               unarchive
@@ -232,7 +232,7 @@ onMounted(load);
               v-else
               variant="ghost"
               size="sm"
-              class="!bg-transparent text-surface-light/60 hover:enabled:!bg-accent-golden/10 hover:enabled:!text-accent-golden focus-visible:!bg-accent-golden/10 focus-visible:!text-accent-golden"
+              class="!bg-transparent text-surface-light/60 hover:enabled:!bg-status-cyan/10 hover:enabled:!text-status-cyan focus-visible:!bg-status-cyan/10 focus-visible:!text-status-cyan"
               @click="archiveItem(item)"
             >
               archive

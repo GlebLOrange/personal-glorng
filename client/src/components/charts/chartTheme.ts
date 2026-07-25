@@ -1,17 +1,18 @@
-/** Chart palette — hex mirrors @theme accents (canvas APIs need resolved colors). */
+/** Chart palette — hex mirrors @theme 1xx–5xx families (canvas APIs need resolved colors). */
 export const CHART_COLORS = [
-  "#7bbde2", // --color-accent-blue
-  "#b8a3c8", // --color-accent-violet
-  "#d4ce94", // --color-accent-golden
-  "#C4B8AC",
-  "#8A847E",
-  "#5a8fb0",
-  "#9a87a8",
-  "#a8a470",
+  "#8ec4e0", // --color-accent-blue (1xx)
+  "#7bc49a", // --color-status-success (2xx)
+  "#7eb8b0", // --color-status-cyan (3xx)
+  "#e88a8a", // --color-status-error (4xx)
+  "#d98aad", // --color-status-critical (5xx)
+  "#d4cdc6", // --color-surface-mid
+  "#a39d97", // --color-surface-muted
+  "#6b7a90", // --color-surface-border
 ] as const;
 
-export const CHART_GRID = "#2e3a4e"; // --color-surface-border
-export const CHART_TEXT = "#C4B8AC";
+/** Darker mix for grid lines — border token is too light on canvas. */
+export const CHART_GRID = "#2e3a4e";
+export const CHART_TEXT = "#d4cdc6"; // --color-surface-mid
 
 export const chartDefaults = {
   responsive: true,

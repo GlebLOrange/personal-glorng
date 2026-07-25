@@ -396,7 +396,7 @@ onMounted(loadSources);
 
       <Card v-else-if="loadError" role="alert">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-sm text-accent-golden">News sources could not be loaded.</p>
+          <p class="text-sm text-status-cyan">News sources could not be loaded.</p>
           <BaseButton variant="ghost" size="sm" @click="loadSources">retry</BaseButton>
         </div>
       </Card>
@@ -441,7 +441,7 @@ onMounted(loadSources);
             <template #actions>
               <span
                 v-if="source.last_error"
-                class="text-xs text-accent-golden"
+                class="text-xs text-status-cyan"
                 :title="source.last_error"
                 aria-label="Source has fetch error"
               >

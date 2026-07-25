@@ -21,9 +21,15 @@
   --text-2xl--line-height: 1.35;
   --text-3xl: 2.125rem;
   --text-3xl--line-height: 1.25;
-  --color-accent-blue: #7bbde2;
-  --color-accent-violet: #b8a3c8;
-  --color-accent-golden: #d4ce94;
+  /* Product action families — pale, statuscode-aligned (1xx–5xx) */
+  --color-accent-blue: #8ec4e0;
+  --color-status-success: #7bc49a;
+  --color-status-cyan: #7eb8b0;
+  --color-status-error: #e88a8a;
+  --color-status-critical: #d98aad;
+  /* Warning collapses into 3xx cyan */
+  --color-status-warning: #7eb8b0;
+  /* Surfaces */
   --color-surface-light: #f5f2ec;
   --color-surface-sage: #d5dcd3;
   --color-surface-mid: #d4cdc6;
@@ -31,15 +37,12 @@
   --color-surface-dark: #141820;
   --color-surface-card: #1c2230;
   --color-surface-border: #6b7a90;
-  --color-status-error: #e57373;
-  --color-status-warning: #d4a574;
-  --color-status-success: #6ebf8a;
-  /* Pale HTTP 3xx / 5xx families (see httpStatusColors.ts) */
-  --color-status-cyan: #7eb8b0;
-  --color-status-critical: #d4789a;
-  /* Legacy aliases of status-* — prefer status-error / status-warning in new code */
-  --color-accent-red: #e57373;
-  --color-accent-amber: #d4a574;
+  /* Marketing / portfolio brand only */
+  --color-accent-violet: #b8a3c8;
+  --color-accent-golden: #d4ce94;
+  /* Legacy aliases → families (prefer status-* / accent-blue in new code) */
+  --color-accent-red: #e88a8a;
+  --color-accent-amber: #7eb8b0;
   --radius-interactive: 0.5rem;
   --spacing-grid-gap: 0.5rem;
 }
@@ -169,11 +172,16 @@
 }
 
 @utility section-title {
-  @apply text-3xl font-bold tracking-tight text-surface-light;
+  /* Weight before size (Toss); scanning hierarchy for product + portfolio */
+  @apply text-3xl font-semibold tracking-tight text-surface-light;
 }
 
 @utility card-title {
   @apply text-lg font-semibold text-surface-light;
+}
+
+@utility text-metric {
+  @apply font-data text-2xl font-bold tracking-tight text-surface-light;
 }
 
 @utility cta-primary {
@@ -355,28 +363,29 @@ body {
 }
 
 #cc-main {
-  --cc-bg: #1c2230;
-  --cc-primary-color: #f5f2ec;
-  --cc-secondary-color: #d5dcd3;
-  --cc-btn-primary-bg: #7bbde2;
-  --cc-btn-primary-color: #141820;
-  --cc-btn-primary-hover-bg: #9acde9;
-  --cc-btn-primary-hover-color: #141820;
-  --cc-btn-secondary-bg: #2e3a4e;
-  --cc-btn-secondary-color: #f5f2ec;
-  --cc-btn-secondary-hover-bg: #3a4760;
-  --cc-btn-secondary-hover-color: #f5f2ec;
-  --cc-separator-border-color: #2e3a4e;
-  --cc-cookie-category-block-bg: #141820;
-  --cc-cookie-category-block-hover-bg: #1a2030;
-  --cc-overlay-bg: rgba(20, 24, 32, 0.7);
-  --cc-toggle-on-bg: #7bbde2;
-  --cc-toggle-off-bg: #2e3a4e;
-  --cc-toggle-readonly-bg: #3a4760;
-  --cc-section-border: #2e3a4e;
-  --cc-footer-bg: #141820;
-  --cc-footer-color: #a39d97;
-  --cc-footer-border-color: #2e3a4e;
+  /* Mirrors @theme surfaces + 1xx accent (CookieConsent needs resolved colors) */
+  --cc-bg: var(--color-surface-card);
+  --cc-primary-color: var(--color-surface-light);
+  --cc-secondary-color: var(--color-surface-sage);
+  --cc-btn-primary-bg: var(--color-accent-blue);
+  --cc-btn-primary-color: var(--color-surface-dark);
+  --cc-btn-primary-hover-bg: color-mix(in srgb, var(--color-accent-blue) 90%, white);
+  --cc-btn-primary-hover-color: var(--color-surface-dark);
+  --cc-btn-secondary-bg: color-mix(in srgb, var(--color-surface-card) 70%, var(--color-surface-border));
+  --cc-btn-secondary-color: var(--color-surface-light);
+  --cc-btn-secondary-hover-bg: color-mix(in srgb, var(--color-surface-card) 50%, var(--color-surface-border));
+  --cc-btn-secondary-hover-color: var(--color-surface-light);
+  --cc-separator-border-color: color-mix(in srgb, var(--color-surface-card) 70%, var(--color-surface-border));
+  --cc-cookie-category-block-bg: var(--color-surface-dark);
+  --cc-cookie-category-block-hover-bg: color-mix(in srgb, var(--color-surface-dark) 85%, var(--color-surface-card));
+  --cc-overlay-bg: color-mix(in srgb, var(--color-surface-dark) 70%, transparent);
+  --cc-toggle-on-bg: var(--color-accent-blue);
+  --cc-toggle-off-bg: color-mix(in srgb, var(--color-surface-card) 70%, var(--color-surface-border));
+  --cc-toggle-readonly-bg: color-mix(in srgb, var(--color-surface-card) 50%, var(--color-surface-border));
+  --cc-section-border: color-mix(in srgb, var(--color-surface-card) 70%, var(--color-surface-border));
+  --cc-footer-bg: var(--color-surface-dark);
+  --cc-footer-color: var(--color-surface-muted);
+  --cc-footer-border-color: color-mix(in srgb, var(--color-surface-card) 70%, var(--color-surface-border));
 
   font-family: var(--font-sans);
 }

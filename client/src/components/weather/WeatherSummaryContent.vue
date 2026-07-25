@@ -122,7 +122,7 @@ onMounted(async () => {
     </div>
 
     <div v-else-if="error" class="text-sm space-y-2" :class="stackClass">
-      <p class="text-accent-golden">{{ error }}</p>
+      <p class="text-status-error">{{ error }}</p>
       <button
         type="button"
         class="text-surface-mid hover:text-surface-light underline"

@@ -68,7 +68,7 @@ function servicePermissionSummary(service: PlatformService): string {
   <div class="space-y-4">
     <div
       class="rounded-lg border border-surface-border bg-surface-dark/70 px-4 py-4"
-      :class="{ 'border-accent-violet/40 bg-accent-violet/10': isSuperuser }"
+      :class="{ 'border-status-critical/40 bg-status-critical/10': isSuperuser }"
     >
       <label
         class="flex items-start gap-3 text-sm text-surface-light cursor-pointer"
@@ -90,7 +90,7 @@ function servicePermissionSummary(service: PlatformService): string {
       </label>
       <p
         v-if="lockSuperuser"
-        class="mt-3 rounded border border-accent-golden/30 bg-accent-golden/10 px-3 py-2 text-xs text-accent-golden"
+        class="mt-3 rounded border border-status-cyan/30 bg-status-cyan/10 px-3 py-2 text-xs text-status-cyan"
       >
         Cannot demote the last admin
       </p>

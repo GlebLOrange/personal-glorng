@@ -128,11 +128,7 @@ async function savePassword(): Promise<void> {
   if (!canSavePassword.value) return;
   const ok = await runPassword(
     async () => {
-      await auth.changePassword(
-        currentPassword.value,
-        newPassword.value,
-        newPasswordConfirm.value,
-      );
+      await auth.changePassword(currentPassword.value, newPassword.value, newPasswordConfirm.value);
       return true;
     },
     {
@@ -331,7 +327,7 @@ async function deleteAccount(): Promise<void> {
       <Card>
         <CardBody>
           <div class="space-y-4">
-            <p v-if="githubError" class="text-sm text-status-warning">{{ githubError }}</p>
+            <p v-if="githubError" class="text-sm text-status-cyan">{{ githubError }}</p>
             <div class="flex flex-wrap items-center gap-3">
               <BaseButton
                 v-if="!githubStatus.linked"

@@ -81,14 +81,14 @@ function onRowKeydown(event: KeyboardEvent): void {
           </span>
           <span
             v-if="cookLabel"
-            class="inline-flex items-center gap-0.5 rounded-full border border-status-warning/30 bg-status-warning/15 px-1.5 py-0.5 text-[10px] text-status-warning"
+            class="inline-flex items-center gap-0.5 rounded-full border border-status-cyan/30 bg-status-cyan/15 px-1.5 py-0.5 text-[10px] text-status-cyan"
           >
             <ClockIcon class-name="size-3 shrink-0" />
             cook {{ cookLabel }}
           </span>
           <span
             v-if="recipe.servings"
-            class="inline-flex items-center gap-0.5 rounded-full border border-accent-violet/30 bg-accent-violet/15 px-1.5 py-0.5 text-[10px] text-accent-violet"
+            class="inline-flex items-center gap-0.5 rounded-full border border-status-success/30 bg-status-success/15 px-1.5 py-0.5 text-[10px] text-status-success"
           >
             <ClockIcon class-name="size-3 shrink-0" />
             {{ recipe.servings }} servings

@@ -18,15 +18,19 @@ Import explicitly per file (only `BaseImage` is global).
 
 ### Button action colors
 
-Use existing palette tokens — map API action to variant:
+Use the pale **1xx–5xx** family tokens — map API action to variant:
 
-| Action | Variant | Token |
-|---|---|---|
-| Create / add | `primary` | `accent-blue` wash |
-| Save / update / send | `success` | `status-success` wash |
-| Secondary / cancel (non-destructive) | `secondary` | grayscale (`surface-light`) |
-| Quiet chrome / tertiary | `ghost` (+ optional `quiet`) | muted until hover accent |
-| Cancel / delete / remove | `ghost` + `danger` (or `secondary` + `danger`) | `status-error` |
+| Action | Family | Variant / control | Token |
+|---|---|---|---|
+| Create / add / primary / info | 1xx | `BaseButton` `primary`, `ToolbarPillButton` `1xx` | `accent-blue` wash |
+| Save / success / created | 2xx | `BaseButton` `success`, pill `2xx` | `status-success` wash |
+| Update / redirect / caution | 3xx | pill `3xx`, edit chrome | `status-cyan` wash |
+| Delete / client error | 4xx | `danger`, pill `4xx` | `status-error` |
+| Critical / server error | 5xx | pill `5xx`, critical badges | `status-critical` |
+| Secondary / cancel (non-destructive) | — | `secondary` | grayscale (`surface-light`) |
+| Quiet chrome / tertiary | — | `ghost` (+ optional `quiet`) | muted until hover accent |
+
+`status-warning` aliases to `status-cyan` (3xx). Prefer `status-cyan` in new product code. Legacy `accent-red` / `accent-amber` map to error / cyan.
 
 Auth submits and marketing `cta-*` stay blue/neutral; do not invent new hex colors.
 
@@ -42,7 +46,7 @@ Three intentional systems — pick one per surface, do not mix adjacent CTAs:
 
 **Do not** use `cta-primary` inside tool screens; **do not** add gradients to `BaseButton`. Prefer `ToolbarPillButton` for admin toolbar primary actions and `BaseButton` for form/dialog actions.
 
-**Marketing vs product accents** — portfolio/marketing pages may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI stays single `accent-blue`; no decorative gradients on buttons.
+**Marketing vs product accents** — portfolio/marketing pages may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI uses only the **1xx–5xx** pale set + surfaces — no golden/violet on tools, chips, or product buttons.
 
 ## Card system (`components/ui/card/`)
 
@@ -63,11 +67,21 @@ For data lists:
 
 See `NewsPage.vue` and `ExpenseList.vue` for reference implementations.
 
-## Status colors
+## Status / palette colors
 
-Semantic tokens in `@theme`: `status-error`, `status-warning`, `status-success`.
+Canonical tokens in `@theme` (`client/src/styles/main.css`):
 
-Use `text-status-*`, `alert-surface-error`, etc. — not raw Tailwind `red-400` / `amber-400`. Prefer `status-*` over legacy `accent-red` / `accent-amber` aliases.
+| Family | Token | Hex |
+|---|---|---|
+| 1xx | `accent-blue` | `#8ec4e0` |
+| 2xx | `status-success` | `#7bc49a` |
+| 3xx | `status-cyan` (= `status-warning`) | `#7eb8b0` |
+| 4xx | `status-error` | `#e88a8a` |
+| 5xx | `status-critical` | `#d98aad` |
+
+Use `text-status-*`, `alert-surface-error`, `alert-surface-warning` (cyan), etc. — not raw Tailwind `red-400` / `amber-400`. Wash pattern: idle `/3`, hover/selected `/15` + border `/40`.
+
+Typography: IBM Plex Sans + Mono; use `font-data` for status codes, counts, and money.
 
 ## Overlay max-width naming
 
