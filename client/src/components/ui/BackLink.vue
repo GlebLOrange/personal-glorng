@@ -2,6 +2,8 @@
 import { computed } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 
+import { actionFamilyClass } from "@/constants/httpStatusColors";
+
 const props = withDefaults(
   defineProps<{
     to: RouteLocationRaw;
@@ -28,32 +30,46 @@ function backAriaLabel(to: RouteLocationRaw, label?: string): string {
 
 const sizeClass = computed(() =>
   props.size === "compact"
-    ? "min-h-9 min-w-9 h-9 w-9"
-    : "min-h-11 min-w-11 h-11 w-11",
+    ? "!min-h-8 !min-w-8 !h-8 !w-8"
+    : "!min-h-11 !min-w-11 !h-11 !w-11",
 );
 
-const iconClass = computed(() => (props.size === "compact" ? "h-4 w-4" : "h-5 w-5"));
+const iconClass = computed(() => (props.size === "compact" ? "size-4" : "size-5"));
+
+function linkClass(isActive: boolean): string {
+  return [
+    actionFamilyClass("1xx", isActive),
+    // Borderless icon control; anchors ignore :enabled so mirror 1xx hover without it.
+    "!border-transparent hover:!border-transparent focus-visible:!border-transparent !px-0",
+    isActive ? "" : "hover:text-accent-blue hover:bg-accent-blue/15",
+    sizeClass.value,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
 </script>
 
 <template>
-  <RouterLink
-    :to="to"
-    :aria-label="backAriaLabel(to, label)"
-    class="inline-flex items-center justify-center rounded-lg bg-surface-card text-surface-light transition-all duration-200 hover:bg-accent-blue/15 hover:text-accent-blue active:bg-accent-blue/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-    :class="sizeClass"
-  >
-    <svg
-      :class="iconClass"
-      viewBox="0 0 40 40"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      aria-hidden="true"
+  <RouterLink v-slot="{ href, navigate, isActive }" :to="to" custom>
+    <a
+      :href="href"
+      :aria-label="backAriaLabel(to, label)"
+      :class="linkClass(isActive)"
+      @click="navigate($event)"
     >
-      <path d="M24 11 15 20l9 9" />
-      <path d="M16 20h18" />
-    </svg>
+      <svg
+        :class="iconClass"
+        viewBox="0 0 40 40"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M24 11 15 20l9 9" />
+        <path d="M16 20h18" />
+      </svg>
+    </a>
   </RouterLink>
 </template>

@@ -44,10 +44,10 @@ const displayTitle = computed(
   <div
     class="relative -mx-6 border-b border-surface-border bg-surface-dark/80 px-6 py-1.5 backdrop-blur-md"
   >
-    <div class="flex min-h-11 min-w-0 items-center gap-3" :class="backTo ? 'pr-16' : ''">
+    <div class="flex min-h-8 min-w-0 items-center gap-3" :class="backTo ? 'pr-12' : ''">
       <div class="flex min-w-0 flex-1 flex-col justify-center">
         <div
-          :class="soleSectionCrumb ? 'flex min-h-11 items-center' : 'page-breadcrumb-row'"
+          :class="soleSectionCrumb ? 'flex min-h-8 items-center' : 'page-breadcrumb-row'"
         >
           <PageBreadcrumbs
             :segments="displaySegments"
