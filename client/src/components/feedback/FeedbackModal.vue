@@ -116,7 +116,6 @@ async function submit(): Promise<void> {
       <DrawerFooterActions>
         <template #dismiss>
           <BaseButton
-            variant="ghost"
             danger
             type="button"
             @click="$emit('close')"

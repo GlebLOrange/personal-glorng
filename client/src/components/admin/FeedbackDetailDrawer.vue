@@ -52,7 +52,6 @@ const emit = defineEmits<{
       <DrawerFooterActions>
         <template #dismiss>
           <BaseButton
-            variant="ghost"
             danger
             size="sm"
             @click="emit('close')"

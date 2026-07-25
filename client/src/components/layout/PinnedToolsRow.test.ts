@@ -5,12 +5,7 @@ import PinnedToolsRow from "@/components/layout/PinnedToolsRow.vue";
 import { WEATHER_ROUTE_NAME } from "@/constants/weather";
 
 const mocks = vi.hoisted(() => ({
-  isSuperuser: { value: false },
   routeName: "calculator" as string | symbol | null | undefined,
-}));
-
-vi.mock("@/composables/usePermissions", () => ({
-  usePermissions: () => ({ isSuperuser: mocks.isSuperuser }),
 }));
 
 vi.mock("vue-router", () => ({
@@ -26,83 +21,35 @@ vi.mock("@/components/weather/WeatherBar.vue", () => ({
   },
 }));
 
+vi.mock("@/components/ui/ToastContainer.vue", () => ({
+  default: {
+    name: "ToastContainer",
+    template: '<div data-testid="toast-host" />',
+  },
+}));
+
 describe("PinnedToolsRow", () => {
-  it("shows the users tile for superusers", () => {
-    mocks.isSuperuser.value = true;
-    mocks.routeName = "admin";
+  it("shows toast host and weather tile in the tool grid", () => {
+    mocks.routeName = "calculator";
 
-    const wrapper = mount(PinnedToolsRow, {
-      global: {
-        stubs: {
-          RouterLink: {
-            props: ["to"],
-            template: '<a :href="to"><slot /></a>',
-          },
-        },
-      },
-    });
+    const wrapper = mount(PinnedToolsRow);
 
-    expect(wrapper.get('a[href="/admin/users"]').text()).toContain("users");
+    expect(wrapper.find(".page-tool-grid").exists()).toBe(true);
+    expect(wrapper.find('[data-testid="toast-host"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="weather-bar"]').attributes("data-wrapper-class")).toBe(
       "page-tile md:col-start-3",
     );
-  });
-
-  it("shows weather without users for guests off the weather page", () => {
-    mocks.isSuperuser.value = false;
-    mocks.routeName = "calculator";
-
-    const wrapper = mount(PinnedToolsRow);
-
     expect(wrapper.find('a[href="/admin/users"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="weather-bar"]').attributes("data-expanded")).toBeUndefined();
   });
 
-  it("hides the pinned row on the weather page", () => {
-    mocks.isSuperuser.value = false;
+  it("keeps the grid on the weather page", () => {
     mocks.routeName = WEATHER_ROUTE_NAME;
 
     const wrapper = mount(PinnedToolsRow);
 
-    expect(wrapper.find(".page-tool-grid").exists()).toBe(false);
-  });
-
-  it("hides the pinned row for superusers on weather page", () => {
-    mocks.isSuperuser.value = true;
-    mocks.routeName = WEATHER_ROUTE_NAME;
-
-    const wrapper = mount(PinnedToolsRow, {
-      global: {
-        stubs: {
-          RouterLink: {
-            props: ["to"],
-            template: '<a :href="to"><slot /></a>',
-          },
-        },
-      },
-    });
-
-    expect(wrapper.find(".page-tool-grid").exists()).toBe(false);
-  });
-
-  it("hides users tile for superusers off the admin dashboard", () => {
-    mocks.isSuperuser.value = true;
-    mocks.routeName = "calculator";
-
-    const wrapper = mount(PinnedToolsRow, {
-      global: {
-        stubs: {
-          RouterLink: {
-            props: ["to"],
-            template: '<a :href="to"><slot /></a>',
-          },
-        },
-      },
-    });
-
-    expect(wrapper.find('a[href="/admin/users"]').exists()).toBe(false);
+    expect(wrapper.find(".page-tool-grid").exists()).toBe(true);
+    expect(wrapper.find('[data-testid="toast-host"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
   });
 });

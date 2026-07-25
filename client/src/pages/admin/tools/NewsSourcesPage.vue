@@ -150,11 +150,8 @@ function clearFilters(): void {
 }
 
 function sourceMeta(source: NewsSource): string {
-  const parts = [source.category, source.region];
-  if (source.last_fetched_at) {
-    parts.push(`fetched ${formatDate(source.last_fetched_at)}`);
-  }
-  return parts.join(" · ");
+  if (!source.last_fetched_at) return "";
+  return `fetched ${formatDate(source.last_fetched_at)}`;
 }
 
 function syncRouteSource(): void {
@@ -389,7 +386,7 @@ onMounted(loadSources);
       </template>
     </div>
 
-    <div class="min-w-0 space-y-1">
+    <div class="min-w-0 divide-y divide-surface-border/40">
       <AdminListSkeleton v-if="loading" label="Loading sources" />
 
       <Card v-else-if="loadError" role="alert">
@@ -433,7 +430,7 @@ onMounted(loadSources);
             <template #primary>
               <span :title="source.name">{{ source.name }}</span>
             </template>
-            <template #meta>
+            <template v-if="source.last_fetched_at" #meta>
               <span>{{ sourceMeta(source) }}</span>
             </template>
             <template #actions>

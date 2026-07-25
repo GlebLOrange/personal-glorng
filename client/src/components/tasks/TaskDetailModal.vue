@@ -13,6 +13,7 @@ import {
   statusActionLabel,
   statusBadgeClass,
   statusLabel,
+  statusMenuItemClass,
   TASK_STATUSES,
   type TaskStatus,
 } from "@/constants/taskStatus";
@@ -95,37 +96,33 @@ watch(
 
     <div v-else class="space-y-5">
       <section class="space-y-2">
-        <div class="flex min-w-0 items-baseline gap-2 text-sm">
-          <span class="shrink-0 text-surface-mid">deadline</span>
-          <span
-            class="min-w-4 flex-1 translate-y-[-0.15em] border-b border-dotted border-surface-border/50"
-            aria-hidden="true"
-          />
-          <span class="shrink-0 text-right text-surface-light">{{ schedule?.headline }}</span>
+        <div class="space-y-1">
+          <div class="flex min-w-0 items-baseline justify-between gap-3 text-sm">
+            <span class="shrink-0 text-surface-mid">deadline</span>
+            <span class="min-w-0 text-right text-surface-light">{{ schedule?.headline }}</span>
+          </div>
+          <p v-if="schedule?.detail" class="text-right text-xs text-surface-mid">
+            {{ schedule.detail }}
+          </p>
         </div>
-        <p v-if="schedule?.detail" class="text-right text-xs text-surface-mid">
-          {{ schedule.detail }}
-        </p>
 
-        <div v-if="task.location" class="flex min-w-0 items-baseline gap-2 text-sm">
+        <div
+          v-if="task.location"
+          class="flex min-w-0 items-baseline justify-between gap-3 text-sm"
+        >
           <span class="shrink-0 text-surface-mid">location</span>
-          <span
-            class="min-w-4 flex-1 translate-y-[-0.15em] border-b border-dotted border-surface-border/50"
-            aria-hidden="true"
-          />
-          <span class="shrink-0 text-right text-surface-light">@{{ task.location }}</span>
+          <span class="min-w-0 text-right text-surface-light">@{{ task.location }}</span>
         </div>
       </section>
 
-      <section v-if="task.description">
-        <div class="mb-1 flex min-w-0 items-baseline gap-2 text-sm">
-          <span class="shrink-0 text-surface-mid">about</span>
-          <span
-            class="min-w-4 flex-1 translate-y-[-0.15em] border-b border-dotted border-surface-border/50"
-            aria-hidden="true"
-          />
-        </div>
-        <p class="whitespace-pre-wrap text-sm text-surface-light">{{ task.description }}</p>
+      <section
+        v-if="task.description"
+        class="flex min-w-0 items-baseline justify-between gap-3 text-sm"
+      >
+        <span class="shrink-0 text-surface-mid">about</span>
+        <p class="min-w-0 whitespace-pre-wrap text-right text-surface-light">
+          {{ task.description }}
+        </p>
       </section>
 
       <section v-if="task.reminders.length" class="border-t border-surface-border pt-4">
@@ -217,19 +214,28 @@ watch(
         <dl
           v-if="technicalOpen"
           id="task-technical-details"
-          class="space-y-1 text-xs text-surface-mid"
+          class="space-y-1 text-xs"
         >
-          <div v-if="task.google_event_id">
-            <dt class="inline font-medium">event id:</dt>
-            <dd class="ml-1 inline break-all">{{ task.google_event_id }}</dd>
+          <div
+            v-if="task.google_event_id"
+            class="flex min-w-0 items-baseline justify-between gap-3"
+          >
+            <dt class="shrink-0 text-surface-mid">event id</dt>
+            <dd class="min-w-0 break-all text-right text-surface-light">
+              {{ task.google_event_id }}
+            </dd>
           </div>
-          <div>
-            <dt class="inline font-medium">created:</dt>
-            <dd class="ml-1 inline">{{ formatDate(task.created_at) }}</dd>
+          <div class="flex min-w-0 items-baseline justify-between gap-3">
+            <dt class="shrink-0 text-surface-mid">created</dt>
+            <dd class="min-w-0 text-right text-surface-light">
+              {{ formatDate(task.created_at) }}
+            </dd>
           </div>
-          <div>
-            <dt class="inline font-medium">updated:</dt>
-            <dd class="ml-1 inline">{{ formatDate(task.updated_at) }}</dd>
+          <div class="flex min-w-0 items-baseline justify-between gap-3">
+            <dt class="shrink-0 text-surface-mid">updated</dt>
+            <dd class="min-w-0 text-right text-surface-light">
+              {{ formatDate(task.updated_at) }}
+            </dd>
           </div>
         </dl>
       </section>
@@ -242,17 +248,17 @@ watch(
           placement="top"
           aria-label="more actions"
         >
-          <template #trigger>
+          <template #trigger="{ open: menuOpen }">
             <span class="inline-flex items-center gap-1.5 px-2 text-sm text-surface-mid">
               more actions
-              <ChevronIcon />
+              <ChevronIcon :open="menuOpen" />
             </span>
           </template>
           <template #default="{ close: closeMenu }">
             <BaseDropdownMenuItem
               v-for="status in menuStatuses"
               :key="status"
-              :destructive="status === 'cancelled' || status === 'not_completed'"
+              :color-class="statusMenuItemClass(status)"
               @select="
                 closeMenu();
                 if (!statusUpdating) emit('updateStatus', status);

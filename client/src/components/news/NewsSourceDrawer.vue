@@ -51,7 +51,7 @@ function toStringValue(value: string | number | null | undefined): string {
       />
       <BaseInput
         :model-value="form.name"
-        placeholder="name"
+        placeholder="title"
         required
         @update:model-value="patch({ name: toStringValue($event) })"
       />
@@ -83,7 +83,6 @@ function toStringValue(value: string | number | null | undefined): string {
         <template #dismiss>
           <BaseButton
             type="button"
-            variant="ghost"
             danger
             @click="emit('close')"
           >

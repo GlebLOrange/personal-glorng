@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -47,6 +48,7 @@ useScrollListFingerprint(
 );
 
 const form = ref<NewsArticleFormData>(emptyForm());
+const themesOpen = ref(false);
 
 /** Chrome crumb prefers public path shape `news/<slug>` once known. */
 const chromeTitle = computed(() => {
@@ -226,6 +228,10 @@ function toggleTheme(theme: string): void {
   form.value.themes = [...themes, theme].join(", ");
 }
 
+function onThemesToggle(event: Event): void {
+  themesOpen.value = (event.target as HTMLDetailsElement).open;
+}
+
 function applySource(sourceId: number | null): void {
   const source = sources.value.find((item) => item.id === sourceId);
   form.value.source_id = sourceId;
@@ -332,8 +338,14 @@ watch(articleId, () => {
               :disabled="!canWrite"
             />
           </div>
-          <details class="mt-4 rounded border border-surface-border px-3 py-2">
-            <summary class="cursor-pointer text-sm text-surface-mid">
+          <details
+            class="mt-4 rounded border border-surface-border px-3 py-2"
+            @toggle="onThemesToggle"
+          >
+            <summary
+              class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+            >
+              <ChevronIcon :open="themesOpen" />
               themes ({{ parsedThemes().length }}/{{ NEWS_THEME_LIMIT }})
               <span class="text-xs text-surface-muted"> — {{ selectedThemesLabel() }}</span>
             </summary>

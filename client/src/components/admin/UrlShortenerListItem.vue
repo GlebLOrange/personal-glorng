@@ -6,6 +6,8 @@ import AdminListRow from "@/components/admin/AdminListRow.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
+import IconCopyButton from "@/components/ui/IconCopyButton.vue";
+import IconEditButton from "@/components/ui/IconEditButton.vue";
 import type { UrlItem } from "@/types";
 import { publicUrl } from "@/utils/publicLinks";
 
@@ -87,6 +89,7 @@ function confirmDelete(): void {
       <BaseInput
         ref="titleInput"
         v-model="draftTitle"
+        class="min-w-0 w-full"
         placeholder="title (optional)"
         @keydown="onTitleKeydown"
       />
@@ -125,26 +128,12 @@ function confirmDelete(): void {
       </a>
     </template>
     <template #actions>
-      <BaseButton
+      <IconEditButton
         v-if="canWrite"
-        variant="ghost"
-        quiet
-        size="sm"
-        class="!text-accent-blue hover:enabled:!bg-accent-blue/15 focus-visible:!text-accent-blue"
         aria-label="edit title"
         @click="startEdit"
-      >
-        ✎
-      </BaseButton>
-      <BaseButton
-        variant="ghost"
-        quiet
-        size="sm"
-        aria-label="copy short link"
-        @click="emit('copy')"
-      >
-        ⎘
-      </BaseButton>
+      />
+      <IconCopyButton aria-label="copy short link" @click="emit('copy')" />
       <IconCloseButton
         v-if="canWrite"
         aria-label="delete short URL"

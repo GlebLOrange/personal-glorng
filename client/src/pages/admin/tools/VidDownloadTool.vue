@@ -172,7 +172,7 @@ async function download(): Promise<void> {
                 name="audio_only"
                 class="accent-accent-blue"
               />
-              audio only (extract as MP3)
+              audio only
             </label>
           </div>
         </div>

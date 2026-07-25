@@ -12,15 +12,13 @@ const emit = defineEmits<{
 
 <template>
   <div class="mb-6 space-y-4">
-    <div class="flex flex-wrap items-center gap-3">
-      <SearchInput
-        :model-value="search"
-        class="min-w-0 flex-1"
-        placeholder="search recipe"
-        @update:model-value="emit('update:search', String($event ?? ''))"
-      />
-      <slot name="actions" />
-    </div>
+    <SearchInput
+      :model-value="search"
+      class="w-full min-w-0 [&_input]:text-right"
+      placeholder="search recipe"
+      aria-label="search recipe"
+      @update:model-value="emit('update:search', String($event ?? ''))"
+    />
     <slot />
   </div>
 </template>

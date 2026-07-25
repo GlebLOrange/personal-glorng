@@ -5,8 +5,8 @@ import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import IconCopyButton from "@/components/ui/IconCopyButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -153,11 +153,14 @@ onMounted(loadUrls);
         >
           {{ lastCreatedLink }}
         </a>
-        <BaseButton variant="ghost" size="sm" @click="copy(lastCreatedLink)">copy</BaseButton>
+        <IconCopyButton
+          aria-label="copy short link"
+          @click="copy(lastCreatedLink)"
+        />
       </div>
     </Card>
 
-    <div v-if="canManage" class="space-y-1">
+    <div v-if="canManage" class="divide-y divide-surface-border/40">
       <AdminListSkeleton v-if="listLoading" label="loading shortened URLs" />
 
       <template v-else>
