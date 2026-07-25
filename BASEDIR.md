@@ -1,83 +1,75 @@
-# PR #419 improvement suggestions
+# PR #421 improvement suggestions
 
-Review target: [Cursor/disable sentry dev](https://github.com/GlebLOrange/personal-glorng/pull/419) (`cursor/disable-sentry-dev` → `main`).
+Review target: [chore(dev-env): fix cloud-vm overlay for mongodb/rabbitmq + document setup caveats](https://github.com/GlebLOrange/personal-glorng/pull/421) (`cursor/dev-env-setup-f152` → `main`).
 
-Verdict: the Sentry change is the right shape (DSN required; `development`/`test` also need `SENTRY_ENABLED=true`) and the new matrix test covers the main env cases. The deployment runbook rewrite is useful but larger than the PR title suggests — land the Sentry guard cleanly, then tighten a few footguns in docs/ops.
+Verdict: ship it. The `mongodb` / `rabbitmq` overlay fix is the real unblocker, and the AGENTS.md caveats match what Cloud Agents hit. Treat the items below as small follow-ups — none should block this thin env/docs PR.
 
-## Scope / PR hygiene
+## High-value follow-ups
 
-1. **Split or rename for clarity**  
-   Title/branch say “disable sentry dev”, but half the diff is a full rewrite of `docs/operations/deployment.md` (profiles → always-on prod services, day-2 `-f` discipline). Prefer either:
-   - two PRs (Sentry + tests first; runbook second), or
-   - a title/body that names both (“Sentry opt-in in dev/test + prod start runbook”).
+1. **Add `elasticsearch` to `docker-compose.cloud-vm.yml`**  
+   Base compose gives ES `deploy.resources.limits.memory: 768M`. AGENTS.md tells agents to use the cloud overlay with `make dev-search` / `--profile search`, but the overlay still omits `elasticsearch`, so search mode will hit the same `cgroupv2 … threaded mode` crash mongodb/rabbitmq just escaped. Mirror the other limited services:
 
-2. **Fill the empty PR body**  
-   Call out the behavior change vs old `sentry_enabled()`: previously `APP_ENV=test` with a DSN alone would initialize Sentry; now it will not. That matters for anyone who copied a DSN into local/`tests` env files.
-
-## Sentry correctness
-
-3. **Document (or add) a staging/prod kill switch**  
-   After this PR, `SENTRY_ENABLED=false` is a no-op whenever `APP_ENV` is `staging`/`production` and `SERVER_SENTRY_DSN` is set. That matches the docstring, but operators may assume the flag still disables shipping. Options:
-   - keep current semantics and put a one-line warning in `.env.example` + configuration docs (“ignored outside development/test; clear the DSN to disable”), or
-   - honor `SENTRY_ENABLED=false` as an emergency override in all envs (DSN + enabled).
-
-4. **Mirror Sentry into `.env.production.example`**  
-   The prod template still has no `SERVER_SENTRY_DSN` / `SERVER_SENTRY_RELEASE` / `SENTRY_ENABLED` (and is generally thinner than `.env.example`). Since the deployment doc tells people to copy that file, add the Sentry block there with the prod rule: DSN set ⇒ on; leave DSN blank to stay off.
-
-5. **Tighten the test matrix a little**  
-   Nice coverage already. Two cheap extras would lock the contract:
-   - `SENTRY_ENABLED=true` + empty DSN → still `False` (DSN gate wins).
-   - unknown/`prod` typo `APP_ENV` with DSN set → document expected behavior (today: treated as non-dev/test ⇒ on). If that is intentional, assert it; if not, validate `APP_ENV` against an allow-list.
-
-6. **Client side is docs-only — say so**  
-   `client/src/constants/sentry.ts` already opt-in on Vite `DEV`; this PR only sets `VITE_SENTRY_ENABLED=false` in `client/.env.development` and comments `.env.example`. Fine, but the PR body should note “no client logic change” so reviewers do not hunt for a TS diff.
-
-## Deployment runbook
-
-7. **Day-2 commands omit the cache overlay that `make prod` uses**  
-   Section 3’s equivalent includes `-f docker-compose.cache.yml`, but section 6 (`logs` / `down` / `exec`) and the Celery DLQ samples use only `-f docker-compose.prod.yml`. That can leave `redis-cache` unmanaged or confuse project name/state. Prefer one documented compose invocation, e.g. a Make variable:
-
-   ```makefile
-   COMPOSE_PROD = docker compose -f docker-compose.prod.yml -f docker-compose.cache.yml
-   prod-logs:
-   	$(COMPOSE_PROD) logs -f
-   prod-down:
-   	$(COMPOSE_PROD) down
+   ```yaml
+   elasticsearch:
+     cgroup: host
+     deploy: !reset null
    ```
 
-   …and point the runbook at those targets instead of repeating fragile `-f` lists.
+2. **Fix the root cause of the SEED_PASSWORD trap in `.env.example`**  
+   Documenting the gotcha is good; leaving `SEED_PASSWORD=password_seed` (and `E2E_PASSWORD=password_seed`) still burns the next agent. Prefer:
 
-8. **`make logs` / `make down` footgun**  
-   Calling out that bare Make targets miss prod compose is good. Going further: either add `prod-logs`/`prod-down` (above) or make `logs`/`down` refuse to run when a prod project is detected, so the doc warning is not the only safety net.
+   - set both to a policy-compliant value that matches the documented E2E creds (`MyTestPass123!`), and  
+   - tighten seed validation to call `validate_password_strength` (today `WEAK_PASSWORDS` only blocks a tiny deny-list, so `password_seed` still seeds successfully and fails only at login).
 
-9. **Todobot always-on crash-loop**  
-   The note to set `TELEGRAM_BOT_TO_DO_TOKEN` is necessary. Stronger options if this bites in real deploys:
-   - Compose `profiles: [bot]` on `todobot` even in prod, or
-   - start the bot only when the token is non-empty (entrypoint guard) so a blank token does not restart forever.
+3. **Wire the cloud overlay into Make (stop claiming equivalence)**  
+   AGENTS.md says the long compose command is “equivalent to `make dev-lite`”, but `make dev-lite` / `dev-search` / `dev-ultra-lite-infra` never pass `-f docker-compose.cloud-vm.yml`, and step 2 still tells agents to run `make dev-lite`. On this VM that fails. Options (pick one):
 
-10. **Optional search/Elasticsearch row dropped**  
-    Old “Optional compose profiles” mentioned a search overlay; the new table keeps Postgres / AI search / Cloudflare but not Elasticsearch. If prod search is still a supported path, restore one row pointing at `docker-compose.search.yml` + `ELASTICSEARCH_URL`; if AI-only is the supported prod path, say that explicitly so the omission is intentional.
+   - `COMPOSE_CLOUD ?= -f docker-compose.cloud-vm.yml` toggled by `CLOUD_VM=1` or auto-detect nested Docker, or  
+   - explicit targets: `dev-lite-cloud`, `dev-search-cloud`, `dev-ultra-lite-infra-cloud`.
 
-## Docs / config consistency
+   Then point AGENTS.md at the Make target instead of a hand-copied compose line.
 
-11. **Configuration table wording**  
-    `docs/reference/configuration.md` already explains opt-in vs DSN-gated. Add a short “Disable in staging/prod” line (clear DSN / omit from process env) next to `SENTRY_ENABLED` so the ignored-flag case is not buried in prose.
+4. **Guard against the next missing overlay service**  
+   The mongodb/rabbitmq miss happened because the overlay is a hand-maintained allowlist. Add a tiny check (CI or `scripts/check_cloud_vm_overlay.sh`) that every service in `docker-compose.yml` with `deploy.resources` also appears in `docker-compose.cloud-vm.yml` with `deploy: !reset null`. Cheap insurance.
 
-12. **Sentry releases section vs runtime enablement**  
-    The restored “Sentry releases (optional CI)” block covers sourcemap upload secrets but not runtime `SERVER_SENTRY_DSN` on the host. One sentence cross-link to configuration (and the new prod `.env` keys) would connect release upload to “events actually flow”.
+## Docs / DX polish
 
-## Test plan additions for #419
+5. **Align the documented `up` service list with reality**  
+   Example command starts `mongodb redis server` but lite also needs `redis-cache` (and pulls `rabbitmq` / `migrate` via `depends_on`). Prefer the same set as Makefile: `mongodb redis redis-cache server` (plus `nginx` if matching `dev-lite`), or say “compose will start depends_on” explicitly so agents do not wonder why extra containers appear.
 
-- [ ] With `APP_ENV=development`, DSN set, `SENTRY_ENABLED=false` → no Sentry init (API + Celery worker).
-- [ ] Same with `SENTRY_ENABLED=true` → init once; no events from pytest unless explicitly opted in.
-- [ ] Staging/production with DSN set and `SENTRY_ENABLED=false` → confirm intended behavior (on today).
-- [ ] Vite DEV: default no client events; `VITE_SENTRY_ENABLED=true` + DSN sends a test error.
-- [ ] Fresh host: copy `.env.production.example` → `make prod` → health/ready; day-2 logs/down use the same compose file set as start (including cache overlay).
+6. **Break the Docker caveat wall of text into bullets**  
+   The Docker 29 / `fuse-overlayfs` / overlay-must-cover-every-limited-service paragraph is accurate but hard to scan. Split into short bullets: daemon.json requirements, per-session `dockerd`, overlay completeness rule, failure signature to search for.
+
+7. **Optional: one bootstrap script for daemon.json + dockerd**  
+   Agents can mis-edit `/etc/docker/daemon.json` (especially the Docker 29 `containerd-snapshotter: false` bit). A `scripts/cloud-vm-docker.sh` that writes the known-good daemon config, restarts/starts `dockerd`, and waits on `docker info` would make the AGENTS.md prose operational instead of copy-paste fragile.
+
+8. **Keep known-broken frontend CI out of permanent AGENTS.md status**  
+   The `npm ci --legacy-peer-deps` / TS7 vs `typescript-eslint` notes are useful *right now*, but they duplicate what should be a tracked issue/PR. After the dep fix lands, delete those bullets so AGENTS.md stays an env bootstrap, not a CI status board. Link an issue if you keep them temporarily.
+
+9. **Seed password update path**  
+   Docs correctly say `seed_admin` skips existing users and you need `down -v`. A small escape hatch (`SEED_PASSWORD_FORCE=1` or “update password when email matches seed admin”) would avoid volume wipes when someone already seeded with `password_seed`.
+
+## Nice-to-have consistency checks before merge (optional)
+
+10. **Confirm overlay coverage matrix** (manual or script):
+
+    | Service with `deploy.resources` | In cloud-vm overlay? |
+    |---|---|
+    | `db` | yes |
+    | `mongodb` | yes (this PR) |
+    | `rabbitmq` | yes (this PR) |
+    | `redis` | yes |
+    | `redis-cache` | yes |
+    | `elasticsearch` | **no — follow-up #1** |
+
+11. **Smoke after follow-ups**  
+    - `… -f docker-compose.cloud-vm.yml --profile search up elasticsearch` stays healthy.  
+    - Fresh `.env` from `.env.example` → `make seed` → login with the documented E2E password works without editing SEED_PASSWORD.  
+    - `make dev-lite-cloud` (or `CLOUD_VM=1 make dev-lite`) starts the lite stack without a hand-rolled compose line.
 
 ## Suggested apply order
 
-1. PR body + title/scope clarity (Sentry vs runbook).  
-2. `.env.production.example` Sentry keys + kill-switch docs.  
-3. One extra sentry unit case (enabled flag without DSN).  
-4. `prod-logs` / `prod-down` (or fix day-2 `-f` lists to include cache).  
-5. Optional follow-up: todobot guard / search row / APP_ENV allow-list.
+1. Merge #421 as-is (overlay fix + docs unblock Cloud Agents today).  
+2. Tiny follow-up: add `elasticsearch` to the overlay (+ optional overlay completeness check).  
+3. `.env.example` / seed policy alignment so SEED_PASSWORD cannot recreate the login trap.  
+4. Make target / `CLOUD_VM` wiring so AGENTS.md can stop duplicating compose flags.
