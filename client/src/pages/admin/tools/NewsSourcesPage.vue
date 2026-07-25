@@ -13,6 +13,7 @@ import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
+import IconEditButton from "@/components/ui/IconEditButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
@@ -123,7 +124,7 @@ async function onSurfaceTab(id: string): Promise<void> {
         >
           {{ refreshButtonText }}
         </ToolbarPillButton>
-        <ToolbarPillButton family="2xx" :disabled="loading" @click="openCreate">
+        <ToolbarPillButton family="1xx" :disabled="loading" @click="openCreate">
           + source
         </ToolbarPillButton>
       </template>
@@ -185,17 +186,11 @@ async function onSurfaceTab(id: string): Promise<void> {
               >
                 ⚠
               </span>
-              <BaseButton
+              <IconEditButton
                 v-if="canWrite"
-                variant="ghost"
-                quiet
-                size="sm"
-                class="!text-accent-blue hover:enabled:!bg-accent-blue/15 focus-visible:!text-accent-blue"
                 aria-label="edit source"
                 @click="openEditableSource(source)"
-              >
-                ✎
-              </BaseButton>
+              />
               <IconCloseButton
                 v-if="canWrite"
                 aria-label="Delete source"

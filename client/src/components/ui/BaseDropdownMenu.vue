@@ -1,7 +1,17 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  useSlots,
+  useTemplateRef,
+  watch,
+} from "vue";
 
-import { actionFamilyClass } from "@/constants/httpStatusColors";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import { actionFamilyClass, iconActionClass } from "@/constants/httpStatusColors";
 
 const props = withDefaults(
   defineProps<{
@@ -16,25 +26,27 @@ const props = withDefaults(
   },
 );
 
+const slots = useSlots();
 const open = ref(false);
 const rootRef = useTemplateRef<HTMLElement>("root");
 const triggerRef = useTemplateRef<HTMLButtonElement>("trigger");
 const menuRef = useTemplateRef<HTMLElement>("menu");
 let previouslyFocused: HTMLElement | null = null;
 
+const hasCustomTrigger = computed(() => Boolean(slots.trigger));
+
 const menuPositionClass = computed(() =>
   props.placement === "top" ? "bottom-full mb-1" : "top-full mt-1",
 );
 
-const triggerClass = computed(() =>
-  [
-    actionFamilyClass("1xx", open.value),
-    "!border-transparent hover:!border-transparent focus-visible:!border-transparent",
-    open.value ? undefined : "hover:text-accent-blue hover:bg-accent-blue/15",
-  ]
-    .filter(Boolean)
-    .join(" "),
-);
+const triggerClass = computed(() => {
+  if (hasCustomTrigger.value) {
+    // Labeled triggers (e.g. more actions) match ToolbarPillButton h-11.
+    return actionFamilyClass("1xx", open.value);
+  }
+  // Icon-only default — h-8 square chrome.
+  return iconActionClass("1xx", open.value);
+});
 
 function getMenuItems(): HTMLElement[] {
   const menu = menuRef.value;
@@ -113,12 +125,13 @@ watch(open, async (isOpen) => {
 });
 
 onMounted(() => {
-  document.addEventListener("click", onDocumentClick);
+  // Capture: drawer panels use @click.stop, which blocks bubble-phase document listeners.
+  document.addEventListener("click", onDocumentClick, true);
   document.addEventListener("keydown", onKeydown);
 });
 
 onUnmounted(() => {
-  document.removeEventListener("click", onDocumentClick);
+  document.removeEventListener("click", onDocumentClick, true);
   document.removeEventListener("keydown", onKeydown);
 });
 
@@ -133,12 +146,14 @@ defineExpose({ close });
       :class="triggerClass"
       aria-haspopup="menu"
       :aria-expanded="open"
-      :aria-label="props.ariaLabel"
+      :aria-label="hasCustomTrigger ? undefined : props.ariaLabel"
+      :title="props.ariaLabel"
       @click.stop="toggle"
     >
-      <slot name="trigger" :open="open">
-        <span class="text-lg leading-none" aria-hidden="true">⋮</span>
-      </slot>
+      <span class="inline-flex items-center gap-1.5">
+        <slot name="trigger" :open="open" />
+        <ChevronIcon :open="open" />
+      </span>
     </button>
 
     <div

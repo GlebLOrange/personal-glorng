@@ -161,7 +161,7 @@ onUnmounted(() => {
         </div>
 
         <main class="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
-          <div class="text-5xl font-mono text-accent-blue mb-6">{{ stepIndex + 1 }}</div>
+          <div class="text-5xl font-data text-accent-blue mb-6">{{ stepIndex + 1 }}</div>
           <p class="text-xl sm:text-2xl text-surface-light leading-relaxed max-w-2xl">
             {{ currentStep }}
           </p>

@@ -95,12 +95,13 @@ watch(open, async (isOpen) => {
 });
 
 onMounted(() => {
-  document.addEventListener("click", onDocumentClick);
+  // Capture: drawer panels use @click.stop, which blocks bubble-phase document listeners.
+  document.addEventListener("click", onDocumentClick, true);
   document.addEventListener("keydown", onKeydown);
 });
 
 onUnmounted(() => {
-  document.removeEventListener("click", onDocumentClick);
+  document.removeEventListener("click", onDocumentClick, true);
   document.removeEventListener("keydown", onKeydown);
 });
 

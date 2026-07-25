@@ -32,7 +32,7 @@ const emit = defineEmits<{
       </slot>
     </div>
     <div class="flex justify-end gap-3">
-      <BaseButton variant="ghost" danger :disabled="loading" @click="emit('cancel')"
+      <BaseButton variant="secondary" :disabled="loading" @click="emit('cancel')"
         >cancel</BaseButton
       >
       <BaseButton

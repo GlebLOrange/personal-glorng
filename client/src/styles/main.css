@@ -2,11 +2,11 @@
 @import "@fontsource/ibm-plex-sans/latin-400.css";
 @import "@fontsource/ibm-plex-sans/latin-600.css";
 @import "@fontsource/ibm-plex-sans/latin-700.css";
-@import "@fontsource/ibm-plex-mono/latin-400.css";
 
 @theme {
   --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  /* Product UI is sans-only; keep alias for Tailwind font-mono / legacy refs. */
+  --font-mono: var(--font-sans);
   --text-xs: 0.875rem;
   --text-xs--line-height: 1.5;
   --text-sm: 1rem;
@@ -111,7 +111,7 @@
 }
 
 @utility font-data {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
 }
 
@@ -221,15 +221,15 @@
   @apply rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error;
 }
 
-/* Native <select> caret — inset from right, vertically centered (surface-mid).
+/* Native <select> caret — same geometry as ChevronIcon (24 viewBox path).
    Sets its own background-color so bg-* utilities cannot wipe the chevron image. */
 @utility field-select-chevron {
   appearance: none;
   background-color: var(--color-surface-dark);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4%206l4%204%204-4' stroke='%23d4cdc6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%23d4cdc6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
-  background-size: 0.75rem 0.75rem;
+  background-size: 0.875rem 0.875rem;
 }
 
 @utility alert-surface-warning {
@@ -257,7 +257,7 @@ body {
 }
 
 .code-block {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   background: var(--color-surface-card);
   border: 1px solid var(--color-surface-border);
   border-radius: var(--radius-interactive);

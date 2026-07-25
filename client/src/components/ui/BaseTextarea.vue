@@ -2,7 +2,7 @@
 import { computed, useAttrs, useId } from "vue";
 
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
-import { TEXTAREA_CLASS } from "@/constants/formClasses";
+import { TEXTAREA_CLASS, TEXTAREA_CLASS_COMPACT } from "@/constants/formClasses";
 
 defineOptions({ inheritAttrs: false });
 
@@ -18,6 +18,7 @@ const props = defineProps<{
   hint?: string;
   error?: string;
   rows?: number;
+  compact?: boolean;
 }>();
 
 const attrs = useAttrs();
@@ -38,15 +39,23 @@ const describedBy = computed(() => {
   // Visual tip stays aria-hidden; do not wire into describedby.
   return ids.length ? ids.join(" ") : undefined;
 });
-const bareClass = computed(() => [TEXTAREA_CLASS, props.error && "border-status-error"]);
+const bareClass = computed(() => [
+  props.compact ? TEXTAREA_CLASS_COMPACT : TEXTAREA_CLASS,
+  props.error && "border-status-error",
+]);
 const shellClass = computed(() => [
   "relative flex w-full items-start rounded-lg border bg-surface-dark transition-colors",
   props.error
     ? "border-status-error"
     : "border-surface-border focus-within:border-accent-blue focus-within:ring-2 focus-within:ring-accent-blue/50",
 ]);
-const shellTextareaClass =
-  "relative z-10 min-h-11 min-w-0 flex-1 resize-y border-0 bg-transparent px-3 py-2 text-left text-sm text-surface-light outline-none disabled:opacity-60";
+const shellTextareaClass = computed(
+  () =>
+    [
+      "relative z-10 min-w-0 flex-1 resize-y border-0 bg-transparent px-3 text-left text-sm text-surface-light outline-none disabled:opacity-60",
+      props.compact ? "min-h-9 py-1.5" : "min-h-11 py-2",
+    ].join(" "),
+);
 const textareaAttrs = computed(() => {
   const nativeAttrs: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(attrs)) {

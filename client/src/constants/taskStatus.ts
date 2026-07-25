@@ -1,3 +1,5 @@
+import { familyBadgeClass } from "@/constants/httpStatusColors";
+
 export const TASK_STATUSES = [
   "pending",
   "completed",
@@ -21,17 +23,19 @@ const STATUS_LABELS: Record<string, string> = {
   confirmed: "confirmed",
 };
 
+const MUTED_BADGE = "text-surface-mid bg-surface-mid/10 border-surface-border";
+
 const STATUS_BADGE_CLASS: Record<string, string> = {
-  pending: "text-status-cyan bg-status-cyan/10 border-status-cyan/30",
-  completed: "text-status-success bg-status-success/10 border-status-success/30",
-  not_completed: "text-status-error bg-status-error/10 border-status-error/30",
-  postponed: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
-  cancelled: "text-surface-mid bg-surface-mid/10 border-surface-border",
-  failed: "text-status-error bg-status-error/10 border-status-error/30",
-  parsing: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
-  clarifying: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
-  ready: "text-status-success bg-status-success/10 border-status-success/30",
-  confirmed: "text-status-success bg-status-success/10 border-status-success/30",
+  pending: familyBadgeClass("3xx"),
+  completed: familyBadgeClass("2xx"),
+  not_completed: familyBadgeClass("4xx"),
+  postponed: familyBadgeClass("1xx"),
+  cancelled: MUTED_BADGE,
+  failed: familyBadgeClass("4xx"),
+  parsing: familyBadgeClass("1xx"),
+  clarifying: familyBadgeClass("1xx"),
+  ready: familyBadgeClass("2xx"),
+  confirmed: familyBadgeClass("2xx"),
 };
 
 const STATUS_ACTION_LABELS: Record<TaskStatus, string> = {
@@ -44,10 +48,10 @@ const STATUS_ACTION_LABELS: Record<TaskStatus, string> = {
 
 /** Text + soft hover for status change menu items. */
 const STATUS_MENU_ITEM_CLASS: Record<TaskStatus, string> = {
-  pending: "text-status-cyan hover:bg-status-cyan/10",
-  completed: "text-status-success hover:bg-status-success/10",
-  not_completed: "text-status-error hover:bg-status-error/10",
-  postponed: "text-accent-blue hover:bg-accent-blue/10",
+  pending: "text-status-cyan hover:bg-status-cyan/15",
+  completed: "text-status-success hover:bg-status-success/15",
+  not_completed: "text-status-error hover:bg-status-error/15",
+  postponed: "text-accent-blue hover:bg-accent-blue/15",
   cancelled: "text-surface-mid hover:bg-surface-mid/10",
 };
 
@@ -63,7 +67,7 @@ export function statusActionLabel(status: TaskStatus): string {
 
 /** Tailwind classes for a status badge. */
 export function statusBadgeClass(status: string): string {
-  return STATUS_BADGE_CLASS[status] ?? "text-surface-mid bg-surface-mid/10 border-surface-border";
+  return STATUS_BADGE_CLASS[status] ?? MUTED_BADGE;
 }
 
 /** Tailwind classes for a status action in a dropdown menu. */

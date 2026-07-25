@@ -2,9 +2,10 @@
 import { computed } from "vue";
 
 import ClockIcon from "@/components/icons/ClockIcon.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
+import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { usePermissions } from "@/composables/usePermissions";
@@ -86,7 +87,7 @@ const emit = defineEmits<{
         <h3 class="text-sm font-medium text-surface-mid mb-2">steps</h3>
         <ol class="text-sm text-surface-light space-y-2">
           <li v-for="(step, i) in recipe.steps" :key="i" class="flex gap-2">
-            <span class="text-accent-blue font-mono shrink-0 w-5">{{ i + 1 }}.</span>
+            <span class="text-accent-blue font-data shrink-0 w-5">{{ i + 1 }}.</span>
             <span>{{ step }}</span>
           </li>
         </ol>
@@ -99,13 +100,15 @@ const emit = defineEmits<{
     </div>
 
     <template v-if="recipe && !loading" #footer>
-      <div class="flex w-full items-center gap-3">
-        <BaseButton v-if="canWrite" danger @click="emit('delete')"> delete </BaseButton>
-        <ToolbarPillButton family="2xx" class="min-w-0 flex-1" @click="emit('cook')">
-          cook
-        </ToolbarPillButton>
-        <IconEditButton v-if="canWrite" aria-label="edit recipe" @click="emit('edit', recipe)" />
-      </div>
+      <DrawerFooterActions>
+        <template v-if="canWrite" #start>
+          <IconCloseButton aria-label="delete recipe" @click="emit('delete')" />
+          <IconEditButton aria-label="edit recipe" @click="emit('edit', recipe)" />
+        </template>
+        <template #primary>
+          <ToolbarPillButton family="2xx" @click="emit('cook')">cook</ToolbarPillButton>
+        </template>
+      </DrawerFooterActions>
     </template>
   </BaseDrawer>
 </template>

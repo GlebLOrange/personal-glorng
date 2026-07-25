@@ -5,6 +5,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
+import IconEditButton from "@/components/ui/IconEditButton.vue";
 import { Card } from "@/components/ui/card";
 import {
   crossRate,
@@ -99,7 +100,7 @@ function onCategoryRowClick(category: ExpenseCategory): void {
             <BaseButton variant="success" size="sm" @click.stop="emit('saveCategoryRename')">
               save
             </BaseButton>
-            <BaseButton variant="ghost" danger size="sm" @click.stop="emit('cancelEditCategory')">
+            <BaseButton variant="secondary" size="sm" @click.stop="emit('cancelEditCategory')">
               cancel
             </BaseButton>
           </template>
@@ -110,16 +111,10 @@ function onCategoryRowClick(category: ExpenseCategory): void {
                 budget {{ category.monthly_budget }}
               </span>
             </span>
-            <BaseButton
-              variant="ghost"
-              quiet
-              size="sm"
-              class="min-w-11 px-0"
+            <IconEditButton
               :aria-label="`Rename ${category.name}`"
               @click.stop="emit('startEditCategory', category)"
-            >
-              ✎
-            </BaseButton>
+            />
             <IconCloseButton
               :aria-label="`Delete ${category.name}`"
               @click.stop="emit('removeCategory', category)"

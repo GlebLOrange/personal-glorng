@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollDirection } from "@/composables/useScrollDirection";
+import { iconActionClass } from "@/constants/httpStatusColors";
 import { useAuthStore } from "@/stores/auth";
 import { goHome } from "@/utils/goHome";
 
@@ -21,6 +22,9 @@ const { canUseAdminHub } = usePermissions();
 const router = useRouter();
 const mobileOpen = ref(false);
 const isMobileNav = ref(false);
+const menuToggleClass = computed(() =>
+  ["md:hidden self-center", iconActionClass("1xx", mobileOpen.value)].join(" "),
+);
 
 const { isHidden: isHeaderHidden, show: showHeader } = useScrollDirection({
   disabled: () => mobileOpen.value || isMobileNav.value,
@@ -183,7 +187,7 @@ async function handleGoHome(): Promise<void> {
           <button
             ref="menuToggleButton"
             type="button"
-            class="md:hidden inline-flex h-8 min-h-8 min-w-8 shrink-0 items-center justify-center self-center rounded-lg text-surface-light transition-colors hover:bg-accent-blue/15 hover:text-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+            :class="menuToggleClass"
             :aria-expanded="mobileOpen"
             aria-controls="nav-mobile-menu"
             aria-label="Toggle navigation menu"

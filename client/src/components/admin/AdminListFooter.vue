@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import BaseButton from "@/components/ui/BaseButton.vue";
+import IconActionButton from "@/components/ui/IconActionButton.vue";
 
 const props = defineProps<{
   total: number;
@@ -42,17 +42,24 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
     :aria-label="ariaLabel"
   >
     <div class="flex flex-wrap items-center gap-1">
-      <BaseButton
-        variant="ghost"
+      <IconActionButton
+        family="1xx"
         :disabled="prevDisabled"
+        title="to start"
         aria-label="to start"
         @click="emit('first')"
       >
         &lt;&lt;
-      </BaseButton>
-      <BaseButton variant="ghost" :disabled="prevDisabled" @click="emit('prev')">
-        previous
-      </BaseButton>
+      </IconActionButton>
+      <IconActionButton
+        family="1xx"
+        :disabled="prevDisabled"
+        title="previous"
+        aria-label="previous"
+        @click="emit('prev')"
+      >
+        &lt;
+      </IconActionButton>
     </div>
     <p
       class="flex flex-wrap items-center justify-center gap-x-2 text-center text-xs text-surface-muted"
@@ -62,15 +69,24 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
       <span>{{ pageLabel }}</span>
     </p>
     <div class="flex flex-wrap items-center justify-end gap-1">
-      <BaseButton variant="ghost" :disabled="nextDisabled" @click="emit('next')"> next </BaseButton>
-      <BaseButton
-        variant="ghost"
+      <IconActionButton
+        family="1xx"
         :disabled="nextDisabled"
+        title="next"
+        aria-label="next"
+        @click="emit('next')"
+      >
+        &gt;
+      </IconActionButton>
+      <IconActionButton
+        family="1xx"
+        :disabled="nextDisabled"
+        title="to end"
         aria-label="to end"
         @click="emit('last')"
       >
         &gt;&gt;
-      </BaseButton>
+      </IconActionButton>
     </div>
   </nav>
 </template>

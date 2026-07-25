@@ -114,7 +114,7 @@ async function generatePassword(): Promise<void> {
             :model-value="displayPassword"
             readonly
             placeholder="password"
-            class="flex-1 min-w-[12rem] font-mono"
+            class="flex-1 min-w-[12rem] font-data"
           />
           <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
             {{ showPassword ? "hide" : "show" }}

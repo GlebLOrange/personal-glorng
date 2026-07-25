@@ -197,11 +197,11 @@ onMounted(() => {
           </div>
           <div class="flex gap-2">
             <dt class="text-surface-mid w-28 shrink-0">Model</dt>
-            <dd class="text-surface-light font-mono text-xs">{{ chatConfig.model }}</dd>
+            <dd class="text-surface-light font-data text-xs">{{ chatConfig.model }}</dd>
           </div>
           <div class="flex gap-2">
             <dt class="text-surface-mid w-28 shrink-0">Base URL</dt>
-            <dd class="text-surface-light font-mono text-xs break-all">
+            <dd class="text-surface-light font-data text-xs break-all">
               {{ chatConfig.base_url ?? "Groq API" }}
             </dd>
           </div>
@@ -277,7 +277,7 @@ onMounted(() => {
           class="rounded-lg border border-surface-border bg-surface-dark p-4 space-y-2"
         >
           <p class="text-sm text-surface-light font-medium">{{ example.name }}</p>
-          <pre class="text-xs text-surface-sage whitespace-pre-wrap font-mono">{{
+          <pre class="text-xs text-surface-sage whitespace-pre-wrap font-data">{{
             example.env
           }}</pre>
         </div>

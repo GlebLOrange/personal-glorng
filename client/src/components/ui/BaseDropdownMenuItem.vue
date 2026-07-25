@@ -19,12 +19,13 @@ function onClick(): void {
     type="button"
     role="menuitem"
     :class="[
-      'w-full text-left px-3 py-2 text-sm transition-colors',
+      'w-[calc(100%-0.5rem)] text-left px-3 py-2 text-sm transition-colors border border-transparent rounded-md mx-1 my-0.5',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
       colorClass
-        ? colorClass
+        ? [colorClass, 'hover:border-current/35 focus-visible:border-current/35']
         : destructive
-          ? 'text-status-error hover:bg-status-error/10'
-          : 'text-surface-light hover:bg-surface-border/40',
+          ? 'text-status-error hover:bg-status-error/10 hover:border-status-error/40 focus-visible:border-status-error/40'
+          : 'text-surface-light hover:bg-surface-border/40 hover:border-surface-border focus-visible:border-surface-border',
     ]"
     @click="onClick"
   >

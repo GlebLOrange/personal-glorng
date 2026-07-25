@@ -10,6 +10,7 @@ import BaseImage from "@/components/ui/BaseImage.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import IconActionButton from "@/components/ui/IconActionButton.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { RECIPE_TAG_LIMIT, RECIPE_TAG_SET, RECIPE_TAGS } from "@/constants/recipes";
@@ -39,30 +40,14 @@ function filledCount(items: string[]): number {
   return filledLines(items).length;
 }
 
-function previewLabel(items: string[], max = 2): string {
-  const filled = filledLines(items);
-  if (filled.length === 0) return "";
-  const shown = filled
-    .slice(0, max)
-    .map((line) => (line.length > 40 ? `${line.slice(0, 40)}…` : line));
-  const extra = filled.length > max ? ` +${filled.length - max}` : "";
-  return ` — ${shown.join(", ")}${extra}`;
-}
-
 const ingredientCount = computed(() => filledCount(props.form.ingredients));
-const ingredientPreview = computed(() => previewLabel(props.form.ingredients));
 const stepCount = computed(() => filledCount(props.form.steps));
-const stepPreview = computed(() => previewLabel(props.form.steps));
 
 const selectedTags = computed(() =>
   props.form.tags
     .split(",")
     .map((tag) => tag.trim())
     .filter(Boolean),
-);
-
-const selectedTagsLabel = computed(() =>
-  selectedTags.value.length > 0 ? selectedTags.value.join(", ") : "none",
 );
 
 /** Catalog tags plus any selected custom/imported tags not in the curated list. */
@@ -217,67 +202,68 @@ function toNullableNumber(value: string | number | null | undefined): number | n
 
 <template>
   <BaseDrawer :open="open" :title="formTitle" max-width="2xl" @close="emit('close')">
-    <form id="recipe-form-drawer-form" class="space-y-4" @submit.prevent="emit('save')">
-      <BaseInput
-        :model-value="form.title"
-        placeholder="enter title"
-        @update:model-value="patch({ title: toStringValue($event) })"
-      />
-      <BaseInput
-        :model-value="form.image_url"
-        placeholder="image url"
-        @update:model-value="patch({ image_url: toStringValue($event) })"
-      />
-      <BaseImage
-        v-if="showImagePreview"
-        :src="form.image_url"
-        :alt="form.title || 'Recipe preview'"
-        class="w-full h-40 rounded-md object-cover"
-      />
+    <form id="recipe-form-drawer-form" class="space-y-3" @submit.prevent="emit('save')">
+      <div class="space-y-2">
+        <BaseInput
+          compact
+          :model-value="form.title"
+          placeholder="enter title"
+          @update:model-value="patch({ title: toStringValue($event) })"
+        />
+        <BaseInput
+          compact
+          :model-value="form.image_url"
+          placeholder="image url"
+          @update:model-value="patch({ image_url: toStringValue($event) })"
+        />
+        <BaseImage
+          v-if="showImagePreview"
+          :src="form.image_url"
+          :alt="form.title || 'Recipe preview'"
+          class="h-24 w-full rounded-md object-cover"
+        />
 
-      <div class="grid grid-cols-3 gap-3">
-        <BaseInput
-          :model-value="form.prep_time"
-          type="number"
-          placeholder="prep · min"
-          @update:model-value="patch({ prep_time: toNullableNumber($event) })"
-        />
-        <BaseInput
-          :model-value="form.cook_time"
-          type="number"
-          placeholder="cook · min"
-          @update:model-value="patch({ cook_time: toNullableNumber($event) })"
-        />
-        <BaseInput
-          :model-value="form.servings"
-          type="number"
-          placeholder="servings"
-          @update:model-value="patch({ servings: toNullableNumber($event) })"
-        />
+        <div class="grid grid-cols-3 gap-2">
+          <BaseInput
+            compact
+            :model-value="form.prep_time"
+            type="number"
+            placeholder="prep · min"
+            @update:model-value="patch({ prep_time: toNullableNumber($event) })"
+          />
+          <BaseInput
+            compact
+            :model-value="form.cook_time"
+            type="number"
+            placeholder="cook · min"
+            @update:model-value="patch({ cook_time: toNullableNumber($event) })"
+          />
+          <BaseInput
+            compact
+            :model-value="form.servings"
+            type="number"
+            placeholder="servings"
+            @update:model-value="patch({ servings: toNullableNumber($event) })"
+          />
+        </div>
       </div>
 
-      <details
-        ref="ingredientsDetails"
-        class="group rounded border border-surface-border px-3 py-2"
-        open
-      >
+      <details ref="ingredientsDetails" class="group rounded border border-surface-border" open>
         <summary
-          class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+          class="flex h-8 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
         >
           <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
           ingredients ({{ ingredientCount }})
-          <span v-if="ingredientPreview" class="text-xs text-surface-muted">{{
-            ingredientPreview
-          }}</span>
         </summary>
-        <div class="mt-3 space-y-2">
-          <ul role="list" class="space-y-2">
+        <div class="space-y-1 border-t border-surface-border px-2 py-2">
+          <ul role="list" class="space-y-1">
             <li
               v-for="(_, idx) in form.ingredients"
               :key="`ingredient-${idx}`"
               class="flex min-w-0 items-center gap-1"
             >
               <BaseInput
+                compact
                 :model-value="form.ingredients[idx]"
                 class="min-w-0 flex-1"
                 placeholder="200g flour"
@@ -320,35 +306,34 @@ function toNullableNumber(value: string | number | null | undefined): number | n
               </BaseDropdownMenu>
             </li>
           </ul>
-          <p class="text-xs text-surface-muted">Enter adds the next ingredient</p>
-          <BaseButton variant="secondary" size="sm" type="button" @click="addIngredient">
-            + ingredient
-          </BaseButton>
+          <IconActionButton type="button" title="add ingredient" aria-label="add ingredient" @click="addIngredient">
+            +
+          </IconActionButton>
         </div>
       </details>
 
-      <details ref="stepsDetails" class="group rounded border border-surface-border px-3 py-2" open>
+      <details ref="stepsDetails" class="group rounded border border-surface-border" open>
         <summary
-          class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+          class="flex h-8 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
         >
           <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
           steps ({{ stepCount }})
-          <span v-if="stepPreview" class="text-xs text-surface-muted">{{ stepPreview }}</span>
         </summary>
-        <div class="mt-3 space-y-2">
-          <ul role="list" class="space-y-2">
+        <div class="space-y-1 border-t border-surface-border px-2 py-2">
+          <ul role="list" class="space-y-1">
             <li
               v-for="(_, idx) in form.steps"
               :key="`step-${idx}`"
-              class="flex min-w-0 items-start gap-2"
+              class="flex min-w-0 items-start gap-1"
             >
               <span
-                class="mt-2.5 inline-flex h-6 w-6 shrink-0 items-center justify-center text-xs text-surface-mid"
+                class="inline-flex h-8 w-5 shrink-0 items-center justify-center text-xs text-surface-mid"
                 aria-hidden="true"
               >
                 {{ idx + 1 }}
               </span>
               <BaseTextarea
+                compact
                 :model-value="form.steps[idx]"
                 class="min-w-0 flex-1"
                 :rows="2"
@@ -361,7 +346,6 @@ function toNullableNumber(value: string | number | null | undefined): number | n
               />
               <IconCloseButton
                 v-if="form.steps.length > 1"
-                class="mt-1"
                 :aria-label="`remove step ${idx + 1}`"
                 @click="removeStep(idx)"
               />
@@ -393,46 +377,42 @@ function toNullableNumber(value: string | number | null | undefined): number | n
               </BaseDropdownMenu>
             </li>
           </ul>
-          <p class="text-xs text-surface-muted">Ctrl/⌘ + Enter adds the next step</p>
-          <BaseButton variant="secondary" size="sm" type="button" @click="addStep">
-            + step
-          </BaseButton>
+          <IconActionButton type="button" title="add step" aria-label="add step" @click="addStep">
+            +
+          </IconActionButton>
         </div>
       </details>
 
-      <details ref="tagsDetails" class="group rounded border border-surface-border px-3 py-2">
+      <details ref="tagsDetails" class="group rounded border border-surface-border">
         <summary
-          class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+          class="flex h-8 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
         >
           <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
           tags ({{ selectedTags.length }}/{{ RECIPE_TAG_LIMIT }})
-          <span class="text-xs text-surface-muted"> — {{ selectedTagsLabel }}</span>
         </summary>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <label
+        <div class="flex flex-wrap gap-1.5 border-t border-surface-border px-2 py-2">
+          <button
             v-for="tag in tagChoices"
             :key="tag"
-            :for="`recipe-drawer-tag-${tag}`"
-            class="inline-flex cursor-pointer items-center gap-2 rounded border border-surface-border px-3 py-1.5 text-xs transition-colors"
+            type="button"
+            class="inline-flex items-center rounded border px-2 py-1 text-xs transition-colors"
             :class="{
-              'border-accent-blue text-surface-light': tagIsSelected(tag),
-              'text-surface-mid': !tagIsSelected(tag),
+              'border-accent-blue/40 bg-accent-blue/15 text-accent-blue': tagIsSelected(tag),
+              'border-transparent text-surface-mid hover:border-surface-border/50':
+                !tagIsSelected(tag),
               'opacity-50': !tagIsSelected(tag) && selectedTags.length >= RECIPE_TAG_LIMIT,
             }"
+            :aria-pressed="tagIsSelected(tag)"
+            :disabled="!tagIsSelected(tag) && selectedTags.length >= RECIPE_TAG_LIMIT"
+            @click="toggleTag(tag)"
           >
-            <input
-              :id="`recipe-drawer-tag-${tag}`"
-              type="checkbox"
-              :checked="tagIsSelected(tag)"
-              :disabled="!tagIsSelected(tag) && selectedTags.length >= RECIPE_TAG_LIMIT"
-              @change="toggleTag(tag)"
-            />
             {{ tag }}
-          </label>
+          </button>
         </div>
       </details>
 
       <BaseTextarea
+        compact
         :model-value="form.notes"
         :rows="3"
         placeholder="notes · tips, variations"
@@ -443,7 +423,7 @@ function toNullableNumber(value: string | number | null | undefined): number | n
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton danger type="button" @click="emit('close')"> cancel </BaseButton>
+          <BaseButton variant="secondary" type="button" @click="emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton
