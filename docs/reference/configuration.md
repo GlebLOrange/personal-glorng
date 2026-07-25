@@ -25,10 +25,10 @@ Keep `RUN_MIGRATIONS` / `RUN_SEED` in `.env` (or secrets) — avoid setting them
 | `BASE_URL` | `http://localhost` | Absolute URL for links and redirects |
 | `MEDIA_DIR` | `/app/media` | Uploaded file storage path |
 | `CORS_ORIGINS` | localhost variants | Comma-separated allowed origins (required explicit list in production) |
-| `LOG_REQUESTS` | `true` | Log request start/complete |
-| `LOG_REQUEST_BODIES` | `false` | Log redacted JSON bodies (POST/PUT/PATCH) |
+| `LOG_REQUESTS` | `false` (dev) / `true` (prod) | Log request start/complete; skipped for `/api/health` and `/api/ready` |
+| `LOG_REQUEST_BODIES` | `false` | Log redacted JSON bodies (POST/PUT/PATCH); forbidden in production |
 | `APP_LOG_PERSIST_ENABLED` | `true` | Persist structured logs to MongoDB |
-| `APP_LOG_PERSIST_MIN_LEVEL` | `INFO` | Min level for DB log persistence |
+| `APP_LOG_PERSIST_MIN_LEVEL` | `WARNING` (dev) / `INFO` (prod) | Min level for DB log persistence |
 | `APP_LOG_RETENTION_DAYS` | `30` | TTL for `app_logs` collection |
 
 ## Database bootstrap
@@ -79,7 +79,7 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 |----------|---------|
 | `RABBITMQ_USER`, `RABBITMQ_PASSWORD` | Broker credentials (`RABBITMQ_PASSWORD` min 16 chars in production) |
 | `CELERY_BROKER_URL` | AMQP URL |
-| `CELERY_TASK_ALWAYS_EAGER` | `true` in ultra-lite host API (inline tasks, no broker) |
+| `CELERY_TASK_ALWAYS_EAGER` | `true` (dev lite default; inline tasks, no broker). Set `false` with `make dev-worker` for RabbitMQ |
 
 ## Auth & JWT
 
@@ -105,11 +105,11 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `SENTRY_ENABLED` | `false` | Enable server Sentry |
+| `SENTRY_ENABLED` | `false` | Opt-in for server/worker Sentry when `APP_ENV` is `development` or `test` (staging/production enable when DSN is set) |
 | `SERVER_SENTRY_DSN` | | DSN |
 | `SERVER_SENTRY_RELEASE` | | Release tag |
 
-Client: `VITE_SENTRY_*` in `client/.env.development` or commented block in `.env.example`.
+Client: `VITE_SENTRY_ENABLED=false` in `client/.env.development` (Vite DEV needs `VITE_SENTRY_ENABLED=true` + DSN). Prod builds stay on when a DSN is set unless `VITE_SENTRY_ENABLED=false`. See also commented `VITE_SENTRY_*` in `.env.example`.
 
 ## Telegram bot
 

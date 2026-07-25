@@ -75,9 +75,11 @@ async def test_calculator_invalid_operator(auth_client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_calculator_nan_rejected(auth_client: AsyncClient) -> None:
+    # httpx json= cannot encode NaN; send Python-json NaN that FastAPI still parses.
     resp = await auth_client.post(
         "/api/tools/calculator",
-        json={"a": float("nan"), "b": 1, "op": "+"},
+        content=b'{"a":NaN,"b":1,"op":"+"}',
+        headers={"Content-Type": "application/json"},
     )
     assert resp.status_code == 422
 
@@ -86,7 +88,8 @@ async def test_calculator_nan_rejected(auth_client: AsyncClient) -> None:
 async def test_calculator_infinity_rejected(auth_client: AsyncClient) -> None:
     resp = await auth_client.post(
         "/api/tools/calculator",
-        json={"a": float("inf"), "b": 1, "op": "+"},
+        content=b'{"a":Infinity,"b":1,"op":"+"}',
+        headers={"Content-Type": "application/json"},
     )
     assert resp.status_code == 422
 

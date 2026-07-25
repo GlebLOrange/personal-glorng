@@ -5750,12 +5750,6 @@
       },
       "WeatherLocationCreate": {
         "properties": {
-          "label": {
-            "default": "",
-            "maxLength": 100,
-            "title": "Label",
-            "type": "string"
-          },
           "query": {
             "maxLength": 100,
             "minLength": 1,
@@ -5792,10 +5786,6 @@
             "title": "Id",
             "type": "integer"
           },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
           "query": {
             "title": "Query",
             "type": "string"
@@ -5807,7 +5797,6 @@
         },
         "required": [
           "id",
-          "label",
           "query",
           "sort_order"
         ],
@@ -17969,7 +17958,7 @@
     },
     "/api/webhooks/{slug}": {
       "post": {
-        "description": "HMAC-signed webhook for external automation. Requires X-Glorng-Signature: sha256=<hex> and WEBHOOK_SECRETS config.",
+        "description": "HMAC-signed inbound webhook. Only the ping slug is supported. Requires X-Glorng-Signature: sha256=<hex> and WEBHOOK_SECRETS config.",
         "operationId": "receive_webhook_api_webhooks__slug__post",
         "parameters": [
           {

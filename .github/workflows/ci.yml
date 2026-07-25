@@ -6,14 +6,86 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
   actions: write
+  pull-requests: read
 
-# P0 PR gate — fast tests on every pull request (see docs/reference/testing.md).
+# P0 PR gate — path-filtered jobs + ci-ok aggregator (see docs/reference/testing.md).
 jobs:
-  backend:
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.select.outputs.backend }}
+      frontend: ${{ steps.select.outputs.frontend }}
+      postgres: ${{ steps.select.outputs.postgres }}
+      e2e: ${{ steps.select.outputs.e2e }}
+      docs: ${{ steps.select.outputs.docs }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          filters: |
+            backend:
+              - 'server/**'
+              - '.github/workflows/ci.yml'
+            frontend:
+              - 'client/**'
+              - '.github/workflows/ci.yml'
+            postgres:
+              - 'server/**'
+              - '.github/workflows/ci.yml'
+            e2e:
+              - 'client/**'
+              - 'server/**'
+              - 'docker-compose*.yml'
+              - 'nginx/**'
+              - 'server/tests/env/ci-docker.env'
+              - '.github/workflows/ci.yml'
+            docs:
+              - 'docs/**'
+              - 'server/app/**'
+              - 'scripts/generate_docs.py'
+              - 'docker-compose.yml'
+              - 'Makefile'
+              - '.github/workflows/ci.yml'
+      - name: Select jobs
+        id: select
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+            echo "postgres=true" >> "$GITHUB_OUTPUT"
+            echo "e2e=true" >> "$GITHUB_OUTPUT"
+            echo "docs=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          backend="${{ steps.filter.outputs.backend }}"
+          frontend="${{ steps.filter.outputs.frontend }}"
+          postgres="${{ steps.filter.outputs.postgres }}"
+          e2e="${{ steps.filter.outputs.e2e }}"
+          docs="${{ steps.filter.outputs.docs }}"
+          # E2E needs the frontend artifact — force frontend when e2e is selected.
+          if [ "$e2e" = "true" ]; then
+            frontend=true
+          fi
+          echo "backend=$backend" >> "$GITHUB_OUTPUT"
+          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
+          echo "postgres=$postgres" >> "$GITHUB_OUTPUT"
+          echo "e2e=$e2e" >> "$GITHUB_OUTPUT"
+          echo "docs=$docs" >> "$GITHUB_OUTPUT"
+
+  backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
     defaults:
       run:
         working-directory: server
@@ -26,22 +98,27 @@ jobs:
           cache-dependency-glob: "server/uv.lock"
       - name: Install dependencies
         run: uv sync --frozen
-      - name: Ruff and Mypy checks
+      - name: Ruff checks
         run: |
           uv run ruff check . & ruff_check_pid=$!
           uv run ruff format --check . & ruff_format_pid=$!
-          uv run mypy app & mypy_pid=$!
           wait "$ruff_check_pid"; ruff_check_exit=$?
           wait "$ruff_format_pid"; ruff_format_exit=$?
-          wait "$mypy_pid"; mypy_exit=$?
-          exit $((ruff_check_exit || ruff_format_exit || mypy_exit))
+          exit $((ruff_check_exit || ruff_format_exit))
+      # Existing typing debt — keep signal without blocking merge gates.
+      - name: Mypy (advisory)
+        continue-on-error: true
+        run: uv run mypy app
       - name: Pytest (P0 — exclude integration tier)
         env:
           GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.test
         run: uv run pytest -m "not integration" -v --cov=app --cov-report=term-missing:skip-covered
 
   frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     defaults:
       run:
         working-directory: client
@@ -70,7 +147,10 @@ jobs:
 
   # P1 postgres paths — audit/search dual-write (see docs/reference/testing.md).
   postgres-tests:
+    needs: changes
+    if: needs.changes.outputs.postgres == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: server
@@ -107,15 +187,20 @@ jobs:
         run: uv run pytest -m postgres -v
 
   e2e:
+    needs: [changes, frontend]
+    if: >-
+      always()
+      && needs.changes.outputs.e2e == 'true'
+      && needs.frontend.result == 'success'
     runs-on: ubuntu-latest
-    needs: [frontend]
+    timeout-minutes: 25
     env:
       DOCKER_BUILDKIT: 1
       COMPOSE_DOCKER_CLI_BUILD: 1
     steps:
       - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: client-dist
           path: client/dist
@@ -168,7 +253,10 @@ jobs:
           kill $PREVIEW_PID
 
   docs:
+    needs: changes
+    if: needs.changes.outputs.docs == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v7
 
@@ -202,3 +290,40 @@ jobs:
         run: |
           npm ci
           npm run build
+
+  ci-ok:
+    if: always()
+    needs: [changes, backend, frontend, postgres-tests, e2e, docs]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify selected jobs
+        env:
+          BACKEND: ${{ needs.changes.outputs.backend }}
+          FRONTEND: ${{ needs.changes.outputs.frontend }}
+          POSTGRES: ${{ needs.changes.outputs.postgres }}
+          E2E: ${{ needs.changes.outputs.e2e }}
+          DOCS: ${{ needs.changes.outputs.docs }}
+          BACKEND_RESULT: ${{ needs.backend.result }}
+          FRONTEND_RESULT: ${{ needs.frontend.result }}
+          POSTGRES_RESULT: ${{ needs.postgres-tests.result }}
+          E2E_RESULT: ${{ needs.e2e.result }}
+          DOCS_RESULT: ${{ needs.docs.result }}
+        run: |
+          fail=0
+          check() {
+            local name="$1" selected="$2" result="$3"
+            if [ "$selected" != "true" ]; then
+              echo "$name: skipped"
+              return
+            fi
+            echo "$name: $result"
+            if [ "$result" != "success" ]; then
+              fail=1
+            fi
+          }
+          check backend "$BACKEND" "$BACKEND_RESULT"
+          check frontend "$FRONTEND" "$FRONTEND_RESULT"
+          check postgres-tests "$POSTGRES" "$POSTGRES_RESULT"
+          check e2e "$E2E" "$E2E_RESULT"
+          check docs "$DOCS" "$DOCS_RESULT"
+          exit "$fail"

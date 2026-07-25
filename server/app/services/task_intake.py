@@ -8,8 +8,8 @@ from typing import Any
 
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.feature_flags import is_task_intake_ai_enabled
-from app.core.utils import DEFAULT_PER_PAGE, as_utc, paginate_params
 from app.core.pagination import build_paginated
+from app.core.utils import DEFAULT_PER_PAGE, as_utc, paginate_params
 from app.db.documents.task import IntakeStatus, Task, TaskIntake
 from app.db.documents.telegram import TelegramInboundMessage
 from app.db.registry import DatabaseRegistry

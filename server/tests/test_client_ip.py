@@ -5,7 +5,9 @@ from starlette.requests import Request
 from app.core.rate_limit import client_ip
 
 
-def _request_with_headers(headers: dict[str, str], client_host: str | None = "127.0.0.1") -> Request:
+def _request_with_headers(
+    headers: dict[str, str], client_host: str | None = "127.0.0.1"
+) -> Request:
     scope: dict = {
         "type": "http",
         "asgi": {"version": "3.0"},
@@ -24,7 +26,9 @@ def _request_with_headers(headers: dict[str, str], client_host: str | None = "12
 
 def test_client_ip_prefers_x_real_ip() -> None:
     """nginx-set X-Real-IP wins over the socket peer (Cloudflare POP or local)."""
-    request = _request_with_headers({"x-real-ip": "203.0.113.50"}, client_host="10.0.0.1")
+    request = _request_with_headers(
+        {"x-real-ip": "203.0.113.50"}, client_host="10.0.0.1"
+    )
     assert client_ip(request) == "203.0.113.50"
 
 
