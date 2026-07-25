@@ -1,14 +1,12 @@
 <script setup lang="ts">
+import ExpenseRow from "@/components/expenses/ExpenseRow.vue";
+import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
-import IconCloseButton from "@/components/ui/IconCloseButton.vue";
-import IconEditButton from "@/components/ui/IconEditButton.vue";
 import { Card } from "@/components/ui/card";
-import type { ExchangeRates, Expense } from "@/types";
-import { expenseSourceLabel } from "@/utils/expenseSource";
-
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExpenseSortKey } from "@/composables/useExpenseSort";
+import type { ExchangeRates, Expense } from "@/types";
 
 defineProps<{
   expenses: Expense[];
@@ -32,94 +30,36 @@ const emit = defineEmits<{
 }>();
 
 const sortButtonClass =
-  "inline-flex h-11 items-center text-left hover:text-surface-light transition-colors tracking-wider text-xs";
-
-const skeletonRows = 5;
+  "inline-flex h-11 items-center text-left text-xs tracking-wider transition-colors hover:text-surface-light";
 </script>
 
 <template>
-  <!-- Loading skeleton -->
-  <div v-if="loading" class="flex flex-col gap-2" aria-busy="true" aria-label="Loading expenses">
-    <Card v-for="n in skeletonRows" :key="n" variant="compact" class="animate-pulse">
-      <div class="h-3 w-24 bg-surface-border rounded mb-2" />
-      <div class="h-4 w-40 bg-surface-border rounded mb-3" />
-      <div class="h-3 w-20 bg-surface-border rounded" />
-    </Card>
-  </div>
+  <AdminListSkeleton v-if="loading" :rows="5" label="Loading expenses" />
 
   <template v-else>
     <!-- Mobile cards -->
     <div class="flex flex-col gap-3 md:hidden">
-      <Card
-        v-for="expense in expenses"
-        :key="expense.id"
-        variant="compact"
-        interactive
-        hoverable
-        role="button"
-        tabindex="0"
-        class="cursor-pointer"
-        @click="emit('edit', expense)"
-        @keydown.enter.prevent="emit('edit', expense)"
-      >
-        <div class="flex justify-between items-start gap-3">
-          <div class="min-w-0">
-            <p class="text-surface-light text-sm font-semibold truncate">{{ expense.tool_name }}</p>
-            <p class="text-xs text-surface-mid mt-1">
-              {{ expense.category ?? "Uncategorized" }} ·
-              {{ formatExpenseDate(expense.expense_date) }}
-            </p>
-          </div>
-          <div class="text-right text-sm text-surface-light font-data shrink-0">
-            <div>{{ formatMoney(expense.amount, expense.currency) }}</div>
-            <div
-              v-if="expense.currency !== displayCurrency && exchangeRates"
-              class="text-xs text-surface-mid"
-            >
-              ≈
-              {{
-                formatMoney(
-                  convertAmount(expense.amount, expense.currency as CurrencyCode, displayCurrency),
-                  displayCurrency,
-                )
-              }}
-            </div>
-          </div>
-        </div>
-        <div class="flex justify-between items-center mt-3 gap-2">
-          <span class="text-xs px-1.5 py-0.5 rounded bg-surface-border text-surface-mid">
-            {{ expenseSourceLabel(expense.source) }}
-          </span>
-          <p v-if="expense.notes" class="text-xs text-surface-mid truncate min-w-0">
-            {{ expense.notes }}
-          </p>
-        </div>
-        <div class="flex gap-1 justify-end flex-wrap mt-3" @click.stop @keydown.stop>
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            :aria-label="`Duplicate ${expense.tool_name || 'expense'}`"
-            @click="emit('duplicate', expense)"
-          >
-            duplicate
-          </BaseButton>
-          <IconEditButton
-            :aria-label="`Edit ${expense.tool_name || 'expense'}`"
-            @click="emit('edit', expense)"
-          />
-          <IconCloseButton
-            :aria-label="`Delete ${expense.tool_name || 'expense'}`"
-            @click="emit('delete', expense.id)"
-          />
-        </div>
+      <Card v-for="expense in expenses" :key="expense.id" variant="compact">
+        <ExpenseRow
+          :expense="expense"
+          layout="card"
+          :display-currency="displayCurrency"
+          :exchange-rates="exchangeRates"
+          :format-money="formatMoney"
+          :format-expense-date="formatExpenseDate"
+          :convert-amount="convertAmount"
+          @edit="emit('edit', $event)"
+          @delete="emit('delete', $event)"
+          @duplicate="emit('duplicate', $event)"
+        />
       </Card>
     </div>
 
     <!-- Desktop table -->
-    <div class="hidden min-w-0 md:block overflow-x-auto rounded-lg border border-surface-border">
-      <table class="w-full min-w-0 text-sm font-data" :aria-label="`Expenses for ${monthLabel}`">
+    <div class="hidden min-w-0 overflow-x-auto rounded-lg border border-surface-border md:block">
+      <table class="w-full min-w-0 font-data text-sm" :aria-label="`Expenses for ${monthLabel}`">
         <thead>
-          <tr class="text-left text-surface-mid border-b border-surface-border bg-surface-card/80">
+          <tr class="border-b border-surface-border bg-surface-card/80 text-left text-surface-mid">
             <th class="px-3" :aria-sort="sortAriaSort('date')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'date')">
                 date{{ sortIndicator("date") }}
@@ -156,66 +96,20 @@ const skeletonRows = 5;
           </tr>
         </thead>
         <tbody>
-          <tr
+          <ExpenseRow
             v-for="expense in expenses"
             :key="expense.id"
-            class="border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50 cursor-pointer"
-            role="button"
-            tabindex="0"
-            @click="emit('edit', expense)"
-            @keydown.enter.prevent="emit('edit', expense)"
-          >
-            <td class="px-3 py-2 whitespace-nowrap">
-              {{ formatExpenseDate(expense.expense_date) }}
-            </td>
-            <td class="px-3 py-2 text-surface-mid">{{ expense.category ?? "—" }}</td>
-            <td class="px-3 py-2 font-sans max-w-[220px] truncate">{{ expense.tool_name }}</td>
-            <td class="px-3 py-2 text-right whitespace-nowrap">
-              <div>{{ formatMoney(expense.amount, expense.currency) }}</div>
-              <div
-                v-if="expense.currency !== displayCurrency && exchangeRates"
-                class="text-xs text-surface-mid"
-              >
-                ≈
-                {{
-                  formatMoney(
-                    convertAmount(
-                      expense.amount,
-                      expense.currency as CurrencyCode,
-                      displayCurrency,
-                    ),
-                    displayCurrency,
-                  )
-                }}
-              </div>
-            </td>
-            <td class="px-3 py-2 text-surface-mid text-xs font-sans">
-              {{ expenseSourceLabel(expense.source) }}
-            </td>
-            <td class="px-3 py-2 text-surface-mid max-w-[200px] truncate font-sans">
-              {{ expense.notes ?? "—" }}
-            </td>
-            <td class="px-3 py-2 text-right whitespace-nowrap" @click.stop @keydown.stop>
-              <div class="inline-flex items-center justify-end gap-1">
-                <BaseButton
-                  variant="ghost"
-                  size="sm"
-                  :aria-label="`Duplicate ${expense.tool_name || 'expense'}`"
-                  @click="emit('duplicate', expense)"
-                >
-                  duplicate
-                </BaseButton>
-                <IconEditButton
-                  :aria-label="`Edit ${expense.tool_name || 'expense'}`"
-                  @click="emit('edit', expense)"
-                />
-                <IconCloseButton
-                  :aria-label="`Delete ${expense.tool_name || 'expense'}`"
-                  @click="emit('delete', expense.id)"
-                />
-              </div>
-            </td>
-          </tr>
+            :expense="expense"
+            layout="table"
+            :display-currency="displayCurrency"
+            :exchange-rates="exchangeRates"
+            :format-money="formatMoney"
+            :format-expense-date="formatExpenseDate"
+            :convert-amount="convertAmount"
+            @edit="emit('edit', $event)"
+            @delete="emit('delete', $event)"
+            @duplicate="emit('duplicate', $event)"
+          />
         </tbody>
       </table>
     </div>
@@ -226,7 +120,7 @@ const skeletonRows = 5;
       description="Add above, or use smart text (20 coffee). Telegram: /spend 20 coffee"
     >
       <template #action>
-        <BaseButton variant="primary" size="sm" @click="emit('smartText')">
+        <BaseButton variant="primary" size="sm" class="min-h-11" @click="emit('smartText')">
           use smart text
         </BaseButton>
       </template>

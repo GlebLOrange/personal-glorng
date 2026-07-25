@@ -6,6 +6,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import {
   crossRate,
@@ -13,7 +14,6 @@ import {
   EXPENSE_DEFAULT_CURRENCY,
   EXPENSE_EXCHANGE_RATE_TARGETS,
 } from "@/composables/useExpenseFilters";
-import { FIELD_INPUT_CLASS_COMPACT } from "@/constants/formClasses";
 import type { ExchangeRates, ExpenseCategory } from "@/types";
 
 const props = defineProps<{
@@ -52,14 +52,17 @@ function onCategoryRowClick(category: ExpenseCategory): void {
 
 <template>
   <div class="flex flex-col gap-6">
-    <Card>
-      <BaseSelect v-model="displayCurrency" aria-label="ledger totals currency">
+    <Card class="flex flex-col gap-3">
+      <BaseSelect v-model="displayCurrency" label="ledger totals currency">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>
+      <p class="text-xs text-surface-mid">
+        Totals and conversions on the ledger use this currency.
+      </p>
     </Card>
 
     <Card v-if="exchangeRates">
-      <p class="text-xs text-surface-mid mb-3">exchange rates</p>
+      <p class="mb-3 text-xs text-surface-mid">exchange rates</p>
       <div class="flex flex-wrap gap-3 text-xs text-surface-mid">
         <span class="text-surface-light">1 {{ EXPENSE_DEFAULT_CURRENCY }} =</span>
         <span v-for="c in EXPENSE_EXCHANGE_RATE_TARGETS" :key="c">
@@ -69,9 +72,9 @@ function onCategoryRowClick(category: ExpenseCategory): void {
     </Card>
 
     <Card>
-      <p class="text-xs text-surface-mid mb-3">categories</p>
+      <p class="mb-3 text-xs text-surface-mid">categories</p>
 
-      <ul class="divide-y divide-surface-border rounded-lg border border-surface-border mb-3">
+      <ul class="mb-4 divide-y divide-surface-border rounded-lg border border-surface-border">
         <li
           v-for="category in expenseCategories"
           :key="category.id"
@@ -80,34 +83,54 @@ function onCategoryRowClick(category: ExpenseCategory): void {
           @click="onCategoryRowClick(category)"
         >
           <template v-if="editingCategoryId === category.id">
-            <input
-              v-model="editingCategoryName"
-              :data-category-edit="category.id"
-              :class="[FIELD_INPUT_CLASS_COMPACT, 'flex-1 min-w-[8rem]']"
-              aria-label="Category name"
-              @keyup.enter="emit('saveCategoryRename')"
-              @click.stop
-            />
-            <input
-              v-model="editingCategoryBudget"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="budget"
-              :class="[FIELD_INPUT_CLASS_COMPACT, 'w-28']"
-              @click.stop
-            />
-            <BaseButton variant="success" size="sm" @click.stop="emit('saveCategoryRename')">
+            <div class="flex min-w-[8rem] flex-1 flex-col gap-1" @click.stop>
+              <label class="text-label text-surface-sage" :for="`cat-name-${category.id}`">
+                name
+              </label>
+              <input
+                :id="`cat-name-${category.id}`"
+                v-model="editingCategoryName"
+                :data-category-edit="category.id"
+                class="h-11 w-full rounded-lg border border-surface-border bg-surface-dark px-3 text-sm text-surface-light outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/50"
+                @keyup.enter="emit('saveCategoryRename')"
+              />
+            </div>
+            <div class="flex w-36 flex-col gap-1" @click.stop>
+              <label class="text-label text-surface-sage" :for="`cat-budget-${category.id}`">
+                monthly budget
+              </label>
+              <input
+                :id="`cat-budget-${category.id}`"
+                v-model="editingCategoryBudget"
+                type="number"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                placeholder="0.00"
+                class="h-11 w-full rounded-lg border border-surface-border bg-surface-dark px-3 font-data text-sm text-surface-light outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/50"
+                @keyup.enter="emit('saveCategoryRename')"
+              />
+            </div>
+            <ToolbarPillButton
+              family="2xx"
+              class="min-h-11"
+              @click.stop="emit('saveCategoryRename')"
+            >
               save
-            </BaseButton>
-            <BaseButton variant="secondary" size="sm" @click.stop="emit('cancelEditCategory')">
+            </ToolbarPillButton>
+            <BaseButton
+              variant="secondary"
+              size="sm"
+              class="min-h-11"
+              @click.stop="emit('cancelEditCategory')"
+            >
               cancel
             </BaseButton>
           </template>
           <template v-else>
-            <span class="flex-1 text-surface-light text-sm">
+            <span class="flex-1 text-sm text-surface-light">
               {{ category.name }}
-              <span v-if="category.monthly_budget" class="text-surface-mid text-xs ml-2">
+              <span v-if="category.monthly_budget" class="ml-2 text-xs text-surface-mid">
                 budget {{ category.monthly_budget }}
               </span>
             </span>
@@ -124,18 +147,18 @@ function onCategoryRowClick(category: ExpenseCategory): void {
       </ul>
 
       <form
-        class="flex flex-col sm:flex-row sm:items-end gap-2"
+        class="flex flex-col gap-2 sm:flex-row sm:items-end"
         @submit.prevent="emit('addCategory')"
       >
         <BaseInput
           v-model="newCategoryName"
           label="new category"
           placeholder="category name"
-          class="min-w-0 flex-1 w-full"
+          class="w-full min-w-0 flex-1"
         />
-        <BaseButton variant="primary" type="submit" size="field" class="shrink-0">
+        <ToolbarPillButton type="submit" family="1xx" class="min-h-11 shrink-0">
           + category
-        </BaseButton>
+        </ToolbarPillButton>
       </form>
     </Card>
   </div>

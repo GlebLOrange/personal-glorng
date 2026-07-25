@@ -72,6 +72,7 @@ def _format_expense_line(
     category: str,
     tool_name: str,
 ) -> str:
+    # Matches web smart-text preview: amount currency · category · product
     return f"Logged: {_format_money(amount, currency)} · {category} · {tool_name}"
 
 
@@ -121,11 +122,16 @@ async def _save_parsed(
 
 
 def _format_draft_summary(data: dict) -> str:
-    return (
-        f"*Price:* {_format_money(data['amount'], data['currency'])}\n"
-        f"*Category:* {data['category']}\n"
-        f"*Product:* {data.get('tool_name') or '—'}"
-    )
+    amount = data.get("amount", "0")
+    currency = data.get("currency", "PLN")
+    category = data.get("category", "—")
+    tool_name = data.get("tool_name") or "—"
+    try:
+        money = _format_money(Decimal(str(amount)), str(currency))
+    except (InvalidOperation, TypeError):
+        money = f"{amount} {currency}"
+    # Same · order as web preview / Logged line
+    return f"Will add · {money} · {category} · {tool_name}"
 
 
 async def _start_guided(message: Message, state: FSMContext) -> None:
@@ -134,7 +140,8 @@ async def _start_guided(message: Message, state: FSMContext) -> None:
     await state.set_state(ExpenseCreation.waiting_for_amount)
     await message.answer(
         f"How much? (default currency: {settings.EXPENSE_DEFAULT_CURRENCY})\n"
-        "Example: 89.50 or 89,50",
+        "Example: 89.50 or 89,50\n"
+        "Tip: skip the wizard with /spend 20 coffee",
     )
 
 
@@ -195,7 +202,7 @@ async def cmd_expenses(message: Message, registry: DatabaseRegistry) -> None:
 
     lines = [f"*{month_label}* — {_format_money(summary.total, summary.currency)}"]
     if not expenses:
-        lines.append("\nNo expenses yet. Use /spend 45 groceries")
+        lines.append("\nNo expenses yet. Use /spend 20 coffee")
     else:
         lines.append("\n*Recent:*")
         for expense in expenses:
@@ -260,7 +267,7 @@ async def guided_skip_place(callback: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(ExpenseCreation.confirming)
     if callback.message:
         await callback.message.edit_text(
-            _format_draft_summary(await state.get_data()), parse_mode="Markdown"
+            _format_draft_summary(await state.get_data()),
         )
         await callback.message.answer(
             "Save this expense?", reply_markup=confirm_expense()
@@ -280,7 +287,6 @@ async def guided_place(message: Message, state: FSMContext) -> None:
     await state.set_state(ExpenseCreation.confirming)
     await message.answer(
         _format_draft_summary(await state.get_data()),
-        parse_mode="Markdown",
         reply_markup=confirm_expense(),
     )
 

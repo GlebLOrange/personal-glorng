@@ -64,16 +64,18 @@ function onAddItem(): void {
           :key="item.id"
           class="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-3 items-end"
         >
-          <BaseInput v-model="item.label" placeholder="label (coffee, taxi...)" data-line-label />
+          <BaseInput v-model="item.label" label="label" placeholder="coffee, taxi..." data-line-label />
           <BaseInput
             v-model="item.amount"
             type="number"
             step="0.01"
             min="0"
-            placeholder="amount (0.00)"
+            label="amount"
+            placeholder="0.00"
+            inputmode="decimal"
             @keydown="onAmountEnter($event, index)"
           />
-          <BaseSelect v-model="item.currency" aria-label="currency">
+          <BaseSelect v-model="item.currency" label="currency">
             <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
           </BaseSelect>
           <IconCloseButton

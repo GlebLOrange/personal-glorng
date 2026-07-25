@@ -44,21 +44,23 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <BaseSelect v-model="categoryId" aria-label="budget line">
+      <BaseSelect v-model="categoryId" label="budget line">
         <option value="overall">overall</option>
         <option v-for="option in budgetOptions" :key="option.id" :value="option.id">
           {{ option.name }}
         </option>
       </BaseSelect>
-      <div class="grid grid-cols-[1fr_120px] gap-2 items-end">
+      <div class="grid grid-cols-[1fr_120px] items-end gap-2">
         <BaseInput
           v-model="amount"
           type="number"
           step="0.01"
           min="0"
-          placeholder="purchase amount"
+          label="purchase amount"
+          placeholder="0.00"
+          inputmode="decimal"
         />
-        <BaseSelect v-model="currency" aria-label="currency">
+        <BaseSelect v-model="currency" label="currency">
           <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
         </BaseSelect>
       </div>

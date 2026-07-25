@@ -46,8 +46,8 @@ const previewLabel = computed(() => {
   if (!result?.valid) return null;
   const parts = [
     result.amount && result.currency ? `${result.amount} ${result.currency}` : null,
-    result.tool_name ?? null,
     result.category ?? null,
+    result.tool_name ?? null,
     result.expense_date ?? null,
   ].filter(Boolean);
   return parts.join(" · ");
@@ -102,42 +102,59 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
 </script>
 
 <template>
-  <Card variant="compact">
-    <div class="mb-2 flex items-center justify-end gap-2">
-      <div class="w-[6.5rem]">
-        <BaseSelect v-model="currency" aria-label="currency">
-          <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
-            {{ code }}
-          </option>
-        </BaseSelect>
+  <Card variant="compact" class="flex flex-col gap-3">
+    <div class="flex flex-wrap items-end justify-between gap-2">
+      <p class="text-xs font-medium uppercase tracking-wide text-surface-mid">quick add</p>
+      <div class="flex items-end gap-2">
+        <div class="w-[6.5rem]">
+          <BaseSelect v-model="currency" label="currency">
+            <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
+              {{ code }}
+            </option>
+          </BaseSelect>
+        </div>
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          class="min-h-11"
+          :aria-expanded="smartTextOpen"
+          aria-controls="expense-smart-text"
+          @click="smartTextOpen = !smartTextOpen"
+        >
+          {{ smartTextOpen ? "hide smart text" : "smart text" }}
+        </BaseButton>
       </div>
-      <BaseButton
-        variant="ghost"
-        size="sm"
-        :aria-expanded="smartTextOpen"
-        aria-controls="expense-smart-text"
-        @click="smartTextOpen = !smartTextOpen"
-      >
-        {{ smartTextOpen ? "hide smart text" : "smart text" }}
-      </BaseButton>
     </div>
 
     <form
       class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(8rem,12rem)_1fr_minmax(5.5rem,7rem)_auto] sm:items-end"
       @submit.prevent="emit('submit')"
     >
-      <BaseSelect v-model="category" class="w-full" aria-label="category">
+      <BaseSelect v-model="category" class="w-full" label="category">
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </BaseSelect>
-      <input
-        ref="productInputRef"
-        v-model="product"
-        list="expense-product-suggestions"
-        placeholder="qty and product name"
-        :class="FIELD_INPUT_CLASS"
+      <div class="flex min-w-0 flex-col gap-1">
+        <label for="expense-quick-product" class="text-label text-surface-sage">product</label>
+        <input
+          id="expense-quick-product"
+          ref="productInputRef"
+          v-model="product"
+          list="expense-product-suggestions"
+          placeholder="qty and product name"
+          autocomplete="off"
+          :class="FIELD_INPUT_CLASS"
+        />
+      </div>
+      <BaseInput
+        v-model="price"
+        type="number"
+        step="0.01"
+        min="0.01"
+        label="price"
+        placeholder="0.00"
+        inputmode="decimal"
       />
-      <BaseInput v-model="price" type="number" step="0.01" min="0.01" placeholder="price" />
-      <BaseButton variant="success" type="submit" size="field" :disabled="loading">
+      <BaseButton variant="success" type="submit" size="field" class="min-h-11" :disabled="loading">
         {{ loading ? "saving..." : "save" }}
       </BaseButton>
       <datalist id="expense-product-suggestions">
@@ -148,7 +165,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
     <div
       v-if="smartTextOpen"
       id="expense-smart-text"
-      class="mt-3 flex flex-col gap-3 border-t border-surface-border pt-3"
+      class="flex flex-col gap-3 border-t border-surface-border pt-3"
     >
       <BaseInput
         ref="smartTextInputRef"
@@ -156,6 +173,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         label="smart text"
         placeholder="20 coffee"
         hint="Amount first — 20 coffee or 50 EUR lunch"
+        autocomplete="off"
       />
       <p v-if="parsing" class="text-xs text-surface-mid" role="status">parsing…</p>
       <p
@@ -165,17 +183,17 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       >
         {{ parsed.error || "Could not parse expense" }}
       </p>
-      <p v-else-if="previewLabel" class="text-xs text-surface-mid" role="status">
-        {{ previewLabel }}
+      <p v-else-if="previewLabel" class="rounded-md bg-surface-dark/60 px-3 py-2 text-sm text-surface-light" role="status">
+        <span class="text-xs text-surface-mid">Will add · </span>{{ previewLabel }}
       </p>
       <BaseButton
         variant="success"
         size="sm"
-        class="self-start"
+        class="min-h-11 self-start"
         :disabled="loading || parsing || !canConfirmSmart"
         @click="confirmSmart"
       >
-        {{ loading ? "saving..." : "+ parsed expense" }}
+        {{ loading ? "saving..." : parsing ? "parsing…" : "+ parsed expense" }}
       </BaseButton>
     </div>
   </Card>
