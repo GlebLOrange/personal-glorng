@@ -75,7 +75,6 @@ function sourceLabel(type: string): string {
         <BaseInput
           v-model="query"
           placeholder="search (admin content)"
-          aria-label="search (admin content)"
           class="min-w-[16rem] flex-1"
         />
         <BaseSelect v-model="sourceType" aria-label="source">

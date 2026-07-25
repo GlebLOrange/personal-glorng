@@ -135,12 +135,10 @@ onMounted(loadUrls);
         v-model="newUrl"
         class="min-w-0 w-full"
         placeholder="url (https://example.com/very-long-url...)"
-        aria-label="url (https://example.com/very-long-url...)"
       />
       <BaseInput
         v-model="newTitle"
         placeholder="title (optional)"
-        aria-label="title (optional)"
       />
     </form>
 

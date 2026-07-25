@@ -137,7 +137,6 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         v-model="product"
         list="expense-product-suggestions"
         placeholder="qty and product name"
-        aria-label="quantity and product name"
         :class="FIELD_INPUT_CLASS"
       />
       <BaseInput
@@ -146,7 +145,6 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         step="0.01"
         min="0.01"
         placeholder="price"
-        aria-label="price"
       />
       <BaseButton variant="success" type="submit" size="field" :disabled="loading">
         {{ loading ? "saving..." : "save" }}
@@ -166,7 +164,6 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         v-model="smartText"
         label="smart text"
         placeholder="20 coffee"
-        aria-label="smart text expense"
         hint="Amount first — 20 coffee or 50 EUR lunch"
       />
       <p v-if="parsing" class="text-xs text-surface-mid" role="status">parsing…</p>

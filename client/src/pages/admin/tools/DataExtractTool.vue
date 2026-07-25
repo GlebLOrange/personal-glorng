@@ -11,6 +11,7 @@ import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
+import { trapTabKeyInRoot } from "@/composables/useOverlayShell";
 import { usePermissions } from "@/composables/usePermissions";
 import { SELECT_CLASS } from "@/constants/formClasses";
 import type {
@@ -273,7 +274,9 @@ function onOptionsKeydown(event: KeyboardEvent): void {
     event.stopPropagation();
     event.preventDefault();
     closeOptions();
+    return;
   }
+  trapTabKeyInRoot(event, optionsPanel.value);
 }
 
 watch(optionsOpen, async (isOpen) => {
@@ -432,7 +435,6 @@ function downloadResult(): void {
             family="1xx"
             type="button"
             :selected="optionsOpen || hasCustomOptions"
-            aria-label="extraction options"
             aria-haspopup="dialog"
             :aria-expanded="optionsOpen"
             @click.stop="toggleOptions"
@@ -448,7 +450,6 @@ function downloadResult(): void {
             v-if="optionsOpen"
             ref="optionsPanel"
             role="dialog"
-            aria-label="extraction options"
             tabindex="-1"
             class="absolute left-0 top-full z-10 mt-1 w-max min-w-[18rem] max-w-[min(100vw-2rem,28rem)] space-y-3 rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
             @click.stop

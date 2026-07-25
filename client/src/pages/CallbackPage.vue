@@ -6,6 +6,7 @@ import BackLink from "@/components/ui/BackLink.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
+import { consumeQueryParams } from "@/utils/consumeQueryParams";
 
 const route = useRoute();
 const router = useRouter();
@@ -16,8 +17,10 @@ const message = ref("");
 let redirectTimer: ReturnType<typeof setTimeout> | null = null;
 
 onMounted(async () => {
-  const code = route.query.code as string | undefined;
-  const state = route.query.state as string | undefined;
+  const { code, state } = await consumeQueryParams(router, route.path, route.query, [
+    "code",
+    "state",
+  ]);
 
   if (!code) {
     status.value = "error";

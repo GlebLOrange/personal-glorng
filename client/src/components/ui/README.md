@@ -22,11 +22,27 @@ Use existing palette tokens — map API action to variant:
 
 | Action | Variant | Token |
 |---|---|---|
-| Create / add | `primary` | `accent-blue` |
-| Save / update / send | `success` | `status-success` |
+| Create / add | `primary` | `accent-blue` wash |
+| Save / update / send | `success` | `status-success` wash |
+| Secondary / cancel (non-destructive) | `secondary` | grayscale (`surface-light`) |
+| Quiet chrome / tertiary | `ghost` (+ optional `quiet`) | muted until hover accent |
 | Cancel / delete / remove | `ghost` + `danger` (or `secondary` + `danger`) | `status-error` |
 
 Auth submits and marketing `cta-*` stay blue/neutral; do not invent new hex colors.
+
+## Marketing CTAs vs product buttons vs toolbar pills
+
+Three intentional systems — pick one per surface, do not mix adjacent CTAs:
+
+| System | Where | Look |
+|---|---|---|
+| `cta-primary` / `cta-secondary` | Portfolio, donations, marketing moments | Solid brand taps (`main.css`) |
+| `BaseButton` | Auth, forms, product dialogs, list rows | Borderless wash; `primary` accent, `secondary` grayscale |
+| `ToolbarPillButton` | Admin list toolbars, tool option bars, HTTP-ish families | Compact pills (`1xx` blue, `2xx` green submit, …) |
+
+**Do not** use `cta-primary` inside tool screens; **do not** add gradients to `BaseButton`. Prefer `ToolbarPillButton` for admin toolbar primary actions and `BaseButton` for form/dialog actions.
+
+**Marketing vs product accents** — portfolio/marketing pages may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI stays single `accent-blue`; no decorative gradients on buttons.
 
 ## Card system (`components/ui/card/`)
 
@@ -36,20 +52,6 @@ Use for **grouped content on a surface** — list items, settings sections, summ
 - Variants: `default`, `compact`, `inset`, `ghost`, `dense`
 - Radius is always `rounded-lg` (interactive token)
 - Not a drop-in for every `div`; use when the block needs a border/background
-
-## Marketing CTAs vs product buttons
-
-**Marketing / portfolio surfaces** — use `cta-primary` and `cta-secondary` utilities from `main.css` on portfolio pages and donations. These use larger tap targets for brand moments.
-
-**Auth and product UI** — prefer `BaseButton` (optionally with `loading`). Auth pages may use `cta-primary` / `cta-secondary` when matching marketing weight:
-
-- `variant="primary"` — flat `accent-blue` fill (create/add)
-- `variant="success"` — flat `status-success` fill (save/update/send)
-- `variant="secondary"` / `variant="ghost"` — borderless; hover/active use accent (or danger) tint + text
-
-Do not use `cta-primary` inside tool screens; do not add gradients to `BaseButton`.
-
-**Marketing vs product accents** — portfolio/marketing pages may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI stays single `accent-blue`; no decorative gradients on buttons.
 
 ## Async UI pattern
 

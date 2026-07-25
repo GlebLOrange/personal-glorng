@@ -67,7 +67,6 @@ function onAddItem(): void {
           <BaseInput
             v-model="item.label"
             placeholder="label (coffee, taxi...)"
-            aria-label="label (coffee, taxi...)"
             data-line-label
           />
           <BaseInput
@@ -76,7 +75,6 @@ function onAddItem(): void {
             step="0.01"
             min="0"
             placeholder="amount (0.00)"
-            aria-label="amount (0.00)"
             @keydown="onAmountEnter($event, index)"
           />
           <BaseSelect v-model="item.currency" aria-label="currency">

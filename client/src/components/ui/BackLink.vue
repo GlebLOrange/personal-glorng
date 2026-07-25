@@ -1,32 +1,22 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useAttrs } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 
 import { actionFamilyClass } from "@/constants/httpStatusColors";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
     to: RouteLocationRaw;
     size?: "default" | "compact";
-    label?: string;
   }>(),
   {
     size: "default",
   },
 );
 
-const backLabels: Record<string, string> = {
-  "/": "Back to portfolio",
-  "/admin": "Back to admin",
-  "/tools": "Back to tools",
-  "/news": "Back to news",
-};
-
-function backAriaLabel(to: RouteLocationRaw, label?: string): string {
-  if (label) return label;
-  const path = typeof to === "string" ? to : (to.path ?? "");
-  return backLabels[path] ?? "Back";
-}
+const attrs = useAttrs();
 
 const sizeClass = computed(() =>
   props.size === "compact"
@@ -43,18 +33,29 @@ function linkClass(isActive: boolean): string {
     "!border-transparent hover:!border-transparent focus-visible:!border-transparent !px-0",
     isActive ? "" : "hover:text-accent-blue hover:bg-accent-blue/15",
     sizeClass.value,
+    attrs.class,
   ]
     .filter(Boolean)
     .join(" ");
 }
+
+const nativeAttrs = computed(() => {
+  const next: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key !== "class" && key !== "style") next[key] = value;
+  }
+  return next;
+});
 </script>
 
 <template>
   <RouterLink v-slot="{ href, navigate, isActive }" :to="to" custom>
     <a
       :href="href"
-      :aria-label="backAriaLabel(to, label)"
+      aria-label="Back"
       :class="linkClass(isActive)"
+      :style="attrs.style"
+      v-bind="nativeAttrs"
       @click="navigate($event)"
     >
       <svg

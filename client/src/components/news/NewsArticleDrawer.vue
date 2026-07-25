@@ -90,20 +90,17 @@ function toggleTheme(theme: string): void {
         <BaseInput
           :model-value="form.source_url"
           placeholder="article url (https://...)"
-          aria-label="article url (https://...)"
           type="url"
           @update:model-value="patch({ source_url: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_name"
           placeholder="source name (e.g. DW)"
-          aria-label="source name (e.g. DW)"
           @update:model-value="patch({ source_name: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_feed_url"
           placeholder="source feed/home url (https://www.dw.com/)"
-          aria-label="source feed/home url (https://www.dw.com/)"
           type="url"
           @update:model-value="patch({ source_feed_url: toStringValue($event) })"
         />
@@ -131,26 +128,22 @@ function toggleTheme(theme: string): void {
           v-if="mode === 'edit'"
           :model-value="form.slug"
           placeholder="slug (article-url-slug)"
-          aria-label="slug (article-url-slug)"
           @update:model-value="patch({ slug: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.title"
           placeholder="title"
-          aria-label="title"
           @update:model-value="patch({ title: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.original_title"
           placeholder="original title"
-          aria-label="original title"
           @update:model-value="patch({ original_title: toStringValue($event) })"
         />
         <BaseTextarea
           :model-value="form.summary"
           :rows="4"
           placeholder="summary"
-          aria-label="summary"
           @update:model-value="patch({ summary: toStringValue($event) })"
         />
         <details class="rounded border border-surface-border px-3 py-2">
@@ -184,7 +177,6 @@ function toggleTheme(theme: string): void {
         <BaseInput
           :model-value="form.language"
           placeholder="language (en)"
-          aria-label="language (en)"
           @update:model-value="patch({ language: toStringValue($event) })"
         />
       </section>

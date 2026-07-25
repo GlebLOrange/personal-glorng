@@ -42,12 +42,12 @@ const displayTitle = computed(
 
 <template>
   <div
-    class="relative -mx-6 border-b border-surface-border bg-surface-dark/80 px-6 py-1.5 backdrop-blur-md"
+    class="relative -mx-6 border-b border-surface-border bg-surface-dark/80 px-6 py-2.5 backdrop-blur-md"
   >
-    <div class="flex min-h-8 min-w-0 items-center gap-3" :class="backTo ? 'pr-12' : ''">
+    <div class="flex min-h-8 min-w-0 items-start gap-3">
       <div class="flex min-w-0 flex-1 flex-col justify-center">
         <div
-          :class="soleSectionCrumb ? 'flex min-h-8 items-center' : 'page-breadcrumb-row'"
+          :class="soleSectionCrumb ? 'flex h-8 items-center' : 'page-breadcrumb-row'"
         >
           <PageBreadcrumbs
             :segments="displaySegments"
@@ -64,13 +64,8 @@ const displayTitle = computed(
           <span class="accent-gradient">{{ displayTitle }}</span>
         </h1>
       </div>
-    </div>
 
-    <BackLink
-      v-if="backTo"
-      :to="backTo"
-      size="compact"
-      class="absolute right-6 top-1/2 -translate-y-1/2"
-    />
+      <BackLink v-if="backTo" :to="backTo" size="compact" class="shrink-0" />
+    </div>
   </div>
 </template>

@@ -51,4 +51,32 @@ describe("useOverlayShell", () => {
     await nextTick();
     scope.stop();
   });
+
+  it("sets background inert while open and clears on close", async () => {
+    const open = ref(true);
+    const panel = ref<HTMLElement | null>(document.createElement("div"));
+    panel.value!.innerHTML = '<button type="button">Close</button>';
+    document.body.append(panel.value!);
+
+    const main = document.createElement("main");
+    main.id = "main-content";
+    document.body.append(main);
+
+    const scope = effectScope();
+    scope.run(() => {
+      useOverlayShell({
+        open,
+        panelRef: panel,
+        onClose: () => undefined,
+      });
+    });
+    await nextTick();
+    expect(main.hasAttribute("inert")).toBe(true);
+
+    open.value = false;
+    await nextTick();
+    expect(main.hasAttribute("inert")).toBe(false);
+
+    scope.stop();
+  });
 });

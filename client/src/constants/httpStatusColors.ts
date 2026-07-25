@@ -9,18 +9,18 @@ const FAMILY_BADGE: Record<HttpStatusFamily, string> = {
   "5xx": "text-status-critical bg-status-critical/15 border-status-critical/30",
 };
 
-/** Idle: clean text, transparent border (layout-stable). Hover/selected: color border (+ pale bg except 1xx). */
+/** Option C: idle fill/3 + matching accent text. Hover/selected: pale /15 bg + matching border. */
 const FAMILY_ACTION: Record<HttpStatusFamily, string> = {
   "1xx":
-    "border-transparent text-surface-mid hover:enabled:bg-accent-blue/15 hover:enabled:border-accent-blue/40 hover:enabled:text-accent-blue",
+    "border-transparent bg-accent-blue/3 text-accent-blue hover:enabled:bg-accent-blue/15 hover:enabled:border-accent-blue/40",
   "2xx":
-    "border-transparent text-surface-mid hover:enabled:bg-status-success/15 hover:enabled:border-status-success/40 hover:enabled:text-status-success",
+    "border-transparent bg-status-success/3 text-status-success hover:enabled:bg-status-success/15 hover:enabled:border-status-success/40",
   "3xx":
-    "border-transparent text-surface-mid hover:enabled:bg-status-cyan/15 hover:enabled:border-status-cyan/40 hover:enabled:text-status-cyan",
+    "border-transparent bg-status-cyan/3 text-status-cyan hover:enabled:bg-status-cyan/15 hover:enabled:border-status-cyan/40",
   "4xx":
-    "border-transparent text-surface-mid hover:enabled:bg-status-error/15 hover:enabled:border-status-error/40 hover:enabled:text-status-error",
+    "border-transparent bg-status-error/3 text-status-error hover:enabled:bg-status-error/15 hover:enabled:border-status-error/40",
   "5xx":
-    "border-transparent text-surface-mid hover:enabled:bg-status-critical/15 hover:enabled:border-status-critical/40 hover:enabled:text-status-critical",
+    "border-transparent bg-status-critical/3 text-status-critical hover:enabled:bg-status-critical/15 hover:enabled:border-status-critical/40",
 };
 
 const FAMILY_ACTION_SELECTED: Record<HttpStatusFamily, string> = {
@@ -52,7 +52,7 @@ export const ACTION_PILL_BASE =
 
 /**
  * Classes for an action pill in a given HTTP-family color.
- * Idle = clean text; hover/selected = pale background + matching border.
+ * Idle = fill at 3% opacity + matching accent text; hover/selected = pale /15 + border.
  */
 export function actionFamilyClass(
   family: HttpStatusFamily,

@@ -8,6 +8,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { api } from "@/composables/useApi";
+import { trapTabKeyInRoot } from "@/composables/useOverlayShell";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessageFromBlob } from "@/types/api";
 
@@ -60,7 +61,9 @@ function onOptionsKeydown(event: KeyboardEvent): void {
     event.stopPropagation();
     event.preventDefault();
     closeOptions();
+    return;
   }
+  trapTabKeyInRoot(event, optionsPanel.value);
 }
 
 watch(optionsOpen, async (isOpen) => {
@@ -129,7 +132,6 @@ async function download(): Promise<void> {
             family="1xx"
             type="button"
             :selected="optionsOpen || hasCustomOptions"
-            aria-label="download options"
             aria-haspopup="dialog"
             :aria-expanded="optionsOpen"
             @click.stop="toggleOptions"
@@ -145,7 +147,6 @@ async function download(): Promise<void> {
             v-if="optionsOpen"
             ref="optionsPanel"
             role="dialog"
-            aria-label="download options"
             tabindex="-1"
             class="absolute left-0 top-full z-10 mt-1 w-max min-w-[16rem] max-w-[min(100vw-2rem,24rem)] space-y-3 rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
             @click.stop
@@ -157,11 +158,7 @@ async function download(): Promise<void> {
               >
                 quality
               </label>
-              <BaseSelect
-                id="vid-download-quality"
-                v-model="format"
-                aria-label="quality"
-              >
+              <BaseSelect id="vid-download-quality" v-model="format">
                 <option v-for="f in formats" :key="f.value" :value="f.value">
                   {{ f.label }}
                 </option>
@@ -193,7 +190,6 @@ async function download(): Promise<void> {
       <BaseInput
         v-model="url"
         placeholder="url (https://....)"
-        aria-label="url (https://....)"
         class="w-full"
       />
     </form>

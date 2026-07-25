@@ -45,7 +45,6 @@ function toStringValue(value: string | number | null | undefined): string {
       <BaseInput
         :model-value="form.feed_url"
         placeholder="feed url"
-        aria-label="feed url"
         type="url"
         required
         @update:model-value="patch({ feed_url: toStringValue($event) })"
@@ -53,21 +52,18 @@ function toStringValue(value: string | number | null | undefined): string {
       <BaseInput
         :model-value="form.name"
         placeholder="name"
-        aria-label="name"
         required
         @update:model-value="patch({ name: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.category"
         placeholder="category"
-        aria-label="category"
         required
         @update:model-value="patch({ category: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.region"
         placeholder="region"
-        aria-label="region"
         required
         @update:model-value="patch({ region: toStringValue($event) })"
       />

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
@@ -57,6 +57,13 @@ const menuStatuses = computed(() =>
 
 const recentStatusHistory = computed(() =>
   (props.task?.status_history ?? []).slice(-4),
+);
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (!isOpen) technicalOpen.value = false;
+  },
 );
 </script>
 
@@ -197,11 +204,7 @@ const recentStatusHistory = computed(() =>
           quiet
           size="sm"
           class="gap-1.5"
-          :class="
-            technicalOpen
-              ? '!bg-accent-blue/15 !text-accent-blue'
-              : undefined
-          "
+          :selected="technicalOpen"
           :aria-expanded="technicalOpen"
           aria-controls="task-technical-details"
           @click="technicalOpen = !technicalOpen"

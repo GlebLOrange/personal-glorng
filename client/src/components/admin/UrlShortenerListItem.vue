@@ -88,7 +88,6 @@ function confirmDelete(): void {
         ref="titleInput"
         v-model="draftTitle"
         placeholder="title (optional)"
-        aria-label="title (optional)"
         @keydown="onTitleKeydown"
       />
     </template>
