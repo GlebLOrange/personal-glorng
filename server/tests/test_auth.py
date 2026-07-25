@@ -188,6 +188,7 @@ def _mock_firebase_token(
     monkeypatch.setattr(
         firebase_auth_service, "_firebase_app", lambda _settings: object()
     )
+
     def _verify_id_token(_token: str, **_kwargs: object) -> dict[str, object]:
         return payload
 
@@ -273,7 +274,6 @@ async def test_firebase_login_existing_user_does_not_grant_permissions_or_email(
 
 
 @pytest.mark.asyncio
-
 @pytest.mark.asyncio
 async def test_firebase_login_rejects_unverified_password_account(
     client: AsyncClient,

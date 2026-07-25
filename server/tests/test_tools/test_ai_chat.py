@@ -464,7 +464,9 @@ def _rate_limited_client(
         def __init__(self, *, timeout: float) -> None:
             super().__init__(fail_count=fail_count, lines=lines, timeout=timeout)
 
-        def stream(self, *_args: object, **_kwargs: object) -> _RateLimitedFakeGroqResponse:
+        def stream(
+            self, *_args: object, **_kwargs: object
+        ) -> _RateLimitedFakeGroqResponse:
             call_state["calls"] += 1
             if call_state["calls"] <= fail_count:
                 return _RateLimitedFakeGroqResponse([], status_code=429)

@@ -1,7 +1,7 @@
 """Tests for TheMealDB recipe import helpers and seed command."""
 
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -119,10 +119,8 @@ class TestThemealDBClient:
 
 class TestSeedMulticookerRecipes:
     @pytest.mark.asyncio
-    @patch("app.db.seed_multicooker_recipes.ThemealDBClient")
     async def test_skips_existing_titles(
         self,
-        mock_client_cls: MagicMock,
         registry: DatabaseRegistry,
     ) -> None:
         assert registry.recipes is not None
@@ -135,33 +133,21 @@ class TestSeedMulticookerRecipes:
             ),
         )
 
-        mock_client = mock_client_cls.return_value
-        mock_client.fetch_multicooker_candidates = AsyncMock(
-            return_value=[map_meal_to_recipe(SAMPLE_MEAL)]
-        )
-
         await _seed_recipes_with_registry(
             registry,
             count=1,
-            candidates=await mock_client.fetch_multicooker_candidates(limit=1),
+            candidates=[map_meal_to_recipe(SAMPLE_MEAL)],
         )
 
         count = await registry.recipes.count()
         assert count == 1
 
     @pytest.mark.asyncio
-    @patch("app.db.seed_multicooker_recipes.ThemealDBClient")
     async def test_inserts_new_recipes(
         self,
-        mock_client_cls: MagicMock,
         registry: DatabaseRegistry,
     ) -> None:
-        mock_client = mock_client_cls.return_value
-        mock_client.fetch_multicooker_candidates = AsyncMock(
-            return_value=[map_meal_to_recipe(SAMPLE_MEAL)]
-        )
-
-        candidates = await mock_client.fetch_multicooker_candidates(limit=1)
+        candidates = [map_meal_to_recipe(SAMPLE_MEAL)]
         await _seed_recipes_with_registry(registry, count=1, candidates=candidates)
 
         assert registry.recipes is not None

@@ -199,12 +199,12 @@ Docs match automation; dependency bots cover the real surface; prod posture impr
 
 ### Tasks
 
-- [ ] Task: Align testing docs with workflows (or add missing smokes)
+- [x] Task: Align testing docs with workflows (or add missing smokes)
   - Acceptance: `docs/reference/testing.md` accurately describes nightly/pre-release; prefer adding one nginx health smoke and documenting the rest as future if cost is high
   - Verify: Doc review + workflow dry-read; optional workflow run
   - Files: `docs/reference/testing.md`, `.github/workflows/nightly.yml`, `.github/workflows/pre-release.yml`
 
-- [ ] Task: Expand Dependabot
+- [x] Task: Expand Dependabot
   - Acceptance: Entries for `/docs` npm, `github-actions`, and Docker ecosystems used by the repo
   - Verify: `dependabot.yml` schema valid
   - Files: `.github/dependabot.yml`, note in `docs/reference/security.md` if needed

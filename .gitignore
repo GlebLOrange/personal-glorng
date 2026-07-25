@@ -62,3 +62,9 @@ Thumbs.db
 
 # Local git worktrees (created under repo root)
 .worktrees/
+
+# npx skills — personal/global installs; mirrors are local-only
+.agents/
+.claude/
+skills-lock.json
+
