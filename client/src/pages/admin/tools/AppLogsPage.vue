@@ -13,6 +13,7 @@ import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { logLevelClass } from "@/constants/filterColors";
+import { httpStatusClass } from "@/constants/httpStatusColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -142,6 +143,11 @@ function hasDetails(entry: AppLogEntry): boolean {
   return Boolean(entry.context || entry.traceback || entry.error || entry.request_id);
 }
 
+function contextStatus(entry: AppLogEntry): number | null {
+  const status = entry.context?.status;
+  return typeof status === "number" && Number.isFinite(status) ? status : null;
+}
+
 onMounted(load);
 </script>
 
@@ -193,7 +199,14 @@ onMounted(load);
           @click="onRowClick(entry)"
         >
           <template #badge>
-            <StatusBadge :label="entry.level" :class-name="logLevelClass(entry.level)" />
+            <div class="flex items-center gap-1">
+              <StatusBadge :label="entry.level" :class-name="logLevelClass(entry.level)" />
+              <StatusBadge
+                v-if="contextStatus(entry) !== null"
+                :label="String(contextStatus(entry))"
+                :class-name="httpStatusClass(contextStatus(entry)!)"
+              />
+            </div>
           </template>
           <template #primary>
             <span :title="entry.message">{{ entry.message }}</span>

@@ -1,10 +1,35 @@
 <script setup lang="ts">
-defineProps<{
+import { computed, ref } from "vue";
+
+const props = defineProps<{
   label: string;
   active?: boolean;
   colorClass?: string;
   disabled?: boolean;
 }>();
+
+const hovered = ref(false);
+
+/** Status fill/text only — drop border-* so idle border chrome never fights colorClass. */
+const statusFillClass = computed(() => {
+  if (!props.colorClass) return "";
+  return props.colorClass
+    .split(/\s+/)
+    .filter((token) => token && !token.startsWith("border-"))
+    .join(" ");
+});
+
+const showStatusColor = computed(
+  () => Boolean((props.active || hovered.value) && statusFillClass.value),
+);
+
+function onEnter(): void {
+  if (!props.disabled) hovered.value = true;
+}
+
+function onLeave(): void {
+  hovered.value = false;
+}
 </script>
 
 <template>
@@ -12,14 +37,16 @@ defineProps<{
     type="button"
     :disabled="disabled"
     :aria-pressed="active"
-    :class="[
-      'w-full min-w-0 truncate text-center text-xs px-2 py-1 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
-      active
-        ? 'ring-2 ring-accent-blue/50 border-accent-blue/40'
-        : 'border-surface-border',
-      disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-accent-blue/40',
-      colorClass,
-    ]"
+    class="w-max shrink-0 whitespace-nowrap rounded-full border border-transparent px-2 py-1 text-center text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:cursor-not-allowed disabled:opacity-50"
+    :class="
+      showStatusColor
+        ? [statusFillClass, active ? 'ring-1 ring-inset ring-current/35' : undefined]
+        : 'bg-transparent text-surface-mid'
+    "
+    @mouseenter="onEnter"
+    @mouseleave="onLeave"
+    @focus="onEnter"
+    @blur="onLeave"
   >
     {{ label }}
   </button>

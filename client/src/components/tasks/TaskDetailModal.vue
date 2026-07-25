@@ -5,8 +5,10 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
 import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import ToolIcon from "@/components/icons/ToolIcon.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import {
   statusActionLabel,
   statusBadgeClass,
@@ -171,8 +173,9 @@ const menuStatuses = computed(() =>
         <BaseButton
           v-else
           variant="ghost"
+          quiet
           size="sm"
-          class="gap-1.5"
+          class="gap-1.5 hover:enabled:!border-accent-blue/40 hover:enabled:!bg-accent-blue/10 hover:enabled:!text-accent-blue focus-visible:!border-accent-blue/40 focus-visible:!text-accent-blue"
           title="Try syncing again"
           @click="emit('retrySync', task.id)"
         >
@@ -206,23 +209,17 @@ const menuStatuses = computed(() =>
     </div>
 
     <template v-if="canMutate && task" #footer>
-      <div class="flex flex-wrap items-center gap-2">
-        <BaseButton
-          v-if="primaryActionStatus"
-          variant="success"
-          size="sm"
-          :disabled="statusUpdating"
-          @click="emit('updateStatus', primaryActionStatus)"
-        >
-          {{ statusActionLabel(primaryActionStatus) }}
-        </BaseButton>
+      <div class="flex w-full flex-wrap items-center gap-2">
         <BaseDropdownMenu
           v-if="menuStatuses.length"
           placement="top"
           aria-label="more actions"
         >
           <template #trigger>
-            <span class="px-2 text-sm">more actions</span>
+            <span class="inline-flex items-center gap-1.5 px-2 text-sm text-surface-mid">
+              more actions
+              <ChevronIcon />
+            </span>
           </template>
           <template #default="{ close: closeMenu }">
             <BaseDropdownMenuItem
@@ -238,6 +235,15 @@ const menuStatuses = computed(() =>
             </BaseDropdownMenuItem>
           </template>
         </BaseDropdownMenu>
+        <ToolbarPillButton
+          v-if="primaryActionStatus"
+          family="2xx"
+          class="ml-auto"
+          :disabled="statusUpdating"
+          @click="emit('updateStatus', primaryActionStatus)"
+        >
+          {{ statusActionLabel(primaryActionStatus) }}
+        </ToolbarPillButton>
       </div>
     </template>
   </BaseDrawer>

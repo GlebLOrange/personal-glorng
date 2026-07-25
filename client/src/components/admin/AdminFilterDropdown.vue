@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 
 withDefaults(
@@ -21,7 +23,7 @@ const emit = defineEmits<{
 
 const open = ref(false);
 const rootRef = useTemplateRef<HTMLElement>("root");
-const triggerRef = useTemplateRef<HTMLElement>("trigger");
+const triggerRef = useTemplateRef<InstanceType<typeof ToolbarPillButton>>("trigger");
 const panelRef = useTemplateRef<HTMLElement>("panel");
 let previouslyFocused: HTMLElement | null = null;
 
@@ -90,16 +92,12 @@ function onKeydown(event: KeyboardEvent): void {
   }
 }
 
-function focusTarget(target: unknown): void {
-  if (target instanceof HTMLElement) {
-    target.focus();
-    return;
-  }
-  if (target && typeof target === "object" && "$el" in target) {
-    const el = (target as { $el: unknown }).$el;
-    if (el instanceof HTMLElement) {
-      el.focus();
-    }
+function focusTrigger(): void {
+  const trigger = triggerRef.value;
+  if (!trigger) return;
+  const el = (trigger as unknown as { $el?: HTMLElement }).$el;
+  if (el instanceof HTMLElement) {
+    el.focus();
   }
 }
 
@@ -117,9 +115,13 @@ watch(open, async (isOpen) => {
     }
     return;
   }
-  const restore = previouslyFocused ?? triggerRef.value;
+  const restore = previouslyFocused;
   previouslyFocused = null;
-  focusTarget(restore);
+  if (restore) {
+    restore.focus();
+  } else {
+    focusTrigger();
+  }
 });
 
 onMounted(() => {
@@ -136,18 +138,18 @@ defineExpose({ close });
 </script>
 
 <template>
-  <div ref="root" class="relative inline-flex">
-    <BaseButton
+  <div ref="root" class="relative inline-flex" :class="open ? 'z-40' : undefined">
+    <ToolbarPillButton
       ref="trigger"
-      type="button"
-      variant="ghost"
-      size="sm"
+      family="1xx"
+      :selected="open || hasActiveFilters"
       aria-haspopup="dialog"
       :aria-expanded="open"
       @click.stop="toggle"
     >
       {{ label }}<span v-if="activeLabel" class="text-surface-muted"> · {{ activeLabel }}</span>
-    </BaseButton>
+      <ChevronIcon :open="open" />
+    </ToolbarPillButton>
 
     <div
       v-if="open"
@@ -155,18 +157,27 @@ defineExpose({ close });
       role="dialog"
       :aria-label="label"
       tabindex="-1"
-      class="absolute left-0 top-full z-10 mt-1 w-[18rem] rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
+      class="absolute left-0 top-full z-10 mt-1 w-max max-w-[min(100vw-2rem,36rem)] rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
       @click.stop
     >
       <div class="space-y-3">
-        <div v-if="$slots.chips" class="grid grid-cols-3 gap-2">
+        <div v-if="$slots.chips" class="flex flex-col gap-2">
           <slot name="chips" />
         </div>
         <slot />
       </div>
       <slot name="footer" />
-      <div v-if="hasActiveFilters" class="mt-3 flex flex-wrap justify-center gap-2">
-        <BaseButton variant="ghost" size="sm" @click="onClear">clear</BaseButton>
+      <div class="mt-3 flex flex-wrap justify-start gap-2">
+        <BaseButton
+          variant="ghost"
+          danger
+          size="sm"
+          class="hover:enabled:border-transparent focus-visible:border-transparent"
+          :disabled="!hasActiveFilters"
+          @click="onClear"
+        >
+          clear
+        </BaseButton>
       </div>
     </div>
   </div>

@@ -6,6 +6,8 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
+import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { newsStatusClass } from "@/constants/filterColors";
 import { SELECT_CLASS } from "@/constants/formClasses";
 import { NEWS_STATUSES, NEWS_THEME_LIMIT, NEWS_THEMES } from "@/constants/news";
@@ -189,27 +191,37 @@ function toggleTheme(theme: string): void {
     </form>
 
     <template #footer>
-      <div
-        class="flex flex-wrap items-center gap-3"
-        :class="mode === 'edit' ? 'justify-between' : 'justify-end'"
-      >
-        <BaseButton
-          v-if="mode === 'edit'"
-          variant="ghost"
-          danger
-          type="button"
-          :disabled="loading"
-          @click="emit('delete')"
-        >
-          delete
-        </BaseButton>
-        <div class="flex justify-end gap-3">
-          <BaseButton variant="ghost" danger type="button" @click="emit('close')">cancel</BaseButton>
-          <BaseButton variant="success" :disabled="loading" @click="emit('save')">
-            {{ loading ? "saving..." : "save" }}
+      <DrawerFooterActions>
+        <template #start>
+          <BaseButton
+            v-if="mode === 'edit'"
+            variant="ghost"
+            danger
+            type="button"
+            class="hover:enabled:border-transparent focus-visible:border-transparent"
+            :disabled="loading"
+            @click="emit('delete')"
+          >
+            delete
           </BaseButton>
-        </div>
-      </div>
+        </template>
+        <template #dismiss>
+          <BaseButton
+            variant="ghost"
+            danger
+            type="button"
+            class="hover:enabled:border-transparent focus-visible:border-transparent"
+            @click="emit('close')"
+          >
+            cancel
+          </BaseButton>
+        </template>
+        <template #primary>
+          <ToolbarPillButton family="2xx" :disabled="loading" @click="emit('save')">
+            {{ loading ? "saving..." : "save" }}
+          </ToolbarPillButton>
+        </template>
+      </DrawerFooterActions>
     </template>
   </BaseDrawer>
 </template>

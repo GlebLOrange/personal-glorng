@@ -48,6 +48,12 @@ useScrollListFingerprint(
 
 const form = ref<NewsArticleFormData>(emptyForm());
 
+/** Chrome crumb prefers public path shape `news/<slug>` once known. */
+const chromeTitle = computed(() => {
+  const slug = form.value.slug.trim();
+  return slug ? `news/${slug}` : "edit news article";
+});
+
 function emptyForm(): NewsArticleFormData {
   return {
     slug: "",
@@ -252,7 +258,7 @@ watch(articleId, () => {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="edit news article" max-width="xl" back-to="/news?manage=1">
+  <AdminPageLayout hub="tools" :title="chromeTitle" max-width="xl" back-to="/news?manage=1">
     <header v-if="canWrite && article" class="page-intro">
       <div class="flex flex-wrap gap-2">
         <BaseButton variant="success" :disabled="actionLoading" @click="saveArticle">

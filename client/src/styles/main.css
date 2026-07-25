@@ -34,6 +34,9 @@
   --color-status-error: #e57373;
   --color-status-warning: #d4a574;
   --color-status-success: #6ebf8a;
+  /* Pale HTTP 3xx / 5xx families (see httpStatusColors.ts) */
+  --color-status-cyan: #7eb8b0;
+  --color-status-critical: #d4789a;
   /* Legacy aliases of status-* — prefer status-error / status-warning in new code */
   --color-accent-red: #e57373;
   --color-accent-amber: #d4a574;
@@ -118,7 +121,7 @@
 @utility nav-link {
   @apply text-surface-mid transition-colors;
   &:hover {
-    @apply text-surface-light;
+    @apply text-accent-blue;
   }
   &:focus-visible {
     @apply outline-none ring-2 ring-accent-blue/50 rounded;
@@ -127,9 +130,6 @@
 
 @utility nav-link-accent {
   @apply nav-link;
-  &:hover {
-    @apply text-accent-blue;
-  }
 }
 
 @utility nav-link-violet {

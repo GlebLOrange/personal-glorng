@@ -3,18 +3,27 @@ import { computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import PageShell from "@/components/layout/PageShell.vue";
+import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
 import { applyPageSeo } from "@/utils/pageSeo";
+import { truncateBreadcrumbSlug } from "@/utils/format";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
 const route = useRoute();
 const slug = computed(() => String(route.params.slug ?? ""));
+const crumbSlug = computed(() => truncateBreadcrumbSlug(slug.value));
 
 const { article, detailLoading, detailError, loadArticle } = useNews();
 
 const articleTitle = computed(() => article.value?.title ?? "article");
+const chromeTitle = computed(() => crumbSlug.value || articleTitle.value);
+const breadcrumbs = computed((): BreadcrumbSegment[] => {
+  const trail: BreadcrumbSegment[] = [{ label: "news", to: "/news" }];
+  if (crumbSlug.value) trail.push({ label: crumbSlug.value });
+  return trail;
+});
 
 async function loadCurrentArticle(): Promise<void> {
   if (slug.value) {
@@ -43,8 +52,8 @@ watch(
 
 <template>
   <PageShell
-    :title="articleTitle"
-    :breadcrumbs="[{ label: 'news', to: '/news' }]"
+    :title="chromeTitle"
+    :breadcrumbs="breadcrumbs"
     back-to="/news"
     :narrow="false"
   >

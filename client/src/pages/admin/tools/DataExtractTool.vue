@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
@@ -24,6 +26,7 @@ import type {
 import type { PaginatedList } from "@/types";
 
 type FormatChoice = "auto" | DataExtractFormat;
+type ActionTab = "extract" | "import";
 
 const selectedFile = ref<File | null>(null);
 const dragOver = ref(false);
@@ -43,6 +46,10 @@ const batchTotalPages = ref(0);
 const selectedBatchId = ref<number | null>(null);
 const batchDetail = ref<ImportBatchDetail | null>(null);
 const promoteResult = ref<PromoteBatchResult | null>(null);
+const activeTab = ref<ActionTab>("extract");
+const optionsOpen = ref(false);
+const optionsRoot = useTemplateRef<HTMLElement>("optionsRoot");
+const optionsPanel = useTemplateRef<HTMLElement>("optionsPanel");
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const { loading, run } = useApiAction();
@@ -72,6 +79,22 @@ const showDelimitedOptions = computed(
     profileChoice.value === "pipe_embed" ||
     formatChoice.value === "auto",
 );
+
+const hasCustomOptions = computed(
+  () =>
+    formatChoice.value !== "auto" ||
+    profileChoice.value !== "custom" ||
+    fieldDelimiter.value !== "|" ||
+    listDelimiter.value !== ";" ||
+    Boolean(rowTag.value.trim()) ||
+    xmlMode.value !== "rows",
+);
+
+const optionsActiveLabel = computed(() => {
+  if (formatChoice.value !== "auto") return formatChoice.value;
+  if (profileChoice.value === "pipe_embed") return "pipe embed";
+  return undefined;
+});
 
 const metaSummary = computed(() => {
   if (!result.value) return "";
@@ -221,6 +244,46 @@ async function promoteSelectedBatch(): Promise<void> {
 
 onMounted(() => {
   void loadBatchHistory();
+  document.addEventListener("click", onDocumentClick);
+  document.addEventListener("keydown", onOptionsKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", onDocumentClick);
+  document.removeEventListener("keydown", onOptionsKeydown);
+});
+
+function toggleOptions(): void {
+  optionsOpen.value = !optionsOpen.value;
+}
+
+function closeOptions(): void {
+  optionsOpen.value = false;
+}
+
+function onDocumentClick(event: MouseEvent): void {
+  if (!optionsOpen.value) return;
+  const root = optionsRoot.value;
+  if (root && !root.contains(event.target as Node)) closeOptions();
+}
+
+function onOptionsKeydown(event: KeyboardEvent): void {
+  if (!optionsOpen.value) return;
+  if (event.key === "Escape") {
+    event.stopPropagation();
+    event.preventDefault();
+    closeOptions();
+  }
+}
+
+watch(optionsOpen, async (isOpen) => {
+  if (!isOpen) return;
+  await nextTick();
+  optionsPanel.value?.focus();
+});
+
+watch(canWrite, (allowed) => {
+  if (!allowed && activeTab.value === "import") activeTab.value = "extract";
 });
 
 function onFileSelect(event: Event): void {
@@ -358,26 +421,181 @@ function downloadResult(): void {
   <AdminPageLayout hub="tools" title="data extract">
     <div class="min-w-0">
 
-    <div class="mb-6 space-y-2">
-      <div class="flex items-center justify-between gap-2">
-        <BaseButton
-          v-if="canWrite"
-          variant="secondary"
-          size="sm"
-          :disabled="loading || !selectedFile"
-          @click="importFile"
+    <div class="mb-6 space-y-3">
+      <div class="flex w-full min-w-0 flex-wrap items-center gap-2">
+        <div
+          ref="optionsRoot"
+          class="relative inline-flex"
+          :class="optionsOpen ? 'z-40' : undefined"
         >
-          {{ loading ? "working..." : "import to db" }}
-        </BaseButton>
-        <span v-else aria-hidden="true" />
-        <BaseButton
-          variant="primary"
-          size="sm"
-          :disabled="loading || !selectedFile"
-          @click="extractFile"
-        >
-          {{ loading ? "working..." : "extract" }}
-        </BaseButton>
+          <ToolbarPillButton
+            family="1xx"
+            type="button"
+            :selected="optionsOpen || hasCustomOptions"
+            aria-label="extraction options"
+            aria-haspopup="dialog"
+            :aria-expanded="optionsOpen"
+            @click.stop="toggleOptions"
+          >
+            options
+            <span v-if="optionsActiveLabel" class="text-surface-muted">
+              · {{ optionsActiveLabel }}
+            </span>
+            <ChevronIcon :open="optionsOpen" />
+          </ToolbarPillButton>
+
+          <div
+            v-if="optionsOpen"
+            ref="optionsPanel"
+            role="dialog"
+            aria-label="extraction options"
+            tabindex="-1"
+            class="absolute left-0 top-full z-10 mt-1 w-max min-w-[18rem] max-w-[min(100vw-2rem,28rem)] space-y-3 rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
+            @click.stop
+          >
+            <div class="flex items-center gap-2">
+              <label
+                for="data-extract-format"
+                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+              >
+                format
+              </label>
+              <select
+                id="data-extract-format"
+                v-model="formatChoice"
+                name="format"
+                :class="SELECT_CLASS"
+              >
+                <option value="auto">auto</option>
+                <option value="csv">CSV</option>
+                <option value="json">JSON</option>
+                <option value="xml">XML</option>
+                <option value="delimited">delimited</option>
+              </select>
+            </div>
+
+            <div v-if="showDelimitedOptions" class="flex items-center gap-2">
+              <label
+                for="data-extract-profile"
+                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+              >
+                profile
+              </label>
+              <select
+                id="data-extract-profile"
+                v-model="profileChoice"
+                name="profile"
+                :class="SELECT_CLASS"
+              >
+                <option value="custom">custom delimiters</option>
+                <option value="pipe_embed">pipe embed (13 fields)</option>
+              </select>
+            </div>
+
+            <div
+              v-if="showDelimitedOptions && profileChoice === 'custom'"
+              class="flex items-center gap-2"
+            >
+              <label
+                for="data-extract-field-delimiter"
+                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+              >
+                field delimiter
+              </label>
+              <input
+                id="data-extract-field-delimiter"
+                v-model="fieldDelimiter"
+                name="field_delimiter"
+                type="text"
+                maxlength="4"
+                placeholder="|"
+                class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
+              />
+            </div>
+
+            <div
+              v-if="showDelimitedOptions && profileChoice === 'custom'"
+              class="flex items-center gap-2"
+            >
+              <label
+                for="data-extract-list-delimiter"
+                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+              >
+                list delimiter
+              </label>
+              <input
+                id="data-extract-list-delimiter"
+                v-model="listDelimiter"
+                name="list_delimiter"
+                type="text"
+                maxlength="4"
+                placeholder=";"
+                class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
+              />
+            </div>
+
+            <div v-if="showXmlOptions" class="flex items-center gap-2">
+              <label
+                for="data-extract-row-tag"
+                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+              >
+                xml row tag
+              </label>
+              <input
+                id="data-extract-row-tag"
+                v-model="rowTag"
+                name="row_tag"
+                type="text"
+                placeholder="optional"
+                class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
+              />
+            </div>
+
+            <div v-if="showXmlOptions" class="flex items-center gap-2">
+              <label
+                for="data-extract-xml-mode"
+                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+              >
+                xml mode
+              </label>
+              <select
+                id="data-extract-xml-mode"
+                v-model="xmlMode"
+                name="xml_mode"
+                :class="SELECT_CLASS"
+              >
+                <option value="rows">rows</option>
+                <option value="tree">tree</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="ml-auto flex flex-wrap items-center gap-1">
+          <ToolbarPillButton
+            v-if="canWrite"
+            family="3xx"
+            type="button"
+            :disabled="loading || !selectedFile"
+            @click="
+              activeTab = 'import';
+              void importFile();
+            "
+          >
+            {{ loading && activeTab === "import" ? "working..." : "import to db" }}
+          </ToolbarPillButton>
+          <ToolbarPillButton
+            family="2xx"
+            type="button"
+            :disabled="loading || !selectedFile"
+            @click="
+              activeTab = 'extract';
+              void extractFile();
+            "
+          >
+            {{ loading && activeTab === "extract" ? "working..." : "extract" }}
+          </ToolbarPillButton>
+        </div>
       </div>
 
       <div
@@ -407,60 +625,6 @@ function downloadResult(): void {
         <p v-if="selectedName" class="text-surface-light text-sm">{{ selectedName }}</p>
         <p v-else class="text-surface-mid text-sm">drop a file here or click to browse</p>
       </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <select v-model="formatChoice" :class="SELECT_CLASS" aria-label="format">
-        <option value="auto">auto</option>
-        <option value="csv">CSV</option>
-        <option value="json">JSON</option>
-        <option value="xml">XML</option>
-        <option value="delimited">delimited</option>
-      </select>
-
-      <select
-        v-if="showDelimitedOptions"
-        v-model="profileChoice"
-        :class="SELECT_CLASS"
-        aria-label="profile"
-      >
-        <option value="custom">custom delimiters</option>
-        <option value="pipe_embed">pipe embed (13 fields)</option>
-      </select>
-
-      <input
-        v-if="showDelimitedOptions && profileChoice === 'custom'"
-        v-model="fieldDelimiter"
-        type="text"
-        maxlength="4"
-        placeholder="field delimiter"
-        aria-label="field delimiter"
-        class="rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-      />
-
-      <input
-        v-if="showDelimitedOptions && profileChoice === 'custom'"
-        v-model="listDelimiter"
-        type="text"
-        maxlength="4"
-        placeholder="list delimiter"
-        aria-label="list delimiter"
-        class="rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-      />
-
-      <input
-        v-if="showXmlOptions"
-        v-model="rowTag"
-        type="text"
-        placeholder="xml row tag (optional)"
-        aria-label="xml row tag (optional)"
-        class="rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-      />
-
-      <select v-if="showXmlOptions" v-model="xmlMode" :class="SELECT_CLASS" aria-label="xml mode">
-        <option value="rows">rows</option>
-        <option value="tree">tree</option>
-      </select>
     </div>
 
     <Card v-if="batchHistory.length" class="space-y-3 mb-6">

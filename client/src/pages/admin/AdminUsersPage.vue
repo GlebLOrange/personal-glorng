@@ -9,7 +9,9 @@ import AdminUserPermissionsEditor from "@/components/admin/AdminUserPermissionsE
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
-import BaseInput from "@/components/ui/BaseInput.vue";
+import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import SearchInput from "@/components/ui/SearchInput.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
@@ -279,22 +281,15 @@ onUnmounted(() => {
       <AdminListToolbar>
         <template #start>
           <div class="flex w-full min-w-0 flex-col gap-3">
-            <BaseInput
-              v-model="searchQuery"
-              type="search"
-              placeholder="search users by name or email"
-              aria-label="search users by name or email"
-              class="w-full"
-            />
             <AdminFilterDropdown
               ref="filterDropdown"
               :has-active-filters="hasActiveFilters"
               :active-label="activeFilterLabel"
               @clear="clearFilters"
             >
-              <div>
-                <p class="text-xs font-medium text-surface-mid mb-2">role</p>
-                <div class="grid grid-cols-3 gap-2">
+              <div class="flex gap-2">
+                <p class="w-14 shrink-0 pt-1 text-xs font-medium text-surface-mid">role</p>
+                <div class="flex flex-col gap-2">
                   <AdminFilterChip
                     v-for="chip in ROLE_FILTERS"
                     :key="chip.value"
@@ -306,9 +301,9 @@ onUnmounted(() => {
                 </div>
               </div>
 
-              <div>
-                <p class="text-xs font-medium text-surface-mid mb-2">status</p>
-                <div class="grid grid-cols-3 gap-2">
+              <div class="flex gap-2">
+                <p class="w-14 shrink-0 pt-1 text-xs font-medium text-surface-mid">status</p>
+                <div class="flex flex-col gap-2">
                   <AdminFilterChip
                     v-for="chip in STATUS_FILTERS"
                     :key="chip.value"
@@ -320,6 +315,12 @@ onUnmounted(() => {
                 </div>
               </div>
             </AdminFilterDropdown>
+            <SearchInput
+              v-model="searchQuery"
+              placeholder="search users by name or email"
+              aria-label="search users by name or email"
+              class="w-full"
+            />
           </div>
         </template>
       </AdminListToolbar>
@@ -432,26 +433,40 @@ onUnmounted(() => {
       </template>
 
       <template v-if="selectedUser" #footer>
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-xs text-surface-muted">
-            {{
-              hasDraftChanges(selectedUser)
-                ? "Unsaved permission changes"
-                : "Permissions are up to date"
-            }}
-          </p>
-          <div class="flex gap-2">
-            <BaseButton variant="ghost" danger @click="requestCloseUserDrawer">cancel</BaseButton>
+        <DrawerFooterActions>
+          <template #start>
+            <p class="text-xs text-surface-muted">
+              {{
+                hasDraftChanges(selectedUser)
+                  ? "Unsaved permission changes"
+                  : "Permissions are up to date"
+              }}
+            </p>
+          </template>
+          <template #dismiss>
             <BaseButton
-              variant="success"
-              :loading="savingId === selectedUser.id"
-              :disabled="selectedUser.is_protected || !hasDraftChanges(selectedUser)"
+              variant="ghost"
+              danger
+              class="hover:enabled:border-transparent focus-visible:border-transparent"
+              @click="requestCloseUserDrawer"
+            >
+              cancel
+            </BaseButton>
+          </template>
+          <template #primary>
+            <ToolbarPillButton
+              family="2xx"
+              :disabled="
+                selectedUser.is_protected ||
+                !hasDraftChanges(selectedUser) ||
+                savingId === selectedUser.id
+              "
               @click="savePermissions(selectedUser)"
             >
               {{ savingId === selectedUser.id ? "saving..." : "save permissions" }}
-            </BaseButton>
-          </div>
-        </div>
+            </ToolbarPillButton>
+          </template>
+        </DrawerFooterActions>
       </template>
     </BaseDrawer>
   </AdminPageLayout>

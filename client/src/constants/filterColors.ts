@@ -25,8 +25,8 @@ const NEWS_STATUS_CLASS: Record<string, string> = {
 
 const FEEDBACK_STATUS_CLASS: Record<string, string> = {
   unread: SEMANTIC.info,
-  read: SEMANTIC.neutral,
-  archived: "bg-surface-dark text-surface-muted border-surface-border",
+  read: SEMANTIC.muted,
+  archived: SEMANTIC.golden,
 };
 
 const USER_STATUS_CLASS: Record<string, string> = {

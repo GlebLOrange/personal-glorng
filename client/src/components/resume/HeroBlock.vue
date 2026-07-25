@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessageFromBlob } from "@/types/api";
@@ -73,7 +74,7 @@ async function downloadCv(): Promise<void> {
       <a
         v-if="availability"
         href="#contacts"
-        class="text-meta underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+        class="text-meta underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         {{ availability }}
       </a>
@@ -82,11 +83,18 @@ async function downloadCv(): Promise<void> {
       {{ bio }}
     </p>
 
-    <div class="mt-8 flex flex-col sm:flex-row flex-wrap justify-center gap-4 print:hidden">
-      <button type="button" class="cta-primary" @click="emit('inquire')">get in touch</button>
-      <button type="button" class="cta-secondary" :disabled="isDownloadingCv" @click="downloadCv">
+    <div class="mt-8 flex flex-col sm:flex-row flex-wrap justify-center gap-2 print:hidden">
+      <ToolbarPillButton family="2xx" type="button" @click="emit('inquire')">
+        get in touch
+      </ToolbarPillButton>
+      <ToolbarPillButton
+        family="1xx"
+        type="button"
+        :disabled="isDownloadingCv"
+        @click="downloadCv"
+      >
         {{ isDownloadingCv ? "downloading..." : "download cv" }}
-      </button>
+      </ToolbarPillButton>
     </div>
 
     <slot name="after-actions" />

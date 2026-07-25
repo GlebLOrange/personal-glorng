@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
+import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { feedbackStatusClass } from "@/constants/filterColors";
 import { formatDate } from "@/utils/format";
 
@@ -47,10 +49,22 @@ const emit = defineEmits<{
     </template>
 
     <template #footer>
-      <div class="flex justify-end gap-3">
-        <BaseButton variant="ghost" size="sm" @click="emit('close')">close</BaseButton>
-        <BaseButton variant="primary" size="sm" @click="emit('reply')">reply</BaseButton>
-      </div>
+      <DrawerFooterActions>
+        <template #dismiss>
+          <BaseButton
+            variant="ghost"
+            danger
+            size="sm"
+            class="hover:enabled:border-transparent focus-visible:border-transparent"
+            @click="emit('close')"
+          >
+            close
+          </BaseButton>
+        </template>
+        <template #primary>
+          <ToolbarPillButton family="2xx" @click="emit('reply')">reply</ToolbarPillButton>
+        </template>
+      </DrawerFooterActions>
     </template>
   </BaseDrawer>
 </template>

@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { nextTick, ref } from "vue";
 
+import { actionFamilyClass, type HttpStatusFamily } from "@/constants/httpStatusColors";
+
 export interface AdminTab {
   id: string;
   label: string;
+  /** Pale HTTP-family color for hover/selected (default 1xx). */
+  family?: HttpStatusFamily;
 }
 
 const activeTab = defineModel<string>({ required: true });
@@ -22,13 +26,8 @@ const props = withDefaults(
   },
 );
 
-const tabClass = (id: string): string =>
-  [
-    "inline-flex h-11 items-center px-4 text-sm rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
-    activeTab.value === id
-      ? "bg-accent-blue/20 text-accent-blue"
-      : "text-surface-mid hover:text-surface-light",
-  ].join(" ");
+const tabClass = (tab: AdminTab): string =>
+  actionFamilyClass(tab.family ?? "1xx", activeTab.value === tab.id);
 
 function tabButtonId(tabId: string): string {
   return `${props.panelIdPrefix}-tab-${tabId}`;
@@ -87,7 +86,7 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
       :aria-selected="activeTab === tab.id"
       :aria-controls="tabPanelId(tab.id)"
       :tabindex="activeTab === tab.id ? 0 : -1"
-      :class="tabClass(tab.id)"
+      :class="tabClass(tab)"
       @click="activeTab = tab.id"
       @keydown="onTabKeydown($event, index)"
     >

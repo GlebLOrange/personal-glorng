@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import ToolIcon from "@/components/icons/ToolIcon.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/format";
@@ -14,7 +15,12 @@ const emit = defineEmits<{ select: [id: number] }>();
 </script>
 
 <template>
-  <AdminListRow interactive @click="emit('select', task.id)">
+  <AdminListRow
+    interactive
+    nested-interactive
+    reveal-actions-on-hover
+    @click="emit('select', task.id)"
+  >
     <template #badge>
       <StatusBadge
         :label="statusLabel(task.status)"
@@ -26,9 +32,6 @@ const emit = defineEmits<{ select: [id: number] }>();
     </template>
     <template #meta>
       <span v-if="task.location">@ {{ task.location }}</span>
-    </template>
-    <template #time>{{ formatDate(task.scheduled_at) }}</template>
-    <template #actions>
       <span
         v-if="task.google_event_id"
         class="inline-flex text-accent-blue"
@@ -37,6 +40,19 @@ const emit = defineEmits<{ select: [id: number] }>();
       >
         <ToolIcon slug="sync" class="h-4 w-4" />
       </span>
+    </template>
+    <template #time>{{ formatDate(task.scheduled_at) }}</template>
+    <template #actions>
+      <BaseButton
+        variant="ghost"
+        quiet
+        size="sm"
+        class="!text-accent-blue hover:enabled:!border-accent-blue/40 hover:enabled:!bg-accent-blue/15 focus-visible:!text-accent-blue"
+        aria-label="edit task"
+        @click="emit('select', task.id)"
+      >
+        ✎
+      </BaseButton>
     </template>
   </AdminListRow>
 </template>

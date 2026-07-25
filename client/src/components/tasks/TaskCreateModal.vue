@@ -2,6 +2,8 @@
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import type { TaskCreateForm } from "@/composables/useTasks";
 
@@ -43,17 +45,29 @@ const emit = defineEmits<{ submit: []; close: [] }>();
     </form>
 
     <template #footer>
-      <div class="flex justify-end gap-3">
-        <BaseButton variant="ghost" danger type="button" @click="emit('close')">cancel</BaseButton>
-        <BaseButton
-          type="submit"
-          form="task-create-drawer-form"
-          variant="primary"
-          :disabled="saving"
-        >
-          {{ saving ? "creating..." : "create" }}
-        </BaseButton>
-      </div>
+      <DrawerFooterActions>
+        <template #dismiss>
+          <BaseButton
+            variant="ghost"
+            danger
+            type="button"
+            class="hover:enabled:border-transparent focus-visible:border-transparent"
+            @click="emit('close')"
+          >
+            cancel
+          </BaseButton>
+        </template>
+        <template #primary>
+          <ToolbarPillButton
+            type="submit"
+            form="task-create-drawer-form"
+            family="2xx"
+            :disabled="saving"
+          >
+            {{ saving ? "creating..." : "create" }}
+          </ToolbarPillButton>
+        </template>
+      </DrawerFooterActions>
     </template>
   </BaseDrawer>
 </template>

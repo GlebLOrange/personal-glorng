@@ -8,6 +8,8 @@ import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
+import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import type { RecipeFormData } from "@/composables/useRecipes";
 
 const props = defineProps<{
@@ -373,17 +375,29 @@ function toNullableNumber(value: string | number | null | undefined): number | n
     </form>
 
     <template #footer>
-      <div class="flex justify-end gap-3">
-        <BaseButton variant="ghost" danger type="button" @click="emit('close')">cancel</BaseButton>
-        <BaseButton
-          type="submit"
-          form="recipe-form-drawer-form"
-          variant="success"
-          :disabled="loading"
-        >
-          {{ loading ? "saving..." : "save" }}
-        </BaseButton>
-      </div>
+      <DrawerFooterActions>
+        <template #dismiss>
+          <BaseButton
+            variant="ghost"
+            danger
+            type="button"
+            class="hover:enabled:border-transparent focus-visible:border-transparent"
+            @click="emit('close')"
+          >
+            cancel
+          </BaseButton>
+        </template>
+        <template #primary>
+          <ToolbarPillButton
+            type="submit"
+            form="recipe-form-drawer-form"
+            family="2xx"
+            :disabled="loading"
+          >
+            {{ loading ? "saving..." : "save" }}
+          </ToolbarPillButton>
+        </template>
+      </DrawerFooterActions>
     </template>
   </BaseDrawer>
 </template>

@@ -2,8 +2,9 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 
+import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { api } from "@/composables/useApi";
@@ -67,35 +68,36 @@ async function preview(): Promise<void> {
 </script>
 
 <template>
-  <AdminPageLayout title="email">
-    <form class="space-y-3 mb-8" @submit.prevent="send">
-      <div class="space-y-2">
-        <div class="flex items-center justify-between gap-2">
-          <BaseButton
-            type="button"
-            variant="ghost"
-            size="sm"
-            :disabled="!subject || !body"
+  <AdminPageLayout hub="tools" title="email" back-to="/tools">
+    <AdminListToolbar>
+      <template #start>
+        <div class="flex w-full min-w-0 items-center justify-between gap-2">
+          <ToolbarPillButton
+            family="1xx"
+            :disabled="!subject || !body || loading"
             @click="preview"
           >
             preview
-          </BaseButton>
-          <BaseButton
-            type="submit"
-            variant="success"
-            size="sm"
+          </ToolbarPillButton>
+          <ToolbarPillButton
+            family="2xx"
+            type="button"
             :disabled="!canSend || loading"
+            @click="send"
           >
             {{ loading ? "sending..." : "send" }}
-          </BaseButton>
+          </ToolbarPillButton>
         </div>
-        <BaseInput
-          v-model="to"
-          type="email"
-          placeholder="to (recipient@example.com)"
-          aria-label="to (recipient@example.com)"
-        />
-      </div>
+      </template>
+    </AdminListToolbar>
+
+    <form class="space-y-3 mb-8" @submit.prevent="send">
+      <BaseInput
+        v-model="to"
+        type="email"
+        placeholder="to (recipient@example.com)"
+        aria-label="to (recipient@example.com)"
+      />
       <BaseInput
         v-model="subject"
         placeholder="subject"

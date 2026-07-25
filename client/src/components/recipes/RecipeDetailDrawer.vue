@@ -6,6 +6,7 @@ import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
 import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import { formatRecipeTime } from "@/utils/recipe";
 import type { Recipe } from "@/types";
@@ -112,7 +113,7 @@ const emit = defineEmits<{
     </div>
 
     <template v-if="recipe && !loading" #footer>
-      <BaseButton variant="primary" class="w-full" @click="emit('cook')">cook</BaseButton>
+      <ToolbarPillButton family="2xx" class="w-full" @click="emit('cook')">cook</ToolbarPillButton>
     </template>
   </BaseDrawer>
 </template>

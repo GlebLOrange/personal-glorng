@@ -19,6 +19,11 @@ export interface ContactLink {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** True when value looks like a complete email address. */
+export function isValidEmail(value: string): boolean {
+  return EMAIL_PATTERN.test(value.trim());
+}
+
 const INQUIRY_SUBJECT = "Work inquiry";
 const INQUIRY_BODY =
   "Hi Gleb,\n\nI'd like to talk about a role / contract. Here's a short brief:\n\n";
@@ -27,7 +32,7 @@ const TELEGRAM_INQUIRY_TEXT =
 
 function contactHref(id: ContactLinkId, raw: string): string | null {
   if (id === "email") {
-    if (!EMAIL_PATTERN.test(raw)) return null;
+    if (!isValidEmail(raw)) return null;
     const params = new URLSearchParams({
       subject: INQUIRY_SUBJECT,
       body: INQUIRY_BODY,

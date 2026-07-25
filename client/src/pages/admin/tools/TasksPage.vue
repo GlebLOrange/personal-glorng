@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useTemplateRef } from "vue";
+import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
-import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import TaskCreateModal from "@/components/tasks/TaskCreateModal.vue";
@@ -14,7 +13,8 @@ import TaskIntakeList from "@/components/tasks/TaskIntakeList.vue";
 import TaskList from "@/components/tasks/TaskList.vue";
 import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseInput from "@/components/ui/BaseInput.vue";
+import SearchInput from "@/components/ui/SearchInput.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { statusBadgeClass } from "@/constants/filterColors";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -121,6 +121,10 @@ function onFailedSyncs(): void {
   switchTab("sync");
 }
 
+watch(activeTab, (tab) => {
+  if (tab !== "queue") filterDropdownRef.value?.close();
+});
+
 useScrollListFingerprint(
   () =>
     `${activeTab.value}:${filterStatus.value}:${searchQuery.value}:${page.value}:${tasks.value[0]?.id ?? ""}:${intakes.value[0]?.id ?? ""}:${syncQueue.value[0]?.id ?? ""}`,
@@ -140,12 +144,71 @@ onMounted(() => {
 <template>
   <AdminPageLayout hub="tools" title="tasks" max-width="xl">
     <div class="min-w-0">
-      <AdminTabBar
-        panel-id-prefix="tasks-tab"
-        :model-value="activeTab"
-        :tabs="TASK_TABS"
-        @update:model-value="switchTab"
-      />
+      <div class="mb-3 space-y-2">
+        <div class="flex min-w-0 flex-wrap items-center gap-2">
+          <AdminFilterDropdown
+            v-show="activeTab === 'queue'"
+            ref="filterDropdown"
+            :has-active-filters="Boolean(filterStatus || searchQuery.trim())"
+            :active-label="activeFilterLabel"
+            @clear="clearFilters"
+          >
+            <template #chips>
+              <AdminFilterChip
+                v-for="chip in STATUS_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :active="filterStatus === chip.value"
+                :color-class="statusBadgeClass(chip.value)"
+                @click="setStatusFilter(chip.value)"
+              />
+            </template>
+            <template #footer>
+              <div class="mt-3 border-t border-surface-border pt-3">
+                <BaseButton
+                  variant="ghost"
+                  size="sm"
+                  class="!border-transparent hover:enabled:!border-transparent hover:enabled:text-accent-blue"
+                  @click="onFailedSyncs"
+                >
+                  open sync queue
+                </BaseButton>
+              </div>
+            </template>
+          </AdminFilterDropdown>
+
+          <AdminTabBar
+            flush
+            panel-id-prefix="tasks-tab"
+            :model-value="activeTab"
+            :tabs="TASK_TABS"
+            @update:model-value="switchTab"
+          />
+
+          <ToolbarPillButton
+            v-if="isSuperuser"
+            v-show="activeTab === 'queue'"
+            family="2xx"
+            class="ml-auto"
+            :disabled="listLoading"
+            @click="openCreate"
+          >
+            + task
+          </ToolbarPillButton>
+        </div>
+
+        <template v-if="activeTab === 'queue'">
+          <SearchInput
+            v-model="searchQuery"
+            class="w-full"
+            placeholder="search tasks"
+            aria-label="search tasks"
+          />
+          <p v-if="!isSuperuser" class="text-xs text-surface-mid">
+            View only — creating and status changes need superuser.
+          </p>
+        </template>
+      </div>
 
       <section
         v-if="activeTab === 'queue'"
@@ -155,56 +218,6 @@ onMounted(() => {
         tabindex="0"
         class="outline-none"
       >
-        <AdminListToolbar>
-          <template #start>
-            <div class="flex w-full min-w-0 flex-wrap items-center gap-3">
-              <AdminFilterDropdown
-                ref="filterDropdown"
-                :has-active-filters="Boolean(filterStatus || searchQuery.trim())"
-                :active-label="activeFilterLabel"
-                @clear="clearFilters"
-              >
-                <template #chips>
-                  <AdminFilterChip
-                    v-for="chip in STATUS_FILTERS"
-                    :key="chip.value"
-                    :label="chip.label"
-                    :active="filterStatus === chip.value"
-                    :color-class="statusBadgeClass(chip.value)"
-                    @click="setStatusFilter(chip.value)"
-                  />
-                </template>
-                <template #footer>
-                  <div class="mt-3 border-t border-surface-border pt-3">
-                    <BaseButton variant="ghost" size="sm" @click="onFailedSyncs">
-                      open sync queue
-                    </BaseButton>
-                  </div>
-                </template>
-              </AdminFilterDropdown>
-              <BaseInput
-                v-model="searchQuery"
-                type="search"
-                class="min-w-0 flex-1"
-                placeholder="search tasks"
-                aria-label="search tasks"
-              />
-              <BaseButton
-                v-if="isSuperuser"
-                variant="primary"
-                size="sm"
-                class="ml-auto"
-                :disabled="listLoading"
-                @click="openCreate"
-              >
-                + task
-              </BaseButton>
-              <p v-else class="ml-auto text-xs text-surface-mid">
-                View only — creating and status changes need superuser.
-              </p>
-            </div>
-          </template>
-        </AdminListToolbar>
         <TaskList
           :tasks="tasks"
           :loading="listLoading"

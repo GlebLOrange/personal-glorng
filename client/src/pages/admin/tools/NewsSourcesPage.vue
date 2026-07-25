@@ -10,6 +10,7 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
+import NewsTabs from "@/components/news/NewsTabs.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
@@ -321,6 +322,7 @@ onMounted(loadSources);
 
 <template>
   <AdminPageLayout hub="tools" title="news sources" max-width="xl" back-to="/news">
+    <NewsTabs />
     <div class="min-w-0 space-y-1">
       <AdminListSkeleton v-if="loading" label="Loading sources" />
 
@@ -381,6 +383,7 @@ onMounted(loadSources);
           :key="source.id"
           :interactive="canWrite"
           :nested-interactive="canWrite"
+          reveal-actions-on-hover
           @click="openEditableSource(source)"
         >
           <template #leading>
@@ -422,7 +425,7 @@ onMounted(loadSources);
               variant="ghost"
               quiet
               size="sm"
-              class="hover:enabled:!text-accent-blue focus-visible:!text-accent-blue"
+              class="!text-accent-blue hover:enabled:!bg-accent-blue/15 hover:enabled:!border-accent-blue/40 focus-visible:!text-accent-blue"
               aria-label="edit source"
               @click="openEditableSource(source)"
             >

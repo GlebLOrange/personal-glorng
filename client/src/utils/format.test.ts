@@ -5,6 +5,7 @@ import {
   formatBreadcrumbLabel,
   formatRelativeTime,
   formatScheduleDate,
+  truncateBreadcrumbSlug,
   truncateBreadcrumbTitle,
 } from "@/utils/format";
 
@@ -16,14 +17,30 @@ describe("formatBreadcrumbLabel", () => {
     expect(formatBreadcrumbLabel("password generator")).toBe("password generator");
   });
 
-  it("turns hyphenated compounds into spaced phrases", () => {
-    expect(formatBreadcrumbLabel("url-shortener")).toBe("url shortener");
-    expect(formatBreadcrumbLabel("vid-download")).toBe("vid download");
+  it("keeps kebab-case labels intact for article slugs", () => {
+    expect(formatBreadcrumbLabel("url-shortener")).toBe("url-shortener");
+    expect(formatBreadcrumbLabel("my-news-article")).toBe("my-news-article");
   });
 
   it("strips an existing section mark before normalizing", () => {
     expect(formatBreadcrumbLabel("§ tools")).toBe("tools");
     expect(formatBreadcrumbLabel("§expenses")).toBe("expenses");
+  });
+
+  it("preserves path-shaped labels for news edit crumbs", () => {
+    expect(formatBreadcrumbLabel("news/my-slug")).toBe("news/my-slug");
+    expect(displayBreadcrumbLabel("news/my-slug")).toBe("§ news/my-slug");
+  });
+});
+
+describe("truncateBreadcrumbSlug", () => {
+  it("returns short slugs unchanged", () => {
+    expect(truncateBreadcrumbSlug("hello-world")).toBe("hello-world");
+  });
+
+  it("truncates long slugs to 14 characters with an ellipsis", () => {
+    expect(truncateBreadcrumbSlug("this-is-a-very-long-news-slug")).toBe("this-is-a-very…");
+    expect(truncateBreadcrumbSlug("this-is-a-very-long-news-slug").length).toBe(15);
   });
 });
 

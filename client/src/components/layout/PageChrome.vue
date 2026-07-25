@@ -20,16 +20,17 @@ const props = withDefaults(
   },
 );
 
-/** Only the current page crumb — parent trail stays in data for callers, not shown. */
+/** Full trail: clickable parents + current page crumb. */
 const displaySegments = computed((): BreadcrumbSegment[] => {
-  const last = props.breadcrumbs.at(-1);
-  return last ? [last] : [{ label: props.title }];
+  if (props.breadcrumbs.length) return props.breadcrumbs;
+  return [{ label: props.title }];
 });
 
-/** Current crumb matches page title — elevated § label acts as the title. */
+/** Current crumb matches page title — elevated § trail acts as the title. */
 const soleSectionCrumb = computed(() => {
-  const [crumb] = displaySegments.value;
-  return formatBreadcrumbLabel(crumb.label) === formatBreadcrumbLabel(props.title);
+  const last = displaySegments.value.at(-1);
+  if (!last) return false;
+  return formatBreadcrumbLabel(last.label) === formatBreadcrumbLabel(props.title);
 });
 
 const showTitle = computed(() => !soleSectionCrumb.value);
@@ -43,7 +44,7 @@ const displayTitle = computed(
   <div
     class="relative -mx-6 border-b border-surface-border bg-surface-dark/80 px-6 py-1.5 backdrop-blur-md"
   >
-    <div class="flex min-h-11 min-w-0 items-center gap-3" :class="backTo ? 'pr-14' : ''">
+    <div class="flex min-h-11 min-w-0 items-center gap-3" :class="backTo ? 'pr-16' : ''">
       <div class="flex min-w-0 flex-1 flex-col justify-center">
         <div
           :class="soleSectionCrumb ? 'flex min-h-11 items-center' : 'page-breadcrumb-row'"
