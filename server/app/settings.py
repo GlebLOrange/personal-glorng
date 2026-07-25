@@ -601,7 +601,6 @@ class Settings(BaseSettings):
     MEDIA_DIR: str
 
     # Weather
-    WEATHER_DEFAULT_LABEL: str
     WEATHER_DEFAULT_QUERY: str
 
     def stripe_checkout_enabled(self) -> bool:

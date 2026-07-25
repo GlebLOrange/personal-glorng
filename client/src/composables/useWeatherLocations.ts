@@ -7,7 +7,6 @@ import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import {
   LEGACY_SAVED_LOCATIONS_STORAGE_KEY,
   MAX_SAVED_WEATHER_LOCATIONS,
-  MAX_WEATHER_LOCATION_LABEL_LENGTH,
   MAX_WEATHER_LOCATION_QUERY_LENGTH,
   SAVED_LOCATIONS_STORAGE_KEY,
   WEATHER_API_PREFIX,
@@ -67,7 +66,7 @@ export function useWeatherLocations(): {
   error: Ref<string | null>;
   isAuthenticated: ComputedRef<boolean>;
   isDefaultLocation: (loc: WeatherLocation | GuestWeatherLocation) => boolean;
-  addLocation: (label: string, query: string) => Promise<void>;
+  addLocation: (query: string) => Promise<void>;
   removeLocation: (id: number | string) => Promise<void>;
   setGuestDefaultByQuery: (query: string) => void;
   refresh: () => Promise<void>;
@@ -144,13 +143,12 @@ export function useWeatherLocations(): {
 
     seeding.value = true;
     try {
-      const { label, query } = await fetchConfig();
+      const { query } = await fetchConfig();
 
       if (isAuthenticated.value) {
         const result = await runMutate(
           () =>
             api.post<WeatherLocation>(`${WEATHER_API_PREFIX}/locations`, {
-              label,
               query,
             }),
           { errorFallback: "Couldn't initialize default city" },
@@ -162,7 +160,6 @@ export function useWeatherLocations(): {
         persistGuestLocations([
           {
             id: guestId(),
-            label,
             query,
             sort_order: 0,
             is_default: true,
@@ -197,9 +194,8 @@ export function useWeatherLocations(): {
     loading.value = false;
   }
 
-  async function addLocation(label: string, query: string): Promise<void> {
+  async function addLocation(query: string): Promise<void> {
     const trimmedQuery = query.trim().slice(0, MAX_WEATHER_LOCATION_QUERY_LENGTH);
-    const trimmedLabel = (label.trim() || trimmedQuery).slice(0, MAX_WEATHER_LOCATION_LABEL_LENGTH);
     if (!trimmedQuery) {
       return;
     }
@@ -211,7 +207,6 @@ export function useWeatherLocations(): {
       const result = await runMutate(
         () =>
           api.post<WeatherLocation>(`${WEATHER_API_PREFIX}/locations`, {
-            label: trimmedLabel,
             query: trimmedQuery,
           }),
         { silent: true },
@@ -237,7 +232,6 @@ export function useWeatherLocations(): {
       ...guestLocations.value,
       {
         id: guestId(),
-        label: trimmedLabel,
         query: trimmedQuery,
         sort_order: guestLocations.value.length,
       },
@@ -337,7 +331,6 @@ export async function syncGuestWeatherLocations(): Promise<void> {
   for (const loc of stored) {
     try {
       await api.post(`${WEATHER_API_PREFIX}/locations`, {
-        label: loc.label,
         query: loc.query,
       });
     } catch {

@@ -4,7 +4,6 @@ import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import WeatherSummaryContent from "@/components/weather/WeatherSummaryContent.vue";
 
 defineProps<{
-  label: string;
   query: string;
   removable?: boolean;
 }>();
@@ -25,7 +24,7 @@ function handleRemove(event: MouseEvent): void {
     <button
       type="button"
       class="block h-full min-w-0 w-full text-left"
-      :aria-label="`Set ${label} as active city`"
+      :aria-label="`Set ${query} as active city`"
       @click="emit('select')"
     >
       <Card hoverable class="page-weather-tile-card h-full">
@@ -35,7 +34,7 @@ function handleRemove(event: MouseEvent): void {
     <IconCloseButton
       v-if="removable"
       class="absolute right-2 top-2"
-      :aria-label="`Remove ${label}`"
+      :aria-label="`Remove ${query}`"
       @click="handleRemove"
     />
   </div>

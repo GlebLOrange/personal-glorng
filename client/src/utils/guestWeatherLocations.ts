@@ -1,13 +1,11 @@
 import {
   MAX_SAVED_WEATHER_LOCATIONS,
-  MAX_WEATHER_LOCATION_LABEL_LENGTH,
   MAX_WEATHER_LOCATION_QUERY_LENGTH,
 } from "@/constants/weather";
 import { isValidWeatherLocationQuery } from "@/utils/weather";
 
 export interface GuestWeatherLocation {
   id: string;
-  label: string;
   query: string;
   sort_order: number;
   is_default?: boolean;
@@ -56,10 +54,8 @@ export function sanitizeGuestWeatherLocations(raw: unknown): GuestWeatherLocatio
     }
     seen.add(normalizedQuery);
 
-    const label = trimField(item.label, MAX_WEATHER_LOCATION_LABEL_LENGTH) || query;
     sanitized.push({
       id: item.id,
-      label,
       query,
       sort_order: sanitized.length,
       ...(item.is_default === true ? { is_default: true } : {}),

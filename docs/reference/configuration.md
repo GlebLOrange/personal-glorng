@@ -181,7 +181,6 @@ Client mirrors: `VITE_AI_CHAT_ENABLED`, `VITE_AI_SEARCH_ENABLED`.
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `WEATHER_DEFAULT_LABEL` | `Wrocław` | Default city label |
 | `WEATHER_DEFAULT_QUERY` | `Wroclaw` | API query |
 
 ## Seed / E2E

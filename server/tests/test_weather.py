@@ -85,7 +85,7 @@ async def test_weather_locations_unauthorized(client: AsyncClient) -> None:
 async def test_weather_location_mutations_unauthorized(client: AsyncClient) -> None:
     create_resp = await client.post(
         "/api/weather/locations",
-        json={"label": "London", "query": "London"},
+        json={"query": "London"},
     )
     assert create_resp.status_code == 401
 
@@ -104,7 +104,7 @@ async def test_weather_config(client: AsyncClient) -> None:
     resp = await client.get("/api/weather/config")
     assert resp.status_code == 200
     data = resp.json()
-    assert data["label"] == "Wrocław"
+    assert "label" not in data
     assert data["query"] == "Wroclaw"
 
     legacy_resp = await client.get("/api/time-date-weather-location/config")
@@ -120,11 +120,11 @@ async def test_weather_location_crud(auth_client: AsyncClient) -> None:
     ):
         create_resp = await auth_client.post(
             "/api/weather/locations",
-            json={"label": "London", "query": "London"},
+            json={"query": "London"},
         )
         assert create_resp.status_code == 201
         created = create_resp.json()
-        assert created["label"] == "London"
+        assert "label" not in created
         assert created["query"] == "London"
 
         list_resp = await auth_client.get("/api/weather/locations")
@@ -148,7 +148,7 @@ async def test_weather_location_cannot_delete_default(auth_client: AsyncClient) 
     ):
         create_resp = await auth_client.post(
             "/api/weather/locations",
-            json={"label": "Wrocław", "query": "Wroclaw"},
+            json={"query": "Wroclaw"},
         )
         assert create_resp.status_code == 201
         created = create_resp.json()
@@ -172,13 +172,13 @@ async def test_weather_location_duplicate(auth_client: AsyncClient) -> None:
     ):
         first = await auth_client.post(
             "/api/weather/locations",
-            json={"label": "Minsk", "query": "Minsk"},
+            json={"query": "Minsk"},
         )
         assert first.status_code == 201
 
         second = await auth_client.post(
             "/api/weather/locations",
-            json={"label": "Minsk", "query": "Minsk"},
+            json={"query": "Minsk"},
         )
         assert second.status_code == 422
         assert "already" in second.json()["detail"].lower()
@@ -188,7 +188,7 @@ async def test_weather_location_duplicate(auth_client: AsyncClient) -> None:
 async def test_weather_location_invalid_query(auth_client: AsyncClient) -> None:
     resp = await auth_client.post(
         "/api/weather/locations",
-        json={"label": "Bad", "query": "Paris123"},
+        json={"query": "Paris123"},
     )
     assert resp.status_code == 422
     assert "invalid" in resp.json()["detail"].lower()
@@ -211,7 +211,7 @@ async def test_weather_location_delete_other_user_forbidden(
     ):
         create_resp = await client.post(
             "/api/weather/locations",
-            json={"label": "London", "query": "London"},
+            json={"query": "London"},
             headers={"Authorization": f"Bearer {owner_token}"},
         )
         assert create_resp.status_code == 201

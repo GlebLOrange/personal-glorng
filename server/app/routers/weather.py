@@ -22,7 +22,6 @@ routes = APIRouter(dependencies=[Depends(rate_limit_api)])
 async def get_weather_config(settings: AppSettings) -> dict[str, str]:
     """Public default city config for section seeding and fallbacks."""
     return {
-        "label": settings.WEATHER_DEFAULT_LABEL,
         "query": settings.WEATHER_DEFAULT_QUERY,
     }
 
@@ -91,7 +90,6 @@ async def add_weather_location(
 ) -> WeatherLocationResponse:
     location = await WeatherLocationService(registry).add_location(
         user.id,
-        label=body.label,
         query=body.query,
     )
     return WeatherLocationResponse.model_validate(location)
