@@ -1,6 +1,6 @@
 ---
+name: spec-driven-development
 description: Creates specs before coding. Use when starting a new project, feature, or significant change and no specification exists yet.
-alwaysApply: false
 ---
 
 # Spec-Driven Development
