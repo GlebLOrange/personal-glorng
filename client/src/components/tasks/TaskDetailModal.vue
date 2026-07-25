@@ -74,7 +74,7 @@ watch(
     max-width="md"
     @close="emit('close')"
   >
-    <template v-if="task" #title>
+    <template v-if="task" #title="{ titleId }">
       <div class="flex min-w-0 flex-col gap-2">
         <StatusBadge
           size="sm"
@@ -82,7 +82,9 @@ watch(
           :label="statusLabel(task.status)"
           :class-name="statusBadgeClass(task.status)"
         />
-        <h2 class="truncate text-lg font-bold text-surface-light">{{ task.title }}</h2>
+        <h2 :id="titleId" class="truncate text-lg font-bold text-surface-light">
+          {{ task.title }}
+        </h2>
       </div>
     </template>
 

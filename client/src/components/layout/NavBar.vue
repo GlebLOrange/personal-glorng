@@ -102,6 +102,7 @@ async function handleGoHome(): Promise<void> {
     <div :style="{ height: `${headerSpacerHeight}px` }" aria-hidden="true" />
 
     <header
+      id="site-header"
       ref="headerEl"
       class="fixed left-0 right-0 top-0 z-40 bg-surface-dark/80 backdrop-blur-md transition-transform duration-200 pt-[env(safe-area-inset-top)]"
       :class="isHeaderHidden ? '-translate-y-full' : 'translate-y-0'"

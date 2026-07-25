@@ -66,15 +66,18 @@ export type OverlayShellOptions = {
 // ponytail: refcount for nested overlays; upgrade to per-root inert map if needed
 let backgroundInertCount = 0;
 
+function backgroundInertTargets(): Array<HTMLElement | null> {
+  return [
+    document.getElementById("site-header"),
+    document.getElementById("main-content"),
+    document.querySelector("footer"),
+  ];
+}
+
 function setBackgroundInert(active: boolean): void {
-  const main = document.getElementById("main-content");
-  const footer = document.querySelector("footer");
-  if (active) {
-    main?.setAttribute("inert", "");
-    footer?.setAttribute("inert", "");
-  } else {
-    main?.removeAttribute("inert");
-    footer?.removeAttribute("inert");
+  for (const el of backgroundInertTargets()) {
+    if (active) el?.setAttribute("inert", "");
+    else el?.removeAttribute("inert");
   }
 }
 
