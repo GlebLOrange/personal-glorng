@@ -1,8 +1,6 @@
-import { computed, ref, watch, type ComputedRef, type Ref } from "vue";
+import { computed, ref, watch, type ComputedRef, type Ref, type WatchStopHandle } from "vue";
 
 import { api } from "@/composables/useApi";
-import { useApiAction } from "@/composables/useApiAction";
-import { useLocalStorage } from "@/composables/useLocalStorage";
 import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import {
   LEGACY_SAVED_LOCATIONS_STORAGE_KEY,
@@ -58,6 +56,157 @@ function migrateLegacyGuestLocations(): void {
 
 migrateLegacyGuestLocations();
 
+/** Shared across all useWeatherLocations() callers (WeatherPage, WeatherBar, …). */
+const serverLocations = ref<WeatherLocation[]>([]);
+const guestLocations = ref<GuestWeatherLocation[]>(
+  readGuestLocations(SAVED_LOCATIONS_STORAGE_KEY),
+);
+const loading = ref(false);
+const seeding = ref(false);
+const error = ref<string | null>(null);
+const defaultSeeded = ref(false);
+
+let refreshPromise: Promise<void> | null = null;
+let stopAuthWatch: WatchStopHandle | null = null;
+let stopGuestSanitizeWatch: WatchStopHandle | null = null;
+
+function writeGuestStorage(locations: GuestWeatherLocation[]): void {
+  if (typeof localStorage === "undefined") {
+    return;
+  }
+  try {
+    localStorage.setItem(SAVED_LOCATIONS_STORAGE_KEY, JSON.stringify(locations));
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
+function persistGuestLocations(next: GuestWeatherLocation[]): void {
+  const sanitized = sanitizeGuestWeatherLocations(next);
+  guestLocations.value = sanitized;
+  writeGuestStorage(sanitized);
+}
+
+/** Reset module cache for tests. */
+export function clearWeatherLocations(): void {
+  stopAuthWatch?.();
+  stopAuthWatch = null;
+  stopGuestSanitizeWatch?.();
+  stopGuestSanitizeWatch = null;
+  serverLocations.value = [];
+  guestLocations.value = [];
+  loading.value = false;
+  seeding.value = false;
+  error.value = null;
+  defaultSeeded.value = false;
+  refreshPromise = null;
+  if (typeof localStorage !== "undefined") {
+    localStorage.removeItem(SAVED_LOCATIONS_STORAGE_KEY);
+  }
+}
+
+function ensureGuestSanitizeWatch(): void {
+  if (stopGuestSanitizeWatch) {
+    return;
+  }
+  stopGuestSanitizeWatch = watch(
+    guestLocations,
+    (next) => {
+      const sanitized = sanitizeGuestWeatherLocations(next);
+      if (JSON.stringify(sanitized) !== JSON.stringify(next)) {
+        persistGuestLocations(sanitized);
+      }
+    },
+    { deep: true },
+  );
+}
+
+function ensureAuthWatch(): void {
+  if (stopAuthWatch) {
+    return;
+  }
+  const auth = useAuthStore();
+  stopAuthWatch = watch(
+    () => auth.isAuthenticated,
+    (authenticated) => {
+      if (authenticated) {
+        void refresh();
+      } else {
+        void ensureDefaultLocation();
+      }
+    },
+    { immediate: true },
+  );
+}
+
+async function ensureDefaultLocation(): Promise<void> {
+  const auth = useAuthStore();
+  const { fetchConfig } = useWeatherConfig();
+  const list = auth.isAuthenticated ? serverLocations.value : guestLocations.value;
+  if (defaultSeeded.value || list.length > 0) {
+    return;
+  }
+
+  seeding.value = true;
+  try {
+    const { query } = await fetchConfig();
+
+    if (auth.isAuthenticated) {
+      try {
+        const { data } = await api.post<WeatherLocation>(`${WEATHER_API_PREFIX}/locations`, {
+          query,
+        });
+        serverLocations.value = [data];
+      } catch {
+        error.value = "Couldn't initialize default city";
+        return;
+      }
+    } else {
+      persistGuestLocations([
+        {
+          id: guestId(),
+          query,
+          sort_order: 0,
+          is_default: true,
+        },
+      ]);
+    }
+    defaultSeeded.value = true;
+  } catch {
+    error.value = "Couldn't initialize default city";
+  } finally {
+    seeding.value = false;
+  }
+}
+
+async function refresh(): Promise<void> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    const auth = useAuthStore();
+    if (!auth.isAuthenticated) {
+      await ensureDefaultLocation();
+      return;
+    }
+    loading.value = true;
+    error.value = null;
+    try {
+      const { data } = await api.get<WeatherLocation[]>(`${WEATHER_API_PREFIX}/locations`);
+      serverLocations.value = data;
+    } catch {
+      error.value = "Couldn't load saved locations";
+    }
+    await ensureDefaultLocation();
+    loading.value = false;
+  })().finally(() => {
+    refreshPromise = null;
+  });
+
+  return refreshPromise;
+}
+
 /** Unified saved-location list: server for auth users, localStorage for guests. */
 export function useWeatherLocations(): {
   locations: ComputedRef<Array<WeatherLocation | GuestWeatherLocation>>;
@@ -75,25 +224,10 @@ export function useWeatherLocations(): {
   guestLimitMessage: ComputedRef<string | null>;
 } {
   const auth = useAuthStore();
-  const { fetchConfig, isDefaultQuery } = useWeatherConfig();
-  const guestLocations = useLocalStorage<GuestWeatherLocation[]>(SAVED_LOCATIONS_STORAGE_KEY, []);
-  const { run: runList } = useApiAction({ silent: true, logContext: "weather-locations" });
-  const { run: runMutate } = useApiAction({ silent: true, logContext: "weather-locations" });
+  const { isDefaultQuery } = useWeatherConfig();
 
-  if (typeof localStorage !== "undefined") {
-    const sanitized = readGuestLocations(SAVED_LOCATIONS_STORAGE_KEY);
-    if (
-      localStorage.getItem(SAVED_LOCATIONS_STORAGE_KEY) !== null &&
-      JSON.stringify(sanitized) !== JSON.stringify(guestLocations.value)
-    ) {
-      guestLocations.value = sanitized;
-    }
-  }
-  const serverLocations = ref<WeatherLocation[]>([]);
-  const loading = ref(false);
-  const seeding = ref(false);
-  const error = ref<string | null>(null);
-  const defaultSeeded = ref(false);
+  ensureGuestSanitizeWatch();
+  ensureAuthWatch();
 
   const isAuthenticated = computed(() => auth.isAuthenticated);
 
@@ -109,11 +243,14 @@ export function useWeatherLocations(): {
     isAuthenticated.value ? null : guestLocationLimitMessage(guestLocations.value.length),
   );
 
-  function persistGuestLocations(next: GuestWeatherLocation[]): void {
-    guestLocations.value = sanitizeGuestWeatherLocations(next);
-  }
-
   function isDefaultLocation(loc: WeatherLocation | GuestWeatherLocation): boolean {
+    // Guests: once an explicit is_default exists, only that city is locked.
+    if (!auth.isAuthenticated) {
+      const hasExplicitDefault = guestLocations.value.some((item) => item.is_default === true);
+      if (hasExplicitDefault) {
+        return "is_default" in loc && loc.is_default === true;
+      }
+    }
     if ("is_default" in loc && loc.is_default) {
       return true;
     }
@@ -121,7 +258,7 @@ export function useWeatherLocations(): {
   }
 
   function setGuestDefaultByQuery(query: string): void {
-    if (isAuthenticated.value) {
+    if (auth.isAuthenticated) {
       return;
     }
     const normalized = query.trim().toLowerCase();
@@ -136,64 +273,6 @@ export function useWeatherLocations(): {
     );
   }
 
-  async function ensureDefaultLocation(): Promise<void> {
-    if (defaultSeeded.value || locations.value.length > 0) {
-      return;
-    }
-
-    seeding.value = true;
-    try {
-      const { query } = await fetchConfig();
-
-      if (isAuthenticated.value) {
-        const result = await runMutate(
-          () =>
-            api.post<WeatherLocation>(`${WEATHER_API_PREFIX}/locations`, {
-              query,
-            }),
-          { errorFallback: "Couldn't initialize default city" },
-        );
-        if (result) {
-          serverLocations.value = [result.data];
-        }
-      } else {
-        persistGuestLocations([
-          {
-            id: guestId(),
-            query,
-            sort_order: 0,
-            is_default: true,
-          },
-        ]);
-      }
-      defaultSeeded.value = true;
-    } catch {
-      error.value = "Couldn't initialize default city";
-    } finally {
-      seeding.value = false;
-    }
-  }
-
-  async function refresh(): Promise<void> {
-    if (!isAuthenticated.value) {
-      await ensureDefaultLocation();
-      return;
-    }
-    loading.value = true;
-    error.value = null;
-    const result = await runList(
-      () => api.get<WeatherLocation[]>(`${WEATHER_API_PREFIX}/locations`),
-      { errorFallback: "Couldn't load saved locations" },
-    );
-    if (result) {
-      serverLocations.value = result.data;
-    } else {
-      error.value = "Couldn't load saved locations";
-    }
-    await ensureDefaultLocation();
-    loading.value = false;
-  }
-
   async function addLocation(query: string): Promise<void> {
     const trimmedQuery = query.trim().slice(0, MAX_WEATHER_LOCATION_QUERY_LENGTH);
     if (!trimmedQuery) {
@@ -203,18 +282,15 @@ export function useWeatherLocations(): {
       throw new Error("Location contains invalid characters");
     }
 
-    if (isAuthenticated.value) {
-      const result = await runMutate(
-        () =>
-          api.post<WeatherLocation>(`${WEATHER_API_PREFIX}/locations`, {
-            query: trimmedQuery,
-          }),
-        { silent: true },
-      );
-      if (!result) {
+    if (auth.isAuthenticated) {
+      try {
+        const { data } = await api.post<WeatherLocation>(`${WEATHER_API_PREFIX}/locations`, {
+          query: trimmedQuery,
+        });
+        serverLocations.value = [...serverLocations.value, data];
+      } catch {
         throw new Error("Failed to add location");
       }
-      serverLocations.value = [...serverLocations.value, result.data];
       return;
     }
 
@@ -239,54 +315,27 @@ export function useWeatherLocations(): {
   }
 
   async function removeLocation(id: number | string): Promise<void> {
-    if (isAuthenticated.value) {
-      const target = serverLocations.value.find((loc) => loc.id === id);
+    if (auth.isAuthenticated) {
+      const target = serverLocations.value.find((loc) => String(loc.id) === String(id));
       if (target && isDefaultLocation(target)) {
         throw new Error("Default location cannot be removed");
       }
-      const result = await runMutate(() => api.delete(`${WEATHER_API_PREFIX}/locations/${id}`), {
-        silent: true,
-      });
-      if (result === undefined) {
+      try {
+        await api.delete(`${WEATHER_API_PREFIX}/locations/${id}`);
+      } catch {
         throw new Error("Failed to remove location");
       }
-      serverLocations.value = serverLocations.value.filter((loc) => loc.id !== id);
+      serverLocations.value = serverLocations.value.filter((loc) => String(loc.id) !== String(id));
       return;
     }
 
-    const target = guestLocations.value.find((loc) => loc.id === id);
+    const target = guestLocations.value.find((loc) => String(loc.id) === String(id));
     if (target && isDefaultLocation(target)) {
       throw new Error("Default location cannot be removed");
     }
 
-    persistGuestLocations(guestLocations.value.filter((loc) => loc.id !== id));
+    persistGuestLocations(guestLocations.value.filter((loc) => String(loc.id) !== String(id)));
   }
-
-  watch(
-    guestLocations,
-    (next) => {
-      if (isAuthenticated.value) {
-        return;
-      }
-      const sanitized = sanitizeGuestWeatherLocations(next);
-      if (JSON.stringify(sanitized) !== JSON.stringify(next)) {
-        guestLocations.value = sanitized;
-      }
-    },
-    { deep: true },
-  );
-
-  watch(
-    () => auth.isAuthenticated,
-    (authenticated) => {
-      if (authenticated) {
-        void refresh();
-      } else {
-        void ensureDefaultLocation();
-      }
-    },
-    { immediate: true },
-  );
 
   return {
     locations,
@@ -337,4 +386,5 @@ export async function syncGuestWeatherLocations(): Promise<void> {
 
   localStorage.removeItem(SAVED_LOCATIONS_STORAGE_KEY);
   localStorage.removeItem(LEGACY_SAVED_LOCATIONS_STORAGE_KEY);
+  guestLocations.value = [];
 }

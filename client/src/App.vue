@@ -37,6 +37,6 @@ async function retrySession(): Promise<void> {
       <ScrollControls />
     </main>
     <FooterBar />
-    <ToastContainer />
+    <ToastContainer variant="overlay" />
   </div>
 </template>

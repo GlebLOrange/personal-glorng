@@ -3,6 +3,8 @@ import { ref } from "vue";
 import type { Toast } from "@/types";
 
 const toasts = ref<Toast[]>([]);
+/** Tile host (PinnedToolsRow) claims this so App overlay does not double-render. */
+const tileHostClaimed = ref(false);
 let nextId = 0;
 const timers = new Map<number, ReturnType<typeof setTimeout>>();
 const durations = new Map<number, number>();
@@ -52,5 +54,22 @@ export function useNotify() {
     scheduleDismiss(id, ms);
   }
 
-  return { toasts, toast, dismiss, pause, resume };
+  function claimTileHost(): void {
+    tileHostClaimed.value = true;
+  }
+
+  function releaseTileHost(): void {
+    tileHostClaimed.value = false;
+  }
+
+  return {
+    toasts,
+    tileHostClaimed,
+    toast,
+    dismiss,
+    pause,
+    resume,
+    claimTileHost,
+    releaseTileHost,
+  };
 }
