@@ -38,6 +38,7 @@ const { run: runDelete } = useApiAction();
 
 const hasNextPage = computed(() => page.value < totalPages.value);
 const hasPreviousPage = computed(() => page.value > 1);
+const canShorten = computed(() => Boolean(newUrl.value.trim()) && !loading.value);
 
 async function loadUrls(): Promise<void> {
   if (!canManage.value) return;
@@ -126,7 +127,7 @@ onMounted(loadUrls);
   >
     <form class="mb-10 space-y-3" @submit.prevent="createUrl">
       <div class="mb-3 flex w-full min-w-0 items-center justify-end">
-        <ToolbarPillButton family="2xx" type="submit" :disabled="loading">
+        <ToolbarPillButton family="2xx" type="submit" :disabled="!canShorten">
           {{ loading ? "creating..." : "shorten" }}
         </ToolbarPillButton>
       </div>
