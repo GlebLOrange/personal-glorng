@@ -213,7 +213,7 @@ function goToTransactions(): void {
             <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
               {{ exporting ? "exporting..." : "export csv" }}
             </ToolbarPillButton>
-            <ToolbarPillButton family="1xx" aria-label="add expense" @click="openCreate">
+            <ToolbarPillButton family="2xx" aria-label="add expense" @click="openCreate">
               <span aria-hidden="true">+</span>
               <span class="hidden sm:inline">add</span>
             </ToolbarPillButton>

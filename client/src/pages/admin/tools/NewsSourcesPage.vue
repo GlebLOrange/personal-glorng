@@ -124,7 +124,7 @@ async function onSurfaceTab(id: string): Promise<void> {
         >
           {{ refreshButtonText }}
         </ToolbarPillButton>
-        <ToolbarPillButton family="1xx" :disabled="loading" @click="openCreate">
+        <ToolbarPillButton family="2xx" :disabled="loading" @click="openCreate">
           + source
         </ToolbarPillButton>
       </template>

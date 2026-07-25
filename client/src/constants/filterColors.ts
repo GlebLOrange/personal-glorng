@@ -17,7 +17,8 @@ const SEMANTIC = {
 
 const NEWS_STATUS_CLASS: Record<string, string> = {
   draft: SEMANTIC.info,
-  published: SEMANTIC.success,
+  // Match BaseButton success idle (/3), not badge /15
+  published: "text-status-success bg-status-success/3 border-transparent",
   unpublished: SEMANTIC.warning,
   failed: SEMANTIC.error,
 };
