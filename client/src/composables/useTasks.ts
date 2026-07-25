@@ -1,4 +1,4 @@
-import { computed, ref, watch } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 
 import { useApiAction } from "@/composables/useApiAction";
 import { api } from "@/composables/useApi";
@@ -230,6 +230,10 @@ export function useTasks() {
       page.value = 1;
       void loadTasks();
     }, 300);
+  });
+
+  onUnmounted(() => {
+    clearTimeout(searchDebounce);
   });
 
   watch(page, () => {
