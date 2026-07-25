@@ -65,3 +65,15 @@ export async function disableSentry(): Promise<void> {
   await sentry.close(2000);
   sentryInitialized = false;
 }
+
+/** Report to Sentry when consented/initialized; always log in DEV. */
+export function captureClientError(
+  error: unknown,
+  context?: { info?: string; [key: string]: unknown },
+): void {
+  if (import.meta.env.DEV) {
+    console.error("[client]", error, context);
+  }
+  if (!sentryInitialized || !sentry) return;
+  sentry.captureException(error, context ? { extra: context } : undefined);
+}

@@ -5,11 +5,12 @@ import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
+import { useApiAction } from "@/composables/useApiAction";
 import { useNotify } from "@/composables/useNotify";
 
 const display = ref("0");
 const expression = ref("");
-const loading = ref(false);
+const { run: runEval, loading } = useApiAction();
 const { toast } = useNotify();
 
 const buttons = ["7", "8", "9", "/", "4", "5", "6", "*", "1", "2", "3", "-", "0", ".", "=", "+"];
@@ -38,26 +39,21 @@ async function evaluate(expr: string): Promise<number | null> {
 
 async function handleInput(val: string): Promise<void> {
   if (val === "=") {
-    loading.value = true;
-    try {
-      const result = await evaluate(expression.value);
-      if (result === null || !Number.isFinite(result)) {
-        toast("Invalid expression", "error");
-        display.value = "Error";
-        expression.value = "";
-      } else {
-        display.value = String(result);
-        expression.value = String(result);
-      }
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        "Calculation failed";
-      toast(msg, "error");
+    const result = await runEval(() => evaluate(expression.value), {
+      errorMessage: "Calculation failed",
+    });
+    if (result === undefined) {
       display.value = "Error";
       expression.value = "";
-    } finally {
-      loading.value = false;
+      return;
+    }
+    if (result === null || !Number.isFinite(result)) {
+      toast("Invalid expression", "error");
+      display.value = "Error";
+      expression.value = "";
+    } else {
+      display.value = String(result);
+      expression.value = String(result);
     }
     return;
   }

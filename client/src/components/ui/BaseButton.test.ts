@@ -52,7 +52,7 @@ describe("BaseButton", () => {
     expect(button.classes()).toContain("hover:enabled:text-status-error");
     expect(button.classes()).toContain("hover:enabled:bg-status-error/10");
     expect(button.classes()).toContain("text-surface-light/60");
-    expect(button.classes().some((c) => c.includes("border"))).toBe(false);
+    expect(button.classes()).toContain("border-transparent");
   });
 
   it("colorizes success with fill/3 matching accent text and pale hover", () => {
@@ -88,7 +88,7 @@ describe("BaseButton", () => {
     expect(button.classes()).toContain("hover:enabled:bg-surface-light/10");
     expect(button.classes()).not.toContain("bg-accent-blue/3");
     expect(button.classes()).not.toContain("text-accent-blue");
-    expect(button.classes().some((c) => c.includes("border"))).toBe(false);
+    expect(button.classes()).toContain("border-transparent");
   });
 
   it("persists pale tint when selected", () => {

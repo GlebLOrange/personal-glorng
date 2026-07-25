@@ -19,10 +19,10 @@ import { Card } from "@/components/ui/card";
 import { newsSourceEnabledClass } from "@/constants/filterColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
+import { useApiAction } from "@/composables/useApiAction";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
 import type { NewsSource, PaginatedList } from "@/types";
-import { getApiErrorMessage } from "@/types/api";
 import { formatDate } from "@/utils/format";
 import { normalizeHttpUrl, sourceFromUrl } from "@/utils/newsForms";
 
@@ -69,15 +69,18 @@ const form = ref<NewsSourceForm>(blankForm());
 const drawerOpen = ref(false);
 const drawerMode = ref<DrawerMode>("create");
 const editingId = ref<number | null>(null);
-const loading = ref(true);
-const loadError = ref(false);
-const saving = ref(false);
-const refreshing = ref(false);
+const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: true });
+const { run: runSave, loading: saving } = useApiAction();
+const { run: runRefresh, loading: refreshing } = useApiAction();
+const { run: runDelete } = useApiAction();
 const deletingId = ref<number | null>(null);
 const lastAutoName = ref<string | null>(null);
 const { toast } = useNotify();
 const { can } = usePermissions();
 const canWrite = computed(() => can("news-sources", "write"));
+const loadError = computed(() => listError.value !== null);
+// ponytail: show skeleton before first onMounted load (useApiAction starts false)
+loading.value = true;
 const selectedSourceCount = computed(() => selectedSourceIds.value.length);
 const refreshButtonText = computed(() => {
   if (refreshing.value) return "queueing...";
@@ -166,32 +169,29 @@ function syncRouteSource(): void {
 }
 
 async function loadSources(): Promise<void> {
-  loading.value = true;
-  loadError.value = false;
-  try {
-    const params: Record<string, string | number | boolean> = {
-      page: page.value,
-      per_page: ADMIN_LIST_PAGE_SIZE,
-    };
-    const enabled = enabledQueryParam();
-    if (enabled !== undefined) params.enabled = enabled;
-    const { data } = await api.get<PaginatedList<NewsSource>>(SOURCES_API, {
-      params,
-    });
-    sources.value = data.items;
-    total.value = data.total;
-    totalPages.value = data.pages;
-    selectedSourceIds.value = selectedSourceIds.value.filter((id) =>
-      data.items.some((source) => source.id === id && source.enabled),
-    );
-    syncRouteSource();
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    loadError.value = true;
-    toast("Failed to load news sources", "error");
-  } finally {
-    loading.value = false;
-  }
+  const data = await runLoad(
+    async () => {
+      const params: Record<string, string | number | boolean> = {
+        page: page.value,
+        per_page: ADMIN_LIST_PAGE_SIZE,
+      };
+      const enabled = enabledQueryParam();
+      if (enabled !== undefined) params.enabled = enabled;
+      const response = await api.get<PaginatedList<NewsSource>>(SOURCES_API, {
+        params,
+      });
+      return response.data;
+    },
+    { errorFallback: "Failed to load news sources", logContext: "news.sources.load" },
+  );
+  if (!data) return;
+  sources.value = data.items;
+  total.value = data.total;
+  totalPages.value = data.pages;
+  selectedSourceIds.value = selectedSourceIds.value.filter((id) =>
+    data.items.some((source) => source.id === id && source.enabled),
+  );
+  syncRouteSource();
 }
 
 function goToPage(nextPage: number): void {
@@ -265,42 +265,43 @@ function payload(): Record<string, string | boolean | null> | null {
 
 async function saveSource(): Promise<void> {
   if (!canWrite.value) return;
-  saving.value = true;
-  try {
-    const requestPayload = payload();
-    if (!requestPayload) return;
-    if (editingId.value) {
-      await api.put(`${SOURCES_API}/${editingId.value}`, requestPayload);
-      toast("News source updated", "success");
-    } else {
-      await api.post(SOURCES_API, requestPayload);
-      toast("News source created", "success");
-    }
-    closeDrawer();
-    await loadSources();
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    toast(getApiErrorMessage(err, "Failed to save news source"), "error");
-  } finally {
-    saving.value = false;
-  }
+  const requestPayload = payload();
+  if (!requestPayload) return;
+  const editing = editingId.value;
+  const ok = await runSave(
+    async () => {
+      if (editing) {
+        await api.put(`${SOURCES_API}/${editing}`, requestPayload);
+      } else {
+        await api.post(SOURCES_API, requestPayload);
+      }
+      return true;
+    },
+    {
+      successMessage: editing ? "News source updated" : "News source created",
+      errorMessage: "Failed to save news source",
+      logContext: "news.sources.save",
+    },
+  );
+  if (!ok) return;
+  closeDrawer();
+  await loadSources();
 }
 
 async function refreshSources(): Promise<void> {
   if (!canWrite.value) return;
-  refreshing.value = true;
-  try {
-    const { data } = await api.post<MessageResponse>(`${SOURCES_API}/refresh`, {
-      source_ids: selectedSourceIds.value.length ? selectedSourceIds.value : null,
-    });
-    toast(data.message, "success");
-    await loadSources();
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    toast("Failed to queue news parser", "error");
-  } finally {
-    refreshing.value = false;
-  }
+  const data = await runRefresh(
+    async () => {
+      const response = await api.post<MessageResponse>(`${SOURCES_API}/refresh`, {
+        source_ids: selectedSourceIds.value.length ? selectedSourceIds.value : null,
+      });
+      return response.data;
+    },
+    { errorMessage: "Failed to queue news parser", logContext: "news.sources.refresh" },
+  );
+  if (!data) return;
+  toast(data.message, "success");
+  await loadSources();
 }
 
 async function deleteSource(source: NewsSource, event?: Event): Promise<void> {
@@ -308,17 +309,21 @@ async function deleteSource(source: NewsSource, event?: Event): Promise<void> {
   if (!canWrite.value) return;
   if (!window.confirm(`Delete ${source.name}?`)) return;
   deletingId.value = source.id;
-  try {
-    await api.delete(`${SOURCES_API}/${source.id}`);
-    sources.value = sources.value.filter((item) => item.id !== source.id);
-    if (editingId.value === source.id) closeDrawer();
-    toast("News source deleted", "success");
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    toast(getApiErrorMessage(err, "Failed to delete news source"), "error");
-  } finally {
-    deletingId.value = null;
-  }
+  const ok = await runDelete(
+    async () => {
+      await api.delete(`${SOURCES_API}/${source.id}`);
+      return true;
+    },
+    {
+      successMessage: "News source deleted",
+      errorMessage: "Failed to delete news source",
+      logContext: "news.sources.delete",
+    },
+  );
+  deletingId.value = null;
+  if (!ok) return;
+  sources.value = sources.value.filter((item) => item.id !== source.id);
+  if (editingId.value === source.id) closeDrawer();
 }
 
 watch(
