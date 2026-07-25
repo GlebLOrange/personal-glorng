@@ -12,7 +12,7 @@ const FAMILY_BADGE: Record<HttpStatusFamily, string> = {
 /** Idle: clean text, transparent border (layout-stable). Hover/selected: color border (+ pale bg except 1xx). */
 const FAMILY_ACTION: Record<HttpStatusFamily, string> = {
   "1xx":
-    "border-transparent text-surface-mid hover:enabled:border-accent-blue/40 hover:enabled:text-accent-blue",
+    "border-transparent text-surface-mid hover:enabled:bg-accent-blue/15 hover:enabled:border-accent-blue/40 hover:enabled:text-accent-blue",
   "2xx":
     "border-transparent text-surface-mid hover:enabled:bg-status-success/15 hover:enabled:border-status-success/40 hover:enabled:text-status-success",
   "3xx":
