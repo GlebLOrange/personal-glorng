@@ -1,7 +1,0 @@
----
-description: "Vue 3 and TypeScript state management guidance for Pinia stores, Composition API usage, persistence, and testing."
-globs: ["client/src/**/*.ts", "client/src/**/*.vue"]
-alwaysApply: false
----
-
-When this rule applies, follow the `vue-pinia-cursorrules-prompt-file` skill: read `.cursor/skills/vue-pinia-cursorrules-prompt-file/SKILL.md` and apply it.

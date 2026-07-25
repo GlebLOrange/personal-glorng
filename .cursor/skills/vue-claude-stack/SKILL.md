@@ -22,6 +22,7 @@ description: Vue 3 component guidance for the Vite client.
 - Use `storeToRefs()` when destructuring store state or getters.
 - Keep stores focused by domain.
 - Keep server state in the API/composable layer unless Pinia intentionally owns UI workflow state.
+- For store ownership, session/auth, persistence, and testing detail, follow the `vue-pinia` skill (`.cursor/skills/vue-pinia/SKILL.md`).
 
 ## Composables
 - Prefix reusable composables with `use`.

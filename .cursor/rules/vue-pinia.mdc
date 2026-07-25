@@ -1,0 +1,7 @@
+---
+description: "Vue 3 Pinia guidance for this client — auth session store, composables vs stores, cookie auth, and Vitest with createPinia."
+globs: ["client/src/**/*.ts", "client/src/**/*.vue"]
+alwaysApply: false
+---
+
+When this rule applies, follow the `vue-pinia` skill: read `.cursor/skills/vue-pinia/SKILL.md` and apply it.
