@@ -90,7 +90,7 @@ describe("BaseInput", () => {
     expect(wrapper.props("modelValue")).toBe("");
   });
 
-  it("prefers placeholder help text as aria-label over the field label", () => {
+  it("uses a visible label for naming when label and placeholder are both set", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "email",
@@ -99,7 +99,10 @@ describe("BaseInput", () => {
       },
     });
 
-    expect(wrapper.get("input").attributes("aria-label")).toBe("your@email.com");
+    expect(wrapper.get("label").attributes("for")).toBe("email");
+    expect(wrapper.get("label").text()).toBe("Email");
+    expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
+    expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
   });
 
   it("applies success and error border tones", () => {

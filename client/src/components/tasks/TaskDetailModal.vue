@@ -231,10 +231,10 @@ function onTechnicalToggle(event: Event): void {
           placement="top"
           aria-label="more actions"
         >
-          <template #trigger="{ open }">
-            <span class="inline-flex items-center gap-1.5 px-2 text-sm">
+          <template #trigger>
+            <span class="inline-flex items-center gap-1.5 px-2 text-sm text-surface-mid">
               more actions
-              <ChevronIcon :open="open" />
+              <ChevronIcon />
             </span>
           </template>
           <template #default="{ close: closeMenu }">

@@ -92,8 +92,9 @@ const accessibleName = computed(() => {
   if (typeof attrs["aria-label"] === "string" && attrs["aria-label"].trim()) {
     return attrs["aria-label"];
   }
-  // Shell tip is the help text — prefer it over the field label for SR naming.
-  return props.placeholder || props.label || props.prefix || undefined;
+  // Visible <label for> names the control when label is set.
+  if (props.label) return undefined;
+  return props.prefix || props.placeholder || undefined;
 });
 
 function clear(): void {
@@ -109,7 +110,7 @@ defineExpose({ focus });
 
 <template>
   <div class="flex flex-col gap-1" :class="$attrs.class" :style="$attrs.style">
-    <label v-if="label && !useShell" :for="inputId" class="text-label text-surface-sage">
+    <label v-if="label" :for="inputId" class="text-label text-surface-sage">
       {{ label }}
     </label>
 
@@ -147,7 +148,7 @@ defineExpose({ focus });
       <span
         v-if="showTip"
         :id="tipId"
-        class="pointer-events-none absolute inset-y-0 z-0 flex items-center text-right text-xs text-surface-mid/40"
+        class="pointer-events-none absolute inset-y-0 z-0 flex items-center text-right text-xs text-surface-mid/65"
         :class="tipInsetClass"
         aria-hidden="true"
       >

@@ -123,6 +123,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         to="/"
         class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        active-class="text-accent-blue"
         @click.prevent="emit('go-home')"
       >
         portfolio
@@ -130,6 +131,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         to="/news"
         class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        active-class="text-accent-blue"
         @click="emit('close')"
       >
         news
@@ -138,6 +140,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         to="/tools"
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        active-class="text-accent-blue"
         @click="emit('close')"
       >
         tools
@@ -146,6 +149,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         v-if="canUseAdminHub"
         to="/admin"
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        active-class="text-accent-blue"
         @click="emit('close')"
       >
         admin
@@ -155,6 +159,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         v-if="auth.isAuthenticated"
         to="/settings"
         class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        active-class="text-accent-blue"
         @click="emit('close')"
       >
         settings
@@ -172,6 +177,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         v-else
         to="/login"
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        active-class="text-accent-blue"
         @click="emit('close')"
       >
         login

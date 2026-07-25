@@ -121,7 +121,7 @@ async function handleGoHome(): Promise<void> {
             <RouterLink
               to="/"
               class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              active-class="text-surface-light"
+              active-class="text-accent-blue"
               @click.prevent="handleGoHome"
             >
               portfolio
@@ -129,7 +129,7 @@ async function handleGoHome(): Promise<void> {
             <RouterLink
               to="/news"
               class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              active-class="text-surface-light"
+              active-class="text-accent-blue"
             >
               news
             </RouterLink>
@@ -154,7 +154,7 @@ async function handleGoHome(): Promise<void> {
               v-if="auth.isAuthenticated"
               to="/settings"
               class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              active-class="text-surface-light"
+              active-class="text-accent-blue"
             >
               settings
             </RouterLink>

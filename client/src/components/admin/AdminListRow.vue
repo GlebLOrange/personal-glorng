@@ -92,7 +92,7 @@ function onKeydown(event: KeyboardEvent): void {
         class="flex shrink-0 items-center gap-1"
         :class="
           revealActionsOnHover
-            ? 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100'
+            ? 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100'
             : undefined
         "
         @click.stop

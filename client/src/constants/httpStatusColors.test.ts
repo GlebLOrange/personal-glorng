@@ -29,8 +29,8 @@ describe("httpStatusColors", () => {
 
     const preview = actionFamilyClass("1xx", false);
     expect(preview).toContain("border-transparent");
+    expect(preview).toContain("hover:enabled:bg-accent-blue/15");
     expect(preview).toContain("hover:enabled:border-accent-blue/40");
-    expect(preview).not.toContain("hover:enabled:bg-accent-blue");
 
     const selected = actionFamilyClass("2xx", true);
     expect(selected).toContain("bg-status-success/15");

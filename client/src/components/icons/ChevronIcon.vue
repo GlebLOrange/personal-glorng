@@ -3,23 +3,17 @@ import { computed } from "vue";
 
 const props = withDefaults(
   defineProps<{
-    /** Points down when closed; flips when open. Ignored when direction is right. */
+    /** Points down when closed; flips when open. */
     open?: boolean;
-    /** down = dropdown chevron; right = horizontal transition (status history). */
-    direction?: "down" | "right";
     className?: string;
   }>(),
   {
     open: false,
-    direction: "down",
     className: "size-3.5",
   },
 );
 
-const rotateClass = computed(() => {
-  if (props.direction === "right") return "-rotate-90";
-  return props.open ? "rotate-180" : "rotate-0";
-});
+const rotateClass = computed(() => (props.open ? "rotate-180" : "rotate-0"));
 </script>
 
 <template>
