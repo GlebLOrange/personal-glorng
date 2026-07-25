@@ -65,9 +65,7 @@ Cloud-specific notes:
   UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
   ```
 - **Backend via Docker:** prod images do not include `pytest`/`ruff`; dev targets may, but host `uv` is the canonical path for backend checks.
-- **Frontend:** `cd client && npm run lint && npm run test && npm run build:check` (Node 24 required by `engines`; the VM's default `/exec-daemon/node` is v22 and shadows nvm — prepend `"$HOME/.nvm/versions/node/v24.18.0/bin"` to `PATH` or `nvm use 24`). Use `npm run build` for a fast Vite-only bundle.
-- **Frontend install caveat:** plain `npm ci` currently fails (lockfile pins `typescript@7`, but `typescript-eslint`'s peer wants `<6.1.0`). Install with `npm ci --legacy-peer-deps`. This is why the frontend CI job is red.
-- **`npm run lint` and `build:check` are currently broken on `main`:** `typescript-eslint@8` hard-errors with "does not support TS 7.0", and `vue-tsc`/typecheck hits the same TS7 mismatch. `npm run dev`, `npm run build`, and `npm run test` (vitest) all work. Don't burn time "fixing" lint from an env angle — it needs a dependency change (downgrade TS or bump typescript-eslint).
+- **Frontend:** Node 24 (`engines` + root `.nvmrc`; Cloud VM default `/exec-daemon/node` is often v22 — prepend `"$HOME/.nvm/versions/node/v24.18.0/bin"` to `PATH` or `nvm use`). From `client/`: `npm ci`, then `npm run lint && npm run format:check && npm run test:coverage && npm run build:check`. Use `npm run build` for a fast Vite-only bundle. TypeScript is pinned to `~5.8.3` so `typescript-eslint@8` peers resolve; do not bump to TS 7 until the ESLint stack supports it.
 
 ### Optional services
 

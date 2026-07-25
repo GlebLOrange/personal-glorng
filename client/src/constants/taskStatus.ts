@@ -22,7 +22,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
-  pending: "text-status-warning bg-status-warning/10 border-status-warning/30",
+  pending: "text-status-cyan bg-status-cyan/10 border-status-cyan/30",
   completed: "text-status-success bg-status-success/10 border-status-success/30",
   not_completed: "text-status-error bg-status-error/10 border-status-error/30",
   postponed: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
@@ -44,7 +44,7 @@ const STATUS_ACTION_LABELS: Record<TaskStatus, string> = {
 
 /** Text + soft hover for status change menu items. */
 const STATUS_MENU_ITEM_CLASS: Record<TaskStatus, string> = {
-  pending: "text-status-warning hover:bg-status-warning/10",
+  pending: "text-status-cyan hover:bg-status-cyan/10",
   completed: "text-status-success hover:bg-status-success/10",
   not_completed: "text-status-error hover:bg-status-error/10",
   postponed: "text-accent-blue hover:bg-accent-blue/10",

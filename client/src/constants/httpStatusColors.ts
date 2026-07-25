@@ -48,7 +48,7 @@ export function httpStatusClass(code: number): string {
 
 /** Shared shape for toolbar/tab action pills. */
 export const ACTION_PILL_BASE =
-  "inline-flex h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50";
+  "inline-flex h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50";
 
 /**
  * Classes for an action pill in a given HTTP-family color.

@@ -23,16 +23,13 @@ const TOAST_TEXT: Record<Toast["type"], string> = {
 
 const hasToasts = computed(() => toasts.value.length > 0);
 
-function toastCardClass(type: Toast["type"]): string {
-  if (type === "success") return "border-status-success/40 bg-status-success/10";
-  return "";
-}
-
-function toastTextClass(type: Toast["type"]): string {
-  if (type === "error") return "text-status-error";
-  if (type === "success") return "text-status-success";
-  return "text-surface-light";
-}
+/** Worst type in the queue drives the stack surface (error > success > info). */
+const stackSurfaceType = computed((): Toast["type"] => {
+  const types = toasts.value.map((t) => t.type);
+  if (types.includes("error")) return "error";
+  if (types.includes("success")) return "success";
+  return "info";
+});
 </script>
 
 <template>
@@ -41,7 +38,10 @@ function toastTextClass(type: Toast["type"]): string {
     class="pointer-events-none fixed inset-x-0 top-16 z-50 flex justify-center px-4 sm:justify-end sm:px-6"
     aria-label="Notifications"
   >
-    <div class="pointer-events-auto flex w-full max-w-sm flex-col gap-2">
+    <div
+      class="pointer-events-auto flex w-full max-w-sm flex-col gap-2"
+      :class="TOAST_SURFACE[stackSurfaceType]"
+    >
       <Card
         v-for="t in toasts"
         :key="t.id"
@@ -49,16 +49,13 @@ function toastTextClass(type: Toast["type"]): string {
         variant="dense"
         :role="t.type === 'error' ? 'alert' : 'status'"
         :aria-live="t.type === 'error' ? 'assertive' : 'polite'"
-        :class="['flex w-full items-center gap-2', toastCardClass(t.type)]"
+        :class="['flex w-full items-center gap-2', TOAST_TEXT[t.type]]"
         @mouseenter="pause(t.id)"
         @mouseleave="resume(t.id)"
         @focusin="pause(t.id)"
         @focusout="resume(t.id)"
       >
-        <p
-          class="min-w-0 flex-1 break-words text-center text-sm leading-snug"
-          :class="toastTextClass(t.type)"
-        >
+        <p class="min-w-0 flex-1 break-words text-center text-sm leading-snug">
           {{ t.message }}
         </p>
         <IconCloseButton aria-label="Dismiss notification" @click="dismiss(t.id)" />

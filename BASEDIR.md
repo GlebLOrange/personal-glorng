@@ -10,7 +10,7 @@ Verdict: useful capture of #422 follow-ups, but the notes are already partly sta
    Several “blockers” in the current `BASEDIR.md` are outdated:
    - **Done:** `GITHUB_TOKEN` for `gitleaks-action@v3` — gitleaks is green.
    - **Changed:** `npm_audit` no longer runs `npm ci`; it uses `npm audit --package-lock-only`. Peer conflict is no longer the audit failure mode.
-   - **Still red on #422:** frontend (`npm ci` TS7 vs `typescript-eslint` peer), backend (Ruff format + lint), docs (stale `docs/generated`), postgres-tests (`ImportError: normalize_feed_articles` from `app.services.news`), npm_audit (real high: `brace-expansion` GHSA-3jxr-9vmj-r5cp / GHSA-mh99-v99m-4gvg).  
+   - **Was red on #422 tip; frontend peer conflict fixed later (#427):** TypeScript is pinned to `~5.8.3`; plain `npm ci` works. Remaining historical notes for that tip: backend (Ruff format + lint), docs (stale `docs/generated`), postgres-tests (`ImportError: normalize_feed_articles` from `app.services.news`), npm_audit (real high: `brace-expansion` GHSA-3jxr-9vmj-r5cp / GHSA-mh99-v99m-4gvg).  
    Rewrite the blocker list to match tip SHA + check conclusions, or readers will chase fixed work.
 
 2. **Add the missing postgres collection failure**  
@@ -26,7 +26,7 @@ Verdict: useful capture of #422 follow-ups, but the notes are already partly sta
    “5 Ruff errors” understates tip reality: `ruff format --check` wants **16 files** reformatted, plus lint hits (`ANN401` in `app/db/mongo/client.py`, `I001` in `app/routers/auth.py`, …). Prefer: run `uv run ruff format` + `uv run ruff check --fix` on the #422 branch (or a tiny preceding hygiene PR) and paste the remaining non-auto-fixable codes.
 
 4. **Mark npm_audit as a real advisory, not a peer install flake**  
-   Lockfile-only audit exits 1 on high `brace-expansion`. Suggestion should be `npm audit fix` / bump transitive deps in `client/package-lock.json` (or temporarily raise audit level with a tracked follow-up) — not `--legacy-peer-deps`.
+   Lockfile-only audit exits 1 on high `brace-expansion`. Suggestion should be `npm audit fix` / bump transitive deps in `client/package-lock.json` (or temporarily raise audit level with a tracked follow-up).
 
 ## Doc / process hygiene for #423
 

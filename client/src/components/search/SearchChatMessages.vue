@@ -31,7 +31,7 @@ const props = withDefaults(
     userClass: "bg-accent-blue/10 border border-accent-blue/20 text-surface-light ml-6",
     assistantClass: "bg-surface-card border border-surface-border text-surface-sage mr-6",
     roleUserClass: "text-accent-blue",
-    roleAssistantClass: "text-accent-violet",
+    roleAssistantClass: "text-status-success",
     sourceLinkClass:
       "block rounded-md border border-surface-border/80 bg-surface-dark/80 px-2 py-1.5 hover:border-accent-blue/40 transition-colors",
     sourceTitleClass: "text-xs text-accent-blue font-medium",
@@ -87,7 +87,7 @@ function showEmptySourcesWarning(msg: ChatMessage): boolean {
       {{ msg.content
       }}<span
         v-if="loading && msg.role === 'assistant' && index === messages.length - 1"
-        class="inline-block w-2 h-4 ml-0.5 bg-accent-violet/60 animate-pulse align-middle"
+        class="inline-block w-2 h-4 ml-0.5 bg-accent-blue/60 animate-pulse align-middle"
       />
 
       <div
@@ -121,7 +121,7 @@ function showEmptySourcesWarning(msg: ChatMessage): boolean {
 
       <p
         v-else-if="!loading && showEmptySourcesWarning(msg)"
-        class="mt-2 text-[11px] text-status-warning/90"
+        class="mt-2 text-[11px] text-status-cyan/90"
       >
         No matching documents — answer may be limited.
       </p>

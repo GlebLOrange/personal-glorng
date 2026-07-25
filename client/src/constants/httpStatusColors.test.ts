@@ -19,6 +19,8 @@ describe("httpStatusColors", () => {
 
   it("uses idle fill/3 with matching accent text and selected with bg+border", () => {
     const idle = actionFamilyClass("2xx", false);
+    expect(idle).toContain("font-medium");
+    expect(idle).toContain("leading-none");
     expect(idle).toContain("border-transparent");
     expect(idle).toContain("bg-status-success/3");
     expect(idle).toContain("text-status-success");
@@ -33,6 +35,8 @@ describe("httpStatusColors", () => {
     expect(preview).toContain("hover:enabled:border-accent-blue/40");
 
     const selected = actionFamilyClass("2xx", true);
+    expect(selected).toContain("font-medium");
+    expect(selected).toContain("leading-none");
     expect(selected).toContain("bg-status-success/15");
     expect(selected).toContain("border-status-success/40");
   });

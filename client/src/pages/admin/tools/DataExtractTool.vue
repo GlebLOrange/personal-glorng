@@ -1,418 +1,58 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
-
-import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import DataExtractBatchPanel from "@/components/admin/data-extract/DataExtractBatchPanel.vue";
+import DataExtractOptionsPanel from "@/components/admin/data-extract/DataExtractOptionsPanel.vue";
+import DataExtractResultPanel from "@/components/admin/data-extract/DataExtractResultPanel.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
-import IconCopyButton from "@/components/ui/IconCopyButton.vue";
-import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { Card } from "@/components/ui/card";
-import { LIST_PAGE_SIZE } from "@/constants/pagination";
-import { api } from "@/composables/useApi";
-import { useApiAction } from "@/composables/useApiAction";
-import { useClipboard } from "@/composables/useClipboard";
-import { trapTabKeyInRoot } from "@/composables/useOverlayShell";
-import { usePermissions } from "@/composables/usePermissions";
-import { SELECT_CLASS } from "@/constants/formClasses";
-import type {
-  DataExtractFormat,
-  DelimitedProfile,
-  ExtractionResult,
-  ImportBatchDetail,
-  ImportBatchSummary,
-  ImportResult,
-  PromoteBatchResult,
-  XmlExtractMode,
-} from "@/types/dataExtract";
-import type { PaginatedList } from "@/types";
+import { useDataExtractTool } from "@/composables/useDataExtractTool";
 
-type FormatChoice = "auto" | DataExtractFormat;
-type ActionTab = "extract" | "import";
-
-const selectedFile = ref<File | null>(null);
-const dragOver = ref(false);
-const formatChoice = ref<FormatChoice>("auto");
-const profileChoice = ref<DelimitedProfile>("custom");
-const fieldDelimiter = ref("|");
-const listDelimiter = ref(";");
-const rowTag = ref("");
-const xmlMode = ref<XmlExtractMode>("rows");
-const showRawJson = ref(false);
-const result = ref<ExtractionResult | null>(null);
-const importResult = ref<ImportResult | null>(null);
-const batchHistory = ref<ImportBatchSummary[]>([]);
-const batchPage = ref(1);
-const batchTotal = ref(0);
-const batchTotalPages = ref(0);
-const selectedBatchId = ref<number | null>(null);
-const batchDetail = ref<ImportBatchDetail | null>(null);
-const promoteResult = ref<PromoteBatchResult | null>(null);
-const activeTab = ref<ActionTab>("extract");
-const optionsOpen = ref(false);
-const optionsRoot = useTemplateRef<HTMLElement>("optionsRoot");
-const optionsPanel = useTemplateRef<HTMLElement>("optionsPanel");
-
-const fileInputRef = ref<HTMLInputElement | null>(null);
-const { loading, run } = useApiAction();
-const { copy } = useClipboard();
-const { can } = usePermissions();
-
-const canWrite = computed(() => can("data-extract", "write"));
-const selectedName = computed(() => selectedFile.value?.name ?? "");
-const selectedBatch = computed(
-  () =>
-    batchDetail.value?.batch ??
-    batchHistory.value.find((b) => b.id === selectedBatchId.value) ??
-    null,
-);
-const canPromoteSelected = computed(
-  () =>
-    canWrite.value &&
-    selectedBatch.value?.profile === "pipe_embed" &&
-    (selectedBatch.value?.row_count ?? 0) > 0,
-);
-const showXmlOptions = computed(
-  () => formatChoice.value === "auto" || formatChoice.value === "xml",
-);
-const showDelimitedOptions = computed(
-  () =>
-    formatChoice.value === "delimited" ||
-    profileChoice.value === "pipe_embed" ||
-    formatChoice.value === "auto",
-);
-
-const hasCustomOptions = computed(
-  () =>
-    formatChoice.value !== "auto" ||
-    profileChoice.value !== "custom" ||
-    fieldDelimiter.value !== "|" ||
-    listDelimiter.value !== ";" ||
-    Boolean(rowTag.value.trim()) ||
-    xmlMode.value !== "rows",
-);
-
-const optionsActiveLabel = computed(() => {
-  if (formatChoice.value !== "auto") return formatChoice.value;
-  if (profileChoice.value === "pipe_embed") return "pipe embed";
-  return undefined;
-});
-
-const metaSummary = computed(() => {
-  if (!result.value) return "";
-  const meta = result.value.meta;
-  const parts = [
-    `format: ${result.value.format}`,
-    `rows: ${String(meta.row_count ?? result.value.records.length)}`,
-  ];
-  const columns = meta.columns;
-  if (Array.isArray(columns) && columns.length) {
-    parts.push(`columns: ${columns.length}`);
-  }
-  const errorCount = meta.error_count;
-  if (typeof errorCount === "number" && errorCount > 0) {
-    parts.push(`errors: ${errorCount}`);
-  }
-  if (typeof meta.filename === "string") {
-    parts.push(String(meta.filename));
-  }
-  return parts.join(" · ");
-});
-
-const importSummary = computed(() => {
-  if (!importResult.value) return "";
-  const parts = [
-    `batch #${importResult.value.batch_id}`,
-    `imported: ${importResult.value.row_count}`,
-  ];
-  if (importResult.value.error_count > 0) {
-    parts.push(`errors: ${importResult.value.error_count}`);
-  }
-  if (importResult.value.profile) {
-    parts.push(`profile: ${importResult.value.profile}`);
-  }
-  return parts.join(" · ");
-});
-
-const tableColumns = computed((): string[] => {
-  if (result.value) {
-    const metaColumns = result.value.meta.columns;
-    if (Array.isArray(metaColumns) && metaColumns.every((c) => typeof c === "string")) {
-      return metaColumns as string[];
-    }
-    const first = result.value.records[0];
-    if (first && typeof first === "object" && !Array.isArray(first)) {
-      return Object.keys(first as Record<string, unknown>);
-    }
-    return [];
-  }
-  const first = importResult.value?.preview[0];
-  if (first && typeof first === "object" && !Array.isArray(first)) {
-    return Object.keys(first);
-  }
-  return [];
-});
-
-const tableRows = computed((): Record<string, unknown>[] => {
-  const rows = result.value?.records ?? importResult.value?.preview ?? [];
-  if (!tableColumns.value.length) return [];
-  return rows.filter(
-    (row): row is Record<string, unknown> =>
-      typeof row === "object" && row !== null && !Array.isArray(row),
-  );
-});
-
-const resultJson = computed(() => (showRawJson.value && result.value ? serializeResult() : ""));
-
-function resetOutputs(): void {
-  result.value = null;
-  importResult.value = null;
-  promoteResult.value = null;
-}
-
-function batchLabel(batch: ImportBatchSummary): string {
-  const parts = [`#${batch.id}`, batch.filename, `${batch.row_count} rows`, batch.status];
-  if (batch.promoted_count > 0) {
-    parts.push(`${batch.promoted_count} promoted`);
-  }
-  return parts.join(" · ");
-}
-
-const hasNextBatchPage = computed(() => batchPage.value < batchTotalPages.value);
-const hasPreviousBatchPage = computed(() => batchPage.value > 1);
-
-async function loadBatchHistory(): Promise<void> {
-  const response = await api.get<PaginatedList<ImportBatchSummary>>("/tools/data-extract/batches", {
-    params: { page: batchPage.value, per_page: LIST_PAGE_SIZE },
-  });
-  batchHistory.value = response.data.items;
-  batchTotal.value = response.data.total;
-  batchTotalPages.value = response.data.pages;
-}
-
-function goToBatchPage(nextPage: number): void {
-  if (nextPage < 1) return;
-  if (batchTotalPages.value > 0 && nextPage > batchTotalPages.value) return;
-  batchPage.value = nextPage;
-  void loadBatchHistory();
-}
-
-async function loadBatchDetail(batchId: number): Promise<void> {
-  selectedBatchId.value = batchId;
-  promoteResult.value = null;
-  const response = await run(
-    () => api.get<ImportBatchDetail>(`/tools/data-extract/batches/${batchId}`),
-    { errorFallback: "Failed to load import batch" },
-  );
-  if (response) {
-    batchDetail.value = response.data;
-    result.value = {
-      format: response.data.batch.format as DataExtractFormat,
-      records: response.data.preview_rows.filter((row) => !row.error).map((row) => row.fields),
-      meta: {
-        row_count: response.data.batch.row_count,
-        error_count: response.data.batch.error_count,
-        profile: response.data.batch.profile,
-      },
-    };
-    importResult.value = {
-      batch_id: response.data.batch.id,
-      format: response.data.batch.format,
-      profile: response.data.batch.profile,
-      row_count: response.data.batch.row_count,
-      error_count: response.data.batch.error_count,
-      preview: response.data.preview_rows.filter((row) => !row.error).map((row) => row.fields),
-      errors: [],
-    };
-    showRawJson.value = false;
-  }
-}
-
-async function promoteSelectedBatch(): Promise<void> {
-  if (!selectedBatchId.value || !canPromoteSelected.value) return;
-  const response = await run(
-    () =>
-      api.post<PromoteBatchResult>(`/tools/data-extract/batches/${selectedBatchId.value}/promote`),
-    { errorFallback: "Promotion failed" },
-  );
-  if (response) {
-    promoteResult.value = response.data;
-    await Promise.all([loadBatchHistory(), loadBatchDetail(selectedBatchId.value)]);
-  }
-}
-
-onMounted(() => {
-  void loadBatchHistory();
-  document.addEventListener("click", onDocumentClick);
-  document.addEventListener("keydown", onOptionsKeydown);
-});
-
-onUnmounted(() => {
-  document.removeEventListener("click", onDocumentClick);
-  document.removeEventListener("keydown", onOptionsKeydown);
-});
-
-function toggleOptions(): void {
-  optionsOpen.value = !optionsOpen.value;
-}
-
-function closeOptions(): void {
-  optionsOpen.value = false;
-}
-
-function onDocumentClick(event: MouseEvent): void {
-  if (!optionsOpen.value) return;
-  const root = optionsRoot.value;
-  if (root && !root.contains(event.target as Node)) closeOptions();
-}
-
-function onOptionsKeydown(event: KeyboardEvent): void {
-  if (!optionsOpen.value) return;
-  if (event.key === "Escape") {
-    event.stopPropagation();
-    event.preventDefault();
-    closeOptions();
-    return;
-  }
-  trapTabKeyInRoot(event, optionsPanel.value);
-}
-
-watch(optionsOpen, async (isOpen) => {
-  if (!isOpen) return;
-  await nextTick();
-  optionsPanel.value?.focus();
-});
-
-watch(canWrite, (allowed) => {
-  if (!allowed && activeTab.value === "import") activeTab.value = "extract";
-});
-
-function onFileSelect(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  if (input.files?.[0]) {
-    selectedFile.value = input.files[0];
-    resetOutputs();
-  }
-}
-
-function onDrop(event: DragEvent): void {
-  dragOver.value = false;
-  if (event.dataTransfer?.files?.[0]) {
-    selectedFile.value = event.dataTransfer.files[0];
-    resetOutputs();
-  }
-}
-
-function formatCell(value: unknown): string {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
-}
-
-function serializeResult(): string {
-  return result.value ? JSON.stringify(result.value, null, 2) : "";
-}
-
-function buildQueryParams(): URLSearchParams {
-  const params = new URLSearchParams();
-  if (formatChoice.value !== "auto") {
-    params.set("format", formatChoice.value);
-  } else if (profileChoice.value === "pipe_embed") {
-    params.set("format", "delimited");
-  }
-  if (profileChoice.value === "pipe_embed") {
-    params.set("profile", "pipe_embed");
-  }
-  if (showDelimitedOptions.value && profileChoice.value === "custom") {
-    if (fieldDelimiter.value.trim()) {
-      params.set("field_delimiter", fieldDelimiter.value);
-    }
-    if (listDelimiter.value.trim()) {
-      params.set("list_delimiter", listDelimiter.value);
-    }
-  }
-  if (showXmlOptions.value && rowTag.value.trim()) {
-    params.set("row_tag", rowTag.value.trim());
-  }
-  if (showXmlOptions.value) {
-    params.set("xml_mode", xmlMode.value);
-  }
-  return params;
-}
-
-function buildUrl(path: string): string {
-  const query = buildQueryParams().toString();
-  return query ? `${path}?${query}` : path;
-}
-
-async function extractFile(): Promise<void> {
-  if (!selectedFile.value) return;
-
-  const response = await run(
-    () => {
-      const form = new FormData();
-      form.append("file", selectedFile.value as File);
-      return api.post<ExtractionResult>(buildUrl("/tools/data-extract"), form, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-    },
-    { errorFallback: "Extraction failed" },
-  );
-
-  if (response) {
-    result.value = response.data;
-    importResult.value = null;
-    showRawJson.value = false;
-  }
-}
-
-async function importFile(): Promise<void> {
-  if (!selectedFile.value || !canWrite.value) return;
-
-  const response = await run(
-    () => {
-      const form = new FormData();
-      form.append("file", selectedFile.value as File);
-      return api.post<ImportResult>(buildUrl("/tools/data-extract/import"), form, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-    },
-    { errorFallback: "Import failed" },
-  );
-
-  if (response) {
-    importResult.value = response.data;
-    selectedBatchId.value = response.data.batch_id;
-    result.value = {
-      format: response.data.format as DataExtractFormat,
-      records: response.data.preview,
-      meta: {
-        row_count: response.data.row_count,
-        error_count: response.data.error_count,
-        profile: response.data.profile,
-      },
-    };
-    showRawJson.value = false;
-    await Promise.all([loadBatchHistory(), loadBatchDetail(response.data.batch_id)]);
-  }
-}
-
-async function copyResult(): Promise<void> {
-  const json = serializeResult();
-  if (!json) return;
-  await copy(json);
-}
-
-function downloadResult(): void {
-  if (!result.value) return;
-  const blob = new Blob([serializeResult()], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = `extract-${result.value.format}.json`;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
+const {
+  selectedFile,
+  dragOver,
+  formatChoice,
+  profileChoice,
+  fieldDelimiter,
+  listDelimiter,
+  rowTag,
+  xmlMode,
+  showRawJson,
+  result,
+  importResult,
+  batchHistory,
+  batchPage,
+  batchTotal,
+  batchTotalPages,
+  selectedBatchId,
+  promoteResult,
+  activeTab,
+  fileInputRef,
+  loading,
+  canWrite,
+  selectedName,
+  selectedBatch,
+  canPromoteSelected,
+  showXmlOptions,
+  showDelimitedOptions,
+  hasCustomOptions,
+  optionsActiveLabel,
+  metaSummary,
+  importSummary,
+  tableColumns,
+  tableRows,
+  resultJson,
+  hasNextBatchPage,
+  hasPreviousBatchPage,
+  loadBatchHistory,
+  goToBatchPage,
+  loadBatchDetail,
+  promoteSelectedBatch,
+  onFileSelect,
+  onDrop,
+  extractFile,
+  importFile,
+  copyResult,
+  downloadResult,
+} = useDataExtractTool();
 </script>
 
 <template>
@@ -420,150 +60,18 @@ function downloadResult(): void {
     <div class="min-w-0">
       <div class="mb-6 space-y-3">
         <div class="flex w-full min-w-0 flex-wrap items-center gap-2">
-          <div
-            ref="optionsRoot"
-            class="relative inline-flex"
-            :class="optionsOpen ? 'z-40' : undefined"
-          >
-            <ToolbarPillButton
-              family="1xx"
-              type="button"
-              :selected="optionsOpen || hasCustomOptions"
-              aria-haspopup="dialog"
-              :aria-expanded="optionsOpen"
-              @click.stop="toggleOptions"
-            >
-              options
-              <span v-if="optionsActiveLabel" class="text-surface-muted">
-                · {{ optionsActiveLabel }}
-              </span>
-              <ChevronIcon :open="optionsOpen" />
-            </ToolbarPillButton>
-
-            <div
-              v-if="optionsOpen"
-              ref="optionsPanel"
-              role="dialog"
-              tabindex="-1"
-              class="absolute left-0 top-full z-10 mt-1 w-max min-w-[18rem] max-w-[min(100vw-2rem,28rem)] space-y-3 rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
-              @click.stop
-            >
-              <div class="flex items-center gap-2">
-                <label
-                  for="data-extract-format"
-                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-                >
-                  format
-                </label>
-                <select
-                  id="data-extract-format"
-                  v-model="formatChoice"
-                  name="format"
-                  :class="SELECT_CLASS"
-                >
-                  <option value="auto">auto</option>
-                  <option value="csv">CSV</option>
-                  <option value="json">JSON</option>
-                  <option value="xml">XML</option>
-                  <option value="delimited">delimited</option>
-                </select>
-              </div>
-
-              <div v-if="showDelimitedOptions" class="flex items-center gap-2">
-                <label
-                  for="data-extract-profile"
-                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-                >
-                  profile
-                </label>
-                <select
-                  id="data-extract-profile"
-                  v-model="profileChoice"
-                  name="profile"
-                  :class="SELECT_CLASS"
-                >
-                  <option value="custom">custom delimiters</option>
-                  <option value="pipe_embed">pipe embed</option>
-                </select>
-              </div>
-
-              <div
-                v-if="showDelimitedOptions && profileChoice === 'custom'"
-                class="flex items-center gap-2"
-              >
-                <label
-                  for="data-extract-field-delimiter"
-                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-                >
-                  field delimiter
-                </label>
-                <input
-                  id="data-extract-field-delimiter"
-                  v-model="fieldDelimiter"
-                  name="field_delimiter"
-                  type="text"
-                  maxlength="4"
-                  placeholder="|"
-                  class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-                />
-              </div>
-
-              <div
-                v-if="showDelimitedOptions && profileChoice === 'custom'"
-                class="flex items-center gap-2"
-              >
-                <label
-                  for="data-extract-list-delimiter"
-                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-                >
-                  list delimiter
-                </label>
-                <input
-                  id="data-extract-list-delimiter"
-                  v-model="listDelimiter"
-                  name="list_delimiter"
-                  type="text"
-                  maxlength="4"
-                  placeholder=";"
-                  class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-                />
-              </div>
-
-              <div v-if="showXmlOptions" class="flex items-center gap-2">
-                <label
-                  for="data-extract-row-tag"
-                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-                >
-                  xml row tag
-                </label>
-                <input
-                  id="data-extract-row-tag"
-                  v-model="rowTag"
-                  name="row_tag"
-                  type="text"
-                  class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-                />
-              </div>
-
-              <div v-if="showXmlOptions" class="flex items-center gap-2">
-                <label
-                  for="data-extract-xml-mode"
-                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-                >
-                  xml mode
-                </label>
-                <select
-                  id="data-extract-xml-mode"
-                  v-model="xmlMode"
-                  name="xml_mode"
-                  :class="SELECT_CLASS"
-                >
-                  <option value="rows">rows</option>
-                  <option value="tree">tree</option>
-                </select>
-              </div>
-            </div>
-          </div>
+          <DataExtractOptionsPanel
+            v-model:format-choice="formatChoice"
+            v-model:profile-choice="profileChoice"
+            v-model:field-delimiter="fieldDelimiter"
+            v-model:list-delimiter="listDelimiter"
+            v-model:row-tag="rowTag"
+            v-model:xml-mode="xmlMode"
+            :has-custom-options="hasCustomOptions"
+            :options-active-label="optionsActiveLabel"
+            :show-delimited-options="showDelimitedOptions"
+            :show-xml-options="showXmlOptions"
+          />
 
           <div class="ml-auto flex flex-wrap items-center gap-1">
             <ToolbarPillButton
@@ -597,7 +105,7 @@ function downloadResult(): void {
           tabindex="0"
           aria-label="Choose a file to extract"
           :class="[
-            'border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
+            'cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors',
             dragOver
               ? 'border-accent-blue bg-accent-blue/10'
               : 'border-surface-border hover:border-accent-blue',
@@ -616,136 +124,46 @@ function downloadResult(): void {
             accept=".csv,.tsv,.json,.xml,.txt,.pipe"
             @change="onFileSelect"
           />
-          <p v-if="selectedName" class="text-surface-light text-sm">{{ selectedName }}</p>
-          <p v-else class="text-surface-mid text-sm">drop a file here or click to browse</p>
+          <p v-if="selectedName" class="text-sm text-surface-light">{{ selectedName }}</p>
+          <p v-else class="text-sm text-surface-mid">drop a file here or click to browse</p>
         </div>
       </div>
 
-      <Card v-if="batchHistory.length" class="space-y-3 mb-6">
-        <div class="flex items-center justify-between gap-3">
-          <h2 class="text-lg font-semibold text-surface-light">Recent imports</h2>
-          <BaseButton variant="ghost" @click="loadBatchHistory">refresh</BaseButton>
-        </div>
-        <ul class="space-y-2">
-          <li v-for="batch in batchHistory" :key="batch.id">
-            <button
-              type="button"
-              :class="[
-                'w-full text-left rounded-md border px-3 py-2 text-sm transition-colors',
-                selectedBatchId === batch.id
-                  ? 'border-accent-blue bg-accent-blue/10 text-surface-light'
-                  : 'border-surface-border text-surface-mid hover:border-accent-blue',
-              ]"
-              @click="loadBatchDetail(batch.id)"
-            >
-              {{ batchLabel(batch) }}
-            </button>
-          </li>
-        </ul>
-        <AdminListFooter
-          v-if="batchHistory.length > 0"
-          :total="batchTotal"
-          :page="batchPage"
-          :total-pages="batchTotalPages"
-          :has-next-page="hasNextBatchPage"
-          :has-previous-page="hasPreviousBatchPage"
-          item-label="batches"
-          ariaLabel="Import batches pagination"
-          @first="goToBatchPage(1)"
-          @prev="goToBatchPage(batchPage - 1)"
-          @next="goToBatchPage(batchPage + 1)"
-          @last="goToBatchPage(batchTotalPages)"
-        />
-      </Card>
+      <DataExtractBatchPanel
+        :batch-history="batchHistory"
+        :batch-total="batchTotal"
+        :batch-page="batchPage"
+        :batch-total-pages="batchTotalPages"
+        :has-next-batch-page="hasNextBatchPage"
+        :has-previous-batch-page="hasPreviousBatchPage"
+        :selected-batch-id="selectedBatchId"
+        :import-result="importResult"
+        :import-summary="importSummary"
+        :selected-batch="selectedBatch"
+        :can-promote-selected="canPromoteSelected"
+        :promote-result="promoteResult"
+        :loading="loading"
+        @refresh="loadBatchHistory"
+        @select="loadBatchDetail"
+        @promote="promoteSelectedBatch"
+        @first="goToBatchPage(1)"
+        @prev="goToBatchPage(batchPage - 1)"
+        @next="goToBatchPage(batchPage + 1)"
+        @last="goToBatchPage(batchTotalPages)"
+      />
 
-      <Card v-if="importResult" class="space-y-3 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h2 class="text-lg font-semibold text-surface-light">Import batch</h2>
-            <p class="text-sm text-surface-mid">{{ importSummary }}</p>
-            <p v-if="importResult.error_count > 0" class="text-xs text-status-warning">
-              {{ importResult.error_count }} row(s) failed parsing and were stored with errors.
-            </p>
-            <p v-if="selectedBatch?.promoted_count" class="text-xs text-status-success mt-1">
-              {{ selectedBatch.promoted_count }} row(s) promoted to embed storage.
-            </p>
-          </div>
-          <BaseButton
-            v-if="canPromoteSelected"
-            variant="secondary"
-            :disabled="loading"
-            @click="promoteSelectedBatch"
-          >
-            {{ loading ? "working..." : "promote pipe embed rows" }}
-          </BaseButton>
-        </div>
-        <p v-if="promoteResult" class="text-xs text-surface-mid">
-          Promoted {{ promoteResult.promoted }}, skipped {{ promoteResult.skipped }}
-          <span v-if="promoteResult.errors.length"
-            >, {{ promoteResult.errors.length }} error(s)</span
-          >.
-        </p>
-      </Card>
-
-      <Card v-if="result" class="space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h2 class="text-lg font-semibold text-surface-light">Results</h2>
-            <p class="text-xs text-surface-mid mt-1">{{ metaSummary }}</p>
-          </div>
-          <div class="flex gap-2">
-            <IconCopyButton aria-label="copy json" @click="copyResult" />
-            <BaseButton variant="ghost" @click="downloadResult">download json</BaseButton>
-            <BaseButton variant="ghost" @click="showRawJson = !showRawJson">
-              {{ showRawJson ? "hide raw json" : "show raw json" }}
-            </BaseButton>
-          </div>
-        </div>
-
-        <div v-if="tableRows.length && tableColumns.length" class="overflow-x-auto">
-          <table class="min-w-full text-sm text-left">
-            <thead>
-              <tr class="border-b border-surface-border text-surface-mid">
-                <th v-for="column in tableColumns" :key="column" class="px-3 py-2 font-medium">
-                  {{ column }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(row, index) in tableRows.slice(0, 50)"
-                :key="index"
-                class="border-b border-surface-border/60"
-              >
-                <td
-                  v-for="column in tableColumns"
-                  :key="column"
-                  class="px-3 py-2 text-surface-light"
-                >
-                  {{ formatCell(row[column]) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <p v-if="tableRows.length > 50" class="text-xs text-surface-mid mt-2">
-            Showing first 50 of {{ tableRows.length }} rows.
-          </p>
-        </div>
-
-        <div v-if="importResult?.errors.length" class="alert-surface-warning p-4 space-y-2">
-          <h3 class="text-sm font-medium">Parse errors</h3>
-          <ul class="text-xs text-surface-mid space-y-1">
-            <li v-for="(error, index) in importResult.errors.slice(0, 10)" :key="index">
-              Line {{ error.line_number ?? "?" }}: {{ error.message }}
-            </li>
-          </ul>
-        </div>
-
-        <pre
-          v-if="showRawJson"
-          class="overflow-x-auto rounded-md bg-surface-dark border border-surface-border p-4 text-xs text-surface-light"
-          >{{ resultJson }}</pre>
-      </Card>
+      <DataExtractResultPanel
+        v-if="result"
+        v-model:show-raw-json="showRawJson"
+        :result="result"
+        :import-result="importResult"
+        :meta-summary="metaSummary"
+        :table-columns="tableColumns"
+        :table-rows="tableRows"
+        :result-json="resultJson"
+        @copy="copyResult"
+        @download="downloadResult"
+      />
     </div>
   </AdminPageLayout>
 </template>

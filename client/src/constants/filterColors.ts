@@ -3,40 +3,38 @@ import { statusBadgeClass } from "@/constants/taskStatus";
 /** Neutral styling for unfiltered / "all" chips and tiles. */
 export const FILTER_CHIP_NEUTRAL = "text-surface-light bg-surface-dark";
 
+/** Pale 1xx–5xx + muted/neutral — product chips only (no golden/violet). */
 const SEMANTIC = {
-  success: "text-status-success bg-status-success/10 border-status-success/30",
-  warning: "text-status-warning bg-status-warning/10 border-status-warning/30",
-  error: "text-status-error bg-status-error/10 border-status-error/30",
   info: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
-  golden: "text-accent-golden bg-accent-golden/10 border-accent-golden/30",
-  violet: "text-accent-violet bg-accent-violet/10 border-accent-violet/30",
+  success: "text-status-success bg-status-success/10 border-status-success/30",
+  warning: "text-status-cyan bg-status-cyan/10 border-status-cyan/30",
+  error: "text-status-error bg-status-error/10 border-status-error/30",
+  critical: "text-status-critical bg-status-critical/10 border-status-critical/30",
   muted: "text-surface-mid bg-surface-mid/10 border-surface-border",
   neutral: "bg-surface-border text-surface-mid border-surface-border",
-  security: "bg-accent-red/20 text-accent-red border-accent-red/30",
-  amber: "bg-accent-amber/20 text-accent-amber border-accent-amber/30",
 } as const;
 
 const NEWS_STATUS_CLASS: Record<string, string> = {
   draft: SEMANTIC.info,
   published: SEMANTIC.success,
-  unpublished: SEMANTIC.golden,
+  unpublished: SEMANTIC.warning,
   failed: SEMANTIC.error,
 };
 
 const FEEDBACK_STATUS_CLASS: Record<string, string> = {
   unread: SEMANTIC.info,
   read: SEMANTIC.muted,
-  archived: SEMANTIC.golden,
+  archived: SEMANTIC.warning,
 };
 
 const USER_STATUS_CLASS: Record<string, string> = {
-  verified: "bg-accent-golden/15 text-accent-golden border-accent-golden/30",
+  verified: "bg-status-cyan/15 text-status-cyan border-status-cyan/30",
   unverified: SEMANTIC.neutral,
   protected: "bg-accent-blue/15 text-accent-blue border-accent-blue/30",
 };
 
 const USER_ROLE_CLASS: Record<string, string> = {
-  superuser: "bg-accent-violet/15 text-accent-violet border-accent-violet/30",
+  superuser: "bg-status-critical/15 text-status-critical border-status-critical/30",
   custom: "bg-surface-dark text-surface-mid border-surface-border",
 };
 
@@ -46,8 +44,8 @@ const AUDIT_CATEGORY_CLASS: Record<string, string> = {
 };
 
 const LOG_LEVEL_CLASS: Record<string, string> = {
-  error: SEMANTIC.security,
-  warning: SEMANTIC.amber,
+  error: SEMANTIC.error,
+  warning: SEMANTIC.warning,
   debug: SEMANTIC.neutral,
   info: SEMANTIC.info,
 };

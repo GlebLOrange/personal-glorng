@@ -1,34 +1,11 @@
 import { ref, type Ref } from "vue";
 
 import { api } from "@/composables/useApi";
-import { PLATFORM_SERVICES, type PlatformCatalog, type PlatformService } from "@/platform/services";
+import { PLATFORM_SERVICES, type PlatformService } from "@/platform/services";
 import { useAuthStore } from "@/stores/auth";
 import { isAiChatEnabled } from "@/utils/featureFlags";
 import { SUPERUSER_PERMISSION } from "@/utils/permissions";
-
-function filterAiChat(services: PlatformService[]): PlatformService[] {
-  const auth = useAuthStore();
-  const isSuperuser = auth.user?.permissions.includes(SUPERUSER_PERMISSION) ?? false;
-  if (isAiChatEnabled() && isSuperuser) return services;
-  return services.filter((s) => s.slug !== "ai-chat");
-}
-
-function mapApiService(s: PlatformCatalog["services"][number]): PlatformService {
-  return {
-    slug: s.slug,
-    name: s.name,
-    category: s.category,
-    categoryLabel: s.categoryLabel,
-    description: s.description,
-    apiPrefix: s.apiPrefix,
-    adminRoute: s.adminRoute,
-    icon: s.icon,
-    capabilities: s.capabilities,
-    external: s.external,
-    public: s.public,
-    publicRoute: s.publicRoute,
-  };
-}
+import { safeNavigationHref } from "@/utils/safeUrl";
 
 type ApiPlatformService = {
   slug: string;
@@ -45,7 +22,41 @@ type ApiPlatformService = {
   public_route?: string | null;
 };
 
-const services = ref<PlatformService[]>(filterAiChat(PLATFORM_SERVICES));
+function filterAiChat(services: PlatformService[]): PlatformService[] {
+  const auth = useAuthStore();
+  const isSuperuser = auth.user?.permissions.includes(SUPERUSER_PERMISSION) ?? false;
+  if (isAiChatEnabled() && isSuperuser) return services;
+  return services.filter((s) => s.slug !== "ai-chat");
+}
+
+/**
+ * Map an API catalog row into a PlatformService, or null when admin_route is unsafe.
+ * public_route is cleared (not dropped) when unsafe.
+ */
+export function mapApiPlatformService(s: ApiPlatformService): PlatformService | null {
+  const adminRoute = safeNavigationHref(s.admin_route);
+  if (!adminRoute) return null;
+
+  const publicRaw = s.public_route?.trim();
+  const publicRoute = publicRaw ? (safeNavigationHref(publicRaw) ?? undefined) : undefined;
+
+  return {
+    slug: s.slug,
+    name: s.name,
+    category: s.category,
+    categoryLabel: s.category_label,
+    description: s.description,
+    apiPrefix: s.api_prefix,
+    adminRoute,
+    icon: s.icon,
+    capabilities: s.capabilities,
+    external: s.external,
+    public: s.public,
+    publicRoute,
+  };
+}
+
+const services = ref<PlatformService[]>(PLATFORM_SERVICES);
 const loaded = ref(false);
 let loadPromise: Promise<void> | null = null;
 
@@ -54,6 +65,11 @@ export function usePlatformCatalog(): {
   services: Ref<PlatformService[]>;
   load: () => Promise<void>;
 } {
+  // Filter when a Vue/Pinia context exists (not at module import time).
+  if (!loaded.value) {
+    services.value = filterAiChat(PLATFORM_SERVICES);
+  }
+
   async function load(): Promise<void> {
     if (loaded.value) {
       services.value = filterAiChat(services.value);
@@ -66,22 +82,9 @@ export function usePlatformCatalog(): {
             services: ApiPlatformService[];
           }>("/platform/catalog");
           services.value = filterAiChat(
-            data.services.map((s) =>
-              mapApiService({
-                slug: s.slug,
-                name: s.name,
-                category: s.category,
-                categoryLabel: s.category_label,
-                description: s.description,
-                apiPrefix: s.api_prefix,
-                adminRoute: s.admin_route,
-                icon: s.icon,
-                capabilities: s.capabilities,
-                external: s.external,
-                public: s.public,
-                publicRoute: s.public_route ?? undefined,
-              }),
-            ),
+            data.services
+              .map(mapApiPlatformService)
+              .filter((service): service is PlatformService => service !== null),
           );
         } catch {
           services.value = filterAiChat(PLATFORM_SERVICES);

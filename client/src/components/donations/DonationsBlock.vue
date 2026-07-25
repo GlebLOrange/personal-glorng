@@ -81,7 +81,7 @@ async function startStripeCheckout(): Promise<void> {
       </a>
     </div>
 
-    <p v-if="checkoutError" class="text-label text-accent-golden" role="status">
+    <p v-if="checkoutError" class="text-label text-status-error" role="status">
       Could not open card checkout. Please try again in a moment.
     </p>
   </div>

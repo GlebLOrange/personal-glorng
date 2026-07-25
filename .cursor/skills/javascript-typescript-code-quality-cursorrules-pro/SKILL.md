@@ -17,7 +17,7 @@ Use this rule when editing client TypeScript or Vue components.
 
 ## Vue And Events
 
-- Prefix event handlers with `handle` when they are passed to templates or child components.
+- Name template/child event handlers clearly: prefer `handle*` **or** a clear verb (`openCreate`, `runIngest`, `setStatusFilter`). Stay consistent within a file; do not mass-rename just to switch styles.
 - Move complex template expressions into `computed` values or small helpers.
 - Keep business workflows in stores/composables instead of large page components.
 - Use conditional classes or computed class lists when it improves readability; do not over-abstract one-off classes.

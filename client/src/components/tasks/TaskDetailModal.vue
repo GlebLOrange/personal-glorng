@@ -126,7 +126,7 @@ watch(
                 'shrink-0 rounded-full px-2 py-0.5 text-xs',
                 reminder.sent
                   ? 'bg-status-success/10 text-status-success'
-                  : 'bg-status-warning/10 text-status-warning',
+                  : 'bg-status-cyan/10 text-status-cyan',
               ]"
             >
               {{ reminder.sent ? "delivered" : "upcoming" }}

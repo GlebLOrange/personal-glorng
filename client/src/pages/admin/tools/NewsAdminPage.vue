@@ -1,66 +1,26 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
-import { useRouter } from "vue-router";
-
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import NewsAdminArticleList from "@/components/news/NewsAdminArticleList.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import NewsTabs from "@/components/news/NewsTabs.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
-import StatusBadge from "@/components/ui/StatusBadge.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
-import {
-  NEWS_SUMMARY_MAX_LENGTH,
-  NEWS_THEME_LIMIT,
-  NEWS_THEME_SET,
-  NEWS_TITLE_MAX_LENGTH,
-} from "@/constants/news";
 import { newsStatusClass } from "@/constants/filterColors";
-import { formatNewsDate, useNews } from "@/composables/useNews";
-import { useNotify } from "@/composables/useNotify";
-import { usePermissions } from "@/composables/usePermissions";
-import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
-import type {
-  NewsArticle,
-  NewsArticleCreate,
-  NewsArticleFormData,
-  NewsArticleUpdate,
-  NewsStatus,
-} from "@/types";
-import { normalizeHttpUrl, titleFromNewsLink } from "@/utils/newsForms";
-import { safeNavigationHref } from "@/utils/safeUrl";
-
-type DrawerMode = "create" | "edit";
-type StatusFilter = "" | NewsStatus;
-
-const STATUS_FILTERS: { label: string; value: NewsStatus }[] = [
-  { label: "draft", value: "draft" },
-  { label: "published", value: "published" },
-  { label: "unpublished", value: "unpublished" },
-  { label: "failed", value: "failed" },
-];
-
-const router = useRouter();
-const { can } = usePermissions();
-const { toast } = useNotify();
-const canWrite = computed(() => can("news", "write"));
-const canManageSources = computed(() => can("news-sources", "read"));
-const drawerOpen = ref(false);
-const drawerMode = ref<DrawerMode>("create");
-const editingArticleId = ref<number | null>(null);
-const form = ref<NewsArticleFormData>(emptyForm());
-const lastAutoTitle = ref<string | null>(null);
-const metadataRequestId = ref(0);
-const statusFilter = ref<StatusFilter>("");
-const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
+import { STATUS_FILTERS, useNewsAdmin } from "@/composables/useNewsAdmin";
 
 const {
+  canWrite,
+  canManageSources,
+  drawerOpen,
+  drawerMode,
+  form,
+  statusFilter,
   articles,
   sources,
   page,
@@ -71,349 +31,24 @@ const {
   actionLoading,
   hasNextPage,
   hasPreviousPage,
-  loadNews,
-  loadSources,
+  hasActiveFilters,
+  activeFilterLabel,
+  emptyFilterDescription,
+  setStatusFilter,
+  clearFilters,
+  reloadAdminNews,
   goToPage,
-  ingestNews,
-  loadArticleMetadata,
-  createArticle,
-  updateArticle,
-  deleteArticle,
-  repostToTelegram,
-} = useNews();
-
-const hasActiveFilters = computed(() => Boolean(statusFilter.value));
-const activeFilterLabel = computed(
-  () => STATUS_FILTERS.find((chip) => chip.value === statusFilter.value)?.label,
-);
-
-function setStatusFilter(next: StatusFilter): void {
-  statusFilter.value = next;
-  page.value = 1;
-  filterDropdownRef.value?.close();
-  void loadAdminNews();
-}
-
-function clearFilters(): void {
-  statusFilter.value = "";
-  page.value = 1;
-  filterDropdownRef.value?.close();
-  void loadAdminNews();
-}
-
-const emptyFilterDescription = computed(() => {
-  if (!statusFilter.value) {
-    return "No news articles yet. Run ingestion after configuring trusted sources.";
-  }
-  return `No ${statusFilter.value} articles match this filter.`;
-});
-
-async function reloadAdminNews(): Promise<void> {
-  await loadNews({ admin: true, status: statusFilter.value || undefined });
-}
-
-useScrollListFingerprint(
-  () => `${statusFilter.value}:${page.value}:${total.value}:${articles.value[0]?.id ?? ""}`,
-);
-
-function emptyForm(): NewsArticleFormData {
-  return {
-    slug: "",
-    status: "draft",
-    source_id: null,
-    source_name: "",
-    source_url: "",
-    source_feed_url: "",
-    source_published_at: "",
-    original_title: "",
-    title: "",
-    summary: "",
-    bullets: [],
-    themes: "world",
-    language: "en",
-    published_at: "",
-    telegram_message_id: "",
-    ai_model: "",
-    ai_input_hash: "",
-    ingest_error: "",
-  };
-}
-
-function formFromArticle(article: NewsArticle): NewsArticleFormData {
-  return {
-    slug: article.slug,
-    status: article.status,
-    source_id: article.source_id,
-    source_name: article.source_name,
-    source_url: article.source_url,
-    source_feed_url: article.source_feed_url,
-    source_published_at: article.source_published_at?.slice(0, 16) ?? "",
-    original_title: article.original_title,
-    title: article.title,
-    summary: article.summary,
-    bullets: [],
-    themes: article.themes.join(", "),
-    language: article.language,
-    published_at: article.published_at?.slice(0, 16) ?? "",
-    telegram_message_id: article.telegram_message_id?.toString() ?? "",
-    ai_model: article.ai_model ?? "",
-    ai_input_hash: article.ai_input_hash ?? "",
-    ingest_error: article.ingest_error ?? "",
-  };
-}
-
-function parsedThemes(): string[] {
-  return form.value.themes
-    .split(",")
-    .map((theme) => theme.trim())
-    .filter(Boolean);
-}
-
-function canReplaceAutoValue(currentValue: string, lastAutoValue: string | null): boolean {
-  return !currentValue.trim() || (lastAutoValue !== null && currentValue === lastAutoValue);
-}
-
-function normalizedDateTime(value: string): string | null {
-  if (!value.trim()) return null;
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
-}
-
-function normalizedSourcePublishedAt(): string | null {
-  return normalizedDateTime(form.value.source_published_at);
-}
-
-function optionalText(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed || null;
-}
-
-function sourcePublishedAtPayload(): string | null {
-  return normalizedSourcePublishedAt();
-}
-
-function sourceUrlPayload(): string | null {
-  return normalizeHttpUrl(form.value.source_url);
-}
-
-function sourceFeedUrlPayload(): string | undefined {
-  const sourceFeedUrl = normalizeHttpUrl(form.value.source_feed_url);
-  return sourceFeedUrl ?? undefined;
-}
-
-function slugPayload(): string | undefined {
-  const slug = form.value.slug.trim();
-  return slug || undefined;
-}
-
-function applySource(sourceId: number | null): void {
-  const source = sources.value.find((item) => item.id === sourceId);
-  form.value = {
-    ...form.value,
-    source_id: sourceId,
-    source_name: source?.name ?? form.value.source_name,
-    source_feed_url: source?.feed_url ?? form.value.source_feed_url,
-  };
-}
-
-async function hydrateFromSourceUrl(sourceUrl: string): Promise<void> {
-  const requestId = metadataRequestId.value + 1;
-  metadataRequestId.value = requestId;
-  const metadata = await loadArticleMetadata(sourceUrl);
-  if (!metadata || requestId !== metadataRequestId.value) return;
-  await loadSources();
-  const nextValues: Partial<NewsArticleFormData> = {
-    source_url: metadata.source_url,
-    source_id: metadata.source_id,
-    source_name: metadata.source_name,
-    source_feed_url: metadata.source_feed_url,
-  };
-  if (metadata.title && canReplaceAutoValue(form.value.title, lastAutoTitle.value)) {
-    nextValues.title = metadata.title;
-    lastAutoTitle.value = metadata.title;
-  }
-  form.value = { ...form.value, ...nextValues };
-}
-
-function dateIsInvalid(value: string, normalizedValue: string | null): boolean {
-  return Boolean(value.trim()) && normalizedValue === null;
-}
-
-function withSourceUrlDefaults(nextForm: NewsArticleFormData): NewsArticleFormData {
-  const sourceUrl = normalizeHttpUrl(nextForm.source_url);
-  if (!sourceUrl) return { ...nextForm, source_feed_url: "" };
-
-  const nextValues: Partial<NewsArticleFormData> = {
-    source_feed_url: sourceUrl,
-  };
-  const autoTitle = titleFromNewsLink(sourceUrl);
-  if (autoTitle && canReplaceAutoValue(nextForm.title, lastAutoTitle.value)) {
-    nextValues.title = autoTitle;
-    lastAutoTitle.value = autoTitle;
-  }
-  return { ...nextForm, ...nextValues };
-}
-
-async function updateForm(nextForm: NewsArticleFormData): Promise<void> {
-  if (nextForm.source_id !== form.value.source_id) {
-    applySource(nextForm.source_id);
-    return;
-  }
-  if (nextForm.source_url !== form.value.source_url) {
-    const nextWithDefaults = withSourceUrlDefaults(nextForm);
-    form.value = nextWithDefaults;
-    const sourceUrl = normalizeHttpUrl(nextWithDefaults.source_url);
-    if (sourceUrl) await hydrateFromSourceUrl(sourceUrl);
-    return;
-  }
-  form.value = nextForm;
-}
-
-function validateForm(): boolean {
-  const title = form.value.title.trim();
-  const summary = form.value.summary.trim();
-  const themes = parsedThemes();
-
-  if (!title) {
-    toast("Title is required", "error");
-    return false;
-  }
-  if (title.length > NEWS_TITLE_MAX_LENGTH) {
-    toast(`Title must be ${NEWS_TITLE_MAX_LENGTH} characters or fewer`, "error");
-    return false;
-  }
-  if (!summary) {
-    toast("Summary is required", "error");
-    return false;
-  }
-  if (summary.length > NEWS_SUMMARY_MAX_LENGTH) {
-    toast(`Summary must be ${NEWS_SUMMARY_MAX_LENGTH} characters or fewer`, "error");
-    return false;
-  }
-  const sourceUrl = sourceUrlPayload();
-  if (!sourceUrl) {
-    toast("Source URL must start with http:// or https://", "error");
-    return false;
-  }
-  if (themes.length < 1) {
-    toast("Add at least one theme", "error");
-    return false;
-  }
-  if (themes.length > NEWS_THEME_LIMIT) {
-    toast(`Choose no more than ${NEWS_THEME_LIMIT} themes`, "error");
-    return false;
-  }
-  if (themes.some((theme) => !NEWS_THEME_SET.has(theme))) {
-    toast("Choose only supported news themes", "error");
-    return false;
-  }
-  if (dateIsInvalid(form.value.source_published_at, normalizedSourcePublishedAt())) {
-    toast("Source published date is invalid", "error");
-    return false;
-  }
-  return true;
-}
-
-function buildCreatePayload(): NewsArticleCreate {
-  const sourceUrl = sourceUrlPayload() ?? form.value.source_url.trim();
-  const title = form.value.title.trim();
-  const originalTitle = form.value.original_title.trim() || title;
-  return {
-    status: form.value.status,
-    source_id: form.value.source_id,
-    source_name: optionalText(form.value.source_name) ?? undefined,
-    source_url: sourceUrl,
-    source_feed_url: sourceFeedUrlPayload(),
-    source_published_at: sourcePublishedAtPayload(),
-    original_title: originalTitle,
-    title,
-    summary: form.value.summary.trim(),
-    themes: parsedThemes(),
-    language: form.value.language.trim() || "en",
-  };
-}
-
-function buildUpdatePayload(): NewsArticleUpdate {
-  return {
-    ...buildCreatePayload(),
-    slug: slugPayload(),
-  };
-}
-
-async function loadAdminNews(): Promise<void> {
-  await loadNews({ admin: true, status: statusFilter.value || undefined });
-}
-
-async function runIngest(): Promise<void> {
-  await ingestNews();
-  await reloadAdminNews();
-}
-
-async function setStatus(articleId: number, status: NewsStatus): Promise<void> {
-  await updateArticle(articleId, { status });
-  await reloadAdminNews();
-}
-
-async function repost(articleId: number): Promise<void> {
-  await repostToTelegram(articleId);
-  await reloadAdminNews();
-}
-
-function openCreate(): void {
-  drawerMode.value = "create";
-  editingArticleId.value = null;
-  lastAutoTitle.value = null;
-  form.value = emptyForm();
-  drawerOpen.value = true;
-}
-
-function openEdit(article: NewsArticle): void {
-  drawerMode.value = "edit";
-  editingArticleId.value = article.id;
-  lastAutoTitle.value = null;
-  form.value = formFromArticle(article);
-  drawerOpen.value = true;
-}
-
-function openEditableArticle(article: NewsArticle): void {
-  if (!canWrite.value) return;
-  openEdit(article);
-}
-
-function closeDrawer(): void {
-  drawerOpen.value = false;
-  editingArticleId.value = null;
-}
-
-async function saveDrawer(): Promise<void> {
-  if (!validateForm()) return;
-  if (drawerMode.value === "create") {
-    const created = await createArticle(buildCreatePayload());
-    if (!created) return;
-  } else if (editingArticleId.value) {
-    const updated = await updateArticle(editingArticleId.value, buildUpdatePayload());
-    if (!updated) return;
-  }
-  closeDrawer();
-  await reloadAdminNews();
-}
-
-async function deleteDrawerArticle(): Promise<void> {
-  if (!editingArticleId.value) return;
-  const title = form.value.title.trim() || "this article";
-  if (!window.confirm(`Delete "${title}"? This cannot be undone.`)) return;
-  if (!(await deleteArticle(editingArticleId.value))) return;
-  closeDrawer();
-  await reloadAdminNews();
-}
-
-onMounted(async () => {
-  await Promise.all([reloadAdminNews(), loadSources()]);
-});
-
-watch(page, () => {
-  void loadAdminNews();
-});
+  runIngest,
+  setStatus,
+  repost,
+  openCreate,
+  openEditableArticle,
+  closeDrawer,
+  updateForm,
+  saveDrawer,
+  deleteDrawerArticle,
+  goToSources,
+} = useNewsAdmin();
 </script>
 
 <template>
@@ -439,9 +74,7 @@ watch(page, () => {
           </template>
         </AdminFilterDropdown>
         <template v-if="canManageSources">
-          <ToolbarPillButton family="1xx" @click="router.push('/news/sources')">
-            sources
-          </ToolbarPillButton>
+          <ToolbarPillButton family="1xx" @click="goToSources"> sources </ToolbarPillButton>
         </template>
         <template v-if="canWrite">
           <ToolbarPillButton family="3xx" :disabled="actionLoading" @click="runIngest">
@@ -460,92 +93,15 @@ watch(page, () => {
 
     <ErrorState v-else-if="listError" :message="listError" show-retry @retry="reloadAdminNews" />
 
-    <section v-else-if="articles.length" class="space-y-3 min-w-0">
-      <Card
-        v-for="item in articles"
-        :key="item.id"
-        as="article"
-        variant="compact"
-        class="min-w-0"
-        :class="canWrite ? 'cursor-pointer' : undefined"
-        :hoverable="canWrite"
-        :interactive="canWrite"
-        :role="canWrite ? 'button' : undefined"
-        :tabindex="canWrite ? 0 : undefined"
-        @click="canWrite ? openEditableArticle(item) : undefined"
-        @keydown.enter.prevent="canWrite ? openEditableArticle(item) : undefined"
-      >
-        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
-          <StatusBadge :label="item.status" :class-name="newsStatusClass(item.status)" />
-          <span aria-hidden="true">/</span>
-          <span>{{ item.source_name }}</span>
-          <span aria-hidden="true">/</span>
-          <time :datetime="item.published_at ?? item.created_at">
-            {{ formatNewsDate(item.published_at ?? item.created_at) }}
-          </time>
-          <span v-if="item.telegram_message_id" class="text-accent-blue">
-            Telegram #{{ item.telegram_message_id }}
-          </span>
-        </div>
-
-        <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
-        <p class="text-sm text-surface-mid mb-3 break-words">{{ item.summary }}</p>
-
-        <div class="mb-4 flex flex-wrap gap-2">
-          <span
-            v-for="theme in item.themes"
-            :key="theme"
-            class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid"
-          >
-            {{ theme }}
-          </span>
-        </div>
-
-        <div class="flex flex-wrap gap-2" @click.stop @keydown.stop>
-          <BaseButton
-            v-if="canWrite && item.status !== 'published'"
-            variant="ghost"
-            quiet
-            size="sm"
-            class="!text-status-success hover:enabled:!bg-status-success/10"
-            :disabled="actionLoading"
-            @click="setStatus(item.id, 'published')"
-          >
-            publish
-          </BaseButton>
-          <BaseButton
-            v-if="canWrite && item.status === 'published'"
-            variant="ghost"
-            quiet
-            size="sm"
-            class="!text-accent-golden hover:enabled:!bg-accent-golden/10"
-            :disabled="actionLoading"
-            @click="setStatus(item.id, 'unpublished')"
-          >
-            unpublish
-          </BaseButton>
-          <BaseButton
-            v-if="canWrite"
-            variant="ghost"
-            quiet
-            size="sm"
-            :disabled="actionLoading"
-            @click="repost(item.id)"
-          >
-            repost telegram
-          </BaseButton>
-          <a
-            v-if="safeNavigationHref(item.source_url)"
-            :href="safeNavigationHref(item.source_url) ?? '#'"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center px-3 py-1.5 text-xs text-accent-blue hover:underline"
-          >
-            source
-          </a>
-        </div>
-      </Card>
-    </section>
+    <NewsAdminArticleList
+      v-else-if="articles.length"
+      :articles="articles"
+      :can-write="canWrite"
+      :action-loading="actionLoading"
+      @edit="openEditableArticle"
+      @set-status="setStatus"
+      @repost="repost"
+    />
 
     <EmptyState
       v-else-if="!listLoading && !listError"
