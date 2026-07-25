@@ -23,7 +23,6 @@ const emit = defineEmits<{ submit: []; close: [] }>();
       <BaseInput
         v-model="form.title"
         placeholder="title (what needs doing?)"
-        aria-label="title (what needs doing?)"
       />
       <BaseInput
         v-model="form.scheduled_at"
@@ -33,13 +32,11 @@ const emit = defineEmits<{ submit: []; close: [] }>();
       <BaseInput
         v-model="form.location"
         placeholder="location (optional)"
-        aria-label="location (optional)"
       />
       <textarea
         v-model="form.description"
         rows="3"
         placeholder="notes (optional)"
-        aria-label="notes (optional)"
         :class="[FIELD_INPUT_CLASS, 'h-auto resize-none']"
       />
     </form>

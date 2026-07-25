@@ -96,18 +96,15 @@ async function preview(): Promise<void> {
         v-model="to"
         type="email"
         placeholder="to (recipient@example.com)"
-        aria-label="to (recipient@example.com)"
       />
       <BaseInput
         v-model="subject"
         placeholder="subject"
-        aria-label="subject"
       />
       <BaseTextarea
         v-model="body"
         :rows="6"
         placeholder="body (write your message...)"
-        aria-label="body (write your message...)"
       />
     </form>
 

@@ -17,7 +17,6 @@ const emit = defineEmits<{
         :model-value="search"
         class="min-w-0 flex-1"
         placeholder="search recipe"
-        aria-label="search recipe"
         @update:model-value="emit('update:search', String($event ?? ''))"
       />
       <slot name="actions" />

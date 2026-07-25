@@ -90,7 +90,6 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
       step="0.01"
       min="0.01"
       placeholder="amount (100.00)"
-      aria-label="amount (100.00)"
     />
 
     <div class="flex items-center gap-3">

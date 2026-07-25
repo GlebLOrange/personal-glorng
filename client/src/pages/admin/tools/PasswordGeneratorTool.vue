@@ -75,7 +75,6 @@ async function generatePassword(): Promise<void> {
           v-model.number="length"
           type="number"
           placeholder="length (8–128)"
-          aria-label="length (8–128)"
         />
 
         <fieldset class="space-y-2">
@@ -118,7 +117,6 @@ async function generatePassword(): Promise<void> {
             :model-value="displayPassword"
             readonly
             placeholder="password"
-            aria-label="password"
             class="flex-1 min-w-[12rem] font-mono"
           />
           <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">

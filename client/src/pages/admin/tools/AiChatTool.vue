@@ -139,7 +139,6 @@ onMounted(() => {
           v-model="input"
           rows="2"
           placeholder="Message the assistant..."
-          aria-label="Message the assistant"
           :class="[TEXTAREA_CLASS, 'flex-1 resize-none']"
           @keydown.enter.exact.prevent="handleSend"
         />

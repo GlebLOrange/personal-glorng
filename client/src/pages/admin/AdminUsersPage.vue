@@ -314,7 +314,6 @@ onUnmounted(() => {
             <SearchInput
               v-model="searchQuery"
               placeholder="search users by name or email"
-              aria-label="search users by name or email"
               class="w-full"
             />
           </div>

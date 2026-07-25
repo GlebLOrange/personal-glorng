@@ -164,13 +164,11 @@ function toNullableNumber(value: string | number | null | undefined): number | n
       <BaseInput
         :model-value="form.title"
         placeholder="enter title"
-        aria-label="title"
         @update:model-value="patch({ title: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.image_url"
         placeholder="image url"
-        aria-label="image url"
         @update:model-value="patch({ image_url: toStringValue($event) })"
       />
       <BaseImage
@@ -185,21 +183,18 @@ function toNullableNumber(value: string | number | null | undefined): number | n
           :model-value="form.prep_time"
           type="number"
           placeholder="prep · min"
-          aria-label="prep time in minutes"
           @update:model-value="patch({ prep_time: toNullableNumber($event) })"
         />
         <BaseInput
           :model-value="form.cook_time"
           type="number"
           placeholder="cook · min"
-          aria-label="cook time in minutes"
           @update:model-value="patch({ cook_time: toNullableNumber($event) })"
         />
         <BaseInput
           :model-value="form.servings"
           type="number"
           placeholder="servings"
-          aria-label="servings"
           @update:model-value="patch({ servings: toNullableNumber($event) })"
         />
       </div>
@@ -359,7 +354,6 @@ function toNullableNumber(value: string | number | null | undefined): number | n
           <BaseInput
             :model-value="form.tags"
             placeholder="tags · italian, vegetarian"
-            aria-label="tags"
             @update:model-value="patch({ tags: toStringValue($event) })"
           />
         </div>
@@ -369,7 +363,6 @@ function toNullableNumber(value: string | number | null | undefined): number | n
         :model-value="form.notes"
         :rows="3"
         placeholder="notes · tips, variations"
-        aria-label="notes"
         @update:model-value="patch({ notes: String($event ?? '') })"
       />
     </form>
