@@ -1,90 +1,83 @@
-# PR #422 improvement suggestions
+# PR #419 improvement suggestions
 
-Review target: [CI: add ci-ok gate and fix gitleaks/security workflow](https://github.com/GlebLOrange/personal-glorng/pull/422) (`cursor/ci-workflows-tune` → `main`).
+Review target: [Cursor/disable sentry dev](https://github.com/GlebLOrange/personal-glorng/pull/419) (`cursor/disable-sentry-dev` → `main`).
 
-Verdict: direction is right (`ci-ok` aggregator + path filters + gitleaks restore), but the PR does not currently go green and a few gate edge cases will bite once `main-protection` is enforced. Fix blockers first, then the small correctness/scope items below.
+Verdict: the Sentry change is the right shape (DSN required; `development`/`test` also need `SENTRY_ENABLED=true`) and the new matrix test covers the main env cases. The deployment runbook rewrite is useful but larger than the PR title suggests — land the Sentry guard cleanly, then tighten a few footguns in docs/ops.
 
-## Blockers (CI red on the PR)
+## Scope / PR hygiene
 
-1. **Pass `GITHUB_TOKEN` to gitleaks-action@v3**  
-   Current failure: `GITHUB_TOKEN is now required to scan pull requests`.  
-   In `.github/workflows/security.yml` under the Scan for secrets step:
+1. **Split or rename for clarity**  
+   Title/branch say “disable sentry dev”, but half the diff is a full rewrite of `docs/operations/deployment.md` (profiles → always-on prod services, day-2 `-f` discipline). Prefer either:
+   - two PRs (Sentry + tests first; runbook second), or
+   - a title/body that names both (“Sentry opt-in in dev/test + prod start runbook”).
 
-   ```yaml
-   env:
-     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-     GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+2. **Fill the empty PR body**  
+   Call out the behavior change vs old `sentry_enabled()`: previously `APP_ENV=test` with a DSN alone would initialize Sentry; now it will not. That matters for anyone who copied a DSN into local/`tests` env files.
+
+## Sentry correctness
+
+3. **Document (or add) a staging/prod kill switch**  
+   After this PR, `SENTRY_ENABLED=false` is a no-op whenever `APP_ENV` is `staging`/`production` and `SERVER_SENTRY_DSN` is set. That matches the docstring, but operators may assume the flag still disables shipping. Options:
+   - keep current semantics and put a one-line warning in `.env.example` + configuration docs (“ignored outside development/test; clear the DSN to disable”), or
+   - honor `SENTRY_ENABLED=false` as an emergency override in all envs (DSN + enabled).
+
+4. **Mirror Sentry into `.env.production.example`**  
+   The prod template still has no `SERVER_SENTRY_DSN` / `SERVER_SENTRY_RELEASE` / `SENTRY_ENABLED` (and is generally thinner than `.env.example`). Since the deployment doc tells people to copy that file, add the Sentry block there with the prod rule: DSN set ⇒ on; leave DSN blank to stay off.
+
+5. **Tighten the test matrix a little**  
+   Nice coverage already. Two cheap extras would lock the contract:
+   - `SENTRY_ENABLED=true` + empty DSN → still `False` (DSN gate wins).
+   - unknown/`prod` typo `APP_ENV` with DSN set → document expected behavior (today: treated as non-dev/test ⇒ on). If that is intentional, assert it; if not, validate `APP_ENV` against an allow-list.
+
+6. **Client side is docs-only — say so**  
+   `client/src/constants/sentry.ts` already opt-in on Vite `DEV`; this PR only sets `VITE_SENTRY_ENABLED=false` in `client/.env.development` and comments `.env.example`. Fine, but the PR body should note “no client logic change” so reviewers do not hunt for a TS diff.
+
+## Deployment runbook
+
+7. **Day-2 commands omit the cache overlay that `make prod` uses**  
+   Section 3’s equivalent includes `-f docker-compose.cache.yml`, but section 6 (`logs` / `down` / `exec`) and the Celery DLQ samples use only `-f docker-compose.prod.yml`. That can leave `redis-cache` unmanaged or confuse project name/state. Prefer one documented compose invocation, e.g. a Make variable:
+
+   ```makefile
+   COMPOSE_PROD = docker compose -f docker-compose.prod.yml -f docker-compose.cache.yml
+   prod-logs:
+   	$(COMPOSE_PROD) logs -f
+   prod-down:
+   	$(COMPOSE_PROD) down
    ```
 
-2. **Frontend / npm_audit `npm ci` peer conflict**  
-   `typescript@7.0.2` vs `typescript-eslint@8.65.0` peer `typescript@">=4.8.4 <6.1.0"`.  
-   Path filters force frontend + npm_audit because this PR touches `ci.yml` / `security.yml`, so a pre-existing client peer mismatch now fails the merge gate path. Either:
-   - align eslint stack to TS 7 (or pin TS back to supported range), or
-   - temporarily use `npm ci --legacy-peer-deps` in CI/audit **only** with a tracked follow-up.
+   …and point the runbook at those targets instead of repeating fragile `-f` lists.
 
-3. **Backend Ruff failures**  
-   Backend job reports 5 Ruff errors (some auto-fixable). Clean those on the PR branch (or confirm they are pre-existing on `main` and fix in a tiny preceding PR so `ci-ok` is honest).
+8. **`make logs` / `make down` footgun**  
+   Calling out that bare Make targets miss prod compose is good. Going further: either add `prod-logs`/`prod-down` (above) or make `logs`/`down` refuse to run when a prod project is detected, so the doc warning is not the only safety net.
 
-4. **Docs job: stale `docs/generated`**  
-   Run `make docs-generate` and commit, or drop `server/app/**` from the docs filter if this PR should not require a docs regen.
+9. **Todobot always-on crash-loop**  
+   The note to set `TELEGRAM_BOT_TO_DO_TOKEN` is necessary. Stronger options if this bites in real deploys:
+   - Compose `profiles: [bot]` on `todobot` even in prod, or
+   - start the bot only when the token is non-empty (entrypoint guard) so a blank token does not restart forever.
 
-## Gate correctness
+10. **Optional search/Elasticsearch row dropped**  
+    Old “Optional compose profiles” mentioned a search overlay; the new table keeps Postgres / AI search / Cloudflare but not Elasticsearch. If prod search is still a supported path, restore one row pointing at `docker-compose.search.yml` + `ELASTICSEARCH_URL`; if AI-only is the supported prod path, say that explicitly so the omission is intentional.
 
-5. **Fail `ci-ok` when `changes` fails**  
-   Today `ci-ok` uses `if: always()` and treats empty selection outputs as “skipped”, so a failed `changes` job can still yield a green aggregator. Add an early hard fail:
+## Docs / config consistency
 
-   ```bash
-   if [ "${{ needs.changes.result }}" != "success" ]; then
-     echo "changes job failed"
-     exit 1
-   fi
-   ```
+11. **Configuration table wording**  
+    `docs/reference/configuration.md` already explains opt-in vs DSN-gated. Add a short “Disable in staging/prod” line (clear DSN / omit from process env) next to `SENTRY_ENABLED` so the ignored-flag case is not buried in prose.
 
-6. **Avoid all-skip green merges for risky root files**  
-   PRs that only touch `README.md`, `AGENTS.md`, `.env.example`, `shared/**`, `scripts/**` (non-docs), `deploy/**`, etc. currently skip every suite and still pass `ci-ok`. Prefer either:
-   - a catch-all `core` filter that forces backend (or a cheap smoke job), or
-   - “if no filter matched → run backend + frontend” fallback in the Select jobs step.
+12. **Sentry releases section vs runtime enablement**  
+    The restored “Sentry releases (optional CI)” block covers sourcemap upload secrets but not runtime `SERVER_SENTRY_DSN` on the host. One sentence cross-link to configuration (and the new prod `.env` keys) would connect release upload to “events actually flow”.
 
-7. **Widen filters that are too narrow for this repo**  
-   - backend: also `shared/**`, `Makefile` targets that affect server, relevant compose files, `.env.example` when settings contract changes.  
-   - e2e: already broad; keep forcing frontend when e2e is selected (good).  
-   - postgres: identical to backend today — collapse to one output or `needs: backend` to avoid duplicate path lists.
+## Test plan additions for #419
 
-8. **Timeouts may be tight**  
-   Backend `timeout-minutes: 7` with parallel Ruff/Mypy + pytest+cov is aggressive on cold cache. Prefer 10–12 until you have p95 job timings from a few green runs.
-
-## Security workflow
-
-9. **Add a `security-ok` aggregator (optional but consistent)**  
-   Ruleset only requires `gitleaks`, so skipped/failed `pip_audit` / `npm_audit` are easy to miss in the UI. A small aggregator (same pattern as `ci-ok`) makes the workflow status obvious without changing the ruleset yet.
-
-10. **Pin / document gitleaks version behavior**  
-    Action installs its own binary (`8.24.3` observed). Fine for now; if scans become noisy or flaky, pin `GITLEAKS_VERSION` explicitly so upgrades are intentional.
-
-11. **npm audit install vs audit-only**  
-    Full `npm ci` is heavy (and currently broken on peers). Prefer `npm audit --omit=dev` against the lockfile where possible, or `npm ci --ignore-scripts` once peers are fixed, to keep the security job cheap.
-
-## Scope / product hygiene on the same PR
-
-12. **Split unrelated changes if you want a minimal unblock PR**  
-    The CI gate fix is mixed with: lite-as-default Make/compose, `.env.example` Celery/logging defaults, middleware health-path skip, skills `.gitignore`, Sentry workflow hard-disable, docs churn. A thin PR that only lands `ci.yml` + `security.yml` (+ checklist note) unblocks `#419`/`#420` faster; follow with the lite-default stack PR.
-
-13. **Document existing-clone migration for env defaults**  
-    Changing `.env.example` to `CELERY_TASK_ALWAYS_EAGER=true` / `LOG_REQUESTS=false` does not update existing `.env` files. One short note in `docs/guide/development.md` (“re-copy or set these two keys”) avoids surprise broker dependency in local lite.
-
-14. **Sentry workflow `if: false`**  
-    Hard-disable is clear for development. Prefer keeping the tag trigger in comments as a copy-paste block (already partly done) and linking the devops checklist row so restore is one checklist item, not archaeology.
-
-## Test plan additions for #422
-
-- [ ] Confirm gitleaks job is green with explicit `GITHUB_TOKEN`.
-- [ ] Confirm `ci-ok` fails when any selected job fails **and** when `changes` fails.
-- [ ] Open a README-only draft PR and decide whether all-skip → green is acceptable once the ruleset is Active.
-- [ ] After merge, record the exact check names shown in the PR UI before enabling `main-protection`.
+- [ ] With `APP_ENV=development`, DSN set, `SENTRY_ENABLED=false` → no Sentry init (API + Celery worker).
+- [ ] Same with `SENTRY_ENABLED=true` → init once; no events from pytest unless explicitly opted in.
+- [ ] Staging/production with DSN set and `SENTRY_ENABLED=false` → confirm intended behavior (on today).
+- [ ] Vite DEV: default no client events; `VITE_SENTRY_ENABLED=true` + DSN sends a test error.
+- [ ] Fresh host: copy `.env.production.example` → `make prod` → health/ready; day-2 logs/down use the same compose file set as start (including cache overlay).
 
 ## Suggested apply order
 
-1. `GITHUB_TOKEN` for gitleaks (unblocks required check).  
-2. Frontend peer / Ruff / docs-generated so `ci-ok` can go green.  
-3. `ci-ok` fail-on-`changes` + filter fallback.  
-4. Optionally split lite-default / logging / Sentry disable into a follow-up.
+1. PR body + title/scope clarity (Sentry vs runbook).  
+2. `.env.production.example` Sentry keys + kill-switch docs.  
+3. One extra sentry unit case (enabled flag without DSN).  
+4. `prod-logs` / `prod-down` (or fix day-2 `-f` lists to include cache).  
+5. Optional follow-up: todobot guard / search row / APP_ENV allow-list.
