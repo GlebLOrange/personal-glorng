@@ -105,11 +105,11 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `SENTRY_ENABLED` | `false` | Enable server Sentry |
+| `SENTRY_ENABLED` | `false` | Opt-in for server/worker Sentry when `APP_ENV` is `development` or `test` (staging/production enable when DSN is set) |
 | `SERVER_SENTRY_DSN` | | DSN |
 | `SERVER_SENTRY_RELEASE` | | Release tag |
 
-Client: `VITE_SENTRY_*` in `client/.env.development` or commented block in `.env.example`.
+Client: `VITE_SENTRY_ENABLED=false` in `client/.env.development` (Vite DEV needs `VITE_SENTRY_ENABLED=true` + DSN). Prod builds stay on when a DSN is set unless `VITE_SENTRY_ENABLED=false`. See also commented `VITE_SENTRY_*` in `.env.example`.
 
 ## Telegram bot
 
