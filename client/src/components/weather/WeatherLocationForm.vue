@@ -41,7 +41,7 @@ async function submit(): Promise<void> {
       </h2>
       <ToolbarPillButton
         type="submit"
-        family="1xx"
+        family="2xx"
         class="ml-auto"
         aria-label="add location"
         :disabled="saving || !city.trim() || props.disabled"

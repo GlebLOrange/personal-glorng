@@ -151,7 +151,7 @@ function onCategoryRowClick(category: ExpenseCategory): void {
           placeholder="category name"
           class="w-full min-w-0 flex-1"
         />
-        <ToolbarPillButton type="submit" family="1xx" class="shrink-0">
+        <ToolbarPillButton type="submit" family="2xx" class="shrink-0">
           + category
         </ToolbarPillButton>
       </form>

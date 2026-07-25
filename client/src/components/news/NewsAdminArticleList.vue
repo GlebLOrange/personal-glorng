@@ -97,7 +97,7 @@ const emit = defineEmits<{
           :href="safeNavigationHref(item.source_url) ?? '#'"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center px-3 py-1.5 text-xs text-accent-blue hover:underline"
+          class="inline-flex items-center px-3 py-1.5 text-xs underline underline-offset-2"
         >
           source
         </a>

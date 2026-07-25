@@ -104,7 +104,7 @@ function editRecipeFromCard(recipe: Recipe): void {
       />
       <ToolbarPillButton
         v-if="canWrite"
-        family="1xx"
+        family="2xx"
         class="ml-auto"
         :disabled="listLoading"
         @click="openCreate"
@@ -157,7 +157,7 @@ function editRecipeFromCard(recipe: Recipe): void {
           <BaseButton v-if="hasFilters" variant="ghost" size="sm" @click="clearFilters">
             clear filters
           </BaseButton>
-          <BaseButton v-else-if="canWrite" variant="ghost" size="sm" @click="openCreate">
+          <BaseButton v-else-if="canWrite" variant="success" size="sm" @click="openCreate">
             + your first recipe
           </BaseButton>
         </template>
