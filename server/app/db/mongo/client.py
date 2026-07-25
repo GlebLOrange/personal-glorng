@@ -10,7 +10,7 @@ from app.core.logging import logger
 async def connect_mongodb(
     url: str,
     database_name: str,
-    **client_kwargs: Any,
+    **client_kwargs: Any,  # noqa: ANN401 — Motor passes through opaque driver kwargs
 ) -> tuple[AsyncIOMotorClient, AsyncIOMotorDatabase]:
     """Open a Motor client and verify connectivity.
 

@@ -83,14 +83,14 @@ def _optional_user_id(request: Request) -> int | None:
     if uid is not None:
         try:
             return int(uid)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             pass
     sub = payload.get("sub")
     if sub is None:
         return None
     try:
         return int(sub)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
 
 
@@ -158,9 +158,7 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
             log_ctx["user_id"] = user_id
 
         path = str(request.url.path)
-        log_request = (
-            settings.LOG_REQUESTS and path not in _SKIP_REQUEST_LOG_PATHS
-        )
+        log_request = settings.LOG_REQUESTS and path not in _SKIP_REQUEST_LOG_PATHS
 
         body_log: str | None = None
         if settings.LOG_REQUEST_BODIES and request.method in {"POST", "PUT", "PATCH"}:

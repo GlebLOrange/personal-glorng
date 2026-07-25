@@ -259,9 +259,8 @@ class Settings(BaseSettings):
             raise ValueError(msg)
         if self.APP_ENV == "production":
             fernet = self.FERNET_SECRET.strip()
-            if (
-                len(fernet) < 32
-                or any(m in fernet.lower() for m in _WEAK_SECRET_MARKERS)
+            if len(fernet) < 32 or any(
+                m in fernet.lower() for m in _WEAK_SECRET_MARKERS
             ):
                 msg = "FERNET_SECRET is too weak for production; use 32+ chars"
                 raise ValueError(msg)
@@ -418,7 +417,7 @@ class Settings(BaseSettings):
     MONGODB_DB: str
     MONGODB_URL: str
     # Motor pool defaults sized for local lite: API + Celery worker/beat + bot
-    # against ~512MB Mongo (≈4×(maxPoolSize+2) sockets worst case).
+    # against ~512MB Mongo (~4x (maxPoolSize+2) sockets worst case).
     MONGODB_MAX_POOL_SIZE: int = 10
     MONGODB_MIN_POOL_SIZE: int = 0
     MONGODB_MAX_IDLE_TIME_MS: int = 60_000
