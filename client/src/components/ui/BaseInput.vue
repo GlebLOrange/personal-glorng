@@ -52,7 +52,7 @@ const describedBy = computed(() => {
   }
   if (props.error) ids.push(errorId.value);
   else if (props.hint) ids.push(hintId.value);
-  if (showTip.value) ids.push(tipId.value);
+  // Visual tip stays aria-hidden; do not wire into describedby.
   return ids.length ? [...new Set(ids)].join(" ") : undefined;
 });
 const borderTone = computed<"error" | "success" | "idle">(() => {

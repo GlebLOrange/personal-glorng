@@ -102,6 +102,22 @@ describe("BaseInput", () => {
     expect(wrapper.get("label").attributes("for")).toBe("email");
     expect(wrapper.get("label").text()).toBe("Email");
     expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
+    expect(wrapper.get("input").attributes("aria-describedby")).toBeUndefined();
+    expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
+    expect(wrapper.get("#email-tip").attributes("aria-hidden")).toBe("true");
+  });
+
+  it("does not put the visual tip into aria-describedby when hint is set", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "email",
+        label: "Email",
+        placeholder: "your@email.com",
+        hint: "We never share this",
+      },
+    });
+
+    expect(wrapper.get("input").attributes("aria-describedby")).toBe("email-hint");
     expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
   });
 
