@@ -21,13 +21,15 @@ docker compose -f docker-compose.yml -f docker-compose.ultra-lite.yml -f docker-
 make dev-ultra-lite-server
 ```
 
-Equivalent to `make dev-lite` / `make dev-ultra-lite-infra` with the cloud overlay. Docker daemon on this VM also uses `fuse-overlayfs` and `default-cgroupns-mode: host` in `/etc/docker/daemon.json`.
+Equivalent to `make dev-lite` / `make dev-ultra-lite-infra` with the cloud overlay. Docker daemon on this VM uses `fuse-overlayfs` and `default-cgroupns-mode: host` in `/etc/docker/daemon.json`. On Docker 29+ the daemon.json must also set `"features": {"containerd-snapshotter": false}`, otherwise `fuse-overlayfs` is ignored. The `docker-compose.cloud-vm.yml` overlay must reset `deploy` (memory limits) and set `cgroup: host` for **every** service you start — including `mongodb` and `rabbitmq`; without that reset those containers fail with `cannot enter cgroupv2 ... it is in threaded mode`.
+
+The Docker daemon is not auto-started on a fresh VM. Start it once per session before running compose: `sudo dockerd > /tmp/dockerd.log 2>&1 &` (wait for `docker info` to succeed).
 
 For Elasticsearch-backed search, use `make dev-search` (add `-f docker-compose.search.yml` and `--profile search` to the compose command above) and set `ELASTICSEARCH_URL=http://elasticsearch:9200` in `.env`. Leave `ELASTICSEARCH_URL` empty for lite mode.
 
 ### First-time / manual setup
 
-1. Copy env: `cp .env.example .env` and fill in all values (see `.env.example` for the full contract). Minimum secrets: `JWT_SECRET` (32+ chars), `REDIS_PASSWORD`, `MONGODB_PASSWORD`, and `SEED_PASSWORD`. Bootstrap knobs `RUN_MIGRATIONS` / `RUN_SEED` live in `.env` only—not Docker Compose overrides.
+1. Copy env: `cp .env.example .env` and fill in all values (see `.env.example` for the full contract). Minimum secrets: `JWT_SECRET` (32+ chars), `REDIS_PASSWORD`, `MONGODB_PASSWORD`, and `SEED_PASSWORD`. Bootstrap knobs `RUN_MIGRATIONS` / `RUN_SEED` live in `.env` only—not Docker Compose overrides. **`SEED_PASSWORD` must satisfy the login password policy** (12+ chars with upper, lower, digit, and special char, e.g. `MyTestPass123!`) — the `.env.example` default `password_seed` seeds an admin that then cannot log in (the login schema rejects it). `seed_admin` skips existing users, so if you seeded with a bad password, recreate the DB (`docker compose ... down -v` then up) after fixing `SEED_PASSWORD`.
 2. Start backend: `make dev-lite` (or the lite compose command above with the cloud overlay).
 3. Seed admin: `make seed` with `SEED_PASSWORD` set.
 4. Backfill search index (first deploy or after schema changes): `make reindex-search`
@@ -63,7 +65,9 @@ Cloud-specific notes:
   UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
   ```
 - **Backend via Docker:** prod images do not include `pytest`/`ruff`; dev targets may, but host `uv` is the canonical path for backend checks.
-- **Frontend:** `cd client && npm run lint && npm run test && npm run build:check` (Node 24 recommended per CI; Node 22 works with engine warnings). Use `npm run build` for a fast Vite-only bundle. Agents may run lint and build without test unless asked.
+- **Frontend:** `cd client && npm run lint && npm run test && npm run build:check` (Node 24 required by `engines`; the VM's default `/exec-daemon/node` is v22 and shadows nvm — prepend `"$HOME/.nvm/versions/node/v24.18.0/bin"` to `PATH` or `nvm use 24`). Use `npm run build` for a fast Vite-only bundle.
+- **Frontend install caveat:** plain `npm ci` currently fails (lockfile pins `typescript@7`, but `typescript-eslint`'s peer wants `<6.1.0`). Install with `npm ci --legacy-peer-deps`. This is why the frontend CI job is red.
+- **`npm run lint` and `build:check` are currently broken on `main`:** `typescript-eslint@8` hard-errors with "does not support TS 7.0", and `vue-tsc`/typecheck hits the same TS7 mismatch. `npm run dev`, `npm run build`, and `npm run test` (vitest) all work. Don't burn time "fixing" lint from an env angle — it needs a dependency change (downgrade TS or bump typescript-eslint).
 
 ### Optional services
 
