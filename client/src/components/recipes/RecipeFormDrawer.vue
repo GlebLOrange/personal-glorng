@@ -97,7 +97,7 @@ watch(
     await nextTick();
     if (ingredientsDetails.value) ingredientsDetails.value.open = true;
     if (stepsDetails.value) stepsDetails.value.open = true;
-    if (tagsDetails.value) tagsDetails.value.open = Boolean(props.form.tags.trim());
+    if (tagsDetails.value) tagsDetails.value.open = false;
   },
 );
 
