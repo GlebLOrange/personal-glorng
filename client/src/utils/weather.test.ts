@@ -128,5 +128,6 @@ describe("sanitizeGuestWeatherLocations", () => {
     const sanitized = sanitizeGuestWeatherLocations(raw);
     expect(sanitized).toHaveLength(2);
     expect(sanitized.map((loc) => loc.query)).toEqual(["London", "Paris"]);
+    expect(sanitized.every((loc) => !("label" in loc))).toBe(true);
   });
 });

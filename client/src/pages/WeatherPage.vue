@@ -21,9 +21,9 @@ const {
 const { activeQuery, setActiveQuery } = useActiveWeatherQuery();
 const { toast } = useNotify();
 
-async function handleAdd(label: string, query: string): Promise<void> {
+async function handleAdd(query: string): Promise<void> {
   try {
-    await addLocation(label, query);
+    await addLocation(query);
     toast("Location added", "success");
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to add location";
@@ -56,15 +56,16 @@ function handleSelect(query: string): void {
     body-class="font-mono"
   >
     <section class="mb-8 min-w-0">
-      <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-surface-light">
-        <ToolIcon slug="location" class="h-5 w-5" />
-        locations
-      </h2>
       <WeatherLocationForm
         :add-location="handleAdd"
         :disabled="!canAddLocation"
         :helper-text="guestLimitMessage"
-      />
+      >
+        <template #heading>
+          <ToolIcon slug="location" class="h-5 w-5" />
+          locations
+        </template>
+      </WeatherLocationForm>
     </section>
 
     <WeatherPinnedCitiesRow

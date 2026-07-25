@@ -87,10 +87,24 @@ async def _drop_obsolete_news_unique_indexes(db: AsyncIOMotorDatabase) -> None:
             )
 
 
+async def _unset_weather_location_labels(db: AsyncIOMotorDatabase) -> None:
+    """Drop legacy nickname field from weather_locations (idempotent)."""
+    result = await db.weather_locations.update_many(
+        {"label": {"$exists": True}},
+        {"$unset": {"label": ""}},
+    )
+    if result.modified_count:
+        logger.info(
+            "Unset legacy weather location labels",
+            context={"modified": result.modified_count},
+        )
+
+
 async def ensure_mongo_schema(db: AsyncIOMotorDatabase) -> None:
     """Create indexes idempotently and record schema version."""
     await _rename_legacy_collections(db)
     await _drop_obsolete_news_unique_indexes(db)
+    await _unset_weather_location_labels(db)
     for collection, keys, options in INDEX_SPECS:
         kwargs = options or {}
         await db[collection].create_index(keys, **kwargs)

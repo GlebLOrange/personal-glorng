@@ -58,7 +58,6 @@ const isBusy = computed(() => props.loading || props.seeding);
       <WeatherCityTile
         v-for="loc in otherCities"
         :key="loc.id"
-        :label="loc.label"
         :query="loc.query"
         :removable="!isDefaultLocation(loc)"
         @select="emit('select', loc.query)"

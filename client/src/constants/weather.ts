@@ -20,12 +20,10 @@ export const LEGACY_SAVED_LOCATIONS_STORAGE_KEY = "weather:saved-locations";
 export const ACTIVE_WEATHER_QUERY_KEY = `${LEGACY_SLUG}:active-query`;
 
 export const DEFAULT_WEATHER_LOCATION = {
-  label: "Wrocław",
   query: "Wroclaw",
 } as const;
 
 /** Max saved cities for guests (localStorage) and authenticated users (server). */
 export const MAX_SAVED_WEATHER_LOCATIONS = 8;
 
-export const MAX_WEATHER_LOCATION_LABEL_LENGTH = 100;
 export const MAX_WEATHER_LOCATION_QUERY_LENGTH = 100;

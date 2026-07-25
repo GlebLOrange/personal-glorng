@@ -119,13 +119,11 @@ export interface UrlItem {
 
 export interface WeatherLocation {
   id: number;
-  label: string;
   query: string;
   sort_order: number;
 }
 
 export interface WeatherConfig {
-  label: string;
   query: string;
 }
 

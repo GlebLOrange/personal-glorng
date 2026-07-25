@@ -6,19 +6,19 @@ import WeatherPinnedCitiesRow from "@/components/weather/WeatherPinnedCitiesRow.
 vi.mock("@/components/weather/WeatherCityTile.vue", () => ({
   default: {
     name: "WeatherCityTile",
-    props: ["label", "query", "removable"],
+    props: ["query", "removable"],
     emits: ["select", "remove"],
-    template: `<div data-testid="weather-city-tile" :data-label="label" :data-removable="removable">
-      <button data-testid="select-city" @click="$emit('select')">{{ label }}</button>
+    template: `<div data-testid="weather-city-tile" :data-query="query" :data-removable="removable">
+      <button data-testid="select-city" @click="$emit('select')">{{ query }}</button>
       <button v-if="removable" data-testid="remove-city" @click="$emit('remove')">Remove</button>
     </div>`,
   },
 }));
 
 const locations = [
-  { id: "1", label: "London", query: "London" },
-  { id: "2", label: "Paris", query: "Paris" },
-  { id: "3", label: "Wrocław", query: "Wroclaw", is_default: true },
+  { id: "1", query: "London" },
+  { id: "2", query: "Paris" },
+  { id: "3", query: "Wroclaw", is_default: true },
 ];
 
 function mountRow(overrides: Record<string, unknown> = {}) {
@@ -43,8 +43,8 @@ describe("WeatherPinnedCitiesRow", () => {
 
     const cityTiles = wrapper.findAll('[data-testid="weather-city-tile"]');
     expect(cityTiles).toHaveLength(2);
-    expect(cityTiles[0]?.attributes("data-label")).toBe("London");
-    expect(cityTiles[1]?.attributes("data-label")).toBe("Paris");
+    expect(cityTiles[0]?.attributes("data-query")).toBe("London");
+    expect(cityTiles[1]?.attributes("data-query")).toBe("Paris");
   });
 
   it("emits select when a city tile is clicked", async () => {

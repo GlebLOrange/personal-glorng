@@ -32,15 +32,13 @@ class WeatherLocationService:
         self,
         user_id: int,
         *,
-        label: str,
         query: str,
     ) -> WeatherLocation:
         trimmed_query = query.strip()
-        trimmed_label = label.strip() or trimmed_query
+        if not trimmed_query:
+            raise ValidationError("Query is required")
         if not is_valid_location(trimmed_query):
             raise ValidationError("Location contains invalid characters")
-        if not trimmed_label:
-            raise ValidationError("Label is required")
 
         existing = await self.list_locations(user_id)
         if any(loc.query.lower() == trimmed_query.lower() for loc in existing):
@@ -50,7 +48,6 @@ class WeatherLocationService:
 
         location = WeatherLocation(
             user_id=user_id,
-            label=trimmed_label,
             query=trimmed_query,
             sort_order=len(existing),
         )

@@ -5,13 +5,12 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 
 const props = defineProps<{
-  addLocation: (label: string, query: string) => Promise<void>;
+  addLocation: (query: string) => Promise<void>;
   disabled?: boolean;
   helperText?: string | null;
 }>();
 
 const city = ref("");
-const label = ref("");
 const error = ref<string | null>(null);
 const saving = ref(false);
 
@@ -24,9 +23,8 @@ async function submit(): Promise<void> {
   saving.value = true;
   error.value = null;
   try {
-    await props.addLocation(label.value.trim() || trimmed, trimmed);
+    await props.addLocation(trimmed);
     city.value = "";
-    label.value = "";
   } catch (err) {
     error.value = err instanceof Error ? err.message : "Failed to add location";
   } finally {
@@ -36,31 +34,31 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <form class="flex flex-col sm:flex-row sm:items-end gap-3" @submit.prevent="submit">
+  <form @submit.prevent="submit">
+    <div class="mb-4 flex min-w-0 flex-wrap items-center gap-2">
+      <h2 class="flex items-center gap-2 text-lg font-bold text-surface-light">
+        <slot name="heading" />
+      </h2>
+      <BaseButton
+        type="submit"
+        variant="primary"
+        size="field"
+        class="ml-auto"
+        aria-label="add location"
+        :loading="saving"
+        :disabled="!city.trim() || props.disabled"
+      >
+        {{ saving ? "adding…" : "+ location" }}
+      </BaseButton>
+    </div>
     <BaseInput
       id="weather-city"
       v-model="city"
       placeholder="city"
-      class="flex-1"
+      class="w-full"
       :error="error ?? undefined"
       required
     />
-    <BaseInput
-      id="weather-label"
-      v-model="label"
-      placeholder="label (optional)"
-      class="sm:max-w-48"
-    />
-    <BaseButton
-      type="submit"
-      variant="primary"
-      size="field"
-      aria-label="add city"
-      :loading="saving"
-      :disabled="!city.trim() || props.disabled"
-    >
-      {{ saving ? "adding…" : "+" }}
-    </BaseButton>
   </form>
   <p v-if="props.helperText" class="text-xs text-surface-mid mt-2">{{ props.helperText }}</p>
 </template>
