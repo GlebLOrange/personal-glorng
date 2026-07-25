@@ -1,7 +1,6 @@
 import { computed, nextTick, onMounted, ref, shallowRef, watch, type Ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
 import { DEFAULT_EXPENSE_CATEGORY } from "@/constants/expenseCategories";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { useCategoryManager } from "@/composables/useCategoryManager";
@@ -34,6 +33,13 @@ export { isCalculatorMode, normalizeCalculatorMode };
 
 export type ExpenseTab = "transactions" | "insights" | "calculator" | "settings";
 
+/** Focus/clear hooks for the expenses quick-add entry (QuickAdd or a wrapping panel). */
+export type ExpenseQuickAddTarget = {
+  focusEntry: () => void;
+  focusSmartText: () => void;
+  clearSmartText: () => void;
+};
+
 const EXPENSE_TABS: ExpenseTab[] = ["transactions", "insights", "calculator", "settings"];
 
 const TAB_LABELS: Record<ExpenseTab, string> = {
@@ -54,9 +60,7 @@ export function isCalculatorTab(tab: string): boolean {
 }
 
 /** Orchestrates expense tool state: filters, list, charts, forms, and mutations. */
-export function useExpensesTool(
-  quickAddRef: Ref<InstanceType<typeof ExpenseQuickAdd> | null> = ref(null),
-) {
+export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> = ref(null)) {
   const route = useRoute();
   const router = useRouter();
   const activeTab = ref<ExpenseTab>("transactions");

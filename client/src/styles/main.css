@@ -371,21 +371,53 @@ body {
   --cc-btn-primary-color: var(--color-surface-dark);
   --cc-btn-primary-hover-bg: color-mix(in srgb, var(--color-accent-blue) 90%, white);
   --cc-btn-primary-hover-color: var(--color-surface-dark);
-  --cc-btn-secondary-bg: color-mix(in srgb, var(--color-surface-card) 70%, var(--color-surface-border));
+  --cc-btn-secondary-bg: color-mix(
+    in srgb,
+    var(--color-surface-card) 70%,
+    var(--color-surface-border)
+  );
   --cc-btn-secondary-color: var(--color-surface-light);
-  --cc-btn-secondary-hover-bg: color-mix(in srgb, var(--color-surface-card) 50%, var(--color-surface-border));
+  --cc-btn-secondary-hover-bg: color-mix(
+    in srgb,
+    var(--color-surface-card) 50%,
+    var(--color-surface-border)
+  );
   --cc-btn-secondary-hover-color: var(--color-surface-light);
-  --cc-separator-border-color: color-mix(in srgb, var(--color-surface-card) 70%, var(--color-surface-border));
+  --cc-separator-border-color: color-mix(
+    in srgb,
+    var(--color-surface-card) 70%,
+    var(--color-surface-border)
+  );
   --cc-cookie-category-block-bg: var(--color-surface-dark);
-  --cc-cookie-category-block-hover-bg: color-mix(in srgb, var(--color-surface-dark) 85%, var(--color-surface-card));
+  --cc-cookie-category-block-hover-bg: color-mix(
+    in srgb,
+    var(--color-surface-dark) 85%,
+    var(--color-surface-card)
+  );
   --cc-overlay-bg: color-mix(in srgb, var(--color-surface-dark) 70%, transparent);
   --cc-toggle-on-bg: var(--color-accent-blue);
-  --cc-toggle-off-bg: color-mix(in srgb, var(--color-surface-card) 70%, var(--color-surface-border));
-  --cc-toggle-readonly-bg: color-mix(in srgb, var(--color-surface-card) 50%, var(--color-surface-border));
-  --cc-section-border: color-mix(in srgb, var(--color-surface-card) 70%, var(--color-surface-border));
+  --cc-toggle-off-bg: color-mix(
+    in srgb,
+    var(--color-surface-card) 70%,
+    var(--color-surface-border)
+  );
+  --cc-toggle-readonly-bg: color-mix(
+    in srgb,
+    var(--color-surface-card) 50%,
+    var(--color-surface-border)
+  );
+  --cc-section-border: color-mix(
+    in srgb,
+    var(--color-surface-card) 70%,
+    var(--color-surface-border)
+  );
   --cc-footer-bg: var(--color-surface-dark);
   --cc-footer-color: var(--color-surface-muted);
-  --cc-footer-border-color: color-mix(in srgb, var(--color-surface-card) 70%, var(--color-surface-border));
+  --cc-footer-border-color: color-mix(
+    in srgb,
+    var(--color-surface-card) 70%,
+    var(--color-surface-border)
+  );
 
   font-family: var(--font-sans);
 }

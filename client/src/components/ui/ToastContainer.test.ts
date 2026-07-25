@@ -48,11 +48,7 @@ describe("ToastContainer", () => {
     toast("hello", "info");
     const info = mount(ToastContainer);
     expect(info.get("[aria-label='Notifications'] > *").classes()).toEqual(
-      expect.arrayContaining([
-        "!bg-accent-blue/10",
-        "!border-accent-blue/30",
-        "text-accent-blue",
-      ]),
+      expect.arrayContaining(["!bg-accent-blue/10", "!border-accent-blue/30", "text-accent-blue"]),
     );
     expect(info.get("[role='status']").classes()).toContain("text-accent-blue");
     info.unmount();

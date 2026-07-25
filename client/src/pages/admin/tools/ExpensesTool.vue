@@ -1,36 +1,27 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, useTemplateRef } from "vue";
 
-import ExpenseCalculatorBudget from "@/components/expense-calculator/ExpenseCalculatorBudget.vue";
-import ExpenseCalculatorConvert from "@/components/expense-calculator/ExpenseCalculatorConvert.vue";
-import ExpenseCalculatorLineItems from "@/components/expense-calculator/ExpenseCalculatorLineItems.vue";
-import ExpenseCalculatorModeTabs from "@/components/expense-calculator/ExpenseCalculatorModeTabs.vue";
-import ExpenseCalculatorWhatIf from "@/components/expense-calculator/ExpenseCalculatorWhatIf.vue";
-import ExpenseCategoryChips from "@/components/expenses/ExpenseCategoryChips.vue";
 import ExpenseCategorySettings from "@/components/expenses/ExpenseCategorySettings.vue";
 import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
-import ExpenseDateFilters from "@/components/expenses/ExpenseDateFilters.vue";
+import ExpenseCalculatorPanel from "@/components/expenses/ExpenseCalculatorPanel.vue";
 import ExpenseFormModal from "@/components/expenses/ExpenseFormModal.vue";
-import ExpenseList from "@/components/expenses/ExpenseList.vue";
-import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
-import ExpenseSummaryCard from "@/components/expenses/ExpenseSummaryCard.vue";
+import ExpenseLedgerHeader from "@/components/expenses/ExpenseLedgerHeader.vue";
+import ExpenseTransactionsPanel from "@/components/expenses/ExpenseTransactionsPanel.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import AdminListFooter from "@/components/admin/AdminListFooter.vue";
-import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseSelect from "@/components/ui/BaseSelect.vue";
-import ErrorState from "@/components/ui/ErrorState.vue";
-import { Card } from "@/components/ui/card";
 import { useExpenseCalculator } from "@/composables/useExpenseCalculator";
-import { isCalculatorTab, useExpensesTool } from "@/composables/useExpensesTool";
-import type { CurrencyCode } from "@/composables/useExpenseFilters";
+import {
+  isCalculatorTab,
+  useExpensesTool,
+  type ExpenseQuickAddTarget,
+} from "@/composables/useExpensesTool";
 
 const ExpenseInsights = defineAsyncComponent(
   () => import("@/components/expenses/ExpenseInsights.vue"),
 );
 
-const quickAddRef = useTemplateRef<InstanceType<typeof ExpenseQuickAdd>>("quickAddRef");
+const transactionsPanelRef = useTemplateRef<ExpenseQuickAddTarget>("transactionsPanelRef");
 
 const {
   activeTab,
@@ -112,7 +103,7 @@ const {
   saveExpense,
   quickSaveExpense,
   saveSmartExpense,
-} = useExpensesTool(quickAddRef);
+} = useExpensesTool(transactionsPanelRef);
 
 const {
   activeMode,
@@ -168,7 +159,6 @@ function retrySummaryAndRates(): void {
 }
 
 function goToBudgetMode(): void {
-  // Already under calculator (what-if); only switchMode — switchTab would re-assert mode=whatif and race.
   switchMode("budget");
 }
 
@@ -180,45 +170,26 @@ function goToTransactions(): void {
 <template>
   <AdminPageLayout hub="tools" title="expenses" max-width="xl">
     <div class="min-w-0">
-      <section v-if="showLedgerHeader" class="mb-4 flex flex-col gap-3">
-        <Card variant="compact" class="flex flex-col gap-3">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div>
-              <p class="text-xs text-surface-mid">period</p>
-              <p class="text-surface-light text-lg font-semibold">{{ monthLabel }}</p>
-            </div>
-            <ExpenseDateFilters
-              v-model:month-preset="monthPreset"
-              v-model:date-filter-mode="dateFilterMode"
-              v-model:selected-month="selectedMonth"
-              v-model:date-from="dateFrom"
-              v-model:date-to="dateTo"
-              :has-active-filters="hasActiveFilters"
-              @apply-preset="handleDatePreset"
-              @clear-filters="clearFilters"
-            />
-          </div>
-          <p v-if="rangeError" class="text-sm text-status-error" role="alert">
-            {{ rangeError }}
-          </p>
-        </Card>
-
-        <ExpenseSummaryCard
-          :summary="summary"
-          :month-label="monthLabel"
-          :expense-categories="expenseCategories"
-          :period-change="periodChange"
-          :format-money="formatMoney"
-        />
-        <div
-          v-if="summaryError || ratesError"
-          class="alert-surface-error flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
-          role="alert"
-        >
-          <span>{{ summaryError || ratesError }}</span>
-          <BaseButton variant="ghost" size="sm" @click="retrySummaryAndRates">retry</BaseButton>
-        </div>
-      </section>
+      <ExpenseLedgerHeader
+        v-if="showLedgerHeader"
+        v-model:month-preset="monthPreset"
+        v-model:date-filter-mode="dateFilterMode"
+        v-model:selected-month="selectedMonth"
+        v-model:date-from="dateFrom"
+        v-model:date-to="dateTo"
+        :month-label="monthLabel"
+        :has-active-filters="hasActiveFilters"
+        :range-error="rangeError"
+        :summary="summary"
+        :expense-categories="expenseCategories"
+        :period-change="periodChange"
+        :format-money="formatMoney"
+        :summary-error="summaryError"
+        :rates-error="ratesError"
+        @apply-preset="handleDatePreset"
+        @clear-filters="clearFilters"
+        @retry="retrySummaryAndRates"
+      />
 
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -247,98 +218,49 @@ function goToTransactions(): void {
           </div>
         </div>
 
-        <section
+        <ExpenseTransactionsPanel
           v-if="activeTab === 'transactions'"
-          id="expenses-tab-panel-transactions"
-          role="tabpanel"
-          aria-labelledby="expenses-tab-tab-transactions"
-          tabindex="0"
-          class="flex flex-col gap-3 outline-none"
-        >
-          <ExpenseQuickAdd
-            ref="quickAddRef"
-            v-model:category="quickAdd.category"
-            v-model:product="quickAdd.product"
-            v-model:price="quickAdd.price"
-            v-model:currency="displayCurrency"
-            v-model:smart-text-open="smartTextOpen"
-            :loading="savingExpense"
-            :category-options="categoryOptions"
-            :product-suggestions="productSuggestions"
-            @submit="quickSaveExpense"
-            @smart-submit="saveSmartExpense"
-          />
-
-          <Card
-            v-if="filtersOpen"
-            id="expense-transaction-filters"
-            variant="compact"
-            class="flex flex-col gap-4"
-          >
-            <div class="flex flex-col md:flex-row md:items-end gap-3">
-              <div class="flex-1">
-                <BaseInput
-                  v-model="productFilter"
-                  label="product filter"
-                  placeholder="filter by product..."
-                />
-              </div>
-              <BaseButton
-                v-if="productFilter || categoryFilter"
-                variant="ghost"
-                @click="clearTransactionFilters"
-              >
-                clear transaction filters
-              </BaseButton>
-            </div>
-
-            <ExpenseCategoryChips
-              v-model:category-filter="categoryFilter"
-              :category-options="categoryOptions"
-            />
-          </Card>
-
-          <ErrorState
-            v-if="listError"
-            :message="listError"
-            show-retry
-            @retry="goToExpensePage(expensePage)"
-          />
-
-          <ExpenseList
-            :expenses="expenses"
-            :loading="listLoading"
-            :sort-indicator="sortIndicator"
-            :sort-aria-sort="sortAriaSort"
-            :month-label="monthLabel"
-            :display-currency="displayCurrency as CurrencyCode"
-            :exchange-rates="exchangeRates"
-            :format-money="formatMoney"
-            :format-expense-date="formatExpenseDate"
-            :convert-amount="convertAmount"
-            @edit="openEdit"
-            @delete="requestDeleteExpense"
-            @duplicate="duplicateExpense"
-            @sort="handleExpenseSort"
-            @smart-text="openSmartText"
-          />
-
-          <AdminListFooter
-            v-if="expenses.length > 0"
-            :total="expenseTotal"
-            :page="expensePage"
-            :total-pages="expensePages"
-            :has-next-page="hasNextExpensePage"
-            :has-previous-page="hasPreviousExpensePage"
-            :loading="listLoading"
-            item-label="expenses"
-            ariaLabel="Expenses pagination"
-            @first="goToExpensePage(1)"
-            @prev="goToExpensePage(expensePage - 1)"
-            @next="goToExpensePage(expensePage + 1)"
-            @last="goToExpensePage(expensePages)"
-          />
-        </section>
+          ref="transactionsPanelRef"
+          v-model:product-filter="productFilter"
+          v-model:category-filter="categoryFilter"
+          v-model:display-currency="displayCurrency"
+          v-model:smart-text-open="smartTextOpen"
+          v-model:filters-open="filtersOpen"
+          v-model:quick-add-category="quickAdd.category"
+          v-model:quick-add-product="quickAdd.product"
+          v-model:quick-add-price="quickAdd.price"
+          :saving-expense="savingExpense"
+          :category-options="categoryOptions"
+          :product-suggestions="productSuggestions"
+          :list-error="listError"
+          :expenses="expenses"
+          :list-loading="listLoading"
+          :sort-indicator="sortIndicator"
+          :sort-aria-sort="sortAriaSort"
+          :month-label="monthLabel"
+          :exchange-rates="exchangeRates"
+          :format-money="formatMoney"
+          :format-expense-date="formatExpenseDate"
+          :convert-amount="convertAmount"
+          :expense-total="expenseTotal"
+          :expense-page="expensePage"
+          :expense-pages="expensePages"
+          :has-next-expense-page="hasNextExpensePage"
+          :has-previous-expense-page="hasPreviousExpensePage"
+          @submit-quick="quickSaveExpense"
+          @smart-submit="saveSmartExpense"
+          @clear-transaction-filters="clearTransactionFilters"
+          @retry-list="goToExpensePage(expensePage)"
+          @edit="openEdit"
+          @delete="requestDeleteExpense"
+          @duplicate="duplicateExpense"
+          @sort="handleExpenseSort"
+          @smart-text="openSmartText"
+          @first-page="goToExpensePage(1)"
+          @prev-page="goToExpensePage(expensePage - 1)"
+          @next-page="goToExpensePage(expensePage + 1)"
+          @last-page="goToExpensePage(expensePages)"
+        />
 
         <section
           v-else-if="activeTab === 'insights'"
@@ -357,84 +279,38 @@ function goToTransactions(): void {
           />
         </section>
 
-        <section
+        <ExpenseCalculatorPanel
           v-else-if="activeTab === 'calculator'"
-          id="expenses-tab-panel-calculator"
-          role="tabpanel"
-          aria-labelledby="expenses-tab-tab-calculator"
-          tabindex="0"
-          class="flex flex-col gap-4 outline-none"
-        >
-          <Card
-            variant="compact"
-            class="flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-          >
-            <p class="text-sm text-surface-mid">{{ persistenceHint }}</p>
-            <div v-if="isSuperuser" class="flex flex-wrap gap-2">
-              <BaseButton variant="ghost" :disabled="loadingState" @click="loadState">
-                {{ loadingState ? "loading..." : "load" }}
-              </BaseButton>
-              <BaseButton variant="success" :disabled="saving || !stateDirty" @click="saveState">
-                {{ saving ? "saving..." : "save" }}
-              </BaseButton>
-            </div>
-          </Card>
-
-          <div class="md:w-36">
-            <BaseSelect
-              id="expenses-calculator-currency"
-              v-model="calculatorDisplayCurrency"
-              aria-label="calculator currency"
-            >
-              <option value="PLN">PLN</option>
-              <option value="EUR">EUR</option>
-              <option value="USD">USD</option>
-              <option value="BYN">BYN</option>
-            </BaseSelect>
-          </div>
-
-          <ExpenseCalculatorModeTabs
-            :active-mode="activeMode"
-            :tabs="modeTabs"
-            @change="switchMode"
-          />
-
-          <ExpenseCalculatorConvert
-            v-if="activeMode === 'convert'"
-            :exchange-rates="calculatorRates"
-            :rates-loading="ratesLoading"
-          />
-          <ExpenseCalculatorLineItems
-            v-else-if="activeMode === 'sum'"
-            :line-items="lineItems"
-            :display-currency="calculatorDisplayCurrency"
-            :sum-total="sumTotal"
-            :format-money="formatCalculatorMoney"
-            @add="addLineItem"
-            @remove="removeLineItem"
-            @apply-to-budget="applySumToBudget"
-          />
-          <ExpenseCalculatorBudget
-            v-else-if="activeMode === 'budget'"
-            :budget-rows="budgetRows"
-            :budget-summary="budgetSummary"
-            :display-currency="calculatorDisplayCurrency"
-            :format-money="formatCalculatorMoney"
-            @add="addBudgetRow"
-            @remove="removeBudgetRow"
-          />
-          <ExpenseCalculatorWhatIf
-            v-else-if="activeMode === 'whatif'"
-            v-model:what-if-category-id="whatIfCategoryId"
-            v-model:what-if-amount="whatIfAmount"
-            v-model:what-if-currency="whatIfCurrency"
-            :budget-options="budgetOptions"
-            :display-currency="calculatorDisplayCurrency"
-            :projection="whatIfProjection"
-            :format-money="formatCalculatorMoney"
-            @go-to-budget="goToBudgetMode"
-          />
-        </section>
+          v-model:display-currency="calculatorDisplayCurrency"
+          v-model:what-if-category-id="whatIfCategoryId"
+          v-model:what-if-amount="whatIfAmount"
+          v-model:what-if-currency="whatIfCurrency"
+          :persistence-hint="persistenceHint"
+          :is-superuser="isSuperuser"
+          :loading-state="loadingState"
+          :saving="saving"
+          :state-dirty="stateDirty"
+          :active-mode="activeMode"
+          :mode-tabs="modeTabs"
+          :exchange-rates="calculatorRates"
+          :rates-loading="ratesLoading"
+          :line-items="lineItems"
+          :sum-total="sumTotal"
+          :budget-rows="budgetRows"
+          :budget-summary="budgetSummary"
+          :budget-options="budgetOptions"
+          :what-if-projection="whatIfProjection"
+          :format-money="formatCalculatorMoney"
+          @load-state="loadState"
+          @save-state="saveState"
+          @change-mode="switchMode"
+          @add-line-item="addLineItem"
+          @remove-line-item="removeLineItem"
+          @apply-sum-to-budget="applySumToBudget"
+          @add-budget-row="addBudgetRow"
+          @remove-budget-row="removeBudgetRow"
+          @go-to-budget="goToBudgetMode"
+        />
 
         <section
           v-else-if="activeTab === 'settings'"

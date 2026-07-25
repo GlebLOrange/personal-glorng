@@ -69,7 +69,11 @@ export function useExpenseSummary(
   const summary = ref<ExpenseSummary | null>(null);
   const previousSummary = ref<ExpenseSummary | null>(null);
   const exchangeRates = ref<ExchangeRates | null>(null);
-  const { loading: listLoading, lastError: listError, run: runList } = useApiAction({
+  const {
+    loading: listLoading,
+    lastError: listError,
+    run: runList,
+  } = useApiAction({
     silent: true,
   });
   const { lastError: summaryError, run: runSummary } = useApiAction({ silent: true });
