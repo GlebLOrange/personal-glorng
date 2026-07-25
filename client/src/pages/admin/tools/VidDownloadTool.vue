@@ -156,19 +156,16 @@ async function download(): Promise<void> {
           >
             <h2 id="vid-download-options-title" class="sr-only">download options</h2>
 
-            <div class="flex items-center gap-2">
-              <label
-                for="vid-download-quality"
-                class="w-20 shrink-0 text-xs font-medium text-surface-mid"
-              >
-                quality
-              </label>
-              <BaseSelect id="vid-download-quality" v-model="format">
-                <option v-for="f in formats" :key="f.value" :value="f.value">
-                  {{ f.label }}
-                </option>
-              </BaseSelect>
-            </div>
+            <BaseSelect
+              id="vid-download-quality"
+              v-model="format"
+              compact
+              aria-label="quality"
+            >
+              <option v-for="f in formats" :key="f.value" :value="f.value">
+                {{ f.label }}
+              </option>
+            </BaseSelect>
 
             <label class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid">
               <input
