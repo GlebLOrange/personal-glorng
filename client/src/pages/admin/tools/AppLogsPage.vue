@@ -153,7 +153,10 @@ onMounted(load);
 
 <template>
   <AdminPageLayout title="app logs">
-    <AdminListSkeleton v-if="loading && items.length === 0 && !listError" label="Loading app logs" />
+    <AdminListSkeleton
+      v-if="loading && items.length === 0 && !listError"
+      label="Loading app logs"
+    />
 
     <template v-else>
       <AdminListToolbar>
@@ -221,13 +224,11 @@ onMounted(load);
             <pre
               v-if="entry.context"
               class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
-              >{{ JSON.stringify(entry.context, null, 2) }}</pre
-            >
+              >{{ JSON.stringify(entry.context, null, 2) }}</pre>
             <pre
               v-if="entry.traceback"
               class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs text-accent-red/80"
-              >{{ entry.traceback }}</pre
-            >
+              >{{ entry.traceback }}</pre>
           </template>
         </AdminListRow>
       </div>

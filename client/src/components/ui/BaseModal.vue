@@ -4,10 +4,7 @@ import { computed, ref, useId } from "vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import OverlayBackdrop from "@/components/ui/OverlayBackdrop.vue";
 import { useOverlayShell } from "@/composables/useOverlayShell";
-import {
-  OVERLAY_MAX_WIDTH_CLASS,
-  type OverlayMaxWidth,
-} from "@/constants/overlaySizes";
+import { OVERLAY_MAX_WIDTH_CLASS, type OverlayMaxWidth } from "@/constants/overlaySizes";
 
 const props = withDefaults(
   defineProps<{
@@ -38,21 +35,14 @@ useOverlayShell({
 });
 
 const labelledBy = computed(() => (props.title ? titleId : undefined));
-const dialogLabel = computed(() =>
-  props.title ? undefined : (props.ariaLabel ?? "Dialog"),
-);
-const widthClass = computed(
-  () => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"],
-);
+const dialogLabel = computed(() => (props.title ? undefined : (props.ariaLabel ?? "Dialog")));
+const widthClass = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"]);
 </script>
 
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div
-        v-if="open"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4"
-      >
+      <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <OverlayBackdrop @close="emit('close')" />
         <div
           ref="panelRef"
@@ -70,22 +60,14 @@ const widthClass = computed(
           <div class="flex shrink-0 items-center gap-2 px-6 pb-3 pt-5">
             <div class="min-w-0 flex-1">
               <slot name="header" :title-id="titleId">
-                <h2
-                  v-if="title"
-                  :id="titleId"
-                  class="text-lg font-bold text-surface-light"
-                >
+                <h2 v-if="title" :id="titleId" class="text-lg font-bold text-surface-light">
                   {{ title }}
                 </h2>
               </slot>
             </div>
             <div class="flex shrink-0 items-center gap-1">
               <slot name="header-actions" />
-              <IconCloseButton
-                ref="closeButton"
-                aria-label="Close"
-                @click="emit('close')"
-              />
+              <IconCloseButton ref="closeButton" aria-label="Close" @click="emit('close')" />
             </div>
           </div>
           <div
@@ -93,10 +75,7 @@ const widthClass = computed(
           >
             <slot />
           </div>
-          <footer
-            v-if="$slots.footer"
-            class="shrink-0 border-t border-surface-border px-6 py-4"
-          >
+          <footer v-if="$slots.footer" class="shrink-0 border-t border-surface-border px-6 py-4">
             <slot name="footer" />
           </footer>
         </div>

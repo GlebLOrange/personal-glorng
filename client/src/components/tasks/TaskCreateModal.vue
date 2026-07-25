@@ -20,19 +20,9 @@ const emit = defineEmits<{ submit: []; close: [] }>();
 <template>
   <BaseDrawer :open="open" title="new task" max-width="md" @close="emit('close')">
     <form id="task-create-drawer-form" class="space-y-4" @submit.prevent="emit('submit')">
-      <BaseInput
-        v-model="form.title"
-        placeholder="title (what needs doing?)"
-      />
-      <BaseInput
-        v-model="form.scheduled_at"
-        type="datetime-local"
-        aria-label="scheduled at"
-      />
-      <BaseInput
-        v-model="form.location"
-        placeholder="location (optional)"
-      />
+      <BaseInput v-model="form.title" placeholder="title (what needs doing?)" />
+      <BaseInput v-model="form.scheduled_at" type="datetime-local" aria-label="scheduled at" />
+      <BaseInput v-model="form.location" placeholder="location (optional)" />
       <textarea
         v-model="form.description"
         rows="3"
@@ -44,13 +34,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton
-            danger
-            type="button"
-            @click="emit('close')"
-          >
-            cancel
-          </BaseButton>
+          <BaseButton danger type="button" @click="emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton

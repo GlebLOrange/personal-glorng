@@ -18,7 +18,9 @@ const route = useRoute();
 const router = useRouter();
 const menuRoot = ref<HTMLElement | null>(null);
 
-const isPortfolio = computed(() => route.path === "/" || route.name === "home" || route.name === "portfolio");
+const isPortfolio = computed(
+  () => route.path === "/" || route.name === "home" || route.name === "portfolio",
+);
 
 const sectionLinks = [
   { href: "#about", label: "about" },

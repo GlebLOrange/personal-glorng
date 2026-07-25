@@ -34,13 +34,8 @@ describe("normalizeStreamError", () => {
 
   it("preserves Groq retry-after seconds in quota errors", () => {
     expect(
-      normalizeStreamError(
-        "Groq rate limit exceeded — try again in ~60s",
-        "/api/tools/ai-chat",
-      ),
-    ).toBe(
-      "Groq rate limit reached — try again in ~60s, or check usage in the Groq console",
-    );
+      normalizeStreamError("Groq rate limit exceeded — try again in ~60s", "/api/tools/ai-chat"),
+    ).toBe("Groq rate limit reached — try again in ~60s, or check usage in the Groq console");
   });
 
   it("uses generic quota message when server omits retry-after", () => {

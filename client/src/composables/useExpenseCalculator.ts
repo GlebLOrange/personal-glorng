@@ -90,11 +90,7 @@ export function useExpenseCalculator() {
   const activeMode = computed<ExpenseCalculatorMode>(() => {
     const tab = route.query.tab;
     const mode = route.query.mode;
-    if (
-      tab === "calculator" &&
-      typeof mode === "string" &&
-      isCalculatorMode(mode)
-    ) {
+    if (tab === "calculator" && typeof mode === "string" && isCalculatorMode(mode)) {
       return mode;
     }
     if (typeof tab === "string" && isCalculatorMode(tab)) {
@@ -307,10 +303,14 @@ export function useExpenseCalculator() {
     }
   }
 
-  watch([displayCurrency, lineItems, budgetRows], () => {
-    if (!initialized.value) return;
-    stateDirty.value = true;
-  }, { deep: true });
+  watch(
+    [displayCurrency, lineItems, budgetRows],
+    () => {
+      if (!initialized.value) return;
+      stateDirty.value = true;
+    },
+    { deep: true },
+  );
 
   onMounted(async () => {
     // Public calculator only: normalize ?mode=X → ?tab=X. Admin uses tab=calculator&mode=X.

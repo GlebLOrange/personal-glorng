@@ -40,9 +40,7 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
 <template>
   <Card class="space-y-4">
     <div v-if="props.budgetOptions.length === 0" class="flex justify-end">
-      <BaseButton variant="ghost" size="sm" @click="emit('goToBudget')">
-        go to budget
-      </BaseButton>
+      <BaseButton variant="ghost" size="sm" @click="emit('goToBudget')"> go to budget </BaseButton>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -66,11 +64,7 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
       </div>
     </div>
 
-    <div
-      class="border-t border-surface-border pt-4 space-y-3"
-      role="status"
-      aria-live="polite"
-    >
+    <div class="border-t border-surface-border pt-4 space-y-3" role="status" aria-live="polite">
       <div class="flex items-center justify-between gap-3">
         <p class="text-xs text-surface-mid uppercase tracking-wider">Projection</p>
         <StatusBadge

@@ -34,11 +34,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
       </BaseSelect>
 
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <BaseInput
-          v-model="toolName"
-          label="product"
-          placeholder="milk, dinner, shell..."
-        />
+        <BaseInput v-model="toolName" label="product" placeholder="milk, dinner, shell..." />
         <BaseInput
           v-model="amount"
           type="number"
@@ -67,13 +63,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton
-            danger
-            type="button"
-            @click="emit('close')"
-          >
-            cancel
-          </BaseButton>
+          <BaseButton danger type="button" @click="emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton

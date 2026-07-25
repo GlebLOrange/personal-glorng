@@ -18,15 +18,15 @@ describe("resumeGlance", () => {
   });
 
   it("builds primary stack from backend and frontend groups", () => {
+    // backend[0] · frontend[0] · backend[2] from RESUME_FALLBACK.skills
     const stack = primaryStack(RESUME_FALLBACK.skills);
-    expect(stack).toContain("FastAPI");
-    expect(stack).toContain("Vue 3");
+    expect(stack).toBe("Python · Vue 3 · Django");
   });
 
   it("builds glance stats with availability when present", () => {
     const stats = buildGlanceStats(RESUME_FALLBACK);
     expect(stats).toHaveLength(4);
     expect(stats.find((s) => s.label === "Availability")?.value).toBe("Open");
-    expect(stats.find((s) => s.label === "Core stack")?.value).toContain("FastAPI");
+    expect(stats.find((s) => s.label === "Core stack")?.value).toBe("Python · Vue 3 · Django");
   });
 });

@@ -22,10 +22,7 @@ const emit = defineEmits<{ select: [id: number] }>();
     @click="emit('select', task.id)"
   >
     <template #badge>
-      <StatusBadge
-        :label="statusLabel(task.status)"
-        :class-name="statusBadgeClass(task.status)"
-      />
+      <StatusBadge :label="statusLabel(task.status)" :class-name="statusBadgeClass(task.status)" />
     </template>
     <template #primary>
       <span :title="task.title">{{ task.title }}</span>

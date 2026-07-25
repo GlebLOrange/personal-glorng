@@ -36,7 +36,7 @@ function flushQueue(error: unknown | null): void {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const orig: AxiosRequestConfig & { _retry?: boolean } | undefined = error.config;
+    const orig: (AxiosRequestConfig & { _retry?: boolean }) | undefined = error.config;
     if (error.response?.status !== 401 || !orig || orig._retry) {
       return Promise.reject(error);
     }

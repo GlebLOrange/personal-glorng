@@ -4,10 +4,7 @@ import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vu
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import {
-  getOverlayFocusableElements,
-  trapTabKeyInRoot,
-} from "@/composables/useOverlayShell";
+import { getOverlayFocusableElements, trapTabKeyInRoot } from "@/composables/useOverlayShell";
 
 withDefaults(
   defineProps<{
@@ -141,13 +138,7 @@ defineExpose({ close });
       </div>
       <slot name="footer" />
       <div class="mt-3 flex flex-wrap justify-start gap-2">
-        <BaseButton
-          variant="ghost"
-          danger
-          size="sm"
-          :disabled="!hasActiveFilters"
-          @click="onClear"
-        >
+        <BaseButton variant="ghost" danger size="sm" :disabled="!hasActiveFilters" @click="onClear">
           clear
         </BaseButton>
       </div>

@@ -65,9 +65,7 @@ async def test_weather_lookup_coords(client: AsyncClient) -> None:
         "app.services.weather.httpx.AsyncClient",
         return_value=_mock_weather_client(),
     ) as mock_cls:
-        resp = await client.get(
-            "/api/weather/lookup/51.1000,17.0333"
-        )
+        resp = await client.get("/api/weather/lookup/51.1000,17.0333")
 
     assert resp.status_code == 200
     mock_cls.return_value.get.assert_awaited_once()

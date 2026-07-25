@@ -51,12 +51,7 @@ watch(
 </script>
 
 <template>
-  <PageShell
-    :title="chromeTitle"
-    :breadcrumbs="breadcrumbs"
-    back-to="/news"
-    :narrow="false"
-  >
+  <PageShell :title="chromeTitle" :breadcrumbs="breadcrumbs" back-to="/news" :narrow="false">
     <Card
       v-if="detailLoading"
       class="h-96 animate-pulse"

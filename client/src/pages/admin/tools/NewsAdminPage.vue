@@ -113,8 +113,7 @@ async function reloadAdminNews(): Promise<void> {
 }
 
 useScrollListFingerprint(
-  () =>
-    `${statusFilter.value}:${page.value}:${total.value}:${articles.value[0]?.id ?? ""}`,
+  () => `${statusFilter.value}:${page.value}:${total.value}:${articles.value[0]?.id ?? ""}`,
 );
 
 function emptyForm(): NewsArticleFormData {
@@ -459,12 +458,7 @@ watch(page, () => {
       <Card v-for="i in 5" :key="i" class="h-36 animate-pulse" />
     </section>
 
-    <ErrorState
-      v-else-if="listError"
-      :message="listError"
-      show-retry
-      @retry="reloadAdminNews"
-    />
+    <ErrorState v-else-if="listError" :message="listError" show-retry @retry="reloadAdminNews" />
 
     <section v-else-if="articles.length" class="space-y-3 min-w-0">
       <Card

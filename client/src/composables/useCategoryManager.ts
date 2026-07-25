@@ -4,7 +4,6 @@ import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { DEFAULT_EXPENSE_CATEGORY } from "@/constants/expenseCategories";
 import { useNotify } from "@/composables/useNotify";
-import { getApiErrorMessage } from "@/types/api";
 import type { ExpenseCategory } from "@/types";
 
 /** Match server normalize: trim + collapse whitespace. */
@@ -21,8 +20,7 @@ export function categoryNameExists(
   if (!key) return false;
   return categories.some(
     (category) =>
-      category.id !== excludeId &&
-      normalizeCategoryName(category.name).toLowerCase() === key,
+      category.id !== excludeId && normalizeCategoryName(category.name).toLowerCase() === key,
   );
 }
 
@@ -46,7 +44,7 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
   const editingCategoryName = ref("");
   const editingCategoryBudget = ref("");
   const { toast } = useNotify();
-  const { run: runApi } = useApiAction({ logErrors: false });
+  const { run: runApi } = useApiAction();
 
   const categoryOptions = computed(() => uniqueCategoryNames(expenseCategories.value));
 
@@ -79,15 +77,16 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
       return;
     }
 
-    try {
-      await api.post("/tools/expenses/categories", { name });
-      newCategoryName.value = "";
-      toast("Category added", "success");
-      await loadCategories();
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      toast(getApiErrorMessage(err, "Failed to add category"), "error");
-    }
+    const ok = await runApi(
+      async () => {
+        await api.post("/tools/expenses/categories", { name });
+        return true;
+      },
+      { successMessage: "Category added", errorMessage: "Failed to add category" },
+    );
+    if (!ok) return;
+    newCategoryName.value = "";
+    await loadCategories();
   }
 
   function startEditCategory(category: ExpenseCategory): void {
@@ -125,29 +124,35 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
       monthly_budget = budgetValue.toFixed(2);
     }
 
-    try {
-      await api.put(`/tools/expenses/categories/${editingCategoryId.value}`, {
-        name,
-        monthly_budget,
-      });
-      cancelEditCategory();
-      toast("Category updated", "success");
-      await Promise.all([loadCategories(), onCategoriesChanged()]);
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      toast(getApiErrorMessage(err, "Failed to update category"), "error");
-    }
+    const categoryId = editingCategoryId.value;
+    const ok = await runApi(
+      async () => {
+        await api.put(`/tools/expenses/categories/${categoryId}`, {
+          name,
+          monthly_budget,
+        });
+        return true;
+      },
+      { successMessage: "Category updated", errorMessage: "Failed to update category" },
+    );
+    if (!ok) return;
+    cancelEditCategory();
+    await Promise.all([loadCategories(), onCategoriesChanged()]);
   }
 
   async function removeCategory(category: ExpenseCategory): Promise<void> {
-    try {
-      await api.delete(`/tools/expenses/categories/${category.id}`);
-      toast("Category deleted", "success");
-      await loadCategories();
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      toast(getApiErrorMessage(err, "Cannot delete a category that is used by expenses"), "error");
-    }
+    const ok = await runApi(
+      async () => {
+        await api.delete(`/tools/expenses/categories/${category.id}`);
+        return true;
+      },
+      {
+        successMessage: "Category deleted",
+        errorMessage: "Cannot delete a category that is used by expenses",
+      },
+    );
+    if (!ok) return;
+    await loadCategories();
   }
 
   return {

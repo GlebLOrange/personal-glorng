@@ -62,9 +62,7 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
       <span>{{ pageLabel }}</span>
     </p>
     <div class="flex flex-wrap items-center justify-end gap-1">
-      <BaseButton variant="ghost" :disabled="nextDisabled" @click="emit('next')">
-        next
-      </BaseButton>
+      <BaseButton variant="ghost" :disabled="nextDisabled" @click="emit('next')"> next </BaseButton>
       <BaseButton
         variant="ghost"
         :disabled="nextDisabled"

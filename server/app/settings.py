@@ -259,9 +259,8 @@ class Settings(BaseSettings):
             raise ValueError(msg)
         if self.APP_ENV == "production":
             fernet = self.FERNET_SECRET.strip()
-            if (
-                len(fernet) < 32
-                or any(m in fernet.lower() for m in _WEAK_SECRET_MARKERS)
+            if len(fernet) < 32 or any(
+                m in fernet.lower() for m in _WEAK_SECRET_MARKERS
             ):
                 msg = "FERNET_SECRET is too weak for production; use 32+ chars"
                 raise ValueError(msg)
@@ -417,6 +416,25 @@ class Settings(BaseSettings):
     MONGODB_PASSWORD: str
     MONGODB_DB: str
     MONGODB_URL: str
+    # Motor pool defaults sized for local lite: API + Celery worker/beat + bot
+    # against ~512MB Mongo (~4x (maxPoolSize+2) sockets worst case).
+    MONGODB_MAX_POOL_SIZE: int = 10
+    MONGODB_MIN_POOL_SIZE: int = 0
+    MONGODB_MAX_IDLE_TIME_MS: int = 60_000
+    MONGODB_WAIT_QUEUE_TIMEOUT_MS: int = 5_000
+    MONGODB_CONNECT_TIMEOUT_MS: int = 10_000
+    MONGODB_SERVER_SELECTION_TIMEOUT_MS: int = 5_000
+
+    def mongodb_client_kwargs(self) -> dict[str, int]:
+        """Keyword args for AsyncIOMotorClient pool/timeouts."""
+        return {
+            "maxPoolSize": self.MONGODB_MAX_POOL_SIZE,
+            "minPoolSize": self.MONGODB_MIN_POOL_SIZE,
+            "maxIdleTimeMS": self.MONGODB_MAX_IDLE_TIME_MS,
+            "waitQueueTimeoutMS": self.MONGODB_WAIT_QUEUE_TIMEOUT_MS,
+            "connectTimeoutMS": self.MONGODB_CONNECT_TIMEOUT_MS,
+            "serverSelectionTimeoutMS": self.MONGODB_SERVER_SELECTION_TIMEOUT_MS,
+        }
 
     @model_validator(mode="after")
     def _normalize_mongodb_url(self) -> Settings:
@@ -504,18 +522,22 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str
     SMTP_FROM: str
 
-    # Sentry (off in development unless SENTRY_ENABLED=true)
+    # Sentry (opt-in in development/test; DSN-gated in staging/production)
     SENTRY_ENABLED: bool
     SERVER_SENTRY_DSN: str
     SERVER_SENTRY_RELEASE: str
 
     def sentry_enabled(self) -> bool:
-        """Whether server/worker Sentry should initialize."""
+        """Whether server/worker Sentry should initialize.
+
+        Requires a DSN. In development/test, also requires SENTRY_ENABLED=true.
+        Staging/production enable whenever a DSN is set.
+        """
         if not self.SERVER_SENTRY_DSN:
             return False
-        if self.SENTRY_ENABLED:
-            return True
-        return self.APP_ENV != "development"
+        if self.APP_ENV in {"development", "test"}:
+            return self.SENTRY_ENABLED
+        return True
 
     # Telegram Bot
     TELEGRAM_BOT_TO_DO_TOKEN: str

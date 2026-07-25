@@ -34,7 +34,9 @@ defineProps<{
     <!-- expenses: coin -->
     <template v-else-if="slug === 'expenses'">
       <circle cx="12" cy="12" r="8" />
-      <path d="M12 7v10M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2 1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2-2.5-.9-2.5-2" />
+      <path
+        d="M12 7v10M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2 1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2-2.5-.9-2.5-2"
+      />
     </template>
 
     <!-- recipes: bowl + utensil -->

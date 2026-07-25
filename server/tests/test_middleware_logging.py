@@ -93,4 +93,3 @@ def test_body_log_redacts_api_key_fields() -> None:
     assert sanitized is not None
     assert "sk-live" not in sanitized
     assert sanitized.count("[REDACTED]") >= 3
-

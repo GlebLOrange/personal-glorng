@@ -7,10 +7,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import { useExpenseParse } from "@/composables/useExpenseParse";
-import {
-  EXPENSE_CURRENCIES,
-  type CurrencyCode,
-} from "@/composables/useExpenseFilters";
+import { EXPENSE_CURRENCIES, type CurrencyCode } from "@/composables/useExpenseFilters";
 import { isoDateLocal } from "@/utils/dates";
 
 const props = defineProps<{
@@ -139,13 +136,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         placeholder="qty and product name"
         :class="FIELD_INPUT_CLASS"
       />
-      <BaseInput
-        v-model="price"
-        type="number"
-        step="0.01"
-        min="0.01"
-        placeholder="price"
-      />
+      <BaseInput v-model="price" type="number" step="0.01" min="0.01" placeholder="price" />
       <BaseButton variant="success" type="submit" size="field" :disabled="loading">
         {{ loading ? "saving..." : "save" }}
       </BaseButton>

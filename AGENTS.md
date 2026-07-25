@@ -1,33 +1,35 @@
 # AGENTS.md
 
-Coding standards and agent behavior live in [`.cursor/rules/`](.cursor/rules/) (always-on safety/dependency/git workflow rules, backend FastAPI/Python rules, frontend Vue/Pinia/TypeScript rules, design-system guidance) and opt-in review/process skills in [`.cursor/skills/`](.cursor/skills/) such as `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, and `spec-driven-development`. This file covers environment and bootstrap only.
+Coding standards and agent behavior use a hybrid layout: thin always-on and path-triggered stubs in [`.cursor/rules/`](.cursor/rules/) (safety, git workflow, dependencies, backend FastAPI/Python, frontend Vue/Pinia/TypeScript, design system) that point at full guidance in [`.cursor/skills/`](.cursor/skills/), plus opt-in review/process skills such as `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, and `spec-driven-development`. This file covers environment and bootstrap only. Ecosystem skills from skills.sh: install with `npx skills add <pkg>@<skill> -g -y` (user-level under `~/.agents/skills/`); keep project skills in `.cursor/skills/` only — do not commit `.agents/`, `.claude/`, or `skills-lock.json`.
 
 ## Cursor Cloud specific instructions
 
 ### Product overview
 
-**gLOrng** is a FastAPI + Vue 3 developer portfolio and personal platform. The recommended dev workflow is **lite mode**: MongoDB, Redis, API, and nginx in Docker; Vite runs on the host with `make dev-lite-client`.
+**gLOrng** is a FastAPI + Vue 3 developer portfolio and personal platform. The default dev workflow is **lite mode** (`make` / `make dev`): MongoDB, Redis, API, and nginx in Docker; Vite on the host with `make dev-lite-client`. RabbitMQ and the Vite client container stay off until you opt in.
 
 ### Cloud VM Docker caveat
 
 Nested Docker on Cloud Agent VMs cannot apply Compose `deploy.resources` memory limits (cgroupv2 threaded mode). Always include the cloud overlay when starting services:
 
 ```bash
-# Lite: API in Docker (also starts RabbitMQ via server depends_on)
-docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.cloud-vm.yml up -d mongodb redis server
+# Lite: API in Docker (no RabbitMQ / client container)
+docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.cloud-vm.yml up -d mongodb redis redis-cache server nginx
 
 # Ultra-lite, when you specifically want host API work
 docker compose -f docker-compose.yml -f docker-compose.ultra-lite.yml -f docker-compose.cloud-vm.yml up -d mongodb redis
 make dev-ultra-lite-server
 ```
 
-Equivalent to `make dev-lite` / `make dev-ultra-lite-infra` with the cloud overlay. Docker daemon on this VM also uses `fuse-overlayfs` and `default-cgroupns-mode: host` in `/etc/docker/daemon.json`.
+Equivalent to `make dev-lite` / `make dev-ultra-lite-infra` with the cloud overlay. Docker daemon on this VM uses `fuse-overlayfs` and `default-cgroupns-mode: host` in `/etc/docker/daemon.json`. On Docker 29+ the daemon.json must also set `"features": {"containerd-snapshotter": false}`, otherwise `fuse-overlayfs` is ignored. The `docker-compose.cloud-vm.yml` overlay must reset `deploy` (memory limits) and set `cgroup: host` for **every** service you start — including `mongodb` and `rabbitmq`; without that reset those containers fail with `cannot enter cgroupv2 ... it is in threaded mode`.
+
+The Docker daemon is not auto-started on a fresh VM. Start it once per session before running compose: `sudo dockerd > /tmp/dockerd.log 2>&1 &` (wait for `docker info` to succeed).
 
 For Elasticsearch-backed search, use `make dev-search` (add `-f docker-compose.search.yml` and `--profile search` to the compose command above) and set `ELASTICSEARCH_URL=http://elasticsearch:9200` in `.env`. Leave `ELASTICSEARCH_URL` empty for lite mode.
 
 ### First-time / manual setup
 
-1. Copy env: `cp .env.example .env` and fill in all values (see `.env.example` for the full contract). Minimum secrets: `JWT_SECRET` (32+ chars), `REDIS_PASSWORD`, `MONGODB_PASSWORD`, and `SEED_PASSWORD`. Bootstrap knobs `RUN_MIGRATIONS` / `RUN_SEED` live in `.env` only—not Docker Compose overrides.
+1. Copy env: `cp .env.example .env` and fill in all values (see `.env.example` for the full contract). Minimum secrets: `JWT_SECRET` (32+ chars), `REDIS_PASSWORD`, `MONGODB_PASSWORD`, and `SEED_PASSWORD`. Bootstrap knobs `RUN_MIGRATIONS` / `RUN_SEED` live in `.env` only—not Docker Compose overrides. **`SEED_PASSWORD` must satisfy the login password policy** (12+ chars with upper, lower, digit, and special char, e.g. `MyTestPass123!`) — the `.env.example` default `password_seed` seeds an admin that then cannot log in (the login schema rejects it). `seed_admin` skips existing users, so if you seeded with a bad password, recreate the DB (`docker compose ... down -v` then up) after fixing `SEED_PASSWORD`.
 2. Start backend: `make dev-lite` (or the lite compose command above with the cloud overlay).
 3. Seed admin: `make seed` with `SEED_PASSWORD` set.
 4. Backfill search index (first deploy or after schema changes): `make reindex-search`
@@ -63,12 +65,15 @@ Cloud-specific notes:
   UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
   ```
 - **Backend via Docker:** prod images do not include `pytest`/`ruff`; dev targets may, but host `uv` is the canonical path for backend checks.
-- **Frontend:** `cd client && npm run lint && npm run test && npm run build:check` (Node 24 recommended per CI; Node 22 works with engine warnings). Use `npm run build` for a fast Vite-only bundle. Agents may run lint and build without test unless asked.
+- **Frontend:** `cd client && npm run lint && npm run test && npm run build:check` (Node 24 required by `engines`; the VM's default `/exec-daemon/node` is v22 and shadows nvm — prepend `"$HOME/.nvm/versions/node/v24.18.0/bin"` to `PATH` or `nvm use 24`). Use `npm run build` for a fast Vite-only bundle.
+- **Frontend install caveat:** plain `npm ci` currently fails (lockfile pins `typescript@7`, but `typescript-eslint`'s peer wants `<6.1.0`). Install with `npm ci --legacy-peer-deps`. This is why the frontend CI job is red.
+- **`npm run lint` and `build:check` are currently broken on `main`:** `typescript-eslint@8` hard-errors with "does not support TS 7.0", and `vue-tsc`/typecheck hits the same TS7 mismatch. `npm run dev`, `npm run build`, and `npm run test` (vitest) all work. Don't burn time "fixing" lint from an env angle — it needs a dependency change (downgrade TS or bump typescript-eslint).
 
 ### Optional services
 
-- `make dev-lite` — API in Docker; also starts RabbitMQ via `server` depends_on.
-- `make dev` — adds nginx + client containers (port 80).
+- `make` / `make dev` — lite default: mongodb, redis, redis-cache, server, nginx (no RabbitMQ / client container).
+- `make dev-lite` — alias for `make dev`.
+- `make dev-docker` — Vite client container + nginx (profile `docker-client`).
 - `make dev-ultra-lite-infra` / `make dev-ultra-lite-server` — host API with inline Celery (no RabbitMQ).
 - `make dev-postgres` — adds Postgres for FTS search / audit secondary storage.
-- `make dev-worker` / `make dev-bot` — Celery worker + beat (RabbitMQ) and Telegram bot (need tokens).
+- `make dev-worker` / `make dev-bot` — Celery worker + beat and Telegram bot; enable RabbitMQ via profile `broker` (set `CELERY_TASK_ALWAYS_EAGER=false`).

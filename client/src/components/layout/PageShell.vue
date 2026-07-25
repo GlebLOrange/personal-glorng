@@ -32,11 +32,7 @@ const props = withDefaults(
 const shellClass = computed(() => {
   // "xl" and "5xl" both map to max-w-5xl (content column); modal/drawer sizes are separate
   const widthClass =
-    props.maxWidth === "sm"
-      ? "max-w-sm"
-      : props.maxWidth === "md"
-        ? "max-w-3xl"
-        : "max-w-5xl";
+    props.maxWidth === "sm" ? "max-w-sm" : props.maxWidth === "md" ? "max-w-3xl" : "max-w-5xl";
   return ["page-shell", widthClass, props.paddingY].filter(Boolean);
 });
 

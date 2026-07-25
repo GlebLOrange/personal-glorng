@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  isCalculatorMode,
-  normalizeCalculatorMode,
-} from "@/composables/useExpenseCalculator";
+import { isCalculatorMode, normalizeCalculatorMode } from "@/composables/useExpenseCalculator";
 
 describe("normalizeCalculatorMode", () => {
   it("maps converter alias to convert", () => {
