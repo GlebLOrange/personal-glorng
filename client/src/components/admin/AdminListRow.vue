@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import { Card } from "@/components/ui/card";
 
 const props = withDefaults(
@@ -53,16 +54,17 @@ function onKeydown(event: KeyboardEvent): void {
 <template>
   <Card
     as="div"
-    variant="dense"
-    :hoverable="hoverable && interactive"
+    variant="ghost"
+    :hoverable="false"
     :interactive="focusable"
     :aria-expanded="expandable ? expanded : undefined"
     v-bind="rowAttrs"
     :class="[
       interactive ? 'cursor-pointer' : undefined,
       revealActionsOnHover ? 'group' : undefined,
+      hoverable ? 'hover:bg-surface-light/5' : undefined,
     ]"
-    class="w-full min-w-0 text-left"
+    class="w-full min-w-0 rounded-lg px-2 py-1.5 text-left"
     @click="onClick"
     @keydown="onKeydown"
   >
@@ -74,7 +76,10 @@ function onKeydown(event: KeyboardEvent): void {
         <slot name="badge" />
       </div>
       <div class="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-        <span v-if="$slots.primary" class="truncate text-sm font-medium text-surface-light">
+        <span
+          v-if="$slots.primary"
+          class="min-w-0 flex-1 truncate text-sm font-medium text-surface-light"
+        >
           <slot name="primary" />
         </span>
         <span
@@ -100,13 +105,12 @@ function onKeydown(event: KeyboardEvent): void {
       >
         <slot name="actions" />
       </div>
-      <span
+      <ChevronIcon
         v-if="expandable"
-        class="shrink-0 text-xs text-surface-muted"
-        aria-hidden="true"
-      >
-        {{ expanded ? "▾" : "▸" }}
-      </span>
+        direction="right"
+        :open="expanded"
+        class-name="size-3.5 text-surface-muted"
+      />
     </div>
     <div
       v-if="expanded && $slots.detail"

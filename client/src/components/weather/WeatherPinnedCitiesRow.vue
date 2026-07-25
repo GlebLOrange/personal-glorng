@@ -3,7 +3,6 @@ import { computed } from "vue";
 
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
-import WeatherBar from "@/components/weather/WeatherBar.vue";
 import WeatherCityTile from "@/components/weather/WeatherCityTile.vue";
 import type { GuestWeatherLocation } from "@/composables/useWeatherLocations";
 import type { WeatherLocation } from "@/types";
@@ -40,7 +39,7 @@ const isBusy = computed(() => props.loading || props.seeding);
       aria-label="Loading cities"
     >
       <Card
-        v-for="n in 3"
+        v-for="n in 2"
         :key="n"
         variant="compact"
         class="page-tile page-weather-tile-card animate-pulse"
@@ -55,7 +54,7 @@ const isBusy = computed(() => props.loading || props.seeding);
       description="No cities yet. Search above to add your first location."
     />
 
-    <div v-else class="page-tool-grid min-w-0">
+    <div v-else-if="otherCities.length" class="page-tool-grid min-w-0">
       <WeatherCityTile
         v-for="loc in otherCities"
         :key="loc.id"
@@ -64,12 +63,6 @@ const isBusy = computed(() => props.loading || props.seeding);
         :removable="!isDefaultLocation(loc)"
         @select="emit('select', loc.query)"
         @remove="emit('remove', loc.id)"
-      />
-
-      <WeatherBar
-        wrapper-class="page-tile md:col-start-3"
-        card-class="page-weather-tile-card"
-        expanded
       />
     </div>
   </section>

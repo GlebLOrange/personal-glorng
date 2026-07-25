@@ -4,6 +4,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import IconCopyButton from "@/components/ui/IconCopyButton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
@@ -489,7 +490,7 @@ function downloadResult(): void {
                 :class="SELECT_CLASS"
               >
                 <option value="custom">custom delimiters</option>
-                <option value="pipe_embed">pipe embed (13 fields)</option>
+                <option value="pipe_embed">pipe embed</option>
               </select>
             </div>
 
@@ -547,7 +548,6 @@ function downloadResult(): void {
                 v-model="rowTag"
                 name="row_tag"
                 type="text"
-                placeholder="optional"
                 class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
               />
             </div>
@@ -700,7 +700,7 @@ function downloadResult(): void {
           <p class="text-xs text-surface-mid mt-1">{{ metaSummary }}</p>
         </div>
         <div class="flex gap-2">
-          <BaseButton variant="ghost" @click="copyResult">copy json</BaseButton>
+          <IconCopyButton aria-label="copy json" @click="copyResult" />
           <BaseButton variant="ghost" @click="downloadResult">download json</BaseButton>
           <BaseButton variant="ghost" @click="showRawJson = !showRawJson">
             {{ showRawJson ? "hide raw json" : "show raw json" }}

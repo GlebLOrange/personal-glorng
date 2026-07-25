@@ -207,14 +207,12 @@ async function deleteAccount(): Promise<void> {
               name="display-name"
               autocomplete="name"
               label="display name"
-              placeholder="optional"
             />
             <BaseInput
               v-model="timezone"
               name="timezone"
               autocomplete="off"
               label="timezone"
-              placeholder="e.g. Europe/Warsaw"
               required
             />
             <BaseButton type="submit" variant="success" :loading="savingProfile" :disabled="!canSaveProfile">
@@ -276,7 +274,6 @@ async function deleteAccount(): Promise<void> {
               autocomplete="new-password"
               label="new password"
               placeholder="••••••••"
-              :hint="newPassword && passwordCheck.valid ? passwordCheck.message : undefined"
               :error="newPassword && !passwordCheck.valid ? passwordCheck.message : undefined"
               required
             />
@@ -300,7 +297,7 @@ async function deleteAccount(): Promise<void> {
       <Card>
         <CardBody>
           <form class="space-y-4" @submit.prevent="saveCurrency">
-            <BaseSelect v-model="displayCurrency">
+            <BaseSelect v-model="displayCurrency" label="display currency">
               <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
                 {{ code }}
               </option>

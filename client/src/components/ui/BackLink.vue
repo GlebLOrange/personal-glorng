@@ -6,9 +6,10 @@ import { actionFamilyClass } from "@/constants/httpStatusColors";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     to: RouteLocationRaw;
+    /** @deprecated Alias of default — both sizes match BaseButton icon hit target. */
     size?: "default" | "compact";
   }>(),
   {
@@ -18,21 +19,16 @@ const props = withDefaults(
 
 const attrs = useAttrs();
 
-const sizeClass = computed(() =>
-  props.size === "compact"
-    ? "!min-h-8 !min-w-8 !h-8 !w-8"
-    : "!min-h-11 !min-w-11 !h-11 !w-11",
-);
-
-const iconClass = computed(() => (props.size === "compact" ? "size-4" : "size-5"));
+/** Match BaseButton size="icon" / IconCloseButton. */
+const sizeClass = "!min-h-8 !min-w-8 !h-8 !w-8 !px-0";
 
 function linkClass(isActive: boolean): string {
   return [
     actionFamilyClass("1xx", isActive),
-    // Borderless icon control; anchors ignore :enabled so mirror 1xx hover without it.
-    "!border-transparent hover:!border-transparent focus-visible:!border-transparent !px-0",
+    // Anchors ignore :enabled — mirror 1xx hover border/bg without it.
+    "hover:border-accent-blue/40 focus-visible:border-accent-blue/40",
     isActive ? "" : "hover:text-accent-blue hover:bg-accent-blue/15",
-    sizeClass.value,
+    sizeClass,
     attrs.class,
   ]
     .filter(Boolean)
@@ -59,7 +55,7 @@ const nativeAttrs = computed(() => {
       @click="navigate($event)"
     >
       <svg
-        :class="iconClass"
+        class="size-4"
         viewBox="0 0 40 40"
         fill="none"
         stroke="currentColor"

@@ -42,6 +42,15 @@ const STATUS_ACTION_LABELS: Record<TaskStatus, string> = {
   cancelled: "cancel task",
 };
 
+/** Text + soft hover for status change menu items. */
+const STATUS_MENU_ITEM_CLASS: Record<TaskStatus, string> = {
+  pending: "text-status-warning hover:bg-status-warning/10",
+  completed: "text-status-success hover:bg-status-success/10",
+  not_completed: "text-status-error hover:bg-status-error/10",
+  postponed: "text-accent-blue hover:bg-accent-blue/10",
+  cancelled: "text-surface-mid hover:bg-surface-mid/10",
+};
+
 /** Human-readable label for a task or intake status. */
 export function statusLabel(status: string): string {
   return STATUS_LABELS[status] ?? status.replaceAll("_", " ");
@@ -55,4 +64,9 @@ export function statusActionLabel(status: TaskStatus): string {
 /** Tailwind classes for a status badge. */
 export function statusBadgeClass(status: string): string {
   return STATUS_BADGE_CLASS[status] ?? "text-surface-mid bg-surface-mid/10 border-surface-border";
+}
+
+/** Tailwind classes for a status action in a dropdown menu. */
+export function statusMenuItemClass(status: TaskStatus): string {
+  return STATUS_MENU_ITEM_CLASS[status];
 }

@@ -59,6 +59,7 @@ export function useRecipes() {
   const showForm = ref(false);
   const showCookMode = ref(false);
   const showDeleteConfirm = ref(false);
+  const pendingDeleteRecipe = ref<Recipe | null>(null);
   const editingId = ref<number | null>(null);
   const form = ref<RecipeFormData>(emptyForm());
   let loadGeneration = 0;
@@ -78,9 +79,12 @@ export function useRecipes() {
     return `${n} recipe${n === 1 ? "" : "s"}`;
   });
   const formTitle = computed(() => (editingId.value ? "edit recipe" : "new recipe"));
+  const deleteTarget = computed(
+    () => pendingDeleteRecipe.value ?? selectedRecipe.value,
+  );
   const deleteConfirmMessage = computed(() =>
-    selectedRecipe.value
-      ? `Delete "${selectedRecipe.value.title}"? This cannot be undone.`
+    deleteTarget.value
+      ? `Delete "${deleteTarget.value.title}"? This cannot be undone.`
       : "Delete this recipe? This cannot be undone.",
   );
 
@@ -259,18 +263,27 @@ export function useRecipes() {
     }
   }
 
-  function requestDelete(): void {
-    if (!selectedRecipe.value) return;
+  function requestDelete(recipe?: Recipe): void {
+    if (recipe) {
+      pendingDeleteRecipe.value = recipe;
+    } else if (!selectedRecipe.value) {
+      return;
+    } else {
+      pendingDeleteRecipe.value = null;
+    }
+    if (!deleteTarget.value) return;
     showDeleteConfirm.value = true;
   }
 
   function cancelDelete(): void {
     showDeleteConfirm.value = false;
+    pendingDeleteRecipe.value = null;
   }
 
   async function confirmDelete(): Promise<void> {
-    if (!selectedRecipe.value) return;
-    const recipeId = selectedRecipe.value.id;
+    const target = deleteTarget.value;
+    if (!target) return;
+    const recipeId = target.id;
     const result = await runDelete(
       async () => {
         await api.delete(`/tools/recipes/${recipeId}`);
@@ -284,7 +297,10 @@ export function useRecipes() {
     if (result === null) return;
 
     showDeleteConfirm.value = false;
-    closeDetail();
+    pendingDeleteRecipe.value = null;
+    if (selectedRecipe.value?.id === recipeId || selectedRecipeId.value === recipeId) {
+      closeDetail();
+    }
     await loadRecipes();
   }
 

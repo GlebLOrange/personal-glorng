@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -28,6 +29,8 @@ const emit = defineEmits<{
   "update:form": [value: NewsArticleFormData];
 }>();
 
+const themesOpen = ref(false);
+
 const title = computed(() => (props.mode === "create" ? "new article" : "edit article"));
 const selectedThemes = computed(() =>
   props.form.themes
@@ -37,6 +40,13 @@ const selectedThemes = computed(() =>
 );
 const selectedThemesLabel = computed(() =>
   selectedThemes.value.length > 0 ? selectedThemes.value.join(", ") : "none",
+);
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (!isOpen) themesOpen.value = false;
+  },
 );
 
 function patch(patchValue: Partial<NewsArticleFormData>): void {
@@ -68,6 +78,10 @@ function toggleTheme(theme: string): void {
   }
   if (themes.length >= NEWS_THEME_LIMIT) return;
   patch({ themes: [...themes, theme].join(", ") });
+}
+
+function onThemesToggle(event: Event): void {
+  themesOpen.value = (event.target as HTMLDetailsElement).open;
 }
 </script>
 
@@ -146,8 +160,11 @@ function toggleTheme(theme: string): void {
           placeholder="summary"
           @update:model-value="patch({ summary: toStringValue($event) })"
         />
-        <details class="rounded border border-surface-border px-3 py-2">
-          <summary class="cursor-pointer text-sm text-surface-mid">
+        <details class="rounded border border-surface-border px-3 py-2" @toggle="onThemesToggle">
+          <summary
+            class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+          >
+            <ChevronIcon :open="themesOpen" />
             themes ({{ selectedThemes.length }}/{{ NEWS_THEME_LIMIT }})
             <span class="text-xs text-surface-muted"> — {{ selectedThemesLabel }}</span>
           </summary>
@@ -187,23 +204,12 @@ function toggleTheme(theme: string): void {
         <template #start>
           <BaseButton
             v-if="mode === 'edit'"
-            variant="ghost"
             danger
             type="button"
             :disabled="loading"
             @click="emit('delete')"
           >
             delete
-          </BaseButton>
-        </template>
-        <template #dismiss>
-          <BaseButton
-            variant="ghost"
-            danger
-            type="button"
-            @click="emit('close')"
-          >
-            cancel
           </BaseButton>
         </template>
         <template #primary>

@@ -3,15 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import WeatherPinnedCitiesRow from "@/components/weather/WeatherPinnedCitiesRow.vue";
 
-vi.mock("@/components/weather/WeatherBar.vue", () => ({
-  default: {
-    name: "WeatherBar",
-    props: ["wrapperClass", "cardClass", "expanded"],
-    template:
-      '<aside data-testid="weather-bar" :data-wrapper-class="wrapperClass" :data-expanded="expanded" />',
-  },
-}));
-
 vi.mock("@/components/weather/WeatherCityTile.vue", () => ({
   default: {
     name: "WeatherCityTile",
@@ -45,15 +36,10 @@ function mountRow(overrides: Record<string, unknown> = {}) {
 }
 
 describe("WeatherPinnedCitiesRow", () => {
-  it("shows active city in column 3 and up to two other cities", () => {
+  it("shows other cities without embedding the active weather bar", () => {
     const wrapper = mountRow();
 
-    expect(wrapper.find('[data-testid="weather-bar"]').attributes("data-wrapper-class")).toBe(
-      "page-tile md:col-start-3",
-    );
-    expect(wrapper.find('[data-testid="weather-bar"]').attributes("data-expanded")).not.toBe(
-      "false",
-    );
+    expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(false);
 
     const cityTiles = wrapper.findAll('[data-testid="weather-city-tile"]');
     expect(cityTiles).toHaveLength(2);
@@ -81,13 +67,13 @@ describe("WeatherPinnedCitiesRow", () => {
     const wrapper = mountRow({ loading: true });
 
     expect(wrapper.find('[aria-label="Loading cities"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="weather-city-tile"]').exists()).toBe(false);
   });
 
   it("shows empty state when there are no cities", () => {
     const wrapper = mountRow({ locations: [] });
 
     expect(wrapper.text()).toContain("No cities yet");
-    expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="weather-city-tile"]').exists()).toBe(false);
   });
 });

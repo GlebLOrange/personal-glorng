@@ -436,7 +436,6 @@ onUnmounted(() => {
           </template>
           <template #dismiss>
             <BaseButton
-              variant="ghost"
               danger
               @click="requestCloseUserDrawer"
             >

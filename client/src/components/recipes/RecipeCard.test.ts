@@ -20,7 +20,7 @@ const recipe: Recipe = {
 };
 
 describe("RecipeCard", () => {
-  it("selects via a dedicated button", async () => {
+  it("selects on row click, shows monogram and title-row chips", async () => {
     const wrapper = mount(RecipeCard, {
       props: {
         recipe,
@@ -32,11 +32,43 @@ describe("RecipeCard", () => {
       },
     });
 
-    expect(wrapper.find('[role="button"]').exists()).toBe(false);
-
-    const openButton = wrapper.get('button[aria-label="Open recipe Tomato Soup"]');
-    await openButton.trigger("click");
+    const row = wrapper.get('[aria-label="Open recipe Tomato Soup"]');
+    await row.trigger("click");
     expect(wrapper.emitted("select")).toEqual([[42]]);
+    expect(wrapper.text()).toContain("TS");
+    expect(wrapper.text()).toContain("prep 10m");
+    expect(wrapper.text()).toContain("cook 20m");
+    expect(wrapper.text()).toContain("2 servings");
+    expect(wrapper.text()).not.toContain("no image");
     expect(wrapper.text()).not.toContain("quick");
+    expect(wrapper.find('[aria-label="edit recipe"]').exists()).toBe(false);
+  });
+
+  it("emits edit and delete when canWrite", async () => {
+    const wrapper = mount(RecipeCard, {
+      props: {
+        recipe,
+        canWrite: true,
+      },
+      global: {
+        stubs: {
+          BaseImage: true,
+          IconEditButton: {
+            template: `<button type="button" aria-label="edit recipe" @click="$emit('click')" />`,
+            emits: ["click"],
+          },
+          IconCloseButton: {
+            template: `<button type="button" aria-label="delete recipe" @click="$emit('click')" />`,
+            emits: ["click"],
+          },
+        },
+      },
+    });
+
+    await wrapper.get('[aria-label="edit recipe"]').trigger("click");
+    expect(wrapper.emitted("edit")?.[0]).toEqual([recipe]);
+
+    await wrapper.get('[aria-label="delete recipe"]').trigger("click");
+    expect(wrapper.emitted("delete")?.[0]).toEqual([recipe]);
   });
 });

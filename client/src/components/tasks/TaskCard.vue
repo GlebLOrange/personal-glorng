@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import ToolIcon from "@/components/icons/ToolIcon.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
+import IconEditButton from "@/components/ui/IconEditButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/format";
@@ -43,16 +43,7 @@ const emit = defineEmits<{ select: [id: number] }>();
     </template>
     <template #time>{{ formatDate(task.scheduled_at) }}</template>
     <template #actions>
-      <BaseButton
-        variant="ghost"
-        quiet
-        size="sm"
-        class="!text-accent-blue hover:enabled:!bg-accent-blue/15 focus-visible:!text-accent-blue"
-        aria-label="edit task"
-        @click="emit('select', task.id)"
-      >
-        ✎
-      </BaseButton>
+      <IconEditButton aria-label="edit task" @click="emit('select', task.id)" />
     </template>
   </AdminListRow>
 </template>

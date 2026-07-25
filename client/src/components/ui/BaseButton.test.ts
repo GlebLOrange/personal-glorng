@@ -16,13 +16,18 @@ describe("BaseButton", () => {
     expect(button.text()).toBe("Save");
   });
 
-  it("keeps sm/md/field at input height; lg is taller", () => {
+  it("keeps sm/md/field at input height; lg is taller; icon is square h-8", () => {
     expect(mount(BaseButton, { props: { size: "sm" } }).get("button").classes()).toContain("h-11");
     expect(mount(BaseButton, { props: { size: "md" } }).get("button").classes()).toContain("h-11");
     expect(mount(BaseButton, { props: { size: "field" } }).get("button").classes()).toContain(
       "h-11",
     );
     expect(mount(BaseButton, { props: { size: "lg" } }).get("button").classes()).toContain("h-12");
+    const icon = mount(BaseButton, { props: { size: "icon" } }).get("button");
+    expect(icon.classes()).toContain("h-8");
+    expect(icon.classes()).toContain("w-8");
+    expect(icon.classes()).toContain("min-w-8");
+    expect(icon.classes()).toContain("px-0");
   });
 
   it("applies muted quiet danger styles on ghost danger", () => {

@@ -4,14 +4,15 @@ import { useRouter } from "vue-router";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
-import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
+import IconEditButton from "@/components/ui/IconEditButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { feedbackStatusClass } from "@/constants/filterColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
@@ -197,12 +198,13 @@ onMounted(load);
         "
       />
 
-      <div v-else class="min-w-0 mt-1 space-y-1">
+      <div v-else class="mt-1 min-w-0 divide-y divide-surface-border/40">
         <AdminListRow
           v-for="item in items"
           :key="item.id"
           interactive
           nested-interactive
+          reveal-actions-on-hover
           @click="openItem(item)"
         >
           <template #badge>
@@ -216,6 +218,7 @@ onMounted(load);
           </template>
           <template #time>{{ formatDate(item.created_at) }}</template>
           <template #actions>
+            <IconEditButton aria-label="edit feedback" @click="openItem(item)" />
             <BaseButton
               v-if="item.status === 'archived'"
               variant="ghost"

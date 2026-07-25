@@ -1,6 +1,8 @@
 <script setup lang="ts">
 defineProps<{
   destructive?: boolean;
+  /** Optional text + hover classes (overrides default / destructive styling). */
+  colorClass?: string;
 }>();
 
 const emit = defineEmits<{
@@ -18,9 +20,11 @@ function onClick(): void {
     role="menuitem"
     :class="[
       'w-full text-left px-3 py-2 text-sm transition-colors',
-      destructive
-        ? 'text-status-error hover:bg-status-error/10'
-        : 'text-surface-light hover:bg-surface-border/40',
+      colorClass
+        ? colorClass
+        : destructive
+          ? 'text-status-error hover:bg-status-error/10'
+          : 'text-surface-light hover:bg-surface-border/40',
     ]"
     @click="onClick"
   >

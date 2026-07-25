@@ -188,7 +188,7 @@ onMounted(load);
 
       <EmptyState v-else-if="items.length === 0" class="mt-4" description="No log entries found." />
 
-      <div v-else class="min-w-0 mt-1 space-y-1">
+      <div v-else class="mt-1 min-w-0 divide-y divide-surface-border/40">
         <AdminListRow
           v-for="entry in items"
           :key="entry.id"

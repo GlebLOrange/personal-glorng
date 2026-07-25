@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import ClockIcon from "@/components/icons/ClockIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
-import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
-import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
+import IconEditButton from "@/components/ui/IconEditButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import { formatRecipeTime } from "@/utils/recipe";
@@ -35,23 +35,6 @@ const emit = defineEmits<{
     max-width="lg"
     @close="emit('close')"
   >
-    <template v-if="canWrite && recipe" #header-actions>
-      <BaseButton variant="ghost" size="sm" @click="emit('edit', recipe)">edit</BaseButton>
-      <BaseDropdownMenu aria-label="Recipe actions">
-        <template #default="{ close: closeMenu }">
-          <BaseDropdownMenuItem
-            destructive
-            @select="
-              closeMenu();
-              emit('delete');
-            "
-          >
-            delete
-          </BaseDropdownMenuItem>
-        </template>
-      </BaseDropdownMenu>
-    </template>
-
     <div v-if="loading || !recipe" class="space-y-3 animate-pulse">
       <div class="h-40 bg-surface-border rounded-md" />
       <div class="h-4 w-full bg-surface-border rounded" />
@@ -65,23 +48,26 @@ const emit = defineEmits<{
         class="w-full h-48 rounded-md object-cover"
       />
 
-      <div class="flex flex-wrap gap-2 text-xs text-surface-mid">
+      <div class="flex flex-wrap gap-2 text-xs">
         <span
           v-if="recipe.prep_time"
-          class="px-2 py-1 rounded-full border border-surface-border"
+          class="inline-flex items-center gap-1 rounded-full border border-accent-blue/30 bg-accent-blue/15 px-2 py-1 text-accent-blue"
         >
+          <ClockIcon class-name="size-3.5 shrink-0" />
           {{ formatRecipeTime(recipe.prep_time) }} prep
         </span>
         <span
           v-if="recipe.cook_time"
-          class="px-2 py-1 rounded-full border border-surface-border"
+          class="inline-flex items-center gap-1 rounded-full border border-status-warning/30 bg-status-warning/15 px-2 py-1 text-status-warning"
         >
+          <ClockIcon class-name="size-3.5 shrink-0" />
           {{ formatRecipeTime(recipe.cook_time) }} cook
         </span>
         <span
           v-if="recipe.servings"
-          class="px-2 py-1 rounded-full border border-surface-border"
+          class="inline-flex items-center gap-1 rounded-full border border-accent-violet/30 bg-accent-violet/15 px-2 py-1 text-accent-violet"
         >
+          <ClockIcon class-name="size-3.5 shrink-0" />
           {{ recipe.servings }} servings
         </span>
       </div>
@@ -113,7 +99,23 @@ const emit = defineEmits<{
     </div>
 
     <template v-if="recipe && !loading" #footer>
-      <ToolbarPillButton family="2xx" class="w-full" @click="emit('cook')">cook</ToolbarPillButton>
+      <div class="flex w-full items-center gap-3">
+        <BaseButton
+          v-if="canWrite"
+          danger
+          @click="emit('delete')"
+        >
+          delete
+        </BaseButton>
+        <ToolbarPillButton family="2xx" class="min-w-0 flex-1" @click="emit('cook')">
+          cook
+        </ToolbarPillButton>
+        <IconEditButton
+          v-if="canWrite"
+          aria-label="edit recipe"
+          @click="emit('edit', recipe)"
+        />
+      </div>
     </template>
   </BaseDrawer>
 </template>

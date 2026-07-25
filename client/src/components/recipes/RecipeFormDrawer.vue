@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
@@ -9,7 +10,9 @@ import BaseImage from "@/components/ui/BaseImage.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
+import { RECIPE_TAG_LIMIT, RECIPE_TAG_SET, RECIPE_TAGS } from "@/constants/recipes";
 import type { RecipeFormData } from "@/composables/useRecipes";
 
 const props = defineProps<{
@@ -50,10 +53,37 @@ const ingredientCount = computed(() => filledCount(props.form.ingredients));
 const ingredientPreview = computed(() => previewLabel(props.form.ingredients));
 const stepCount = computed(() => filledCount(props.form.steps));
 const stepPreview = computed(() => previewLabel(props.form.steps));
-const tagsPreview = computed(() => {
-  const tags = props.form.tags.trim();
-  return tags ? ` — ${tags.length > 48 ? `${tags.slice(0, 48)}…` : tags}` : "";
+
+const selectedTags = computed(() =>
+  props.form.tags
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean),
+);
+
+const selectedTagsLabel = computed(() =>
+  selectedTags.value.length > 0 ? selectedTags.value.join(", ") : "none",
+);
+
+/** Catalog tags plus any selected custom/imported tags not in the curated list. */
+const tagChoices = computed(() => {
+  const extras = selectedTags.value.filter((tag) => !RECIPE_TAG_SET.has(tag));
+  return [...RECIPE_TAGS, ...extras];
 });
+
+function tagIsSelected(tag: string): boolean {
+  return selectedTags.value.includes(tag);
+}
+
+function toggleTag(tag: string): void {
+  const tags = selectedTags.value;
+  if (tags.includes(tag)) {
+    patch({ tags: tags.filter((item) => item !== tag).join(", ") });
+    return;
+  }
+  if (tags.length >= RECIPE_TAG_LIMIT) return;
+  patch({ tags: [...tags, tag].join(", ") });
+}
 
 // Uncontrolled <details>; set .open on drawer open so Vue doesn't fight native toggles.
 const ingredientsDetails = ref<HTMLDetailsElement | null>(null);
@@ -115,6 +145,23 @@ function onIngredientEnter(event: KeyboardEvent, index: number): void {
   void focusField("[data-recipe-ingredient]", index + 1);
 }
 
+function splitPasteLines(text: string): string[] {
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function onIngredientPaste(event: ClipboardEvent, index: number): void {
+  const lines = splitPasteLines(event.clipboardData?.getData("text") ?? "");
+  if (lines.length < 2) return;
+  event.preventDefault();
+  const ingredients = [...props.form.ingredients];
+  ingredients.splice(index, 1, ...lines);
+  patch({ ingredients });
+  void focusField("[data-recipe-ingredient]", index + lines.length - 1);
+}
+
 function addStep(): void {
   patch({ steps: [...props.form.steps, ""] });
   void focusField("[data-recipe-step]", props.form.steps.length);
@@ -146,6 +193,16 @@ function onStepModEnter(event: KeyboardEvent, index: number): void {
   steps.splice(index + 1, 0, "");
   patch({ steps });
   void focusField("[data-recipe-step]", index + 1);
+}
+
+function onStepPaste(event: ClipboardEvent, index: number): void {
+  const lines = splitPasteLines(event.clipboardData?.getData("text") ?? "");
+  if (lines.length < 2) return;
+  event.preventDefault();
+  const steps = [...props.form.steps];
+  steps.splice(index, 1, ...lines);
+  patch({ steps });
+  void focusField("[data-recipe-step]", index + lines.length - 1);
 }
 
 function toStringValue(value: string | number | null | undefined): string {
@@ -201,10 +258,13 @@ function toNullableNumber(value: string | number | null | undefined): number | n
 
       <details
         ref="ingredientsDetails"
-        class="rounded border border-surface-border px-3 py-2"
+        class="group rounded border border-surface-border px-3 py-2"
         open
       >
-        <summary class="cursor-pointer text-sm text-surface-mid">
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+        >
+          <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
           ingredients ({{ ingredientCount }})
           <span v-if="ingredientPreview" class="text-xs text-surface-muted">{{
             ingredientPreview
@@ -225,6 +285,12 @@ function toNullableNumber(value: string | number | null | undefined): number | n
                 data-recipe-ingredient
                 @update:model-value="updateIngredient(idx, toStringValue($event))"
                 @keydown="onIngredientEnter($event, idx)"
+                @paste="onIngredientPaste($event, idx)"
+              />
+              <IconCloseButton
+                v-if="form.ingredients.length > 1"
+                :aria-label="`remove ingredient ${idx + 1}`"
+                @click="removeIngredient(idx)"
               />
               <BaseDropdownMenu
                 v-if="form.ingredients.length > 1"
@@ -250,19 +316,11 @@ function toNullableNumber(value: string | number | null | undefined): number | n
                   >
                     move down
                   </BaseDropdownMenuItem>
-                  <BaseDropdownMenuItem
-                    destructive
-                    @select="
-                      closeMenu();
-                      removeIngredient(idx);
-                    "
-                  >
-                    remove
-                  </BaseDropdownMenuItem>
                 </template>
               </BaseDropdownMenu>
             </li>
           </ul>
+          <p class="text-xs text-surface-muted">Enter adds the next ingredient</p>
           <BaseButton variant="secondary" size="sm" type="button" @click="addIngredient">
             + ingredient
           </BaseButton>
@@ -271,10 +329,13 @@ function toNullableNumber(value: string | number | null | undefined): number | n
 
       <details
         ref="stepsDetails"
-        class="rounded border border-surface-border px-3 py-2"
+        class="group rounded border border-surface-border px-3 py-2"
         open
       >
-        <summary class="cursor-pointer text-sm text-surface-mid">
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+        >
+          <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
           steps ({{ stepCount }})
           <span v-if="stepPreview" class="text-xs text-surface-muted">{{ stepPreview }}</span>
         </summary>
@@ -300,6 +361,13 @@ function toNullableNumber(value: string | number | null | undefined): number | n
                 data-recipe-step
                 @update:model-value="updateStep(idx, String($event ?? ''))"
                 @keydown="onStepModEnter($event, idx)"
+                @paste="onStepPaste($event, idx)"
+              />
+              <IconCloseButton
+                v-if="form.steps.length > 1"
+                class="mt-1"
+                :aria-label="`remove step ${idx + 1}`"
+                @click="removeStep(idx)"
               />
               <BaseDropdownMenu
                 v-if="form.steps.length > 1"
@@ -325,15 +393,6 @@ function toNullableNumber(value: string | number | null | undefined): number | n
                   >
                     move down
                   </BaseDropdownMenuItem>
-                  <BaseDropdownMenuItem
-                    destructive
-                    @select="
-                      closeMenu();
-                      removeStep(idx);
-                    "
-                  >
-                    remove
-                  </BaseDropdownMenuItem>
                 </template>
               </BaseDropdownMenu>
             </li>
@@ -345,17 +404,35 @@ function toNullableNumber(value: string | number | null | undefined): number | n
         </div>
       </details>
 
-      <details ref="tagsDetails" class="rounded border border-surface-border px-3 py-2">
-        <summary class="cursor-pointer text-sm text-surface-mid">
-          tags
-          <span v-if="tagsPreview" class="text-xs text-surface-muted">{{ tagsPreview }}</span>
+      <details ref="tagsDetails" class="group rounded border border-surface-border px-3 py-2">
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+        >
+          <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
+          tags ({{ selectedTags.length }}/{{ RECIPE_TAG_LIMIT }})
+          <span class="text-xs text-surface-muted"> — {{ selectedTagsLabel }}</span>
         </summary>
-        <div class="mt-3">
-          <BaseInput
-            :model-value="form.tags"
-            placeholder="tags · italian, vegetarian"
-            @update:model-value="patch({ tags: toStringValue($event) })"
-          />
+        <div class="mt-3 flex flex-wrap gap-2">
+          <label
+            v-for="tag in tagChoices"
+            :key="tag"
+            :for="`recipe-drawer-tag-${tag}`"
+            class="inline-flex cursor-pointer items-center gap-2 rounded border border-surface-border px-3 py-1.5 text-xs transition-colors"
+            :class="{
+              'border-accent-blue text-surface-light': tagIsSelected(tag),
+              'text-surface-mid': !tagIsSelected(tag),
+              'opacity-50': !tagIsSelected(tag) && selectedTags.length >= RECIPE_TAG_LIMIT,
+            }"
+          >
+            <input
+              :id="`recipe-drawer-tag-${tag}`"
+              type="checkbox"
+              :checked="tagIsSelected(tag)"
+              :disabled="!tagIsSelected(tag) && selectedTags.length >= RECIPE_TAG_LIMIT"
+              @change="toggleTag(tag)"
+            />
+            {{ tag }}
+          </label>
         </div>
       </details>
 
@@ -371,7 +448,6 @@ function toNullableNumber(value: string | number | null | undefined): number | n
       <DrawerFooterActions>
         <template #dismiss>
           <BaseButton
-            variant="ghost"
             danger
             type="button"
             @click="emit('close')"

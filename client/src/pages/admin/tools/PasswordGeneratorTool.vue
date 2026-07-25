@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import IconCopyButton from "@/components/ui/IconCopyButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
@@ -122,7 +123,7 @@ async function generatePassword(): Promise<void> {
           <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
             {{ showPassword ? "hide" : "show" }}
           </BaseButton>
-          <BaseButton variant="ghost" size="field" @click="copy(generated)">copy</BaseButton>
+          <IconCopyButton @click="copy(generated)" />
         </div>
         <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
           {{ strength.message }}
