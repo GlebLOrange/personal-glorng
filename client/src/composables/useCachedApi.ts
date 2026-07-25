@@ -3,6 +3,7 @@ import { ref, toValue, type MaybeRefOrGetter, type Ref } from "vue";
 import { api } from "@/composables/useApi";
 
 const cache = new Map<string, { data: unknown; ts: number }>();
+const inflight = new Map<string, Promise<unknown>>();
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 64;
 
@@ -23,8 +24,30 @@ function pruneCache(ttlMs: number): void {
   }
 }
 
+async function fetchAndCache<T>(url: string, ttlMs: number): Promise<T> {
+  const existing = inflight.get(url);
+  if (existing) {
+    return existing as Promise<T>;
+  }
+
+  const request = api
+    .get<T>(url)
+    .then((res) => {
+      cache.set(url, { data: res.data, ts: Date.now() });
+      pruneCache(ttlMs);
+      return res.data;
+    })
+    .finally(() => {
+      inflight.delete(url);
+    });
+
+  inflight.set(url, request);
+  return request;
+}
+
 /**
  * Returns cached API data if still fresh, otherwise fetches and caches.
+ * Concurrent fetches for the same URL share one in-flight promise.
  * TTL defaults to 5 minutes.
  */
 export function useCachedApi<T>(
@@ -53,13 +76,11 @@ export function useCachedApi<T>(
 
     loading.value = true;
     try {
-      const res = await api.get<T>(resolved);
+      const payload = await fetchAndCache<T>(resolved, ttlMs);
       if (requestGen !== generation) {
         return;
       }
-      data.value = res.data;
-      cache.set(resolved, { data: res.data, ts: Date.now() });
-      pruneCache(ttlMs);
+      data.value = payload;
     } catch (err) {
       if (requestGen !== generation) {
         return;
@@ -84,4 +105,5 @@ export function invalidateCachedApi(url: string): void {
 /** Clear all cached API responses (e.g. on logout or session expiry). */
 export function clearCachedApi(): void {
   cache.clear();
+  inflight.clear();
 }

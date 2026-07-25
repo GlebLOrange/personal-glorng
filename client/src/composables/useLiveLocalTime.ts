@@ -14,6 +14,72 @@ import {
   type LiveTimeFormatKind,
 } from "@/utils/weather";
 
+type TickFn = () => void;
+
+const subscribers = new Set<TickFn>();
+let sharedTimer: ReturnType<typeof setInterval> | null = null;
+let visibilityBound = false;
+
+function tickAll(): void {
+  for (const fn of subscribers) {
+    fn();
+  }
+}
+
+function stopSharedTimer(): void {
+  if (sharedTimer === null) {
+    return;
+  }
+  clearInterval(sharedTimer);
+  sharedTimer = null;
+}
+
+function startSharedTimer(): void {
+  if (sharedTimer !== null) {
+    return;
+  }
+  if (typeof document !== "undefined" && document.hidden) {
+    return;
+  }
+  sharedTimer = setInterval(tickAll, 1_000);
+}
+
+function onVisibilityChange(): void {
+  if (typeof document === "undefined") {
+    return;
+  }
+  if (document.hidden) {
+    stopSharedTimer();
+    return;
+  }
+  if (subscribers.size === 0) {
+    return;
+  }
+  tickAll();
+  startSharedTimer();
+}
+
+function ensureVisibilityListener(): void {
+  if (visibilityBound || typeof document === "undefined") {
+    return;
+  }
+  visibilityBound = true;
+  document.addEventListener("visibilitychange", onVisibilityChange);
+}
+
+/** One shared 1Hz timer for all live clocks; paused while the tab is hidden. */
+function subscribeLiveClock(tick: TickFn): () => void {
+  subscribers.add(tick);
+  ensureVisibilityListener();
+  startSharedTimer();
+  return () => {
+    subscribers.delete(tick);
+    if (subscribers.size === 0) {
+      stopSharedTimer();
+    }
+  };
+}
+
 function updateFromOffset(
   offset: number,
   fmt: LiveTimeFormatKind,
@@ -52,7 +118,7 @@ export function useLiveLocalTime(
   const liveDate = ref<string | null>(null);
   const liveDateTime = ref<string | null>(null);
   const liveDateIso = ref<string | null>(null);
-  let timer: ReturnType<typeof setInterval> | null = null;
+  let unsubscribe: (() => void) | null = null;
 
   const refs = { liveTime, liveDate, liveDateTime, liveDateIso };
 
@@ -87,13 +153,12 @@ export function useLiveLocalTime(
 
   onMounted(() => {
     update();
-    timer = setInterval(update, 1_000);
+    unsubscribe = subscribeLiveClock(update);
   });
 
   onUnmounted(() => {
-    if (timer) {
-      clearInterval(timer);
-    }
+    unsubscribe?.();
+    unsubscribe = null;
   });
 
   watch(
