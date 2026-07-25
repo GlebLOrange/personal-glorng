@@ -147,7 +147,7 @@ Structured API logs (Loguru / [`logging.py`](../../server/app/core/logging.py)) 
 | Control | Detail |
 |---------|--------|
 | Master switch | `APP_LOG_PERSIST_ENABLED` (default `true`) |
-| Min level stored | `APP_LOG_PERSIST_MIN_LEVEL` (default `INFO`; DEBUG stays stderr-only) |
+| Min level stored | `APP_LOG_PERSIST_MIN_LEVEL` (dev default `WARNING`; prod example `INFO`; DEBUG stays stderr-only) |
 | Retention | TTL index on `occurred_at` — `APP_LOG_RETENTION_DAYS` (default 30) |
 | Admin access | `GET /api/tools/app-logs` requires `app-logs:read` |
 | Health noise | `/api/health` request logs are not persisted |
@@ -160,7 +160,8 @@ Audit events ([`audit_events`](../../server/app/db/repositories/audit.py)) remai
 
 - Never commit `.env` (see [Configuration](/reference/configuration))
 - Production startup validates strength of `JWT_SECRET`, `FERNET_SECRET` (must differ from `JWT_SECRET`), `RABBITMQ_PASSWORD`, `POSTGRES_PASSWORD`, and the password embedded in `REDIS_URL` — see [`server/app/settings.py`](../../server/app/settings.py)
-- Weekly Dependabot updates for `/server` (uv + Docker), `/client` (npm + Docker), `/docs` (npm), and GitHub Actions; [`security.yml`](../../.github/workflows/security.yml) runs gitleaks, pip-audit, and npm audit
+- Weekly Dependabot updates for `/server` (uv + Docker), `/client` (npm + Docker), `/docs` (npm), and GitHub Actions; [`security.yml`](../../.github/workflows/security.yml) runs gitleaks on every PR/push, and pip-audit / npm audit on schedule (or when lockfiles change)
+- **Development:** GitHub branch ruleset / required checks are **disabled** so CI stays advisory. **Before production:** enable `main-protection` (require `ci-ok` + `gitleaks`), keep Actions token permissions read-only, and set any deploy secrets — full matrix in [DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd)
 
 ## Risk register
 

@@ -4,16 +4,17 @@ Production runbook for the Docker Compose stack.
 
 ## Prerequisites
 
-1. Copy [`.env.production.example`](../../.env.production.example) (or `.env.example`) to `.env` and fill blanks (`APP_ENV=production`).
-2. Set strong secrets — production startup validates:
+1. **GitHub / CI gates** — During development, branch protection and required Actions checks are **off**. Before production, enable the `main-protection` ruleset and verify secrets/workflows per [DevOps checklist — Development vs production](/operations/devops-checklist#development-vs-production-github--cicd).
+2. Copy [`.env.production.example`](../../.env.production.example) (or `.env.example`) to `.env` and fill blanks (`APP_ENV=production`).
+3. Set strong secrets — production startup validates:
    - `JWT_SECRET` — 32+ chars, no weak markers (JWT signing only)
    - `FERNET_SECRET` — 32+ chars, must differ from `JWT_SECRET`
    - `REDIS_PASSWORD`, `MONGODB_PASSWORD`, `POSTGRES_PASSWORD` (if Postgres enabled)
    - `RABBITMQ_PASSWORD` — 16+ chars when Celery is used
    - Set `REDIS_CACHE_URL` to the `redis-cache` service for cache isolation
-3. Set `CORS_ORIGINS` to explicit HTTPS origins (no `*`).
-4. Set `RUN_MIGRATIONS=false` and `RUN_SEED=false` (migrations run via `migrate` service only).
-5. Prod compose enables log rotation (`10m` × 3), `no-new-privileges`, and `init` on services. Process env overrides dotenv when you inject secrets without editing `.env`.
+4. Set `CORS_ORIGINS` to explicit HTTPS origins (no `*`).
+5. Set `RUN_MIGRATIONS=false` and `RUN_SEED=false` (migrations run via `migrate` service only).
+6. Prod compose enables log rotation (`10m` × 3), `no-new-privileges`, and `init` on services. Process env overrides dotenv when you inject secrets without editing `.env`.
 
 See [Configuration](/reference/configuration) for the full variable list.
 
@@ -40,7 +41,7 @@ Client sourcemap upload is gated on GitHub Actions secrets (workflow [`sentry-re
 | `SERVER_SENTRY_DSN` | Server/worker DSN on the API host |
 | `SERVER_SENTRY_RELEASE` / `VITE_CLIENT_SENTRY_RELEASE` | Same release string on client build and server so events group |
 
-Trigger: **Actions → sentry-release → Run workflow**, or push a `v*` tag. Without `SENTRY_AUTH_TOKEN`, the job is skipped (CI stays green). Staging still needs a manual deliberate-500 check after deploy.
+The workflow is **disabled during development** (`if: false`, no `v*` tag trigger). Before production, restore the tag trigger and job `if` in [`sentry-release.yml`](../../.github/workflows/sentry-release.yml), then run **Actions → sentry-release → Run workflow** or push a `v*` tag. Without `SENTRY_AUTH_TOKEN`, the job stays skipped. Staging still needs a manual deliberate-500 check after deploy.
 
 ## First-deploy checklist
 

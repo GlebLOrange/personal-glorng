@@ -90,7 +90,12 @@ class UserRepository(MongoRepository[User]):
         return await self._col().count_documents(query)
 
     async def admin_stats(self) -> dict[str, int]:
-        total, superuser_count, protected_count, unverified_count = await asyncio.gather(
+        (
+            total,
+            superuser_count,
+            protected_count,
+            unverified_count,
+        ) = await asyncio.gather(
             self._col().count_documents({}),
             self.count_superusers(SUPERUSER_PERMISSION),
             self._col().count_documents({"is_protected": True}),

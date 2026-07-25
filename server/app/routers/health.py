@@ -80,13 +80,16 @@ async def ready(
     request: Request,
     settings: Settings = Depends(get_settings),
 ) -> JSONResponse:
-    mongo_status, (redis_status, redis_memory), broker_status, postgres_status = (
-        await asyncio.gather(
-            _check_mongodb(settings),
-            _check_redis(),
-            _check_broker(settings),
-            _check_postgres(request, settings),
-        )
+    (
+        mongo_status,
+        (redis_status, redis_memory),
+        broker_status,
+        postgres_status,
+    ) = await asyncio.gather(
+        _check_mongodb(settings),
+        _check_redis(),
+        _check_broker(settings),
+        _check_postgres(request, settings),
     )
 
     checks: dict[str, Any] = {}

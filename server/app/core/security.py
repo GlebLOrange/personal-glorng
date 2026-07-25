@@ -11,6 +11,7 @@ from app.settings import get_settings
 def _hash_password_sync(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12)).decode()
 
+
 def _verify_password_sync(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode(), hashed.encode())
 
@@ -84,14 +85,14 @@ def user_id_from_access_token(raw: str) -> int | None:
     if uid is not None:
         try:
             return int(uid)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
     sub = payload.get("sub")
     if sub is None:
         return None
     try:
         return int(sub)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
 
 

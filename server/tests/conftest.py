@@ -392,5 +392,6 @@ async def login_tokens(client: AsyncClient, admin_user: User) -> dict[str, str]:
     assert resp.status_code == 200
     access = resp.cookies.get("access_token")
     refresh = resp.cookies.get("refresh_token")
-    assert access and refresh
+    assert access is not None
+    assert refresh is not None
     return {"access_token": access, "refresh_token": refresh}

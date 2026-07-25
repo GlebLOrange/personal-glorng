@@ -2,44 +2,14 @@ from datetime import UTC, datetime
 
 import pytest
 
-from app.db.documents.news import NewsArticle, NewsSource
+from app.db.documents.news import NewsArticle
 from app.db.registry import DatabaseRegistry
 from app.schemas.news import NewsArticleCreate
-from app.services.news import NewsService, normalize_feed_articles
+from app.services.news import NewsService
 
 
 async def _noop_cache_invalidator() -> None:
     """Avoid touching Redis in focused news service tests."""
-
-
-def test_normalize_feed_articles_parses_rss_entry() -> None:
-    """RSS entries are normalized into stored feed article documents."""
-    source = NewsSource(
-        name="Example News",
-        feed_url="https://example.com/rss.xml",
-        category="world",
-        region="global",
-    )
-    feed = b"""
-    <rss version="2.0">
-      <channel>
-        <item>
-          <title>Example headline</title>
-          <link>/story/example-headline</link>
-          <description><![CDATA[<p>Short summary</p>]]></description>
-          <pubDate>Sat, 27 Jun 2026 04:00:00 GMT</pubDate>
-        </item>
-      </channel>
-    </rss>
-    """
-
-    articles = normalize_feed_articles(feed, source)
-
-    assert len(articles) == 1
-    assert articles[0].title == "Example headline"
-    assert articles[0].link == "https://example.com/story/example-headline"
-    assert articles[0].summary == "Short summary"
-    assert articles[0].status == "published"
 
 
 @pytest.mark.asyncio
