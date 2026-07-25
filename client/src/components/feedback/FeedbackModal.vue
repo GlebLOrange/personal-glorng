@@ -96,7 +96,6 @@ async function submit(): Promise<void> {
         type="email"
         label="Email"
         placeholder="your@email.com"
-        aria-label="your@email.com"
         autocomplete="email"
         :tone="emailTone"
         :error="emailError"
@@ -105,13 +104,11 @@ async function submit(): Promise<void> {
         v-model="theme"
         :label="copy.subjectLabel"
         :placeholder="copy.subjectPlaceholder"
-        :aria-label="copy.subjectPlaceholder"
       />
       <BaseTextarea
         v-model="message"
         :label="copy.messageLabel"
         :placeholder="copy.messagePlaceholder"
-        :aria-label="copy.messagePlaceholder"
         :rows="5"
       />    </form>
 

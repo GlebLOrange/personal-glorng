@@ -95,7 +95,6 @@ function onCategoryRowClick(category: ExpenseCategory): void {
               min="0"
               step="0.01"
               placeholder="budget"
-              aria-label="budget"
               :class="[FIELD_INPUT_CLASS_COMPACT, 'w-28']"
               @click.stop
             />

@@ -299,7 +299,6 @@ watch(articleId, () => {
             <BaseInput
               v-model="form.slug"
               placeholder="slug"
-              aria-label="slug"
               :disabled="!canWrite"
             />
             <div
@@ -320,19 +319,16 @@ watch(articleId, () => {
             <BaseInput
               v-model="form.title"
               placeholder="title"
-              aria-label="title"
               :disabled="!canWrite"
             />
             <BaseInput
               v-model="form.original_title"
               placeholder="original title"
-              aria-label="original title"
               :disabled="!canWrite"
             />
             <BaseInput
               v-model="form.language"
               placeholder="language (en)"
-              aria-label="language (en)"
               :disabled="!canWrite"
             />
           </div>
@@ -373,7 +369,6 @@ watch(articleId, () => {
               v-model="form.summary"
               :rows="4"
               placeholder="summary"
-              aria-label="summary"
               :disabled="!canWrite"
             />
           </div>
@@ -397,20 +392,17 @@ watch(articleId, () => {
             <BaseInput
               v-model="form.source_name"
               placeholder="source name"
-              aria-label="source name"
               :disabled="!canWrite"
             />
             <BaseInput
               v-model="form.source_url"
               placeholder="article url"
-              aria-label="article url"
               type="url"
               :disabled="!canWrite"
             />
             <BaseInput
               v-model="form.source_feed_url"
               placeholder="source feed/home url"
-              aria-label="source feed/home url"
               type="url"
               :disabled="!canWrite"
             />

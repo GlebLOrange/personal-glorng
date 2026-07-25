@@ -187,7 +187,6 @@ async function download(): Promise<void> {
       <BaseInput
         v-model="url"
         placeholder="url (https://....)"
-        aria-label="url (https://....)"
         class="w-full"
       />
     </form>
