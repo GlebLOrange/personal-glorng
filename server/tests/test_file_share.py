@@ -51,7 +51,9 @@ async def test_upload_retries_when_share_code_collides(
         )
     )
     codes = iter(["abc123", "def456"])
-    monkeypatch.setattr(fileshare_svc, "generate_short_code", lambda _length: next(codes))
+    monkeypatch.setattr(
+        fileshare_svc, "generate_short_code", lambda _length: next(codes)
+    )
 
     resp = await auth_client.post("/api/tools/file-share", files=_make_file())
 

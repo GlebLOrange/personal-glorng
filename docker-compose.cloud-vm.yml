@@ -4,6 +4,12 @@ services:
   db:
     cgroup: host
     deploy: !reset null
+  mongodb:
+    cgroup: host
+    deploy: !reset null
+  rabbitmq:
+    cgroup: host
+    deploy: !reset null
   redis:
     cgroup: host
     deploy: !reset null

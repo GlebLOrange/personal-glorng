@@ -103,7 +103,7 @@ def test_resolve_format_prefers_explicit_value() -> None:
 
 def test_extract_unknown_extension_without_format() -> None:
     with pytest.raises(ValidationError, match="Cannot detect format"):
-        extract(b"hello", filename="notes.txt")
+        extract(b"hello", filename="notes.xyz")
 
 
 def test_extract_bytes_without_filename_or_format() -> None:
@@ -146,9 +146,11 @@ def test_extract_xml_rejects_entity_after_padding() -> None:
         extract(xml.encode(), filename="padded-xxe.xml")
 
 
-def test_extract_csv_without_header() -> None:
-    with pytest.raises(ValidationError, match="no header row"):
-        extract(b"1,2\n3,4", filename="data.csv")
+def test_extract_csv_uses_first_row_as_header() -> None:
+    # DictReader always treats the first non-empty row as headers.
+    result = extract(b"1,2\n3,4", filename="data.csv")
+    assert result.records == [{"1": "3", "2": "4"}]
+    assert result.meta["columns"] == ["1", "2"]
 
 
 def test_extract_xml_missing_row_tag() -> None:
