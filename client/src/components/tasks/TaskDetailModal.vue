@@ -37,7 +37,7 @@ const technicalOpen = ref(false);
 
 const availableStatuses = computed(() =>
   props.task
-    ? TASK_STATUSES.filter((status) => status !== props.task!.status)
+    ? TASK_STATUSES.filter((status) => status !== props.task.status)
     : [],
 );
 

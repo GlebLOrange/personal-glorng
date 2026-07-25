@@ -1,15 +1,12 @@
 /** Query keys that must not appear in history, analytics, SEO, or telemetry. */
 const SENSITIVE_QUERY_KEYS = new Set(["token", "code", "state"]);
 
-function scrubSearchParams(params: URLSearchParams): boolean {
-  let changed = false;
+function scrubSearchParams(params: URLSearchParams): void {
   for (const key of [...params.keys()]) {
     if (SENSITIVE_QUERY_KEYS.has(key.toLowerCase())) {
       params.delete(key);
-      changed = true;
     }
   }
-  return changed;
 }
 
 /** Strip sensitive keys from a `?a=1&token=…` search string (with or without `?`). */
