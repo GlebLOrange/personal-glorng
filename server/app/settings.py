@@ -522,18 +522,22 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str
     SMTP_FROM: str
 
-    # Sentry (off in development unless SENTRY_ENABLED=true)
+    # Sentry (opt-in in development/test; DSN-gated in staging/production)
     SENTRY_ENABLED: bool
     SERVER_SENTRY_DSN: str
     SERVER_SENTRY_RELEASE: str
 
     def sentry_enabled(self) -> bool:
-        """Whether server/worker Sentry should initialize."""
+        """Whether server/worker Sentry should initialize.
+
+        Requires a DSN. In development/test, also requires SENTRY_ENABLED=true.
+        Staging/production enable whenever a DSN is set.
+        """
         if not self.SERVER_SENTRY_DSN:
             return False
-        if self.SENTRY_ENABLED:
-            return True
-        return self.APP_ENV != "development"
+        if self.APP_ENV in {"development", "test"}:
+            return self.SENTRY_ENABLED
+        return True
 
     # Telegram Bot
     TELEGRAM_BOT_TO_DO_TOKEN: str
