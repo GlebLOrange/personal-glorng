@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Coding standards and agent behavior use a hybrid layout: thin always-on and path-triggered stubs in [`.cursor/rules/`](.cursor/rules/) (safety, git workflow, dependencies, backend FastAPI/Python, frontend Vue/Pinia/TypeScript, design system) that point at full guidance in [`.cursor/skills/`](.cursor/skills/), plus opt-in review/process skills such as `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, and `spec-driven-development`. This file covers environment and bootstrap only.
+Coding standards and agent behavior use a hybrid layout: thin always-on and path-triggered stubs in [`.cursor/rules/`](.cursor/rules/) (safety, git workflow, dependencies, backend FastAPI/Python, frontend Vue/Pinia/TypeScript, design system) that point at full guidance in [`.cursor/skills/`](.cursor/skills/), plus opt-in review/process skills such as `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, and `spec-driven-development`. This file covers environment and bootstrap only. Ecosystem skills from skills.sh: install with `npx skills add <pkg>@<skill> -g -y` (user-level under `~/.agents/skills/`); keep project skills in `.cursor/skills/` only — do not commit `.agents/`, `.claude/`, or `skills-lock.json`.
 
 ## Cursor Cloud specific instructions
 
