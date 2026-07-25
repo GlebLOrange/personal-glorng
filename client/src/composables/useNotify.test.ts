@@ -3,10 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNotify } from "@/composables/useNotify";
 
 function clearToasts(): void {
-  const { toasts, dismiss } = useNotify();
+  const { toasts, dismiss, releaseTileHost } = useNotify();
   for (const t of [...toasts.value]) {
     dismiss(t.id);
   }
+  releaseTileHost();
 }
 
 describe("useNotify", () => {
@@ -86,5 +87,15 @@ describe("useNotify", () => {
     expect(toasts.value.some((t) => t.id === successId)).toBe(true);
     vi.advanceTimersByTime(1);
     expect(toasts.value.some((t) => t.id === successId)).toBe(false);
+  });
+
+  it("claimTileHost and releaseTileHost toggle the tile claim", () => {
+    const { tileHostClaimed, claimTileHost, releaseTileHost } = useNotify();
+
+    expect(tileHostClaimed.value).toBe(false);
+    claimTileHost();
+    expect(tileHostClaimed.value).toBe(true);
+    releaseTileHost();
+    expect(tileHostClaimed.value).toBe(false);
   });
 });

@@ -33,7 +33,7 @@ function handleRemove(event: MouseEvent): void {
     </button>
     <IconCloseButton
       v-if="removable"
-      class="absolute right-2 top-2"
+      class="absolute right-2 top-2 z-10"
       :aria-label="`Remove ${query}`"
       @click="handleRemove"
     />
