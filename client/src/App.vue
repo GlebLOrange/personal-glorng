@@ -2,6 +2,7 @@
 import NavBar from "@/components/layout/NavBar.vue";
 import FooterBar from "@/components/layout/FooterBar.vue";
 import ScrollControls from "@/components/layout/ScrollControls.vue";
+import ToastContainer from "@/components/ui/ToastContainer.vue";
 </script>
 
 <template>
@@ -13,5 +14,6 @@ import ScrollControls from "@/components/layout/ScrollControls.vue";
       <ScrollControls />
     </main>
     <FooterBar />
+    <ToastContainer />
   </div>
 </template>
