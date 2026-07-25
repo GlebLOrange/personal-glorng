@@ -48,7 +48,7 @@ describe("LoginPage", () => {
     // BaseInput renders placeholder as tip text, not the native attribute
     expect(wrapper.text()).toContain("you@example.com");
     expect(wrapper.text()).toContain("login");
-    expect(wrapper.text()).toContain("continue with Google");
+    expect(wrapper.text().toLowerCase()).toContain("continue with google");
     expect(wrapper.text()).toContain("create account");
     expect(wrapper.text()).toContain("forgot password?");
   });
