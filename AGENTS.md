@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Coding standards and agent behavior live in [`.cursor/rules/`](.cursor/rules/) (always-on safety/dependency/git workflow rules, backend FastAPI/Python rules, frontend Vue/Pinia/TypeScript rules, design-system guidance) and opt-in review/process skills in [`.cursor/skills/`](.cursor/skills/) such as `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, and `spec-driven-development`. This file covers environment and bootstrap only.
+Coding standards and agent behavior use a hybrid layout: thin always-on and path-triggered stubs in [`.cursor/rules/`](.cursor/rules/) (safety, git workflow, dependencies, backend FastAPI/Python, frontend Vue/Pinia/TypeScript, design system) that point at full guidance in [`.cursor/skills/`](.cursor/skills/), plus opt-in review/process skills such as `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, and `spec-driven-development`. This file covers environment and bootstrap only.
 
 ## Cursor Cloud specific instructions
 

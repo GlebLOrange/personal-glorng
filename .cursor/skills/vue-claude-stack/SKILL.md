@@ -1,0 +1,53 @@
+---
+name: vue-claude-stack
+description: Vue 3 component guidance for the Vite client.
+---
+# Vue 3 Client
+
+## Core Principles
+- Use Vue 3 Composition API with `<script setup lang="ts">`.
+- Do not add Options API, mixins, or `this`-based component code.
+- Write strict TypeScript and avoid `any`.
+- Prefer composables for reusable reactive logic.
+- Keep templates readable; move complex logic into `computed` values, composables, or small helpers.
+
+## Component Rules
+- Use `defineProps<T>()` with TypeScript generics for props.
+- Use typed `defineEmits<T>()` for emitted events.
+- Use `defineModel()` for new v-model bindings when it keeps the component simpler.
+- Keep one component per file; component filenames should stay PascalCase.
+
+## State Management (Pinia)
+- Use setup stores with `defineStore('name', () => { ... })`.
+- Use `storeToRefs()` when destructuring store state or getters.
+- Keep stores focused by domain.
+- Keep server state in the API/composable layer unless Pinia intentionally owns UI workflow state.
+
+## Composables
+- Prefix reusable composables with `use`.
+- Return explicit loading/error state for async composables when the UI depends on it.
+- Place shared composables under `client/src/composables`.
+- Use the existing API layer for data fetching.
+
+## TypeScript
+- Prefer `type` for local aliases and `interface` for shared object contracts that are extended.
+- Use `satisfies` when it improves checking without widening types.
+- Avoid type assertions unless the value has already been validated or narrowed.
+
+## Testing
+- Use Vitest and `@vue/test-utils`.
+- Keep component tests behavior-focused.
+- Prefer `mount()` unless a shallow render is clearly enough.
+
+## Tailwind CSS
+- Use existing utility classes and design tokens.
+- Extract repeated UI patterns to components before adding ad hoc CSS.
+- Respect dark mode and reduced motion patterns already in the client.
+
+## Do NOT
+- Generate Options API code.
+- Use `any` where `unknown` plus narrowing works.
+- Put large business workflows in page components.
+- Use `v-html` with unsanitized content.
+- Mutate props.
+- Use `var`.

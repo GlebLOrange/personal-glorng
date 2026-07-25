@@ -3,33 +3,5 @@ description: "TypeScript quality rules for the Vite Vue client."
 globs: ["client/src/**/*.ts", "client/src/**/*.vue"]
 alwaysApply: false
 ---
-# TypeScript Client Quality
 
-Use this rule when editing client TypeScript or Vue components.
-
-## Principles
-
-- Keep changes small and local to the task.
-- Prefer clear names, early returns, and simple control flow.
-- Avoid `any`; use `unknown` at external boundaries and narrow it.
-- Prefer `const`; use `let` only when reassignment is needed.
-- Use existing composables, stores, utilities, and components before adding new abstractions.
-- Add comments only for non-obvious intent or constraints.
-
-## Vue And Events
-
-- Prefix event handlers with `handle` when they are passed to templates or child components.
-- Move complex template expressions into `computed` values or small helpers.
-- Keep business workflows in stores/composables instead of large page components.
-- Use conditional classes or computed class lists when it improves readability; do not over-abstract one-off classes.
-
-## Safety
-
-- Treat API responses, persisted store data, URL params, and browser state as untrusted until validated or narrowed.
-- Never use raw `v-html`; only use sanitized HTML through existing utilities.
-- Use safe URL/image helpers for dynamic navigation or media sources.
-
-## Verification
-
-- Prefer focused Vitest files, `npm run typecheck`, or `npm run lint` for touched client code.
-- Run Playwright only when the user asks, CI is failing, or the change affects a critical browser flow.
+When this rule applies, follow the `javascript-typescript-code-quality-cursorrules-pro` skill: read `.cursor/skills/javascript-typescript-code-quality-cursorrules-pro/SKILL.md` and apply it.
