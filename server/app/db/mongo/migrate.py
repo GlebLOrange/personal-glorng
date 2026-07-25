@@ -3,7 +3,7 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.logging import logger
-from app.db.mongo.indexes import INDEX_SPECS
+from app.db.mongo.indexes import INDEX_SPECS, SUPERSEDED_INDEX_KEYS
 from app.settings import get_settings
 
 _SCHEMA_VERSION = "v001_initial_indexes"
@@ -87,6 +87,21 @@ async def _drop_obsolete_news_unique_indexes(db: AsyncIOMotorDatabase) -> None:
             )
 
 
+async def _drop_superseded_indexes(db: AsyncIOMotorDatabase) -> None:
+    """Drop single-field indexes replaced by compound ESR indexes."""
+    for collection, target_key in SUPERSEDED_INDEX_KEYS:
+        indexes = await db[collection].index_information()
+        for name, spec in indexes.items():
+            if name == "_id_":
+                continue
+            if dict(spec.get("key", [])) == target_key:
+                await db[collection].drop_index(name)
+                logger.info(
+                    "Dropped superseded MongoDB index",
+                    context={"collection": collection, "index": name},
+                )
+
+
 async def _unset_weather_location_labels(db: AsyncIOMotorDatabase) -> None:
     """Drop legacy nickname field from weather_locations (idempotent)."""
     result = await db.weather_locations.update_many(
@@ -108,6 +123,7 @@ async def ensure_mongo_schema(db: AsyncIOMotorDatabase) -> None:
     for collection, keys, options in INDEX_SPECS:
         kwargs = options or {}
         await db[collection].create_index(keys, **kwargs)
+    await _drop_superseded_indexes(db)
 
     settings = get_settings()
     ttl_seconds = settings.APP_LOG_RETENTION_DAYS * 86_400
