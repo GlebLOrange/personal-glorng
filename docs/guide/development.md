@@ -54,6 +54,10 @@ Leave `ELASTICSEARCH_URL` empty for dev-lite. MongoDB text search and optional P
 
 Full list: run `make` or see the [Makefile](../../Makefile).
 
+## Logging (development)
+
+Local defaults are quiet: `LOG_REQUESTS=false`, `APP_LOG_PERSIST_MIN_LEVEL=WARNING`, and uvicorn `--no-access-log`. You still get warnings/errors and intentional lifecycle logs (DB connect, auth events). Set `LOG_REQUESTS=true` in `.env` only when debugging HTTP. Production keeps request logging on — see [Configuration](/reference/configuration).
+
 ## Backend on the host
 
 With [uv](https://docs.astral.sh/uv/) installed:

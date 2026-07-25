@@ -36,6 +36,7 @@ _SENSITIVE_BODY_KEYS = frozenset(
         "apikey",
     },
 )
+_SKIP_REQUEST_LOG_PATHS = frozenset({"/api/health", "/api/ready"})
 
 
 def _should_skip_body_log(content_type: str | None) -> bool:
@@ -156,6 +157,11 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
         if user_id is not None:
             log_ctx["user_id"] = user_id
 
+        path = str(request.url.path)
+        log_request = (
+            settings.LOG_REQUESTS and path not in _SKIP_REQUEST_LOG_PATHS
+        )
+
         body_log: str | None = None
         if settings.LOG_REQUEST_BODIES and request.method in {"POST", "PUT", "PATCH"}:
             body_bytes = await _read_body_for_log(request)
@@ -174,7 +180,7 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
                     content_type=request.headers.get("content-type"),
                 )
 
-        if settings.LOG_REQUESTS:
+        if log_request:
             started_context = dict(log_ctx)
             if body_log is not None:
                 started_context["body"] = body_log
@@ -205,7 +211,7 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
         if user_id is not None:
             completed_ctx["user_id"] = user_id
 
-        if settings.LOG_REQUESTS:
+        if log_request:
             logger.info("Request completed", context=completed_ctx)
 
         return response

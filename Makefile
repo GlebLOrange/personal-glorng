@@ -30,7 +30,7 @@ dev-ultra-lite-infra:
 	$(DOCKER_BUILD) $(COMPOSE_ULTRA) $(COMPOSE_CACHE) run --rm migrate
 
 dev-ultra-lite-server:
-	cd server && $(ULTRA_LITE_ENV) uv sync --frozen && $(ULTRA_LITE_ENV) uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir app --forwarded-allow-ips=127.0.0.1
+	cd server && $(ULTRA_LITE_ENV) uv sync --frozen && $(ULTRA_LITE_ENV) uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir app --forwarded-allow-ips=127.0.0.1 --no-access-log
 
 dev-search:
 	$(DOCKER_BUILD) docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.search.yml $(COMPOSE_CACHE) --profile search up --build mongodb redis redis-cache elasticsearch server

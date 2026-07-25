@@ -41,6 +41,8 @@ cd client && npm run e2e   # optional; needs running API
 
 CI workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). Testing tiers: [Testing](/reference/testing).
 
+Merge gates (`ci-ok`, `gitleaks`) are **disabled during development**; turn them on before production — [DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd).
+
 ## Pre-commit
 
 ```bash

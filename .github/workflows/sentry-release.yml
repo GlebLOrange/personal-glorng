@@ -18,6 +18,7 @@ jobs:
   client-sourcemaps:
     if: ${{ secrets.SENTRY_AUTH_TOKEN != '' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: client

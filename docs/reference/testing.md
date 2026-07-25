@@ -4,36 +4,39 @@ Tests are organized into four tiers by CI cost and release risk.
 
 ## Tier matrix
 
-| Tier | When | Runtime target | Automation |
-|------|------|----------------|------------|
-| **P0 — PR gate** | Every pull request | Backend &lt; 5 min, frontend &lt; 3 min | [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) |
-| **P1 — Nightly** | `main` branch nightly | &lt; 15 min | [`.github/workflows/nightly.yml`](../../.github/workflows/nightly.yml) |
-| **P2 — Pre-release** | Before production deploy | &lt; 45 min | [`.github/workflows/pre-release.yml`](../../.github/workflows/pre-release.yml) |
+| Tier | When | Runtime target / hard timeout | Automation |
+|------|------|-------------------------------|------------|
+| **P0 — PR gate** | Every pull request (path-filtered jobs) | Soft targets: backend ~5 min, frontend ~3–8 min; job timeouts in [`ci.yml`](../../.github/workflows/ci.yml) | [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) — aggregator **`ci-ok`** (merge-required only after production ruleset is enabled; see [DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd)) |
+| **P1 — Nightly** | Schedule `0 3 * * *` UTC + `workflow_dispatch` | &lt; 15 min (`timeout-minutes: 15`) | [`.github/workflows/nightly.yml`](../../.github/workflows/nightly.yml) |
+| **P2 — Pre-release** | Before production deploy (`workflow_dispatch`) | &lt; 45 min (stack-smoke timeout 30) | [`.github/workflows/pre-release.yml`](../../.github/workflows/pre-release.yml) |
 | **P3 — Staging manual** | Post-deploy validation | Human-driven | Checklist below |
+
+Related security automation (not a test tier): [`.github/workflows/security.yml`](../../.github/workflows/security.yml) runs **gitleaks** on every PR/push; **pip-audit** / **npm audit** on schedule, manual dispatch, or when lockfiles change.
 
 ### P0 — PR gate (default)
 
-- `uv run pytest -m "not integration" -v --cov=app` — mongomock + FakeRedis (~430 cases) with coverage gate
-- `npm run test:coverage` — Vitest unit/component tests with statement threshold
-- `npm run lint` / `npm run build:check`
-- Playwright E2E (`client/e2e/*.spec.ts`, including smoke + admin-tools)
-- Ruff check/format
+Jobs are path-filtered on pull requests; pushes to `main` run the full suite. Aggregator job `ci-ok` fails if any selected job failed. During development the `main-protection` ruleset is **disabled**, so CI is advisory; enable required checks before production ([DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd)).
+
+- **backend** — Ruff check/format, mypy, `pytest -m "not integration"` with coverage (mongomock + FakeRedis)
+- **frontend** — `npm run lint` / `format:check`, `test:coverage`, `build:check`
+- **postgres-tests** — `pytest -m postgres` (Alembic + Postgres service; also marked `integration`)
+- **e2e** — Playwright (`client/e2e/*.spec.ts`, smoke + admin-tools) against compose API + preview
+- **docs** — `scripts/generate_docs.py` freshness check + VitePress build
 
 ### P1 — Nightly
 
 Automated today ([`nightly.yml`](../../.github/workflows/nightly.yml)):
 
-- `pytest -m postgres` — audit/search Postgres dual-write paths (requires migrations; also marked `integration`)
-- `pytest -m redis` — real Redis rate-limit and health checks (also marked `integration`)
+- `pytest -m redis` — real Redis connectivity / round-trip (also marked `integration`)
 
-CI also runs `pytest -m postgres` on every PR via the `postgres-tests` job.
+Postgres integration (`pytest -m postgres`) runs on every PR via the CI `postgres-tests` job, not nightly.
 
 ### P2 — Pre-release
 
 Automated today ([`pre-release.yml`](../../.github/workflows/pre-release.yml)):
 
-- Beat schedule registry unit tests (`tests/test_celery_schedule.py`)
-- Compose stack smoke: migrate + API `:8000/api/health` + `/api/ready`
+- Celery unit tests (`tests/test_celery_schedule.py`, `tests/test_celery_conf.py`)
+- Compose stack smoke: migrate + API `:8000/api/health` + `/api/ready` (asserts `"mongodb":"ok"`)
 - Nginx (dev-lite overlay) `:80/api/health` through the reverse proxy
 
 Not yet in pre-release CI (manual / follow-up):
@@ -106,11 +109,11 @@ npm run e2e
 | Middleware → app log | Built | `test_middleware_logging.py` |
 | App logs API | Built + maintain | `test_app_logs_api.py` (level, message, request_id, date, pagination) |
 | Audit trail | Built + maintain | `test_platform.py`, `test_audit_extended.py`, `test_audit_mutations.py` |
-| Postgres audit/search | Built (P1) | `test_postgres_integration.py` |
+| Postgres audit/search | Built (P0 CI `postgres-tests`) | `test_postgres_integration.py` |
 | Health / readiness | Built | `test_health.py`, `test_broker_health.py` |
 | Sentry init (mock) | Built | `test_sentry_init.py` |
 | Feature flags | Built | `test_feature_flags.py` |
-| Celery beat registry | Built (P2 unit) | `test_celery_schedule.py` |
+| Celery beat registry | Built (P2 unit) | `test_celery_schedule.py`, `test_celery_conf.py` |
 | Registry parity | Maintain | `test_platform_parity.py`, `services.parity.test.ts` |
 | Portfolio / resume UI | Built | `resumeGlance.test.ts`, E2E smoke |
 | Admin UI harness | Built | `adminToolHarness.test.ts` |

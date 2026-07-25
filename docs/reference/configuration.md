@@ -25,10 +25,10 @@ Keep `RUN_MIGRATIONS` / `RUN_SEED` in `.env` (or secrets) — avoid setting them
 | `BASE_URL` | `http://localhost` | Absolute URL for links and redirects |
 | `MEDIA_DIR` | `/app/media` | Uploaded file storage path |
 | `CORS_ORIGINS` | localhost variants | Comma-separated allowed origins (required explicit list in production) |
-| `LOG_REQUESTS` | `true` | Log request start/complete |
-| `LOG_REQUEST_BODIES` | `false` | Log redacted JSON bodies (POST/PUT/PATCH) |
+| `LOG_REQUESTS` | `false` (dev) / `true` (prod) | Log request start/complete; skipped for `/api/health` and `/api/ready` |
+| `LOG_REQUEST_BODIES` | `false` | Log redacted JSON bodies (POST/PUT/PATCH); forbidden in production |
 | `APP_LOG_PERSIST_ENABLED` | `true` | Persist structured logs to MongoDB |
-| `APP_LOG_PERSIST_MIN_LEVEL` | `INFO` | Min level for DB log persistence |
+| `APP_LOG_PERSIST_MIN_LEVEL` | `WARNING` (dev) / `INFO` (prod) | Min level for DB log persistence |
 | `APP_LOG_RETENTION_DAYS` | `30` | TTL for `app_logs` collection |
 
 ## Database bootstrap
