@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import CollapsibleUsageGuide from "@/components/ui/CollapsibleUsageGuide.vue";
 import PageShell from "@/components/layout/PageShell.vue";
-import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { api } from "@/composables/useApi";
-import { trapTabKeyInRoot } from "@/composables/useOverlayShell";
+import { useToolbarOptionsPopover } from "@/composables/useToolbarOptionsPopover";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessageFromBlob } from "@/types/api";
 
@@ -17,11 +16,18 @@ const url = ref("");
 const format = ref("best");
 const audioOnly = ref(false);
 const loading = ref(false);
-const guideOpen = ref(false);
 const optionsOpen = ref(false);
 const optionsRoot = useTemplateRef<HTMLElement>("optionsRoot");
 const optionsPanel = useTemplateRef<HTMLElement>("optionsPanel");
+const optionsTrigger = useTemplateRef<InstanceType<typeof ToolbarPillButton>>("optionsTrigger");
 const { toast } = useNotify();
+
+const { toggle: toggleOptions } = useToolbarOptionsPopover({
+  open: optionsOpen,
+  rootRef: optionsRoot,
+  panelRef: optionsPanel,
+  triggerRef: optionsTrigger,
+});
 
 const formats = [
   { value: "best", label: "best (auto)" },
@@ -39,43 +45,6 @@ const optionsActiveLabel = computed(() => {
   if (selected && selected.value !== "best") parts.push(selected.label);
   if (audioOnly.value) parts.push("audio");
   return parts.length ? parts.join(" · ") : undefined;
-});
-
-function closeOptions(): void {
-  optionsOpen.value = false;
-}
-
-function onDocumentClick(event: MouseEvent): void {
-  if (!optionsOpen.value) return;
-  const root = optionsRoot.value;
-  if (root && !root.contains(event.target as Node)) closeOptions();
-}
-
-function onOptionsKeydown(event: KeyboardEvent): void {
-  if (!optionsOpen.value) return;
-  if (event.key === "Escape") {
-    event.stopPropagation();
-    event.preventDefault();
-    closeOptions();
-    return;
-  }
-  trapTabKeyInRoot(event, optionsPanel.value);
-}
-
-watch(optionsOpen, async (isOpen) => {
-  if (!isOpen) return;
-  await nextTick();
-  optionsPanel.value?.focus();
-});
-
-onMounted(() => {
-  document.addEventListener("click", onDocumentClick);
-  document.addEventListener("keydown", onOptionsKeydown);
-});
-
-onUnmounted(() => {
-  document.removeEventListener("click", onDocumentClick);
-  document.removeEventListener("keydown", onOptionsKeydown);
 });
 
 async function download(): Promise<void> {
@@ -129,13 +98,14 @@ async function download(): Promise<void> {
           :class="optionsOpen ? 'z-40' : undefined"
         >
           <ToolbarPillButton
+            ref="optionsTrigger"
             family="1xx"
             type="button"
             :selected="optionsOpen || hasCustomOptions"
             aria-haspopup="dialog"
             :aria-expanded="optionsOpen"
             aria-controls="vid-download-options-dialog"
-            @click.stop="optionsOpen = !optionsOpen"
+            @click.stop="toggleOptions"
           >
             options
             <span v-if="optionsActiveLabel" class="text-surface-muted">
@@ -189,19 +159,14 @@ async function download(): Promise<void> {
         </ToolbarPillButton>
       </div>
 
-      <BaseInput v-model="url" placeholder="url (https://....)" class="w-full" />
+      <BaseInput
+        v-model="url"
+        placeholder="url (https://....)"
+        class="w-full"
+      />
     </form>
 
-    <BaseButton
-      variant="ghost"
-      size="sm"
-      class="mb-4"
-      @click="guideOpen = !guideOpen"
-    >
-      {{ guideOpen ? "▾ Hide" : "▸ Show" }} yt-dlp usage guide
-    </BaseButton>
-
-    <Card v-if="guideOpen">
+    <CollapsibleUsageGuide title="yt-dlp usage guide">
       <div class="space-y-4 text-sm text-surface-light">
         <div>
           <h3 class="mb-2 font-bold text-accent-blue">Format selection</h3>
@@ -257,6 +222,6 @@ async function download(): Promise<void> {
           Full yt-dlp documentation &rarr;
         </a>
       </div>
-    </Card>
+    </CollapsibleUsageGuide>
   </PageShell>
 </template>

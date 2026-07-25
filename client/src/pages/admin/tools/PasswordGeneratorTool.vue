@@ -109,7 +109,7 @@ async function generatePassword(): Promise<void> {
       </form>
 
       <div v-if="generated" class="mt-6 space-y-3">
-        <div class="flex flex-wrap items-end gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <BaseInput
             :model-value="displayPassword"
             readonly
@@ -119,7 +119,8 @@ async function generatePassword(): Promise<void> {
           <BaseButton variant="ghost" @click="showPassword = !showPassword">
             {{ showPassword ? "hide" : "show" }}
           </BaseButton>
-          <IconCopyButton @click="copy(generated)" />
+          <!-- ponytail: match h-11 field row; IconActionButton default is h-8 -->
+          <IconCopyButton class="!h-11 !w-11 !min-h-11 !min-w-11" @click="copy(generated)" />
         </div>
         <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
           {{ strength.message }}

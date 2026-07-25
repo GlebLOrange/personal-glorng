@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, useTemplateRef } from "vue";
 
 import ShareableListItem from "@/components/admin/ShareableListItem.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
+import FileDropZone from "@/components/ui/FileDropZone.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
@@ -20,13 +21,12 @@ const page = ref(1);
 const total = ref(0);
 const totalPages = ref(0);
 const selectedFile = ref<File | null>(null);
-const dragOver = ref(false);
 const { copy } = useClipboard();
 const { loading: listLoading, run: runList } = useApiAction();
 const { loading: uploading, run: runUpload } = useApiAction();
 const { run: runDelete } = useApiAction();
 
-const fileInputRef = ref<HTMLInputElement | null>(null);
+const dropZoneRef = useTemplateRef<{ clear: () => void }>("dropZone");
 
 const selectedName = computed(() => selectedFile.value?.name ?? "");
 
@@ -57,14 +57,8 @@ function goToPage(nextPage: number): void {
   void loadFiles();
 }
 
-function onFileSelect(e: Event): void {
-  const input = e.target as HTMLInputElement;
-  if (input.files?.[0]) selectedFile.value = input.files[0];
-}
-
-function onDrop(e: DragEvent): void {
-  dragOver.value = false;
-  if (e.dataTransfer?.files?.[0]) selectedFile.value = e.dataTransfer.files[0];
+function onSelectFile(file: File): void {
+  selectedFile.value = file;
 }
 
 async function upload(): Promise<void> {
@@ -82,7 +76,7 @@ async function upload(): Promise<void> {
   );
   if (result) {
     selectedFile.value = null;
-    if (fileInputRef.value) fileInputRef.value.value = "";
+    dropZoneRef.value?.clear();
     page.value = 1;
     await loadFiles();
   }
@@ -115,24 +109,13 @@ onMounted(loadFiles);
         </ToolbarPillButton>
       </div>
 
-      <div
-        :class="[
-          'w-full border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
-          dragOver
-            ? 'border-accent-blue bg-accent-blue/10'
-            : 'border-surface-border hover:border-accent-blue',
-        ]"
-        @dragover.prevent="dragOver = true"
-        @dragleave="dragOver = false"
-        @drop.prevent="onDrop"
-        @click="fileInputRef?.click()"
-      >
-        <input ref="fileInputRef" type="file" class="hidden" @change="onFileSelect" />
-        <p v-if="selectedName" class="text-surface-light text-sm">
-          {{ selectedName }}
-        </p>
-        <p v-else class="text-surface-mid text-sm">drop a file here or click to browse</p>
-      </div>
+      <FileDropZone
+        ref="dropZone"
+        class="w-full"
+        aria-label="Choose a file to share"
+        :selected-name="selectedName"
+        @select="onSelectFile"
+      />
     </div>
 
     <div class="space-y-3">
