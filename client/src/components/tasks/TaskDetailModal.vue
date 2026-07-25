@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
@@ -9,6 +9,7 @@ import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import ToolIcon from "@/components/icons/ToolIcon.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
+import { actionFamilyClass } from "@/constants/httpStatusColors";
 import {
   statusActionLabel,
   statusBadgeClass,
@@ -34,6 +35,18 @@ const emit = defineEmits<{
 }>();
 
 const technicalOpen = ref(false);
+
+const technicalSummaryClass = computed(() =>
+  [
+    actionFamilyClass("1xx", technicalOpen.value),
+    "w-max cursor-pointer list-none select-none !px-2 [&::-webkit-details-marker]:hidden",
+    "!border-transparent hover:!border-transparent focus-visible:!border-transparent",
+    // summary ignores :enabled — mirror 1xx hover like BackLink / dropdown triggers
+    technicalOpen.value ? undefined : "hover:text-accent-blue hover:bg-accent-blue/15",
+  ]
+    .filter(Boolean)
+    .join(" "),
+);
 
 const availableStatuses = computed(() =>
   props.task
@@ -63,6 +76,13 @@ function onTechnicalToggle(event: Event): void {
   const details = event.currentTarget;
   technicalOpen.value = details instanceof HTMLDetailsElement ? details.open : false;
 }
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (!isOpen) technicalOpen.value = false;
+  },
+);
 </script>
 
 <template>
@@ -201,9 +221,7 @@ function onTechnicalToggle(event: Event): void {
         class="border-t border-surface-border pt-4 text-sm text-surface-mid"
         @toggle="onTechnicalToggle"
       >
-        <summary
-          class="flex cursor-pointer list-none select-none items-center gap-1.5 hover:text-surface-light [&::-webkit-details-marker]:hidden"
-        >
+        <summary :class="technicalSummaryClass">
           technical details
           <ChevronIcon :open="technicalOpen" />
         </summary>
