@@ -8,6 +8,19 @@ import type { Toast } from "@/types";
 
 const { toasts, dismiss, pause, resume } = useNotify();
 
+/* ponytail: ! beats Card default bg/border; ceiling = no twMerge — fix Card class merge instead. */
+const TOAST_SURFACE: Record<Toast["type"], string> = {
+  success: "text-status-success !bg-status-success/10 !border-status-success/30",
+  error: "text-status-error !bg-status-error/10 !border-status-error/30",
+  info: "text-accent-blue !bg-accent-blue/10 !border-accent-blue/30",
+};
+
+const TOAST_TEXT: Record<Toast["type"], string> = {
+  success: "text-status-success",
+  error: "text-status-error",
+  info: "text-accent-blue",
+};
+
 const hasToasts = computed(() => toasts.value.length > 0);
 
 function toastCardClass(type: Toast["type"]): string {
