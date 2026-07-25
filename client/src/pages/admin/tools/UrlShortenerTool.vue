@@ -134,9 +134,12 @@ onMounted(loadUrls);
       <BaseInput
         v-model="newUrl"
         class="min-w-0 w-full"
-        placeholder="url (https://example.com/very-long-url...)"
+        label="url"
+        placeholder="https://example.com/very-long-url…"
+        type="url"
+        autocomplete="url"
       />
-      <BaseInput v-model="newTitle" placeholder="title (optional)" />
+      <BaseInput v-model="newTitle" label="title" placeholder="optional" />
     </form>
 
     <Card v-if="lastCreatedLink" variant="compact" class="mb-10">

@@ -189,7 +189,14 @@ async function download(): Promise<void> {
         </ToolbarPillButton>
       </div>
 
-      <BaseInput v-model="url" placeholder="url (https://....)" class="w-full" />
+      <BaseInput
+        v-model="url"
+        label="url"
+        placeholder="https://…"
+        type="url"
+        class="w-full"
+        autocomplete="url"
+      />
     </form>
 
     <button

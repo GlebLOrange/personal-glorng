@@ -90,7 +90,8 @@ function confirmDelete(): void {
         ref="titleInput"
         v-model="draftTitle"
         class="min-w-0 w-full"
-        placeholder="title (optional)"
+        label="title"
+        placeholder="optional"
         @keydown="onTitleKeydown"
       />
     </template>

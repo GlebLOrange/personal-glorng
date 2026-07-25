@@ -99,21 +99,24 @@ function onAddBudgetLine(): void {
             <BaseInput
               v-model="row.name"
               data-budget-name
-              placeholder="name (food, transport...)"
+              label="name"
+              placeholder="food, transport…"
             />
             <BaseInput
               v-model="row.budget"
               type="number"
               step="0.01"
               min="0"
-              placeholder="budget (0.00)"
+              label="budget"
+              placeholder="0.00"
             />
             <BaseInput
               v-model="row.spent"
               type="number"
               step="0.01"
               min="0"
-              placeholder="spent (0.00)"
+              label="spent"
+              placeholder="0.00"
             />
             <IconCloseButton
               :aria-label="`Remove ${row.name || 'budget line'}`"

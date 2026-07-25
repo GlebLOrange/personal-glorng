@@ -47,13 +47,13 @@ onMounted(() => load());
           :href="tool.external ? tool.adminRoute : undefined"
           :target="tool.external ? '_blank' : undefined"
           :rel="tool.external ? 'noopener noreferrer' : undefined"
-          :aria-label="tool.external ? `${tool.name} (opens in new tab)` : undefined"
         >
           <Card hoverable class="page-tile-card h-full">
             <ToolIcon :slug="tool.slug" class="mb-3 h-8 w-8 text-surface-light" />
             <h3 class="text-surface-light font-bold mb-1 break-words">
               {{ tool.name }}
               <span v-if="tool.external" class="text-surface-mid font-normal"> ↗</span>
+              <span v-if="tool.external" class="sr-only">(opens in new tab)</span>
             </h3>
             <p class="text-xs text-surface-mid break-words">{{ tool.description }}</p>
           </Card>

@@ -72,7 +72,12 @@ async function generatePassword(): Promise<void> {
   >
     <Card>
       <form class="space-y-4" @submit.prevent="generatePassword">
-        <BaseInput v-model.number="length" type="number" placeholder="length (8–128)" />
+        <BaseInput
+          v-model.number="length"
+          type="number"
+          label="length"
+          placeholder="8–128"
+        />
 
         <fieldset class="space-y-2">
           <legend class="text-sm text-surface-mid mb-1">character sets</legend>
@@ -113,7 +118,8 @@ async function generatePassword(): Promise<void> {
           <BaseInput
             :model-value="displayPassword"
             readonly
-            placeholder="password"
+            label="password"
+            placeholder="generated password"
             class="flex-1 min-w-[12rem] font-mono"
           />
           <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">

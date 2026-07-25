@@ -52,7 +52,8 @@ async function submit(): Promise<void> {
     <BaseInput
       id="weather-city"
       v-model="city"
-      placeholder="city"
+      label="city"
+      placeholder="city name"
       class="w-full"
       :error="error ?? undefined"
       required

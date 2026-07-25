@@ -180,7 +180,8 @@ onMounted(load);
             <BaseInput
               :model-value="requestId"
               compact
-              placeholder="request id uuid"
+              label="request id"
+              placeholder="uuid"
               @update:model-value="onRequestIdChange"
             />
           </AdminFilterDropdown>

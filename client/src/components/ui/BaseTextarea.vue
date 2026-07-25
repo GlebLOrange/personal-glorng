@@ -29,7 +29,8 @@ const tipId = computed(() => `${textareaId.value}-tip`);
 const hasClearableValue = computed(() => Boolean(model.value?.length));
 const useShell = computed(() => Boolean(props.prefix || props.placeholder));
 const showClear = computed(() => useShell.value && hasClearableValue.value);
-const showTip = computed(() => Boolean(props.placeholder));
+/** Tip only when empty; hide while typing (Clear X takes the right side). */
+const showTip = computed(() => Boolean(props.placeholder) && !hasClearableValue.value);
 const tipInsetClass = computed(() => (showClear.value ? "right-11" : "right-3"));
 const describedBy = computed(() => {
   const ids: string[] = [];
@@ -60,7 +61,8 @@ const accessibleName = computed(() => {
   }
   // Visible <label for> names the control when label is set.
   if (props.label) return undefined;
-  return props.prefix || props.placeholder || undefined;
+  // Tip/placeholder is visual help only (aria-hidden) — never the accessible name.
+  return props.prefix || undefined;
 });
 
 function clear(): void {

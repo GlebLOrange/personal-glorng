@@ -89,6 +89,7 @@ async function preview(): Promise<void> {
 
     <form class="space-y-3 mb-8" @submit.prevent="send">
       <BaseInput
+        id="email-to"
         v-model="to"
         type="email"
         label="to"
@@ -96,8 +97,15 @@ async function preview(): Promise<void> {
         autocomplete="email"
         spellcheck="false"
       />
-      <BaseInput v-model="subject" label="subject" placeholder="Subject…" autocomplete="off" />
+      <BaseInput
+        id="email-subject"
+        v-model="subject"
+        label="subject"
+        placeholder="Subject…"
+        autocomplete="off"
+      />
       <BaseTextarea
+        id="email-body"
         v-model="body"
         :rows="6"
         label="body"

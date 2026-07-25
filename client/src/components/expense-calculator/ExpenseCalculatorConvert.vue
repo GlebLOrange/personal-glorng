@@ -89,7 +89,8 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
       type="number"
       step="0.01"
       min="0.01"
-      placeholder="amount (100.00)"
+      label="amount"
+      placeholder="100.00"
     />
 
     <div class="flex items-center gap-3">

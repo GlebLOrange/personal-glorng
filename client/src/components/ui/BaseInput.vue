@@ -33,14 +33,20 @@ const errorId = computed(() => `${inputId.value}-error`);
 const tipId = computed(() => `${inputId.value}-tip`);
 const hasSuffix = computed(() => Boolean(slots.suffix));
 const isClearableType = computed(() => props.type !== "number");
+const hasTypedValue = computed(() => {
+  const value = model.value;
+  if (value == null || value === "") return false;
+  if (typeof value === "string") return value.length > 0;
+  return true;
+});
 const hasClearableValue = computed(() => {
   if (!isClearableType.value) return false;
-  const value = model.value;
-  return typeof value === "string" && value.length > 0;
+  return typeof model.value === "string" && model.value.length > 0;
 });
 const useShell = computed(() => Boolean(props.prefix || props.placeholder || hasSuffix.value));
 const showClear = computed(() => useShell.value && hasClearableValue.value);
-const showTip = computed(() => Boolean(props.placeholder));
+/** Tip only when empty; hide while typing (Clear X takes the right side). */
+const showTip = computed(() => Boolean(props.placeholder) && !hasTypedValue.value);
 const tipInsetClass = computed(() => (showClear.value || hasSuffix.value ? "right-11" : "right-3"));
 const describedBy = computed(() => {
   const ids: string[] = [];
@@ -92,7 +98,8 @@ const accessibleName = computed(() => {
   }
   // Visible <label for> names the control when label is set.
   if (props.label) return undefined;
-  return props.prefix || props.placeholder || undefined;
+  // Tip/placeholder is visual help only (aria-hidden) — never the accessible name.
+  return props.prefix || undefined;
 });
 
 function clear(): void {

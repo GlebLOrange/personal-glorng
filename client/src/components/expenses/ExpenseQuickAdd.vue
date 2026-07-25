@@ -5,7 +5,6 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
-import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import { useExpenseParse } from "@/composables/useExpenseParse";
 import { EXPENSE_CURRENCIES, type CurrencyCode } from "@/composables/useExpenseFilters";
 import { isoDateLocal } from "@/utils/dates";
@@ -35,7 +34,7 @@ const emit = defineEmits<{
   ];
 }>();
 
-const productInputRef = ref<HTMLInputElement | null>(null);
+const productInputRef = ref<{ focus: () => void } | null>(null);
 const smartTextInputRef = ref<{ focus: () => void } | null>(null);
 const smartText = ref("");
 
@@ -129,14 +128,21 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       <BaseSelect v-model="category" class="w-full" aria-label="category">
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </BaseSelect>
-      <input
+      <BaseInput
         ref="productInputRef"
         v-model="product"
         list="expense-product-suggestions"
-        placeholder="qty and product name"
-        :class="FIELD_INPUT_CLASS"
+        label="product"
+        placeholder="qty and name"
       />
-      <BaseInput v-model="price" type="number" step="0.01" min="0.01" placeholder="price" />
+      <BaseInput
+        v-model="price"
+        type="number"
+        step="0.01"
+        min="0.01"
+        label="price"
+        placeholder="0.00"
+      />
       <BaseButton variant="success" type="submit" size="field" :disabled="loading">
         {{ loading ? "saving..." : "save" }}
       </BaseButton>

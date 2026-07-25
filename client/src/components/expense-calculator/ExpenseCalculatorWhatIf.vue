@@ -56,7 +56,8 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
           type="number"
           step="0.01"
           min="0"
-          placeholder="purchase amount"
+          label="amount"
+          placeholder="0.00"
         />
         <BaseSelect v-model="currency" aria-label="currency">
           <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>

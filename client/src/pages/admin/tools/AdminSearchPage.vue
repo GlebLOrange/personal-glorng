@@ -74,7 +74,8 @@ function sourceLabel(type: string): string {
       <form class="flex flex-wrap items-center gap-3" @submit.prevent="search">
         <BaseInput
           v-model="query"
-          placeholder="search (admin content)"
+          label="query"
+          placeholder="admin content"
           class="min-w-[16rem] flex-1"
         />
         <BaseSelect v-model="sourceType" aria-label="source">

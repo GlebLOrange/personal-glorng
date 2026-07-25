@@ -2,9 +2,9 @@
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import type { TaskCreateForm } from "@/composables/useTasks";
 
 defineProps<{
@@ -20,14 +20,18 @@ const emit = defineEmits<{ submit: []; close: [] }>();
 <template>
   <BaseDrawer :open="open" title="new task" max-width="md" @close="emit('close')">
     <form id="task-create-drawer-form" class="space-y-4" @submit.prevent="emit('submit')">
-      <BaseInput v-model="form.title" placeholder="title (what needs doing?)" />
-      <BaseInput v-model="form.scheduled_at" type="datetime-local" aria-label="scheduled at" />
-      <BaseInput v-model="form.location" placeholder="location (optional)" />
-      <textarea
+      <BaseInput v-model="form.title" label="title" placeholder="what needs doing?" />
+      <BaseInput
+        v-model="form.scheduled_at"
+        type="datetime-local"
+        label="scheduled at"
+      />
+      <BaseInput v-model="form.location" label="location" placeholder="optional" />
+      <BaseTextarea
         v-model="form.description"
-        rows="3"
-        placeholder="notes (optional)"
-        :class="[FIELD_INPUT_CLASS, 'h-auto resize-none']"
+        :rows="3"
+        label="notes"
+        placeholder="optional"
       />
     </form>
 
