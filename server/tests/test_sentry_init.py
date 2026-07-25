@@ -10,7 +10,7 @@ from app.core.logging import logger
 from app.settings import get_settings
 from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file, scenario_env
 
-_DSN = "https://examplePublicKey@o0.ingest.sentry.io/0"
+_DSN = "https://fake@example.invalid/0"
 
 
 def test_sentry_disabled_without_dsn() -> None:
