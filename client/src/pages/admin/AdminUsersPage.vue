@@ -287,32 +287,28 @@ onUnmounted(() => {
               :active-label="activeFilterLabel"
               @clear="clearFilters"
             >
-              <div class="flex gap-2">
-                <p class="w-14 shrink-0 pt-1 text-xs font-medium text-surface-mid">role</p>
-                <div class="flex flex-col gap-2">
-                  <AdminFilterChip
-                    v-for="chip in ROLE_FILTERS"
-                    :key="chip.value"
-                    :label="chip.label"
-                    :active="roleFilter === chip.value"
-                    :color-class="userRoleClass(chip.value)"
-                    @click="setRoleFilter(chip.value)"
-                  />
-                </div>
+              <div class="flex flex-col gap-2">
+                <AdminFilterChip
+                  v-for="chip in ROLE_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="roleFilter === chip.value"
+                  :color-class="userRoleClass(chip.value)"
+                  @click="setRoleFilter(chip.value)"
+                />
               </div>
 
-              <div class="flex gap-2">
-                <p class="w-14 shrink-0 pt-1 text-xs font-medium text-surface-mid">status</p>
-                <div class="flex flex-col gap-2">
-                  <AdminFilterChip
-                    v-for="chip in STATUS_FILTERS"
-                    :key="chip.value"
-                    :label="chip.label"
-                    :active="statusFilter === chip.value"
-                    :color-class="userStatusClass(chip.value)"
-                    @click="setUserStatusFilter(chip.value)"
-                  />
-                </div>
+              <div class="border-t border-surface-border" />
+
+              <div class="flex flex-col gap-2">
+                <AdminFilterChip
+                  v-for="chip in STATUS_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="statusFilter === chip.value"
+                  :color-class="userStatusClass(chip.value)"
+                  @click="setUserStatusFilter(chip.value)"
+                />
               </div>
             </AdminFilterDropdown>
             <SearchInput
@@ -435,12 +431,8 @@ onUnmounted(() => {
       <template v-if="selectedUser" #footer>
         <DrawerFooterActions>
           <template #start>
-            <p class="text-xs text-surface-muted">
-              {{
-                hasDraftChanges(selectedUser)
-                  ? "Unsaved permission changes"
-                  : "Permissions are up to date"
-              }}
+            <p v-if="hasDraftChanges(selectedUser)" class="text-xs text-surface-muted">
+              Unsaved permission changes
             </p>
           </template>
           <template #dismiss>
