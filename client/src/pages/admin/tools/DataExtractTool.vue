@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import { ref } from "vue";
+
 import DataExtractBatchPanel from "@/components/admin/data-extract/DataExtractBatchPanel.vue";
 import DataExtractOptionsPanel from "@/components/admin/data-extract/DataExtractOptionsPanel.vue";
 import DataExtractResultPanel from "@/components/admin/data-extract/DataExtractResultPanel.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
+import { Card } from "@/components/ui/card";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { useDataExtractTool } from "@/composables/useDataExtractTool";
+
+const guideOpen = ref(false);
 
 const {
   selectedFile,
@@ -58,6 +64,70 @@ const {
 <template>
   <AdminPageLayout hub="tools" title="data extract">
     <div class="min-w-0">
+      <BaseButton
+        variant="ghost"
+        size="sm"
+        class="mb-4"
+        @click="guideOpen = !guideOpen"
+      >
+        {{ guideOpen ? "▾ Hide" : "▸ Show" }} data extract usage guide
+      </BaseButton>
+
+      <Card v-if="guideOpen" class="mb-6">
+        <div class="space-y-4 text-sm text-surface-light">
+          <p class="text-surface-mid">
+            Extract structured rows from CSV, JSON, XML, and delimited files.
+          </p>
+
+          <div>
+            <h3 class="mb-2 font-bold text-accent-blue">Formats</h3>
+            <p class="text-surface-mid">
+              Accepts CSV, TSV, JSON, XML, TXT, and PIPE. Leave format on
+              <code class="text-surface-light">auto</code> to detect from the extension, or override
+              in options.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="mb-2 font-bold text-accent-blue">Delimited &amp; pipe embed</h3>
+            <p class="text-surface-mid">
+              Field delimiter separates columns; list delimiter splits values inside one cell.
+              <code class="text-surface-light">pipe embed</code> is a preset (
+              <code class="text-surface-light">|</code> fields,
+              <code class="text-surface-light">;</code> lists). Promote moves staged pipe-embed rows
+              into embed storage.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="mb-2 font-bold text-accent-blue">XML</h3>
+            <p class="text-surface-mid">
+              Set the repeating element as the row tag (e.g.
+              <code class="text-surface-light">item</code>).
+              <code class="text-surface-light">rows</code> flattens to a table;
+              <code class="text-surface-light">tree</code> keeps nested JSON.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="mb-2 font-bold text-accent-blue">Workflow</h3>
+            <ul class="ml-2 list-inside list-disc space-y-1 text-surface-mid">
+              <li>
+                <code class="text-surface-light">extract</code> — preview rows in the browser (no
+                DB write)
+              </li>
+              <li>
+                <code class="text-surface-light">import to db</code> — stage rows in an import batch
+              </li>
+              <li>
+                <code class="text-surface-light">promote</code> — push a staged pipe-embed batch into
+                embed storage
+              </li>
+            </ul>
+          </div>
+        </div>
+      </Card>
+
       <div class="mb-6 space-y-3">
         <div class="flex w-full min-w-0 flex-wrap items-center gap-2">
           <DataExtractOptionsPanel
@@ -104,6 +174,7 @@ const {
           role="button"
           tabindex="0"
           aria-label="Choose a file to extract"
+          :aria-describedby="selectedName ? undefined : 'data-extract-drop-hint'"
           :class="[
             'cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors',
             dragOver
@@ -125,7 +196,12 @@ const {
             @change="onFileSelect"
           />
           <p v-if="selectedName" class="text-sm text-surface-light">{{ selectedName }}</p>
-          <p v-else class="text-sm text-surface-mid">drop a file here or click to browse</p>
+          <template v-else>
+            <p class="text-sm text-surface-mid">drop a file here or click to browse</p>
+            <p id="data-extract-drop-hint" class="mt-1 text-xs text-surface-mid">
+              CSV, TSV, JSON, XML, TXT, or PIPE
+            </p>
+          </template>
         </div>
       </div>
 
