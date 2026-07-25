@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+import re
 from typing import Annotated
 from urllib.parse import quote
 
@@ -49,6 +50,8 @@ from app.settings import Settings
 from app.workers.job_names import JobName
 
 router = APIRouter()
+
+_VERIFY_TOKEN_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,2048}$")
 
 _ACCESS_COOKIE = "access_token"
 _REFRESH_COOKIE = "refresh_token"
@@ -210,6 +213,11 @@ async def verify_redirect(
     settings: AppSettings,
 ) -> RedirectResponse:
     base = settings.BASE_URL.rstrip("/")
+    if not _VERIFY_TOKEN_PATTERN.fullmatch(token):
+        return RedirectResponse(
+            url=f"{base}/verify-email",
+            status_code=302,
+        )
     return RedirectResponse(
         url=f"{base}/verify-email?token={quote(token, safe='')}",
         status_code=302,
