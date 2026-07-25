@@ -41,10 +41,6 @@ const optionsActiveLabel = computed(() => {
   return parts.length ? parts.join(" · ") : undefined;
 });
 
-function toggleOptions(): void {
-  optionsOpen.value = !optionsOpen.value;
-}
-
 function closeOptions(): void {
   optionsOpen.value = false;
 }
@@ -139,7 +135,7 @@ async function download(): Promise<void> {
             aria-haspopup="dialog"
             :aria-expanded="optionsOpen"
             aria-controls="vid-download-options-dialog"
-            @click.stop="toggleOptions"
+            @click.stop="optionsOpen = !optionsOpen"
           >
             options
             <span v-if="optionsActiveLabel" class="text-surface-muted">
