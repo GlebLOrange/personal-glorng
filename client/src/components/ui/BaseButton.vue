@@ -67,11 +67,11 @@ const variantClass = computed(() => {
     return "bg-accent-blue/3 text-accent-blue hover:enabled:bg-accent-blue/15 active:enabled:bg-accent-blue/25";
   }
 
-  // secondary
+  // secondary — grayscale hierarchy (Toss); not accent wash
   if (selected) {
-    return "bg-accent-blue/15 text-accent-blue";
+    return "bg-surface-light/15 text-surface-light";
   }
-  return "bg-accent-blue/3 text-accent-blue hover:enabled:bg-accent-blue/15 active:enabled:bg-accent-blue/25";
+  return "bg-transparent text-surface-light/80 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light active:enabled:bg-surface-light/15";
 });
 </script>
 

@@ -27,6 +27,34 @@ export function getOverlayFocusableElements(root: HTMLElement): HTMLElement[] {
   );
 }
 
+/** Trap Tab/Shift+Tab inside `root` (shared by full overlays and option popovers). */
+export function trapTabKeyInRoot(event: KeyboardEvent, root: HTMLElement | null | undefined): void {
+  if (event.key !== "Tab" || !root) return;
+
+  const focusables = getOverlayFocusableElements(root);
+  if (focusables.length === 0) {
+    event.preventDefault();
+    return;
+  }
+
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  const active = document.activeElement;
+
+  if (event.shiftKey) {
+    if (active === first || !root.contains(active)) {
+      last.focus();
+      event.preventDefault();
+    }
+    return;
+  }
+
+  if (active === last || !root.contains(active)) {
+    first.focus();
+    event.preventDefault();
+  }
+}
+
 export type OverlayShellOptions = {
   open: WatchSource<boolean>;
   panelRef: Ref<HTMLElement | null>;
@@ -35,12 +63,42 @@ export type OverlayShellOptions = {
   initialFocusFallback?: Ref<HTMLElement | null> | (() => HTMLElement | null);
 };
 
+// ponytail: refcount for nested overlays; upgrade to per-root inert map if needed
+let backgroundInertCount = 0;
+
+function setBackgroundInert(active: boolean): void {
+  const main = document.getElementById("main-content");
+  const footer = document.querySelector("footer");
+  if (active) {
+    main?.setAttribute("inert", "");
+    footer?.setAttribute("inert", "");
+  } else {
+    main?.removeAttribute("inert");
+    footer?.removeAttribute("inert");
+  }
+}
+
+function acquireBackgroundInert(): void {
+  backgroundInertCount += 1;
+  if (backgroundInertCount === 1) {
+    setBackgroundInert(true);
+  }
+}
+
+function releaseBackgroundInert(): void {
+  backgroundInertCount = Math.max(0, backgroundInertCount - 1);
+  if (backgroundInertCount === 0) {
+    setBackgroundInert(false);
+  }
+}
+
 /**
- * Shared overlay behavior: scroll lock, Escape, Tab trap, return-focus, initial focus.
+ * Shared overlay behavior: scroll lock, Escape, Tab trap, return-focus, initial focus, background inert.
  */
 export function useOverlayShell(options: OverlayShellOptions): void {
   let returnFocusTarget: HTMLElement | null = null;
   let focusRafId = 0;
+  let holdingInert = false;
 
   useScrollLock(options.open);
 
@@ -50,40 +108,12 @@ export function useOverlayShell(options: OverlayShellOptions): void {
     return typeof fallback === "function" ? fallback() : fallback.value;
   }
 
-  function trapFocus(event: KeyboardEvent): void {
-    const root = options.panelRef.value;
-    if (!root) return;
-
-    const focusables = getOverlayFocusableElements(root);
-    if (focusables.length === 0) {
-      event.preventDefault();
-      return;
-    }
-
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    const active = document.activeElement;
-
-    if (event.shiftKey) {
-      if (active === first || !root.contains(active)) {
-        last.focus();
-        event.preventDefault();
-      }
-      return;
-    }
-
-    if (active === last || !root.contains(active)) {
-      first.focus();
-      event.preventDefault();
-    }
-  }
-
   function onKeydown(event: KeyboardEvent): void {
     if (event.key === "Escape") {
       options.onClose();
       return;
     }
-    if (event.key === "Tab") trapFocus(event);
+    if (event.key === "Tab") trapTabKeyInRoot(event, options.panelRef.value);
   }
 
   watch(
@@ -93,6 +123,10 @@ export function useOverlayShell(options: OverlayShellOptions): void {
 
       if (!open) {
         document.removeEventListener("keydown", onKeydown);
+        if (holdingInert) {
+          releaseBackgroundInert();
+          holdingInert = false;
+        }
         await nextTick();
         returnFocusTarget?.focus();
         return;
@@ -101,6 +135,10 @@ export function useOverlayShell(options: OverlayShellOptions): void {
       returnFocusTarget =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;
       document.addEventListener("keydown", onKeydown);
+      if (!holdingInert) {
+        acquireBackgroundInert();
+        holdingInert = true;
+      }
       await nextTick();
 
       focusRafId = requestAnimationFrame(() => {
@@ -113,5 +151,9 @@ export function useOverlayShell(options: OverlayShellOptions): void {
   onUnmounted(() => {
     cancelAnimationFrame(focusRafId);
     document.removeEventListener("keydown", onKeydown);
+    if (holdingInert) {
+      releaseBackgroundInert();
+      holdingInert = false;
+    }
   });
 }

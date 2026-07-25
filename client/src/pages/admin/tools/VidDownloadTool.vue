@@ -8,6 +8,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { api } from "@/composables/useApi";
+import { trapTabKeyInRoot } from "@/composables/useOverlayShell";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessageFromBlob } from "@/types/api";
 
@@ -60,7 +61,9 @@ function onOptionsKeydown(event: KeyboardEvent): void {
     event.stopPropagation();
     event.preventDefault();
     closeOptions();
+    return;
   }
+  trapTabKeyInRoot(event, optionsPanel.value);
 }
 
 watch(optionsOpen, async (isOpen) => {

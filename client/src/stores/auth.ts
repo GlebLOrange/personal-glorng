@@ -128,11 +128,12 @@ export const useAuthStore = defineStore("auth", () => {
     return axios.isAxiosError(err) && err.response?.status === 401;
   }
 
-  /** Restore session from cookies; try refresh before treating user as logged out. */
-  async function resolveSession(): Promise<void> {
+  let resolveInFlight: Promise<void> | null = null;
+
+  async function runResolveSession(): Promise<void> {
     sessionResolved.value = false;
     sessionError.value = null;
-    clearUser();
+    // Keep prior user until auth failure is confirmed (avoids bounce on network/5xx blips).
 
     try {
       try {
@@ -143,6 +144,7 @@ export const useAuthStore = defineStore("auth", () => {
           throw err;
         }
         if (!(await tryRefreshSession())) {
+          clearUser();
           return;
         }
         await fetchUser();
@@ -159,6 +161,17 @@ export const useAuthStore = defineStore("auth", () => {
     } finally {
       sessionResolved.value = true;
     }
+  }
+
+  /** Restore session from cookies; try refresh before treating user as logged out. */
+  async function resolveSession(): Promise<void> {
+    if (resolveInFlight) {
+      return resolveInFlight;
+    }
+    resolveInFlight = runResolveSession().finally(() => {
+      resolveInFlight = null;
+    });
+    return resolveInFlight;
   }
 
   return {

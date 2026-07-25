@@ -1,8 +1,23 @@
 const BLOCKED_PROTOCOLS = new Set(["javascript:", "data:", "vbscript:"]);
 
+/** Auth entry paths that must not be post-login redirect targets (avoids replace loops). */
+const AUTH_ENTRY_PATHS = new Set([
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+  "/callback",
+]);
+
 /** Whether a URL is safe to use as a navigation href in chat source links. */
 export function isSafeNavigationUrl(url: string): boolean {
   return safeNavigationHref(url) !== null;
+}
+
+function isAuthEntryPath(pathname: string): boolean {
+  const normalized = pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+  return AUTH_ENTRY_PATHS.has(normalized);
 }
 
 /** Return a same-origin path for auth redirects, or a safe fallback. */
@@ -19,6 +34,9 @@ export function safeRedirectPath(value: unknown, fallback = "/admin"): string {
   try {
     const parsed = new URL(trimmed, window.location.origin);
     if (parsed.origin !== window.location.origin) {
+      return fallback;
+    }
+    if (isAuthEntryPath(parsed.pathname)) {
       return fallback;
     }
     return `${parsed.pathname}${parsed.search}${parsed.hash}`;

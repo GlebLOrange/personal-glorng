@@ -6,6 +6,7 @@ import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { api } from "@/composables/useApi";
 import { getApiErrorMessage } from "@/types/api";
+import { consumeQueryParams } from "@/utils/consumeQueryParams";
 
 const route = useRoute();
 const router = useRouter();
@@ -14,7 +15,7 @@ const status = ref<"loading" | "success" | "error">("loading");
 const message = ref("");
 
 onMounted(async () => {
-  const token = route.query.token;
+  const { token } = await consumeQueryParams(router, route.path, route.query, ["token"]);
   if (typeof token !== "string" || !token.trim()) {
     status.value = "error";
     message.value = "Missing verification token.";

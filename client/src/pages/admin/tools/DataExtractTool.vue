@@ -11,6 +11,7 @@ import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
+import { trapTabKeyInRoot } from "@/composables/useOverlayShell";
 import { usePermissions } from "@/composables/usePermissions";
 import { SELECT_CLASS } from "@/constants/formClasses";
 import type {
@@ -273,7 +274,9 @@ function onOptionsKeydown(event: KeyboardEvent): void {
     event.stopPropagation();
     event.preventDefault();
     closeOptions();
+    return;
   }
+  trapTabKeyInRoot(event, optionsPanel.value);
 }
 
 watch(optionsOpen, async (isOpen) => {

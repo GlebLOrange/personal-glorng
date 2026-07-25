@@ -4,6 +4,7 @@ import type { Auth, UserCredential } from "firebase/auth";
 import type { Router } from "vue-router";
 
 import { isFirebaseAnalyticsEnabled, isFirebaseEnabled } from "@/constants/firebase";
+import { scrubSensitivePath } from "@/utils/sensitiveUrl";
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
@@ -55,7 +56,7 @@ export async function initFirebaseAnalytics(router: Router): Promise<void> {
   removeAnalyticsRouteHook = router.afterEach((to) => {
     if (!analytics) return;
     logEvent(analytics, "page_view", {
-      page_path: to.fullPath,
+      page_path: scrubSensitivePath(to.fullPath),
       page_title: to.name?.toString(),
     });
   });

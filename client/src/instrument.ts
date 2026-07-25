@@ -1,7 +1,23 @@
 import { isSentryEnabled } from "@/constants/sentry";
+import { scrubSensitiveUrl } from "@/utils/sensitiveUrl";
 
 let sentry: typeof import("@sentry/vue") | null = null;
 let sentryInitialized = false;
+
+function scrubSentryEvent<T extends {
+  request?: { url?: string };
+  breadcrumbs?: Array<{ data?: { url?: string }; message?: string }>;
+}>(event: T): T {
+  if (event.request?.url) {
+    event.request.url = scrubSensitiveUrl(event.request.url);
+  }
+  for (const crumb of event.breadcrumbs ?? []) {
+    if (crumb.data?.url) {
+      crumb.data.url = scrubSensitiveUrl(crumb.data.url);
+    }
+  }
+  return event;
+}
 
 export async function initSentry(app: ReturnType<(typeof import("vue"))["createApp"]>) {
   if (!isSentryEnabled || sentryInitialized) return;
@@ -30,6 +46,13 @@ export async function initSentry(app: ReturnType<(typeof import("vue"))["createA
 
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
+
+    beforeSend(event) {
+      return scrubSentryEvent(event);
+    },
+    beforeSendTransaction(event) {
+      return scrubSentryEvent(event);
+    },
   });
   sentryInitialized = true;
 }

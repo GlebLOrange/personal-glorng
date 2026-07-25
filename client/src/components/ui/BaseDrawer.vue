@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, useId } from "vue";
 
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import OverlayBackdrop from "@/components/ui/OverlayBackdrop.vue";
@@ -24,6 +24,7 @@ const emit = defineEmits<{ close: [] }>();
 
 const panel = ref<HTMLElement | null>(null);
 const closeButton = ref<InstanceType<typeof IconCloseButton> | null>(null);
+const titleId = useId();
 
 useOverlayShell({
   open: () => props.open,
@@ -49,7 +50,7 @@ const panelWidth = computed(
           ref="panel"
           role="dialog"
           aria-modal="true"
-          :aria-label="title"
+          :aria-labelledby="titleId"
           :class="[
             'drawer-panel relative flex h-full w-full flex-col border-l border-surface-border bg-surface-dark shadow-xl',
             panelWidth,
@@ -61,7 +62,7 @@ const panelWidth = computed(
           >
             <div class="min-w-0 flex-1">
               <slot name="title">
-                <h2 class="truncate text-lg font-bold text-surface-light">
+                <h2 :id="titleId" class="truncate text-lg font-bold text-surface-light">
                   {{ title }}
                 </h2>
               </slot>

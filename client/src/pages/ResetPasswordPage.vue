@@ -8,6 +8,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
+import { consumeQueryParams } from "@/utils/consumeQueryParams";
 import { passwordStrength } from "@/utils/passwordPolicy";
 
 const route = useRoute();
@@ -28,8 +29,8 @@ const canSubmit = computed(
   () => !!token.value && strength.value.valid && passwordsMatch.value && !loading.value,
 );
 
-onMounted(() => {
-  const raw = route.query.token;
+onMounted(async () => {
+  const { token: raw } = await consumeQueryParams(router, route.path, route.query, ["token"]);
   token.value = typeof raw === "string" ? raw : "";
 });
 
