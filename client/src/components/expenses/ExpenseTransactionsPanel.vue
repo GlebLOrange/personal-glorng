@@ -88,7 +88,7 @@ defineExpose({
     role="tabpanel"
     aria-labelledby="expenses-tab-tab-transactions"
     tabindex="0"
-    class="flex flex-col gap-3 outline-none"
+    class="flex flex-col gap-3 outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
   >
     <ExpenseQuickAdd
       ref="quickAddRef"

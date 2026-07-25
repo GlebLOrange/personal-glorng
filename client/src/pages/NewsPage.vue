@@ -94,7 +94,7 @@ watch(page, () => {
             :href="safeNavigationHref(item.source_url) ?? '#'"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-xs text-accent-blue hover:underline"
+            class="text-xs text-accent-blue hover:underline focus:underline"
             @click.stop
           >
             source

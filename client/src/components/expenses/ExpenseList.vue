@@ -46,50 +46,61 @@ const skeletonRows = 5;
   </div>
 
   <template v-else>
-    <!-- Mobile cards -->
+    <!-- Mobile cards — primary hit target is a button; actions stay nested-safe -->
     <div class="flex flex-col gap-3 md:hidden">
       <Card
         v-for="expense in expenses"
         :key="expense.id"
         variant="compact"
-        interactive
         hoverable
         class="cursor-pointer"
-        @click="emit('edit', expense)"
       >
-        <div class="flex justify-between items-start gap-3">
-          <div class="min-w-0">
-            <p class="text-surface-light text-sm font-semibold truncate">{{ expense.tool_name }}</p>
-            <p class="text-xs text-surface-mid mt-1">
-              {{ expense.category ?? "Uncategorized" }} ·
-              {{ formatExpenseDate(expense.expense_date) }}
-            </p>
-          </div>
-          <div class="text-right text-sm text-surface-light font-data shrink-0">
-            <div>{{ formatMoney(expense.amount, expense.currency) }}</div>
-            <div
-              v-if="expense.currency !== displayCurrency && exchangeRates"
-              class="text-xs text-surface-mid"
-            >
-              ≈
-              {{
-                formatMoney(
-                  convertAmount(expense.amount, expense.currency as CurrencyCode, displayCurrency),
-                  displayCurrency,
-                )
-              }}
+        <button
+          type="button"
+          class="w-full text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+          :aria-label="`Edit ${expense.tool_name || 'expense'}`"
+          @click="emit('edit', expense)"
+        >
+          <div class="flex justify-between items-start gap-3">
+            <div class="min-w-0">
+              <p class="text-surface-light text-sm font-semibold truncate">
+                {{ expense.tool_name }}
+              </p>
+              <p class="text-xs text-surface-mid mt-1">
+                {{ expense.category ?? "Uncategorized" }} ·
+                {{ formatExpenseDate(expense.expense_date) }}
+              </p>
+            </div>
+            <div class="text-right text-sm text-surface-light font-data shrink-0">
+              <div>{{ formatMoney(expense.amount, expense.currency) }}</div>
+              <div
+                v-if="expense.currency !== displayCurrency && exchangeRates"
+                class="text-xs text-surface-mid"
+              >
+                ≈
+                {{
+                  formatMoney(
+                    convertAmount(
+                      expense.amount,
+                      expense.currency as CurrencyCode,
+                      displayCurrency,
+                    ),
+                    displayCurrency,
+                  )
+                }}
+              </div>
             </div>
           </div>
-        </div>
-        <div class="flex justify-between items-center mt-3 gap-2">
-          <span class="text-xs px-1.5 py-0.5 rounded bg-surface-border text-surface-mid">
-            {{ expenseSourceLabel(expense.source) }}
-          </span>
-          <p v-if="expense.notes" class="text-xs text-surface-mid truncate min-w-0">
-            {{ expense.notes }}
-          </p>
-        </div>
-        <div class="flex gap-2 justify-end flex-wrap mt-3" @click.stop>
+          <div class="flex justify-between items-center mt-3 gap-2">
+            <span class="text-xs px-1.5 py-0.5 rounded bg-surface-border text-surface-mid">
+              {{ expenseSourceLabel(expense.source) }}
+            </span>
+            <p v-if="expense.notes" class="text-xs text-surface-mid truncate min-w-0">
+              {{ expense.notes }}
+            </p>
+          </div>
+        </button>
+        <div class="flex gap-2 justify-end flex-wrap mt-3">
           <BaseButton
             variant="ghost"
             size="sm"
@@ -150,8 +161,12 @@ const skeletonRows = 5;
           <tr
             v-for="expense in expenses"
             :key="expense.id"
-            class="border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50 cursor-pointer"
+            tabindex="0"
+            class="border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-blue/50"
+            :aria-label="`Edit ${expense.tool_name || 'expense'}`"
             @click="emit('edit', expense)"
+            @keydown.enter.prevent="emit('edit', expense)"
+            @keydown.space.prevent="emit('edit', expense)"
           >
             <td class="px-3 py-2 whitespace-nowrap">
               {{ formatExpenseDate(expense.expense_date) }}

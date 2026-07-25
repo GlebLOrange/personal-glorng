@@ -211,7 +211,7 @@ onMounted(() => {
         role="tabpanel"
         aria-labelledby="tasks-tab-tab-queue"
         tabindex="0"
-        class="outline-none"
+        class="outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         <TaskList
           :tasks="tasks"
@@ -242,7 +242,7 @@ onMounted(() => {
         role="tabpanel"
         aria-labelledby="tasks-tab-tab-intakes"
         tabindex="0"
-        class="outline-none"
+        class="outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         <TaskIntakeList :intakes="intakes" :loading="intakesLoading" />
         <AdminListFooter
@@ -268,7 +268,7 @@ onMounted(() => {
         role="tabpanel"
         aria-labelledby="tasks-tab-tab-sync"
         tabindex="0"
-        class="outline-none"
+        class="outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         <TaskSyncQueue
           :items="syncQueue"

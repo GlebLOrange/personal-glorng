@@ -171,7 +171,7 @@ async function onSurfaceTab(id: string): Promise<void> {
               />
             </template>
             <template #primary>
-              <span :title="source.name">{{ source.name }}</span>
+              <span>{{ source.name }}</span>
             </template>
             <template v-if="source.last_fetched_at" #meta>
               <span>{{ sourceMeta(source) }}</span>
@@ -180,8 +180,7 @@ async function onSurfaceTab(id: string): Promise<void> {
               <span
                 v-if="source.last_error"
                 class="text-xs text-status-cyan"
-                :title="source.last_error"
-                aria-label="Source has fetch error"
+                :aria-label="`Source fetch error: ${source.last_error}`"
               >
                 ⚠
               </span>

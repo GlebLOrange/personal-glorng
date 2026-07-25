@@ -212,7 +212,7 @@ onMounted(load);
             </div>
           </template>
           <template #primary>
-            <span :title="entry.message">{{ entry.message }}</span>
+            <span>{{ entry.message }}</span>
           </template>
           <template #meta>
             <span class="font-data">{{ entry.logger }}</span>

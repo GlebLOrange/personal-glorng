@@ -31,10 +31,7 @@ const emit = defineEmits<{
       :class="canWrite ? 'cursor-pointer' : undefined"
       :hoverable="canWrite"
       :interactive="canWrite"
-      :role="canWrite ? 'button' : undefined"
-      :tabindex="canWrite ? 0 : undefined"
       @click="canWrite ? emit('edit', item) : undefined"
-      @keydown.enter.prevent="canWrite ? emit('edit', item) : undefined"
     >
       <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
         <StatusBadge :label="item.status" :class-name="newsStatusClass(item.status)" />
@@ -100,7 +97,7 @@ const emit = defineEmits<{
           :href="safeNavigationHref(item.source_url) ?? '#'"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center px-3 py-1.5 text-xs text-accent-blue hover:underline"
+          class="inline-flex items-center px-3 py-1.5 text-xs text-accent-blue hover:underline focus:underline"
         >
           source
         </a>

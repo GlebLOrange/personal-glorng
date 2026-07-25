@@ -43,7 +43,7 @@ function closeDrawer(): void {
         />
       </template>
       <template #primary>
-        <span class="line-clamp-1" :title="item.inbound_text || undefined">
+        <span class="line-clamp-1">
           {{ item.inbound_text?.trim() || `Intake #${item.id}` }}
         </span>
       </template>

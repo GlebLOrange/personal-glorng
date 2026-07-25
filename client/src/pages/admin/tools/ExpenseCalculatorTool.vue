@@ -112,7 +112,7 @@ const persistenceHint = computed(() => {
         role="tabpanel"
         aria-labelledby="expense-calc-tab-convert"
         tabindex="0"
-        class="outline-none"
+        class="outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         <ExpenseCalculatorConvert :exchange-rates="exchangeRates" :rates-loading="ratesLoading" />
       </section>
@@ -123,7 +123,7 @@ const persistenceHint = computed(() => {
         role="tabpanel"
         aria-labelledby="expense-calc-tab-sum"
         tabindex="0"
-        class="outline-none"
+        class="outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         <ExpenseCalculatorLineItems
           :line-items="lineItems"
@@ -142,7 +142,7 @@ const persistenceHint = computed(() => {
         role="tabpanel"
         aria-labelledby="expense-calc-tab-budget"
         tabindex="0"
-        class="outline-none"
+        class="outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         <ExpenseCalculatorBudget
           :budget-rows="budgetRows"
@@ -160,7 +160,7 @@ const persistenceHint = computed(() => {
         role="tabpanel"
         aria-labelledby="expense-calc-tab-whatif"
         tabindex="0"
-        class="outline-none"
+        class="outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         <ExpenseCalculatorWhatIf
           v-model:what-if-category-id="whatIfCategoryId"

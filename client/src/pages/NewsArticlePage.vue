@@ -114,7 +114,7 @@ watch(
           :href="safeNavigationHref(article.source_url) ?? '#'"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-sm text-accent-blue hover:underline"
+          class="text-sm text-accent-blue hover:underline focus:underline"
         >
           open original source
         </a>

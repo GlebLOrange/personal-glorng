@@ -268,7 +268,7 @@ watch(articleId, () => {
     <header v-if="canWrite && article" class="page-intro">
       <div class="flex flex-wrap gap-2">
         <BaseButton variant="success" :disabled="actionLoading" @click="saveArticle">
-          {{ actionLoading ? "saving..." : "save article" }}
+          {{ actionLoading ? "saving…" : "save article" }}
         </BaseButton>
       </div>
     </header>
@@ -301,7 +301,14 @@ watch(articleId, () => {
           <Card>
             <h2 class="card-title mb-4">article</h2>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <BaseInput v-model="form.slug" placeholder="slug" :disabled="!canWrite" />
+              <BaseInput
+                v-model="form.slug"
+                label="slug"
+                placeholder="article-url-slug"
+                autocomplete="off"
+                spellcheck="false"
+                :disabled="!canWrite"
+              />
               <div
                 class="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-4"
                 role="group"
@@ -317,15 +324,26 @@ watch(articleId, () => {
                   @click="setStatus(status)"
                 />
               </div>
-              <BaseInput v-model="form.title" placeholder="title" :disabled="!canWrite" />
+              <BaseInput
+                v-model="form.title"
+                label="title"
+                placeholder="Article title…"
+                autocomplete="off"
+                :disabled="!canWrite"
+              />
               <BaseInput
                 v-model="form.original_title"
-                placeholder="original title"
+                label="original title"
+                placeholder="Original title…"
+                autocomplete="off"
                 :disabled="!canWrite"
               />
               <BaseInput
                 v-model="form.language"
-                placeholder="language (en)"
+                label="language"
+                placeholder="en"
+                autocomplete="off"
+                spellcheck="false"
                 :disabled="!canWrite"
               />
             </div>
@@ -371,7 +389,9 @@ watch(articleId, () => {
               <BaseTextarea
                 v-model="form.summary"
                 :rows="4"
-                placeholder="summary"
+                label="summary"
+                placeholder="Summary…"
+                autocomplete="off"
                 :disabled="!canWrite"
               />
             </div>
@@ -394,19 +414,25 @@ watch(articleId, () => {
               </select>
               <BaseInput
                 v-model="form.source_name"
-                placeholder="source name"
+                label="source name"
+                placeholder="e.g. DW"
+                autocomplete="off"
                 :disabled="!canWrite"
               />
               <BaseInput
                 v-model="form.source_url"
-                placeholder="article url"
+                label="article url"
+                placeholder="https://…"
                 type="url"
+                autocomplete="off"
                 :disabled="!canWrite"
               />
               <BaseInput
                 v-model="form.source_feed_url"
-                placeholder="source feed/home url"
+                label="source feed/home url"
+                placeholder="https://…"
                 type="url"
+                autocomplete="off"
                 :disabled="!canWrite"
               />
               <BaseInput

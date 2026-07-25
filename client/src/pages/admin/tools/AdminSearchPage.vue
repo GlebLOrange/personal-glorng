@@ -101,7 +101,7 @@ function sourceLabel(type: string): string {
           <span class="text-xs px-2 py-0.5 rounded bg-accent-blue/20 text-accent-blue">
             {{ sourceLabel(hit.source_type) }}
           </span>
-          <RouterLink :to="hit.url" class="font-medium text-accent-blue hover:underline">
+          <RouterLink :to="hit.url" class="font-medium text-accent-blue hover:underline focus:underline">
             {{ hit.title }}
           </RouterLink>
         </div>

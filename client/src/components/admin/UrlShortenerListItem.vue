@@ -113,15 +113,15 @@ function confirmDelete(): void {
     @click="startEdit"
   >
     <template #primary>
-      <span :title="displayTitle">{{ displayTitle }}</span>
+      <span>{{ displayTitle }}</span>
     </template>
     <template #meta>
       <a
         :href="shortLink"
-        :title="`${url.original_url} · ${shortLink}`"
+        :aria-label="`Open ${url.original_url}`"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-accent-blue underline-offset-2 hover:underline"
+        class="text-accent-blue underline-offset-2 hover:underline focus:underline"
         @click.stop
       >
         {{ shortLink }}

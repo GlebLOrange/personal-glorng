@@ -268,7 +268,7 @@ function goToTransactions(): void {
           role="tabpanel"
           aria-labelledby="expenses-tab-tab-insights"
           tabindex="0"
-          class="outline-none"
+          class="outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
         >
           <ExpenseInsights
             :has-chart-data="hasChartData"
@@ -318,7 +318,7 @@ function goToTransactions(): void {
           role="tabpanel"
           aria-labelledby="expenses-tab-tab-settings"
           tabindex="0"
-          class="outline-none"
+          class="outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
         >
           <ExpenseCategorySettings
             v-model:display-currency="displayCurrency"

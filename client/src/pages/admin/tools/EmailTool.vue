@@ -81,16 +81,29 @@ async function preview(): Promise<void> {
             :disabled="!canSend || loading"
             @click="send"
           >
-            {{ loading ? "sending..." : "send" }}
+            {{ loading ? "sending…" : "send" }}
           </ToolbarPillButton>
         </div>
       </template>
     </AdminListToolbar>
 
     <form class="space-y-3 mb-8" @submit.prevent="send">
-      <BaseInput v-model="to" type="email" placeholder="to (recipient@example.com)" />
-      <BaseInput v-model="subject" placeholder="subject" />
-      <BaseTextarea v-model="body" :rows="6" placeholder="body (write your message...)" />
+      <BaseInput
+        v-model="to"
+        type="email"
+        label="to"
+        placeholder="recipient@example.com"
+        autocomplete="email"
+        spellcheck="false"
+      />
+      <BaseInput v-model="subject" label="subject" placeholder="Subject…" autocomplete="off" />
+      <BaseTextarea
+        v-model="body"
+        :rows="6"
+        label="body"
+        placeholder="Write your message…"
+        autocomplete="off"
+      />
     </form>
 
     <div v-if="previewHtml" class="space-y-2">

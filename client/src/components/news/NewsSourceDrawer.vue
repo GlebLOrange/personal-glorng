@@ -44,26 +44,34 @@ function toStringValue(value: string | number | null | undefined): string {
     <form id="news-source-form" class="space-y-4" @submit.prevent="emit('save')">
       <BaseInput
         :model-value="form.feed_url"
-        placeholder="feed url"
+        label="feed url"
+        placeholder="https://example.com/feed.xml"
         type="url"
+        autocomplete="off"
         required
         @update:model-value="patch({ feed_url: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.name"
-        placeholder="title"
+        label="title"
+        placeholder="Source name…"
+        autocomplete="off"
         required
         @update:model-value="patch({ name: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.category"
-        placeholder="category"
+        label="category"
+        placeholder="e.g. tech"
+        autocomplete="off"
         required
         @update:model-value="patch({ category: toStringValue($event) })"
       />
       <BaseInput
         :model-value="form.region"
-        placeholder="region"
+        label="region"
+        placeholder="e.g. EU"
+        autocomplete="off"
         required
         @update:model-value="patch({ region: toStringValue($event) })"
       />
@@ -85,7 +93,7 @@ function toStringValue(value: string | number | null | undefined): string {
         </template>
         <template #primary>
           <ToolbarPillButton type="submit" form="news-source-form" family="2xx" :disabled="loading">
-            {{ loading ? "saving..." : "save" }}
+            {{ loading ? "saving…" : "save" }}
           </ToolbarPillButton>
         </template>
       </DrawerFooterActions>

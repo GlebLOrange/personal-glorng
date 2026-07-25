@@ -82,7 +82,7 @@ const emit = defineEmits<{
     role="tabpanel"
     aria-labelledby="expenses-tab-tab-calculator"
     tabindex="0"
-    class="flex flex-col gap-4 outline-none"
+    class="flex flex-col gap-4 outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
   >
     <Card
       variant="compact"

@@ -25,14 +25,13 @@ const emit = defineEmits<{ select: [id: number] }>();
       <StatusBadge :label="statusLabel(task.status)" :class-name="statusBadgeClass(task.status)" />
     </template>
     <template #primary>
-      <span :title="task.title">{{ task.title }}</span>
+      <span>{{ task.title }}</span>
     </template>
     <template #meta>
       <span v-if="task.location">@ {{ task.location }}</span>
       <span
         v-if="task.google_event_id"
         class="inline-flex text-accent-blue"
-        title="Synced to Google Calendar"
         aria-label="Synced to Google Calendar"
       >
         <ToolIcon slug="sync" class="h-4 w-4" />

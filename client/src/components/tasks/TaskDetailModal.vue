@@ -162,9 +162,8 @@ watch(
         <div v-if="task.google_event_id" class="flex items-center gap-2">
           <span
             class="inline-flex items-center gap-1.5 rounded-full bg-accent-blue/10 px-2 py-0.5 text-xs text-accent-blue"
-            title="Synced to Google Calendar"
           >
-            <ToolIcon slug="sync" class="h-3.5 w-3.5" />
+            <ToolIcon slug="sync" class="h-3.5 w-3.5" aria-hidden="true" />
             synced to google calendar
           </span>
         </div>
@@ -174,7 +173,6 @@ watch(
           quiet
           size="sm"
           class="gap-1.5 hover:enabled:!bg-accent-blue/10 hover:enabled:!text-accent-blue focus-visible:!text-accent-blue"
-          title="Try syncing again"
           @click="emit('retrySync', task.id)"
         >
           <ToolIcon slug="sync" class="h-4 w-4" />

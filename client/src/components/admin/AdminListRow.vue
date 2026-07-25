@@ -29,25 +29,9 @@ const emit = defineEmits<{ click: [MouseEvent | KeyboardEvent] }>();
 
 const focusable = computed(() => props.interactive && !props.nestedInteractive);
 
-const rowAttrs = computed(() => {
-  if (!focusable.value) return {};
-  return {
-    role: "button",
-    tabindex: 0,
-  };
-});
-
 function onClick(event: MouseEvent): void {
   if (!props.interactive) return;
   emit("click", event);
-}
-
-function onKeydown(event: KeyboardEvent): void {
-  if (!focusable.value) return;
-  if (event.key === "Enter" || event.key === " ") {
-    event.preventDefault();
-    emit("click", event);
-  }
 }
 </script>
 
@@ -58,7 +42,6 @@ function onKeydown(event: KeyboardEvent): void {
     :hoverable="false"
     :interactive="focusable"
     :aria-expanded="expandable ? expanded : undefined"
-    v-bind="rowAttrs"
     :class="[
       interactive ? 'cursor-pointer' : undefined,
       revealActionsOnHover ? 'group' : undefined,
@@ -66,7 +49,6 @@ function onKeydown(event: KeyboardEvent): void {
     ]"
     class="w-full min-w-0 rounded-lg px-2 py-1.5 text-left"
     @click="onClick"
-    @keydown="onKeydown"
   >
     <div class="flex min-w-0 items-center gap-2">
       <div v-if="$slots.leading" class="shrink-0" @click.stop @keydown.stop>

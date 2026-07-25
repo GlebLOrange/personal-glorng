@@ -144,7 +144,7 @@ onMounted(loadUrls);
       <div class="flex flex-wrap items-center gap-3">
         <a
           :href="lastCreatedLink"
-          class="break-all text-sm text-accent-blue hover:underline"
+          class="break-all text-sm text-accent-blue hover:underline focus:underline"
           target="_blank"
           rel="noopener noreferrer"
         >

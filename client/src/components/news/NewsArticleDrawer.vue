@@ -103,25 +103,31 @@ function onThemesToggle(event: Event): void {
         </select>
         <BaseInput
           :model-value="form.source_url"
-          placeholder="article url (https://...)"
+          label="article url"
+          placeholder="https://…"
           type="url"
+          autocomplete="off"
           @update:model-value="patch({ source_url: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_name"
-          placeholder="source name (e.g. DW)"
+          label="source name"
+          placeholder="e.g. DW"
+          autocomplete="off"
           @update:model-value="patch({ source_name: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_feed_url"
-          placeholder="source feed/home url (https://www.dw.com/)"
+          label="source feed/home url"
+          placeholder="https://www.dw.com/"
           type="url"
+          autocomplete="off"
           @update:model-value="patch({ source_feed_url: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_published_at"
           type="datetime-local"
-          aria-label="source published at"
+          label="source published at"
           @update:model-value="patch({ source_published_at: toStringValue($event) })"
         />
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-4" role="group" aria-label="status">
@@ -141,23 +147,32 @@ function onThemesToggle(event: Event): void {
         <BaseInput
           v-if="mode === 'edit'"
           :model-value="form.slug"
-          placeholder="slug (article-url-slug)"
+          label="slug"
+          placeholder="article-url-slug"
+          autocomplete="off"
+          spellcheck="false"
           @update:model-value="patch({ slug: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.title"
-          placeholder="title"
+          label="title"
+          placeholder="Article title…"
+          autocomplete="off"
           @update:model-value="patch({ title: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.original_title"
-          placeholder="original title"
+          label="original title"
+          placeholder="Original title…"
+          autocomplete="off"
           @update:model-value="patch({ original_title: toStringValue($event) })"
         />
         <BaseTextarea
           :model-value="form.summary"
           :rows="4"
-          placeholder="summary"
+          label="summary"
+          placeholder="Summary…"
+          autocomplete="off"
           @update:model-value="patch({ summary: toStringValue($event) })"
         />
         <details class="rounded border border-surface-border px-3 py-2" @toggle="onThemesToggle">
@@ -193,7 +208,10 @@ function onThemesToggle(event: Event): void {
         </details>
         <BaseInput
           :model-value="form.language"
-          placeholder="language (en)"
+          label="language"
+          placeholder="en"
+          autocomplete="off"
+          spellcheck="false"
           @update:model-value="patch({ language: toStringValue($event) })"
         />
       </section>
@@ -214,7 +232,7 @@ function onThemesToggle(event: Event): void {
         </template>
         <template #primary>
           <ToolbarPillButton family="2xx" :disabled="loading" @click="emit('save')">
-            {{ loading ? "saving..." : "save" }}
+            {{ loading ? "saving…" : "save" }}
           </ToolbarPillButton>
         </template>
       </DrawerFooterActions>

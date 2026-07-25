@@ -111,13 +111,14 @@ onMounted(loadFiles);
     <div class="mb-10 space-y-3">
       <div class="mb-3 flex w-full min-w-0 items-center justify-end">
         <ToolbarPillButton family="2xx" :disabled="uploading || !selectedFile" @click="upload">
-          {{ uploading ? "uploading..." : "upload & share" }}
+          {{ uploading ? "uploading…" : "upload & share" }}
         </ToolbarPillButton>
       </div>
 
-      <div
+      <label
+        for="file-share-upload"
         :class="[
-          'w-full border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
+          'block w-full cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors focus-within:ring-2 focus-within:ring-accent-blue/50',
           dragOver
             ? 'border-accent-blue bg-accent-blue/10'
             : 'border-surface-border hover:border-accent-blue',
@@ -125,14 +126,19 @@ onMounted(loadFiles);
         @dragover.prevent="dragOver = true"
         @dragleave="dragOver = false"
         @drop.prevent="onDrop"
-        @click="fileInputRef?.click()"
       >
-        <input ref="fileInputRef" type="file" class="hidden" @change="onFileSelect" />
+        <input
+          id="file-share-upload"
+          ref="fileInputRef"
+          type="file"
+          class="sr-only"
+          @change="onFileSelect"
+        />
         <p v-if="selectedName" class="text-surface-light text-sm">
           {{ selectedName }}
         </p>
         <p v-else class="text-surface-mid text-sm">drop a file here or click to browse</p>
-      </div>
+      </label>
     </div>
 
     <div class="space-y-3">

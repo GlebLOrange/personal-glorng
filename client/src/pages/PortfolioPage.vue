@@ -191,7 +191,7 @@ onUnmounted(() => {
       <div class="mt-6 flex print:hidden">
         <button
           type="button"
-          class="text-meta text-surface-sage underline-offset-4 hover:underline inline-flex items-center gap-2 min-h-11 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+          class="text-meta text-surface-sage underline-offset-4 hover:underline focus:underline inline-flex items-center gap-2 min-h-11 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
           @click="contactModal = 'feedback'"
         >
           <ContactIcon id="feedback" class="size-4 shrink-0" />

@@ -259,7 +259,7 @@ async function deleteAccount(): Promise<void> {
         <CardBody>
           <form class="space-y-4" @submit.prevent="savePassword">
             <div class="flex justify-end">
-              <RouterLink to="/forgot-password" class="text-sm text-accent-blue hover:underline">
+              <RouterLink to="/forgot-password" class="text-sm text-accent-blue hover:underline focus:underline">
                 forgot password?
               </RouterLink>
             </div>

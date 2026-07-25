@@ -169,7 +169,7 @@ onMounted(load);
             <StatusBadge :label="event.category" :class-name="auditCategoryClass(event.category)" />
           </template>
           <template #primary>
-            <span :title="event.action">{{ event.action }}</span>
+            <span>{{ event.action }}</span>
           </template>
           <template #meta>
             <span>{{ actorLabel(event) }}</span>

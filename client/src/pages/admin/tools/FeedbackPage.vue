@@ -211,7 +211,7 @@ onMounted(load);
             <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
           </template>
           <template #primary>
-            <span :title="item.theme">{{ item.theme }}</span>
+            <span>{{ item.theme }}</span>
           </template>
           <template #meta>
             <span>{{ item.email }}</span>
