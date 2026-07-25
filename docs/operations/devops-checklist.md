@@ -15,7 +15,7 @@ Inspection snapshot of edge, CI, backups, logging, and observability for this re
 | **Security** [`security.yml`](../../.github/workflows/security.yml) | gitleaks on PR/push; pip/npm audit on schedule or lockfile changes | Keep enabled; require **`gitleaks`** on merge when ruleset is active. |
 | **Nightly** [`nightly.yml`](../../.github/workflows/nightly.yml) | Optional redis integration (schedule + manual) | Leave on; treat failures as ops signal before release. |
 | **Pre-release** [`pre-release.yml`](../../.github/workflows/pre-release.yml) | Manual only | Run once before each production deploy (compose + nginx smoke). |
-| **Sentry release** [`sentry-release.yml`](../../.github/workflows/sentry-release.yml) | Skips without secrets | Set `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`; align release strings on deploy. |
+| **Sentry release** [`sentry-release.yml`](../../.github/workflows/sentry-release.yml) | **Disabled** (`if: false`; no tag trigger) | Restore tag trigger + `if: secrets.SENTRY_AUTH_TOKEN != ''`; set `SENTRY_*` secrets; align release strings on deploy. |
 | **Docs Pages** [`docs-pages.yml`](../../.github/workflows/docs-pages.yml) | Optional (path-filtered deploy) | Enable GitHub Pages → GitHub Actions if publishing the handbook. |
 | **Dependabot** [`.github/dependabot.yml`](../../.github/dependabot.yml) | Weekly PRs (uv, npm, Actions, Docker) | Review/merge regularly; do not disable for prod. |
 | **Repo secrets** | Minimal / unset OK for local | Production host `.env` + optional Actions secrets (`SENTRY_*`); never commit `.env`. |

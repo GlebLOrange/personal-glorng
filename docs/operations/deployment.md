@@ -41,7 +41,7 @@ Client sourcemap upload is gated on GitHub Actions secrets (workflow [`sentry-re
 | `SERVER_SENTRY_DSN` | Server/worker DSN on the API host |
 | `SERVER_SENTRY_RELEASE` / `VITE_CLIENT_SENTRY_RELEASE` | Same release string on client build and server so events group |
 
-Trigger: **Actions → sentry-release → Run workflow**, or push a `v*` tag. Without `SENTRY_AUTH_TOKEN`, the job is skipped (CI stays green). Staging still needs a manual deliberate-500 check after deploy.
+The workflow is **disabled during development** (`if: false`, no `v*` tag trigger). Before production, restore the tag trigger and job `if` in [`sentry-release.yml`](../../.github/workflows/sentry-release.yml), then run **Actions → sentry-release → Run workflow** or push a `v*` tag. Without `SENTRY_AUTH_TOKEN`, the job stays skipped. Staging still needs a manual deliberate-500 check after deploy.
 
 ## First-deploy checklist
 

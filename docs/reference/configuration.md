@@ -79,7 +79,7 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 |----------|---------|
 | `RABBITMQ_USER`, `RABBITMQ_PASSWORD` | Broker credentials (`RABBITMQ_PASSWORD` min 16 chars in production) |
 | `CELERY_BROKER_URL` | AMQP URL |
-| `CELERY_TASK_ALWAYS_EAGER` | `true` in ultra-lite host API (inline tasks, no broker) |
+| `CELERY_TASK_ALWAYS_EAGER` | `true` (dev lite default; inline tasks, no broker). Set `false` with `make dev-worker` for RabbitMQ |
 
 ## Auth & JWT
 

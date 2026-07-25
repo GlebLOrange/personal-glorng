@@ -5,11 +5,11 @@ Day-to-day workflow, dev modes, ports, and quality checks.
 ## Recommended workflow
 
 ```bash
-make dev-lite          # terminal 1: mongodb, redis, rabbitmq, API (:8000), nginx (:80)
+make                   # or: make dev — mongodb, redis, API, nginx (lite default)
 make dev-lite-client   # terminal 2: Vite (:3000)
 ```
 
-`make dev-lite` alone does **not** start Vite — [http://localhost:3000](http://localhost:3000) will refuse connections until `make dev-lite-client` runs.
+`make` / `make dev` alone does **not** start Vite — [http://localhost:3000](http://localhost:3000) will refuse connections until `make dev-lite-client` runs. RabbitMQ and the Docker Vite client stay off.
 
 If `npm run dev` fails with a missing `@rolldown/binding-*` module (common when `client/node_modules` was installed inside a Linux devcontainer), run `npm install` in `client/` on your host OS and retry.
 
@@ -17,16 +17,17 @@ If `npm run dev` fails with a missing `@rolldown/binding-*` module (common when 
 
 | Command | Containers / process | Use when |
 |---------|----------------------|----------|
-| `make dev-lite` + `make dev-lite-client` | mongodb, redis, rabbitmq, server, nginx + host Vite | **Default** daily workflow |
-| `make dev` | + client container, nginx | Full stack in Docker; no worker/bot |
-| `make dev-ultra-lite-infra` + `make dev-ultra-lite-server` | mongodb, redis + host API | Debugging API on host; inline Celery (no RabbitMQ) |
+| `make` / `make dev` + `make dev-lite-client` | mongodb, redis, redis-cache, server, nginx + host Vite | **Default** daily workflow |
+| `make dev-lite` | Alias for `make dev` | Same as default |
+| `make dev-docker` | + Vite **client** container (profile `docker-client`) | All-in-Docker frontend |
+| `make dev-ultra-lite-infra` + `make dev-ultra-lite-server` | mongodb, redis + host API | Debugging API on host; inline Celery |
 | `make dev-search` | + elasticsearch | Elasticsearch-backed search |
 | `make dev-postgres` | + postgres profile | Postgres FTS + audit secondary |
-| `make dev-worker` | worker + beat profiles | Real Celery jobs (RabbitMQ) |
-| `make dev-bot` | bot profile | Telegram todobot development |
-| `make dev-full` | worker + bot profiles | Everything |
+| `make dev-worker` | worker + beat + **broker** (RabbitMQ) | Real Celery jobs |
+| `make dev-bot` | bot + broker | Telegram todobot development |
+| `make dev-full` | worker + bot + broker + docker-client | Everything in Docker |
 
-Leave `ELASTICSEARCH_URL` empty for dev-lite. MongoDB text search and optional Postgres FTS cover search without Elasticsearch.
+Leave `ELASTICSEARCH_URL` empty for lite. MongoDB text search and optional Postgres FTS cover search without Elasticsearch. Default `.env.example` sets `CELERY_TASK_ALWAYS_EAGER=true`; set `false` when using `make dev-worker`.
 
 ## Services and ports
 
@@ -79,7 +80,7 @@ cd server
 UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv sync --frozen
 UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run ruff check .
 GLORNG_ENV_FILE=$PWD/tests/.env.test \
-  UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
+UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
 ```
 
 ## Frontend on the host

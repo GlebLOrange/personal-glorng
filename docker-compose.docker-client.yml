@@ -1,0 +1,6 @@
+# Overlay for `make dev-docker`: Vite client in Docker + nginx waits on it.
+services:
+  nginx:
+    depends_on:
+      client:
+        condition: service_started
