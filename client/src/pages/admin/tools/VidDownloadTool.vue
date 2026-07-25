@@ -24,20 +24,21 @@ const optionsPanel = useTemplateRef<HTMLElement>("optionsPanel");
 const { toast } = useNotify();
 
 const formats = [
-  { value: "best", label: "Best (auto)" },
-  { value: "bestvideo+bestaudio/best", label: "Best video + audio" },
+  { value: "best", label: "best (auto)" },
+  { value: "bestvideo+bestaudio/best", label: "best video + audio" },
   { value: "bestvideo[height<=1080]+bestaudio/best", label: "1080p max" },
   { value: "bestvideo[height<=720]+bestaudio/best", label: "720p max" },
-  { value: "bestaudio/best", label: "Best audio" },
+  { value: "bestaudio/best", label: "best audio" },
 ];
 
 const hasCustomOptions = computed(() => audioOnly.value || format.value !== "best");
 
 const optionsActiveLabel = computed(() => {
-  if (audioOnly.value) return "audio";
+  const parts: string[] = [];
   const selected = formats.find((item) => item.value === format.value);
-  if (!selected || selected.value === "best") return undefined;
-  return selected.label;
+  if (selected && selected.value !== "best") parts.push(selected.label);
+  if (audioOnly.value) parts.push("audio");
+  return parts.length ? parts.join(" · ") : undefined;
 });
 
 function toggleOptions(): void {
@@ -137,6 +138,7 @@ async function download(): Promise<void> {
             :selected="optionsOpen || hasCustomOptions"
             aria-haspopup="dialog"
             :aria-expanded="optionsOpen"
+            aria-controls="vid-download-options-dialog"
             @click.stop="toggleOptions"
           >
             options
@@ -148,12 +150,16 @@ async function download(): Promise<void> {
 
           <div
             v-if="optionsOpen"
+            id="vid-download-options-dialog"
             ref="optionsPanel"
             role="dialog"
+            aria-labelledby="vid-download-options-title"
             tabindex="-1"
             class="absolute left-0 top-full z-10 mt-1 w-max min-w-[16rem] max-w-[min(100vw-2rem,24rem)] space-y-3 rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
             @click.stop
           >
+            <h2 id="vid-download-options-title" class="sr-only">download options</h2>
+
             <div class="flex items-center gap-2">
               <label
                 for="vid-download-quality"
