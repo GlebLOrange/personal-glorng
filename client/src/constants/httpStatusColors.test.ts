@@ -21,14 +21,18 @@ describe("httpStatusColors", () => {
     expect(httpStatusClass(503)).toContain("status-critical");
   });
 
-  it("keeps idle action pills text-only and selected with bg+border", () => {
+  it("uses idle fill/3 with matching accent text and selected with bg+border", () => {
     const idle = actionFamilyClass("2xx", false);
     expect(idle).toContain("border-transparent");
+    expect(idle).toContain("bg-status-success/3");
+    expect(idle).toContain("text-status-success");
     expect(idle).toContain("hover:enabled:bg-status-success/15");
     expect(idle).toContain("hover:enabled:border-status-success/40");
 
     const preview = actionFamilyClass("1xx", false);
     expect(preview).toContain("border-transparent");
+    expect(preview).toContain("bg-accent-blue/3");
+    expect(preview).toContain("text-accent-blue");
     expect(preview).toContain("hover:enabled:bg-accent-blue/15");
     expect(preview).toContain("hover:enabled:border-accent-blue/40");
 

@@ -36,37 +36,47 @@ describe("BaseButton", () => {
     expect(button.classes().some((c) => c.includes("border"))).toBe(false);
   });
 
-  it("colorizes success hover without solid fill", () => {
+  it("colorizes success with fill/3 matching accent text and pale hover", () => {
     const button = mount(BaseButton, {
       props: { variant: "success" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-transparent");
+    expect(button.classes()).toContain("bg-status-success/3");
+    expect(button.classes()).toContain("text-status-success");
     expect(button.classes()).toContain("hover:enabled:bg-status-success/15");
-    expect(button.classes()).toContain("hover:enabled:text-status-success");
     expect(button.classes()).toContain("active:enabled:bg-status-success/25");
     expect(button.classes()).toContain("focus-visible:ring-status-success/50");
   });
 
-  it("colorizes primary hover without solid fill", () => {
+  it("colorizes primary with fill/3 matching accent text and pale hover", () => {
     const button = mount(BaseButton, {
       props: { variant: "primary" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-transparent");
+    expect(button.classes()).toContain("bg-accent-blue/3");
+    expect(button.classes()).toContain("text-accent-blue");
     expect(button.classes()).toContain("hover:enabled:bg-accent-blue/15");
-    expect(button.classes()).toContain("hover:enabled:text-accent-blue");
     expect(button.classes()).toContain("active:enabled:bg-accent-blue/25");
   });
 
-  it("colorizes secondary hover without borders", () => {
+  it("colorizes secondary with fill/3 matching accent text without borders", () => {
     const button = mount(BaseButton, {
       props: { variant: "secondary" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-surface-card");
+    expect(button.classes()).toContain("bg-accent-blue/3");
+    expect(button.classes()).toContain("text-accent-blue");
     expect(button.classes()).toContain("hover:enabled:bg-accent-blue/15");
-    expect(button.classes()).toContain("hover:enabled:text-accent-blue");
     expect(button.classes().some((c) => c.includes("border"))).toBe(false);
+  });
+
+  it("persists pale tint when selected", () => {
+    const button = mount(BaseButton, {
+      props: { variant: "primary", selected: true },
+    }).get("button");
+
+    expect(button.attributes("aria-pressed")).toBe("true");
+    expect(button.classes()).toContain("bg-accent-blue/15");
+    expect(button.classes()).toContain("text-accent-blue");
   });
 });
