@@ -33,20 +33,14 @@ const errorId = computed(() => `${inputId.value}-error`);
 const tipId = computed(() => `${inputId.value}-tip`);
 const hasSuffix = computed(() => Boolean(slots.suffix));
 const isClearableType = computed(() => props.type !== "number");
-const hasTypedValue = computed(() => {
-  const value = model.value;
-  if (value == null || value === "") return false;
-  if (typeof value === "string") return value.length > 0;
-  return true;
-});
 const hasClearableValue = computed(() => {
   if (!isClearableType.value) return false;
   return typeof model.value === "string" && model.value.length > 0;
 });
 const useShell = computed(() => Boolean(props.prefix || props.placeholder || hasSuffix.value));
 const showClear = computed(() => useShell.value && hasClearableValue.value);
-/** Tip only when empty; hide while typing (Clear X takes the right side). */
-const showTip = computed(() => Boolean(props.placeholder) && !hasTypedValue.value);
+/** Faint tip stays behind the value; inset past Clear/suffix when present. */
+const showTip = computed(() => Boolean(props.placeholder));
 const tipInsetClass = computed(() => [
   "left-3",
   showClear.value || hasSuffix.value ? "right-11" : "right-3",
