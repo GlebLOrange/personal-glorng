@@ -47,7 +47,10 @@ const useShell = computed(() => Boolean(props.prefix || props.placeholder || has
 const showClear = computed(() => useShell.value && hasClearableValue.value);
 /** Tip only when empty; hide while typing (Clear X takes the right side). */
 const showTip = computed(() => Boolean(props.placeholder) && !hasTypedValue.value);
-const tipInsetClass = computed(() => (showClear.value || hasSuffix.value ? "right-11" : "right-3"));
+const tipInsetClass = computed(() => [
+  "left-3",
+  showClear.value || hasSuffix.value ? "right-11" : "right-3",
+]);
 const describedBy = computed(() => {
   const ids: string[] = [];
   const fromAttrs = attrs["aria-describedby"];
@@ -153,11 +156,13 @@ defineExpose({ focus });
       <span
         v-if="showTip"
         :id="tipId"
-        class="pointer-events-none absolute inset-y-0 z-0 flex items-center text-right text-xs text-surface-mid/65"
+        class="pointer-events-none absolute inset-y-0 z-0 flex items-center"
         :class="tipInsetClass"
         aria-hidden="true"
       >
-        {{ placeholder }}
+        <span class="min-w-0 flex-1 truncate text-right text-xs text-surface-mid/65">
+          {{ placeholder }}
+        </span>
       </span>
       <div
         v-if="showClear || hasSuffix"
