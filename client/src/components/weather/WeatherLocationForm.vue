@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 
 const props = defineProps<{
   addLocation: (query: string) => Promise<void>;
@@ -39,17 +39,15 @@ async function submit(): Promise<void> {
       <h2 class="flex items-center gap-2 text-lg font-bold text-surface-light">
         <slot name="heading" />
       </h2>
-      <BaseButton
+      <ToolbarPillButton
         type="submit"
-        variant="primary"
-        size="field"
+        family="2xx"
         class="ml-auto"
         aria-label="add location"
-        :loading="saving"
-        :disabled="!city.trim() || props.disabled"
+        :disabled="saving || !city.trim() || props.disabled"
       >
         {{ saving ? "adding…" : "+ location" }}
-      </BaseButton>
+      </ToolbarPillButton>
     </div>
     <BaseInput
       id="weather-city"
