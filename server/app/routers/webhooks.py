@@ -27,7 +27,7 @@ rate_limit_webhook = RateLimiter(requests=30, window=60, fail_open=False)
     "/{slug}",
     summary="Inbound webhook",
     description=(
-        "HMAC-signed webhook for external automation. "
+        "HMAC-signed inbound webhook. Only the ping slug is supported. "
         "Requires X-Glorng-Signature: sha256=<hex> and WEBHOOK_SECRETS config."
     ),
     dependencies=[Depends(rate_limit_webhook)],

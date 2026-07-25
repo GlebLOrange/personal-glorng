@@ -47,7 +47,7 @@ Template in [`postman/environments/glorng-local.environment.yaml`](../../postman
 | `admin_password` | *(your `SEED_PASSWORD`)* | Login body — never commit real values |
 | `access_token` | *(set by script)* | Bearer auth for admin routes |
 | `refresh_token` | *(set by script)* | Token refresh |
-| `webhook_task_secret` | *(from `WEBHOOK_SECRETS`)* | HMAC for manual webhook requests |
+| `webhook_ping_secret` | *(from `WEBHOOK_SECRETS`)* | HMAC for manual webhook requests |
 
 Production/staging: duplicate the environment and set `base_url` to `https://your-domain`.
 
@@ -120,7 +120,7 @@ These are **not** in OpenAPI or need custom Postman setup:
 Suggested extra folder: **Webhooks & redirects** with pre-request scripts for HMAC:
 
 ```javascript
-const secret = pm.environment.get("webhook_task_secret");
+const secret = pm.environment.get("webhook_ping_secret");
 const body = pm.request.body.raw;
 const sig = CryptoJS.HmacSHA256(body, secret).toString(CryptoJS.enc.Hex);
 pm.request.headers.upsert({ key: "X-Glorng-Signature", value: "sha256=" + sig });

@@ -1,0 +1,17 @@
+---
+name: agent-git-workflow
+description: Create a cursor/* branch before agent code changes; keep main clean
+---
+
+# Agent git workflow
+
+Before editing tracked project files:
+
+1. Check the current branch (`git branch --show-current`).
+2. If on `main` (or another shared branch), **ask the user once** whether to create `cursor/<short-kebab-description>` and create it before edits.
+3. Use branch prefix **`cursor/`** only (example: `cursor/fix-nginx-csp`).
+4. Do not commit or push to `main` unless the user explicitly requests it.
+
+For new chats or risky/experimental work, prefer Cursor **Worktree** mode or start with `/worktree <task>` so changes stay isolated.
+
+When the user asks to commit or open a PR, inspect status, diff, and recent history first; never commit, push, amend, or open a PR unless explicitly requested.

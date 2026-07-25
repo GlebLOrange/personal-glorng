@@ -3,40 +3,5 @@ description: "FastAPI backend guidance for the server package."
 globs: ["server/**/*.py"]
 alwaysApply: false
 ---
-# FastAPI Backend
 
-Use this rule when changing Python code under `server/`.
-
-## Key Principles
-
-- Keep route handlers thin: authentication, validation, HTTP status mapping, and dependency wiring belong in routers; business logic belongs in services.
-- Prefer small functions and existing services over new abstractions.
-- Use descriptive `snake_case` names with clear state booleans such as `is_active` and `has_permission`.
-- Use Pydantic models for request/response validation instead of raw dictionaries at API boundaries.
-- Validate external input at the boundary and keep authorization checks close to protected routes or service entrypoints.
-
-## FastAPI
-
-- Use `async def` for I/O-bound routes and services.
-- Use `def` for pure CPU-local helpers.
-- Prefer FastAPI dependencies for shared request state and permission checks.
-- Raise `HTTPException` for expected HTTP errors; log unexpected failures without leaking secrets or stack traces to users.
-- Prefer lifespan setup over new `@app.on_event` handlers.
-
-## Error Handling
-
-- Handle invalid state with guard clauses before the happy path.
-- Avoid broad exception handling unless the code adds useful context or maps to a safe user-facing error.
-- Never log passwords, tokens, API keys, full cookies, or sensitive request bodies.
-
-## Data And Performance
-
-- Use async database clients and avoid blocking I/O in request handlers.
-- Keep list endpoints paginated or explicitly bounded.
-- Check MongoDB/PostgreSQL indexes before adding query patterns that sort, filter, or search at scale.
-- Treat Redis, RabbitMQ, external APIs, and LLM output as fallible external boundaries.
-
-## Verification
-
-- For backend changes, prefer targeted `uv run ruff check <path>` and focused pytest files.
-- Run broader backend checks only when the change crosses shared contracts, CI is failing, or the user asks.
+When this rule applies, follow the `python-fast-api` skill: read `.cursor/skills/python-fast-api/SKILL.md` and apply it.
