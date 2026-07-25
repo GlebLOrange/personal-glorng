@@ -198,7 +198,6 @@ function toggleTheme(theme: string): void {
             variant="ghost"
             danger
             type="button"
-            class="hover:enabled:border-transparent focus-visible:border-transparent"
             :disabled="loading"
             @click="emit('delete')"
           >
@@ -210,7 +209,6 @@ function toggleTheme(theme: string): void {
             variant="ghost"
             danger
             type="button"
-            class="hover:enabled:border-transparent focus-visible:border-transparent"
             @click="emit('close')"
           >
             cancel

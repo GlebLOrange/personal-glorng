@@ -45,7 +45,7 @@ Use for **grouped content on a surface** — list items, settings sections, summ
 
 - `variant="primary"` — flat `accent-blue` fill (create/add)
 - `variant="success"` — flat `status-success` fill (save/update/send)
-- `variant="secondary"` / `variant="ghost"` — neutral surfaces; add `danger` for cancel/delete
+- `variant="secondary"` / `variant="ghost"` — borderless; hover/active use accent (or danger) tint + text
 
 Do not use `cta-primary` inside tool screens; do not add gradients to `BaseButton`.
 

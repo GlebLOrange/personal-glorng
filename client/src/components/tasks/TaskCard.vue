@@ -47,7 +47,7 @@ const emit = defineEmits<{ select: [id: number] }>();
         variant="ghost"
         quiet
         size="sm"
-        class="!text-accent-blue hover:enabled:!border-accent-blue/40 hover:enabled:!bg-accent-blue/15 focus-visible:!text-accent-blue"
+        class="!text-accent-blue hover:enabled:!bg-accent-blue/15 focus-visible:!text-accent-blue"
         aria-label="edit task"
         @click="emit('select', task.id)"
       >

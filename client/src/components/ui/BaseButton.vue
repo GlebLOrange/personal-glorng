@@ -10,9 +10,9 @@ const props = withDefaults(
      * `field` is an alias of `md`.
      */
     size?: "sm" | "md" | "lg" | "field";
-    /** Destructive action — red border/text on hover. */
+    /** Destructive action — red tint/text on hover. */
     danger?: boolean;
-    /** Ghost only: muted text; border only on hover / focus-visible. */
+    /** Ghost only: muted text until hover / focus-visible. */
     quiet?: boolean;
     disabled?: boolean;
     loading?: boolean;
@@ -28,26 +28,26 @@ const resolvedSize = computed(() => (props.size === "field" ? "md" : props.size)
 
 const variantClass = computed(() => {
   if (props.variant === "success") {
-    return "border-transparent bg-status-success text-surface-dark hover:enabled:bg-status-success/90 focus-visible:ring-status-success/50";
+    return "bg-status-success text-surface-dark hover:enabled:bg-status-success/90 active:enabled:bg-status-success/80 focus-visible:ring-status-success/50";
   }
   if (props.variant === "primary") {
-    return "border-transparent bg-accent-blue text-surface-dark hover:enabled:bg-accent-blue/90";
+    return "bg-accent-blue text-surface-dark hover:enabled:bg-accent-blue/90 active:enabled:bg-accent-blue/80";
   }
   if (props.variant === "ghost") {
     if (props.danger) {
       // ponytail: danger ghost is always quiet (muted until hover/focus)
-      return "border-transparent bg-transparent text-surface-light/60 hover:enabled:border-status-error/20 hover:enabled:bg-status-error/10 hover:enabled:text-status-error focus-visible:border-status-error/20 focus-visible:text-status-error";
+      return "bg-transparent text-surface-light/60 hover:enabled:bg-status-error/10 hover:enabled:text-status-error active:enabled:bg-status-error/20 focus-visible:bg-status-error/10 focus-visible:text-status-error";
     }
     if (props.quiet) {
-      return "border-transparent bg-transparent text-surface-light/60 hover:enabled:border-surface-border/20 hover:enabled:text-surface-light focus-visible:border-surface-border/20 focus-visible:text-surface-light";
+      return "bg-transparent text-surface-light/60 hover:enabled:bg-accent-blue/15 hover:enabled:text-accent-blue active:enabled:bg-accent-blue/25 focus-visible:bg-accent-blue/15 focus-visible:text-accent-blue";
     }
-    return "border-surface-border bg-transparent text-surface-light hover:enabled:border-accent-blue";
+    return "bg-transparent text-surface-light hover:enabled:bg-accent-blue/15 hover:enabled:text-accent-blue active:enabled:bg-accent-blue/25";
   }
   // secondary
   if (props.danger) {
-    return "border-surface-border bg-surface-card text-surface-light hover:enabled:border-status-error hover:enabled:bg-status-error/10 hover:enabled:text-status-error";
+    return "bg-surface-card text-surface-light hover:enabled:bg-status-error/10 hover:enabled:text-status-error active:enabled:bg-status-error/20";
   }
-  return "border-surface-border bg-surface-card text-surface-light hover:enabled:border-accent-blue";
+  return "bg-surface-card text-surface-light hover:enabled:bg-accent-blue/15 hover:enabled:text-accent-blue active:enabled:bg-accent-blue/25";
 });
 </script>
 
@@ -57,10 +57,9 @@ const variantClass = computed(() => {
     :disabled="isDisabled"
     :aria-busy="loading ? true : undefined"
     :class="[
-      'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg border font-medium leading-none transition-all duration-200',
+      'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg font-medium leading-none transition-all duration-200',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
       'disabled:cursor-not-allowed disabled:opacity-50',
-      'active:enabled:opacity-80',
       variantClass,
       resolvedSize === 'lg'
         ? 'h-12 px-6 text-base'

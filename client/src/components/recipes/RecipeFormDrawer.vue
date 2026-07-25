@@ -381,7 +381,6 @@ function toNullableNumber(value: string | number | null | undefined): number | n
             variant="ghost"
             danger
             type="button"
-            class="hover:enabled:border-transparent focus-visible:border-transparent"
             @click="emit('close')"
           >
             cancel

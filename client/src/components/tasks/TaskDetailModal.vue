@@ -187,7 +187,7 @@ function onTechnicalToggle(event: Event): void {
           variant="ghost"
           quiet
           size="sm"
-          class="gap-1.5 hover:enabled:!border-accent-blue/40 hover:enabled:!bg-accent-blue/10 hover:enabled:!text-accent-blue focus-visible:!border-accent-blue/40 focus-visible:!text-accent-blue"
+          class="gap-1.5 hover:enabled:!bg-accent-blue/10 hover:enabled:!text-accent-blue focus-visible:!text-accent-blue"
           title="Try syncing again"
           @click="emit('retrySync', task.id)"
         >

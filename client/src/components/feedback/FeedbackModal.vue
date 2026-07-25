@@ -122,7 +122,6 @@ async function submit(): Promise<void> {
             variant="ghost"
             danger
             type="button"
-            class="hover:enabled:border-transparent focus-visible:border-transparent"
             @click="$emit('close')"
           >
             cancel

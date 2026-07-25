@@ -168,7 +168,7 @@ onMounted(() => {
                 <BaseButton
                   variant="ghost"
                   size="sm"
-                  class="!border-transparent hover:enabled:!border-transparent hover:enabled:text-accent-blue"
+                  class="hover:enabled:text-accent-blue"
                   @click="onFailedSyncs"
                 >
                   open sync queue
