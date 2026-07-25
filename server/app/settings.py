@@ -395,8 +395,8 @@ class Settings(BaseSettings):
         return self.ENABLE_POSTGRES
 
     # Elasticsearch (optional; empty disables the external search backend)
-    ELASTICSEARCH_URL: str
-    ELASTICSEARCH_INDEX: str
+    ELASTICSEARCH_URL: str = ""
+    ELASTICSEARCH_INDEX: str = "search_documents"
     ELASTICSEARCH_APP_LOGS_INDEX: str = "app_logs"
     APP_LOG_ES_ENABLED: bool = True
 
