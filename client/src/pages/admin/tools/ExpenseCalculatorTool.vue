@@ -69,13 +69,21 @@ const persistenceHint = computed(() => {
     :narrow="false"
   >
     <div class="flex flex-col gap-4 min-w-0">
-      <Card variant="compact" class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <Card
+        variant="compact"
+        class="flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+      >
         <p class="text-sm text-surface-mid">{{ persistenceHint }}</p>
         <div v-if="isSuperuser" class="flex flex-wrap gap-2">
           <BaseButton variant="ghost" size="sm" :disabled="loadingState" @click="loadState">
             {{ loadingState ? "loading..." : "load" }}
           </BaseButton>
-          <BaseButton variant="success" size="sm" :disabled="saving || !stateDirty" @click="saveState">
+          <BaseButton
+            variant="success"
+            size="sm"
+            :disabled="saving || !stateDirty"
+            @click="saveState"
+          >
             {{ saving ? "saving..." : "save" }}
           </BaseButton>
         </div>

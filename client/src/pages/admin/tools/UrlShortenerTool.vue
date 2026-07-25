@@ -136,10 +136,7 @@ onMounted(loadUrls);
         class="min-w-0 w-full"
         placeholder="url (https://example.com/very-long-url...)"
       />
-      <BaseInput
-        v-model="newTitle"
-        placeholder="title (optional)"
-      />
+      <BaseInput v-model="newTitle" placeholder="title (optional)" />
     </form>
 
     <Card v-if="lastCreatedLink" variant="compact" class="mb-10">
@@ -153,10 +150,7 @@ onMounted(loadUrls);
         >
           {{ lastCreatedLink }}
         </a>
-        <IconCopyButton
-          aria-label="copy short link"
-          @click="copy(lastCreatedLink)"
-        />
+        <IconCopyButton aria-label="copy short link" @click="copy(lastCreatedLink)" />
       </div>
     </Card>
 

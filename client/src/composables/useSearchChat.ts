@@ -105,18 +105,13 @@ const ASSISTANT_ERROR_PREFIX = "I couldn't get an AI response: ";
 const GROQ_CONSOLE_HINT = "or check usage in the Groq console";
 
 function isGroqQuotaMessage(message: string): boolean {
-  return (
-    message.includes("Groq rate limit") ||
-    message.includes("Groq quota")
-  );
+  return message.includes("Groq rate limit") || message.includes("Groq quota");
 }
 
 function formatGroqQuotaError(message: string): string {
   const retryMatch = message.match(/~(\d+)s/);
   if (retryMatch) {
-    return (
-      `Groq rate limit reached — try again in ~${retryMatch[1]}s, ${GROQ_CONSOLE_HINT}`
-    );
+    return `Groq rate limit reached — try again in ~${retryMatch[1]}s, ${GROQ_CONSOLE_HINT}`;
   }
   return `Groq rate limit reached — wait a minute and try again, ${GROQ_CONSOLE_HINT}`;
 }

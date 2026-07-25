@@ -11,7 +11,11 @@ defineProps<{
     <p v-if="description" class="text-sm text-surface-mid" :class="{ 'mb-4': $slots.action }">
       {{ description }}
     </p>
-    <p v-else-if="$slots.default" class="text-sm text-surface-mid" :class="{ 'mb-4': $slots.action }">
+    <p
+      v-else-if="$slots.default"
+      class="text-sm text-surface-mid"
+      :class="{ 'mb-4': $slots.action }"
+    >
       <slot />
     </p>
     <div v-if="$slots.action">

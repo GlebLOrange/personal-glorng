@@ -4,10 +4,7 @@ import { computed, ref, useId } from "vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import OverlayBackdrop from "@/components/ui/OverlayBackdrop.vue";
 import { useOverlayShell } from "@/composables/useOverlayShell";
-import {
-  OVERLAY_MAX_WIDTH_CLASS,
-  type OverlayMaxWidth,
-} from "@/constants/overlaySizes";
+import { OVERLAY_MAX_WIDTH_CLASS, type OverlayMaxWidth } from "@/constants/overlaySizes";
 
 const props = withDefaults(
   defineProps<{
@@ -36,9 +33,7 @@ useOverlayShell({
   },
 });
 
-const panelWidth = computed(
-  () => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"],
-);
+const panelWidth = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"]);
 </script>
 
 <template>
@@ -69,11 +64,7 @@ const panelWidth = computed(
             </div>
             <div class="flex shrink-0 items-center gap-1">
               <slot name="header-actions" />
-              <IconCloseButton
-                ref="closeButton"
-                aria-label="Close drawer"
-                @click="emit('close')"
-              />
+              <IconCloseButton ref="closeButton" aria-label="Close drawer" @click="emit('close')" />
             </div>
           </header>
 

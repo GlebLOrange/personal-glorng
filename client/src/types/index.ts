@@ -252,11 +252,7 @@ export interface Recipe {
   updated_at: string;
 }
 
-export type RecipeSort =
-  | "title_asc"
-  | "title_desc"
-  | "prep_asc"
-  | "total_time_asc";
+export type RecipeSort = "title_asc" | "title_desc" | "prep_asc" | "total_time_asc";
 
 export interface PaginatedList<T> {
   items: T[];

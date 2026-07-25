@@ -7,10 +7,7 @@ describe("PageBreadcrumbs", () => {
   it("renders link segments with href", () => {
     const wrapper = mount(PageBreadcrumbs, {
       props: {
-        segments: [
-          { label: "tools", to: "/tools" },
-          { label: "calculator" },
-        ],
+        segments: [{ label: "tools", to: "/tools" }, { label: "calculator" }],
       },
       global: {
         stubs: {

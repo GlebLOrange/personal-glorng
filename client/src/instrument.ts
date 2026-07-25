@@ -4,10 +4,12 @@ import { scrubSensitiveUrl } from "@/utils/sensitiveUrl";
 let sentry: typeof import("@sentry/vue") | null = null;
 let sentryInitialized = false;
 
-function scrubSentryEvent<T extends {
-  request?: { url?: string };
-  breadcrumbs?: Array<{ data?: { url?: string }; message?: string }>;
-}>(event: T): T {
+function scrubSentryEvent<
+  T extends {
+    request?: { url?: string };
+    breadcrumbs?: Array<{ data?: { url?: string }; message?: string }>;
+  },
+>(event: T): T {
   if (event.request?.url) {
     event.request.url = scrubSensitiveUrl(event.request.url);
   }

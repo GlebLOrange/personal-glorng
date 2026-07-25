@@ -11,7 +11,10 @@
     >
       <slot name="actions" />
     </div>
-    <div v-if="$slots.default || $slots.start" class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+    <div
+      v-if="$slots.default || $slots.start"
+      class="flex min-w-0 flex-1 flex-wrap items-center gap-2"
+    >
       <slot />
       <slot name="start" />
     </div>

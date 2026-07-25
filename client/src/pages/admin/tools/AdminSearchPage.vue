@@ -82,9 +82,7 @@ function sourceLabel(type: string): string {
             {{ option.label }}
           </option>
         </BaseSelect>
-        <BaseButton type="submit" :disabled="loading || !query.trim()">
-          search
-        </BaseButton>
+        <BaseButton type="submit" :disabled="loading || !query.trim()"> search </BaseButton>
       </form>
     </Card>
 
@@ -92,17 +90,9 @@ function sourceLabel(type: string): string {
       <Card v-for="i in 4" :key="i" class="h-20 animate-pulse" />
     </section>
 
-    <ErrorState
-      v-else-if="listError"
-      :message="listError"
-      show-retry
-      @retry="search"
-    />
+    <ErrorState v-else-if="listError" :message="listError" show-retry @retry="search" />
 
-    <EmptyState
-      v-else-if="hasSearched && hits.length === 0"
-      description="No matches found."
-    />
+    <EmptyState v-else-if="hasSearched && hits.length === 0" description="No matches found." />
 
     <div v-else-if="hits.length > 0" class="space-y-3">
       <p class="text-xs text-surface-muted">{{ resultSummary }} for “{{ query.trim() }}”</p>

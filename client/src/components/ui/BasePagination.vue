@@ -42,9 +42,7 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
 <template>
   <nav
     :aria-label="ariaLabel"
-    :class="
-      layout === 'compact' ? 'flex items-center gap-2' : 'flex items-center justify-between'
-    "
+    :class="layout === 'compact' ? 'flex items-center gap-2' : 'flex items-center justify-between'"
   >
     <BaseButton variant="ghost" size="sm" :disabled="prevDisabled" @click="emit('prev')">
       previous

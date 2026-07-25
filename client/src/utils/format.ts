@@ -1,6 +1,9 @@
 /** Normalized breadcrumb label from a page title (spaces/underscores become spaces). */
 export function formatBreadcrumbLabel(title: string): string {
-  const cleaned = title.trim().replace(/^§+\s*/, "").toLowerCase();
+  const cleaned = title
+    .trim()
+    .replace(/^§+\s*/, "")
+    .toLowerCase();
   // Path-shaped crumbs keep `/` (e.g. news/my-slug → § news/my-slug).
   if (cleaned.includes("/")) return cleaned;
   // Keep kebab-case slugs intact (news article crumbs).

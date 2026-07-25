@@ -21,8 +21,7 @@ export function categoryNameExists(
   if (!key) return false;
   return categories.some(
     (category) =>
-      category.id !== excludeId &&
-      normalizeCategoryName(category.name).toLowerCase() === key,
+      category.id !== excludeId && normalizeCategoryName(category.name).toLowerCase() === key,
   );
 }
 

@@ -22,8 +22,8 @@ const emit = defineEmits<{
 
 const prepLabel = computed(() => formatRecipeTime(props.recipe.prep_time));
 const cookLabel = computed(() => formatRecipeTime(props.recipe.cook_time));
-const hasMeta = computed(
-  () => Boolean(prepLabel.value || cookLabel.value || props.recipe.servings),
+const hasMeta = computed(() =>
+  Boolean(prepLabel.value || cookLabel.value || props.recipe.servings),
 );
 
 const thumbInitials = computed(() => {

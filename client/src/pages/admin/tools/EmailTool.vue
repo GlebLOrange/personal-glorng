@@ -72,11 +72,7 @@ async function preview(): Promise<void> {
     <AdminListToolbar>
       <template #start>
         <div class="flex w-full min-w-0 items-center justify-between gap-2">
-          <ToolbarPillButton
-            family="1xx"
-            :disabled="!subject || !body || loading"
-            @click="preview"
-          >
+          <ToolbarPillButton family="1xx" :disabled="!subject || !body || loading" @click="preview">
             preview
           </ToolbarPillButton>
           <ToolbarPillButton
@@ -92,20 +88,9 @@ async function preview(): Promise<void> {
     </AdminListToolbar>
 
     <form class="space-y-3 mb-8" @submit.prevent="send">
-      <BaseInput
-        v-model="to"
-        type="email"
-        placeholder="to (recipient@example.com)"
-      />
-      <BaseInput
-        v-model="subject"
-        placeholder="subject"
-      />
-      <BaseTextarea
-        v-model="body"
-        :rows="6"
-        placeholder="body (write your message...)"
-      />
+      <BaseInput v-model="to" type="email" placeholder="to (recipient@example.com)" />
+      <BaseInput v-model="subject" placeholder="subject" />
+      <BaseTextarea v-model="body" :rows="6" placeholder="body (write your message...)" />
     </form>
 
     <div v-if="previewHtml" class="space-y-2">

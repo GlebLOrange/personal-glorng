@@ -81,21 +81,10 @@ function toStringValue(value: string | number | null | undefined): string {
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton
-            type="button"
-            danger
-            @click="emit('close')"
-          >
-            cancel
-          </BaseButton>
+          <BaseButton type="button" danger @click="emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
-          <ToolbarPillButton
-            type="submit"
-            form="news-source-form"
-            family="2xx"
-            :disabled="loading"
-          >
+          <ToolbarPillButton type="submit" form="news-source-form" family="2xx" :disabled="loading">
             {{ loading ? "saving..." : "save" }}
           </ToolbarPillButton>
         </template>

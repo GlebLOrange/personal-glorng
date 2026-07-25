@@ -215,7 +215,12 @@ async function deleteAccount(): Promise<void> {
               label="timezone"
               required
             />
-            <BaseButton type="submit" variant="success" :loading="savingProfile" :disabled="!canSaveProfile">
+            <BaseButton
+              type="submit"
+              variant="success"
+              :loading="savingProfile"
+              :disabled="!canSaveProfile"
+            >
               {{ savingProfile ? "saving..." : "save profile" }}
             </BaseButton>
           </form>
@@ -243,7 +248,12 @@ async function deleteAccount(): Promise<void> {
               placeholder="••••••••"
               required
             />
-            <BaseButton type="submit" variant="success" :loading="savingEmail" :disabled="!canSaveEmail">
+            <BaseButton
+              type="submit"
+              variant="success"
+              :loading="savingEmail"
+              :disabled="!canSaveEmail"
+            >
               {{ savingEmail ? "saving..." : "change email" }}
             </BaseButton>
           </form>
@@ -287,7 +297,12 @@ async function deleteAccount(): Promise<void> {
               :error="newPasswordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
               required
             />
-            <BaseButton type="submit" variant="success" :loading="savingPassword" :disabled="!canSavePassword">
+            <BaseButton
+              type="submit"
+              variant="success"
+              :loading="savingPassword"
+              :disabled="!canSavePassword"
+            >
               {{ savingPassword ? "saving..." : "change password" }}
             </BaseButton>
           </form>
@@ -302,7 +317,12 @@ async function deleteAccount(): Promise<void> {
                 {{ code }}
               </option>
             </BaseSelect>
-            <BaseButton type="submit" variant="success" :loading="savingPrefs" :disabled="!canSaveCurrency">
+            <BaseButton
+              type="submit"
+              variant="success"
+              :loading="savingPrefs"
+              :disabled="!canSaveCurrency"
+            >
               {{ savingPrefs ? "saving..." : "save preferences" }}
             </BaseButton>
           </form>
@@ -358,9 +378,7 @@ async function deleteAccount(): Promise<void> {
                 {{ perm }}
               </span>
             </div>
-            <p v-else class="text-sm text-surface-mid">
-              No tool permissions — contact an admin.
-            </p>
+            <p v-else class="text-sm text-surface-mid">No tool permissions — contact an admin.</p>
           </div>
         </CardBody>
       </Card>
@@ -381,7 +399,13 @@ async function deleteAccount(): Promise<void> {
               <input v-model="deleteConfirm" type="checkbox" class="mt-1 accent-status-error" />
               <span>I understand this permanently deletes my account.</span>
             </label>
-            <BaseButton type="submit" variant="secondary" danger :loading="deleting" :disabled="!canDeleteAccount">
+            <BaseButton
+              type="submit"
+              variant="secondary"
+              danger
+              :loading="deleting"
+              :disabled="!canDeleteAccount"
+            >
               {{ deleting ? "deleting..." : "delete account" }}
             </BaseButton>
           </form>

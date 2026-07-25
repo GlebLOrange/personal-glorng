@@ -17,9 +17,7 @@ import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import type { DonationsConfig, ResumeData } from "@/types";
 
-const ExperienceList = defineAsyncComponent(
-  () => import("@/components/resume/ExperienceList.vue"),
-);
+const ExperienceList = defineAsyncComponent(() => import("@/components/resume/ExperienceList.vue"));
 const ProjectsGrid = defineAsyncComponent(() => import("@/components/resume/ProjectsGrid.vue"));
 const DonationsBlock = defineAsyncComponent(
   () => import("@/components/donations/DonationsBlock.vue"),
@@ -171,13 +169,17 @@ onUnmounted(() => {
       <EducationList :education="education" />
     </SectionWrapper>
 
-    <SectionWrapper id="contacts" title="contacts" width="full" dark :alternate="education.length === 0">
+    <SectionWrapper
+      id="contacts"
+      title="contacts"
+      width="full"
+      dark
+      :alternate="education.length === 0"
+    >
       <p class="text-body mb-2">
         Open to full-time and contract — usually reply within 24h (EU timezone).
       </p>
-      <p class="text-meta mb-6">
-        Fastest: Telegram or email. Or send a short inquiry below.
-      </p>
+      <p class="text-meta mb-6">Fastest: Telegram or email. Or send a short inquiry below.</p>
       <div class="flex flex-wrap gap-4 mb-6">
         <button type="button" class="cta-primary print:hidden" @click="contactModal = 'inquiry'">
           send inquiry
@@ -196,11 +198,7 @@ onUnmounted(() => {
           send feedback instead
         </button>
       </div>
-      <FeedbackModal
-        v-if="contactModal"
-        :intent="contactModal"
-        @close="contactModal = null"
-      />
+      <FeedbackModal v-if="contactModal" :intent="contactModal" @close="contactModal = null" />
     </SectionWrapper>
 
     <div ref="supportSectionRef" class="print:hidden">

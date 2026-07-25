@@ -517,7 +517,9 @@ export function useExpensesTool(
     activeTab.value = tab as ExpenseTab;
     if (tab === "calculator") {
       const existing =
-        typeof route.query.mode === "string" ? normalizeCalculatorMode(route.query.mode) : "convert";
+        typeof route.query.mode === "string"
+          ? normalizeCalculatorMode(route.query.mode)
+          : "convert";
       void router.replace({ query: { ...route.query, tab: "calculator", mode: existing } });
       return;
     }

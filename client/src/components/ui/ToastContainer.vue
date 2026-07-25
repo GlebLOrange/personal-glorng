@@ -48,10 +48,7 @@ function toastTextClass(type: Toast["type"]): string {
         >
           {{ t.message }}
         </p>
-        <IconCloseButton
-          aria-label="Dismiss notification"
-          @click="dismiss(t.id)"
-        />
+        <IconCloseButton aria-label="Dismiss notification" @click="dismiss(t.id)" />
       </Card>
     </div>
   </div>
