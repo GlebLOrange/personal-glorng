@@ -1,90 +1,86 @@
-# PR #422 improvement suggestions
+# PR #423 improvement suggestions
 
-Review target: [CI: add ci-ok gate and fix gitleaks/security workflow](https://github.com/GlebLOrange/personal-glorng/pull/422) (`cursor/ci-workflows-tune` → `main`).
+Review target: [Add BASEDIR.md with PR #422 CI improvement suggestions](https://github.com/GlebLOrange/personal-glorng/pull/423) (`cursor/basedir-file-improvements-581c` → `main`).
 
-Verdict: direction is right (`ci-ok` aggregator + path filters + gitleaks restore), but the PR does not currently go green and a few gate edge cases will bite once `main-protection` is enforced. Fix blockers first, then the small correctness/scope items below.
+Verdict: useful capture of #422 follow-ups, but the notes are already partly stale against #422 tip `a872646`, underspecify current red checks, and would land ephemeral review noise on `main` without a freshness contract. Refresh or reshape before merge.
 
-## Blockers (CI red on the PR)
+## Blockers / must-fix before merging #423 as-is
 
-1. **Pass `GITHUB_TOKEN` to gitleaks-action@v3**  
-   Current failure: `GITHUB_TOKEN is now required to scan pull requests`.  
-   In `.github/workflows/security.yml` under the Scan for secrets step:
+1. **Refresh against current #422 tip (`a872646`)**  
+   Several “blockers” in the current `BASEDIR.md` are outdated:
+   - **Done:** `GITHUB_TOKEN` for `gitleaks-action@v3` — gitleaks is green.
+   - **Changed:** `npm_audit` no longer runs `npm ci`; it uses `npm audit --package-lock-only`. Peer conflict is no longer the audit failure mode.
+   - **Still red on #422:** frontend (`npm ci` TS7 vs `typescript-eslint` peer), backend (Ruff format + lint), docs (stale `docs/generated`), postgres-tests (`ImportError: normalize_feed_articles` from `app.services.news`), npm_audit (real high: `brace-expansion` GHSA-3jxr-9vmj-r5cp / GHSA-mh99-v99m-4gvg).  
+   Rewrite the blocker list to match tip SHA + check conclusions, or readers will chase fixed work.
 
-   ```yaml
-   env:
-     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-     GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+2. **Add the missing postgres collection failure**  
+   Current notes omit `postgres-tests` failing during collection:
+
+   ```text
+   ImportError: cannot import name 'normalize_feed_articles' from 'app.services.news'
    ```
 
-2. **Frontend / npm_audit `npm ci` peer conflict**  
-   `typescript@7.0.2` vs `typescript-eslint@8.65.0` peer `typescript@">=4.8.4 <6.1.0"`.  
-   Path filters force frontend + npm_audit because this PR touches `ci.yml` / `security.yml`, so a pre-existing client peer mismatch now fails the merge gate path. Either:
-   - align eslint stack to TS 7 (or pin TS back to supported range), or
-   - temporarily use `npm ci --legacy-peer-deps` in CI/audit **only** with a tracked follow-up.
+   That is a real gate failure once `ci-ok` + path filters select postgres (this PR touches workflows → postgres=true). Call it out as a #422 unblock item (delete/update the stale import in `server/tests/test_news.py`, or restore the helper).
 
-3. **Backend Ruff failures**  
-   Backend job reports 5 Ruff errors (some auto-fixable). Clean those on the PR branch (or confirm they are pre-existing on `main` and fix in a tiny preceding PR so `ci-ok` is honest).
+3. **Correct the Ruff diagnosis**  
+   “5 Ruff errors” understates tip reality: `ruff format --check` wants **16 files** reformatted, plus lint hits (`ANN401` in `app/db/mongo/client.py`, `I001` in `app/routers/auth.py`, …). Prefer: run `uv run ruff format` + `uv run ruff check --fix` on the #422 branch (or a tiny preceding hygiene PR) and paste the remaining non-auto-fixable codes.
 
-4. **Docs job: stale `docs/generated`**  
-   Run `make docs-generate` and commit, or drop `server/app/**` from the docs filter if this PR should not require a docs regen.
+4. **Mark npm_audit as a real advisory, not a peer install flake**  
+   Lockfile-only audit exits 1 on high `brace-expansion`. Suggestion should be `npm audit fix` / bump transitive deps in `client/package-lock.json` (or temporarily raise audit level with a tracked follow-up) — not `--legacy-peer-deps`.
 
-## Gate correctness
+## Doc / process hygiene for #423
 
-5. **Fail `ci-ok` when `changes` fails**  
-   Today `ci-ok` uses `if: always()` and treats empty selection outputs as “skipped”, so a failed `changes` job can still yield a green aggregator. Add an early hard fail:
+5. **Do not merge stale review notes onto `main` without a freshness header**  
+   At minimum add at the top:
 
-   ```bash
-   if [ "${{ needs.changes.result }}" != "success" ]; then
-     echo "changes job failed"
-     exit 1
-   fi
+   ```md
+   Reviewed PR: #422 @ <full SHA>
+   Checks snapshot: <UTC timestamp>
+   Status: living notes — update or delete after #422 merges
    ```
 
-6. **Avoid all-skip green merges for risky root files**  
-   PRs that only touch `README.md`, `AGENTS.md`, `.env.example`, `shared/**`, `scripts/**` (non-docs), `deploy/**`, etc. currently skip every suite and still pass `ci-ok`. Prefer either:
-   - a catch-all `core` filter that forces backend (or a cheap smoke job), or
-   - “if no filter matched → run backend + frontend” fallback in the Select jobs step.
+   Better: keep this as a PR comment / automation artifact and **do not commit** `BASEDIR.md` to `main`, or put it under `docs/operations/` / `.cursor/` with an explicit “ephemeral” note in `.gitignore` if the file is only for agent handoff.
 
-7. **Widen filters that are too narrow for this repo**  
-   - backend: also `shared/**`, `Makefile` targets that affect server, relevant compose files, `.env.example` when settings contract changes.  
-   - e2e: already broad; keep forcing frontend when e2e is selected (good).  
-   - postgres: identical to backend today — collapse to one output or `needs: backend` to avoid duplicate path lists.
+6. **Rename or relocate if this stays in-repo**  
+   `BASEDIR.md` at repo root reads like project layout docs, not “latest automation review”. Prefer something explicit (`docs/operations/pr-422-ci-followups.md` or `.cursor/reviews/pr-422.md`) so humans and agents do not treat it as canonical architecture.
 
-8. **Timeouts may be tight**  
-   Backend `timeout-minutes: 7` with parallel Ruff/Mypy + pytest+cov is aggressive on cold cache. Prefer 10–12 until you have p95 job timings from a few green runs.
+7. **Add a done/open checklist keyed to check names**  
+   Mirror the GitHub check names the ruleset will require (`ci-ok`, `gitleaks`, plus non-required but selected jobs). Example:
 
-## Security workflow
+   | Check | #422 tip | Action |
+   | --- | --- | --- |
+   | gitleaks | pass | none |
+   | pip_audit | pass | none |
+   | npm_audit | fail | bump `brace-expansion` |
+   | frontend | fail | TS ↔ eslint peer align |
+   | backend | fail | ruff format/lint |
+   | postgres-tests | fail | fix `normalize_feed_articles` import |
+   | docs | fail | `make docs-generate` |
+   | ci-ok | fail | turns green after above |
 
-9. **Add a `security-ok` aggregator (optional but consistent)**  
-   Ruleset only requires `gitleaks`, so skipped/failed `pip_audit` / `npm_audit` are easy to miss in the UI. A small aggregator (same pattern as `ci-ok`) makes the workflow status obvious without changing the ruleset yet.
+8. **Call out that #423 itself proves the all-skip green risk**  
+   This PR only adds `BASEDIR.md`. Path filters select nothing → every suite skipped → `ci-ok` can still succeed. That is the strongest concrete example for the “catch-all / no-match fallback” suggestion already in the notes — promote it with this evidence instead of a hypothetical README-only PR.
 
-10. **Pin / document gitleaks version behavior**  
-    Action installs its own binary (`8.24.3` observed). Fine for now; if scans become noisy or flaky, pin `GITLEAKS_VERSION` explicitly so upgrades are intentional.
+## Gate suggestions that remain valid (keep, but re-home)
 
-11. **npm audit install vs audit-only**  
-    Full `npm ci` is heavy (and currently broken on peers). Prefer `npm audit --omit=dev` against the lockfile where possible, or `npm ci --ignore-scripts` once peers are fixed, to keep the security job cheap.
+These #422 items in the current file are still right; keep them after the refresh:
 
-## Scope / product hygiene on the same PR
+9. **Fail `ci-ok` when `changes` fails** — today empty outputs look like skips under `if: always()`.
+10. **No-match fallback** — if no filter matches, run a cheap smoke (backend and/or frontend), not an empty green gate.
+11. **Widen/collapse filters** — `shared/**`, compose, `.env.example`; collapse duplicate postgres≡backend path lists.
+12. **Relax backend `timeout-minutes: 7`** until p95 timings exist.
+13. **Prefer a thin CI-only PR** to unblock #419/#420; keep lite-default Make/env/Sentry-disable as follow-up.
 
-12. **Split unrelated changes if you want a minimal unblock PR**  
-    The CI gate fix is mixed with: lite-as-default Make/compose, `.env.example` Celery/logging defaults, middleware health-path skip, skills `.gitignore`, Sentry workflow hard-disable, docs churn. A thin PR that only lands `ci.yml` + `security.yml` (+ checklist note) unblocks `#419`/`#420` faster; follow with the lite-default stack PR.
+## Test plan additions for #423
 
-13. **Document existing-clone migration for env defaults**  
-    Changing `.env.example` to `CELERY_TASK_ALWAYS_EAGER=true` / `LOG_REQUESTS=false` does not update existing `.env` files. One short note in `docs/guide/development.md` (“re-copy or set these two keys”) avoids surprise broker dependency in local lite.
+- [ ] Re-pull #422 checks at tip SHA and rewrite blockers to match (gitleaks/pip_audit green; list current reds).
+- [ ] Include postgres `normalize_feed_articles` ImportError and npm high advisory by name.
+- [ ] Decide merge destiny: ephemeral path vs `docs/operations/` with freshness header — do not leave an undated root `BASEDIR.md` on `main`.
+- [ ] Explicitly document that a `BASEDIR.md`-only PR skips all suites under current filters.
 
-14. **Sentry workflow `if: false`**  
-    Hard-disable is clear for development. Prefer keeping the tag trigger in comments as a copy-paste block (already partly done) and linking the devops checklist row so restore is one checklist item, not archaeology.
+## Suggested apply order for #423
 
-## Test plan additions for #422
-
-- [ ] Confirm gitleaks job is green with explicit `GITHUB_TOKEN`.
-- [ ] Confirm `ci-ok` fails when any selected job fails **and** when `changes` fails.
-- [ ] Open a README-only draft PR and decide whether all-skip → green is acceptable once the ruleset is Active.
-- [ ] After merge, record the exact check names shown in the PR UI before enabling `main-protection`.
-
-## Suggested apply order
-
-1. `GITHUB_TOKEN` for gitleaks (unblocks required check).  
-2. Frontend peer / Ruff / docs-generated so `ci-ok` can go green.  
-3. `ci-ok` fail-on-`changes` + filter fallback.  
-4. Optionally split lite-default / logging / Sentry disable into a follow-up.
+1. Refresh content against #422 `@a872646` (or newer tip).  
+2. Add freshness header + done/open check table.  
+3. Relocate/rename or mark ephemeral so `main` does not accumulate stale agent notes.  
+4. Keep the still-valid gate/filter follow-ups; drop fixed gitleaks-token / peer-based npm_audit guidance.
