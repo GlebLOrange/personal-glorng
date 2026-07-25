@@ -236,7 +236,7 @@ async function deleteAccount(): Promise<void> {
               type="email"
               name="email"
               autocomplete="email"
-              label="email address"
+              prefix="email address"
               placeholder="you@example.com"
               required
             />
