@@ -119,4 +119,26 @@ describe("useWeatherLocations", () => {
     expect(isDefaultLocation(paris)).toBe(true);
     expect(isDefaultLocation(wroclaw)).toBe(false);
   });
+
+  it("re-seeds guest default after logout when guest list is empty", async () => {
+    const auth = useAuthStore();
+    // Empty server list forces ensureDefaultLocation to seed and set defaultSeeded.
+    vi.mocked(api.get).mockResolvedValue({ data: [] });
+    vi.mocked(api.post).mockResolvedValue({
+      data: { id: 1, query: "Wroclaw", sort_order: 0 } satisfies WeatherLocation,
+    });
+
+    auth.user = makeUser();
+    const { locations } = useWeatherLocations();
+    await vi.waitFor(() => expect(locations.value).toHaveLength(1));
+    expect(api.post).toHaveBeenCalled();
+
+    auth.user = null;
+
+    await vi.waitFor(() => {
+      expect(auth.isAuthenticated).toBe(false);
+      expect(locations.value).toHaveLength(1);
+    });
+    expect(locations.value[0]?.query).toBe("Wroclaw");
+  });
 });

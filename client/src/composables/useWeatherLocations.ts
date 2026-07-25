@@ -132,6 +132,9 @@ function ensureAuthWatch(): void {
       if (authenticated) {
         void refresh();
       } else {
+        // Auth seeding left defaultSeeded true; guests need a fresh seed pass.
+        defaultSeeded.value = false;
+        serverLocations.value = [];
         void ensureDefaultLocation();
       }
     },
