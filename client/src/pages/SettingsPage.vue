@@ -204,15 +204,13 @@ async function deleteAccount(): Promise<void> {
               v-model="displayName"
               name="display-name"
               autocomplete="name"
-              placeholder="display name"
-              aria-label="display name"
+              label="display name"
             />
             <BaseInput
               v-model="timezone"
               name="timezone"
               autocomplete="off"
-              placeholder="timezone"
-              aria-label="timezone"
+              label="timezone"
               required
             />
             <BaseButton
@@ -238,8 +236,8 @@ async function deleteAccount(): Promise<void> {
               type="email"
               name="email"
               autocomplete="email"
+              label="email address"
               placeholder="you@example.com"
-              aria-label="email address"
               required
             />
             <BaseInput
@@ -247,8 +245,7 @@ async function deleteAccount(): Promise<void> {
               type="password"
               name="current-password-for-email"
               autocomplete="current-password"
-              placeholder="current password"
-              aria-label="current password"
+              label="current password"
               required
             />
             <BaseButton
@@ -282,8 +279,7 @@ async function deleteAccount(): Promise<void> {
               type="password"
               name="current-password"
               autocomplete="current-password"
-              placeholder="current password"
-              aria-label="current password"
+              label="current password"
               required
             />
             <BaseInput
@@ -291,8 +287,7 @@ async function deleteAccount(): Promise<void> {
               type="password"
               name="new-password"
               autocomplete="new-password"
-              placeholder="new password"
-              aria-label="new password"
+              label="new password"
               :error="newPassword && !passwordCheck.valid ? passwordCheck.message : undefined"
               required
             />
@@ -301,8 +296,7 @@ async function deleteAccount(): Promise<void> {
               type="password"
               name="confirm-new-password"
               autocomplete="new-password"
-              placeholder="confirm new password"
-              aria-label="confirm new password"
+              label="confirm new password"
               :error="newPasswordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
               required
             />
@@ -324,7 +318,7 @@ async function deleteAccount(): Promise<void> {
             <CardTitle>preferences</CardTitle>
           </CardHeader>
           <form class="space-y-4" @submit.prevent="saveCurrency">
-            <BaseSelect v-model="displayCurrency" aria-label="display currency">
+            <BaseSelect v-model="displayCurrency" label="display currency">
               <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
                 {{ code }}
               </option>
@@ -412,8 +406,7 @@ async function deleteAccount(): Promise<void> {
               type="password"
               name="delete-current-password"
               autocomplete="current-password"
-              placeholder="current password"
-              aria-label="current password"
+              label="current password"
               required
             />
             <label class="flex min-h-11 cursor-pointer items-start gap-3 text-xs text-surface-mid">
