@@ -3,11 +3,11 @@ import { computed, ref } from "vue";
 import { RouterLink } from "vue-router";
 
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 
@@ -82,7 +82,9 @@ function sourceLabel(type: string): string {
             {{ option.label }}
           </option>
         </BaseSelect>
-        <BaseButton type="submit" :disabled="loading || !query.trim()"> search </BaseButton>
+        <ToolbarPillButton type="submit" family="2xx" :disabled="loading || !query.trim()">
+          {{ loading ? "searching..." : "search" }}
+        </ToolbarPillButton>
       </form>
     </Card>
 

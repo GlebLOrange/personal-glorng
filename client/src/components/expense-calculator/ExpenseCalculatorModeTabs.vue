@@ -1,37 +1,22 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
+import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import type { ExpenseCalculatorMode } from "@/composables/useExpenseCalculator";
 
-defineProps<{
+const props = defineProps<{
   activeMode: ExpenseCalculatorMode;
   tabs: Array<{ id: ExpenseCalculatorMode; label: string }>;
 }>();
 
 const emit = defineEmits<{ change: [mode: ExpenseCalculatorMode] }>();
+
+const mode = computed({
+  get: () => props.activeMode,
+  set: (value: string) => emit("change", value as ExpenseCalculatorMode),
+});
 </script>
 
 <template>
-  <div
-    role="tablist"
-    aria-label="Calculator modes"
-    class="flex flex-wrap gap-1 rounded-lg border border-surface-border bg-surface-dark/40 p-1"
-  >
-    <button
-      v-for="tab in tabs"
-      :key="tab.id"
-      :id="`expense-calc-tab-${tab.id}`"
-      type="button"
-      role="tab"
-      :aria-selected="activeMode === tab.id"
-      :aria-controls="`expense-calc-panel-${tab.id}`"
-      class="flex min-h-11 flex-1 min-w-[5rem] items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue"
-      :class="
-        activeMode === tab.id
-          ? 'bg-surface-card text-surface-light'
-          : 'text-surface-mid hover:text-surface-light'
-      "
-      @click="emit('change', tab.id)"
-    >
-      {{ tab.label }}
-    </button>
-  </div>
+  <AdminTabBar v-model="mode" :tabs="tabs" panel-id-prefix="expense-calc" flush />
 </template>

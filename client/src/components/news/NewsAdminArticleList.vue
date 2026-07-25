@@ -65,10 +65,8 @@ const emit = defineEmits<{
       <div class="flex flex-wrap gap-2" @click.stop @keydown.stop>
         <BaseButton
           v-if="canWrite && item.status !== 'published'"
-          variant="ghost"
-          quiet
+          variant="success"
           size="sm"
-          class="!text-status-success hover:enabled:!bg-status-success/10"
           :disabled="actionLoading"
           @click="emit('setStatus', item.id, 'published')"
         >
@@ -79,7 +77,6 @@ const emit = defineEmits<{
           variant="ghost"
           quiet
           size="sm"
-          class="!text-status-cyan hover:enabled:!bg-status-cyan/10"
           :disabled="actionLoading"
           @click="emit('setStatus', item.id, 'unpublished')"
         >

@@ -50,7 +50,7 @@ describe("BaseButton", () => {
     }).get("button");
 
     expect(button.classes()).toContain("hover:enabled:text-status-error");
-    expect(button.classes()).toContain("hover:enabled:bg-status-error/10");
+    expect(button.classes()).toContain("hover:enabled:bg-status-error/15");
     expect(button.classes()).toContain("text-surface-light/60");
     expect(button.classes()).toContain("border-transparent");
   });

@@ -135,7 +135,7 @@ async function onSurfaceTab(id: string): Promise<void> {
 
       <Card v-else-if="loadError" role="alert">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-sm text-status-cyan">News sources could not be loaded.</p>
+          <p class="text-sm text-status-yellow">News sources could not be loaded.</p>
           <BaseButton variant="ghost" size="sm" @click="loadSources">retry</BaseButton>
         </div>
       </Card>
@@ -180,7 +180,7 @@ async function onSurfaceTab(id: string): Promise<void> {
             <template #actions>
               <span
                 v-if="source.last_error"
-                class="text-xs text-status-cyan"
+                class="text-xs text-status-yellow"
                 :title="source.last_error"
                 aria-label="Source has fetch error"
               >

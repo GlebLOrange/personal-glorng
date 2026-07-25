@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 
+import BaseButton from "@/components/ui/BaseButton.vue";
 import { useLiveLocalTime } from "@/composables/useLiveLocalTime";
 import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
@@ -123,13 +124,7 @@ onMounted(async () => {
 
     <div v-else-if="error" class="text-sm space-y-2" :class="stackClass">
       <p class="text-status-error">{{ error }}</p>
-      <button
-        type="button"
-        class="text-surface-mid hover:text-surface-light underline"
-        @click="refresh"
-      >
-        retry
-      </button>
+      <BaseButton variant="ghost" size="sm" @click="refresh">retry</BaseButton>
     </div>
 
     <div
@@ -153,11 +148,9 @@ onMounted(async () => {
       </p>
     </div>
 
-    <div v-else class="text-sm text-surface-mid" :class="stackClass">
+    <div v-else class="flex flex-wrap items-center gap-2 text-sm text-surface-mid" :class="stackClass">
       Weather unavailable.
-      <button type="button" class="ml-2 underline hover:text-surface-light" @click="refresh">
-        retry
-      </button>
+      <BaseButton variant="ghost" size="sm" @click="refresh">retry</BaseButton>
     </div>
   </div>
 </template>

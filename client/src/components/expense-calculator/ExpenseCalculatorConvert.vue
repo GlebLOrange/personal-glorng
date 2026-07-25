@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from "vue";
 
-import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
+import IconActionButton from "@/components/ui/IconActionButton.vue";
 import { Card } from "@/components/ui/card";
 import {
   convertCurrency,
@@ -98,10 +98,9 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
       <BaseSelect v-model="fromCurrency" label="from" class="min-w-0 flex-1">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>
-      <BaseButton
-        variant="ghost"
-        size="sm"
-        class="mb-0.5 min-h-11 shrink-0 px-2"
+      <IconActionButton
+        class="mb-0.5"
+        family="1xx"
         aria-label="swap currencies"
         @click="swapCurrencies"
       >
@@ -113,14 +112,14 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="size-5"
+          class="size-4"
           aria-hidden="true"
         >
           <path d="M8 8 4 12l4 4" />
           <path d="M4 12h16" />
           <path d="M16 8l4 4-4 4" />
         </svg>
-      </BaseButton>
+      </IconActionButton>
       <BaseSelect v-model="toCurrency" label="to" class="min-w-0 flex-1">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>

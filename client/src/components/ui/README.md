@@ -24,13 +24,13 @@ Use the pale **1xx–5xx** family tokens — map API action to variant:
 |---|---|---|---|
 | Create / add / primary / info | 1xx | `BaseButton` `primary`, `ToolbarPillButton` `1xx` | `accent-blue` wash |
 | Save / success / created | 2xx | `BaseButton` `success`, pill `2xx` | `status-success` wash |
-| Update / redirect / caution | 3xx | pill `3xx`, edit chrome | `status-cyan` wash |
+| Update / redirect / caution | 3xx | pill `3xx`, edit chrome | `status-yellow` wash |
 | Delete / client error | 4xx | `danger`, pill `4xx` | `status-error` |
 | Critical / server error | 5xx | pill `5xx`, critical badges | `status-critical` |
 | Secondary / cancel (non-destructive) | — | `secondary` | grayscale (`surface-light`) |
 | Quiet chrome / tertiary | — | `ghost` (+ optional `quiet`) | muted until hover accent |
 
-`status-warning` aliases to `status-cyan` (3xx). Prefer `status-cyan` in new product code. Legacy `accent-red` / `accent-amber` map to error / cyan.
+`status-warning` / `status-cyan` / `accent-amber` alias to `status-yellow` (3xx). Prefer `status-yellow` in new product code. Legacy `accent-red` maps to error.
 
 Auth submits and marketing `cta-*` stay blue/neutral; do not invent new hex colors.
 
@@ -45,6 +45,19 @@ Three intentional systems — pick one per surface, do not mix adjacent CTAs:
 | `ToolbarPillButton` | Admin list toolbars, tool option bars, HTTP-ish families | Compact pills (`1xx` blue, `2xx` green submit, …) |
 
 **Do not** use `cta-primary` inside tool screens; **do not** add gradients to `BaseButton`. Prefer `ToolbarPillButton` for admin toolbar primary actions and `BaseButton` for form/dialog actions.
+
+### Control sizing (do not override)
+
+| Control | Default height | Notes |
+|---|---|---|
+| `BaseButton` `sm` / `md` / `field` | **h-11** | `sm` only tightens `px`/`text` — it is **not** shorter |
+| `BaseButton` `lg` | **h-12** | Keypad exception (`CalculatorTool`) only |
+| `BaseButton` `icon` | **h-8 w-8** | Prefer `IconActionButton` in tools |
+| `ToolbarPillButton` | **h-11 px-4** | No size prop — do not add `min-h-11` |
+| `IconActionButton` (+ wrappers) | **h-8 w-8** | Icon-only chrome |
+| `BaseSelect` | **h-11** (`compact` → h-9) | Dense toolbars only for compact |
+
+Wash recipe (idle → hover/selected → active): `/3` → `/15` + border `/40` → `/25`. Do **not** re-add `min-h-11` / `h-11` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `family`, `quiet`, and `selected`.
 
 **Marketing vs product accents** — portfolio/marketing pages may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI uses only the **1xx–5xx** pale set + surfaces — no golden/violet on tools, chips, or product buttons.
 
@@ -75,11 +88,11 @@ Canonical tokens in `@theme` (`client/src/styles/main.css`):
 |---|---|---|
 | 1xx | `accent-blue` | `#8ec4e0` |
 | 2xx | `status-success` | `#7bc49a` |
-| 3xx | `status-cyan` (= `status-warning`) | `#7eb8b0` |
+| 3xx | `status-yellow` (= `status-warning` / `status-cyan`) | `#d8cc82` |
 | 4xx | `status-error` | `#e88a8a` |
 | 5xx | `status-critical` | `#d98aad` |
 
-Use `text-status-*`, `alert-surface-error`, `alert-surface-warning` (cyan), etc. — not raw Tailwind `red-400` / `amber-400`. Wash pattern: idle `/3`, hover/selected `/15` + border `/40`.
+Use `text-status-*`, `alert-surface-error`, `alert-surface-warning` (pale yellow), etc. — not raw Tailwind `red-400` / `amber-400`. Wash pattern: idle `/3`, hover/selected `/15` + border `/40`.
 
 Typography: IBM Plex Sans + Mono; use `font-data` for status codes, counts, and money.
 

@@ -64,7 +64,6 @@ function convertedLabel(): string | null {
         <BaseButton
           variant="ghost"
           size="sm"
-          class="min-h-11"
           :aria-label="`Duplicate ${expense.tool_name || 'expense'}`"
           @click="emit('duplicate', expense)"
         >
@@ -108,7 +107,6 @@ function convertedLabel(): string | null {
       <BaseButton
         variant="ghost"
         size="sm"
-        class="min-h-11"
         :aria-label="`Duplicate ${expense.tool_name || 'expense'}`"
         @click="emit('duplicate', expense)"
       >

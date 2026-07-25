@@ -40,14 +40,14 @@ const variantClass = computed(() => {
   }
 
   if (props.danger) {
-    // ponytail: danger ghost is always quiet (muted until hover/focus)
+    // ponytail: danger ghost is always quiet (muted until hover/focus); wash matches pill 4xx (/15)
     if (selected) {
-      return "border-status-error/40 bg-status-error/10 text-status-error";
+      return "border-status-error/40 bg-status-error/15 text-status-error";
     }
     if (props.variant === "ghost" || props.quiet) {
-      return "border-transparent bg-transparent text-surface-light/60 hover:enabled:border-status-error/40 hover:enabled:bg-status-error/10 hover:enabled:text-status-error active:enabled:bg-status-error/20 focus-visible:border-status-error/40 focus-visible:bg-status-error/10 focus-visible:text-status-error";
+      return "border-transparent bg-transparent text-surface-light/60 hover:enabled:border-status-error/40 hover:enabled:bg-status-error/15 hover:enabled:text-status-error active:enabled:bg-status-error/25 focus-visible:border-status-error/40 focus-visible:bg-status-error/15 focus-visible:text-status-error";
     }
-    return "border-transparent bg-status-error/3 text-status-error hover:enabled:border-status-error/40 hover:enabled:bg-status-error/10 active:enabled:bg-status-error/20";
+    return "border-transparent bg-status-error/3 text-status-error hover:enabled:border-status-error/40 hover:enabled:bg-status-error/15 active:enabled:bg-status-error/25";
   }
 
   if (props.variant === "ghost") {

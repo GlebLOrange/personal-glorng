@@ -121,7 +121,6 @@ defineExpose({
         <BaseButton
           v-if="productFilter || categoryFilter"
           variant="ghost"
-          class="min-h-11"
           @click="emit('clearTransactionFilters')"
         >
           clear transaction filters

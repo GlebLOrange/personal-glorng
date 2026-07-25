@@ -120,7 +120,7 @@ const sortButtonClass =
       description="Add above, or use smart text (20 coffee). Telegram: /spend 20 coffee"
     >
       <template #action>
-        <BaseButton variant="primary" size="sm" class="min-h-11" @click="emit('smartText')">
+        <BaseButton variant="primary" size="sm" @click="emit('smartText')">
           use smart text
         </BaseButton>
       </template>
