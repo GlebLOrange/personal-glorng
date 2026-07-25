@@ -60,6 +60,7 @@ jobs:
       - name: Scan for secrets
         uses: gitleaks/gitleaks-action@v3
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
 
   pip_audit:
@@ -95,7 +96,6 @@ jobs:
           node-version: "24"
           cache: npm
           cache-dependency-path: client/package-lock.json
-      - name: Install dependencies
-        run: npm ci
+      # Lockfile-only: avoids peer-dep install failures when only auditing.
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        run: npm audit --package-lock-only --audit-level=high
