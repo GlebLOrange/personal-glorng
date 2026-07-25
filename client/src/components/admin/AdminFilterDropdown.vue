@@ -4,6 +4,10 @@ import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vu
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import {
+  getOverlayFocusableElements,
+  trapTabKeyInRoot,
+} from "@/composables/useOverlayShell";
 
 withDefaults(
   defineProps<{
@@ -26,14 +30,6 @@ const rootRef = useTemplateRef<HTMLElement>("root");
 const triggerRef = useTemplateRef<InstanceType<typeof ToolbarPillButton>>("trigger");
 const panelRef = useTemplateRef<HTMLElement>("panel");
 let previouslyFocused: HTMLElement | null = null;
-
-function getFocusableElements(el: HTMLElement): HTMLElement[] {
-  return Array.from(
-    el.querySelectorAll<HTMLElement>(
-      'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]',
-    ),
-  ).filter((item) => item.tabIndex >= 0);
-}
 
 function toggle(): void {
   open.value = !open.value;
@@ -66,30 +62,7 @@ function onKeydown(event: KeyboardEvent): void {
     return;
   }
 
-  if (event.key !== "Tab" || !panelRef.value) return;
-
-  const focusables = getFocusableElements(panelRef.value);
-  if (focusables.length === 0) {
-    event.preventDefault();
-    return;
-  }
-
-  const first = focusables[0];
-  const last = focusables[focusables.length - 1];
-  const active = document.activeElement;
-
-  if (event.shiftKey) {
-    if (active === first || !panelRef.value.contains(active)) {
-      last.focus();
-      event.preventDefault();
-    }
-    return;
-  }
-
-  if (active === last || !panelRef.value.contains(active)) {
-    first.focus();
-    event.preventDefault();
-  }
+  trapTabKeyInRoot(event, panelRef.value);
 }
 
 function focusTrigger(): void {
@@ -107,7 +80,7 @@ watch(open, async (isOpen) => {
     await nextTick();
     const panel = panelRef.value;
     if (!panel) return;
-    const focusables = getFocusableElements(panel);
+    const focusables = getOverlayFocusableElements(panel);
     if (focusables.length > 0) {
       focusables[0].focus();
     } else {
