@@ -8,6 +8,7 @@ import { isAiChatEnabled } from "@/utils/featureFlags";
 import { installScrollRestore, resolveScrollBehavior } from "@/utils/scrollRestore";
 import { applyRouteSeo } from "@/composables/useRouteSeo";
 import { safeRedirectPath } from "@/utils/safeUrl";
+import { scrubSensitivePath } from "@/utils/sensitiveUrl";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -390,7 +391,7 @@ router.beforeEach(async (to, _from, next) => {
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     next({
       name: "login",
-      query: { redirect: to.fullPath },
+      query: { redirect: scrubSensitivePath(to.fullPath) },
       replace: true,
     });
     return;

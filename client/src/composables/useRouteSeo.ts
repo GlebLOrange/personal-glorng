@@ -1,4 +1,5 @@
 import { applyPageSeo } from "@/utils/pageSeo";
+import { scrubSensitivePath } from "@/utils/sensitiveUrl";
 
 /**
  * Apply SEO from the active route's `meta.title` / `meta.description`.
@@ -16,10 +17,13 @@ export function applyRouteSeo(to: {
   const title = typeof to.meta.title === "string" ? to.meta.title : undefined;
   const description = typeof to.meta.description === "string" ? to.meta.description : undefined;
   const noindex = to.meta.noindex === true || to.meta.requiresAuth === true;
+  // Auth/noindex pages: pathname only (no secrets in og:url). Otherwise scrub sensitive query keys.
+  const scrubbed = scrubSensitivePath(to.fullPath);
+  const pathname = scrubbed.replace(/[?#].*$/, "");
   applyPageSeo({
     title,
     description,
-    path: to.fullPath,
+    path: noindex ? pathname : scrubbed,
     noindex,
   });
 }

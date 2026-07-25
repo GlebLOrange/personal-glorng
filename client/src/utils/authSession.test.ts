@@ -54,6 +54,26 @@ describe("authSession", () => {
     expect(auth.user).toBeNull();
   });
 
+  it("tryRefreshSession shares one in-flight refresh", async () => {
+    let resolvePost!: (value: unknown) => void;
+    vi.mocked(api.post).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvePost = resolve;
+        }) as ReturnType<typeof api.post>,
+    );
+
+    const first = tryRefreshSession();
+    const second = tryRefreshSession();
+    await vi.waitFor(() => {
+      expect(api.post).toHaveBeenCalledTimes(1);
+    });
+
+    resolvePost({ data: {} });
+    await expect(Promise.all([first, second])).resolves.toEqual([true, true]);
+    expect(api.post).toHaveBeenCalledTimes(1);
+  });
+
   it("handleAuthFailure redirects protected routes to login", async () => {
     const router = (await import("@/router")).default;
 

@@ -124,4 +124,60 @@ describe("useAuthStore", () => {
     expect(auth.user).toBeNull();
     expect(auth.sessionResolved).toBe(true);
   });
+
+  it("resolveSession keeps prior user on non-401 failures", async () => {
+    const user = {
+      id: "1",
+      email: "a@b.c",
+      permissions: [],
+      is_verified: true,
+      display_name: "User",
+      timezone: "UTC",
+      preferences: {},
+      created_at: "2026-01-01T00:00:00Z",
+    };
+    const auth = useAuthStore();
+    auth.user = user;
+
+    const err500 = new AxiosError("Server error");
+    err500.response = { status: 500 } as NonNullable<AxiosError["response"]>;
+    vi.mocked(api.get).mockRejectedValue(err500);
+    vi.spyOn(axios, "isAxiosError").mockReturnValue(true);
+
+    await expect(auth.resolveSession()).rejects.toBe(err500);
+    expect(auth.user).toEqual(user);
+    expect(auth.sessionResolved).toBe(true);
+    expect(auth.sessionError).toBeTruthy();
+  });
+
+  it("resolveSession shares one in-flight request", async () => {
+    let resolveGet!: (value: unknown) => void;
+    vi.mocked(api.get).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveGet = resolve;
+        }) as ReturnType<typeof api.get>,
+    );
+
+    const auth = useAuthStore();
+    const first = auth.resolveSession();
+    const second = auth.resolveSession();
+    expect(api.get).toHaveBeenCalledTimes(1);
+
+    resolveGet({
+      data: {
+        id: "u1",
+        email: "a@b.c",
+        permissions: [],
+        is_verified: true,
+        display_name: "User",
+        timezone: "UTC",
+        preferences: {},
+        created_at: "2026-01-01T00:00:00Z",
+      },
+    });
+    await Promise.all([first, second]);
+    expect(auth.user?.email).toBe("a@b.c");
+    expect(api.get).toHaveBeenCalledTimes(1);
+  });
 });

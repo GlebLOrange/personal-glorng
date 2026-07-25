@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
+import { useOverlayShell } from "@/composables/useOverlayShell";
 import type { Recipe } from "@/types";
 
 const props = defineProps<{
@@ -13,6 +14,8 @@ const emit = defineEmits<{
   close: [];
 }>();
 
+const panelRef = ref<HTMLElement | null>(null);
+const exitButton = ref<InstanceType<typeof BaseButton> | null>(null);
 const stepIndex = ref(0);
 const showIngredients = ref(false);
 let wakeLock: { release: () => Promise<void> } | null = null;
@@ -22,6 +25,19 @@ const totalSteps = computed(() => props.recipe?.steps.length ?? 0);
 const progress = computed(() =>
   totalSteps.value ? ((stepIndex.value + 1) / totalSteps.value) * 100 : 0,
 );
+const dialogLabel = computed(() =>
+  props.recipe ? `Cook mode: ${props.recipe.title}` : "Cook mode",
+);
+
+useOverlayShell({
+  open: () => props.open && Boolean(props.recipe),
+  panelRef,
+  onClose: () => emit("close"),
+  initialFocusFallback: () => {
+    const el = exitButton.value?.$el;
+    return el instanceof HTMLElement ? el : null;
+  },
+});
 
 async function requestWakeLock(): Promise<void> {
   if (!("wakeLock" in navigator)) return;
@@ -52,10 +68,6 @@ function goNext(): void {
 
 function onKeydown(event: KeyboardEvent): void {
   if (!props.open) return;
-  if (event.key === "Escape") {
-    emit("close");
-    return;
-  }
   if (event.key === "ArrowLeft") goPrev();
   if (event.key === "ArrowRight") goNext();
 }
@@ -90,19 +102,31 @@ onUnmounted(() => {
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="open && recipe" class="fixed inset-0 z-[60] bg-surface-dark flex flex-col">
+      <div
+        v-if="open && recipe"
+        ref="panelRef"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="dialogLabel"
+        tabindex="-1"
+        class="fixed inset-0 z-[60] bg-surface-dark flex flex-col focus:outline-none"
+      >
         <header class="flex items-center justify-between px-4 py-3 border-b border-surface-border">
           <div class="min-w-0">
             <p class="text-xs text-surface-mid truncate">{{ recipe.title }}</p>
             <p class="text-sm text-accent-blue">Step {{ stepIndex + 1 }} of {{ totalSteps }}</p>
           </div>
-          <button
+          <BaseButton
+            ref="exitButton"
             type="button"
-            class="text-surface-mid hover:text-surface-light text-sm shrink-0 ml-4"
+            variant="ghost"
+            quiet
+            size="sm"
+            class="shrink-0 ml-4"
             @click="emit('close')"
           >
             Exit cook mode
-          </button>
+          </BaseButton>
         </header>
 
         <div class="h-1 bg-surface-border">
@@ -113,13 +137,15 @@ onUnmounted(() => {
         </div>
 
         <div class="px-4 py-2 border-b border-surface-border">
-          <button
+          <BaseButton
             type="button"
-            class="text-xs text-accent-blue"
+            variant="ghost"
+            quiet
+            size="sm"
             @click="showIngredients = !showIngredients"
           >
             {{ showIngredients ? "Hide" : "Show" }} ingredients ({{ recipe.ingredients.length }})
-          </button>
+          </BaseButton>
           <ul
             v-if="showIngredients"
             class="mt-2 text-sm text-surface-light space-y-1 max-h-32 overflow-y-auto"

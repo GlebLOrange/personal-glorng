@@ -3,19 +3,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { addLinkRelAttributes, sanitizeEmailHtml } from "@/utils/sanitizeEmailHtml";
-
-describe("addLinkRelAttributes", () => {
-  it("adds rel noopener on links without rel", () => {
-    const html = '<a href="https://example.com">link</a>';
-    expect(addLinkRelAttributes(html)).toContain('rel="noopener noreferrer"');
-  });
-
-  it("does not duplicate rel when already set", () => {
-    const html = '<a href="https://example.com" rel="nofollow">link</a>';
-    expect(addLinkRelAttributes(html)).toBe(html);
-  });
-});
+import { sanitizeEmailHtml } from "@/utils/sanitizeEmailHtml";
 
 describe("sanitizeEmailHtml", () => {
   it("keeps safe email markup", () => {
@@ -50,10 +38,20 @@ describe("sanitizeEmailHtml", () => {
     expect(clean).toContain("ok");
   });
 
-  it("adds rel noopener on safe https links", () => {
-    const html = '<a href="https://example.com">link</a>';
-    const clean = sanitizeEmailHtml(html);
-    expect(clean).toContain('rel="noopener noreferrer"');
-    expect(clean).toContain("https://example.com");
+  it("adds rel noopener on safe https links including single-quoted href", () => {
+    const doubleQuoted = sanitizeEmailHtml('<a href="https://example.com">link</a>');
+    expect(doubleQuoted).toContain('rel="noopener noreferrer"');
+    expect(doubleQuoted).toContain("https://example.com");
+
+    const singleQuoted = sanitizeEmailHtml("<a href='https://example.com'>link</a>");
+    expect(singleQuoted).toMatch(/rel="[^"]*noopener/);
+    expect(singleQuoted).toMatch(/rel="[^"]*noreferrer/);
+  });
+
+  it("merges noopener into existing rel", () => {
+    const clean = sanitizeEmailHtml('<a href="https://example.com" rel="nofollow">link</a>');
+    expect(clean).toMatch(/rel="[^"]*nofollow/);
+    expect(clean).toMatch(/rel="[^"]*noopener/);
+    expect(clean).toMatch(/rel="[^"]*noreferrer/);
   });
 });

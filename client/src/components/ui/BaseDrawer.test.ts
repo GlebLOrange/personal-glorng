@@ -38,7 +38,8 @@ describe("BaseDrawer", () => {
     expect(backdrop?.getAttribute("aria-hidden")).toBe("true");
     const dialog = document.body.querySelector('[role="dialog"]');
     expect(dialog?.getAttribute("aria-modal")).toBe("true");
-    expect(dialog?.getAttribute("aria-label")).toBe("Drawer title");
+    expect(dialog?.getAttribute("aria-labelledby")).toBeTruthy();
+    expect(dialog?.hasAttribute("aria-label")).toBe(false);
 
     wrapper.unmount();
   });

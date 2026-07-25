@@ -59,14 +59,16 @@ describe("BaseButton", () => {
     expect(button.classes()).toContain("active:enabled:bg-accent-blue/25");
   });
 
-  it("colorizes secondary with fill/3 matching accent text without borders", () => {
+  it("keeps secondary grayscale without accent wash", () => {
     const button = mount(BaseButton, {
       props: { variant: "secondary" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-accent-blue/3");
-    expect(button.classes()).toContain("text-accent-blue");
-    expect(button.classes()).toContain("hover:enabled:bg-accent-blue/15");
+    expect(button.classes()).toContain("bg-transparent");
+    expect(button.classes()).toContain("text-surface-light/80");
+    expect(button.classes()).toContain("hover:enabled:bg-surface-light/10");
+    expect(button.classes()).not.toContain("bg-accent-blue/3");
+    expect(button.classes()).not.toContain("text-accent-blue");
     expect(button.classes().some((c) => c.includes("border"))).toBe(false);
   });
 
