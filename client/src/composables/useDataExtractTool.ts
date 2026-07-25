@@ -72,7 +72,6 @@ export function batchLabel(batch: ImportBatchSummary): string {
 
 export function useDataExtractTool() {
   const selectedFile = ref<File | null>(null);
-  const dragOver = ref(false);
   const formatChoice = ref<FormatChoice>("auto");
   const profileChoice = ref<DelimitedProfile>("custom");
   const fieldDelimiter = ref("|");
@@ -90,7 +89,6 @@ export function useDataExtractTool() {
   const batchDetail = ref<ImportBatchDetail | null>(null);
   const promoteResult = ref<PromoteBatchResult | null>(null);
   const activeTab = ref<ActionTab>("extract");
-  const fileInputRef = ref<HTMLInputElement | null>(null);
 
   const { loading, run } = useApiAction();
   const { copy } = useClipboard();
@@ -276,20 +274,9 @@ export function useDataExtractTool() {
     }
   }
 
-  function onFileSelect(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files?.[0]) {
-      selectedFile.value = input.files[0];
-      resetOutputs();
-    }
-  }
-
-  function onDrop(event: DragEvent): void {
-    dragOver.value = false;
-    if (event.dataTransfer?.files?.[0]) {
-      selectedFile.value = event.dataTransfer.files[0];
-      resetOutputs();
-    }
+  function selectFile(file: File): void {
+    selectedFile.value = file;
+    resetOutputs();
   }
 
   function serializeResult(): string {
@@ -393,7 +380,6 @@ export function useDataExtractTool() {
 
   return {
     selectedFile,
-    dragOver,
     formatChoice,
     profileChoice,
     fieldDelimiter,
@@ -411,7 +397,6 @@ export function useDataExtractTool() {
     batchDetail,
     promoteResult,
     activeTab,
-    fileInputRef,
     loading,
     canWrite,
     selectedName,
@@ -432,8 +417,7 @@ export function useDataExtractTool() {
     goToBatchPage,
     loadBatchDetail,
     promoteSelectedBatch,
-    onFileSelect,
-    onDrop,
+    selectFile,
     extractFile,
     importFile,
     copyResult,

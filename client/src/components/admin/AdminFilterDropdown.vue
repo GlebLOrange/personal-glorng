@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
+import { ref, useTemplateRef } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import { getOverlayFocusableElements, trapTabKeyInRoot } from "@/composables/useOverlayShell";
+import { useToolbarOptionsPopover } from "@/composables/useToolbarOptionsPopover";
 
 withDefaults(
   defineProps<{
@@ -26,84 +26,18 @@ const open = ref(false);
 const rootRef = useTemplateRef<HTMLElement>("root");
 const triggerRef = useTemplateRef<InstanceType<typeof ToolbarPillButton>>("trigger");
 const panelRef = useTemplateRef<HTMLElement>("panel");
-let previouslyFocused: HTMLElement | null = null;
 
-function toggle(): void {
-  open.value = !open.value;
-}
-
-function close(): void {
-  open.value = false;
-}
+const { close, toggle } = useToolbarOptionsPopover({
+  open,
+  rootRef,
+  panelRef,
+  triggerRef,
+});
 
 function onClear(): void {
   emit("clear");
   close();
 }
-
-function onDocumentClick(event: MouseEvent): void {
-  if (!open.value) return;
-  const root = rootRef.value;
-  if (root && !root.contains(event.target as Node)) {
-    close();
-  }
-}
-
-function onKeydown(event: KeyboardEvent): void {
-  if (!open.value) return;
-
-  if (event.key === "Escape") {
-    event.stopPropagation();
-    event.preventDefault();
-    close();
-    return;
-  }
-
-  trapTabKeyInRoot(event, panelRef.value);
-}
-
-function focusTrigger(): void {
-  const trigger = triggerRef.value;
-  if (!trigger) return;
-  const el = (trigger as unknown as { $el?: HTMLElement }).$el;
-  if (el instanceof HTMLElement) {
-    el.focus();
-  }
-}
-
-watch(open, async (isOpen) => {
-  if (isOpen) {
-    previouslyFocused = document.activeElement as HTMLElement | null;
-    await nextTick();
-    const panel = panelRef.value;
-    if (!panel) return;
-    const focusables = getOverlayFocusableElements(panel);
-    if (focusables.length > 0) {
-      focusables[0].focus();
-    } else {
-      panel.focus();
-    }
-    return;
-  }
-  const restore = previouslyFocused;
-  previouslyFocused = null;
-  if (restore) {
-    restore.focus();
-  } else {
-    focusTrigger();
-  }
-});
-
-onMounted(() => {
-  // Capture: drawer panels use @click.stop, which blocks bubble-phase document listeners.
-  document.addEventListener("click", onDocumentClick, true);
-  document.addEventListener("keydown", onKeydown);
-});
-
-onUnmounted(() => {
-  document.removeEventListener("click", onDocumentClick, true);
-  document.removeEventListener("keydown", onKeydown);
-});
 
 defineExpose({ close });
 </script>
