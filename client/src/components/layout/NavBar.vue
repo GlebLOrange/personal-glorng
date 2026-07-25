@@ -180,7 +180,7 @@ async function handleGoHome(): Promise<void> {
           <button
             ref="menuToggleButton"
             type="button"
-            class="md:hidden interactive-surface inline-flex h-11 min-h-11 min-w-11 shrink-0 items-center justify-center self-center text-surface-light"
+            class="md:hidden inline-flex h-8 min-h-8 min-w-8 shrink-0 items-center justify-center self-center rounded-lg text-surface-light transition-colors hover:bg-accent-blue/15 hover:text-accent-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
             :aria-expanded="mobileOpen"
             aria-controls="nav-mobile-menu"
             aria-label="Toggle navigation menu"
@@ -192,7 +192,7 @@ async function handleGoHome(): Promise<void> {
               fill="none"
               stroke="currentColor"
               stroke-width="2"
-              class="size-5"
+              class="size-4"
               aria-hidden="true"
             >
               <path v-if="!mobileOpen" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />

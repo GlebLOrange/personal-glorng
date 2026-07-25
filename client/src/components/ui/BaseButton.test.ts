@@ -36,15 +36,27 @@ describe("BaseButton", () => {
     expect(button.classes().some((c) => c.includes("border"))).toBe(false);
   });
 
-  it("applies success fill and focus ring", () => {
+  it("colorizes success hover without solid fill", () => {
     const button = mount(BaseButton, {
       props: { variant: "success" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-status-success");
-    expect(button.classes()).toContain("hover:enabled:bg-status-success/90");
-    expect(button.classes()).toContain("active:enabled:bg-status-success/80");
+    expect(button.classes()).toContain("bg-transparent");
+    expect(button.classes()).toContain("hover:enabled:bg-status-success/15");
+    expect(button.classes()).toContain("hover:enabled:text-status-success");
+    expect(button.classes()).toContain("active:enabled:bg-status-success/25");
     expect(button.classes()).toContain("focus-visible:ring-status-success/50");
+  });
+
+  it("colorizes primary hover without solid fill", () => {
+    const button = mount(BaseButton, {
+      props: { variant: "primary" },
+    }).get("button");
+
+    expect(button.classes()).toContain("bg-transparent");
+    expect(button.classes()).toContain("hover:enabled:bg-accent-blue/15");
+    expect(button.classes()).toContain("hover:enabled:text-accent-blue");
+    expect(button.classes()).toContain("active:enabled:bg-accent-blue/25");
   });
 
   it("colorizes secondary hover without borders", () => {
