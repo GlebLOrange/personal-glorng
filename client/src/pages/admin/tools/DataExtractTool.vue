@@ -12,6 +12,12 @@ import { useDataExtractTool } from "@/composables/useDataExtractTool";
 
 const guideOpen = ref(false);
 
+const ACCEPT_EXTS = ["csv", "tsv", "json", "xml", "txt", "pipe"] as const;
+const acceptAttr = ACCEPT_EXTS.map((ext) => `.${ext}`).join(",");
+const acceptHint = `${ACCEPT_EXTS.slice(0, -1)
+  .map((ext) => ext.toUpperCase())
+  .join(", ")}, or ${ACCEPT_EXTS[ACCEPT_EXTS.length - 1].toUpperCase()}`;
+
 const {
   selectedFile,
   dragOver,
@@ -192,14 +198,14 @@ const {
             ref="fileInputRef"
             type="file"
             class="hidden"
-            accept=".csv,.tsv,.json,.xml,.txt,.pipe"
+            :accept="acceptAttr"
             @change="onFileSelect"
           />
           <p v-if="selectedName" class="text-sm text-surface-light">{{ selectedName }}</p>
           <template v-else>
             <p class="text-sm text-surface-mid">drop a file here or click to browse</p>
             <p id="data-extract-drop-hint" class="mt-1 text-xs text-surface-mid">
-              CSV, TSV, JSON, XML, TXT, or PIPE
+              {{ acceptHint }}
             </p>
           </template>
         </div>

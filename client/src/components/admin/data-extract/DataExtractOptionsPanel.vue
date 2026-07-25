@@ -4,7 +4,7 @@ import { nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vu
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { trapTabKeyInRoot } from "@/composables/useOverlayShell";
-import { SELECT_CLASS } from "@/constants/formClasses";
+import { FIELD_INPUT_CLASS, SELECT_CLASS } from "@/constants/formClasses";
 import type { FormatChoice } from "@/composables/useDataExtractTool";
 import type { DelimitedProfile, XmlExtractMode } from "@/types/dataExtract";
 
@@ -26,11 +26,9 @@ const optionsOpen = ref(false);
 const optionsRoot = useTemplateRef<HTMLElement>("optionsRoot");
 const optionsPanel = useTemplateRef<HTMLElement>("optionsPanel");
 
-const HINT_INDENT = "pl-[calc(7rem+0.5rem)] text-xs text-surface-mid";
-
-function toggleOptions(): void {
-  optionsOpen.value = !optionsOpen.value;
-}
+const LABEL_CLASS = "text-xs font-medium text-surface-mid";
+const HINT_CLASS = "col-start-2 text-xs text-surface-mid";
+const FIELD_ROW_CLASS = "grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-x-2 gap-y-1";
 
 function closeOptions(): void {
   optionsOpen.value = false;
@@ -79,7 +77,7 @@ onUnmounted(() => {
       aria-haspopup="dialog"
       :aria-expanded="optionsOpen"
       aria-controls="data-extract-options-dialog"
-      @click.stop="toggleOptions"
+      @click.stop="optionsOpen = !optionsOpen"
     >
       options
       <span v-if="optionsActiveLabel" class="text-surface-muted"> · {{ optionsActiveLabel }} </span>
@@ -98,150 +96,111 @@ onUnmounted(() => {
     >
       <h2 id="data-extract-options-title" class="sr-only">extract options</h2>
 
-      <div class="space-y-1">
-        <div class="flex items-center gap-2">
-          <label for="data-extract-format" class="w-28 shrink-0 text-xs font-medium text-surface-mid">
-            format
-          </label>
-          <select
-            id="data-extract-format"
-            v-model="formatChoice"
-            name="format"
-            aria-describedby="data-extract-format-hint"
-            :class="SELECT_CLASS"
-          >
-            <option value="auto">auto</option>
-            <option value="csv">CSV</option>
-            <option value="json">JSON</option>
-            <option value="xml">XML</option>
-            <option value="delimited">delimited</option>
-          </select>
-        </div>
-        <p id="data-extract-format-hint" :class="HINT_INDENT">
+      <div :class="FIELD_ROW_CLASS">
+        <label for="data-extract-format" :class="LABEL_CLASS">format</label>
+        <select
+          id="data-extract-format"
+          v-model="formatChoice"
+          name="format"
+          aria-describedby="data-extract-format-hint"
+          :class="SELECT_CLASS"
+        >
+          <option value="auto">auto</option>
+          <option value="csv">CSV</option>
+          <option value="json">JSON</option>
+          <option value="xml">XML</option>
+          <option value="delimited">delimited</option>
+        </select>
+        <p id="data-extract-format-hint" :class="HINT_CLASS">
           auto detects from the file extension
         </p>
       </div>
 
-      <div v-if="showDelimitedOptions" class="space-y-1">
-        <div class="flex items-center gap-2">
-          <label
-            for="data-extract-profile"
-            class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-          >
-            profile
-          </label>
-          <select
-            id="data-extract-profile"
-            v-model="profileChoice"
-            name="profile"
-            aria-describedby="data-extract-profile-hint"
-            :class="SELECT_CLASS"
-          >
-            <option value="custom">custom delimiters</option>
-            <option value="pipe_embed">pipe embed</option>
-          </select>
-        </div>
-        <p id="data-extract-profile-hint" :class="HINT_INDENT">
+      <div v-if="showDelimitedOptions" :class="FIELD_ROW_CLASS">
+        <label for="data-extract-profile" :class="LABEL_CLASS">profile</label>
+        <select
+          id="data-extract-profile"
+          v-model="profileChoice"
+          name="profile"
+          aria-describedby="data-extract-profile-hint"
+          :class="SELECT_CLASS"
+        >
+          <option value="custom">custom delimiters</option>
+          <option value="pipe_embed">pipe embed</option>
+        </select>
+        <p id="data-extract-profile-hint" :class="HINT_CLASS">
           pipe embed: | fields with ; lists inside cells
         </p>
       </div>
 
       <div
         v-if="showDelimitedOptions && profileChoice === 'custom'"
-        class="space-y-1"
+        :class="FIELD_ROW_CLASS"
       >
-        <div class="flex items-center gap-2">
-          <label
-            for="data-extract-field-delimiter"
-            class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-          >
-            field delimiter
-          </label>
-          <input
-            id="data-extract-field-delimiter"
-            v-model="fieldDelimiter"
-            name="field_delimiter"
-            type="text"
-            maxlength="4"
-            placeholder="|"
-            aria-describedby="data-extract-field-delimiter-hint"
-            class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-          />
-        </div>
-        <p id="data-extract-field-delimiter-hint" :class="HINT_INDENT">
+        <label for="data-extract-field-delimiter" :class="LABEL_CLASS">field delimiter</label>
+        <input
+          id="data-extract-field-delimiter"
+          v-model="fieldDelimiter"
+          name="field_delimiter"
+          type="text"
+          maxlength="4"
+          placeholder="|"
+          aria-describedby="data-extract-field-delimiter-hint"
+          :class="[FIELD_INPUT_CLASS, 'min-w-0']"
+        />
+        <p id="data-extract-field-delimiter-hint" :class="HINT_CLASS">
           character between columns
         </p>
       </div>
 
       <div
         v-if="showDelimitedOptions && profileChoice === 'custom'"
-        class="space-y-1"
+        :class="FIELD_ROW_CLASS"
       >
-        <div class="flex items-center gap-2">
-          <label
-            for="data-extract-list-delimiter"
-            class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-          >
-            list delimiter
-          </label>
-          <input
-            id="data-extract-list-delimiter"
-            v-model="listDelimiter"
-            name="list_delimiter"
-            type="text"
-            maxlength="4"
-            placeholder=";"
-            aria-describedby="data-extract-list-delimiter-hint"
-            class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-          />
-        </div>
-        <p id="data-extract-list-delimiter-hint" :class="HINT_INDENT">
+        <label for="data-extract-list-delimiter" :class="LABEL_CLASS">list delimiter</label>
+        <input
+          id="data-extract-list-delimiter"
+          v-model="listDelimiter"
+          name="list_delimiter"
+          type="text"
+          maxlength="4"
+          placeholder=";"
+          aria-describedby="data-extract-list-delimiter-hint"
+          :class="[FIELD_INPUT_CLASS, 'min-w-0']"
+        />
+        <p id="data-extract-list-delimiter-hint" :class="HINT_CLASS">
           character between values inside one cell
         </p>
       </div>
 
-      <div v-if="showXmlOptions" class="space-y-1">
-        <div class="flex items-center gap-2">
-          <label
-            for="data-extract-row-tag"
-            class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-          >
-            xml row tag
-          </label>
-          <input
-            id="data-extract-row-tag"
-            v-model="rowTag"
-            name="row_tag"
-            type="text"
-            aria-describedby="data-extract-row-tag-hint"
-            class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-          />
-        </div>
-        <p id="data-extract-row-tag-hint" :class="HINT_INDENT">
+      <div v-if="showXmlOptions" :class="FIELD_ROW_CLASS">
+        <label for="data-extract-row-tag" :class="LABEL_CLASS">xml row tag</label>
+        <input
+          id="data-extract-row-tag"
+          v-model="rowTag"
+          name="row_tag"
+          type="text"
+          aria-describedby="data-extract-row-tag-hint"
+          :class="[FIELD_INPUT_CLASS, 'min-w-0']"
+        />
+        <p id="data-extract-row-tag-hint" :class="HINT_CLASS">
           repeating element name, e.g. item or row
         </p>
       </div>
 
-      <div v-if="showXmlOptions" class="space-y-1">
-        <div class="flex items-center gap-2">
-          <label
-            for="data-extract-xml-mode"
-            class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-          >
-            xml mode
-          </label>
-          <select
-            id="data-extract-xml-mode"
-            v-model="xmlMode"
-            name="xml_mode"
-            aria-describedby="data-extract-xml-mode-hint"
-            :class="SELECT_CLASS"
-          >
-            <option value="rows">rows</option>
-            <option value="tree">tree</option>
-          </select>
-        </div>
-        <p id="data-extract-xml-mode-hint" :class="HINT_INDENT">
+      <div v-if="showXmlOptions" :class="FIELD_ROW_CLASS">
+        <label for="data-extract-xml-mode" :class="LABEL_CLASS">xml mode</label>
+        <select
+          id="data-extract-xml-mode"
+          v-model="xmlMode"
+          name="xml_mode"
+          aria-describedby="data-extract-xml-mode-hint"
+          :class="SELECT_CLASS"
+        >
+          <option value="rows">rows</option>
+          <option value="tree">tree</option>
+        </select>
+        <p id="data-extract-xml-mode-hint" :class="HINT_CLASS">
           rows = flat table; tree = nested JSON
         </p>
       </div>
