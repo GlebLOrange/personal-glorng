@@ -82,10 +82,7 @@ function onKeydown(event: KeyboardEvent): void {
         >
           <slot name="primary" />
         </span>
-        <span
-          v-if="$slots.meta"
-          class="hidden truncate text-xs text-surface-muted sm:inline"
-        >
+        <span v-if="$slots.meta" class="hidden truncate text-xs text-surface-muted sm:inline">
           <slot name="meta" />
         </span>
       </div>

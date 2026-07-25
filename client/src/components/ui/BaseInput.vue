@@ -41,9 +41,7 @@ const hasClearableValue = computed(() => {
 const useShell = computed(() => Boolean(props.prefix || props.placeholder || hasSuffix.value));
 const showClear = computed(() => useShell.value && hasClearableValue.value);
 const showTip = computed(() => Boolean(props.placeholder));
-const tipInsetClass = computed(() =>
-  showClear.value || hasSuffix.value ? "right-11" : "right-3",
-);
+const tipInsetClass = computed(() => (showClear.value || hasSuffix.value ? "right-11" : "right-3"));
 const describedBy = computed(() => {
   const ids: string[] = [];
   const fromAttrs = attrs["aria-describedby"];

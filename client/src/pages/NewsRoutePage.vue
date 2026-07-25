@@ -15,9 +15,7 @@ const NewsAdminPage = defineAsyncComponent(() =>
 const route = useRoute();
 const { can } = usePermissions();
 
-const showManage = computed(
-  () => can("news", "read") && String(route.query.manage ?? "") === "1",
-);
+const showManage = computed(() => can("news", "read") && String(route.query.manage ?? "") === "1");
 </script>
 
 <template>

@@ -18,9 +18,7 @@ const props = defineProps<{
 const fallbackId = useId();
 const inputId = computed(() => props.id ?? `search-input-${fallbackId}`);
 const hasValue = computed(() => Boolean(model.value.trim()));
-const accessibleName = computed(
-  () => props.ariaLabel || props.placeholder || "Search",
-);
+const accessibleName = computed(() => props.ariaLabel || props.placeholder || "Search");
 
 function clear(): void {
   model.value = "";

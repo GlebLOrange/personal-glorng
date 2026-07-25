@@ -244,10 +244,9 @@ export function useWeatherLocations(): {
       if (target && isDefaultLocation(target)) {
         throw new Error("Default location cannot be removed");
       }
-      const result = await runMutate(
-        () => api.delete(`${WEATHER_API_PREFIX}/locations/${id}`),
-        { silent: true },
-      );
+      const result = await runMutate(() => api.delete(`${WEATHER_API_PREFIX}/locations/${id}`), {
+        silent: true,
+      });
       if (result === undefined) {
         throw new Error("Failed to remove location");
       }

@@ -25,12 +25,7 @@ export const ADMIN_HUB_SERVICE_SLUGS = new Set([
 ]);
 
 /** Capability tools listed on /tools for signed-in users (alongside public tools). */
-export const TOOLS_PAGE_EXTRA_SLUGS = new Set([
-  "tasks",
-  "expenses",
-  "file-share",
-  "data-extract",
-]);
+export const TOOLS_PAGE_EXTRA_SLUGS = new Set(["tasks", "expenses", "file-share", "data-extract"]);
 
 /** Static fallback when API is unavailable; kept in sync with server registry. */
 export const PLATFORM_SERVICES: PlatformService[] = [

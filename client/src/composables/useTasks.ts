@@ -6,13 +6,7 @@ import { useNotify } from "@/composables/useNotify";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { statusLabel, type TaskStatus } from "@/constants/taskStatus";
 import { datetimeLocalValue, parseDatetimeLocalToIso } from "@/utils/dates";
-import type {
-  PaginatedList,
-  SyncQueueItem,
-  TaskDetail,
-  TaskIntakeItem,
-  TaskItem,
-} from "@/types";
+import type { PaginatedList, SyncQueueItem, TaskDetail, TaskIntakeItem, TaskItem } from "@/types";
 
 export interface TaskCreateForm {
   title: string;

@@ -1,7 +1,12 @@
 import { flushPromises, mount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import NewsRoutePage from "@/pages/NewsRoutePage.vue";
+
+vi.mock("vue-router", () => ({
+  useRoute: () => ({ query: {} }),
+}));
 
 vi.mock("@/pages/NewsPage.vue", () => ({
   __isKeepAlive: false,
@@ -12,6 +17,10 @@ vi.mock("@/pages/NewsPage.vue", () => ({
 }));
 
 describe("NewsRoutePage", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
   it("always shows the public news digest", async () => {
     const wrapper = mount(NewsRoutePage);
 

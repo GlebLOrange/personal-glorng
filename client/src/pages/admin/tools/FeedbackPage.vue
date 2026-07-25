@@ -192,9 +192,7 @@ onMounted(load);
         v-if="items.length === 0"
         class="mt-4"
         :description="
-          filter
-            ? `No feedback messages with status '${filter}'.`
-            : 'No feedback messages.'
+          filter ? `No feedback messages with status '${filter}'.` : 'No feedback messages.'
         "
       />
 

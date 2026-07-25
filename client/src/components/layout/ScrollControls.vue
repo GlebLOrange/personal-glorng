@@ -10,10 +10,7 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
 
 <template>
   <!-- Content-column rail: buttons sit just outside the padded max-w edge. -->
-  <div
-    v-if="showToTop"
-    class="pointer-events-none fixed inset-x-0 top-32 z-30 print:hidden"
-  >
+  <div v-if="showToTop" class="pointer-events-none fixed inset-x-0 top-32 z-30 print:hidden">
     <div class="relative mx-auto w-full max-w-5xl px-6 xl:max-w-6xl">
       <ToolbarPillButton
         family="1xx"

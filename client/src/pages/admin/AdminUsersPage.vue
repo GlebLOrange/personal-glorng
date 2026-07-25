@@ -15,10 +15,7 @@ import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
-import {
-  userRoleClass,
-  userStatusClass,
-} from "@/constants/filterColors";
+import { userRoleClass, userStatusClass } from "@/constants/filterColors";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
@@ -71,9 +68,7 @@ const selectedUserId = ref<string | null>(null);
 const superuserCount = computed(() => userStats.value?.superuser_count ?? 0);
 const hasNextPage = computed(() => page.value < totalPages.value);
 const hasPreviousPage = computed(() => page.value > 1);
-const hasActiveFilters = computed(
-  () => roleFilter.value !== "all" || statusFilter.value !== "all",
-);
+const hasActiveFilters = computed(() => roleFilter.value !== "all" || statusFilter.value !== "all");
 const activeFilterLabel = computed(() => {
   const parts: string[] = [];
   const role = ROLE_FILTERS.find((chip) => chip.value === roleFilter.value)?.label;
@@ -320,9 +315,7 @@ onUnmounted(() => {
         </template>
       </AdminListToolbar>
 
-      <EmptyState v-if="users.length === 0">
-        No users match the current filters.
-      </EmptyState>
+      <EmptyState v-if="users.length === 0"> No users match the current filters. </EmptyState>
 
       <div v-else class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <button
@@ -435,12 +428,7 @@ onUnmounted(() => {
             </p>
           </template>
           <template #dismiss>
-            <BaseButton
-              danger
-              @click="requestCloseUserDrawer"
-            >
-              cancel
-            </BaseButton>
+            <BaseButton danger @click="requestCloseUserDrawer"> cancel </BaseButton>
           </template>
           <template #primary>
             <ToolbarPillButton

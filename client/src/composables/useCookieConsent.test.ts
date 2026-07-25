@@ -56,7 +56,8 @@ describe("setupCookieConsent", () => {
     mocks.acceptedCategory.mockImplementation((category: string) => category === "analytics");
     config.onChange();
 
-    expect(mocks.initFirebaseAnalytics).toHaveBeenCalledOnce();
+    // applyConsent loads firebase via dynamic import
+    await vi.waitFor(() => expect(mocks.initFirebaseAnalytics).toHaveBeenCalledOnce());
     expect(mocks.initFirebaseAnalytics).toHaveBeenCalledWith(mocks.router);
   });
 });

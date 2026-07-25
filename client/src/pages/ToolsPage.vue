@@ -37,7 +37,12 @@ function toolRoute(tool: PlatformService): string {
 </script>
 
 <template>
-  <PageShell title="tools" :breadcrumbs="[{ label: 'tools', to: '/tools' }]" back-to="/" :narrow="false">
+  <PageShell
+    title="tools"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }]"
+    back-to="/"
+    :narrow="false"
+  >
     <section v-for="section in sections" :key="section.category" class="mb-10 min-w-0">
       <h2 class="text-meta mb-4 uppercase tracking-wider">{{ section.label }}</h2>
       <div class="page-tool-grid gap-4">

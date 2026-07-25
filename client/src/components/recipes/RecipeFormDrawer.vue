@@ -42,9 +42,9 @@ function filledCount(items: string[]): number {
 function previewLabel(items: string[], max = 2): string {
   const filled = filledLines(items);
   if (filled.length === 0) return "";
-  const shown = filled.slice(0, max).map((line) =>
-    line.length > 40 ? `${line.slice(0, 40)}…` : line,
-  );
+  const shown = filled
+    .slice(0, max)
+    .map((line) => (line.length > 40 ? `${line.slice(0, 40)}…` : line));
   const extra = filled.length > max ? ` +${filled.length - max}` : "";
   return ` — ${shown.join(", ")}${extra}`;
 }
@@ -327,11 +327,7 @@ function toNullableNumber(value: string | number | null | undefined): number | n
         </div>
       </details>
 
-      <details
-        ref="stepsDetails"
-        class="group rounded border border-surface-border px-3 py-2"
-        open
-      >
+      <details ref="stepsDetails" class="group rounded border border-surface-border px-3 py-2" open>
         <summary
           class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
         >
@@ -447,13 +443,7 @@ function toNullableNumber(value: string | number | null | undefined): number | n
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton
-            danger
-            type="button"
-            @click="emit('close')"
-          >
-            cancel
-          </BaseButton>
+          <BaseButton danger type="button" @click="emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton

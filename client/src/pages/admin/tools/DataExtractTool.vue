@@ -237,10 +237,7 @@ async function promoteSelectedBatch(): Promise<void> {
   );
   if (response) {
     promoteResult.value = response.data;
-    await Promise.all([
-      loadBatchHistory(),
-      loadBatchDetail(selectedBatchId.value),
-    ]);
+    await Promise.all([loadBatchHistory(), loadBatchDetail(selectedBatchId.value)]);
   }
 }
 
@@ -396,10 +393,7 @@ async function importFile(): Promise<void> {
       },
     };
     showRawJson.value = false;
-    await Promise.all([
-      loadBatchHistory(),
-      loadBatchDetail(response.data.batch_id),
-    ]);
+    await Promise.all([loadBatchHistory(), loadBatchDetail(response.data.batch_id)]);
   }
 }
 
@@ -424,334 +418,334 @@ function downloadResult(): void {
 <template>
   <AdminPageLayout hub="tools" title="data extract">
     <div class="min-w-0">
-
-    <div class="mb-6 space-y-3">
-      <div class="flex w-full min-w-0 flex-wrap items-center gap-2">
-        <div
-          ref="optionsRoot"
-          class="relative inline-flex"
-          :class="optionsOpen ? 'z-40' : undefined"
-        >
-          <ToolbarPillButton
-            family="1xx"
-            type="button"
-            :selected="optionsOpen || hasCustomOptions"
-            aria-haspopup="dialog"
-            :aria-expanded="optionsOpen"
-            @click.stop="toggleOptions"
-          >
-            options
-            <span v-if="optionsActiveLabel" class="text-surface-muted">
-              · {{ optionsActiveLabel }}
-            </span>
-            <ChevronIcon :open="optionsOpen" />
-          </ToolbarPillButton>
-
+      <div class="mb-6 space-y-3">
+        <div class="flex w-full min-w-0 flex-wrap items-center gap-2">
           <div
-            v-if="optionsOpen"
-            ref="optionsPanel"
-            role="dialog"
-            tabindex="-1"
-            class="absolute left-0 top-full z-10 mt-1 w-max min-w-[18rem] max-w-[min(100vw-2rem,28rem)] space-y-3 rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
-            @click.stop
+            ref="optionsRoot"
+            class="relative inline-flex"
+            :class="optionsOpen ? 'z-40' : undefined"
           >
-            <div class="flex items-center gap-2">
-              <label
-                for="data-extract-format"
-                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-              >
-                format
-              </label>
-              <select
-                id="data-extract-format"
-                v-model="formatChoice"
-                name="format"
-                :class="SELECT_CLASS"
-              >
-                <option value="auto">auto</option>
-                <option value="csv">CSV</option>
-                <option value="json">JSON</option>
-                <option value="xml">XML</option>
-                <option value="delimited">delimited</option>
-              </select>
-            </div>
-
-            <div v-if="showDelimitedOptions" class="flex items-center gap-2">
-              <label
-                for="data-extract-profile"
-                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-              >
-                profile
-              </label>
-              <select
-                id="data-extract-profile"
-                v-model="profileChoice"
-                name="profile"
-                :class="SELECT_CLASS"
-              >
-                <option value="custom">custom delimiters</option>
-                <option value="pipe_embed">pipe embed</option>
-              </select>
-            </div>
+            <ToolbarPillButton
+              family="1xx"
+              type="button"
+              :selected="optionsOpen || hasCustomOptions"
+              aria-haspopup="dialog"
+              :aria-expanded="optionsOpen"
+              @click.stop="toggleOptions"
+            >
+              options
+              <span v-if="optionsActiveLabel" class="text-surface-muted">
+                · {{ optionsActiveLabel }}
+              </span>
+              <ChevronIcon :open="optionsOpen" />
+            </ToolbarPillButton>
 
             <div
-              v-if="showDelimitedOptions && profileChoice === 'custom'"
-              class="flex items-center gap-2"
+              v-if="optionsOpen"
+              ref="optionsPanel"
+              role="dialog"
+              tabindex="-1"
+              class="absolute left-0 top-full z-10 mt-1 w-max min-w-[18rem] max-w-[min(100vw-2rem,28rem)] space-y-3 rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"
+              @click.stop
             >
-              <label
-                for="data-extract-field-delimiter"
-                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-              >
-                field delimiter
-              </label>
-              <input
-                id="data-extract-field-delimiter"
-                v-model="fieldDelimiter"
-                name="field_delimiter"
-                type="text"
-                maxlength="4"
-                placeholder="|"
-                class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-              />
-            </div>
+              <div class="flex items-center gap-2">
+                <label
+                  for="data-extract-format"
+                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+                >
+                  format
+                </label>
+                <select
+                  id="data-extract-format"
+                  v-model="formatChoice"
+                  name="format"
+                  :class="SELECT_CLASS"
+                >
+                  <option value="auto">auto</option>
+                  <option value="csv">CSV</option>
+                  <option value="json">JSON</option>
+                  <option value="xml">XML</option>
+                  <option value="delimited">delimited</option>
+                </select>
+              </div>
 
-            <div
-              v-if="showDelimitedOptions && profileChoice === 'custom'"
-              class="flex items-center gap-2"
+              <div v-if="showDelimitedOptions" class="flex items-center gap-2">
+                <label
+                  for="data-extract-profile"
+                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+                >
+                  profile
+                </label>
+                <select
+                  id="data-extract-profile"
+                  v-model="profileChoice"
+                  name="profile"
+                  :class="SELECT_CLASS"
+                >
+                  <option value="custom">custom delimiters</option>
+                  <option value="pipe_embed">pipe embed</option>
+                </select>
+              </div>
+
+              <div
+                v-if="showDelimitedOptions && profileChoice === 'custom'"
+                class="flex items-center gap-2"
+              >
+                <label
+                  for="data-extract-field-delimiter"
+                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+                >
+                  field delimiter
+                </label>
+                <input
+                  id="data-extract-field-delimiter"
+                  v-model="fieldDelimiter"
+                  name="field_delimiter"
+                  type="text"
+                  maxlength="4"
+                  placeholder="|"
+                  class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
+                />
+              </div>
+
+              <div
+                v-if="showDelimitedOptions && profileChoice === 'custom'"
+                class="flex items-center gap-2"
+              >
+                <label
+                  for="data-extract-list-delimiter"
+                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+                >
+                  list delimiter
+                </label>
+                <input
+                  id="data-extract-list-delimiter"
+                  v-model="listDelimiter"
+                  name="list_delimiter"
+                  type="text"
+                  maxlength="4"
+                  placeholder=";"
+                  class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
+                />
+              </div>
+
+              <div v-if="showXmlOptions" class="flex items-center gap-2">
+                <label
+                  for="data-extract-row-tag"
+                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+                >
+                  xml row tag
+                </label>
+                <input
+                  id="data-extract-row-tag"
+                  v-model="rowTag"
+                  name="row_tag"
+                  type="text"
+                  class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
+                />
+              </div>
+
+              <div v-if="showXmlOptions" class="flex items-center gap-2">
+                <label
+                  for="data-extract-xml-mode"
+                  class="w-28 shrink-0 text-xs font-medium text-surface-mid"
+                >
+                  xml mode
+                </label>
+                <select
+                  id="data-extract-xml-mode"
+                  v-model="xmlMode"
+                  name="xml_mode"
+                  :class="SELECT_CLASS"
+                >
+                  <option value="rows">rows</option>
+                  <option value="tree">tree</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="ml-auto flex flex-wrap items-center gap-1">
+            <ToolbarPillButton
+              v-if="canWrite"
+              family="3xx"
+              type="button"
+              :disabled="loading || !selectedFile"
+              @click="
+                activeTab = 'import';
+                void importFile();
+              "
             >
-              <label
-                for="data-extract-list-delimiter"
-                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-              >
-                list delimiter
-              </label>
-              <input
-                id="data-extract-list-delimiter"
-                v-model="listDelimiter"
-                name="list_delimiter"
-                type="text"
-                maxlength="4"
-                placeholder=";"
-                class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-              />
-            </div>
-
-            <div v-if="showXmlOptions" class="flex items-center gap-2">
-              <label
-                for="data-extract-row-tag"
-                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-              >
-                xml row tag
-              </label>
-              <input
-                id="data-extract-row-tag"
-                v-model="rowTag"
-                name="row_tag"
-                type="text"
-                class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-dark px-3 py-2 text-surface-light"
-              />
-            </div>
-
-            <div v-if="showXmlOptions" class="flex items-center gap-2">
-              <label
-                for="data-extract-xml-mode"
-                class="w-28 shrink-0 text-xs font-medium text-surface-mid"
-              >
-                xml mode
-              </label>
-              <select
-                id="data-extract-xml-mode"
-                v-model="xmlMode"
-                name="xml_mode"
-                :class="SELECT_CLASS"
-              >
-                <option value="rows">rows</option>
-                <option value="tree">tree</option>
-              </select>
-            </div>
+              {{ loading && activeTab === "import" ? "working..." : "import to db" }}
+            </ToolbarPillButton>
+            <ToolbarPillButton
+              family="2xx"
+              type="button"
+              :disabled="loading || !selectedFile"
+              @click="
+                activeTab = 'extract';
+                void extractFile();
+              "
+            >
+              {{ loading && activeTab === "extract" ? "working..." : "extract" }}
+            </ToolbarPillButton>
           </div>
         </div>
 
-        <div class="ml-auto flex flex-wrap items-center gap-1">
-          <ToolbarPillButton
-            v-if="canWrite"
-            family="3xx"
-            type="button"
-            :disabled="loading || !selectedFile"
-            @click="
-              activeTab = 'import';
-              void importFile();
-            "
-          >
-            {{ loading && activeTab === "import" ? "working..." : "import to db" }}
-          </ToolbarPillButton>
-          <ToolbarPillButton
-            family="2xx"
-            type="button"
-            :disabled="loading || !selectedFile"
-            @click="
-              activeTab = 'extract';
-              void extractFile();
-            "
-          >
-            {{ loading && activeTab === "extract" ? "working..." : "extract" }}
-          </ToolbarPillButton>
-        </div>
-      </div>
-
-      <div
-        role="button"
-        tabindex="0"
-        aria-label="Choose a file to extract"
-        :class="[
-          'border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
-          dragOver
-            ? 'border-accent-blue bg-accent-blue/10'
-            : 'border-surface-border hover:border-accent-blue',
-        ]"
-        @dragover.prevent="dragOver = true"
-        @dragleave="dragOver = false"
-        @drop.prevent="onDrop"
-        @click="fileInputRef?.click()"
-        @keydown.enter.prevent="fileInputRef?.click()"
-        @keydown.space.prevent="fileInputRef?.click()"
-      >
-        <input
-          ref="fileInputRef"
-          type="file"
-          class="hidden"
-          accept=".csv,.tsv,.json,.xml,.txt,.pipe"
-          @change="onFileSelect"
-        />
-        <p v-if="selectedName" class="text-surface-light text-sm">{{ selectedName }}</p>
-        <p v-else class="text-surface-mid text-sm">drop a file here or click to browse</p>
-      </div>
-    </div>
-
-    <Card v-if="batchHistory.length" class="space-y-3 mb-6">
-      <div class="flex items-center justify-between gap-3">
-        <h2 class="text-lg font-semibold text-surface-light">Recent imports</h2>
-        <BaseButton variant="ghost" @click="loadBatchHistory">refresh</BaseButton>
-      </div>
-      <ul class="space-y-2">
-        <li v-for="batch in batchHistory" :key="batch.id">
-          <button
-            type="button"
-            :class="[
-              'w-full text-left rounded-md border px-3 py-2 text-sm transition-colors',
-              selectedBatchId === batch.id
-                ? 'border-accent-blue bg-accent-blue/10 text-surface-light'
-                : 'border-surface-border text-surface-mid hover:border-accent-blue',
-            ]"
-            @click="loadBatchDetail(batch.id)"
-          >
-            {{ batchLabel(batch) }}
-          </button>
-        </li>
-      </ul>
-      <AdminListFooter
-        v-if="batchHistory.length > 0"
-        :total="batchTotal"
-        :page="batchPage"
-        :total-pages="batchTotalPages"
-        :has-next-page="hasNextBatchPage"
-        :has-previous-page="hasPreviousBatchPage"
-        item-label="batches"
-        ariaLabel="Import batches pagination"
-        @first="goToBatchPage(1)"
-        @prev="goToBatchPage(batchPage - 1)"
-        @next="goToBatchPage(batchPage + 1)"
-        @last="goToBatchPage(batchTotalPages)"
-      />
-    </Card>
-
-    <Card v-if="importResult" class="space-y-3 mb-6">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h2 class="text-lg font-semibold text-surface-light">Import batch</h2>
-          <p class="text-sm text-surface-mid">{{ importSummary }}</p>
-          <p v-if="importResult.error_count > 0" class="text-xs text-status-warning">
-            {{ importResult.error_count }} row(s) failed parsing and were stored with errors.
-          </p>
-          <p v-if="selectedBatch?.promoted_count" class="text-xs text-status-success mt-1">
-            {{ selectedBatch.promoted_count }} row(s) promoted to embed storage.
-          </p>
-        </div>
-        <BaseButton
-          v-if="canPromoteSelected"
-          variant="secondary"
-          :disabled="loading"
-          @click="promoteSelectedBatch"
+        <div
+          role="button"
+          tabindex="0"
+          aria-label="Choose a file to extract"
+          :class="[
+            'border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
+            dragOver
+              ? 'border-accent-blue bg-accent-blue/10'
+              : 'border-surface-border hover:border-accent-blue',
+          ]"
+          @dragover.prevent="dragOver = true"
+          @dragleave="dragOver = false"
+          @drop.prevent="onDrop"
+          @click="fileInputRef?.click()"
+          @keydown.enter.prevent="fileInputRef?.click()"
+          @keydown.space.prevent="fileInputRef?.click()"
         >
-          {{ loading ? "working..." : "promote pipe embed rows" }}
-        </BaseButton>
-      </div>
-      <p v-if="promoteResult" class="text-xs text-surface-mid">
-        Promoted {{ promoteResult.promoted }}, skipped {{ promoteResult.skipped }}
-        <span v-if="promoteResult.errors.length">, {{ promoteResult.errors.length }} error(s)</span
-        >.
-      </p>
-    </Card>
-
-    <Card v-if="result" class="space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h2 class="text-lg font-semibold text-surface-light">Results</h2>
-          <p class="text-xs text-surface-mid mt-1">{{ metaSummary }}</p>
-        </div>
-        <div class="flex gap-2">
-          <IconCopyButton aria-label="copy json" @click="copyResult" />
-          <BaseButton variant="ghost" @click="downloadResult">download json</BaseButton>
-          <BaseButton variant="ghost" @click="showRawJson = !showRawJson">
-            {{ showRawJson ? "hide raw json" : "show raw json" }}
-          </BaseButton>
+          <input
+            ref="fileInputRef"
+            type="file"
+            class="hidden"
+            accept=".csv,.tsv,.json,.xml,.txt,.pipe"
+            @change="onFileSelect"
+          />
+          <p v-if="selectedName" class="text-surface-light text-sm">{{ selectedName }}</p>
+          <p v-else class="text-surface-mid text-sm">drop a file here or click to browse</p>
         </div>
       </div>
 
-      <div v-if="tableRows.length && tableColumns.length" class="overflow-x-auto">
-        <table class="min-w-full text-sm text-left">
-          <thead>
-            <tr class="border-b border-surface-border text-surface-mid">
-              <th v-for="column in tableColumns" :key="column" class="px-3 py-2 font-medium">
-                {{ column }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(row, index) in tableRows.slice(0, 50)"
-              :key="index"
-              class="border-b border-surface-border/60"
+      <Card v-if="batchHistory.length" class="space-y-3 mb-6">
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-lg font-semibold text-surface-light">Recent imports</h2>
+          <BaseButton variant="ghost" @click="loadBatchHistory">refresh</BaseButton>
+        </div>
+        <ul class="space-y-2">
+          <li v-for="batch in batchHistory" :key="batch.id">
+            <button
+              type="button"
+              :class="[
+                'w-full text-left rounded-md border px-3 py-2 text-sm transition-colors',
+                selectedBatchId === batch.id
+                  ? 'border-accent-blue bg-accent-blue/10 text-surface-light'
+                  : 'border-surface-border text-surface-mid hover:border-accent-blue',
+              ]"
+              @click="loadBatchDetail(batch.id)"
             >
-              <td v-for="column in tableColumns" :key="column" class="px-3 py-2 text-surface-light">
-                {{ formatCell(row[column]) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p v-if="tableRows.length > 50" class="text-xs text-surface-mid mt-2">
-          Showing first 50 of {{ tableRows.length }} rows.
-        </p>
-      </div>
-
-      <div
-        v-if="importResult?.errors.length"
-        class="alert-surface-warning p-4 space-y-2"
-      >
-        <h3 class="text-sm font-medium">Parse errors</h3>
-        <ul class="text-xs text-surface-mid space-y-1">
-          <li v-for="(error, index) in importResult.errors.slice(0, 10)" :key="index">
-            Line {{ error.line_number ?? "?" }}: {{ error.message }}
+              {{ batchLabel(batch) }}
+            </button>
           </li>
         </ul>
-      </div>
+        <AdminListFooter
+          v-if="batchHistory.length > 0"
+          :total="batchTotal"
+          :page="batchPage"
+          :total-pages="batchTotalPages"
+          :has-next-page="hasNextBatchPage"
+          :has-previous-page="hasPreviousBatchPage"
+          item-label="batches"
+          ariaLabel="Import batches pagination"
+          @first="goToBatchPage(1)"
+          @prev="goToBatchPage(batchPage - 1)"
+          @next="goToBatchPage(batchPage + 1)"
+          @last="goToBatchPage(batchTotalPages)"
+        />
+      </Card>
 
-      <pre
-        v-if="showRawJson"
-        class="overflow-x-auto rounded-md bg-surface-dark border border-surface-border p-4 text-xs text-surface-light"
-        >{{ resultJson }}</pre
-      >
-    </Card>
+      <Card v-if="importResult" class="space-y-3 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-semibold text-surface-light">Import batch</h2>
+            <p class="text-sm text-surface-mid">{{ importSummary }}</p>
+            <p v-if="importResult.error_count > 0" class="text-xs text-status-warning">
+              {{ importResult.error_count }} row(s) failed parsing and were stored with errors.
+            </p>
+            <p v-if="selectedBatch?.promoted_count" class="text-xs text-status-success mt-1">
+              {{ selectedBatch.promoted_count }} row(s) promoted to embed storage.
+            </p>
+          </div>
+          <BaseButton
+            v-if="canPromoteSelected"
+            variant="secondary"
+            :disabled="loading"
+            @click="promoteSelectedBatch"
+          >
+            {{ loading ? "working..." : "promote pipe embed rows" }}
+          </BaseButton>
+        </div>
+        <p v-if="promoteResult" class="text-xs text-surface-mid">
+          Promoted {{ promoteResult.promoted }}, skipped {{ promoteResult.skipped }}
+          <span v-if="promoteResult.errors.length"
+            >, {{ promoteResult.errors.length }} error(s)</span
+          >.
+        </p>
+      </Card>
+
+      <Card v-if="result" class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-semibold text-surface-light">Results</h2>
+            <p class="text-xs text-surface-mid mt-1">{{ metaSummary }}</p>
+          </div>
+          <div class="flex gap-2">
+            <IconCopyButton aria-label="copy json" @click="copyResult" />
+            <BaseButton variant="ghost" @click="downloadResult">download json</BaseButton>
+            <BaseButton variant="ghost" @click="showRawJson = !showRawJson">
+              {{ showRawJson ? "hide raw json" : "show raw json" }}
+            </BaseButton>
+          </div>
+        </div>
+
+        <div v-if="tableRows.length && tableColumns.length" class="overflow-x-auto">
+          <table class="min-w-full text-sm text-left">
+            <thead>
+              <tr class="border-b border-surface-border text-surface-mid">
+                <th v-for="column in tableColumns" :key="column" class="px-3 py-2 font-medium">
+                  {{ column }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(row, index) in tableRows.slice(0, 50)"
+                :key="index"
+                class="border-b border-surface-border/60"
+              >
+                <td
+                  v-for="column in tableColumns"
+                  :key="column"
+                  class="px-3 py-2 text-surface-light"
+                >
+                  {{ formatCell(row[column]) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-if="tableRows.length > 50" class="text-xs text-surface-mid mt-2">
+            Showing first 50 of {{ tableRows.length }} rows.
+          </p>
+        </div>
+
+        <div v-if="importResult?.errors.length" class="alert-surface-warning p-4 space-y-2">
+          <h3 class="text-sm font-medium">Parse errors</h3>
+          <ul class="text-xs text-surface-mid space-y-1">
+            <li v-for="(error, index) in importResult.errors.slice(0, 10)" :key="index">
+              Line {{ error.line_number ?? "?" }}: {{ error.message }}
+            </li>
+          </ul>
+        </div>
+
+        <pre
+          v-if="showRawJson"
+          class="overflow-x-auto rounded-md bg-surface-dark border border-surface-border p-4 text-xs text-surface-light"
+          >{{ resultJson }}</pre>
+      </Card>
     </div>
   </AdminPageLayout>
 </template>

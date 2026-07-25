@@ -44,25 +44,25 @@ describe("scrollRestore", () => {
 
   it("returns top on back to live routes", () => {
     saveScrollSnapshot("/weather", 500, "");
-    expect(
-      resolveScrollBehavior(route("/weather", "live"), { left: 0, top: 0 }),
-    ).toEqual({ top: 0 });
+    expect(resolveScrollBehavior(route("/weather", "live"), { left: 0, top: 0 })).toEqual({
+      top: 0,
+    });
   });
 
   it("restores volatile route Y when fingerprint matches", () => {
     saveScrollSnapshot("/news", 300, "2:40:item-1");
     setScrollFingerprint("/news", "2:40:item-1");
-    expect(
-      resolveScrollBehavior(route("/news", "volatile"), { left: 0, top: 0 }),
-    ).toEqual({ top: 300 });
+    expect(resolveScrollBehavior(route("/news", "volatile"), { left: 0, top: 0 })).toEqual({
+      top: 300,
+    });
   });
 
   it("returns top on volatile back when fingerprint mismatches", () => {
     saveScrollSnapshot("/news", 300, "2:40:item-1");
     setScrollFingerprint("/news", "3:40:item-9");
-    expect(
-      resolveScrollBehavior(route("/news", "volatile"), { left: 0, top: 0 }),
-    ).toEqual({ top: 0 });
+    expect(resolveScrollBehavior(route("/news", "volatile"), { left: 0, top: 0 })).toEqual({
+      top: 0,
+    });
   });
 
   it("falls back to browser savedPosition when no snapshot exists", () => {
