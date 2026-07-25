@@ -88,9 +88,30 @@ async function preview(): Promise<void> {
     </AdminListToolbar>
 
     <form class="space-y-3 mb-8" @submit.prevent="send">
-      <BaseInput v-model="to" type="email" placeholder="to (recipient@example.com)" />
-      <BaseInput v-model="subject" placeholder="subject" />
-      <BaseTextarea v-model="body" :rows="6" placeholder="body (write your message...)" />
+      <BaseInput
+        id="email-to"
+        v-model="to"
+        type="email"
+        label="to"
+        placeholder="recipient@example.com"
+        autocomplete="email"
+        spellcheck="false"
+      />
+      <BaseInput
+        id="email-subject"
+        v-model="subject"
+        label="subject"
+        placeholder="Subject…"
+        autocomplete="off"
+      />
+      <BaseTextarea
+        id="email-body"
+        v-model="body"
+        :rows="6"
+        label="body"
+        placeholder="Write your message…"
+        autocomplete="off"
+      />
     </form>
 
     <div v-if="previewHtml" class="space-y-2">

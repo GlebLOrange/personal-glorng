@@ -4,7 +4,7 @@ import { statusBadgeClass } from "@/constants/taskStatus";
 /** Neutral styling for unfiltered / "all" chips and tiles. */
 export const FILTER_CHIP_NEUTRAL = "text-surface-light bg-surface-dark";
 
-/** Pale 1xx–5xx + muted/neutral — product chips only (no golden/violet). */
+/** Pale 1xx–5xx + muted/neutral (3xx = pale yellow warning). */
 const SEMANTIC = {
   info: familyBadgeClass("1xx"),
   success: familyBadgeClass("2xx"),
@@ -17,8 +17,7 @@ const SEMANTIC = {
 
 const NEWS_STATUS_CLASS: Record<string, string> = {
   draft: SEMANTIC.info,
-  // Match BaseButton success idle (/3), not badge /15
-  published: "text-status-success bg-status-success/3 border-transparent",
+  published: SEMANTIC.success,
   unpublished: SEMANTIC.warning,
   failed: SEMANTIC.error,
 };

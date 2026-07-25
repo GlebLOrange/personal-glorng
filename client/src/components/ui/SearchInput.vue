@@ -18,7 +18,8 @@ const props = defineProps<{
 const fallbackId = useId();
 const inputId = computed(() => props.id ?? `search-input-${fallbackId}`);
 const hasValue = computed(() => Boolean(model.value.trim()));
-const accessibleName = computed(() => props.ariaLabel || props.placeholder || "Search");
+/** Decorative placeholder is not the accessible name. */
+const accessibleName = computed(() => props.ariaLabel || "Search");
 
 function clear(): void {
   model.value = "";

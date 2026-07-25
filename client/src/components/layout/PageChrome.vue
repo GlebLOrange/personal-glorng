@@ -55,6 +55,8 @@ const displayTitle = computed(() => `${props.titlePrefix}${truncateBreadcrumbTit
         >
           <span class="accent-gradient">{{ displayTitle }}</span>
         </h1>
+        <!-- Elevated sole crumb is the visible title; keep a real h1 for outline/AT -->
+        <h1 v-else class="sr-only">{{ displayTitle }}</h1>
       </div>
 
       <BackLink v-if="backTo" :to="backTo" size="compact" class="shrink-0" />

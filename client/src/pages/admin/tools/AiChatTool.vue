@@ -111,10 +111,10 @@ onMounted(() => {
         </span>
         <span class="text-surface-mid/60 text-xs">·</span>
         <span class="text-surface-mid text-xs">{{ modelLabel }}</span>
-        <span v-if="!configLoading && !isReady" class="ml-auto text-xs text-status-yellow/90">
+        <span v-if="!configLoading && !isReady" class="ml-auto text-xs text-status-warning/90">
           not configured
         </span>
-        <span v-else-if="!canSend" class="ml-auto text-xs text-status-yellow/90">
+        <span v-else-if="!canSend" class="ml-auto text-xs text-status-warning/90">
           superuser only
         </span>
       </div>
@@ -207,7 +207,7 @@ onMounted(() => {
           </div>
           <div class="flex gap-2">
             <dt class="text-surface-mid w-28 shrink-0">API key</dt>
-            <dd :class="chatConfig.configured ? 'text-status-success' : 'text-status-yellow'">
+            <dd :class="chatConfig.configured ? 'text-status-success' : 'text-status-warning'">
               {{ chatConfig.configured ? "configured" : "missing" }}
             </dd>
           </div>

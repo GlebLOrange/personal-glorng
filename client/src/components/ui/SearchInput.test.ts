@@ -24,4 +24,18 @@ describe("SearchInput", () => {
     });
     expect(wrapper.find('button[aria-label="Clear search"]').exists()).toBe(false);
   });
+
+  it("names the field Search by default, not the decorative placeholder", () => {
+    const wrapper = mount(SearchInput, {
+      props: { modelValue: "", placeholder: "search recipes" },
+    });
+    expect(wrapper.get("input").attributes("aria-label")).toBe("Search");
+  });
+
+  it("uses ariaLabel when provided", () => {
+    const wrapper = mount(SearchInput, {
+      props: { modelValue: "", placeholder: "search", ariaLabel: "Find recipes" },
+    });
+    expect(wrapper.get("input").attributes("aria-label")).toBe("Find recipes");
+  });
 });

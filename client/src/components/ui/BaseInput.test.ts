@@ -32,7 +32,7 @@ describe("BaseInput", () => {
     expect(wrapper.get("#email-error").text()).toBe("Required");
   });
 
-  it("keeps a faint full-width tip behind the value", async () => {
+  it("shows a right-aligned tip when empty and Clear X when typing", async () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "title",
@@ -45,16 +45,18 @@ describe("BaseInput", () => {
     expect(wrapper.get("input").attributes("placeholder")).toBeUndefined();
     expect(wrapper.get("#title-tip").text()).toBe("enter title");
     expect(wrapper.get("#title-tip").classes()).toContain("absolute");
-    expect(wrapper.get("input").attributes("aria-label")).toBe("enter title");
+    expect(wrapper.get("#title-tip").classes()).toContain("text-right");
+    expect(wrapper.get("#title-tip").attributes("aria-hidden")).toBe("true");
+    expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
     expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
 
     await wrapper.setProps({ modelValue: "Pasta Carbonara" });
     expect(wrapper.get("input").element).toHaveProperty("value", "Pasta Carbonara");
-    expect(wrapper.get("#title-tip").text()).toBe("enter title");
+    expect(wrapper.find("#title-tip").exists()).toBe(false);
     expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(true);
   });
 
-  it("renders a suffix slot inside the shell and keeps the tip", () => {
+  it("renders a suffix slot inside the shell and hides the tip while typing", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "ingredient",
@@ -69,13 +71,14 @@ describe("BaseInput", () => {
       },
     });
 
-    expect(wrapper.get("#ingredient-tip").text()).toBe("ingredient");
+    expect(wrapper.find("#ingredient-tip").exists()).toBe(false);
     expect(wrapper.get("input").element).toHaveProperty("value", "pasta");
+    expect(wrapper.get("input").attributes("aria-label")).toBe("ingredient 1");
     expect(wrapper.text()).toContain("↑");
     expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(true);
   });
 
-  it("clears the shell value via the clear control", async () => {
+  it("clears the shell value via the clear control and restores the tip", async () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "to",
@@ -88,6 +91,8 @@ describe("BaseInput", () => {
 
     await wrapper.get('button[aria-label="Clear"]').trigger("click");
     expect(wrapper.props("modelValue")).toBe("");
+    expect(wrapper.get("#to-tip").text()).toBe("to");
+    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
   });
 
   it("uses a visible label for naming when label and placeholder are both set", () => {

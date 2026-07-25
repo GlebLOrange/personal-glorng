@@ -33,7 +33,8 @@ describe("PageChrome", () => {
     expect(crumbs[0].attributes("data-to")).toBe("/admin");
     expect(crumbs[1].text()).toBe("users");
     expect(crumbs[1].attributes("data-elevated")).toBe("true");
-    expect(wrapper.find("h1").exists()).toBe(false);
+    expect(wrapper.get("h1").classes()).toContain("sr-only");
+    expect(wrapper.get("h1").text()).toBe("users");
     expect(wrapper.get("[data-testid=back]").attributes("href")).toBe("/admin");
     expect(wrapper.get("[data-testid=back]").attributes("data-size")).toBe("compact");
   });
@@ -52,7 +53,8 @@ describe("PageChrome", () => {
     expect(crumbs.map((c) => c.text())).toEqual(["tools", "calculator"]);
     expect(crumbs[0].attributes("data-to")).toBe("/tools");
     expect(crumbs[1].attributes("data-elevated")).toBe("true");
-    expect(wrapper.find("h1").exists()).toBe(false);
+    expect(wrapper.get("h1").classes()).toContain("sr-only");
+    expect(wrapper.get("h1").text()).toBe("calculator");
   });
 
   it("keeps parent crumb + h1 when last crumb does not match title (news article)", () => {

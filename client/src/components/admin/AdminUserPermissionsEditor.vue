@@ -90,7 +90,7 @@ function servicePermissionSummary(service: PlatformService): string {
       </label>
       <p
         v-if="lockSuperuser"
-        class="mt-3 rounded border border-status-yellow/30 bg-status-yellow/10 px-3 py-2 text-xs text-status-yellow"
+        class="mt-3 rounded border border-status-warning/30 bg-status-warning/10 px-3 py-2 text-xs text-status-warning"
       >
         Cannot demote the last admin
       </p>

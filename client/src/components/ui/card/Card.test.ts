@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { Card, CardTitle } from "@/components/ui/card";
 
@@ -48,6 +48,23 @@ describe("Card", () => {
     expect(wrapper.classes()).toEqual(
       expect.arrayContaining(["hover:border-accent-blue", "focus-visible:ring-accent-blue/50"]),
     );
+  });
+
+  it("adds keyboard semantics for interactive non-button cards", async () => {
+    const onClick = vi.fn();
+    const wrapper = mount(Card, {
+      props: { interactive: true, variant: "compact" },
+      attrs: { onClick },
+    });
+
+    expect(wrapper.attributes("role")).toBe("button");
+    expect(wrapper.attributes("tabindex")).toBe("0");
+
+    await wrapper.trigger("keydown", { key: "Enter" });
+    expect(onClick).toHaveBeenCalledTimes(1);
+
+    await wrapper.trigger("keydown", { key: " " });
+    expect(onClick).toHaveBeenCalledTimes(2);
   });
 });
 

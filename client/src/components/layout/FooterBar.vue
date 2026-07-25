@@ -9,7 +9,7 @@ const year = new Date().getFullYear();
     <div class="flex justify-center mb-4">
       <router-link
         to="/privacy"
-        class="text-base text-surface-sage hover:text-accent-blue transition-colors"
+        class="text-base text-surface-sage hover:text-accent-blue transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         Privacy Policy
       </router-link>
