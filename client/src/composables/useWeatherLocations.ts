@@ -327,15 +327,13 @@ export async function syncGuestWeatherLocations(): Promise<void> {
     return;
   }
 
-  for (const loc of stored) {
-    try {
-      await api.post(`${WEATHER_API_PREFIX}/locations`, {
+  await Promise.allSettled(
+    stored.map((loc) =>
+      api.post(`${WEATHER_API_PREFIX}/locations`, {
         query: loc.query,
-      });
-    } catch {
-      // skip duplicates or limit errors
-    }
-  }
+      }),
+    ),
+  );
 
   localStorage.removeItem(SAVED_LOCATIONS_STORAGE_KEY);
   localStorage.removeItem(LEGACY_SAVED_LOCATIONS_STORAGE_KEY);

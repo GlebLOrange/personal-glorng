@@ -13,6 +13,7 @@ vi.mock("@/composables/useApi", () => ({
 describe("useCachedApi", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    clearCachedApi();
   });
 
   it("fetches and stores data on first load", async () => {
@@ -87,5 +88,29 @@ describe("useCachedApi", () => {
     await fetch();
 
     expect(api.get).toHaveBeenCalledWith("/cache-test-d");
+  });
+
+  it("dedupes concurrent fetches for the same url", async () => {
+    let resolveGet!: (value: { data: { n: number } }) => void;
+    vi.mocked(api.get).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveGet = resolve;
+        }),
+    );
+
+    const url = "/cache-test-inflight";
+    const first = useCachedApi<{ n: number }>(url, 60_000);
+    const second = useCachedApi<{ n: number }>(url, 60_000);
+
+    const pending = Promise.all([first.fetch(), second.fetch()]);
+    expect(api.get).toHaveBeenCalledTimes(1);
+
+    resolveGet({ data: { n: 42 } });
+    await pending;
+
+    expect(api.get).toHaveBeenCalledTimes(1);
+    expect(first.data.value).toEqual({ n: 42 });
+    expect(second.data.value).toEqual({ n: 42 });
   });
 });

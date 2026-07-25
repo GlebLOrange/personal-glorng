@@ -110,12 +110,27 @@ export function useNews() {
   }
 
   async function loadSources(): Promise<void> {
+    // ponytail: picker needs full source list; page until done, hard ceiling 500
+    const PER_PAGE = 100;
+    const MAX_SOURCES = 500;
     const data = await runAction(
       async () => {
-        const response = await api.get<PaginatedList<NewsSource>>("/tools/news/sources", {
-          params: { page: 1, per_page: 100 },
-        });
-        return response.data.items;
+        const collected: NewsSource[] = [];
+        let pageNum = 1;
+        let totalCount = Number.POSITIVE_INFINITY;
+        while (collected.length < totalCount && collected.length < MAX_SOURCES) {
+          const response = await api.get<PaginatedList<NewsSource>>("/tools/news/sources", {
+            params: { page: pageNum, per_page: PER_PAGE },
+          });
+          const { items, total } = response.data;
+          collected.push(...items);
+          totalCount = total;
+          if (items.length === 0) {
+            break;
+          }
+          pageNum += 1;
+        }
+        return collected.slice(0, MAX_SOURCES);
       },
       { errorFallback: "Failed to load news sources", logContext: "news.loadSources" },
     );
