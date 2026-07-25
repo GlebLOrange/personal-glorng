@@ -122,7 +122,9 @@ def _search_query(
     if date_from or date_to:
         occurred: dict[str, str] = {}
         if date_from:
-            occurred["gte"] = datetime.combine(date_from, datetime.min.time()).isoformat()
+            occurred["gte"] = datetime.combine(
+                date_from, datetime.min.time()
+            ).isoformat()
         if date_to:
             occurred["lte"] = datetime.combine(date_to, datetime.max.time()).isoformat()
         filters.append({"range": {"occurred_at": occurred}})

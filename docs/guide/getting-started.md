@@ -14,7 +14,7 @@ Minimal setup for local development with the recommended **lite mode**: API in D
 cp .env.example .env
 # Edit .env — minimum secrets below
 
-make dev-lite          # terminal 1: mongodb, redis, API, nginx
+make                   # terminal 1: mongodb, redis, API, nginx (lite default)
 make dev-lite-client   # terminal 2: Vite on :3000
 make db-init           # if migrate did not run on stack start
 make seed              # admin user (needs SEED_PASSWORD in .env)

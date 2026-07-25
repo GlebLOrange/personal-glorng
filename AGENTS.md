@@ -1,20 +1,20 @@
 # AGENTS.md
 
-Coding standards and agent behavior use a hybrid layout: thin always-on and path-triggered stubs in [`.cursor/rules/`](.cursor/rules/) (safety, git workflow, dependencies, backend FastAPI/Python, frontend Vue/Pinia/TypeScript, design system) that point at full guidance in [`.cursor/skills/`](.cursor/skills/), plus opt-in review/process skills such as `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, and `spec-driven-development`. This file covers environment and bootstrap only.
+Coding standards and agent behavior use a hybrid layout: thin always-on and path-triggered stubs in [`.cursor/rules/`](.cursor/rules/) (safety, git workflow, dependencies, backend FastAPI/Python, frontend Vue/Pinia/TypeScript, design system) that point at full guidance in [`.cursor/skills/`](.cursor/skills/), plus opt-in review/process skills such as `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, and `spec-driven-development`. This file covers environment and bootstrap only. Ecosystem skills from skills.sh: install with `npx skills add <pkg>@<skill> -g -y` (user-level under `~/.agents/skills/`); keep project skills in `.cursor/skills/` only — do not commit `.agents/`, `.claude/`, or `skills-lock.json`.
 
 ## Cursor Cloud specific instructions
 
 ### Product overview
 
-**gLOrng** is a FastAPI + Vue 3 developer portfolio and personal platform. The recommended dev workflow is **lite mode**: MongoDB, Redis, API, and nginx in Docker; Vite runs on the host with `make dev-lite-client`.
+**gLOrng** is a FastAPI + Vue 3 developer portfolio and personal platform. The default dev workflow is **lite mode** (`make` / `make dev`): MongoDB, Redis, API, and nginx in Docker; Vite on the host with `make dev-lite-client`. RabbitMQ and the Vite client container stay off until you opt in.
 
 ### Cloud VM Docker caveat
 
 Nested Docker on Cloud Agent VMs cannot apply Compose `deploy.resources` memory limits (cgroupv2 threaded mode). Always include the cloud overlay when starting services:
 
 ```bash
-# Lite: API in Docker (also starts RabbitMQ via server depends_on)
-docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.cloud-vm.yml up -d mongodb redis server
+# Lite: API in Docker (no RabbitMQ / client container)
+docker compose -f docker-compose.yml -f docker-compose.lite.yml -f docker-compose.cloud-vm.yml up -d mongodb redis redis-cache server nginx
 
 # Ultra-lite, when you specifically want host API work
 docker compose -f docker-compose.yml -f docker-compose.ultra-lite.yml -f docker-compose.cloud-vm.yml up -d mongodb redis
@@ -71,8 +71,9 @@ Cloud-specific notes:
 
 ### Optional services
 
-- `make dev-lite` — API in Docker; also starts RabbitMQ via `server` depends_on.
-- `make dev` — adds nginx + client containers (port 80).
+- `make` / `make dev` — lite default: mongodb, redis, redis-cache, server, nginx (no RabbitMQ / client container).
+- `make dev-lite` — alias for `make dev`.
+- `make dev-docker` — Vite client container + nginx (profile `docker-client`).
 - `make dev-ultra-lite-infra` / `make dev-ultra-lite-server` — host API with inline Celery (no RabbitMQ).
 - `make dev-postgres` — adds Postgres for FTS search / audit secondary storage.
-- `make dev-worker` / `make dev-bot` — Celery worker + beat (RabbitMQ) and Telegram bot (need tokens).
+- `make dev-worker` / `make dev-bot` — Celery worker + beat and Telegram bot; enable RabbitMQ via profile `broker` (set `CELERY_TASK_ALWAYS_EAGER=false`).

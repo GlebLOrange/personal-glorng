@@ -61,7 +61,9 @@ def _skills_html(resume: dict[str, Any]) -> str:
     for group in resume.get("skills", []):
         items = ", ".join(_esc(item) for item in group.get("items", []))
         summary = str(group.get("summary", "")).strip()
-        summary_html = f'<p class="skill-summary">{_esc(summary)}</p>' if summary else ""
+        summary_html = (
+            f'<p class="skill-summary">{_esc(summary)}</p>' if summary else ""
+        )
         blocks.append(
             f"""
         <div class="skill-group">
