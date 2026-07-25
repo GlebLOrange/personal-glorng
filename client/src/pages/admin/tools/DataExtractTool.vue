@@ -100,12 +100,9 @@ const {
           </div>
         </div>
 
-        <div
-          role="button"
-          tabindex="0"
-          aria-label="Choose a file to extract"
+        <label
           :class="[
-            'cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors',
+            'block cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors focus-within:ring-2 focus-within:ring-accent-blue/50',
             dragOver
               ? 'border-accent-blue bg-accent-blue/10'
               : 'border-surface-border hover:border-accent-blue',
@@ -113,20 +110,17 @@ const {
           @dragover.prevent="dragOver = true"
           @dragleave="dragOver = false"
           @drop.prevent="onDrop"
-          @click="fileInputRef?.click()"
-          @keydown.enter.prevent="fileInputRef?.click()"
-          @keydown.space.prevent="fileInputRef?.click()"
         >
           <input
             ref="fileInputRef"
             type="file"
-            class="hidden"
+            class="sr-only"
             accept=".csv,.tsv,.json,.xml,.txt,.pipe"
             @change="onFileSelect"
           />
           <p v-if="selectedName" class="text-sm text-surface-light">{{ selectedName }}</p>
           <p v-else class="text-sm text-surface-mid">drop a file here or click to browse</p>
-        </div>
+        </label>
       </div>
 
       <DataExtractBatchPanel

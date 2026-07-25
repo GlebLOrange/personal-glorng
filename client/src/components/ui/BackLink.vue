@@ -19,8 +19,8 @@ withDefaults(
 
 const attrs = useAttrs();
 
-/** Match BaseButton size="icon" / IconCloseButton. */
-const sizeClass = "!min-h-8 !min-w-8 !h-8 !w-8 !px-0";
+/** Match BaseButton size="icon" / IconCloseButton (≥44px hit target). */
+const sizeClass = "!min-h-11 !min-w-11 !h-11 !w-11 !px-0";
 
 function linkClass(isActive: boolean): string {
   return [

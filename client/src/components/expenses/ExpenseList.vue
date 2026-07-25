@@ -54,11 +54,8 @@ const skeletonRows = 5;
         variant="compact"
         interactive
         hoverable
-        role="button"
-        tabindex="0"
         class="cursor-pointer"
         @click="emit('edit', expense)"
-        @keydown.enter.prevent="emit('edit', expense)"
       >
         <div class="flex justify-between items-start gap-3">
           <div class="min-w-0">
@@ -92,7 +89,7 @@ const skeletonRows = 5;
             {{ expense.notes }}
           </p>
         </div>
-        <div class="flex gap-2 justify-end flex-wrap mt-3" @click.stop @keydown.stop>
+        <div class="flex gap-2 justify-end flex-wrap mt-3" @click.stop>
           <BaseButton
             variant="ghost"
             size="sm"
@@ -154,10 +151,7 @@ const skeletonRows = 5;
             v-for="expense in expenses"
             :key="expense.id"
             class="border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50 cursor-pointer"
-            role="button"
-            tabindex="0"
             @click="emit('edit', expense)"
-            @keydown.enter.prevent="emit('edit', expense)"
           >
             <td class="px-3 py-2 whitespace-nowrap">
               {{ formatExpenseDate(expense.expense_date) }}
@@ -189,7 +183,7 @@ const skeletonRows = 5;
             <td class="px-3 py-2 text-surface-mid max-w-[200px] truncate font-sans">
               {{ expense.notes ?? "—" }}
             </td>
-            <td class="px-3 py-2 text-right whitespace-nowrap" @click.stop @keydown.stop>
+            <td class="px-3 py-2 text-right whitespace-nowrap" @click.stop>
               <BaseButton
                 variant="ghost"
                 size="sm"

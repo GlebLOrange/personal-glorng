@@ -19,6 +19,7 @@ describe("AdminFilterDropdown", () => {
 
     const dialog = document.querySelector('[role="dialog"][aria-label="filters"]');
     expect(dialog).toBeTruthy();
+    expect(dialog?.getAttribute("aria-modal")).toBe("true");
     expect(dialog?.contains(document.activeElement)).toBe(true);
 
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));

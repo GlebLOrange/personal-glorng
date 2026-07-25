@@ -5,9 +5,9 @@ const props = withDefaults(
   defineProps<{
     variant?: "primary" | "secondary" | "ghost" | "success";
     /**
-     * Shared control height with inputs (h-11), except lg (h-12) and icon (h-8 square).
+     * Shared control height with inputs (h-11), except lg (h-12).
      * sm/md/field share the same height; sm only tightens padding/type.
-     * `field` is an alias of `md`. `icon` is a square hit target for glyph-only actions.
+     * `field` is an alias of `md`. `icon` is a square ≥44px hit target for glyph-only actions.
      */
     size?: "sm" | "md" | "lg" | "field" | "icon";
     /** Destructive action — red tint/text on hover. */
@@ -82,14 +82,14 @@ const variantClass = computed(() => {
     :aria-busy="loading ? true : undefined"
     :aria-pressed="selected ? true : undefined"
     :class="[
-      'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg border font-medium leading-none transition-all duration-200',
+      'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg border font-medium leading-none transition-[color,background-color,border-color,opacity,box-shadow] duration-200',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
       'disabled:cursor-not-allowed disabled:opacity-50',
       variantClass,
       resolvedSize === 'lg'
         ? 'h-12 px-6 text-base'
         : resolvedSize === 'icon'
-          ? 'h-8 w-8 min-w-8 px-0 text-xs'
+          ? 'h-11 w-11 min-h-11 min-w-11 px-0 text-xs'
           : resolvedSize === 'sm'
             ? 'h-11 px-3 text-xs'
             : 'h-11 px-4 text-sm',

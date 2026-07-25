@@ -28,7 +28,7 @@ function crumbLabel(label: string): string {
         <RouterLink
           v-if="seg.to"
           :to="seg.to"
-          class="relative z-10 inline-flex h-8 cursor-pointer items-center"
+          class="relative z-10 inline-flex h-8 min-h-8 cursor-pointer items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
         >
           <span
             :class="

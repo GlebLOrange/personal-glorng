@@ -237,6 +237,7 @@
 }
 
 html {
+  color-scheme: dark;
   scroll-behavior: smooth;
   font-size: 112.5%;
   -webkit-text-size-adjust: 100%;
@@ -254,6 +255,30 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* WIG: avoid double-tap zoom delay; intentional pale tap flash on dark UI */
+button,
+a,
+[role="button"],
+input,
+select,
+textarea,
+summary,
+label {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: color-mix(in srgb, var(--color-accent-blue) 25%, transparent);
+}
+
+/* Sticky header + chrome offset for in-page heading / id anchors */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+[id] {
+  scroll-margin-top: 5rem;
 }
 
 .code-block {

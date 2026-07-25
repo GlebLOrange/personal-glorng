@@ -125,6 +125,7 @@ defineExpose({ close });
       v-if="open"
       ref="panel"
       role="dialog"
+      aria-modal="true"
       :aria-label="label"
       tabindex="-1"
       class="absolute left-0 top-full z-10 mt-1 w-max max-w-[min(100vw-2rem,36rem)] rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg"

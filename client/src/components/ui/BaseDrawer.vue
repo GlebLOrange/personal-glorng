@@ -68,7 +68,7 @@ const panelWidth = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"
             </div>
           </header>
 
-          <div class="flex-1 overflow-y-auto px-6 py-5">
+          <div class="flex-1 overflow-y-auto overscroll-contain px-6 py-5">
             <slot />
           </div>
 

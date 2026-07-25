@@ -131,7 +131,7 @@ onUnmounted(() => {
 
         <div class="h-1 bg-surface-border">
           <div
-            class="h-full bg-accent-blue transition-all duration-300"
+            class="h-full bg-accent-blue transition-[width] duration-300"
             :style="{ width: `${progress}%` }"
           />
         </div>

@@ -32,12 +32,6 @@ const thumbInitials = computed(() => {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 });
-
-function onRowKeydown(event: KeyboardEvent): void {
-  if (event.key !== "Enter" && event.key !== " ") return;
-  event.preventDefault();
-  emit("select", props.recipe.id);
-}
 </script>
 
 <template>
@@ -45,62 +39,62 @@ function onRowKeydown(event: KeyboardEvent): void {
     as="div"
     interactive
     variant="ghost"
-    role="button"
-    tabindex="0"
-    class="group w-full min-w-0 cursor-pointer rounded-lg px-2 py-1.5 text-left hover:bg-surface-light/5"
-    :aria-label="`Open recipe ${recipe.title}`"
-    @click="emit('select', recipe.id)"
-    @keydown="onRowKeydown"
+    class="group w-full min-w-0 rounded-lg px-2 py-1.5 text-left hover:bg-surface-light/5"
   >
     <div class="flex min-w-0 items-center gap-2">
-      <BaseImage
-        v-if="recipe.image_url"
-        :src="recipe.image_url"
-        :alt="recipe.title"
-        class="size-10 shrink-0 rounded-md object-cover"
-      />
-      <div
-        v-else
-        class="flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-dark text-xs font-semibold text-surface-sage"
-        aria-hidden="true"
+      <button
+        type="button"
+        class="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+        :aria-label="`Open recipe ${recipe.title}`"
+        @click="emit('select', recipe.id)"
       >
-        {{ thumbInitials }}
-      </div>
-
-      <div class="flex min-w-0 flex-1 items-center gap-2">
-        <h3 class="min-w-0 flex-1 truncate text-sm font-bold text-surface-light">
-          {{ recipe.title }}
-        </h3>
-        <div v-if="hasMeta" class="flex shrink-0 flex-wrap items-center justify-end gap-1">
-          <span
-            v-if="prepLabel"
-            class="inline-flex items-center gap-0.5 rounded-full border border-accent-blue/30 bg-accent-blue/15 px-1.5 py-0.5 text-[10px] text-accent-blue"
-          >
-            <ClockIcon class-name="size-3 shrink-0" />
-            prep {{ prepLabel }}
-          </span>
-          <span
-            v-if="cookLabel"
-            class="inline-flex items-center gap-0.5 rounded-full border border-status-cyan/30 bg-status-cyan/15 px-1.5 py-0.5 text-[10px] text-status-cyan"
-          >
-            <ClockIcon class-name="size-3 shrink-0" />
-            cook {{ cookLabel }}
-          </span>
-          <span
-            v-if="recipe.servings"
-            class="inline-flex items-center gap-0.5 rounded-full border border-status-success/30 bg-status-success/15 px-1.5 py-0.5 text-[10px] text-status-success"
-          >
-            <ClockIcon class-name="size-3 shrink-0" />
-            {{ recipe.servings }} servings
-          </span>
+        <BaseImage
+          v-if="recipe.image_url"
+          :src="recipe.image_url"
+          :alt="recipe.title"
+          class="size-10 shrink-0 rounded-md object-cover"
+        />
+        <div
+          v-else
+          class="flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-dark text-xs font-semibold text-surface-sage"
+          aria-hidden="true"
+        >
+          {{ thumbInitials }}
         </div>
-      </div>
+
+        <div class="flex min-w-0 flex-1 items-center gap-2">
+          <h3 class="min-w-0 flex-1 truncate text-sm font-bold text-surface-light">
+            {{ recipe.title }}
+          </h3>
+          <div v-if="hasMeta" class="flex shrink-0 flex-wrap items-center justify-end gap-1">
+            <span
+              v-if="prepLabel"
+              class="inline-flex items-center gap-0.5 rounded-full border border-accent-blue/30 bg-accent-blue/15 px-1.5 py-0.5 text-[10px] text-accent-blue"
+            >
+              <ClockIcon class-name="size-3 shrink-0" />
+              prep {{ prepLabel }}
+            </span>
+            <span
+              v-if="cookLabel"
+              class="inline-flex items-center gap-0.5 rounded-full border border-status-cyan/30 bg-status-cyan/15 px-1.5 py-0.5 text-[10px] text-status-cyan"
+            >
+              <ClockIcon class-name="size-3 shrink-0" />
+              cook {{ cookLabel }}
+            </span>
+            <span
+              v-if="recipe.servings"
+              class="inline-flex items-center gap-0.5 rounded-full border border-status-success/30 bg-status-success/15 px-1.5 py-0.5 text-[10px] text-status-success"
+            >
+              <ClockIcon class-name="size-3 shrink-0" />
+              {{ recipe.servings }} servings
+            </span>
+          </div>
+        </div>
+      </button>
 
       <div
         v-if="canWrite"
         class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100"
-        @click.stop
-        @keydown.stop
       >
         <IconEditButton aria-label="edit recipe" @click="emit('edit', recipe)" />
         <IconCloseButton aria-label="delete recipe" @click="emit('delete', recipe)" />

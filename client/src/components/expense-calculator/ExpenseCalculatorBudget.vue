@@ -133,7 +133,7 @@ function onAddBudgetLine(): void {
               </div>
               <div class="h-1.5 bg-surface-border rounded-full overflow-hidden">
                 <div
-                  class="h-full rounded-full motion-reduce:transition-none transition-all"
+                  class="h-full rounded-full motion-reduce:transition-none transition-[width] duration-200"
                   :class="view.overBudget ? 'bg-status-error' : 'bg-accent-blue'"
                   :style="{ width: `${Math.min(view.percent, 100)}%` }"
                 />

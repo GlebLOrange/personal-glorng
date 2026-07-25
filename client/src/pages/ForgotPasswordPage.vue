@@ -57,7 +57,7 @@ async function handleSubmit(): Promise<void> {
         />
         <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
         <BaseButton type="submit" variant="primary" class="w-full" :loading="loading">
-          {{ loading ? "sending..." : "send reset link" }}
+          {{ loading ? "sending…" : "send reset link" }}
         </BaseButton>
       </form>
 

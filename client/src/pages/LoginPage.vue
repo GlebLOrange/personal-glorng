@@ -95,7 +95,7 @@ async function handleGoogleLogin(): Promise<void> {
           :loading="loading"
           :disabled="!canSubmit"
         >
-          {{ loading ? "signing in..." : "login" }}
+          {{ loading ? "signing in…" : "login" }}
         </BaseButton>
       </form>
 
@@ -113,7 +113,7 @@ async function handleGoogleLogin(): Promise<void> {
           @click="handleGoogleLogin"
         >
           <span class="font-data text-sm" aria-hidden="true">G</span>
-          {{ googleLoading ? "connecting..." : "continue with google" }}
+          {{ googleLoading ? "connecting…" : "continue with google" }}
         </BaseButton>
       </div>
 

@@ -121,7 +121,7 @@ const budgetTotals = computed(() => {
         </div>
         <div class="h-1.5 bg-surface-border rounded-full overflow-hidden">
           <div
-            class="h-full rounded-full transition-all"
+            class="h-full rounded-full transition-[width] duration-200"
             :class="item.overBudget ? 'bg-status-error' : 'bg-accent-blue'"
             :style="{
               width: `${Math.min(item.budgetPercent ?? item.percent, 100)}%`,

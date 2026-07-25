@@ -66,6 +66,7 @@ onUnmounted(() => {
   <div
     v-if="shouldRender"
     data-testid="toast-host"
+    role="region"
     aria-label="Notifications"
     :class="
       variant === 'tile'
