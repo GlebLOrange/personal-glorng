@@ -246,7 +246,6 @@ async function deleteAccount(): Promise<void> {
               name="current-password-for-email"
               autocomplete="current-password"
               label="current password"
-              placeholder="••••••••"
               required
             />
             <BaseButton
@@ -281,7 +280,6 @@ async function deleteAccount(): Promise<void> {
               name="current-password"
               autocomplete="current-password"
               label="current password"
-              placeholder="••••••••"
               required
             />
             <BaseInput
@@ -290,7 +288,6 @@ async function deleteAccount(): Promise<void> {
               name="new-password"
               autocomplete="new-password"
               label="new password"
-              placeholder="••••••••"
               :error="newPassword && !passwordCheck.valid ? passwordCheck.message : undefined"
               required
             />
@@ -300,7 +297,6 @@ async function deleteAccount(): Promise<void> {
               name="confirm-new-password"
               autocomplete="new-password"
               label="confirm new password"
-              placeholder="••••••••"
               :error="newPasswordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
               required
             />
@@ -410,7 +406,7 @@ async function deleteAccount(): Promise<void> {
               type="password"
               name="delete-current-password"
               autocomplete="current-password"
-              placeholder="current password"
+              label="current password"
               required
             />
             <label class="flex min-h-11 cursor-pointer items-start gap-3 text-xs text-surface-mid">
