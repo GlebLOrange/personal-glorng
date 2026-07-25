@@ -24,7 +24,7 @@ function onClick(): void {
       colorClass
         ? [colorClass, 'hover:border-current/35 focus-visible:border-current/35']
         : destructive
-          ? 'text-status-error hover:bg-status-error/10 hover:border-status-error/40 focus-visible:border-status-error/40'
+          ? 'text-status-error hover:bg-status-error/15 hover:border-status-error/40 focus-visible:border-status-error/40'
           : 'text-surface-light hover:bg-surface-border/40 hover:border-surface-border focus-visible:border-surface-border',
     ]"
     @click="onClick"

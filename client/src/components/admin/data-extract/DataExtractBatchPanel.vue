@@ -44,10 +44,10 @@ const emit = defineEmits<{
           <button
             type="button"
             :class="[
-              'w-full rounded-md border px-3 py-2 text-left text-sm transition-colors',
+              'w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors',
               selectedBatchId === batch.id
-                ? 'border-accent-blue bg-accent-blue/10 text-surface-light'
-                : 'border-surface-border text-surface-mid hover:border-accent-blue',
+                ? 'border-accent-blue/40 bg-accent-blue/15 text-accent-blue'
+                : 'border-surface-border text-surface-mid hover:border-accent-blue/40 hover:bg-accent-blue/15 hover:text-accent-blue',
             ]"
             @click="emit('select', batch.id)"
           >
@@ -76,7 +76,7 @@ const emit = defineEmits<{
         <div>
           <h2 class="text-lg font-semibold text-surface-light">Import batch</h2>
           <p class="text-sm text-surface-mid">{{ importSummary }}</p>
-          <p v-if="importResult.error_count > 0" class="font-data text-xs text-status-cyan">
+          <p v-if="importResult.error_count > 0" class="font-data text-xs text-status-yellow">
             {{ importResult.error_count }} row(s) failed parsing and were stored with errors.
           </p>
           <p v-if="selectedBatch?.promoted_count" class="mt-1 text-xs text-status-success">

@@ -1,17 +1,13 @@
 <script setup lang="ts">
+import { actionFamilyClass } from "@/constants/httpStatusColors";
+
 defineProps<{
   categoryOptions: string[];
 }>();
 
 const categoryFilter = defineModel<string | null>("categoryFilter", { required: true });
 
-const chipClass = (active: boolean) =>
-  [
-    "min-h-11 px-3 py-2 text-xs rounded-lg border transition-colors",
-    active
-      ? "bg-accent-blue/20 text-accent-blue border-accent-blue/40"
-      : "text-surface-mid border-surface-border hover:text-surface-light",
-  ].join(" ");
+const chipClass = (active: boolean) => actionFamilyClass("1xx", active);
 </script>
 
 <template>

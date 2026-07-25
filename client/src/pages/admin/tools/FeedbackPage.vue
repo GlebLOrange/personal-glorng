@@ -222,19 +222,13 @@ onMounted(load);
             <BaseButton
               v-if="item.status === 'archived'"
               variant="ghost"
+              quiet
               size="sm"
-              class="!bg-transparent text-surface-light/60 hover:enabled:!bg-status-cyan/10 hover:enabled:!text-status-cyan focus-visible:!bg-status-cyan/10 focus-visible:!text-status-cyan"
               @click="unarchiveItem(item)"
             >
               unarchive
             </BaseButton>
-            <BaseButton
-              v-else
-              variant="ghost"
-              size="sm"
-              class="!bg-transparent text-surface-light/60 hover:enabled:!bg-status-cyan/10 hover:enabled:!text-status-cyan focus-visible:!bg-status-cyan/10 focus-visible:!text-status-cyan"
-              @click="archiveItem(item)"
-            >
+            <BaseButton v-else variant="ghost" quiet size="sm" @click="archiveItem(item)">
               archive
             </BaseButton>
           </template>

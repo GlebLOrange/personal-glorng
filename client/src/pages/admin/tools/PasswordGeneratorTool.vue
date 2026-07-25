@@ -116,7 +116,7 @@ async function generatePassword(): Promise<void> {
             placeholder="password"
             class="flex-1 min-w-[12rem] font-data"
           />
-          <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
+          <BaseButton variant="ghost" @click="showPassword = !showPassword">
             {{ showPassword ? "hide" : "show" }}
           </BaseButton>
           <IconCopyButton @click="copy(generated)" />

@@ -111,17 +111,12 @@ function onCategoryRowClick(category: ExpenseCategory): void {
                 @keyup.enter="emit('saveCategoryRename')"
               />
             </div>
-            <ToolbarPillButton
-              family="2xx"
-              class="min-h-11"
-              @click.stop="emit('saveCategoryRename')"
-            >
+            <ToolbarPillButton family="2xx" @click.stop="emit('saveCategoryRename')">
               save
             </ToolbarPillButton>
             <BaseButton
               variant="secondary"
               size="sm"
-              class="min-h-11"
               @click.stop="emit('cancelEditCategory')"
             >
               cancel
@@ -156,7 +151,7 @@ function onCategoryRowClick(category: ExpenseCategory): void {
           placeholder="category name"
           class="w-full min-w-0 flex-1"
         />
-        <ToolbarPillButton type="submit" family="1xx" class="min-h-11 shrink-0">
+        <ToolbarPillButton type="submit" family="1xx" class="shrink-0">
           + category
         </ToolbarPillButton>
       </form>

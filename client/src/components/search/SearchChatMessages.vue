@@ -121,7 +121,7 @@ function showEmptySourcesWarning(msg: ChatMessage): boolean {
 
       <p
         v-else-if="!loading && showEmptySourcesWarning(msg)"
-        class="mt-2 text-[11px] text-status-cyan/90"
+        class="mt-2 text-[11px] text-status-yellow/90"
       >
         No matching documents — answer may be limited.
       </p>

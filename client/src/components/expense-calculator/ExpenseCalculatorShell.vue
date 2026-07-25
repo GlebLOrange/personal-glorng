@@ -96,7 +96,6 @@ const emit = defineEmits<{
       <div v-if="isSuperuser" class="flex flex-wrap gap-2">
         <BaseButton
           variant="ghost"
-          class="min-h-11"
           :disabled="loadingState"
           @click="emit('loadState')"
         >
@@ -104,7 +103,6 @@ const emit = defineEmits<{
         </BaseButton>
         <BaseButton
           variant="success"
-          class="min-h-11"
           :disabled="saving || !stateDirty"
           @click="emit('saveState')"
         >

@@ -327,7 +327,7 @@ async function deleteAccount(): Promise<void> {
       <Card>
         <CardBody>
           <div class="space-y-4">
-            <p v-if="githubError" class="text-sm text-status-cyan">{{ githubError }}</p>
+            <p v-if="githubError" class="text-sm text-status-yellow">{{ githubError }}</p>
             <div class="flex flex-wrap items-center gap-3">
               <BaseButton
                 v-if="!githubStatus.linked"

@@ -6,6 +6,7 @@ import PageShell from "@/components/layout/PageShell.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { api } from "@/composables/useApi";
 import { trapTabKeyInRoot } from "@/composables/useOverlayShell";
@@ -192,13 +193,14 @@ async function download(): Promise<void> {
       <BaseInput v-model="url" placeholder="url (https://....)" class="w-full" />
     </form>
 
-    <button
-      type="button"
-      class="mb-4 text-sm text-accent-blue transition-colors hover:text-accent-blue/80"
+    <BaseButton
+      variant="ghost"
+      size="sm"
+      class="mb-4"
       @click="guideOpen = !guideOpen"
     >
       {{ guideOpen ? "▾ Hide" : "▸ Show" }} yt-dlp usage guide
-    </button>
+    </BaseButton>
 
     <Card v-if="guideOpen">
       <div class="space-y-4 text-sm text-surface-light">

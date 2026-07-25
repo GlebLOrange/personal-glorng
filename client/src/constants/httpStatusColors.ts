@@ -4,7 +4,7 @@ export type HttpStatusFamily = "1xx" | "2xx" | "3xx" | "4xx" | "5xx";
 const FAMILY_BADGE: Record<HttpStatusFamily, string> = {
   "1xx": "text-accent-blue bg-accent-blue/15 border-accent-blue/30",
   "2xx": "text-status-success bg-status-success/15 border-status-success/30",
-  "3xx": "text-status-cyan bg-status-cyan/15 border-status-cyan/30",
+  "3xx": "text-status-yellow bg-status-yellow/15 border-status-yellow/30",
   "4xx": "text-status-error bg-status-error/15 border-status-error/30",
   "5xx": "text-status-critical bg-status-critical/15 border-status-critical/30",
 };
@@ -16,7 +16,7 @@ const FAMILY_ACTION: Record<HttpStatusFamily, string> = {
   "2xx":
     "border-transparent bg-status-success/3 text-status-success hover:enabled:bg-status-success/15 hover:enabled:border-status-success/40",
   "3xx":
-    "border-transparent bg-status-cyan/3 text-status-cyan hover:enabled:bg-status-cyan/15 hover:enabled:border-status-cyan/40",
+    "border-transparent bg-status-yellow/3 text-status-yellow hover:enabled:bg-status-yellow/15 hover:enabled:border-status-yellow/40",
   "4xx":
     "border-transparent bg-status-error/3 text-status-error hover:enabled:bg-status-error/15 hover:enabled:border-status-error/40",
   "5xx":
@@ -26,7 +26,7 @@ const FAMILY_ACTION: Record<HttpStatusFamily, string> = {
 const FAMILY_ACTION_SELECTED: Record<HttpStatusFamily, string> = {
   "1xx": "bg-accent-blue/15 border-accent-blue/40 text-accent-blue",
   "2xx": "bg-status-success/15 border-status-success/40 text-status-success",
-  "3xx": "bg-status-cyan/15 border-status-cyan/40 text-status-cyan",
+  "3xx": "bg-status-yellow/15 border-status-yellow/40 text-status-yellow",
   "4xx": "bg-status-error/15 border-status-error/40 text-status-error",
   "5xx": "bg-status-critical/15 border-status-critical/40 text-status-critical",
 };

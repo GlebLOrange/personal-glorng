@@ -59,7 +59,7 @@ const emit = defineEmits<{
         </span>
         <span
           v-if="recipe.cook_time"
-          class="inline-flex items-center gap-1 rounded-full border border-status-cyan/30 bg-status-cyan/15 px-2 py-1 text-status-cyan"
+          class="inline-flex items-center gap-1 rounded-full border border-status-yellow/30 bg-status-yellow/15 px-2 py-1 text-status-yellow"
         >
           <ClockIcon class-name="size-3.5 shrink-0" />
           {{ formatRecipeTime(recipe.cook_time) }} cook

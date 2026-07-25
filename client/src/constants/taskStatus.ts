@@ -48,7 +48,7 @@ const STATUS_ACTION_LABELS: Record<TaskStatus, string> = {
 
 /** Text + soft hover for status change menu items. */
 const STATUS_MENU_ITEM_CLASS: Record<TaskStatus, string> = {
-  pending: "text-status-cyan hover:bg-status-cyan/15",
+  pending: "text-status-yellow hover:bg-status-yellow/15",
   completed: "text-status-success hover:bg-status-success/15",
   not_completed: "text-status-error hover:bg-status-error/15",
   postponed: "text-accent-blue hover:bg-accent-blue/15",

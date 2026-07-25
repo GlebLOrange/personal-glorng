@@ -8,9 +8,9 @@ import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { newsStatusClass } from "@/constants/filterColors";
-import { SELECT_CLASS } from "@/constants/formClasses";
 import {
   NEWS_STATUSES,
   NEWS_SUMMARY_MAX_LENGTH,
@@ -275,7 +275,7 @@ watch(articleId, () => {
 
     <div class="min-w-0">
       <Card v-if="!Number.isInteger(articleId) || articleId <= 0" role="alert">
-        <p class="text-sm text-status-cyan">Invalid news article id.</p>
+        <p class="text-sm text-status-yellow">Invalid news article id.</p>
       </Card>
 
       <Card
@@ -287,7 +287,7 @@ watch(articleId, () => {
 
       <Card v-else-if="detailError" role="alert">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-sm text-status-cyan">{{ detailError }}</p>
+          <p class="text-sm text-status-yellow">{{ detailError }}</p>
           <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">retry</BaseButton>
         </div>
       </Card>
@@ -380,18 +380,19 @@ watch(articleId, () => {
           <Card>
             <h2 class="card-title mb-4">source</h2>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <select
-                :value="form.source_id ?? ''"
-                :class="SELECT_CLASS"
+              <BaseSelect
+                :model-value="form.source_id ?? ''"
                 aria-label="source"
                 :disabled="!canWrite"
-                @change="applySource(Number(($event.target as HTMLSelectElement).value) || null)"
+                @update:model-value="
+                  (value) => applySource(value === '' || value == null ? null : Number(value))
+                "
               >
                 <option value="">auto from URL host</option>
                 <option v-for="source in sources" :key="source.id" :value="source.id">
                   {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
                 </option>
-              </select>
+              </BaseSelect>
               <BaseInput
                 v-model="form.source_name"
                 placeholder="source name"

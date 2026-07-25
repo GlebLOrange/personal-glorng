@@ -270,7 +270,7 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
     description="Add expenses for this period to see trends and breakdowns."
   >
     <template #action>
-      <BaseButton variant="primary" size="sm" class="min-h-11" @click="emit('addExpense')">
+      <BaseButton variant="primary" size="sm" @click="emit('addExpense')">
         go to transactions
       </BaseButton>
     </template>

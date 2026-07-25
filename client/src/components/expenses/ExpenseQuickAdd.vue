@@ -116,7 +116,6 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         <BaseButton
           variant="ghost"
           size="sm"
-          class="min-h-11"
           :aria-expanded="smartTextOpen"
           aria-controls="expense-smart-text"
           @click="smartTextOpen = !smartTextOpen"
@@ -154,7 +153,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         placeholder="0.00"
         inputmode="decimal"
       />
-      <BaseButton variant="success" type="submit" size="field" class="min-h-11" :disabled="loading">
+      <BaseButton variant="success" type="submit" :disabled="loading">
         {{ loading ? "saving..." : "save" }}
       </BaseButton>
       <datalist id="expense-product-suggestions">
@@ -189,7 +188,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       <BaseButton
         variant="success"
         size="sm"
-        class="min-h-11 self-start"
+        class="self-start"
         :disabled="loading || parsing || !canConfirmSmart"
         @click="confirmSmart"
       >

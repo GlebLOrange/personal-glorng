@@ -51,7 +51,7 @@ describe("httpStatusColors", () => {
   it("builds h-8 icon action classes", () => {
     const icon = iconActionClass("3xx", false);
     expect(icon).toContain("!h-8");
-    expect(icon).toContain("bg-status-cyan/3");
+    expect(icon).toContain("bg-status-yellow/3");
     expect(iconActionClass("1xx", false, { quiet: true })).toContain("text-surface-light/60");
     expect(iconActionClass("1xx", false, { danger: true })).toContain("bg-status-error/3");
     expect(iconActionClass("1xx", false, { anchor: true })).toContain("hover:bg-accent-blue/15");

@@ -127,7 +127,7 @@ watch(
                 'shrink-0 rounded-full px-2 py-0.5 text-xs',
                 reminder.sent
                   ? 'bg-status-success/10 text-status-success'
-                  : 'bg-status-cyan/10 text-status-cyan',
+                  : 'bg-status-yellow/10 text-status-yellow',
               ]"
             >
               {{ reminder.sent ? "delivered" : "upcoming" }}
@@ -174,7 +174,7 @@ watch(
           variant="ghost"
           quiet
           size="sm"
-          class="gap-1.5 hover:enabled:!bg-accent-blue/10 hover:enabled:!text-accent-blue focus-visible:!text-accent-blue"
+          class="gap-1.5"
           title="Try syncing again"
           @click="emit('retrySync', task.id)"
         >
