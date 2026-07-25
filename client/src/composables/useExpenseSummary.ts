@@ -1,8 +1,7 @@
 import { computed, ref } from "vue";
 
 import { api } from "@/composables/useApi";
-import { useNotify } from "@/composables/useNotify";
-import { getApiErrorMessage } from "@/types/api";
+import { useApiAction } from "@/composables/useApiAction";
 import type { ExchangeRates, Expense, ExpenseSummary, PaginatedExpenses } from "@/types";
 
 import type { CurrencyCode } from "./useExpenseFilters";
@@ -70,11 +69,12 @@ export function useExpenseSummary(
   const summary = ref<ExpenseSummary | null>(null);
   const previousSummary = ref<ExpenseSummary | null>(null);
   const exchangeRates = ref<ExchangeRates | null>(null);
-  const listLoading = ref(false);
-  const listError = ref<string | null>(null);
-  const summaryError = ref<string | null>(null);
-  const ratesError = ref<string | null>(null);
-  const { toast } = useNotify();
+  const { loading: listLoading, lastError: listError, run: runList } = useApiAction({
+    silent: true,
+  });
+  const { lastError: summaryError, run: runSummary } = useApiAction({ silent: true });
+  const { lastError: ratesError, run: runRates } = useApiAction({ silent: true });
+  const { run: runPrevious } = useApiAction({ silent: true });
 
   const periodChange = computed(() => {
     if (!summary.value || !previousSummary.value) return null;
@@ -142,53 +142,45 @@ export function useExpenseSummary(
   }
 
   async function loadExpenses(): Promise<void> {
-    listLoading.value = true;
-    try {
-      const { data } = await api.get<PaginatedExpenses>("/tools/expenses", {
-        params: queryParams(),
-      });
-      expenses.value = data.items;
-      expenseTotal.value = data.total;
-      expensePage.value = data.page;
-      expensePages.value = data.pages;
-      expensePerPage.value = data.per_page;
-      listError.value = null;
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      const message = getApiErrorMessage(err, "Failed to load expenses");
-      listError.value = message;
-      toast(message, "error");
-    } finally {
-      listLoading.value = false;
-    }
+    const data = await runList(
+      async () => {
+        const response = await api.get<PaginatedExpenses>("/tools/expenses", {
+          params: queryParams(),
+        });
+        return response.data;
+      },
+      { errorFallback: "Failed to load expenses", logContext: "expenses.list" },
+    );
+    if (!data) return;
+    expenses.value = data.items;
+    expenseTotal.value = data.total;
+    expensePage.value = data.page;
+    expensePages.value = data.pages;
+    expensePerPage.value = data.per_page;
   }
 
   async function loadRates(): Promise<void> {
-    try {
-      const { data } = await api.get<ExchangeRates>("/tools/expenses/rates");
-      exchangeRates.value = data;
-      ratesError.value = null;
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      const message = getApiErrorMessage(err, "Failed to load exchange rates");
-      ratesError.value = message;
-      toast(message, "error");
-    }
+    const data = await runRates(
+      async () => {
+        const response = await api.get<ExchangeRates>("/tools/expenses/rates");
+        return response.data;
+      },
+      { errorFallback: "Failed to load exchange rates", logContext: "expenses.rates" },
+    );
+    if (data) exchangeRates.value = data;
   }
 
   async function loadSummary(): Promise<void> {
-    try {
-      const { data } = await api.get<ExpenseSummary>("/tools/expenses/summary", {
-        params: summaryParams(),
-      });
-      summary.value = data;
-      summaryError.value = null;
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      const message = getApiErrorMessage(err, "Failed to load summary");
-      summaryError.value = message;
-      toast(message, "error");
-    }
+    const data = await runSummary(
+      async () => {
+        const response = await api.get<ExpenseSummary>("/tools/expenses/summary", {
+          params: summaryParams(),
+        });
+        return response.data;
+      },
+      { errorFallback: "Failed to load summary", logContext: "expenses.summary" },
+    );
+    if (data) summary.value = data;
   }
 
   async function loadPreviousSummary(): Promise<void> {
@@ -198,16 +190,19 @@ export function useExpenseSummary(
       return;
     }
 
-    try {
-      const { data } = await api.get<ExpenseSummary>("/tools/expenses/summary", {
-        params,
-      });
-      previousSummary.value = data;
-    } catch (err) {
-      if (import.meta.env.DEV) console.error(err);
-      previousSummary.value = null;
-      toast(getApiErrorMessage(err, "Failed to load period comparison"), "error");
-    }
+    const data = await runPrevious(
+      async () => {
+        const response = await api.get<ExpenseSummary>("/tools/expenses/summary", {
+          params,
+        });
+        return response.data;
+      },
+      {
+        errorFallback: "Failed to load period comparison",
+        logContext: "expenses.previousSummary",
+      },
+    );
+    previousSummary.value = data ?? null;
   }
 
   async function reloadListAndSummary(): Promise<void> {
