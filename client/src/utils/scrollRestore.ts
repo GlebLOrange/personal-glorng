@@ -1,4 +1,7 @@
-import type { Router, RouteLocationNormalized, ScrollPosition } from "vue-router";
+import type { Router, RouteLocationNormalized } from "vue-router";
+
+/** vue-router v5 no longer exports ScrollPosition; keep the shape scrollBehavior uses. */
+type ScrollPosition = { left?: number; top?: number };
 
 const STORAGE_PREFIX = "glorng:scroll:";
 

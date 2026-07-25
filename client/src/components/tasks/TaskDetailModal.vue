@@ -36,9 +36,10 @@ const emit = defineEmits<{
 
 const technicalOpen = ref(false);
 
-const availableStatuses = computed(() =>
-  props.task ? TASK_STATUSES.filter((status) => status !== props.task.status) : [],
-);
+const availableStatuses = computed(() => {
+  const task = props.task;
+  return task ? TASK_STATUSES.filter((status) => status !== task.status) : [];
+});
 
 const schedule = computed(() => (props.task ? formatScheduleDate(props.task.scheduled_at) : null));
 
