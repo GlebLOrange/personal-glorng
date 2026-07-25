@@ -56,16 +56,20 @@ async def test_cached_resume_pdf_renders_once(monkeypatch: pytest.MonkeyPatch) -
     """Cached renderer reuses generated PDF bytes after the first render."""
     from app.services import resume_pdf
 
-    calls = 0
+    renders = 0
 
-    def fake_render_resume_pdf(_resume: dict[str, object]) -> bytes:
+    def fake_render(_resume: dict[str, object], _timeout: float) -> bytes:
         """Return deterministic PDF bytes and track render calls."""
-        nonlocal calls
-        calls += 1
+        nonlocal renders
+        renders += 1
         return b"%PDF cached"
 
     resume_pdf.clear_resume_pdf_cache()
-    monkeypatch.setattr(resume_pdf, "render_resume_pdf", fake_render_resume_pdf)
+    monkeypatch.setattr(
+        resume_pdf,
+        "_render_resume_pdf_in_subprocess",
+        fake_render,
+    )
     try:
         first = await resume_pdf.get_cached_resume_pdf(dict(RESUME_DATA))
         second = await resume_pdf.get_cached_resume_pdf(dict(RESUME_DATA))
@@ -74,7 +78,7 @@ async def test_cached_resume_pdf_renders_once(monkeypatch: pytest.MonkeyPatch) -
 
     assert first == b"%PDF cached"
     assert second == first
-    assert calls == 1
+    assert renders == 1
 
 
 @requires_weasyprint
