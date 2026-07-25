@@ -61,7 +61,7 @@ const panelWidth = computed(
             class="flex shrink-0 items-start justify-between gap-3 border-b border-surface-border px-6 py-4"
           >
             <div class="min-w-0 flex-1">
-              <slot name="title">
+              <slot name="title" :title-id="titleId">
                 <h2 :id="titleId" class="truncate text-lg font-bold text-surface-light">
                   {{ title }}
                 </h2>

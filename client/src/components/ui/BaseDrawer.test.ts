@@ -44,6 +44,32 @@ describe("BaseDrawer", () => {
     wrapper.unmount();
   });
 
+  it("wires aria-labelledby through a custom #title slot", async () => {
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    document.body.append(trigger);
+    trigger.focus();
+
+    const wrapper = mount(BaseDrawer, {
+      attachTo: document.body,
+      props: { open: true, title: "Fallback title" },
+      slots: {
+        // Scoped slot props are in scope for string slot templates.
+        title: '<h2 :id="titleId">Custom title</h2>',
+        default: "<p>Drawer body</p>",
+      },
+    });
+    await flushFocus();
+
+    const dialog = document.body.querySelector('[role="dialog"]');
+    const labelledBy = dialog?.getAttribute("aria-labelledby");
+    expect(labelledBy).toBeTruthy();
+    const title = document.getElementById(labelledBy!);
+    expect(title?.textContent).toBe("Custom title");
+
+    wrapper.unmount();
+  });
+
   it("focuses the first editable field when the drawer opens", async () => {
     const trigger = document.createElement("button");
     trigger.type = "button";

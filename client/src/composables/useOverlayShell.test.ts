@@ -58,9 +58,12 @@ describe("useOverlayShell", () => {
     panel.value!.innerHTML = '<button type="button">Close</button>';
     document.body.append(panel.value!);
 
+    const header = document.createElement("header");
+    header.id = "site-header";
     const main = document.createElement("main");
     main.id = "main-content";
-    document.body.append(main);
+    const footer = document.createElement("footer");
+    document.body.append(header, main, footer);
 
     const scope = effectScope();
     scope.run(() => {
@@ -71,11 +74,15 @@ describe("useOverlayShell", () => {
       });
     });
     await nextTick();
+    expect(header.hasAttribute("inert")).toBe(true);
     expect(main.hasAttribute("inert")).toBe(true);
+    expect(footer.hasAttribute("inert")).toBe(true);
 
     open.value = false;
     await nextTick();
+    expect(header.hasAttribute("inert")).toBe(false);
     expect(main.hasAttribute("inert")).toBe(false);
+    expect(footer.hasAttribute("inert")).toBe(false);
 
     scope.stop();
   });
