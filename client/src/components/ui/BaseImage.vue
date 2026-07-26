@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 
-import { IMAGE_PLACEHOLDER_SRC } from "@/constants/images";
 import { safeImageSrc } from "@/utils/safeImageSrc";
 
 const props = withDefaults(
@@ -63,12 +62,12 @@ function onError(): void {
 </script>
 
 <template>
-  <div class="relative overflow-hidden" :style="aspectStyle">
-    <img
-      :src="IMAGE_PLACEHOLDER_SRC"
-      alt=""
+  <div class="relative overflow-hidden bg-surface-card" :style="aspectStyle">
+    <div
+      v-if="!safeSrc || !loaded || failed"
+      class="absolute inset-0 bg-surface-border/20"
+      :class="!failed && safeSrc && !loaded ? 'animate-pulse' : undefined"
       aria-hidden="true"
-      class="absolute inset-0 h-full w-full object-cover"
     />
     <img
       v-if="safeSrc && !failed"

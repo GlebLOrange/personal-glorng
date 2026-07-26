@@ -12,7 +12,7 @@ import {
 import { computed } from "vue";
 import { Line } from "vue-chartjs";
 
-import { CHART_COLORS, chartDefaults } from "@/components/charts/chartTheme";
+import { resolveChartTheme } from "@/components/charts/chartTheme";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -21,27 +21,35 @@ const props = defineProps<{
   values: number[];
 }>();
 
-const chartData = computed(() => ({
-  labels: props.labels,
-  datasets: [
-    {
-      label: "Spending",
-      data: props.values,
-      borderColor: CHART_COLORS[0],
-      backgroundColor: `${CHART_COLORS[0]}33`,
-      tension: 0.3,
-      fill: true,
-    },
-  ],
-}));
+const theme = computed(() => resolveChartTheme());
 
-const chartOptions = {
-  ...chartDefaults,
-  plugins: {
-    ...chartDefaults.plugins,
-    legend: { display: false },
-  },
-};
+const chartData = computed(() => {
+  const color = theme.value.colors[0] ?? "#8ec4e0";
+  return {
+    labels: props.labels,
+    datasets: [
+      {
+        label: "Spending",
+        data: props.values,
+        borderColor: color,
+        backgroundColor: `${color}33`,
+        tension: 0.3,
+        fill: true,
+      },
+    ],
+  };
+});
+
+const chartOptions = computed(() => {
+  const { defaults } = theme.value;
+  return {
+    ...defaults,
+    plugins: {
+      ...defaults.plugins,
+      legend: { display: false },
+    },
+  };
+});
 </script>
 
 <template>

@@ -3,7 +3,7 @@ import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { computed } from "vue";
 import { Doughnut } from "vue-chartjs";
 
-import { CHART_COLORS, CHART_TEXT, chartDefaults } from "@/components/charts/chartTheme";
+import { resolveChartTheme } from "@/components/charts/chartTheme";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -12,31 +12,39 @@ const props = defineProps<{
   values: number[];
 }>();
 
-const chartData = computed(() => ({
-  labels: props.labels,
-  datasets: [
-    {
-      data: props.values,
-      backgroundColor: props.labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
-      borderColor: "#141820",
-      borderWidth: 2,
-    },
-  ],
-}));
+const theme = computed(() => resolveChartTheme());
 
-const chartOptions = {
-  ...chartDefaults,
-  scales: undefined,
-  plugins: {
-    legend: {
-      position: "right" as const,
-      labels: {
-        color: CHART_TEXT,
-        font: { family: "IBM Plex Sans, Segoe UI, system-ui, sans-serif", size: 10 },
+const chartData = computed(() => {
+  const { colors } = theme.value;
+  return {
+    labels: props.labels,
+    datasets: [
+      {
+        data: props.values,
+        backgroundColor: props.labels.map((_, i) => colors[i % colors.length]),
+        borderColor: "#141820",
+        borderWidth: 2,
+      },
+    ],
+  };
+});
+
+const chartOptions = computed(() => {
+  const { text } = theme.value;
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "right" as const,
+        labels: {
+          color: text,
+          font: { family: "IBM Plex Sans, Segoe UI, system-ui, sans-serif", size: 10 },
+        },
       },
     },
-  },
-};
+  };
+});
 </script>
 
 <template>

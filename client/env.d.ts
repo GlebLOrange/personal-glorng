@@ -4,6 +4,7 @@ export {};
 
 declare global {
   interface ImportMetaEnv {
+    readonly VITE_PUBLIC_ORIGIN?: string;
     readonly VITE_FIREBASE_ENABLED?: string;
     readonly VITE_FIREBASE_API_KEY?: string;
     readonly VITE_FIREBASE_AUTH_DOMAIN?: string;
