@@ -18,6 +18,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock("vue-router", () => ({
   useRoute: () => ({ path: mocks.routePath, query: mocks.routeQuery }),
   useRouter: () => ({ push: mocks.push, replace: mocks.replace }),
+  RouterLink: {
+    props: ["to"],
+    template: '<a :href="typeof to === \'string\' ? to : \'#\'"><slot /></a>',
+  },
 }));
 
 vi.mock("@/composables/useNotify", () => ({
@@ -58,6 +62,7 @@ describe("CallbackPage", () => {
       state: "oauth-state",
     });
     expect(wrapper.text()).toContain("Connected as octocat");
+    expect(wrapper.text()).toContain("Continue to admin");
 
     await vi.advanceTimersByTimeAsync(2000);
     expect(mocks.push).toHaveBeenCalledWith("/admin");

@@ -17,6 +17,7 @@ import { httpStatusClass } from "@/constants/httpStatusColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
+import { useExpandableIds } from "@/composables/useExpandableIds";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { formatDate } from "@/utils/format";
 
@@ -39,7 +40,7 @@ const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: t
 const level = ref("");
 const requestId = ref("");
 const page = ref(1);
-const expandedEntryIds = ref<Set<number>>(new Set());
+const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
 const LEVEL_FILTERS = [
@@ -85,7 +86,7 @@ async function load(): Promise<void> {
   if (!data) return;
   items.value = data.items;
   total.value = data.total;
-  expandedEntryIds.value = new Set();
+  clearExpanded();
 }
 
 function setLevelFilter(next: string): void {
@@ -122,16 +123,6 @@ function goToPage(nextPage: number): void {
   if (nextPage < 1 || (totalPages.value > 0 && nextPage > totalPages.value)) return;
   page.value = nextPage;
   void load();
-}
-
-function toggleExpanded(entryId: number): void {
-  const next = new Set(expandedEntryIds.value);
-  if (next.has(entryId)) {
-    next.delete(entryId);
-  } else {
-    next.add(entryId);
-  }
-  expandedEntryIds.value = next;
 }
 
 function onRowClick(entry: AppLogEntry): void {
@@ -197,7 +188,7 @@ onMounted(load);
           :key="entry.id"
           :interactive="hasDetails(entry)"
           :expandable="hasDetails(entry)"
-          :expanded="expandedEntryIds.has(entry.id)"
+          :expanded="isExpanded(entry.id)"
           :hoverable="hasDetails(entry)"
           @click="onRowClick(entry)"
         >

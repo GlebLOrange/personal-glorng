@@ -4,6 +4,7 @@ import { computed } from "vue";
 import ExpenseCalculatorShell from "@/components/expense-calculator/ExpenseCalculatorShell.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import { useExpenseCalculator } from "@/composables/useExpenseCalculator";
+import { buildPersistenceHint } from "@/utils/expensePersistenceHint";
 
 const {
   activeMode,
@@ -41,16 +42,13 @@ const budgetOptions = computed(() =>
     .map((row) => ({ id: row.id, name: row.name.trim() })),
 );
 
-const persistenceHint = computed(() => {
-  if (isSuperuser.value) {
-    if (lastSavedAt.value && !stateDirty.value) {
-      return `Saved ${new Date(lastSavedAt.value).toLocaleString()}`;
-    }
-    if (stateDirty.value) return "Unsaved changes";
-    return "Superuser: save to keep data across sessions";
-  }
-  return "Calculations reset when you leave this page.";
-});
+const persistenceHint = computed(() =>
+  buildPersistenceHint({
+    isSuperuser: isSuperuser.value,
+    stateDirty: stateDirty.value,
+    lastSavedAt: lastSavedAt.value,
+  }),
+);
 </script>
 
 <template>

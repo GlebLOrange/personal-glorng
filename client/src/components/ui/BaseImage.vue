@@ -10,6 +10,8 @@ const props = withDefaults(
     lazy?: boolean;
     width?: number | string;
     height?: number | string;
+    srcset?: string;
+    sizes?: string;
   }>(),
   {
     lazy: true,
@@ -73,6 +75,8 @@ function onError(): void {
       v-if="safeSrc && !failed"
       ref="imgRef"
       :src="safeSrc"
+      :srcset="srcset"
+      :sizes="sizes"
       :alt="alt"
       :loading="lazy ? 'lazy' : 'eager'"
       decoding="async"

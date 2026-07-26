@@ -12,7 +12,7 @@ import {
   isValidWeatherLocationQuery,
   localTimeFromOffset,
   weatherAnchorUnixtime,
-  weatherConditionEmoji,
+  weatherConditionKind,
   weatherIanaTimezone,
   weatherUtcOffsetHours,
 } from "@/utils/weather";
@@ -56,15 +56,15 @@ describe("weather time formatting", () => {
   });
 });
 
-describe("weatherConditionEmoji", () => {
+describe("weatherConditionKind", () => {
   it("maps known wttr codes", () => {
-    expect(weatherConditionEmoji("113")).toBe("☀️");
-    expect(weatherConditionEmoji("296")).toBe("🌧️");
+    expect(weatherConditionKind("113")).toBe("clear");
+    expect(weatherConditionKind("296")).toBe("rain");
   });
 
-  it("falls back to description or generic icon", () => {
-    expect(weatherConditionEmoji(undefined, "Partly cloudy")).toBe("☁️");
-    expect(weatherConditionEmoji("99999")).toBe("🌡️");
+  it("falls back to description or unknown", () => {
+    expect(weatherConditionKind(undefined, "Partly cloudy")).toBe("partly");
+    expect(weatherConditionKind("99999")).toBe("unknown");
   });
 });
 

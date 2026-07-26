@@ -15,6 +15,7 @@ import ErrorState from "@/components/ui/ErrorState.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import StatusIcon from "@/components/icons/StatusIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { newsSourceEnabledClass } from "@/constants/filterColors";
 import { ENABLED_FILTERS, useNewsSources } from "@/composables/useNewsSources";
@@ -179,11 +180,11 @@ async function onSurfaceTab(id: string): Promise<void> {
             <template #actions>
               <span
                 v-if="source.last_error"
-                class="text-xs text-status-warning"
+                class="inline-flex text-status-warning"
                 :title="source.last_error"
                 aria-label="Source has fetch error"
               >
-                ⚠
+                <StatusIcon status="warning" class-name="size-4" />
               </span>
               <IconEditButton
                 v-if="canWrite"

@@ -15,6 +15,7 @@ import { auditCategoryClass } from "@/constants/filterColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
+import { useExpandableIds } from "@/composables/useExpandableIds";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { formatDate } from "@/utils/format";
 
@@ -37,7 +38,7 @@ const total = ref(0);
 const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: true });
 const category = ref("");
 const page = ref(1);
-const expandedEventIds = ref<Set<number>>(new Set());
+const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
 const CATEGORY_FILTERS = [
@@ -76,7 +77,7 @@ async function load(): Promise<void> {
   if (!data) return;
   items.value = data.items;
   total.value = data.total;
-  expandedEventIds.value = new Set();
+  clearExpanded();
 }
 
 function setCategoryFilter(next: string): void {
@@ -97,16 +98,6 @@ function goToPage(nextPage: number): void {
   if (nextPage < 1 || (totalPages.value > 0 && nextPage > totalPages.value)) return;
   page.value = nextPage;
   void load();
-}
-
-function toggleExpanded(eventId: number): void {
-  const next = new Set(expandedEventIds.value);
-  if (next.has(eventId)) {
-    next.delete(eventId);
-  } else {
-    next.add(eventId);
-  }
-  expandedEventIds.value = next;
 }
 
 function actorLabel(event: AuditEvent): string {
@@ -161,7 +152,7 @@ onMounted(load);
           :key="event.id"
           interactive
           expandable
-          :expanded="expandedEventIds.has(event.id)"
+          :expanded="isExpanded(event.id)"
           @click="toggleExpanded(event.id)"
         >
           <template #badge>

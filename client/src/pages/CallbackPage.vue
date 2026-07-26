@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import AuthPageShell from "@/components/auth/AuthPageShell.vue";
+import StatusIcon from "@/components/icons/StatusIcon.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
@@ -65,13 +66,14 @@ onUnmounted(() => {
       </div>
 
       <div v-else-if="status === 'success'" class="space-y-4">
-        <p class="text-2xl" aria-hidden="true">&#10003;</p>
+        <StatusIcon status="success" class-name="mx-auto size-8" />
         <p class="text-surface-light font-medium">{{ message }}</p>
         <p class="text-xs text-surface-mid">Redirecting to admin…</p>
+        <RouterLink to="/admin" class="nav-link text-sm">Continue to admin</RouterLink>
       </div>
 
       <div v-else class="space-y-4" role="alert">
-        <p class="text-2xl" aria-hidden="true">&#10007;</p>
+        <StatusIcon status="error" class-name="mx-auto size-8" />
         <p class="text-surface-light font-medium">{{ message }}</p>
       </div>
     </div>

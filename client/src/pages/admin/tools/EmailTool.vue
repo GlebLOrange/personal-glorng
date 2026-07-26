@@ -115,7 +115,12 @@ async function preview(): Promise<void> {
       />
     </form>
 
-    <div v-if="previewHtml" class="space-y-2">
+    <div
+      v-if="previewHtml"
+      class="space-y-2"
+      role="status"
+      aria-live="polite"
+    >
       <h3 class="text-sm text-surface-mid">preview</h3>
       <!-- eslint-disable-next-line vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
       <div

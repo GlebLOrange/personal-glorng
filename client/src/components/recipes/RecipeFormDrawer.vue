@@ -1,19 +1,16 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed } from "vue";
 
-import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import RecipeIngredientFields from "@/components/recipes/RecipeIngredientFields.vue";
+import RecipeStepFields from "@/components/recipes/RecipeStepFields.vue";
+import RecipeTagFields from "@/components/recipes/RecipeTagFields.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
-import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
-import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
-import IconActionButton from "@/components/ui/IconActionButton.vue";
-import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { RECIPE_TAG_LIMIT, RECIPE_TAG_SET, RECIPE_TAGS } from "@/constants/recipes";
 import type { RecipeFormData } from "@/composables/useRecipes";
 
 const props = defineProps<{
@@ -31,163 +28,8 @@ const emit = defineEmits<{
 
 const showImagePreview = computed(() => Boolean(props.form.image_url.trim()));
 
-/** Filled (trimmed) lines — same filter as save. */
-function filledLines(items: string[]): string[] {
-  return items.map((item) => item.trim()).filter(Boolean);
-}
-
-function filledCount(items: string[]): number {
-  return filledLines(items).length;
-}
-
-const ingredientCount = computed(() => filledCount(props.form.ingredients));
-const stepCount = computed(() => filledCount(props.form.steps));
-
-const selectedTags = computed(() =>
-  props.form.tags
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean),
-);
-
-/** Catalog tags plus any selected custom/imported tags not in the curated list. */
-const tagChoices = computed(() => {
-  const extras = selectedTags.value.filter((tag) => !RECIPE_TAG_SET.has(tag));
-  return [...RECIPE_TAGS, ...extras];
-});
-
-function tagIsSelected(tag: string): boolean {
-  return selectedTags.value.includes(tag);
-}
-
-function toggleTag(tag: string): void {
-  const tags = selectedTags.value;
-  if (tags.includes(tag)) {
-    patch({ tags: tags.filter((item) => item !== tag).join(", ") });
-    return;
-  }
-  if (tags.length >= RECIPE_TAG_LIMIT) return;
-  patch({ tags: [...tags, tag].join(", ") });
-}
-
-// Uncontrolled <details>; set .open on drawer open so Vue doesn't fight native toggles.
-const ingredientsDetails = ref<HTMLDetailsElement | null>(null);
-const stepsDetails = ref<HTMLDetailsElement | null>(null);
-const tagsDetails = ref<HTMLDetailsElement | null>(null);
-
-watch(
-  () => props.open,
-  async (isOpen) => {
-    if (!isOpen) return;
-    await nextTick();
-    if (ingredientsDetails.value) ingredientsDetails.value.open = true;
-    if (stepsDetails.value) stepsDetails.value.open = true;
-    if (tagsDetails.value) tagsDetails.value.open = false;
-  },
-);
-
 function patch(patch: Partial<RecipeFormData>): void {
   emit("update:form", { ...props.form, ...patch });
-}
-
-async function focusField(selector: string, index: number): Promise<void> {
-  await nextTick();
-  const fields = document.querySelectorAll<HTMLElement>(selector);
-  fields[index]?.focus();
-}
-
-function addIngredient(): void {
-  patch({ ingredients: [...props.form.ingredients, ""] });
-  void focusField("[data-recipe-ingredient]", props.form.ingredients.length);
-}
-
-function removeIngredient(index: number): void {
-  if (props.form.ingredients.length <= 1) return;
-  patch({ ingredients: props.form.ingredients.filter((_, i) => i !== index) });
-}
-
-function updateIngredient(index: number, value: string): void {
-  const ingredients = [...props.form.ingredients];
-  ingredients[index] = value;
-  patch({ ingredients });
-}
-
-function moveIngredient(index: number, direction: -1 | 1): void {
-  const nextIndex = index + direction;
-  if (nextIndex < 0 || nextIndex >= props.form.ingredients.length) return;
-  const ingredients = [...props.form.ingredients];
-  [ingredients[index], ingredients[nextIndex]] = [ingredients[nextIndex], ingredients[index]];
-  patch({ ingredients });
-}
-
-function onIngredientEnter(event: KeyboardEvent, index: number): void {
-  if (event.key !== "Enter") return;
-  event.preventDefault();
-  // Insert after current row so Enter mid-list adds the next line in place.
-  const ingredients = [...props.form.ingredients];
-  ingredients.splice(index + 1, 0, "");
-  patch({ ingredients });
-  void focusField("[data-recipe-ingredient]", index + 1);
-}
-
-function splitPasteLines(text: string): string[] {
-  return text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
-function onIngredientPaste(event: ClipboardEvent, index: number): void {
-  const lines = splitPasteLines(event.clipboardData?.getData("text") ?? "");
-  if (lines.length < 2) return;
-  event.preventDefault();
-  const ingredients = [...props.form.ingredients];
-  ingredients.splice(index, 1, ...lines);
-  patch({ ingredients });
-  void focusField("[data-recipe-ingredient]", index + lines.length - 1);
-}
-
-function addStep(): void {
-  patch({ steps: [...props.form.steps, ""] });
-  void focusField("[data-recipe-step]", props.form.steps.length);
-}
-
-function removeStep(index: number): void {
-  if (props.form.steps.length <= 1) return;
-  patch({ steps: props.form.steps.filter((_, i) => i !== index) });
-}
-
-function updateStep(index: number, value: string): void {
-  const steps = [...props.form.steps];
-  steps[index] = value;
-  patch({ steps });
-}
-
-function moveStep(index: number, direction: -1 | 1): void {
-  const nextIndex = index + direction;
-  if (nextIndex < 0 || nextIndex >= props.form.steps.length) return;
-  const steps = [...props.form.steps];
-  [steps[index], steps[nextIndex]] = [steps[nextIndex], steps[index]];
-  patch({ steps });
-}
-
-function onStepModEnter(event: KeyboardEvent, index: number): void {
-  if (event.key !== "Enter" || !(event.metaKey || event.ctrlKey)) return;
-  event.preventDefault();
-  const steps = [...props.form.steps];
-  steps.splice(index + 1, 0, "");
-  patch({ steps });
-  void focusField("[data-recipe-step]", index + 1);
-}
-
-function onStepPaste(event: ClipboardEvent, index: number): void {
-  const lines = splitPasteLines(event.clipboardData?.getData("text") ?? "");
-  if (lines.length < 2) return;
-  event.preventDefault();
-  const steps = [...props.form.steps];
-  steps.splice(index, 1, ...lines);
-  patch({ steps });
-  void focusField("[data-recipe-step]", index + lines.length - 1);
 }
 
 function toStringValue(value: string | number | null | undefined): string {
@@ -248,168 +90,23 @@ function toNullableNumber(value: string | number | null | undefined): number | n
         </div>
       </div>
 
-      <details ref="ingredientsDetails" class="group rounded border border-surface-border" open>
-        <summary
-          class="flex h-8 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
-        >
-          <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
-          ingredients ({{ ingredientCount }})
-        </summary>
-        <div class="space-y-1 border-t border-surface-border px-2 py-2">
-          <ul role="list" class="space-y-1">
-            <li
-              v-for="(_, idx) in form.ingredients"
-              :key="`ingredient-${idx}`"
-              class="flex min-w-0 items-center gap-1"
-            >
-              <BaseInput
-                compact
-                :model-value="form.ingredients[idx]"
-                class="min-w-0 flex-1"
-                placeholder="200g flour"
-                :aria-label="`ingredient ${idx + 1}`"
-                data-recipe-ingredient
-                @update:model-value="updateIngredient(idx, toStringValue($event))"
-                @keydown="onIngredientEnter($event, idx)"
-                @paste="onIngredientPaste($event, idx)"
-              />
-              <IconCloseButton
-                v-if="form.ingredients.length > 1"
-                :aria-label="`remove ingredient ${idx + 1}`"
-                @click="removeIngredient(idx)"
-              />
-              <BaseDropdownMenu
-                v-if="form.ingredients.length > 1"
-                :aria-label="`ingredient ${idx + 1} actions`"
-                placement="bottom"
-              >
-                <template #default="{ close: closeMenu }">
-                  <BaseDropdownMenuItem
-                    v-if="idx > 0"
-                    @select="
-                      closeMenu();
-                      moveIngredient(idx, -1);
-                    "
-                  >
-                    move up
-                  </BaseDropdownMenuItem>
-                  <BaseDropdownMenuItem
-                    v-if="idx < form.ingredients.length - 1"
-                    @select="
-                      closeMenu();
-                      moveIngredient(idx, 1);
-                    "
-                  >
-                    move down
-                  </BaseDropdownMenuItem>
-                </template>
-              </BaseDropdownMenu>
-            </li>
-          </ul>
-          <IconActionButton type="button" title="add ingredient" aria-label="add ingredient" @click="addIngredient">
-            +
-          </IconActionButton>
-        </div>
-      </details>
+      <RecipeIngredientFields
+        :ingredients="form.ingredients"
+        :form-open="open"
+        @update:ingredients="patch({ ingredients: $event })"
+      />
 
-      <details ref="stepsDetails" class="group rounded border border-surface-border" open>
-        <summary
-          class="flex h-8 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
-        >
-          <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
-          steps ({{ stepCount }})
-        </summary>
-        <div class="space-y-1 border-t border-surface-border px-2 py-2">
-          <ul role="list" class="space-y-1">
-            <li
-              v-for="(_, idx) in form.steps"
-              :key="`step-${idx}`"
-              class="flex min-w-0 items-start gap-1"
-            >
-              <span
-                class="inline-flex h-8 w-5 shrink-0 items-center justify-center text-xs text-surface-mid"
-                aria-hidden="true"
-              >
-                {{ idx + 1 }}
-              </span>
-              <BaseTextarea
-                compact
-                :model-value="form.steps[idx]"
-                class="min-w-0 flex-1"
-                :rows="2"
-                placeholder="Preheat oven to 200°C"
-                :aria-label="`step ${idx + 1}`"
-                data-recipe-step
-                @update:model-value="updateStep(idx, String($event ?? ''))"
-                @keydown="onStepModEnter($event, idx)"
-                @paste="onStepPaste($event, idx)"
-              />
-              <IconCloseButton
-                v-if="form.steps.length > 1"
-                :aria-label="`remove step ${idx + 1}`"
-                @click="removeStep(idx)"
-              />
-              <BaseDropdownMenu
-                v-if="form.steps.length > 1"
-                :aria-label="`step ${idx + 1} actions`"
-                placement="bottom"
-              >
-                <template #default="{ close: closeMenu }">
-                  <BaseDropdownMenuItem
-                    v-if="idx > 0"
-                    @select="
-                      closeMenu();
-                      moveStep(idx, -1);
-                    "
-                  >
-                    move up
-                  </BaseDropdownMenuItem>
-                  <BaseDropdownMenuItem
-                    v-if="idx < form.steps.length - 1"
-                    @select="
-                      closeMenu();
-                      moveStep(idx, 1);
-                    "
-                  >
-                    move down
-                  </BaseDropdownMenuItem>
-                </template>
-              </BaseDropdownMenu>
-            </li>
-          </ul>
-          <IconActionButton type="button" title="add step" aria-label="add step" @click="addStep">
-            +
-          </IconActionButton>
-        </div>
-      </details>
+      <RecipeStepFields
+        :steps="form.steps"
+        :form-open="open"
+        @update:steps="patch({ steps: $event })"
+      />
 
-      <details ref="tagsDetails" class="group rounded border border-surface-border">
-        <summary
-          class="flex h-8 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
-        >
-          <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
-          tags ({{ selectedTags.length }}/{{ RECIPE_TAG_LIMIT }})
-        </summary>
-        <div class="flex flex-wrap gap-1.5 border-t border-surface-border px-2 py-2">
-          <button
-            v-for="tag in tagChoices"
-            :key="tag"
-            type="button"
-            class="inline-flex items-center rounded border px-2 py-1 text-xs transition-colors"
-            :class="{
-              'border-accent-blue/40 bg-accent-blue/15 text-accent-blue': tagIsSelected(tag),
-              'border-transparent text-surface-mid hover:border-surface-border/50':
-                !tagIsSelected(tag),
-              'opacity-50': !tagIsSelected(tag) && selectedTags.length >= RECIPE_TAG_LIMIT,
-            }"
-            :aria-pressed="tagIsSelected(tag)"
-            :disabled="!tagIsSelected(tag) && selectedTags.length >= RECIPE_TAG_LIMIT"
-            @click="toggleTag(tag)"
-          >
-            {{ tag }}
-          </button>
-        </div>
-      </details>
+      <RecipeTagFields
+        :tags="form.tags"
+        :form-open="open"
+        @update:tags="patch({ tags: $event })"
+      />
 
       <BaseTextarea
         compact

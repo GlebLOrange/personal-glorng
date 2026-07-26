@@ -9,14 +9,14 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
-import { passwordStrength } from "@/utils/passwordPolicy";
+import { passwordStrength, PASSWORD_MIN_LENGTH } from "@/utils/passwordPolicy";
 
 interface PasswordGeneratorResponse {
   password: string;
   length: number;
 }
 
-const length = ref(16);
+const length = ref(Math.max(16, PASSWORD_MIN_LENGTH));
 const uppercase = ref(true);
 const lowercase = ref(true);
 const digits = ref(true);
@@ -32,6 +32,10 @@ const hasCharset = computed(
   () => uppercase.value || lowercase.value || digits.value || symbols.value,
 );
 
+const clampedLength = computed(() =>
+  Math.min(128, Math.max(PASSWORD_MIN_LENGTH, Number(length.value) || PASSWORD_MIN_LENGTH)),
+);
+
 const strength = computed(() => passwordStrength(generated.value));
 
 const displayPassword = computed(() => {
@@ -41,11 +45,12 @@ const displayPassword = computed(() => {
 
 async function generatePassword(): Promise<void> {
   if (!hasCharset.value) return;
+  length.value = clampedLength.value;
 
   const result = await run(
     () =>
       api.post<PasswordGeneratorResponse>("/tools/password-generator", {
-        length: length.value,
+        length: clampedLength.value,
         uppercase: uppercase.value,
         lowercase: lowercase.value,
         digits: digits.value,
@@ -75,8 +80,10 @@ async function generatePassword(): Promise<void> {
         <BaseInput
           v-model.number="length"
           type="number"
+          :min="PASSWORD_MIN_LENGTH"
+          :max="128"
           label="length"
-          placeholder="8–128"
+          :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
         />
 
         <fieldset class="space-y-2">

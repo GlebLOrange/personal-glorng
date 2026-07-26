@@ -16,6 +16,7 @@ import {
   useExpensesTool,
   type ExpenseQuickAddTarget,
 } from "@/composables/useExpensesTool";
+import { buildPersistenceHint } from "@/utils/expensePersistenceHint";
 
 const ExpenseInsights = defineAsyncComponent(
   () => import("@/components/expenses/ExpenseInsights.vue"),
@@ -143,16 +144,13 @@ const budgetOptions = computed(() =>
     .map((row) => ({ id: row.id, name: row.name.trim() })),
 );
 
-const persistenceHint = computed(() => {
-  if (isSuperuser.value) {
-    if (lastSavedAt.value && !stateDirty.value) {
-      return `Saved ${new Date(lastSavedAt.value).toLocaleString()}`;
-    }
-    if (stateDirty.value) return "Unsaved changes";
-    return "Superuser: save to keep data across sessions";
-  }
-  return "Calculations reset when you leave this page.";
-});
+const persistenceHint = computed(() =>
+  buildPersistenceHint({
+    isSuperuser: isSuperuser.value,
+    stateDirty: stateDirty.value,
+    lastSavedAt: lastSavedAt.value,
+  }),
+);
 
 function retrySummaryAndRates(): void {
   void Promise.all([loadSummary(), loadRates()]);

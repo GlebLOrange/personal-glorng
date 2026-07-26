@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted } from "vue";
 
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
-import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import RecipeCard from "@/components/recipes/RecipeCard.vue";
@@ -18,9 +17,6 @@ import { usePermissions } from "@/composables/usePermissions";
 import { useRecipes } from "@/composables/useRecipes";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import type { Recipe } from "@/types";
-
-const RECIPE_TABS = [{ id: "all", label: "all" }] as const;
-const activeTab = ref("all");
 
 const { can } = usePermissions();
 const canWrite = computed(() => can("recipes", "write"));
@@ -95,20 +91,8 @@ function editRecipeFromCard(recipe: Recipe): void {
     max-width="xl"
     :narrow="false"
   >
-    <div class="mb-3 flex min-w-0 flex-wrap items-center gap-2">
-      <AdminTabBar
-        v-model="activeTab"
-        flush
-        panel-id-prefix="recipes-tab"
-        :tabs="[...RECIPE_TABS]"
-      />
-      <ToolbarPillButton
-        v-if="canWrite"
-        family="2xx"
-        class="ml-auto"
-        :disabled="listLoading"
-        @click="openCreate"
-      >
+    <div v-if="canWrite" class="mb-3 flex min-w-0 flex-wrap items-center justify-end gap-2">
+      <ToolbarPillButton family="2xx" :disabled="listLoading" @click="openCreate">
         + recipe
       </ToolbarPillButton>
     </div>
