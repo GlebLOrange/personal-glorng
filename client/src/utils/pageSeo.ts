@@ -12,6 +12,8 @@ export type PageSeoInput = {
   /** Absolute or root-relative path; defaults to current location. */
   path?: string | null;
   noindex?: boolean;
+  /** When true, set `<link rel="amphtml">` to absolute `/amp`; otherwise remove it. */
+  amphtml?: boolean;
 };
 
 function upsertMeta(attr: "name" | "property", key: string, content: string): void {
@@ -25,10 +27,35 @@ function upsertMeta(attr: "name" | "property", key: string, content: string): vo
   el.setAttribute("content", content);
 }
 
-function absoluteUrl(pathOrUrl: string): string {
+/** Prefer build-time public origin for crawler-stable OG URLs; fall back to window. */
+export function publicOrigin(): string {
+  const fromEnv =
+    typeof import.meta.env.VITE_PUBLIC_ORIGIN === "string"
+      ? import.meta.env.VITE_PUBLIC_ORIGIN.trim()
+      : "";
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  return window.location.origin;
+}
+
+export function absoluteUrl(pathOrUrl: string): string {
   if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
   const path = pathOrUrl.startsWith("/") ? pathOrUrl : `/${pathOrUrl}`;
-  return new URL(path, window.location.origin).href;
+  return new URL(path, `${publicOrigin()}/`).href;
+}
+
+function setAmphtmlLink(enabled: boolean): void {
+  const existing = document.head.querySelector('link[rel="amphtml"]');
+  if (!enabled) {
+    existing?.remove();
+    return;
+  }
+  let el = existing;
+  if (!(el instanceof HTMLLinkElement)) {
+    el = document.createElement("link");
+    el.setAttribute("rel", "amphtml");
+    document.head.appendChild(el);
+  }
+  el.setAttribute("href", absoluteUrl("/amp"));
 }
 
 /**
@@ -58,6 +85,10 @@ export function applyPageSeo(input: PageSeoInput = {}): void {
   upsertMeta("name", "twitter:title", title);
   upsertMeta("name", "twitter:description", description);
   upsertMeta("name", "twitter:image", image);
+
+  if (input.amphtml !== undefined) {
+    setAmphtmlLink(input.amphtml);
+  }
 }
 
 /** Reset to the default portfolio SEO shell (used by catch-all / errors). */
@@ -66,5 +97,6 @@ export function applyDefaultPageSeo(): void {
     title: DEFAULT_DOCUMENT_TITLE,
     description: DEFAULT_DESCRIPTION,
     path: "/",
+    amphtml: true,
   });
 }

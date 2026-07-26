@@ -1,11 +1,13 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { DEFAULT_DESCRIPTION, DEFAULT_DOCUMENT_TITLE, formatDocumentTitle } from "@/constants/seo";
-import { applyPageSeo } from "@/utils/pageSeo";
+import { absoluteUrl, applyPageSeo, publicOrigin } from "@/utils/pageSeo";
 
 afterEach(() => {
   document.title = "";
   document.head.querySelectorAll("meta[name], meta[property]").forEach((el) => el.remove());
+  document.head.querySelectorAll('link[rel="amphtml"]').forEach((el) => el.remove());
+  vi.unstubAllEnvs();
 });
 
 describe("formatDocumentTitle", () => {
@@ -16,6 +18,21 @@ describe("formatDocumentTitle", () => {
 
   it("suffixes page titles with the site name", () => {
     expect(formatDocumentTitle("Tools")).toBe("Tools — Gleb.Y");
+  });
+});
+
+describe("absoluteUrl / publicOrigin", () => {
+  it("prefers VITE_PUBLIC_ORIGIN when set", () => {
+    vi.stubEnv("VITE_PUBLIC_ORIGIN", "https://example.test/");
+    expect(publicOrigin()).toBe("https://example.test");
+    expect(absoluteUrl("/apple-touch-icon.png")).toBe(
+      "https://example.test/apple-touch-icon.png",
+    );
+  });
+
+  it("falls back to window.location.origin", () => {
+    vi.stubEnv("VITE_PUBLIC_ORIGIN", "");
+    expect(absoluteUrl("/tools")).toBe(`${window.location.origin}/tools`);
   });
 });
 
@@ -54,5 +71,15 @@ describe("applyPageSeo", () => {
     expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe(
       DEFAULT_DESCRIPTION,
     );
+  });
+
+  it("sets amphtml only when requested", () => {
+    applyPageSeo({ title: "Home", path: "/", amphtml: true });
+    const link = document.querySelector('link[rel="amphtml"]');
+    expect(link).toBeTruthy();
+    expect(link?.getAttribute("href")).toContain("/amp");
+
+    applyPageSeo({ title: "News", path: "/news", amphtml: false });
+    expect(document.querySelector('link[rel="amphtml"]')).toBeNull();
   });
 });

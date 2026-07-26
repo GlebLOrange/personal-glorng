@@ -11,7 +11,7 @@ import {
 import { computed } from "vue";
 import { Bar } from "vue-chartjs";
 
-import { CHART_COLORS, chartDefaults } from "@/components/charts/chartTheme";
+import { resolveChartTheme } from "@/components/charts/chartTheme";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -24,25 +24,33 @@ const props = withDefaults(
   { horizontal: false },
 );
 
-const chartData = computed(() => ({
-  labels: props.labels,
-  datasets: [
-    {
-      label: "Total",
-      data: props.values,
-      backgroundColor: props.labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
-    },
-  ],
-}));
+const theme = computed(() => resolveChartTheme());
 
-const chartOptions = computed(() => ({
-  ...chartDefaults,
-  indexAxis: props.horizontal ? ("y" as const) : ("x" as const),
-  plugins: {
-    ...chartDefaults.plugins,
-    legend: { display: false },
-  },
-}));
+const chartData = computed(() => {
+  const { colors } = theme.value;
+  return {
+    labels: props.labels,
+    datasets: [
+      {
+        label: "Total",
+        data: props.values,
+        backgroundColor: props.labels.map((_, i) => colors[i % colors.length]),
+      },
+    ],
+  };
+});
+
+const chartOptions = computed(() => {
+  const { defaults } = theme.value;
+  return {
+    ...defaults,
+    indexAxis: props.horizontal ? ("y" as const) : ("x" as const),
+    plugins: {
+      ...defaults.plugins,
+      legend: { display: false },
+    },
+  };
+});
 </script>
 
 <template>

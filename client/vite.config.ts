@@ -27,6 +27,15 @@ export default defineConfig(({ mode }) => {
             if (id.includes("node_modules/firebase")) {
               return "firebase";
             }
+            if (id.includes("node_modules/axios")) {
+              return "axios";
+            }
+            if (id.includes("node_modules/dompurify")) {
+              return "dompurify";
+            }
+            if (id.includes("node_modules/vanilla-cookieconsent")) {
+              return "cookieconsent";
+            }
             if (
               id.includes("node_modules/vue/") ||
               id.includes("node_modules/@vue/") ||
@@ -42,6 +51,13 @@ export default defineConfig(({ mode }) => {
     plugins: [
       vue(),
       tailwindcss(),
+      {
+        name: "html-public-origin",
+        transformIndexHtml(html) {
+          const origin = (env.VITE_PUBLIC_ORIGIN || "http://localhost:3000").replace(/\/$/, "");
+          return html.replaceAll("__PUBLIC_ORIGIN__", origin);
+        },
+      },
       sentryVitePlugin({
         org: process.env.SENTRY_ORG || env.SENTRY_ORG,
         project: process.env.SENTRY_PROJECT || env.SENTRY_PROJECT,

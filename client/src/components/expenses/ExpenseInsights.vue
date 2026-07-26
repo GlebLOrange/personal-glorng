@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, defineAsyncComponent } from "vue";
 
-import ExpenseBarChart from "@/components/charts/ExpenseBarChart.vue";
-import ExpenseDoughnutChart from "@/components/charts/ExpenseDoughnutChart.vue";
-import ExpenseLineChart from "@/components/charts/ExpenseLineChart.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 import type { ExpenseCategory, ExpenseSummary } from "@/types";
+
+const ExpenseBarChart = defineAsyncComponent(() => import("@/components/charts/ExpenseBarChart.vue"));
+const ExpenseDoughnutChart = defineAsyncComponent(
+  () => import("@/components/charts/ExpenseDoughnutChart.vue"),
+);
+const ExpenseLineChart = defineAsyncComponent(() => import("@/components/charts/ExpenseLineChart.vue"));
 
 const props = defineProps<{
   hasChartData: boolean;

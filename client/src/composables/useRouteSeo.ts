@@ -7,6 +7,7 @@ import { scrubSensitivePath } from "@/utils/sensitiveUrl";
  */
 export function applyRouteSeo(to: {
   fullPath: string;
+  name?: unknown;
   meta: {
     title?: unknown;
     description?: unknown;
@@ -20,10 +21,12 @@ export function applyRouteSeo(to: {
   // Auth/noindex pages: pathname only (no secrets in og:url). Otherwise scrub sensitive query keys.
   const scrubbed = scrubSensitivePath(to.fullPath);
   const pathname = scrubbed.replace(/[?#].*$/, "");
+  const isPortfolio = to.name === "portfolio" || pathname === "/";
   applyPageSeo({
     title,
     description,
     path: noindex ? pathname : scrubbed,
     noindex,
+    amphtml: isPortfolio,
   });
 }
