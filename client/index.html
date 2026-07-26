@@ -7,7 +7,7 @@
       name="description"
       content="Gleb.Y — developer portfolio, tools, and curated news. Full-stack delivery of web apps, APIs, and product platforms."
     />
-    <meta name="theme-color" content="#141820" />
+    <meta name="theme-color" content="#111827" />
     <meta property="og:site_name" content="Gleb.Y" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Gleb.Y — Developer Portfolio" />
@@ -28,6 +28,31 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <title>Gleb.Y — Developer Portfolio</title>
+    <script>
+      /* FOUC: apply data-theme before CSS paint. Key must match COLOR_THEME_STORAGE_KEY. */
+      (function () {
+        try {
+          var key = "glorng-color-theme";
+          var pref = localStorage.getItem(key);
+          var theme = "dark";
+          if (pref === "light" || pref === "dark") {
+            theme = pref;
+          } else if (pref === "system") {
+            theme =
+              window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          }
+          document.documentElement.setAttribute("data-theme", theme);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute("content", theme === "light" ? "#f9f9fb" : "#111827");
+          }
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

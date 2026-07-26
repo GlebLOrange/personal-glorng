@@ -13,6 +13,7 @@ import { computed } from "vue";
 import { Line } from "vue-chartjs";
 
 import { resolveChartTheme } from "@/components/charts/chartTheme";
+import { colorThemeResolved } from "@/composables/useColorTheme";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -21,7 +22,10 @@ const props = defineProps<{
   values: number[];
 }>();
 
-const theme = computed(() => resolveChartTheme());
+const theme = computed(() => {
+  void colorThemeResolved.value;
+  return resolveChartTheme();
+});
 
 const chartData = computed(() => {
   const color = theme.value.colors[0] ?? "#8ec4e0";

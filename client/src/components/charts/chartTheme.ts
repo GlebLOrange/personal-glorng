@@ -1,19 +1,19 @@
 /** Chart palette — resolves CSS theme tokens at runtime (canvas needs concrete colors). */
 
+/** Dark-theme pale fallbacks (match main.css :root / data-theme=dark). */
 const CHART_COLOR_VARS = [
   ["--color-accent-blue", "#8ec4e0"],
   ["--color-status-success", "#7bc49a"],
   ["--color-status-warning", "#d4ce94"],
   ["--color-status-error", "#e88a8a"],
   ["--color-status-critical", "#d98aad"],
-  ["--color-surface-mid", "#d4cdc6"],
+  ["--color-surface-mid", "#d1d5db"],
   ["--color-surface-muted", "#a39d97"],
   ["--color-surface-border", "#6b7a90"],
 ] as const;
 
-/** Darker mix for grid lines — border token is too light on canvas. */
 const CHART_GRID_FALLBACK = "#2e3a4e";
-const CHART_TEXT_FALLBACK = "#d4cdc6";
+const CHART_TEXT_FALLBACK = "#d1d5db";
 const FONT_FAMILY = "IBM Plex Sans, Segoe UI, system-ui, sans-serif";
 
 function cssVar(name: string, fallback: string): string {
@@ -54,7 +54,7 @@ export type ChartTheme = {
 export function resolveChartTheme(): ChartTheme {
   const colors = CHART_COLOR_VARS.map(([name, fallback]) => cssVar(name, fallback));
   const text = cssVar("--color-surface-mid", CHART_TEXT_FALLBACK);
-  const grid = CHART_GRID_FALLBACK;
+  const grid = cssVar("--color-surface-grid", CHART_GRID_FALLBACK);
 
   return {
     colors,

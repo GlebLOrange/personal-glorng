@@ -191,11 +191,11 @@ def render_resume_html(resume: dict[str, Any]) -> str:
       font-family: Arial, Helvetica, sans-serif;
       font-size: 9.7pt;
       line-height: 1.36;
-      color: #172033;
+      color: #111827;
       margin: 0;
     }}
     header {{
-      border-bottom: 2px solid #1f4f78;
+      border-bottom: 2px solid #7aa3d4;
       padding-bottom: 0.45rem;
       margin-bottom: 0.75rem;
     }}
@@ -204,36 +204,36 @@ def render_resume_html(resume: dict[str, Any]) -> str:
       line-height: 1;
       letter-spacing: -0.03em;
       margin: 0 0 0.18rem;
-      color: #0b1220;
+      color: #111827;
     }}
     .title {{
       font-size: 12.5pt;
       font-weight: 700;
-      color: #1f4f78;
+      color: #7aa3d4;
       margin: 0 0 0.22rem;
     }}
     .header-meta {{
       font-size: 9.5pt;
-      color: #46566f;
+      color: #6b7280;
       margin: 0 0 0.45rem;
     }}
     .bio {{
       margin: 0.45rem 0 0;
-      color: #263447;
+      color: #374151;
     }}
     h2 {{
       font-size: 8.5pt;
       letter-spacing: 0.09em;
       text-transform: uppercase;
-      color: #1f4f78;
-      border-bottom: 1px solid #cfd8e3;
+      color: #7aa3d4;
+      border-bottom: 1px solid #d1d5db;
       padding-bottom: 0.14rem;
       margin: 0.82rem 0 0.38rem;
     }}
     h3 {{
       font-size: 10pt;
       margin: 0 0 0.06rem;
-      color: #0b1220;
+      color: #111827;
     }}
     .entry {{
       margin-bottom: 0.55rem;
@@ -248,11 +248,11 @@ def render_resume_html(resume: dict[str, Any]) -> str:
     }}
     .period {{
       font-size: 8.8pt;
-      color: #607086;
+      color: #9ca3af;
       white-space: nowrap;
     }}
     .subtle {{
-      color: #1f4f78;
+      color: #7aa3d4;
       font-weight: 700;
       margin: 0;
     }}
@@ -270,38 +270,38 @@ def render_resume_html(resume: dict[str, Any]) -> str:
     .skill-group h3 {{
       display: inline;
       font-size: 9.2pt;
-      color: #0b1220;
+      color: #111827;
       margin: 0;
     }}
     .skill-group h3::after {{
       content: ": ";
-      color: #607086;
+      color: #9ca3af;
     }}
     .skill-summary {{
       display: block;
       font-size: 8.5pt;
-      color: #607086;
+      color: #9ca3af;
       margin: 0.02rem 0 0.04rem;
     }}
     .skill-group p:not(.skill-summary) {{
       display: inline;
-      color: #263447;
+      color: #374151;
     }}
     .highlights {{
       margin: 0.18rem 0 0;
       padding-left: 0.95rem;
-      color: #263447;
+      color: #374151;
     }}
     .highlights li {{
       margin-bottom: 0.12rem;
     }}
     .tech {{
-      color: #607086;
+      color: #9ca3af;
       font-size: 8.8pt;
       margin: 0.16rem 0 0;
     }}
     a {{
-      color: #1f4f78;
+      color: #7aa3d4;
       text-decoration: none;
     }}
     .contact {{
@@ -315,7 +315,7 @@ def render_resume_html(resume: dict[str, Any]) -> str:
       white-space: nowrap;
     }}
     .contact-item span {{
-      color: #607086;
+      color: #9ca3af;
       font-weight: 700;
     }}
   </style>

@@ -4,6 +4,7 @@ import { computed } from "vue";
 import { Doughnut } from "vue-chartjs";
 
 import { resolveChartTheme } from "@/components/charts/chartTheme";
+import { colorThemeResolved } from "@/composables/useColorTheme";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -12,17 +13,25 @@ const props = defineProps<{
   values: number[];
 }>();
 
-const theme = computed(() => resolveChartTheme());
+const theme = computed(() => {
+  void colorThemeResolved.value;
+  return resolveChartTheme();
+});
 
 const chartData = computed(() => {
   const { colors } = theme.value;
+  const border =
+    typeof document !== "undefined"
+      ? getComputedStyle(document.documentElement).getPropertyValue("--color-surface-dark").trim() ||
+        "#111827"
+      : "#111827";
   return {
     labels: props.labels,
     datasets: [
       {
         data: props.values,
         backgroundColor: props.labels.map((_, i) => colors[i % colors.length]),
-        borderColor: "#141820",
+        borderColor: border,
         borderWidth: 2,
       },
     ],

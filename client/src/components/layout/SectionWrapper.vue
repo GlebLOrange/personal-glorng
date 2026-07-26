@@ -30,7 +30,8 @@ const innerClass = computed(() => {
     :class="[
       'py-20 md:py-24 px-6 scroll-mt-40 md:scroll-mt-44',
       alternate && 'bg-surface-card/30',
-      dark ? 'text-surface-light' : 'text-surface-dark',
+      /* surface-light = primary text in both themes; `dark` kept for call-site compat */
+      'text-surface-light',
     ]"
   >
     <div class="page-tile-scope mx-auto w-full max-w-5xl xl:max-w-6xl">
