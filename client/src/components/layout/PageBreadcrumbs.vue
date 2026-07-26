@@ -1,19 +1,33 @@
 <script setup lang="ts">
 import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
-import { displayBreadcrumbLabel } from "@/utils/format";
+import { formatBreadcrumbLabel } from "@/utils/format";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     segments: BreadcrumbSegment[];
-    /** Larger accent styling for sole section labels (news / admin / settings). */
+    /** Title-scale accent on the current crumb only (when it substitutes for h1). */
     elevated?: boolean;
   }>(),
   { elevated: false },
 );
 
 function crumbLabel(label: string): string {
-  return displayBreadcrumbLabel(label);
+  return formatBreadcrumbLabel(label);
 }
+
+function isCurrent(idx: number): boolean {
+  return idx === props.segments.length - 1;
+}
+
+function currentClass(): string {
+  if (props.elevated) {
+    return "inline-flex h-8 items-center truncate text-lg font-bold leading-none accent-gradient";
+  }
+  return "page-breadcrumb font-medium text-surface-light";
+}
+
+const ancestorClass =
+  "page-breadcrumb text-surface-mid transition-colors hover:text-accent-blue";
 </script>
 
 <template>
@@ -26,27 +40,17 @@ function crumbLabel(label: string): string {
       >
         <!-- ponytail: gradient on inner span — clip/fill on <a> can eat clicks -->
         <RouterLink
-          v-if="seg.to"
+          v-if="seg.to && !isCurrent(idx)"
           :to="seg.to"
           class="relative z-10 inline-flex h-8 cursor-pointer items-center"
         >
-          <span
-            :class="
-              elevated
-                ? 'truncate text-lg font-bold leading-none accent-gradient transition-opacity hover:opacity-90'
-                : 'page-breadcrumb text-surface-mid transition-colors hover:text-accent-blue'
-            "
-          >
+          <span :class="ancestorClass">
             {{ crumbLabel(seg.label) }}
           </span>
         </RouterLink>
         <span
           v-else
-          :class="
-            elevated
-              ? 'inline-flex h-8 items-center truncate text-lg font-bold leading-none accent-gradient'
-              : 'page-breadcrumb text-surface-light'
-          "
+          :class="currentClass()"
           aria-current="page"
         >
           {{ crumbLabel(seg.label) }}

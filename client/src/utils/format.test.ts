@@ -29,7 +29,7 @@ describe("formatBreadcrumbLabel", () => {
 
   it("preserves path-shaped labels for news edit crumbs", () => {
     expect(formatBreadcrumbLabel("news/my-slug")).toBe("news/my-slug");
-    expect(displayBreadcrumbLabel("news/my-slug")).toBe("§ news/my-slug");
+    expect(displayBreadcrumbLabel("news/my-slug")).toBe("news/my-slug");
   });
 });
 
@@ -45,10 +45,10 @@ describe("truncateBreadcrumbSlug", () => {
 });
 
 describe("displayBreadcrumbLabel", () => {
-  it("prefixes the page name with § and a space", () => {
-    expect(displayBreadcrumbLabel("calculator")).toBe("§ calculator");
-    expect(displayBreadcrumbLabel("app logs")).toBe("§ app logs");
-    expect(displayBreadcrumbLabel("§ tools")).toBe("§ tools");
+  it("aliases formatBreadcrumbLabel without a § prefix", () => {
+    expect(displayBreadcrumbLabel("calculator")).toBe("calculator");
+    expect(displayBreadcrumbLabel("app logs")).toBe("app logs");
+    expect(displayBreadcrumbLabel("§ tools")).toBe("tools");
   });
 });
 
