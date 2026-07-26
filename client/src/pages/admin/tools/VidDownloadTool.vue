@@ -7,7 +7,7 @@ import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { TOOLBAR_POPOVER_PANEL_CHROME_CLASS, TOOLBAR_POPOVER_WIDTH_CLASS } from "@/constants/toolbarPopover";
+import { TOOLBAR_POPOVER_PANEL_CLASS } from "@/constants/toolbarPopover";
 import { api } from "@/composables/useApi";
 import { useToolbarOptionsPopover } from "@/composables/useToolbarOptionsPopover";
 import { useNotify } from "@/composables/useNotify";
@@ -96,13 +96,12 @@ async function download(): Promise<void> {
         <div
           ref="optionsRoot"
           class="relative inline-flex flex-col"
-          :class="[TOOLBAR_POPOVER_WIDTH_CLASS, optionsOpen ? 'z-40' : undefined]"
+          :class="optionsOpen ? 'z-40' : undefined"
         >
           <ToolbarPillButton
             ref="optionsTrigger"
             family="1xx"
             type="button"
-            class="w-full"
             :selected="optionsOpen || hasCustomOptions"
             aria-haspopup="dialog"
             :aria-expanded="optionsOpen"
@@ -123,8 +122,8 @@ async function download(): Promise<void> {
             role="dialog"
             aria-labelledby="vid-download-options-title"
             tabindex="-1"
-            class="absolute left-0 top-full z-10 mt-1 w-full space-y-3"
-            :class="TOOLBAR_POPOVER_PANEL_CHROME_CLASS"
+            class="absolute left-0 top-full z-10 mt-1 space-y-3"
+            :class="TOOLBAR_POPOVER_PANEL_CLASS"
             @click.stop
           >
             <h2 id="vid-download-options-title" class="sr-only">download options</h2>
