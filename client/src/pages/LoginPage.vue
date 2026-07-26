@@ -2,7 +2,7 @@
 import { computed, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import BackLink from "@/components/ui/BackLink.vue";
+import AuthPageShell from "@/components/auth/AuthPageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { isFirebaseEnabled } from "@/constants/firebase";
@@ -63,77 +63,68 @@ async function handleGoogleLogin(): Promise<void> {
 </script>
 
 <template>
-  <div class="flex min-h-[calc(100dvh-8rem)] items-center justify-center px-6 py-12">
-    <div class="relative w-full max-w-sm -translate-y-[15dvh]">
-      <div class="relative mb-8 min-h-11">
-        <h1 class="pr-14 text-2xl font-bold text-surface-light text-left">
-          <span class="accent-gradient">login</span>
-        </h1>
-        <BackLink to="/" class="absolute right-0 top-0" />
-      </div>
-
-      <form class="space-y-4" @submit.prevent="handleLogin">
-        <BaseInput
-          v-model="email"
-          type="email"
-          name="email"
-          autocomplete="email"
-          label="email"
-          placeholder="you@example.com"
-          required
-        />
-        <BaseInput
-          v-model="password"
-          type="password"
-          name="password"
-          autocomplete="current-password"
-          label="password"
-          placeholder="password"
-          required
-        />
-        <p
-          v-if="formError"
-          ref="formErrorAlert"
-          class="text-xs text-status-error"
-          role="alert"
-          tabindex="-1"
-        >
-          {{ formError }}
-        </p>
-        <BaseButton
-          type="submit"
-          variant="primary"
-          class="w-full"
-          :loading="loading"
-          :disabled="!canSubmit"
-        >
-          {{ loading ? "signing in..." : "login" }}
-        </BaseButton>
-      </form>
-
-      <div v-if="isFirebaseEnabled" class="mt-5">
-        <div class="flex items-center gap-3 text-xs text-surface-mid mb-4">
-          <span class="h-px flex-1 bg-surface-border" />
-          <span>or</span>
-          <span class="h-px flex-1 bg-surface-border" />
-        </div>
-        <BaseButton
-          type="button"
-          variant="secondary"
-          class="w-full gap-2"
-          :loading="googleLoading"
-          @click="handleGoogleLogin"
-        >
-          <span class="font-data text-sm" aria-hidden="true">G</span>
-          {{ googleLoading ? "connecting..." : "continue with google" }}
-        </BaseButton>
-      </div>
-
-      <p class="text-center text-xs text-surface-mid mt-4 space-x-3">
-        <RouterLink to="/register" class="nav-link"> create account </RouterLink>
-        <span>·</span>
-        <RouterLink to="/forgot-password" class="nav-link"> forgot password? </RouterLink>
+  <AuthPageShell title="login" variant="login" back-to="/">
+    <form class="space-y-4" @submit.prevent="handleLogin">
+      <BaseInput
+        v-model="email"
+        type="email"
+        name="email"
+        autocomplete="email"
+        label="email"
+        placeholder="you@example.com"
+        required
+      />
+      <BaseInput
+        v-model="password"
+        type="password"
+        name="password"
+        autocomplete="current-password"
+        label="password"
+        placeholder="password"
+        required
+      />
+      <p
+        v-if="formError"
+        ref="formErrorAlert"
+        class="text-xs text-status-error"
+        role="alert"
+        tabindex="-1"
+      >
+        {{ formError }}
       </p>
+      <BaseButton
+        type="submit"
+        variant="primary"
+        class="w-full"
+        :loading="loading"
+        :disabled="!canSubmit"
+      >
+        {{ loading ? "signing in..." : "login" }}
+      </BaseButton>
+    </form>
+
+    <div v-if="isFirebaseEnabled" class="mt-5">
+      <div class="flex items-center gap-3 text-xs text-surface-mid mb-4">
+        <span class="h-px flex-1 bg-surface-border" />
+        <span>or</span>
+        <span class="h-px flex-1 bg-surface-border" />
+      </div>
+      <BaseButton
+        type="button"
+        variant="secondary"
+        class="w-full gap-2"
+        :loading="googleLoading"
+        @click="handleGoogleLogin"
+      >
+        <span class="font-data text-sm" aria-hidden="true">G</span>
+        {{ googleLoading ? "connecting..." : "continue with google" }}
+      </BaseButton>
     </div>
-  </div>
+
+    <p class="text-center text-xs text-surface-mid mt-4 space-x-3">
+      <RouterLink to="/register" class="nav-link"> create account </RouterLink>
+      <span>·</span>
+      <RouterLink to="/forgot-password" class="nav-link"> forgot password? </RouterLink>
+    </p>
+  </AuthPageShell>
 </template>

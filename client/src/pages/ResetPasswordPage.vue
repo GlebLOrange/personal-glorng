@@ -2,9 +2,9 @@
 import { computed, onMounted, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import BackLink from "@/components/ui/BackLink.vue";
+import AuthPageShell from "@/components/auth/AuthPageShell.vue";
+import PasswordFields from "@/components/auth/PasswordFields.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
@@ -68,70 +68,40 @@ async function handleSubmit(): Promise<void> {
 </script>
 
 <template>
-  <div class="min-h-[80vh] flex items-center justify-center px-6">
-    <div class="w-full max-w-sm">
-      <h1 class="text-2xl font-bold text-surface-light mb-8 text-center">
-        <span class="accent-gradient">new password</span>
-      </h1>
-
-      <form v-if="token" ref="resetForm" class="space-y-4" @submit.prevent="handleSubmit">
-        <BaseInput
-          v-model="password"
-          type="password"
-          name="password"
-          autocomplete="new-password"
-          label="new password"
-          placeholder="new password"
-          aria-describedby="reset-password-strength"
-          required
-        />
-        <p
-          id="reset-password-strength"
-          class="text-xs"
-          :class="strength.valid ? 'text-status-success' : 'text-surface-mid'"
-        >
-          {{ strength.message }}
-        </p>
-        <BaseInput
-          v-model="passwordConfirm"
-          type="password"
-          name="password-confirm"
-          autocomplete="new-password"
-          label="confirm password"
-          placeholder="confirm password"
-          :error="passwordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
-          required
-        />
-        <p
-          v-if="formError"
-          ref="formErrorAlert"
-          class="text-xs text-status-error"
-          role="alert"
-          tabindex="-1"
-        >
-          {{ formError }}
-        </p>
-        <BaseButton
-          type="submit"
-          variant="primary"
-          class="w-full"
-          :loading="loading"
-          :disabled="!canSubmit"
-        >
-          {{ loading ? "saving..." : "set new password" }}
-        </BaseButton>
-      </form>
-
-      <div v-else class="space-y-3 text-center" role="alert">
-        <p class="text-status-error text-sm">Invalid or missing reset link.</p>
-        <RouterLink to="/forgot-password" class="nav-link text-sm">
-          request a new reset link
-        </RouterLink>
-      </div>
-
-      <p class="flex justify-center mt-6">
-        <BackLink to="/login" />
+  <AuthPageShell title="new password" back-to="/login">
+    <form v-if="token" ref="resetForm" class="space-y-4" @submit.prevent="handleSubmit">
+      <PasswordFields
+        v-model:password="password"
+        v-model:password-confirm="passwordConfirm"
+        password-label="new password"
+        password-placeholder="new password"
+        strength-id="reset-password-strength"
+      />
+      <p
+        v-if="formError"
+        ref="formErrorAlert"
+        class="text-xs text-status-error"
+        role="alert"
+        tabindex="-1"
+      >
+        {{ formError }}
       </p>
+      <BaseButton
+        type="submit"
+        variant="primary"
+        class="w-full"
+        :loading="loading"
+        :disabled="!canSubmit"
+      >
+        {{ loading ? "saving..." : "set new password" }}
+      </BaseButton>
+    </form>
+
+    <div v-else class="space-y-3 text-center" role="alert">
+      <p class="text-status-error text-sm">Invalid or missing reset link.</p>
+      <RouterLink to="/forgot-password" class="nav-link text-sm">
+        request a new reset link
+      </RouterLink>
     </div>
-  </div>
+  </AuthPageShell>
 </template>

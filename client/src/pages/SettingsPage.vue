@@ -3,11 +3,13 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import PageShell from "@/components/layout/PageShell.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
+import SettingsCurrencySection from "@/components/settings/SettingsCurrencySection.vue";
+import SettingsDeleteSection from "@/components/settings/SettingsDeleteSection.vue";
+import SettingsEmailSection from "@/components/settings/SettingsEmailSection.vue";
+import SettingsGithubSection from "@/components/settings/SettingsGithubSection.vue";
+import SettingsPasswordSection from "@/components/settings/SettingsPasswordSection.vue";
+import SettingsProfileSection from "@/components/settings/SettingsProfileSection.vue";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
-import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseSelect from "@/components/ui/BaseSelect.vue";
-import { EXPENSE_CURRENCIES } from "@/composables/useExpenseFilters";
 import { useUserPreferences } from "@/composables/useUserPreferences";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
@@ -194,192 +196,47 @@ async function deleteAccount(): Promise<void> {
     :narrow="false"
   >
     <div class="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
-      <Card>
-        <CardBody>
-          <CardHeader>
-            <CardTitle>profile</CardTitle>
-          </CardHeader>
-          <form class="space-y-4" @submit.prevent="saveProfile">
-            <BaseInput
-              v-model="displayName"
-              name="display-name"
-              autocomplete="name"
-              placeholder="display name"
-              aria-label="display name"
-            />
-            <BaseInput
-              v-model="timezone"
-              name="timezone"
-              autocomplete="off"
-              placeholder="timezone"
-              aria-label="timezone"
-              required
-            />
-            <BaseButton
-              type="submit"
-              variant="success"
-              :loading="savingProfile"
-              :disabled="!canSaveProfile"
-            >
-              {{ savingProfile ? "saving..." : "save profile" }}
-            </BaseButton>
-          </form>
-        </CardBody>
-      </Card>
+      <SettingsProfileSection
+        v-model:display-name="displayName"
+        v-model:timezone="timezone"
+        :saving="savingProfile"
+        :can-save="canSaveProfile"
+        @save="saveProfile"
+      />
 
-      <Card>
-        <CardBody>
-          <CardHeader>
-            <CardTitle>email</CardTitle>
-          </CardHeader>
-          <form class="space-y-4" @submit.prevent="saveEmail">
-            <BaseInput
-              v-model="newEmail"
-              type="email"
-              name="email"
-              autocomplete="email"
-              placeholder="email address"
-              aria-label="email address"
-              required
-            />
-            <BaseInput
-              v-model="emailPassword"
-              type="password"
-              name="current-password-for-email"
-              autocomplete="current-password"
-              placeholder="current password"
-              aria-label="current password"
-              required
-            />
-            <BaseButton
-              type="submit"
-              variant="success"
-              :loading="savingEmail"
-              :disabled="!canSaveEmail"
-            >
-              {{ savingEmail ? "saving..." : "change email" }}
-            </BaseButton>
-          </form>
-        </CardBody>
-      </Card>
+      <SettingsEmailSection
+        v-model:new-email="newEmail"
+        v-model:email-password="emailPassword"
+        :saving="savingEmail"
+        :can-save="canSaveEmail"
+        @save="saveEmail"
+      />
 
-      <Card>
-        <CardBody>
-          <CardHeader>
-            <CardTitle>password</CardTitle>
-          </CardHeader>
-          <form class="space-y-4" @submit.prevent="savePassword">
-            <div class="flex justify-end">
-              <RouterLink
-                to="/forgot-password"
-                class="text-sm text-accent-blue hover:underline focus:underline"
-              >
-                forgot password?
-              </RouterLink>
-            </div>
-            <BaseInput
-              v-model="currentPassword"
-              type="password"
-              name="current-password"
-              autocomplete="current-password"
-              placeholder="current password"
-              aria-label="current password"
-              required
-            />
-            <BaseInput
-              v-model="newPassword"
-              type="password"
-              name="new-password"
-              autocomplete="new-password"
-              placeholder="new password"
-              aria-label="new password"
-              :error="newPassword && !passwordCheck.valid ? passwordCheck.message : undefined"
-              required
-            />
-            <BaseInput
-              v-model="newPasswordConfirm"
-              type="password"
-              name="confirm-new-password"
-              autocomplete="new-password"
-              placeholder="confirm new password"
-              aria-label="confirm new password"
-              :error="newPasswordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
-              required
-            />
-            <BaseButton
-              type="submit"
-              variant="success"
-              :loading="savingPassword"
-              :disabled="!canSavePassword"
-            >
-              {{ savingPassword ? "saving..." : "change password" }}
-            </BaseButton>
-          </form>
-        </CardBody>
-      </Card>
+      <SettingsPasswordSection
+        v-model:current-password="currentPassword"
+        v-model:new-password="newPassword"
+        v-model:new-password-confirm="newPasswordConfirm"
+        :saving="savingPassword"
+        :can-save="canSavePassword"
+        @save="savePassword"
+      />
 
-      <Card>
-        <CardBody>
-          <CardHeader>
-            <CardTitle>preferences</CardTitle>
-          </CardHeader>
-          <form class="space-y-4" @submit.prevent="saveCurrency">
-            <BaseSelect v-model="displayCurrency" aria-label="display currency">
-              <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
-                {{ code }}
-              </option>
-            </BaseSelect>
-            <BaseButton
-              type="submit"
-              variant="success"
-              :loading="savingPrefs"
-              :disabled="!canSaveCurrency"
-            >
-              {{ savingPrefs ? "saving..." : "save preferences" }}
-            </BaseButton>
-          </form>
-        </CardBody>
-      </Card>
+      <SettingsCurrencySection
+        v-model:display-currency="displayCurrency"
+        :saving="savingPrefs"
+        :can-save="canSaveCurrency"
+        @save="saveCurrency"
+      />
 
-      <Card>
-        <CardBody>
-          <CardHeader>
-            <CardTitle>github</CardTitle>
-          </CardHeader>
-          <div class="space-y-4">
-            <p v-if="githubError" class="text-sm text-status-warning">{{ githubError }}</p>
-            <div class="flex flex-wrap items-center gap-3">
-              <BaseButton
-                v-if="!githubStatus.linked"
-                variant="primary"
-                :disabled="githubLoading"
-                @click="connectGithub"
-              >
-                connect github
-              </BaseButton>
-              <template v-else>
-                <p class="text-sm text-surface-mid">
-                  Connected as
-                  <span class="text-surface-light font-medium"
-                    >@{{ githubStatus.github_username ?? "github" }}</span
-                  >
-                </p>
-                <BaseButton variant="secondary" :disabled="unlinkingGithub" @click="unlinkGithub">
-                  {{ unlinkingGithub ? "unlinking..." : "unlink github" }}
-                </BaseButton>
-              </template>
-              <BaseButton
-                v-if="githubError"
-                variant="ghost"
-                :disabled="githubLoading"
-                @click="loadGithubStatus"
-              >
-                retry
-              </BaseButton>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
+      <SettingsGithubSection
+        :status="githubStatus"
+        :loading="githubLoading"
+        :error="githubError"
+        :unlinking="unlinkingGithub"
+        @connect="connectGithub"
+        @unlink="unlinkGithub"
+        @retry="loadGithubStatus"
+      />
 
       <Card>
         <CardBody>
@@ -401,37 +258,13 @@ async function deleteAccount(): Promise<void> {
         </CardBody>
       </Card>
 
-      <Card tint="danger">
-        <CardBody>
-          <CardHeader>
-            <CardTitle>delete account</CardTitle>
-          </CardHeader>
-          <form class="space-y-4" @submit.prevent="deleteAccount">
-            <BaseInput
-              v-model="deletePassword"
-              type="password"
-              name="delete-current-password"
-              autocomplete="current-password"
-              placeholder="current password"
-              aria-label="current password"
-              required
-            />
-            <label class="flex min-h-11 cursor-pointer items-start gap-3 text-xs text-surface-mid">
-              <input v-model="deleteConfirm" type="checkbox" class="mt-1 accent-status-error" />
-              <span>I understand this permanently deletes my account.</span>
-            </label>
-            <BaseButton
-              type="submit"
-              variant="secondary"
-              danger
-              :loading="deleting"
-              :disabled="!canDeleteAccount"
-            >
-              {{ deleting ? "deleting..." : "delete account" }}
-            </BaseButton>
-          </form>
-        </CardBody>
-      </Card>
+      <SettingsDeleteSection
+        v-model:delete-password="deletePassword"
+        v-model:delete-confirm="deleteConfirm"
+        :deleting="deleting"
+        :can-delete="canDeleteAccount"
+        @delete="deleteAccount"
+      />
     </div>
   </PageShell>
 </template>

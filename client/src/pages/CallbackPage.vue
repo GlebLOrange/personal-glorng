@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import BackLink from "@/components/ui/BackLink.vue";
+import AuthPageShell from "@/components/auth/AuthPageShell.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
@@ -49,9 +49,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="min-h-[80vh] flex items-center justify-center px-6">
+  <AuthPageShell title="" :back-to="status === 'error' ? '/admin' : undefined">
     <div
-      class="w-full max-w-sm text-center"
+      class="text-center"
       role="status"
       aria-live="polite"
       :aria-busy="status === 'loading'"
@@ -73,10 +73,7 @@ onUnmounted(() => {
       <div v-else class="space-y-4" role="alert">
         <p class="text-2xl" aria-hidden="true">&#10007;</p>
         <p class="text-surface-light font-medium">{{ message }}</p>
-        <p class="flex justify-center">
-          <BackLink to="/admin" />
-        </p>
       </div>
     </div>
-  </div>
+  </AuthPageShell>
 </template>

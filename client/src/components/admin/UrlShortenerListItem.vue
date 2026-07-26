@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 
-import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
+import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -138,7 +138,7 @@ function confirmDelete(): void {
     </template>
   </AdminListRow>
 
-  <ExpenseConfirmDialog
+  <ConfirmDialog
     :open="showDeleteConfirm"
     title="delete short URL"
     confirm-label="delete"
@@ -159,5 +159,5 @@ function confirmDelete(): void {
       </a>
       ? This cannot be undone.
     </p>
-  </ExpenseConfirmDialog>
+  </ConfirmDialog>
 </template>

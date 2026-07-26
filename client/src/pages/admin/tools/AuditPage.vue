@@ -14,6 +14,7 @@ import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { auditCategoryClass } from "@/constants/filterColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
+import { useApiAction } from "@/composables/useApiAction";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { formatDate } from "@/utils/format";
 
@@ -33,8 +34,7 @@ interface AuditEvent {
 
 const items = ref<AuditEvent[]>([]);
 const total = ref(0);
-const loading = ref(false);
-const listError = ref<string | null>(null);
+const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: true });
 const category = ref("");
 const page = ref(1);
 const expandedEventIds = ref<Set<number>>(new Set());
@@ -58,26 +58,25 @@ useScrollListFingerprint(
 );
 
 async function load(): Promise<void> {
-  loading.value = true;
-  listError.value = null;
-  try {
-    const params: Record<string, string | number> = {
-      page: page.value,
-      per_page: ADMIN_LIST_PAGE_SIZE,
-    };
-    if (category.value) params.category = category.value;
-    const { data } = await api.get<{ items: AuditEvent[]; total: number }>("/tools/audit", {
-      params,
-    });
-    items.value = data.items;
-    total.value = data.total;
-    expandedEventIds.value = new Set();
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    listError.value = "Failed to load audit events.";
-  } finally {
-    loading.value = false;
-  }
+  const data = await runLoad(
+    async () => {
+      const params: Record<string, string | number> = {
+        page: page.value,
+        per_page: ADMIN_LIST_PAGE_SIZE,
+      };
+      if (category.value) params.category = category.value;
+      const { data: response } = await api.get<{ items: AuditEvent[]; total: number }>(
+        "/tools/audit",
+        { params },
+      );
+      return response;
+    },
+    { errorMessage: "Failed to load audit events.", logContext: "audit.load" },
+  );
+  if (!data) return;
+  items.value = data.items;
+  total.value = data.total;
+  expandedEventIds.value = new Set();
 }
 
 function setCategoryFilter(next: string): void {
