@@ -4,14 +4,13 @@ import { useRoute, useRouter } from "vue-router";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
-import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import TaskCreateModal from "@/components/tasks/TaskCreateModal.vue";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
-import TaskIntakeList from "@/components/tasks/TaskIntakeList.vue";
-import TaskList from "@/components/tasks/TaskList.vue";
-import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
+import TasksIntakesPanel from "@/components/tasks/TasksIntakesPanel.vue";
+import TasksListPanel from "@/components/tasks/TasksListPanel.vue";
+import TasksSyncPanel from "@/components/tasks/TasksSyncPanel.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import SearchInput from "@/components/ui/SearchInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -204,93 +203,54 @@ onMounted(() => {
         </template>
       </div>
 
-      <section
+      <TasksListPanel
         v-if="activeTab === 'queue'"
-        id="tasks-tab-panel-queue"
-        role="tabpanel"
-        aria-labelledby="tasks-tab-tab-queue"
-        tabindex="0"
-        class="outline-none"
-      >
-        <TaskList
-          :tasks="tasks"
-          :loading="listLoading"
-          :filter-status="filterStatus"
-          @select="openDetail"
-        />
-        <AdminListFooter
-          v-if="!listLoading"
-          :total="total"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          :loading="listLoading"
-          item-label="tasks"
-          ariaLabel="Tasks pagination"
-          @first="goToPage(1)"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-          @last="goToPage(totalPages)"
-        />
-      </section>
+        :tasks="tasks"
+        :loading="listLoading"
+        :filter-status="filterStatus"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        @select="openDetail"
+        @first-page="goToPage(1)"
+        @prev-page="goToPage(page - 1)"
+        @next-page="goToPage(page + 1)"
+        @last-page="goToPage(totalPages)"
+      />
 
-      <section
+      <TasksIntakesPanel
         v-else-if="activeTab === 'intakes'"
-        id="tasks-tab-panel-intakes"
-        role="tabpanel"
-        aria-labelledby="tasks-tab-tab-intakes"
-        tabindex="0"
-        class="outline-none"
-      >
-        <TaskIntakeList :intakes="intakes" :loading="intakesLoading" />
-        <AdminListFooter
-          v-if="!intakesLoading"
-          :total="intakeTotal"
-          :page="intakePage"
-          :total-pages="intakeTotalPages"
-          :has-next-page="hasNextIntakePage"
-          :has-previous-page="hasPreviousIntakePage"
-          :loading="intakesLoading"
-          item-label="intakes"
-          ariaLabel="Task intakes pagination"
-          @first="goToIntakePage(1)"
-          @prev="goToIntakePage(intakePage - 1)"
-          @next="goToIntakePage(intakePage + 1)"
-          @last="goToIntakePage(intakeTotalPages)"
-        />
-      </section>
+        :intakes="intakes"
+        :loading="intakesLoading"
+        :total="intakeTotal"
+        :page="intakePage"
+        :total-pages="intakeTotalPages"
+        :has-next-page="hasNextIntakePage"
+        :has-previous-page="hasPreviousIntakePage"
+        @first-page="goToIntakePage(1)"
+        @prev-page="goToIntakePage(intakePage - 1)"
+        @next-page="goToIntakePage(intakePage + 1)"
+        @last-page="goToIntakePage(intakeTotalPages)"
+      />
 
-      <section
+      <TasksSyncPanel
         v-else-if="activeTab === 'sync'"
-        id="tasks-tab-panel-sync"
-        role="tabpanel"
-        aria-labelledby="tasks-tab-tab-sync"
-        tabindex="0"
-        class="outline-none"
-      >
-        <TaskSyncQueue
-          :items="syncQueue"
-          :loading="syncLoading"
-          :can-mutate="isSuperuser"
-          @retry="retrySync"
-        />
-        <AdminListFooter
-          v-if="!syncLoading"
-          :total="syncTotal"
-          :page="syncPage"
-          :total-pages="syncTotalPages"
-          :has-next-page="hasNextSyncPage"
-          :has-previous-page="hasPreviousSyncPage"
-          :loading="syncLoading"
-          item-label="items"
-          ariaLabel="Task sync queue pagination"
-          @first="goToSyncPage(1)"
-          @prev="goToSyncPage(syncPage - 1)"
-          @next="goToSyncPage(syncPage + 1)"
-          @last="goToSyncPage(syncTotalPages)"
-        />
-      </section>
+        :items="syncQueue"
+        :loading="syncLoading"
+        :can-mutate="isSuperuser"
+        :total="syncTotal"
+        :page="syncPage"
+        :total-pages="syncTotalPages"
+        :has-next-page="hasNextSyncPage"
+        :has-previous-page="hasPreviousSyncPage"
+        @retry="retrySync"
+        @first-page="goToSyncPage(1)"
+        @prev-page="goToSyncPage(syncPage - 1)"
+        @next-page="goToSyncPage(syncPage + 1)"
+        @last-page="goToSyncPage(syncTotalPages)"
+      />
 
       <TaskCreateModal
         v-if="isSuperuser"

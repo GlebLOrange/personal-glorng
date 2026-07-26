@@ -3,6 +3,7 @@ import { computed } from "vue";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import {
   groupServicesByCategory,
@@ -42,6 +43,7 @@ function toolRoute(tool: PlatformService): string {
     back-to="/"
     :narrow="false"
   >
-    <ToolTileGrid :sections="sections" :resolve-route="toolRoute" gap-class="gap-4" />
+    <EmptyState v-if="tools.length === 0" description="No tools available." />
+    <ToolTileGrid v-else :sections="sections" :resolve-route="toolRoute" gap-class="gap-4" />
   </PageShell>
 </template>

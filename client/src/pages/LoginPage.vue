@@ -3,6 +3,7 @@ import { computed, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import AuthPageShell from "@/components/auth/AuthPageShell.vue";
+import GoogleMarkIcon from "@/components/icons/GoogleMarkIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { isFirebaseEnabled } from "@/constants/firebase";
@@ -116,7 +117,7 @@ async function handleGoogleLogin(): Promise<void> {
         :loading="googleLoading"
         @click="handleGoogleLogin"
       >
-        <span class="font-data text-sm" aria-hidden="true">G</span>
+        <GoogleMarkIcon class-name="size-4" />
         {{ googleLoading ? "connecting..." : "continue with google" }}
       </BaseButton>
     </div>

@@ -283,7 +283,7 @@ const routes: RouteRecordRaw[] = [
     path: "/callback",
     name: "oauth-callback",
     component: () => import("@/pages/CallbackPage.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, title: "GitHub callback", noindex: true },
   },
   {
     path: "/weather",

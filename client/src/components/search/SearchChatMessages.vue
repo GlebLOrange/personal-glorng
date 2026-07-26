@@ -66,7 +66,7 @@ function showEmptySourcesWarning(msg: ChatMessage): boolean {
 </script>
 
 <template>
-  <div class="space-y-3">
+  <div class="space-y-3" role="log" aria-live="polite" aria-relevant="additions">
     <EmptyState v-if="!messages.length" :description="emptyMessage" />
 
     <div

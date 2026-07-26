@@ -92,15 +92,15 @@ watch(
 
       <section v-if="article.themes.length" class="mb-8 min-w-0">
         <h2 class="card-title mb-4">Themes</h2>
-        <div class="flex flex-wrap gap-2">
-          <span
+        <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
+          <li
             v-for="theme in article.themes"
             :key="theme"
             class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid"
           >
             {{ theme }}
-          </span>
-        </div>
+          </li>
+        </ul>
       </section>
 
       <Card as="footer" variant="compact" class="min-w-0">

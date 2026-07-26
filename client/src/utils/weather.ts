@@ -330,84 +330,86 @@ export function isoDateFromUnix(unixtime: number, offsetHours: number): string {
   return `${local.getUTCFullYear()}-${pad2(local.getUTCMonth() + 1)}-${pad2(local.getUTCDate())}`;
 }
 
+export type WeatherConditionKind =
+  | "clear"
+  | "partly"
+  | "cloud"
+  | "fog"
+  | "rain"
+  | "snow"
+  | "storm"
+  | "unknown";
+
 // ponytail: coarse wttr code buckets; extend map if a code renders wrong often.
-const WEATHER_CODE_EMOJI: Record<number, string> = {
-  113: "☀️",
-  116: "⛅",
-  119: "☁️",
-  122: "☁️",
-  143: "🌫️",
-  176: "🌦️",
-  179: "🌨️",
-  182: "🌨️",
-  185: "🌨️",
-  200: "⛈️",
-  227: "🌨️",
-  230: "🌨️",
-  248: "🌫️",
-  260: "🌫️",
-  263: "🌧️",
-  266: "🌧️",
-  281: "🌧️",
-  284: "🌧️",
-  293: "🌧️",
-  296: "🌧️",
-  299: "🌧️",
-  302: "🌧️",
-  305: "🌧️",
-  308: "🌧️",
-  311: "🌧️",
-  314: "🌧️",
-  317: "🌨️",
-  320: "🌨️",
-  323: "🌨️",
-  326: "🌨️",
-  329: "🌨️",
-  332: "🌨️",
-  335: "🌨️",
-  338: "🌨️",
-  350: "🌨️",
-  353: "🌧️",
-  356: "🌧️",
-  359: "🌧️",
-  362: "🌨️",
-  365: "🌨️",
-  368: "🌨️",
-  371: "🌨️",
-  374: "🌧️",
-  377: "🌨️",
-  386: "⛈️",
-  389: "⛈️",
-  392: "⛈️",
-  395: "❄️",
+const WEATHER_CODE_KIND: Record<number, WeatherConditionKind> = {
+  113: "clear",
+  116: "partly",
+  119: "cloud",
+  122: "cloud",
+  143: "fog",
+  176: "rain",
+  179: "snow",
+  182: "snow",
+  185: "snow",
+  200: "storm",
+  227: "snow",
+  230: "snow",
+  248: "fog",
+  260: "fog",
+  263: "rain",
+  266: "rain",
+  281: "rain",
+  284: "rain",
+  293: "rain",
+  296: "rain",
+  299: "rain",
+  302: "rain",
+  305: "rain",
+  308: "rain",
+  311: "rain",
+  314: "rain",
+  317: "snow",
+  320: "snow",
+  323: "snow",
+  326: "snow",
+  329: "snow",
+  332: "snow",
+  335: "snow",
+  338: "snow",
+  350: "snow",
+  353: "rain",
+  356: "rain",
+  359: "rain",
+  362: "snow",
+  365: "snow",
+  368: "snow",
+  371: "snow",
+  374: "rain",
+  377: "snow",
+  386: "storm",
+  389: "storm",
+  392: "storm",
+  395: "snow",
 };
 
-/** Emoji for wttr.in weatherCode; falls back to condition text or generic icon. */
-export function weatherConditionEmoji(code: string | undefined, weatherDesc?: string): string {
+/** Condition kind for wttr.in weatherCode; falls back to description or unknown. */
+export function weatherConditionKind(
+  code: string | undefined,
+  weatherDesc?: string,
+): WeatherConditionKind {
   if (code) {
     const parsed = Number.parseInt(code, 10);
-    if (Number.isFinite(parsed) && WEATHER_CODE_EMOJI[parsed]) {
-      return WEATHER_CODE_EMOJI[parsed];
+    if (Number.isFinite(parsed) && WEATHER_CODE_KIND[parsed]) {
+      return WEATHER_CODE_KIND[parsed];
     }
   }
   const desc = weatherDesc?.toLowerCase() ?? "";
-  if (desc.includes("sun") || desc.includes("clear")) {
-    return "☀️";
-  }
-  if (desc.includes("cloud")) {
-    return "☁️";
-  }
-  if (desc.includes("rain") || desc.includes("drizzle")) {
-    return "🌧️";
-  }
-  if (desc.includes("snow")) {
-    return "🌨️";
-  }
-  if (desc.includes("thunder") || desc.includes("storm")) {
-    return "⛈️";
-  }
-  if (desc.includes("fog") || desc.includes("mist")) {
-    return "🌫️";
-  }
-  return "🌡️";
+  if (desc.includes("sun") || desc.includes("clear")) return "clear";
+  if (desc.includes("partly")) return "partly";
+  if (desc.includes("cloud")) return "cloud";
+  if (desc.includes("rain") || desc.includes("drizzle")) return "rain";
+  if (desc.includes("snow")) return "snow";
+  if (desc.includes("thunder") || desc.includes("storm")) return "storm";
+  if (desc.includes("fog") || desc.includes("mist")) return "fog";
+  return "unknown";
 }

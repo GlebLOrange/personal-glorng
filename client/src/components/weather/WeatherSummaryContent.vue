@@ -2,11 +2,12 @@
 import { computed, onMounted } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
+import WeatherConditionIcon from "@/components/weather/WeatherConditionIcon.vue";
 import { useLiveLocalTime } from "@/composables/useLiveLocalTime";
 import { useWeatherConfig } from "@/composables/useWeatherConfig";
 import { useWeatherLookup } from "@/composables/useWeatherLookup";
 import {
-  weatherConditionEmoji,
+  weatherConditionKind,
   weatherIanaTimezone,
   weatherLocationLabel,
   weatherUtcOffsetHours,
@@ -87,8 +88,8 @@ const temperature = computed(() => currentCondition.value?.temp_C ?? "—");
 
 const conditionText = computed(() => currentCondition.value?.weatherDesc?.[0]?.value ?? "");
 
-const weatherEmoji = computed(() =>
-  weatherConditionEmoji(currentCondition.value?.weatherCode, conditionText.value),
+const weatherKind = computed(() =>
+  weatherConditionKind(currentCondition.value?.weatherCode, conditionText.value),
 );
 
 const conditionsAriaLabel = computed(() => {
@@ -140,7 +141,7 @@ onMounted(async () => {
         {{ liveDate }}
       </time>
       <p :class="conditionsClass" :aria-label="conditionsAriaLabel">
-        <span aria-hidden="true">{{ weatherEmoji }}</span>
+        <WeatherConditionIcon :kind="weatherKind" class-name="size-4 inline-block align-[-0.125em]" />
         <span class="font-bold accent-gradient tabular-nums shrink-0">{{ temperature }}°C</span>
         <span aria-hidden="true" class="text-surface-muted">·</span>
         <span class="truncate text-surface-light">{{ locationLabel }}</span>
