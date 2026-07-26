@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, useAttrs, useId, useSlots } from "vue";
 
+import FieldHelp from "@/components/ui/FieldHelp.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import { FIELD_INPUT_CLASS, FIELD_INPUT_CLASS_COMPACT } from "@/constants/formClasses";
 
@@ -115,15 +116,20 @@ defineExpose({ focus });
 </script>
 
 <template>
-  <div class="flex flex-col gap-1" :class="$attrs.class" :style="$attrs.style">
-    <label v-if="label" :for="inputId" class="text-label text-surface-sage">
-      {{ label }}
-    </label>
+  <div class="flex min-w-0 flex-col gap-1" :class="$attrs.class" :style="$attrs.style">
+    <div v-if="label || hint" class="flex items-center gap-1.5">
+      <!-- associated via :for / :id (computed ids); FieldHelp sits beside the label -->
+      <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
+      <label v-if="label" :for="inputId" class="text-label text-surface-sage">
+        {{ label }}
+      </label>
+      <FieldHelp v-if="hint" :text="hint" :content-id="hintId" />
+    </div>
 
     <div v-if="useShell" :class="shellClass">
       <span
         v-if="prefix"
-        class="relative z-10 shrink-0 pl-3 text-xs font-medium uppercase tracking-wide text-surface-mid"
+        class="relative z-10 shrink-0 pl-3 text-xs font-medium text-surface-mid"
       >
         {{ prefix }}
       </span>
@@ -158,7 +164,7 @@ defineExpose({ focus });
         :class="tipInsetClass"
         aria-hidden="true"
       >
-        <span class="min-w-0 flex-1 truncate text-right text-xs text-surface-mid/65">
+        <span class="min-w-0 flex-1 truncate text-left text-xs text-surface-mid/65">
           {{ placeholder }}
         </span>
       </span>
@@ -204,9 +210,6 @@ defineExpose({ focus });
 
     <p v-if="error" :id="errorId" role="alert" class="text-xs text-status-error">
       {{ error }}
-    </p>
-    <p v-else-if="hint" :id="hintId" class="text-xs text-surface-mid">
-      {{ hint }}
     </p>
   </div>
 </template>

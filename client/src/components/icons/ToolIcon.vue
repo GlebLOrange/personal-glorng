@@ -139,7 +139,7 @@ defineProps<{
       <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
     </template>
 
-    <!-- sync: circular arrows -->
+    <!-- sync: circular arrows (keep in sync with SyncIcon.vue) -->
     <template v-else-if="slug === 'sync'">
       <path d="M21 12a9 9 0 0 0-15.5-6.4" />
       <path d="M5.5 5.6V9h3.4" />
@@ -147,7 +147,7 @@ defineProps<{
       <path d="M18.5 18.4V15h-3.4" />
     </template>
 
-    <!-- location: map pin -->
+    <!-- location: map pin (keep in sync with LocationIcon.vue) -->
     <template v-else-if="slug === 'location'">
       <path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10Z" />
       <circle cx="12" cy="11" r="2.25" />

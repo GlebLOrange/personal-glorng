@@ -47,8 +47,8 @@ const emit = defineEmits<{ submit: []; close: [] }>();
       </div>
 
       <div class="grid grid-cols-2 gap-3">
-        <BaseInput v-model="expenseDate" type="date" label="date" />
-        <BaseSelect v-model="currency" label="currency">
+        <BaseInput v-model="expenseDate" type="date" label="date" class="min-w-0 w-full" />
+        <BaseSelect v-model="currency" label="currency" class="min-w-0 w-full">
           <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
         </BaseSelect>
       </div>

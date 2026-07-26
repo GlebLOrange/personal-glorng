@@ -11,6 +11,7 @@ import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
+import { effectiveSearchQuery } from "@/constants/search";
 import { safeRouterPath } from "@/utils/safeUrl";
 
 interface SearchHit {
@@ -45,8 +46,10 @@ const displayHits = computed(() =>
   hits.value.map((hit) => ({ ...hit, path: safeRouterPath(hit.url) })),
 );
 
+const canSubmitSearch = computed(() => Boolean(effectiveSearchQuery(query.value)));
+
 async function search(): Promise<void> {
-  const trimmed = query.value.trim();
+  const trimmed = effectiveSearchQuery(query.value);
   if (!trimmed) return;
 
   hasSearched.value = true;
@@ -89,7 +92,7 @@ function sourceLabel(type: string): string {
             {{ option.label }}
           </option>
         </BaseSelect>
-        <ToolbarPillButton type="submit" family="2xx" :disabled="loading || !query.trim()">
+        <ToolbarPillButton type="submit" family="2xx" :disabled="loading || !canSubmitSearch">
           {{ loading ? "searching..." : "search" }}
         </ToolbarPillButton>
       </form>

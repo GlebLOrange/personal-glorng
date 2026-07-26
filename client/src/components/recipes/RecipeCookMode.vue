@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import { useOverlayShell } from "@/composables/useOverlayShell";
 import type { Recipe } from "@/types";
 
@@ -15,7 +17,7 @@ const emit = defineEmits<{
 }>();
 
 const panelRef = ref<HTMLElement | null>(null);
-const exitButton = ref<InstanceType<typeof BaseButton> | null>(null);
+const exitButton = ref<InstanceType<typeof IconCloseButton> | null>(null);
 const stepIndex = ref(0);
 const showIngredients = ref(false);
 let wakeLock: { release: () => Promise<void> } | null = null;
@@ -109,24 +111,21 @@ onUnmounted(() => {
         aria-modal="true"
         :aria-label="dialogLabel"
         tabindex="-1"
-        class="fixed inset-0 z-[60] bg-surface-dark flex flex-col focus:outline-none"
+        class="fixed inset-0 z-[60] flex flex-col bg-surface-dark focus:outline-none"
       >
-        <header class="flex items-center justify-between px-4 py-3 border-b border-surface-border">
+        <header class="flex items-center justify-between border-b border-surface-border px-4 py-3">
           <div class="min-w-0">
-            <p class="text-xs text-surface-mid truncate">{{ recipe.title }}</p>
-            <p class="text-sm text-accent-blue">Step {{ stepIndex + 1 }} of {{ totalSteps }}</p>
+            <p class="truncate text-xs text-surface-mid">{{ recipe.title }}</p>
+            <p class="text-sm text-accent-blue">
+              step {{ stepIndex + 1 }} of {{ totalSteps }}
+            </p>
           </div>
-          <BaseButton
+          <IconCloseButton
             ref="exitButton"
-            type="button"
-            variant="ghost"
-            quiet
-            size="sm"
-            class="shrink-0 ml-4"
+            class="ml-4 shrink-0"
+            aria-label="exit cook mode"
             @click="emit('close')"
-          >
-            Exit cook mode
-          </BaseButton>
+          />
         </header>
 
         <div class="h-1 bg-surface-border">
@@ -136,19 +135,21 @@ onUnmounted(() => {
           />
         </div>
 
-        <div class="px-4 py-2 border-b border-surface-border">
+        <div class="border-b border-surface-border px-4 py-2">
           <BaseButton
             type="button"
             variant="ghost"
             quiet
             size="sm"
+            class="gap-1.5"
             @click="showIngredients = !showIngredients"
           >
-            {{ showIngredients ? "Hide" : "Show" }} ingredients ({{ recipe.ingredients.length }})
+            <ChevronIcon :open="showIngredients" />
+            {{ showIngredients ? "hide" : "show" }} ingredients ({{ recipe.ingredients.length }})
           </BaseButton>
           <ul
             v-if="showIngredients"
-            class="mt-2 text-sm text-surface-light space-y-1 max-h-32 overflow-y-auto"
+            class="mt-2 max-h-32 space-y-1 overflow-y-auto text-sm text-surface-light"
           >
             <li
               v-for="(ing, i) in recipe.ingredients"
@@ -161,26 +162,28 @@ onUnmounted(() => {
         </div>
 
         <div
-          class="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center"
+          class="flex flex-1 flex-col items-center justify-center px-6 py-8 text-center"
           role="region"
           aria-label="Cook mode step"
         >
-          <div class="text-5xl font-data text-accent-blue mb-6">{{ stepIndex + 1 }}</div>
-          <p class="text-xl sm:text-2xl text-surface-light leading-relaxed max-w-2xl">
-            {{ currentStep }}
-          </p>
+          <div class="font-data text-5xl text-accent-blue">{{ stepIndex + 1 }}</div>
         </div>
 
         <footer
-          class="flex items-center justify-between gap-4 px-4 py-4 border-t border-surface-border"
+          class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-t border-surface-border px-4 py-4"
         >
           <BaseButton variant="ghost" :disabled="stepIndex === 0" @click="goPrev">
             previous
           </BaseButton>
+          <p
+            class="min-w-0 text-center text-sm leading-relaxed text-surface-light sm:text-base"
+          >
+            {{ currentStep }}
+          </p>
           <BaseButton v-if="stepIndex < totalSteps - 1" variant="primary" @click="goNext">
             next
           </BaseButton>
-          <BaseButton v-else variant="primary" @click="emit('close')">done</BaseButton>
+          <IconCloseButton v-else aria-label="done" @click="emit('close')" />
         </footer>
       </div>
     </Transition>

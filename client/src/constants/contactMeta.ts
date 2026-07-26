@@ -5,10 +5,10 @@ export const CONTACT_ORDER = ["email", "telegram", "linkedin", "github"] as cons
 export type ContactLinkId = (typeof CONTACT_ORDER)[number];
 
 export const CONTACT_LABELS: Record<ContactLinkId, string> = {
-  email: "Email",
-  telegram: "Telegram",
-  linkedin: "LinkedIn",
-  github: "GitHub",
+  email: "email",
+  telegram: "telegram",
+  linkedin: "linkedin",
+  github: "github",
 };
 
 export interface ContactLink {

@@ -108,7 +108,7 @@ defineExpose({
       v-if="filtersOpen"
       id="expense-transaction-filters"
       variant="compact"
-      class="flex flex-col gap-4"
+      class="flex w-[min(100vw-2rem,28rem)] min-w-[16rem] max-w-full flex-col gap-4"
     >
       <div class="flex flex-col gap-3 md:flex-row md:items-end">
         <div class="flex-1">

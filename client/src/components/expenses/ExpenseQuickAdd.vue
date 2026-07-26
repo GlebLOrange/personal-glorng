@@ -104,10 +104,10 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
 <template>
   <Card variant="compact" class="flex flex-col gap-3">
     <div class="flex flex-wrap items-end justify-between gap-2">
-      <p class="text-xs font-medium uppercase tracking-wide text-surface-mid">quick add</p>
+      <p class="text-xs font-medium text-surface-mid">quick add</p>
       <div class="flex items-end gap-2">
-        <div class="w-[6.5rem]">
-          <BaseSelect v-model="currency" label="currency">
+        <div class="min-w-0 w-full max-w-[7.5rem]">
+          <BaseSelect v-model="currency" label="currency" class="w-full">
             <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
               {{ code }}
             </option>

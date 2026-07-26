@@ -4,6 +4,7 @@ import { useApiAction } from "@/composables/useApiAction";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
+import { effectiveSearchQuery } from "@/constants/search";
 import { statusLabel, type TaskStatus } from "@/constants/taskStatus";
 import { datetimeLocalValue, parseDatetimeLocalToIso } from "@/utils/dates";
 import type { PaginatedList, SyncQueueItem, TaskDetail, TaskIntakeItem, TaskItem } from "@/types";
@@ -54,6 +55,7 @@ export function useTasks() {
   const hasPreviousIntakePage = computed(() => intakePage.value > 1);
   const hasNextSyncPage = computed(() => syncPage.value < syncTotalPages.value);
   const hasPreviousSyncPage = computed(() => syncPage.value > 1);
+  const effectiveSearch = computed(() => effectiveSearchQuery(searchQuery.value) ?? "");
 
   async function loadTasks(): Promise<void> {
     const params: Record<string, string | number> = {
@@ -63,7 +65,7 @@ export function useTasks() {
     if (filterStatus.value) {
       params.status = filterStatus.value;
     }
-    const q = searchQuery.value.trim();
+    const q = effectiveSearchQuery(searchQuery.value);
     if (q) {
       params.q = q;
     }
@@ -224,7 +226,7 @@ export function useTasks() {
   });
 
   let searchDebounce: ReturnType<typeof setTimeout> | undefined;
-  watch(searchQuery, () => {
+  watch(effectiveSearch, () => {
     clearTimeout(searchDebounce);
     searchDebounce = setTimeout(() => {
       page.value = 1;

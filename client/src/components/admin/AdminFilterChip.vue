@@ -28,7 +28,7 @@ function onLeave(): void {
     type="button"
     :disabled="disabled"
     :aria-pressed="active"
-    class="w-full whitespace-nowrap rounded-lg border px-2 py-1 text-left text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:cursor-not-allowed disabled:opacity-50"
+    class="w-full whitespace-nowrap rounded-lg border px-2 py-1 text-left text-xs leading-normal transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:cursor-not-allowed disabled:opacity-50"
     :class="
       showStatusColor
         ? [colorClass, active ? 'ring-1 ring-inset ring-current/35' : undefined]

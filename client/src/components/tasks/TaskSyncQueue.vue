@@ -3,6 +3,7 @@ import { ref } from "vue";
 
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import SyncIcon from "@/components/icons/SyncIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
@@ -83,9 +84,11 @@ function syncMeta(item: SyncQueueItem): string {
           variant="ghost"
           quiet
           size="sm"
+          class="gap-1.5"
           aria-label="retry sync"
           @click="emit('retry', item.task_id)"
         >
+          <SyncIcon class-name="size-3.5" />
           retry
         </BaseButton>
       </template>

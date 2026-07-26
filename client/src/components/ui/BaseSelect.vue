@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, useAttrs, useId } from "vue";
 
+import FieldHelp from "@/components/ui/FieldHelp.vue";
 import { SELECT_CLASS, SELECT_CLASS_COMPACT } from "@/constants/formClasses";
 
 defineOptions({ inheritAttrs: false });
@@ -35,10 +36,15 @@ const ariaLabel = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-1" :class="attrs.class">
-    <label v-if="label" :for="selectId" class="text-label text-surface-sage">
-      {{ label }}
-    </label>
+  <div class="flex min-w-0 flex-col gap-1" :class="attrs.class">
+    <div v-if="label || hint" class="flex items-center gap-1.5">
+      <!-- associated via :for / :id (computed ids); FieldHelp sits beside the label -->
+      <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
+      <label v-if="label" :for="selectId" class="text-label text-surface-sage">
+        {{ label }}
+      </label>
+      <FieldHelp v-if="hint" :text="hint" :content-id="hintId" />
+    </div>
     <select
       :id="selectId"
       v-model="model"
@@ -51,9 +57,6 @@ const ariaLabel = computed(() => {
     </select>
     <p v-if="error" :id="errorId" role="alert" class="text-xs text-status-error">
       {{ error }}
-    </p>
-    <p v-else-if="hint" :id="hintId" class="text-xs text-surface-mid">
-      {{ hint }}
     </p>
   </div>
 </template>

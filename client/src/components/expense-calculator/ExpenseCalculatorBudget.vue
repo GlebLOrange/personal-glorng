@@ -58,19 +58,19 @@ function onAddBudgetLine(): void {
   <div class="flex flex-col gap-4">
     <Card variant="compact" class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div>
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Budget</p>
+        <p class="text-xs text-surface-mid">budget</p>
         <p class="text-2xl font-bold font-data text-surface-light mt-1">
           {{ formatMoney(budgetSummary.totalBudget, displayCurrency) }}
         </p>
       </div>
       <div>
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Spent</p>
+        <p class="text-xs text-surface-mid">spent</p>
         <p class="text-2xl font-bold font-data text-surface-light mt-1">
           {{ formatMoney(budgetSummary.totalSpent, displayCurrency) }}
         </p>
       </div>
       <div>
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Remaining</p>
+        <p class="text-xs text-surface-mid">remaining</p>
         <p
           class="text-2xl font-bold font-data mt-1"
           :class="budgetSummary.overBudget ? 'text-status-error' : 'text-accent-blue'"

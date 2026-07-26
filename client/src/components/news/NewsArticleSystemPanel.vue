@@ -62,9 +62,9 @@ const previewThemes = computed(() =>
         <span
           v-for="theme in previewThemes"
           :key="theme"
-          class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid"
+          class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
         >
-          {{ theme }}
+          #{{ theme }}
         </span>
       </div>
     </Card>

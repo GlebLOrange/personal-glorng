@@ -68,7 +68,7 @@ const currency = defineModel<CurrencyCode>("whatIfCurrency", { required: true })
 
     <div class="border-t border-surface-border pt-4 space-y-3" role="status" aria-live="polite">
       <div class="flex items-center justify-between gap-3">
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Projection</p>
+        <p class="text-xs text-surface-mid">projection</p>
         <StatusBadge
           :label="projection.overBudget ? 'over budget' : 'within budget'"
           :class-name="

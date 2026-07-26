@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ExpenseDateFilters from "@/components/expenses/ExpenseDateFilters.vue";
 import ExpenseSummaryCard from "@/components/expenses/ExpenseSummaryCard.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import type { DateFilterMode, MonthPreset } from "@/composables/useExpenseFilters";
@@ -70,7 +71,10 @@ const emit = defineEmits<{
       role="alert"
     >
       <span>{{ summaryError || ratesError }}</span>
-      <BaseButton variant="ghost" size="sm" @click="emit('retry')">retry</BaseButton>
+      <BaseButton variant="ghost" size="sm" class="gap-1.5" @click="emit('retry')">
+        <RefreshIcon class-name="size-3.5" />
+        retry
+      </BaseButton>
     </div>
   </section>
 </template>

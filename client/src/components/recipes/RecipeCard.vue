@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import ClockIcon from "@/components/icons/ClockIcon.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import { Card } from "@/components/ui/card";
-import { formatRecipeTime } from "@/utils/recipe";
 import type { Recipe } from "@/types";
 
 const props = defineProps<{
@@ -19,12 +17,6 @@ const emit = defineEmits<{
   edit: [recipe: Recipe];
   delete: [recipe: Recipe];
 }>();
-
-const prepLabel = computed(() => formatRecipeTime(props.recipe.prep_time));
-const cookLabel = computed(() => formatRecipeTime(props.recipe.cook_time));
-const hasMeta = computed(() =>
-  Boolean(prepLabel.value || cookLabel.value || props.recipe.servings),
-);
 
 const thumbInitials = computed(() => {
   const parts = props.recipe.title.trim().split(/\s+/).filter(Boolean);
@@ -71,29 +63,6 @@ function onRowKeydown(event: KeyboardEvent): void {
         <h3 class="min-w-0 flex-1 truncate text-sm font-bold text-surface-light">
           {{ recipe.title }}
         </h3>
-        <div v-if="hasMeta" class="flex shrink-0 flex-wrap items-center justify-end gap-1">
-          <span
-            v-if="prepLabel"
-            class="inline-flex items-center gap-0.5 rounded-full border border-accent-blue/30 bg-accent-blue/15 px-1.5 py-0.5 text-[10px] text-accent-blue"
-          >
-            <ClockIcon class-name="size-3 shrink-0" />
-            prep {{ prepLabel }}
-          </span>
-          <span
-            v-if="cookLabel"
-            class="inline-flex items-center gap-0.5 rounded-full border border-status-warning/30 bg-status-warning/15 px-1.5 py-0.5 text-[10px] text-status-warning"
-          >
-            <ClockIcon class-name="size-3 shrink-0" />
-            cook {{ cookLabel }}
-          </span>
-          <span
-            v-if="recipe.servings"
-            class="inline-flex items-center gap-0.5 rounded-full border border-status-success/30 bg-status-success/15 px-1.5 py-0.5 text-[10px] text-status-success"
-          >
-            <ClockIcon class-name="size-3 shrink-0" />
-            {{ recipe.servings }} servings
-          </span>
-        </div>
       </div>
 
       <div

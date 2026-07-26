@@ -3,7 +3,7 @@ from typing import Any
 RESUME_DATA: dict[str, Any] = {
     "name": "Gleb.Y",
     "title": "Full-Stack Developer",
-    "location": "Remote · EU",
+    "location": "EU",
     "availability": "Open to full-time and contract (remote)",
     "bio": (
         "End-to-end delivery of web apps, APIs, and automation for clients"

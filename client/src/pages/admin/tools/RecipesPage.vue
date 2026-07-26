@@ -189,9 +189,10 @@ function editRecipeFromCard(recipe: Recipe): void {
     <ConfirmDialog
       v-if="canWrite"
       :open="showDeleteConfirm"
-      title="Delete recipe"
+      title="delete recipe"
       :message="deleteConfirmMessage"
       confirm-label="delete"
+      loading-label="deleting recipe..."
       :loading="deleting"
       @confirm="confirmDelete"
       @cancel="cancelDelete"

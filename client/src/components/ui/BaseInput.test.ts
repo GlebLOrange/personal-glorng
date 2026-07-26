@@ -47,7 +47,7 @@ describe("BaseInput", () => {
     expect(wrapper.get("#title-tip").classes()).toContain("absolute");
     expect(wrapper.get("#title-tip").classes()).toContain("left-3");
     expect(wrapper.get("#title-tip").classes()).toContain("right-11");
-    expect(wrapper.get("#title-tip").find(".truncate").classes()).toContain("text-right");
+    expect(wrapper.get("#title-tip").find(".truncate").classes()).toContain("text-left");
     expect(wrapper.get("#title-tip").attributes("aria-hidden")).toBe("true");
     expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
     const clearEmpty = wrapper.get('button[aria-label="Clear"]');
@@ -129,6 +129,8 @@ describe("BaseInput", () => {
     });
 
     expect(wrapper.get("input").attributes("aria-describedby")).toBe("email-hint");
+    expect(wrapper.get("#email-hint").text()).toBe("We never share this");
+    expect(wrapper.get('button[aria-label="help"]').exists()).toBe(true);
     expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
   });
 

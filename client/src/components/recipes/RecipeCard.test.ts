@@ -20,7 +20,7 @@ const recipe: Recipe = {
 };
 
 describe("RecipeCard", () => {
-  it("selects on row click, shows monogram and title-row chips", async () => {
+  it("selects on row click and shows monogram without meta pills", async () => {
     const wrapper = mount(RecipeCard, {
       props: {
         recipe,
@@ -36,9 +36,10 @@ describe("RecipeCard", () => {
     await row.trigger("click");
     expect(wrapper.emitted("select")).toEqual([[42]]);
     expect(wrapper.text()).toContain("TS");
-    expect(wrapper.text()).toContain("prep 10m");
-    expect(wrapper.text()).toContain("cook 20m");
-    expect(wrapper.text()).toContain("2 servings");
+    expect(wrapper.text()).toContain("Tomato Soup");
+    expect(wrapper.text()).not.toContain("prep 10m");
+    expect(wrapper.text()).not.toContain("cook 20m");
+    expect(wrapper.text()).not.toContain("2 servings");
     expect(wrapper.text()).not.toContain("no image");
     expect(wrapper.text()).not.toContain("quick");
     expect(wrapper.find('[aria-label="edit recipe"]').exists()).toBe(false);

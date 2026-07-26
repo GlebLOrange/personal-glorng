@@ -83,6 +83,9 @@ async def test_public_search_query(
     assert len(body["hits"]) == 1
     assert body["hits"][0]["title"] == "Vue Weeknight Bowl"
 
+    short = await client.get(SEARCH_QUERY_URL, params={"q": "Vu"})
+    assert short.status_code == 422
+
 
 @pytest.mark.asyncio
 async def test_task_status_change_reindexes(registry: DatabaseRegistry) -> None:

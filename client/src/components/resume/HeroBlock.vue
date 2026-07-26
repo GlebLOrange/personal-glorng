@@ -2,6 +2,7 @@
 import { ref } from "vue";
 
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
+import LocationIcon from "@/components/icons/LocationIcon.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessageFromBlob } from "@/types/api";
@@ -61,15 +62,18 @@ async function downloadCv(): Promise<void> {
     <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 text-balance">
       <span class="accent-gradient">{{ name }}</span>
     </h1>
-    <p class="text-2xl md:text-3xl text-surface-sage mb-2">{{ title }}</p>
+    <p class="text-2xl md:text-3xl text-surface-sage mb-2 lowercase">{{ title }}</p>
     <p v-if="tagline" class="text-lg text-accent-blue mb-4 text-pretty max-w-2xl mx-auto">
       {{ tagline }}
     </p>
     <p
       v-if="location || availability"
-      class="text-meta mb-6 flex flex-wrap justify-center gap-x-3 gap-y-1"
+      class="text-meta mb-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1"
     >
-      <span v-if="location">{{ location }}</span>
+      <span v-if="location" class="inline-flex items-center gap-1.5">
+        <LocationIcon class-name="size-3.5 shrink-0" />
+        {{ location }}
+      </span>
       <span v-if="location && availability" aria-hidden="true">·</span>
       <a
         v-if="availability"

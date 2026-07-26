@@ -69,26 +69,16 @@ watch(page, () => {
           :aria-label="item.title"
         />
 
-        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
-          <span>{{ item.source_name }}</span>
-          <span aria-hidden="true">/</span>
-          <time :datetime="newsArticleDisplayDate(item)">
-            {{ formatNewsDate(newsArticleDisplayDate(item)) }}
-          </time>
-        </div>
-
-        <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
-
-        <p class="mb-4 break-words text-sm text-surface-mid">{{ item.summary }}</p>
-
-        <div class="relative z-20 flex flex-wrap items-center gap-2">
-          <span
-            v-for="theme in item.themes"
-            :key="theme"
-            class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid"
-          >
-            {{ theme }}
-          </span>
+        <div
+          class="relative z-20 mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-surface-muted"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <span>{{ item.source_name }}</span>
+            <span aria-hidden="true">/</span>
+            <time :datetime="newsArticleDisplayDate(item)">
+              {{ formatNewsDate(newsArticleDisplayDate(item)) }}
+            </time>
+          </div>
           <a
             v-if="safeNavigationHref(item.source_url)"
             :href="safeNavigationHref(item.source_url) ?? '#'"
@@ -99,6 +89,20 @@ watch(page, () => {
           >
             source
           </a>
+        </div>
+
+        <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
+
+        <p class="mb-4 break-words text-sm text-surface-mid">{{ item.summary }}</p>
+
+        <div class="relative z-20 flex flex-wrap items-center gap-2">
+          <span
+            v-for="theme in item.themes"
+            :key="theme"
+            class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
+          >
+            #{{ theme }}
+          </span>
         </div>
       </Card>
     </section>

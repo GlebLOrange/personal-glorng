@@ -2,8 +2,6 @@
 import { computed, nextTick, ref, watch } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
-import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
-import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
@@ -134,32 +132,16 @@ function onIngredientPaste(event: ClipboardEvent, index: number): void {
             :aria-label="`remove ingredient ${idx + 1}`"
             @click="removeIngredient(idx)"
           />
-          <BaseDropdownMenu
-            v-if="ingredients.length > 1"
-            :aria-label="`ingredient ${idx + 1} actions`"
-            placement="bottom"
+          <IconActionButton
+            v-if="idx > 0"
+            type="button"
+            quiet
+            :title="`move ingredient ${idx + 1} up`"
+            :aria-label="`move ingredient ${idx + 1} up`"
+            @click="moveIngredient(idx, -1)"
           >
-            <template #default="{ close: closeMenu }">
-              <BaseDropdownMenuItem
-                v-if="idx > 0"
-                @select="
-                  closeMenu();
-                  moveIngredient(idx, -1);
-                "
-              >
-                move up
-              </BaseDropdownMenuItem>
-              <BaseDropdownMenuItem
-                v-if="idx < ingredients.length - 1"
-                @select="
-                  closeMenu();
-                  moveIngredient(idx, 1);
-                "
-              >
-                move down
-              </BaseDropdownMenuItem>
-            </template>
-          </BaseDropdownMenu>
+            ↑
+          </IconActionButton>
         </li>
       </ul>
       <IconActionButton type="button" title="add ingredient" aria-label="add ingredient" @click="addIngredient">

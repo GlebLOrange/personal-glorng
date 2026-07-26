@@ -12,10 +12,10 @@ defineProps<{
     <Card v-for="(exp, i) in experience" :key="i" variant="ghost">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
-          <h3 class="card-title">{{ exp.role }}</h3>
-          <p class="text-base text-accent-blue">{{ exp.company }}</p>
+          <h3 class="card-title lowercase">{{ exp.role }}</h3>
+          <p class="text-base text-accent-blue lowercase">{{ exp.company }}</p>
         </div>
-        <span class="text-meta shrink-0">
+        <span class="text-meta shrink-0 lowercase">
           {{ exp.period }}
         </span>
       </div>

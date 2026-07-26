@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PageShell from "@/components/layout/PageShell.vue";
-import ToolIcon from "@/components/icons/ToolIcon.vue";
+import LocationIcon from "@/components/icons/LocationIcon.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
 import WeatherPinnedCitiesRow from "@/components/weather/WeatherPinnedCitiesRow.vue";
 import { useActiveWeatherQuery } from "@/composables/useActiveWeatherQuery";
@@ -55,7 +55,7 @@ function handleSelect(query: string): void {
         :helper-text="guestLimitMessage"
       >
         <template #heading>
-          <ToolIcon slug="location" class="h-5 w-5" />
+          <LocationIcon class-name="size-5" />
           locations
         </template>
       </WeatherLocationForm>

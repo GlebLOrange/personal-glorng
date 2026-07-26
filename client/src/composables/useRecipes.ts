@@ -3,6 +3,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import { useApiAction } from "@/composables/useApiAction";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
+import { effectiveSearchQuery } from "@/constants/search";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
@@ -73,7 +74,8 @@ export function useRecipes() {
     () => selectedRecipeId.value !== null || selectedRecipe.value !== null,
   );
   const hasNextPage = computed(() => page.value < totalPages.value);
-  const hasFilters = computed(() => Boolean(search.value.trim()));
+  const hasFilters = computed(() => Boolean(effectiveSearchQuery(search.value)));
+  const effectiveSearch = computed(() => effectiveSearchQuery(search.value) ?? "");
   const recipeCountLabel = computed(() => {
     const n = total.value;
     return `${n} recipe${n === 1 ? "" : "s"}`;
@@ -111,7 +113,8 @@ export function useRecipes() {
       per_page: LIST_PAGE_SIZE,
       sort: sort.value,
     };
-    if (search.value.trim()) params.search = search.value.trim();
+    const q = effectiveSearchQuery(search.value);
+    if (q) params.search = q;
 
     const data = await runList(
       async () => {
@@ -328,7 +331,7 @@ export function useRecipes() {
   }
 
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
-  watch(search, () => {
+  watch(effectiveSearch, () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       page.value = 1;

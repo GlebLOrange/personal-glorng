@@ -45,10 +45,12 @@ export function useToolbarOptionsPopover(options: ToolbarOptionsPopoverOptions):
 
   function onDocumentClick(event: MouseEvent): void {
     if (!open.value) return;
+    const target = event.target as Node;
     const root = rootRef.value;
-    if (root && !root.contains(event.target as Node)) {
-      close();
-    }
+    const panel = panelRef.value;
+    // Panel may be Teleported outside root (e.g. AdminFilterDropdown).
+    if (root?.contains(target) || panel?.contains(target)) return;
+    close();
   }
 
   function onKeydown(event: KeyboardEvent): void {
@@ -71,8 +73,15 @@ export function useToolbarOptionsPopover(options: ToolbarOptionsPopoverOptions):
       const panel = panelRef.value;
       if (!panel) return;
       const focusables = getOverlayFocusableElements(panel);
-      if (focusables.length > 0) {
-        focusables[0].focus();
+      const preferred =
+        focusables.find(
+          (el) =>
+            el instanceof HTMLInputElement ||
+            el instanceof HTMLSelectElement ||
+            el instanceof HTMLTextAreaElement,
+        ) ?? focusables[0];
+      if (preferred) {
+        preferred.focus();
       } else {
         panel.focus();
       }

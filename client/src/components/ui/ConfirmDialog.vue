@@ -8,12 +8,15 @@ withDefaults(
     title: string;
     message?: string;
     confirmLabel?: string;
+    /** Shown on the confirm button while loading. */
+    loadingLabel?: string;
     loading?: boolean;
     danger?: boolean;
   }>(),
   {
     message: "",
     confirmLabel: "confirm",
+    loadingLabel: "working...",
     danger: false,
   },
 );
@@ -41,7 +44,7 @@ const emit = defineEmits<{
         :disabled="loading"
         @click="emit('confirm')"
       >
-        {{ loading ? "working..." : (confirmLabel ?? "confirm") }}
+        {{ loading ? loadingLabel : (confirmLabel ?? "confirm") }}
       </BaseButton>
     </div>
   </BaseModal>
