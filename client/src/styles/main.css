@@ -291,7 +291,7 @@ html[data-theme="light"] {
 }
 
 html {
-  /* color-scheme set per [data-theme] above; default dark via :root */
+  /* color-scheme set per [data-theme]; :root falls back to dark tokens before FOUC */
   scroll-behavior: smooth;
   font-size: 112.5%;
   -webkit-text-size-adjust: 100%;

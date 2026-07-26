@@ -1,12 +1,15 @@
 import { computed, onMounted, ref, type Ref } from "vue";
 
-/** Persisted preference: explicit theme or follow OS. Default dark when unset. */
+/** Persisted preference: explicit theme or follow OS. Default system when unset. */
 export type ColorThemePreference = "light" | "dark" | "system";
 
 /** Resolved theme applied to `html[data-theme]`. */
 export type ColorThemeResolved = "light" | "dark";
 
 export const COLOR_THEME_STORAGE_KEY = "glorng-color-theme";
+
+/** Unset / invalid localStorage → follow OS (FOUC script must match). */
+export const DEFAULT_COLOR_THEME_PREFERENCE: ColorThemePreference = "system";
 
 const THEME_COLOR_LIGHT = "#f9f9fb";
 const THEME_COLOR_DARK = "#111827";
@@ -20,7 +23,7 @@ const resolved = colorThemeResolved;
 
 function readPreference(): ColorThemePreference {
   if (typeof localStorage === "undefined") {
-    return "dark";
+    return DEFAULT_COLOR_THEME_PREFERENCE;
   }
   try {
     const raw = localStorage.getItem(COLOR_THEME_STORAGE_KEY)?.trim();
@@ -30,7 +33,7 @@ function readPreference(): ColorThemePreference {
   } catch {
     // ignore
   }
-  return "dark";
+  return DEFAULT_COLOR_THEME_PREFERENCE;
 }
 
 function systemPrefersDark(): boolean {

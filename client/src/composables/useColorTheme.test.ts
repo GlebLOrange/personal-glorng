@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   COLOR_THEME_STORAGE_KEY,
+  DEFAULT_COLOR_THEME_PREFERENCE,
   applyColorTheme,
   resolveTheme,
 } from "@/composables/useColorTheme";
@@ -54,5 +55,9 @@ describe("useColorTheme", () => {
 
   it("storage key is stable for FOUC script parity", () => {
     expect(COLOR_THEME_STORAGE_KEY).toBe("glorng-color-theme");
+  });
+
+  it("unset preference defaults to system (FOUC parity)", () => {
+    expect(DEFAULT_COLOR_THEME_PREFERENCE).toBe("system");
   });
 });

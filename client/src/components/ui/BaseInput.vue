@@ -11,7 +11,7 @@ const model = defineModel<string | number | null>();
 const props = defineProps<{
   id?: string;
   type?: string;
-  /** Faint right-aligned tip drawn behind the value (full-width input). */
+  /** In-bar overlay tip (decorative); shown only when empty. Not the accessible name. */
   placeholder?: string;
   /** Optional left-side field name inside the control. */
   prefix?: string;
@@ -33,17 +33,21 @@ const errorId = computed(() => `${inputId.value}-error`);
 const tipId = computed(() => `${inputId.value}-tip`);
 const hasSuffix = computed(() => Boolean(slots.suffix));
 const isClearableType = computed(() => props.type !== "number");
-const hasClearableValue = computed(() => {
-  if (!isClearableType.value) return false;
-  return typeof model.value === "string" && model.value.length > 0;
+const hasTypedValue = computed(() => {
+  if (typeof model.value === "string") return model.value.length > 0;
+  if (typeof model.value === "number") return true;
+  return false;
 });
+const hasClearableValue = computed(() => isClearableType.value && hasTypedValue.value);
 const useShell = computed(() => Boolean(props.prefix || props.placeholder || hasSuffix.value));
 const showClear = computed(() => useShell.value && hasClearableValue.value);
-/** Faint tip stays behind the value; inset past Clear/suffix when present. */
-const showTip = computed(() => Boolean(props.placeholder));
+/** Reserve clear width whenever shell is clearable so tip/value never jump. */
+const reserveClear = computed(() => useShell.value && isClearableType.value);
+/** Overlay tip only when empty (even if focused). */
+const showTip = computed(() => Boolean(props.placeholder) && !hasTypedValue.value);
 const tipInsetClass = computed(() => [
   "left-3",
-  showClear.value || hasSuffix.value ? "right-11" : "right-3",
+  reserveClear.value || hasSuffix.value ? "right-11" : "right-3",
 ]);
 const describedBy = computed(() => {
   const ids: string[] = [];
@@ -159,11 +163,17 @@ defineExpose({ focus });
         </span>
       </span>
       <div
-        v-if="showClear || hasSuffix"
+        v-if="reserveClear || hasSuffix"
         class="relative z-10 flex shrink-0 items-center gap-0.5 pr-1"
       >
         <slot name="suffix" />
-        <IconCloseButton v-if="showClear" aria-label="Clear" @click="clear" />
+        <div
+          v-if="reserveClear"
+          class="flex w-8 shrink-0 items-center justify-center"
+          :class="showClear ? undefined : 'invisible pointer-events-none'"
+        >
+          <IconCloseButton aria-label="Clear" @click="clear" />
+        </div>
       </div>
     </div>
 
