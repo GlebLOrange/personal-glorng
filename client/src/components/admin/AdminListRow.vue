@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useSlots } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import { Card } from "@/components/ui/card";
@@ -14,6 +14,8 @@ const props = withDefaults(
     nestedInteractive?: boolean;
     /** Hide row actions until hover or focus-within (keyboard accessible). */
     revealActionsOnHover?: boolean;
+    /** Optional accessible name override; omit to use primary slot text. */
+    openLabel?: string;
   }>(),
   {
     interactive: false,
@@ -26,8 +28,12 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{ click: [MouseEvent | KeyboardEvent] }>();
+const slots = useSlots();
 
 const focusable = computed(() => props.interactive && !props.nestedInteractive);
+const primaryAsOpenControl = computed(
+  () => props.interactive && props.nestedInteractive && Boolean(slots.primary),
+);
 
 const rowAttrs = computed(() => {
   if (!focusable.value) return {};
@@ -39,6 +45,18 @@ const rowAttrs = computed(() => {
 
 function onClick(event: MouseEvent): void {
   if (!props.interactive) return;
+  // Nested primary button already handles activation; ignore bubbled clicks from it.
+  if (primaryAsOpenControl.value) {
+    const target = event.target;
+    if (target instanceof Element && target.closest("[data-admin-list-open]")) {
+      return;
+    }
+  }
+  emit("click", event);
+}
+
+function onPrimaryOpen(event: MouseEvent): void {
+  event.stopPropagation();
   emit("click", event);
 }
 
@@ -76,8 +94,18 @@ function onKeydown(event: KeyboardEvent): void {
         <slot name="badge" />
       </div>
       <div class="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+        <button
+          v-if="primaryAsOpenControl"
+          type="button"
+          data-admin-list-open
+          class="min-w-0 flex-1 truncate text-left text-sm font-medium text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+          :aria-label="openLabel"
+          @click="onPrimaryOpen"
+        >
+          <slot name="primary" />
+        </button>
         <span
-          v-if="$slots.primary"
+          v-else-if="$slots.primary"
           class="min-w-0 flex-1 truncate text-sm font-medium text-surface-light"
         >
           <slot name="primary" />

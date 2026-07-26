@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
@@ -9,6 +9,7 @@ import { isFirebaseEnabled } from "@/constants/firebase";
 import { useNotify } from "@/composables/useNotify";
 import { useAuthStore } from "@/stores/auth";
 import { getApiErrorMessage } from "@/types/api";
+import { focusAfterPaint } from "@/utils/focusField";
 import { safeRedirectPath } from "@/utils/safeUrl";
 
 const auth = useAuthStore();
@@ -21,6 +22,7 @@ const password = ref("");
 const loading = ref(false);
 const googleLoading = ref(false);
 const formError = ref("");
+const formErrorEl = useTemplateRef<HTMLElement>("formErrorAlert");
 
 const canSubmit = computed(() => !!email.value.trim() && !!password.value && !loading.value);
 
@@ -36,6 +38,7 @@ async function handleLogin(): Promise<void> {
     if (import.meta.env.DEV) console.error(err);
     formError.value = getApiErrorMessage(err, "Invalid email or password");
     toast(formError.value, "error");
+    await focusAfterPaint(() => formErrorEl.value);
   } finally {
     loading.value = false;
   }
@@ -52,6 +55,7 @@ async function handleGoogleLogin(): Promise<void> {
     if (import.meta.env.DEV) console.error(err);
     formError.value = getApiErrorMessage(err, "Google login failed");
     toast(formError.value, "error");
+    await focusAfterPaint(() => formErrorEl.value);
   } finally {
     googleLoading.value = false;
   }
@@ -87,7 +91,15 @@ async function handleGoogleLogin(): Promise<void> {
           placeholder="password"
           required
         />
-        <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
+        <p
+          v-if="formError"
+          ref="formErrorAlert"
+          class="text-xs text-status-error"
+          role="alert"
+          tabindex="-1"
+        >
+          {{ formError }}
+        </p>
         <BaseButton
           type="submit"
           variant="primary"

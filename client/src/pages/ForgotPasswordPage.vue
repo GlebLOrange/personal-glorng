@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, useTemplateRef } from "vue";
 
 import BackLink from "@/components/ui/BackLink.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
@@ -7,6 +7,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
+import { focusAfterPaint } from "@/utils/focusField";
 
 const { toast } = useNotify();
 
@@ -14,6 +15,7 @@ const email = ref("");
 const loading = ref(false);
 const submitted = ref(false);
 const formError = ref("");
+const formErrorEl = useTemplateRef<HTMLElement>("formErrorAlert");
 
 async function handleSubmit(): Promise<void> {
   loading.value = true;
@@ -25,6 +27,7 @@ async function handleSubmit(): Promise<void> {
   } catch (err) {
     formError.value = getApiErrorMessage(err, "Request failed");
     toast(formError.value, "error");
+    await focusAfterPaint(() => formErrorEl.value);
   } finally {
     loading.value = false;
   }
@@ -55,7 +58,15 @@ async function handleSubmit(): Promise<void> {
           placeholder="you@example.com"
           required
         />
-        <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
+        <p
+          v-if="formError"
+          ref="formErrorAlert"
+          class="text-xs text-status-error"
+          role="alert"
+          tabindex="-1"
+        >
+          {{ formError }}
+        </p>
         <BaseButton type="submit" variant="primary" class="w-full" :loading="loading">
           {{ loading ? "sending..." : "send reset link" }}
         </BaseButton>
