@@ -29,7 +29,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <title>Gleb.Y — Developer Portfolio</title>
     <script>
-      /* FOUC: apply data-theme before CSS paint. Key must match COLOR_THEME_STORAGE_KEY. */
+      /* FOUC: apply data-theme before CSS paint. Key must match COLOR_THEME_STORAGE_KEY.
+         Unset/invalid preference → system (prefers-color-scheme). */
       (function () {
         try {
           var key = "glorng-color-theme";
@@ -37,7 +38,8 @@
           var theme = "dark";
           if (pref === "light" || pref === "dark") {
             theme = pref;
-          } else if (pref === "system") {
+          } else {
+            // system (explicit), or unset/invalid → follow OS
             theme =
               window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
                 ? "dark"

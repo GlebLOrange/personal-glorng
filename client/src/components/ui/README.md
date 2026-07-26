@@ -10,6 +10,8 @@ Use for **interactive controls and overlays** in admin tools and feature UI.
 - `BaseModal` / `BaseDrawer` — dialogs and side panels (focus trap, Escape, focus restore built in)
 - `BaseInput`, `BaseTextarea`, `BaseSelect` — forms; styling from `constants/formClasses.ts`
 - Always pass a visible `label` prop (or an explicit `aria-label` when the label must be hidden)
+- Shell `placeholder` is an **in-bar overlay tip** (aria-hidden): visible only when empty, including while focused; never the accessible name — pass `label` or `aria-label`
+- `SearchInput` — same overlay pattern with a leading search icon; clear X slot is always reserved (invisible when empty) so text does not shift
 - Optional `error` / `hint` wire `aria-invalid` + `aria-describedby`
 - `EmptyState` / `ErrorState` — list empty and fetch-error surfaces
 - `ListSkeleton` — shared loading skeleton (`aria-busy`); `AdminListSkeleton` wraps it for dense admin rows
@@ -45,6 +47,10 @@ Three intentional systems — pick one per surface, do not mix adjacent CTAs:
 | `ToolbarPillButton` | Admin list toolbars, tool option bars, HTTP-ish families | Compact pills (`1xx` blue, `2xx` green submit, …) |
 
 **Do not** use `cta-primary` inside tool screens; **do not** add gradients to `BaseButton`. Prefer `ToolbarPillButton` for admin toolbar primary actions and `BaseButton` for form/dialog actions.
+
+### Action copy (no bare `+`)
+
+Product `BaseButton` / `ToolbarPillButton` labels must name the action with a short noun: `+ task`, `+ recipe`, `+ expense`. A lone `+` (or other single glyph) is banned. Icon-only chrome (`IconActionButton`, nav theme toggle) remains allowed when it has an `aria-label`.
 
 ### Control sizing (do not override)
 
@@ -82,11 +88,11 @@ See `NewsPage.vue` and `ExpenseList.vue` for reference implementations.
 
 ## Status / palette colors
 
-Canonical tokens live in `client/src/styles/main.css` as pale dual-theme CSS variables (`html[data-theme="dark"|"light"]`). Class names stay the same; values switch with theme. Default is **dark**. Toggle: nav chrome cycles dark → light → system (`useColorTheme`, key `glorng-color-theme`).
+Canonical tokens live in `client/src/styles/main.css` as pale dual-theme CSS variables (`html[data-theme="dark"|"light"]`). Class names stay the same; values switch with theme. **Preference** default is **system** (follow OS); **resolved** theme is often dark. Toggle: nav chrome cycles dark → light → system (`useColorTheme`, key `glorng-color-theme`).
 
 **Roles (both themes):** `surface-dark` = page background, `surface-card` = elevated surface, `surface-border` = borders, `surface-light` = primary text, `surface-sage` / `surface-mid` / `surface-muted` = body → secondary → muted. `on-accent` = dark ink on solid pale CTA fills. Product/admin uses pale 1xx–5xx + surfaces only; violet/golden are marketing-only.
 
-| Family | Token | Dark (default) | Light |
+| Family | Token | Dark (resolved) | Light |
 |---|---|---|---|
 | 1xx | `accent-blue` | `#8ec4e0` | `#7aa3d4` |
 | 2xx | `status-success` | `#7bc49a` | `#86c9a0` |

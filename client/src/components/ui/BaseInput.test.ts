@@ -32,7 +32,7 @@ describe("BaseInput", () => {
     expect(wrapper.get("#email-error").text()).toBe("Required");
   });
 
-  it("shows a right-aligned tip behind the value and Clear X when typing", async () => {
+  it("shows overlay tip only when empty and reserves clear slot without jump", async () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "title",
@@ -46,20 +46,21 @@ describe("BaseInput", () => {
     expect(wrapper.get("#title-tip").text()).toBe("enter title");
     expect(wrapper.get("#title-tip").classes()).toContain("absolute");
     expect(wrapper.get("#title-tip").classes()).toContain("left-3");
-    expect(wrapper.get("#title-tip").classes()).toContain("right-3");
+    expect(wrapper.get("#title-tip").classes()).toContain("right-11");
     expect(wrapper.get("#title-tip").find(".truncate").classes()).toContain("text-right");
     expect(wrapper.get("#title-tip").attributes("aria-hidden")).toBe("true");
     expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
-    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
+    const clearEmpty = wrapper.get('button[aria-label="Clear"]');
+    expect(clearEmpty.element.closest(".invisible")).not.toBeNull();
 
     await wrapper.setProps({ modelValue: "Pasta Carbonara" });
     expect(wrapper.get("input").element).toHaveProperty("value", "Pasta Carbonara");
-    expect(wrapper.get("#title-tip").text()).toBe("enter title");
-    expect(wrapper.get("#title-tip").classes()).toContain("right-11");
-    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(true);
+    expect(wrapper.find("#title-tip").exists()).toBe(false);
+    const clearFilled = wrapper.get('button[aria-label="Clear"]');
+    expect(clearFilled.element.closest(".invisible")).toBeNull();
   });
 
-  it("renders a suffix slot inside the shell and keeps the tip while typing", () => {
+  it("renders a suffix slot inside the shell and hides tip while typing", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "ingredient",
@@ -74,15 +75,14 @@ describe("BaseInput", () => {
       },
     });
 
-    expect(wrapper.get("#ingredient-tip").text()).toBe("ingredient");
-    expect(wrapper.get("#ingredient-tip").classes()).toContain("right-11");
+    expect(wrapper.find("#ingredient-tip").exists()).toBe(false);
     expect(wrapper.get("input").element).toHaveProperty("value", "pasta");
     expect(wrapper.get("input").attributes("aria-label")).toBe("ingredient 1");
     expect(wrapper.text()).toContain("↑");
-    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(true);
+    expect(wrapper.get('button[aria-label="Clear"]').element.closest(".invisible")).toBeNull();
   });
 
-  it("clears the shell value via the clear control and keeps the tip", async () => {
+  it("clears the shell value and restores the tip without layout jump", async () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "to",
@@ -93,13 +93,12 @@ describe("BaseInput", () => {
       },
     });
 
-    expect(wrapper.get("#to-tip").text()).toBe("to");
-    expect(wrapper.get("#to-tip").classes()).toContain("right-11");
+    expect(wrapper.find("#to-tip").exists()).toBe(false);
     await wrapper.get('button[aria-label="Clear"]').trigger("click");
     expect(wrapper.props("modelValue")).toBe("");
     expect(wrapper.get("#to-tip").text()).toBe("to");
-    expect(wrapper.get("#to-tip").classes()).toContain("right-3");
-    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
+    expect(wrapper.get("#to-tip").classes()).toContain("right-11");
+    expect(wrapper.get('button[aria-label="Clear"]').element.closest(".invisible")).not.toBeNull();
   });
 
   it("uses a visible label for naming when label and placeholder are both set", () => {
