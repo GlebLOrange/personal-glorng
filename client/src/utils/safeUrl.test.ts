@@ -3,7 +3,12 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { isExternalHref, isSafeNavigationUrl, safeNavigationHref } from "@/utils/safeUrl";
+import {
+  isExternalHref,
+  isSafeNavigationUrl,
+  safeNavigationHref,
+  safeRouterPath,
+} from "@/utils/safeUrl";
 
 describe("safeNavigationHref", () => {
   it("allows same-origin relative paths", () => {
@@ -34,6 +39,26 @@ describe("isSafeNavigationUrl", () => {
   it("mirrors safeNavigationHref nullability", () => {
     expect(isSafeNavigationUrl("/recipes")).toBe(true);
     expect(isSafeNavigationUrl("javascript:void(0)")).toBe(false);
+  });
+});
+
+describe("safeRouterPath", () => {
+  it("allows same-origin relative paths", () => {
+    expect(safeRouterPath("/tasks")).toBe("/tasks");
+    expect(safeRouterPath("/expenses?tab=insights")).toBe("/expenses?tab=insights");
+  });
+
+  it("rejects protocol-relative and dangerous schemes", () => {
+    expect(safeRouterPath("//evil.example")).toBeNull();
+    expect(safeRouterPath("javascript:alert(1)")).toBeNull();
+  });
+
+  it("allows same-origin absolute URLs as relative paths", () => {
+    expect(safeRouterPath(`${window.location.origin}/tasks`)).toBe("/tasks");
+  });
+
+  it("rejects external https URLs", () => {
+    expect(safeRouterPath("https://evil.example/doc")).toBeNull();
   });
 });
 

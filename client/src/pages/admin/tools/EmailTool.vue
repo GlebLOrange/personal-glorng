@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
 
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
@@ -9,17 +8,19 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
+import { consumeEmailDraft } from "@/utils/emailDraft";
 import { sanitizeEmailHtml } from "@/utils/sanitizeEmailHtml";
 
-const route = useRoute();
 const to = ref("");
 const subject = ref("");
 const body = ref("");
 
 onMounted(() => {
-  if (route.query.to) to.value = String(route.query.to);
-  if (route.query.subject) subject.value = String(route.query.subject);
-  if (route.query.body) body.value = String(route.query.body);
+  const draft = consumeEmailDraft();
+  if (!draft) return;
+  to.value = draft.to;
+  subject.value = draft.subject;
+  body.value = draft.body;
 });
 const previewHtml = ref("");
 const { loading, run } = useApiAction();

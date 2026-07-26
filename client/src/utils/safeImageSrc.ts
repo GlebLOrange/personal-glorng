@@ -1,6 +1,18 @@
 const BLOCKED_PROTOCOLS = new Set(["javascript:", "data:", "vbscript:", "blob:"]);
 
-/** Allow https absolute URLs and same-origin relative paths for img src. */
+/**
+ * Hosts allowed by nginx img-src CSP (https only).
+ * Keep in sync with nginx/security_headers.conf and security_headers.prod.conf.
+ */
+const CSP_IMG_HOSTS = new Set([
+  "fastapi.tiangolo.com",
+  "i.scdn.co",
+  "www.paypal.com",
+  "www.paypalobjects.com",
+  "www.themealdb.com",
+]);
+
+/** Allow same-origin relative paths and CSP-allowlisted https hosts for img src. */
 export function safeImageSrc(url: string | null | undefined): string | null {
   const trimmed = url?.trim();
   if (!trimmed) {
@@ -16,7 +28,7 @@ export function safeImageSrc(url: string | null | undefined): string | null {
     if (BLOCKED_PROTOCOLS.has(parsed.protocol)) {
       return null;
     }
-    if (parsed.protocol === "https:") {
+    if (parsed.protocol === "https:" && CSP_IMG_HOSTS.has(parsed.hostname)) {
       return parsed.href;
     }
   } catch {

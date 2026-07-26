@@ -20,6 +20,7 @@ import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import type { PaginatedList } from "@/types";
 import { formatDate } from "@/utils/format";
+import { writeEmailDraft } from "@/utils/emailDraft";
 
 interface FeedbackItem {
   id: number;
@@ -57,11 +58,12 @@ const activeFilterLabel = computed(
 );
 
 function reply(item: FeedbackItem): void {
-  const body = `\n\n--- Original ---\n${item.message}`;
-  router.push({
-    path: "/admin/send-email",
-    query: { to: item.email, subject: `Re: ${item.theme}`, body },
+  writeEmailDraft({
+    to: item.email,
+    subject: `Re: ${item.theme}`,
+    body: `\n\n--- Original ---\n${item.message}`,
   });
+  void router.push({ path: "/admin/send-email" });
 }
 
 function removeFromList(id: number): void {
@@ -132,8 +134,6 @@ async function setStatus(id: number, status: string): Promise<void> {
 function openItem(item: FeedbackItem): void {
   selectedItem.value = item;
   drawerOpen.value = true;
-  // ponytail: opening = read; archive in the same step (no separate read linger)
-  if (item.status !== "archived") void setStatus(item.id, "archived");
 }
 
 function closeDrawer(): void {

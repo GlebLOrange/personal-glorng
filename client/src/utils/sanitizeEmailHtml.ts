@@ -9,15 +9,13 @@ function ensureLinkRel(node: Element): void {
   node.setAttribute("rel", [...parts].join(" "));
 }
 
+// Register once — add/remove per call races under concurrent sanitize.
+DOMPurify.addHook("afterSanitizeAttributes", ensureLinkRel);
+
 /** Sanitize server-rendered email HTML before binding with v-html. */
 export function sanitizeEmailHtml(html: string): string {
-  DOMPurify.addHook("afterSanitizeAttributes", ensureLinkRel);
-  try {
-    return DOMPurify.sanitize(html, {
-      USE_PROFILES: { html: true },
-      FORBID_TAGS: ["script", "iframe", "object", "embed", "form"],
-    });
-  } finally {
-    DOMPurify.removeHook("afterSanitizeAttributes");
-  }
+  return DOMPurify.sanitize(html, {
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: ["script", "iframe", "object", "embed", "form"],
+  });
 }
