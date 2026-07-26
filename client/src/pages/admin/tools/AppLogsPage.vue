@@ -181,6 +181,7 @@ onMounted(load);
               :model-value="requestId"
               compact
               placeholder="request id uuid"
+              aria-label="request id"
               @update:model-value="onRequestIdChange"
             />
           </AdminFilterDropdown>

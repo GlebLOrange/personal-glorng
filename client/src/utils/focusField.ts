@@ -1,3 +1,5 @@
+import { nextTick } from "vue";
+
 /** Prefer a typing field over chrome controls (e.g. modal Close). */
 const EDITABLE_FIELD_SELECTOR = [
   'input:not([disabled]):not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"])',
@@ -20,5 +22,18 @@ export function focusEditableField(
   fallback?: HTMLElement | null,
 ): void {
   const target = (root && queryEditableField(root)) || fallback || null;
+  target?.focus();
+}
+
+/**
+ * Focus an element after the next paint (e.g. newly rendered `role="alert"`).
+ * Target should be focusable (`tabindex="-1"` for non-interactive alerts).
+ * Pass a getter when the element mounts on the same tick as the call.
+ */
+export async function focusAfterPaint(
+  el: HTMLElement | null | undefined | (() => HTMLElement | null | undefined),
+): Promise<void> {
+  await nextTick();
+  const target = typeof el === "function" ? el() : el;
   target?.focus();
 }

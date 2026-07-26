@@ -28,4 +28,16 @@ describe("focusField", () => {
 
     root.remove();
   });
+
+  it("focusAfterPaint resolves a getter after nextTick", async () => {
+    const { focusAfterPaint } = await import("@/utils/focusField");
+    const el = document.createElement("p");
+    el.tabIndex = -1;
+    document.body.append(el);
+
+    await focusAfterPaint(() => el);
+    expect(document.activeElement).toBe(el);
+
+    el.remove();
+  });
 });

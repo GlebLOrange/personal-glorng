@@ -301,7 +301,12 @@ watch(articleId, () => {
           <Card>
             <h2 class="card-title mb-4">article</h2>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <BaseInput v-model="form.slug" placeholder="slug" :disabled="!canWrite" />
+              <BaseInput
+                v-model="form.slug"
+                placeholder="slug"
+                aria-label="slug"
+                :disabled="!canWrite"
+              />
               <div
                 class="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-4"
                 role="group"
@@ -317,15 +322,22 @@ watch(articleId, () => {
                   @click="setStatus(status)"
                 />
               </div>
-              <BaseInput v-model="form.title" placeholder="title" :disabled="!canWrite" />
+              <BaseInput
+                v-model="form.title"
+                placeholder="title"
+                aria-label="title"
+                :disabled="!canWrite"
+              />
               <BaseInput
                 v-model="form.original_title"
                 placeholder="original title"
+                aria-label="original title"
                 :disabled="!canWrite"
               />
               <BaseInput
                 v-model="form.language"
                 placeholder="language (en)"
+                aria-label="language"
                 :disabled="!canWrite"
               />
             </div>
@@ -372,6 +384,7 @@ watch(articleId, () => {
                 v-model="form.summary"
                 :rows="4"
                 placeholder="summary"
+                aria-label="summary"
                 :disabled="!canWrite"
               />
             </div>
@@ -396,17 +409,20 @@ watch(articleId, () => {
               <BaseInput
                 v-model="form.source_name"
                 placeholder="source name"
+                aria-label="source name"
                 :disabled="!canWrite"
               />
               <BaseInput
                 v-model="form.source_url"
                 placeholder="article url"
+                aria-label="article url"
                 type="url"
                 :disabled="!canWrite"
               />
               <BaseInput
                 v-model="form.source_feed_url"
                 placeholder="source feed/home url"
+                aria-label="source feed url"
                 type="url"
                 :disabled="!canWrite"
               />

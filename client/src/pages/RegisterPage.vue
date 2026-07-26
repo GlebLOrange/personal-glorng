@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 import { useRouter } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
@@ -8,6 +8,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import { useNotify } from "@/composables/useNotify";
 import { useAuthStore } from "@/stores/auth";
 import { getApiErrorMessage } from "@/types/api";
+import { focusAfterPaint, focusEditableField } from "@/utils/focusField";
 import { passwordStrength } from "@/utils/passwordPolicy";
 
 const auth = useAuthStore();
@@ -23,6 +24,8 @@ const acceptTerms = ref(false);
 const loading = ref(false);
 const submitted = ref(false);
 const formError = ref("");
+const formErrorEl = useTemplateRef<HTMLElement>("formErrorAlert");
+const formEl = useTemplateRef<HTMLFormElement>("registerForm");
 
 const strength = computed(() => passwordStrength(password.value));
 const passwordsMatch = computed(
@@ -38,7 +41,10 @@ const canSubmit = computed(
 );
 
 async function handleRegister(): Promise<void> {
-  if (!canSubmit.value) return;
+  if (!canSubmit.value) {
+    focusEditableField(formEl.value);
+    return;
+  }
   loading.value = true;
   formError.value = "";
   try {
@@ -55,6 +61,7 @@ async function handleRegister(): Promise<void> {
   } catch (err) {
     formError.value = getApiErrorMessage(err, "Registration failed");
     toast(formError.value, "error");
+    await focusAfterPaint(() => formErrorEl.value);
   } finally {
     loading.value = false;
   }
@@ -78,7 +85,7 @@ async function handleRegister(): Promise<void> {
         </BaseButton>
       </div>
 
-      <form v-else class="space-y-4" @submit.prevent="handleRegister">
+      <form v-else ref="registerForm" class="space-y-4" @submit.prevent="handleRegister">
         <BaseInput
           v-model="email"
           type="email"
@@ -144,7 +151,15 @@ async function handleRegister(): Promise<void> {
             and terms of use
           </span>
         </label>
-        <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
+        <p
+          v-if="formError"
+          ref="formErrorAlert"
+          class="text-xs text-status-error"
+          role="alert"
+          tabindex="-1"
+        >
+          {{ formError }}
+        </p>
         <BaseButton
           type="submit"
           variant="primary"

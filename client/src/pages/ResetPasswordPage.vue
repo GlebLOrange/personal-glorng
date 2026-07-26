@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
@@ -9,6 +9,7 @@ import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessage } from "@/types/api";
 import { consumeQueryParams } from "@/utils/consumeQueryParams";
+import { focusAfterPaint, focusEditableField } from "@/utils/focusField";
 import { passwordStrength } from "@/utils/passwordPolicy";
 
 const route = useRoute();
@@ -20,6 +21,8 @@ const password = ref("");
 const passwordConfirm = ref("");
 const loading = ref(false);
 const formError = ref("");
+const formErrorEl = useTemplateRef<HTMLElement>("formErrorAlert");
+const formEl = useTemplateRef<HTMLFormElement>("resetForm");
 
 const strength = computed(() => passwordStrength(password.value));
 const passwordsMatch = computed(
@@ -39,7 +42,10 @@ async function handleSubmit(): Promise<void> {
     toast("Missing reset token", "error");
     return;
   }
-  if (!canSubmit.value) return;
+  if (!canSubmit.value) {
+    focusEditableField(formEl.value);
+    return;
+  }
 
   loading.value = true;
   formError.value = "";
@@ -54,6 +60,7 @@ async function handleSubmit(): Promise<void> {
   } catch (err) {
     formError.value = getApiErrorMessage(err, "Reset failed");
     toast(formError.value, "error");
+    await focusAfterPaint(() => formErrorEl.value);
   } finally {
     loading.value = false;
   }
@@ -67,7 +74,7 @@ async function handleSubmit(): Promise<void> {
         <span class="accent-gradient">new password</span>
       </h1>
 
-      <form v-if="token" class="space-y-4" @submit.prevent="handleSubmit">
+      <form v-if="token" ref="resetForm" class="space-y-4" @submit.prevent="handleSubmit">
         <BaseInput
           v-model="password"
           type="password"
@@ -95,7 +102,15 @@ async function handleSubmit(): Promise<void> {
           :error="passwordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
           required
         />
-        <p v-if="formError" class="text-xs text-status-error" role="alert">{{ formError }}</p>
+        <p
+          v-if="formError"
+          ref="formErrorAlert"
+          class="text-xs text-status-error"
+          role="alert"
+          tabindex="-1"
+        >
+          {{ formError }}
+        </p>
         <BaseButton
           type="submit"
           variant="primary"
