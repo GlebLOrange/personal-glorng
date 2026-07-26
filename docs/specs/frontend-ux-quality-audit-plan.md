@@ -41,15 +41,15 @@ Severity: **P0** ship-blocker / security · **P1** a11y or UX correctness · **P
 
 ### 2.1 Accessible names vs placeholder tips — **P1**
 
-**Finding:** `BaseInput` intentionally never uses `placeholder` as the accessible name (tip is `aria-hidden`). Many pages pass only `placeholder=...` without `label` or `aria-label` (Settings often uses `aria-label`; NewsArticleAdmin, UrlShortener, VidDownload, AdminSearch, AppLogs, Email, AiChat textarea, etc. do not).
+**Finding:** `BaseInput` intentionally never uses `placeholder` as the accessible name (tip is `aria-hidden`). Product convention (see recent tip-placeholder work on Settings/Email) is **visible tip + `aria-label` or `label`**. The real bug is call sites that pass only `placeholder=...` with **neither** `label` nor `aria-label` (NewsArticleAdmin, UrlShortener, VidDownload, AdminSearch, AppLogs, AiChat textarea, etc.). Settings/Email with `aria-label` are named — optional upgrade is visible `<label>` for denser admin forms, not a P0.
 
-**Why bad:** Screen readers announce an unnamed textbox; fails WCAG 1.3.1 / 4.1.2; Pro Max forms rule (“no placeholder-only labels”).
+**Why bad:** Unnamed textboxes fail WCAG 1.3.1 / 4.1.2; Pro Max forms rule (“no placeholder-only labels”) when there is no accessible name at all.
 
-**Solution:** Audit every `BaseInput` / `BaseTextarea` / native control: require `label` (preferred) or `aria-label`. Add a lint rule or unit assertion on critical forms. Prefer visible labels in dense admin forms.
+**Solution:** Audit every `BaseInput` / `BaseTextarea` / native control: require `label` **or** `aria-label` (match Settings tip pattern). Add a lint rule or unit assertion on critical forms. Prefer visible labels where the tip pattern is ambiguous (NewsArticleAdmin density).
 
-**Why better:** Predictable names; fewer support bugs; matches `BaseInput` contract.
+**Why better:** Predictable names; matches `BaseInput` contract and existing tip UX.
 
-**Self-check:** Grep `placeholder=` without nearby `label=` / `aria-label=`; axe or vitest mount asserts `getByRole('textbox', { name: ... })` on Login, AdminSearch, NewsArticleAdmin, UrlShortener, VidDownload, AiChat.
+**Self-check:** Grep `placeholder=` without nearby `label=` / `aria-label=`; axe or vitest mount asserts `getByRole('textbox', { name: ... })` on AdminSearch, NewsArticleAdmin, UrlShortener, VidDownload, AiChat.
 
 ---
 
@@ -288,7 +288,7 @@ Legend for page status after current strengths: **OK** (minor only) · **Needs w
 | # | Sev | Finding | Why bad | Solution | Why better | Self-check |
 |---|-----|---------|---------|----------|------------|------------|
 | 1 | P2 | XL monolith (profile, email, password, currency, GitHub, delete) | Hard to review / test | Split section components | Smaller blast radius | Each section ≤150 lines |
-| 2 | P1 | `aria-label` instead of visible labels | Weaker for sighted + zoom users | Visible `<label>` via BaseInput `label` | Matches forms checklist | Visual labels on all fields |
+| 2 | P3 | Tip + `aria-label` (product pattern) vs visible `<label>` | Named for AT already; sighted users rely on tip prefix | Optional: promote critical fields to `label` prop | Clearer for zoom/cognitive load | Keep aria-label minimum; labels nice-to-have |
 | 3 | P2 | Password strength duplicated again | Drift | Shared PasswordFields | Consistency | Same meter as Register |
 | 4 | P3 | Hard nav to GitHub authorize | Full reload OK for OAuth; document | Keep; ensure return path scrubbed | Secure OAuth | Callback still works |
 
