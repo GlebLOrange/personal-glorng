@@ -107,6 +107,7 @@ onUnmounted(() => {
         message="Using cached portfolio data — live sync unavailable."
         show-retry
         retry-label="retry sync"
+        retry-icon="sync"
         @retry="loadResume"
       />
     </div>

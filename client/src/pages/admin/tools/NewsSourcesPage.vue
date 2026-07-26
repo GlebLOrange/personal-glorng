@@ -16,6 +16,7 @@ import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import StatusIcon from "@/components/icons/StatusIcon.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { newsSourceEnabledClass } from "@/constants/filterColors";
 import { ENABLED_FILTERS, useNewsSources } from "@/composables/useNewsSources";
@@ -118,10 +119,11 @@ async function onSurfaceTab(id: string): Promise<void> {
       <template v-if="canWrite">
         <ToolbarPillButton
           family="3xx"
-          class="ml-auto"
+          class="ml-auto gap-1.5"
           :disabled="refreshing || loading"
           @click="refreshSources"
         >
+          <RefreshIcon class-name="size-3.5" />
           {{ refreshButtonText }}
         </ToolbarPillButton>
         <ToolbarPillButton family="2xx" :disabled="loading" @click="openCreate">

@@ -15,7 +15,7 @@ const isExternal = computed(() => /^https?:/i.test(props.link.href));
     :href="link.href"
     :target="isExternal ? '_blank' : undefined"
     :rel="isExternal ? 'noopener noreferrer' : undefined"
-    class="interactive-surface inline-flex items-center gap-2 px-5 py-3 min-h-11 text-base text-surface-sage"
+    class="inline-flex h-11 items-center gap-1.5 rounded-lg bg-surface-card px-4 text-sm text-surface-sage transition-colors hover:bg-accent-blue/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
   >
     <ContactIcon :id="link.id" class="size-4 shrink-0" />
     {{ link.label }}

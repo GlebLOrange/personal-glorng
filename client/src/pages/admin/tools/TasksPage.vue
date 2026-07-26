@@ -6,25 +6,26 @@ import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import SyncIcon from "@/components/icons/SyncIcon.vue";
 import TaskCreateModal from "@/components/tasks/TaskCreateModal.vue";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
 import TasksIntakesPanel from "@/components/tasks/TasksIntakesPanel.vue";
 import TasksListPanel from "@/components/tasks/TasksListPanel.vue";
 import TasksSyncPanel from "@/components/tasks/TasksSyncPanel.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import SearchInput from "@/components/ui/SearchInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { statusBadgeClass } from "@/constants/filterColors";
+import { effectiveSearchQuery } from "@/constants/search";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { useTasks } from "@/composables/useTasks";
 
 type Tab = "queue" | "intakes" | "sync";
 
-const TASK_TABS: { id: Tab; label: string }[] = [
+const TASK_TABS: { id: Tab; label: string; icon?: "sync" | "refresh" }[] = [
   { id: "queue", label: "queue" },
   { id: "intakes", label: "intakes" },
-  { id: "sync", label: "sync" },
+  { id: "sync", label: "sync", icon: "sync" },
 ];
 
 const STATUS_FILTERS = [
@@ -148,7 +149,7 @@ onMounted(() => {
           <AdminFilterDropdown
             v-show="activeTab === 'queue'"
             ref="filterDropdown"
-            :has-active-filters="Boolean(filterStatus || searchQuery.trim())"
+            :has-active-filters="Boolean(filterStatus || effectiveSearchQuery(searchQuery))"
             :active-label="activeFilterLabel"
             @clear="clearFilters"
           >
@@ -164,13 +165,14 @@ onMounted(() => {
             </template>
             <template #footer>
               <div class="mt-3 border-t border-surface-border pt-3">
-                <BaseButton
-                  variant="ghost"
-                  size="sm"
+                <button
+                  type="button"
+                  class="inline-flex w-full items-center gap-1.5 whitespace-nowrap rounded-lg border border-transparent bg-transparent px-2 py-1 text-left text-xs leading-normal text-accent-blue transition-colors hover:enabled:bg-accent-blue/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
                   @click="onFailedSyncs"
                 >
+                  <SyncIcon class-name="size-3.5 shrink-0" />
                   open sync queue
-                </BaseButton>
+                </button>
               </div>
             </template>
           </AdminFilterDropdown>

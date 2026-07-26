@@ -13,6 +13,7 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
+import { effectiveSearchQuery } from "@/constants/search";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
@@ -117,7 +118,7 @@ async function loadUsers(): Promise<void> {
         role: roleFilter.value,
         status: statusFilter.value,
       };
-      const query = debouncedSearch.value.trim();
+      const query = effectiveSearchQuery(debouncedSearch.value);
       if (query) params.search = query;
 
       const response = await api.get<PaginatedList<AdminUserSummary>>("/admin/users", { params });
@@ -144,7 +145,9 @@ let searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
 watch(searchQuery, (value) => {
   if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
   searchDebounceTimer = setTimeout(() => {
-    debouncedSearch.value = value;
+    const next = effectiveSearchQuery(value) ?? "";
+    if (next === debouncedSearch.value) return;
+    debouncedSearch.value = next;
     page.value = 1;
   }, 300);
 });

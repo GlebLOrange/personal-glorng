@@ -8,6 +8,7 @@ import ExpenseFormDrawer from "@/components/expenses/ExpenseFormDrawer.vue";
 import ExpenseLedgerHeader from "@/components/expenses/ExpenseLedgerHeader.vue";
 import ExpenseTransactionsPanel from "@/components/expenses/ExpenseTransactionsPanel.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
+import FilterIcon from "@/components/icons/FilterIcon.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { useExpenseCalculator } from "@/composables/useExpenseCalculator";
@@ -190,7 +191,7 @@ function goToTransactions(): void {
       />
 
       <div class="flex flex-col gap-3">
-        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div class="flex w-full min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <AdminTabBar
             flush
             panel-id-prefix="expenses-tab"
@@ -206,6 +207,7 @@ function goToTransactions(): void {
               aria-controls="expense-transaction-filters"
               @click="filtersOpen = !filtersOpen"
             >
+              <FilterIcon class-name="size-3.5" />
               {{ transactionFilterLabel }}
             </ToolbarPillButton>
             <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">

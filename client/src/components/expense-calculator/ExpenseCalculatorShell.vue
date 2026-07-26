@@ -118,11 +118,12 @@ const emit = defineEmits<{
         :tabs="modeTabs"
         @change="emit('changeMode', $event)"
       />
-      <div class="md:w-36">
+      <div class="min-w-0 w-full md:max-w-[7.5rem]">
         <BaseSelect
           id="expense-calculator-currency"
           v-model="displayCurrency"
           label="currency"
+          class="w-full"
         >
           <option value="PLN">PLN</option>
           <option value="EUR">EUR</option>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, useAttrs, useId } from "vue";
 
+import FieldHelp from "@/components/ui/FieldHelp.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import { TEXTAREA_CLASS, TEXTAREA_CLASS_COMPACT } from "@/constants/formClasses";
 
@@ -29,10 +30,15 @@ const errorId = computed(() => `${textareaId.value}-error`);
 const tipId = computed(() => `${textareaId.value}-tip`);
 const hasClearableValue = computed(() => Boolean(model.value?.length));
 const useShell = computed(() => Boolean(props.prefix || props.placeholder));
-const showClear = computed(() => useShell.value && hasClearableValue.value);
+/** Reserve clear width whenever shell is active so tip never jumps vs BaseInput. */
+const reserveClear = computed(() => useShell.value);
+const showClear = computed(() => reserveClear.value && hasClearableValue.value);
 /** Tip only when empty; hide while typing (Clear X takes the right side). */
 const showTip = computed(() => Boolean(props.placeholder) && !hasClearableValue.value);
-const tipInsetClass = computed(() => (showClear.value ? "right-11" : "right-3"));
+const tipInsetClass = computed(() => [
+  "left-3",
+  reserveClear.value ? "right-11" : "right-3",
+]);
 const describedBy = computed(() => {
   const ids: string[] = [];
   if (props.error) ids.push(errorId.value);
@@ -80,15 +86,20 @@ function clear(): void {
 </script>
 
 <template>
-  <div class="flex flex-col gap-1" :class="$attrs.class" :style="$attrs.style">
-    <label v-if="label" :for="textareaId" class="text-label text-surface-sage">
-      {{ label }}
-    </label>
+  <div class="flex min-w-0 flex-col gap-1" :class="$attrs.class" :style="$attrs.style">
+    <div v-if="label || hint" class="flex items-center gap-1.5">
+      <!-- associated via :for / :id (computed ids); FieldHelp sits beside the label -->
+      <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
+      <label v-if="label" :for="textareaId" class="text-label text-surface-sage">
+        {{ label }}
+      </label>
+      <FieldHelp v-if="hint" :text="hint" :content-id="hintId" />
+    </div>
 
     <div v-if="useShell" :class="shellClass">
       <span
         v-if="prefix"
-        class="relative z-10 shrink-0 pl-3 pt-2.5 text-xs font-medium uppercase tracking-wide text-surface-mid"
+        class="relative z-10 shrink-0 pl-3 pt-2.5 text-xs font-medium text-surface-mid"
       >
         {{ prefix }}
       </span>
@@ -105,13 +116,17 @@ function clear(): void {
       <span
         v-if="showTip"
         :id="tipId"
-        class="pointer-events-none absolute top-2.5 z-0 text-right text-xs text-surface-mid/65"
+        class="pointer-events-none absolute top-2.5 z-0 text-left text-xs text-surface-mid/65"
         :class="tipInsetClass"
         aria-hidden="true"
       >
         {{ placeholder }}
       </span>
-      <div v-if="showClear" class="absolute right-1 top-1 z-10">
+      <div
+        v-if="reserveClear"
+        class="absolute right-1 top-1 z-10 flex w-8 items-center justify-center"
+        :class="showClear ? undefined : 'invisible pointer-events-none'"
+      >
         <IconCloseButton aria-label="Clear" @click="clear" />
       </div>
     </div>
@@ -129,9 +144,6 @@ function clear(): void {
 
     <p v-if="error" :id="errorId" role="alert" class="text-xs text-status-error">
       {{ error }}
-    </p>
-    <p v-else-if="hint" :id="hintId" class="text-xs text-surface-mid">
-      {{ hint }}
     </p>
   </div>
 </template>

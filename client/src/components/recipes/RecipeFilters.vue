@@ -14,7 +14,7 @@ const emit = defineEmits<{
   <div class="mb-6 space-y-4">
     <SearchInput
       :model-value="search"
-      class="w-full min-w-0 [&_input]:text-right"
+      class="w-full min-w-0"
       placeholder="search recipe"
       aria-label="search recipe"
       @update:model-value="emit('update:search', String($event ?? ''))"

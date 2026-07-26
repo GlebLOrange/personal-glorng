@@ -2,6 +2,8 @@
 import { computed, onMounted } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
+import LocationIcon from "@/components/icons/LocationIcon.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import WeatherConditionIcon from "@/components/weather/WeatherConditionIcon.vue";
 import { useLiveLocalTime } from "@/composables/useLiveLocalTime";
 import { useWeatherConfig } from "@/composables/useWeatherConfig";
@@ -125,7 +127,10 @@ onMounted(async () => {
 
     <div v-else-if="error" class="text-sm space-y-2" :class="stackClass">
       <p class="text-status-error">{{ error }}</p>
-      <BaseButton variant="ghost" size="sm" @click="refresh">retry</BaseButton>
+      <BaseButton variant="ghost" size="sm" class="gap-1.5" @click="refresh">
+        <RefreshIcon class-name="size-3.5" />
+        retry
+      </BaseButton>
     </div>
 
     <div
@@ -144,14 +149,20 @@ onMounted(async () => {
         <WeatherConditionIcon :kind="weatherKind" class-name="size-4 inline-block align-[-0.125em]" />
         <span class="font-bold accent-gradient tabular-nums shrink-0">{{ temperature }}°C</span>
         <span aria-hidden="true" class="text-surface-muted">·</span>
-        <span class="truncate text-surface-light">{{ locationLabel }}</span>
+        <span class="inline-flex min-w-0 items-center gap-1 truncate text-surface-light">
+          <LocationIcon class-name="size-3.5 shrink-0" />
+          <span class="truncate">{{ locationLabel }}</span>
+        </span>
         <span v-if="conditionText" class="sr-only">{{ conditionText }}</span>
       </p>
     </div>
 
     <div v-else class="flex flex-wrap items-center gap-2 text-sm text-surface-mid" :class="stackClass">
-      Weather unavailable.
-      <BaseButton variant="ghost" size="sm" @click="refresh">retry</BaseButton>
+      weather unavailable.
+      <BaseButton variant="ghost" size="sm" class="gap-1.5" @click="refresh">
+        <RefreshIcon class-name="size-3.5" />
+        retry
+      </BaseButton>
     </div>
   </div>
 </template>

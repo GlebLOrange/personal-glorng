@@ -5,6 +5,7 @@ import { useRoute } from "vue-router";
 import PageShell from "@/components/layout/PageShell.vue";
 import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
+import FieldHelp from "@/components/ui/FieldHelp.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
 import { applyPageSeo } from "@/utils/pageSeo";
@@ -67,18 +68,33 @@ watch(
 
     <article v-else-if="article" class="min-w-0 w-full">
       <header class="mb-8 min-w-0">
-        <div class="mb-4 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
+        <div class="mb-4 flex min-w-0 flex-wrap items-center gap-2 text-xs text-surface-muted">
           <span>{{ article.source_name }}</span>
           <span aria-hidden="true">/</span>
           <time :datetime="newsArticleDisplayDate(article)">
             {{ formatNewsDate(newsArticleDisplayDate(article)) }}
           </time>
+          <div class="ml-auto flex shrink-0 items-center gap-2">
+            <a
+              v-if="safeNavigationHref(article.source_url)"
+              :href="safeNavigationHref(article.source_url) ?? '#'"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-accent-blue hover:underline"
+            >
+              open original source
+            </a>
+            <FieldHelp
+              align="end"
+              :text="`This is a curated summary. Read the original article from ${article.source_name} for full context.`"
+            />
+          </div>
         </div>
         <p class="text-body break-words">{{ article.summary }}</p>
       </header>
 
       <section v-if="article.bullets.length" class="mb-8 min-w-0">
-        <h2 class="card-title mb-4">Key points</h2>
+        <h2 class="card-title mb-4">key points</h2>
         <ul class="min-w-0 space-y-3 text-sm text-surface-mid">
           <li
             v-for="bullet in article.bullets"
@@ -91,33 +107,17 @@ watch(
       </section>
 
       <section v-if="article.themes.length" class="mb-8 min-w-0">
-        <h2 class="card-title mb-4">Themes</h2>
+        <h2 class="card-title mb-4">tags</h2>
         <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
           <li
             v-for="theme in article.themes"
             :key="theme"
-            class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid"
+            class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
           >
-            {{ theme }}
+            #{{ theme }}
           </li>
         </ul>
       </section>
-
-      <Card as="footer" variant="compact" class="min-w-0">
-        <p class="mb-3 break-words text-sm text-surface-mid">
-          This is a curated summary. Read the original article from
-          {{ article.source_name }} for full context.
-        </p>
-        <a
-          v-if="safeNavigationHref(article.source_url)"
-          :href="safeNavigationHref(article.source_url) ?? '#'"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-sm text-accent-blue hover:underline"
-        >
-          open original source
-        </a>
-      </Card>
     </article>
   </PageShell>
 </template>

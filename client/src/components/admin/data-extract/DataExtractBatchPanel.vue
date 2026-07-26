@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import { batchLabel } from "@/composables/useDataExtractTool";
@@ -36,8 +37,11 @@ const emit = defineEmits<{
   <div class="space-y-6">
     <Card v-if="batchHistory.length" class="mb-6 space-y-3">
       <div class="flex items-center justify-between gap-3">
-        <h2 class="text-lg font-semibold text-surface-light">Recent imports</h2>
-        <BaseButton variant="ghost" @click="emit('refresh')">refresh</BaseButton>
+        <h2 class="text-lg font-semibold text-surface-light">recent imports</h2>
+        <BaseButton variant="ghost" class="gap-1.5" @click="emit('refresh')">
+          <RefreshIcon class-name="size-3.5" />
+          refresh
+        </BaseButton>
       </div>
       <ul class="space-y-2">
         <li v-for="batch in batchHistory" :key="batch.id">

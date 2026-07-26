@@ -39,7 +39,7 @@ async def list_tags(svc: RecipeServiceDep) -> list[str]:
 )
 async def list_recipes(
     svc: RecipeServiceDep,
-    search: Annotated[str | None, Query(max_length=200)] = None,
+    search: Annotated[str | None, Query(min_length=3, max_length=200)] = None,
     tag: Annotated[str | None, Query(max_length=100)] = None,
     tags: Annotated[str | None, Query(max_length=1000)] = None,
     sort: RecipeSort = "title_asc",

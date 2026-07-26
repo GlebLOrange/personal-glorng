@@ -69,7 +69,7 @@ function toggleTag(tag: string): void {
         type="button"
         class="inline-flex items-center rounded border px-2 py-1 text-xs transition-colors"
         :class="{
-          'border-accent-blue/40 bg-accent-blue/15 text-accent-blue': tagIsSelected(tag),
+          'border-transparent bg-accent-blue/15 text-accent-blue': tagIsSelected(tag),
           'border-transparent text-surface-mid hover:border-surface-border/50':
             !tagIsSelected(tag),
           'opacity-50': !tagIsSelected(tag) && selectedTags.length >= RECIPE_TAG_LIMIT,

@@ -13,7 +13,7 @@ describe("buildContactLinks", () => {
 
     expect(result.map((link) => link.id)).toEqual(["email", "telegram", "linkedin", "github"]);
     expect(result[0]?.id).toBe("email");
-    expect(result[0]?.label).toBe("Email");
+    expect(result[0]?.label).toBe("email");
     expect(result[0]?.href).toMatch(/^mailto:hello@example\.com\?/);
     expect(result[0]?.href).toContain("subject=Work");
     expect(result[0]?.href).toContain("body=");

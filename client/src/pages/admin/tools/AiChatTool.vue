@@ -4,6 +4,7 @@ import { computed, nextTick, onMounted, ref } from "vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
@@ -106,7 +107,7 @@ onMounted(() => {
 
     <Card v-if="activeTab === 'chat'" class="flex flex-col h-[65vh]">
       <div class="flex items-center gap-3 mb-4 pb-4 border-b border-surface-border">
-        <span class="text-surface-mid text-xs uppercase tracking-wider">
+        <span class="text-surface-mid text-xs">
           {{ providerLabel }}
         </span>
         <span class="text-surface-mid/60 text-xs">·</span>
@@ -161,8 +162,8 @@ onMounted(() => {
     <Card v-else class="space-y-8">
       <section class="space-y-3">
         <div class="flex items-center justify-between gap-3">
-          <h2 class="text-sm font-semibold text-surface-light uppercase tracking-wider">
-            Current setup
+          <h2 class="text-sm font-semibold text-surface-light">
+            current setup
           </h2>
           <BaseButton
             variant="ghost"
@@ -171,57 +172,42 @@ onMounted(() => {
             :disabled="configLoading"
             @click="loadConfig"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="size-4"
-              aria-hidden="true"
-            >
-              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-              <path d="M16 16h5v5" />
-            </svg>
+            <RefreshIcon class-name="size-4" />
             refresh
           </BaseButton>
         </div>
         <p v-if="configLoading" class="text-surface-mid text-sm">Loading…</p>
         <dl v-else-if="chatConfig" class="grid gap-2 text-sm">
           <div class="flex gap-2">
-            <dt class="text-surface-mid w-28 shrink-0">Provider</dt>
+            <dt class="text-surface-mid w-28 shrink-0">provider</dt>
             <dd class="text-surface-light">{{ chatConfig.provider }}</dd>
           </div>
           <div class="flex gap-2">
-            <dt class="text-surface-mid w-28 shrink-0">Model</dt>
+            <dt class="text-surface-mid w-28 shrink-0">model</dt>
             <dd class="text-surface-light font-data text-xs">{{ chatConfig.model }}</dd>
           </div>
           <div class="flex gap-2">
-            <dt class="text-surface-mid w-28 shrink-0">Base URL</dt>
+            <dt class="text-surface-mid w-28 shrink-0">base url</dt>
             <dd class="text-surface-light font-data text-xs break-all">
               {{ chatConfig.base_url ?? "Groq API" }}
             </dd>
           </div>
           <div class="flex gap-2">
-            <dt class="text-surface-mid w-28 shrink-0">API key</dt>
+            <dt class="text-surface-mid w-28 shrink-0">api key</dt>
             <dd :class="chatConfig.configured ? 'text-status-success' : 'text-status-warning'">
               {{ chatConfig.configured ? "configured" : "missing" }}
             </dd>
           </div>
           <div class="flex gap-2">
-            <dt class="text-surface-mid w-28 shrink-0">Enabled</dt>
+            <dt class="text-surface-mid w-28 shrink-0">enabled</dt>
             <dd class="text-surface-light">{{ chatConfig.enabled ? "yes" : "no" }}</dd>
           </div>
         </dl>
       </section>
 
       <section v-if="chatConfig?.configured" class="space-y-3">
-        <h2 class="text-sm font-semibold text-surface-light uppercase tracking-wider">
-          Troubleshooting
+        <h2 class="text-sm font-semibold text-surface-light">
+          troubleshooting
         </h2>
         <ul class="text-surface-mid text-sm leading-relaxed list-disc pl-5 space-y-2">
           <li>
@@ -253,8 +239,8 @@ onMounted(() => {
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-sm font-semibold text-surface-light uppercase tracking-wider">
-          How it works
+        <h2 class="text-sm font-semibold text-surface-light">
+          how it works
         </h2>
         <p class="text-surface-mid text-sm leading-relaxed">
           Superuser-only plain LLM chat. Set <code class="text-surface-sage">GROQ_API_KEY</code> and
@@ -269,8 +255,8 @@ onMounted(() => {
       </section>
 
       <section class="space-y-4">
-        <h2 class="text-sm font-semibold text-surface-light uppercase tracking-wider">
-          Example .env snippets
+        <h2 class="text-sm font-semibold text-surface-light">
+          example .env snippets
         </h2>
         <div
           v-for="example in PROVIDER_EXAMPLES"

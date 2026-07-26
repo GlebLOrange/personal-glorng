@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import type { GitHubStatus } from "@/types";
 
@@ -45,7 +46,14 @@ const emit = defineEmits<{
               {{ unlinking ? "unlinking..." : "unlink github" }}
             </BaseButton>
           </template>
-          <BaseButton v-if="error" variant="ghost" :disabled="loading" @click="emit('retry')">
+          <BaseButton
+            v-if="error"
+            variant="ghost"
+            class="gap-1.5"
+            :disabled="loading"
+            @click="emit('retry')"
+          >
+            <RefreshIcon class-name="size-3.5" />
             retry
           </BaseButton>
         </div>

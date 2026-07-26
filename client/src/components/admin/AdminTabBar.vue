@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { nextTick, ref } from "vue";
 
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
+import SyncIcon from "@/components/icons/SyncIcon.vue";
 import { actionFamilyClass, type HttpStatusFamily } from "@/constants/httpStatusColors";
 
 export interface AdminTab {
@@ -8,6 +10,8 @@ export interface AdminTab {
   label: string;
   /** Pale HTTP-family color for hover/selected (default 1xx). */
   family?: HttpStatusFamily;
+  /** Optional leading icon for sync/refresh tabs. */
+  icon?: "sync" | "refresh";
 }
 
 const activeTab = defineModel<string>({ required: true });
@@ -90,6 +94,8 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
       @click="activeTab = tab.id"
       @keydown="onTabKeydown($event, index)"
     >
+      <SyncIcon v-if="tab.icon === 'sync'" class-name="size-3.5 shrink-0" />
+      <RefreshIcon v-else-if="tab.icon === 'refresh'" class-name="size-3.5 shrink-0" />
       {{ tab.label }}
     </button>
   </div>

@@ -131,7 +131,7 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
       aria-live="polite"
       :aria-busy="converting || ratesLoading"
     >
-      <p class="text-xs text-surface-mid uppercase tracking-wider mb-2">result</p>
+      <p class="text-xs text-surface-mid mb-2">result</p>
       <p v-if="converted" class="text-3xl font-bold font-data text-surface-light">
         {{ formatMoney(converted, toCurrency) }}
       </p>

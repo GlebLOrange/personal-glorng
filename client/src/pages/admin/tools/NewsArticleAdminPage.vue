@@ -6,6 +6,7 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsArticleContentFields from "@/components/news/NewsArticleContentFields.vue";
 import NewsArticleSourceFields from "@/components/news/NewsArticleSourceFields.vue";
 import NewsArticleSystemPanel from "@/components/news/NewsArticleSystemPanel.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import {
@@ -245,7 +246,15 @@ watch(articleId, () => {
       <Card v-else-if="detailError" role="alert">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-sm text-status-warning">{{ detailError }}</p>
-          <BaseButton variant="ghost" size="sm" @click="loadCurrentArticle">retry</BaseButton>
+          <BaseButton
+            variant="ghost"
+            size="sm"
+            class="gap-1.5"
+            @click="loadCurrentArticle"
+          >
+            <RefreshIcon class-name="size-3.5" />
+            retry
+          </BaseButton>
         </div>
       </Card>
 

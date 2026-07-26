@@ -80,11 +80,17 @@ const {
           <ToolbarPillButton family="3xx" :disabled="actionLoading" @click="runIngest">
             run ingest
           </ToolbarPillButton>
-          <ToolbarPillButton family="2xx" :disabled="actionLoading" @click="openCreate">
-            + article
-          </ToolbarPillButton>
         </template>
       </template>
+      <ToolbarPillButton
+        v-if="canWrite"
+        family="2xx"
+        class="ml-auto"
+        :disabled="actionLoading"
+        @click="openCreate"
+      >
+        + article
+      </ToolbarPillButton>
     </AdminListToolbar>
 
     <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading news">

@@ -45,7 +45,7 @@ function onAddItem(): void {
     <Card class="space-y-4">
       <div class="flex items-center justify-between gap-3">
         <div>
-          <p class="text-xs text-surface-mid uppercase tracking-wider">Itemized sum</p>
+          <p class="text-xs text-surface-mid">itemized sum</p>
           <p class="text-xs text-surface-muted mt-1">Add line items and see a running total.</p>
         </div>
         <BaseButton variant="primary" size="sm" @click="onAddItem">+ item</BaseButton>
@@ -103,7 +103,7 @@ function onAddItem(): void {
       aria-live="polite"
     >
       <Card variant="compact" class="flex items-center justify-between gap-3">
-        <p class="text-xs text-surface-mid uppercase tracking-wider">Total</p>
+        <p class="text-xs text-surface-mid">total</p>
         <p class="text-2xl font-bold font-data text-surface-light">
           {{ formatMoney(sumTotal, displayCurrency) }}
         </p>

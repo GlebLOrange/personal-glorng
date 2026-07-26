@@ -9,7 +9,9 @@ describe("ErrorState", () => {
       props: { message: "Failed to load items." },
     });
 
-    expect(wrapper.get('[role="alert"]').text()).toContain("Failed to load items.");
+    const alert = wrapper.get('[role="alert"]');
+    expect(alert.text()).toContain("Failed to load items.");
+    expect(alert.get("p").classes()).toContain("text-status-error");
   });
 
   it("emits retry when retry button is clicked", async () => {
@@ -21,6 +23,7 @@ describe("ErrorState", () => {
       },
     });
 
+    expect(wrapper.get("button").text()).toContain("try again");
     await wrapper.get("button").trigger("click");
     expect(wrapper.emitted("retry")).toHaveLength(1);
   });

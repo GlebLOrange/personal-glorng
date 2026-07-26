@@ -26,7 +26,7 @@ describe("AdminSearchPage", () => {
   it("links only safe hit URLs and drops malicious ones", async () => {
     getMock.mockResolvedValue({
       data: {
-        query: "q",
+        query: "safe",
         hits: [
           {
             id: 1,
@@ -75,9 +75,14 @@ describe("AdminSearchPage", () => {
       },
     });
 
-    await wrapper.get('input[aria-label="search admin content"]').setValue("q");
+    await wrapper.get('input[aria-label="search admin content"]').setValue("safe");
     await wrapper.get("form").trigger("submit");
     await flushPromises();
+
+    expect(getMock).toHaveBeenCalledWith(
+      "/tools/search",
+      expect.objectContaining({ params: expect.objectContaining({ q: "safe" }) }),
+    );
 
     const links = wrapper.findAll("a.router-link");
     expect(links).toHaveLength(1);
@@ -90,5 +95,30 @@ describe("AdminSearchPage", () => {
     expect(wrapper.html()).not.toContain("javascript:alert");
     expect(wrapper.html()).not.toContain("//evil.example");
     expect(wrapper.html()).not.toContain("https://evil.example/x");
+  });
+
+  it("does not search until the query has at least 3 characters", async () => {
+    const wrapper = mount(AdminSearchPage, {
+      global: {
+        stubs: {
+          RouterLink: {
+            props: ["to"],
+            template: '<a class="router-link" :data-to="to"><slot /></a>',
+          },
+        },
+      },
+    });
+
+    const submit = wrapper.get('button[type="submit"]');
+    expect(submit.attributes("disabled")).toBeDefined();
+
+    await wrapper.get('input[aria-label="search admin content"]').setValue("ab");
+    expect(submit.attributes("disabled")).toBeDefined();
+    await wrapper.get("form").trigger("submit");
+    await flushPromises();
+    expect(getMock).not.toHaveBeenCalled();
+
+    await wrapper.get('input[aria-label="search admin content"]').setValue("abc");
+    expect(submit.attributes("disabled")).toBeUndefined();
   });
 });

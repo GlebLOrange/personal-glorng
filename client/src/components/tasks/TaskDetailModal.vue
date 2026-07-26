@@ -6,7 +6,8 @@ import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
 import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
-import ToolIcon from "@/components/icons/ToolIcon.vue";
+import LocationIcon from "@/components/icons/LocationIcon.vue";
+import SyncIcon from "@/components/icons/SyncIcon.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -95,9 +96,12 @@ watch(
           </p>
         </div>
 
-        <div v-if="task.location" class="flex min-w-0 items-baseline justify-between gap-3 text-sm">
-          <span class="shrink-0 text-surface-mid">location</span>
-          <span class="min-w-0 text-right text-surface-light">@{{ task.location }}</span>
+        <div v-if="task.location" class="flex min-w-0 items-center justify-between gap-3 text-sm">
+          <span class="inline-flex shrink-0 items-center gap-1.5 text-surface-mid">
+            <LocationIcon class-name="size-3.5 shrink-0" />
+            location
+          </span>
+          <span class="min-w-0 text-right text-surface-light">{{ task.location }}</span>
         </div>
       </section>
 
@@ -165,7 +169,7 @@ watch(
             class="inline-flex items-center gap-1.5 rounded-full bg-accent-blue/10 px-2 py-0.5 text-xs text-accent-blue"
             title="Synced to Google Calendar"
           >
-            <ToolIcon slug="sync" class="h-3.5 w-3.5" />
+            <SyncIcon class-name="size-3.5" />
             synced to google calendar
           </span>
         </div>
@@ -178,7 +182,7 @@ watch(
           title="Try syncing again"
           @click="emit('retrySync', task.id)"
         >
-          <ToolIcon slug="sync" class="h-4 w-4" />
+          <SyncIcon class-name="size-4" />
           try syncing again
         </BaseButton>
       </section>

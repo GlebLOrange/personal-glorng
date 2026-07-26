@@ -3,18 +3,26 @@ import { computed, useId } from "vue";
 
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import SearchIcon from "@/components/icons/SearchIcon.vue";
+import { SEARCH_MIN_QUERY_LENGTH } from "@/constants/search";
 
 defineOptions({ inheritAttrs: false });
 
 const model = defineModel<string>({ default: "" });
 
-const props = defineProps<{
-  id?: string;
-  /** In-bar overlay label (decorative); not the accessible name. */
-  placeholder?: string;
-  /** Accessible name when placeholder is decorative. */
-  ariaLabel?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    id?: string;
+    /** In-bar overlay label (decorative); not the accessible name. */
+    placeholder?: string;
+    /** Accessible name when placeholder is decorative. */
+    ariaLabel?: string;
+    /** HTML minlength hint; search APIs gate at SEARCH_MIN_QUERY_LENGTH. */
+    minLength?: number;
+  }>(),
+  {
+    minLength: SEARCH_MIN_QUERY_LENGTH,
+  },
+);
 
 const fallbackId = useId();
 const inputId = computed(() => props.id ?? `search-input-${fallbackId}`);
@@ -43,6 +51,7 @@ function clear(): void {
         :id="inputId"
         v-model="model"
         type="search"
+        :minlength="minLength"
         :aria-label="accessibleName"
         class="search-input-field relative z-10 h-full min-w-0 w-full border-0 bg-transparent py-0 pl-2.5 pr-1 text-left text-sm text-surface-light outline-none"
         v-bind="{

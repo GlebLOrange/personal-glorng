@@ -36,7 +36,7 @@ async def get_users(
     registry: DbRegistry,
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
-    search: Annotated[str | None, Query(max_length=120)] = None,
+    search: Annotated[str | None, Query(min_length=3, max_length=120)] = None,
     role: RoleQuery = "all",
     status: StatusQuery = "all",
 ) -> AdminUserListResponse:

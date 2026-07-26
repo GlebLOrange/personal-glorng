@@ -37,7 +37,7 @@ rate_limit_admin_search = RateLimiter(requests=60, window=60)
 async def search_admin_documents(
     search_svc: SearchIndexServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
-    q: str = Query(min_length=1, max_length=500),
+    q: str = Query(min_length=3, max_length=500),
     source_type: Annotated[
         SearchSourceType | None,
         Query(description="Limit to one indexed admin source type"),

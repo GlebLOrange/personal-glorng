@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminListRow from "@/components/admin/AdminListRow.vue";
-import ToolIcon from "@/components/icons/ToolIcon.vue";
+import LocationIcon from "@/components/icons/LocationIcon.vue";
+import SyncIcon from "@/components/icons/SyncIcon.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
@@ -28,14 +29,17 @@ const emit = defineEmits<{ select: [id: number] }>();
       <span :title="task.title">{{ task.title }}</span>
     </template>
     <template #meta>
-      <span v-if="task.location">@ {{ task.location }}</span>
+      <span v-if="task.location" class="inline-flex min-w-0 items-center gap-1">
+        <LocationIcon class-name="size-3.5 shrink-0" />
+        <span class="truncate">{{ task.location }}</span>
+      </span>
       <span
         v-if="task.google_event_id"
         class="inline-flex text-accent-blue"
         title="Synced to Google Calendar"
         aria-label="Synced to Google Calendar"
       >
-        <ToolIcon slug="sync" class="h-4 w-4" />
+        <SyncIcon class-name="size-4" />
       </span>
     </template>
     <template #time>{{ formatDate(task.scheduled_at) }}</template>

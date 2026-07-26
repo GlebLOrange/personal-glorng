@@ -93,6 +93,14 @@ async def test_admin_search_filters_by_source_type(
 
 
 @pytest.mark.asyncio
+async def test_admin_search_rejects_short_query(
+    auth_client: AsyncClient,
+) -> None:
+    resp = await auth_client.get(ADMIN_SEARCH_URL, params={"q": "ab"})
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
 async def test_admin_search_requires_capability(
     no_perms_client: AsyncClient,
 ) -> None:

@@ -3,6 +3,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import LocationIcon from "@/components/icons/LocationIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import type { TaskCreateForm } from "@/composables/useTasks";
@@ -22,7 +23,15 @@ const emit = defineEmits<{ submit: []; close: [] }>();
     <form id="task-create-drawer-form" class="space-y-4" @submit.prevent="emit('submit')">
       <BaseInput v-model="form.title" placeholder="title (what needs doing?)" />
       <BaseInput v-model="form.scheduled_at" type="datetime-local" aria-label="scheduled at" />
-      <BaseInput v-model="form.location" placeholder="location (optional)" />
+      <div class="flex min-w-0 items-center gap-2">
+        <LocationIcon class-name="size-4 shrink-0 text-surface-mid" />
+        <BaseInput
+          v-model="form.location"
+          class="min-w-0 flex-1"
+          placeholder="location (optional)"
+          aria-label="location"
+        />
+      </div>
       <textarea
         v-model="form.description"
         rows="3"

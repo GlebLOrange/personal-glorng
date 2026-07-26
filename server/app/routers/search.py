@@ -21,7 +21,7 @@ rate_limit_search_query = RateLimiter(requests=30, window=60)
 )
 async def search_documents(
     search_svc: SearchIndexServiceDep,
-    q: str = Query(min_length=1, max_length=500),
+    q: str = Query(min_length=3, max_length=500),
 ) -> SearchQueryResponse:
     results = await search_svc.search(
         q,
