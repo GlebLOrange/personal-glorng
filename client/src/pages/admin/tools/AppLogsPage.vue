@@ -16,6 +16,7 @@ import { logLevelClass } from "@/constants/filterColors";
 import { httpStatusClass } from "@/constants/httpStatusColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
+import { useApiAction } from "@/composables/useApiAction";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { formatDate } from "@/utils/format";
 
@@ -34,8 +35,7 @@ interface AppLogEntry {
 
 const items = ref<AppLogEntry[]>([]);
 const total = ref(0);
-const loading = ref(false);
-const listError = ref<string | null>(null);
+const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: true });
 const level = ref("");
 const requestId = ref("");
 const page = ref(1);
@@ -66,27 +66,26 @@ useScrollListFingerprint(
 );
 
 async function load(): Promise<void> {
-  loading.value = true;
-  listError.value = null;
-  try {
-    const params: Record<string, string | number> = {
-      page: page.value,
-      per_page: ADMIN_LIST_PAGE_SIZE,
-    };
-    if (level.value) params.level = level.value;
-    if (requestId.value.trim()) params.request_id = requestId.value.trim();
-    const { data } = await api.get<{ items: AppLogEntry[]; total: number }>("/tools/app-logs", {
-      params,
-    });
-    items.value = data.items;
-    total.value = data.total;
-    expandedEntryIds.value = new Set();
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    listError.value = "Failed to load app logs.";
-  } finally {
-    loading.value = false;
-  }
+  const data = await runLoad(
+    async () => {
+      const params: Record<string, string | number> = {
+        page: page.value,
+        per_page: ADMIN_LIST_PAGE_SIZE,
+      };
+      if (level.value) params.level = level.value;
+      if (requestId.value.trim()) params.request_id = requestId.value.trim();
+      const { data: response } = await api.get<{ items: AppLogEntry[]; total: number }>(
+        "/tools/app-logs",
+        { params },
+      );
+      return response;
+    },
+    { errorMessage: "Failed to load app logs.", logContext: "appLogs.load" },
+  );
+  if (!data) return;
+  items.value = data.items;
+  total.value = data.total;
+  expandedEntryIds.value = new Set();
 }
 
 function setLevelFilter(next: string): void {

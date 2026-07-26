@@ -2,7 +2,7 @@
 import { computed, defineAsyncComponent, useTemplateRef } from "vue";
 
 import ExpenseCategorySettings from "@/components/expenses/ExpenseCategorySettings.vue";
-import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
+import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import ExpenseCalculatorPanel from "@/components/expenses/ExpenseCalculatorPanel.vue";
 import ExpenseFormDrawer from "@/components/expenses/ExpenseFormDrawer.vue";
 import ExpenseLedgerHeader from "@/components/expenses/ExpenseLedgerHeader.vue";
@@ -357,7 +357,7 @@ function goToTransactions(): void {
         @close="showForm = false"
       />
 
-      <ExpenseConfirmDialog
+      <ConfirmDialog
         :open="deleteTargetId !== null"
         title="delete expense"
         message="This expense will be permanently removed."
@@ -368,7 +368,7 @@ function goToTransactions(): void {
         @cancel="deleteTargetId = null"
       />
 
-      <ExpenseConfirmDialog
+      <ConfirmDialog
         :open="deleteCategoryTarget !== null"
         title="delete category"
         :message="deleteCategoryTarget ? `delete category '${deleteCategoryTarget.name}'?` : ''"

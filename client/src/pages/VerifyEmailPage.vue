@@ -2,7 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import BackLink from "@/components/ui/BackLink.vue";
+import AuthPageShell from "@/components/auth/AuthPageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { api } from "@/composables/useApi";
 import { getApiErrorMessage } from "@/types/api";
@@ -36,41 +36,36 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-[80vh] flex items-center justify-center px-6">
-    <div class="w-full max-w-md text-center space-y-4">
-      <h1 class="text-2xl font-bold text-surface-light">
-        <span class="accent-gradient">email verification</span>
-      </h1>
-
-      <div
-        :role="status === 'error' ? 'alert' : 'status'"
-        :aria-live="status === 'error' ? 'assertive' : 'polite'"
-        :aria-busy="status === 'loading'"
-        class="text-sm"
-        :class="{
-          'text-surface-mid': status === 'loading',
-          'text-status-success': status === 'success',
-          'text-status-error': status === 'error',
-        }"
-      >
-        <p v-if="status === 'loading'">Verifying your email...</p>
-        <p v-else>{{ message }}</p>
-      </div>
-
-      <BaseButton
-        v-if="status !== 'loading'"
-        type="button"
-        variant="primary"
-        size="lg"
-        class="w-full"
-        @click="router.push('/login')"
-      >
-        continue to login
-      </BaseButton>
-
-      <p v-if="status === 'error'" class="flex justify-center">
-        <BackLink to="/login" />
-      </p>
+  <AuthPageShell
+    title="email verification"
+    max-width="md"
+    :back-to="status === 'error' ? '/login' : undefined"
+    title-align="center"
+  >
+    <div
+      :role="status === 'error' ? 'alert' : 'status'"
+      :aria-live="status === 'error' ? 'assertive' : 'polite'"
+      :aria-busy="status === 'loading'"
+      class="text-sm text-center"
+      :class="{
+        'text-surface-mid': status === 'loading',
+        'text-status-success': status === 'success',
+        'text-status-error': status === 'error',
+      }"
+    >
+      <p v-if="status === 'loading'">Verifying your email...</p>
+      <p v-else>{{ message }}</p>
     </div>
-  </div>
+
+    <BaseButton
+      v-if="status !== 'loading'"
+      type="button"
+      variant="primary"
+      size="lg"
+      class="w-full mt-4"
+      @click="router.push('/login')"
+    >
+      continue to login
+    </BaseButton>
+  </AuthPageShell>
 </template>

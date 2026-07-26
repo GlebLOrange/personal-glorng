@@ -10,6 +10,7 @@ import ErrorState from "@/components/ui/ErrorState.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
+import { useApiAction } from "@/composables/useApiAction";
 import { safeRouterPath } from "@/utils/safeUrl";
 
 interface SearchHit {
@@ -24,8 +25,7 @@ interface SearchHit {
 const query = ref("");
 const sourceType = ref("");
 const hits = ref<SearchHit[]>([]);
-const loading = ref(false);
-const listError = ref<string | null>(null);
+const { loading, lastError: listError, run: runSearch } = useApiAction({ silent: true });
 const hasSearched = ref(false);
 
 const sourceTypeOptions = [
@@ -49,23 +49,24 @@ async function search(): Promise<void> {
   const trimmed = query.value.trim();
   if (!trimmed) return;
 
-  loading.value = true;
-  listError.value = null;
   hasSearched.value = true;
-  try {
-    const params: Record<string, string> = { q: trimmed };
-    if (sourceType.value) params.source_type = sourceType.value;
-    const { data } = await api.get<{ query: string; hits: SearchHit[] }>("/tools/search", {
-      params,
-    });
-    hits.value = data.hits;
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    listError.value = "Search failed.";
+  const data = await runSearch(
+    async () => {
+      const params: Record<string, string> = { q: trimmed };
+      if (sourceType.value) params.source_type = sourceType.value;
+      const { data: response } = await api.get<{ query: string; hits: SearchHit[] }>(
+        "/tools/search",
+        { params },
+      );
+      return response;
+    },
+    { errorMessage: "Search failed.", logContext: "adminSearch.search" },
+  );
+  if (!data) {
     hits.value = [];
-  } finally {
-    loading.value = false;
+    return;
   }
+  hits.value = data.hits;
 }
 
 function sourceLabel(type: string): string {

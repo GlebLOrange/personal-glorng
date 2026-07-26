@@ -10,13 +10,12 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminTabBar, { type AdminTab } from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
+import ErrorState from "@/components/ui/ErrorState.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { Card } from "@/components/ui/card";
 import { newsSourceEnabledClass } from "@/constants/filterColors";
 import { ENABLED_FILTERS, useNewsSources } from "@/composables/useNewsSources";
 import { usePermissions } from "@/composables/usePermissions";
@@ -133,12 +132,12 @@ async function onSurfaceTab(id: string): Promise<void> {
     <div class="min-w-0 divide-y divide-surface-border/40">
       <AdminListSkeleton v-if="loading" label="Loading sources" />
 
-      <Card v-else-if="loadError" role="alert">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-sm text-status-warning">News sources could not be loaded.</p>
-          <BaseButton variant="ghost" size="sm" @click="loadSources">retry</BaseButton>
-        </div>
-      </Card>
+      <ErrorState
+        v-else-if="loadError"
+        message="News sources could not be loaded."
+        show-retry
+        @retry="loadSources"
+      />
 
       <template v-else>
         <EmptyState v-if="sources.length === 0" :description="emptyFilterDescription" />

@@ -2,28 +2,23 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
-import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import NewsArticleContentFields from "@/components/news/NewsArticleContentFields.vue";
+import NewsArticleSourceFields from "@/components/news/NewsArticleSourceFields.vue";
+import NewsArticleSystemPanel from "@/components/news/NewsArticleSystemPanel.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
-import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseSelect from "@/components/ui/BaseSelect.vue";
-import BaseTextarea from "@/components/ui/BaseTextarea.vue";
-import { newsStatusClass } from "@/constants/filterColors";
 import {
-  NEWS_STATUSES,
   NEWS_SUMMARY_MAX_LENGTH,
   NEWS_THEME_LIMIT,
   NEWS_THEME_SET,
-  NEWS_THEMES,
   NEWS_TITLE_MAX_LENGTH,
 } from "@/constants/news";
-import { formatNewsDate, useNews } from "@/composables/useNews";
+import { useNews } from "@/composables/useNews";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
-import type { NewsArticle, NewsArticleFormData, NewsArticleUpdate, NewsStatus } from "@/types";
+import type { NewsArticle, NewsArticleFormData, NewsArticleUpdate } from "@/types";
 import { normalizeHttpUrl } from "@/utils/newsForms";
 
 const route = useRoute();
@@ -48,7 +43,6 @@ useScrollListFingerprint(
 );
 
 const form = ref<NewsArticleFormData>(emptyForm());
-const themesOpen = ref(false);
 
 /** Chrome crumb prefers public path shape `news/<slug>` once known. */
 const chromeTitle = computed(() => {
@@ -203,43 +197,6 @@ function buildUpdatePayload(): NewsArticleUpdate {
   };
 }
 
-function themeIsSelected(theme: string): boolean {
-  return parsedThemes().includes(theme);
-}
-
-function selectedThemesLabel(): string {
-  const themes = parsedThemes();
-  return themes.length > 0 ? themes.join(", ") : "none";
-}
-
-function setStatus(status: NewsStatus): void {
-  if (!canWrite.value) return;
-  form.value.status = status;
-}
-
-function toggleTheme(theme: string): void {
-  if (!canWrite.value) return;
-  const themes = parsedThemes();
-  if (themes.includes(theme)) {
-    form.value.themes = themes.filter((item) => item !== theme).join(", ");
-    return;
-  }
-  if (themes.length >= NEWS_THEME_LIMIT) return;
-  form.value.themes = [...themes, theme].join(", ");
-}
-
-function onThemesToggle(event: Event): void {
-  themesOpen.value = (event.target as HTMLDetailsElement).open;
-}
-
-function applySource(sourceId: number | null): void {
-  const source = sources.value.find((item) => item.id === sourceId);
-  form.value.source_id = sourceId;
-  if (!source) return;
-  form.value.source_name = source.name;
-  form.value.source_feed_url = source.feed_url;
-}
-
 async function loadCurrentArticle(): Promise<void> {
   if (!Number.isInteger(articleId.value) || articleId.value <= 0) return;
   await loadAdminArticle(articleId.value);
@@ -298,199 +255,11 @@ watch(articleId, () => {
         @submit.prevent="saveArticle"
       >
         <div class="space-y-6">
-          <Card>
-            <h2 class="card-title mb-4">article</h2>
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <BaseInput
-                v-model="form.slug"
-                placeholder="slug"
-                aria-label="slug"
-                :disabled="!canWrite"
-              />
-              <div
-                class="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-4"
-                role="group"
-                aria-label="status"
-              >
-                <AdminFilterChip
-                  v-for="status in NEWS_STATUSES"
-                  :key="status"
-                  :label="status"
-                  :active="form.status === status"
-                  :color-class="newsStatusClass(status)"
-                  :disabled="!canWrite"
-                  @click="setStatus(status)"
-                />
-              </div>
-              <BaseInput
-                v-model="form.title"
-                placeholder="title"
-                aria-label="title"
-                :disabled="!canWrite"
-              />
-              <BaseInput
-                v-model="form.original_title"
-                placeholder="original title"
-                aria-label="original title"
-                :disabled="!canWrite"
-              />
-              <BaseInput
-                v-model="form.language"
-                placeholder="language (en)"
-                aria-label="language"
-                :disabled="!canWrite"
-              />
-            </div>
-            <details
-              class="mt-4 rounded border border-surface-border px-3 py-2"
-              @toggle="onThemesToggle"
-            >
-              <summary
-                class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
-              >
-                <ChevronIcon :open="themesOpen" />
-                themes ({{ parsedThemes().length }}/{{ NEWS_THEME_LIMIT }})
-                <span class="text-xs text-surface-muted"> — {{ selectedThemesLabel() }}</span>
-              </summary>
-              <div class="mt-3 flex flex-wrap gap-2">
-                <label
-                  v-for="theme in NEWS_THEMES"
-                  :key="theme"
-                  :for="`news-edit-theme-${theme}`"
-                  class="inline-flex cursor-pointer items-center gap-2 rounded border border-surface-border px-3 py-1.5 text-xs transition-colors"
-                  :class="{
-                    'border-accent-blue text-surface-light': themeIsSelected(theme),
-                    'text-surface-mid': !themeIsSelected(theme),
-                    'opacity-50':
-                      !themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT,
-                  }"
-                >
-                  <input
-                    :id="`news-edit-theme-${theme}`"
-                    type="checkbox"
-                    :checked="themeIsSelected(theme)"
-                    :disabled="
-                      !canWrite ||
-                      (!themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT)
-                    "
-                    @change="toggleTheme(theme)"
-                  />
-                  {{ theme }}
-                </label>
-              </div>
-            </details>
-            <div class="mt-4">
-              <BaseTextarea
-                v-model="form.summary"
-                :rows="4"
-                placeholder="summary"
-                aria-label="summary"
-                :disabled="!canWrite"
-              />
-            </div>
-          </Card>
-
-          <Card>
-            <h2 class="card-title mb-4">source</h2>
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <BaseSelect
-                :model-value="form.source_id ?? ''"
-                aria-label="source"
-                :disabled="!canWrite"
-                @update:model-value="
-                  (value) => applySource(value === '' || value == null ? null : Number(value))
-                "
-              >
-                <option value="">auto from URL host</option>
-                <option v-for="source in sources" :key="source.id" :value="source.id">
-                  {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
-                </option>
-              </BaseSelect>
-              <BaseInput
-                v-model="form.source_name"
-                placeholder="source name"
-                aria-label="source name"
-                :disabled="!canWrite"
-              />
-              <BaseInput
-                v-model="form.source_url"
-                placeholder="article url"
-                aria-label="article url"
-                type="url"
-                :disabled="!canWrite"
-              />
-              <BaseInput
-                v-model="form.source_feed_url"
-                placeholder="source feed/home url"
-                aria-label="source feed url"
-                type="url"
-                :disabled="!canWrite"
-              />
-              <BaseInput
-                v-model="form.source_published_at"
-                type="datetime-local"
-                aria-label="source published at"
-                :disabled="!canWrite"
-              />
-            </div>
-          </Card>
+          <NewsArticleContentFields v-model="form" :can-write="canWrite" />
+          <NewsArticleSourceFields v-model="form" :can-write="canWrite" :sources="sources" />
         </div>
 
-        <aside class="space-y-6">
-          <Card>
-            <h2 class="card-title mb-4">system fields</h2>
-            <dl class="space-y-3 text-sm">
-              <div>
-                <dt class="text-surface-muted">ID</dt>
-                <dd class="font-data text-surface-light">{{ article.id }}</dd>
-              </div>
-              <div>
-                <dt class="text-surface-muted">Created</dt>
-                <dd class="text-surface-light">{{ formatNewsDate(article.created_at) }}</dd>
-              </div>
-              <div>
-                <dt class="text-surface-muted">Updated</dt>
-                <dd class="text-surface-light">{{ formatNewsDate(article.updated_at) }}</dd>
-              </div>
-              <div>
-                <dt class="text-surface-muted">Source ID</dt>
-                <dd class="font-data text-surface-light">{{ article.source_id ?? "none" }}</dd>
-              </div>
-              <div>
-                <dt class="text-surface-muted">Telegram message</dt>
-                <dd class="font-data text-surface-light">
-                  {{ article.telegram_message_id ?? "none" }}
-                </dd>
-              </div>
-            </dl>
-          </Card>
-
-          <Card>
-            <h2 class="card-title mb-4">current preview</h2>
-            <p class="mb-2 text-xs text-surface-muted">
-              {{ form.status }} / {{ form.source_name || "unknown source" }}
-            </p>
-            <h3 class="mb-3 text-lg font-semibold text-surface-light">
-              {{ form.title || "Untitled" }}
-            </h3>
-            <p class="text-sm text-surface-mid">{{ form.summary || "No summary yet." }}</p>
-            <div class="mt-4 flex flex-wrap gap-2">
-              <span
-                v-for="theme in parsedThemes()"
-                :key="theme"
-                class="rounded border border-surface-border px-2 py-1 text-xs text-surface-mid"
-              >
-                {{ theme }}
-              </span>
-            </div>
-          </Card>
-
-          <Card v-if="!canWrite">
-            <p class="text-sm text-surface-mid">
-              You have `news:read`, so this page is read-only. Saving requires `news:write`.
-            </p>
-          </Card>
-        </aside>
+        <NewsArticleSystemPanel :article="article" :form="form" :can-write="canWrite" />
       </form>
     </div>
   </AdminPageLayout>

@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
-import ExpenseConfirmDialog from "@/components/expenses/ExpenseConfirmDialog.vue";
+import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import RecipeCard from "@/components/recipes/RecipeCard.vue";
 import RecipeCookMode from "@/components/recipes/RecipeCookMode.vue";
@@ -202,7 +202,7 @@ function editRecipeFromCard(recipe: Recipe): void {
 
     <RecipeCookMode :recipe="selectedRecipe" :open="showCookMode" @close="closeCookMode" />
 
-    <ExpenseConfirmDialog
+    <ConfirmDialog
       v-if="canWrite"
       :open="showDeleteConfirm"
       title="Delete recipe"
