@@ -4,7 +4,7 @@ export function formatBreadcrumbLabel(title: string): string {
     .trim()
     .replace(/^§+\s*/, "")
     .toLowerCase();
-  // Path-shaped crumbs keep `/` (e.g. news/my-slug → § news/my-slug).
+  // Path-shaped crumbs keep `/` (e.g. news/my-slug).
   if (cleaned.includes("/")) return cleaned;
   // Keep kebab-case slugs intact (news article crumbs).
   if (!/[\s_]/.test(cleaned) && cleaned.includes("-")) return cleaned;
@@ -12,9 +12,9 @@ export function formatBreadcrumbLabel(title: string): string {
   return parts.join(" ") || cleaned;
 }
 
-/** Visible breadcrumb text: § as the first character of the page name. */
+/** Visible breadcrumb text (alias of formatBreadcrumbLabel; no § prefix). */
 export function displayBreadcrumbLabel(title: string): string {
-  return `§ ${formatBreadcrumbLabel(title)}`;
+  return formatBreadcrumbLabel(title);
 }
 
 /** Truncate a URL slug for breadcrumb chrome (default 14 characters). */

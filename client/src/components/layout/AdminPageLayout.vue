@@ -13,7 +13,7 @@ const props = withDefaults(
     backTo?: RouteLocationRaw;
     /** Breadcrumb root: admin hub or tools hub. */
     hub?: "admin" | "tools";
-    /** Brand prefix on the page title (h1); breadcrumbs always use §. */
+    /** Brand prefix on the page title (h1). */
     titlePrefix?: string;
   }>(),
   {

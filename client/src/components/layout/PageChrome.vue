@@ -26,7 +26,7 @@ const displaySegments = computed((): BreadcrumbSegment[] => {
   return [{ label: props.title }];
 });
 
-/** Current crumb matches page title — elevated § trail acts as the title. */
+/** Current crumb matches page title — elevated current crumb acts as the title. */
 const soleSectionCrumb = computed(() => {
   const last = displaySegments.value.at(-1);
   if (!last) return false;
