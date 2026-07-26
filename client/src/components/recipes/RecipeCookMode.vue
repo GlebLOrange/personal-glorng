@@ -160,12 +160,16 @@ onUnmounted(() => {
           </ul>
         </div>
 
-        <main class="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
+        <div
+          class="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center"
+          role="region"
+          aria-label="Cook mode step"
+        >
           <div class="text-5xl font-data text-accent-blue mb-6">{{ stepIndex + 1 }}</div>
           <p class="text-xl sm:text-2xl text-surface-light leading-relaxed max-w-2xl">
             {{ currentStep }}
           </p>
-        </main>
+        </div>
 
         <footer
           class="flex items-center justify-between gap-4 px-4 py-4 border-t border-surface-border"

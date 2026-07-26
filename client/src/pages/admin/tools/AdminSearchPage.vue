@@ -10,6 +10,7 @@ import ErrorState from "@/components/ui/ErrorState.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
+import { safeRouterPath } from "@/utils/safeUrl";
 
 interface SearchHit {
   id: number;
@@ -39,6 +40,10 @@ const resultSummary = computed(() => {
   if (!hasSearched.value) return "";
   return hits.value.length === 1 ? "1 result" : `${hits.value.length} results`;
 });
+
+const displayHits = computed(() =>
+  hits.value.map((hit) => ({ ...hit, path: safeRouterPath(hit.url) })),
+);
 
 async function search(): Promise<void> {
   const trimmed = query.value.trim();
@@ -96,16 +101,21 @@ function sourceLabel(type: string): string {
 
     <EmptyState v-else-if="hasSearched && hits.length === 0" description="No matches found." />
 
-    <div v-else-if="hits.length > 0" class="space-y-3">
+    <div v-else-if="displayHits.length > 0" class="space-y-3">
       <p class="text-xs text-surface-muted">{{ resultSummary }} for “{{ query.trim() }}”</p>
-      <Card v-for="hit in hits" :key="`${hit.source_type}:${hit.id}`" class="text-sm">
+      <Card v-for="hit in displayHits" :key="`${hit.source_type}:${hit.id}`" class="text-sm">
         <div class="flex flex-wrap items-center gap-2 mb-2">
           <span class="text-xs px-2 py-0.5 rounded bg-accent-blue/20 text-accent-blue">
             {{ sourceLabel(hit.source_type) }}
           </span>
-          <RouterLink :to="hit.url" class="font-medium text-accent-blue hover:underline">
+          <RouterLink
+            v-if="hit.path"
+            :to="hit.path"
+            class="font-medium text-accent-blue hover:underline"
+          >
             {{ hit.title }}
           </RouterLink>
+          <span v-else class="font-medium text-surface-light">{{ hit.title }}</span>
         </div>
         <p class="text-xs text-surface-mid">{{ hit.snippet }}</p>
       </Card>

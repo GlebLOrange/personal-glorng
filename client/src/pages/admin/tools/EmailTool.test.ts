@@ -2,9 +2,10 @@
  * @vitest-environment jsdom
  */
 import { mount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import EmailTool from "@/pages/admin/tools/EmailTool.vue";
+import { EMAIL_DRAFT_STORAGE_KEY, writeEmailDraft } from "@/utils/emailDraft";
 
 const { postMock, toastMock } = vi.hoisted(() => ({
   postMock: vi.fn(),
@@ -19,13 +20,15 @@ vi.mock("@/composables/useNotify", () => ({
   useNotify: () => ({ toast: toastMock }),
 }));
 
-vi.mock("vue-router", () => ({
-  useRoute: () => ({ query: {} }),
-}));
-
 vi.mock("@/components/layout/AdminPageLayout.vue", () => ({
   default: { template: "<div><slot /></div>" },
 }));
+
+afterEach(() => {
+  sessionStorage.clear();
+  postMock.mockReset();
+  toastMock.mockReset();
+});
 
 describe("EmailTool", () => {
   it("sanitizes preview HTML before rendering", async () => {
@@ -49,5 +52,21 @@ describe("EmailTool", () => {
     );
     await vi.waitFor(() => expect(wrapper.html()).toContain("Safe"));
     expect(wrapper.html()).not.toContain("<script");
+  });
+
+  it("consumes a sessionStorage draft on mount and clears it", async () => {
+    writeEmailDraft({
+      to: "user@example.com",
+      subject: "Re: theme",
+      body: "\n\n--- Original ---\nhello",
+    });
+
+    const wrapper = mount(EmailTool);
+    await vi.waitFor(() => {
+      expect((wrapper.get("#email-to").element as HTMLInputElement).value).toBe("user@example.com");
+    });
+    expect((wrapper.get("#email-subject").element as HTMLInputElement).value).toBe("Re: theme");
+    expect((wrapper.get("#email-body").element as HTMLTextAreaElement).value).toContain("hello");
+    expect(sessionStorage.getItem(EMAIL_DRAFT_STORAGE_KEY)).toBeNull();
   });
 });

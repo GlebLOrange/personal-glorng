@@ -23,11 +23,20 @@ describe("safeImageSrc", () => {
     expect(safeImageSrc("blob:https://example.com/uuid")).toBeNull();
   });
 
-  it("allows external https URLs", () => {
-    expect(safeImageSrc("https://example.com/photo.jpg")).toBe("https://example.com/photo.jpg");
+  it("allows CSP-allowlisted https hosts", () => {
+    expect(safeImageSrc("https://www.themealdb.com/images/media/meals/example.jpg")).toBe(
+      "https://www.themealdb.com/images/media/meals/example.jpg",
+    );
+    expect(safeImageSrc("https://i.scdn.co/image/ab67616d0000b273")).toBe(
+      "https://i.scdn.co/image/ab67616d0000b273",
+    );
+  });
+
+  it("rejects https hosts outside the CSP allowlist", () => {
+    expect(safeImageSrc("https://example.com/photo.jpg")).toBeNull();
   });
 
   it("rejects external http URLs", () => {
-    expect(safeImageSrc("http://example.com/photo.jpg")).toBeNull();
+    expect(safeImageSrc("http://www.themealdb.com/photo.jpg")).toBeNull();
   });
 });

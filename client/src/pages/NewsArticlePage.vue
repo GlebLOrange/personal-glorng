@@ -18,7 +18,6 @@ const crumbSlug = computed(() => truncateBreadcrumbSlug(slug.value));
 const { article, detailLoading, detailError, loadArticle } = useNews();
 
 const articleTitle = computed(() => article.value?.title ?? "article");
-const chromeTitle = computed(() => crumbSlug.value || articleTitle.value);
 const breadcrumbs = computed((): BreadcrumbSegment[] => {
   const trail: BreadcrumbSegment[] = [{ label: "news", to: "/news" }];
   if (crumbSlug.value) trail.push({ label: crumbSlug.value });
@@ -51,7 +50,7 @@ watch(
 </script>
 
 <template>
-  <PageShell :title="chromeTitle" :breadcrumbs="breadcrumbs" back-to="/news" :narrow="false">
+  <PageShell :title="articleTitle" :breadcrumbs="breadcrumbs" back-to="/news" :narrow="false">
     <Card
       v-if="detailLoading"
       class="h-96 animate-pulse"

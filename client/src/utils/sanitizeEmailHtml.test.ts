@@ -54,4 +54,16 @@ describe("sanitizeEmailHtml", () => {
     expect(clean).toMatch(/rel="[^"]*noopener/);
     expect(clean).toMatch(/rel="[^"]*noreferrer/);
   });
+
+  it("stays correct under concurrent sanitize calls", async () => {
+    const dirty = '<a href="https://example.com">link</a><script>x</script>';
+    const results = await Promise.all(
+      Array.from({ length: 20 }, () => Promise.resolve(sanitizeEmailHtml(dirty))),
+    );
+    for (const clean of results) {
+      expect(clean).not.toContain("<script");
+      expect(clean).toMatch(/rel="[^"]*noopener/);
+      expect(clean).toMatch(/rel="[^"]*noreferrer/);
+    }
+  });
 });
