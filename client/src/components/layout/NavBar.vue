@@ -3,6 +3,8 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { useRouter } from "vue-router";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
+import IconActionButton from "@/components/ui/IconActionButton.vue";
+import { useColorTheme } from "@/composables/useColorTheme";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollDirection } from "@/composables/useScrollDirection";
 import { iconActionClass } from "@/constants/httpStatusColors";
@@ -19,12 +21,23 @@ let syncMobileNav: (() => void) | null = null;
 
 const auth = useAuthStore();
 const { canUseAdminHub } = usePermissions();
+const { preference: colorThemePreference, cyclePreference } = useColorTheme();
 const router = useRouter();
 const mobileOpen = ref(false);
 const isMobileNav = ref(false);
 const menuToggleClass = computed(() =>
   ["md:hidden self-center", iconActionClass("1xx", mobileOpen.value)].join(" "),
 );
+
+const themeToggleLabel = computed(() => {
+  if (colorThemePreference.value === "light") {
+    return "Color theme: light. Click for system.";
+  }
+  if (colorThemePreference.value === "system") {
+    return "Color theme: system. Click for dark.";
+  }
+  return "Color theme: dark. Click for light.";
+});
 
 const { isHidden: isHeaderHidden, show: showHeader } = useScrollDirection({
   disabled: () => mobileOpen.value || isMobileNav.value,
@@ -182,30 +195,139 @@ async function handleGoHome(): Promise<void> {
             >
               login
             </RouterLink>
+
+            <IconActionButton
+              quiet
+              class="self-center"
+              :aria-label="themeToggleLabel"
+              :title="themeToggleLabel"
+              @click="cyclePreference()"
+            >
+              <!-- sun = light, moon = dark, monitor = system -->
+              <svg
+                v-if="colorThemePreference === 'light'"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="size-4"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path
+                  stroke-linecap="round"
+                  d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+                />
+              </svg>
+              <svg
+                v-else-if="colorThemePreference === 'system'"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="size-4"
+                aria-hidden="true"
+              >
+                <rect x="3" y="4" width="18" height="12" rx="2" />
+                <path stroke-linecap="round" d="M8 20h8M12 16v4" />
+              </svg>
+              <svg
+                v-else
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="size-4"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 14.5A8.5 8.5 0 1 1 11.5 3 7 7 0 0 0 21 14.5z"
+                />
+              </svg>
+            </IconActionButton>
           </div>
 
-          <button
-            ref="menuToggleButton"
-            type="button"
-            :class="menuToggleClass"
-            :aria-expanded="mobileOpen"
-            aria-controls="nav-mobile-menu"
-            aria-label="Toggle navigation menu"
-            @click="toggleMobileMenu"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              class="size-4"
-              aria-hidden="true"
+          <div class="flex md:hidden items-center gap-2">
+            <IconActionButton
+              quiet
+              :aria-label="themeToggleLabel"
+              :title="themeToggleLabel"
+              @click="cyclePreference()"
             >
-              <path v-if="!mobileOpen" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
-              <path v-else stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
+              <svg
+                v-if="colorThemePreference === 'light'"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="size-4"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path
+                  stroke-linecap="round"
+                  d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+                />
+              </svg>
+              <svg
+                v-else-if="colorThemePreference === 'system'"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="size-4"
+                aria-hidden="true"
+              >
+                <rect x="3" y="4" width="18" height="12" rx="2" />
+                <path stroke-linecap="round" d="M8 20h8M12 16v4" />
+              </svg>
+              <svg
+                v-else
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="size-4"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 14.5A8.5 8.5 0 1 1 11.5 3 7 7 0 0 0 21 14.5z"
+                />
+              </svg>
+            </IconActionButton>
+            <button
+              ref="menuToggleButton"
+              type="button"
+              :class="menuToggleClass"
+              :aria-expanded="mobileOpen"
+              aria-controls="nav-mobile-menu"
+              aria-label="Toggle navigation menu"
+              @click="toggleMobileMenu"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="size-4"
+                aria-hidden="true"
+              >
+                <path v-if="!mobileOpen" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
+                <path v-else stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
         </div>
       </nav>
 

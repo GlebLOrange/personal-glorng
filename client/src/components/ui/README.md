@@ -82,19 +82,23 @@ See `NewsPage.vue` and `ExpenseList.vue` for reference implementations.
 
 ## Status / palette colors
 
-Canonical tokens in `@theme` (`client/src/styles/main.css`):
+Canonical tokens live in `client/src/styles/main.css` as pale dual-theme CSS variables (`html[data-theme="dark"|"light"]`). Class names stay the same; values switch with theme. Default is **dark**. Toggle: nav chrome cycles dark → light → system (`useColorTheme`, key `glorng-color-theme`).
 
-| Family | Token | Hex |
-|---|---|---|
-| 1xx | `accent-blue` | `#8ec4e0` |
-| 2xx | `status-success` | `#7bc49a` |
-| 3xx | `status-warning` | `#d4ce94` |
-| 4xx | `status-error` | `#e88a8a` |
-| 5xx | `status-critical` | `#d98aad` |
+**Roles (both themes):** `surface-dark` = page background, `surface-card` = elevated surface, `surface-border` = borders, `surface-light` = primary text, `surface-sage` / `surface-mid` / `surface-muted` = body → secondary → muted. `on-accent` = dark ink on solid pale CTA fills. Product/admin uses pale 1xx–5xx + surfaces only; violet/golden are marketing-only.
 
-Use `text-status-*`, `alert-surface-error`, `alert-surface-warning` (pale yellow), etc. — not raw Tailwind `red-400` / `amber-400`. Wash pattern: idle `/3`, hover/selected `/15` + border `/40`.
+| Family | Token | Dark (default) | Light |
+|---|---|---|---|
+| 1xx | `accent-blue` | `#8ec4e0` | `#7aa3d4` |
+| 2xx | `status-success` | `#7bc49a` | `#86c9a0` |
+| 3xx | `status-warning` | `#d4ce94` | `#d4b86a` |
+| 4xx | `status-error` | `#e88a8a` | `#e08a8a` |
+| 5xx | `status-critical` | `#d98aad` | `#d98aad` |
+| Page bg | `surface-dark` | `#111827` | `#f9f9fb` |
+| Primary text | `surface-light` | `#f9f9fb` | `#111827` |
 
-Typography: IBM Plex Sans + Mono; use `font-data` for status codes, counts, and money.
+Use `text-status-*`, `alert-surface-error`, `alert-surface-warning` (pale yellow), etc. — not raw Tailwind `red-400` / `amber-400`. Wash pattern: idle `/3`, hover/selected `/15` + border `/40`. Never use saturated sheet hexes as solid button fills.
+
+Typography: IBM Plex Sans; use `font-data` for status codes, counts, and money.
 
 ## Overlay max-width naming
 

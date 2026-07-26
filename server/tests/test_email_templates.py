@@ -12,8 +12,8 @@ from app.core.email import (
 
 def test_verification_email_uses_brand_colors() -> None:
     html = render_verification_email("test-token", "https://glorng.dev")
-    assert "#141820" in html
-    assert "#7bbde2" in html
+    assert "#111827" in html
+    assert "#8ec4e0" in html
     assert "#1c2230" in html
 
 
@@ -38,8 +38,8 @@ def test_reset_email_contains_reset_url_and_brand_colors() -> None:
     base_url = "https://glorng.dev"
     html = render_reset_email(token, base_url)
     assert f"{base_url}/reset-password?token={token}" in html
-    assert "#141820" in html
-    assert "#7bbde2" in html
+    assert "#111827" in html
+    assert "#8ec4e0" in html
     assert "Reset password" in html
 
 

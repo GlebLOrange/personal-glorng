@@ -144,8 +144,8 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
   <style amp-custom>
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #141820;
-      color: #f5f2ec;
+      background: #111827;
+      color: #f9f9fb;
       margin: 0;
       line-height: 1.6;
     }}
@@ -153,48 +153,48 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
     h1 {{
       font-size: 2rem;
       margin: 0 0 0.25rem;
-      background: linear-gradient(90deg, #7bbde2, #b8a3c8);
+      background: linear-gradient(90deg, #8ec4e0, #b8a3c8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }}
-    .subtitle {{ color: #c4b8ac; font-size: 1.125rem; margin: 0 0 0.5rem; }}
-    .tagline {{ color: #7bbde2; font-size: 1rem; margin: 0 0 0.75rem; }}
-    .bio {{ color: #8a847e; font-size: 0.95rem; }}
+    .subtitle {{ color: #d1d5db; font-size: 1.125rem; margin: 0 0 0.5rem; }}
+    .tagline {{ color: #8ec4e0; font-size: 1rem; margin: 0 0 0.75rem; }}
+    .bio {{ color: #a39d97; font-size: 0.95rem; }}
     h2 {{
       font-size: 0.75rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #7bbde2;
+      color: #8ec4e0;
       margin: 2rem 0 0.75rem;
     }}
     h3 {{ margin: 0 0 0.35rem; font-size: 1rem; }}
     .block {{ margin-bottom: 0.5rem; }}
     .card {{
       background: #1c2230;
-      border: 1px solid #2e3a4e;
+      border: 1px solid #6b7a90;
       border-radius: 0.5rem;
       padding: 1rem;
       margin-bottom: 0.75rem;
     }}
-    .meta {{ color: #8a847e; font-size: 0.85rem; margin: 0 0 0.5rem; }}
-    .highlights {{ margin: 0.5rem 0 0; padding-left: 1.25rem; color: #c4b8ac; font-size: 0.9rem; }}
-    a {{ color: #7bbde2; text-decoration: none; }}
+    .meta {{ color: #a39d97; font-size: 0.85rem; margin: 0 0 0.5rem; }}
+    .highlights {{ margin: 0.5rem 0 0; padding-left: 1.25rem; color: #d1d5db; font-size: 0.9rem; }}
+    a {{ color: #8ec4e0; text-decoration: none; }}
     .chips {{ display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }}
     .chip {{
-      border: 1px solid #2e3a4e;
+      border: 1px solid #6b7a90;
       border-radius: 0.5rem;
       padding: 0.35rem 0.75rem;
       font-size: 0.85rem;
-      color: #c4b8ac;
+      color: #d1d5db;
     }}
     .footer {{
       margin-top: 2.5rem;
       padding-top: 1rem;
-      border-top: 1px solid #2e3a4e;
+      border-top: 1px solid #6b7a90;
       font-size: 0.8rem;
-      color: #8a847e;
+      color: #a39d97;
     }}
-    .footer a {{ color: #7bbde2; }}
+    .footer a {{ color: #8ec4e0; }}
   </style>
 </head>
 <body>

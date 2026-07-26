@@ -4,6 +4,55 @@
 @import "@fontsource/ibm-plex-sans/latin-600.css";
 @import "@fontsource/ibm-plex-sans/latin-700.css";
 
+/*
+  Pale dual-theme palette. Token *names* stay stable for Tailwind classes;
+  values switch on html[data-theme]. surface-dark = page bg, surface-light = primary text.
+*/
+:root,
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --palette-accent-blue: #8ec4e0;
+  --palette-status-success: #7bc49a;
+  --palette-status-cyan: #7eb8b0;
+  --palette-status-error: #e88a8a;
+  --palette-status-critical: #d98aad;
+  --palette-status-warning: #d4ce94;
+  --palette-surface-light: #f9f9fb;
+  --palette-surface-sage: #d5dcd3;
+  --palette-surface-mid: #d1d5db;
+  --palette-surface-muted: #a39d97;
+  --palette-surface-dark: #111827;
+  --palette-surface-card: #1c2230;
+  --palette-surface-border: #6b7a90;
+  --palette-surface-grid: #2e3a4e;
+  --palette-accent-violet: #b8a3c8;
+  --palette-accent-golden: #e0b08a;
+  --palette-on-accent: #111827;
+  --palette-theme-color: #111827;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --palette-accent-blue: #7aa3d4;
+  --palette-status-success: #86c9a0;
+  --palette-status-cyan: #6bb8ae;
+  --palette-status-error: #e08a8a;
+  --palette-status-critical: #d98aad;
+  --palette-status-warning: #d4b86a;
+  --palette-surface-light: #111827;
+  --palette-surface-sage: #374151;
+  --palette-surface-mid: #6b7280;
+  --palette-surface-muted: #9ca3af;
+  --palette-surface-dark: #f9f9fb;
+  --palette-surface-card: #ffffff;
+  --palette-surface-border: #d1d5db;
+  --palette-surface-grid: #e5e7eb;
+  --palette-accent-violet: #a78bdb;
+  --palette-accent-golden: #e0a878;
+  --palette-on-accent: #111827;
+  --palette-theme-color: #f9f9fb;
+}
+
 @theme {
   --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   /* Product UI is sans-only; keep alias for Tailwind font-mono / legacy refs. */
@@ -23,27 +72,30 @@
   --text-3xl: 2.125rem;
   --text-3xl--line-height: 1.25;
   /* Product action families — pale, statuscode-aligned (1xx–5xx) */
-  --color-accent-blue: #8ec4e0;
-  --color-status-success: #7bc49a;
-  --color-status-cyan: #7eb8b0;
-  --color-status-error: #e88a8a;
-  --color-status-critical: #d98aad;
+  --color-accent-blue: var(--palette-accent-blue);
+  --color-status-success: var(--palette-status-success);
+  --color-status-cyan: var(--palette-status-cyan);
+  --color-status-error: var(--palette-status-error);
+  --color-status-critical: var(--palette-status-critical);
   /* Warning / 3xx update-edit — pale yellow */
-  --color-status-warning: #d4ce94;
-  /* Surfaces */
-  --color-surface-light: #f5f2ec;
-  --color-surface-sage: #d5dcd3;
-  --color-surface-mid: #d4cdc6;
-  --color-surface-muted: #a39d97;
-  --color-surface-dark: #141820;
-  --color-surface-card: #1c2230;
-  --color-surface-border: #6b7a90;
+  --color-status-warning: var(--palette-status-warning);
+  /* Surfaces: dark=page bg, light=primary text, card=elevated, mid=secondary text */
+  --color-surface-light: var(--palette-surface-light);
+  --color-surface-sage: var(--palette-surface-sage);
+  --color-surface-mid: var(--palette-surface-mid);
+  --color-surface-muted: var(--palette-surface-muted);
+  --color-surface-dark: var(--palette-surface-dark);
+  --color-surface-card: var(--palette-surface-card);
+  --color-surface-border: var(--palette-surface-border);
+  --color-surface-grid: var(--palette-surface-grid);
+  /* Ink on solid pale accent fills (CTA) — always dark for contrast */
+  --color-on-accent: var(--palette-on-accent);
   /* Marketing / portfolio brand only */
-  --color-accent-violet: #b8a3c8;
-  --color-accent-golden: #d4ce94;
+  --color-accent-violet: var(--palette-accent-violet);
+  --color-accent-golden: var(--palette-accent-golden);
   /* Legacy aliases → families (prefer status-* / accent-blue in new code) */
-  --color-accent-red: #e88a8a;
-  --color-accent-amber: #d4ce94;
+  --color-accent-red: var(--palette-status-error);
+  --color-accent-amber: var(--palette-status-warning);
   --radius-interactive: 0.5rem;
   --spacing-grid-gap: 0.5rem;
 }
@@ -186,8 +238,8 @@
 }
 
 @utility cta-primary {
-  /* Solid accent-blue for AA contrast (white on violet gradient end failed WCAG) */
-  @apply h-11 px-4 rounded-lg bg-accent-blue text-surface-dark text-sm font-medium transition-colors inline-flex items-center justify-center;
+  /* Solid accent-blue; on-accent ink stays dark in both themes for AA on pale fill */
+  @apply h-11 px-4 rounded-lg bg-accent-blue text-on-accent text-sm font-medium transition-colors inline-flex items-center justify-center;
   &:hover:not(:disabled) {
     @apply bg-accent-blue/90;
   }
@@ -226,8 +278,9 @@
    Sets its own background-color so bg-* utilities cannot wipe the chevron image. */
 @utility field-select-chevron {
   appearance: none;
-  background-color: var(--color-surface-dark);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%23d4cdc6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-color: var(--color-surface-card);
+  /* stroke uses mid secondary — readable on both themes */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 0.875rem 0.875rem;
@@ -238,7 +291,7 @@
 }
 
 html {
-  color-scheme: dark;
+  /* color-scheme set per [data-theme] above; default dark via :root */
   scroll-behavior: smooth;
   font-size: 112.5%;
   -webkit-text-size-adjust: 100%;
@@ -329,8 +382,8 @@ h6,
 
 @media print {
   body {
-    background: #fff;
-    color: #111;
+    background: #f9f9fb;
+    color: #111827;
   }
 
   nav,
@@ -359,31 +412,31 @@ h6,
   .portfolio-cv .card-title,
   .portfolio-cv h1,
   .portfolio-cv h3 {
-    color: #111 !important;
+    color: #111827 !important;
   }
 
   .portfolio-cv .text-body,
   .portfolio-cv .text-meta,
   .portfolio-cv .text-surface-sage,
   .portfolio-cv .text-surface-mid {
-    color: #333 !important;
+    color: #6b7280 !important;
   }
 
   .portfolio-cv .accent-gradient {
-    -webkit-text-fill-color: #111;
-    color: #111;
+    -webkit-text-fill-color: #111827;
+    color: #111827;
     background: none;
   }
 
   .portfolio-cv a {
-    color: #111 !important;
+    color: #111827 !important;
     text-decoration: underline;
   }
 
   .portfolio-cv .interactive-surface,
   .portfolio-cv [class*="bg-surface"] {
-    border-color: #ccc !important;
-    background: #f9f9f9 !important;
+    border-color: #d1d5db !important;
+    background: #ffffff !important;
     box-shadow: none !important;
   }
 }
@@ -394,9 +447,9 @@ h6,
   --cc-primary-color: var(--color-surface-light);
   --cc-secondary-color: var(--color-surface-sage);
   --cc-btn-primary-bg: var(--color-accent-blue);
-  --cc-btn-primary-color: var(--color-surface-dark);
+  --cc-btn-primary-color: var(--color-on-accent);
   --cc-btn-primary-hover-bg: color-mix(in srgb, var(--color-accent-blue) 90%, white);
-  --cc-btn-primary-hover-color: var(--color-surface-dark);
+  --cc-btn-primary-hover-color: var(--color-on-accent);
   --cc-btn-secondary-bg: color-mix(
     in srgb,
     var(--color-surface-card) 70%,

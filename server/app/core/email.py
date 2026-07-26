@@ -11,13 +11,13 @@ from app.core.logging import logger
 from app.settings import Settings, get_settings
 
 EMAIL_COLORS = {
-    "surface_dark": "#141820",
+    "surface_dark": "#111827",
     "surface_card": "#1c2230",
-    "surface_border": "#2e3a4e",
-    "surface_light": "#f5f2ec",
-    "surface_mid": "#c4b8ac",
-    "surface_muted": "#8a847e",
-    "accent_blue": "#7bbde2",
+    "surface_border": "#6b7a90",
+    "surface_light": "#f9f9fb",
+    "surface_mid": "#d1d5db",
+    "surface_muted": "#a39d97",
+    "accent_blue": "#8ec4e0",
     "accent_violet": "#b8a3c8",
 }
 
