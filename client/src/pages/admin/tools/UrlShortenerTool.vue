@@ -131,7 +131,7 @@ onMounted(loadUrls);
         v-model="newUrl"
         class="min-w-0 w-full"
         placeholder="url (example.com or https://…)"
-        aria-label="url"
+        aria-label="url (example.com or https://…)"
       />
       <BaseInput v-model="newTitle" placeholder="title (optional)" aria-label="title" />
     </form>

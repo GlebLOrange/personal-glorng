@@ -41,6 +41,12 @@ describe("PageChrome", () => {
     expect(back.attributes("data-size")).toBe("compact");
     // Back sits in the breadcrumb row (same vertical band) and parks on the nav rail.
     expect(back.element.parentElement?.className).toContain("my-[15px]");
+    expect(back.element.parentElement?.className).toContain("min-h-10");
+    expect(
+      wrapper
+        .findAll("div")
+        .some((node) => node.classes().includes("h-10") && node.classes().includes("items-center")),
+    ).toBe(true);
     expect(back.classes()).toContain("shell-outside-end");
     expect(back.classes()).toContain("!-right-6");
     expect(back.classes()).toContain("top-1/2");

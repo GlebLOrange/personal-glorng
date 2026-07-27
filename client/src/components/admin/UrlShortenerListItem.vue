@@ -84,7 +84,10 @@ function confirmDelete(): void {
 </script>
 
 <template>
-  <div v-if="editing" class="flex w-full min-w-0 items-stretch gap-1">
+  <div
+    v-if="editing"
+    class="relative flex w-full min-w-0 items-stretch gap-1 after:pointer-events-none after:absolute after:bottom-0 after:left-2 after:right-2 after:z-[1] after:h-px after:bg-surface-border/60 after:content-[''] last:after:hidden"
+  >
     <BaseInput
       ref="titleInput"
       v-model="draftTitle"
@@ -155,7 +158,7 @@ function confirmDelete(): void {
       >
         {{ shortLink }}
       </a>
-      ? this cannot be undone.
+      ? this cannot be undone
     </p>
   </ConfirmDialog>
 </template>

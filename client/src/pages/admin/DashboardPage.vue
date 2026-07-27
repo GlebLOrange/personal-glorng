@@ -38,7 +38,7 @@ onMounted(async () => {
 <template>
   <AdminPageLayout title="admin" max-width="xl" back-to="/">
     <div v-if="catalogLoading" class="page-tool-grid" aria-busy="true" aria-label="Loading tools">
-      <Card v-for="i in 6" :key="i" class="page-tile-card h-28 animate-pulse" />
+      <Card v-for="i in 6" :key="i" class="page-tile-card min-h-40 animate-pulse" />
     </div>
     <EmptyState
       v-else-if="sections.length === 0"
