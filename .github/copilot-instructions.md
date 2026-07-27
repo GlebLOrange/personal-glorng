@@ -1,0 +1,29 @@
+<!-- gortex:communities:start -->
+<!-- gortex:skills:start -->
+## Community Skills
+
+| Area | Description | Skill |
+|------|-------------|-------|
+| Tests 3 Dirs | 772 symbols | `/gortex-tests-3-dirs` |
+| 15 Dirs Record | 411 symbols | `/gortex-15-dirs-record` |
+| Composables 10 Dirs | 344 symbols | `/gortex-composables-10-dirs` |
+| Components Ui 28 Dirs | 343 symbols | `/gortex-components-ui-28-dirs` |
+| 9 Dirs Get | 274 symbols | `/gortex-9-dirs-get` |
+| 15 Dirs Tasks | 267 symbols | `/gortex-15-dirs-tasks` |
+| Db Repositories 5 Dirs | 266 symbols | `/gortex-db-repositories-5-dirs` |
+| 16 Dirs | 217 symbols | `/gortex-16-dirs` |
+| Composables 3 Dirs Useexpensetransactions | 212 symbols | `/gortex-composables-3-dirs-useexpensetransactions` |
+| 14 Dirs | 184 symbols | `/gortex-14-dirs` |
+| 6 Dirs Fastapi Query | 162 symbols | `/gortex-6-dirs-fastapi-query` |
+| 9 Dirs App Settings Get Settings | 161 symbols | `/gortex-9-dirs-app-settings-get-settings` |
+| 10 Dirs Create Article | 140 symbols | `/gortex-10-dirs-create-article` |
+| 8 Dirs | 128 symbols | `/gortex-8-dirs` |
+| Composables 8 Dirs | 116 symbols | `/gortex-composables-8-dirs` |
+| 10 Dirs Strip | 111 symbols | `/gortex-10-dirs-strip` |
+| 5 Dirs Create Task | 104 symbols | `/gortex-5-dirs-create-task` |
+| 10 Dirs App Core Exceptions Validatione | 98 symbols | `/gortex-10-dirs-app-core-exceptions-validatione` |
+| Composables 7 Dirs | 94 symbols | `/gortex-composables-7-dirs` |
+| 7 Dirs App Core Exceptions Apierror | 92 symbols | `/gortex-7-dirs-app-core-exceptions-apierror` |
+<!-- gortex:skills:end -->
+
+<!-- gortex:communities:end -->
