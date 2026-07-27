@@ -45,15 +45,15 @@ function applySource(sourceId: number | null): void {
       />
       <BaseInput
         v-model="form.source_url"
-        placeholder="article url"
-        aria-label="article url"
+        placeholder="article url (example.com or https://…)"
+        aria-label="article url (example.com or https://…)"
         type="url"
         :disabled="!canWrite"
       />
       <BaseInput
         v-model="form.source_feed_url"
-        placeholder="source feed/home url"
-        aria-label="source feed url"
+        placeholder="source feed/home url (example.com or https://…)"
+        aria-label="source feed/home url (example.com or https://…)"
         type="url"
         :disabled="!canWrite"
       />

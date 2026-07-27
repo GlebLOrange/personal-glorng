@@ -108,7 +108,8 @@ function onTagsToggle(event: Event): void {
         </select>
         <BaseInput
           :model-value="form.source_url"
-          placeholder="article url (https://...)"
+          placeholder="article url (example.com or https://…)"
+          aria-label="article url (example.com or https://…)"
           type="url"
           @update:model-value="patch({ source_url: toStringValue($event) })"
         />
@@ -119,7 +120,8 @@ function onTagsToggle(event: Event): void {
         />
         <BaseInput
           :model-value="form.source_feed_url"
-          placeholder="source feed/home url (https://www.dw.com/)"
+          placeholder="source feed/home url (example.com or https://…)"
+          aria-label="source feed/home url (example.com or https://…)"
           type="url"
           @update:model-value="patch({ source_feed_url: toStringValue($event) })"
         />
