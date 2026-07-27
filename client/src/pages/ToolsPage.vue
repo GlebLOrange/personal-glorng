@@ -74,7 +74,10 @@ const breadcrumbs = computed((): BreadcrumbSegment[] => {
   const category = activeCategory.value;
   if (!category) return crumbs;
   const section = sections.value.find((item) => item.category === category);
-  crumbs.push({ label: section?.label ?? category });
+  crumbs.push({
+    label: section?.label ?? category,
+    to: { path: "/tools", query: { category } },
+  });
   return crumbs;
 });
 

@@ -66,7 +66,11 @@ const notchClass = FIELD_NOTCH_CLASS;
       :aria-label="ariaLabel"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="describedBy"
-      :class="[selectClass, 'w-full', error && 'border-status-error']"
+      :class="[
+        selectClass,
+        'w-full',
+        error ? 'ring-status-error focus-visible:ring-status-error' : undefined,
+      ]"
     >
       <slot />
     </select>

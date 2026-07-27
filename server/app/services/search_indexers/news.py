@@ -42,7 +42,7 @@ async def index_news_article(
     registry: DatabaseRegistry,
     article: NewsArticle,
 ) -> None:
-    """Upsert a published article into search, or remove unpublished articles."""
+    """Upsert a published article into search, or remove non-published articles."""
     if article.status != "published":
         await remove_news_article(registry, article.id)
         return

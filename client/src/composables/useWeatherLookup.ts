@@ -34,7 +34,7 @@ export function useWeatherLookup(location: ComputedRef<string>): {
     try {
       await fetch();
     } catch {
-      error.value = "Couldn't load weather";
+      error.value = "couldn't load weather";
     }
   }
 

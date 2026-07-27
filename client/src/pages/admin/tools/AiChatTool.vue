@@ -157,7 +157,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="ai chat" back-to="/tools">
+  <AdminPageLayout title="ai chat" back-to="/admin">
     <AdminTabBar v-model="activeTab" :tabs="[...AI_CHAT_TABS]" aria-label="ai chat sections">
       <template #end>
         <div

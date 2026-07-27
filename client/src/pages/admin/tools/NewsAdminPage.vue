@@ -12,6 +12,7 @@ import ErrorState from "@/components/ui/ErrorState.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import { newsStatusClass } from "@/constants/filterColors";
+import { newsStatusDescription } from "@/constants/news";
 import { STATUS_FILTERS, useNewsAdmin } from "@/composables/useNewsAdmin";
 
 const {
@@ -68,6 +69,7 @@ const {
               v-for="chip in STATUS_FILTERS"
               :key="chip.value"
               :label="chip.label"
+              :title="newsStatusDescription(chip.value)"
               :active="statusFilter === chip.value"
               :color-class="newsStatusClass(chip.value)"
               @click="setStatusFilter(chip.value)"

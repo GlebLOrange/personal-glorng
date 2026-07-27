@@ -47,7 +47,7 @@ function toggleConfirm(): void {
           :aria-pressed="deleteConfirm"
           @click="toggleConfirm"
         >
-          I understand this permanently deletes my account.
+          i understand this permanently deletes my account.
         </button>
         <BaseButton
           type="submit"

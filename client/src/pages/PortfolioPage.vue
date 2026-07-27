@@ -178,9 +178,9 @@ onUnmounted(() => {
       :alternate="education.length === 0"
     >
       <p class="text-body mb-2">
-        Open to full-time and contract — usually reply within 24h (EU timezone).
+        open to full-time and contract — usually reply within 24h (EU timezone)
       </p>
-      <p class="text-meta mb-6">Fastest: Telegram or email. Or send a short inquiry below.</p>
+      <p class="text-meta mb-6">fastest: telegram or email. or send a short inquiry below</p>
       <div class="flex flex-wrap gap-4 mb-6">
         <button type="button" class="cta-primary print:hidden" @click="contactModal = 'inquiry'">
           send inquiry
@@ -205,7 +205,7 @@ onUnmounted(() => {
     <div ref="supportSectionRef" class="print:hidden">
       <SectionWrapper id="support" title="support my work" width="full" dark alternate>
         <p class="text-body mb-6">
-          If my tools or writing have helped you, a small contribution keeps the work going.
+          if my tools or writing have helped you, a small contribution keeps the work going
         </p>
         <div
           v-if="donationsStarted && donationsLoading"

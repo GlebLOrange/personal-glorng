@@ -30,17 +30,21 @@ async def test_news_stats_counts_by_status(registry: DatabaseRegistry) -> None:
 
     for slug, status in (
         ("draft-one", "draft"),
+        ("pending-one", "pending_review"),
+        ("scheduled-one", "scheduled"),
         ("published-one", "published"),
         ("published-two", "published"),
-        ("unpublished-one", "unpublished"),
-        ("failed-one", "failed"),
+        ("private-one", "private"),
+        ("trash-one", "trash"),
     ):
         await registry.news.insert(_article(slug=slug, status=status))
 
     stats = await service.news_stats()
 
-    assert stats.total == 5
+    assert stats.total == 7
     assert stats.draft == 1
+    assert stats.pending_review == 1
+    assert stats.scheduled == 1
     assert stats.published == 2
-    assert stats.unpublished == 1
-    assert stats.failed == 1
+    assert stats.private == 1
+    assert stats.trash == 1

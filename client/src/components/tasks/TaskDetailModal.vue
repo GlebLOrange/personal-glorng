@@ -73,14 +73,9 @@ watch(
     @close="emit('close')"
   >
     <template v-if="task" #title="{ titleId }">
-      <div class="flex min-w-0 flex-col gap-1">
-        <span class="text-xs font-medium leading-none lowercase">
-          {{ statusLabel(task.status) }}
-        </span>
-        <h2 :id="titleId" class="truncate text-lg font-bold leading-none lowercase">
-          {{ task.title }}
-        </h2>
-      </div>
+      <h2 :id="titleId" class="truncate text-lg font-bold leading-none lowercase">
+        {{ task.title }}
+      </h2>
     </template>
 
     <div v-if="loading || !task" class="space-y-3 animate-pulse">
@@ -177,18 +172,16 @@ watch(
             synced to google calendar
           </span>
         </div>
-        <BaseButton
+        <ToolbarPillButton
           v-else
-          variant="ghost"
-          quiet
-          size="sm"
+          family="5xx"
           class="gap-1.5"
           title="try syncing again"
           @click="emit('retrySync', task.id)"
         >
-          <SyncIcon class-name="size-4" />
+          <SyncIcon class-name="size-3.5" />
           try syncing again
-        </BaseButton>
+        </ToolbarPillButton>
       </section>
 
       <section v-if="canMutate" class="space-y-2 border-t border-surface-border pt-4">

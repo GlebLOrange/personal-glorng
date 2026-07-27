@@ -2613,9 +2613,11 @@
             "default": "draft",
             "enum": [
               "draft",
+              "pending_review",
+              "scheduled",
               "published",
-              "unpublished",
-              "failed"
+              "private",
+              "trash"
             ],
             "title": "Status",
             "type": "string"
@@ -2626,7 +2628,7 @@
             "title": "Summary",
             "type": "string"
           },
-          "themes": {
+          "tags": {
             "items": {
               "enum": [
                 "world",
@@ -2643,7 +2645,7 @@
             },
             "maxItems": 4,
             "minItems": 1,
-            "title": "Themes",
+            "title": "Tags",
             "type": "array"
           },
           "title": {
@@ -2658,7 +2660,7 @@
           "original_title",
           "title",
           "summary",
-          "themes"
+          "tags"
         ],
         "title": "NewsArticleCreate",
         "type": "object"
@@ -2877,9 +2879,11 @@
           "status": {
             "enum": [
               "draft",
+              "pending_review",
+              "scheduled",
               "published",
-              "unpublished",
-              "failed"
+              "private",
+              "trash"
             ],
             "title": "Status",
             "type": "string"
@@ -2887,6 +2891,13 @@
           "summary": {
             "title": "Summary",
             "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
           },
           "telegram_message_id": {
             "anyOf": [
@@ -2898,13 +2909,6 @@
               }
             ],
             "title": "Telegram Message Id"
-          },
-          "themes": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Themes",
-            "type": "array"
           },
           "title": {
             "title": "Title",
@@ -2929,7 +2933,7 @@
           "title",
           "summary",
           "bullets",
-          "themes",
+          "tags",
           "language",
           "published_at",
           "telegram_message_id",
@@ -3117,9 +3121,11 @@
               {
                 "enum": [
                   "draft",
+                  "pending_review",
+                  "scheduled",
                   "published",
-                  "unpublished",
-                  "failed"
+                  "private",
+                  "trash"
                 ],
                 "type": "string"
               },
@@ -3142,19 +3148,7 @@
             ],
             "title": "Summary"
           },
-          "telegram_message_id": {
-            "anyOf": [
-              {
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Telegram Message Id"
-          },
-          "themes": {
+          "tags": {
             "anyOf": [
               {
                 "items": {
@@ -3179,7 +3173,19 @@
                 "type": "null"
               }
             ],
-            "title": "Themes"
+            "title": "Tags"
+          },
+          "telegram_message_id": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telegram Message Id"
           },
           "title": {
             "anyOf": [
@@ -3539,29 +3545,39 @@
             "title": "Draft",
             "type": "integer"
           },
-          "failed": {
-            "title": "Failed",
+          "pending_review": {
+            "title": "Pending Review",
+            "type": "integer"
+          },
+          "private": {
+            "title": "Private",
             "type": "integer"
           },
           "published": {
             "title": "Published",
             "type": "integer"
           },
+          "scheduled": {
+            "title": "Scheduled",
+            "type": "integer"
+          },
           "total": {
             "title": "Total",
             "type": "integer"
           },
-          "unpublished": {
-            "title": "Unpublished",
+          "trash": {
+            "title": "Trash",
             "type": "integer"
           }
         },
         "required": [
           "total",
           "draft",
+          "pending_review",
+          "scheduled",
           "published",
-          "unpublished",
-          "failed"
+          "private",
+          "trash"
         ],
         "title": "NewsStatsResponse",
         "type": "object"
@@ -6004,6 +6020,7 @@
               "anyOf": [
                 {
                   "maxLength": 120,
+                  "minLength": 3,
                   "type": "string"
                 },
                 {
@@ -9324,7 +9341,7 @@
             "required": true,
             "schema": {
               "maxLength": 500,
-              "minLength": 1,
+              "minLength": 3,
               "title": "Q",
               "type": "string"
             }
@@ -13768,9 +13785,11 @@
                 {
                   "enum": [
                     "draft",
+                    "pending_review",
+                    "scheduled",
                     "published",
-                    "unpublished",
-                    "failed"
+                    "private",
+                    "trash"
                   ],
                   "type": "string"
                 },
@@ -14764,10 +14783,10 @@
         ]
       }
     },
-    "/api/tools/news/themes": {
+    "/api/tools/news/tags": {
       "get": {
-        "description": "Public news themes (rate limited).",
-        "operationId": "list_news_themes_api_tools_news_themes_get",
+        "description": "Public news tags (rate limited).",
+        "operationId": "list_news_tags_api_tools_news_tags_get",
         "responses": {
           "200": {
             "content": {
@@ -14776,7 +14795,7 @@
                   "items": {
                     "type": "string"
                   },
-                  "title": "Response List News Themes Api Tools News Themes Get",
+                  "title": "Response List News Tags Api Tools News Tags Get",
                   "type": "array"
                 }
               }
@@ -14834,7 +14853,7 @@
             "description": "Internal server error"
           }
         },
-        "summary": "List news themes",
+        "summary": "List news tags",
         "tags": [
           "news"
         ]
@@ -15283,6 +15302,7 @@
               "anyOf": [
                 {
                   "maxLength": 200,
+                  "minLength": 3,
                   "type": "string"
                 },
                 {
@@ -15863,7 +15883,7 @@
             "required": true,
             "schema": {
               "maxLength": 500,
-              "minLength": 1,
+              "minLength": 3,
               "title": "Q",
               "type": "string"
             }
@@ -16012,6 +16032,7 @@
               "anyOf": [
                 {
                   "maxLength": 200,
+                  "minLength": 3,
                   "type": "string"
                 },
                 {

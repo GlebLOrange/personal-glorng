@@ -283,16 +283,20 @@ html[data-theme="light"] {
   @apply rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error;
 }
 
-/* Native <select> caret — same geometry as ChevronIcon (24 viewBox path).
-   Sets its own background-color so bg-* utilities cannot wipe the chevron image. */
+/* Native <select> caret — same path as ChevronIcon; paint follows surface-mid per theme. */
 @utility field-select-chevron {
   appearance: none;
   background-color: var(--color-surface-dark);
-  /* stroke uses mid secondary — readable on both themes */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 0.875rem 0.875rem;
+  /* dark theme (default): surface-mid #d1d5db */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%23d1d5db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+html[data-theme="light"] .field-select-chevron {
+  /* light theme: surface-mid #6b7280 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 @utility alert-surface-warning {
@@ -349,7 +353,15 @@ a.cta-primary:focus-visible,
 a.cta-secondary:hover,
 a.cta-secondary:focus-visible,
 a.contact-link-chip:hover,
-a.contact-link-chip:focus-visible {
+a.contact-link-chip:focus-visible,
+#site-header a:hover,
+#site-header a:focus-visible,
+#site-header a[aria-current="page"],
+#site-header a[aria-selected="true"],
+.page-breadcrumb a:hover,
+.page-breadcrumb a:focus-visible,
+.page-breadcrumb a[aria-current="page"],
+.page-breadcrumb a[aria-selected="true"] {
   text-decoration-line: none;
 }
 

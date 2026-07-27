@@ -11,7 +11,13 @@ import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { newsStatusClass } from "@/constants/filterColors";
 import { SELECT_CLASS } from "@/constants/formClasses";
-import { NEWS_STATUSES, NEWS_TAG_LIMIT, NEWS_TAGS } from "@/constants/news";
+import {
+  NEWS_STATUSES,
+  NEWS_TAG_LIMIT,
+  NEWS_TAGS,
+  newsStatusDescription,
+  newsStatusLabel,
+} from "@/constants/news";
 import type { NewsArticleFormData, NewsSource, NewsStatus } from "@/types";
 
 const props = defineProps<{
@@ -131,11 +137,12 @@ function onTagsToggle(event: Event): void {
           aria-label="source published at"
           @update:model-value="patch({ source_published_at: toStringValue($event) })"
         />
-        <div class="grid grid-cols-2 gap-2 sm:grid-cols-4" role="group" aria-label="status">
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3" role="group" aria-label="status">
           <AdminFilterChip
             v-for="status in NEWS_STATUSES"
             :key="status"
-            :label="status"
+            :label="newsStatusLabel(status)"
+            :title="newsStatusDescription(status)"
             align="center"
             :active="form.status === status"
             :color-class="newsStatusClass(status)"

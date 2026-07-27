@@ -1,11 +1,52 @@
 import type { NewsStatus } from "@/types";
 
+/** Editorial workflow statuses (slug → chip label). */
+export const NEWS_STATUS_META: Record<
+  NewsStatus,
+  { label: string; description: string }
+> = {
+  draft: {
+    label: "draft",
+    description: "still being written",
+  },
+  pending_review: {
+    label: "pending review",
+    description: "ready for editorial approval",
+  },
+  scheduled: {
+    label: "scheduled / future",
+    description: "approved and queued for publication",
+  },
+  published: {
+    label: "published",
+    description: "live and visible",
+  },
+  private: {
+    label: "private",
+    description: "visible only to authorized users",
+  },
+  trash: {
+    label: "trash",
+    description: "removed, but recoverable for a while",
+  },
+};
+
 export const NEWS_STATUSES: readonly NewsStatus[] = [
   "draft",
+  "pending_review",
+  "scheduled",
   "published",
-  "unpublished",
-  "failed",
+  "private",
+  "trash",
 ] as const;
+
+export function newsStatusLabel(status: NewsStatus | string): string {
+  return NEWS_STATUS_META[status as NewsStatus]?.label ?? status;
+}
+
+export function newsStatusDescription(status: NewsStatus | string): string {
+  return NEWS_STATUS_META[status as NewsStatus]?.description ?? "";
+}
 
 export const NEWS_TAGS = [
   "world",

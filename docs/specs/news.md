@@ -64,4 +64,4 @@ Read on site: {site_url}/news/{slug}
 - A scheduled job can ingest trusted feeds and skip duplicates.
 - Valid AI output auto-publishes to the site.
 - Telegram posting is retryable and records the message id when successful.
-- Admin users can trigger ingestion, unpublish/delete items, and repost to Telegram.
+- Admin users can trigger ingestion, change editorial status (draft → pending review → scheduled / future → published, or private / trash), delete items, and repost to Telegram.

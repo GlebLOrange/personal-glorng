@@ -18,9 +18,11 @@ import type {
 export interface NewsStats {
   total: number;
   draft: number;
+  pending_review: number;
+  scheduled: number;
   published: number;
-  unpublished: number;
-  failed: number;
+  private: number;
+  trash: number;
 }
 
 const newsDateFormatter = new Intl.DateTimeFormat(undefined, {

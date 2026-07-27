@@ -270,7 +270,13 @@ export interface PaginatedRecipes {
   pages: number;
 }
 
-export type NewsStatus = "draft" | "published" | "unpublished" | "failed";
+export type NewsStatus =
+  | "draft"
+  | "pending_review"
+  | "scheduled"
+  | "published"
+  | "private"
+  | "trash";
 
 export interface NewsArticle {
   id: number;

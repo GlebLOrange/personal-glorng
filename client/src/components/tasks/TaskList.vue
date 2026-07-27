@@ -13,9 +13,9 @@ defineProps<{
 const emit = defineEmits<{ select: [id: number] }>();
 
 const emptyMessage = (filterStatus: string): string => {
-  if (filterStatus === "pending") return "No pending tasks.";
-  if (filterStatus) return `No ${filterStatus.replaceAll("_", " ")} tasks.`;
-  return "No tasks yet.";
+  if (filterStatus === "pending") return "No pending tasks";
+  if (filterStatus) return `No ${filterStatus.replaceAll("_", " ")} tasks`;
+  return "No tasks yet";
 };
 </script>
 
@@ -24,7 +24,7 @@ const emptyMessage = (filterStatus: string): string => {
 
   <EmptyState v-else-if="tasks.length === 0" :description="emptyMessage(filterStatus)" />
 
-  <div v-else class="min-w-0">
+  <div v-else class="min-w-0 space-y-2">
     <TaskCard v-for="task in tasks" :key="task.id" :task="task" @select="emit('select', $event)" />
   </div>
 </template>

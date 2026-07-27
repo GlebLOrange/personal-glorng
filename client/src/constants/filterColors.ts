@@ -17,9 +17,11 @@ const SEMANTIC = {
 
 const NEWS_STATUS_CLASS: Record<string, string> = {
   draft: SEMANTIC.info,
+  pending_review: SEMANTIC.warning,
+  scheduled: SEMANTIC.info,
   published: SEMANTIC.success,
-  unpublished: SEMANTIC.warning,
-  failed: SEMANTIC.error,
+  private: SEMANTIC.muted,
+  trash: SEMANTIC.error,
 };
 
 const FEEDBACK_STATUS_CLASS: Record<string, string> = {

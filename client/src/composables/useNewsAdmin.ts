@@ -2,6 +2,7 @@ import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import {
+  NEWS_STATUS_META,
   NEWS_SUMMARY_MAX_LENGTH,
   NEWS_TAG_LIMIT,
   NEWS_TAG_SET,
@@ -23,12 +24,9 @@ import { normalizeHttpUrl, titleFromNewsLink } from "@/utils/newsForms";
 export type DrawerMode = "create" | "edit";
 export type StatusFilter = "" | NewsStatus;
 
-export const STATUS_FILTERS: { label: string; value: NewsStatus }[] = [
-  { label: "draft", value: "draft" },
-  { label: "published", value: "published" },
-  { label: "unpublished", value: "unpublished" },
-  { label: "failed", value: "failed" },
-];
+export const STATUS_FILTERS: { label: string; value: NewsStatus }[] = (
+  Object.entries(NEWS_STATUS_META) as [NewsStatus, (typeof NEWS_STATUS_META)[NewsStatus]][]
+).map(([value, meta]) => ({ label: meta.label, value }));
 
 export function emptyForm(): NewsArticleFormData {
   return {

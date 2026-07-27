@@ -7,7 +7,13 @@ import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { newsStatusClass } from "@/constants/filterColors";
-import { NEWS_STATUSES, NEWS_TAG_LIMIT, NEWS_TAGS } from "@/constants/news";
+import {
+  NEWS_STATUSES,
+  NEWS_TAG_LIMIT,
+  NEWS_TAGS,
+  newsStatusDescription,
+  newsStatusLabel,
+} from "@/constants/news";
 import type { NewsArticleFormData, NewsStatus } from "@/types";
 
 const form = defineModel<NewsArticleFormData>({ required: true });
@@ -66,14 +72,15 @@ function onTagsToggle(event: Event): void {
         :disabled="!canWrite"
       />
       <div
-        class="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-4"
+        class="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-3"
         role="group"
         aria-label="status"
       >
         <AdminFilterChip
           v-for="status in NEWS_STATUSES"
           :key="status"
-          :label="status"
+          :label="newsStatusLabel(status)"
+          :title="newsStatusDescription(status)"
           align="center"
           :active="form.status === status"
           :color-class="newsStatusClass(status)"

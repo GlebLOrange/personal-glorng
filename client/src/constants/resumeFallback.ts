@@ -5,36 +5,36 @@ export const RESUME_FALLBACK: ResumeData = {
   name: "Gleb.Y",
   title: "Full-Stack Developer",
   location: "EU",
-  availability: "Open to full-time and contract (remote)",
+  availability: "open to full-time and contract (remote)",
   bio:
-    "End-to-end delivery of web apps, APIs, and automation for clients" +
+    "end-to-end delivery of web apps, APIs, and automation for clients" +
     " and personal products. I build clean, maintainable systems across" +
     " backend, frontend, and deployment — with a focus on clarity," +
     " reliability, and long-term maintainability.",
   skills: [
     {
       category: "Backend",
-      summary: "Production APIs, auth, workers, and service boundaries.",
+      summary: "Production APIs, auth, workers, and service boundaries",
       items: ["Python", "FastAPI", "Django", "SQLAlchemy", "Celery", "Redis"],
     },
     {
       category: "Frontend",
-      summary: "Responsive UIs with typed components and predictable state.",
+      summary: "Responsive UIs with typed components and predictable state",
       items: ["Vue 3", "TypeScript", "Pinia", "Tailwind"],
     },
     {
       category: "Databases",
-      summary: "Relational and document stores with caching layers.",
+      summary: "Relational and document stores with caching layers",
       items: ["PostgreSQL", "MongoDB", "Redis"],
     },
     {
       category: "DevOps",
-      summary: "Containerized deploys, CI/CD, and Linux ops.",
+      summary: "Containerized deploys, CI/CD, and Linux ops",
       items: ["Docker", "Docker Compose", "Nginx", "CI/CD (GitHub Actions)", "Linux"],
     },
     {
       category: "Other",
-      summary: "Cross-cutting concerns for production systems.",
+      summary: "Cross-cutting concerns for production systems",
       items: [
         "API design",
         "authentication",
@@ -47,7 +47,7 @@ export const RESUME_FALLBACK: ResumeData = {
     },
     {
       category: "Patterns",
-      summary: "Maintainable architecture for long-lived codebases.",
+      summary: "Maintainable architecture for long-lived codebases",
       items: ["Clean architecture", "modular services", "async processing", "event-driven tasks"],
     },
   ],

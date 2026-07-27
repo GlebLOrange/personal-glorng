@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
@@ -10,20 +11,13 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
+import { familyBadgeClass } from "@/constants/httpStatusColors";
 import { passwordStrength, PASSWORD_MIN_LENGTH } from "@/utils/passwordPolicy";
 
 interface PasswordGeneratorResponse {
   password: string;
   length: number;
 }
-
-const OPTION_LABELS = [
-  "uppercase",
-  "lowercase",
-  "numbers",
-  "symbols",
-  "exclude ambiguous (0, O, 1, l, I)",
-] as const;
 
 const length = ref(Math.max(16, PASSWORD_MIN_LENGTH));
 const uppercase = ref(true);
@@ -71,6 +65,14 @@ const displayPassword = computed(() => {
   if (!generated.value) return "";
   return showPassword.value ? generated.value : "•".repeat(generated.value.length);
 });
+
+function clearOptions(): void {
+  uppercase.value = true;
+  lowercase.value = true;
+  digits.value = true;
+  symbols.value = true;
+  excludeAmbiguous.value = false;
+}
 
 async function generatePassword(): Promise<void> {
   if (!hasCharset.value) return;
@@ -120,48 +122,49 @@ async function generatePassword(): Promise<void> {
           <AdminFilterDropdown
             label="options"
             bare
-            match-trigger-width
-            class="min-w-0 flex-1 [&_button]:w-full"
-            :show-filter-icon="false"
-            :show-clear="false"
+            class="min-w-0 flex-1 [&_button]:w-full [&_button]:!bg-surface-dark hover:enabled:[&_button]:!bg-surface-dark [&_button]:ring-1 [&_button]:ring-inset [&_button]:ring-surface-border [&_button[aria-expanded='true']]:ring-2 [&_button[aria-expanded='true']]:ring-accent-blue/50"
             :has-active-filters="hasCustomOptions"
             :active-label="optionsActiveLabel"
-            :option-labels="[...OPTION_LABELS]"
+            :option-labels="['uppercase', 'lowercase', 'numbers', 'symbols', 'exclude ambiguous']"
+            @clear="clearOptions"
           >
-            <div class="flex flex-col gap-2">
-              <label
-                class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid"
+            <template #chips>
+              <AdminFilterChip
+                label="uppercase"
                 title="uppercase (A-Z)"
-              >
-                <input v-model="uppercase" type="checkbox" class="accent-accent-blue" />
-                uppercase
-              </label>
-              <label
-                class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid"
+                :active="uppercase"
+                :color-class="familyBadgeClass('1xx')"
+                @click="uppercase = !uppercase"
+              />
+              <AdminFilterChip
+                label="lowercase"
                 title="lowercase (a-z)"
-              >
-                <input v-model="lowercase" type="checkbox" class="accent-accent-blue" />
-                lowercase
-              </label>
-              <label
-                class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid"
+                :active="lowercase"
+                :color-class="familyBadgeClass('1xx')"
+                @click="lowercase = !lowercase"
+              />
+              <AdminFilterChip
+                label="numbers"
                 title="numbers (0-9)"
-              >
-                <input v-model="digits" type="checkbox" class="accent-accent-blue" />
-                numbers
-              </label>
-              <label
-                class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid"
+                :active="digits"
+                :color-class="familyBadgeClass('1xx')"
+                @click="digits = !digits"
+              />
+              <AdminFilterChip
+                label="symbols"
                 title="symbols (!@#$…)"
-              >
-                <input v-model="symbols" type="checkbox" class="accent-accent-blue" />
-                symbols
-              </label>
-              <label class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid">
-                <input v-model="excludeAmbiguous" type="checkbox" class="accent-accent-blue" />
-                exclude ambiguous (0, O, 1, l, I)
-              </label>
-            </div>
+                :active="symbols"
+                :color-class="familyBadgeClass('1xx')"
+                @click="symbols = !symbols"
+              />
+              <AdminFilterChip
+                label="exclude ambiguous"
+                title="exclude ambiguous (0, O, 1, l, I)"
+                :active="excludeAmbiguous"
+                :color-class="familyBadgeClass('3xx')"
+                @click="excludeAmbiguous = !excludeAmbiguous"
+              />
+            </template>
           </AdminFilterDropdown>
         </div>
 
@@ -184,8 +187,11 @@ async function generatePassword(): Promise<void> {
             placeholder="generated password"
             class="flex-1 min-w-[12rem] font-data"
           />
-          <BaseButton variant="ghost" size="field" class="min-w-[4rem]" @click="showPassword = !showPassword">
-            {{ showPassword ? "hide" : "show" }}
+          <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
+            <span class="inline-grid justify-items-center">
+              <span class="invisible col-start-1 row-start-1" aria-hidden="true">hide</span>
+              <span class="col-start-1 row-start-1">{{ showPassword ? "hide" : "show" }}</span>
+            </span>
           </BaseButton>
           <IconCopyButton @click="copy(generated)" />
         </div>

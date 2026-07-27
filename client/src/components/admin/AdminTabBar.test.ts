@@ -33,7 +33,7 @@ describe("AdminTabBar", () => {
     wrapper.unmount();
   });
 
-  it("paints sync/refresh tabs with pale 1xx wash (not marketing violet)", () => {
+  it("paints sync/refresh tabs with pale 1xx wash by default (not marketing violet)", () => {
     const wrapper = mount(AdminTabBar, {
       props: {
         modelValue: "sync",
@@ -55,6 +55,20 @@ describe("AdminTabBar", () => {
     expect(refreshTab.classes()).toContain("text-accent-blue");
     expect(refreshTab.classes()).toContain("bg-accent-blue/3");
     expect(refreshTab.classes()).not.toContain("text-accent-violet");
+  });
+
+  it("honors family=5xx critical wash when set on a tab", () => {
+    const wrapper = mount(AdminTabBar, {
+      props: {
+        modelValue: "sync",
+        tabs: [{ id: "sync", label: "sync", icon: "sync", family: "5xx" }],
+      },
+    });
+
+    const syncTab = wrapper.get("#admin-tab-tab-sync");
+    expect(syncTab.classes()).toContain("text-status-critical");
+    expect(syncTab.classes()).toContain("bg-status-critical/15");
+    expect(syncTab.classes()).toContain("border-status-critical/40");
   });
 
   it("supports arrow and boundary key navigation", async () => {

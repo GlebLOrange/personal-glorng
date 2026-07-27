@@ -57,7 +57,7 @@ export function buildGlanceStats(resume: ResumeData): GlanceStat[] {
     {
       label: "Experience",
       value: years > 0 ? `${years}+ yrs` : "—",
-      detail: years > 0 ? "Building and shipping products" : "No entries yet",
+      detail: years > 0 ? "building and shipping products" : "no entries yet",
     },
     {
       label: "Core stack",
@@ -67,12 +67,12 @@ export function buildGlanceStats(resume: ResumeData): GlanceStat[] {
     {
       label: "Projects",
       value: String(resume.projects.length),
-      detail: "Highlighted work with live links",
+      detail: "highlighted work with live links",
     },
     {
       label: "Availability",
-      value: resume.availability ? "Open" : "—",
-      detail: resume.availability ?? resume.location ?? "Add availability in resume data",
+      value: resume.availability ? "open" : "—",
+      detail: resume.availability ?? resume.location ?? "add availability in resume data",
     },
   ];
 }

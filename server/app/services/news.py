@@ -698,13 +698,17 @@ class NewsService:
         repo = self._news()
         total = await repo.count_articles()
         draft = await repo.count_articles(status="draft")
+        pending_review = await repo.count_articles(status="pending_review")
+        scheduled = await repo.count_articles(status="scheduled")
         published = await repo.count_articles(status="published")
-        unpublished = await repo.count_articles(status="unpublished")
-        failed = await repo.count_articles(status="failed")
+        private = await repo.count_articles(status="private")
+        trash = await repo.count_articles(status="trash")
         return NewsStatsResponse(
             total=total,
             draft=draft,
+            pending_review=pending_review,
+            scheduled=scheduled,
             published=published,
-            unpublished=unpublished,
-            failed=failed,
+            private=private,
+            trash=trash,
         )

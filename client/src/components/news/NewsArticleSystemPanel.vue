@@ -3,6 +3,7 @@ import { computed } from "vue";
 
 import { Card } from "@/components/ui/card";
 import { formatNewsDate } from "@/composables/useNews";
+import { newsStatusLabel } from "@/constants/news";
 import type { NewsArticle, NewsArticleFormData } from "@/types";
 
 const props = defineProps<{
@@ -52,7 +53,7 @@ const previewTags = computed(() =>
     <Card>
       <h2 class="card-title mb-4">current preview</h2>
       <p class="mb-2 text-xs text-surface-muted">
-        {{ form.status }} / {{ form.source_name || "unknown source" }}
+        {{ newsStatusLabel(form.status) }} / {{ form.source_name || "unknown source" }}
       </p>
       <h3 class="mb-3 text-lg font-semibold text-surface-light">
         {{ form.title || "Untitled" }}

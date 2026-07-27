@@ -51,12 +51,12 @@ export const FIELD_INPUT_CLASS_COMPACT =
   `${FIELD_FOCUS} transition-colors placeholder:text-surface-mid/70`;
 
 export const SELECT_CLASS =
-  `field-select-chevron ${CONTROL_SIZE} w-full border border-surface-border rounded-lg pl-4 pr-10 py-0 text-surface-light text-sm ` +
-  `${FIELD_FOCUS} transition-colors`;
+  `field-select-chevron ${CONTROL_SIZE} w-full rounded-lg pl-4 pr-10 py-0 text-surface-light text-sm ` +
+  `ring-1 ring-inset ring-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 transition-colors`;
 
 export const SELECT_CLASS_COMPACT =
-  "field-select-chevron box-border h-9 border border-surface-border rounded-lg pl-2 pr-8 py-0 text-surface-light text-xs " +
-  `${FIELD_FOCUS} transition-colors min-w-[7.5rem]`;
+  "field-select-chevron box-border h-9 rounded-lg pl-2 pr-8 py-0 text-surface-light text-xs " +
+  "ring-1 ring-inset ring-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 transition-colors min-w-[7.5rem]";
 
 export const TEXTAREA_CLASS =
   "min-h-10 w-full bg-surface-card border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm " +

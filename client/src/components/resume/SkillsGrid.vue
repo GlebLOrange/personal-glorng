@@ -14,7 +14,7 @@ defineProps<{
         {{ group.category }}
       </h3>
       <p v-if="group.summary" class="text-meta mb-3 lowercase">
-        {{ group.summary }}
+        {{ group.summary.replace(/\.$/, "") }}
       </p>
       <div class="flex flex-wrap gap-2">
         <span
