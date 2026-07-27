@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
-import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardBody } from "@/components/ui/card";
 import type { GitHubStatus } from "@/types";
 
 defineProps<{
@@ -19,44 +19,46 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <Card>
+  <Card variant="compact">
     <CardBody>
-      <CardHeader>
-        <CardTitle>github</CardTitle>
-      </CardHeader>
-      <div class="space-y-4">
-        <p v-if="error" class="text-sm text-status-warning">{{ error }}</p>
-        <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-wrap items-center gap-2">
+        <p v-if="error" class="w-full text-sm text-status-warning">{{ error }}</p>
+        <BaseButton
+          v-if="!status.linked"
+          variant="primary"
+          size="sm"
+          :disabled="loading"
+          @click="emit('connect')"
+        >
+          connect github
+        </BaseButton>
+        <template v-else>
+          <p class="text-sm text-surface-mid">
+            Connected as
+            <span class="font-medium text-surface-light"
+              >@{{ status.github_username ?? "github" }}</span
+            >
+          </p>
           <BaseButton
-            v-if="!status.linked"
-            variant="primary"
-            :disabled="loading"
-            @click="emit('connect')"
+            variant="secondary"
+            size="sm"
+            :disabled="unlinking"
+            @click="emit('unlink')"
           >
-            connect github
+            {{ unlinking ? "unlinking..." : "unlink" }}
           </BaseButton>
-          <template v-else>
-            <p class="text-sm text-surface-mid">
-              Connected as
-              <span class="text-surface-light font-medium"
-                >@{{ status.github_username ?? "github" }}</span
-              >
-            </p>
-            <BaseButton variant="secondary" :disabled="unlinking" @click="emit('unlink')">
-              {{ unlinking ? "unlinking..." : "unlink github" }}
-            </BaseButton>
-          </template>
-          <BaseButton
-            v-if="error"
-            variant="ghost"
-            class="gap-1.5"
-            :disabled="loading"
-            @click="emit('retry')"
-          >
-            <RefreshIcon class-name="size-3.5" />
-            retry
-          </BaseButton>
-        </div>
+        </template>
+        <BaseButton
+          v-if="error"
+          variant="ghost"
+          size="sm"
+          class="gap-1.5"
+          :disabled="loading"
+          @click="emit('retry')"
+        >
+          <RefreshIcon class-name="size-3.5" />
+          retry
+        </BaseButton>
       </div>
     </CardBody>
   </Card>

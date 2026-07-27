@@ -3,13 +3,11 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import PageShell from "@/components/layout/PageShell.vue";
-import SettingsCurrencySection from "@/components/settings/SettingsCurrencySection.vue";
+import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
 import SettingsDeleteSection from "@/components/settings/SettingsDeleteSection.vue";
-import SettingsEmailSection from "@/components/settings/SettingsEmailSection.vue";
 import SettingsGithubSection from "@/components/settings/SettingsGithubSection.vue";
-import SettingsPasswordSection from "@/components/settings/SettingsPasswordSection.vue";
+import SettingsPreferencesSection from "@/components/settings/SettingsPreferencesSection.vue";
 import SettingsProfileSection from "@/components/settings/SettingsProfileSection.vue";
-import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUserPreferences } from "@/composables/useUserPreferences";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
@@ -26,6 +24,7 @@ const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPrefere
 
 const displayName = ref("");
 const timezone = ref("UTC");
+const savedCurrency = ref(displayCurrency.value);
 const newEmail = ref("");
 const emailPassword = ref("");
 const currentPassword = ref("");
@@ -44,17 +43,20 @@ const { run: runUnlinkGithub, loading: unlinkingGithub } = useApiAction();
 const { run: runDelete, loading: deleting } = useApiAction();
 
 const passwordCheck = computed(() => passwordStrength(newPassword.value));
-const profilePayload = computed(() => ({
-  display_name: displayName.value.trim() || null,
-  timezone: timezone.value.trim(),
-}));
+const profileDisplayName = computed(() => displayName.value.trim() || null);
 const isProfileUnchanged = computed(
-  () =>
-    profilePayload.value.display_name === (auth.user?.display_name ?? null) &&
-    profilePayload.value.timezone === (auth.user?.timezone ?? "UTC"),
+  () => profileDisplayName.value === (auth.user?.display_name ?? null),
 );
-const canSaveProfile = computed(
-  () => !!profilePayload.value.timezone && !isProfileUnchanged.value && !savingProfile.value,
+const canSaveProfile = computed(() => !isProfileUnchanged.value && !savingProfile.value);
+const isTimezoneUnchanged = computed(
+  () => timezone.value.trim() === (auth.user?.timezone ?? "UTC"),
+);
+const isCurrencyUnchanged = computed(() => displayCurrency.value === savedCurrency.value);
+const canSavePrefs = computed(
+  () =>
+    !!timezone.value.trim() &&
+    (!isTimezoneUnchanged.value || !isCurrencyUnchanged.value) &&
+    !savingPrefs.value,
 );
 const isEmailUnchanged = computed(
   () => newEmail.value.trim().toLowerCase() === (auth.user?.email ?? "").toLowerCase(),
@@ -74,7 +76,6 @@ const canSavePassword = computed(
     passwordsMatch.value &&
     !savingPassword.value,
 );
-const canSaveCurrency = computed(() => !!displayCurrency.value && !savingPrefs.value);
 const canDeleteAccount = computed(
   () => !!deletePassword.value && deleteConfirm.value && !deleting.value,
 );
@@ -101,14 +102,35 @@ async function loadGithubStatus(): Promise<void> {
 onMounted(async () => {
   syncFormFromUser();
   await Promise.all([loadPreferences(), loadGithubStatus()]);
+  savedCurrency.value = displayCurrency.value;
 });
 
 async function saveProfile(): Promise<void> {
   if (!canSaveProfile.value) return;
-  await runProfile(() => auth.updateProfile(profilePayload.value), {
+  await runProfile(() => auth.updateProfile({ display_name: profileDisplayName.value }), {
     successMessage: "Profile updated",
     errorMessage: "Profile update failed",
   });
+}
+
+async function savePreferences(): Promise<void> {
+  if (!canSavePrefs.value) return;
+  await runPrefs(
+    async () => {
+      if (!isTimezoneUnchanged.value) {
+        await auth.updateProfile({ timezone: timezone.value.trim() });
+      }
+      if (!isCurrencyUnchanged.value) {
+        await saveDisplayCurrency(displayCurrency.value);
+        savedCurrency.value = displayCurrency.value;
+      }
+      return true;
+    },
+    {
+      successMessage: "Preferences saved",
+      errorMessage: "Preferences update failed",
+    },
+  );
 }
 
 async function saveEmail(): Promise<void> {
@@ -143,14 +165,6 @@ async function savePassword(): Promise<void> {
     newPassword.value = "";
     newPasswordConfirm.value = "";
   }
-}
-
-async function saveCurrency(): Promise<void> {
-  if (!canSaveCurrency.value) return;
-  await runPrefs(() => saveDisplayCurrency(displayCurrency.value), {
-    successMessage: "Preferences saved",
-    errorMessage: "Preferences update failed",
-  });
 }
 
 function connectGithub(): void {
@@ -195,37 +209,35 @@ async function deleteAccount(): Promise<void> {
     max-width="5xl"
     :narrow="false"
   >
-    <div class="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2">
       <SettingsProfileSection
         v-model:display-name="displayName"
-        v-model:timezone="timezone"
         :saving="savingProfile"
         :can-save="canSaveProfile"
         @save="saveProfile"
       />
 
-      <SettingsEmailSection
-        v-model:new-email="newEmail"
-        v-model:email-password="emailPassword"
-        :saving="savingEmail"
-        :can-save="canSaveEmail"
-        @save="saveEmail"
+      <SettingsPreferencesSection
+        v-model:timezone="timezone"
+        v-model:display-currency="displayCurrency"
+        :permissions="permissions"
+        :saving="savingPrefs"
+        :can-save="canSavePrefs"
+        @save="savePreferences"
       />
 
-      <SettingsPasswordSection
+      <SettingsAccountSection
+        v-model:new-email="newEmail"
+        v-model:email-password="emailPassword"
         v-model:current-password="currentPassword"
         v-model:new-password="newPassword"
         v-model:new-password-confirm="newPasswordConfirm"
-        :saving="savingPassword"
-        :can-save="canSavePassword"
-        @save="savePassword"
-      />
-
-      <SettingsCurrencySection
-        v-model:display-currency="displayCurrency"
-        :saving="savingPrefs"
-        :can-save="canSaveCurrency"
-        @save="saveCurrency"
+        :saving-email="savingEmail"
+        :can-save-email="canSaveEmail"
+        :saving-password="savingPassword"
+        :can-save-password="canSavePassword"
+        @save-email="saveEmail"
+        @save-password="savePassword"
       />
 
       <SettingsGithubSection
@@ -237,26 +249,6 @@ async function deleteAccount(): Promise<void> {
         @unlink="unlinkGithub"
         @retry="loadGithubStatus"
       />
-
-      <Card>
-        <CardBody>
-          <CardHeader>
-            <CardTitle>permissions</CardTitle>
-          </CardHeader>
-          <div class="space-y-4">
-            <div v-if="permissions.length" class="flex flex-wrap gap-2">
-              <span
-                v-for="perm in permissions"
-                :key="perm"
-                class="break-words rounded-full border border-surface-border px-2 py-1 text-xs text-surface-muted"
-              >
-                {{ perm }}
-              </span>
-            </div>
-            <p v-else class="text-sm text-surface-mid">No tool permissions — contact an admin.</p>
-          </div>
-        </CardBody>
-      </Card>
 
       <SettingsDeleteSection
         v-model:delete-password="deletePassword"

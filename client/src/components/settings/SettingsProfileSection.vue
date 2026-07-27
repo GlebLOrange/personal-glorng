@@ -4,7 +4,6 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 
 const displayName = defineModel<string>("displayName", { required: true });
-const timezone = defineModel<string>("timezone", { required: true });
 
 defineProps<{
   saving: boolean;
@@ -17,12 +16,12 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <Card>
+  <Card variant="compact">
     <CardBody>
-      <CardHeader>
+      <CardHeader class="!mb-2">
         <CardTitle>profile</CardTitle>
       </CardHeader>
-      <form class="space-y-4" @submit.prevent="emit('save')">
+      <form class="space-y-2" @submit.prevent="emit('save')">
         <BaseInput
           v-model="displayName"
           name="display-name"
@@ -30,16 +29,8 @@ const emit = defineEmits<{
           placeholder="display name"
           aria-label="display name"
         />
-        <BaseInput
-          v-model="timezone"
-          name="timezone"
-          autocomplete="off"
-          placeholder="timezone"
-          aria-label="timezone"
-          required
-        />
-        <BaseButton type="submit" variant="success" :loading="saving" :disabled="!canSave">
-          {{ saving ? "saving..." : "save profile" }}
+        <BaseButton type="submit" variant="success" size="sm" :loading="saving" :disabled="!canSave">
+          {{ saving ? "saving..." : "save" }}
         </BaseButton>
       </form>
     </CardBody>
