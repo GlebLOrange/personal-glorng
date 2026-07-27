@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } f
 
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import QuestionIcon from "@/components/icons/QuestionIcon.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
@@ -238,11 +239,12 @@ onBeforeUnmount(() => {
 
               <details
                 v-if="chatConfig?.configured"
-                class="rounded-md border border-surface-border/60 open:border-surface-border"
+                class="group rounded-md border border-surface-border/60 open:border-surface-border"
               >
                 <summary
-                  class="cursor-pointer px-2 py-1.5 text-sm font-semibold lowercase text-surface-light marker:text-surface-muted"
+                  class="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
                 >
+                  <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
                   troubleshooting
                 </summary>
                 <ul class="list-disc space-y-2 border-t border-surface-border/60 px-2 py-2 pl-7 text-xs leading-relaxed text-surface-mid">
@@ -276,10 +278,11 @@ onBeforeUnmount(() => {
                 </ul>
               </details>
 
-              <details class="rounded-md border border-surface-border/60 open:border-surface-border">
+              <details class="group rounded-md border border-surface-border/60 open:border-surface-border">
                 <summary
-                  class="cursor-pointer px-2 py-1.5 text-sm font-semibold lowercase text-surface-light marker:text-surface-muted"
+                  class="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
                 >
+                  <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
                   how it works
                 </summary>
                 <div class="space-y-2 border-t border-surface-border/60 px-2 py-2 text-xs leading-relaxed text-surface-mid">
@@ -299,10 +302,11 @@ onBeforeUnmount(() => {
                 </div>
               </details>
 
-              <details class="rounded-md border border-surface-border/60 open:border-surface-border">
+              <details class="group rounded-md border border-surface-border/60 open:border-surface-border">
                 <summary
-                  class="cursor-pointer px-2 py-1.5 text-sm font-semibold lowercase text-surface-light marker:text-surface-muted"
+                  class="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
                 >
+                  <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
                   example .env snippets
                 </summary>
                 <div class="space-y-3 border-t border-surface-border/60 px-2 py-2">
