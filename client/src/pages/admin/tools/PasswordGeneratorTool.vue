@@ -75,8 +75,8 @@ async function generatePassword(): Promise<void> {
     max-width="xl"
     :narrow="false"
   >
-    <Card>
-      <form class="space-y-4" @submit.prevent="generatePassword">
+    <Card class="mx-auto w-full max-w-md">
+      <form class="space-y-3" @submit.prevent="generatePassword">
         <BaseInput
           v-model.number="length"
           type="number"
@@ -88,23 +88,37 @@ async function generatePassword(): Promise<void> {
 
         <fieldset class="space-y-2">
           <legend class="text-sm text-surface-mid mb-1">character sets</legend>
-          <label class="flex items-center gap-2 text-sm text-surface-light">
-            <input v-model="uppercase" type="checkbox" class="rounded" />
-            uppercase (A–Z)
-          </label>
-          <label class="flex items-center gap-2 text-sm text-surface-light">
-            <input v-model="lowercase" type="checkbox" class="rounded" />
-            lowercase (a–z)
-          </label>
-          <label class="flex items-center gap-2 text-sm text-surface-light">
-            <input v-model="digits" type="checkbox" class="rounded" />
-            numbers (0–9)
-          </label>
-          <label class="flex items-center gap-2 text-sm text-surface-light">
-            <input v-model="symbols" type="checkbox" class="rounded" />
-            symbols (!@#$…)
-          </label>
-          <label class="flex items-center gap-2 text-sm text-surface-light">
+          <div class="grid grid-cols-2 gap-x-3 gap-y-2">
+            <label
+              class="flex min-h-11 items-center gap-2 text-sm text-surface-light"
+              title="uppercase (A-Z)"
+            >
+              <input v-model="uppercase" type="checkbox" class="rounded" />
+              uppercase
+            </label>
+            <label
+              class="flex min-h-11 items-center gap-2 text-sm text-surface-light"
+              title="lowercase (a-z)"
+            >
+              <input v-model="lowercase" type="checkbox" class="rounded" />
+              lowercase
+            </label>
+            <label
+              class="flex min-h-11 items-center gap-2 text-sm text-surface-light"
+              title="numbers (0-9)"
+            >
+              <input v-model="digits" type="checkbox" class="rounded" />
+              numbers
+            </label>
+            <label
+              class="flex min-h-11 items-center gap-2 text-sm text-surface-light"
+              title="symbols (!@#$...)"
+            >
+              <input v-model="symbols" type="checkbox" class="rounded" />
+              symbols
+            </label>
+          </div>
+          <label class="flex min-h-11 items-center gap-2 text-sm text-surface-light">
             <input v-model="excludeAmbiguous" type="checkbox" class="rounded" />
             exclude ambiguous (0, O, 1, l, I)
           </label>
@@ -120,7 +134,7 @@ async function generatePassword(): Promise<void> {
         </BaseButton>
       </form>
 
-      <div v-if="generated" class="mt-6 space-y-3">
+      <div v-if="generated" class="mt-4 space-y-2">
         <div class="flex flex-wrap items-end gap-2">
           <BaseInput
             :model-value="displayPassword"
