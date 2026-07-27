@@ -7,9 +7,12 @@ withDefaults(
     /** Accessible name for the icon-only control. */
     ariaLabel?: string;
     disabled?: boolean;
+    /** field = in-shell clear (fills parent shell height); default = CONTROL_SIZE square (h-10). */
+    size?: "md" | "field";
   }>(),
   {
     ariaLabel: "Edit",
+    size: "md",
   },
 );
 
@@ -19,6 +22,7 @@ defineEmits<{ click: [MouseEvent] }>();
 <template>
   <IconActionButton
     family="3xx"
+    :size="size"
     :ariaLabel="ariaLabel"
     :disabled="disabled"
     @click="$emit('click', $event)"

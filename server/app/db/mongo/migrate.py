@@ -102,6 +102,19 @@ async def _drop_superseded_indexes(db: AsyncIOMotorDatabase) -> None:
                 )
 
 
+async def _rename_news_themes_to_tags(db: AsyncIOMotorDatabase) -> None:
+    """Rename the themes field to tags in news_articles (idempotent)."""
+    result = await db.news_articles.update_many(
+        {"themes": {"$exists": True}},
+        {"$rename": {"themes": "tags"}},
+    )
+    if result.modified_count:
+        logger.info(
+            "Renamed news_articles.themes -> tags",
+            context={"modified": result.modified_count},
+        )
+
+
 async def _unset_weather_location_labels(db: AsyncIOMotorDatabase) -> None:
     """Drop legacy nickname field from weather_locations (idempotent)."""
     result = await db.weather_locations.update_many(
@@ -119,6 +132,7 @@ async def ensure_mongo_schema(db: AsyncIOMotorDatabase) -> None:
     """Create indexes idempotently and record schema version."""
     await _rename_legacy_collections(db)
     await _drop_obsolete_news_unique_indexes(db)
+    await _rename_news_themes_to_tags(db)
     await _unset_weather_location_labels(db)
     for collection, keys, options in INDEX_SPECS:
         kwargs = options or {}

@@ -70,25 +70,23 @@ watch(page, () => {
         />
 
         <div
-          class="relative z-20 mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-surface-muted"
+          class="relative z-20 mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted"
         >
-          <div class="flex flex-wrap items-center gap-2">
-            <span>{{ item.source_name }}</span>
-            <span aria-hidden="true">/</span>
-            <time :datetime="newsArticleDisplayDate(item)">
-              {{ formatNewsDate(newsArticleDisplayDate(item)) }}
-            </time>
-          </div>
+          <time class="mr-auto" :datetime="newsArticleDisplayDate(item)">
+            {{ formatNewsDate(newsArticleDisplayDate(item)) }}
+          </time>
           <a
             v-if="safeNavigationHref(item.source_url)"
             :href="safeNavigationHref(item.source_url) ?? '#'"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-xs text-accent-blue hover:underline"
+            title="source"
+            class="shrink-0 text-xs text-accent-blue hover:underline"
             @click.stop
           >
-            source
+            {{ item.source_name }}
           </a>
+          <span v-else class="shrink-0 text-xs text-accent-blue">{{ item.source_name }}</span>
         </div>
 
         <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
@@ -97,11 +95,11 @@ watch(page, () => {
 
         <div class="relative z-20 flex flex-wrap items-center gap-2">
           <span
-            v-for="theme in item.themes"
-            :key="theme"
+            v-for="tag in item.tags"
+            :key="tag"
             class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
           >
-            #{{ theme }}
+            #{{ tag }}
           </span>
         </div>
       </Card>

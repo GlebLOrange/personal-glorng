@@ -440,7 +440,7 @@ def build_demo_news_articles(
                         "Source and article stay linked through source_id.",
                     ]
                 ),
-                themes=json.dumps(["world", "tech"] if index % 3 == 0 else ["world"]),
+                tags=json.dumps(["world", "tech"] if index % 3 == 0 else ["world"]),
                 language="en",
                 published_at=published_at,
                 ai_model="demo",

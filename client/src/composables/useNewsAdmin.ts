@@ -3,8 +3,8 @@ import { useRouter } from "vue-router";
 
 import {
   NEWS_SUMMARY_MAX_LENGTH,
-  NEWS_THEME_LIMIT,
-  NEWS_THEME_SET,
+  NEWS_TAG_LIMIT,
+  NEWS_TAG_SET,
   NEWS_TITLE_MAX_LENGTH,
 } from "@/constants/news";
 import { useNews } from "@/composables/useNews";
@@ -43,7 +43,7 @@ export function emptyForm(): NewsArticleFormData {
     title: "",
     summary: "",
     bullets: [],
-    themes: "world",
+    tags: "world",
     language: "en",
     published_at: "",
     telegram_message_id: "",
@@ -66,7 +66,7 @@ export function formFromArticle(article: NewsArticle): NewsArticleFormData {
     title: article.title,
     summary: article.summary,
     bullets: [],
-    themes: article.themes.join(", "),
+    tags: article.tags.join(", "),
     language: article.language,
     published_at: article.published_at?.slice(0, 16) ?? "",
     telegram_message_id: article.telegram_message_id?.toString() ?? "",
@@ -134,9 +134,9 @@ export function useNewsAdmin() {
 
   const emptyFilterDescription = computed(() => {
     if (!statusFilter.value) {
-      return "No news articles yet. Run ingestion after configuring trusted sources.";
+      return "no news articles yet. run ingestion after configuring trusted sources.";
     }
-    return `No ${statusFilter.value} articles match this filter.`;
+    return `no ${statusFilter.value} articles match this filter.`;
   });
 
   async function reloadAdminNews(): Promise<void> {
@@ -147,10 +147,10 @@ export function useNewsAdmin() {
     () => `${statusFilter.value}:${page.value}:${total.value}:${articles.value[0]?.id ?? ""}`,
   );
 
-  function parsedThemes(): string[] {
-    return form.value.themes
+  function parsedTags(): string[] {
+    return form.value.tags
       .split(",")
-      .map((theme) => theme.trim())
+      .map((tag) => tag.trim())
       .filter(Boolean);
   }
 
@@ -257,7 +257,7 @@ export function useNewsAdmin() {
   function validateForm(): boolean {
     const title = form.value.title.trim();
     const summary = form.value.summary.trim();
-    const themes = parsedThemes();
+    const tags = parsedTags();
 
     if (!title) {
       toast("Title is required", "error");
@@ -280,16 +280,16 @@ export function useNewsAdmin() {
       toast("Source URL must start with http:// or https://", "error");
       return false;
     }
-    if (themes.length < 1) {
-      toast("Add at least one theme", "error");
+    if (tags.length < 1) {
+      toast("Add at least one tag", "error");
       return false;
     }
-    if (themes.length > NEWS_THEME_LIMIT) {
-      toast(`Choose no more than ${NEWS_THEME_LIMIT} themes`, "error");
+    if (tags.length > NEWS_TAG_LIMIT) {
+      toast(`Choose no more than ${NEWS_TAG_LIMIT} tags`, "error");
       return false;
     }
-    if (themes.some((theme) => !NEWS_THEME_SET.has(theme))) {
-      toast("Choose only supported news themes", "error");
+    if (tags.some((tag) => !NEWS_TAG_SET.has(tag))) {
+      toast("Choose only supported news tags", "error");
       return false;
     }
     if (dateIsInvalid(form.value.source_published_at, normalizedSourcePublishedAt())) {
@@ -313,7 +313,7 @@ export function useNewsAdmin() {
       original_title: originalTitle,
       title,
       summary: form.value.summary.trim(),
-      themes: parsedThemes(),
+      tags: parsedTags(),
       language: form.value.language.trim() || "en",
     };
   }

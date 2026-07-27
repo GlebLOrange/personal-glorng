@@ -5,6 +5,7 @@ import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import SearchIcon from "@/components/icons/SearchIcon.vue";
 import { pickNativeAttrs } from "@/components/ui/fieldA11y";
 import {
+  CONTROL_SIZE,
   FIELD_CLEAR_HIDDEN_CLASS,
   FIELD_CLEAR_SLOT,
   FIELD_WRAPPER_CLASS,
@@ -50,7 +51,8 @@ function clear(): void {
   <div
     :class="[
       FIELD_WRAPPER_CLASS,
-      'flex h-10 w-full items-center rounded-lg border border-surface-border bg-surface-dark transition-colors focus-within:border-accent-blue focus-within:ring-2 focus-within:ring-accent-blue/50',
+      CONTROL_SIZE,
+      'flex w-full items-center overflow-hidden rounded-lg bg-surface-dark transition-colors ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-blue/50',
       $attrs.class,
     ]"
   >

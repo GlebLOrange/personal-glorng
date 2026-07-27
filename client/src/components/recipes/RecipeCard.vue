@@ -5,6 +5,7 @@ import BaseImage from "@/components/ui/BaseImage.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import { Card } from "@/components/ui/card";
+import { CONTROL_SIZE } from "@/constants/formClasses";
 import type { Recipe } from "@/types";
 
 const props = defineProps<{
@@ -36,25 +37,28 @@ function onRowKeydown(event: KeyboardEvent): void {
   <Card
     as="div"
     interactive
-    hoverable
-    variant="dense"
+    :hoverable="false"
+    variant="ghost"
     role="button"
     tabindex="0"
-    class="group w-full min-w-0 cursor-pointer text-left"
+    :class="[
+      CONTROL_SIZE,
+      'group flex w-full min-w-0 cursor-pointer items-center overflow-hidden rounded-md !border-0 !bg-surface-card px-3 text-left ring-1 ring-inset ring-transparent hover:bg-surface-light/10 hover:ring-accent-blue/40 focus-visible:bg-surface-light/10 focus-visible:ring-accent-blue/40 focus-within:bg-surface-light/10 focus-within:ring-accent-blue/40',
+    ]"
     :aria-label="`Open recipe ${recipe.title}`"
     @click="emit('select', recipe.id)"
     @keydown="onRowKeydown"
   >
-    <div class="flex min-w-0 items-center gap-2">
+    <div class="flex h-full min-w-0 flex-1 items-center gap-2">
       <BaseImage
         v-if="recipe.image_url"
         :src="recipe.image_url"
         :alt="recipe.title"
-        class="size-7 shrink-0 rounded object-cover"
+        class="size-6 shrink-0 rounded object-cover"
       />
       <div
         v-else
-        class="flex size-7 shrink-0 items-center justify-center rounded bg-surface-dark text-[10px] font-semibold leading-none text-surface-sage"
+        class="flex size-6 shrink-0 items-center justify-center rounded bg-surface-dark text-[10px] font-semibold leading-none text-surface-sage"
         aria-hidden="true"
       >
         {{ thumbInitials }}
@@ -66,7 +70,7 @@ function onRowKeydown(event: KeyboardEvent): void {
 
       <div
         v-if="canWrite"
-        class="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100"
+        class="flex h-full shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100"
         @click.stop
         @keydown.stop
       >

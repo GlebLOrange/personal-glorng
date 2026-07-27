@@ -2,10 +2,10 @@
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import type { TaskCreateForm } from "@/composables/useTasks";
 
 defineProps<{
@@ -21,22 +21,22 @@ const emit = defineEmits<{ submit: []; close: [] }>();
 <template>
   <BaseDrawer :open="open" title="new task" max-width="md" @close="emit('close')">
     <form id="task-create-drawer-form" class="space-y-4" @submit.prevent="emit('submit')">
-      <BaseInput v-model="form.title" placeholder="title (what needs doing?)" />
+      <BaseInput v-model="form.title" placeholder="title" />
       <BaseInput v-model="form.scheduled_at" type="datetime-local" aria-label="scheduled at" />
-      <div class="flex min-w-0 items-center gap-2">
-        <LocationIcon class-name="size-4 shrink-0 text-surface-mid" />
-        <BaseInput
-          v-model="form.location"
-          class="min-w-0 flex-1"
-          placeholder="location (optional)"
-          aria-label="location"
-        />
-      </div>
-      <textarea
+      <BaseInput
+        v-model="form.location"
+        placeholder="(optional)"
+        aria-label="location"
+      >
+        <template #prefix>
+          <LocationIcon class-name="size-4 shrink-0" />
+        </template>
+      </BaseInput>
+      <BaseTextarea
         v-model="form.description"
-        rows="3"
+        :rows="3"
         placeholder="notes (optional)"
-        :class="[FIELD_INPUT_CLASS, 'h-auto resize-none']"
+        aria-label="notes"
       />
     </form>
 
@@ -49,7 +49,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
           <ToolbarPillButton
             type="submit"
             form="task-create-drawer-form"
-            family="1xx"
+            family="2xx"
             :disabled="saving"
           >
             {{ saving ? "creating..." : "create" }}

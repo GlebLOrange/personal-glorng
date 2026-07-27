@@ -89,7 +89,6 @@ async function handleRegister(): Promise<void> {
         autocomplete="email"
         label="email"
         placeholder="you@example.com"
-        label-inside
         required
       />
       <BaseInput
@@ -99,7 +98,6 @@ async function handleRegister(): Promise<void> {
         autocomplete="nickname"
         label="display name"
         placeholder="optional"
-        label-inside
       />
       <BaseInput
         v-model="timezone"
@@ -108,7 +106,6 @@ async function handleRegister(): Promise<void> {
         autocomplete="off"
         label="timezone"
         placeholder="Europe/Warsaw"
-        label-inside
       />
       <PasswordFields
         v-model:password="password"

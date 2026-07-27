@@ -84,15 +84,15 @@ async def get_news_stats(
 
 
 @router.get(
-    "/themes",
+    "/tags",
     response_model=list[str],
-    summary="List news themes",
-    description="Public news themes (rate limited).",
+    summary="List news tags",
+    description="Public news tags (rate limited).",
     dependencies=[Depends(rate_limit_api)],
 )
-async def list_news_themes(svc: NewsServiceDep) -> list[str]:
-    """List public news themes."""
-    return await svc.list_themes()
+async def list_news_tags(svc: NewsServiceDep) -> list[str]:
+    """List public news tags."""
+    return await svc.list_tags()
 
 
 @router.post(

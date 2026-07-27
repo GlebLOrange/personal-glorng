@@ -22,18 +22,25 @@ defineOptions({ inheritAttrs: false });
 
 const model = defineModel<string>();
 
-const props = defineProps<{
-  id?: string;
-  /** Faint tip drawn behind the value (full-width textarea). */
-  placeholder?: string;
-  /** Optional left-side field name inside the control. */
-  prefix?: string;
-  label?: string;
-  hint?: string;
-  error?: string;
-  rows?: number;
-  compact?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    id?: string;
+    /** Faint tip drawn behind the value (full-width textarea). */
+    placeholder?: string;
+    /** Optional left-side field name inside the control. */
+    prefix?: string;
+    label?: string;
+    hint?: string;
+    error?: string;
+    rows?: number;
+    compact?: boolean;
+    /** Render the label inside the control instead of the outer border notch. */
+    labelInside?: boolean;
+  }>(),
+  {
+    labelInside: true,
+  },
+);
 
 const attrs = useAttrs();
 const fallbackId = useId();
@@ -42,17 +49,30 @@ const hintId = computed(() => `${textareaId.value}-hint`);
 const errorId = computed(() => `${textareaId.value}-error`);
 const tipId = computed(() => `${textareaId.value}-tip`);
 const hasClearableValue = computed(() => Boolean(model.value?.length));
-const useShell = computed(() => Boolean(props.prefix || props.placeholder));
+const useShell = computed(() =>
+  Boolean(props.prefix || props.placeholder || props.labelInside || props.label),
+);
 /** Reserve clear width whenever shell is active so tip never jumps vs BaseInput. */
 const reserveClear = computed(() => useShell.value);
 const showClear = computed(() => reserveClear.value && hasClearableValue.value);
-/** Tip only when empty; hide while typing (Clear X takes the right side). */
-const showTip = computed(() => Boolean(props.placeholder) && !hasClearableValue.value);
+/** Inside-label overlay mirrors tip: visible only while empty. */
+const showInsideLabel = computed(
+  () => Boolean(props.labelInside && props.label) && !hasClearableValue.value,
+);
+/** Tip only when empty and no inside label is showing. */
+const showTip = computed(
+  () => Boolean(props.placeholder) && !hasClearableValue.value && !showInsideLabel.value,
+);
 const tipInsetClass = computed(() => [
   "left-3",
   reserveClear.value ? "right-10" : "right-3",
 ]);
-const showLabelNotch = computed(() => Boolean(props.label) && !props.error);
+const showLabelNotch = computed(
+  () => Boolean(props.label) && !props.error && !props.labelInside,
+);
+const hasVisibleLabel = computed(
+  () => showLabelNotch.value || Boolean(props.label && props.labelInside),
+);
 const showNotchRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
 const describedBy = computed(() =>
@@ -85,7 +105,7 @@ const textareaAttrs = computed(() => pickNativeAttrs(attrs, ["aria-describedby"]
 const accessibleName = computed(() =>
   buildFieldAccessibleName({
     ariaLabel: attrs["aria-label"],
-    hasVisibleLabel: showLabelNotch.value,
+    hasVisibleLabel: hasVisibleLabel.value,
     label: props.label,
     prefix: props.prefix,
   }),
@@ -110,6 +130,9 @@ function clear(): void {
       >
         {{ prefix }}
       </span>
+      <label v-if="props.labelInside && props.label" :for="textareaId" class="sr-only">
+        {{ props.label }}
+      </label>
       <textarea
         :id="textareaId"
         v-bind="textareaAttrs"
@@ -120,6 +143,14 @@ function clear(): void {
         :aria-describedby="describedBy"
         :class="shellTextareaClass"
       />
+      <span
+        v-if="showInsideLabel"
+        aria-hidden="true"
+        class="pointer-events-none absolute top-2.5 z-0 text-left text-xs font-medium text-surface-sage"
+        :class="tipInsetClass"
+      >
+        {{ label }}
+      </span>
       <span
         v-if="showTip"
         :id="tipId"
@@ -134,7 +165,7 @@ function clear(): void {
         class="absolute right-0 top-0 z-10 flex h-10 w-10 items-center justify-center"
         :class="showClear ? undefined : FIELD_CLEAR_HIDDEN_CLASS"
       >
-        <IconCloseButton v-if="showClear" size="field" aria-label="Clear" @click="clear" />
+        <IconCloseButton v-if="showClear" size="field" aria-label="clear" @click="clear" />
       </div>
     </div>
 

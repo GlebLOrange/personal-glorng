@@ -34,7 +34,7 @@ function closeDrawer(): void {
 
   <EmptyState v-else-if="intakes.length === 0" description="No task intakes yet." />
 
-  <div v-else class="divide-y divide-surface-border/40">
+  <div v-else class="divide-y divide-surface-border/60">
     <AdminListRow v-for="item in intakes" :key="item.id" interactive @click="openIntake(item)">
       <template #badge>
         <StatusBadge

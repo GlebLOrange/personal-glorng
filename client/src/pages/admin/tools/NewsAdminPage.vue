@@ -60,6 +60,7 @@ const {
           ref="filterDropdown"
           :has-active-filters="hasActiveFilters"
           :active-label="activeFilterLabel"
+          :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
           @clear="clearFilters"
         >
           <template #chips>
@@ -111,7 +112,7 @@ const {
 
     <EmptyState
       v-else-if="!listLoading && !listError"
-      title="No articles"
+      title="no articles"
       :description="emptyFilterDescription"
     />
 

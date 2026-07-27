@@ -7,6 +7,7 @@ import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
+import PencilIcon from "@/components/icons/PencilIcon.vue";
 import SyncIcon from "@/components/icons/SyncIcon.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
@@ -64,16 +65,19 @@ watch(
 </script>
 
 <template>
-  <BaseDrawer :open="open" :title="task?.title ?? 'Task'" max-width="md" @close="emit('close')">
+  <BaseDrawer
+    :open="open"
+    :title="task?.title ?? 'Task'"
+    max-width="md"
+    :header-class="task ? statusBadgeClass(task.status) : undefined"
+    @close="emit('close')"
+  >
     <template v-if="task" #title="{ titleId }">
-      <div class="flex min-w-0 flex-col gap-2">
-        <StatusBadge
-          size="sm"
-          class="inline-flex box-border h-8 items-center leading-none"
-          :label="statusLabel(task.status)"
-          :class-name="statusBadgeClass(task.status)"
-        />
-        <h2 :id="titleId" class="truncate text-lg font-bold text-surface-light">
+      <div class="flex min-w-0 flex-col gap-1">
+        <span class="text-xs font-medium leading-none lowercase">
+          {{ statusLabel(task.status) }}
+        </span>
+        <h2 :id="titleId" class="truncate text-lg font-bold leading-none lowercase">
           {{ task.title }}
         </h2>
       </div>
@@ -101,7 +105,7 @@ watch(
             <LocationIcon class-name="size-3.5 shrink-0" />
             location
           </span>
-          <span class="min-w-0 text-right text-surface-light">{{ task.location }}</span>
+          <span class="min-w-0 text-right lowercase text-surface-light">{{ task.location }}</span>
         </div>
       </section>
 
@@ -110,7 +114,7 @@ watch(
         class="flex min-w-0 items-baseline justify-between gap-3 text-sm"
       >
         <span class="shrink-0 text-surface-mid">about</span>
-        <p class="min-w-0 whitespace-pre-wrap text-right text-surface-light">
+        <p class="min-w-0 whitespace-pre-wrap text-right lowercase text-surface-light">
           {{ task.description }}
         </p>
       </section>
@@ -230,9 +234,9 @@ watch(
     <template v-if="canMutate && task" #footer>
       <DrawerFooterActions>
         <template v-if="menuStatuses.length" #dismiss>
-          <BaseDropdownMenu placement="top" aria-label="more actions">
+          <BaseDropdownMenu placement="top" icon-only family="3xx" aria-label="edit">
             <template #trigger>
-              <span>more actions</span>
+              <PencilIcon class-name="size-4" />
             </template>
             <template #default="{ close: closeMenu }">
               <BaseDropdownMenuItem

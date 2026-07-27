@@ -11,10 +11,10 @@ const props = defineProps<{
   canWrite: boolean;
 }>();
 
-const previewThemes = computed(() =>
-  props.form.themes
+const previewTags = computed(() =>
+  props.form.tags
     .split(",")
-    .map((theme) => theme.trim())
+    .map((tag) => tag.trim())
     .filter(Boolean),
 );
 </script>
@@ -60,11 +60,11 @@ const previewThemes = computed(() =>
       <p class="text-sm text-surface-mid">{{ form.summary || "No summary yet." }}</p>
       <div class="mt-4 flex flex-wrap gap-2">
         <span
-          v-for="theme in previewThemes"
-          :key="theme"
+          v-for="tag in previewTags"
+          :key="tag"
           class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
         >
-          #{{ theme }}
+          #{{ tag }}
         </span>
       </div>
     </Card>

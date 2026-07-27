@@ -7,17 +7,18 @@ import BackLink from "@/components/ui/BackLink.vue";
 const props = withDefaults(
   defineProps<{
     title: string;
-    /** login: left title + absolute BackLink + vertical offset; centered: default auth pages */
+    /** login: vertical offset in the viewport; centered: default auth pages */
     variant?: "centered" | "login";
     maxWidth?: "sm" | "md";
     backTo?: RouteLocationRaw;
+    /** Title alignment — left by default (matches login). */
     titleAlign?: "left" | "center";
   }>(),
   {
     variant: "centered",
     maxWidth: "sm",
     backTo: undefined,
-    titleAlign: undefined,
+    titleAlign: "left",
   },
 );
 
@@ -33,32 +34,32 @@ const innerClass = computed(() => [
   props.variant === "login" ? "relative -translate-y-[15dvh]" : undefined,
 ]);
 
-const resolvedTitleAlign = computed(
-  () => props.titleAlign ?? (props.variant === "login" ? "left" : "center"),
-);
+const showHeaderBack = computed(() => Boolean(props.backTo && props.title));
 
 const titleClass = computed(() => [
-  "text-2xl font-bold text-surface-light",
-  props.variant === "login" ? "pr-14 mb-0 text-left min-h-11" : "mb-8",
-  resolvedTitleAlign.value === "center" ? "text-center" : "text-left",
+  "text-2xl font-bold leading-none text-surface-light",
+  showHeaderBack.value ? "pr-14" : undefined,
+  props.titleAlign === "center" ? "text-center" : "text-left",
 ]);
 </script>
 
 <template>
   <div :class="outerClass">
     <div :class="innerClass">
-      <div v-if="title" :class="variant === 'login' ? 'relative mb-8 min-h-11' : undefined">
-        <h1 :class="titleClass">
-          <span class="accent-gradient">{{ title }}</span>
-        </h1>
-        <BackLink
-          v-if="backTo && variant === 'login'"
-          :to="backTo"
-          class="absolute right-0 top-0"
-        />
+      <div class="space-y-4">
+        <div v-if="title" class="relative flex h-10 items-center">
+          <h1 :class="titleClass">
+            <span class="accent-gradient">{{ title }}</span>
+          </h1>
+          <BackLink
+            v-if="showHeaderBack"
+            :to="backTo!"
+            class="absolute right-0 top-1/2 -translate-y-1/2"
+          />
+        </div>
+        <slot />
       </div>
-      <slot />
-      <p v-if="backTo && variant === 'centered'" class="flex justify-center mt-6">
+      <p v-if="backTo && !title" class="mt-6 flex justify-center">
         <BackLink :to="backTo" />
       </p>
     </div>

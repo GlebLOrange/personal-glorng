@@ -3,14 +3,18 @@ import { nextTick, ref } from "vue";
 
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import SyncIcon from "@/components/icons/SyncIcon.vue";
-import { actionFamilyClass, type HttpStatusFamily } from "@/constants/httpStatusColors";
+import {
+  ACTION_PILL_BASE,
+  actionFamilyClass,
+  type HttpStatusFamily,
+} from "@/constants/httpStatusColors";
 
 export interface AdminTab {
   id: string;
   label: string;
   /** Pale HTTP-family color for hover/selected (default 1xx). */
   family?: HttpStatusFamily;
-  /** Optional leading icon for sync/refresh tabs. */
+  /** Optional leading icon for sync/refresh tabs — paints the whole tab pale purple. */
   icon?: "sync" | "refresh";
 }
 
@@ -32,8 +36,21 @@ const props = withDefaults(
   },
 );
 
-const tabClass = (tab: AdminTab): string =>
-  actionFamilyClass(tab.family ?? "1xx", activeTab.value === tab.id);
+/** Sync/refresh tabs use marketing violet wash (full chip, not icon-only). */
+function violetTabClass(selected: boolean): string {
+  if (selected) {
+    return `${ACTION_PILL_BASE} bg-accent-violet/15 border-accent-violet/40 text-accent-violet`;
+  }
+  return `${ACTION_PILL_BASE} border-transparent bg-accent-violet/3 text-accent-violet hover:enabled:border-accent-violet/40 hover:enabled:bg-accent-violet/15`;
+}
+
+const tabClass = (tab: AdminTab): string => {
+  const selected = activeTab.value === tab.id;
+  if (tab.icon === "sync" || tab.icon === "refresh") {
+    return violetTabClass(selected);
+  }
+  return actionFamilyClass(tab.family ?? "1xx", selected);
+};
 
 function tabButtonId(tabId: string): string {
   return `${props.panelIdPrefix}-tab-${tabId}`;
