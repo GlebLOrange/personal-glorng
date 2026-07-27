@@ -46,32 +46,41 @@ const primaryAsOpenControl = computed(
  * Idle is surface-card; status wash paints only on hover / focus / expanded.
  * Use ring-inset (not border) so CONTROL_SIZE matches BaseInput / icon buttons.
  */
-const STATUS_ROW_INTERACTIVE: Record<string, string> = {
-  "accent-blue":
-    "hover:!ring-accent-blue/50 focus-visible:!ring-accent-blue/50 focus-within:!ring-accent-blue/50 hover:!bg-accent-blue/15 focus-visible:!bg-accent-blue/15 focus-within:!bg-accent-blue/15",
-  "status-success":
-    "hover:!ring-status-success/50 focus-visible:!ring-status-success/50 focus-within:!ring-status-success/50 hover:!bg-status-success/15 focus-visible:!bg-status-success/15 focus-within:!bg-status-success/15",
-  "status-warning":
-    "hover:!ring-status-warning/50 focus-visible:!ring-status-warning/50 focus-within:!ring-status-warning/50 hover:!bg-status-warning/15 focus-visible:!bg-status-warning/15 focus-within:!bg-status-warning/15",
-  "status-error":
-    "hover:!ring-status-error/50 focus-visible:!ring-status-error/50 focus-within:!ring-status-error/50 hover:!bg-status-error/15 focus-visible:!bg-status-error/15 focus-within:!bg-status-error/15",
-  "status-critical":
-    "hover:!ring-status-critical/50 focus-visible:!ring-status-critical/50 focus-within:!ring-status-critical/50 hover:!bg-status-critical/15 focus-visible:!bg-status-critical/15 focus-within:!bg-status-critical/15",
-  "surface-mid":
-    "hover:!ring-surface-border focus-visible:!ring-surface-border focus-within:!ring-surface-border hover:!bg-surface-mid/10 focus-visible:!bg-surface-mid/10 focus-within:!bg-surface-mid/10",
-};
-
-const STATUS_ROW_ACTIVE: Record<string, string> = {
-  "accent-blue": "!ring-accent-blue/50 !bg-accent-blue/15",
-  "status-success": "!ring-status-success/50 !bg-status-success/15",
-  "status-warning": "!ring-status-warning/50 !bg-status-warning/15",
-  "status-error": "!ring-status-error/50 !bg-status-error/15",
-  "status-critical": "!ring-status-critical/50 !bg-status-critical/15",
-  "surface-mid": "!ring-surface-border !bg-surface-mid/10",
+const STATUS_ROW_TONES: Record<string, { interactive: string; active: string }> = {
+  "accent-blue": {
+    interactive:
+      "hover:!ring-accent-blue/50 focus-visible:!ring-accent-blue/50 focus-within:!ring-accent-blue/50 hover:!bg-accent-blue/15 focus-visible:!bg-accent-blue/15 focus-within:!bg-accent-blue/15",
+    active: "!ring-accent-blue/50 !bg-accent-blue/15",
+  },
+  "status-success": {
+    interactive:
+      "hover:!ring-status-success/50 focus-visible:!ring-status-success/50 focus-within:!ring-status-success/50 hover:!bg-status-success/15 focus-visible:!bg-status-success/15 focus-within:!bg-status-success/15",
+    active: "!ring-status-success/50 !bg-status-success/15",
+  },
+  "status-warning": {
+    interactive:
+      "hover:!ring-status-warning/50 focus-visible:!ring-status-warning/50 focus-within:!ring-status-warning/50 hover:!bg-status-warning/15 focus-visible:!bg-status-warning/15 focus-within:!bg-status-warning/15",
+    active: "!ring-status-warning/50 !bg-status-warning/15",
+  },
+  "status-error": {
+    interactive:
+      "hover:!ring-status-error/50 focus-visible:!ring-status-error/50 focus-within:!ring-status-error/50 hover:!bg-status-error/15 focus-visible:!bg-status-error/15 focus-within:!bg-status-error/15",
+    active: "!ring-status-error/50 !bg-status-error/15",
+  },
+  "status-critical": {
+    interactive:
+      "hover:!ring-status-critical/50 focus-visible:!ring-status-critical/50 focus-within:!ring-status-critical/50 hover:!bg-status-critical/15 focus-visible:!bg-status-critical/15 focus-within:!bg-status-critical/15",
+    active: "!ring-status-critical/50 !bg-status-critical/15",
+  },
+  "surface-mid": {
+    interactive:
+      "hover:!ring-surface-border focus-visible:!ring-surface-border focus-within:!ring-surface-border hover:!bg-surface-mid/10 focus-visible:!bg-surface-mid/10 focus-within:!bg-surface-mid/10",
+    active: "!ring-surface-border !bg-surface-mid/10",
+  },
 };
 
 function statusToneKey(statusClass: string): string | null {
-  for (const key of Object.keys(STATUS_ROW_INTERACTIVE)) {
+  for (const key of Object.keys(STATUS_ROW_TONES)) {
     if (statusClass.includes(key)) return key;
   }
   return null;
@@ -81,12 +90,21 @@ const statusToneClass = computed(() => {
   if (!props.statusClass) return "";
   const key = statusToneKey(props.statusClass);
   if (!key) return "";
-  return [STATUS_ROW_INTERACTIVE[key], props.expanded ? STATUS_ROW_ACTIVE[key] : undefined]
-    .filter(Boolean)
-    .join(" ");
+  const tone = STATUS_ROW_TONES[key];
+  return [tone.interactive, props.expanded ? tone.active : undefined].filter(Boolean).join(" ");
 });
 
 const showNeutralHover = computed(() => props.hoverable && !props.statusClass);
+
+/** Computed so Tailwind class strings never nest `"` inside a `:class="..."` attribute. */
+const rowClass = computed(() => [
+  props.interactive ? "cursor-pointer" : undefined,
+  props.revealActionsOnHover || props.centerMeta ? "group relative" : undefined,
+  showNeutralHover.value
+    ? "hover:ring-accent-blue/40 hover:bg-surface-light/10 focus-visible:ring-accent-blue/40 focus-within:ring-accent-blue/40"
+    : undefined,
+  statusToneClass.value || undefined,
+]);
 
 const rowAttrs = computed(() => {
   if (!focusable.value) return {};
@@ -130,21 +148,15 @@ function onKeydown(event: KeyboardEvent): void {
     :interactive="focusable"
     :aria-expanded="expandable ? expanded : undefined"
     v-bind="rowAttrs"
-    :class="[
-      interactive ? 'cursor-pointer' : undefined,
-      revealActionsOnHover || centerMeta ? 'group relative' : undefined,
-      showNeutralHover
-        ? "hover:ring-accent-blue/40 hover:bg-surface-light/10 focus-visible:ring-accent-blue/40 focus-within:ring-accent-blue/40"
-        : undefined,
-      statusToneClass || undefined,
-      // Default control height — same token as ToolbarPillButton / icon actions.
-      expanded && $slots.detail ? "min-h-10" : CONTROL_SIZE,
-    ]"
-    class="flex w-full min-w-0 flex-col justify-center overflow-hidden rounded-md !border-0 !bg-surface-card px-2 text-left ring-1 ring-inset ring-transparent"
+    :class="rowClass"
+    class="flex w-full min-w-0 flex-col justify-start overflow-hidden rounded-md !border-0 !bg-surface-card px-2 text-left ring-1 ring-inset ring-transparent"
     @click="onClick"
     @keydown="onKeydown"
   >
-    <div class="flex h-full min-h-0 w-full min-w-0 items-center gap-2">
+    <div
+      data-admin-list-header
+      :class="['flex w-full min-w-0 shrink-0 items-center gap-2', CONTROL_SIZE]"
+    >
       <div
         v-if="$slots.leading"
         class="flex shrink-0 items-center"

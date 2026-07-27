@@ -82,6 +82,7 @@ describe("AdminListRow", () => {
       props: { interactive: true },
       slots: { primary: "plan sprint" },
     });
-    expect(wrapper.classes()).toContain("h-10");
+    const header = wrapper.find("[data-admin-list-header]");
+    expect(header.classes()).toContain("h-10");
   });
 });
