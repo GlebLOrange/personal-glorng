@@ -44,7 +44,7 @@ withDefaults(
           rel="noopener noreferrer"
           :aria-label="`${tool.name} (opens in new tab)`"
         >
-          <Card hoverable variant="compact" class="page-tile-card h-full">
+          <Card hoverable class="page-tile-card h-full">
             <div class="flex min-w-0 items-center gap-2">
               <ToolIcon :slug="tool.slug" class="h-6 w-6 shrink-0 text-surface-light" />
               <h3 class="min-w-0 text-sm font-semibold text-surface-light break-words">
@@ -62,7 +62,7 @@ withDefaults(
           class="page-tile"
           :to="resolveRoute ? resolveRoute(tool) : tool.adminRoute"
         >
-          <Card hoverable variant="compact" class="page-tile-card h-full">
+          <Card hoverable class="page-tile-card h-full">
             <div class="flex min-w-0 items-center gap-2">
               <ToolIcon :slug="tool.slug" class="h-6 w-6 shrink-0 text-surface-light" />
               <h3 class="min-w-0 text-sm font-semibold text-surface-light break-words">

@@ -31,9 +31,9 @@ const displayTitle = computed(() => `${props.titlePrefix}${props.title}`);
 <template>
   <div class="relative border-b border-surface-border bg-surface-dark/80 backdrop-blur-md">
     <!-- Back parks on this row so it shares the breadcrumb vertical band. -->
-    <div class="relative my-[15px] flex min-h-8 min-w-0 items-center gap-3">
+    <div class="relative my-[15px] flex min-h-10 min-w-0 items-center gap-3">
       <div class="flex min-w-0 flex-1 flex-col justify-center">
-        <div class="flex h-8 items-center">
+        <div class="flex h-10 items-center">
           <PageBreadcrumbs :segments="displaySegments" :elevated="true" class="min-w-0" />
         </div>
         <!-- Breadcrumbs are the visible chrome title; keep a real h1 for outline/AT -->

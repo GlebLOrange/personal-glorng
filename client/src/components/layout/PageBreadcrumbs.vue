@@ -27,7 +27,7 @@ function crumbIconSlug(label: string): string | null {
 function currentClass(): string {
   if (props.elevated) {
     // Hierarchy via size/weight only — default text color, not accent gradient
-    return "inline-flex h-8 items-center gap-2 truncate text-xl font-bold leading-none text-surface-light";
+    return "inline-flex h-10 items-center gap-2 truncate text-xl font-bold leading-none text-surface-light";
   }
   return "page-breadcrumb inline-flex items-center gap-2 font-medium text-surface-light";
 }
@@ -47,7 +47,7 @@ const ancestorClass =
         <RouterLink
           v-if="seg.to && !isCurrent(idx)"
           :to="seg.to"
-          class="relative z-10 inline-flex h-8 cursor-pointer items-center"
+          class="relative z-10 inline-flex h-10 cursor-pointer items-center"
         >
           <span :class="ancestorClass">
             <ToolIcon
@@ -72,7 +72,7 @@ const ancestorClass =
         </span>
         <span
           v-if="idx < segments.length - 1"
-          class="page-breadcrumb inline-flex h-8 items-center text-surface-muted"
+          class="page-breadcrumb inline-flex h-10 items-center text-surface-muted"
           aria-hidden="true"
           >/</span
         >
