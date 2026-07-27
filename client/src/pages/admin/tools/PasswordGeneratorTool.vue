@@ -88,37 +88,37 @@ async function generatePassword(): Promise<void> {
 
         <fieldset class="space-y-2">
           <legend class="text-sm text-surface-mid mb-1">character sets</legend>
-          <div class="grid grid-cols-2 gap-x-3 gap-y-2">
+          <div class="grid grid-cols-2 gap-x-3 gap-y-1">
             <label
-              class="flex min-h-11 items-center gap-2 text-sm text-surface-light"
+              class="flex h-8 items-center gap-2 text-sm text-surface-light"
               title="uppercase (A-Z)"
             >
               <input v-model="uppercase" type="checkbox" class="rounded" />
               uppercase
             </label>
             <label
-              class="flex min-h-11 items-center gap-2 text-sm text-surface-light"
+              class="flex h-8 items-center gap-2 text-sm text-surface-light"
               title="lowercase (a-z)"
             >
               <input v-model="lowercase" type="checkbox" class="rounded" />
               lowercase
             </label>
             <label
-              class="flex min-h-11 items-center gap-2 text-sm text-surface-light"
+              class="flex h-8 items-center gap-2 text-sm text-surface-light"
               title="numbers (0-9)"
             >
               <input v-model="digits" type="checkbox" class="rounded" />
               numbers
             </label>
             <label
-              class="flex min-h-11 items-center gap-2 text-sm text-surface-light"
+              class="flex h-8 items-center gap-2 text-sm text-surface-light"
               title="symbols (!@#$...)"
             >
               <input v-model="symbols" type="checkbox" class="rounded" />
               symbols
             </label>
           </div>
-          <label class="flex min-h-11 items-center gap-2 text-sm text-surface-light">
+          <label class="flex h-8 items-center gap-2 text-sm text-surface-light">
             <input v-model="excludeAmbiguous" type="checkbox" class="rounded" />
             exclude ambiguous (0, O, 1, l, I)
           </label>
@@ -143,12 +143,12 @@ async function generatePassword(): Promise<void> {
             placeholder="generated password"
             class="flex-1 min-w-[12rem] font-data"
           />
-          <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
+          <BaseButton variant="ghost" size="field" class="min-w-[4rem]" @click="showPassword = !showPassword">
             {{ showPassword ? "hide" : "show" }}
           </BaseButton>
           <IconCopyButton @click="copy(generated)" />
         </div>
-        <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
+        <p v-if="!strength.valid" class="text-xs text-surface-mid">
           {{ strength.message }}
         </p>
       </div>
