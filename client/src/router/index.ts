@@ -4,7 +4,7 @@ import { WEATHER_ROUTE_NAME } from "@/constants/weather";
 import { useAuthStore } from "@/stores/auth";
 import { isCalculatorMode, normalizeCalculatorMode } from "@/composables/useExpenseCalculator";
 import { usePermissions } from "@/composables/usePermissions";
-import { isAiChatEnabled } from "@/utils/featureFlags";
+import { isAiChatEnabled, isExpensesEnabled } from "@/utils/featureFlags";
 import { installScrollRestore, resolveScrollBehavior } from "@/utils/scrollRestore";
 import { applyRouteSeo } from "@/composables/useRouteSeo";
 import { safeRedirectPath } from "@/utils/safeUrl";
@@ -348,6 +348,13 @@ installScrollRestore(router);
 router.beforeEach(async (to, _from, next) => {
   if (to.name === "tool-ai-chat" && !isAiChatEnabled()) {
     next({ name: "admin" });
+    return;
+  }
+  if (
+    !isExpensesEnabled() &&
+    (to.name === "tool-expenses" || to.name === "expense-calculator")
+  ) {
+    next({ name: "tools", replace: true });
     return;
   }
   const auth = useAuthStore();

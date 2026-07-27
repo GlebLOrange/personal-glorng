@@ -19,6 +19,7 @@ vi.mock("@/composables/useApi", () => ({
 
 vi.mock("@/utils/featureFlags", () => ({
   isAiChatEnabled: vi.fn(() => true),
+  isExpensesEnabled: vi.fn(() => true),
 }));
 
 import { isAiChatEnabled } from "@/utils/featureFlags";

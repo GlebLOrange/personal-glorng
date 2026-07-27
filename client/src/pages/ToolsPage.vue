@@ -16,6 +16,7 @@ import {
   TOOLS_PAGE_EXTRA_SLUGS,
   type PlatformService,
 } from "@/platform/services";
+import { isExpensesEnabled } from "@/utils/featureFlags";
 import { resolveToolsCategory } from "@/utils/toolsCategory";
 
 const route = useRoute();
@@ -25,9 +26,11 @@ const { can, canAccess } = usePermissions();
 const tools = computed((): PlatformService[] => {
   const bySlug = new Map<string, PlatformService>();
   for (const tool of publicToolsAsServices()) {
+    if (tool.slug === "expenses" && !isExpensesEnabled()) continue;
     bySlug.set(tool.slug, tool);
   }
   for (const tool of PLATFORM_SERVICES) {
+    if (tool.slug === "expenses" && !isExpensesEnabled()) continue;
     if (TOOLS_PAGE_EXTRA_SLUGS.has(tool.slug) && canAccess(tool.slug)) {
       bySlug.set(tool.slug, tool);
     }

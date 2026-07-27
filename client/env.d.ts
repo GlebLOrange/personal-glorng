@@ -13,6 +13,7 @@ declare global {
     readonly VITE_FIREBASE_MEASUREMENT_ID?: string;
     readonly VITE_AI_CHAT_ENABLED?: string;
     readonly VITE_AI_SEARCH_ENABLED?: string;
+    readonly VITE_EXPENSES_ENABLED?: string;
   }
 }
 

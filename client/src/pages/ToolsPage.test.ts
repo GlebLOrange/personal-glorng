@@ -70,8 +70,11 @@ describe("ToolsPage category tabs", () => {
     expect(crumbText).toContain("content");
 
     const tabLabels = wrapper.findAll('[role="tab"]').map((tab) => tab.text());
-    expect(tabLabels).toEqual(["content", "productivity", "utilities"]);
+    // expenses (only public productivity tool) is off by default via feature flag
+    expect(tabLabels).toEqual(["content", "utilities"]);
     expect(tabLabels).not.toContain("operations");
+    expect(tabLabels).not.toContain("productivity");
+    expect(wrapper.text()).not.toContain("expenses");
   });
 
   it("switches category via tab and updates the query", async () => {

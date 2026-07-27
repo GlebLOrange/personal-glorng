@@ -23,6 +23,7 @@ async def test_platform_services_catalog(client: AsyncClient) -> None:
     slugs = {s["slug"] for s in data["services"]}
     assert "tasks" in slugs
     assert "audit" in slugs
+    assert "expenses" in slugs
     assert "ai-chat" not in slugs
 
 
