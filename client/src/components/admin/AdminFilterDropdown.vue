@@ -11,7 +11,10 @@ import {
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import FilterIcon from "@/components/icons/FilterIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { TOOLBAR_POPOVER_PANEL_CHROME_CLASS } from "@/constants/toolbarPopover";
+import {
+  TOOLBAR_POPOVER_PANEL_CHROME_CLASS,
+  TOOLBAR_POPOVER_WIDTH_CLASS,
+} from "@/constants/toolbarPopover";
 import { useToolbarOptionsPopover } from "@/composables/useToolbarOptionsPopover";
 
 withDefaults(
@@ -35,7 +38,6 @@ const rootRef = useTemplateRef<HTMLElement>("root");
 const triggerRef = useTemplateRef<InstanceType<typeof ToolbarPillButton>>("trigger");
 const panelRef = useTemplateRef<HTMLElement>("panel");
 const panelStyle = ref<CSSProperties>({});
-const triggerStyle = ref<CSSProperties>({});
 
 const { close, toggle } = useToolbarOptionsPopover({
   open,
@@ -52,43 +54,33 @@ function resolveTriggerEl(): HTMLElement | null {
   return el instanceof HTMLElement ? el : null;
 }
 
-/** Place panel under the trigger; size both to the longest menu label. */
-function syncPanelLayout(): void {
+/** Place panel under the trigger (shared mid width via TOOLBAR_POPOVER_WIDTH_CLASS). */
+function syncPanelPosition(): void {
   const trigger = resolveTriggerEl();
-  const panel = panelRef.value;
-  if (!trigger || !panel) return;
+  if (!trigger) return;
 
   const rect = trigger.getBoundingClientRect();
-  // Content-fit panel (no minWidth from trigger — longest chip/footer wins).
   panelStyle.value = {
     top: `${rect.bottom + 4}px`,
     left: `${rect.left}px`,
   };
-
-  // Match filters pill to panel width after content lays out.
-  const width = panel.offsetWidth;
-  if (width > 0) {
-    triggerStyle.value = { width: `${width}px` };
-  }
 }
 
 function onViewportChange(): void {
   if (!open.value) return;
-  syncPanelLayout();
+  syncPanelPosition();
 }
 
 watch(open, async (isOpen) => {
   if (!isOpen) {
-    triggerStyle.value = {};
     window.removeEventListener("resize", onViewportChange);
     window.removeEventListener("scroll", onViewportChange, true);
     return;
   }
   await nextTick();
-  syncPanelLayout();
-  // Second frame: chips/footer may still be settling intrinsic width.
+  syncPanelPosition();
   requestAnimationFrame(() => {
-    syncPanelLayout();
+    syncPanelPosition();
   });
   window.addEventListener("resize", onViewportChange);
   window.addEventListener("scroll", onViewportChange, true);
@@ -112,15 +104,15 @@ defineExpose({ close });
     <ToolbarPillButton
       ref="trigger"
       family="1xx"
-      class="w-full"
-      :style="triggerStyle"
+      :class="TOOLBAR_POPOVER_WIDTH_CLASS"
       :selected="open || hasActiveFilters"
       aria-haspopup="dialog"
       :aria-expanded="open"
       @click.stop="toggle"
     >
       <FilterIcon class-name="size-3.5" />
-      {{ label }}<span v-if="activeLabel" class="text-surface-muted"> · {{ activeLabel }}</span>
+      {{ label }}
+      <span v-if="activeLabel" class="min-w-0 truncate text-surface-muted"> · {{ activeLabel }}</span>
       <ChevronIcon :open="open" />
     </ToolbarPillButton>
 
@@ -131,8 +123,8 @@ defineExpose({ close });
         role="dialog"
         :aria-label="label"
         tabindex="-1"
-        class="fixed z-50 w-max max-w-[min(100vw-2rem,28rem)]"
-        :class="TOOLBAR_POPOVER_PANEL_CHROME_CLASS"
+        class="fixed z-50"
+        :class="[TOOLBAR_POPOVER_WIDTH_CLASS, TOOLBAR_POPOVER_PANEL_CHROME_CLASS]"
         :style="panelStyle"
         @click.stop
       >

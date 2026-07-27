@@ -3,6 +3,7 @@ import { computed, useId } from "vue";
 
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import SearchIcon from "@/components/icons/SearchIcon.vue";
+import { FIELD_CLEAR_SLOT } from "@/constants/formClasses";
 import { SEARCH_MIN_QUERY_LENGTH } from "@/constants/search";
 
 defineOptions({ inheritAttrs: false });
@@ -40,7 +41,7 @@ function clear(): void {
 
 <template>
   <div
-    class="relative flex h-11 w-full min-w-0 items-center rounded-lg border border-surface-border bg-surface-dark transition-colors focus-within:border-accent-blue focus-within:ring-2 focus-within:ring-accent-blue/50"
+    class="relative flex h-10 w-full min-w-0 items-center rounded-lg border border-surface-border bg-surface-dark transition-colors focus-within:border-accent-blue focus-within:ring-2 focus-within:ring-accent-blue/50"
     :class="$attrs.class"
   >
     <span class="relative z-10 flex shrink-0 items-center pl-3 text-surface-mid" aria-hidden="true">
@@ -73,10 +74,9 @@ function clear(): void {
     </div>
     <!-- Reserved clear slot — always present so overlay/value never shift. -->
     <div
-      class="relative z-10 flex w-11 shrink-0 items-center justify-center"
-      :class="hasValue ? undefined : 'invisible pointer-events-none'"
+      :class="[FIELD_CLEAR_SLOT, hasValue ? undefined : 'invisible pointer-events-none']"
     >
-      <IconCloseButton aria-label="Clear search" @click="clear" />
+      <IconCloseButton size="field" aria-label="Clear search" @click="clear" />
     </div>
   </div>
 </template>

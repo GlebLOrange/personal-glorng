@@ -56,14 +56,14 @@ Product `BaseButton` / `ToolbarPillButton` labels must name the action with a sh
 
 | Control | Default height | Notes |
 |---|---|---|
-| `BaseButton` `sm` / `md` / `field` | **h-11** | `sm` only tightens `px`/`text` — it is **not** shorter |
+| `BaseButton` `sm` / `md` / `field` | **h-10** | `sm` only tightens `px`/`text` — it is **not** shorter |
 | `BaseButton` `lg` | **h-12** | Keypad exception (`CalculatorTool`) only |
-| `BaseButton` `icon` | **h-8 w-8** | Prefer `IconActionButton` in tools |
-| `ToolbarPillButton` | **h-11 px-4** | No size prop — do not add `min-h-11` |
-| `IconActionButton` (+ wrappers) | **h-8 w-8** | Icon-only chrome |
-| `BaseSelect` | **h-11** (`compact` → h-9) | Dense toolbars only for compact |
+| `BaseButton` `icon` | **h-10 w-10** | Prefer `IconActionButton` in tools |
+| `ToolbarPillButton` | **h-10 px-4** | No size prop — do not add `min-h-10` |
+| `IconActionButton` (+ wrappers) | **h-10 w-10** | Icon-only chrome; in-field clear uses `size="field"` (same square) |
+| `BaseSelect` | **h-10** (`compact` → h-9) | Dense toolbars only for compact |
 
-Wash recipe (idle → hover/selected → active): `/3` → `/15` + border `/40` → `/25`. Do **not** re-add `min-h-11` / `h-11` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `family`, `quiet`, and `selected`.
+Wash recipe (idle → hover/selected → active): `/3` → `/15` + border `/40` → `/25`. Do **not** re-add `min-h-10` / `h-10` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `family`, `quiet`, and `selected`. Size tokens live in `constants/formClasses.ts` (`CONTROL_BUTTON_*`).
 
 **Marketing vs product accents** — portfolio/marketing pages may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI uses only the **1xx–5xx** pale set + surfaces — no golden/violet on tools, chips, or product buttons.
 
@@ -88,7 +88,7 @@ See `NewsPage.vue` and `ExpenseList.vue` for reference implementations.
 
 ## Status / palette colors
 
-Canonical tokens live in `client/src/styles/main.css` as pale dual-theme CSS variables (`html[data-theme="dark"|"light"]`). Class names stay the same; values switch with theme. **Preference** default is **system** (follow OS); **resolved** theme is often dark. Toggle: nav chrome cycles dark → light → system (`useColorTheme`, key `glorng-color-theme`).
+Canonical tokens live in `client/src/styles/main.css` as pale dual-theme CSS variables (`html[data-theme="dark"|"light"]`). Class names stay the same; values switch with theme. **Preference** is **dark** or **light** only (default dark); toggle: nav chrome flips dark ↔ light (`useColorTheme`, key `glorng-color-theme`). Legacy `system` values migrate once to the current OS theme.
 
 **Roles (both themes):** `surface-dark` = page background, `surface-card` = elevated surface, `surface-border` = borders, `surface-light` = primary text, `surface-sage` / `surface-mid` / `surface-muted` = body → secondary → muted. `on-accent` = dark ink on solid pale CTA fills. Product/admin uses pale 1xx–5xx + surfaces only; violet/golden are marketing-only.
 
@@ -99,7 +99,7 @@ Canonical tokens live in `client/src/styles/main.css` as pale dual-theme CSS var
 | 3xx | `status-warning` | `#d4ce94` | `#d4b86a` |
 | 4xx | `status-error` | `#e88a8a` | `#e08a8a` |
 | 5xx | `status-critical` | `#d98aad` | `#d98aad` |
-| Page bg | `surface-dark` | `#111827` | `#f9f9fb` |
+| Page bg | `surface-dark` | `#111827` | `#e5e7eb` |
 | Primary text | `surface-light` | `#f9f9fb` | `#111827` |
 
 Use `text-status-*`, `alert-surface-error`, `alert-surface-warning` (pale yellow), etc. — not raw Tailwind `red-400` / `amber-400`. Wash pattern: idle `/3`, hover/selected `/15` + border `/40`. Never use saturated sheet hexes as solid button fills.

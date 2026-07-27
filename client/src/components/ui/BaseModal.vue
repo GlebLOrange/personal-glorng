@@ -60,18 +60,18 @@ const widthClass = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"
           <div
             class="flex shrink-0 items-center gap-3 border-b border-surface-border px-4 py-3"
           >
-            <div class="flex min-h-11 min-w-0 items-center">
+            <div class="flex h-10 min-w-0 items-center">
               <slot name="header" :title-id="titleId">
                 <h2
                   v-if="title"
                   :id="titleId"
-                  class="text-lg font-bold leading-none text-surface-light"
+                  class="truncate text-lg font-bold leading-none text-surface-light"
                 >
                   {{ title }}
                 </h2>
               </slot>
             </div>
-            <div class="ml-auto flex h-11 shrink-0 items-center gap-1">
+            <div class="ml-auto flex h-10 shrink-0 items-center gap-1">
               <slot name="header-actions" />
               <IconCloseButton ref="closeButton" aria-label="Close" @click="emit('close')" />
             </div>

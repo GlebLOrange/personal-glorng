@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import IconActionButton from "@/components/ui/IconActionButton.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import { useOverlayShell } from "@/composables/useOverlayShell";
 import type { Recipe } from "@/types";
@@ -114,12 +115,9 @@ onUnmounted(() => {
         class="fixed inset-0 z-[60] flex flex-col bg-surface-dark focus:outline-none"
       >
         <header class="flex items-center justify-between border-b border-surface-border px-4 py-3">
-          <div class="min-w-0">
-            <p class="truncate text-xs text-surface-mid">{{ recipe.title }}</p>
-            <p class="text-sm text-accent-blue">
-              step {{ stepIndex + 1 }} of {{ totalSteps }}
-            </p>
-          </div>
+          <p class="min-w-0 truncate text-lg font-bold leading-none text-surface-light">
+            {{ recipe.title }}
+          </p>
           <IconCloseButton
             ref="exitButton"
             class="ml-4 shrink-0"
@@ -166,23 +164,36 @@ onUnmounted(() => {
           role="region"
           aria-label="Cook mode step"
         >
-          <div class="font-data text-5xl text-accent-blue">{{ stepIndex + 1 }}</div>
+          <div class="mb-6 font-data text-5xl text-accent-blue">{{ stepIndex + 1 }}</div>
+          <p class="max-w-2xl text-xl leading-relaxed text-surface-light sm:text-2xl">
+            {{ currentStep }}
+          </p>
         </div>
 
         <footer
           class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-t border-surface-border px-4 py-4"
         >
-          <BaseButton variant="ghost" :disabled="stepIndex === 0" @click="goPrev">
-            previous
-          </BaseButton>
-          <p
-            class="min-w-0 text-center text-sm leading-relaxed text-surface-light sm:text-base"
+          <IconActionButton
+            family="1xx"
+            :disabled="stepIndex === 0"
+            aria-label="previous"
+            title="previous"
+            @click="goPrev"
           >
-            {{ currentStep }}
+            &lt;
+          </IconActionButton>
+          <p class="min-w-0 text-center text-sm text-accent-blue">
+            step {{ stepIndex + 1 }} of {{ totalSteps }}
           </p>
-          <BaseButton v-if="stepIndex < totalSteps - 1" variant="primary" @click="goNext">
-            next
-          </BaseButton>
+          <IconActionButton
+            v-if="stepIndex < totalSteps - 1"
+            family="1xx"
+            aria-label="next"
+            title="next"
+            @click="goNext"
+          >
+            &gt;
+          </IconActionButton>
           <IconCloseButton v-else aria-label="done" @click="emit('close')" />
         </footer>
       </div>

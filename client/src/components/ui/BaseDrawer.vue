@@ -53,28 +53,31 @@ const panelWidth = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"
           @click.stop
         >
           <header
-            class="flex shrink-0 items-start justify-between gap-3 border-b border-surface-border px-6 py-4"
+            class="flex shrink-0 items-center justify-between gap-3 border-b border-surface-border px-4 py-3"
           >
-            <div class="min-w-0 flex-1">
+            <div class="flex h-10 min-w-0 flex-1 items-center">
               <slot name="title" :title-id="titleId">
-                <h2 :id="titleId" class="truncate text-lg font-bold text-surface-light">
+                <h2
+                  :id="titleId"
+                  class="truncate text-lg font-bold leading-none text-surface-light"
+                >
                   {{ title }}
                 </h2>
               </slot>
             </div>
-            <div class="flex h-11 shrink-0 items-center gap-1">
+            <div class="flex h-10 shrink-0 items-center gap-1">
               <slot name="header-actions" />
               <IconCloseButton ref="closeButton" aria-label="Close drawer" @click="emit('close')" />
             </div>
           </header>
 
-          <div class="flex-1 overflow-y-auto px-6 py-5">
+          <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-5">
             <slot />
           </div>
 
           <footer
             v-if="$slots.footer"
-            class="shrink-0 border-t border-surface-border bg-surface-dark px-6 py-4"
+            class="shrink-0 border-t border-surface-border bg-surface-dark px-4 py-3"
           >
             <slot name="footer" />
           </footer>

@@ -6,9 +6,7 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import IconCopyButton from "@/components/ui/IconCopyButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
@@ -25,7 +23,6 @@ const total = ref(0);
 const totalPages = ref(0);
 const newUrl = ref("");
 const newTitle = ref("");
-const lastCreatedLink = ref<string | null>(null);
 const savingId = ref<number | null>(null);
 const deletingId = ref<number | null>(null);
 const { copy } = useClipboard();
@@ -77,8 +74,6 @@ async function createUrl(): Promise<void> {
     { successMessage: "URL created", errorFallback: "Failed to create URL" },
   );
   if (result) {
-    const code = result.data.code as string;
-    lastCreatedLink.value = publicUrl("s", code);
     newUrl.value = "";
     newTitle.value = "";
     if (canManage.value) {
@@ -126,7 +121,7 @@ onMounted(loadUrls);
     max-width="xl"
     :narrow="false"
   >
-    <form class="mb-10 space-y-3" @submit.prevent="createUrl">
+    <form class="mb-6 space-y-3" @submit.prevent="createUrl">
       <div class="mb-3 flex w-full min-w-0 items-center justify-end">
         <ToolbarPillButton family="2xx" type="submit" :disabled="!canShorten">
           {{ loading ? "creating..." : "shorten" }}
@@ -140,21 +135,6 @@ onMounted(loadUrls);
       />
       <BaseInput v-model="newTitle" placeholder="title (optional)" aria-label="title" />
     </form>
-
-    <Card v-if="lastCreatedLink" variant="compact" class="mb-10">
-      <div class="mb-2 flex items-center justify-between gap-3">
-        <p class="text-sm text-surface-mid">your short link</p>
-        <IconCopyButton aria-label="copy short link" @click="copy(lastCreatedLink)" />
-      </div>
-      <a
-        :href="lastCreatedLink"
-        class="break-all text-sm text-accent-blue hover:underline"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {{ lastCreatedLink }}
-      </a>
-    </Card>
 
     <div v-if="canManage" class="divide-y divide-surface-border/40">
       <AdminListSkeleton v-if="listLoading" label="loading shortened URLs" />

@@ -82,15 +82,36 @@ describe("ToastContainer", () => {
 
     const wrapper = mount(ToastContainer, { props: { variant: "tile" } });
     const host = wrapper.get('[data-testid="toast-host"]');
-    expect(host.classes()).toEqual(expect.arrayContaining(["page-tile", "md:col-start-2"]));
+    expect(host.classes()).toEqual(
+      expect.arrayContaining([
+        "page-tile",
+        "md:col-start-2",
+        "md:h-0",
+        "md:min-h-full",
+        "md:overflow-hidden",
+      ]),
+    );
     expect(host.get(".page-weather-tile-card").classes()).toEqual(
       expect.arrayContaining([
         "!bg-status-error/10",
         "!border-status-error/30",
         "hover:!bg-status-error/20",
         "hover:!border-status-error/50",
+        "max-h-full",
+        "md:overflow-y-auto",
       ]),
     );
+  });
+
+  it("shows only the latest toast in the tile slot", () => {
+    const { toast } = useNotify();
+    toast("location added", "success");
+    toast("location removed", "success");
+
+    const wrapper = mount(ToastContainer, { props: { variant: "tile" } });
+    const statuses = wrapper.findAll("[role='status']");
+    expect(statuses).toHaveLength(1);
+    expect(statuses[0].text()).toContain("location removed");
   });
 
   it("hides overlay when a tile host is claimed", () => {

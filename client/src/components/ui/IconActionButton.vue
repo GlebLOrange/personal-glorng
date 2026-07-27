@@ -20,6 +20,8 @@ const props = withDefaults(
     type?: "button" | "submit" | "reset";
     ariaLabel?: string;
     title?: string;
+    /** field = in-shell clear (same h-10 square); default matches CONTROL_SIZE (h-10). */
+    size?: "md" | "field";
   }>(),
   {
     family: "1xx",
@@ -28,6 +30,7 @@ const props = withDefaults(
     selected: false,
     disabled: false,
     type: "button",
+    size: "md",
   },
 );
 
@@ -40,6 +43,7 @@ const classes = computed(() =>
     iconActionClass(props.family, props.selected, {
       danger: props.danger,
       quiet: props.quiet,
+      size: props.size,
     }),
     attrs.class,
   ]

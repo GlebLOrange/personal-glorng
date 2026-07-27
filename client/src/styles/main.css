@@ -43,14 +43,15 @@ html[data-theme="light"] {
   --palette-surface-sage: #374151;
   --palette-surface-mid: #6b7280;
   --palette-surface-muted: #9ca3af;
-  --palette-surface-dark: #f9f9fb;
+  /* Page bg: light gray so elevated white cards read clearly (dev-friendly hierarchy) */
+  --palette-surface-dark: #e5e7eb;
   --palette-surface-card: #ffffff;
   --palette-surface-border: #d1d5db;
-  --palette-surface-grid: #e5e7eb;
+  --palette-surface-grid: #d1d5db;
   --palette-accent-violet: #a78bdb;
   --palette-accent-golden: #e0a878;
   --palette-on-accent: #111827;
-  --palette-theme-color: #f9f9fb;
+  --palette-theme-color: #e5e7eb;
 }
 
 @theme {
@@ -149,7 +150,7 @@ html[data-theme="light"] {
 }
 
 @utility page-weather-tile-card {
-  @apply flex h-full min-w-0 flex-col items-center justify-center gap-2 p-4 text-center !bg-accent-blue/3 hover:!bg-accent-blue/15 active:!bg-accent-blue/25;
+  @apply flex h-full min-w-0 flex-col items-center justify-center gap-2 p-4 text-center;
 }
 
 @media (min-width: 768px) {
@@ -240,7 +241,7 @@ html[data-theme="light"] {
 
 @utility cta-primary {
   /* Solid accent-blue; on-accent ink stays dark in both themes for AA on pale fill */
-  @apply h-11 px-4 rounded-lg bg-accent-blue text-on-accent text-sm font-medium transition-colors inline-flex items-center justify-center;
+  @apply h-10 px-4 rounded-lg bg-accent-blue text-on-accent text-sm font-medium transition-colors inline-flex items-center justify-center;
   &:hover:not(:disabled) {
     @apply bg-accent-blue/90;
   }
@@ -256,7 +257,7 @@ html[data-theme="light"] {
 }
 
 @utility cta-secondary {
-  @apply h-11 px-4 rounded-lg bg-surface-card text-surface-mid text-sm font-medium transition-colors inline-flex items-center justify-center;
+  @apply h-10 px-4 rounded-lg bg-surface-card text-surface-mid text-sm font-medium transition-colors inline-flex items-center justify-center;
   &:hover:not(:disabled) {
     @apply bg-accent-blue/15 text-accent-blue;
   }

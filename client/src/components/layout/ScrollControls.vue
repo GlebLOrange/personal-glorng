@@ -26,7 +26,7 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
 
   <div
     v-if="showArrowDown"
-    class="pointer-events-none fixed inset-x-0 bottom-[14%] z-30 print:hidden"
+    class="pointer-events-none fixed inset-x-0 bottom-[8%] z-30 print:hidden"
   >
     <div class="relative mx-auto w-full max-w-5xl px-6">
       <IconActionButton

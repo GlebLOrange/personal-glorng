@@ -18,20 +18,7 @@ describe("useColorTheme", () => {
     vi.restoreAllMocks();
   });
 
-  it("resolveTheme maps system to OS preference", () => {
-    vi.spyOn(window, "matchMedia").mockImplementation((query) => {
-      return {
-        matches: query.includes("dark"),
-        media: query,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-        onchange: null,
-      } as MediaQueryList;
-    });
-    expect(resolveTheme("system")).toBe("dark");
+  it("resolveTheme is identity for light/dark", () => {
     expect(resolveTheme("light")).toBe("light");
     expect(resolveTheme("dark")).toBe("dark");
   });
@@ -44,7 +31,7 @@ describe("useColorTheme", () => {
 
     applyColorTheme("light");
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
-    expect(meta.getAttribute("content")).toBe("#f9f9fb");
+    expect(meta.getAttribute("content")).toBe("#e5e7eb");
 
     applyColorTheme("dark");
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
@@ -57,7 +44,7 @@ describe("useColorTheme", () => {
     expect(COLOR_THEME_STORAGE_KEY).toBe("glorng-color-theme");
   });
 
-  it("unset preference defaults to system (FOUC parity)", () => {
-    expect(DEFAULT_COLOR_THEME_PREFERENCE).toBe("system");
+  it("unset preference defaults to dark (FOUC parity)", () => {
+    expect(DEFAULT_COLOR_THEME_PREFERENCE).toBe("dark");
   });
 });

@@ -134,8 +134,8 @@ function editRecipeFromCard(recipe: Recipe): void {
         v-else
         :description="
           hasFilters
-            ? 'No recipes match your filters.'
-            : 'No recipes yet. Add your first one to get started.'
+            ? 'no recipes match your filters.'
+            : 'no recipes yet. add your first one to get started.'
         "
       >
         <template v-if="hasFilters || canWrite" #action>

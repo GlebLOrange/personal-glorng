@@ -47,6 +47,16 @@ const stackSurfaceType = computed((): Toast["type"] => {
   return "info";
 });
 
+/**
+ * Tile slot matches the weather bar height — do not stack every toast or the grid jumps.
+ * Overlay keeps the full queue.
+ */
+const visibleToasts = computed(() => {
+  if (props.variant !== "tile") return toasts.value;
+  const last = toasts.value[toasts.value.length - 1];
+  return last ? [last] : [];
+});
+
 const shouldRender = computed(() => {
   if (!hasToasts.value) return false;
   if (props.variant === "tile") return true;
@@ -69,17 +79,17 @@ onUnmounted(() => {
     aria-label="Notifications"
     :class="
       variant === 'tile'
-        ? 'page-tile md:col-start-2'
+        ? 'page-tile md:col-start-2 min-w-0 md:h-0 md:min-h-full md:overflow-hidden'
         : 'pointer-events-none fixed inset-x-0 top-16 z-50 flex justify-center px-4 sm:justify-end sm:px-6'
     "
   >
     <Card
       v-if="variant === 'tile'"
-      class="page-weather-tile-card h-full w-full gap-3 transition-colors duration-200"
+      class="page-weather-tile-card h-full max-h-full w-full gap-2 md:overflow-y-auto md:overscroll-contain transition-colors duration-200"
       :class="[TOAST_SURFACE[stackSurfaceType], TOAST_HOVER[stackSurfaceType]]"
     >
       <div
-        v-for="t in toasts"
+        v-for="t in visibleToasts"
         :key="t.id"
         :role="t.type === 'error' ? 'alert' : 'status'"
         :aria-live="t.type === 'error' ? 'assertive' : 'polite'"
@@ -102,7 +112,7 @@ onUnmounted(() => {
       :class="[TOAST_SURFACE[stackSurfaceType], TOAST_HOVER[stackSurfaceType]]"
     >
       <Card
-        v-for="t in toasts"
+        v-for="t in visibleToasts"
         :key="t.id"
         :tint="t.type === 'error' ? 'danger' : 'default'"
         variant="dense"

@@ -41,10 +41,10 @@ const menuPositionClass = computed(() =>
 
 const triggerClass = computed(() => {
   if (hasCustomTrigger.value) {
-    // Labeled triggers (e.g. more actions) match ToolbarPillButton h-11.
+    // Labeled triggers (e.g. more actions) match ToolbarPillButton h-10.
     return actionFamilyClass("1xx", open.value);
   }
-  // Icon-only default — h-11 square chrome.
+  // Icon-only default — h-10 square chrome.
   return iconActionClass("1xx", open.value);
 });
 

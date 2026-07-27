@@ -21,6 +21,9 @@ const fallbackId = useId();
 const selectId = computed(() => props.id ?? `base-select-${fallbackId}`);
 const hintId = computed(() => `${selectId.value}-hint`);
 const errorId = computed(() => `${selectId.value}-error`);
+const showLabelNotch = computed(() => Boolean(props.label) && !props.error);
+const showNotchRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
+const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
 const describedBy = computed(() => {
   const ids: string[] = [];
   if (props.error) ids.push(errorId.value);
@@ -29,22 +32,23 @@ const describedBy = computed(() => {
 });
 const selectClass = computed(() => (props.compact ? SELECT_CLASS_COMPACT : SELECT_CLASS));
 const ariaLabel = computed(() => {
-  if (props.label) return undefined;
-  const value = attrs["aria-label"];
-  return typeof value === "string" ? value : undefined;
+  if (typeof attrs["aria-label"] === "string" && attrs["aria-label"].trim()) {
+    return attrs["aria-label"];
+  }
+  if (showLabelNotch.value) return undefined;
+  if (props.label) return props.label;
+  return undefined;
 });
+const notchBgClass = "bg-surface-card";
+const notchClass =
+  "pointer-events-none absolute left-3 top-2.5 z-20 max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] truncate px-1.5 text-xs leading-4";
 </script>
 
 <template>
-  <div class="flex min-w-0 flex-col gap-1" :class="attrs.class">
-    <div v-if="label || hint" class="flex items-center gap-1.5">
-      <!-- associated via :for / :id (computed ids); FieldHelp sits beside the label -->
-      <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
-      <label v-if="label" :for="selectId" class="text-label text-surface-sage">
-        {{ label }}
-      </label>
-      <FieldHelp v-if="hint" :text="hint" :content-id="hintId" />
-    </div>
+  <div
+    class="relative min-w-0"
+    :class="[hasBorderNotch ? 'pt-2.5' : undefined, attrs.class]"
+  >
     <select
       :id="selectId"
       v-model="model"
@@ -55,7 +59,29 @@ const ariaLabel = computed(() => {
     >
       <slot />
     </select>
-    <p v-if="error" :id="errorId" role="alert" class="text-xs text-status-error">
+    <div
+      v-if="showNotchRow"
+      class="absolute left-3 top-2.5 z-20 flex max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] items-center gap-1 px-1.5"
+      :class="notchBgClass"
+    >
+      <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
+      <label
+        v-if="showLabelNotch"
+        :for="selectId"
+        class="pointer-events-auto truncate text-label leading-4 text-surface-sage"
+      >
+        {{ label }}
+      </label>
+      <span class="pointer-events-auto">
+        <FieldHelp v-if="hint" :text="hint" :content-id="hintId" />
+      </span>
+    </div>
+    <p
+      v-if="error"
+      :id="errorId"
+      role="alert"
+      :class="[notchClass, notchBgClass, 'text-status-error']"
+    >
       {{ error }}
     </p>
   </div>

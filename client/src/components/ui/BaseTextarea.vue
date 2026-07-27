@@ -3,7 +3,10 @@ import { computed, useAttrs, useId } from "vue";
 
 import FieldHelp from "@/components/ui/FieldHelp.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
-import { TEXTAREA_CLASS, TEXTAREA_CLASS_COMPACT } from "@/constants/formClasses";
+import {
+  TEXTAREA_CLASS,
+  TEXTAREA_CLASS_COMPACT,
+} from "@/constants/formClasses";
 
 defineOptions({ inheritAttrs: false });
 
@@ -37,8 +40,11 @@ const showClear = computed(() => reserveClear.value && hasClearableValue.value);
 const showTip = computed(() => Boolean(props.placeholder) && !hasClearableValue.value);
 const tipInsetClass = computed(() => [
   "left-3",
-  reserveClear.value ? "right-11" : "right-3",
+  reserveClear.value ? "right-10" : "right-3",
 ]);
+const showLabelNotch = computed(() => Boolean(props.label) && !props.error);
+const showNotchRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
+const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
 const describedBy = computed(() => {
   const ids: string[] = [];
   if (props.error) ids.push(errorId.value);
@@ -60,7 +66,7 @@ const shellTextareaClass = computed(
   () =>
     [
       "relative z-10 min-w-0 flex-1 resize-y border-0 bg-transparent px-3 text-left text-sm text-surface-light outline-none disabled:opacity-60",
-      props.compact ? "min-h-9 py-1.5" : "min-h-11 py-2",
+      props.compact ? "min-h-9 py-1.5" : "min-h-10 py-2",
     ].join(" "),
 );
 const textareaAttrs = computed(() => {
@@ -74,11 +80,14 @@ const accessibleName = computed(() => {
   if (typeof attrs["aria-label"] === "string" && attrs["aria-label"].trim()) {
     return attrs["aria-label"];
   }
-  // Visible <label for> names the control when label is set.
-  if (props.label) return undefined;
+  if (showLabelNotch.value) return undefined;
+  if (props.label) return props.label;
   // Tip/placeholder is visual help only (aria-hidden) — never the accessible name.
   return props.prefix || undefined;
 });
+const notchBgClass = "bg-surface-card";
+const notchClass =
+  "pointer-events-none absolute left-3 top-2.5 z-20 max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] truncate px-1.5 text-xs leading-4";
 
 function clear(): void {
   model.value = "";
@@ -86,16 +95,11 @@ function clear(): void {
 </script>
 
 <template>
-  <div class="relative flex min-w-0 flex-col gap-1" :class="$attrs.class" :style="$attrs.style">
-    <div v-if="label || hint" class="flex items-center gap-1.5">
-      <!-- associated via :for / :id (computed ids); FieldHelp sits beside the label -->
-      <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
-      <label v-if="label" :for="textareaId" class="text-label text-surface-sage">
-        {{ label }}
-      </label>
-      <FieldHelp v-if="hint" :text="hint" :content-id="hintId" />
-    </div>
-
+  <div
+    class="relative min-w-0"
+    :class="[hasBorderNotch ? 'pt-2.5' : undefined, $attrs.class]"
+    :style="$attrs.style"
+  >
     <div v-if="useShell" :class="shellClass">
       <span
         v-if="prefix"
@@ -124,30 +128,48 @@ function clear(): void {
       </span>
       <div
         v-if="reserveClear"
-        class="absolute right-0 top-0 z-10 flex w-11 items-center justify-center"
+        class="absolute right-0 top-0 z-10 flex h-10 w-10 items-center justify-center"
         :class="showClear ? undefined : 'invisible pointer-events-none'"
       >
-        <IconCloseButton aria-label="Clear" @click="clear" />
+        <IconCloseButton size="field" aria-label="Clear" @click="clear" />
       </div>
     </div>
 
-    <textarea
-      v-else
-      :id="textareaId"
-      v-bind="textareaAttrs"
-      v-model="model"
-      :rows="rows ?? 5"
-      :aria-invalid="error ? true : undefined"
-      :aria-describedby="describedBy"
-      :class="bareClass"
-    />
+    <div v-else class="relative">
+      <textarea
+        :id="textareaId"
+        v-bind="textareaAttrs"
+        v-model="model"
+        :rows="rows ?? 5"
+        :aria-label="accessibleName"
+        :aria-invalid="error ? true : undefined"
+        :aria-describedby="describedBy"
+        :class="bareClass"
+      />
+    </div>
 
-    <!-- ponytail: absolute above control so validation never shifts following fields -->
+    <div
+      v-if="showNotchRow"
+      class="absolute left-3 top-2.5 z-20 flex max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] items-center gap-1 px-1.5"
+      :class="notchBgClass"
+    >
+      <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
+      <label
+        v-if="showLabelNotch"
+        :for="textareaId"
+        class="pointer-events-auto truncate text-label leading-4 text-surface-sage"
+      >
+        {{ label }}
+      </label>
+      <span class="pointer-events-auto">
+        <FieldHelp v-if="hint" :text="hint" :content-id="hintId" />
+      </span>
+    </div>
     <p
       v-if="error"
       :id="errorId"
       role="alert"
-      class="pointer-events-none absolute bottom-full left-0 right-0 z-10 mb-1 text-center text-xs leading-4 text-status-error"
+      :class="[notchClass, notchBgClass, 'text-status-error']"
     >
       {{ error }}
     </p>
