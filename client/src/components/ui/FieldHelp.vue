@@ -106,7 +106,7 @@ watch(
     <span
       :id="panelId"
       role="tooltip"
-      class="absolute top-full z-20 mt-1 w-max max-w-[min(100vw-2rem,18rem)] rounded-md border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs leading-normal text-surface-mid shadow-lg"
+      class="absolute top-full z-20 mt-1 w-max max-w-[min(100vw-2rem,18rem)] rounded-md border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs lowercase leading-normal text-surface-mid shadow-lg"
       :class="[
         align === 'end' ? 'right-0' : 'left-0',
         open ? undefined : 'sr-only',
