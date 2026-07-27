@@ -43,7 +43,8 @@ const props = withDefaults(
     showFilterIcon: true,
     showClear: true,
     bare: false,
-    matchTriggerWidth: false,
+    // Panel and trigger share one locked width (longest menu line).
+    matchTriggerWidth: true,
   },
 );
 
