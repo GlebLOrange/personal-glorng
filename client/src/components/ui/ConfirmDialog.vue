@@ -28,24 +28,27 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <BaseModal :open="open" :title="title" @close="emit('cancel')">
-    <div class="mb-6 text-sm text-surface-mid">
+  <BaseModal :open="open" :title="title" compact max-width="sm" @close="emit('cancel')">
+    <div class="text-sm lowercase text-surface-mid">
       <slot>
         <p>{{ message }}</p>
       </slot>
     </div>
-    <div class="flex justify-between gap-3">
-      <BaseButton variant="secondary" :disabled="loading" @click="emit('cancel')"
-        >cancel</BaseButton
-      >
-      <BaseButton
-        :variant="danger ? 'secondary' : 'success'"
-        :danger="danger"
-        :disabled="loading"
-        @click="emit('confirm')"
-      >
-        {{ loading ? loadingLabel : (confirmLabel ?? "confirm") }}
-      </BaseButton>
-    </div>
+    <template #footer>
+      <div class="flex justify-between gap-3">
+        <BaseButton variant="secondary" size="sm" :disabled="loading" @click="emit('cancel')">
+          cancel
+        </BaseButton>
+        <BaseButton
+          size="sm"
+          :variant="danger ? 'secondary' : 'success'"
+          :danger="danger"
+          :disabled="loading"
+          @click="emit('confirm')"
+        >
+          {{ loading ? loadingLabel : (confirmLabel ?? "confirm") }}
+        </BaseButton>
+      </div>
+    </template>
   </BaseModal>
 </template>

@@ -104,24 +104,15 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
   <Card variant="compact" class="flex flex-col gap-3">
     <div class="flex flex-wrap items-end justify-between gap-2">
       <p class="text-xs font-medium text-surface-mid">quick add</p>
-      <div class="flex items-end gap-2">
-        <div class="min-w-0 w-full max-w-[7.5rem]">
-          <BaseSelect v-model="currency" label="currency" class="w-full">
-            <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
-              {{ code }}
-            </option>
-          </BaseSelect>
-        </div>
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          :aria-expanded="smartTextOpen"
-          aria-controls="expense-smart-text"
-          @click="smartTextOpen = !smartTextOpen"
-        >
-          {{ smartTextOpen ? "hide smart text" : "smart text" }}
-        </BaseButton>
-      </div>
+      <BaseButton
+        variant="ghost"
+        size="sm"
+        :aria-expanded="smartTextOpen"
+        aria-controls="expense-smart-text"
+        @click="smartTextOpen = !smartTextOpen"
+      >
+        {{ smartTextOpen ? "hide smart text" : "smart text" }}
+      </BaseButton>
     </div>
 
     <form

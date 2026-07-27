@@ -45,15 +45,18 @@ const ancestorClass =
         class="flex items-center gap-2"
       >
         <RouterLink
-          v-if="seg.to && !isCurrent(idx)"
+          v-if="seg.to"
           :to="seg.to"
           class="relative z-10 inline-flex h-10 cursor-pointer items-center"
+          :aria-current="isCurrent(idx) ? 'page' : undefined"
         >
-          <span :class="ancestorClass">
+          <span :class="isCurrent(idx) ? currentClass() : ancestorClass">
             <ToolIcon
               v-if="crumbIconSlug(seg.label) === 'tools'"
               slug="tools"
-              class="size-3.5 shrink-0"
+              :class="
+                isCurrent(idx) && elevated ? 'size-5 shrink-0' : 'size-3.5 shrink-0'
+              "
             />
             {{ crumbLabel(seg.label) }}
           </span>

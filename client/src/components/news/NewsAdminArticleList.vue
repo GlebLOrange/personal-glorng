@@ -36,18 +36,29 @@ const emit = defineEmits<{
       @keydown.enter.prevent="canWrite ? emit('edit', item) : undefined"
     >
       <div
-        class="mb-3 flex flex-wrap items-center gap-2 rounded-md px-2.5 py-1.5 text-xs"
+        class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-xs"
         :class="newsStatusClass(item.status)"
         :aria-label="item.status"
       >
-        <span class="text-surface-muted">{{ item.source_name }}</span>
-        <span class="opacity-50" aria-hidden="true">/</span>
-        <time :datetime="item.published_at ?? item.created_at">
-          {{ formatNewsDate(item.published_at ?? item.created_at) }}
-        </time>
-        <span v-if="item.telegram_message_id" class="text-accent-blue">
-          Telegram #{{ item.telegram_message_id }}
-        </span>
+        <div class="flex min-w-0 flex-wrap items-center gap-2">
+          <time :datetime="item.published_at ?? item.created_at">
+            {{ formatNewsDate(item.published_at ?? item.created_at) }}
+          </time>
+          <span v-if="item.telegram_message_id" class="text-accent-blue">
+            Telegram #{{ item.telegram_message_id }}
+          </span>
+        </div>
+        <a
+          v-if="safeNavigationHref(item.source_url)"
+          :href="safeNavigationHref(item.source_url) ?? '#'"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="shrink-0 text-accent-blue hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+          @click.stop
+        >
+          {{ item.source_name }}
+        </a>
+        <span v-else class="shrink-0 text-accent-blue">{{ item.source_name }}</span>
       </div>
 
       <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
@@ -79,7 +90,7 @@ const emit = defineEmits<{
           quiet
           size="sm"
           :disabled="actionLoading"
-          @click="emit('setStatus', item.id, 'unpublished')"
+          @click="emit('setStatus', item.id, 'private')"
         >
           unpublish
         </BaseButton>
@@ -93,15 +104,6 @@ const emit = defineEmits<{
         >
           repost telegram
         </BaseButton>
-        <a
-          v-if="safeNavigationHref(item.source_url)"
-          :href="safeNavigationHref(item.source_url) ?? '#'"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center px-3 py-1.5 text-xs underline-offset-2"
-        >
-          source
-        </a>
       </div>
     </Card>
   </section>

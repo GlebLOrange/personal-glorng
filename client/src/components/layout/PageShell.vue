@@ -5,7 +5,7 @@ import type { RouteLocationRaw } from "vue-router";
 import PageChrome from "@/components/layout/PageChrome.vue";
 import PinnedToolsRow from "@/components/layout/PinnedToolsRow.vue";
 
-export type BreadcrumbSegment = { label: string; to?: string };
+export type BreadcrumbSegment = { label: string; to?: RouteLocationRaw };
 
 const props = withDefaults(
   defineProps<{

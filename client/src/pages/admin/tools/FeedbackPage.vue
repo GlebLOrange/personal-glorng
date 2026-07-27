@@ -195,29 +195,35 @@ onMounted(load);
         v-if="items.length === 0"
         class="mt-4"
         :description="
-          filter ? `No feedback messages with status '${filter}'.` : 'No feedback messages.'
+          filter ? `no feedback messages with status '${filter}'` : 'no feedback messages'
         "
       />
 
-      <div v-else class="mt-1 min-w-0">
+      <div v-else class="mt-1 min-w-0 space-y-2">
         <AdminListRow
           v-for="item in items"
           :key="item.id"
           interactive
           nested-interactive
           reveal-actions-on-hover
+          :status-class="feedbackStatusClass(item.status)"
+          :expanded="drawerOpen && selectedItem?.id === item.id"
           @click="openItem(item)"
         >
           <template #badge>
-            <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
+            <div class="flex items-center gap-2">
+              <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
+              <span class="whitespace-nowrap text-xs lowercase text-surface-muted">
+                {{ formatDate(item.created_at) }}
+              </span>
+              <span class="hidden max-w-[12rem] truncate text-xs lowercase text-surface-muted sm:inline">
+                {{ item.email }}
+              </span>
+            </div>
           </template>
           <template #primary>
-            <span :title="item.theme">{{ item.theme }}</span>
+            <span class="lowercase" :title="item.theme">{{ item.theme }}</span>
           </template>
-          <template #meta>
-            <span>{{ item.email }}</span>
-          </template>
-          <template #time>{{ formatDate(item.created_at) }}</template>
           <template #actions>
             <IconEditButton aria-label="edit feedback" @click="openItem(item)" />
             <BaseButton

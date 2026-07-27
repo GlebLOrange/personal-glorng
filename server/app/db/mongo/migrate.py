@@ -128,11 +128,30 @@ async def _unset_weather_location_labels(db: AsyncIOMotorDatabase) -> None:
         )
 
 
+async def _migrate_news_article_statuses(db: AsyncIOMotorDatabase) -> None:
+    """Map legacy news statuses onto the editorial workflow (idempotent)."""
+    for old_status, new_status in (("unpublished", "private"), ("failed", "trash")):
+        result = await db.news_articles.update_many(
+            {"status": old_status},
+            {"$set": {"status": new_status}},
+        )
+        if result.modified_count:
+            logger.info(
+                "Migrated news article statuses",
+                context={
+                    "from": old_status,
+                    "to": new_status,
+                    "modified": result.modified_count,
+                },
+            )
+
+
 async def ensure_mongo_schema(db: AsyncIOMotorDatabase) -> None:
     """Create indexes idempotently and record schema version."""
     await _rename_legacy_collections(db)
     await _drop_obsolete_news_unique_indexes(db)
     await _rename_news_themes_to_tags(db)
+    await _migrate_news_article_statuses(db)
     await _unset_weather_location_labels(db)
     for collection, keys, options in INDEX_SPECS:
         kwargs = options or {}

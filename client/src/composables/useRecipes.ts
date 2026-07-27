@@ -84,8 +84,8 @@ export function useRecipes() {
   const deleteTarget = computed(() => pendingDeleteRecipe.value ?? selectedRecipe.value);
   const deleteConfirmMessage = computed(() =>
     deleteTarget.value
-      ? `Delete "${deleteTarget.value.title}"? This cannot be undone.`
-      : "Delete this recipe? This cannot be undone.",
+      ? `delete "${deleteTarget.value.title}"? this cannot be undone.`
+      : "delete this recipe? this cannot be undone.",
   );
 
   function recipeQueryId(): number | null {

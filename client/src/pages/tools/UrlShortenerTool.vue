@@ -140,7 +140,7 @@ onMounted(loadUrls);
       <AdminListSkeleton v-if="listLoading" label="loading shortened URLs" />
 
       <template v-else>
-        <div v-if="urls.length > 0" class="min-w-0">
+        <div v-if="urls.length > 0" class="min-w-0 space-y-2">
           <UrlShortenerListItem
             v-for="url in urls"
             :key="url.id"

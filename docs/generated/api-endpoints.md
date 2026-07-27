@@ -104,7 +104,7 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `DELETE` | `/api/tools/news/sources/{source_id}` | news, news | Delete RSS news source |
 | `PUT` | `/api/tools/news/sources/{source_id}` | news, news | Update RSS news source |
 | `GET` | `/api/tools/news/stats` | news | Get news article stats |
-| `GET` | `/api/tools/news/themes` | news | List news themes |
+| `GET` | `/api/tools/news/tags` | news | List news tags |
 | `DELETE` | `/api/tools/news/{article_id}` | news | Delete news article |
 | `PUT` | `/api/tools/news/{article_id}` | news | Update news article |
 | `POST` | `/api/tools/news/{article_id}/telegram` | news | Publish news article to Telegram |

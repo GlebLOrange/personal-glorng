@@ -309,6 +309,8 @@ class NewsStatsResponse(BaseModel):
 
     total: int
     draft: int
+    pending_review: int
+    scheduled: int
     published: int
-    unpublished: int
-    failed: int
+    private: int
+    trash: int

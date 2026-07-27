@@ -5,7 +5,14 @@ from typing import Literal
 
 from app.db.documents.base import TimestampedDocument
 
-NewsStatus = Literal["draft", "published", "unpublished", "failed"]
+NewsStatus = Literal[
+    "draft",
+    "pending_review",
+    "scheduled",
+    "published",
+    "private",
+    "trash",
+]
 
 
 class NewsArticle(TimestampedDocument):

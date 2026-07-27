@@ -140,7 +140,7 @@ onMounted(loadFiles);
         <EmptyState
           v-if="files.length === 0"
           title="no shared files"
-          description="upload a file above to get a shareable link."
+          description="upload a file above to get a shareable link"
         />
 
         <AdminListFooter

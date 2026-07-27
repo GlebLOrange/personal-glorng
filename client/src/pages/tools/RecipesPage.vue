@@ -118,7 +118,7 @@ function editRecipeFromCard(recipe: Recipe): void {
 
       <ErrorState v-else-if="listError" :message="listError" show-retry @retry="loadRecipes" />
 
-      <div v-else-if="recipes.length" class="mt-1 min-w-0">
+      <div v-else-if="recipes.length" class="mt-1 min-w-0 space-y-2">
         <RecipeCard
           v-for="recipe in recipes"
           :key="recipe.id"
@@ -134,7 +134,7 @@ function editRecipeFromCard(recipe: Recipe): void {
         v-else
         :description="
           hasFilters
-            ? 'no recipes match your filters.'
+            ? 'no recipes match your filters'
             : 'no recipes yet. add your first one to get started.'
         "
       >
