@@ -240,7 +240,7 @@ watch(articleId, () => {
         v-else-if="detailLoading"
         class="h-96 animate-pulse"
         aria-busy="true"
-        aria-label="Loading news article"
+        aria-label="loading news article"
       />
 
       <Card v-else-if="detailError" role="alert">

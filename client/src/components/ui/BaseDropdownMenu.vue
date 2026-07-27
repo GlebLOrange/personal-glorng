@@ -29,7 +29,7 @@ const props = withDefaults(
     family?: HttpStatusFamily;
   }>(),
   {
-    ariaLabel: "Actions",
+    ariaLabel: "actions",
     placement: "bottom",
     iconOnly: false,
     family: "1xx",

@@ -50,7 +50,7 @@ function statusBadges(user: AdminUserSummary): BadgeView[] {
       :key="user.id"
       type="button"
       class="interactive-surface h-full w-full p-4 text-left transition-colors"
-      :aria-label="`Open permissions for ${user.display_name || user.email}`"
+      :aria-label="`open permissions for ${user.display_name || user.email}`"
       @click="emit('select', user)"
     >
       <span class="flex min-h-full flex-col gap-4">

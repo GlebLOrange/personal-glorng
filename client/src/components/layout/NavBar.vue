@@ -31,9 +31,9 @@ const menuToggleClass = computed(() =>
 
 const themeToggleLabel = computed(() => {
   if (colorThemePreference.value === "light") {
-    return "Color theme: light. Click for dark.";
+    return "color theme: light. click for dark.";
   }
-  return "Color theme: dark. Click for light.";
+  return "color theme: dark. click for light.";
 });
 
 const { isHidden: isHeaderHidden, show: showHeader } = useScrollDirection({
@@ -121,14 +121,14 @@ async function handleGoHome(): Promise<void> {
       class="fixed left-0 right-0 top-0 z-40 bg-surface-dark/80 backdrop-blur-md transition-transform duration-200 pt-[env(safe-area-inset-top)]"
       :class="isHeaderHidden ? '-translate-y-full' : 'translate-y-0'"
     >
-      <nav aria-label="Main navigation" class="border-b border-surface-border">
+      <nav aria-label="main navigation" class="border-b border-surface-border">
         <div
           class="relative mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-[15px]"
         >
           <RouterLink
             to="/"
             class="text-xl font-bold text-surface-light"
-            aria-label="Gleb.Y home"
+            aria-label="gleb.y home"
             @click.prevent="handleGoHome"
           >
             Gleb.Y
@@ -282,7 +282,7 @@ async function handleGoHome(): Promise<void> {
               :class="menuToggleClass"
               :aria-expanded="mobileOpen"
               aria-controls="nav-mobile-menu"
-              aria-label="Toggle navigation menu"
+              aria-label="toggle navigation menu"
               @click="toggleMobileMenu"
             >
               <svg

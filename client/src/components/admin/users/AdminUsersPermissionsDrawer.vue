@@ -98,7 +98,7 @@ function statusBadges(user: AdminUserSummary): BadgeView[] {
       <DrawerFooterActions>
         <template #start>
           <p v-if="hasDraftChanges" class="text-xs text-surface-muted">
-            Unsaved permission changes
+            unsaved permission changes
           </p>
         </template>
         <template #dismiss>

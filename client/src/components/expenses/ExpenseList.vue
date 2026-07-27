@@ -57,7 +57,7 @@ const sortButtonClass =
 
     <!-- Desktop table -->
     <div class="hidden min-w-0 overflow-x-auto rounded-lg border border-surface-border md:block">
-      <table class="w-full min-w-0 font-data text-sm" :aria-label="`Expenses for ${monthLabel}`">
+      <table class="w-full min-w-0 font-data text-sm" :aria-label="`expenses for ${monthLabel}`">
         <thead>
           <tr class="border-b border-surface-border bg-surface-card/80 text-left text-surface-mid">
             <th class="px-3" :aria-sort="sortAriaSort('date')">
@@ -116,8 +116,8 @@ const sortButtonClass =
 
     <EmptyState
       v-if="expenses.length === 0"
-      :title="`No expenses in ${monthLabel || 'this period'}`"
-      description="Add above, or use smart text (20 coffee). Telegram: /spend 20 coffee"
+      :title="`no expenses in ${monthLabel || 'this period'}`"
+      description="add above, or use smart text (20 coffee). telegram: /spend 20 coffee"
     >
       <template #action>
         <BaseButton variant="primary" size="sm" @click="emit('smartText')">

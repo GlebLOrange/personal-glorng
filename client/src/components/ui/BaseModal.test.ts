@@ -26,7 +26,7 @@ function mountModal(
     attachTo: document.body,
     props: { open: true, ...props },
     slots: {
-      default: '<input type="text" aria-label="Sample field" />',
+      default: '<input type="text" aria-label="sample field" />',
     },
   });
 
@@ -64,7 +64,7 @@ describe("BaseModal", () => {
     await flushFocus();
 
     const field = document.body.querySelector(
-      'input[aria-label="Sample field"]',
+      'input[aria-label="sample field"]',
     ) as HTMLInputElement | null;
     expect(document.activeElement).toBe(field);
 
@@ -105,11 +105,11 @@ describe("BaseModal", () => {
   });
 
   it("uses ariaLabel when no title is provided", async () => {
-    const { wrapper } = mountModal({ open: true, ariaLabel: "Confirm delete" });
+    const { wrapper } = mountModal({ open: true, ariaLabel: "confirm delete" });
     await flushFocus();
 
     const dialog = document.body.querySelector('[role="dialog"]');
-    expect(dialog?.getAttribute("aria-label")).toBe("Confirm delete");
+    expect(dialog?.getAttribute("aria-label")).toBe("confirm delete");
     expect(dialog?.getAttribute("aria-labelledby")).toBeNull();
 
     wrapper.unmount();
@@ -126,7 +126,7 @@ describe("BaseModal", () => {
       props: { open: true, title: "Custom title fallback" },
       slots: {
         header: "<div>Custom header</div>",
-        default: '<input type="text" aria-label="Sample field" />',
+        default: '<input type="text" aria-label="sample field" />',
       },
     });
     await flushFocus();
@@ -144,7 +144,7 @@ describe("BaseModal", () => {
     await flushFocus();
 
     const dialog = document.body.querySelector('[role="dialog"]');
-    expect(dialog?.getAttribute("aria-label")).toBe("Dialog");
+    expect(dialog?.getAttribute("aria-label")).toBe("dialog");
     expect(dialog?.getAttribute("aria-labelledby")).toBeNull();
 
     wrapper.unmount();

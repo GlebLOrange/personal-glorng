@@ -6,10 +6,10 @@ export function buildPersistenceHint(input: {
 }): string {
   if (input.isSuperuser) {
     if (input.lastSavedAt && !input.stateDirty) {
-      return `Saved ${new Date(input.lastSavedAt).toLocaleString()}`;
+      return `saved ${new Date(input.lastSavedAt).toLocaleString()}`;
     }
-    if (input.stateDirty) return "Unsaved changes";
-    return "Superuser: save to keep data across sessions";
+    if (input.stateDirty) return "unsaved changes";
+    return "superuser: save to keep data across sessions";
   }
-  return "Calculations reset when you leave this page.";
+  return "calculations reset when you leave this page.";
 }

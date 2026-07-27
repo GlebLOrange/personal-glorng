@@ -22,7 +22,7 @@ describe("ToastContainer", () => {
 
     toast("saved", "success");
     const success = mount(ToastContainer, { props: { variant: "overlay" } });
-    expect(success.get("[aria-label='Notifications'] > *").classes()).toEqual(
+    expect(success.get("[aria-label='notifications'] > *").classes()).toEqual(
       expect.arrayContaining([
         "!bg-status-success/10",
         "!border-status-success/30",
@@ -37,7 +37,7 @@ describe("ToastContainer", () => {
 
     toast("failed", "error");
     const error = mount(ToastContainer, { props: { variant: "overlay" } });
-    expect(error.get("[aria-label='Notifications'] > *").classes()).toEqual(
+    expect(error.get("[aria-label='notifications'] > *").classes()).toEqual(
       expect.arrayContaining([
         "!bg-status-error/10",
         "!border-status-error/30",
@@ -52,7 +52,7 @@ describe("ToastContainer", () => {
 
     toast("hello", "info");
     const info = mount(ToastContainer, { props: { variant: "overlay" } });
-    expect(info.get("[aria-label='Notifications'] > *").classes()).toEqual(
+    expect(info.get("[aria-label='notifications'] > *").classes()).toEqual(
       expect.arrayContaining([
         "!bg-accent-blue/10",
         "!border-accent-blue/30",
@@ -71,7 +71,7 @@ describe("ToastContainer", () => {
     toast("nope", "error");
 
     const wrapper = mount(ToastContainer, { props: { variant: "overlay" } });
-    expect(wrapper.get("[aria-label='Notifications'] > *").classes()).toEqual(
+    expect(wrapper.get("[aria-label='notifications'] > *").classes()).toEqual(
       expect.arrayContaining(["!bg-status-error/10", "!border-status-error/30"]),
     );
   });

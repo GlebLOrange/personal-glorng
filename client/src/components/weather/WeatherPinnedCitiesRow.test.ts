@@ -66,7 +66,7 @@ describe("WeatherPinnedCitiesRow", () => {
   it("shows loading skeletons while busy", () => {
     const wrapper = mountRow({ loading: true });
 
-    expect(wrapper.find('[aria-label="Loading cities"]').exists()).toBe(true);
+    expect(wrapper.find('[aria-label="loading cities"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="weather-city-tile"]').exists()).toBe(false);
   });
 

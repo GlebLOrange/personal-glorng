@@ -144,7 +144,7 @@ onUnmounted(() => {
       />
     </div>
 
-    <section v-if="loading" class="space-y-3" aria-busy="true" aria-label="Searching">
+    <section v-if="loading" class="space-y-3" aria-busy="true" aria-label="searching">
       <Card v-for="i in 4" :key="i" class="h-20 animate-pulse" />
     </section>
 

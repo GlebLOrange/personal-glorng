@@ -167,7 +167,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         v-model="smartText"
         label="smart text"
         placeholder="20 coffee"
-        hint="Amount first — 20 coffee or 50 EUR lunch"
+        hint="amount first — 20 coffee or 50 EUR lunch"
         autocomplete="off"
       />
       <p v-if="parsing" class="text-xs text-surface-mid" role="status">parsing…</p>

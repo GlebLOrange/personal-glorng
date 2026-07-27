@@ -165,7 +165,7 @@ onMounted(loadUrls);
           :has-previous-page="hasPreviousPage"
           :loading="listLoading"
           item-label="URLs"
-          aria-label="Short URLs pagination"
+          aria-label="short URLs pagination"
           @first="goToPage(1)"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"

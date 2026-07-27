@@ -64,17 +64,17 @@ function convertedLabel(): string | null {
         <BaseButton
           variant="ghost"
           size="sm"
-          :aria-label="`Duplicate ${expense.tool_name || 'expense'}`"
+          :aria-label="`duplicate ${expense.tool_name || 'expense'}`"
           @click="emit('duplicate', expense)"
         >
           duplicate
         </BaseButton>
         <IconEditButton
-          :aria-label="`Edit ${expense.tool_name || 'expense'}`"
+          :aria-label="`edit ${expense.tool_name || 'expense'}`"
           @click="emit('edit', expense)"
         />
         <IconCloseButton
-          :aria-label="`Delete ${expense.tool_name || 'expense'}`"
+          :aria-label="`delete ${expense.tool_name || 'expense'}`"
           @click="emit('delete', expense.id)"
         />
       </div>
@@ -107,17 +107,17 @@ function convertedLabel(): string | null {
       <BaseButton
         variant="ghost"
         size="sm"
-        :aria-label="`Duplicate ${expense.tool_name || 'expense'}`"
+        :aria-label="`duplicate ${expense.tool_name || 'expense'}`"
         @click="emit('duplicate', expense)"
       >
         duplicate
       </BaseButton>
       <IconEditButton
-        :aria-label="`Edit ${expense.tool_name || 'expense'}`"
+        :aria-label="`edit ${expense.tool_name || 'expense'}`"
         @click="emit('edit', expense)"
       />
       <IconCloseButton
-        :aria-label="`Delete ${expense.tool_name || 'expense'}`"
+        :aria-label="`delete ${expense.tool_name || 'expense'}`"
         @click="emit('delete', expense.id)"
       />
     </div>

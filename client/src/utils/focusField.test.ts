@@ -7,12 +7,12 @@ describe("focusField", () => {
     const root = document.createElement("div");
     root.innerHTML = `
       <button type="button">Close</button>
-      <input type="text" aria-label="Title" />
+      <input type="text" aria-label="title" />
       <button type="submit">Save</button>
     `;
 
     const field = queryEditableField(root);
-    expect(field?.getAttribute("aria-label")).toBe("Title");
+    expect(field?.getAttribute("aria-label")).toBe("title");
   });
 
   it("falls back when no editable field exists", () => {

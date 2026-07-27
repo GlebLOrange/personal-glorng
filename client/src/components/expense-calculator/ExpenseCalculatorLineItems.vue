@@ -79,7 +79,7 @@ function onAddItem(): void {
             <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
           </BaseSelect>
           <IconCloseButton
-            :aria-label="`Remove ${item.label || 'item'}`"
+            :aria-label="`remove ${item.label || 'item'}`"
             @click="emit('remove', item.id)"
           />
         </li>

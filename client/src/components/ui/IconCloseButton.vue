@@ -10,7 +10,7 @@ withDefaults(
     size?: "md" | "field";
   }>(),
   {
-    ariaLabel: "Close",
+    ariaLabel: "close",
     size: "md",
   },
 );

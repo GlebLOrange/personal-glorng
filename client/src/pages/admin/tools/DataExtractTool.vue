@@ -154,7 +154,7 @@ const {
         </div>
 
         <FileDropZone
-          aria-label="Choose a file to extract"
+          aria-label="choose a file to extract"
           :accept="acceptAttr"
           :hint="acceptHint"
           :selected-name="selectedName"

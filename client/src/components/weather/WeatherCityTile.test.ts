@@ -16,7 +16,7 @@ describe("WeatherCityTile", () => {
       props: { query: "Paris", removable: true },
     });
 
-    const close = wrapper.get('button[aria-label="Remove Paris"]');
+    const close = wrapper.get('button[aria-label="remove Paris"]');
     expect(close.classes()).toContain("z-10");
 
     await close.trigger("click");

@@ -137,7 +137,7 @@ onMounted(async () => {
       v-else-if="weather"
       class="flex w-full max-w-full flex-col gap-0.5 min-w-0"
       :class="stackClass"
-      :aria-label="liveTime ? `Local time ${liveTime}` : undefined"
+      :aria-label="liveTime ? `local time ${liveTime}` : undefined"
     >
       <time v-if="liveTime" :datetime="liveDateTime ?? undefined" :class="timeClass" role="timer">
         {{ liveTime }}

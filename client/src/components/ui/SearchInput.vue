@@ -39,7 +39,7 @@ const overlayId = computed(() => `${inputId.value}-overlay`);
 const hasValue = computed(() => model.value.length > 0);
 const showOverlay = computed(() => Boolean(props.placeholder) && !hasValue.value);
 /** Decorative placeholder is not the accessible name. */
-const accessibleName = computed(() => props.ariaLabel || "Search");
+const accessibleName = computed(() => props.ariaLabel || "search");
 const inputAttrs = computed(() => pickNativeAttrs(attrs));
 
 function clear(): void {
@@ -84,7 +84,7 @@ function clear(): void {
     <div
       :class="[FIELD_CLEAR_SLOT, hasValue ? undefined : FIELD_CLEAR_HIDDEN_CLASS]"
     >
-      <IconCloseButton v-if="hasValue" size="field" aria-label="Clear search" @click="clear" />
+      <IconCloseButton v-if="hasValue" size="field" aria-label="clear search" @click="clear" />
     </div>
   </div>
 </template>

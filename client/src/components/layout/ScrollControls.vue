@@ -16,7 +16,7 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
         family="1xx"
         type="button"
         class="shell-outside-end pointer-events-auto"
-        aria-label="To the top"
+        aria-label="to the top"
         @click="scrollToTop"
       >
         <ScrollArrowIcon direction="up" />
@@ -33,7 +33,7 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
         family="1xx"
         type="button"
         class="shell-outside-end pointer-events-auto"
-        aria-label="Scroll to next section"
+        aria-label="scroll to next section"
         @click="scrollToNextSection"
       >
         <ScrollArrowIcon direction="down" />

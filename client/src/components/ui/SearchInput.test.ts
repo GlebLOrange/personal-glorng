@@ -13,7 +13,7 @@ describe("SearchInput", () => {
       },
     });
 
-    const clear = wrapper.get('button[aria-label="Clear search"]');
+    const clear = wrapper.get('button[aria-label="clear search"]');
     expect(clear.classes().join(" ")).not.toMatch(/invisible/);
     expect(clear.element.closest(".invisible")).toBeNull();
     await clear.trigger("click");
@@ -24,7 +24,7 @@ describe("SearchInput", () => {
     const wrapper = mount(SearchInput, {
       props: { modelValue: "", placeholder: "search" },
     });
-    expect(wrapper.find('button[aria-label="Clear search"]').exists()).toBe(false);
+    expect(wrapper.find('button[aria-label="clear search"]').exists()).toBe(false);
     expect(wrapper.find(".invisible.pointer-events-none").exists()).toBe(true);
   });
 
@@ -62,14 +62,14 @@ describe("SearchInput", () => {
     const wrapper = mount(SearchInput, {
       props: { modelValue: "", placeholder: "search recipes" },
     });
-    expect(wrapper.get("input").attributes("aria-label")).toBe("Search");
+    expect(wrapper.get("input").attributes("aria-label")).toBe("search");
   });
 
   it("uses ariaLabel when provided", () => {
     const wrapper = mount(SearchInput, {
-      props: { modelValue: "", placeholder: "search", ariaLabel: "Find recipes" },
+      props: { modelValue: "", placeholder: "search", ariaLabel: "find recipes" },
     });
-    expect(wrapper.get("input").attributes("aria-label")).toBe("Find recipes");
+    expect(wrapper.get("input").attributes("aria-label")).toBe("find recipes");
   });
 
   it("always shows the search icon", () => {

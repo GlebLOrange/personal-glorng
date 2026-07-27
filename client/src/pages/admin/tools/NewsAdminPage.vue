@@ -94,7 +94,7 @@ const {
       </ToolbarPillButton>
     </AdminListToolbar>
 
-    <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading news">
+    <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="loading news">
       <Card v-for="i in 5" :key="i" class="h-36 animate-pulse" />
     </section>
 
@@ -125,7 +125,7 @@ const {
       :has-previous-page="hasPreviousPage"
       :loading="listLoading"
       item-label="articles"
-      aria-label="News pagination"
+      aria-label="news pagination"
       @first="goToPage(1)"
       @prev="goToPage(page - 1)"
       @next="goToPage(page + 1)"

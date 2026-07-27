@@ -35,12 +35,12 @@ describe("BaseTextarea", () => {
       props: {
         id: "message",
         label: "Message",
-        hint: "Keep it short",
+        hint: "keep it short",
       },
     });
 
     expect(wrapper.get("textarea").attributes("aria-describedby")).toBe("message-hint");
-    expect(wrapper.get("#message-hint").text()).toBe("Keep it short");
+    expect(wrapper.get("#message-hint").text()).toBe("keep it short");
     expect(wrapper.get('button[aria-label="help"]').exists()).toBe(true);
     expect(wrapper.find("p#message-hint").exists()).toBe(false);
   });

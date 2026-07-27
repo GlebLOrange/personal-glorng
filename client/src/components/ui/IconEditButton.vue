@@ -11,7 +11,7 @@ withDefaults(
     size?: "md" | "field";
   }>(),
   {
-    ariaLabel: "Edit",
+    ariaLabel: "edit",
     size: "md",
   },
 );

@@ -114,7 +114,7 @@ defineExpose({ categoryBreakdown, budgetTotals });
           :aria-valuenow="Math.min(budgetTotals.percent, 100)"
           aria-valuemin="0"
           aria-valuemax="100"
-          :aria-label="`Budget used ${budgetTotals.percent}%`"
+          :aria-label="`budget used ${budgetTotals.percent}%`"
         >
           <div
             class="h-full rounded-full transition-[width] duration-200"

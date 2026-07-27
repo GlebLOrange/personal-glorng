@@ -116,7 +116,7 @@ function onAddBudgetLine(): void {
               placeholder="spent (0.00)"
             />
             <IconCloseButton
-              :aria-label="`Remove ${row.name || 'budget line'}`"
+              :aria-label="`remove ${row.name || 'budget line'}`"
               @click="emit('remove', row.id)"
             />
           </div>

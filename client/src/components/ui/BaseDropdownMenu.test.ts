@@ -8,7 +8,7 @@ import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 describe("BaseDropdownMenu", () => {
   it("names the icon trigger and moves focus into the menu", async () => {
     const wrapper = mount(BaseDropdownMenu, {
-      props: { ariaLabel: "Recipe actions" },
+      props: { ariaLabel: "recipe actions" },
       slots: {
         default: `
           <button type="button" role="menuitem">edit</button>
@@ -18,7 +18,7 @@ describe("BaseDropdownMenu", () => {
       attachTo: document.body,
     });
 
-    const trigger = wrapper.get('button[aria-label="Recipe actions"]');
+    const trigger = wrapper.get('button[aria-label="recipe actions"]');
     expect(trigger.attributes("aria-haspopup")).toBe("menu");
     expect(trigger.attributes("aria-expanded")).toBe("false");
 
@@ -55,14 +55,14 @@ describe("BaseDropdownMenu", () => {
 
   it("keeps the trigger labeled even with a custom trigger slot", () => {
     const wrapper = mount(BaseDropdownMenu, {
-      props: { ariaLabel: "More actions" },
+      props: { ariaLabel: "more actions" },
       slots: {
         trigger: "more",
         default: '<button type="button" role="menuitem">edit</button>',
       },
     });
 
-    expect(wrapper.get('button[aria-label="More actions"]').text()).toContain("more");
+    expect(wrapper.get('button[aria-label="more actions"]').text()).toContain("more");
   });
 
   it("paints icon-only triggers with the requested family", () => {

@@ -162,7 +162,7 @@ defineExpose({
       :has-previous-page="hasPreviousExpensePage"
       :loading="listLoading"
       item-label="expenses"
-      aria-label="Expenses pagination"
+      aria-label="expenses pagination"
       @first="emit('firstPage')"
       @prev="emit('prevPage')"
       @next="emit('nextPage')"

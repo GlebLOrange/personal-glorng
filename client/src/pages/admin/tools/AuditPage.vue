@@ -144,7 +144,7 @@ onMounted(load);
       <EmptyState
         v-else-if="items.length === 0"
         class="mt-4"
-        description="No audit events found."
+        description="no audit events found."
       />
 
       <div v-else class="mt-1 min-w-0">
@@ -195,7 +195,7 @@ onMounted(load);
         :has-previous-page="hasPreviousPage"
         :loading="loading"
         item-label="events"
-        aria-label="Audit pagination"
+        aria-label="audit pagination"
         @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"

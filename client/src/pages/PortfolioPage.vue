@@ -222,8 +222,8 @@ onUnmounted(() => {
         />
         <EmptyState
           v-else-if="donationsFetched"
-          title="No donation options"
-          description="Support options are not configured right now."
+          title="no donation options"
+          description="support options are not configured right now."
         />
       </SectionWrapper>
     </div>

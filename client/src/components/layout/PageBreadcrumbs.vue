@@ -37,7 +37,7 @@ const ancestorClass =
 </script>
 
 <template>
-  <nav aria-label="Breadcrumb" class="page-breadcrumb min-w-0">
+  <nav aria-label="breadcrumb" class="page-breadcrumb min-w-0">
     <ol class="flex items-center gap-2">
       <li
         v-for="(seg, idx) in segments"

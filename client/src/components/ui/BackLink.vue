@@ -39,7 +39,7 @@ const nativeAttrs = computed(() => {
   <RouterLink v-slot="{ href, navigate, isActive }" :to="to" custom>
     <a
       :href="href"
-      aria-label="Back"
+      aria-label="back"
       :class="linkClass(isActive)"
       :style="attrs.style"
       v-bind="nativeAttrs"

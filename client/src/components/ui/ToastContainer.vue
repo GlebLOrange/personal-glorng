@@ -76,7 +76,7 @@ onUnmounted(() => {
   <div
     v-if="shouldRender"
     data-testid="toast-host"
-    aria-label="Notifications"
+    aria-label="notifications"
     :class="
       variant === 'tile'
         ? 'page-tile md:col-start-2 min-w-0 md:h-0 md:min-h-full md:overflow-hidden'
@@ -102,7 +102,7 @@ onUnmounted(() => {
         <p class="min-w-0 flex-1 break-words text-center text-base lowercase leading-snug">
           {{ t.message }}
         </p>
-        <IconCloseButton aria-label="Dismiss notification" @click="dismiss(t.id)" />
+        <IconCloseButton aria-label="dismiss notification" @click="dismiss(t.id)" />
       </div>
     </Card>
 
@@ -127,7 +127,7 @@ onUnmounted(() => {
         <p class="min-w-0 flex-1 break-words text-center text-base lowercase leading-snug">
           {{ t.message }}
         </p>
-        <IconCloseButton aria-label="Dismiss notification" @click="dismiss(t.id)" />
+        <IconCloseButton aria-label="dismiss notification" @click="dismiss(t.id)" />
       </Card>
     </div>
   </div>

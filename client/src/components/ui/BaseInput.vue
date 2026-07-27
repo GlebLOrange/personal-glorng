@@ -248,7 +248,7 @@ defineExpose({ focus });
           v-if="reserveClear"
           :class="[FIELD_CLEAR_SLOT, showClear ? undefined : FIELD_CLEAR_HIDDEN_CLASS]"
         >
-          <IconCloseButton v-if="showClear" size="field" aria-label="Clear" @click="clear" />
+          <IconCloseButton v-if="showClear" size="field" aria-label="clear" @click="clear" />
         </div>
       </div>
     </div>
