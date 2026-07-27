@@ -70,8 +70,8 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 | Variable | Purpose |
 |----------|---------|
 | `REDIS_PASSWORD` | Auth (validated in production) |
-| `REDIS_URL` | Security Redis (`noeviction`): blacklist, rate limits, OAuth state |
-| `REDIS_CACHE_URL` | Optional cache Redis (`allkeys-lru`). Empty = share `REDIS_URL` |
+| `REDIS_URL` | Security Redis (`noeviction`): blacklist, rate limits, OAuth state, vid-download slots |
+| `REDIS_CACHE_URL` | Cache Redis (`allkeys-lru`). Empty = share `REDIS_URL`. **Staging/production:** set a dedicated URL — settings log a warning when cache shares security Redis |
 
 ## RabbitMQ / Celery
 
@@ -110,6 +110,23 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 | `SERVER_SENTRY_RELEASE` | | Release tag |
 
 Client: `VITE_SENTRY_ENABLED=false` in `client/.env.development` (Vite DEV needs `VITE_SENTRY_ENABLED=true` + DSN). Prod builds stay on when a DSN is set unless `VITE_SENTRY_ENABLED=false`. See also commented `VITE_SENTRY_*` in `.env.example`.
+
+## EDOT OpenTelemetry (opt-in)
+
+Zero-code instrumentation via `elastic-opentelemetry` + `opentelemetry-instrument`. Core auto-instrumentation packages (FastAPI, httpx, Redis, Celery, Motor/pymongo, etc.) are locked in `server/pyproject.toml`. The Docker entrypoint wraps uvicorn/Celery only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (from process env or `GLORNG_ENV_FILE`), and runs `edot-bootstrap` for any extra instrumentations. Leave the endpoint empty for local lite (no overhead).
+
+| Variable | Purpose |
+|----------|---------|
+| `OTEL_SERVICE_NAME` | Service name in Elastic (Compose defaults: `glorng-api`, `glorng-worker`, `glorng-beat`) |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Managed OTLP or EDOT Collector URL — **not** classic APM Server (`:8200`, `/intake/v2/events`) |
+| `OTEL_EXPORTER_OTLP_HEADERS` | Auth headers, e.g. `Authorization=ApiKey …` or `Authorization=Bearer …` |
+| `OTEL_RESOURCE_ATTRIBUTES` | Optional resource attrs (e.g. `service.version=` aligned with `SERVER_SENTRY_RELEASE`) |
+
+Do **not** set `OTEL_TRACES_EXPORTER`, `OTEL_METRICS_EXPORTER`, or `OTEL_LOGS_EXPORTER` — EDOT defaults are correct. Do **not** install classic `elastic-apm` alongside EDOT. Keep Sentry for errors; use EDOT for traces/metrics.
+
+Host ultra-lite (`make dev-ultra-lite-server`) does not auto-wrap; prefix manually if needed: `opentelemetry-instrument uv run uvicorn …`.
+
+Smoke check: set endpoint + headers, hit `/api/health`, confirm the service appears in Elastic Observability → Applications.
 
 ## Telegram bot
 

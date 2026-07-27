@@ -41,3 +41,25 @@ def test_resolve_redis_cache_url_maps_compose_host_to_localhost(
     assert settings.REDIS_CACHE_URL == "redis://:pass@127.0.0.1:6380/0"
 
     get_settings.cache_clear()
+
+
+def test_shared_redis_cache_warns_in_staging(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    activate_env_file(
+        monkeypatch,
+        scenario_env(
+            tmp_path,
+            APP_ENV="staging",
+            REDIS_URL="redis://:local@127.0.0.1:6379/0",
+            REDIS_CACHE_URL="",
+        ),
+    )
+
+    with caplog.at_level("WARNING", logger="app.settings"):
+        get_settings()
+
+    assert any("REDIS_CACHE_URL" in r.message for r in caplog.records)
+    get_settings.cache_clear()

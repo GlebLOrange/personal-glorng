@@ -477,6 +477,25 @@ class Settings(BaseSettings):
             self.REDIS_CACHE_URL = _resolve_redis_url(self.REDIS_CACHE_URL)
         return self
 
+    @model_validator(mode="after")
+    def _warn_shared_redis_cache(self) -> Settings:
+        """Staging/production should isolate cache (LRU) from security Redis."""
+        if self.APP_ENV not in {"production", "staging"}:
+            return self
+        cache = (self.REDIS_CACHE_URL or "").strip()
+        security = (self.REDIS_URL or "").strip()
+        if cache and cache != security:
+            return self
+        import logging
+
+        logging.getLogger("app.settings").warning(
+            "REDIS_CACHE_URL is empty or equals REDIS_URL in %s; "
+            "use a dedicated allkeys-lru Redis so cache eviction cannot "
+            "affect blacklist/rate-limit keys on the noeviction instance",
+            self.APP_ENV,
+        )
+        return self
+
     # RabbitMQ / Celery
     RABBITMQ_USER: str
     RABBITMQ_PASSWORD: str

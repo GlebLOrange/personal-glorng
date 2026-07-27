@@ -23,11 +23,11 @@ If `npm run dev` fails with a missing `@rolldown/binding-*` module (common when 
 | `make dev-ultra-lite-infra` + `make dev-ultra-lite-server` | mongodb, redis + host API | Debugging API on host; inline Celery |
 | `make dev-search` | + elasticsearch | Elasticsearch-backed search |
 | `make dev-postgres` | + postgres profile | Postgres FTS + audit secondary |
-| `make dev-worker` | worker + beat + **broker** (RabbitMQ) | Real Celery jobs |
+| `make dev-worker` | worker + beat + **broker** (RabbitMQ) | Real Celery jobs — set `CELERY_TASK_ALWAYS_EAGER=false` in `.env` or scheduled/async jobs stay inline on the API process |
 | `make dev-bot` | bot + broker | Telegram todobot development |
 | `make dev-full` | worker + bot + broker + docker-client | Everything in Docker |
 
-Leave `ELASTICSEARCH_URL` empty for lite. MongoDB text search and optional Postgres FTS cover search without Elasticsearch. Default `.env.example` sets `CELERY_TASK_ALWAYS_EAGER=true`; set `false` when using `make dev-worker`.
+Leave `ELASTICSEARCH_URL` empty for lite. MongoDB text search and optional Postgres FTS cover search without Elasticsearch. Default `.env.example` sets `CELERY_TASK_ALWAYS_EAGER=true` (emails, news ingest, sync, and beat schedules run **inside the API process**). For real queues and beat, run `make dev-worker` and set `CELERY_TASK_ALWAYS_EAGER=false`.
 
 ## Services and ports
 

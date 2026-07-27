@@ -41,9 +41,10 @@ Workflow inventory and local test tiers: [Testing](/reference/testing). Deploy r
 | **GitHub Actions** | CI, security, nightly, pre-release, optional Sentry upload — **merge gates off in development** (see table above) | Repo secrets (`SENTRY_*`); enable ruleset before production | Full CD to VPS |
 | **Backups** | `make backup`, cron install, Mongo/Redis/media (+ optional Postgres), optional `BACKUP_OFFSITE_CMD` | Cron on host, offsite target, restore drills | Managed object-storage product |
 | **Logging** | Quiet dev defaults (`LOG_REQUESTS=false`, persist `WARNING+`); prod request logs on; JSON Loguru stderr + optional Mongo/ES; prod `json-file` rotation | `docker logs` / host retention | Loki/Fluent Bit shipper |
-| **Prometheus** | — | — | No scrape stack; health via `/api/health` + `/api/ready` |
-| **Grafana** | — | — | No dashboards; use Sentry + logs |
-| **Sentry** | Server + client SDKs; vite plugin when token set; optional [`sentry-release`](../../.github/workflows/sentry-release.yml) workflow | DSN + auth token secrets; release string alignment | Celery traces parity with FastAPI |
+| **EDOT / OTLP** | Opt-in `elastic-opentelemetry`; entrypoint wraps with `opentelemetry-instrument` when `OTEL_EXPORTER_OTLP_ENDPOINT` is set; Compose sets `OTEL_SERVICE_NAME` per process | Elastic managed OTLP or EDOT Collector + API key/headers | Leave endpoint empty in lite |
+| **Prometheus** | — | — | Covered by EDOT OTLP metrics when configured; no separate scrape stack |
+| **Grafana** | — | — | Use Elastic Observability + Sentry + logs |
+| **Sentry** | Server + client SDKs; vite plugin when token set; optional [`sentry-release`](../../.github/workflows/sentry-release.yml) workflow | DSN + auth token secrets; release string alignment | Never add classic `elastic-apm` alongside EDOT; Celery traces via EDOT when enabled |
 
 ## Quick links
 

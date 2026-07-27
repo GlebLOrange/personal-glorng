@@ -40,7 +40,8 @@ Compose service inventory: [architecture inventory (generated)](/generated/archi
    - `FERNET_SECRET` — 32+ chars, must differ from `JWT_SECRET`
    - `REDIS_PASSWORD`, `MONGODB_PASSWORD`, `POSTGRES_PASSWORD` (if Postgres enabled)
    - `RABBITMQ_PASSWORD` — 16+ chars (Celery / RabbitMQ always run in prod)
-   - `REDIS_CACHE_URL` pointing at the `redis-cache` service (cache isolation)
+   - `REDIS_CACHE_URL` pointing at the `redis-cache` service (cache isolation; staging/production warn if shared with `REDIS_URL`)
+   - Optional EDOT: `OTEL_EXPORTER_OTLP_ENDPOINT` + `OTEL_EXPORTER_OTLP_HEADERS` (see [Configuration](/reference/configuration#edot-opentelemetry-opt-in))
 4. `CORS_ORIGINS` — explicit HTTPS origins (no `*`).
 5. `RUN_MIGRATIONS=false` and `RUN_SEED=false` — schema work goes through the one-shot `migrate` service, not API boot seed.
 

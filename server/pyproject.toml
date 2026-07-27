@@ -29,6 +29,18 @@ dependencies = [
     "weasyprint==69.*",
     "firebase-admin>=7.5.0",
     "defusedxml==0.7.*",
+    "elastic-opentelemetry==1.15.*",
+    "opentelemetry-instrumentation-fastapi==0.64b0",
+    "opentelemetry-instrumentation-asgi==0.64b0",
+    "opentelemetry-instrumentation-starlette==0.64b0",
+    "opentelemetry-instrumentation-httpx==0.64b0",
+    "opentelemetry-instrumentation-redis==0.64b0",
+    "opentelemetry-instrumentation-celery==0.64b0",
+    "opentelemetry-instrumentation-pymongo==0.64b0",
+    "opentelemetry-instrumentation-asyncpg==0.64b0",
+    "opentelemetry-instrumentation-elasticsearch==0.64b0",
+    "opentelemetry-instrumentation-sqlalchemy==0.64b0",
+    "opentelemetry-instrumentation-logging==0.64b0",
 ]
 
 [dependency-groups]
