@@ -132,8 +132,7 @@ async function generatePassword(): Promise<void> {
           <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
             {{ showPassword ? "hide" : "show" }}
           </BaseButton>
-          <!-- ponytail: match h-11 field row; IconActionButton default is h-8 -->
-          <IconCopyButton class="!h-11 !w-11 !min-h-11 !min-w-11" @click="copy(generated)" />
+          <IconCopyButton @click="copy(generated)" />
         </div>
         <p class="text-xs" :class="strength.valid ? 'text-status-success' : 'text-surface-mid'">
           {{ strength.message }}

@@ -86,7 +86,7 @@ function clear(): void {
 </script>
 
 <template>
-  <div class="flex min-w-0 flex-col gap-1" :class="$attrs.class" :style="$attrs.style">
+  <div class="relative flex min-w-0 flex-col gap-1" :class="$attrs.class" :style="$attrs.style">
     <div v-if="label || hint" class="flex items-center gap-1.5">
       <!-- associated via :for / :id (computed ids); FieldHelp sits beside the label -->
       <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
@@ -124,7 +124,7 @@ function clear(): void {
       </span>
       <div
         v-if="reserveClear"
-        class="absolute right-1 top-1 z-10 flex w-8 items-center justify-center"
+        class="absolute right-0 top-0 z-10 flex w-11 items-center justify-center"
         :class="showClear ? undefined : 'invisible pointer-events-none'"
       >
         <IconCloseButton aria-label="Clear" @click="clear" />
@@ -142,7 +142,13 @@ function clear(): void {
       :class="bareClass"
     />
 
-    <p v-if="error" :id="errorId" role="alert" class="text-xs text-status-error">
+    <!-- ponytail: absolute above control so validation never shifts following fields -->
+    <p
+      v-if="error"
+      :id="errorId"
+      role="alert"
+      class="pointer-events-none absolute bottom-full left-0 right-0 z-10 mb-1 text-center text-xs leading-4 text-status-error"
+    >
       {{ error }}
     </p>
   </div>

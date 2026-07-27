@@ -48,9 +48,9 @@ describe("httpStatusColors", () => {
     expect(selected).toContain("border-status-success/40");
   });
 
-  it("builds h-8 icon action classes", () => {
+  it("builds h-11 icon action classes", () => {
     const icon = iconActionClass("3xx", false);
-    expect(icon).toContain("!h-8");
+    expect(icon).toContain("!h-11");
     expect(icon).toContain("bg-status-warning/3");
     expect(iconActionClass("1xx", false, { quiet: true })).toContain("text-surface-light/60");
     expect(iconActionClass("1xx", false, { danger: true })).toContain("bg-status-error/3");

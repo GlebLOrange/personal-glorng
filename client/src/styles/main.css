@@ -149,7 +149,7 @@ html[data-theme="light"] {
 }
 
 @utility page-weather-tile-card {
-  @apply flex h-full min-w-0 flex-col items-center justify-center gap-2 p-4 text-center;
+  @apply flex h-full min-w-0 flex-col items-center justify-center gap-2 p-4 text-center !bg-accent-blue/3 hover:!bg-accent-blue/15 active:!bg-accent-blue/25;
 }
 
 @media (min-width: 768px) {

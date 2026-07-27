@@ -5,9 +5,9 @@ const props = withDefaults(
   defineProps<{
     variant?: "primary" | "secondary" | "ghost" | "success";
     /**
-     * Shared control height with inputs (h-11), except lg (h-12) and icon (h-8 square).
+     * Shared control height with inputs (h-11), except lg (h-12).
      * sm/md/field share the same height; sm only tightens padding/type.
-     * `field` is an alias of `md`. `icon` is a square hit target for glyph-only actions.
+     * `field` is an alias of `md`. `icon` is a square hit target matching field height.
      */
     size?: "sm" | "md" | "lg" | "field" | "icon";
     /** Destructive action — red tint/text on hover. */
@@ -89,7 +89,7 @@ const variantClass = computed(() => {
       resolvedSize === 'lg'
         ? 'h-12 px-6 text-base'
         : resolvedSize === 'icon'
-          ? 'h-8 w-8 min-w-8 px-0 text-xs'
+          ? 'h-11 w-11 min-w-11 px-0 text-sm'
           : resolvedSize === 'sm'
             ? 'h-11 px-3 text-xs'
             : 'h-11 px-4 text-sm',

@@ -82,7 +82,7 @@ async function submit(): Promise<void> {
 
 <template>
   <BaseModal :open="open" :title="copy.title" max-width="md" @close="$emit('close')">
-    <form id="feedback-modal-form" class="space-y-[15px]" @submit.prevent="submit">
+    <form id="feedback-modal-form" class="space-y-3" @submit.prevent="submit">
       <BaseInput
         v-model="email"
         type="email"
