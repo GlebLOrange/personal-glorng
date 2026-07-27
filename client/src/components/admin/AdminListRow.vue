@@ -232,7 +232,7 @@ function onKeydown(event: KeyboardEvent): void {
     </div>
     <div
       v-if="expanded && $slots.detail"
-      class="mt-2 border-t border-surface-border pt-2 text-xs text-surface-mid"
+      class="mt-2 border-t border-surface-border pt-2 pb-2 text-xs text-surface-mid"
     >
       <slot name="detail" />
     </div>

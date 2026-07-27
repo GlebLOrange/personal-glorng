@@ -118,7 +118,7 @@ function editRecipeFromCard(recipe: Recipe): void {
 
       <ErrorState v-else-if="listError" :message="listError" show-retry @retry="loadRecipes" />
 
-      <div v-else-if="recipes.length" class="flex flex-col gap-1">
+      <div v-else-if="recipes.length" class="mt-1 min-w-0">
         <RecipeCard
           v-for="recipe in recipes"
           :key="recipe.id"

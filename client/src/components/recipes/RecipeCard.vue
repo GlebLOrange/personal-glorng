@@ -43,7 +43,7 @@ function onRowKeydown(event: KeyboardEvent): void {
     tabindex="0"
     :class="[
       CONTROL_SIZE,
-      'group flex w-full min-w-0 cursor-pointer items-center overflow-hidden rounded-md !border-0 !bg-surface-card px-3 text-left ring-1 ring-inset ring-transparent hover:bg-surface-light/10 hover:ring-accent-blue/40 focus-visible:bg-surface-light/10 focus-visible:ring-accent-blue/40 focus-within:bg-surface-light/10 focus-within:ring-accent-blue/40',
+      'admin-list-row-rule group flex w-full min-w-0 cursor-pointer items-center overflow-hidden rounded-md !border-0 !bg-surface-card px-3 text-left ring-1 ring-inset ring-transparent hover:bg-surface-light/10 hover:ring-accent-blue/40 focus-visible:bg-surface-light/10 focus-visible:ring-accent-blue/40 focus-within:bg-surface-light/10 focus-within:ring-accent-blue/40',
     ]"
     :aria-label="`Open recipe ${recipe.title}`"
     @click="emit('select', recipe.id)"
