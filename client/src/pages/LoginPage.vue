@@ -120,7 +120,7 @@ async function handleGoogleLogin(): Promise<void> {
         @click="handleGoogleLogin"
       >
         <GoogleMarkIcon class-name="size-4" />
-        {{ googleLoading ? "connecting..." : "continue with google" }}
+        {{ googleLoading ? "connecting..." : "continue with Google" }}
       </BaseButton>
     </div>
 

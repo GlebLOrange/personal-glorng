@@ -134,23 +134,45 @@ describe("BaseInput", () => {
     expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
   });
 
-  it("labelInside renders label inside the shell and suppresses the outer notch", () => {
+  it("labelInside shows overlay while empty and suppresses tip + outer notch", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "pw",
+        label: "password",
+        placeholder: "password tip",
+        labelInside: true,
+        modelValue: "",
+      },
+    });
+
+    expect(wrapper.get("label.sr-only").attributes("for")).toBe("pw");
+    expect(wrapper.get("label.sr-only").text()).toBe("password");
+    // visual label is a flex sibling span (not the sr-only label)
+    expect(wrapper.find("span.text-surface-sage").exists()).toBe(true);
+    expect(wrapper.find("span.text-surface-sage").text()).toBe("password");
+    // tip suppressed when labelInside is active
+    expect(wrapper.find("#pw-tip").exists()).toBe(false);
+    expect(wrapper.find(".pt-2\\.5").exists()).toBe(false);
+    expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
+    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
+  });
+
+  it("labelInside hides visual label and shows clear once typing", async () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "pw",
         label: "password",
         labelInside: true,
+        modelValue: "",
       },
     });
 
-    // label is inside the shell, not the outer notch
-    const label = wrapper.get("label");
-    expect(label.attributes("for")).toBe("pw");
-    expect(label.text()).toBe("password");
-    // no top padding reserved — no outer notch without an error
-    expect(wrapper.find(".pt-2\\.5").exists()).toBe(false);
-    // input is named via label association, not aria-label fallback
-    expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
+    expect(wrapper.find("span.text-surface-sage").exists()).toBe(true);
+    await wrapper.setProps({ modelValue: "secret" });
+    // visual label gone; sr-only stays for a11y
+    expect(wrapper.find("span.text-surface-sage").exists()).toBe(false);
+    expect(wrapper.find("label.sr-only").exists()).toBe(true);
+    expect(wrapper.get('button[aria-label="Clear"]').exists()).toBe(true);
   });
 
   it("labelInside still shows error in outer notch when error is present", () => {

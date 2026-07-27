@@ -60,14 +60,24 @@ const useShell = computed(() => Boolean(props.prefix || props.placeholder || has
 const showClear = computed(() => useShell.value && hasClearableValue.value);
 /** Reserve clear width whenever shell is clearable so tip/value never jump. */
 const reserveClear = computed(() => useShell.value && isClearableType.value);
-/** Overlay tip only when empty (even if focused). */
-const showTip = computed(() => Boolean(props.placeholder) && !hasTypedValue.value);
+/**
+ * Overlay tip only when empty. labelInside replaces the tip — avoid stacking both.
+ * (ponytail: ceiling is auth/dense fields; restore tip beside label if a consumer needs both.)
+ */
+const showTip = computed(
+  () => Boolean(props.placeholder) && !hasTypedValue.value && !props.labelInside,
+);
+/** Inside-label overlay mirrors tip: visible only while empty, then clear takes over. */
+const showInsideLabel = computed(
+  () => Boolean(props.labelInside && props.label) && !hasTypedValue.value,
+);
 const tipInsetClass = computed(() => [
   "left-3",
   reserveClear.value || hasSuffix.value ? "right-10" : "right-3",
 ]);
 /** Error replaces label on the border notch; hint rides beside the label when present. */
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
+/** Persistent sr-only label when labelInside so naming survives hide-on-type. */
 const hasVisibleLabel = computed(() => showLabelNotch.value || Boolean(props.label && props.labelInside));
 const showNotchRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
@@ -148,14 +158,17 @@ defineExpose({ focus });
       >
         {{ prefix }}
       </span>
-      <!-- ponytail: inside-label sits left of the input text; shares the shell flex row -->
-      <label
-        v-if="props.labelInside && props.label"
-        :for="inputId"
-        class="relative z-10 shrink-0 pl-3 text-xs font-medium text-surface-sage"
-      >
+      <!-- sr-only keeps for/id naming always; visual label is a flex sibling (no layout overlap) -->
+      <label v-if="props.labelInside && props.label" :for="inputId" class="sr-only">
         {{ props.label }}
       </label>
+      <span
+        v-if="showInsideLabel"
+        aria-hidden="true"
+        class="relative z-10 shrink-0 pl-3 text-xs font-medium text-surface-sage"
+      >
+        {{ label }}
+      </span>
       <input
         v-if="type === 'number'"
         :id="inputId"
