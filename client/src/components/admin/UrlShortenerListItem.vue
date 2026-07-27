@@ -155,7 +155,7 @@ function confirmDelete(): void {
       >
         {{ shortLink }}
       </a>
-      ? this cannot be undone.
+      ? this cannot be undone
     </p>
   </ConfirmDialog>
 </template>
