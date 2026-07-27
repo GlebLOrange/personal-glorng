@@ -26,14 +26,18 @@ describe("DataExtractOptionsPanel popover a11y", () => {
     await trigger.trigger("click");
     await nextTick();
 
-    const dialog = document.querySelector('[role="dialog"][aria-label="options"]');
-    expect(dialog).toBeTruthy();
-    expect(dialog?.contains(document.activeElement)).toBe(true);
+    const dialog = wrapper.find('[role="dialog"][aria-label="options"]');
+    expect(dialog.exists()).toBe(true);
+    // Local-anchor: panel stays under the options root (BaseDropdownMenu layout).
+    expect(wrapper.element.contains(dialog.element)).toBe(true);
+    expect(dialog.element.parentElement).not.toBe(document.body);
+    expect(dialog.classes()).toContain("absolute");
+    expect(dialog.element.contains(document.activeElement)).toBe(true);
     expect(document.activeElement?.tagName).toBe("SELECT");
 
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     await nextTick();
-    expect(document.querySelector('[role="dialog"][aria-label="options"]')).toBeNull();
+    expect(wrapper.find('[role="dialog"][aria-label="options"]').exists()).toBe(false);
     expect(document.activeElement).toBe(trigger.element);
 
     wrapper.unmount();
