@@ -49,7 +49,7 @@ const emit = defineEmits<{
         class="w-full h-48 rounded-md object-cover"
       />
 
-      <div class="flex flex-wrap gap-2 text-xs">
+      <div class="flex w-full flex-wrap items-center justify-between gap-2 text-xs">
         <span
           v-if="recipe.prep_time"
           class="inline-flex items-center gap-1 rounded-full border border-accent-blue/30 bg-accent-blue/15 px-2 py-1 text-accent-blue"

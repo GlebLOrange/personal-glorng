@@ -5,7 +5,10 @@ import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { TOOLBAR_POPOVER_PANEL_CHROME_CLASS, TOOLBAR_POPOVER_WIDTH_CLASS } from "@/constants/toolbarPopover";
+import {
+  TOOLBAR_POPOVER_PANEL_CHROME_CLASS,
+  TOOLBAR_POPOVER_WIDTH_CLASS,
+} from "@/constants/toolbarPopover";
 import { useToolbarOptionsPopover } from "@/composables/useToolbarOptionsPopover";
 import type { FormatChoice } from "@/composables/useDataExtractTool";
 import type { DelimitedProfile, XmlExtractMode } from "@/types/dataExtract";
@@ -41,13 +44,13 @@ const { toggle: toggleOptions } = useToolbarOptionsPopover({
   <div
     ref="optionsRoot"
     class="relative inline-flex flex-col"
-    :class="[TOOLBAR_POPOVER_WIDTH_CLASS, optionsOpen ? 'z-40' : undefined]"
+    :class="optionsOpen ? 'z-40' : undefined"
   >
     <ToolbarPillButton
       ref="optionsTrigger"
       family="1xx"
       type="button"
-      class="w-full"
+      :class="TOOLBAR_POPOVER_WIDTH_CLASS"
       :selected="optionsOpen || hasCustomOptions"
       aria-haspopup="dialog"
       :aria-expanded="optionsOpen"
@@ -55,7 +58,9 @@ const { toggle: toggleOptions } = useToolbarOptionsPopover({
       @click.stop="toggleOptions"
     >
       options
-      <span v-if="optionsActiveLabel" class="text-surface-muted"> · {{ optionsActiveLabel }} </span>
+      <span v-if="optionsActiveLabel" class="min-w-0 truncate text-surface-muted">
+        · {{ optionsActiveLabel }}
+      </span>
       <ChevronIcon :open="optionsOpen" />
     </ToolbarPillButton>
 
@@ -66,8 +71,8 @@ const { toggle: toggleOptions } = useToolbarOptionsPopover({
       role="dialog"
       aria-labelledby="data-extract-options-title"
       tabindex="-1"
-      class="absolute left-0 top-full z-10 mt-1 w-full space-y-3"
-      :class="TOOLBAR_POPOVER_PANEL_CHROME_CLASS"
+      class="absolute left-0 top-full z-10 mt-1 space-y-3"
+      :class="[TOOLBAR_POPOVER_WIDTH_CLASS, TOOLBAR_POPOVER_PANEL_CHROME_CLASS]"
       @click.stop
     >
       <h2 id="data-extract-options-title" class="sr-only">extract options</h2>

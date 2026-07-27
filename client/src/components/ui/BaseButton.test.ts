@@ -16,31 +16,31 @@ describe("BaseButton", () => {
     expect(button.text()).toBe("Save");
   });
 
-  it("keeps sm/md/field at input height; lg is taller; icon is square h-11", () => {
+  it("keeps sm/md/field at input height; lg is taller; icon is square h-10", () => {
     expect(
       mount(BaseButton, { props: { size: "sm" } })
         .get("button")
         .classes(),
-    ).toContain("h-11");
+    ).toContain("h-10");
     expect(
       mount(BaseButton, { props: { size: "md" } })
         .get("button")
         .classes(),
-    ).toContain("h-11");
+    ).toContain("h-10");
     expect(
       mount(BaseButton, { props: { size: "field" } })
         .get("button")
         .classes(),
-    ).toContain("h-11");
+    ).toContain("h-10");
     expect(
       mount(BaseButton, { props: { size: "lg" } })
         .get("button")
         .classes(),
     ).toContain("h-12");
     const icon = mount(BaseButton, { props: { size: "icon" } }).get("button");
-    expect(icon.classes()).toContain("h-11");
-    expect(icon.classes()).toContain("w-11");
-    expect(icon.classes()).toContain("min-w-11");
+    expect(icon.classes()).toContain("h-10");
+    expect(icon.classes()).toContain("w-10");
+    expect(icon.classes()).toContain("min-w-10");
     expect(icon.classes()).toContain("px-0");
   });
 

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { findNextSection, getSectionTargets } from "@/composables/useNextSectionScroll";
+import {
+  findNextSection,
+  getSectionTargets,
+  scrollStepPx,
+} from "@/composables/useNextSectionScroll";
 
 describe("getSectionTargets", () => {
   it("returns section[id] elements under main sorted by offsetTop", () => {
@@ -34,5 +38,11 @@ describe("findNextSection", () => {
     expect(findNextSection([first, second], 50)?.offsetTop).toBe(100);
     expect(findNextSection([first, second], 200)?.offsetTop).toBe(500);
     expect(findNextSection([first, second], 900)).toBeNull();
+  });
+});
+
+describe("scrollStepPx", () => {
+  it("uses about 85% of the viewport", () => {
+    expect(scrollStepPx(1000)).toBe(850);
   });
 });

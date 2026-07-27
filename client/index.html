@@ -30,7 +30,7 @@
     <title>Gleb.Y — Developer Portfolio</title>
     <script>
       /* FOUC: apply data-theme before CSS paint. Key must match COLOR_THEME_STORAGE_KEY.
-         Unset/invalid preference → system (prefers-color-scheme). */
+         light|dark as stored; legacy `system` → OS once; unset/invalid → dark. */
       (function () {
         try {
           var key = "glorng-color-theme";
@@ -38,17 +38,21 @@
           var theme = "dark";
           if (pref === "light" || pref === "dark") {
             theme = pref;
-          } else {
-            // system (explicit), or unset/invalid → follow OS
+          } else if (pref === "system") {
             theme =
               window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
                 ? "dark"
                 : "light";
+            try {
+              localStorage.setItem(key, theme);
+            } catch (e) {
+              /* ignore */
+            }
           }
           document.documentElement.setAttribute("data-theme", theme);
           var meta = document.querySelector('meta[name="theme-color"]');
           if (meta) {
-            meta.setAttribute("content", theme === "light" ? "#f9f9fb" : "#111827");
+            meta.setAttribute("content", theme === "light" ? "#e5e7eb" : "#111827");
           }
         } catch (e) {
           document.documentElement.setAttribute("data-theme", "dark");

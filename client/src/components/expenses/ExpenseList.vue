@@ -30,7 +30,7 @@ const emit = defineEmits<{
 }>();
 
 const sortButtonClass =
-  "inline-flex h-11 items-center text-left text-xs tracking-wider transition-colors hover:text-surface-light";
+  "inline-flex h-10 items-center text-left text-xs tracking-wider transition-colors hover:text-surface-light";
 </script>
 
 <template>
@@ -85,13 +85,13 @@ const sortButtonClass =
               </button>
             </th>
             <th class="px-3">
-              <span class="inline-flex h-11 items-center text-xs tracking-wider">source</span>
+              <span class="inline-flex h-10 items-center text-xs tracking-wider">source</span>
             </th>
             <th class="px-3">
-              <span class="inline-flex h-11 items-center text-xs tracking-wider">notes</span>
+              <span class="inline-flex h-10 items-center text-xs tracking-wider">notes</span>
             </th>
             <th class="px-3 text-right">
-              <span class="inline-flex h-11 items-center text-xs tracking-wider">actions</span>
+              <span class="inline-flex h-10 items-center text-xs tracking-wider">actions</span>
             </th>
           </tr>
         </thead>

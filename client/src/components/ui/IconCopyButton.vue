@@ -7,9 +7,12 @@ withDefaults(
     /** Accessible name for the icon-only control. */
     ariaLabel?: string;
     disabled?: boolean;
+    /** field = in-shell (same h-10 square); default chrome (h-10). */
+    size?: "md" | "field";
   }>(),
   {
     ariaLabel: "copy",
+    size: "md",
   },
 );
 
@@ -19,6 +22,7 @@ defineEmits<{ click: [MouseEvent] }>();
 <template>
   <IconActionButton
     quiet
+    :size="size"
     :ariaLabel="ariaLabel"
     :disabled="disabled"
     @click="$emit('click', $event)"

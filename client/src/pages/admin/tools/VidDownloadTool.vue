@@ -7,7 +7,10 @@ import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { TOOLBAR_POPOVER_PANEL_CLASS } from "@/constants/toolbarPopover";
+import {
+  TOOLBAR_POPOVER_PANEL_CHROME_CLASS,
+  TOOLBAR_POPOVER_WIDTH_CLASS,
+} from "@/constants/toolbarPopover";
 import { api } from "@/composables/useApi";
 import { useToolbarOptionsPopover } from "@/composables/useToolbarOptionsPopover";
 import { useNotify } from "@/composables/useNotify";
@@ -102,6 +105,7 @@ async function download(): Promise<void> {
             ref="optionsTrigger"
             family="1xx"
             type="button"
+            :class="TOOLBAR_POPOVER_WIDTH_CLASS"
             :selected="optionsOpen || hasCustomOptions"
             aria-haspopup="dialog"
             :aria-expanded="optionsOpen"
@@ -109,7 +113,7 @@ async function download(): Promise<void> {
             @click.stop="toggleOptions"
           >
             options
-            <span v-if="optionsActiveLabel" class="text-surface-muted">
+            <span v-if="optionsActiveLabel" class="min-w-0 truncate text-surface-muted">
               · {{ optionsActiveLabel }}
             </span>
             <ChevronIcon :open="optionsOpen" />
@@ -123,7 +127,7 @@ async function download(): Promise<void> {
             aria-labelledby="vid-download-options-title"
             tabindex="-1"
             class="absolute left-0 top-full z-10 mt-1 space-y-3"
-            :class="TOOLBAR_POPOVER_PANEL_CLASS"
+            :class="[TOOLBAR_POPOVER_WIDTH_CLASS, TOOLBAR_POPOVER_PANEL_CHROME_CLASS]"
             @click.stop
           >
             <h2 id="vid-download-options-title" class="sr-only">download options</h2>

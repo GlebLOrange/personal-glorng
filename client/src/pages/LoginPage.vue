@@ -123,9 +123,13 @@ async function handleGoogleLogin(): Promise<void> {
     </div>
 
     <p class="text-center text-xs text-surface-mid mt-4 space-x-3">
-      <RouterLink to="/register" class="nav-link"> create account </RouterLink>
+      <RouterLink to="/register" class="nav-link underline underline-offset-4">
+        create account
+      </RouterLink>
       <span>·</span>
-      <RouterLink to="/forgot-password" class="nav-link"> forgot password? </RouterLink>
+      <RouterLink to="/forgot-password" class="nav-link underline underline-offset-4">
+        forgot password?
+      </RouterLink>
     </p>
   </AuthPageShell>
 </template>

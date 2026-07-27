@@ -32,7 +32,7 @@ const asideClass = computed(() => [props.wrapperClass]);
 const linkClass = computed(() => (props.chrome ? "block h-full w-full" : "block w-full"));
 
 const resolvedCardClass = computed(() =>
-  isActivePage.value ? [props.cardClass, "border-accent-blue !bg-accent-blue/10"] : props.cardClass,
+  isActivePage.value ? [props.cardClass, "border-accent-blue bg-accent-blue/10"] : props.cardClass,
 );
 
 const summaryProps = computed(() => ({

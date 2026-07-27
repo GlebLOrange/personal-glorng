@@ -46,7 +46,7 @@ description: Toss-style UI design rules for disciplined spacing, typography, gra
 - Keep disabled and secondary states in grayscale.
 - Ensure status is never communicated by color alone.
 - Prefer **pale** (desaturated) status/brand tokens — not saturated neon fills. Solid CTAs use pale `accent-blue` with `on-accent` ink.
-- Dual theme: rebuild grayscale per mode via `html[data-theme]`; preference default is **system** (OS), resolved theme is often dark. Same token names in light and dark.
+- Dual theme: rebuild grayscale per mode via `html[data-theme]`; preference is **dark** or **light** (default dark). Same token names in light and dark.
 
 ## Marketing / portfolio exception
 
@@ -58,7 +58,7 @@ Portfolio and marketing surfaces may use `accent-blue`, `accent-violet`, `accent
 - Reduce bright accent intensity on dark backgrounds (pale tokens already do this).
 - Preserve contrast between surface, border, and foreground layers.
 - Test charts, cards, and form controls in both modes.
-- Light defaults: page `#F9F9FB`, text `#111827`. Dark defaults: page `#111827`, text `#F9F9FB`.
+- Light defaults: page `#e5e7eb`, text `#111827`. Dark defaults: page `#111827`, text `#F9F9FB`.
 
 ## Accessibility
 

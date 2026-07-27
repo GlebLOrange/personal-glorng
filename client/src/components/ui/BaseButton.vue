@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import {
+  CONTROL_BUTTON_ICON,
+  CONTROL_BUTTON_LG,
+  CONTROL_BUTTON_MD,
+  CONTROL_BUTTON_SM,
+} from "@/constants/formClasses";
+
 const props = withDefaults(
   defineProps<{
     variant?: "primary" | "secondary" | "ghost" | "success";
     /**
-     * Shared control height with inputs (h-11), except lg (h-12).
+     * Shared control height with inputs (h-10), except lg (h-12).
      * sm/md/field share the same height; sm only tightens padding/type.
      * `field` is an alias of `md`. `icon` is a square hit target matching field height.
      */
@@ -27,6 +34,13 @@ const props = withDefaults(
 
 const isDisabled = computed(() => Boolean(props.disabled || props.loading));
 const resolvedSize = computed(() => (props.size === "field" ? "md" : props.size));
+
+const sizeClass = computed(() => {
+  if (resolvedSize.value === "lg") return CONTROL_BUTTON_LG;
+  if (resolvedSize.value === "icon") return CONTROL_BUTTON_ICON;
+  if (resolvedSize.value === "sm") return CONTROL_BUTTON_SM;
+  return CONTROL_BUTTON_MD;
+});
 
 const variantClass = computed(() => {
   const selected = Boolean(props.selected);
@@ -86,13 +100,7 @@ const variantClass = computed(() => {
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
       'disabled:cursor-not-allowed disabled:opacity-50',
       variantClass,
-      resolvedSize === 'lg'
-        ? 'h-12 px-6 text-base'
-        : resolvedSize === 'icon'
-          ? 'h-11 w-11 min-w-11 px-0 text-sm'
-          : resolvedSize === 'sm'
-            ? 'h-11 px-3 text-xs'
-            : 'h-11 px-4 text-sm',
+      sizeClass,
     ]"
   >
     <slot />

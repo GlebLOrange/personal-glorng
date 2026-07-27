@@ -91,7 +91,7 @@ function onCategoryRowClick(category: ExpenseCategory): void {
                 :id="`cat-name-${category.id}`"
                 v-model="editingCategoryName"
                 :data-category-edit="category.id"
-                class="h-11 w-full rounded-lg border border-surface-border bg-surface-dark px-3 text-sm text-surface-light outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/50"
+                class="h-10 w-full rounded-lg border border-surface-border bg-surface-dark px-3 text-sm text-surface-light outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/50"
                 @keyup.enter="emit('saveCategoryRename')"
               />
             </div>
@@ -107,7 +107,7 @@ function onCategoryRowClick(category: ExpenseCategory): void {
                 step="0.01"
                 inputmode="decimal"
                 placeholder="0.00"
-                class="h-11 w-full rounded-lg border border-surface-border bg-surface-dark px-3 font-data text-sm text-surface-light outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/50"
+                class="h-10 w-full rounded-lg border border-surface-border bg-surface-dark px-3 font-data text-sm text-surface-light outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/50"
                 @keyup.enter="emit('saveCategoryRename')"
               />
             </div>

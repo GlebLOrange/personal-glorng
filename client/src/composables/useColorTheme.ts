@@ -1,40 +1,23 @@
 import { computed, onMounted, ref, type Ref } from "vue";
 
-/** Persisted preference: explicit theme or follow OS. Default system when unset. */
-export type ColorThemePreference = "light" | "dark" | "system";
+/** Persisted color theme (explicit light or dark only). */
+export type ColorThemePreference = "light" | "dark";
 
-/** Resolved theme applied to `html[data-theme]`. */
-export type ColorThemeResolved = "light" | "dark";
+/** Resolved theme applied to `html[data-theme]` — same as preference. */
+export type ColorThemeResolved = ColorThemePreference;
 
 export const COLOR_THEME_STORAGE_KEY = "glorng-color-theme";
 
-/** Unset / invalid localStorage → follow OS (FOUC script must match). */
-export const DEFAULT_COLOR_THEME_PREFERENCE: ColorThemePreference = "system";
+/** Unset / invalid localStorage → dark (FOUC script must match). */
+export const DEFAULT_COLOR_THEME_PREFERENCE: ColorThemePreference = "dark";
 
-const THEME_COLOR_LIGHT = "#f9f9fb";
+const THEME_COLOR_LIGHT = "#e5e7eb";
 const THEME_COLOR_DARK = "#111827";
 
-let mediaQuery: MediaQueryList | null = null;
-let mediaListener: ((event: MediaQueryListEvent) => void) | null = null;
 const preference: Ref<ColorThemePreference> = ref(readPreference());
 /** Shared resolved theme — charts/composables can depend on this for reactivity. */
-export const colorThemeResolved: Ref<ColorThemeResolved> = ref(resolveTheme(preference.value));
+export const colorThemeResolved: Ref<ColorThemeResolved> = ref(preference.value);
 const resolved = colorThemeResolved;
-
-function readPreference(): ColorThemePreference {
-  if (typeof localStorage === "undefined") {
-    return DEFAULT_COLOR_THEME_PREFERENCE;
-  }
-  try {
-    const raw = localStorage.getItem(COLOR_THEME_STORAGE_KEY)?.trim();
-    if (raw === "light" || raw === "dark" || raw === "system") {
-      return raw;
-    }
-  } catch {
-    // ignore
-  }
-  return DEFAULT_COLOR_THEME_PREFERENCE;
-}
 
 function systemPrefersDark(): boolean {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
@@ -43,10 +26,40 @@ function systemPrefersDark(): boolean {
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
-export function resolveTheme(pref: ColorThemePreference): ColorThemeResolved {
-  if (pref === "system") {
+/** Map legacy `system` (or OS peek) to an explicit preference. */
+function migrateLegacyPreference(raw: string | null | undefined): ColorThemePreference | null {
+  if (raw === "light" || raw === "dark") return raw;
+  if (raw === "system") {
     return systemPrefersDark() ? "dark" : "light";
   }
+  return null;
+}
+
+function readPreference(): ColorThemePreference {
+  if (typeof localStorage === "undefined") {
+    return DEFAULT_COLOR_THEME_PREFERENCE;
+  }
+  try {
+    const raw = localStorage.getItem(COLOR_THEME_STORAGE_KEY)?.trim();
+    const migrated = migrateLegacyPreference(raw);
+    if (migrated) {
+      // ponytail: rewrite legacy `system` so toggle never resurfaces it
+      if (raw === "system") {
+        try {
+          localStorage.setItem(COLOR_THEME_STORAGE_KEY, migrated);
+        } catch {
+          // ignore
+        }
+      }
+      return migrated;
+    }
+  } catch {
+    // ignore
+  }
+  return DEFAULT_COLOR_THEME_PREFERENCE;
+}
+
+export function resolveTheme(pref: ColorThemePreference): ColorThemeResolved {
   return pref;
 }
 
@@ -81,27 +94,6 @@ function persistPreference(pref: ColorThemePreference): void {
   }
 }
 
-function onSystemChange(): void {
-  if (preference.value !== "system") {
-    return;
-  }
-  applyColorTheme(resolveTheme("system"));
-}
-
-function ensureSystemListener(): void {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-    return;
-  }
-  if (mediaQuery && mediaListener) {
-    return;
-  }
-  mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-  mediaListener = (): void => {
-    onSystemChange();
-  };
-  mediaQuery.addEventListener("change", mediaListener);
-}
-
 /**
  * Color theme preference + resolved `data-theme`.
  * Call `initColorTheme()` once at app boot (after FOUC script already painted).
@@ -115,8 +107,7 @@ export function useColorTheme(): {
 } {
   onMounted(() => {
     preference.value = readPreference();
-    applyColorTheme(resolveTheme(preference.value));
-    ensureSystemListener();
+    applyColorTheme(preference.value);
   });
 
   const isDark = computed(() => resolved.value === "dark");
@@ -124,18 +115,12 @@ export function useColorTheme(): {
   function setPreference(next: ColorThemePreference): void {
     preference.value = next;
     persistPreference(next);
-    applyColorTheme(resolveTheme(next));
-    if (next === "system") {
-      ensureSystemListener();
-    }
+    applyColorTheme(next);
   }
 
-  /** Cycle dark → light → system → dark for a single chrome control. */
+  /** Toggle dark ↔ light for a single chrome control. */
   function cyclePreference(): void {
-    const order: ColorThemePreference[] = ["dark", "light", "system"];
-    const idx = order.indexOf(preference.value);
-    const next = order[(idx + 1) % order.length] ?? "dark";
-    setPreference(next);
+    setPreference(preference.value === "dark" ? "light" : "dark");
   }
 
   return {
@@ -150,6 +135,5 @@ export function useColorTheme(): {
 /** Sync Vue state after the FOUC inline script (call once from main.ts). */
 export function initColorTheme(): void {
   preference.value = readPreference();
-  applyColorTheme(resolveTheme(preference.value));
-  ensureSystemListener();
+  applyColorTheme(preference.value);
 }

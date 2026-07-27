@@ -57,7 +57,7 @@ describe("AdminFilterDropdown", () => {
     wrapper.unmount();
   });
 
-  it("matches trigger width to the open panel and clear width to chips", async () => {
+  it("keeps a stable mid width open and closed", async () => {
     const wrapper = mount(AdminFilterDropdown, {
       props: { hasActiveFilters: true },
       slots: {
@@ -73,6 +73,8 @@ describe("AdminFilterDropdown", () => {
     });
 
     const trigger = wrapper.get('button[aria-haspopup="dialog"]');
+    const closedWidth = trigger.element.offsetWidth;
+
     await trigger.trigger("click");
     await nextTick();
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
@@ -81,8 +83,9 @@ describe("AdminFilterDropdown", () => {
       '[role="dialog"][aria-label="filters"]',
     ) as HTMLElement | null;
     expect(dialog).toBeTruthy();
-    // Pill matches content-fit panel (longest chip / footer label).
-    expect(trigger.element.offsetWidth).toBe(dialog!.offsetWidth);
+    // Fixed mid column — trigger does not jump when the panel opens.
+    expect(trigger.element.offsetWidth).toBe(closedWidth);
+    expect(dialog!.offsetWidth).toBe(trigger.element.offsetWidth);
 
     const chip = dialog!.querySelector("button[aria-pressed]") as HTMLButtonElement | null;
     const clear = Array.from(dialog!.querySelectorAll("button")).find(
@@ -91,11 +94,8 @@ describe("AdminFilterDropdown", () => {
     expect(chip).toBeTruthy();
     expect(clear).toBeTruthy();
     expect(clear!.offsetWidth).toBe(chip!.offsetWidth);
-    // Same chip geometry (not tall BaseButton h-11).
+    // Same chip geometry (not tall BaseButton h-10).
     expect(clear!.offsetHeight).toBe(chip!.offsetHeight);
-
-    // Content-fit: short chip labels must not force the old 16rem floor.
-    expect(dialog!.offsetWidth).toBeLessThan(16 * 16);
 
     wrapper.unmount();
   });

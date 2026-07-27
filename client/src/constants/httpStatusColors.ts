@@ -1,4 +1,8 @@
-import { CONTROL_SIZE, CONTROL_SIZE_ICON } from "@/constants/formClasses";
+import {
+  CONTROL_SIZE,
+  CONTROL_SIZE_ICON,
+  CONTROL_SIZE_ICON_FIELD,
+} from "@/constants/formClasses";
 
 /** HTTP status family keys used for badges and action pills. */
 export type HttpStatusFamily = "1xx" | "2xx" | "3xx" | "4xx" | "5xx";
@@ -76,10 +80,12 @@ export type IconActionClassOptions = {
   danger?: boolean;
   /** Anchors ignore :enabled — use plain hover: */
   anchor?: boolean;
+  /** field = in-shell clear (same square as CONTROL_SIZE); default matches CONTROL_SIZE. */
+  size?: "md" | "field";
 };
 
 /**
- * Classes for h-11 icon chrome (back, pagination, edit, clear).
+ * Classes for square icon chrome (back, pagination, edit, clear).
  * Same idle/hover/selected paint as pills; size forced to square.
  */
 export function iconActionClass(
@@ -88,20 +94,21 @@ export function iconActionClass(
   opts: IconActionClassOptions = {},
 ): string {
   const resolved: HttpStatusFamily = opts.danger ? "4xx" : family;
+  const sizeCls = opts.size === "field" ? CONTROL_SIZE_ICON_FIELD : ICON_ACTION_SIZE;
   if (opts.quiet && !selected) {
     const hover = opts.anchor ? "hover:" : "hover:enabled:";
     return [
-      ICON_ACTION_SIZE,
+      sizeCls,
       "border-transparent bg-transparent text-surface-light/60",
       `${hover}border-accent-blue/40 ${hover}bg-accent-blue/15 ${hover}text-accent-blue`,
     ].join(" ");
   }
   if (selected) {
-    return `${ICON_ACTION_SIZE} ${FAMILY_ACTION_SELECTED[resolved]}`;
+    return `${sizeCls} ${FAMILY_ACTION_SELECTED[resolved]}`;
   }
   const tone = FAMILY_ACTION[resolved];
   if (opts.anchor) {
-    return `${ICON_ACTION_SIZE} ${tone.replaceAll("hover:enabled:", "hover:")}`;
+    return `${sizeCls} ${tone.replaceAll("hover:enabled:", "hover:")}`;
   }
-  return `${ICON_ACTION_SIZE} ${tone}`;
+  return `${sizeCls} ${tone}`;
 }

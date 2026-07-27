@@ -11,6 +11,11 @@ function scrollBehavior(): ScrollBehavior {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth";
 }
 
+/** Minimum travel per click — ~one screen so short sections don’t feel stuck. */
+export function scrollStepPx(viewportHeight: number): number {
+  return Math.round(viewportHeight * 0.85);
+}
+
 /** Find the next section below the current scroll position. */
 export function findNextSection(
   sections: HTMLElement[],
@@ -25,17 +30,17 @@ export function useNextSectionScroll(): {
   scrollToTop: () => void;
 } {
   function scrollToNextSection(): void {
-    const sections = getSectionTargets();
-    const next = findNextSection(sections, window.scrollY);
     const behavior = scrollBehavior();
+    const step = scrollStepPx(window.innerHeight);
+    const sections = getSectionTargets();
+    // Skip sections still near the viewport — land on one ~a screen down when possible.
+    const next = findNextSection(sections, window.scrollY, step);
     if (next) {
       next.scrollIntoView({ behavior, block: "start" });
       return;
     }
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior,
-    });
+    const maxTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    window.scrollTo({ top: Math.min(window.scrollY + step, maxTop), behavior });
   }
 
   function scrollToTop(): void {
