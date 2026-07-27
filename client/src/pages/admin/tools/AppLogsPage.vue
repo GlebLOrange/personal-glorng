@@ -194,9 +194,9 @@ onMounted(load);
 
       <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
 
-      <EmptyState v-else-if="items.length === 0" class="mt-4" description="No log entries found." />
+      <EmptyState v-else-if="items.length === 0" class="mt-4" description="No log entries found" />
 
-      <div v-else class="mt-1 min-w-0 divide-y divide-surface-border/60">
+      <div v-else class="mt-1 min-w-0">
         <AdminListRow
           v-for="entry in items"
           :key="entry.id"
@@ -218,7 +218,7 @@ onMounted(load);
             </div>
           </template>
           <template #primary>
-            <span class="lowercase" :title="entry.message">{{ entry.message }}</span>
+            <span class="lowercase" :title="entry.message.toLowerCase()">{{ entry.message }}</span>
           </template>
           <template #meta>
             <span class="font-data">{{ entry.logger }}</span>

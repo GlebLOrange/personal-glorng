@@ -149,7 +149,7 @@ function onKeydown(event: KeyboardEvent): void {
     :aria-expanded="expandable ? expanded : undefined"
     v-bind="rowAttrs"
     :class="rowClass"
-    class="flex w-full min-w-0 flex-col justify-start overflow-hidden rounded-md !border-0 !bg-surface-card px-2 text-left ring-1 ring-inset ring-transparent"
+    class="relative flex w-full min-w-0 flex-col justify-start overflow-hidden rounded-md !border-0 !bg-surface-card px-2 text-left ring-1 ring-inset ring-transparent after:pointer-events-none after:absolute after:bottom-0 after:left-2 after:right-2 after:z-[1] after:h-px after:bg-surface-border/60 after:content-[''] last:after:hidden"
     @click="onClick"
     @keydown="onKeydown"
   >
@@ -187,7 +187,7 @@ function onKeydown(event: KeyboardEvent): void {
         </span>
         <span
           v-if="$slots.meta && !centerMeta"
-          class="hidden truncate text-xs leading-none text-surface-muted sm:inline"
+          class="hidden truncate text-xs lowercase leading-none text-surface-muted sm:inline"
         >
           <slot name="meta" />
         </span>
@@ -196,13 +196,13 @@ function onKeydown(event: KeyboardEvent): void {
         v-if="$slots.meta && centerMeta"
         class="pointer-events-none absolute inset-0 hidden items-center justify-center sm:flex"
       >
-        <span class="pointer-events-auto max-w-[min(100%,24rem)] truncate px-2 text-xs leading-none text-surface-muted">
+        <span class="pointer-events-auto max-w-[min(100%,24rem)] truncate px-2 text-xs lowercase leading-none text-surface-muted">
           <slot name="meta" />
         </span>
       </div>
       <div
         v-if="$slots.time"
-        class="shrink-0 whitespace-nowrap text-xs leading-none text-surface-muted"
+        class="shrink-0 whitespace-nowrap text-xs lowercase leading-none text-surface-muted"
       >
         <slot name="time" />
       </div>

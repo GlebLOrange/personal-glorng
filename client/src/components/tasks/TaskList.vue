@@ -24,7 +24,7 @@ const emptyMessage = (filterStatus: string): string => {
 
   <EmptyState v-else-if="tasks.length === 0" :description="emptyMessage(filterStatus)" />
 
-  <div v-else class="divide-y divide-surface-border/60">
+  <div v-else class="min-w-0">
     <TaskCard v-for="task in tasks" :key="task.id" :task="task" @select="emit('select', $event)" />
   </div>
 </template>
