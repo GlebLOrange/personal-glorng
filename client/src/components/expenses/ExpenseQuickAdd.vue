@@ -150,7 +150,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         inputmode="decimal"
       />
       <BaseButton variant="success" type="submit" :disabled="loading">
-        {{ loading ? "saving..." : "save" }}
+        {{ loading ? "saving…" : "save" }}
       </BaseButton>
       <datalist id="expense-product-suggestions">
         <option v-for="name in productSuggestions" :key="name" :value="name" />
@@ -188,7 +188,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         :disabled="loading || parsing || !canConfirmSmart"
         @click="confirmSmart"
       >
-        {{ loading ? "saving..." : parsing ? "parsing…" : "+ parsed expense" }}
+        {{ loading ? "saving…" : parsing ? "parsing…" : "+ parsed expense" }}
       </BaseButton>
     </div>
   </Card>

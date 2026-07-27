@@ -194,7 +194,7 @@ onBeforeUnmount(() => {
                     type="button"
                     :class="[
                       ACTION_PILL_BASE,
-                      'gap-1.5 shrink-0 border-transparent bg-accent-violet/3 text-accent-violet hover:enabled:border-accent-violet/40 hover:enabled:bg-accent-violet/15',
+                      'gap-1.5 shrink-0 border-transparent bg-accent-blue/3 text-accent-blue hover:enabled:border-accent-blue/40 hover:enabled:bg-accent-blue/15',
                     ]"
                     :disabled="configLoading"
                     @click="loadConfig"
@@ -379,7 +379,7 @@ onBeforeUnmount(() => {
           v-model="input"
           class="min-w-0 flex-1 [&>div]:box-border [&>div]:min-h-[calc(2.5rem+0.5rem+2.5rem)] [&>div]:items-stretch [&_textarea]:h-full [&_textarea]:min-h-full [&_textarea]:resize-none"
           rows="3"
-          placeholder="message the assistant..."
+          placeholder="message the assistant…"
           aria-label="message"
           @keydown.enter.exact.prevent="handleSend"
         />
@@ -392,7 +392,7 @@ onBeforeUnmount(() => {
             type="submit"
             :disabled="loading || !input.trim() || !isReady || !canSend"
           >
-            {{ loading ? "..." : "send" }}
+            {{ loading ? "…" : "send" }}
           </ToolbarPillButton>
         </div>
       </form>

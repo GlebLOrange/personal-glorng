@@ -33,7 +33,7 @@ describe("AdminTabBar", () => {
     wrapper.unmount();
   });
 
-  it("paints sync/refresh tabs pale purple (icon, text, wash)", () => {
+  it("paints sync/refresh tabs with pale 1xx wash (not marketing violet)", () => {
     const wrapper = mount(AdminTabBar, {
       props: {
         modelValue: "sync",
@@ -46,13 +46,15 @@ describe("AdminTabBar", () => {
     });
 
     const syncTab = wrapper.get("#admin-tab-tab-sync");
-    expect(syncTab.classes()).toContain("text-accent-violet");
-    expect(syncTab.classes()).toContain("bg-accent-violet/15");
-    expect(syncTab.classes()).toContain("border-accent-violet/40");
+    expect(syncTab.classes()).toContain("text-accent-blue");
+    expect(syncTab.classes()).toContain("bg-accent-blue/15");
+    expect(syncTab.classes()).toContain("border-accent-blue/40");
+    expect(syncTab.classes()).not.toContain("text-accent-violet");
 
     const refreshTab = wrapper.get("#admin-tab-tab-refresh");
-    expect(refreshTab.classes()).toContain("text-accent-violet");
-    expect(refreshTab.classes()).toContain("bg-accent-violet/3");
+    expect(refreshTab.classes()).toContain("text-accent-blue");
+    expect(refreshTab.classes()).toContain("bg-accent-blue/3");
+    expect(refreshTab.classes()).not.toContain("text-accent-violet");
   });
 
   it("supports arrow and boundary key navigation", async () => {

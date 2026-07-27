@@ -90,7 +90,7 @@ const variantClass = computed(() => {
     :aria-busy="loading ? true : undefined"
     :aria-pressed="selected ? true : undefined"
     :class="[
-      'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg border font-medium leading-none transition-all duration-200',
+      'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg border font-medium leading-none transition-colors duration-200',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
       'disabled:cursor-not-allowed disabled:opacity-50',
       variantClass,

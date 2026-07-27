@@ -23,7 +23,7 @@ defineEmits<{ click: [MouseEvent] }>();
   <IconActionButton
     family="3xx"
     :size="size"
-    :ariaLabel="ariaLabel"
+    :aria-label="ariaLabel"
     :disabled="disabled"
     @click="$emit('click', $event)"
   >

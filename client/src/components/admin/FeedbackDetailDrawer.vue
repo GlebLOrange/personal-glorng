@@ -30,7 +30,7 @@ const emit = defineEmits<{
 <template>
   <BaseDrawer
     :open="open && item !== null"
-    :title="(item?.theme ?? "feedback").toLowerCase()"
+    :title="(item?.theme ?? 'feedback').toLowerCase()"
     max-width="md"
     @close="emit('close')"
   >

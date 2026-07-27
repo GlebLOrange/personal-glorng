@@ -124,7 +124,7 @@ onMounted(loadUrls);
     <form class="mb-6 space-y-3" @submit.prevent="createUrl">
       <div class="mb-3 flex w-full min-w-0 items-center justify-end">
         <ToolbarPillButton family="2xx" type="submit" :disabled="!canShorten">
-          {{ loading ? "creating..." : "shorten" }}
+          {{ loading ? "creating…" : "shorten" }}
         </ToolbarPillButton>
       </div>
       <BaseInput
@@ -165,7 +165,7 @@ onMounted(loadUrls);
           :has-previous-page="hasPreviousPage"
           :loading="listLoading"
           item-label="URLs"
-          ariaLabel="Short URLs pagination"
+          aria-label="Short URLs pagination"
           @first="goToPage(1)"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"

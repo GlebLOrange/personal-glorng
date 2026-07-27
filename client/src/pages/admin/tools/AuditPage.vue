@@ -195,7 +195,7 @@ onMounted(load);
         :has-previous-page="hasPreviousPage"
         :loading="loading"
         item-label="events"
-        ariaLabel="Audit pagination"
+        aria-label="Audit pagination"
         @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"

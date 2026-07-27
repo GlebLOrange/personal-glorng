@@ -34,7 +34,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
       </BaseSelect>
 
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <BaseInput v-model="toolName" label="product" placeholder="milk, dinner, shell..." />
+        <BaseInput v-model="toolName" label="product" placeholder="milk, dinner, shell…" />
         <BaseInput
           v-model="amount"
           type="number"
@@ -57,7 +57,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
         v-model="notes"
         :rows="3"
         label="notes"
-        placeholder="invoice ref, billing period..."
+        placeholder="invoice ref, billing period…"
       />
     </form>
 
@@ -73,7 +73,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
             family="2xx"
             :disabled="loading"
           >
-            {{ loading ? "saving..." : "save" }}
+            {{ loading ? "saving…" : "save" }}
           </ToolbarPillButton>
         </template>
       </DrawerFooterActions>

@@ -125,7 +125,7 @@ const {
       :has-previous-page="hasPreviousPage"
       :loading="listLoading"
       item-label="articles"
-      ariaLabel="News pagination"
+      aria-label="News pagination"
       @first="goToPage(1)"
       @prev="goToPage(page - 1)"
       @next="goToPage(page + 1)"

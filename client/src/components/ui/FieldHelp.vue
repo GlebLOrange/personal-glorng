@@ -93,7 +93,7 @@ watch(
   >
     <button
       type="button"
-      class="inline-flex size-5 items-center justify-center rounded-full text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+      class="inline-flex h-10 w-10 items-center justify-center rounded-full text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
       aria-label="help"
       :aria-expanded="open"
       :aria-controls="panelId"

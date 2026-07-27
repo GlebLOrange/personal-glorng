@@ -115,7 +115,7 @@ function buttonAriaLabel(val: string): string | undefined {
         </div>
         <div class="text-2xl font-bold text-surface-light">
           <span class="sr-only">Result: </span>
-          {{ loading ? "..." : display }}
+          {{ loading ? "…" : display }}
         </div>
       </div>
 

@@ -118,7 +118,7 @@ async function download(): Promise<void> {
           class="ml-auto"
           :disabled="loading || !url.trim()"
         >
-          {{ loading ? "downloading..." : "download" }}
+          {{ loading ? "downloading…" : "download" }}
         </ToolbarPillButton>
       </div>
 

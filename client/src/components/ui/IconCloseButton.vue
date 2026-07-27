@@ -22,7 +22,7 @@ defineEmits<{ click: [MouseEvent] }>();
   <IconActionButton
     danger
     :size="size"
-    :ariaLabel="ariaLabel"
+    :aria-label="ariaLabel"
     :disabled="disabled"
     @click="$emit('click', $event)"
   >

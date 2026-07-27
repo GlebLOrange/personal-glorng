@@ -16,7 +16,7 @@ withDefaults(
   {
     message: "",
     confirmLabel: "confirm",
-    loadingLabel: "working...",
+    loadingLabel: "working…",
     danger: false,
   },
 );

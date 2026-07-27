@@ -243,7 +243,7 @@ onMounted(load);
         :has-next-page="page < totalPages"
         :has-previous-page="page > 1"
         item-label="messages"
-        ariaLabel="Feedback pagination"
+        aria-label="Feedback pagination"
         @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"

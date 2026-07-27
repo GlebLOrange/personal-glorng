@@ -105,7 +105,7 @@ onMounted(loadFiles);
     <div class="mb-10 space-y-3">
       <div class="mb-3 flex w-full min-w-0 items-center justify-end">
         <ToolbarPillButton family="2xx" :disabled="uploading || !selectedFile" @click="upload">
-          {{ uploading ? "uploading..." : "upload & share" }}
+          {{ uploading ? "uploading…" : "upload & share" }}
         </ToolbarPillButton>
       </div>
 
@@ -152,7 +152,7 @@ onMounted(loadFiles);
           :has-previous-page="hasPreviousPage"
           :loading="listLoading"
           item-label="files"
-          ariaLabel="Shared files pagination"
+          aria-label="Shared files pagination"
           @first="goToPage(1)"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"

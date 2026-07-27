@@ -93,7 +93,7 @@ async function handleSubmit(): Promise<void> {
         :loading="loading"
         :disabled="!canSubmit"
       >
-        {{ loading ? "saving..." : "set new password" }}
+        {{ loading ? "saving…" : "set new password" }}
       </BaseButton>
     </form>
 

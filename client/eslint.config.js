@@ -28,9 +28,16 @@ export default tseslint.config(
       "vue/multi-word-component-names": "off",
       "vue/require-default-prop": "warn",
       "vue/attributes-order": "warn",
-      "vuejs-accessibility/label-has-for": "warn",
-      "vuejs-accessibility/click-events-have-key-events": "warn",
-      "vuejs-accessibility/no-autofocus": "warn",
+      "vuejs-accessibility/label-has-for": [
+        "error",
+        {
+          required: {
+            some: ["nesting", "id"],
+          },
+        },
+      ],
+      "vuejs-accessibility/click-events-have-key-events": "error",
+      "vuejs-accessibility/no-autofocus": "error",
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },

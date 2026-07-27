@@ -67,7 +67,7 @@ const emit = defineEmits<{
         :has-next-page="hasNextBatchPage"
         :has-previous-page="hasPreviousBatchPage"
         item-label="batches"
-        ariaLabel="Import batches pagination"
+        aria-label="Import batches pagination"
         @first="emit('first')"
         @prev="emit('prev')"
         @next="emit('next')"
@@ -93,7 +93,7 @@ const emit = defineEmits<{
           :disabled="loading"
           @click="emit('promote')"
         >
-          {{ loading ? "working..." : "promote pipe embed rows" }}
+          {{ loading ? "working…" : "promote pipe embed rows" }}
         </BaseButton>
       </div>
       <p v-if="promoteResult" class="text-xs text-surface-mid">

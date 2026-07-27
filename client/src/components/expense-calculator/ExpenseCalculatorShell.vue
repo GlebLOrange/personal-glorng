@@ -99,14 +99,14 @@ const emit = defineEmits<{
           :disabled="loadingState"
           @click="emit('loadState')"
         >
-          {{ loadingState ? "loading..." : "load" }}
+          {{ loadingState ? "loading…" : "load" }}
         </BaseButton>
         <BaseButton
           variant="success"
           :disabled="saving || !stateDirty"
           @click="emit('saveState')"
         >
-          {{ saving ? "saving..." : "save" }}
+          {{ saving ? "saving…" : "save" }}
         </BaseButton>
       </div>
     </Card>

@@ -110,7 +110,7 @@ function statusBadges(user: AdminUserSummary): BadgeView[] {
             :disabled="user.is_protected || !hasDraftChanges || saving"
             @click="emit('save')"
           >
-            {{ saving ? "saving..." : "save permissions" }}
+            {{ saving ? "saving…" : "save permissions" }}
           </ToolbarPillButton>
         </template>
       </DrawerFooterActions>

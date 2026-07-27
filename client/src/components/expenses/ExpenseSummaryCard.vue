@@ -117,7 +117,7 @@ defineExpose({ categoryBreakdown, budgetTotals });
           :aria-label="`Budget used ${budgetTotals.percent}%`"
         >
           <div
-            class="h-full rounded-full transition-all"
+            class="h-full rounded-full transition-[width] duration-200"
             :class="budgetTotals.overBudget ? 'bg-status-error' : 'bg-accent-blue'"
             :style="{ width: `${Math.min(budgetTotals.percent, 100)}%` }"
           />
@@ -143,7 +143,7 @@ defineExpose({ categoryBreakdown, budgetTotals });
         </div>
         <div class="h-1.5 overflow-hidden rounded-full bg-surface-border">
           <div
-            class="h-full rounded-full transition-all"
+            class="h-full rounded-full transition-[width] duration-200"
             :class="item.overBudget ? 'bg-status-error' : 'bg-accent-blue'"
             :style="{
               width: `${Math.min(item.budgetPercent ?? item.percent, 100)}%`,

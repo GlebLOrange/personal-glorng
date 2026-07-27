@@ -57,7 +57,7 @@ async function startStripeCheckout(): Promise<void> {
         :loading="isStartingCheckout"
         @click="startStripeCheckout"
       >
-        {{ isStartingCheckout ? "opening..." : "donate by card" }}
+        {{ isStartingCheckout ? "opening…" : "donate by card" }}
       </BaseButton>
 
       <a

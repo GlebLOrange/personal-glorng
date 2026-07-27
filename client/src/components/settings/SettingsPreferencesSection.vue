@@ -46,7 +46,7 @@ const emit = defineEmits<{
             </option>
           </BaseSelect>
           <BaseButton type="submit" variant="success" size="sm" :loading="saving" :disabled="!canSave">
-            {{ saving ? "saving..." : "save" }}
+            {{ saving ? "saving…" : "save" }}
           </BaseButton>
         </div>
         <div>

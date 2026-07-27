@@ -147,7 +147,7 @@ onMounted(async () => {
       </time>
       <p :class="conditionsClass" :aria-label="conditionsAriaLabel">
         <WeatherConditionIcon :kind="weatherKind" class-name="size-4 inline-block align-[-0.125em]" />
-        <span class="font-bold accent-gradient tabular-nums shrink-0">{{ temperature }}°C</span>
+        <span class="font-bold font-data text-accent-blue tabular-nums shrink-0">{{ temperature }}°C</span>
         <span aria-hidden="true" class="text-surface-muted">·</span>
         <span class="inline-flex min-w-0 items-center gap-1 truncate text-surface-light">
           <LocationIcon class-name="size-3.5 shrink-0" />
