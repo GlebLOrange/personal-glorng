@@ -1,15 +1,34 @@
 <script setup lang="ts">
-/** Shared drawer footer: dismiss left, primary right; optional start (e.g. delete). */
+withDefaults(
+  defineProps<{
+    /**
+     * Cluster actions as content-width (end-aligned) instead of
+     * dismiss left / primary right across the full footer.
+     */
+    cluster?: boolean;
+  }>(),
+  { cluster: false },
+);
 </script>
 
 <template>
-  <div class="flex w-full flex-wrap items-center justify-between gap-3">
-    <div class="flex flex-wrap items-center gap-2">
+  <div
+    class="flex flex-wrap items-center gap-2"
+    :class="cluster ? 'ml-auto w-fit' : 'w-full justify-between'"
+  >
+    <template v-if="cluster">
       <slot name="start" />
       <slot name="dismiss" />
-    </div>
-    <div class="flex flex-wrap items-center gap-2">
       <slot name="primary" />
-    </div>
+    </template>
+    <template v-else>
+      <div class="flex flex-wrap items-center gap-2">
+        <slot name="start" />
+        <slot name="dismiss" />
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <slot name="primary" />
+      </div>
+    </template>
   </div>
 </template>

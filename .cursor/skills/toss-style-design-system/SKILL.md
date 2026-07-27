@@ -35,6 +35,9 @@ description: Toss-style UI design rules for disciplined spacing, typography, gra
 - Use subtle shadows or borders, not both heavily.
 - Keep shadow opacity low and avoid dramatic elevation.
 - Do not place important controls in low-contrast decorative surfaces.
+- Interactive cards, tiles, and action pills: **idle = `border-transparent`** (surface/fill separates units). **Hover / selected / active** = accent (or family) border; **focus-visible** = ring (not a permanent border).
+- Do not add idle `border-surface-border` on hoverable tiles to “fix” separation — use spacing, type, and surface contrast instead.
+- Exception: structural chrome (nav/page chrome dividers, form fields, tables) may keep always-on borders. Selected weather (`border-accent-blue` on the weather page) counts as selected and is allowed.
 
 ## Color
 

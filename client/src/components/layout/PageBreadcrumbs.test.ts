@@ -27,12 +27,13 @@ describe("PageBreadcrumbs", () => {
 
     const current = wrapper.get("[aria-current=page]");
     expect(current.text()).toBe("app logs");
-    expect(current.classes()).toContain("accent-gradient");
-    expect(current.classes()).toContain("text-lg");
+    expect(current.classes()).toContain("text-surface-light");
+    expect(current.classes()).toContain("text-xl");
+    expect(current.classes()).not.toContain("accent-gradient");
     expect(wrapper.text()).toMatch(/admin\s*\/\s*app logs/);
   });
 
-  it("applies elevated accent only on the current sole section crumb", () => {
+  it("applies elevated size only on the current sole section crumb", () => {
     const wrapper = mount(PageBreadcrumbs, {
       props: {
         segments: [{ label: "admin", to: "/admin" }],
@@ -51,8 +52,9 @@ describe("PageBreadcrumbs", () => {
     expect(wrapper.find("a").exists()).toBe(false);
     const current = wrapper.get("[aria-current=page]");
     expect(current.text()).toBe("admin");
-    expect(current.classes()).toContain("accent-gradient");
-    expect(current.classes()).toContain("text-lg");
+    expect(current.classes()).toContain("text-surface-light");
+    expect(current.classes()).toContain("text-xl");
+    expect(current.classes()).not.toContain("accent-gradient");
   });
 
   it("highlights current without elevated title scale", () => {

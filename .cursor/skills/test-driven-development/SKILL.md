@@ -9,7 +9,7 @@ description: Drives development with tests using RED/GREEN/REFACTOR and reproduc
 This rule supplements always-on agent rules; it does not override them.
 
 - **Writing tests:** Follow RED/GREEN/REFACTOR — write tests before or alongside implementation for logic and bug fixes.
-- **Running tests:** Run the **new or changed test file** after each edit. Do not run full `make test`, `npm run test`, or Playwright unless the user asks, CI is failing, or the task is test-focused.
+- **Running tests:** Follow **agent-safety** opt-in — do not auto-run tests; ask once “Run tests for this change?” unless the user already asked to run/pass/verify tests or the task is test-focused (writing/fixing tests, CI failure). When they opt in, run the **new or changed test file** first. Do not run full `make test`, `npm run test`, or Playwright unless the user asks for the full suite.
 - **Commits:** Do not commit unless the user explicitly requests it.
 
 ## Overview
@@ -106,7 +106,7 @@ Bug report arrives
   Test PASSES (proving the fix works)
        │
        ▼
-  Run targeted tests (full suite only when user asks or fixing CI)
+  Ask once to run targeted tests (agent-safety); full suite only when user asks or fixing CI
 ```
 
 **Example:**
@@ -363,10 +363,10 @@ This separation ensures the test is written without knowledge of the fix, making
 After completing any implementation:
 
 - [ ] Every new behavior has a corresponding test
-- [ ] Targeted tests for changed files pass
+- [ ] Targeted tests for changed files pass when the user opted in (or the task is test-focused)
 - [ ] Bug fixes include a reproduction test that failed before the fix
 - [ ] Test names describe the behavior being verified
 - [ ] No tests were skipped or disabled
-- [ ] Full suite run only when user asks, CI is failing, or task is test-focused
+- [ ] Tests were not claimed as passing if none were run; full suite only when user asks
 
 **Note:** Run each test command after a change that could affect the result. After a clean run, don't repeat the same command unless the code has changed since — re-running on unchanged code adds no confidence.

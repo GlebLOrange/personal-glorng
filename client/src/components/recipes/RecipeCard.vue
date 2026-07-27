@@ -36,10 +36,11 @@ function onRowKeydown(event: KeyboardEvent): void {
   <Card
     as="div"
     interactive
-    variant="ghost"
+    hoverable
+    variant="dense"
     role="button"
     tabindex="0"
-    class="group w-full min-w-0 cursor-pointer rounded-lg px-2 py-1.5 text-left hover:bg-surface-light/5"
+    class="group w-full min-w-0 cursor-pointer text-left"
     :aria-label="`Open recipe ${recipe.title}`"
     @click="emit('select', recipe.id)"
     @keydown="onRowKeydown"
@@ -49,25 +50,23 @@ function onRowKeydown(event: KeyboardEvent): void {
         v-if="recipe.image_url"
         :src="recipe.image_url"
         :alt="recipe.title"
-        class="size-10 shrink-0 rounded-md object-cover"
+        class="size-7 shrink-0 rounded object-cover"
       />
       <div
         v-else
-        class="flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-dark text-xs font-semibold text-surface-sage"
+        class="flex size-7 shrink-0 items-center justify-center rounded bg-surface-dark text-[10px] font-semibold leading-none text-surface-sage"
         aria-hidden="true"
       >
         {{ thumbInitials }}
       </div>
 
-      <div class="flex min-w-0 flex-1 items-center gap-2">
-        <h3 class="min-w-0 flex-1 truncate text-sm font-bold text-surface-light">
-          {{ recipe.title }}
-        </h3>
-      </div>
+      <h3 class="min-w-0 flex-1 truncate text-sm font-semibold leading-none text-surface-light">
+        {{ recipe.title }}
+      </h3>
 
       <div
         v-if="canWrite"
-        class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100"
+        class="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100"
         @click.stop
         @keydown.stop
       >

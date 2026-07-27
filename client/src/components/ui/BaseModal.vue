@@ -57,25 +57,28 @@ const widthClass = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"
           ]"
           @click.stop
         >
-          <div class="flex shrink-0 items-center gap-2 px-6 pb-3 pt-5">
-            <div class="min-w-0 flex-1">
+          <div class="flex shrink-0 items-center gap-3 p-[15px]">
+            <div class="flex min-h-8 min-w-0 items-center">
               <slot name="header" :title-id="titleId">
-                <h2 v-if="title" :id="titleId" class="text-lg font-bold text-surface-light">
+                <h2 v-if="title" :id="titleId" class="text-lg font-bold leading-8 text-surface-light">
                   {{ title }}
                 </h2>
               </slot>
             </div>
-            <div class="flex shrink-0 items-center gap-1">
+            <div class="ml-auto flex h-8 shrink-0 items-center gap-1">
               <slot name="header-actions" />
               <IconCloseButton ref="closeButton" aria-label="Close" @click="emit('close')" />
             </div>
           </div>
           <div
-            class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-8 [scrollbar-gutter:stable]"
+            class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-[15px] pt-0 pb-[15px] [scrollbar-gutter:stable]"
           >
             <slot />
           </div>
-          <footer v-if="$slots.footer" class="shrink-0 border-t border-surface-border px-6 py-4">
+          <footer
+            v-if="$slots.footer"
+            class="shrink-0 border-t border-surface-border p-[15px]"
+          >
             <slot name="footer" />
           </footer>
         </div>

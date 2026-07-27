@@ -68,19 +68,6 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     public: true,
   },
   {
-    slug: "recipes",
-    name: "recipes",
-    category: "content",
-    categoryLabel: "content",
-    description: "Personal recipe book and food notes",
-    apiPrefix: "/recipes",
-    adminRoute: "/recipes",
-    icon: "◉",
-    capabilities: ["read", "write"],
-    external: false,
-    public: true,
-  },
-  {
     slug: "news",
     name: "news",
     category: "content",
@@ -89,6 +76,19 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     apiPrefix: "/tools/news",
     adminRoute: "/news",
     icon: "◇",
+    capabilities: ["read", "write"],
+    external: false,
+    public: true,
+  },
+  {
+    slug: "recipes",
+    name: "recipes",
+    category: "content",
+    categoryLabel: "content",
+    description: "Personal recipe book and food notes",
+    apiPrefix: "/recipes",
+    adminRoute: "/recipes",
+    icon: "◉",
     capabilities: ["read", "write"],
     external: false,
     public: true,
@@ -277,8 +277,8 @@ export function resolveToolRoute(
 }
 
 export const PLATFORM_CATEGORIES: Record<string, string> = {
-  productivity: "productivity",
   content: "content",
+  productivity: "productivity",
   utilities: "utilities",
   operations: "operations",
 };

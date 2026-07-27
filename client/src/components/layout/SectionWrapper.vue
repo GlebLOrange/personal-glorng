@@ -34,7 +34,7 @@ const innerClass = computed(() => {
       'text-surface-light',
     ]"
   >
-    <div class="page-tile-scope mx-auto w-full max-w-5xl xl:max-w-6xl">
+    <div class="page-tile-scope mx-auto w-full max-w-5xl">
       <h2 v-if="title" class="section-title mb-8">
         <span aria-hidden="true" class="text-accent-blue">§ </span>
         {{ title }}

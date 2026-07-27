@@ -11,7 +11,7 @@ import { isValidEmail } from "@/constants/contactMeta";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 
-const EMAIL_HELP = "Use a full address like name@example.com";
+const EMAIL_HELP = "use a full address like name@example.com";
 
 const props = withDefaults(
   defineProps<{
@@ -27,7 +27,7 @@ const emit = defineEmits<{ close: [] }>();
 const isInquiry = computed(() => props.intent === "inquiry");
 
 const email = ref("");
-const theme = ref(isInquiry.value ? "Work inquiry" : "");
+const theme = ref(isInquiry.value ? "work inquiry" : "");
 const message = ref("");
 const { run: runSubmit, loading } = useApiAction();
 
@@ -47,19 +47,19 @@ const copy = computed(() =>
   isInquiry.value
     ? {
         title: "get in touch",
-        subjectPlaceholder: "Role, contract, or collaboration",
-        messagePlaceholder: "What are you hiring for, timeline, and how to reach you…",
+        subjectPlaceholder: "role, contract, or collaboration",
+        messagePlaceholder: "what are you hiring for, timeline, and how to reach you…",
         submit: "send inquiry",
-        success: "Message sent — I'll reply soon.",
-        error: "Failed to send inquiry",
+        success: "message sent — i'll reply soon.",
+        error: "failed to send inquiry",
       }
     : {
         title: "send feedback",
-        subjectPlaceholder: "What is this about?",
-        messagePlaceholder: "Your feedback…",
+        subjectPlaceholder: "what is this about?",
+        messagePlaceholder: "your feedback…",
         submit: "send feedback",
-        success: "Feedback sent — thank you!",
-        error: "Failed to send feedback",
+        success: "feedback sent — thank you!",
+        error: "failed to send feedback",
       },
 );
 
@@ -82,7 +82,7 @@ async function submit(): Promise<void> {
 
 <template>
   <BaseModal :open="open" :title="copy.title" max-width="md" @close="$emit('close')">
-    <form id="feedback-modal-form" class="space-y-3" @submit.prevent="submit">
+    <form id="feedback-modal-form" class="space-y-[15px]" @submit.prevent="submit">
       <BaseInput
         v-model="email"
         type="email"
@@ -92,7 +92,7 @@ async function submit(): Promise<void> {
         :error="emailError"
       />
       <BaseInput v-model="theme" :placeholder="copy.subjectPlaceholder" />
-      <BaseTextarea v-model="message" :placeholder="copy.messagePlaceholder" :rows="5" />
+      <BaseTextarea v-model="message" :placeholder="copy.messagePlaceholder" :rows="3" />
     </form>
 
     <template #footer>

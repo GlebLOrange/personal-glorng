@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import ToolIcon from "@/components/icons/ToolIcon.vue";
 import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
 import { formatBreadcrumbLabel } from "@/utils/format";
 
 const props = withDefaults(
   defineProps<{
     segments: BreadcrumbSegment[];
-    /** Title-scale accent on the current crumb only (when it substitutes for h1). */
+    /** Title-scale size on the current crumb only (when it substitutes for h1). */
     elevated?: boolean;
   }>(),
   { elevated: false },
@@ -19,15 +20,20 @@ function isCurrent(idx: number): boolean {
   return idx === props.segments.length - 1;
 }
 
+function crumbIconSlug(label: string): string | null {
+  return crumbLabel(label) === "tools" ? "tools" : null;
+}
+
 function currentClass(): string {
   if (props.elevated) {
-    return "inline-flex h-8 items-center truncate text-lg font-bold leading-none accent-gradient";
+    // Hierarchy via size/weight only — default text color, not accent gradient
+    return "inline-flex h-8 items-center gap-2 truncate text-xl font-bold leading-none text-surface-light";
   }
-  return "page-breadcrumb font-medium text-surface-light";
+  return "page-breadcrumb inline-flex items-center gap-2 font-medium text-surface-light";
 }
 
 const ancestorClass =
-  "page-breadcrumb text-surface-mid transition-colors hover:text-accent-blue";
+  "page-breadcrumb inline-flex items-center gap-2 text-surface-mid transition-colors hover:text-accent-blue";
 </script>
 
 <template>
@@ -38,13 +44,17 @@ const ancestorClass =
         :key="`${idx}:${seg.label}`"
         class="flex items-center gap-2"
       >
-        <!-- ponytail: gradient on inner span — clip/fill on <a> can eat clicks -->
         <RouterLink
           v-if="seg.to && !isCurrent(idx)"
           :to="seg.to"
           class="relative z-10 inline-flex h-8 cursor-pointer items-center"
         >
           <span :class="ancestorClass">
+            <ToolIcon
+              v-if="crumbIconSlug(seg.label) === 'tools'"
+              slug="tools"
+              class="size-3.5 shrink-0"
+            />
             {{ crumbLabel(seg.label) }}
           </span>
         </RouterLink>
@@ -53,6 +63,11 @@ const ancestorClass =
           :class="currentClass()"
           aria-current="page"
         >
+          <ToolIcon
+            v-if="crumbIconSlug(seg.label) === 'tools'"
+            slug="tools"
+            :class="elevated ? 'size-5 shrink-0' : 'size-3.5 shrink-0'"
+          />
           {{ crumbLabel(seg.label) }}
         </span>
         <span

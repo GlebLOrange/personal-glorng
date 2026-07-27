@@ -6,8 +6,9 @@ import PageChrome from "@/components/layout/PageChrome.vue";
 const stubs = {
   BackLink: {
     props: ["to", "size"],
+    inheritAttrs: false,
     template:
-      '<a :href="typeof to === \'string\' ? to : to.path" data-testid="back" :data-size="size">back</a>',
+      '<a :href="typeof to === \'string\' ? to : to.path" data-testid="back" :data-size="size" v-bind="$attrs">back</a>',
   },
   PageBreadcrumbs: {
     props: ["segments", "elevated"],
@@ -35,8 +36,14 @@ describe("PageChrome", () => {
     expect(crumbs[1].attributes("data-elevated")).toBe("true");
     expect(wrapper.get("h1").classes()).toContain("sr-only");
     expect(wrapper.get("h1").text()).toBe("users");
-    expect(wrapper.get("[data-testid=back]").attributes("href")).toBe("/admin");
-    expect(wrapper.get("[data-testid=back]").attributes("data-size")).toBe("compact");
+    const back = wrapper.get("[data-testid=back]");
+    expect(back.attributes("href")).toBe("/admin");
+    expect(back.attributes("data-size")).toBe("compact");
+    // Back sits in the breadcrumb row (same vertical band) and parks on the nav rail.
+    expect(back.element.parentElement?.className).toContain("my-[15px]");
+    expect(back.classes()).toContain("shell-outside-end");
+    expect(back.classes()).toContain("!-right-6");
+    expect(back.classes()).toContain("top-1/2");
   });
 
   it("shows tools parent + tool crumb for tools trails", () => {
@@ -57,20 +64,21 @@ describe("PageChrome", () => {
     expect(wrapper.get("h1").text()).toBe("calculator");
   });
 
-  it("keeps parent crumb + h1 when last crumb does not match title (news article)", () => {
+  it("keeps parent crumbs and sr-only h1 when last crumb does not match title (news article)", () => {
     const wrapper = mount(PageChrome, {
       props: {
         title: "Some Article",
-        breadcrumbs: [{ label: "news", to: "/news" }],
+        breadcrumbs: [{ label: "news", to: "/news" }, { label: "demo-news-1" }],
         backTo: "/news",
       },
       global: { stubs },
     });
 
     const crumbs = wrapper.findAll("[data-testid=crumbs] span");
-    expect(crumbs.map((c) => c.text())).toEqual(["news"]);
+    expect(crumbs.map((c) => c.text())).toEqual(["news", "demo-news-1"]);
     expect(crumbs[0].attributes("data-elevated")).toBe("true");
-    expect(wrapper.get("h1").text()).toContain("Some...");
-    expect(wrapper.get("h1").attributes("title")).toBe("Some Article");
+    expect(wrapper.get("h1").classes()).toContain("sr-only");
+    expect(wrapper.get("h1").text()).toBe("Some Article");
+    expect(wrapper.find(".accent-gradient").exists()).toBe(false);
   });
 });
