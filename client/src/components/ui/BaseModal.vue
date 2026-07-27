@@ -57,7 +57,9 @@ const widthClass = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"
           ]"
           @click.stop
         >
-          <div class="flex shrink-0 items-center gap-3 p-[15px]">
+          <div
+            class="flex shrink-0 items-center gap-3 p-[15px] [scrollbar-gutter:stable]"
+          >
             <div class="flex min-h-8 min-w-0 items-center">
               <slot name="header" :title-id="titleId">
                 <h2 v-if="title" :id="titleId" class="text-lg font-bold leading-8 text-surface-light">
@@ -77,7 +79,7 @@ const widthClass = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"
           </div>
           <footer
             v-if="$slots.footer"
-            class="shrink-0 border-t border-surface-border p-[15px]"
+            class="shrink-0 border-t border-surface-border p-[15px] [scrollbar-gutter:stable]"
           >
             <slot name="footer" />
           </footer>
