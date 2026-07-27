@@ -21,7 +21,7 @@ from app.core.url_safety import get_public_http_url, is_public_http_url
 from app.core.xml_security import has_unsafe_xml_declaration
 from app.db.documents.news import NewsSource
 from app.schemas.news import (
-    ALLOWED_NEWS_THEMES,
+    ALLOWED_NEWS_TAGS,
     NewsArticleCreate,
     NewsIngestResponse,
 )
@@ -35,7 +35,7 @@ _CONTENT = "{http://purl.org/rss/1.0/modules/content/}"
 _MAX_FEED_BYTES = 1_000_000
 _SYSTEM_PROMPT = """You write concise curated news summaries.
 Use only facts present in the supplied feed metadata.
-Return JSON with: title, summary, bullets, themes, telegram_text.
+Return JSON with: title, summary, bullets, tags, telegram_text.
 Do not invent details. Keep attribution neutral and do not copy publisher prose."""
 
 
@@ -103,7 +103,7 @@ def _source_from_raw(raw: dict[str, Any]) -> NewsSourceConfig:
     themes = tuple(
         theme
         for theme in raw.get("default_themes", ["world"])
-        if isinstance(theme, str) and theme in ALLOWED_NEWS_THEMES
+        if isinstance(theme, str) and theme in ALLOWED_NEWS_TAGS
     )
     return NewsSourceConfig(
         name=name,
@@ -131,7 +131,7 @@ def load_news_sources() -> list[NewsSourceConfig]:
 def _source_from_document(source: NewsSource) -> NewsSourceConfig:
     """Convert a stored source document into an ingest config."""
     default_themes = (
-        [source.category] if source.category in ALLOWED_NEWS_THEMES else ["world"]
+        [source.category] if source.category in ALLOWED_NEWS_TAGS else ["world"]
     )
     return _source_from_raw(
         {
@@ -234,10 +234,10 @@ def _validate_ai_payload(
         for item in raw.get("bullets", [])
         if isinstance(item, str) and _clean_text(item, max_length=180)
     ][:5]
-    themes = [
-        theme
-        for theme in raw.get("themes", [])
-        if isinstance(theme, str) and theme in ALLOWED_NEWS_THEMES
+    tags = [
+        tag
+        for tag in raw.get("tags", [])
+        if isinstance(tag, str) and tag in ALLOWED_NEWS_TAGS
     ][:4]
     if not title or not summary or len(bullets) < 2:
         msg = "AI news summary is incomplete"
@@ -246,7 +246,7 @@ def _validate_ai_payload(
         "title": title,
         "summary": summary,
         "bullets": bullets,
-        "themes": themes or list(source.default_themes),
+        "tags": tags or list(source.default_themes),
     }
 
 
@@ -268,7 +268,7 @@ async def _summarize_item(
             "published_at": item.published_at.isoformat()
             if item.published_at
             else None,
-            "allowed_themes": sorted(ALLOWED_NEWS_THEMES),
+            "allowed_tags": sorted(ALLOWED_NEWS_TAGS),
             "default_themes": list(source.default_themes),
         },
         ensure_ascii=False,
@@ -366,7 +366,7 @@ class NewsIngestService:
                                 title=ai["title"],
                                 summary=ai["summary"],
                                 bullets=ai["bullets"],
-                                themes=ai["themes"],
+                                tags=ai["tags"],
                                 language=source.language,
                                 status="published",
                                 ai_model=settings.GROQ_CHAT_MODEL,

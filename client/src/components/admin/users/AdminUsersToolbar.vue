@@ -64,6 +64,10 @@ function clearFilters(): void {
           ref="filterDropdown"
           :has-active-filters="hasActiveFilters"
           :active-label="activeFilterLabel"
+          :option-labels="[
+            ...ROLE_FILTERS.map((chip) => chip.label),
+            ...STATUS_FILTERS.map((chip) => chip.label),
+          ]"
           @clear="clearFilters"
         >
           <div class="flex flex-col gap-2">

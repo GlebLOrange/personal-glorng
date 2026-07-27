@@ -47,9 +47,9 @@ function syncMeta(item: SyncQueueItem): string {
 <template>
   <AdminListSkeleton v-if="loading" label="Loading sync queue" />
 
-  <EmptyState v-else-if="items.length === 0" description="Sync queue is clear." />
+  <EmptyState v-else-if="items.length === 0" description="sync queue is clear" />
 
-  <div v-else class="divide-y divide-surface-border/40">
+  <div v-else class="min-w-0">
     <AdminListRow
       v-for="item in items"
       :key="item.id"

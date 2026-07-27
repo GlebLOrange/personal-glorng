@@ -35,7 +35,7 @@ async function handleSubmit(): Promise<void> {
 </script>
 
 <template>
-  <AuthPageShell title="forgot password" back-to="/login">
+  <AuthPageShell title="forgot password?" back-to="/login">
     <div v-if="submitted" class="space-y-4 text-center" role="status">
       <p class="text-surface-mid text-sm">
         If an account exists for {{ email }}, you will receive a reset link shortly.
@@ -50,7 +50,6 @@ async function handleSubmit(): Promise<void> {
         name="email"
         autocomplete="email"
         label="email"
-        placeholder="you@example.com"
         required
       />
       <p

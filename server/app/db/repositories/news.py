@@ -74,9 +74,9 @@ class NewsRepository(MongoRepository[NewsArticle]):
         )
         return int(result.modified_count)
 
-    async def list_themes(self, *, status: NewsStatus = "published") -> list[str]:
-        """Return distinct stored theme JSON values for articles."""
-        values = await self._col().distinct("themes", {"status": status})
+    async def list_tags(self, *, status: NewsStatus = "published") -> list[str]:
+        """Return distinct stored tag JSON values for articles."""
+        values = await self._col().distinct("tags", {"status": status})
         return [str(value) for value in values if value]
 
     @staticmethod

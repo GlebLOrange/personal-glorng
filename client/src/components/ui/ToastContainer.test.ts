@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import ToastContainer from "@/components/ui/ToastContainer.vue";
 import { useNotify } from "@/composables/useNotify";
@@ -112,6 +112,22 @@ describe("ToastContainer", () => {
     const statuses = wrapper.findAll("[role='status']");
     expect(statuses).toHaveLength(1);
     expect(statuses[0].text()).toContain("location removed");
+  });
+
+  it("keeps sticky errors in the tile until dismiss", () => {
+    vi.useFakeTimers();
+    const { toast, dismiss, toasts } = useNotify();
+    toast("failed", "error");
+    const id = toasts.value[0]!.id;
+
+    const wrapper = mount(ToastContainer, { props: { variant: "tile" } });
+    expect(wrapper.get("[role='alert']").text()).toContain("failed");
+    vi.advanceTimersByTime(60_000);
+    expect(wrapper.get("[role='alert']").text()).toContain("failed");
+
+    dismiss(id);
+    expect(wrapper.find("[role='alert']").exists()).toBe(false);
+    vi.useRealTimers();
   });
 
   it("hides overlay when a tile host is claimed", () => {

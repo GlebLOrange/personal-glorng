@@ -50,7 +50,8 @@ describe("httpStatusColors", () => {
 
   it("builds h-10 icon action classes", () => {
     const icon = iconActionClass("3xx", false);
-    expect(icon).toContain("!h-10");
+    expect(icon).toContain("h-10");
+    expect(icon).toContain("box-border");
     expect(icon).toContain("bg-status-warning/3");
     expect(iconActionClass("1xx", false, { quiet: true })).toContain("text-surface-light/60");
     expect(iconActionClass("1xx", false, { danger: true })).toContain("bg-status-error/3");
@@ -60,7 +61,7 @@ describe("httpStatusColors", () => {
 
   it("builds field-size icon action classes matching chrome", () => {
     const field = iconActionClass("4xx", false, { size: "field", danger: true });
-    expect(field).toContain("!h-10");
+    expect(field).toContain("!h-full");
     expect(field).toContain("!w-10");
     expect(field).toContain("bg-status-error/3");
   });

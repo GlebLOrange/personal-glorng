@@ -285,7 +285,7 @@ export interface NewsArticle {
   title: string;
   summary: string;
   bullets: string[];
-  themes: string[];
+  tags: string[];
   language: string;
   published_at: string | null;
   telegram_message_id: number | null;
@@ -316,7 +316,7 @@ export interface NewsArticleUpdate {
   title?: string;
   summary?: string;
   bullets?: string[];
-  themes?: string[];
+  tags?: string[];
   language?: string;
   published_at?: string | null;
   telegram_message_id?: number | null;
@@ -336,7 +336,7 @@ export interface NewsArticleCreate {
   title: string;
   summary: string;
   bullets?: string[];
-  themes: string[];
+  tags: string[];
   language: string;
   ai_model?: string | null;
   ai_input_hash?: string | null;
@@ -355,7 +355,7 @@ export interface NewsArticleFormData {
   title: string;
   summary: string;
   bullets: string[];
-  themes: string;
+  tags: string;
   language: string;
   published_at: string;
   telegram_message_id: string;

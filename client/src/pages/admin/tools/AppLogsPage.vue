@@ -50,20 +50,27 @@ const LEVEL_FILTERS = [
   { label: "error", value: "error" },
 ] as const;
 
+/** Don't hit the API for partial request-id typing. */
+const MIN_REQUEST_ID_LENGTH = 3;
+
 const totalPages = computed(() => Math.ceil(total.value / ADMIN_LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
-const hasActiveFilters = computed(() => Boolean(level.value || requestId.value.trim()));
+const appliedRequestId = computed(() => {
+  const value = requestId.value.trim();
+  return value.length >= MIN_REQUEST_ID_LENGTH ? value : "";
+});
+const hasActiveFilters = computed(() => Boolean(level.value || appliedRequestId.value));
 const activeFilterLabel = computed(() => {
   const parts: string[] = [];
   if (level.value) parts.push(level.value);
-  if (requestId.value.trim()) parts.push(requestId.value.trim());
+  if (appliedRequestId.value) parts.push(appliedRequestId.value);
   return parts.length ? parts.join(", ") : undefined;
 });
 
 useScrollListFingerprint(
   () =>
-    `${page.value}:${total.value}:${level.value}:${requestId.value}:${items.value[0]?.id ?? ""}`,
+    `${page.value}:${total.value}:${level.value}:${appliedRequestId.value}:${items.value[0]?.id ?? ""}`,
 );
 
 async function load(): Promise<void> {
@@ -74,7 +81,7 @@ async function load(): Promise<void> {
         per_page: ADMIN_LIST_PAGE_SIZE,
       };
       if (level.value) params.level = level.value;
-      if (requestId.value.trim()) params.request_id = requestId.value.trim();
+      if (appliedRequestId.value) params.request_id = appliedRequestId.value;
       const { data: response } = await api.get<{ items: AppLogEntry[]; total: number }>(
         "/tools/app-logs",
         { params },
@@ -97,11 +104,16 @@ function setLevelFilter(next: string): void {
 }
 
 let requestIdTimer: ReturnType<typeof setTimeout> | undefined;
+let lastAppliedRequestId = "";
 
 function onRequestIdChange(value: string | number | null | undefined): void {
   requestId.value = String(value ?? "");
   clearTimeout(requestIdTimer);
   requestIdTimer = setTimeout(() => {
+    const next = appliedRequestId.value;
+    // Reload when a 3+ char filter applies, or when clearing a previously applied one.
+    if (next === lastAppliedRequestId) return;
+    lastAppliedRequestId = next;
     page.value = 1;
     void load();
   }, 300);
@@ -111,6 +123,7 @@ function clearFilters(): void {
   clearTimeout(requestIdTimer);
   level.value = "";
   requestId.value = "";
+  lastAppliedRequestId = "";
   page.value = 1;
   void load();
 }
@@ -155,6 +168,7 @@ onMounted(load);
             ref="filterDropdown"
             :has-active-filters="hasActiveFilters"
             :active-label="activeFilterLabel"
+            :option-labels="LEVEL_FILTERS.map((chip) => chip.label)"
             @clear="clearFilters"
           >
             <template #chips>
@@ -170,7 +184,7 @@ onMounted(load);
             <BaseInput
               :model-value="requestId"
               compact
-              placeholder="request id uuid"
+              placeholder="request id (3+ chars)"
               aria-label="request id"
               @update:model-value="onRequestIdChange"
             />
@@ -180,9 +194,9 @@ onMounted(load);
 
       <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
 
-      <EmptyState v-else-if="items.length === 0" class="mt-4" description="No log entries found." />
+      <EmptyState v-else-if="items.length === 0" class="mt-4" description="No log entries found" />
 
-      <div v-else class="mt-1 min-w-0 divide-y divide-surface-border/40">
+      <div v-else class="mt-1 min-w-0">
         <AdminListRow
           v-for="entry in items"
           :key="entry.id"
@@ -190,6 +204,7 @@ onMounted(load);
           :expandable="hasDetails(entry)"
           :expanded="isExpanded(entry.id)"
           :hoverable="hasDetails(entry)"
+          :status-class="logLevelClass(entry.level)"
           @click="onRowClick(entry)"
         >
           <template #badge>
@@ -203,7 +218,7 @@ onMounted(load);
             </div>
           </template>
           <template #primary>
-            <span :title="entry.message">{{ entry.message }}</span>
+            <span class="lowercase" :title="entry.message.toLowerCase()">{{ entry.message }}</span>
           </template>
           <template #meta>
             <span class="font-data">{{ entry.logger }}</span>

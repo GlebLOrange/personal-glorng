@@ -26,14 +26,14 @@ describe("DataExtractOptionsPanel popover a11y", () => {
     await trigger.trigger("click");
     await nextTick();
 
-    const dialog = document.querySelector("#data-extract-options-dialog");
+    const dialog = document.querySelector('[role="dialog"][aria-label="options"]');
     expect(dialog).toBeTruthy();
     expect(dialog?.contains(document.activeElement)).toBe(true);
     expect(document.activeElement?.tagName).toBe("SELECT");
 
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     await nextTick();
-    expect(document.querySelector("#data-extract-options-dialog")).toBeNull();
+    expect(document.querySelector('[role="dialog"][aria-label="options"]')).toBeNull();
     expect(document.activeElement).toBe(trigger.element);
 
     wrapper.unmount();

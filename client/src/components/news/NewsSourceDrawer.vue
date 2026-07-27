@@ -6,6 +6,7 @@ import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
+import { newsSourceEnabledClass } from "@/constants/filterColors";
 
 interface NewsSourceForm {
   name: string;
@@ -40,7 +41,13 @@ function toStringValue(value: string | number | null | undefined): string {
 </script>
 
 <template>
-  <BaseDrawer :open="open" :title="title" max-width="md" @close="emit('close')">
+  <BaseDrawer
+    :open="open"
+    :title="title"
+    max-width="md"
+    :header-class="newsSourceEnabledClass(form.enabled)"
+    @close="emit('close')"
+  >
     <form id="news-source-form" class="space-y-4" @submit.prevent="emit('save')">
       <BaseInput
         :model-value="form.feed_url"
@@ -67,14 +74,17 @@ function toStringValue(value: string | number | null | undefined): string {
         required
         @update:model-value="patch({ region: toStringValue($event) })"
       />
-      <label class="flex items-center gap-2 text-sm text-surface-mid">
+      <label
+        class="flex cursor-pointer items-center rounded-md px-2.5 py-1.5 text-sm has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent-blue/50"
+        :class="newsSourceEnabledClass(form.enabled)"
+      >
         <input
           :checked="form.enabled"
           type="checkbox"
-          class="size-4 accent-accent-blue"
+          class="sr-only"
           @change="patch({ enabled: ($event.target as HTMLInputElement).checked })"
         />
-        enabled
+        {{ form.enabled ? "enabled" : "disabled" }}
       </label>
     </form>
 

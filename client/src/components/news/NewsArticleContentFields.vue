@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { newsStatusClass } from "@/constants/filterColors";
-import { NEWS_STATUSES, NEWS_THEME_LIMIT, NEWS_THEMES } from "@/constants/news";
+import { NEWS_STATUSES, NEWS_TAG_LIMIT, NEWS_TAGS } from "@/constants/news";
 import type { NewsArticleFormData, NewsStatus } from "@/types";
 
 const form = defineModel<NewsArticleFormData>({ required: true });
@@ -16,22 +16,22 @@ const props = defineProps<{
   canWrite: boolean;
 }>();
 
-const themesOpen = ref(false);
+const tagsOpen = ref(false);
 
-function parsedThemes(): string[] {
-  return form.value.themes
+function parsedTags(): string[] {
+  return form.value.tags
     .split(",")
-    .map((theme) => theme.trim())
+    .map((tag) => tag.trim())
     .filter(Boolean);
 }
 
-function themeIsSelected(theme: string): boolean {
-  return parsedThemes().includes(theme);
+function tagIsSelected(tag: string): boolean {
+  return parsedTags().includes(tag);
 }
 
-function selectedThemesLabel(): string {
-  const themes = parsedThemes();
-  return themes.length > 0 ? themes.join(", ") : "none";
+function selectedTagsLabel(): string {
+  const tags = parsedTags();
+  return tags.length > 0 ? tags.join(", ") : "none";
 }
 
 function setStatus(status: NewsStatus): void {
@@ -39,19 +39,19 @@ function setStatus(status: NewsStatus): void {
   form.value.status = status;
 }
 
-function toggleTheme(theme: string): void {
+function toggleTag(tag: string): void {
   if (!props.canWrite) return;
-  const themes = parsedThemes();
-  if (themes.includes(theme)) {
-    form.value.themes = themes.filter((item) => item !== theme).join(", ");
+  const tags = parsedTags();
+  if (tags.includes(tag)) {
+    form.value.tags = tags.filter((item) => item !== tag).join(", ");
     return;
   }
-  if (themes.length >= NEWS_THEME_LIMIT) return;
-  form.value.themes = [...themes, theme].join(", ");
+  if (tags.length >= NEWS_TAG_LIMIT) return;
+  form.value.tags = [...tags, tag].join(", ");
 }
 
-function onThemesToggle(event: Event): void {
-  themesOpen.value = (event.target as HTMLDetailsElement).open;
+function onTagsToggle(event: Event): void {
+  tagsOpen.value = (event.target as HTMLDetailsElement).open;
 }
 </script>
 
@@ -74,6 +74,7 @@ function onThemesToggle(event: Event): void {
           v-for="status in NEWS_STATUSES"
           :key="status"
           :label="status"
+          align="center"
           :active="form.status === status"
           :color-class="newsStatusClass(status)"
           :disabled="!canWrite"
@@ -101,37 +102,38 @@ function onThemesToggle(event: Event): void {
     </div>
     <details
       class="mt-4 rounded border border-surface-border px-3 py-2"
-      @toggle="onThemesToggle"
+      @toggle="onTagsToggle"
     >
       <summary
         class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
       >
-        <ChevronIcon :open="themesOpen" />
-        themes ({{ parsedThemes().length }}/{{ NEWS_THEME_LIMIT }})
-        <span class="text-xs text-surface-muted"> — {{ selectedThemesLabel() }}</span>
+        <ChevronIcon :open="tagsOpen" />
+        tags ({{ parsedTags().length }}/{{ NEWS_TAG_LIMIT }})
+        <span class="text-xs text-surface-muted"> — {{ selectedTagsLabel() }}</span>
       </summary>
       <div class="mt-3 flex flex-wrap gap-2">
         <label
-          v-for="theme in NEWS_THEMES"
-          :key="theme"
-          :for="`news-edit-theme-${theme}`"
-          class="inline-flex cursor-pointer items-center gap-2 rounded border border-surface-border px-3 py-1.5 text-xs transition-colors"
+          v-for="tag in NEWS_TAGS"
+          :key="tag"
+          :for="`news-edit-tag-${tag}`"
+          class="inline-flex cursor-pointer items-center rounded px-2.5 py-1 text-xs lowercase transition-colors"
           :class="{
-            'border-accent-blue text-surface-light': themeIsSelected(theme),
-            'text-surface-mid': !themeIsSelected(theme),
-            'opacity-50': !themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT,
+            'bg-accent-blue/10 text-accent-blue': tagIsSelected(tag),
+            'text-surface-mid hover:bg-surface-mid/10': !tagIsSelected(tag),
+            'opacity-50': !tagIsSelected(tag) && parsedTags().length >= NEWS_TAG_LIMIT,
           }"
         >
           <input
-            :id="`news-edit-theme-${theme}`"
+            :id="`news-edit-tag-${tag}`"
             type="checkbox"
-            :checked="themeIsSelected(theme)"
+            class="sr-only"
+            :checked="tagIsSelected(tag)"
             :disabled="
-              !canWrite || (!themeIsSelected(theme) && parsedThemes().length >= NEWS_THEME_LIMIT)
+              !canWrite || (!tagIsSelected(tag) && parsedTags().length >= NEWS_TAG_LIMIT)
             "
-            @change="toggleTheme(theme)"
+            @change="toggleTag(tag)"
           />
-          {{ theme }}
+          {{ tag }}
         </label>
       </div>
     </details>

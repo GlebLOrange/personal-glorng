@@ -45,10 +45,12 @@ describe("LoginPage", () => {
 
     expect(wrapper.get('input[type="email"]').exists()).toBe(true);
     expect(wrapper.get('input[type="password"]').exists()).toBe(true);
-    // BaseInput renders placeholder as tip text, not the native attribute
-    expect(wrapper.text()).toContain("you@example.com");
+    // labelInside uses the label overlay (placeholders suppressed while empty)
+    expect(wrapper.text()).toContain("email");
+    expect(wrapper.text()).toContain("password");
+    expect(wrapper.text()).not.toContain("you@example.com");
     expect(wrapper.text()).toContain("login");
-    expect(wrapper.text().toLowerCase()).toContain("continue with google");
+    expect(wrapper.text()).toContain("continue with Google");
     expect(wrapper.text()).toContain("create account");
     expect(wrapper.text()).toContain("forgot password?");
   });

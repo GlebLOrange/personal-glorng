@@ -70,6 +70,30 @@ describe("BaseDrawer", () => {
     wrapper.unmount();
   });
 
+  it("keeps aria-labelledby valid when a custom title slot omits the title id", async () => {
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    document.body.append(trigger);
+    trigger.focus();
+
+    const wrapper = mount(BaseDrawer, {
+      attachTo: document.body,
+      props: { open: true, title: "Drawer fallback" },
+      slots: {
+        title: "<div>Custom title</div>",
+        default: "<p>Drawer body</p>",
+      },
+    });
+    await flushFocus();
+
+    const dialog = document.body.querySelector('[role="dialog"]');
+    const labelledBy = dialog?.getAttribute("aria-labelledby");
+    expect(labelledBy).toBeTruthy();
+    expect(document.getElementById(labelledBy! as string)?.textContent).toBe("Drawer fallback");
+
+    wrapper.unmount();
+  });
+
   it("focuses the first editable field when the drawer opens", async () => {
     const trigger = document.createElement("button");
     trigger.type = "button";

@@ -22,7 +22,7 @@ class NewsArticle(TimestampedDocument):
     title: str
     summary: str
     bullets: str = "[]"
-    themes: str = "[]"
+    tags: str = "[]"
     language: str = "en"
     published_at: datetime | None = None
     telegram_message_id: int | None = None

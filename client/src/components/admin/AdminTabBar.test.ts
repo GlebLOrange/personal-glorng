@@ -6,7 +6,7 @@ import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 const tabs = [
   { id: "queue", label: "queue" },
   { id: "intakes", label: "intakes" },
-  { id: "sync", label: "sync" },
+  { id: "sync", label: "sync", icon: "sync" as const },
 ];
 
 function mountTabBar(activeTab = "queue"): VueWrapper {
@@ -33,6 +33,28 @@ describe("AdminTabBar", () => {
     wrapper.unmount();
   });
 
+  it("paints sync/refresh tabs pale purple (icon, text, wash)", () => {
+    const wrapper = mount(AdminTabBar, {
+      props: {
+        modelValue: "sync",
+        tabs: [
+          { id: "queue", label: "queue" },
+          { id: "sync", label: "sync", icon: "sync" },
+          { id: "refresh", label: "refresh", icon: "refresh" },
+        ],
+      },
+    });
+
+    const syncTab = wrapper.get("#admin-tab-tab-sync");
+    expect(syncTab.classes()).toContain("text-accent-violet");
+    expect(syncTab.classes()).toContain("bg-accent-violet/15");
+    expect(syncTab.classes()).toContain("border-accent-violet/40");
+
+    const refreshTab = wrapper.get("#admin-tab-tab-refresh");
+    expect(refreshTab.classes()).toContain("text-accent-violet");
+    expect(refreshTab.classes()).toContain("bg-accent-violet/3");
+  });
+
   it("supports arrow and boundary key navigation", async () => {
     const wrapper = mountTabBar();
     const firstTab = wrapper.findAll<HTMLButtonElement>('[role="tab"]')[0];
@@ -45,6 +67,25 @@ describe("AdminTabBar", () => {
 
     await wrapper.findAll<HTMLButtonElement>('[role="tab"]')[2].trigger("keydown", { key: "Home" });
     expect(wrapper.emitted("update:modelValue")?.at(-1)).toEqual(["queue"]);
+
+    wrapper.unmount();
+  });
+
+  it("renders a right-aligned end slot outside the tablist", () => {
+    const wrapper = mount(AdminTabBar, {
+      props: {
+        tabs: [{ id: "chat", label: "chat" }],
+        modelValue: "chat",
+      },
+      slots: {
+        end: '<button type="button" aria-label="setup help">?</button>',
+      },
+    });
+
+    const tablist = wrapper.get('[role="tablist"]');
+    expect(tablist.find('[aria-label="setup help"]').exists()).toBe(false);
+    expect(wrapper.get('[aria-label="setup help"]').exists()).toBe(true);
+    expect(wrapper.html()).toContain("ml-auto");
 
     wrapper.unmount();
   });

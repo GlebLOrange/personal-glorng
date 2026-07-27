@@ -73,7 +73,7 @@ function makeArticle(overrides: Partial<NewsArticle> = {}): NewsArticle {
     title: "Hello",
     summary: "Summary",
     bullets: [],
-    themes: ["world"],
+    tags: ["world"],
     language: "en",
     published_at: null,
     telegram_message_id: null,
@@ -89,18 +89,18 @@ function makeArticle(overrides: Partial<NewsArticle> = {}): NewsArticle {
 describe("emptyForm / formFromArticle", () => {
   it("builds a blank draft form", () => {
     expect(emptyForm().status).toBe("draft");
-    expect(emptyForm().themes).toBe("world");
+    expect(emptyForm().tags).toBe("world");
   });
 
   it("maps article fields into form data", () => {
     const form = formFromArticle(
       makeArticle({
-        themes: ["tech", "world"],
+        tags: ["tech", "world"],
         source_published_at: "2026-01-02T15:30:00Z",
         telegram_message_id: 42,
       }),
     );
-    expect(form.themes).toBe("tech, world");
+    expect(form.tags).toBe("tech, world");
     expect(form.source_published_at).toBe("2026-01-02T15:30");
     expect(form.telegram_message_id).toBe("42");
   });

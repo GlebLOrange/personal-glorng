@@ -122,6 +122,7 @@ onMounted(load);
             ref="filterDropdown"
             :has-active-filters="hasActiveFilters"
             :active-label="activeFilterLabel"
+            :option-labels="CATEGORY_FILTERS.map((chip) => chip.label)"
             @clear="clearFilters"
           >
             <template #chips>
@@ -146,13 +147,14 @@ onMounted(load);
         description="No audit events found."
       />
 
-      <div v-else class="mt-1 min-w-0 divide-y divide-surface-border/40">
+      <div v-else class="mt-1 min-w-0">
         <AdminListRow
           v-for="event in items"
           :key="event.id"
           interactive
           expandable
           :expanded="isExpanded(event.id)"
+          :status-class="auditCategoryClass(event.category)"
           @click="toggleExpanded(event.id)"
         >
           <template #badge>

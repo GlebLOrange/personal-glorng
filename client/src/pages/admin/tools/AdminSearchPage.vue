@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onUnmounted, ref, useTemplateRef } from "vue";
 import { RouterLink } from "vue-router";
 
+import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
-import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
+import SearchInput from "@/components/ui/SearchInput.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
@@ -28,14 +28,14 @@ const sourceType = ref("");
 const hits = ref<SearchHit[]>([]);
 const { loading, lastError: listError, run: runSearch } = useApiAction({ silent: true });
 const hasSearched = ref(false);
+const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
 const sourceTypeOptions = [
-  { value: "", label: "all admin content" },
   { value: "task", label: "tasks" },
   { value: "expense", label: "expenses" },
   { value: "feedback", label: "feedback" },
   { value: "url", label: "URLs" },
-];
+] as const;
 
 const resultSummary = computed(() => {
   if (!hasSearched.value) return "";
@@ -46,11 +46,20 @@ const displayHits = computed(() =>
   hits.value.map((hit) => ({ ...hit, path: safeRouterPath(hit.url) })),
 );
 
-const canSubmitSearch = computed(() => Boolean(effectiveSearchQuery(query.value)));
+const hasActiveFilters = computed(() => Boolean(sourceType.value));
+const activeFilterLabel = computed(
+  () => sourceTypeOptions.find((option) => option.value === sourceType.value)?.label,
+);
+
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
 async function search(): Promise<void> {
   const trimmed = effectiveSearchQuery(query.value);
-  if (!trimmed) return;
+  if (!trimmed) {
+    hasSearched.value = false;
+    hits.value = [];
+    return;
+  }
 
   hasSearched.value = true;
   const data = await runSearch(
@@ -72,31 +81,68 @@ async function search(): Promise<void> {
   hits.value = data.hits;
 }
 
+function scheduleSearch(): void {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    void search();
+  }, 300);
+}
+
+function onQueryChange(value: string): void {
+  query.value = value;
+  scheduleSearch();
+}
+
+function setSourceTypeFilter(next: string): void {
+  sourceType.value = next;
+  filterDropdownRef.value?.close();
+  scheduleSearch();
+}
+
+function clearFilters(): void {
+  sourceType.value = "";
+  scheduleSearch();
+}
+
 function sourceLabel(type: string): string {
   return sourceTypeOptions.find((option) => option.value === type)?.label ?? type;
 }
+
+onUnmounted(() => {
+  clearTimeout(searchTimer);
+});
 </script>
 
 <template>
   <AdminPageLayout title="search">
-    <Card class="mb-6">
-      <form class="flex flex-wrap items-center gap-3" @submit.prevent="search">
-        <BaseInput
-          v-model="query"
-          placeholder="search (admin content)"
-          aria-label="search admin content"
-          class="min-w-[16rem] flex-1"
-        />
-        <BaseSelect v-model="sourceType" aria-label="source">
-          <option v-for="option in sourceTypeOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </BaseSelect>
-        <ToolbarPillButton type="submit" family="2xx" :disabled="loading || !canSubmitSearch">
-          {{ loading ? "searching..." : "search" }}
-        </ToolbarPillButton>
-      </form>
-    </Card>
+    <div class="mb-6 space-y-2">
+      <div class="flex min-w-0 flex-wrap items-center gap-2">
+        <AdminFilterDropdown
+          ref="filterDropdown"
+          :has-active-filters="hasActiveFilters"
+          :active-label="activeFilterLabel"
+          :option-labels="sourceTypeOptions.map((option) => option.label)"
+          @clear="clearFilters"
+        >
+          <template #chips>
+            <AdminFilterChip
+              v-for="option in sourceTypeOptions"
+              :key="option.value"
+              :label="option.label"
+              :active="sourceType === option.value"
+              @click="setSourceTypeFilter(option.value)"
+            />
+          </template>
+        </AdminFilterDropdown>
+      </div>
+      <SearchInput
+        :model-value="query"
+        placeholder="search (admin content)"
+        aria-label="search admin content"
+        class="w-full"
+        @update:model-value="onQueryChange"
+      />
+    </div>
 
     <section v-if="loading" class="space-y-3" aria-busy="true" aria-label="Searching">
       <Card v-for="i in 4" :key="i" class="h-20 animate-pulse" />
@@ -104,7 +150,7 @@ function sourceLabel(type: string): string {
 
     <ErrorState v-else-if="listError" :message="listError" show-retry @retry="search" />
 
-    <EmptyState v-else-if="hasSearched && hits.length === 0" description="No matches found." />
+    <EmptyState v-else-if="hasSearched && hits.length === 0" description="no matches found" />
 
     <div v-else-if="displayHits.length > 0" class="space-y-3">
       <p class="text-xs text-surface-muted">{{ resultSummary }} for “{{ query.trim() }}”</p>

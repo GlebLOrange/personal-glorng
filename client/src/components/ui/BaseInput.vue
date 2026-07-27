@@ -4,29 +4,47 @@ import { computed, ref, useAttrs, useId, useSlots } from "vue";
 import FieldHelp from "@/components/ui/FieldHelp.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import {
+  buildFieldAccessibleName,
+  buildFieldDescribedBy,
+  pickNativeAttrs,
+} from "@/components/ui/fieldA11y";
+import {
+  CONTROL_SIZE,
   FIELD_CLEAR_SLOT,
+  FIELD_CLEAR_HIDDEN_CLASS,
   FIELD_INPUT_CLASS,
   FIELD_INPUT_CLASS_COMPACT,
+  FIELD_NOTCH_BG_CLASS,
+  FIELD_NOTCH_CLASS,
+  FIELD_NOTCH_ROW_CLASS,
+  FIELD_WRAPPER_CLASS,
 } from "@/constants/formClasses";
 
 defineOptions({ inheritAttrs: false });
 
 const model = defineModel<string | number | null>();
 
-const props = defineProps<{
-  id?: string;
-  type?: string;
-  /** In-bar overlay tip (decorative); shown only when empty. Not the accessible name. */
-  placeholder?: string;
-  /** Optional left-side field name inside the control. */
-  prefix?: string;
-  label?: string;
-  hint?: string;
-  error?: string;
-  /** Border tone when there is no error message (validation UI). */
-  tone?: "error" | "success";
-  compact?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    id?: string;
+    type?: string;
+    /** In-bar overlay tip (decorative); shown only when empty. Not the accessible name. */
+    placeholder?: string;
+    /** Optional left-side field name inside the control. */
+    prefix?: string;
+    label?: string;
+    hint?: string;
+    error?: string;
+    /** Border tone when there is no error message (validation UI). */
+    tone?: "error" | "success";
+    compact?: boolean;
+    /** Render the label inside the input bar instead of the outer border notch. */
+    labelInside?: boolean;
+  }>(),
+  {
+    labelInside: true,
+  },
+);
 
 const attrs = useAttrs();
 const slots = useSlots();
@@ -37,6 +55,8 @@ const hintId = computed(() => `${inputId.value}-hint`);
 const errorId = computed(() => `${inputId.value}-error`);
 const tipId = computed(() => `${inputId.value}-tip`);
 const hasSuffix = computed(() => Boolean(slots.suffix));
+const hasPrefixSlot = computed(() => Boolean(slots.prefix));
+const hasPrefix = computed(() => Boolean(props.prefix) || hasPrefixSlot.value);
 const isClearableType = computed(() => props.type !== "number");
 const hasTypedValue = computed(() => {
   if (typeof model.value === "string") return model.value.length > 0;
@@ -44,31 +64,44 @@ const hasTypedValue = computed(() => {
   return false;
 });
 const hasClearableValue = computed(() => isClearableType.value && hasTypedValue.value);
-const useShell = computed(() => Boolean(props.prefix || props.placeholder || hasSuffix.value));
+const useShell = computed(() =>
+  Boolean(
+    hasPrefix.value ||
+      props.placeholder ||
+      hasSuffix.value ||
+      props.labelInside ||
+      props.label,
+  ),
+);
 const showClear = computed(() => useShell.value && hasClearableValue.value);
 /** Reserve clear width whenever shell is clearable so tip/value never jump. */
 const reserveClear = computed(() => useShell.value && isClearableType.value);
-/** Overlay tip only when empty (even if focused). */
-const showTip = computed(() => Boolean(props.placeholder) && !hasTypedValue.value);
+/** Inside-label overlay mirrors tip: visible only while empty, then clear takes over. */
+const showInsideLabel = computed(
+  () => Boolean(props.labelInside && props.label) && !hasTypedValue.value,
+);
+const showTip = computed(
+  () => Boolean(props.placeholder) && !hasTypedValue.value && !showInsideLabel.value,
+);
 const tipInsetClass = computed(() => [
-  "left-3",
+  hasPrefix.value ? "left-10" : "left-3",
   reserveClear.value || hasSuffix.value ? "right-10" : "right-3",
 ]);
 /** Error replaces label on the border notch; hint rides beside the label when present. */
-const showLabelNotch = computed(() => Boolean(props.label) && !props.error);
+const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
+/** Persistent sr-only label when labelInside so naming survives hide-on-type. */
+const hasVisibleLabel = computed(() => showLabelNotch.value || Boolean(props.label && props.labelInside));
 const showNotchRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
-const describedBy = computed(() => {
-  const ids: string[] = [];
-  const fromAttrs = attrs["aria-describedby"];
-  if (typeof fromAttrs === "string" && fromAttrs.trim()) {
-    ids.push(...fromAttrs.trim().split(/\s+/));
-  }
-  if (props.error) ids.push(errorId.value);
-  else if (props.hint) ids.push(hintId.value);
-  // Visual tip stays aria-hidden; do not wire into describedby.
-  return ids.length ? [...new Set(ids)].join(" ") : undefined;
-});
+const describedBy = computed(() =>
+  buildFieldDescribedBy({
+    ariaDescribedBy: attrs["aria-describedby"],
+    hint: props.hint,
+    hintId: hintId.value,
+    error: props.error,
+    errorId: errorId.value,
+  }),
+);
 const borderTone = computed<"error" | "success" | "idle">(() => {
   if (props.error || props.tone === "error") return "error";
   if (props.tone === "success") return "success";
@@ -79,49 +112,54 @@ const toneBorderClass = computed(() => {
   if (borderTone.value === "success") return "border-status-success";
   return undefined;
 });
+/** Inset ring so shell content box stays full CONTROL_SIZE (matches ToolbarPillButton). */
+const toneShellRingClass = computed(() => {
+  if (borderTone.value === "error") {
+    return "ring-1 ring-inset ring-status-error focus-within:ring-status-error";
+  }
+  if (borderTone.value === "success") {
+    return "ring-1 ring-inset ring-status-success focus-within:ring-status-success";
+  }
+  return "ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-blue/50";
+});
 const bareInputClass = computed(() => [
   props.compact ? FIELD_INPUT_CLASS_COMPACT : FIELD_INPUT_CLASS,
   props.type === "number" && "font-data",
   toneBorderClass.value,
 ]);
 const shellClass = computed(() => [
-  // No overflow clip — clear may sit flush; notches live on the outer wrapper.
-  "relative flex w-full items-center rounded-lg border bg-surface-dark transition-colors",
-  props.compact ? "h-9" : "h-10",
-  toneBorderClass.value ??
-    "border-surface-border focus-within:border-accent-blue focus-within:ring-2 focus-within:ring-accent-blue/50",
+  // Inset ring (not border) — content height matches CONTROL_SIZE / icon buttons.
+  "relative flex w-full items-center overflow-hidden rounded-lg bg-surface-dark transition-colors",
+  props.compact ? "box-border h-9" : CONTROL_SIZE,
+  toneShellRingClass.value,
 ]);
 const shellInputClass = computed(() => [
-  "relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent px-3 text-left text-sm text-surface-light outline-none",
+  "relative z-10 h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent px-3 text-left text-sm leading-none text-surface-light outline-none",
   props.type === "number" && "font-data",
   props.type === "search" && "base-input-search",
 ]);
 const inputAttrs = computed(() => {
-  const nativeAttrs: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(attrs)) {
-    if (key !== "class" && key !== "style" && key !== "aria-describedby") nativeAttrs[key] = value;
-  }
-  return nativeAttrs;
+  return pickNativeAttrs(attrs, ["aria-describedby"]);
 });
-const accessibleName = computed(() => {
-  if (typeof attrs["aria-label"] === "string" && attrs["aria-label"].trim()) {
-    return attrs["aria-label"];
-  }
-  // Visible <label for> names the control when label notch is shown.
-  if (showLabelNotch.value) return undefined;
-  // Error hides the notch label — keep the name via aria-label.
-  if (props.label) return props.label;
-  // Tip/placeholder is visual help only (aria-hidden) — never the accessible name.
-  return props.prefix || undefined;
-});
+/** Avoid UA size=20; prefer placeholder length so shrink-wrapped panels fit tips. */
+const shellTextAttrs = computed(() => ({
+  ...inputAttrs.value,
+  size: inputAttrs.value.size ?? Math.max(props.placeholder?.length ?? 1, 1),
+}));
+const accessibleName = computed(() =>
+  buildFieldAccessibleName({
+    ariaLabel: attrs["aria-label"],
+    hasVisibleLabel: hasVisibleLabel.value,
+    label: props.label,
+    prefix: props.prefix,
+  }),
+);
 /**
  * Notch sits on the field’s top border against the parent surface (usually card).
  * Shell fill is surface-dark — do not use that here or the chip looks wrong on cards/modals.
  */
-const notchBgClass = "bg-surface-card";
-/** Shared notch chrome — mostly above the border so value text is never covered. */
-const notchClass =
-  "pointer-events-none absolute left-3 top-2.5 z-20 max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] truncate px-1.5 text-xs leading-4";
+const notchBgClass = FIELD_NOTCH_BG_CLASS;
+const notchClass = FIELD_NOTCH_CLASS;
 
 function clear(): void {
   model.value = "";
@@ -136,8 +174,7 @@ defineExpose({ focus });
 
 <template>
   <div
-    class="relative min-w-0"
-    :class="[hasBorderNotch ? 'pt-2.5' : undefined, $attrs.class]"
+    :class="[FIELD_WRAPPER_CLASS, hasBorderNotch ? 'pt-2.5' : undefined, $attrs.class]"
     :style="$attrs.style"
   >
     <div v-if="useShell" :class="shellClass">
@@ -147,6 +184,16 @@ defineExpose({ focus });
       >
         {{ prefix }}
       </span>
+      <span
+        v-else-if="hasPrefixSlot"
+        class="relative z-10 flex shrink-0 items-center pl-3 text-surface-mid"
+      >
+        <slot name="prefix" />
+      </span>
+      <!-- sr-only keeps for/id naming always; visual label mirrors tip overlay when empty -->
+      <label v-if="props.labelInside && props.label" :for="inputId" class="sr-only">
+        {{ props.label }}
+      </label>
       <input
         v-if="type === 'number'"
         :id="inputId"
@@ -163,7 +210,7 @@ defineExpose({ focus });
         v-else
         :id="inputId"
         ref="inputEl"
-        v-bind="inputAttrs"
+        v-bind="shellTextAttrs"
         v-model="model"
         :type="type ?? 'text'"
         :aria-label="accessibleName"
@@ -171,6 +218,16 @@ defineExpose({ focus });
         :aria-describedby="describedBy"
         :class="shellInputClass"
       />
+      <span
+        v-if="showInsideLabel"
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-y-0 z-0 flex items-center"
+        :class="tipInsetClass"
+      >
+        <span class="min-w-0 flex-1 truncate text-left text-xs font-medium text-surface-sage">
+          {{ label }}
+        </span>
+      </span>
       <span
         v-if="showTip"
         :id="tipId"
@@ -189,9 +246,9 @@ defineExpose({ focus });
         <slot name="suffix" />
         <div
           v-if="reserveClear"
-          :class="[FIELD_CLEAR_SLOT, showClear ? undefined : 'invisible pointer-events-none']"
+          :class="[FIELD_CLEAR_SLOT, showClear ? undefined : FIELD_CLEAR_HIDDEN_CLASS]"
         >
-          <IconCloseButton size="field" aria-label="Clear" @click="clear" />
+          <IconCloseButton v-if="showClear" size="field" aria-label="Clear" @click="clear" />
         </div>
       </div>
     </div>
@@ -226,8 +283,7 @@ defineExpose({ focus });
     <!-- Outside the control box so scroll/overflow parents cannot clip the notch into the value. -->
     <div
       v-if="showNotchRow"
-      class="absolute left-3 top-2.5 z-20 flex max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] items-center gap-1 px-1.5"
-      :class="notchBgClass"
+      :class="[FIELD_NOTCH_ROW_CLASS, notchBgClass]"
     >
       <!-- associated via :for / :id; FieldHelp sits beside the label -->
       <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->

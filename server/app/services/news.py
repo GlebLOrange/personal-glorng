@@ -219,7 +219,7 @@ def _article_payload_from_create(
         "title": data.title,
         "summary": data.summary,
         "bullets": _dumps_json_list(data.bullets or []),
-        "themes": _dumps_json_list([str(theme) for theme in data.themes]),
+        "tags": _dumps_json_list([str(tag) for tag in data.tags]),
         "language": data.language,
         "published_at": published_at,
         "ai_model": data.ai_model,
@@ -239,7 +239,7 @@ def _apply_article_updates(
         updates["source_id"] = source.id
         updates["source_name"] = source.name
         updates["source_feed_url"] = source.feed_url
-    for field in ("bullets", "themes"):
+    for field in ("bullets", "tags"):
         if field in updates and updates[field] is not None:
             updates[field] = _dumps_json_list(updates[field])
     for field in ("source_url", "source_feed_url"):
@@ -307,7 +307,7 @@ class NewsService:
             title=article.title,
             summary=article.summary,
             bullets=_loads_json_list("bullets", article.bullets),
-            themes=_loads_json_list("themes", article.themes),
+            tags=_loads_json_list("tags", article.tags),
             language=article.language,
             published_at=article.published_at,
             telegram_message_id=article.telegram_message_id,
@@ -686,12 +686,12 @@ class NewsService:
             pages=ceil(total / limit) if total else 0,
         )
 
-    async def list_themes(self) -> list[str]:
-        """Return all public themes."""
-        themes: set[str] = set()
-        for raw in await self._news().list_themes():
-            themes.update(_loads_json_list("themes", raw))
-        return sorted(themes)
+    async def list_tags(self) -> list[str]:
+        """Return all public tags."""
+        tags: set[str] = set()
+        for raw in await self._news().list_tags():
+            tags.update(_loads_json_list("tags", raw))
+        return sorted(tags)
 
     async def news_stats(self) -> NewsStatsResponse:
         """Return article counts grouped by status for admin dashboards."""

@@ -80,7 +80,7 @@ onUnmounted(() => {
     :class="
       variant === 'tile'
         ? 'page-tile md:col-start-2 min-w-0 md:h-0 md:min-h-full md:overflow-hidden'
-        : 'pointer-events-none fixed inset-x-0 top-16 z-50 flex justify-center px-4 sm:justify-end sm:px-6'
+        : 'pointer-events-none fixed inset-x-0 top-[5.5rem] z-50 flex justify-center px-4 sm:justify-end sm:px-6'
     "
   >
     <Card
@@ -99,7 +99,7 @@ onUnmounted(() => {
         @focusin="pause(t.id)"
         @focusout="resume(t.id)"
       >
-        <p class="min-w-0 flex-1 break-words text-center text-sm leading-snug">
+        <p class="min-w-0 flex-1 break-words text-center text-base lowercase leading-snug">
           {{ t.message }}
         </p>
         <IconCloseButton aria-label="Dismiss notification" @click="dismiss(t.id)" />
@@ -124,7 +124,7 @@ onUnmounted(() => {
         @focusin="pause(t.id)"
         @focusout="resume(t.id)"
       >
-        <p class="min-w-0 flex-1 break-words text-center text-sm leading-snug">
+        <p class="min-w-0 flex-1 break-words text-center text-base lowercase leading-snug">
           {{ t.message }}
         </p>
         <IconCloseButton aria-label="Dismiss notification" @click="dismiss(t.id)" />

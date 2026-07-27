@@ -84,31 +84,28 @@ function confirmDelete(): void {
 </script>
 
 <template>
-  <AdminListRow v-if="editing" :hoverable="false">
-    <template #primary>
-      <BaseInput
-        ref="titleInput"
-        v-model="draftTitle"
-        class="min-w-0 w-full"
-        placeholder="title (optional)"
-        @keydown="onTitleKeydown"
-      />
-    </template>
-    <template #actions>
-      <BaseButton variant="secondary" size="sm" :disabled="saving" @click="cancelEdit">
-        cancel
-      </BaseButton>
-      <BaseButton variant="success" size="sm" :disabled="saving" @click="saveEdit">
-        {{ saving ? "…" : "save" }}
-      </BaseButton>
-    </template>
-  </AdminListRow>
+  <div v-if="editing" class="flex w-full min-w-0 items-stretch gap-1">
+    <BaseInput
+      ref="titleInput"
+      v-model="draftTitle"
+      class="min-w-0 flex-1"
+      placeholder="title (optional)"
+      @keydown="onTitleKeydown"
+    />
+    <BaseButton variant="secondary" size="sm" class="shrink-0" :disabled="saving" @click="cancelEdit">
+      cancel
+    </BaseButton>
+    <BaseButton variant="success" size="sm" class="shrink-0" :disabled="saving" @click="saveEdit">
+      {{ saving ? "…" : "save" }}
+    </BaseButton>
+  </div>
 
   <AdminListRow
     v-else
     :interactive="canWrite"
     :nested-interactive="canWrite"
     hoverable
+    center-meta
     reveal-actions-on-hover
     @click="startEdit"
   >
@@ -142,22 +139,23 @@ function confirmDelete(): void {
     :open="showDeleteConfirm"
     title="delete short URL"
     confirm-label="delete"
+    danger
     :loading="deleting"
     @confirm="confirmDelete"
     @cancel="showDeleteConfirm = false"
   >
     <p>
-      Delete
+      delete
       <a
         :href="shortLink"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-accent-blue underline underline-offset-2"
+        class="text-accent-blue underline-offset-2"
         @click.stop
       >
         {{ shortLink }}
       </a>
-      ? This cannot be undone.
+      ? this cannot be undone
     </p>
   </ConfirmDialog>
 </template>

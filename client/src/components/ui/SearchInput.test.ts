@@ -24,9 +24,8 @@ describe("SearchInput", () => {
     const wrapper = mount(SearchInput, {
       props: { modelValue: "", placeholder: "search" },
     });
-    const clear = wrapper.get('button[aria-label="Clear search"]');
-    expect(clear.element.closest(".invisible")).not.toBeNull();
-    expect(clear.element.closest(".pointer-events-none")).not.toBeNull();
+    expect(wrapper.find('button[aria-label="Clear search"]').exists()).toBe(false);
+    expect(wrapper.find(".invisible.pointer-events-none").exists()).toBe(true);
   });
 
   it("shows the overlay label only when empty", async () => {
@@ -71,5 +70,12 @@ describe("SearchInput", () => {
       props: { modelValue: "", placeholder: "search", ariaLabel: "Find recipes" },
     });
     expect(wrapper.get("input").attributes("aria-label")).toBe("Find recipes");
+  });
+
+  it("always shows the search icon", () => {
+    const wrapper = mount(SearchInput, {
+      props: { modelValue: "", placeholder: "search" },
+    });
+    expect(wrapper.find("svg").exists()).toBe(true);
   });
 });

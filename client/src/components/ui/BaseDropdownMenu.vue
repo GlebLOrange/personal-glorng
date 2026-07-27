@@ -11,7 +11,11 @@ import {
 } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
-import { actionFamilyClass, iconActionClass } from "@/constants/httpStatusColors";
+import {
+  actionFamilyClass,
+  iconActionClass,
+  type HttpStatusFamily,
+} from "@/constants/httpStatusColors";
 
 const props = withDefaults(
   defineProps<{
@@ -19,10 +23,16 @@ const props = withDefaults(
     ariaLabel?: string;
     /** Menu opens below (default) or above the trigger. */
     placement?: "bottom" | "top";
+    /** Custom `#trigger` is an icon (no chevron / labeled width). */
+    iconOnly?: boolean;
+    /** Trigger paint family — edit menus use 3xx (pale yellow) to match IconEditButton. */
+    family?: HttpStatusFamily;
   }>(),
   {
     ariaLabel: "Actions",
     placement: "bottom",
+    iconOnly: false,
+    family: "1xx",
   },
 );
 
@@ -31,22 +41,30 @@ const open = ref(false);
 const rootRef = useTemplateRef<HTMLElement>("root");
 const triggerRef = useTemplateRef<HTMLButtonElement>("trigger");
 const menuRef = useTemplateRef<HTMLElement>("menu");
+/** Shared min width so trigger and menu stay aligned (no jump). */
+const sharedMinWidthPx = ref<number | null>(null);
 let previouslyFocused: HTMLElement | null = null;
+let shouldRestoreFocus = true;
 
 const hasCustomTrigger = computed(() => Boolean(slots.trigger));
+const isLabeledTrigger = computed(() => hasCustomTrigger.value && !props.iconOnly);
 
 const menuPositionClass = computed(() =>
   props.placement === "top" ? "bottom-full mb-1" : "top-full mt-1",
 );
 
 const triggerClass = computed(() => {
-  if (hasCustomTrigger.value) {
+  if (isLabeledTrigger.value) {
     // Labeled triggers (e.g. more actions) match ToolbarPillButton h-10.
-    return actionFamilyClass("1xx", open.value);
+    return [actionFamilyClass(props.family, open.value), "w-full"];
   }
-  // Icon-only default — h-10 square chrome.
-  return iconActionClass("1xx", open.value);
+  // Icon-only — h-10 square chrome.
+  return iconActionClass(props.family, open.value);
 });
+
+const rootStyle = computed(() =>
+  sharedMinWidthPx.value != null ? { minWidth: `${sharedMinWidthPx.value}px` } : undefined,
+);
 
 function getMenuItems(): HTMLElement[] {
   const menu = menuRef.value;
@@ -54,6 +72,37 @@ function getMenuItems(): HTMLElement[] {
   return Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]')).filter(
     (item) => item.tabIndex >= 0 && !item.hasAttribute("disabled"),
   );
+}
+
+function longestMenuItemWidth(menu: HTMLElement): number {
+  let longest = 0;
+  for (const item of menu.querySelectorAll<HTMLElement>('[role="menuitem"]')) {
+    const previousWidth = item.style.width;
+    const previousMinWidth = item.style.minWidth;
+    item.style.width = "max-content";
+    item.style.minWidth = "max-content";
+    longest = Math.max(longest, item.getBoundingClientRect().width);
+    item.style.width = previousWidth;
+    item.style.minWidth = previousMinWidth;
+  }
+  return longest;
+}
+
+function syncSharedMinWidth(): void {
+  // Icon-only triggers stay square; only labeled menus share width with items.
+  if (!isLabeledTrigger.value) return;
+  const menu = menuRef.value;
+  const trigger = triggerRef.value;
+  if (!menu || !trigger) return;
+
+  const triggerWidth = trigger.getBoundingClientRect().width;
+  const itemWidth = longestMenuItemWidth(menu);
+  // Menu chrome: horizontal padding/margins around items (~0.5rem each side).
+  const menuChrome = 16;
+  const next = Math.ceil(Math.max(triggerWidth, itemWidth + menuChrome));
+  if (sharedMinWidthPx.value == null || next > sharedMinWidthPx.value) {
+    sharedMinWidthPx.value = next;
+  }
 }
 
 function focusItem(index: number): void {
@@ -64,10 +113,15 @@ function focusItem(index: number): void {
 }
 
 function toggle(): void {
-  open.value = !open.value;
+  if (open.value) {
+    close();
+    return;
+  }
+  open.value = true;
 }
 
-function close(): void {
+function close(restoreFocus = true): void {
+  shouldRestoreFocus = restoreFocus;
   open.value = false;
 }
 
@@ -75,8 +129,16 @@ function onDocumentClick(event: MouseEvent): void {
   if (!open.value) return;
   const root = rootRef.value;
   if (root && !root.contains(event.target as Node)) {
-    close();
+    close(false);
   }
+}
+
+function onFocusOut(event: FocusEvent): void {
+  if (!open.value) return;
+  const root = rootRef.value;
+  const nextTarget = event.relatedTarget;
+  if (root && nextTarget instanceof Node && root.contains(nextTarget)) return;
+  close(false);
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -115,19 +177,25 @@ function onItemSelect(): void {
 watch(open, async (isOpen) => {
   if (isOpen) {
     previouslyFocused = document.activeElement as HTMLElement | null;
+    shouldRestoreFocus = true;
     await nextTick();
+    syncSharedMinWidth();
     focusItem(0);
     return;
   }
-  const restore = previouslyFocused ?? triggerRef.value;
+  const restore = shouldRestoreFocus ? (previouslyFocused ?? triggerRef.value) : null;
   previouslyFocused = null;
+  shouldRestoreFocus = true;
   restore?.focus();
 });
 
-onMounted(() => {
+onMounted(async () => {
   // Capture: drawer panels use @click.stop, which blocks bubble-phase document listeners.
   document.addEventListener("click", onDocumentClick, true);
   document.addEventListener("keydown", onKeydown);
+  await nextTick();
+  // Menu stays mounted (invisible when closed) so we can size the trigger up front.
+  syncSharedMinWidth();
 });
 
 onUnmounted(() => {
@@ -139,30 +207,30 @@ defineExpose({ close });
 </script>
 
 <template>
-  <div ref="root" class="relative inline-flex">
+  <div ref="root" class="relative inline-flex" :style="rootStyle" @focusout="onFocusOut">
     <button
       ref="trigger"
       type="button"
       :class="triggerClass"
       aria-haspopup="menu"
       :aria-expanded="open"
-      :aria-label="hasCustomTrigger ? undefined : props.ariaLabel"
-      :title="props.ariaLabel"
+      :aria-label="props.ariaLabel"
       @click.stop="toggle"
     >
       <span class="inline-flex items-center gap-1.5">
         <slot name="trigger" :open="open" />
-        <ChevronIcon :open="open" />
+        <ChevronIcon v-if="!hasCustomTrigger || isLabeledTrigger" :open="open" />
       </span>
     </button>
 
     <div
-      v-if="open"
       ref="menu"
       role="menu"
+      :aria-hidden="!open"
       :class="[
-        'absolute right-0 z-10 min-w-[10rem] rounded-lg border border-surface-border bg-surface-card py-1 shadow-lg',
-        menuPositionClass,
+        'absolute z-10 rounded-lg border border-surface-border bg-surface-card py-1 shadow-lg',
+        isLabeledTrigger ? 'left-0 right-0' : 'right-0 min-w-[10rem]',
+        open ? menuPositionClass : 'invisible pointer-events-none',
       ]"
       @click.stop
     >

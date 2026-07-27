@@ -62,6 +62,13 @@ export function useNewsSources() {
   const { run: runRefresh, loading: refreshing } = useApiAction();
   const { run: runDelete } = useApiAction();
   const deletingId = ref<number | null>(null);
+  const showDeleteConfirm = ref(false);
+  const pendingDeleteSource = ref<NewsSource | null>(null);
+  const deleteConfirmMessage = computed(() => {
+    const name = pendingDeleteSource.value?.name?.trim();
+    return name ? `delete ${name}?` : "delete this news source?";
+  });
+
   const lastAutoName = ref<string | null>(null);
   const { toast } = useNotify();
   const { can } = usePermissions();
@@ -268,10 +275,21 @@ export function useNewsSources() {
     await loadSources();
   }
 
-  async function deleteSource(source: NewsSource, event?: Event): Promise<void> {
+  function requestDeleteSource(source: NewsSource, event?: Event): void {
     event?.stopPropagation();
     if (!canWrite.value) return;
-    if (!window.confirm(`Delete ${source.name}?`)) return;
+    pendingDeleteSource.value = source;
+    showDeleteConfirm.value = true;
+  }
+
+  function cancelDeleteSource(): void {
+    showDeleteConfirm.value = false;
+    pendingDeleteSource.value = null;
+  }
+
+  async function confirmDeleteSource(): Promise<void> {
+    const source = pendingDeleteSource.value;
+    if (!source || !canWrite.value) return;
     deletingId.value = source.id;
     const ok = await runDelete(
       async () => {
@@ -279,13 +297,15 @@ export function useNewsSources() {
         return true;
       },
       {
-        successMessage: "News source deleted",
-        errorMessage: "Failed to delete news source",
+        successMessage: "news source deleted",
+        errorMessage: "failed to delete news source",
         logContext: "news.sources.delete",
       },
     );
     deletingId.value = null;
     if (!ok) return;
+    showDeleteConfirm.value = false;
+    pendingDeleteSource.value = null;
     sources.value = sources.value.filter((item) => item.id !== source.id);
     if (editingId.value === source.id) closeDrawer();
   }
@@ -324,6 +344,8 @@ export function useNewsSources() {
     saving,
     refreshing,
     deletingId,
+    showDeleteConfirm,
+    deleteConfirmMessage,
     canWrite,
     loadError,
     refreshButtonText,
@@ -343,6 +365,8 @@ export function useNewsSources() {
     updateForm,
     saveSource,
     refreshSources,
-    deleteSource,
+    requestDeleteSource,
+    confirmDeleteSource,
+    cancelDeleteSource,
   };
 }

@@ -118,16 +118,16 @@ async function handleGoogleLogin(): Promise<void> {
         @click="handleGoogleLogin"
       >
         <GoogleMarkIcon class-name="size-4" />
-        {{ googleLoading ? "connecting..." : "continue with google" }}
+        {{ googleLoading ? "connecting..." : "continue with Google" }}
       </BaseButton>
     </div>
 
     <p class="text-center text-xs text-surface-mid mt-4 space-x-3">
-      <RouterLink to="/register" class="nav-link underline underline-offset-4">
+      <RouterLink to="/register" class="nav-link underline-offset-4">
         create account
       </RouterLink>
       <span>·</span>
-      <RouterLink to="/forgot-password" class="nav-link underline underline-offset-4">
+      <RouterLink to="/forgot-password" class="nav-link underline-offset-4">
         forgot password?
       </RouterLink>
     </p>

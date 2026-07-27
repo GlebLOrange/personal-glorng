@@ -5,7 +5,6 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
-import { FIELD_INPUT_CLASS } from "@/constants/formClasses";
 import { useExpenseParse } from "@/composables/useExpenseParse";
 import { EXPENSE_CURRENCIES, type CurrencyCode } from "@/composables/useExpenseFilters";
 import { isoDateLocal } from "@/utils/dates";
@@ -35,7 +34,7 @@ const emit = defineEmits<{
   ];
 }>();
 
-const productInputRef = ref<HTMLInputElement | null>(null);
+const productInputRef = ref<{ focus: () => void } | null>(null);
 const smartTextInputRef = ref<{ focus: () => void } | null>(null);
 const smartText = ref("");
 
@@ -132,18 +131,15 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       <BaseSelect v-model="category" class="w-full" label="category">
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </BaseSelect>
-      <div class="flex min-w-0 flex-col gap-1">
-        <label for="expense-quick-product" class="text-label text-surface-sage">product</label>
-        <input
-          id="expense-quick-product"
-          ref="productInputRef"
-          v-model="product"
-          list="expense-product-suggestions"
-          placeholder="qty and product name"
-          autocomplete="off"
-          :class="FIELD_INPUT_CLASS"
-        />
-      </div>
+      <BaseInput
+        id="expense-quick-product"
+        ref="productInputRef"
+        v-model="product"
+        label="product"
+        list="expense-product-suggestions"
+        placeholder="qty and product name"
+        autocomplete="off"
+      />
       <BaseInput
         v-model="price"
         type="number"

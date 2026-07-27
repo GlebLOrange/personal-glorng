@@ -29,9 +29,9 @@ def _theme_tag(theme: str) -> str:
 def format_news_telegram_message(article: NewsArticle) -> str:
     """Format a curated news article for Telegram."""
     bullets = parse_json_string_list(article.bullets)[:3]
-    themes = [_theme_tag(theme) for theme in parse_json_string_list(article.themes)]
+    tags = [_theme_tag(tag) for tag in parse_json_string_list(article.tags)]
     bullet_lines = "\n".join(f"• {_escape(bullet)}" for bullet in bullets)
-    theme_line = " ".join(theme for theme in themes if theme)
+    theme_line = " ".join(tag for tag in tags if tag)
     base = get_settings().BASE_URL.rstrip("/")
     parts = [
         f"<b>{_escape(article.title)}</b>",
@@ -40,7 +40,7 @@ def format_news_telegram_message(article: NewsArticle) -> str:
     if bullet_lines:
         parts.append(bullet_lines)
     if theme_line:
-        parts.append(f"Themes: {theme_line}")
+        parts.append(f"Tags: {theme_line}")
     parts.extend(
         [
             (
