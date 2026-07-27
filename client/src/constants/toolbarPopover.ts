@@ -1,6 +1,6 @@
 /**
  * Shared width for filters / options toolbar popovers.
- * Options roots own width; trigger + panel stretch to w-full of that root.
+ * Prefer width on the panel (`TOOLBAR_POPOVER_PANEL_CLASS`) so the trigger stays content-fit.
  * Chip filter menus teleport a content-fit fixed panel (see AdminFilterDropdown).
  */
 
