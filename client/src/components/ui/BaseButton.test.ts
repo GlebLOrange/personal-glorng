@@ -16,7 +16,7 @@ describe("BaseButton", () => {
     expect(button.text()).toBe("Save");
   });
 
-  it("keeps sm/md/field at input height; lg is taller; icon is square h-8", () => {
+  it("keeps sm/md/field at input height; lg is taller; icon is square h-11", () => {
     expect(
       mount(BaseButton, { props: { size: "sm" } })
         .get("button")
@@ -38,9 +38,9 @@ describe("BaseButton", () => {
         .classes(),
     ).toContain("h-12");
     const icon = mount(BaseButton, { props: { size: "icon" } }).get("button");
-    expect(icon.classes()).toContain("h-8");
-    expect(icon.classes()).toContain("w-8");
-    expect(icon.classes()).toContain("min-w-8");
+    expect(icon.classes()).toContain("h-11");
+    expect(icon.classes()).toContain("w-11");
+    expect(icon.classes()).toContain("min-w-11");
     expect(icon.classes()).toContain("px-0");
   });
 

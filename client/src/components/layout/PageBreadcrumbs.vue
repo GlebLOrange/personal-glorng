@@ -1,19 +1,39 @@
 <script setup lang="ts">
+import ToolIcon from "@/components/icons/ToolIcon.vue";
 import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
-import { displayBreadcrumbLabel } from "@/utils/format";
+import { formatBreadcrumbLabel } from "@/utils/format";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     segments: BreadcrumbSegment[];
-    /** Larger accent styling for sole section labels (news / admin / settings). */
+    /** Title-scale size on the current crumb only (when it substitutes for h1). */
     elevated?: boolean;
   }>(),
   { elevated: false },
 );
 
 function crumbLabel(label: string): string {
-  return displayBreadcrumbLabel(label);
+  return formatBreadcrumbLabel(label);
 }
+
+function isCurrent(idx: number): boolean {
+  return idx === props.segments.length - 1;
+}
+
+function crumbIconSlug(label: string): string | null {
+  return crumbLabel(label) === "tools" ? "tools" : null;
+}
+
+function currentClass(): string {
+  if (props.elevated) {
+    // Hierarchy via size/weight only — default text color, not accent gradient
+    return "inline-flex h-8 items-center gap-2 truncate text-xl font-bold leading-none text-surface-light";
+  }
+  return "page-breadcrumb inline-flex items-center gap-2 font-medium text-surface-light";
+}
+
+const ancestorClass =
+  "page-breadcrumb inline-flex items-center gap-2 text-surface-mid transition-colors hover:text-accent-blue";
 </script>
 
 <template>
@@ -24,31 +44,30 @@ function crumbLabel(label: string): string {
         :key="`${idx}:${seg.label}`"
         class="flex items-center gap-2"
       >
-        <!-- ponytail: gradient on inner span — clip/fill on <a> can eat clicks -->
         <RouterLink
-          v-if="seg.to"
+          v-if="seg.to && !isCurrent(idx)"
           :to="seg.to"
           class="relative z-10 inline-flex h-8 cursor-pointer items-center"
         >
-          <span
-            :class="
-              elevated
-                ? 'truncate text-lg font-bold leading-none accent-gradient transition-opacity hover:opacity-90'
-                : 'page-breadcrumb text-surface-mid transition-colors hover:text-accent-blue'
-            "
-          >
+          <span :class="ancestorClass">
+            <ToolIcon
+              v-if="crumbIconSlug(seg.label) === 'tools'"
+              slug="tools"
+              class="size-3.5 shrink-0"
+            />
             {{ crumbLabel(seg.label) }}
           </span>
         </RouterLink>
         <span
           v-else
-          :class="
-            elevated
-              ? 'inline-flex h-8 items-center truncate text-lg font-bold leading-none accent-gradient'
-              : 'page-breadcrumb text-surface-light'
-          "
+          :class="currentClass()"
           aria-current="page"
         >
+          <ToolIcon
+            v-if="crumbIconSlug(seg.label) === 'tools'"
+            slug="tools"
+            :class="elevated ? 'size-5 shrink-0' : 'size-3.5 shrink-0'"
+          />
           {{ crumbLabel(seg.label) }}
         </span>
         <span

@@ -126,7 +126,7 @@ async function handleGoHome(): Promise<void> {
     >
       <nav aria-label="Main navigation" class="border-b border-surface-border">
         <div
-          class="max-w-5xl xl:max-w-6xl mx-auto px-6 py-4 md:py-5 flex items-center justify-between gap-4"
+          class="relative mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-[15px]"
         >
           <RouterLink
             to="/"
@@ -195,62 +195,62 @@ async function handleGoHome(): Promise<void> {
             >
               login
             </RouterLink>
-
-            <IconActionButton
-              quiet
-              class="self-center"
-              :aria-label="themeToggleLabel"
-              :title="themeToggleLabel"
-              @click="cyclePreference()"
-            >
-              <!-- sun = light, moon = dark, monitor = system -->
-              <svg
-                v-if="colorThemePreference === 'light'"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="size-4"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="4" />
-                <path
-                  stroke-linecap="round"
-                  d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
-                />
-              </svg>
-              <svg
-                v-else-if="colorThemePreference === 'system'"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="size-4"
-                aria-hidden="true"
-              >
-                <rect x="3" y="4" width="18" height="12" rx="2" />
-                <path stroke-linecap="round" d="M8 20h8M12 16v4" />
-              </svg>
-              <svg
-                v-else
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="size-4"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 14.5A8.5 8.5 0 1 1 11.5 3 7 7 0 0 0 21 14.5z"
-                />
-              </svg>
-            </IconActionButton>
           </div>
+
+          <IconActionButton
+            quiet
+            class="shell-outside-end top-1/2 hidden -translate-y-1/2 md:inline-flex"
+            :aria-label="themeToggleLabel"
+            :title="themeToggleLabel"
+            @click="cyclePreference()"
+          >
+            <!-- sun = light, moon = dark, monitor = system -->
+            <svg
+              v-if="colorThemePreference === 'light'"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="size-4"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <path
+                stroke-linecap="round"
+                d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+              />
+            </svg>
+            <svg
+              v-else-if="colorThemePreference === 'system'"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="size-4"
+              aria-hidden="true"
+            >
+              <rect x="3" y="4" width="18" height="12" rx="2" />
+              <path stroke-linecap="round" d="M8 20h8M12 16v4" />
+            </svg>
+            <svg
+              v-else
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="size-4"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 14.5A8.5 8.5 0 1 1 11.5 3 7 7 0 0 0 21 14.5z"
+              />
+            </svg>
+          </IconActionButton>
 
           <div class="flex md:hidden items-center gap-2">
             <IconActionButton

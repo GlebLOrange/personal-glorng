@@ -6,7 +6,6 @@ import {
   formatRelativeTime,
   formatScheduleDate,
   truncateBreadcrumbSlug,
-  truncateBreadcrumbTitle,
 } from "@/utils/format";
 
 describe("formatBreadcrumbLabel", () => {
@@ -29,7 +28,7 @@ describe("formatBreadcrumbLabel", () => {
 
   it("preserves path-shaped labels for news edit crumbs", () => {
     expect(formatBreadcrumbLabel("news/my-slug")).toBe("news/my-slug");
-    expect(displayBreadcrumbLabel("news/my-slug")).toBe("§ news/my-slug");
+    expect(displayBreadcrumbLabel("news/my-slug")).toBe("news/my-slug");
   });
 });
 
@@ -45,24 +44,10 @@ describe("truncateBreadcrumbSlug", () => {
 });
 
 describe("displayBreadcrumbLabel", () => {
-  it("prefixes the page name with § and a space", () => {
-    expect(displayBreadcrumbLabel("calculator")).toBe("§ calculator");
-    expect(displayBreadcrumbLabel("app logs")).toBe("§ app logs");
-    expect(displayBreadcrumbLabel("§ tools")).toBe("§ tools");
-  });
-});
-
-describe("truncateBreadcrumbTitle", () => {
-  it("returns the only word unchanged", () => {
-    expect(truncateBreadcrumbTitle("Breaking")).toBe("Breaking");
-  });
-
-  it("keeps the first word and appends ellipsis", () => {
-    expect(truncateBreadcrumbTitle("Breaking news about space")).toBe("Breaking...");
-  });
-
-  it("trims surrounding whitespace", () => {
-    expect(truncateBreadcrumbTitle("  Hello world  ")).toBe("Hello...");
+  it("aliases formatBreadcrumbLabel without a § prefix", () => {
+    expect(displayBreadcrumbLabel("calculator")).toBe("calculator");
+    expect(displayBreadcrumbLabel("app logs")).toBe("app logs");
+    expect(displayBreadcrumbLabel("§ tools")).toBe("tools");
   });
 });
 

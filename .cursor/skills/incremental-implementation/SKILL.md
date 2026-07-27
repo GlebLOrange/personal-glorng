@@ -8,7 +8,7 @@ description: Delivers changes incrementally in thin vertical slices with targete
 
 This rule supplements always-on agent rules; it does not override them.
 
-- **Tests:** Write tests for each slice; run **targeted** tests for the files you changed. Do not run full `make test`, `npm run test`, or Playwright unless the user asks, CI is failing, or the task is test-focused.
+- **Tests:** Write tests for each slice when the slice needs them. **Running** tests follows **agent-safety** opt-in — ask once “Run tests for this change?” unless the user already asked to run/pass/verify tests or the task is test-focused. When they opt in, run **targeted** tests for changed files. Do not run full `make test`, `npm run test`, or Playwright unless the user asks for the full suite.
 - **Commits:** Leave each slice in a committable state, but only `git commit` when the user explicitly requests it.
 
 ## Overview
@@ -43,8 +43,8 @@ Build in thin vertical slices — implement one piece, test it, verify it, then 
 For each slice:
 
 1. **Implement** the smallest complete piece of functionality
-2. **Test** — write or update tests for the slice; run targeted tests for changed files
-3. **Verify** — confirm the slice works (targeted tests pass, lint/build succeeds, manual check if needed)
+2. **Test** — write or update tests for the slice when needed; run them only per **agent-safety** opt-in (ask once unless already requested / test-focused)
+3. **Verify** — confirm the slice works (opt-in targeted tests, lint/build if needed, or manual check)
 4. **Prepare commit** — summarize the slice; commit only when the user asks
 5. **Move to the next slice** — carry forward, don't restart
 
@@ -197,8 +197,8 @@ When directing an agent to implement incrementally:
 Start with just the database schema change and the API endpoint.
 Don't touch the UI yet — we'll do that in the next increment.
 
-After implementing, run targeted tests for the changed files and
-`npm run lint` + `npm run build` (frontend) or `ruff check` (backend)
+After implementing, ask whether to run targeted tests for the changed files;
+if yes, run them, then `npm run lint` + `npm run build` (frontend) or `ruff check` (backend)
 to verify nothing is broken."
 ```
 
@@ -231,7 +231,7 @@ After each increment, verify:
 
 ## Red Flags
 
-- More than 100 lines of code written without running targeted tests
+- More than 100 lines of code written without verifying the slice (opt-in tests or manual check)
 - Multiple unrelated changes in a single increment
 - "Let me just quickly add this too" scope expansion
 - Skipping the test/verify step to move faster
@@ -246,8 +246,8 @@ After each increment, verify:
 
 After completing all increments for a task:
 
-- [ ] Each increment was individually tested (targeted tests)
+- [ ] Each increment was verified (opt-in targeted tests and/or manual check)
 - [ ] Each increment is ready to commit when the user asks
 - [ ] The build is clean
 - [ ] The feature works end-to-end as specified
-- [ ] Full test suite passes only when user asks, CI is failing, or task is test-focused
+- [ ] Tests were not claimed as passing if none were run; full suite only when user asks

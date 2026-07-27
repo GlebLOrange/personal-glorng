@@ -4,7 +4,7 @@ export function formatBreadcrumbLabel(title: string): string {
     .trim()
     .replace(/^§+\s*/, "")
     .toLowerCase();
-  // Path-shaped crumbs keep `/` (e.g. news/my-slug → § news/my-slug).
+  // Path-shaped crumbs keep `/` (e.g. news/my-slug).
   if (cleaned.includes("/")) return cleaned;
   // Keep kebab-case slugs intact (news article crumbs).
   if (!/[\s_]/.test(cleaned) && cleaned.includes("-")) return cleaned;
@@ -12,9 +12,9 @@ export function formatBreadcrumbLabel(title: string): string {
   return parts.join(" ") || cleaned;
 }
 
-/** Visible breadcrumb text: § as the first character of the page name. */
+/** Visible breadcrumb text (alias of formatBreadcrumbLabel; no § prefix). */
 export function displayBreadcrumbLabel(title: string): string {
-  return `§ ${formatBreadcrumbLabel(title)}`;
+  return formatBreadcrumbLabel(title);
 }
 
 /** Truncate a URL slug for breadcrumb chrome (default 14 characters). */
@@ -23,14 +23,6 @@ export function truncateBreadcrumbSlug(slug: string, maxLen = 14): string {
   if (!cleaned) return cleaned;
   if (cleaned.length <= maxLen) return cleaned;
   return `${cleaned.slice(0, maxLen)}…`;
-}
-
-/** First word of a title for compact breadcrumbs; appends "..." when truncated. */
-export function truncateBreadcrumbTitle(title: string): string {
-  const words = title.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return title;
-  if (words.length === 1) return words[0]!;
-  return `${words[0]}...`;
 }
 
 export function formatDate(iso: string): string {

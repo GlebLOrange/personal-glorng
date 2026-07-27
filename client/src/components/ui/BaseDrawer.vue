@@ -62,7 +62,7 @@ const panelWidth = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"
                 </h2>
               </slot>
             </div>
-            <div class="flex h-8 shrink-0 items-center gap-1">
+            <div class="flex h-11 shrink-0 items-center gap-1">
               <slot name="header-actions" />
               <IconCloseButton ref="closeButton" aria-label="Close drawer" @click="emit('close')" />
             </div>

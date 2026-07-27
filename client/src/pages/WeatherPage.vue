@@ -23,13 +23,13 @@ const { toast } = useNotify();
 
 async function handleAdd(query: string): Promise<void> {
   await addLocation(query);
-  toast("Location added", "success");
+  toast("location added", "success");
 }
 
 async function handleRemove(id: number | string): Promise<void> {
   try {
     await removeLocation(id);
-    toast("Location removed", "success");
+    toast("location removed", "success");
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to remove location";
     toast(message, "error");

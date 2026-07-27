@@ -16,6 +16,7 @@ import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
 import { usePermissions } from "@/composables/usePermissions";
 import type { PaginatedList, UrlItem } from "@/types";
+import { ensureHttpsUrl } from "@/utils/ensureHttpsUrl";
 import { publicUrl } from "@/utils/publicLinks";
 
 const urls = ref<UrlItem[]>([]);
@@ -70,7 +71,7 @@ async function createUrl(): Promise<void> {
   const result = await runCreate(
     () =>
       api.post("/tools/url-shortener", {
-        original_url: newUrl.value,
+        original_url: ensureHttpsUrl(newUrl.value),
         title: newTitle.value || null,
       }),
     { successMessage: "URL created", errorFallback: "Failed to create URL" },
@@ -134,25 +135,25 @@ onMounted(loadUrls);
       <BaseInput
         v-model="newUrl"
         class="min-w-0 w-full"
-        placeholder="url (https://example.com/very-long-url...)"
+        placeholder="url (example.com or https://…)"
         aria-label="url"
       />
       <BaseInput v-model="newTitle" placeholder="title (optional)" aria-label="title" />
     </form>
 
     <Card v-if="lastCreatedLink" variant="compact" class="mb-10">
-      <p class="mb-2 text-sm text-surface-mid">your short link</p>
-      <div class="flex flex-wrap items-center gap-3">
-        <a
-          :href="lastCreatedLink"
-          class="break-all text-sm text-accent-blue hover:underline"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {{ lastCreatedLink }}
-        </a>
+      <div class="mb-2 flex items-center justify-between gap-3">
+        <p class="text-sm text-surface-mid">your short link</p>
         <IconCopyButton aria-label="copy short link" @click="copy(lastCreatedLink)" />
       </div>
+      <a
+        :href="lastCreatedLink"
+        class="break-all text-sm text-accent-blue hover:underline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ lastCreatedLink }}
+      </a>
     </Card>
 
     <div v-if="canManage" class="divide-y divide-surface-border/40">

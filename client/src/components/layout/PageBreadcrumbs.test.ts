@@ -4,10 +4,11 @@ import { describe, expect, it } from "vitest";
 import PageBreadcrumbs from "@/components/layout/PageBreadcrumbs.vue";
 
 describe("PageBreadcrumbs", () => {
-  it("renders link segments with href", () => {
+  it("renders plain labels with muted ancestors and highlighted current", () => {
     const wrapper = mount(PageBreadcrumbs, {
       props: {
-        segments: [{ label: "tools", to: "/tools" }, { label: "calculator" }],
+        segments: [{ label: "admin", to: "/admin" }, { label: "app logs" }],
+        elevated: true,
       },
       global: {
         stubs: {
@@ -19,12 +20,20 @@ describe("PageBreadcrumbs", () => {
       },
     });
 
-    expect(wrapper.get("a").attributes("href")).toBe("/tools");
-    expect(wrapper.text()).toContain("§ tools");
-    expect(wrapper.text()).toContain("§ calculator");
+    expect(wrapper.get("a").attributes("href")).toBe("/admin");
+    expect(wrapper.get("a span").text()).toBe("admin");
+    expect(wrapper.get("a span").classes()).toContain("text-surface-mid");
+    expect(wrapper.get("a span").classes()).not.toContain("accent-gradient");
+
+    const current = wrapper.get("[aria-current=page]");
+    expect(current.text()).toBe("app logs");
+    expect(current.classes()).toContain("text-surface-light");
+    expect(current.classes()).toContain("text-xl");
+    expect(current.classes()).not.toContain("accent-gradient");
+    expect(wrapper.text()).toMatch(/admin\s*\/\s*app logs/);
   });
 
-  it("applies elevated accent classes for sole section crumbs", () => {
+  it("applies elevated size only on the current sole section crumb", () => {
     const wrapper = mount(PageBreadcrumbs, {
       props: {
         segments: [{ label: "admin", to: "/admin" }],
@@ -40,9 +49,34 @@ describe("PageBreadcrumbs", () => {
       },
     });
 
-    expect(wrapper.get("a").classes()).toContain("cursor-pointer");
-    expect(wrapper.get("a span").classes()).toContain("accent-gradient");
-    expect(wrapper.get("a span").classes()).toContain("text-lg");
-    expect(wrapper.get("a span").text()).toBe("§ admin");
+    expect(wrapper.find("a").exists()).toBe(false);
+    const current = wrapper.get("[aria-current=page]");
+    expect(current.text()).toBe("admin");
+    expect(current.classes()).toContain("text-surface-light");
+    expect(current.classes()).toContain("text-xl");
+    expect(current.classes()).not.toContain("accent-gradient");
+  });
+
+  it("highlights current without elevated title scale", () => {
+    const wrapper = mount(PageBreadcrumbs, {
+      props: {
+        segments: [{ label: "tools", to: "/tools" }, { label: "calculator" }],
+        elevated: false,
+      },
+      global: {
+        stubs: {
+          RouterLink: {
+            props: ["to"],
+            template: '<a :href="to"><slot /></a>',
+          },
+        },
+      },
+    });
+
+    const current = wrapper.get("[aria-current=page]");
+    expect(current.text()).toBe("calculator");
+    expect(current.classes()).toContain("font-medium");
+    expect(current.classes()).toContain("text-surface-light");
+    expect(current.classes()).not.toContain("accent-gradient");
   });
 });
