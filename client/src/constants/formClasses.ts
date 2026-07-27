@@ -25,9 +25,17 @@ export const CONTROL_SIZE_ICON_FIELD = CONTROL_SIZE_ICON;
 
 /** Reserved clear-slot inside field shells (matches shell + icon square). */
 export const FIELD_CLEAR_SLOT = `flex ${CONTROL_SIZE} ${CONTROL_SIZE_SQUARE} shrink-0 items-center justify-center`;
+export const FIELD_CLEAR_HIDDEN_CLASS = "invisible pointer-events-none";
 
 const FIELD_FOCUS =
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 focus-visible:border-accent-blue";
+
+export const FIELD_WRAPPER_CLASS = "relative min-w-0";
+export const FIELD_NOTCH_BG_CLASS = "bg-surface-card";
+export const FIELD_NOTCH_ROW_CLASS =
+  "absolute left-3 top-2.5 z-20 flex max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] items-center gap-1 px-1.5";
+export const FIELD_NOTCH_CLASS =
+  "pointer-events-none absolute left-3 top-2.5 z-20 max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] truncate px-1.5 text-xs leading-4";
 
 export const FIELD_INPUT_CLASS =
   `${CONTROL_SIZE} w-full bg-surface-card border border-surface-border rounded-lg px-4 py-0 text-surface-light text-sm ` +

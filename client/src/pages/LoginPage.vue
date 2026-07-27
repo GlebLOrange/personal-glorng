@@ -73,6 +73,7 @@ async function handleGoogleLogin(): Promise<void> {
         autocomplete="email"
         label="email"
         placeholder="you@example.com"
+        label-inside
         required
       />
       <BaseInput
@@ -82,6 +83,7 @@ async function handleGoogleLogin(): Promise<void> {
         autocomplete="current-password"
         label="password"
         placeholder="password"
+        label-inside
         required
       />
       <p
@@ -118,7 +120,7 @@ async function handleGoogleLogin(): Promise<void> {
         @click="handleGoogleLogin"
       >
         <GoogleMarkIcon class-name="size-4" />
-        {{ googleLoading ? "connecting..." : "continue with google" }}
+        {{ googleLoading ? "connecting..." : "continue with Google" }}
       </BaseButton>
     </div>
 

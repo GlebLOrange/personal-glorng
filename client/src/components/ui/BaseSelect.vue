@@ -2,7 +2,18 @@
 import { computed, useAttrs, useId } from "vue";
 
 import FieldHelp from "@/components/ui/FieldHelp.vue";
-import { SELECT_CLASS, SELECT_CLASS_COMPACT } from "@/constants/formClasses";
+import {
+  buildFieldAccessibleName,
+  buildFieldDescribedBy,
+} from "@/components/ui/fieldA11y";
+import {
+  FIELD_NOTCH_BG_CLASS,
+  FIELD_NOTCH_CLASS,
+  FIELD_NOTCH_ROW_CLASS,
+  FIELD_WRAPPER_CLASS,
+  SELECT_CLASS,
+  SELECT_CLASS_COMPACT,
+} from "@/constants/formClasses";
 
 defineOptions({ inheritAttrs: false });
 
@@ -24,30 +35,30 @@ const errorId = computed(() => `${selectId.value}-error`);
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error);
 const showNotchRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
-const describedBy = computed(() => {
-  const ids: string[] = [];
-  if (props.error) ids.push(errorId.value);
-  else if (props.hint) ids.push(hintId.value);
-  return ids.length ? ids.join(" ") : undefined;
-});
+const describedBy = computed(() =>
+  buildFieldDescribedBy({
+    ariaDescribedBy: attrs["aria-describedby"],
+    hint: props.hint,
+    hintId: hintId.value,
+    error: props.error,
+    errorId: errorId.value,
+  }),
+);
 const selectClass = computed(() => (props.compact ? SELECT_CLASS_COMPACT : SELECT_CLASS));
-const ariaLabel = computed(() => {
-  if (typeof attrs["aria-label"] === "string" && attrs["aria-label"].trim()) {
-    return attrs["aria-label"];
-  }
-  if (showLabelNotch.value) return undefined;
-  if (props.label) return props.label;
-  return undefined;
-});
-const notchBgClass = "bg-surface-card";
-const notchClass =
-  "pointer-events-none absolute left-3 top-2.5 z-20 max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] truncate px-1.5 text-xs leading-4";
+const ariaLabel = computed(() =>
+  buildFieldAccessibleName({
+    ariaLabel: attrs["aria-label"],
+    hasVisibleLabel: showLabelNotch.value,
+    label: props.label,
+  }),
+);
+const notchBgClass = FIELD_NOTCH_BG_CLASS;
+const notchClass = FIELD_NOTCH_CLASS;
 </script>
 
 <template>
   <div
-    class="relative min-w-0"
-    :class="[hasBorderNotch ? 'pt-2.5' : undefined, attrs.class]"
+    :class="[FIELD_WRAPPER_CLASS, hasBorderNotch ? 'pt-2.5' : undefined, attrs.class]"
   >
     <select
       :id="selectId"
@@ -61,8 +72,7 @@ const notchClass =
     </select>
     <div
       v-if="showNotchRow"
-      class="absolute left-3 top-2.5 z-20 flex max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] items-center gap-1 px-1.5"
-      :class="notchBgClass"
+      :class="[FIELD_NOTCH_ROW_CLASS, notchBgClass]"
     >
       <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
       <label

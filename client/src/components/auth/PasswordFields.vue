@@ -40,6 +40,7 @@ defineExpose({ strength, passwordsMatch, valid });
     :label="passwordLabel"
     :placeholder="passwordPlaceholder"
     :aria-describedby="describedById"
+    label-inside
     required
   />
   <p
@@ -57,6 +58,7 @@ defineExpose({ strength, passwordsMatch, valid });
     label="confirm password"
     placeholder="confirm password"
     :error="passwordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
+    label-inside
     required
   />
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useId } from "vue";
+import { computed, ref, useId, useSlots } from "vue";
 
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import OverlayBackdrop from "@/components/ui/OverlayBackdrop.vue";
@@ -19,6 +19,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{ close: [] }>();
 
+const slots = useSlots();
 const panel = ref<HTMLElement | null>(null);
 const closeButton = ref<InstanceType<typeof IconCloseButton> | null>(null);
 const titleId = useId();
@@ -34,6 +35,7 @@ useOverlayShell({
 });
 
 const panelWidth = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"]);
+const hasCustomTitle = computed(() => Boolean(slots.title));
 </script>
 
 <template>
@@ -52,6 +54,7 @@ const panelWidth = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"
           ]"
           @click.stop
         >
+          <h2 v-if="hasCustomTitle" :id="titleId" class="sr-only">{{ title }}</h2>
           <header
             class="flex shrink-0 items-center justify-between gap-3 border-b border-surface-border px-4 py-3"
           >

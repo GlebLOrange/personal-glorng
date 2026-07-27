@@ -50,8 +50,8 @@ describe("BaseInput", () => {
     expect(wrapper.get("#title-tip").find(".truncate").classes()).toContain("text-left");
     expect(wrapper.get("#title-tip").attributes("aria-hidden")).toBe("true");
     expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
-    const clearEmpty = wrapper.get('button[aria-label="Clear"]');
-    expect(clearEmpty.element.closest(".invisible")).not.toBeNull();
+    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
+    expect(wrapper.find(".invisible.pointer-events-none").exists()).toBe(true);
 
     await wrapper.setProps({ modelValue: "Pasta Carbonara" });
     expect(wrapper.get("input").element).toHaveProperty("value", "Pasta Carbonara");
@@ -98,7 +98,7 @@ describe("BaseInput", () => {
     expect(wrapper.props("modelValue")).toBe("");
     expect(wrapper.get("#to-tip").text()).toBe("to");
     expect(wrapper.get("#to-tip").classes()).toContain("right-11");
-    expect(wrapper.get('button[aria-label="Clear"]').element.closest(".invisible")).not.toBeNull();
+    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
   });
 
   it("uses a visible label for naming when label and placeholder are both set", () => {
@@ -132,6 +132,63 @@ describe("BaseInput", () => {
     expect(wrapper.get("#email-hint").text()).toBe("We never share this");
     expect(wrapper.get('button[aria-label="help"]').exists()).toBe(true);
     expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
+  });
+
+  it("labelInside shows overlay while empty and suppresses tip + outer notch", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "pw",
+        label: "password",
+        placeholder: "password tip",
+        labelInside: true,
+        modelValue: "",
+      },
+    });
+
+    expect(wrapper.get("label.sr-only").attributes("for")).toBe("pw");
+    expect(wrapper.get("label.sr-only").text()).toBe("password");
+    // visual label is a flex sibling span (not the sr-only label)
+    expect(wrapper.find("span.text-surface-sage").exists()).toBe(true);
+    expect(wrapper.find("span.text-surface-sage").text()).toBe("password");
+    // tip suppressed when labelInside is active
+    expect(wrapper.find("#pw-tip").exists()).toBe(false);
+    expect(wrapper.find(".pt-2\\.5").exists()).toBe(false);
+    expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
+    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
+  });
+
+  it("labelInside hides visual label and shows clear once typing", async () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "pw",
+        label: "password",
+        labelInside: true,
+        modelValue: "",
+      },
+    });
+
+    expect(wrapper.find("span.text-surface-sage").exists()).toBe(true);
+    await wrapper.setProps({ modelValue: "secret" });
+    // visual label gone; sr-only stays for a11y
+    expect(wrapper.find("span.text-surface-sage").exists()).toBe(false);
+    expect(wrapper.find("label.sr-only").exists()).toBe(true);
+    expect(wrapper.get('button[aria-label="Clear"]').exists()).toBe(true);
+  });
+
+  it("labelInside still shows error in outer notch when error is present", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "pw",
+        label: "password",
+        labelInside: true,
+        error: "Required field",
+      },
+    });
+
+    expect(wrapper.get("#pw-error").text()).toBe("Required field");
+    expect(wrapper.get("input").attributes("aria-invalid")).toBe("true");
+    // outer notch position is reserved for the error
+    expect(wrapper.find(".pt-2\\.5").exists()).toBe(true);
   });
 
   it("applies success and error border tones", () => {

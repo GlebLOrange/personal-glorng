@@ -32,6 +32,7 @@ const rootRef = useTemplateRef<HTMLElement>("root");
 const triggerRef = useTemplateRef<HTMLButtonElement>("trigger");
 const menuRef = useTemplateRef<HTMLElement>("menu");
 let previouslyFocused: HTMLElement | null = null;
+let shouldRestoreFocus = true;
 
 const hasCustomTrigger = computed(() => Boolean(slots.trigger));
 
@@ -64,10 +65,15 @@ function focusItem(index: number): void {
 }
 
 function toggle(): void {
-  open.value = !open.value;
+  if (open.value) {
+    close();
+    return;
+  }
+  open.value = true;
 }
 
-function close(): void {
+function close(restoreFocus = true): void {
+  shouldRestoreFocus = restoreFocus;
   open.value = false;
 }
 
@@ -75,8 +81,16 @@ function onDocumentClick(event: MouseEvent): void {
   if (!open.value) return;
   const root = rootRef.value;
   if (root && !root.contains(event.target as Node)) {
-    close();
+    close(false);
   }
+}
+
+function onFocusOut(event: FocusEvent): void {
+  if (!open.value) return;
+  const root = rootRef.value;
+  const nextTarget = event.relatedTarget;
+  if (root && nextTarget instanceof Node && root.contains(nextTarget)) return;
+  close(false);
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -115,12 +129,14 @@ function onItemSelect(): void {
 watch(open, async (isOpen) => {
   if (isOpen) {
     previouslyFocused = document.activeElement as HTMLElement | null;
+    shouldRestoreFocus = true;
     await nextTick();
     focusItem(0);
     return;
   }
-  const restore = previouslyFocused ?? triggerRef.value;
+  const restore = shouldRestoreFocus ? (previouslyFocused ?? triggerRef.value) : null;
   previouslyFocused = null;
+  shouldRestoreFocus = true;
   restore?.focus();
 });
 
@@ -139,14 +155,14 @@ defineExpose({ close });
 </script>
 
 <template>
-  <div ref="root" class="relative inline-flex">
+  <div ref="root" class="relative inline-flex" @focusout="onFocusOut">
     <button
       ref="trigger"
       type="button"
       :class="triggerClass"
       aria-haspopup="menu"
       :aria-expanded="open"
-      :aria-label="hasCustomTrigger ? undefined : props.ariaLabel"
+      :aria-label="props.ariaLabel"
       :title="props.ariaLabel"
       @click.stop="toggle"
     >
