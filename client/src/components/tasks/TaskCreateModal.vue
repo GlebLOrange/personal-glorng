@@ -52,7 +52,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
             family="2xx"
             :disabled="saving"
           >
-            {{ saving ? "creating..." : "create" }}
+            {{ saving ? "creating…" : "create" }}
           </ToolbarPillButton>
         </template>
       </DrawerFooterActions>

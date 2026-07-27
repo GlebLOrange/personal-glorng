@@ -141,7 +141,7 @@ async function handleRegister(): Promise<void> {
         :loading="loading"
         :disabled="!canSubmit"
       >
-        {{ loading ? "creating account..." : "create account" }}
+        {{ loading ? "creating account…" : "create account" }}
       </BaseButton>
     </form>
 

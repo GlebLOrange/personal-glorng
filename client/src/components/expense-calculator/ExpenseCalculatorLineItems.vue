@@ -64,7 +64,7 @@ function onAddItem(): void {
           :key="item.id"
           class="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-3 items-end"
         >
-          <BaseInput v-model="item.label" label="label" placeholder="coffee, taxi..." data-line-label />
+          <BaseInput v-model="item.label" label="label" placeholder="coffee, taxi…" data-line-label />
           <BaseInput
             v-model="item.amount"
             type="number"

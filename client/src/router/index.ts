@@ -188,13 +188,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/calculator",
     name: "calculator",
-    component: () => import("@/pages/admin/tools/CalculatorTool.vue"),
+    component: () => import("@/pages/tools/CalculatorTool.vue"),
     meta: { title: "Calculator", description: "Quick math calculations." },
   },
   {
     path: "/expense-calculator",
     name: "expense-calculator",
-    component: () => import("@/pages/admin/tools/ExpenseCalculatorTool.vue"),
+    component: () => import("@/pages/tools/ExpenseCalculatorTool.vue"),
     meta: {
       resolveSession: true,
       title: "Expense calculator",
@@ -204,13 +204,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/password-generator",
     name: "password-generator",
-    component: () => import("@/pages/admin/tools/PasswordGeneratorTool.vue"),
+    component: () => import("@/pages/tools/PasswordGeneratorTool.vue"),
     meta: { title: "Password generator", description: "Generate strong random passwords." },
   },
   {
     path: "/recipes",
     name: "recipes",
-    component: () => import("@/pages/admin/tools/RecipesPage.vue"),
+    component: () => import("@/pages/tools/RecipesPage.vue"),
     meta: {
       scrollRestore: "volatile",
       title: "Recipes",
@@ -220,13 +220,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/shortener",
     name: "shortener",
-    component: () => import("@/pages/admin/tools/UrlShortenerTool.vue"),
+    component: () => import("@/pages/tools/UrlShortenerTool.vue"),
     meta: { title: "URL shortener", description: "Create and manage short URLs." },
   },
   {
     path: "/vid-download",
     name: "vid-download",
-    component: () => import("@/pages/admin/tools/VidDownloadTool.vue"),
+    component: () => import("@/pages/tools/VidDownloadTool.vue"),
     meta: { title: "Video downloader", description: "Download videos with yt-dlp." },
   },
   {

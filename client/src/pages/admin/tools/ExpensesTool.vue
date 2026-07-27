@@ -211,7 +211,7 @@ function goToTransactions(): void {
               {{ transactionFilterLabel }}
             </ToolbarPillButton>
             <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
-              {{ exporting ? "exporting..." : "export csv" }}
+              {{ exporting ? "exporting…" : "export csv" }}
             </ToolbarPillButton>
             <ToolbarPillButton family="2xx" @click="openCreate">
               + expense

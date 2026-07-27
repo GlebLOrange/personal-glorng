@@ -137,7 +137,7 @@ const {
                 void importFile();
               "
             >
-              {{ loading && activeTab === "import" ? "working..." : "import to db" }}
+              {{ loading && activeTab === "import" ? "working…" : "import to db" }}
             </ToolbarPillButton>
             <ToolbarPillButton
               family="2xx"
@@ -148,7 +148,7 @@ const {
                 void extractFile();
               "
             >
-              {{ loading && activeTab === "extract" ? "working..." : "extract" }}
+              {{ loading && activeTab === "extract" ? "working…" : "extract" }}
             </ToolbarPillButton>
           </div>
         </div>

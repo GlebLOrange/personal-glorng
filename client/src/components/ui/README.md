@@ -9,7 +9,7 @@ Use for **interactive controls and overlays** in admin tools and feature UI.
 - `BaseButton` — primary/secondary/ghost/success actions; supports `loading` (`aria-busy` + disabled)
 - `BaseModal` / `BaseDrawer` — dialogs and side panels (focus trap, Escape, focus restore built in)
 - `BaseInput`, `BaseTextarea`, `BaseSelect` — forms; styling from `constants/formClasses.ts`
-- Always pass a visible `label` prop (or an explicit `aria-label` when the label must be hidden)
+- Always pass a visible `label` prop (or an explicit `aria-label` / `ariaLabel` when the label must be hidden). `IconActionButton` requires `ariaLabel` (use `aria-label` in templates).
 - Shell `placeholder` is an **in-bar overlay tip** (aria-hidden): visible only when empty, including while focused; never the accessible name — pass `label` or `aria-label`
 - `SearchInput` — same overlay pattern with a leading search icon; clear X slot is always reserved (invisible when empty) so text does not shift
 - Optional `error` / `hint` wire `aria-invalid` + `aria-describedby`

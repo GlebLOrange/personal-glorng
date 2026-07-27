@@ -92,7 +92,7 @@ async function downloadCv(): Promise<void> {
         get in touch
       </ToolbarPillButton>
       <ToolbarPillButton family="1xx" type="button" :disabled="isDownloadingCv" @click="downloadCv">
-        {{ isDownloadingCv ? "downloading..." : "download cv" }}
+        {{ isDownloadingCv ? "downloading…" : "download cv" }}
       </ToolbarPillButton>
     </div>
 

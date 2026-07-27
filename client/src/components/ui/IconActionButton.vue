@@ -18,7 +18,8 @@ const props = withDefaults(
     selected?: boolean;
     disabled?: boolean;
     type?: "button" | "submit" | "reset";
-    ariaLabel?: string;
+    /** Required accessible name for icon-only chrome. */
+    ariaLabel: string;
     /** Opt-in native tooltip — omitted by default (aria-label covers a11y). */
     title?: string;
     /** field = in-shell clear (same h-10 square); default matches CONTROL_SIZE (h-10). */
@@ -55,7 +56,7 @@ const classes = computed(() =>
 const nativeAttrs = computed(() => {
   const next: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(attrs)) {
-    if (key !== "class" && key !== "style") next[key] = value;
+    if (key !== "class" && key !== "style" && key !== "aria-label") next[key] = value;
   }
   return next;
 });

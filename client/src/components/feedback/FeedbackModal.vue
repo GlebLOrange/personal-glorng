@@ -107,7 +107,7 @@ async function submit(): Promise<void> {
             type="submit"
             :disabled="loading || !canSubmit"
           >
-            {{ loading ? "sending..." : copy.submit }}
+            {{ loading ? "sending…" : copy.submit }}
           </ToolbarPillButton>
         </template>
       </DrawerFooterActions>

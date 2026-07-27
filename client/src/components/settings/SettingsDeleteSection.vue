@@ -57,7 +57,7 @@ function toggleConfirm(): void {
           :loading="deleting"
           :disabled="!canDelete"
         >
-          {{ deleting ? "deleting..." : "delete account" }}
+          {{ deleting ? "deleting…" : "delete account" }}
         </BaseButton>
       </form>
     </CardBody>

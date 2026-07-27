@@ -45,7 +45,7 @@ const emit = defineEmits<{
             :disabled="unlinking"
             @click="emit('unlink')"
           >
-            {{ unlinking ? "unlinking..." : "unlink" }}
+            {{ unlinking ? "unlinking…" : "unlink" }}
           </BaseButton>
         </template>
         <BaseButton

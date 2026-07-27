@@ -53,7 +53,7 @@ onMounted(async () => {
         'text-status-error': status === 'error',
       }"
     >
-      <p v-if="status === 'loading'">Verifying your email...</p>
+      <p v-if="status === 'loading'">Verifying your email…</p>
       <p v-else>{{ message }}</p>
     </div>
 

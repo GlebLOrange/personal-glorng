@@ -30,7 +30,7 @@ const emit = defineEmits<{
           aria-label="display name"
         />
         <BaseButton type="submit" variant="success" size="sm" :loading="saving" :disabled="!canSave">
-          {{ saving ? "saving..." : "save" }}
+          {{ saving ? "saving…" : "save" }}
         </BaseButton>
       </form>
     </CardBody>

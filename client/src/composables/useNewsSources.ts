@@ -78,7 +78,7 @@ export function useNewsSources() {
   loading.value = true;
   const selectedSourceCount = computed(() => selectedSourceIds.value.length);
   const refreshButtonText = computed(() => {
-    if (refreshing.value) return "queueing...";
+    if (refreshing.value) return "queueing…";
     if (selectedSourceCount.value) return `queue parser (${selectedSourceCount.value})`;
     return "queue parser";
   });

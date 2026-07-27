@@ -82,7 +82,7 @@ async function preview(): Promise<void> {
             :disabled="!canSend || loading"
             @click="send"
           >
-            {{ loading ? "sending..." : "send" }}
+            {{ loading ? "sending…" : "send" }}
           </ToolbarPillButton>
         </div>
       </template>

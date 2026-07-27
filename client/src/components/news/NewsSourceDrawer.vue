@@ -95,7 +95,7 @@ function toStringValue(value: string | number | null | undefined): string {
         </template>
         <template #primary>
           <ToolbarPillButton type="submit" form="news-source-form" family="2xx" :disabled="loading">
-            {{ loading ? "saving..." : "save" }}
+            {{ loading ? "saving…" : "save" }}
           </ToolbarPillButton>
         </template>
       </DrawerFooterActions>

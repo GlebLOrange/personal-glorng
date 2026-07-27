@@ -152,7 +152,7 @@ async function generatePassword(): Promise<void> {
               </label>
               <label
                 class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid"
-                title="symbols (!@#$...)"
+                title="symbols (!@#$…)"
               >
                 <input v-model="symbols" type="checkbox" class="accent-accent-blue" />
                 symbols
@@ -171,7 +171,7 @@ async function generatePassword(): Promise<void> {
           class="w-full"
           :disabled="loading || !hasCharset"
         >
-          {{ loading ? "generating..." : "generate" }}
+          {{ loading ? "generating…" : "generate" }}
         </BaseButton>
       </form>
 

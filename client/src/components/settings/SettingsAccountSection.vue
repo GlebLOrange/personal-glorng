@@ -64,7 +64,7 @@ const passwordsMatch = computed(
             :loading="savingEmail"
             :disabled="!canSaveEmail"
           >
-            {{ savingEmail ? "saving..." : "change email" }}
+            {{ savingEmail ? "saving…" : "change email" }}
           </BaseButton>
         </form>
 
@@ -114,7 +114,7 @@ const passwordsMatch = computed(
             :loading="savingPassword"
             :disabled="!canSavePassword"
           >
-            {{ savingPassword ? "saving..." : "change password" }}
+            {{ savingPassword ? "saving…" : "change password" }}
           </BaseButton>
         </form>
       </div>

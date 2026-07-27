@@ -129,7 +129,7 @@ function toNullableNumber(value: string | number | null | undefined): number | n
             family="2xx"
             :disabled="loading"
           >
-            {{ loading ? "saving..." : "save" }}
+            {{ loading ? "saving…" : "save" }}
           </ToolbarPillButton>
         </template>
       </DrawerFooterActions>

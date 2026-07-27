@@ -62,7 +62,7 @@ onUnmounted(() => {
           class="animate-spin mx-auto h-8 w-8 border-2 border-accent-blue border-t-transparent rounded-full"
           aria-hidden="true"
         />
-        <p class="text-surface-mid">Linking GitHub account...</p>
+        <p class="text-surface-mid">Linking GitHub account…</p>
       </div>
 
       <div v-else-if="status === 'success'" class="space-y-4">

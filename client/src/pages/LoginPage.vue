@@ -100,7 +100,7 @@ async function handleGoogleLogin(): Promise<void> {
         :loading="loading"
         :disabled="!canSubmit"
       >
-        {{ loading ? "signing in..." : "login" }}
+        {{ loading ? "signing in…" : "login" }}
       </BaseButton>
     </form>
 
@@ -118,7 +118,7 @@ async function handleGoogleLogin(): Promise<void> {
         @click="handleGoogleLogin"
       >
         <GoogleMarkIcon class-name="size-4" />
-        {{ googleLoading ? "connecting..." : "continue with Google" }}
+        {{ googleLoading ? "connecting…" : "continue with Google" }}
       </BaseButton>
     </div>
 

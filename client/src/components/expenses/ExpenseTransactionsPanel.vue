@@ -115,7 +115,7 @@ defineExpose({
           <BaseInput
             v-model="productFilter"
             label="product filter"
-            placeholder="filter by product..."
+            placeholder="filter by product…"
           />
         </div>
         <BaseButton
@@ -162,7 +162,7 @@ defineExpose({
       :has-previous-page="hasPreviousExpensePage"
       :loading="listLoading"
       item-label="expenses"
-      ariaLabel="Expenses pagination"
+      aria-label="Expenses pagination"
       @first="emit('firstPage')"
       @prev="emit('prevPage')"
       @next="emit('nextPage')"

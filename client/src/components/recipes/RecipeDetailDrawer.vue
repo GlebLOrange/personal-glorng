@@ -32,7 +32,7 @@ const emit = defineEmits<{
 <template>
   <BaseDrawer
     :open="open"
-    :title="recipe?.title ?? 'Loading recipe...'"
+    :title="recipe?.title ?? 'Loading recipe…'"
     max-width="lg"
     @close="emit('close')"
   >

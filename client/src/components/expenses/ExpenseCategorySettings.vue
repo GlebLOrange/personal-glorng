@@ -45,6 +45,12 @@ function onCategoryRowClick(category: ExpenseCategory): void {
   if (props.editingCategoryId === category.id) return;
   emit("startEditCategory", category);
 }
+
+function onCategoryRowKeydown(event: KeyboardEvent, category: ExpenseCategory): void {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  onCategoryRowClick(category);
+}
 </script>
 
 <template>
@@ -68,7 +74,10 @@ function onCategoryRowClick(category: ExpenseCategory): void {
           :key="category.id"
           class="flex flex-wrap items-center gap-2 px-3 py-2"
           :class="editingCategoryId === category.id ? undefined : 'cursor-pointer'"
+          :role="editingCategoryId === category.id ? undefined : 'button'"
+          :tabindex="editingCategoryId === category.id ? undefined : 0"
           @click="onCategoryRowClick(category)"
+          @keydown="onCategoryRowKeydown($event, category)"
         >
           <template v-if="editingCategoryId === category.id">
             <div class="flex min-w-[8rem] flex-1 flex-col gap-1" @click.stop>

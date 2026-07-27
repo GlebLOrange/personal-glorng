@@ -129,7 +129,7 @@ async function onSurfaceTab(id: string): Promise<void> {
           :disabled="refreshing || loading"
           @click="refreshSources"
         >
-          <RefreshIcon class-name="size-3.5 text-accent-violet" />
+          <RefreshIcon class-name="size-3.5" />
           {{ refreshButtonText }}
         </ToolbarPillButton>
         <ToolbarPillButton family="2xx" :disabled="loading" @click="openCreate">
@@ -218,7 +218,7 @@ async function onSurfaceTab(id: string): Promise<void> {
           :has-previous-page="hasPreviousPage"
           :loading="loading"
           item-label="sources"
-          ariaLabel="News sources pagination"
+          aria-label="News sources pagination"
           @first="goToPage(1)"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"
@@ -244,7 +244,7 @@ async function onSurfaceTab(id: string): Promise<void> {
       title="delete source"
       :message="deleteConfirmMessage"
       confirm-label="delete"
-      loading-label="deleting..."
+      loading-label="deleting…"
       :loading="deletingId !== null"
       danger
       @confirm="confirmDeleteSource"

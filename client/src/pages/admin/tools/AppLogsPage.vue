@@ -248,7 +248,7 @@ onMounted(load);
         :has-previous-page="hasPreviousPage"
         :loading="loading"
         item-label="entries"
-        ariaLabel="App logs pagination"
+        aria-label="App logs pagination"
         @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"
