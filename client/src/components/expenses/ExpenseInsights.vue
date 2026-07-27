@@ -131,7 +131,7 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
           :aria-valuenow="Math.min(budgetTotals.percent, 100)"
           aria-valuemin="0"
           aria-valuemax="100"
-          :aria-label="`Budget used ${budgetTotals.percent}%`"
+          :aria-label="`budget used ${budgetTotals.percent}%`"
         >
           <div
             class="h-full rounded-full"
@@ -269,8 +269,8 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
   </div>
   <EmptyState
     v-else
-    title="No chart data yet"
-    description="Add expenses for this period to see trends and breakdowns."
+    title="no chart data yet"
+    description="add expenses for this period to see trends and breakdowns."
   >
     <template #action>
       <BaseButton variant="primary" size="sm" @click="emit('addExpense')">

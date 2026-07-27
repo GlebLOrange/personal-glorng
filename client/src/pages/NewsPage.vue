@@ -107,8 +107,8 @@ watch(page, () => {
 
     <EmptyState
       v-else
-      title="No news yet"
-      description="The digest has not published anything yet. Check back after the next ingestion run."
+      title="no news yet"
+      description="the digest has not published anything yet. Check back after the next ingestion run."
     />
 
     <AdminListFooter
@@ -121,7 +121,7 @@ watch(page, () => {
       :has-previous-page="page > 1"
       :loading="listLoading"
       item-label="articles"
-      aria-label="News pagination"
+      aria-label="news pagination"
       @first="goToPage(1)"
       @prev="goToPage(page - 1)"
       @next="goToPage(page + 1)"

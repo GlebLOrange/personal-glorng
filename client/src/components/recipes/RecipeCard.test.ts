@@ -32,7 +32,7 @@ describe("RecipeCard", () => {
       },
     });
 
-    const row = wrapper.get('[aria-label="Open recipe Tomato Soup"]');
+    const row = wrapper.get('[aria-label="open recipe Tomato Soup"]');
     await row.trigger("click");
     expect(wrapper.emitted("select")).toEqual([[42]]);
     expect(wrapper.text()).toContain("TS");

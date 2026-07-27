@@ -102,7 +102,7 @@ function editRecipeFromCard(recipe: Recipe): void {
         v-if="listLoading"
         class="flex flex-col gap-1"
         aria-busy="true"
-        aria-label="Loading recipes"
+        aria-label="loading recipes"
       >
         <div
           v-for="i in 6"
@@ -156,7 +156,7 @@ function editRecipeFromCard(recipe: Recipe): void {
         :total-pages="totalPages"
         :has-next-page="hasNextPage"
         :has-previous-page="page > 1"
-        aria-label="Recipes pagination"
+        aria-label="recipes pagination"
         @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"

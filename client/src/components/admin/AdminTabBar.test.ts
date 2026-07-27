@@ -23,7 +23,7 @@ describe("AdminTabBar", () => {
   it("exposes tab semantics", () => {
     const wrapper = mountTabBar();
 
-    expect(wrapper.get('[role="tablist"]').attributes("aria-label")).toBe("Admin sections");
+    expect(wrapper.get('[role="tablist"]').attributes("aria-label")).toBe("admin sections");
     expect(wrapper.findAll('[role="tab"]')).toHaveLength(3);
     expect(wrapper.get('[role="tab"]').attributes("aria-selected")).toBe("true");
     expect(wrapper.get('[role="tab"]').attributes("tabindex")).toBe("0");

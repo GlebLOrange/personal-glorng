@@ -32,7 +32,7 @@ function closeDrawer(): void {
 <template>
   <AdminListSkeleton v-if="loading" label="Loading task intakes" />
 
-  <EmptyState v-else-if="intakes.length === 0" description="No task intakes yet." />
+  <EmptyState v-else-if="intakes.length === 0" description="no task intakes yet." />
 
   <div v-else class="min-w-0">
     <AdminListRow v-for="item in intakes" :key="item.id" interactive @click="openIntake(item)">

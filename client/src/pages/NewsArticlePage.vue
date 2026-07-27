@@ -56,7 +56,7 @@ watch(
       v-if="detailLoading"
       class="h-96 animate-pulse"
       aria-busy="true"
-      aria-label="Loading article"
+      aria-label="loading article"
     />
 
     <ErrorState
@@ -88,7 +88,7 @@ watch(
             <span v-else class="text-accent-blue">{{ article.source_name }}</span>
             <FieldHelp
               align="end"
-              :text="`This is a curated summary. Read the original article from ${article.source_name} for full context.`"
+              :text="`this is a curated summary. read the original article from ${article.source_name} for full context.`"
             />
           </div>
         </div>

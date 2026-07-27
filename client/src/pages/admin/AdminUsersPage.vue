@@ -201,7 +201,7 @@ onUnmounted(() => {
 
 <template>
   <AdminPageLayout title="users" max-width="xl">
-    <div v-if="loading" class="space-y-4" aria-busy="true" aria-label="Loading users">
+    <div v-if="loading" class="space-y-4" aria-busy="true" aria-label="loading users">
       <Card v-for="index in 3" :key="index">
         <div class="animate-pulse space-y-4">
           <div class="flex items-center justify-between gap-4">
@@ -241,7 +241,7 @@ onUnmounted(() => {
         :loading="loading"
         :visible-count="users.length"
         item-label="users"
-        aria-label="Users pagination"
+        aria-label="users pagination"
         @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"

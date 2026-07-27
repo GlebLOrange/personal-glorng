@@ -112,14 +112,14 @@ onMounted(loadFiles);
       <FileDropZone
         ref="dropZone"
         class="w-full"
-        aria-label="Choose a file to share"
+        aria-label="choose a file to share"
         :selected-name="selectedName"
         @select="onSelectFile"
       />
     </div>
 
     <div class="space-y-3">
-      <div v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="Loading shared files">
+      <div v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="loading shared files">
         <Card v-for="n in 3" :key="n" variant="compact" class="animate-pulse">
           <div class="h-4 w-48 bg-surface-border rounded mb-2" />
           <div class="h-3 w-32 bg-surface-border rounded" />
@@ -152,7 +152,7 @@ onMounted(loadFiles);
           :has-previous-page="hasPreviousPage"
           :loading="listLoading"
           item-label="files"
-          aria-label="Shared files pagination"
+          aria-label="shared files pagination"
           @first="goToPage(1)"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"

@@ -104,13 +104,13 @@ describe("BaseDrawer", () => {
       attachTo: document.body,
       props: { open: true, title: "Edit item" },
       slots: {
-        default: '<input type="text" aria-label="Title field" />',
+        default: '<input type="text" aria-label="title field" />',
       },
     });
     await flushFocus();
 
     const field = document.body.querySelector(
-      'input[aria-label="Title field"]',
+      'input[aria-label="title field"]',
     ) as HTMLInputElement | null;
     expect(document.activeElement).toBe(field);
 
@@ -122,7 +122,7 @@ describe("BaseDrawer", () => {
     await flushFocus();
 
     const close = document.body.querySelector(
-      'button[aria-label="Close drawer"]',
+      'button[aria-label="close drawer"]',
     ) as HTMLButtonElement | null;
     expect(close).not.toBeNull();
     expect(document.activeElement).toBe(close);
@@ -162,7 +162,7 @@ describe("BaseDrawer", () => {
       attachTo: document.body,
       props: { open: true, title: "Trap" },
       slots: {
-        default: '<input type="text" aria-label="Field" />',
+        default: '<input type="text" aria-label="field" />',
       },
     });
     await flushFocus();

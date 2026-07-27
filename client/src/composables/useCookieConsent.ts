@@ -146,7 +146,7 @@ export function setupCookieConsent(app: App): void {
             acceptAllBtn: "Accept all",
             acceptNecessaryBtn: "Reject all",
             savePreferencesBtn: "Save preferences",
-            closeIconLabel: "Close",
+            closeIconLabel: "close",
             sections: preferenceSections,
           },
         },

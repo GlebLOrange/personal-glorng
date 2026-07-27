@@ -194,7 +194,7 @@ onMounted(load);
 
       <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
 
-      <EmptyState v-else-if="items.length === 0" class="mt-4" description="No log entries found" />
+      <EmptyState v-else-if="items.length === 0" class="mt-4" description="no log entries found" />
 
       <div v-else class="mt-1 min-w-0">
         <AdminListRow
@@ -248,7 +248,7 @@ onMounted(load);
         :has-previous-page="hasPreviousPage"
         :loading="loading"
         item-label="entries"
-        aria-label="App logs pagination"
+        aria-label="app logs pagination"
         @first="goToPage(1)"
         @prev="goToPage(page - 1)"
         @next="goToPage(page + 1)"

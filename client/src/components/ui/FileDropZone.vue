@@ -15,7 +15,7 @@ const props = withDefaults(
     class?: string;
   }>(),
   {
-    ariaLabel: "Choose a file",
+    ariaLabel: "choose a file",
   },
 );
 

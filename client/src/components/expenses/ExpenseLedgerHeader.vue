@@ -33,7 +33,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="mb-4 flex flex-col gap-3" aria-label="Expense period summary">
+  <section class="mb-4 flex flex-col gap-3" aria-label="expense period summary">
     <Card variant="compact" class="flex flex-col gap-4 md:!p-5">
       <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div class="min-w-0">

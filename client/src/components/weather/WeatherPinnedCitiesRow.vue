@@ -30,7 +30,7 @@ const isBusy = computed(() => props.loading || props.seeding);
 
 <template>
   <section class="min-w-0">
-    <div v-if="isBusy" class="page-tool-grid min-w-0" aria-busy="true" aria-label="Loading cities">
+    <div v-if="isBusy" class="page-tool-grid min-w-0" aria-busy="true" aria-label="loading cities">
       <Card
         v-for="n in 2"
         :key="n"
@@ -44,7 +44,7 @@ const isBusy = computed(() => props.loading || props.seeding);
 
     <EmptyState
       v-else-if="locations.length === 0"
-      description="No cities yet. Search above to add your first location."
+      description="no cities yet. Search above to add your first location."
     />
 
     <div v-else-if="otherCities.length" class="page-tool-grid min-w-0">

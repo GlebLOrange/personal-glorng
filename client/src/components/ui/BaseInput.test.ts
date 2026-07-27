@@ -64,13 +64,13 @@ describe("BaseInput", () => {
     expect(wrapper.get("#title-tip").find(".truncate").classes()).toContain("text-left");
     expect(wrapper.get("#title-tip").attributes("aria-hidden")).toBe("true");
     expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
-    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
+    expect(wrapper.find('button[aria-label="clear"]').exists()).toBe(false);
     expect(wrapper.find(".invisible.pointer-events-none").exists()).toBe(true);
 
     await wrapper.setProps({ modelValue: "Pasta Carbonara" });
     expect(wrapper.get("input").element).toHaveProperty("value", "Pasta Carbonara");
     expect(wrapper.find("#title-tip").exists()).toBe(false);
-    const clearFilled = wrapper.get('button[aria-label="Clear"]');
+    const clearFilled = wrapper.get('button[aria-label="clear"]');
     expect(clearFilled.element.closest(".invisible")).toBeNull();
   });
 
@@ -93,7 +93,7 @@ describe("BaseInput", () => {
     expect(wrapper.get("input").element).toHaveProperty("value", "pasta");
     expect(wrapper.get("input").attributes("aria-label")).toBe("ingredient 1");
     expect(wrapper.text()).toContain("↑");
-    expect(wrapper.get('button[aria-label="Clear"]').element.closest(".invisible")).toBeNull();
+    expect(wrapper.get('button[aria-label="clear"]').element.closest(".invisible")).toBeNull();
   });
 
   it("clears the shell value and restores the tip without layout jump", async () => {
@@ -108,11 +108,11 @@ describe("BaseInput", () => {
     });
 
     expect(wrapper.find("#to-tip").exists()).toBe(false);
-    await wrapper.get('button[aria-label="Clear"]').trigger("click");
+    await wrapper.get('button[aria-label="clear"]').trigger("click");
     expect(wrapper.props("modelValue")).toBe("");
     expect(wrapper.get("#to-tip").text()).toBe("to");
     expect(wrapper.get("#to-tip").classes()).toContain("right-10");
-    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
+    expect(wrapper.find('button[aria-label="clear"]').exists()).toBe(false);
   });
 
   it("shows inside label and suppresses placeholder tip when both are set", () => {
@@ -137,13 +137,13 @@ describe("BaseInput", () => {
         id: "email",
         label: "Email",
         placeholder: "your@email.com",
-        hint: "We never share this",
+        hint: "we never share this",
         labelInside: false,
       },
     });
 
     expect(wrapper.get("input").attributes("aria-describedby")).toBe("email-hint");
-    expect(wrapper.get("#email-hint").text()).toBe("We never share this");
+    expect(wrapper.get("#email-hint").text()).toBe("we never share this");
     expect(wrapper.get('button[aria-label="help"]').exists()).toBe(true);
     expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
   });
@@ -167,7 +167,7 @@ describe("BaseInput", () => {
     expect(wrapper.find("#pw-tip").exists()).toBe(false);
     expect(wrapper.find(".pt-2\\.5").exists()).toBe(false);
     expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
-    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
+    expect(wrapper.find('button[aria-label="clear"]').exists()).toBe(false);
   });
 
   it("labelInside hides visual label and shows clear once typing", async () => {
@@ -184,7 +184,7 @@ describe("BaseInput", () => {
     // visual label gone; sr-only stays for a11y
     expect(wrapper.find("span.text-surface-sage").exists()).toBe(false);
     expect(wrapper.find("label.sr-only").exists()).toBe(true);
-    expect(wrapper.get('button[aria-label="Clear"]').exists()).toBe(true);
+    expect(wrapper.get('button[aria-label="clear"]').exists()).toBe(true);
   });
 
   it("labelInside still shows error in outer notch when error is present", () => {

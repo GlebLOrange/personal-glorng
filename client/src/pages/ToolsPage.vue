@@ -85,14 +85,14 @@ function toolRoute(tool: PlatformService): string {
 
 <template>
   <PageShell title="tools" :breadcrumbs="breadcrumbs" back-to="/" :narrow="false">
-    <EmptyState v-if="tools.length === 0" description="No tools available." />
+    <EmptyState v-if="tools.length === 0" description="no tools available." />
     <template v-else>
       <div class="mb-8">
         <AdminTabBar
           v-model="activeCategory"
           :tabs="categoryTabs"
           panel-id-prefix="tools-category"
-          aria-label="Tool categories"
+          aria-label="tool categories"
           flush
         />
       </div>

@@ -41,8 +41,8 @@ const emit = defineEmits<{ select: [id: number] }>();
       <span
         v-if="task.google_event_id"
         class="inline-flex text-accent-blue"
-        title="Synced to Google Calendar"
-        aria-label="Synced to Google Calendar"
+        title="synced to Google Calendar"
+        aria-label="synced to Google Calendar"
       >
         <SyncIcon class-name="size-4" />
       </span>

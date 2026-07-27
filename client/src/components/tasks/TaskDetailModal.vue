@@ -171,7 +171,7 @@ watch(
         <div v-if="task.google_event_id" class="flex items-center gap-2">
           <span
             class="inline-flex items-center gap-1.5 rounded-full bg-accent-blue/10 px-2 py-0.5 text-xs text-accent-blue"
-            title="Synced to Google Calendar"
+            title="synced to Google Calendar"
           >
             <SyncIcon class-name="size-3.5" />
             synced to google calendar
@@ -183,7 +183,7 @@ watch(
           quiet
           size="sm"
           class="gap-1.5"
-          title="Try syncing again"
+          title="try syncing again"
           @click="emit('retrySync', task.id)"
         >
           <SyncIcon class-name="size-4" />

@@ -14,7 +14,7 @@ const chipClass = (active: boolean) => actionFamilyClass("1xx", active);
   <div
     class="flex flex-nowrap gap-2 overflow-x-auto pb-1"
     role="group"
-    aria-label="Filter by category"
+    aria-label="filter by category"
   >
     <button
       type="button"

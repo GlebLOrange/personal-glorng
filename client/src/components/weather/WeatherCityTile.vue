@@ -24,7 +24,7 @@ function handleRemove(event: MouseEvent): void {
     <button
       type="button"
       class="block h-full min-w-0 w-full text-left"
-      :aria-label="`Set ${query} as active city`"
+      :aria-label="`set ${query} as active city`"
       @click="emit('select')"
     >
       <Card hoverable class="page-weather-tile-card h-full">
@@ -34,7 +34,7 @@ function handleRemove(event: MouseEvent): void {
     <IconCloseButton
       v-if="removable"
       class="absolute right-2 top-2 z-10"
-      :aria-label="`Remove ${query}`"
+      :aria-label="`remove ${query}`"
       @click="handleRemove"
     />
   </div>

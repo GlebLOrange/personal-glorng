@@ -127,11 +127,11 @@ function onCategoryRowKeydown(event: KeyboardEvent, category: ExpenseCategory): 
               </span>
             </span>
             <IconEditButton
-              :aria-label="`Rename ${category.name}`"
+              :aria-label="`rename ${category.name}`"
               @click.stop="emit('startEditCategory', category)"
             />
             <IconCloseButton
-              :aria-label="`Delete ${category.name}`"
+              :aria-label="`delete ${category.name}`"
               @click.stop="emit('removeCategory', category)"
             />
           </template>

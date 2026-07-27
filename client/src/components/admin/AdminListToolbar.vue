@@ -7,7 +7,7 @@
       v-if="$slots.actions"
       class="flex min-w-0 flex-wrap items-center gap-1"
       role="toolbar"
-      aria-label="List actions"
+      aria-label="list actions"
     >
       <slot name="actions" />
     </div>

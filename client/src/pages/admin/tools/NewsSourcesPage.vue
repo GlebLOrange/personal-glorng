@@ -169,7 +169,7 @@ async function onSurfaceTab(id: string): Promise<void> {
                 class="size-4 shrink-0 align-middle accent-accent-blue"
                 :value="source.id"
                 :disabled="refreshing || !source.enabled"
-                :aria-label="`Select ${source.name} for parser refresh`"
+                :aria-label="`select ${source.name} for parser refresh`"
                 @click.stop
                 @keydown.stop
               />
@@ -191,7 +191,7 @@ async function onSurfaceTab(id: string): Promise<void> {
                 v-if="source.last_error"
                 class="inline-flex text-status-warning"
                 :title="source.last_error"
-                aria-label="Source has fetch error"
+                aria-label="source has fetch error"
               >
                 <StatusIcon status="warning" class-name="size-4" />
               </span>
@@ -218,7 +218,7 @@ async function onSurfaceTab(id: string): Promise<void> {
           :has-previous-page="hasPreviousPage"
           :loading="loading"
           item-label="sources"
-          aria-label="News sources pagination"
+          aria-label="news sources pagination"
           @first="goToPage(1)"
           @prev="goToPage(page - 1)"
           @next="goToPage(page + 1)"

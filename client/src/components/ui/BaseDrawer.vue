@@ -73,7 +73,7 @@ const hasCustomTitle = computed(() => Boolean(slots.title));
             </div>
             <div class="flex h-10 shrink-0 items-center gap-1 self-start">
               <slot name="header-actions" />
-              <IconCloseButton ref="closeButton" aria-label="Close drawer" @click="emit('close')" />
+              <IconCloseButton ref="closeButton" aria-label="close drawer" @click="emit('close')" />
             </div>
           </header>
 

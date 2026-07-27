@@ -28,7 +28,7 @@ const props = withDefaults(
   {
     panelIdPrefix: "admin-tab",
     flush: false,
-    ariaLabel: "Admin sections",
+    ariaLabel: "admin sections",
   },
 );
 

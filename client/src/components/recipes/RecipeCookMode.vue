@@ -29,7 +29,7 @@ const progress = computed(() =>
   totalSteps.value ? ((stepIndex.value + 1) / totalSteps.value) * 100 : 0,
 );
 const dialogLabel = computed(() =>
-  props.recipe ? `Cook mode: ${props.recipe.title}` : "Cook mode",
+  props.recipe ? `cook mode: ${props.recipe.title}` : "cook mode",
 );
 
 useOverlayShell({
@@ -162,7 +162,7 @@ onUnmounted(() => {
         <div
           class="flex flex-1 flex-col items-center justify-center px-6 py-8 text-center"
           role="region"
-          aria-label="Cook mode step"
+          aria-label="cook mode step"
         >
           <div class="mb-6 font-data text-5xl text-accent-blue">{{ stepIndex + 1 }}</div>
           <p class="max-w-2xl text-xl leading-relaxed text-surface-light sm:text-2xl">

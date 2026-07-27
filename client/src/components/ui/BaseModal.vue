@@ -36,7 +36,7 @@ useOverlayShell({
 });
 
 const labelledBy = computed(() => (props.title ? titleId : undefined));
-const dialogLabel = computed(() => (props.title ? undefined : (props.ariaLabel ?? "Dialog")));
+const dialogLabel = computed(() => (props.title ? undefined : (props.ariaLabel ?? "dialog")));
 const widthClass = computed(() => OVERLAY_MAX_WIDTH_CLASS[props.maxWidth ?? "lg"]);
 const hasCustomHeader = computed(() => Boolean(slots.header));
 </script>
@@ -76,7 +76,7 @@ const hasCustomHeader = computed(() => Boolean(slots.header));
             </div>
             <div class="ml-auto flex h-10 shrink-0 items-center gap-1">
               <slot name="header-actions" />
-              <IconCloseButton ref="closeButton" aria-label="Close" @click="emit('close')" />
+              <IconCloseButton ref="closeButton" aria-label="close" @click="emit('close')" />
             </div>
           </div>
           <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
