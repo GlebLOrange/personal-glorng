@@ -51,6 +51,7 @@ async function handleSubmit(): Promise<void> {
         autocomplete="email"
         label="email"
         placeholder="you@example.com"
+        label-inside
         required
       />
       <p

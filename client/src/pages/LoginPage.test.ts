@@ -47,6 +47,9 @@ describe("LoginPage", () => {
     expect(wrapper.get('input[type="password"]').exists()).toBe(true);
     // BaseInput renders placeholder as tip text, not the native attribute
     expect(wrapper.text()).toContain("you@example.com");
+    // labels are inside the input shell (labelInside mode), not outer notch chips
+    expect(wrapper.text()).toContain("email");
+    expect(wrapper.text()).toContain("password");
     expect(wrapper.text()).toContain("login");
     expect(wrapper.text().toLowerCase()).toContain("continue with google");
     expect(wrapper.text()).toContain("create account");

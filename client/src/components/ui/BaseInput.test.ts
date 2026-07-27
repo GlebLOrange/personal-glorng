@@ -50,8 +50,8 @@ describe("BaseInput", () => {
     expect(wrapper.get("#title-tip").find(".truncate").classes()).toContain("text-left");
     expect(wrapper.get("#title-tip").attributes("aria-hidden")).toBe("true");
     expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
-    const clearEmpty = wrapper.get('button[aria-label="Clear"]');
-    expect(clearEmpty.element.closest(".invisible")).not.toBeNull();
+    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
+    expect(wrapper.find(".invisible.pointer-events-none").exists()).toBe(true);
 
     await wrapper.setProps({ modelValue: "Pasta Carbonara" });
     expect(wrapper.get("input").element).toHaveProperty("value", "Pasta Carbonara");
@@ -98,7 +98,7 @@ describe("BaseInput", () => {
     expect(wrapper.props("modelValue")).toBe("");
     expect(wrapper.get("#to-tip").text()).toBe("to");
     expect(wrapper.get("#to-tip").classes()).toContain("right-11");
-    expect(wrapper.get('button[aria-label="Clear"]').element.closest(".invisible")).not.toBeNull();
+    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
   });
 
   it("uses a visible label for naming when label and placeholder are both set", () => {
@@ -132,6 +132,41 @@ describe("BaseInput", () => {
     expect(wrapper.get("#email-hint").text()).toBe("We never share this");
     expect(wrapper.get('button[aria-label="help"]').exists()).toBe(true);
     expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
+  });
+
+  it("labelInside renders label inside the shell and suppresses the outer notch", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "pw",
+        label: "password",
+        labelInside: true,
+      },
+    });
+
+    // label is inside the shell, not the outer notch
+    const label = wrapper.get("label");
+    expect(label.attributes("for")).toBe("pw");
+    expect(label.text()).toBe("password");
+    // no top padding reserved — no outer notch without an error
+    expect(wrapper.find(".pt-2\\.5").exists()).toBe(false);
+    // input is named via label association, not aria-label fallback
+    expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
+  });
+
+  it("labelInside still shows error in outer notch when error is present", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "pw",
+        label: "password",
+        labelInside: true,
+        error: "Required field",
+      },
+    });
+
+    expect(wrapper.get("#pw-error").text()).toBe("Required field");
+    expect(wrapper.get("input").attributes("aria-invalid")).toBe("true");
+    // outer notch position is reserved for the error
+    expect(wrapper.find(".pt-2\\.5").exists()).toBe(true);
   });
 
   it("applies success and error border tones", () => {
