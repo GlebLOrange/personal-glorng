@@ -117,10 +117,13 @@ Webhook and Stripe endpoints use [`read_request_body_bounded`](../../server/app/
 
 ## Observability
 
-Two complementary streams:
+Three complementary streams:
 
-1. **Operational telemetry** — structured JSON logs (Loguru) + Sentry. Not queryable as audit.
-2. **Audit trail** — `audit_events` with `security` and `domain` categories. Review at `/admin/audit-logs`.
+1. **Operational telemetry** — structured JSON logs (Loguru) + Sentry errors. Not queryable as audit.
+2. **Traces / metrics (opt-in)** — EDOT OpenTelemetry via `opentelemetry-instrument` when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. See [Configuration — EDOT](/reference/configuration#edot-opentelemetry-opt-in).
+3. **Audit trail** — `audit_events` with `security` and `domain` categories. Review at `/admin/audit-logs`.
+
+Health: `/api/health` (liveness), `/api/ready` (Mongo + Redis; optional Postgres; RabbitMQ non-critical).
 
 ## Related
 

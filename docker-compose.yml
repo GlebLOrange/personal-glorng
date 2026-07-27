@@ -177,6 +177,8 @@ services:
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
+      # Used when OTEL_EXPORTER_OTLP_ENDPOINT is set (entrypoint wraps with EDOT).
+      OTEL_SERVICE_NAME: glorng-api
     networks:
       - backend
     depends_on:
@@ -220,6 +222,7 @@ services:
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
+      OTEL_SERVICE_NAME: glorng-worker
     networks:
       - backend
     depends_on:
@@ -256,6 +259,7 @@ services:
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
+      OTEL_SERVICE_NAME: glorng-beat
     networks:
       - backend
     depends_on:

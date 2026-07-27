@@ -67,6 +67,39 @@ class _FakeIncrExpireScript:
         return current
 
 
+class _FakeSlotAcquireScript:
+    """Mirrors redis_slots._ACQUIRE_LUA for FakeRedis."""
+
+    def __init__(self, redis: FakeRedis) -> None:
+        self._redis = redis
+
+    async def __call__(self, keys: list[str], args: list[int]) -> int:
+        key = keys[0]
+        limit = int(args[0])
+        ttl = int(args[1])
+        current = int((await self._redis.get(key)) or "0")
+        if current >= limit:
+            return 0
+        current = await self._redis.incr(key)
+        await self._redis.expire(key, ttl)
+        return current
+
+
+class _FakeSlotReleaseScript:
+    """Mirrors redis_slots._RELEASE_LUA for FakeRedis."""
+
+    def __init__(self, redis: FakeRedis) -> None:
+        self._redis = redis
+
+    async def __call__(self, keys: list[str], args: list[int]) -> int:
+        key = keys[0]
+        current = int((await self._redis.get(key)) or "0")
+        if current <= 1:
+            await self._redis.delete(key)
+            return 0
+        return await self._redis.decr(key)
+
+
 class FakeRedis:
     """Minimal in-memory Redis substitute for tests.
 
@@ -119,11 +152,25 @@ class FakeRedis:
         self._store[key] = str(val)
         return val
 
+    async def decr(self, key: str) -> int:
+        await self._purge_if_expired(key)
+        val = int(self._store.get(key, "0")) - 1
+        self._store[key] = str(val)
+        return val
+
     async def expire(self, key: str, seconds: int) -> None:
         if key in self._store and not self._expired(key):
             self._expiry[key] = time.monotonic() + seconds
 
-    def register_script(self, _script: str) -> _FakeIncrExpireScript:
+    def register_script(
+        self, script: str
+    ) -> _FakeIncrExpireScript | _FakeSlotAcquireScript | _FakeSlotReleaseScript:
+        # Dispatch by Lua body so rate-limit and slot scripts share one FakeRedis.
+        upper = script.upper()
+        if "DECR" in upper:
+            return _FakeSlotReleaseScript(self)
+        if "ARGV[2]" in script and "INCR" in upper:
+            return _FakeSlotAcquireScript(self)
         return _FakeIncrExpireScript(self)
 
     async def delete(self, key: str) -> None:

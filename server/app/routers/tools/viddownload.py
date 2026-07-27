@@ -5,7 +5,6 @@ import mimetypes
 import shutil
 import tempfile
 import time
-from collections import defaultdict
 from collections.abc import Generator
 from pathlib import Path
 from urllib.parse import urlparse
@@ -18,6 +17,8 @@ from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.permissions import permission_key, user_has_permission
 from app.core.rate_limit import client_ip, rate_limit_api, rate_limit_vid_download
+from app.core.redis_keys import VID_DOWNLOAD_GLOBAL_KEY, VID_DOWNLOAD_IP_PREFIX
+from app.core.redis_slots import release_slot, try_acquire_slot
 from app.core.utils import attachment_content_disposition
 from app.schemas.viddownload import VidDownloadRequest
 
@@ -31,47 +32,50 @@ DOWNLOAD_TIMEOUT = 120
 MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 MB
 MAX_CONCURRENT_DOWNLOADS = 2
 MAX_CONCURRENT_PER_IP = 1
+# TTL backstop if a worker crashes before release (timeout + margin).
+_SLOT_TTL_SEC = DOWNLOAD_TIMEOUT + 60
 
-_active_downloads = 0
-_download_lock = asyncio.Lock()
-_ip_active_downloads: defaultdict[str, int] = defaultdict(int)
-_ip_lock = asyncio.Lock()
+
+def _ip_slot_key(ip_address: str) -> str:
+    return f"{VID_DOWNLOAD_IP_PREFIX}{ip_address}"
 
 
 async def _acquire_ip_slot(ip_address: str) -> None:
-    async with _ip_lock:
-        if _ip_active_downloads[ip_address] >= MAX_CONCURRENT_PER_IP:
-            raise ApiError(
-                503,
-                "Too many concurrent downloads from your IP, try again later",
-            )
-        _ip_active_downloads[ip_address] += 1
+    acquired = await try_acquire_slot(
+        _ip_slot_key(ip_address),
+        limit=MAX_CONCURRENT_PER_IP,
+        ttl=_SLOT_TTL_SEC,
+    )
+    if acquired is None:
+        raise ApiError(503, "Service temporarily unavailable")
+    if not acquired:
+        raise ApiError(
+            503,
+            "Too many concurrent downloads from your IP, try again later",
+        )
 
 
-async def _release_ip_slot(client_ip: str) -> None:
-    async with _ip_lock:
-        current = _ip_active_downloads.get(client_ip, 0)
-        if current <= 1:
-            _ip_active_downloads.pop(client_ip, None)
-        else:
-            _ip_active_downloads[client_ip] = current - 1
+async def _release_ip_slot(ip_address: str) -> None:
+    await release_slot(_ip_slot_key(ip_address))
 
 
 async def _acquire_global_slot() -> None:
-    global _active_downloads
-    async with _download_lock:
-        if _active_downloads >= MAX_CONCURRENT_DOWNLOADS:
-            raise ApiError(
-                503,
-                "Server busy — too many concurrent downloads, try again later",
-            )
-        _active_downloads += 1
+    acquired = await try_acquire_slot(
+        VID_DOWNLOAD_GLOBAL_KEY,
+        limit=MAX_CONCURRENT_DOWNLOADS,
+        ttl=_SLOT_TTL_SEC,
+    )
+    if acquired is None:
+        raise ApiError(503, "Service temporarily unavailable")
+    if not acquired:
+        raise ApiError(
+            503,
+            "Server busy — too many concurrent downloads, try again later",
+        )
 
 
 async def _release_global_slot() -> None:
-    global _active_downloads
-    async with _download_lock:
-        _active_downloads = max(0, _active_downloads - 1)
+    await release_slot(VID_DOWNLOAD_GLOBAL_KEY)
 
 
 def _build_command(data: VidDownloadRequest, tmp_dir: str) -> list[str]:
@@ -152,7 +156,11 @@ async def download_video(
     )
 
     await _acquire_ip_slot(request_ip)
-    await _acquire_global_slot()
+    try:
+        await _acquire_global_slot()
+    except Exception:
+        await _release_ip_slot(request_ip)
+        raise
     started = time.monotonic()
 
     try:
