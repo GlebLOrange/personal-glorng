@@ -27,10 +27,6 @@ const { activeQuery } = useActiveWeatherQuery();
 
 const isActivePage = computed(() => props.expanded || route.name === WEATHER_ROUTE_NAME);
 
-const asideClass = computed(() => [props.wrapperClass]);
-
-const linkClass = computed(() => (props.chrome ? "block h-full w-full" : "block w-full"));
-
 const resolvedCardClass = computed(() =>
   isActivePage.value ? [props.cardClass, "border-accent-blue bg-accent-blue/10"] : props.cardClass,
 );
@@ -45,8 +41,13 @@ const summaryProps = computed(() => ({
 </script>
 
 <template>
-  <aside :aria-label="WEATHER_TOOL_NAME" :class="asideClass">
-    <RouterLink v-if="!isActivePage" :to="WEATHER_PATH" :class="linkClass">
+  <aside :aria-label="WEATHER_TOOL_NAME" :class="props.wrapperClass">
+    <RouterLink
+      v-if="!isActivePage"
+      :to="WEATHER_PATH"
+      :aria-label="WEATHER_TOOL_NAME"
+      :class="props.chrome ? 'block h-full w-full' : 'block w-full'"
+    >
       <Card hoverable :class="resolvedCardClass">
         <WeatherSummaryContent v-bind="summaryProps" />
       </Card>

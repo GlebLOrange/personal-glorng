@@ -63,8 +63,8 @@ describe("BaseTextarea", () => {
     });
 
     expect(wrapper.get("#notes-tip").classes()).toContain("right-11");
-    const clearEmpty = wrapper.get('button[aria-label="Clear"]');
-    expect(clearEmpty.element.closest(".invisible")).not.toBeNull();
+    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
+    expect(wrapper.find(".invisible.pointer-events-none").exists()).toBe(true);
 
     await wrapper.setProps({ modelValue: "hello" });
     expect(wrapper.find("#notes-tip").exists()).toBe(false);
@@ -88,6 +88,6 @@ describe("BaseTextarea", () => {
     expect(wrapper.props("modelValue")).toBe("");
     expect(wrapper.get("#body-tip").text()).toBe("body");
     expect(wrapper.get("#body-tip").classes()).toContain("right-11");
-    expect(wrapper.get('button[aria-label="Clear"]').element.closest(".invisible")).not.toBeNull();
+    expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
   });
 });

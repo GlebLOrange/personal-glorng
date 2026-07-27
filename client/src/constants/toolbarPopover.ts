@@ -7,9 +7,6 @@
 export const TOOLBAR_POPOVER_WIDTH_CLASS =
   "w-64 max-w-[min(100vw-2rem,28rem)]";
 
-/** @deprecated Alias of TOOLBAR_POPOVER_WIDTH_CLASS. */
-export const TOOLBAR_POPOVER_PANEL_FIT_CLASS = TOOLBAR_POPOVER_WIDTH_CLASS;
-
 /** Panel surface chrome only. */
 export const TOOLBAR_POPOVER_PANEL_CHROME_CLASS =
   "rounded-lg border border-surface-border bg-surface-card p-3 shadow-lg";

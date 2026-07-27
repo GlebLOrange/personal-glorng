@@ -8,7 +8,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import {
-  TOOLBAR_POPOVER_PANEL_CHROME_CLASS,
+  TOOLBAR_POPOVER_PANEL_CLASS,
   TOOLBAR_POPOVER_WIDTH_CLASS,
 } from "@/constants/toolbarPopover";
 import { api } from "@/composables/useApi";
@@ -126,8 +126,7 @@ async function download(): Promise<void> {
             role="dialog"
             aria-labelledby="vid-download-options-title"
             tabindex="-1"
-            class="absolute left-0 top-full z-10 mt-1 space-y-3"
-            :class="[TOOLBAR_POPOVER_WIDTH_CLASS, TOOLBAR_POPOVER_PANEL_CHROME_CLASS]"
+            :class="['absolute left-0 top-full z-10 mt-1 space-y-3', TOOLBAR_POPOVER_PANEL_CLASS]"
             @click.stop
           >
             <h2 id="vid-download-options-title" class="sr-only">download options</h2>

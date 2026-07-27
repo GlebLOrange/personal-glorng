@@ -52,6 +52,51 @@ describe("BaseDropdownMenu", () => {
 
     wrapper.unmount();
   });
+
+  it("keeps the trigger labeled even with a custom trigger slot", () => {
+    const wrapper = mount(BaseDropdownMenu, {
+      props: { ariaLabel: "More actions" },
+      slots: {
+        trigger: "more",
+        default: '<button type="button" role="menuitem">edit</button>',
+      },
+    });
+
+    expect(wrapper.get('button[aria-label="More actions"]').text()).toContain("more");
+  });
+
+  it("closes when focus leaves the menu", async () => {
+    const wrapper = mount(BaseDropdownMenu, {
+      slots: {
+        default: `
+          <button type="button" role="menuitem">one</button>
+          <button type="button" role="menuitem">two</button>
+        `,
+      },
+      attachTo: document.body,
+    });
+
+    const trigger = wrapper.get("button");
+    await trigger.trigger("click");
+    await nextTick();
+
+    const outside = document.createElement("button");
+    outside.type = "button";
+    document.body.append(outside);
+    document.activeElement?.dispatchEvent(
+      new FocusEvent("focusout", {
+        bubbles: true,
+        relatedTarget: outside,
+      }),
+    );
+    outside.focus();
+    await nextTick();
+
+    expect(trigger.attributes("aria-expanded")).toBe("false");
+
+    outside.remove();
+    wrapper.unmount();
+  });
 });
 
 describe("BaseDropdownMenuItem", () => {

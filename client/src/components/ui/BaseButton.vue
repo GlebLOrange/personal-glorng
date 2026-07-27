@@ -7,6 +7,7 @@ import {
   CONTROL_BUTTON_MD,
   CONTROL_BUTTON_SM,
 } from "@/constants/formClasses";
+import { familyToneClass } from "@/constants/httpStatusColors";
 
 const props = withDefaults(
   defineProps<{
@@ -45,40 +46,33 @@ const sizeClass = computed(() => {
 const variantClass = computed(() => {
   const selected = Boolean(props.selected);
 
-  // Option C + fill/3 shadow wash; idle text matches fill accent. Hover/selected = /15 tint + accent border.
   if (props.variant === "success") {
-    if (selected) {
-      return "border-status-success/40 bg-status-success/15 text-status-success focus-visible:ring-status-success/50";
-    }
-    return "border-transparent bg-status-success/3 text-status-success hover:enabled:border-status-success/40 hover:enabled:bg-status-success/15 active:enabled:bg-status-success/25 focus-visible:ring-status-success/50";
+    return `${familyToneClass("2xx", selected, { includeActive: true })} focus-visible:ring-status-success/50`;
   }
 
   if (props.danger) {
     // ponytail: danger ghost is always quiet (muted until hover/focus); wash matches pill 4xx (/15)
-    if (selected) {
-      return "border-status-error/40 bg-status-error/15 text-status-error";
-    }
     if (props.variant === "ghost" || props.quiet) {
-      return "border-transparent bg-transparent text-surface-light/60 hover:enabled:border-status-error/40 hover:enabled:bg-status-error/15 hover:enabled:text-status-error active:enabled:bg-status-error/25 focus-visible:border-status-error/40 focus-visible:bg-status-error/15 focus-visible:text-status-error";
+      return familyToneClass("4xx", selected, {
+        quiet: true,
+        includeFocusTint: true,
+      });
     }
-    return "border-transparent bg-status-error/3 text-status-error hover:enabled:border-status-error/40 hover:enabled:bg-status-error/15 active:enabled:bg-status-error/25";
+    return familyToneClass("4xx", selected, { includeActive: true });
   }
 
   if (props.variant === "ghost") {
     if (props.quiet && !selected) {
-      return "border-transparent bg-transparent text-surface-light/60 hover:enabled:border-accent-blue/40 hover:enabled:bg-accent-blue/15 hover:enabled:text-accent-blue active:enabled:bg-accent-blue/25 focus-visible:border-accent-blue/40 focus-visible:bg-accent-blue/15 focus-visible:text-accent-blue";
+      return familyToneClass("1xx", false, {
+        quiet: true,
+        includeFocusTint: true,
+      });
     }
-    if (selected) {
-      return "border-accent-blue/40 bg-accent-blue/15 text-accent-blue";
-    }
-    return "border-transparent bg-accent-blue/3 text-accent-blue hover:enabled:border-accent-blue/40 hover:enabled:bg-accent-blue/15 active:enabled:bg-accent-blue/25";
+    return familyToneClass("1xx", selected, { includeActive: true });
   }
 
   if (props.variant === "primary") {
-    if (selected) {
-      return "border-accent-blue/40 bg-accent-blue/15 text-accent-blue";
-    }
-    return "border-transparent bg-accent-blue/3 text-accent-blue hover:enabled:border-accent-blue/40 hover:enabled:bg-accent-blue/15 active:enabled:bg-accent-blue/25";
+    return familyToneClass("1xx", selected, { includeActive: true });
   }
 
   // secondary — grayscale hierarchy (Toss); not accent wash

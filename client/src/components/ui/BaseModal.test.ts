@@ -115,6 +115,30 @@ describe("BaseModal", () => {
     wrapper.unmount();
   });
 
+  it("keeps aria-labelledby valid when a custom header slot omits the title id", async () => {
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    document.body.append(trigger);
+    trigger.focus();
+
+    const wrapper = mount(BaseModal, {
+      attachTo: document.body,
+      props: { open: true, title: "Custom title fallback" },
+      slots: {
+        header: "<div>Custom header</div>",
+        default: '<input type="text" aria-label="Sample field" />',
+      },
+    });
+    await flushFocus();
+
+    const dialog = document.body.querySelector('[role="dialog"]');
+    const labelledBy = dialog?.getAttribute("aria-labelledby");
+    expect(labelledBy).toBeTruthy();
+    expect(document.getElementById(labelledBy! as string)?.textContent).toBe("Custom title fallback");
+
+    wrapper.unmount();
+  });
+
   it("falls back to Dialog aria-label when no title or ariaLabel", async () => {
     const { wrapper } = mountModal({ open: true });
     await flushFocus();

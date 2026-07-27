@@ -4,6 +4,16 @@ import { computed, useAttrs, useId } from "vue";
 import FieldHelp from "@/components/ui/FieldHelp.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import {
+  buildFieldAccessibleName,
+  buildFieldDescribedBy,
+  pickNativeAttrs,
+} from "@/components/ui/fieldA11y";
+import {
+  FIELD_CLEAR_HIDDEN_CLASS,
+  FIELD_NOTCH_BG_CLASS,
+  FIELD_NOTCH_CLASS,
+  FIELD_NOTCH_ROW_CLASS,
+  FIELD_WRAPPER_CLASS,
   TEXTAREA_CLASS,
   TEXTAREA_CLASS_COMPACT,
 } from "@/constants/formClasses";
@@ -45,13 +55,15 @@ const tipInsetClass = computed(() => [
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error);
 const showNotchRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
-const describedBy = computed(() => {
-  const ids: string[] = [];
-  if (props.error) ids.push(errorId.value);
-  else if (props.hint) ids.push(hintId.value);
-  // Visual tip stays aria-hidden; do not wire into describedby.
-  return ids.length ? ids.join(" ") : undefined;
-});
+const describedBy = computed(() =>
+  buildFieldDescribedBy({
+    ariaDescribedBy: attrs["aria-describedby"],
+    hint: props.hint,
+    hintId: hintId.value,
+    error: props.error,
+    errorId: errorId.value,
+  }),
+);
 const bareClass = computed(() => [
   props.compact ? TEXTAREA_CLASS_COMPACT : TEXTAREA_CLASS,
   props.error && "border-status-error",
@@ -69,25 +81,17 @@ const shellTextareaClass = computed(
       props.compact ? "min-h-9 py-1.5" : "min-h-10 py-2",
     ].join(" "),
 );
-const textareaAttrs = computed(() => {
-  const nativeAttrs: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(attrs)) {
-    if (key !== "class" && key !== "style") nativeAttrs[key] = value;
-  }
-  return nativeAttrs;
-});
-const accessibleName = computed(() => {
-  if (typeof attrs["aria-label"] === "string" && attrs["aria-label"].trim()) {
-    return attrs["aria-label"];
-  }
-  if (showLabelNotch.value) return undefined;
-  if (props.label) return props.label;
-  // Tip/placeholder is visual help only (aria-hidden) — never the accessible name.
-  return props.prefix || undefined;
-});
-const notchBgClass = "bg-surface-card";
-const notchClass =
-  "pointer-events-none absolute left-3 top-2.5 z-20 max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] truncate px-1.5 text-xs leading-4";
+const textareaAttrs = computed(() => pickNativeAttrs(attrs, ["aria-describedby"]));
+const accessibleName = computed(() =>
+  buildFieldAccessibleName({
+    ariaLabel: attrs["aria-label"],
+    hasVisibleLabel: showLabelNotch.value,
+    label: props.label,
+    prefix: props.prefix,
+  }),
+);
+const notchBgClass = FIELD_NOTCH_BG_CLASS;
+const notchClass = FIELD_NOTCH_CLASS;
 
 function clear(): void {
   model.value = "";
@@ -96,8 +100,7 @@ function clear(): void {
 
 <template>
   <div
-    class="relative min-w-0"
-    :class="[hasBorderNotch ? 'pt-2.5' : undefined, $attrs.class]"
+    :class="[FIELD_WRAPPER_CLASS, hasBorderNotch ? 'pt-2.5' : undefined, $attrs.class]"
     :style="$attrs.style"
   >
     <div v-if="useShell" :class="shellClass">
@@ -129,9 +132,9 @@ function clear(): void {
       <div
         v-if="reserveClear"
         class="absolute right-0 top-0 z-10 flex h-10 w-10 items-center justify-center"
-        :class="showClear ? undefined : 'invisible pointer-events-none'"
+        :class="showClear ? undefined : FIELD_CLEAR_HIDDEN_CLASS"
       >
-        <IconCloseButton size="field" aria-label="Clear" @click="clear" />
+        <IconCloseButton v-if="showClear" size="field" aria-label="Clear" @click="clear" />
       </div>
     </div>
 
@@ -150,8 +153,7 @@ function clear(): void {
 
     <div
       v-if="showNotchRow"
-      class="absolute left-3 top-2.5 z-20 flex max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] items-center gap-1 px-1.5"
-      :class="notchBgClass"
+      :class="[FIELD_NOTCH_ROW_CLASS, notchBgClass]"
     >
       <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
       <label

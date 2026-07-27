@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import { computed, useId } from "vue";
+import { computed, useAttrs, useId } from "vue";
 
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import SearchIcon from "@/components/icons/SearchIcon.vue";
-import { FIELD_CLEAR_SLOT } from "@/constants/formClasses";
+import { pickNativeAttrs } from "@/components/ui/fieldA11y";
+import {
+  FIELD_CLEAR_HIDDEN_CLASS,
+  FIELD_CLEAR_SLOT,
+  FIELD_WRAPPER_CLASS,
+} from "@/constants/formClasses";
 import { SEARCH_MIN_QUERY_LENGTH } from "@/constants/search";
 
 defineOptions({ inheritAttrs: false });
@@ -25,6 +30,7 @@ const props = withDefaults(
   },
 );
 
+const attrs = useAttrs();
 const fallbackId = useId();
 const inputId = computed(() => props.id ?? `search-input-${fallbackId}`);
 const overlayId = computed(() => `${inputId.value}-overlay`);
@@ -33,6 +39,7 @@ const hasValue = computed(() => model.value.length > 0);
 const showOverlay = computed(() => Boolean(props.placeholder) && !hasValue.value);
 /** Decorative placeholder is not the accessible name. */
 const accessibleName = computed(() => props.ariaLabel || "Search");
+const inputAttrs = computed(() => pickNativeAttrs(attrs));
 
 function clear(): void {
   model.value = "";
@@ -41,8 +48,11 @@ function clear(): void {
 
 <template>
   <div
-    class="relative flex h-10 w-full min-w-0 items-center rounded-lg border border-surface-border bg-surface-dark transition-colors focus-within:border-accent-blue focus-within:ring-2 focus-within:ring-accent-blue/50"
-    :class="$attrs.class"
+    :class="[
+      FIELD_WRAPPER_CLASS,
+      'flex h-10 w-full items-center rounded-lg border border-surface-border bg-surface-dark transition-colors focus-within:border-accent-blue focus-within:ring-2 focus-within:ring-accent-blue/50',
+      $attrs.class,
+    ]"
   >
     <span class="relative z-10 flex shrink-0 items-center pl-3 text-surface-mid" aria-hidden="true">
       <SearchIcon class-name="size-4" />
@@ -55,11 +65,7 @@ function clear(): void {
         :minlength="minLength"
         :aria-label="accessibleName"
         class="search-input-field relative z-10 h-full min-w-0 w-full border-0 bg-transparent py-0 pl-2.5 pr-1 text-left text-sm text-surface-light outline-none"
-        v-bind="{
-          ...Object.fromEntries(
-            Object.entries($attrs).filter(([key]) => key !== 'class' && key !== 'style'),
-          ),
-        }"
+        v-bind="inputAttrs"
       />
       <span
         v-if="showOverlay"
@@ -74,9 +80,9 @@ function clear(): void {
     </div>
     <!-- Reserved clear slot — always present so overlay/value never shift. -->
     <div
-      :class="[FIELD_CLEAR_SLOT, hasValue ? undefined : 'invisible pointer-events-none']"
+      :class="[FIELD_CLEAR_SLOT, hasValue ? undefined : FIELD_CLEAR_HIDDEN_CLASS]"
     >
-      <IconCloseButton size="field" aria-label="Clear search" @click="clear" />
+      <IconCloseButton v-if="hasValue" size="field" aria-label="Clear search" @click="clear" />
     </div>
   </div>
 </template>
