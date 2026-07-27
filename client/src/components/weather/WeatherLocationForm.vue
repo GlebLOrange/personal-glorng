@@ -2,6 +2,7 @@
 import { ref } from "vue";
 
 import BaseInput from "@/components/ui/BaseInput.vue";
+import FieldHelp from "@/components/ui/FieldHelp.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 
 const props = defineProps<{
@@ -17,7 +18,7 @@ const saving = ref(false);
 async function submit(): Promise<void> {
   const trimmed = city.value.trim();
   if (!trimmed) {
-    error.value = "Enter a city to search";
+    error.value = "Enter a location to search";
     return;
   }
   saving.value = true;
@@ -38,6 +39,7 @@ async function submit(): Promise<void> {
     <div class="mb-4 flex min-w-0 flex-wrap items-center gap-2">
       <h2 class="flex items-center gap-2 text-lg font-bold text-surface-light">
         <slot name="heading" />
+        <FieldHelp v-if="props.helperText" :text="props.helperText" />
       </h2>
       <ToolbarPillButton
         type="submit"
@@ -52,12 +54,11 @@ async function submit(): Promise<void> {
     <BaseInput
       id="weather-city"
       v-model="city"
-      placeholder="city"
+      placeholder="location"
       class="min-w-0 w-full"
-      aria-label="city"
+      aria-label="location"
       :error="error ?? undefined"
       required
     />
   </form>
-  <p v-if="props.helperText" class="text-xs text-surface-mid mt-2">{{ props.helperText }}</p>
 </template>

@@ -142,18 +142,18 @@ onMounted(loadUrls);
     </form>
 
     <Card v-if="lastCreatedLink" variant="compact" class="mb-10">
-      <p class="mb-2 text-sm text-surface-mid">your short link</p>
-      <div class="flex flex-wrap items-center gap-3">
-        <a
-          :href="lastCreatedLink"
-          class="break-all text-sm text-accent-blue hover:underline"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {{ lastCreatedLink }}
-        </a>
+      <div class="mb-2 flex items-center justify-between gap-3">
+        <p class="text-sm text-surface-mid">your short link</p>
         <IconCopyButton aria-label="copy short link" @click="copy(lastCreatedLink)" />
       </div>
+      <a
+        :href="lastCreatedLink"
+        class="break-all text-sm text-accent-blue hover:underline"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ lastCreatedLink }}
+      </a>
     </Card>
 
     <div v-if="canManage" class="divide-y divide-surface-border/40">

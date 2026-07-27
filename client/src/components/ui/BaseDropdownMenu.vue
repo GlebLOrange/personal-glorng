@@ -44,7 +44,7 @@ const triggerClass = computed(() => {
     // Labeled triggers (e.g. more actions) match ToolbarPillButton h-11.
     return actionFamilyClass("1xx", open.value);
   }
-  // Icon-only default — h-8 square chrome.
+  // Icon-only default — h-11 square chrome.
   return iconActionClass("1xx", open.value);
 });
 

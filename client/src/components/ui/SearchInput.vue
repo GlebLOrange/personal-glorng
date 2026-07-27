@@ -73,7 +73,7 @@ function clear(): void {
     </div>
     <!-- Reserved clear slot — always present so overlay/value never shift. -->
     <div
-      class="relative z-10 flex w-8 shrink-0 items-center justify-center pr-0.5"
+      class="relative z-10 flex w-11 shrink-0 items-center justify-center"
       :class="hasValue ? undefined : 'invisible pointer-events-none'"
     >
       <IconCloseButton aria-label="Clear search" @click="clear" />

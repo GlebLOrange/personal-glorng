@@ -148,8 +148,9 @@ test.describe("public pages", () => {
     await page.goto("/weather");
     await expect(page.getByRole("heading", { name: "weather", level: 1 })).toBeVisible();
     await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
-    await expect(page.getByText(/\d+\/8 cities saved in your browser/i)).toBeVisible();
-    await page.getByPlaceholder(/^city$/i).fill("London");
+    await page.getByRole("button", { name: "help" }).click();
+    await expect(page.getByText(/\d+\/8 locations saved in your browser/i)).toBeVisible();
+    await page.getByPlaceholder(/^location$/i).fill("London");
     await page.getByRole("button", { name: /add location/i }).click();
     await expect(page.getByText(/location added/i)).toBeVisible();
     await expect(page.getByRole("button", { name: /set london as active city/i })).toBeVisible();

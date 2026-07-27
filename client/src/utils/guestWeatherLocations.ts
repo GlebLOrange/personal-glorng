@@ -66,5 +66,5 @@ export function sanitizeGuestWeatherLocations(raw: unknown): GuestWeatherLocatio
 }
 
 export function guestLocationLimitMessage(currentCount: number): string {
-  return `${currentCount}/${MAX_SAVED_WEATHER_LOCATIONS} cities saved in your browser`;
+  return `${currentCount}/${MAX_SAVED_WEATHER_LOCATIONS} locations saved in your browser`;
 }

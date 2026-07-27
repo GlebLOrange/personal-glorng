@@ -1,3 +1,5 @@
+import { CONTROL_SIZE, CONTROL_SIZE_ICON } from "@/constants/formClasses";
+
 /** HTTP status family keys used for badges and action pills. */
 export type HttpStatusFamily = "1xx" | "2xx" | "3xx" | "4xx" | "5xx";
 
@@ -53,11 +55,10 @@ export function httpStatusClass(code: number): string {
 
 /** Shared shape for toolbar/tab action pills. */
 export const ACTION_PILL_BASE =
-  "inline-flex h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50";
+  `inline-flex ${CONTROL_SIZE} shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50`;
 
-/** h-8 square chrome — overrides ACTION_PILL_BASE height/padding. */
-export const ICON_ACTION_SIZE =
-  "inline-flex !h-8 !w-8 !min-h-8 !min-w-8 shrink-0 items-center justify-center rounded-lg border !px-0 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50";
+/** Square icon chrome matching CONTROL_SIZE (overrides pill padding). */
+export const ICON_ACTION_SIZE = CONTROL_SIZE_ICON;
 
 /**
  * Classes for an action pill in a given HTTP-family color.
@@ -78,7 +79,7 @@ export type IconActionClassOptions = {
 };
 
 /**
- * Classes for h-8 icon chrome (back, pagination, edit, clear).
+ * Classes for h-11 icon chrome (back, pagination, edit, clear).
  * Same idle/hover/selected paint as pills; size forced to square.
  */
 export function iconActionClass(

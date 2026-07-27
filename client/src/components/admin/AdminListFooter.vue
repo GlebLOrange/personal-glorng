@@ -66,7 +66,7 @@ const nextDisabled = computed(() => props.loading || !props.hasNextPage);
     >
       <span class="font-data text-surface-light">{{ totalLabel }}</span>
       <span class="text-surface-border" aria-hidden="true">·</span>
-      <span class="font-data text-surface-muted">{{ pageLabel }}</span>
+      <span class="font-data text-surface-light">{{ pageLabel }}</span>
     </p>
     <div class="flex flex-wrap items-center justify-end gap-1">
       <IconActionButton
