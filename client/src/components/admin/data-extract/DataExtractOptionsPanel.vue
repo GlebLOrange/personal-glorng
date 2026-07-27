@@ -37,6 +37,7 @@ const optionLabels = computed(() => [
 <template>
   <AdminFilterDropdown
     label="options"
+    anchor="local"
     :show-filter-icon="false"
     :show-clear="false"
     :has-active-filters="hasCustomOptions"

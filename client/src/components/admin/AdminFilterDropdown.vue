@@ -35,8 +35,14 @@ const props = withDefaults(
     showClear?: boolean;
     /** Transparent trigger — no wash / border chrome. */
     bare?: boolean;
-    /** Lock panel width to the trigger (no content growth). */
+    /** Lock panel width to the trigger (no content growth). Portal mode only. */
     matchTriggerWidth?: boolean;
+    /**
+     * Panel placement:
+     * - `portal` — teleported fixed panel (default; news/filters).
+     * - `local` — absolute under trigger, shared root min-width (BaseDropdownMenu layout).
+     */
+    anchor?: "portal" | "local";
   }>(),
   {
     label: "filters",
@@ -44,6 +50,7 @@ const props = withDefaults(
     showClear: true,
     bare: false,
     matchTriggerWidth: true,
+    anchor: "portal",
   },
 );
 
@@ -57,6 +64,8 @@ const sizingLabels = computed(() => {
   if (labels.length) return labels;
   return props.activeLabel ? [props.activeLabel] : [];
 });
+
+const isLocalAnchor = computed(() => props.anchor === "local");
 
 const open = ref(false);
 const rootRef = useTemplateRef<HTMLElement>("root");
@@ -74,8 +83,14 @@ const { close, toggle } = useToolbarOptionsPopover({
   triggerRef,
 });
 
+/** Local: shared min-width on root (BaseDropdownMenu). Portal: min-width on trigger. */
+const rootStyle = computed((): CSSProperties | undefined => {
+  if (!isLocalAnchor.value || contentMinWidthPx.value <= 0) return undefined;
+  return { minWidth: `${contentMinWidthPx.value}px` };
+});
+
 const triggerStyle = computed((): CSSProperties | undefined => {
-  if (contentMinWidthPx.value <= 0) return undefined;
+  if (isLocalAnchor.value || contentMinWidthPx.value <= 0) return undefined;
   return { minWidth: `${contentMinWidthPx.value}px` };
 });
 
@@ -112,8 +127,10 @@ function measureContentMinWidth(): void {
   if (widest > 0) contentMinWidthPx.value = widest;
 }
 
-/** Place panel under the trigger; min width matches the bar (already content-floored). */
+/** Place teleported panel under the trigger; min width matches the bar (already content-floored). */
 function syncPanelPosition(): void {
+  if (isLocalAnchor.value) return;
+
   const trigger = resolveTriggerEl();
   if (!trigger) return;
 
@@ -134,10 +151,7 @@ function syncPanelPosition(): void {
     return;
   }
 
-  const minWidth = Math.min(
-    Math.max(rect.width, contentMinWidthPx.value),
-    maxWidth,
-  );
+  const minWidth = Math.min(Math.max(rect.width, contentMinWidthPx.value), maxWidth);
   const panelWidth = Math.max(panelRef.value?.offsetWidth ?? 0, minWidth);
   const maxLeft = Math.max(viewportPadding, window.innerWidth - panelWidth - viewportPadding);
   panelStyle.value = {
@@ -149,11 +163,19 @@ function syncPanelPosition(): void {
 
 function onViewportChange(): void {
   measureContentMinWidth();
-  if (!open.value) return;
+  if (!open.value || isLocalAnchor.value) return;
   syncPanelPosition();
 }
 
 watch(open, async (isOpen) => {
+  if (isLocalAnchor.value) {
+    if (isOpen) {
+      await nextTick();
+      measureContentMinWidth();
+    }
+    return;
+  }
+
   if (!isOpen) {
     window.removeEventListener("resize", onViewportChange);
     window.removeEventListener("scroll", onViewportChange, true);
@@ -193,11 +215,23 @@ defineExpose({ close });
 </script>
 
 <template>
-  <div ref="root" class="relative inline-flex" :class="open ? 'z-40' : undefined">
+  <div
+    ref="root"
+    class="relative inline-flex"
+    :class="[
+      open ? 'z-40' : undefined,
+      isLocalAnchor ? TOOLBAR_POPOVER_MAX_WIDTH_CLASS : undefined,
+    ]"
+    :style="rootStyle"
+  >
     <ToolbarPillButton
       ref="trigger"
       family="1xx"
-      :class="[TOOLBAR_POPOVER_MAX_WIDTH_CLASS, bareTriggerClass]"
+      :class="[
+        TOOLBAR_POPOVER_MAX_WIDTH_CLASS,
+        isLocalAnchor ? 'w-full' : undefined,
+        bareTriggerClass,
+      ]"
       :style="triggerStyle"
       :selected="bare ? open : open || hasActiveFilters"
       aria-haspopup="dialog"
@@ -243,19 +277,26 @@ defineExpose({ close });
       <span v-if="showClear" class="inline-block px-2 text-xs leading-normal">clear</span>
     </div>
 
-    <Teleport to="body">
+    <!-- :disabled keeps the panel under root for local (BaseDropdownMenu) layout. -->
+    <Teleport to="body" :disabled="isLocalAnchor">
       <div
         v-if="open"
         ref="panel"
         role="dialog"
         :aria-label="label"
         tabindex="-1"
-        class="fixed z-50"
         :class="[
-          matchTriggerWidth ? TOOLBAR_POPOVER_MAX_WIDTH_CLASS : TOOLBAR_POPOVER_PANEL_WIDTH_CLASS,
+          isLocalAnchor
+            ? ['absolute left-0 right-0 top-full z-50 mt-1', TOOLBAR_POPOVER_MAX_WIDTH_CLASS]
+            : [
+                'fixed z-50',
+                matchTriggerWidth
+                  ? TOOLBAR_POPOVER_MAX_WIDTH_CLASS
+                  : TOOLBAR_POPOVER_PANEL_WIDTH_CLASS,
+              ],
           TOOLBAR_POPOVER_PANEL_CHROME_CLASS,
         ]"
-        :style="panelStyle"
+        :style="isLocalAnchor ? undefined : panelStyle"
         @click.stop
       >
         <div class="space-y-3">
