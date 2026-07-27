@@ -262,18 +262,18 @@ onBeforeUnmount(() => {
                     . Disable competing features in <code class="text-surface-sage">.env</code> while
                     testing chat:
                     <code class="text-surface-sage">TASK_INTAKE_AI_ENABLED=false</code>,
-                    <code class="text-surface-sage">NEWS_INGEST_ENABLED=false</code>.
+                    <code class="text-surface-sage">NEWS_INGEST_ENABLED=false</code>
                   </li>
                   <li>
                     <strong class="font-medium text-surface-light">App rate limit</strong> — this tool
-                    caps chat to 5 messages per 5 minutes per signed-in superuser.
+                    caps chat to 5 messages per 5 minutes per signed-in superuser
                   </li>
                   <li>
                     <strong class="font-medium text-surface-light">After .env changes</strong> — set
                     <code class="text-surface-sage">GROQ_API_KEY</code>,
                     <code class="text-surface-sage">GROQ_CHAT_MODEL</code>, and
                     <code class="text-surface-sage">AI_CHAT_ENABLED=true</code>, then restart the
-                    backend.
+                    backend
                   </li>
                 </ul>
               </details>
@@ -292,12 +292,12 @@ onBeforeUnmount(() => {
                     <code class="text-surface-sage">GROQ_CHAT_MODEL</code> in your server
                     <code class="text-surface-sage">.env</code>, then restart the backend. Set
                     <code class="text-surface-sage">AI_CHAT_ENABLED=false</code> to hide this tool
-                    entirely.
+                    entirely
                   </p>
                   <p>
                     The same Groq key is shared by AI chat, news ingest, and task intake. Groq
                     enforces per-model RPM limits. This app also caps chat to 5 messages per 5
-                    minutes per superuser.
+                    minutes per superuser
                   </p>
                 </div>
               </details>
@@ -330,7 +330,7 @@ onBeforeUnmount(() => {
                     >
                       Groq Console
                     </a>
-                    and restart the backend after changing server env.
+                    and restart the backend after changing server env
                   </p>
                 </div>
               </details>
