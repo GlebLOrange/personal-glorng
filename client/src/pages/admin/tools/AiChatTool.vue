@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } f
 
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import QuestionIcon from "@/components/icons/QuestionIcon.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
@@ -10,6 +11,7 @@ import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import { ACTION_PILL_BASE, iconActionClass } from "@/constants/httpStatusColors";
+import { TOOLBAR_POPOVER_PANEL_CHROME_CLASS } from "@/constants/toolbarPopover";
 import { useChatConfig } from "@/composables/useChatConfig";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
@@ -179,13 +181,13 @@ onBeforeUnmount(() => {
           <div
             id="ai-chat-setup-help"
             role="tooltip"
-            class="absolute right-0 top-full z-30 mt-1 w-[min(100vw-2rem,28rem)] max-h-[min(70vh,36rem)] overflow-y-auto rounded-lg border border-surface-border bg-surface-card p-4 text-left shadow-lg"
-            :class="helpOpen ? undefined : 'sr-only'"
+            class="scrollbar-thin absolute right-0 top-full z-30 mt-1 w-[min(100vw-2rem,28rem)] max-h-[min(50vh,24rem)] overflow-y-auto overscroll-contain text-left"
+            :class="[TOOLBAR_POPOVER_PANEL_CHROME_CLASS, helpOpen ? undefined : 'sr-only']"
             @mouseenter="showHelp"
             @mouseleave="scheduleHideHelp"
           >
-            <div class="space-y-6">
-              <section class="space-y-3">
+            <div class="space-y-3">
+              <section class="space-y-2">
                 <div class="flex items-center justify-between gap-3">
                   <h2 class="text-sm font-semibold lowercase text-surface-light">current setup</h2>
                   <button
@@ -202,7 +204,7 @@ onBeforeUnmount(() => {
                   </button>
                 </div>
                 <p v-if="configLoading" class="text-sm lowercase text-surface-mid">loading…</p>
-                <dl v-else-if="chatConfig" class="grid gap-2 text-sm">
+                <dl v-else-if="chatConfig" class="grid gap-1.5 text-sm">
                   <div class="flex gap-2">
                     <dt class="w-28 shrink-0 lowercase text-surface-mid">provider</dt>
                     <dd class="text-surface-light">{{ chatConfig.provider }}</dd>
@@ -235,9 +237,17 @@ onBeforeUnmount(() => {
                 </dl>
               </section>
 
-              <section v-if="chatConfig?.configured" class="space-y-3">
-                <h2 class="text-sm font-semibold lowercase text-surface-light">troubleshooting</h2>
-                <ul class="list-disc space-y-2 pl-5 text-sm leading-relaxed text-surface-mid">
+              <details
+                v-if="chatConfig?.configured"
+                class="group rounded-md border border-surface-border/60 open:border-surface-border"
+              >
+                <summary
+                  class="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
+                >
+                  <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
+                  troubleshooting
+                </summary>
+                <ul class="list-disc space-y-2 border-t border-surface-border/60 px-2 py-2 pl-7 text-xs leading-relaxed text-surface-mid">
                   <li>
                     <strong class="font-medium text-surface-light">Quota or rate limit</strong> —
                     wait for the retry window, then try again. Check RPM limits in
@@ -252,66 +262,78 @@ onBeforeUnmount(() => {
                     . Disable competing features in <code class="text-surface-sage">.env</code> while
                     testing chat:
                     <code class="text-surface-sage">TASK_INTAKE_AI_ENABLED=false</code>,
-                    <code class="text-surface-sage">NEWS_INGEST_ENABLED=false</code>.
+                    <code class="text-surface-sage">NEWS_INGEST_ENABLED=false</code>
                   </li>
                   <li>
                     <strong class="font-medium text-surface-light">App rate limit</strong> — this tool
-                    caps chat to 5 messages per 5 minutes per signed-in superuser.
+                    caps chat to 5 messages per 5 minutes per signed-in superuser
                   </li>
                   <li>
                     <strong class="font-medium text-surface-light">After .env changes</strong> — set
                     <code class="text-surface-sage">GROQ_API_KEY</code>,
                     <code class="text-surface-sage">GROQ_CHAT_MODEL</code>, and
                     <code class="text-surface-sage">AI_CHAT_ENABLED=true</code>, then restart the
-                    backend.
+                    backend
                   </li>
                 </ul>
-              </section>
+              </details>
 
-              <section class="space-y-3">
-                <h2 class="text-sm font-semibold lowercase text-surface-light">how it works</h2>
-                <p class="text-sm leading-relaxed text-surface-mid">
-                  Superuser-only plain LLM chat. Set
-                  <code class="text-surface-sage">GROQ_API_KEY</code> and
-                  <code class="text-surface-sage">GROQ_CHAT_MODEL</code> in your server
-                  <code class="text-surface-sage">.env</code>, then restart the backend. Set
-                  <code class="text-surface-sage">AI_CHAT_ENABLED=false</code> to hide this tool
-                  entirely.
-                </p>
-                <p class="text-sm leading-relaxed text-surface-mid">
-                  The same Groq key is shared by AI chat, news ingest, and task intake. Groq
-                  enforces per-model RPM limits. This app also caps chat to 5 messages per 5 minutes
-                  per superuser.
-                </p>
-              </section>
-
-              <section class="space-y-4">
-                <h2 class="text-sm font-semibold lowercase text-surface-light">
-                  example .env snippets
-                </h2>
-                <div
-                  v-for="example in PROVIDER_EXAMPLES"
-                  :key="example.name"
-                  class="space-y-2 rounded-lg border border-surface-border bg-surface-dark p-3"
+              <details class="group rounded-md border border-surface-border/60 open:border-surface-border">
+                <summary
+                  class="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
                 >
-                  <p class="text-sm font-medium text-surface-light">{{ example.name }}</p>
-                  <pre class="whitespace-pre-wrap font-data text-xs text-surface-sage">{{
-                    example.env
-                  }}</pre>
+                  <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
+                  how it works
+                </summary>
+                <div class="space-y-2 border-t border-surface-border/60 px-2 py-2 text-xs leading-relaxed text-surface-mid">
+                  <p>
+                    Superuser-only plain LLM chat. Set
+                    <code class="text-surface-sage">GROQ_API_KEY</code> and
+                    <code class="text-surface-sage">GROQ_CHAT_MODEL</code> in your server
+                    <code class="text-surface-sage">.env</code>, then restart the backend. Set
+                    <code class="text-surface-sage">AI_CHAT_ENABLED=false</code> to hide this tool
+                    entirely
+                  </p>
+                  <p>
+                    The same Groq key is shared by AI chat, news ingest, and task intake. Groq
+                    enforces per-model RPM limits. This app also caps chat to 5 messages per 5
+                    minutes per superuser
+                  </p>
                 </div>
-                <p class="text-xs text-surface-mid">
-                  Get a key from
-                  <a
-                    class="text-accent-blue transition-colors hover:text-accent-blue/80"
-                    href="https://console.groq.com/keys"
-                    rel="noopener noreferrer"
-                    target="_blank"
+              </details>
+
+              <details class="group rounded-md border border-surface-border/60 open:border-surface-border">
+                <summary
+                  class="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
+                >
+                  <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
+                  example .env snippets
+                </summary>
+                <div class="space-y-3 border-t border-surface-border/60 px-2 py-2">
+                  <div
+                    v-for="example in PROVIDER_EXAMPLES"
+                    :key="example.name"
+                    class="space-y-2 rounded-lg border border-surface-border bg-surface-dark p-2.5"
                   >
-                    Groq Console
-                  </a>
-                  and restart the backend after changing server env.
-                </p>
-              </section>
+                    <p class="text-xs font-medium text-surface-light">{{ example.name }}</p>
+                    <pre class="whitespace-pre-wrap font-data text-xs text-surface-sage">{{
+                      example.env
+                    }}</pre>
+                  </div>
+                  <p class="text-xs text-surface-mid">
+                    Get a key from
+                    <a
+                      class="text-accent-blue transition-colors hover:text-accent-blue/80"
+                      href="https://console.groq.com/keys"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      Groq Console
+                    </a>
+                    and restart the backend after changing server env
+                  </p>
+                </div>
+              </details>
             </div>
           </div>
         </div>

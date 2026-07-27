@@ -91,10 +91,7 @@ describe("AdminListRow", () => {
       props: { interactive: true },
       slots: { primary: "request started" },
     });
-    expect(wrapper.classes()).toContain("after:left-2");
-    expect(wrapper.classes()).toContain("after:right-2");
-    expect(wrapper.classes()).toContain("after:h-px");
-    expect(wrapper.classes()).toContain("last:after:hidden");
+    expect(wrapper.classes()).toContain("admin-list-row-rule");
     expect(wrapper.classes()).toContain("!border-0");
   });
 });

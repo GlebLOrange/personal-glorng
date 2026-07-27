@@ -325,7 +325,6 @@ function goToTransactions(): void {
           class="outline-none"
         >
           <ExpenseCategorySettings
-            v-model:display-currency="displayCurrency"
             v-model:new-category-name="newCategoryName"
             v-model:editing-category-name="editingCategoryName"
             v-model:editing-category-budget="editingCategoryBudget"

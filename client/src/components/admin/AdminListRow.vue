@@ -149,7 +149,7 @@ function onKeydown(event: KeyboardEvent): void {
     :aria-expanded="expandable ? expanded : undefined"
     v-bind="rowAttrs"
     :class="rowClass"
-    class="relative flex w-full min-w-0 flex-col justify-start overflow-hidden rounded-md !border-0 !bg-surface-card px-2 text-left ring-1 ring-inset ring-transparent after:pointer-events-none after:absolute after:bottom-0 after:left-2 after:right-2 after:z-[1] after:h-px after:bg-surface-border/60 after:content-[''] last:after:hidden"
+    class="admin-list-row-rule flex w-full min-w-0 flex-col justify-start overflow-hidden rounded-md !border-0 !bg-surface-card px-2 text-left ring-1 ring-inset ring-transparent"
     @click="onClick"
     @keydown="onKeydown"
   >
@@ -232,7 +232,7 @@ function onKeydown(event: KeyboardEvent): void {
     </div>
     <div
       v-if="expanded && $slots.detail"
-      class="mt-2 border-t border-surface-border pt-2 text-xs text-surface-mid"
+      class="mt-2 border-t border-surface-border pt-2 pb-2 text-xs text-surface-mid"
     >
       <slot name="detail" />
     </div>

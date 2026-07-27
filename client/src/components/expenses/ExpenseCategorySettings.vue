@@ -3,14 +3,12 @@ import { nextTick, watch } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import BaseSelect from "@/components/ui/BaseSelect.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
 import {
   crossRate,
-  EXPENSE_CURRENCIES,
   EXPENSE_DEFAULT_CURRENCY,
   EXPENSE_EXCHANGE_RATE_TARGETS,
 } from "@/composables/useExpenseFilters";
@@ -22,7 +20,6 @@ const props = defineProps<{
   exchangeRates: ExchangeRates | null;
 }>();
 
-const displayCurrency = defineModel<string>("displayCurrency", { required: true });
 const newCategoryName = defineModel<string>("newCategoryName", { required: true });
 const editingCategoryName = defineModel<string>("editingCategoryName", { required: true });
 const editingCategoryBudget = defineModel<string>("editingCategoryBudget", { required: true });
@@ -52,15 +49,6 @@ function onCategoryRowClick(category: ExpenseCategory): void {
 
 <template>
   <div class="flex flex-col gap-6">
-    <Card class="flex flex-col gap-3">
-      <BaseSelect v-model="displayCurrency" label="ledger totals currency">
-        <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
-      </BaseSelect>
-      <p class="text-xs text-surface-mid">
-        Totals and conversions on the ledger use this currency.
-      </p>
-    </Card>
-
     <Card v-if="exchangeRates">
       <p class="mb-3 text-xs text-surface-mid">exchange rates</p>
       <div class="flex flex-wrap gap-3 text-xs text-surface-mid">
