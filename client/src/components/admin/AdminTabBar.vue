@@ -93,29 +93,33 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
 </script>
 
 <template>
-  <div
-    ref="tablistRef"
-    class="flex flex-wrap gap-2"
-    :class="flush ? undefined : 'mb-6'"
-    role="tablist"
-    :aria-label="ariaLabel"
-  >
-    <button
-      v-for="(tab, index) in tabs"
-      :id="tabButtonId(tab.id)"
-      :key="tab.id"
-      type="button"
-      role="tab"
-      :aria-selected="activeTab === tab.id"
-      :aria-controls="tabPanelId(tab.id)"
-      :tabindex="activeTab === tab.id ? 0 : -1"
-      :class="tabClass(tab)"
-      @click="activeTab = tab.id"
-      @keydown="onTabKeydown($event, index)"
+  <div class="flex min-w-0 flex-wrap items-center gap-2" :class="flush ? undefined : 'mb-6'">
+    <div
+      ref="tablistRef"
+      class="flex flex-wrap gap-2"
+      role="tablist"
+      :aria-label="ariaLabel"
     >
-      <SyncIcon v-if="tab.icon === 'sync'" class-name="size-3.5 shrink-0" />
-      <RefreshIcon v-else-if="tab.icon === 'refresh'" class-name="size-3.5 shrink-0" />
-      {{ tab.label }}
-    </button>
+      <button
+        v-for="(tab, index) in tabs"
+        :id="tabButtonId(tab.id)"
+        :key="tab.id"
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === tab.id"
+        :aria-controls="tabPanelId(tab.id)"
+        :tabindex="activeTab === tab.id ? 0 : -1"
+        :class="tabClass(tab)"
+        @click="activeTab = tab.id"
+        @keydown="onTabKeydown($event, index)"
+      >
+        <SyncIcon v-if="tab.icon === 'sync'" class-name="size-3.5 shrink-0" />
+        <RefreshIcon v-else-if="tab.icon === 'refresh'" class-name="size-3.5 shrink-0" />
+        {{ tab.label }}
+      </button>
+    </div>
+    <div v-if="$slots.end" class="ml-auto flex shrink-0 items-center">
+      <slot name="end" />
+    </div>
   </div>
 </template>
