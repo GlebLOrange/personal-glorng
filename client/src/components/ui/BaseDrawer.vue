@@ -11,6 +11,8 @@ const props = withDefaults(
     open: boolean;
     title: string;
     maxWidth?: OverlayMaxWidth;
+    /** Extra classes for the drawer header bar (e.g. status wash). */
+    headerClass?: string;
   }>(),
   {
     maxWidth: "lg",
@@ -57,24 +59,25 @@ const hasCustomTitle = computed(() => Boolean(slots.title));
           <h2 v-if="hasCustomTitle" :id="titleId" class="sr-only">{{ title }}</h2>
           <header
             class="flex shrink-0 items-center justify-between gap-3 border-b border-surface-border px-4 py-3"
+            :class="headerClass"
           >
-            <div class="flex h-10 min-w-0 flex-1 items-center">
+            <div class="flex min-h-10 min-w-0 flex-1 items-center">
               <slot name="title" :title-id="titleId">
                 <h2
                   :id="titleId"
-                  class="truncate text-lg font-bold leading-none text-surface-light"
+                  class="truncate text-lg font-bold leading-none"
                 >
                   {{ title }}
                 </h2>
               </slot>
             </div>
-            <div class="flex h-10 shrink-0 items-center gap-1">
+            <div class="flex h-10 shrink-0 items-center gap-1 self-start">
               <slot name="header-actions" />
               <IconCloseButton ref="closeButton" aria-label="Close drawer" @click="emit('close')" />
             </div>
           </header>
 
-          <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-5">
+          <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5">
             <slot />
           </div>
 

@@ -39,4 +39,49 @@ describe("AdminListRow", () => {
     await wrapper.trigger("keydown", { key: "Enter" });
     expect(wrapper.emitted("click")?.length).toBeGreaterThanOrEqual(1);
   });
+
+  it("applies status ring only when expanded", () => {
+    const statusClass = "text-status-success bg-status-success/15 border-status-success/30";
+
+    const idle = mount(AdminListRow, {
+      props: { statusClass, expandable: true, expanded: false },
+      slots: { primary: "auth.login_success" },
+    });
+    expect(idle.classes()).not.toContain("!ring-status-success/50");
+    expect(idle.classes()).toContain("hover:!ring-status-success/50");
+
+    const active = mount(AdminListRow, {
+      props: { statusClass, expandable: true, expanded: true },
+      slots: { primary: "auth.login_success" },
+    });
+    expect(active.classes()).toContain("!ring-status-success/50");
+  });
+
+  it("uses accent and neutral status rings for news source tones", () => {
+    const enabled = mount(AdminListRow, {
+      props: {
+        statusClass: "text-accent-blue bg-accent-blue/15 border-accent-blue/30",
+        interactive: true,
+      },
+      slots: { primary: "DW" },
+    });
+    expect(enabled.classes()).toContain("hover:!ring-accent-blue/50");
+
+    const disabled = mount(AdminListRow, {
+      props: {
+        statusClass: "bg-surface-border text-surface-mid border-surface-border",
+        interactive: true,
+      },
+      slots: { primary: "Al Jazeera" },
+    });
+    expect(disabled.classes()).toContain("hover:!ring-surface-border");
+  });
+
+  it("keeps the main row at control height", () => {
+    const wrapper = mount(AdminListRow, {
+      props: { interactive: true },
+      slots: { primary: "plan sprint" },
+    });
+    expect(wrapper.classes()).toContain("h-10");
+  });
 });

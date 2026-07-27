@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
-import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { Card } from "@/components/ui/card";
 import { newsStatusClass } from "@/constants/filterColors";
 import { formatNewsDate } from "@/composables/useNews";
@@ -36,11 +35,13 @@ const emit = defineEmits<{
       @click="canWrite ? emit('edit', item) : undefined"
       @keydown.enter.prevent="canWrite ? emit('edit', item) : undefined"
     >
-      <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
-        <StatusBadge :label="item.status" :class-name="newsStatusClass(item.status)" />
-        <span aria-hidden="true">/</span>
-        <span>{{ item.source_name }}</span>
-        <span aria-hidden="true">/</span>
+      <div
+        class="mb-3 flex flex-wrap items-center gap-2 rounded-md px-2.5 py-1.5 text-xs"
+        :class="newsStatusClass(item.status)"
+        :aria-label="item.status"
+      >
+        <span class="text-surface-muted">{{ item.source_name }}</span>
+        <span class="opacity-50" aria-hidden="true">/</span>
         <time :datetime="item.published_at ?? item.created_at">
           {{ formatNewsDate(item.published_at ?? item.created_at) }}
         </time>
@@ -54,11 +55,11 @@ const emit = defineEmits<{
 
       <div class="mb-4 flex flex-wrap gap-2">
         <span
-          v-for="theme in item.themes"
-          :key="theme"
+          v-for="tag in item.tags"
+          :key="tag"
           class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
         >
-          #{{ theme }}
+          #{{ tag }}
         </span>
       </div>
 
@@ -97,7 +98,7 @@ const emit = defineEmits<{
           :href="safeNavigationHref(item.source_url) ?? '#'"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center px-3 py-1.5 text-xs underline underline-offset-2"
+          class="inline-flex items-center px-3 py-1.5 text-xs underline-offset-2"
         >
           source
         </a>

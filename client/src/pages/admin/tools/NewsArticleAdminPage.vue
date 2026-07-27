@@ -11,8 +11,8 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import {
   NEWS_SUMMARY_MAX_LENGTH,
-  NEWS_THEME_LIMIT,
-  NEWS_THEME_SET,
+  NEWS_TAG_LIMIT,
+  NEWS_TAG_SET,
   NEWS_TITLE_MAX_LENGTH,
 } from "@/constants/news";
 import { useNews } from "@/composables/useNews";
@@ -64,7 +64,7 @@ function emptyForm(): NewsArticleFormData {
     title: "",
     summary: "",
     bullets: [],
-    themes: "",
+    tags: "",
     language: "en",
     published_at: "",
     telegram_message_id: "",
@@ -87,7 +87,7 @@ function formFromArticle(item: NewsArticle): NewsArticleFormData {
     title: item.title,
     summary: item.summary,
     bullets: [],
-    themes: item.themes.join(", "),
+    tags: item.tags.join(", "),
     language: item.language,
     published_at: item.published_at?.slice(0, 16) ?? "",
     telegram_message_id: item.telegram_message_id?.toString() ?? "",
@@ -97,10 +97,10 @@ function formFromArticle(item: NewsArticle): NewsArticleFormData {
   };
 }
 
-function parsedThemes(): string[] {
-  return form.value.themes
+function parsedTags(): string[] {
+  return form.value.tags
     .split(",")
-    .map((theme) => theme.trim())
+    .map((tag) => tag.trim())
     .filter(Boolean);
 }
 
@@ -126,7 +126,7 @@ function dateIsInvalid(value: string, normalizedValue: string | null): boolean {
 function validateForm(): boolean {
   const title = form.value.title.trim();
   const summary = form.value.summary.trim();
-  const themes = parsedThemes();
+  const tags = parsedTags();
 
   if (!canWrite.value) return false;
   if (!form.value.slug.trim()) {
@@ -157,16 +157,16 @@ function validateForm(): boolean {
     toast("Source feed/home URL must start with http:// or https://", "error");
     return false;
   }
-  if (themes.length < 1) {
-    toast("Add at least one theme", "error");
+  if (tags.length < 1) {
+    toast("Add at least one tag", "error");
     return false;
   }
-  if (themes.length > NEWS_THEME_LIMIT) {
-    toast(`Choose no more than ${NEWS_THEME_LIMIT} themes`, "error");
+  if (tags.length > NEWS_TAG_LIMIT) {
+    toast(`Choose no more than ${NEWS_TAG_LIMIT} tags`, "error");
     return false;
   }
-  if (themes.some((theme) => !NEWS_THEME_SET.has(theme))) {
-    toast("Choose only supported news themes", "error");
+  if (tags.some((tag) => !NEWS_TAG_SET.has(tag))) {
+    toast("Choose only supported news tags", "error");
     return false;
   }
   if (
@@ -193,7 +193,7 @@ function buildUpdatePayload(): NewsArticleUpdate {
     original_title: form.value.original_title.trim() || form.value.title.trim(),
     title: form.value.title.trim(),
     summary: form.value.summary.trim(),
-    themes: parsedThemes(),
+    tags: parsedTags(),
     language: form.value.language.trim() || "en",
   };
 }

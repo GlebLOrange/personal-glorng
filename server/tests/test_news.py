@@ -21,7 +21,7 @@ def _article(*, slug: str, title: str, status: str) -> NewsArticle:
         original_title=title,
         title=title,
         summary="Summary",
-        themes='["tech"]',
+        tags='["tech"]',
         published_at=published_at if status == "published" else None,
     )
 
@@ -59,7 +59,7 @@ async def test_create_article_persists_required_fields(
         original_title="Metadata title",
         title="Metadata title",
         summary="Metadata summary",
-        themes=["tech"],
+        tags=["tech"],
         status="draft",
     )
 

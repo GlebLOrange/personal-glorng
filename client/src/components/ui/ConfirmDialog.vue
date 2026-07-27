@@ -34,7 +34,7 @@ const emit = defineEmits<{
         <p>{{ message }}</p>
       </slot>
     </div>
-    <div class="flex justify-end gap-3">
+    <div class="flex justify-between gap-3">
       <BaseButton variant="secondary" :disabled="loading" @click="emit('cancel')"
         >cancel</BaseButton
       >

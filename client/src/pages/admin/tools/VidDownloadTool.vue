@@ -1,18 +1,13 @@
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, ref } from "vue";
 
-import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import CollapsibleUsageGuide from "@/components/ui/CollapsibleUsageGuide.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import {
-  TOOLBAR_POPOVER_PANEL_CLASS,
-  TOOLBAR_POPOVER_WIDTH_CLASS,
-} from "@/constants/toolbarPopover";
 import { api } from "@/composables/useApi";
-import { useToolbarOptionsPopover } from "@/composables/useToolbarOptionsPopover";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessageFromBlob } from "@/types/api";
 
@@ -20,18 +15,7 @@ const url = ref("");
 const format = ref("best");
 const audioOnly = ref(false);
 const loading = ref(false);
-const optionsOpen = ref(false);
-const optionsRoot = useTemplateRef<HTMLElement>("optionsRoot");
-const optionsPanel = useTemplateRef<HTMLElement>("optionsPanel");
-const optionsTrigger = useTemplateRef<InstanceType<typeof ToolbarPillButton>>("optionsTrigger");
 const { toast } = useNotify();
-
-const { toggle: toggleOptions } = useToolbarOptionsPopover({
-  open: optionsOpen,
-  rootRef: optionsRoot,
-  panelRef: optionsPanel,
-  triggerRef: optionsTrigger,
-});
 
 const formats = [
   { value: "best", label: "best (auto)" },
@@ -40,6 +24,8 @@ const formats = [
   { value: "bestvideo[height<=720]+bestaudio/best", label: "720p max" },
   { value: "bestaudio/best", label: "best audio" },
 ];
+
+const optionLabels = computed(() => [...formats.map((item) => item.label), "audio"]);
 
 const hasCustomOptions = computed(() => audioOnly.value || format.value !== "best");
 
@@ -96,63 +82,35 @@ async function download(): Promise<void> {
   >
     <form class="mb-8 space-y-3" @submit.prevent="download">
       <div class="mb-3 flex w-full min-w-0 flex-wrap items-center gap-2">
-        <div
-          ref="optionsRoot"
-          class="relative inline-flex flex-col"
-          :class="optionsOpen ? 'z-40' : undefined"
+        <AdminFilterDropdown
+          label="options"
+          :show-filter-icon="false"
+          :show-clear="false"
+          :has-active-filters="hasCustomOptions"
+          :active-label="optionsActiveLabel"
+          :option-labels="optionLabels"
         >
-          <ToolbarPillButton
-            ref="optionsTrigger"
-            family="1xx"
-            type="button"
-            :class="TOOLBAR_POPOVER_WIDTH_CLASS"
-            :selected="optionsOpen || hasCustomOptions"
-            aria-haspopup="dialog"
-            :aria-expanded="optionsOpen"
-            aria-controls="vid-download-options-dialog"
-            @click.stop="toggleOptions"
+          <BaseSelect
+            id="vid-download-quality"
+            v-model="format"
+            compact
+            aria-label="quality"
           >
-            options
-            <span v-if="optionsActiveLabel" class="min-w-0 truncate text-surface-muted">
-              · {{ optionsActiveLabel }}
-            </span>
-            <ChevronIcon :open="optionsOpen" />
-          </ToolbarPillButton>
+            <option v-for="f in formats" :key="f.value" :value="f.value">
+              {{ f.label }}
+            </option>
+          </BaseSelect>
 
-          <div
-            v-if="optionsOpen"
-            id="vid-download-options-dialog"
-            ref="optionsPanel"
-            role="dialog"
-            aria-labelledby="vid-download-options-title"
-            tabindex="-1"
-            :class="['absolute left-0 top-full z-10 mt-1 space-y-3', TOOLBAR_POPOVER_PANEL_CLASS]"
-            @click.stop
-          >
-            <h2 id="vid-download-options-title" class="sr-only">download options</h2>
-
-            <BaseSelect
-              id="vid-download-quality"
-              v-model="format"
-              compact
-              aria-label="quality"
-            >
-              <option v-for="f in formats" :key="f.value" :value="f.value">
-                {{ f.label }}
-              </option>
-            </BaseSelect>
-
-            <label class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid">
-              <input
-                v-model="audioOnly"
-                type="checkbox"
-                name="audio_only"
-                class="accent-accent-blue"
-              />
-              audio only
-            </label>
-          </div>
-        </div>
+          <label class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid">
+            <input
+              v-model="audioOnly"
+              type="checkbox"
+              name="audio_only"
+              class="accent-accent-blue"
+            />
+            audio only
+          </label>
+        </AdminFilterDropdown>
 
         <ToolbarPillButton
           family="2xx"

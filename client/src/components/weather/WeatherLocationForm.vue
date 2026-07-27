@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import BaseInput from "@/components/ui/BaseInput.vue";
 import FieldHelp from "@/components/ui/FieldHelp.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
+import { SEARCH_MIN_QUERY_LENGTH } from "@/constants/search";
 
 const props = defineProps<{
   addLocation: (query: string) => Promise<void>;
@@ -15,10 +16,14 @@ const city = ref("");
 const error = ref<string | null>(null);
 const saving = ref(false);
 
+const canSubmit = computed(
+  () => city.value.trim().length >= SEARCH_MIN_QUERY_LENGTH && !saving.value && !props.disabled,
+);
+
 async function submit(): Promise<void> {
   const trimmed = city.value.trim();
-  if (!trimmed) {
-    error.value = "Enter a location to search";
+  if (trimmed.length < SEARCH_MIN_QUERY_LENGTH) {
+    error.value = `Enter at least ${SEARCH_MIN_QUERY_LENGTH} characters`;
     return;
   }
   saving.value = true;
@@ -46,7 +51,7 @@ async function submit(): Promise<void> {
         family="2xx"
         class="ml-auto"
         aria-label="add location"
-        :disabled="saving || !city.trim() || props.disabled"
+        :disabled="!canSubmit"
       >
         {{ saving ? "adding…" : "+ location" }}
       </ToolbarPillButton>
@@ -54,11 +59,11 @@ async function submit(): Promise<void> {
     <BaseInput
       id="weather-city"
       v-model="city"
-      placeholder="location"
+      placeholder="location (3+ chars)"
       class="min-w-0 w-full"
       aria-label="location"
+      :minlength="SEARCH_MIN_QUERY_LENGTH"
       :error="error ?? undefined"
-      required
     />
   </form>
 </template>

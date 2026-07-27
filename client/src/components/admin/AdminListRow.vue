@@ -3,6 +3,7 @@ import { computed, useSlots } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import { Card } from "@/components/ui/card";
+import { CONTROL_SIZE } from "@/constants/formClasses";
 
 const props = withDefaults(
   defineProps<{
@@ -14,8 +15,12 @@ const props = withDefaults(
     nestedInteractive?: boolean;
     /** Hide row actions until hover or focus-within (keyboard accessible). */
     revealActionsOnHover?: boolean;
+    /** Absolutely center the meta slot in the row (e.g. short URL). */
+    centerMeta?: boolean;
     /** Optional accessible name override; omit to use primary slot text. */
     openLabel?: string;
+    /** Status badge classes — border/bg tint the row on hover / focus / expanded. */
+    statusClass?: string;
   }>(),
   {
     interactive: false,
@@ -24,6 +29,7 @@ const props = withDefaults(
     expandable: false,
     nestedInteractive: false,
     revealActionsOnHover: false,
+    centerMeta: false,
   },
 );
 
@@ -34,6 +40,53 @@ const focusable = computed(() => props.interactive && !props.nestedInteractive);
 const primaryAsOpenControl = computed(
   () => props.interactive && props.nestedInteractive && Boolean(slots.primary),
 );
+
+/**
+ * Full static class strings so Tailwind keeps them.
+ * Idle is surface-card; status wash paints only on hover / focus / expanded.
+ * Use ring-inset (not border) so CONTROL_SIZE matches BaseInput / icon buttons.
+ */
+const STATUS_ROW_INTERACTIVE: Record<string, string> = {
+  "accent-blue":
+    "hover:!ring-accent-blue/50 focus-visible:!ring-accent-blue/50 focus-within:!ring-accent-blue/50 hover:!bg-accent-blue/15 focus-visible:!bg-accent-blue/15 focus-within:!bg-accent-blue/15",
+  "status-success":
+    "hover:!ring-status-success/50 focus-visible:!ring-status-success/50 focus-within:!ring-status-success/50 hover:!bg-status-success/15 focus-visible:!bg-status-success/15 focus-within:!bg-status-success/15",
+  "status-warning":
+    "hover:!ring-status-warning/50 focus-visible:!ring-status-warning/50 focus-within:!ring-status-warning/50 hover:!bg-status-warning/15 focus-visible:!bg-status-warning/15 focus-within:!bg-status-warning/15",
+  "status-error":
+    "hover:!ring-status-error/50 focus-visible:!ring-status-error/50 focus-within:!ring-status-error/50 hover:!bg-status-error/15 focus-visible:!bg-status-error/15 focus-within:!bg-status-error/15",
+  "status-critical":
+    "hover:!ring-status-critical/50 focus-visible:!ring-status-critical/50 focus-within:!ring-status-critical/50 hover:!bg-status-critical/15 focus-visible:!bg-status-critical/15 focus-within:!bg-status-critical/15",
+  "surface-mid":
+    "hover:!ring-surface-border focus-visible:!ring-surface-border focus-within:!ring-surface-border hover:!bg-surface-mid/10 focus-visible:!bg-surface-mid/10 focus-within:!bg-surface-mid/10",
+};
+
+const STATUS_ROW_ACTIVE: Record<string, string> = {
+  "accent-blue": "!ring-accent-blue/50 !bg-accent-blue/15",
+  "status-success": "!ring-status-success/50 !bg-status-success/15",
+  "status-warning": "!ring-status-warning/50 !bg-status-warning/15",
+  "status-error": "!ring-status-error/50 !bg-status-error/15",
+  "status-critical": "!ring-status-critical/50 !bg-status-critical/15",
+  "surface-mid": "!ring-surface-border !bg-surface-mid/10",
+};
+
+function statusToneKey(statusClass: string): string | null {
+  for (const key of Object.keys(STATUS_ROW_INTERACTIVE)) {
+    if (statusClass.includes(key)) return key;
+  }
+  return null;
+}
+
+const statusToneClass = computed(() => {
+  if (!props.statusClass) return "";
+  const key = statusToneKey(props.statusClass);
+  if (!key) return "";
+  return [STATUS_ROW_INTERACTIVE[key], props.expanded ? STATUS_ROW_ACTIVE[key] : undefined]
+    .filter(Boolean)
+    .join(" ");
+});
+
+const showNeutralHover = computed(() => props.hoverable && !props.statusClass);
 
 const rowAttrs = computed(() => {
   if (!focusable.value) return {};
@@ -79,18 +132,28 @@ function onKeydown(event: KeyboardEvent): void {
     v-bind="rowAttrs"
     :class="[
       interactive ? 'cursor-pointer' : undefined,
-      revealActionsOnHover ? 'group' : undefined,
-      hoverable ? 'hover:bg-surface-light/5' : undefined,
+      revealActionsOnHover || centerMeta ? 'group relative' : undefined,
+      showNeutralHover
+        ? "hover:ring-accent-blue/40 hover:bg-surface-light/10 focus-visible:ring-accent-blue/40 focus-within:ring-accent-blue/40"
+        : undefined,
+      statusToneClass || undefined,
+      // Default control height — same token as ToolbarPillButton / icon actions.
+      expanded && $slots.detail ? "min-h-10" : CONTROL_SIZE,
     ]"
-    class="w-full min-w-0 rounded-lg px-2 py-1.5 text-left"
+    class="flex w-full min-w-0 flex-col justify-center overflow-hidden rounded-md !border-0 !bg-surface-card px-2 text-left ring-1 ring-inset ring-transparent"
     @click="onClick"
     @keydown="onKeydown"
   >
-    <div class="flex min-w-0 items-center gap-2">
-      <div v-if="$slots.leading" class="shrink-0" @click.stop @keydown.stop>
+    <div class="flex h-full min-h-0 w-full min-w-0 items-center gap-2">
+      <div
+        v-if="$slots.leading"
+        class="flex shrink-0 items-center"
+        @click.stop
+        @keydown.stop
+      >
         <slot name="leading" />
       </div>
-      <div v-if="$slots.badge" class="shrink-0">
+      <div v-if="$slots.badge" class="flex h-full shrink-0 items-center">
         <slot name="badge" />
       </div>
       <div class="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
@@ -98,7 +161,7 @@ function onKeydown(event: KeyboardEvent): void {
           v-if="primaryAsOpenControl"
           type="button"
           data-admin-list-open
-          class="min-w-0 flex-1 truncate text-left text-sm font-medium text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+          class="min-w-0 flex-1 truncate rounded text-left text-sm font-medium leading-none text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
           :aria-label="openLabel"
           @click="onPrimaryOpen"
         >
@@ -106,25 +169,35 @@ function onKeydown(event: KeyboardEvent): void {
         </button>
         <span
           v-else-if="$slots.primary"
-          class="min-w-0 flex-1 truncate text-sm font-medium text-surface-light"
+          class="min-w-0 flex-1 truncate text-sm font-medium leading-none text-surface-light"
         >
           <slot name="primary" />
         </span>
-        <span v-if="$slots.meta" class="hidden truncate text-xs text-surface-muted sm:inline">
+        <span
+          v-if="$slots.meta && !centerMeta"
+          class="hidden truncate text-xs leading-none text-surface-muted sm:inline"
+        >
           <slot name="meta" />
         </span>
       </div>
-      <div v-if="$slots.time" class="shrink-0 whitespace-nowrap text-xs text-surface-muted">
-        <slot name="time" />
+      <div
+        v-if="$slots.meta && centerMeta"
+        class="pointer-events-none absolute inset-0 hidden items-center justify-center sm:flex"
+      >
+        <span class="pointer-events-auto max-w-[min(100%,24rem)] truncate px-2 text-xs leading-none text-surface-muted">
+          <slot name="meta" />
+        </span>
       </div>
       <div
-        v-if="$slots.actions"
+        v-if="$slots.time"
+        class="shrink-0 whitespace-nowrap text-xs leading-none text-surface-muted"
+      >
+        <slot name="time" />
+      </div>
+      <!-- In-flow actions only when always visible — hover actions overlay so h-10 icons don't skew centering. -->
+      <div
+        v-if="$slots.actions && !revealActionsOnHover"
         class="flex shrink-0 items-center gap-1"
-        :class="
-          revealActionsOnHover
-            ? 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100'
-            : undefined
-        "
         @click.stop
         @keydown.stop
       >
@@ -134,8 +207,16 @@ function onKeydown(event: KeyboardEvent): void {
         v-if="expandable"
         direction="right"
         :open="expanded"
-        class-name="size-3.5 text-surface-muted"
+        class-name="size-3.5 shrink-0 text-surface-muted"
       />
+    </div>
+    <div
+      v-if="$slots.actions && revealActionsOnHover"
+      class="absolute inset-y-0 right-1 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 [&_button]:!h-full [&_button]:!max-h-full [&_button]:!min-h-0 [&_button]:!w-10 [&_button]:!min-w-0"
+      @click.stop
+      @keydown.stop
+    >
+      <slot name="actions" />
     </div>
     <div
       v-if="expanded && $slots.detail"

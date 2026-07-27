@@ -174,6 +174,7 @@ onMounted(load);
             ref="filterDropdown"
             :has-active-filters="hasActiveFilters"
             :active-label="activeFilterLabel"
+            :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
             @clear="clearFilters"
           >
             <template #chips>
@@ -198,7 +199,7 @@ onMounted(load);
         "
       />
 
-      <div v-else class="mt-1 min-w-0 divide-y divide-surface-border/40">
+      <div v-else class="mt-1 min-w-0 divide-y divide-surface-border/60">
         <AdminListRow
           v-for="item in items"
           :key="item.id"

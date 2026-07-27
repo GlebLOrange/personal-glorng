@@ -52,7 +52,7 @@ withDefaults(
                 <span class="text-surface-mid font-normal"> ↗</span>
               </h3>
             </div>
-            <p class="text-xs leading-snug text-surface-mid break-words">
+            <p class="text-xs lowercase leading-snug text-surface-mid break-words">
               {{ tool.description }}
             </p>
           </Card>
@@ -69,7 +69,7 @@ withDefaults(
                 {{ tool.name }}
               </h3>
             </div>
-            <p class="text-xs leading-snug text-surface-mid break-words">
+            <p class="text-xs lowercase leading-snug text-surface-mid break-words">
               {{ tool.description }}
             </p>
           </Card>

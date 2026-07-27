@@ -30,7 +30,7 @@ const emit = defineEmits<{
 <template>
   <BaseDrawer
     :open="open && item !== null"
-    :title="item?.theme ?? 'Feedback'"
+    :title="(item?.theme ?? "feedback").toLowerCase()"
     max-width="md"
     @close="emit('close')"
   >
@@ -45,7 +45,9 @@ const emit = defineEmits<{
           >{{ item.email }} · {{ formatDate(item.created_at) }}</span
         >
       </div>
-      <p class="whitespace-pre-wrap break-words text-sm text-surface-sage">{{ item.message }}</p>
+      <p class="whitespace-pre-wrap break-words text-sm lowercase text-surface-sage">
+        {{ item.message }}
+      </p>
     </template>
 
     <template #footer>

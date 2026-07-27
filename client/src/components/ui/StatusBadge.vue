@@ -11,9 +11,10 @@ const props = withDefaults(
 );
 
 const sizeClass = computed(() => {
-  if (props.size === "lg") return "text-lg font-bold px-3 py-1";
-  if (props.size === "md") return "text-sm px-3 py-1";
-  return "text-xs px-2 py-0.5";
+  if (props.size === "lg") return "inline-flex items-center text-lg font-bold px-3 py-1 leading-none";
+  if (props.size === "md") return "inline-flex items-center text-sm px-3 py-1 leading-none";
+  // Match AdminFilterChip vertical rhythm (same status paint language).
+  return "inline-flex items-center px-2 py-1 text-xs leading-normal";
 });
 
 /** Display-only — borders belong on clickable/action controls. */

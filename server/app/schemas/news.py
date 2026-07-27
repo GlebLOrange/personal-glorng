@@ -13,7 +13,7 @@ from app.schemas.validators import (
     validate_clean_string_list,
 )
 
-NewsTheme = Literal[
+NewsTag = Literal[
     "world",
     "business",
     "tech",
@@ -25,7 +25,7 @@ NewsTheme = Literal[
     "politics",
 ]
 
-ALLOWED_NEWS_THEMES: set[str] = set(NewsTheme.__args__)
+ALLOWED_NEWS_TAGS: set[str] = set(NewsTag.__args__)
 
 
 class NewsArticleCreate(BaseModel):
@@ -40,7 +40,7 @@ class NewsArticleCreate(BaseModel):
     title: str = Field(min_length=1, max_length=90)
     summary: str = Field(min_length=1, max_length=600)
     bullets: list[str] = Field(default_factory=list, max_length=5)
-    themes: list[NewsTheme] = Field(min_length=1, max_length=4)
+    tags: list[NewsTag] = Field(min_length=1, max_length=4)
     language: str = Field(default="en", min_length=2, max_length=12)
     status: NewsStatus = "draft"
     ai_model: str | None = Field(None, max_length=120)
@@ -109,7 +109,7 @@ class NewsArticleUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=90)
     summary: str | None = Field(None, min_length=1, max_length=600)
     bullets: list[str] | None = Field(None, max_length=5)
-    themes: list[NewsTheme] | None = Field(None, min_length=1, max_length=4)
+    tags: list[NewsTag] | None = Field(None, min_length=1, max_length=4)
     language: str | None = Field(None, min_length=2, max_length=12)
     published_at: datetime | None = None
     telegram_message_id: int | None = Field(None, ge=0)
@@ -180,7 +180,7 @@ class NewsArticleResponse(BaseModel):
     title: str
     summary: str
     bullets: list[str]
-    themes: list[str]
+    tags: list[str]
     language: str
     published_at: datetime | None
     telegram_message_id: int | None

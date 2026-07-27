@@ -71,4 +71,11 @@ describe("SearchInput", () => {
     });
     expect(wrapper.get("input").attributes("aria-label")).toBe("Find recipes");
   });
+
+  it("always shows the search icon", () => {
+    const wrapper = mount(SearchInput, {
+      props: { modelValue: "", placeholder: "search" },
+    });
+    expect(wrapper.find("svg").exists()).toBe(true);
+  });
 });

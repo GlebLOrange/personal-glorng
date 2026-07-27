@@ -11,7 +11,7 @@ import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { newsStatusClass } from "@/constants/filterColors";
 import { SELECT_CLASS } from "@/constants/formClasses";
-import { NEWS_STATUSES, NEWS_THEME_LIMIT, NEWS_THEMES } from "@/constants/news";
+import { NEWS_STATUSES, NEWS_TAG_LIMIT, NEWS_TAGS } from "@/constants/news";
 import type { NewsArticleFormData, NewsSource, NewsStatus } from "@/types";
 
 const props = defineProps<{
@@ -29,23 +29,23 @@ const emit = defineEmits<{
   "update:form": [value: NewsArticleFormData];
 }>();
 
-const themesOpen = ref(false);
+const tagsOpen = ref(false);
 
 const title = computed(() => (props.mode === "create" ? "new article" : "edit article"));
-const selectedThemes = computed(() =>
-  props.form.themes
+const selectedTags = computed(() =>
+  props.form.tags
     .split(",")
-    .map((theme) => theme.trim())
+    .map((tag) => tag.trim())
     .filter(Boolean),
 );
-const selectedThemesLabel = computed(() =>
-  selectedThemes.value.length > 0 ? selectedThemes.value.join(", ") : "none",
+const selectedTagsLabel = computed(() =>
+  selectedTags.value.length > 0 ? selectedTags.value.join(", ") : "none",
 );
 
 watch(
   () => props.open,
   (isOpen) => {
-    if (!isOpen) themesOpen.value = false;
+    if (!isOpen) tagsOpen.value = false;
   },
 );
 
@@ -66,30 +66,35 @@ function setStatus(status: NewsStatus): void {
   patch({ status });
 }
 
-function themeIsSelected(theme: string): boolean {
-  return selectedThemes.value.includes(theme);
+function tagIsSelected(tag: string): boolean {
+  return selectedTags.value.includes(tag);
 }
 
-function toggleTheme(theme: string): void {
-  const themes = selectedThemes.value;
-  if (themes.includes(theme)) {
-    patch({ themes: themes.filter((item) => item !== theme).join(", ") });
+function toggleTag(tag: string): void {
+  const tags = selectedTags.value;
+  if (tags.includes(tag)) {
+    patch({ tags: tags.filter((item) => item !== tag).join(", ") });
     return;
   }
-  if (themes.length >= NEWS_THEME_LIMIT) return;
-  patch({ themes: [...themes, theme].join(", ") });
+  if (tags.length >= NEWS_TAG_LIMIT) return;
+  patch({ tags: [...tags, tag].join(", ") });
 }
 
-function onThemesToggle(event: Event): void {
-  themesOpen.value = (event.target as HTMLDetailsElement).open;
+function onTagsToggle(event: Event): void {
+  tagsOpen.value = (event.target as HTMLDetailsElement).open;
 }
 </script>
 
 <template>
-  <BaseDrawer :open="open" :title="title" max-width="2xl" @close="emit('close')">
+  <BaseDrawer
+    :open="open"
+    :title="title"
+    max-width="2xl"
+    :header-class="newsStatusClass(form.status)"
+    @close="emit('close')"
+  >
     <form class="space-y-6" @submit.prevent="emit('save')">
       <section class="space-y-4">
-        <h3 class="text-sm font-medium text-surface-mid">publishing</h3>
         <select
           :value="form.source_id ?? ''"
           aria-label="source"
@@ -129,6 +134,7 @@ function onThemesToggle(event: Event): void {
             v-for="status in NEWS_STATUSES"
             :key="status"
             :label="status"
+            align="center"
             :active="form.status === status"
             :color-class="newsStatusClass(status)"
             @click="setStatus(status)"
@@ -160,34 +166,35 @@ function onThemesToggle(event: Event): void {
           placeholder="summary"
           @update:model-value="patch({ summary: toStringValue($event) })"
         />
-        <details class="rounded border border-surface-border px-3 py-2" @toggle="onThemesToggle">
+        <details class="rounded border border-surface-border px-3 py-2" @toggle="onTagsToggle">
           <summary
             class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
           >
-            <ChevronIcon :open="themesOpen" />
-            themes ({{ selectedThemes.length }}/{{ NEWS_THEME_LIMIT }})
-            <span class="text-xs text-surface-muted"> — {{ selectedThemesLabel }}</span>
+            <ChevronIcon :open="tagsOpen" />
+            tags ({{ selectedTags.length }}/{{ NEWS_TAG_LIMIT }})
+            <span class="text-xs text-surface-muted"> — {{ selectedTagsLabel }}</span>
           </summary>
           <div class="mt-3 flex flex-wrap gap-2">
             <label
-              v-for="theme in NEWS_THEMES"
-              :key="theme"
-              :for="`news-drawer-theme-${theme}`"
-              class="inline-flex cursor-pointer items-center gap-2 rounded border border-surface-border px-3 py-1.5 text-xs transition-colors"
+              v-for="tag in NEWS_TAGS"
+              :key="tag"
+              :for="`news-drawer-tag-${tag}`"
+              class="inline-flex cursor-pointer items-center rounded px-2.5 py-1 text-xs lowercase transition-colors"
               :class="{
-                'border-accent-blue text-surface-light': themeIsSelected(theme),
-                'text-surface-mid': !themeIsSelected(theme),
-                'opacity-50': !themeIsSelected(theme) && selectedThemes.length >= NEWS_THEME_LIMIT,
+                'bg-accent-blue/10 text-accent-blue': tagIsSelected(tag),
+                'text-surface-mid hover:bg-surface-mid/10': !tagIsSelected(tag),
+                'opacity-50': !tagIsSelected(tag) && selectedTags.length >= NEWS_TAG_LIMIT,
               }"
             >
               <input
-                :id="`news-drawer-theme-${theme}`"
+                :id="`news-drawer-tag-${tag}`"
                 type="checkbox"
-                :checked="themeIsSelected(theme)"
-                :disabled="!themeIsSelected(theme) && selectedThemes.length >= NEWS_THEME_LIMIT"
-                @change="toggleTheme(theme)"
+                class="sr-only"
+                :checked="tagIsSelected(tag)"
+                :disabled="!tagIsSelected(tag) && selectedTags.length >= NEWS_TAG_LIMIT"
+                @change="toggleTag(tag)"
               />
-              {{ theme }}
+              {{ tag }}
             </label>
           </div>
         </details>

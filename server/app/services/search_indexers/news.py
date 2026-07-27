@@ -17,14 +17,14 @@ NEWS_SOURCE_TYPE = SearchSourceType.NEWS
 def _news_document(article: NewsArticle) -> SearchDocumentInput:
     """Build a search document for a news article."""
     bullets = " ".join(parse_json_string_list(article.bullets))
-    themes = ", ".join(parse_json_string_list(article.themes))
+    tags = ", ".join(parse_json_string_list(article.tags))
     body = "\n".join(
         part
         for part in (
             article.summary,
             bullets,
             f"Source: {article.source_name}",
-            f"Themes: {themes}" if themes else "",
+            f"Tags: {tags}" if tags else "",
         )
         if part
     )

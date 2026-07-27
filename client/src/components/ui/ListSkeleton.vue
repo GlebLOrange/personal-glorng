@@ -11,8 +11,8 @@ withDefaults(
   {
     rows: 5,
     label: "Loading list",
-    rowClass: "h-9",
-    gapClass: "divide-y divide-surface-border/40",
+    rowClass: "h-10",
+    gapClass: "divide-y divide-surface-border/60",
   },
 );
 </script>
@@ -22,7 +22,7 @@ withDefaults(
     <div
       v-for="i in rows"
       :key="i"
-      :class="[rowClass, 'w-full animate-pulse rounded-lg bg-surface-border/20 px-2 py-1.5']"
+      :class="[rowClass, 'w-full animate-pulse rounded-md bg-surface-border/20 px-2']"
     />
   </section>
 </template>

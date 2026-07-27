@@ -15,6 +15,13 @@ export function isApiError(err: unknown): err is ApiErrorShape {
   return typeof err === "object" && err !== null && "response" in err;
 }
 
+function normalizeApiErrorMessage(message: string): string {
+  if (/^Request failed(?:\b| with status code \d+$)/.test(message)) {
+    return message.toLowerCase();
+  }
+  return message;
+}
+
 export function getApiErrorMessage(err: unknown, fallback = "Request failed"): string {
   if (isApiError(err)) {
     const detail = err.response?.data?.detail;
@@ -25,13 +32,13 @@ export function getApiErrorMessage(err: unknown, fallback = "Request failed"): s
       return detail[0].msg;
     }
     if (err.message?.trim()) {
-      return err.message;
+      return normalizeApiErrorMessage(err.message);
     }
   }
   if (err instanceof Error && err.message.trim()) {
-    return err.message;
+    return normalizeApiErrorMessage(err.message);
   }
-  return fallback;
+  return normalizeApiErrorMessage(fallback);
 }
 
 export async function getApiErrorMessageFromBlob(

@@ -20,16 +20,21 @@ const emit = defineEmits<{ select: [id: number] }>();
     interactive
     nested-interactive
     reveal-actions-on-hover
+    :status-class="statusBadgeClass(task.status)"
     @click="emit('select', task.id)"
   >
     <template #badge>
-      <StatusBadge :label="statusLabel(task.status)" :class-name="statusBadgeClass(task.status)" />
+      <StatusBadge
+        class="w-[9.5rem] justify-center"
+        :label="statusLabel(task.status)"
+        :class-name="statusBadgeClass(task.status)"
+      />
     </template>
     <template #primary>
-      <span :title="task.title">{{ task.title }}</span>
+      <span class="lowercase" :title="task.title">{{ task.title }}</span>
     </template>
     <template #meta>
-      <span v-if="task.location" class="inline-flex min-w-0 items-center gap-1">
+      <span v-if="task.location" class="inline-flex min-w-0 items-center gap-1 lowercase">
         <LocationIcon class-name="size-3.5 shrink-0" />
         <span class="truncate">{{ task.location }}</span>
       </span>

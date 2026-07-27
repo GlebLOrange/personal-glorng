@@ -136,7 +136,7 @@ onMounted(loadUrls);
       <BaseInput v-model="newTitle" placeholder="title (optional)" aria-label="title" />
     </form>
 
-    <div v-if="canManage" class="divide-y divide-surface-border/40">
+    <div v-if="canManage" class="divide-y divide-surface-border/60">
       <AdminListSkeleton v-if="listLoading" label="loading shortened URLs" />
 
       <template v-else>

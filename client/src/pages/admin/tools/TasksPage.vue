@@ -16,6 +16,7 @@ import SearchInput from "@/components/ui/SearchInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { statusBadgeClass } from "@/constants/filterColors";
 import { effectiveSearchQuery } from "@/constants/search";
+import { FILTER_MENU_ROW_CLASS } from "@/constants/toolbarPopover";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { useTasks } from "@/composables/useTasks";
@@ -151,6 +152,7 @@ onMounted(() => {
             ref="filterDropdown"
             :has-active-filters="Boolean(filterStatus || effectiveSearchQuery(searchQuery))"
             :active-label="activeFilterLabel"
+            :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
             @clear="clearFilters"
           >
             <template #chips>
@@ -167,7 +169,10 @@ onMounted(() => {
               <div class="mt-3 border-t border-surface-border pt-3">
                 <button
                   type="button"
-                  class="inline-flex w-full items-center gap-1.5 whitespace-nowrap rounded-lg border border-transparent bg-transparent px-2 py-1 text-left text-xs leading-normal text-accent-blue transition-colors hover:enabled:bg-accent-blue/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+                  :class="[
+                    FILTER_MENU_ROW_CLASS,
+                    'justify-start border-transparent bg-transparent text-accent-violet hover:enabled:bg-accent-violet/15 focus-visible:ring-accent-violet/50',
+                  ]"
                   @click="onFailedSyncs"
                 >
                   <SyncIcon class-name="size-3.5 shrink-0" />

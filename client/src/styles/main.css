@@ -142,7 +142,14 @@ html[data-theme="light"] {
 }
 
 @utility page-tile {
-  @apply block h-full min-w-0 w-full;
+  @apply block h-full min-w-0 w-full no-underline;
+  /* Tile is a hit target, not a text link — keep global a:hover underline off. */
+  &:hover,
+  &:focus-visible,
+  &[aria-current="page"],
+  &[aria-selected="true"] {
+    text-decoration-line: none;
+  }
 }
 
 @utility page-tile-card {
@@ -257,18 +264,18 @@ html[data-theme="light"] {
 }
 
 @utility cta-secondary {
-  @apply h-10 px-4 rounded-lg bg-surface-card text-surface-mid text-sm font-medium transition-colors inline-flex items-center justify-center;
+  @apply h-10 px-4 rounded-lg border border-transparent bg-surface-card text-surface-mid text-sm font-medium transition-colors inline-flex items-center justify-center;
   &:hover:not(:disabled) {
-    @apply bg-accent-blue/15 text-accent-blue;
+    @apply border-accent-blue/40 bg-accent-blue/15 text-accent-blue;
   }
   &:active:not(:disabled) {
-    @apply bg-accent-blue/25 text-accent-blue;
+    @apply border-accent-blue/40 bg-accent-blue/25 text-accent-blue;
   }
   &:disabled {
     @apply opacity-50 cursor-not-allowed;
   }
   &:focus-visible {
-    @apply outline-none ring-2 ring-accent-blue/50;
+    @apply border-accent-blue/40 outline-none ring-2 ring-accent-blue/50;
   }
 }
 
@@ -280,7 +287,7 @@ html[data-theme="light"] {
    Sets its own background-color so bg-* utilities cannot wipe the chevron image. */
 @utility field-select-chevron {
   appearance: none;
-  background-color: var(--color-surface-card);
+  background-color: var(--color-surface-dark);
   /* stroke uses mid secondary — readable on both themes */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -311,6 +318,39 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* Links: no idle underline — show on hover / keyboard focus / selected.
+   Card/tile hit targets stay undecorated; underline is for text links. */
+a {
+  text-decoration-line: none;
+  text-underline-offset: 0.125rem;
+}
+a:hover,
+a:focus-visible,
+a[aria-current="page"],
+a[aria-selected="true"] {
+  text-decoration-line: underline;
+}
+a.page-tile:hover,
+a.page-tile:focus-visible,
+a.page-tile[aria-current="page"],
+a.page-tile[aria-selected="true"],
+.page-tile a:hover,
+.page-tile a:focus-visible,
+.page-tile a[aria-current="page"],
+.page-tile a[aria-selected="true"],
+a:has(.page-weather-tile-card):hover,
+a:has(.page-weather-tile-card):focus-visible,
+a:has(.page-weather-tile-card)[aria-current="page"],
+a:has(.page-weather-tile-card)[aria-selected="true"],
+a.cta-primary:hover,
+a.cta-primary:focus-visible,
+a.cta-secondary:hover,
+a.cta-secondary:focus-visible,
+a.contact-link-chip:hover,
+a.contact-link-chip:focus-visible {
+  text-decoration-line: none;
 }
 
 /* WIG: avoid double-tap zoom delay; intentional pale tap flash on dark UI */
@@ -432,7 +472,12 @@ h6,
 
   .portfolio-cv a {
     color: #111827 !important;
-    text-decoration: underline;
+    text-decoration-line: none;
+  }
+
+  .portfolio-cv a:hover,
+  .portfolio-cv a:focus-visible {
+    text-decoration-line: underline;
   }
 
   .portfolio-cv .interactive-surface,

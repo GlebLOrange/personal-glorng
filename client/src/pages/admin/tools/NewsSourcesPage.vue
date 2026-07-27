@@ -10,6 +10,7 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminTabBar, { type AdminTab } from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
+import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
@@ -39,6 +40,8 @@ const {
   saving,
   refreshing,
   deletingId,
+  showDeleteConfirm,
+  deleteConfirmMessage,
   canWrite,
   loadError,
   refreshButtonText,
@@ -58,7 +61,9 @@ const {
   updateForm,
   saveSource,
   refreshSources,
-  deleteSource,
+  requestDeleteSource,
+  confirmDeleteSource,
+  cancelDeleteSource,
 } = useNewsSources();
 
 const surfaceTabs = computed((): AdminTab[] => {
@@ -93,6 +98,7 @@ async function onSurfaceTab(id: string): Promise<void> {
         ref="filterDropdown"
         :has-active-filters="hasActiveFilters"
         :active-label="activeFilterLabel"
+        :option-labels="ENABLED_FILTERS.map((chip) => chip.label)"
         @clear="clearFilters"
       >
         <template #chips>
@@ -118,12 +124,12 @@ async function onSurfaceTab(id: string): Promise<void> {
 
       <template v-if="canWrite">
         <ToolbarPillButton
-          family="3xx"
+          family="5xx"
           class="ml-auto gap-1.5"
           :disabled="refreshing || loading"
           @click="refreshSources"
         >
-          <RefreshIcon class-name="size-3.5" />
+          <RefreshIcon class-name="size-3.5 text-accent-violet" />
           {{ refreshButtonText }}
         </ToolbarPillButton>
         <ToolbarPillButton family="2xx" :disabled="loading" @click="openCreate">
@@ -132,7 +138,7 @@ async function onSurfaceTab(id: string): Promise<void> {
       </template>
     </div>
 
-    <div class="min-w-0 divide-y divide-surface-border/40">
+    <div class="min-w-0 divide-y divide-surface-border/60">
       <AdminListSkeleton v-if="loading" label="Loading sources" />
 
       <ErrorState
@@ -152,6 +158,7 @@ async function onSurfaceTab(id: string): Promise<void> {
             :interactive="canWrite"
             :nested-interactive="canWrite"
             reveal-actions-on-hover
+            :status-class="newsSourceEnabledClass(source.enabled)"
             @click="openEditableSource(source)"
           >
             <template #leading>
@@ -159,7 +166,7 @@ async function onSurfaceTab(id: string): Promise<void> {
                 v-if="canWrite"
                 v-model="selectedSourceIds"
                 type="checkbox"
-                class="size-4 accent-accent-blue"
+                class="size-4 shrink-0 align-middle accent-accent-blue"
                 :value="source.id"
                 :disabled="refreshing || !source.enabled"
                 :aria-label="`Select ${source.name} for parser refresh`"
@@ -195,9 +202,9 @@ async function onSurfaceTab(id: string): Promise<void> {
               />
               <IconCloseButton
                 v-if="canWrite"
-                aria-label="Delete source"
+                aria-label="delete source"
                 :disabled="deletingId === source.id"
-                @click="deleteSource(source, $event)"
+                @click="requestDeleteSource(source, $event)"
               />
             </template>
           </AdminListRow>
@@ -229,6 +236,19 @@ async function onSurfaceTab(id: string): Promise<void> {
       @update:form="updateForm"
       @close="closeDrawer"
       @save="saveSource"
+    />
+
+    <ConfirmDialog
+      v-if="canWrite"
+      :open="showDeleteConfirm"
+      title="delete source"
+      :message="deleteConfirmMessage"
+      confirm-label="delete"
+      loading-label="deleting..."
+      :loading="deletingId !== null"
+      danger
+      @confirm="confirmDeleteSource"
+      @cancel="cancelDeleteSource"
     />
   </AdminPageLayout>
 </template>

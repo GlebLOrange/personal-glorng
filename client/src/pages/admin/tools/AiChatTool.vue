@@ -5,10 +5,10 @@ import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
-import { TEXTAREA_CLASS } from "@/constants/formClasses";
+import { ACTION_PILL_BASE } from "@/constants/httpStatusColors";
 import { useChatConfig } from "@/composables/useChatConfig";
 import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
@@ -125,7 +125,7 @@ onMounted(() => {
           :messages="messages"
           :loading="loading"
           show-role-labels
-          empty-message="Ask anything — responses stream from the configured Groq model."
+          empty-message="ask anything — responses stream from the configured Groq model."
           user-class="bg-accent-blue/10 border border-accent-blue/20 text-surface-light ml-8"
           assistant-class="bg-surface-dark border border-surface-border text-surface-sage mr-8"
         >
@@ -135,13 +135,17 @@ onMounted(() => {
         </SearchChatMessages>
       </div>
 
-      <form class="flex gap-3 border-t border-surface-border pt-4" @submit.prevent="handleSend">
-        <textarea
+      <form
+        class="flex items-stretch gap-3 border-t border-surface-border pt-4"
+        @submit.prevent="handleSend"
+      >
+        <!-- Match clear + send stack: h-10 + gap-2 + h-10 -->
+        <BaseTextarea
           v-model="input"
-          rows="2"
-          placeholder="Message the assistant..."
-          aria-label="Message"
-          :class="[TEXTAREA_CLASS, 'flex-1 resize-none']"
+          class="min-w-0 flex-1 [&>div]:box-border [&>div]:min-h-[calc(2.5rem+0.5rem+2.5rem)] [&>div]:items-stretch [&_textarea]:h-full [&_textarea]:min-h-full [&_textarea]:resize-none"
+          rows="3"
+          placeholder="message the assistant..."
+          aria-label="message"
           @keydown.enter.exact.prevent="handleSend"
         />
         <div class="flex flex-col gap-2">
@@ -165,16 +169,18 @@ onMounted(() => {
           <h2 class="text-sm font-semibold text-surface-light">
             current setup
           </h2>
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            class="gap-1.5 shrink-0"
+          <button
+            type="button"
+            :class="[
+              ACTION_PILL_BASE,
+              'gap-1.5 shrink-0 border-transparent bg-accent-violet/3 text-accent-violet hover:enabled:border-accent-violet/40 hover:enabled:bg-accent-violet/15',
+            ]"
             :disabled="configLoading"
             @click="loadConfig"
           >
-            <RefreshIcon class-name="size-4" />
+            <RefreshIcon class-name="size-3.5 shrink-0" />
             refresh
-          </BaseButton>
+          </button>
         </div>
         <p v-if="configLoading" class="text-surface-mid text-sm">Loading…</p>
         <dl v-else-if="chatConfig" class="grid gap-2 text-sm">

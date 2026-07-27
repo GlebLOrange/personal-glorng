@@ -6,7 +6,7 @@ import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 const tabs = [
   { id: "queue", label: "queue" },
   { id: "intakes", label: "intakes" },
-  { id: "sync", label: "sync" },
+  { id: "sync", label: "sync", icon: "sync" as const },
 ];
 
 function mountTabBar(activeTab = "queue"): VueWrapper {
@@ -31,6 +31,28 @@ describe("AdminTabBar", () => {
     expect(wrapper.get('[role="tab"]').attributes("id")).toBe("admin-tab-tab-queue");
 
     wrapper.unmount();
+  });
+
+  it("paints sync/refresh tabs pale purple (icon, text, wash)", () => {
+    const wrapper = mount(AdminTabBar, {
+      props: {
+        modelValue: "sync",
+        tabs: [
+          { id: "queue", label: "queue" },
+          { id: "sync", label: "sync", icon: "sync" },
+          { id: "refresh", label: "refresh", icon: "refresh" },
+        ],
+      },
+    });
+
+    const syncTab = wrapper.get("#admin-tab-tab-sync");
+    expect(syncTab.classes()).toContain("text-accent-violet");
+    expect(syncTab.classes()).toContain("bg-accent-violet/15");
+    expect(syncTab.classes()).toContain("border-accent-violet/40");
+
+    const refreshTab = wrapper.get("#admin-tab-tab-refresh");
+    expect(refreshTab.classes()).toContain("text-accent-violet");
+    expect(refreshTab.classes()).toContain("bg-accent-violet/3");
   });
 
   it("supports arrow and boundary key navigation", async () => {

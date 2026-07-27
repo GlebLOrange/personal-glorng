@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import IconCopyButton from "@/components/ui/IconCopyButton.vue";
@@ -15,6 +16,14 @@ interface PasswordGeneratorResponse {
   password: string;
   length: number;
 }
+
+const OPTION_LABELS = [
+  "uppercase",
+  "lowercase",
+  "numbers",
+  "symbols",
+  "exclude ambiguous (0, O, 1, l, I)",
+] as const;
 
 const length = ref(Math.max(16, PASSWORD_MIN_LENGTH));
 const uppercase = ref(true);
@@ -31,6 +40,26 @@ const { copy } = useClipboard();
 const hasCharset = computed(
   () => uppercase.value || lowercase.value || digits.value || symbols.value,
 );
+
+const hasCustomOptions = computed(
+  () =>
+    !uppercase.value ||
+    !lowercase.value ||
+    !digits.value ||
+    !symbols.value ||
+    excludeAmbiguous.value,
+);
+
+const optionsActiveLabel = computed(() => {
+  if (!hasCustomOptions.value) return undefined;
+  const parts: string[] = [];
+  if (uppercase.value) parts.push("uppercase");
+  if (lowercase.value) parts.push("lowercase");
+  if (digits.value) parts.push("numbers");
+  if (symbols.value) parts.push("symbols");
+  if (excludeAmbiguous.value) parts.push("exclude ambiguous");
+  return parts.length ? parts.join(" · ") : "none";
+});
 
 const clampedLength = computed(() =>
   Math.min(128, Math.max(PASSWORD_MIN_LENGTH, Number(length.value) || PASSWORD_MIN_LENGTH)),
@@ -75,54 +104,66 @@ async function generatePassword(): Promise<void> {
     max-width="xl"
     :narrow="false"
   >
-    <Card class="mx-auto w-full max-w-md">
+    <Card variant="ghost" class="mx-auto w-full max-w-md">
       <form class="space-y-3" @submit.prevent="generatePassword">
-        <BaseInput
-          v-model.number="length"
-          type="number"
-          :min="PASSWORD_MIN_LENGTH"
-          :max="128"
-          label="length"
-          :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
-        />
+        <div class="flex min-w-0 items-end gap-2">
+          <BaseInput
+            v-model.number="length"
+            type="number"
+            :min="PASSWORD_MIN_LENGTH"
+            :max="128"
+            label="length"
+            :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
+            class="w-28 shrink-0"
+          />
 
-        <fieldset class="space-y-2">
-          <legend class="text-sm text-surface-mid mb-1">character sets</legend>
-          <div class="grid grid-cols-2 gap-x-3 gap-y-1">
-            <label
-              class="flex h-8 items-center gap-2 text-sm text-surface-light"
-              title="uppercase (A-Z)"
-            >
-              <input v-model="uppercase" type="checkbox" class="rounded" />
-              uppercase
-            </label>
-            <label
-              class="flex h-8 items-center gap-2 text-sm text-surface-light"
-              title="lowercase (a-z)"
-            >
-              <input v-model="lowercase" type="checkbox" class="rounded" />
-              lowercase
-            </label>
-            <label
-              class="flex h-8 items-center gap-2 text-sm text-surface-light"
-              title="numbers (0-9)"
-            >
-              <input v-model="digits" type="checkbox" class="rounded" />
-              numbers
-            </label>
-            <label
-              class="flex h-8 items-center gap-2 text-sm text-surface-light"
-              title="symbols (!@#$...)"
-            >
-              <input v-model="symbols" type="checkbox" class="rounded" />
-              symbols
-            </label>
-          </div>
-          <label class="flex h-8 items-center gap-2 text-sm text-surface-light">
-            <input v-model="excludeAmbiguous" type="checkbox" class="rounded" />
-            exclude ambiguous (0, O, 1, l, I)
-          </label>
-        </fieldset>
+          <AdminFilterDropdown
+            label="options"
+            bare
+            match-trigger-width
+            class="min-w-0 flex-1 [&_button]:w-full"
+            :show-filter-icon="false"
+            :show-clear="false"
+            :has-active-filters="hasCustomOptions"
+            :active-label="optionsActiveLabel"
+            :option-labels="[...OPTION_LABELS]"
+          >
+            <div class="flex flex-col gap-2">
+              <label
+                class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid"
+                title="uppercase (A-Z)"
+              >
+                <input v-model="uppercase" type="checkbox" class="accent-accent-blue" />
+                uppercase
+              </label>
+              <label
+                class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid"
+                title="lowercase (a-z)"
+              >
+                <input v-model="lowercase" type="checkbox" class="accent-accent-blue" />
+                lowercase
+              </label>
+              <label
+                class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid"
+                title="numbers (0-9)"
+              >
+                <input v-model="digits" type="checkbox" class="accent-accent-blue" />
+                numbers
+              </label>
+              <label
+                class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid"
+                title="symbols (!@#$...)"
+              >
+                <input v-model="symbols" type="checkbox" class="accent-accent-blue" />
+                symbols
+              </label>
+              <label class="flex cursor-pointer items-center gap-2 text-sm text-surface-mid">
+                <input v-model="excludeAmbiguous" type="checkbox" class="accent-accent-blue" />
+                exclude ambiguous (0, O, 1, l, I)
+              </label>
+            </div>
+          </AdminFilterDropdown>
+        </div>
 
         <BaseButton
           variant="primary"

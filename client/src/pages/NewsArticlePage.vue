@@ -68,22 +68,24 @@ watch(
 
     <article v-else-if="article" class="min-w-0 w-full">
       <header class="mb-8 min-w-0">
-        <div class="mb-4 flex min-w-0 flex-wrap items-center gap-2 text-xs text-surface-muted">
-          <span>{{ article.source_name }}</span>
-          <span aria-hidden="true">/</span>
-          <time :datetime="newsArticleDisplayDate(article)">
+        <div
+          class="mb-4 flex w-full min-w-0 flex-wrap items-center justify-between gap-2 text-xs text-surface-muted"
+        >
+          <time class="shrink-0 text-left" :datetime="newsArticleDisplayDate(article)">
             {{ formatNewsDate(newsArticleDisplayDate(article)) }}
           </time>
-          <div class="ml-auto flex shrink-0 items-center gap-2">
+          <div class="flex shrink-0 items-center gap-2">
             <a
               v-if="safeNavigationHref(article.source_url)"
               :href="safeNavigationHref(article.source_url) ?? '#'"
               target="_blank"
               rel="noopener noreferrer"
+              title="source"
               class="text-accent-blue hover:underline"
             >
-              open original source
+              {{ article.source_name }}
             </a>
+            <span v-else class="text-accent-blue">{{ article.source_name }}</span>
             <FieldHelp
               align="end"
               :text="`This is a curated summary. Read the original article from ${article.source_name} for full context.`"
@@ -106,15 +108,15 @@ watch(
         </ul>
       </section>
 
-      <section v-if="article.themes.length" class="mb-8 min-w-0">
+      <section v-if="article.tags.length" class="mb-8 min-w-0">
         <h2 class="card-title mb-4">tags</h2>
         <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
           <li
-            v-for="theme in article.themes"
-            :key="theme"
+            v-for="tag in article.tags"
+            :key="tag"
             class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
           >
-            #{{ theme }}
+            #{{ tag }}
           </li>
         </ul>
       </section>

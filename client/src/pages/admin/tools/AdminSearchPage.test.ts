@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { mount, flushPromises } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import AdminSearchPage from "@/pages/admin/tools/AdminSearchPage.vue";
 
@@ -21,6 +21,11 @@ vi.mock("@/components/layout/AdminPageLayout.vue", () => ({
 describe("AdminSearchPage", () => {
   beforeEach(() => {
     getMock.mockReset();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("links only safe hit URLs and drops malicious ones", async () => {
@@ -76,7 +81,7 @@ describe("AdminSearchPage", () => {
     });
 
     await wrapper.get('input[aria-label="search admin content"]').setValue("safe");
-    await wrapper.get("form").trigger("submit");
+    await vi.advanceTimersByTimeAsync(300);
     await flushPromises();
 
     expect(getMock).toHaveBeenCalledWith(
@@ -109,16 +114,20 @@ describe("AdminSearchPage", () => {
       },
     });
 
-    const submit = wrapper.get('button[type="submit"]');
-    expect(submit.attributes("disabled")).toBeDefined();
+    expect(wrapper.find('button[type="submit"]').exists()).toBe(false);
 
     await wrapper.get('input[aria-label="search admin content"]').setValue("ab");
-    expect(submit.attributes("disabled")).toBeDefined();
-    await wrapper.get("form").trigger("submit");
+    await vi.advanceTimersByTimeAsync(300);
     await flushPromises();
     expect(getMock).not.toHaveBeenCalled();
 
+    getMock.mockResolvedValue({ data: { query: "abc", hits: [] } });
     await wrapper.get('input[aria-label="search admin content"]').setValue("abc");
-    expect(submit.attributes("disabled")).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(300);
+    await flushPromises();
+    expect(getMock).toHaveBeenCalledWith(
+      "/tools/search",
+      expect.objectContaining({ params: expect.objectContaining({ q: "abc" }) }),
+    );
   });
 });

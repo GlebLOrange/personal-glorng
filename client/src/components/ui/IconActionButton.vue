@@ -19,6 +19,7 @@ const props = withDefaults(
     disabled?: boolean;
     type?: "button" | "submit" | "reset";
     ariaLabel?: string;
+    /** Opt-in native tooltip — omitted by default (aria-label covers a11y). */
     title?: string;
     /** field = in-shell clear (same h-10 square); default matches CONTROL_SIZE (h-10). */
     size?: "md" | "field";
@@ -66,7 +67,7 @@ const nativeAttrs = computed(() => {
     :disabled="disabled"
     :aria-label="ariaLabel"
     :aria-pressed="selected ? true : undefined"
-    :title="title ?? ariaLabel"
+    :title="title || undefined"
     :class="classes"
     :style="attrs.style"
     v-bind="nativeAttrs"

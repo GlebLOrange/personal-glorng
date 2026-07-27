@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import BaseInput from "@/components/ui/BaseInput.vue";
 
 describe("BaseInput", () => {
-  it("associates the visible label with the input", () => {
+  it("associates the sr-only label with the input by default", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "email",
@@ -12,8 +12,22 @@ describe("BaseInput", () => {
       },
     });
 
-    expect(wrapper.get("label").attributes("for")).toBe("email");
+    expect(wrapper.get("label.sr-only").attributes("for")).toBe("email");
     expect(wrapper.get("input").attributes("id")).toBe("email");
+    expect(wrapper.get("span.text-surface-sage").text()).toBe("Email");
+  });
+
+  it("renders a border-notch label when labelInside is false", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "email",
+        label: "Email",
+        labelInside: false,
+      },
+    });
+
+    expect(wrapper.get("label:not(.sr-only)").attributes("for")).toBe("email");
+    expect(wrapper.find("span.text-surface-sage").exists()).toBe(false);
   });
 
   it("wires error text via aria-describedby and aria-invalid", () => {
@@ -46,7 +60,7 @@ describe("BaseInput", () => {
     expect(wrapper.get("#title-tip").text()).toBe("enter title");
     expect(wrapper.get("#title-tip").classes()).toContain("absolute");
     expect(wrapper.get("#title-tip").classes()).toContain("left-3");
-    expect(wrapper.get("#title-tip").classes()).toContain("right-11");
+    expect(wrapper.get("#title-tip").classes()).toContain("right-10");
     expect(wrapper.get("#title-tip").find(".truncate").classes()).toContain("text-left");
     expect(wrapper.get("#title-tip").attributes("aria-hidden")).toBe("true");
     expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
@@ -97,11 +111,11 @@ describe("BaseInput", () => {
     await wrapper.get('button[aria-label="Clear"]').trigger("click");
     expect(wrapper.props("modelValue")).toBe("");
     expect(wrapper.get("#to-tip").text()).toBe("to");
-    expect(wrapper.get("#to-tip").classes()).toContain("right-11");
+    expect(wrapper.get("#to-tip").classes()).toContain("right-10");
     expect(wrapper.find('button[aria-label="Clear"]').exists()).toBe(false);
   });
 
-  it("uses a visible label for naming when label and placeholder are both set", () => {
+  it("shows inside label and suppresses placeholder tip when both are set", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "email",
@@ -110,12 +124,11 @@ describe("BaseInput", () => {
       },
     });
 
-    expect(wrapper.get("label").attributes("for")).toBe("email");
-    expect(wrapper.get("label").text()).toBe("Email");
+    expect(wrapper.get("label.sr-only").attributes("for")).toBe("email");
+    expect(wrapper.get("span.text-surface-sage").text()).toBe("Email");
     expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
     expect(wrapper.get("input").attributes("aria-describedby")).toBeUndefined();
-    expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
-    expect(wrapper.get("#email-tip").attributes("aria-hidden")).toBe("true");
+    expect(wrapper.find("#email-tip").exists()).toBe(false);
   });
 
   it("does not put the visual tip into aria-describedby when hint is set", () => {
@@ -125,6 +138,7 @@ describe("BaseInput", () => {
         label: "Email",
         placeholder: "your@email.com",
         hint: "We never share this",
+        labelInside: false,
       },
     });
 
@@ -140,16 +154,15 @@ describe("BaseInput", () => {
         id: "pw",
         label: "password",
         placeholder: "password tip",
-        labelInside: true,
         modelValue: "",
       },
     });
 
     expect(wrapper.get("label.sr-only").attributes("for")).toBe("pw");
     expect(wrapper.get("label.sr-only").text()).toBe("password");
-    // visual label is a flex sibling span (not the sr-only label)
-    expect(wrapper.find("span.text-surface-sage").exists()).toBe(true);
-    expect(wrapper.find("span.text-surface-sage").text()).toBe("password");
+    // visual label mirrors tip overlay (absolute, behind value)
+    expect(wrapper.get("span.text-surface-sage").text()).toBe("password");
+    expect(wrapper.get("span.text-surface-sage").classes()).toContain("truncate");
     // tip suppressed when labelInside is active
     expect(wrapper.find("#pw-tip").exists()).toBe(false);
     expect(wrapper.find(".pt-2\\.5").exists()).toBe(false);
@@ -162,7 +175,6 @@ describe("BaseInput", () => {
       props: {
         id: "pw",
         label: "password",
-        labelInside: true,
         modelValue: "",
       },
     });
@@ -180,7 +192,6 @@ describe("BaseInput", () => {
       props: {
         id: "pw",
         label: "password",
-        labelInside: true,
         error: "Required field",
       },
     });
@@ -195,12 +206,12 @@ describe("BaseInput", () => {
     const success = mount(BaseInput, {
       props: { id: "ok", label: "Email", tone: "success" },
     });
-    expect(success.get("input").classes()).toContain("border-status-success");
+    expect(success.get("div.ring-status-success").exists()).toBe(true);
 
     const bad = mount(BaseInput, {
       props: { id: "bad", label: "Email", tone: "error" },
     });
-    expect(bad.get("input").classes()).toContain("border-status-error");
+    expect(bad.get("div.ring-status-error").exists()).toBe(true);
     expect(bad.get("input").attributes("aria-invalid")).toBe("true");
   });
 });
