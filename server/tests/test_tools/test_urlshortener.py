@@ -43,10 +43,30 @@ async def test_create_url(auth_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_create_url_prepends_https_for_schemeless_host(client: AsyncClient) -> None:
+    resp = await client.post(
+        "/api/tools/url-shortener",
+        json={"original_url": "example.com/path"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["original_url"] == "https://example.com/path"
+
+
+@pytest.mark.asyncio
+async def test_create_url_does_not_invent_www(client: AsyncClient) -> None:
+    resp = await client.post(
+        "/api/tools/url-shortener",
+        json={"original_url": "example.com"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["original_url"] == "https://example.com/"
+
+
+@pytest.mark.asyncio
 async def test_create_url_invalid_url(auth_client: AsyncClient) -> None:
     resp = await auth_client.post(
         "/api/tools/url-shortener",
-        json={"original_url": "not-a-url"},
+        json={"original_url": "ftp://example.com"},
     )
     assert resp.status_code == 422
 

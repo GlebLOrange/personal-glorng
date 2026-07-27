@@ -2,6 +2,7 @@
 import { computed, useAttrs } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 
+import ScrollArrowIcon from "@/components/icons/ScrollArrowIcon.vue";
 import { iconActionClass } from "@/constants/httpStatusColors";
 
 defineOptions({ inheritAttrs: false });
@@ -44,19 +45,7 @@ const nativeAttrs = computed(() => {
       v-bind="nativeAttrs"
       @click="navigate($event)"
     >
-      <svg
-        class="size-4"
-        viewBox="0 0 40 40"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M24 11 15 20l9 9" />
-        <path d="M16 20h18" />
-      </svg>
+      <ScrollArrowIcon direction="left" />
     </a>
   </RouterLink>
 </template>

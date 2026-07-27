@@ -102,7 +102,7 @@ onUnmounted(() => {
 
 <template>
   <div class="portfolio-cv" :aria-busy="resumeLoading && !resumeApi">
-    <div v-if="apiError" class="mx-auto max-w-5xl xl:max-w-6xl px-6 pt-4 print:hidden">
+    <div v-if="apiError" class="mx-auto max-w-5xl px-6 pt-4 print:hidden">
       <ErrorState
         message="Using cached portfolio data — live sync unavailable."
         show-retry

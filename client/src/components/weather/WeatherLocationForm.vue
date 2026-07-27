@@ -2,7 +2,6 @@
 import { ref } from "vue";
 
 import BaseInput from "@/components/ui/BaseInput.vue";
-import LocationIcon from "@/components/icons/LocationIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 
 const props = defineProps<{
@@ -50,18 +49,15 @@ async function submit(): Promise<void> {
         {{ saving ? "adding…" : "+ location" }}
       </ToolbarPillButton>
     </div>
-    <div class="flex min-w-0 items-center gap-2">
-      <LocationIcon class-name="size-4 shrink-0 text-surface-mid" />
-      <BaseInput
-        id="weather-city"
-        v-model="city"
-        placeholder="city"
-        class="min-w-0 w-full flex-1"
-        aria-label="city"
-        :error="error ?? undefined"
-        required
-      />
-    </div>
+    <BaseInput
+      id="weather-city"
+      v-model="city"
+      placeholder="city"
+      class="min-w-0 w-full"
+      aria-label="city"
+      :error="error ?? undefined"
+      required
+    />
   </form>
   <p v-if="props.helperText" class="text-xs text-surface-mid mt-2">{{ props.helperText }}</p>
 </template>

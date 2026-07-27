@@ -16,6 +16,7 @@ import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
 import { usePermissions } from "@/composables/usePermissions";
 import type { PaginatedList, UrlItem } from "@/types";
+import { ensureHttpsUrl } from "@/utils/ensureHttpsUrl";
 import { publicUrl } from "@/utils/publicLinks";
 
 const urls = ref<UrlItem[]>([]);
@@ -70,7 +71,7 @@ async function createUrl(): Promise<void> {
   const result = await runCreate(
     () =>
       api.post("/tools/url-shortener", {
-        original_url: newUrl.value,
+        original_url: ensureHttpsUrl(newUrl.value),
         title: newTitle.value || null,
       }),
     { successMessage: "URL created", errorFallback: "Failed to create URL" },
@@ -134,7 +135,7 @@ onMounted(loadUrls);
       <BaseInput
         v-model="newUrl"
         class="min-w-0 w-full"
-        placeholder="url (https://example.com/very-long-url...)"
+        placeholder="url (example.com or https://…)"
         aria-label="url"
       />
       <BaseInput v-model="newTitle" placeholder="title (optional)" aria-label="title" />

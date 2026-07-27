@@ -23,10 +23,12 @@ const props = withDefaults(
     panelIdPrefix?: string;
     /** Drop bottom margin when the bar sits in a shared chrome row. */
     flush?: boolean;
+    ariaLabel?: string;
   }>(),
   {
     panelIdPrefix: "admin-tab",
     flush: false,
+    ariaLabel: "Admin sections",
   },
 );
 
@@ -79,7 +81,7 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
     class="flex flex-wrap gap-2"
     :class="flush ? undefined : 'mb-6'"
     role="tablist"
-    aria-label="Admin sections"
+    :aria-label="ariaLabel"
   >
     <button
       v-for="(tab, index) in tabs"

@@ -100,24 +100,25 @@ function editRecipeFromCard(recipe: Recipe): void {
     <RecipeFilters v-model:search="search">
       <div
         v-if="listLoading"
-        class="flex flex-col divide-y divide-surface-border/40"
+        class="flex flex-col gap-1"
         aria-busy="true"
         aria-label="Loading recipes"
       >
-        <div v-for="i in 6" :key="i" class="w-full px-2 py-1.5">
+        <div
+          v-for="i in 6"
+          :key="i"
+          class="w-full rounded-lg border border-transparent bg-surface-card px-3 py-2"
+        >
           <div class="flex items-center gap-2">
-            <div class="size-10 shrink-0 animate-pulse rounded-md bg-surface-border/40" />
-            <div class="min-w-0 flex-1 space-y-2">
-              <div class="h-4 w-2/3 animate-pulse rounded bg-surface-border/40" />
-              <div class="h-3 w-1/3 animate-pulse rounded bg-surface-border/30" />
-            </div>
+            <div class="size-7 shrink-0 animate-pulse rounded bg-surface-border/40" />
+            <div class="h-3 w-2/3 animate-pulse rounded bg-surface-border/40" />
           </div>
         </div>
       </div>
 
       <ErrorState v-else-if="listError" :message="listError" show-retry @retry="loadRecipes" />
 
-      <div v-else-if="recipes.length" class="flex flex-col divide-y divide-surface-border/40">
+      <div v-else-if="recipes.length" class="flex flex-col gap-1">
         <RecipeCard
           v-for="recipe in recipes"
           :key="recipe.id"

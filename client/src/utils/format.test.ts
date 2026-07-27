@@ -6,7 +6,6 @@ import {
   formatRelativeTime,
   formatScheduleDate,
   truncateBreadcrumbSlug,
-  truncateBreadcrumbTitle,
 } from "@/utils/format";
 
 describe("formatBreadcrumbLabel", () => {
@@ -49,20 +48,6 @@ describe("displayBreadcrumbLabel", () => {
     expect(displayBreadcrumbLabel("calculator")).toBe("calculator");
     expect(displayBreadcrumbLabel("app logs")).toBe("app logs");
     expect(displayBreadcrumbLabel("§ tools")).toBe("tools");
-  });
-});
-
-describe("truncateBreadcrumbTitle", () => {
-  it("returns the only word unchanged", () => {
-    expect(truncateBreadcrumbTitle("Breaking")).toBe("Breaking");
-  });
-
-  it("keeps the first word and appends ellipsis", () => {
-    expect(truncateBreadcrumbTitle("Breaking news about space")).toBe("Breaking...");
-  });
-
-  it("trims surrounding whitespace", () => {
-    expect(truncateBreadcrumbTitle("  Hello world  ")).toBe("Hello...");
   });
 });
 

@@ -5,7 +5,6 @@ import type { RouteLocationRaw } from "vue-router";
 import BackLink from "@/components/ui/BackLink.vue";
 import PageBreadcrumbs from "@/components/layout/PageBreadcrumbs.vue";
 import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
-import { formatBreadcrumbLabel, truncateBreadcrumbTitle } from "@/utils/format";
 
 const props = withDefaults(
   defineProps<{
@@ -26,40 +25,31 @@ const displaySegments = computed((): BreadcrumbSegment[] => {
   return [{ label: props.title }];
 });
 
-/** Current crumb matches page title — elevated current crumb acts as the title. */
-const soleSectionCrumb = computed(() => {
-  const last = displaySegments.value.at(-1);
-  if (!last) return false;
-  return formatBreadcrumbLabel(last.label) === formatBreadcrumbLabel(props.title);
-});
-
-const showTitle = computed(() => !soleSectionCrumb.value);
-
-const displayTitle = computed(() => `${props.titlePrefix}${truncateBreadcrumbTitle(props.title)}`);
+const displayTitle = computed(() => `${props.titlePrefix}${props.title}`);
 </script>
 
 <template>
-  <div
-    class="relative -mx-6 border-b border-surface-border bg-surface-dark/80 px-6 py-2.5 backdrop-blur-md"
-  >
-    <div class="flex min-h-8 min-w-0 items-center gap-3">
+  <div class="relative border-b border-surface-border bg-surface-dark/80 backdrop-blur-md">
+    <!-- Back parks on this row so it shares the breadcrumb vertical band. -->
+    <div class="relative my-[15px] flex min-h-8 min-w-0 items-center gap-3">
       <div class="flex min-w-0 flex-1 flex-col justify-center">
-        <div :class="soleSectionCrumb ? 'flex h-8 items-center' : 'page-breadcrumb-row'">
+        <div class="flex h-8 items-center">
           <PageBreadcrumbs :segments="displaySegments" :elevated="true" class="min-w-0" />
         </div>
-
-        <h1
-          v-if="showTitle"
-          class="mt-0.5 min-w-0 truncate text-lg font-bold leading-tight text-surface-light"
-          :title="`${titlePrefix}${title}`"
-        >
-          <span class="accent-gradient">{{ displayTitle }}</span>
-        </h1>
-        <!-- Elevated sole crumb is the visible title; keep a real h1 for outline/AT -->
-        <h1 v-else class="sr-only">{{ displayTitle }}</h1>
+        <!-- Breadcrumbs are the visible chrome title; keep a real h1 for outline/AT -->
+        <h1 class="sr-only">{{ displayTitle }}</h1>
       </div>
 
-      <BackLink v-if="backTo" :to="backTo" size="compact" class="shrink-0" />
+      <!--
+        !-right-6 reaches the shell outer edge (chrome is content-width; nav CB includes px-6).
+        top-1/2 centers on this row with the breadcrumbs.
+      -->
+      <BackLink
+        v-if="backTo"
+        :to="backTo"
+        size="compact"
+        class="shell-outside-end !-right-6 top-1/2 -translate-y-1/2"
+      />
     </div>
   </div>
 </template>

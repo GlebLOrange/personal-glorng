@@ -9,13 +9,13 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
 </script>
 
 <template>
-  <!-- Content-column rail: buttons sit just outside the padded max-w edge. -->
+  <!-- Rail matches shell; buttons sit in the gutter past the right edge -->
   <div v-if="showToTop" class="pointer-events-none fixed inset-x-0 top-[14%] z-30 print:hidden">
-    <div class="relative mx-auto w-full max-w-5xl px-6 xl:max-w-6xl">
+    <div class="relative mx-auto w-full max-w-5xl px-6">
       <IconActionButton
         family="1xx"
         type="button"
-        class="pointer-events-auto absolute right-0 translate-x-2 mr-[env(safe-area-inset-right)]"
+        class="shell-outside-end pointer-events-auto"
         aria-label="To the top"
         @click="scrollToTop"
       >
@@ -28,11 +28,11 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
     v-if="showArrowDown"
     class="pointer-events-none fixed inset-x-0 bottom-[14%] z-30 print:hidden"
   >
-    <div class="relative mx-auto w-full max-w-5xl px-6 xl:max-w-6xl">
+    <div class="relative mx-auto w-full max-w-5xl px-6">
       <IconActionButton
         family="1xx"
         type="button"
-        class="pointer-events-auto absolute right-0 translate-x-2 mr-[env(safe-area-inset-right)]"
+        class="shell-outside-end pointer-events-auto"
         aria-label="Scroll to next section"
         @click="scrollToNextSection"
       >

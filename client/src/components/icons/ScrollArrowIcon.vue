@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  direction: "up" | "down";
+  direction: "up" | "down" | "left";
 }>();
 </script>
 
@@ -17,6 +17,7 @@ defineProps<{
     class="size-5"
   >
     <path v-if="direction === 'down'" d="M12 5v14M5 12l7 7 7-7" />
+    <path v-else-if="direction === 'left'" d="M19 12H5M12 5l-7 7 7 7" />
     <path v-else d="M12 19V5M5 12l7-7 7 7" />
   </svg>
 </template>
