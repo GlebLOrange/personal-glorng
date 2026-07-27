@@ -142,7 +142,7 @@ html[data-theme="light"] {
 }
 
 @utility page-tile {
-  @apply block h-full min-w-0 w-full no-underline;
+  @apply block h-full min-w-0 w-full cursor-pointer no-underline outline-none;
   /* Tile is a hit target, not a text link — keep global a:hover underline off. */
   &:hover,
   &:focus-visible,
@@ -150,10 +150,59 @@ html[data-theme="light"] {
   &[aria-selected="true"] {
     text-decoration-line: none;
   }
+  /* Keyboard focus on the link drives the inner card (hover uses Card hoverable). */
+  &:focus-visible .page-tile-card {
+    border-color: var(--color-accent-blue);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent-blue) 50%, transparent);
+  }
 }
 
 @utility page-tile-card {
-  @apply flex h-full min-h-40 min-w-0 flex-col items-start justify-center gap-2 p-6 text-left;
+  /* !p beats Card default p-6 (no twMerge on Card class merge). */
+  @apply flex h-full min-h-36 min-w-0 flex-col items-start justify-center gap-2 !p-5 text-left sm:min-h-40 sm:!p-6;
+}
+
+@keyframes page-tile-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger capped at ~9 tiles so long admin grids stay snappy. */
+.page-tool-grid > .page-tile {
+  animation: page-tile-enter 0.22s ease-out both;
+}
+.page-tool-grid > .page-tile:nth-child(1) {
+  animation-delay: 0ms;
+}
+.page-tool-grid > .page-tile:nth-child(2) {
+  animation-delay: 30ms;
+}
+.page-tool-grid > .page-tile:nth-child(3) {
+  animation-delay: 60ms;
+}
+.page-tool-grid > .page-tile:nth-child(4) {
+  animation-delay: 90ms;
+}
+.page-tool-grid > .page-tile:nth-child(5) {
+  animation-delay: 120ms;
+}
+.page-tool-grid > .page-tile:nth-child(6) {
+  animation-delay: 150ms;
+}
+.page-tool-grid > .page-tile:nth-child(7) {
+  animation-delay: 180ms;
+}
+.page-tool-grid > .page-tile:nth-child(8) {
+  animation-delay: 210ms;
+}
+.page-tool-grid > .page-tile:nth-child(n + 9) {
+  animation-delay: 240ms;
 }
 
 @utility page-weather-tile-card {

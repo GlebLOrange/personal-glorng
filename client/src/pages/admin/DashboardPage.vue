@@ -37,14 +37,23 @@ onMounted(async () => {
 
 <template>
   <AdminPageLayout title="admin" max-width="xl" back-to="/">
-    <div v-if="catalogLoading" class="page-tool-grid" aria-busy="true" aria-label="loading tools">
-      <Card v-for="i in 6" :key="i" class="page-tile-card min-h-40 animate-pulse" />
+    <div v-if="catalogLoading" aria-busy="true" aria-label="loading tools">
+      <section v-for="block in 2" :key="block" class="mb-8 min-w-0">
+        <div class="mb-3 h-3 w-24 animate-pulse rounded bg-surface-card" aria-hidden="true" />
+        <div class="page-tool-grid">
+          <Card
+            v-for="i in 3"
+            :key="`${block}-${i}`"
+            class="page-tile-card min-h-36 animate-pulse sm:min-h-40"
+          />
+        </div>
+      </section>
     </div>
     <EmptyState
       v-else-if="sections.length === 0"
       title="no tools available"
       description="contact an admin if you need access."
     />
-    <ToolTileGrid v-else :sections="sections" />
+    <ToolTileGrid v-else density="compact" :sections="sections" />
   </AdminPageLayout>
 </template>
