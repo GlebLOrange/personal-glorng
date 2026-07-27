@@ -85,4 +85,16 @@ describe("AdminListRow", () => {
     const header = wrapper.find("[data-admin-list-header]");
     expect(header.classes()).toContain("h-10");
   });
+
+  it("draws an inset hairline that hides on the last sibling", () => {
+    const wrapper = mount(AdminListRow, {
+      props: { interactive: true },
+      slots: { primary: "request started" },
+    });
+    expect(wrapper.classes()).toContain("after:left-2");
+    expect(wrapper.classes()).toContain("after:right-2");
+    expect(wrapper.classes()).toContain("after:h-px");
+    expect(wrapper.classes()).toContain("last:after:hidden");
+    expect(wrapper.classes()).toContain("!border-0");
+  });
 });

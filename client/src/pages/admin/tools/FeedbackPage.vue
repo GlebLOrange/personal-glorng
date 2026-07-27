@@ -199,7 +199,7 @@ onMounted(load);
         "
       />
 
-      <div v-else class="mt-1 min-w-0 divide-y divide-surface-border/60">
+      <div v-else class="mt-1 min-w-0">
         <AdminListRow
           v-for="item in items"
           :key="item.id"

@@ -70,4 +70,23 @@ describe("AdminTabBar", () => {
 
     wrapper.unmount();
   });
+
+  it("renders a right-aligned end slot outside the tablist", () => {
+    const wrapper = mount(AdminTabBar, {
+      props: {
+        tabs: [{ id: "chat", label: "chat" }],
+        modelValue: "chat",
+      },
+      slots: {
+        end: '<button type="button" aria-label="setup help">?</button>',
+      },
+    });
+
+    const tablist = wrapper.get('[role="tablist"]');
+    expect(tablist.find('[aria-label="setup help"]').exists()).toBe(false);
+    expect(wrapper.get('[aria-label="setup help"]').exists()).toBe(true);
+    expect(wrapper.html()).toContain("ml-auto");
+
+    wrapper.unmount();
+  });
 });

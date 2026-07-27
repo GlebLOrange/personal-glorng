@@ -43,7 +43,7 @@ const props = withDefaults(
     showFilterIcon: true,
     showClear: true,
     bare: false,
-    matchTriggerWidth: false,
+    matchTriggerWidth: true,
   },
 );
 

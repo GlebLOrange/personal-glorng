@@ -147,7 +147,7 @@ onMounted(load);
         description="No audit events found."
       />
 
-      <div v-else class="mt-1 min-w-0 divide-y divide-surface-border/60">
+      <div v-else class="mt-1 min-w-0">
         <AdminListRow
           v-for="event in items"
           :key="event.id"

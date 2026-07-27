@@ -91,8 +91,11 @@ describe("AdminFilterDropdown", () => {
     expect(dialog).toBeTruthy();
     // Trigger keeps a stable size when the panel opens.
     expect(trigger.element.offsetWidth).toBe(closedWidth);
-    // Panel is at least the trigger bar; may grow for longer chip labels.
-    expect(dialog!.offsetWidth).toBeGreaterThanOrEqual(trigger.element.offsetWidth);
+    // Panel locks to the same width as the filter bar.
+    expect(dialog!.style.width).toBe(`${trigger.element.offsetWidth}px`);
+    expect(dialog!.style.minWidth).toBe(`${trigger.element.offsetWidth}px`);
+    expect(dialog!.style.maxWidth).toBe(`${trigger.element.offsetWidth}px`);
+    expect(dialog!.offsetWidth).toBe(trigger.element.offsetWidth);
 
     const chip = dialog!.querySelector("button[aria-pressed]") as HTMLButtonElement | null;
     const clear = Array.from(dialog!.querySelectorAll("button")).find(
@@ -209,8 +212,10 @@ describe("AdminFilterDropdown", () => {
     expect(dialog).toBeTruthy();
     expect(dialog!.style.top).toBe("419px");
     expect(dialog!.style.left).toBe("267px");
-    // Never narrower than the filter bar.
+    // Locked to the filter bar — same width, min, and max.
+    expect(dialog!.style.width).toBe("288px");
     expect(dialog!.style.minWidth).toBe("288px");
+    expect(dialog!.style.maxWidth).toBe("288px");
 
     wrapper.unmount();
   });

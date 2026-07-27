@@ -32,8 +32,10 @@ function scheduleDismiss(id: number, duration: number): void {
 export function useNotify() {
   function toast(message: string, type: Toast["type"] = "info", duration?: number): void {
     const id = nextId++;
-    const ms = duration ?? (type === "error" ? 6000 : 4000);
     toasts.value.push({ id, message, type });
+    // Errors stay in the mid tile until dismiss unless a duration is passed explicitly.
+    if (duration === undefined && type === "error") return;
+    const ms = duration ?? 4000;
     durations.set(id, ms);
     scheduleDismiss(id, ms);
   }
@@ -50,7 +52,8 @@ export function useNotify() {
 
   function resume(id: number): void {
     if (!toasts.value.some((t) => t.id === id)) return;
-    const ms = durations.get(id) ?? 4000;
+    const ms = durations.get(id);
+    if (ms === undefined) return;
     scheduleDismiss(id, ms);
   }
 

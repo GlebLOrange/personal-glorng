@@ -138,7 +138,7 @@ async function onSurfaceTab(id: string): Promise<void> {
       </template>
     </div>
 
-    <div class="min-w-0 divide-y divide-surface-border/60">
+    <div class="min-w-0">
       <AdminListSkeleton v-if="loading" label="Loading sources" />
 
       <ErrorState
@@ -151,7 +151,7 @@ async function onSurfaceTab(id: string): Promise<void> {
       <template v-else>
         <EmptyState v-if="sources.length === 0" :description="emptyFilterDescription" />
 
-        <template v-else>
+        <div v-else class="min-w-0">
           <AdminListRow
             v-for="source in sources"
             :key="source.id"
@@ -208,7 +208,7 @@ async function onSurfaceTab(id: string): Promise<void> {
               />
             </template>
           </AdminListRow>
-        </template>
+        </div>
 
         <AdminListFooter
           :total="total"

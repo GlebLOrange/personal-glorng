@@ -136,23 +136,25 @@ onMounted(loadUrls);
       <BaseInput v-model="newTitle" placeholder="title (optional)" aria-label="title" />
     </form>
 
-    <div v-if="canManage" class="divide-y divide-surface-border/60">
+    <div v-if="canManage" class="min-w-0">
       <AdminListSkeleton v-if="listLoading" label="loading shortened URLs" />
 
       <template v-else>
-        <UrlShortenerListItem
-          v-for="url in urls"
-          :key="url.id"
-          :url="url"
-          :can-write="canWrite"
-          :saving="savingId === url.id"
-          :deleting="deletingId === url.id"
-          @copy="copy(publicUrl('s', url.code))"
-          @save="updateUrl(url.id, $event)"
-          @delete="deleteUrl(url.id)"
-        />
+        <div v-if="urls.length > 0" class="min-w-0">
+          <UrlShortenerListItem
+            v-for="url in urls"
+            :key="url.id"
+            :url="url"
+            :can-write="canWrite"
+            :saving="savingId === url.id"
+            :deleting="deletingId === url.id"
+            @copy="copy(publicUrl('s', url.code))"
+            @save="updateUrl(url.id, $event)"
+            @delete="deleteUrl(url.id)"
+          />
+        </div>
 
-        <EmptyState v-if="urls.length === 0">no shortened URLs yet. create one above.</EmptyState>
+        <EmptyState v-else>no shortened URLs yet. create one above.</EmptyState>
 
         <AdminListFooter
           v-if="urls.length > 0"
