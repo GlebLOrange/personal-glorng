@@ -180,48 +180,51 @@ onUnmounted(() => {
       <p class="text-body mb-2">
         open to full-time and contract — usually reply within 24h (EU timezone)
       </p>
-      <p class="text-meta mb-6">fastest: telegram or email. or send a short inquiry below</p>
-      <div class="flex flex-wrap gap-4 mb-6">
+      <p class="text-meta mb-6 flex flex-wrap items-center gap-x-2 gap-y-2">
+        <span>fastest: telegram or email. or</span>
         <button type="button" class="cta-primary print:hidden" @click="contactModal = 'inquiry'">
           send inquiry
         </button>
-      </div>
-      <div class="flex flex-wrap gap-4">
-        <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
-      </div>
-      <div class="mt-6 flex print:hidden">
         <button
           type="button"
-          class="text-meta text-surface-sage underline-offset-4 hover:underline inline-flex items-center gap-2 min-h-11 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+          class="print:hidden text-surface-sage underline-offset-4 hover:underline inline-flex items-center gap-2 min-h-11 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
           @click="contactModal = 'feedback'"
         >
           <ContactIcon id="feedback" class="size-4 shrink-0" />
           send feedback instead
         </button>
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
       </div>
       <FeedbackModal v-if="contactModal" :intent="contactModal" @close="contactModal = null" />
     </SectionWrapper>
 
     <div ref="supportSectionRef" class="print:hidden">
       <SectionWrapper id="support" title="support my work" width="full" dark alternate>
-        <p class="text-body mb-6">
+        <template #headerActions>
+          <div
+            v-if="donationsStarted && donationsLoading"
+            class="h-10 w-40 animate-pulse rounded-lg bg-surface-card"
+            aria-busy="true"
+          />
+          <DonationsBlock v-else-if="donations" :config="donations" />
+        </template>
+        <p class="text-body mb-2">
           if my tools or writing have helped you, a small contribution keeps the work going
         </p>
-        <div
-          v-if="donationsStarted && donationsLoading"
-          class="h-24 animate-pulse rounded-lg bg-surface-card"
-          aria-busy="true"
-        />
-        <DonationsBlock v-else-if="donations" :config="donations" />
+        <p class="text-meta">card, paypal, or monthly support — pick what works for you</p>
         <ErrorState
-          v-else-if="donationsError"
+          v-if="donationsError"
+          class="mt-6"
           message="Donation options are temporarily unavailable."
           show-retry
           retry-label="retry"
           @retry="loadDonations"
         />
         <EmptyState
-          v-else-if="donationsFetched"
+          v-else-if="donationsFetched && !donations"
+          class="mt-6"
           title="no donation options"
           description="support options are not configured right now."
         />

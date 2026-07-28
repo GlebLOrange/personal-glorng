@@ -278,6 +278,12 @@ html[data-theme="light"] {
   @apply text-sm text-surface-mid;
 }
 
+@utility text-datetime {
+  @apply text-sm text-surface-muted;
+  /* Body sets surface-light; explicit + important keeps meta timestamps muted. */
+  color: var(--color-surface-muted) !important;
+}
+
 @utility text-label {
   @apply text-xs font-medium;
 }

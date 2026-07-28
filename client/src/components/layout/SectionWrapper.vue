@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useSlots } from "vue";
 
 const props = defineProps<{
   id?: string;
@@ -10,6 +10,8 @@ const props = defineProps<{
   centered?: boolean;
   width?: "full" | "content" | "prose";
 }>();
+
+const slots = useSlots();
 
 const innerClass = computed(() => {
   const resolvedWidth = props.width ?? (props.centered ? "full" : "content");
@@ -22,6 +24,8 @@ const innerClass = computed(() => {
   }
   return "page-body-narrow w-full";
 });
+
+const showHeader = computed(() => Boolean(props.title || slots.headerActions));
 </script>
 
 <template>
@@ -35,10 +39,18 @@ const innerClass = computed(() => {
     ]"
   >
     <div class="page-tile-scope mx-auto w-full max-w-5xl">
-      <h2 v-if="title" class="section-title mb-8">
-        <span aria-hidden="true" class="text-accent-blue">§ </span>
-        {{ title }}
-      </h2>
+      <div
+        v-if="showHeader"
+        class="mb-8 flex min-w-0 flex-wrap items-center justify-between gap-4"
+      >
+        <h2 v-if="title" class="section-title min-w-0">
+          <span aria-hidden="true" class="text-accent-blue">§ </span>
+          {{ title }}
+        </h2>
+        <div v-if="$slots.headerActions" class="flex min-w-0 flex-wrap items-center gap-4">
+          <slot name="headerActions" />
+        </div>
+      </div>
       <div :class="innerClass">
         <slot />
       </div>

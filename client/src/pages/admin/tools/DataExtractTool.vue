@@ -63,70 +63,34 @@ const {
 <template>
   <AdminPageLayout hub="tools" title="data extract">
     <div class="min-w-0">
-      <CollapsibleUsageGuide title="data extract usage guide" class="mb-6">
-        <div class="space-y-4 text-sm text-surface-light">
-          <p class="text-surface-mid">
-            Extract structured rows from CSV, JSON, XML, and delimited files.
-          </p>
-
-          <div>
-            <h3 class="mb-2 font-bold text-accent-blue">Formats</h3>
-            <p class="text-surface-mid">
-              Accepted types are listed on the drop zone. Use options to override auto format
-              detection.
-            </p>
-          </div>
-
-          <div>
-            <h3 class="mb-2 font-bold text-accent-blue">Delimited &amp; pipe embed</h3>
-            <p class="text-surface-mid">
-              Configure delimiters and pipe-embed profile in options. Promote moves staged
-              pipe-embed rows into embed storage.
-            </p>
-          </div>
-
-          <div>
-            <h3 class="mb-2 font-bold text-accent-blue">XML</h3>
-            <p class="text-surface-mid">
-              Set row tag and rows/tree mode in options when format is XML.
-            </p>
-          </div>
-
-          <div>
-            <h3 class="mb-2 font-bold text-accent-blue">Workflow</h3>
-            <ul class="ml-2 list-inside list-disc space-y-1 text-surface-mid">
-              <li>
-                <code class="text-surface-light">extract</code> — preview rows in the browser (no
-                DB write)
-              </li>
-              <li>
-                <code class="text-surface-light">import to db</code> — stage rows in an import batch
-              </li>
-              <li>
-                <code class="text-surface-light">promote</code> — push a staged pipe-embed batch into
-                embed storage
-              </li>
-            </ul>
-          </div>
-        </div>
-      </CollapsibleUsageGuide>
-
       <div class="mb-6 space-y-3">
-        <div class="flex w-full min-w-0 flex-wrap items-center gap-2">
-          <DataExtractOptionsPanel
-            v-model:format-choice="formatChoice"
-            v-model:profile-choice="profileChoice"
-            v-model:field-delimiter="fieldDelimiter"
-            v-model:list-delimiter="listDelimiter"
-            v-model:row-tag="rowTag"
-            v-model:xml-mode="xmlMode"
-            :has-custom-options="hasCustomOptions"
-            :options-active-label="optionsActiveLabel"
-            :show-delimited-options="showDelimitedOptions"
-            :show-xml-options="showXmlOptions"
-          />
-
-          <div class="ml-auto flex flex-wrap items-center gap-1">
+        <CollapsibleUsageGuide title="data extract usage guide">
+          <template #start>
+            <DataExtractOptionsPanel
+              v-model:format-choice="formatChoice"
+              v-model:profile-choice="profileChoice"
+              v-model:field-delimiter="fieldDelimiter"
+              v-model:list-delimiter="listDelimiter"
+              v-model:row-tag="rowTag"
+              v-model:xml-mode="xmlMode"
+              :has-custom-options="hasCustomOptions"
+              :options-active-label="optionsActiveLabel"
+              :show-delimited-options="showDelimitedOptions"
+              :show-xml-options="showXmlOptions"
+            />
+          </template>
+          <template #actions>
+            <ToolbarPillButton
+              family="2xx"
+              type="button"
+              :disabled="loading || !selectedFile"
+              @click="
+                activeTab = 'extract';
+                void extractFile();
+              "
+            >
+              {{ loading && activeTab === "extract" ? "working…" : "extract" }}
+            </ToolbarPillButton>
             <ToolbarPillButton
               v-if="canWrite"
               family="3xx"
@@ -139,19 +103,55 @@ const {
             >
               {{ loading && activeTab === "import" ? "working…" : "import to db" }}
             </ToolbarPillButton>
-            <ToolbarPillButton
-              family="2xx"
-              type="button"
-              :disabled="loading || !selectedFile"
-              @click="
-                activeTab = 'extract';
-                void extractFile();
-              "
-            >
-              {{ loading && activeTab === "extract" ? "working…" : "extract" }}
-            </ToolbarPillButton>
+          </template>
+
+          <div class="space-y-4 text-sm text-surface-light">
+            <p class="text-surface-mid">
+              Extract structured rows from CSV, JSON, XML, and delimited files.
+            </p>
+
+            <div>
+              <h3 class="mb-2 font-bold text-accent-blue">Formats</h3>
+              <p class="text-surface-mid">
+                Accepted types are listed on the drop zone. Use options to override auto format
+                detection.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="mb-2 font-bold text-accent-blue">Delimited &amp; pipe embed</h3>
+              <p class="text-surface-mid">
+                Configure delimiters and pipe-embed profile in options. Promote moves staged
+                pipe-embed rows into embed storage.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="mb-2 font-bold text-accent-blue">XML</h3>
+              <p class="text-surface-mid">
+                Set row tag and rows/tree mode in options when format is XML.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="mb-2 font-bold text-accent-blue">Workflow</h3>
+              <ul class="ml-2 list-inside list-disc space-y-1 text-surface-mid">
+                <li>
+                  <code class="text-surface-light">extract</code> — preview rows in the browser (no
+                  DB write)
+                </li>
+                <li>
+                  <code class="text-surface-light">import to db</code> — stage rows in an import
+                  batch
+                </li>
+                <li>
+                  <code class="text-surface-light">promote</code> — push a staged pipe-embed batch
+                  into embed storage
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
+        </CollapsibleUsageGuide>
 
         <FileDropZone
           aria-label="choose a file to extract"

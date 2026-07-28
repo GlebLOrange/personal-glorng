@@ -2,6 +2,7 @@ import { computed, ref } from "vue";
 
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
+import { formatDate } from "@/utils/format";
 import { useApiAction } from "@/composables/useApiAction";
 import type {
   NewsArticle,
@@ -25,14 +26,9 @@ export interface NewsStats {
   trash: number;
 }
 
-const newsDateFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-
 export function formatNewsDate(value: string | null): string {
   if (!value) return "not published";
-  return newsDateFormatter.format(new Date(value));
+  return formatDate(value);
 }
 
 export function newsArticleDisplayDate(article: NewsArticle): string {

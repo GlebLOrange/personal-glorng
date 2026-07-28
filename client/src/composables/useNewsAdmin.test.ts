@@ -10,10 +10,6 @@ const loadNews = vi.fn(async () => undefined);
 const loadSources = vi.fn(async () => undefined);
 const page = ref(1);
 
-vi.mock("vue-router", () => ({
-  useRouter: () => ({ push: vi.fn() }),
-}));
-
 vi.mock("@/composables/useNews", () => ({
   useNews: () => ({
     articles: ref([]),

@@ -6,7 +6,6 @@ import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsAdminArticleList from "@/components/news/NewsAdminArticleList.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
-import NewsTabs from "@/components/news/NewsTabs.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -17,7 +16,6 @@ import { STATUS_FILTERS, useNewsAdmin } from "@/composables/useNewsAdmin";
 
 const {
   canWrite,
-  canManageSources,
   drawerOpen,
   drawerMode,
   form,
@@ -48,13 +46,11 @@ const {
   updateForm,
   saveDrawer,
   deleteDrawerArticle,
-  goToSources,
 } = useNewsAdmin();
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="news" max-width="xl" back-to="/news">
-    <NewsTabs />
+  <AdminPageLayout hub="admin" title="manage news" max-width="xl" back-to="/admin">
     <AdminListToolbar v-if="!listLoading && !listError">
       <template #actions>
         <AdminFilterDropdown
@@ -76,9 +72,6 @@ const {
             />
           </template>
         </AdminFilterDropdown>
-        <template v-if="canManageSources">
-          <ToolbarPillButton family="1xx" @click="goToSources"> sources </ToolbarPillButton>
-        </template>
         <template v-if="canWrite">
           <ToolbarPillButton family="3xx" :disabled="actionLoading" @click="runIngest">
             run ingest

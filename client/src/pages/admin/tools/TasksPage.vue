@@ -174,7 +174,7 @@ onMounted(() => {
                   type="button"
                   :class="[
                     FILTER_MENU_ROW_CLASS,
-                    'justify-start border-transparent bg-transparent text-accent-blue hover:enabled:bg-accent-blue/15 focus-visible:ring-accent-blue/50',
+                    'justify-start border-transparent bg-transparent text-status-critical hover:enabled:bg-status-critical/15 focus-visible:ring-status-critical/50',
                   ]"
                   @click="onFailedSyncs"
                 >

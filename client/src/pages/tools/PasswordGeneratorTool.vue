@@ -121,11 +121,10 @@ async function generatePassword(): Promise<void> {
 
           <AdminFilterDropdown
             label="options"
-            bare
-            class="min-w-0 flex-1 [&_button]:w-full [&_button]:!bg-surface-dark hover:enabled:[&_button]:!bg-surface-dark [&_button]:ring-1 [&_button]:ring-inset [&_button]:ring-surface-border [&_button[aria-expanded='true']]:ring-2 [&_button[aria-expanded='true']]:ring-accent-blue/50"
+            class="shrink-0"
+            :match-trigger-width="false"
             :has-active-filters="hasCustomOptions"
             :active-label="optionsActiveLabel"
-            :option-labels="['uppercase', 'lowercase', 'numbers', 'symbols', 'exclude ambiguous']"
             @clear="clearOptions"
           >
             <template #chips>
@@ -179,21 +178,24 @@ async function generatePassword(): Promise<void> {
       </form>
 
       <div v-if="generated" class="mt-4 space-y-2">
-        <div class="flex flex-wrap items-end gap-2">
+        <div class="flex min-w-0 items-end gap-2">
           <BaseInput
             :model-value="displayPassword"
             readonly
             label="password"
             placeholder="generated password"
-            class="flex-1 min-w-[12rem] font-data"
+            class="min-w-0 flex-1 font-data"
           />
-          <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
-            <span class="inline-grid justify-items-center">
-              <span class="invisible col-start-1 row-start-1" aria-hidden="true">hide</span>
-              <span class="col-start-1 row-start-1">{{ showPassword ? "hide" : "show" }}</span>
-            </span>
-          </BaseButton>
-          <IconCopyButton @click="copy(generated)" />
+          <div class="flex shrink-0 items-end gap-2">
+            <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
+              <span class="inline-grid justify-items-center">
+                <span class="invisible col-start-1 row-start-1" aria-hidden="true">show</span>
+                <span class="invisible col-start-1 row-start-1" aria-hidden="true">hide</span>
+                <span class="col-start-1 row-start-1">{{ showPassword ? "hide" : "show" }}</span>
+              </span>
+            </BaseButton>
+            <IconCopyButton @click="copy(generated)" />
+          </div>
         </div>
         <p v-if="!strength.valid" class="text-xs text-surface-mid">
           {{ strength.message }}

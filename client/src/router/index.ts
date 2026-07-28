@@ -112,6 +112,45 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, title: "Send email", noindex: true },
   },
   {
+    path: "/admin/news",
+    name: "admin-news",
+    component: () => import("@/pages/admin/tools/NewsAdminPage.vue"),
+    meta: { requiresAuth: true, scrollRestore: "volatile", title: "Manage news", noindex: true },
+  },
+  {
+    path: "/admin/news/sources",
+    name: "news-sources",
+    component: () => import("@/pages/admin/tools/NewsSourcesPage.vue"),
+    meta: {
+      requiresAuth: true,
+      scrollRestore: "volatile",
+      title: "News sources",
+      noindex: true,
+    },
+  },
+  {
+    path: "/admin/news/sources/:id(\\d+)",
+    name: "news-source",
+    component: () => import("@/pages/admin/tools/NewsSourcesPage.vue"),
+    meta: {
+      requiresAuth: true,
+      scrollRestore: "volatile",
+      title: "News source",
+      noindex: true,
+    },
+  },
+  {
+    path: "/admin/news/:id(\\d+)",
+    name: "news-article-edit",
+    component: () => import("@/pages/admin/tools/NewsArticleAdminPage.vue"),
+    meta: {
+      requiresAuth: true,
+      scrollRestore: "volatile",
+      title: "Edit news article",
+      noindex: true,
+    },
+  },
+  {
     path: "/admin/api/docs",
     name: "admin-api-docs",
     // Swagger is a FastAPI page, not a Vue route — leave the SPA.
@@ -134,7 +173,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/news",
     name: "news",
-    component: () => import("@/pages/NewsRoutePage.vue"),
+    component: () => import("@/pages/NewsPage.vue"),
     meta: {
       resolveSession: true,
       scrollRestore: "volatile",
@@ -143,37 +182,16 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/news/sources",
-    name: "news-sources",
-    component: () => import("@/pages/admin/tools/NewsSourcesPage.vue"),
-    meta: {
-      requiresAuth: true,
-      scrollRestore: "volatile",
-      title: "News sources",
-      noindex: true,
-    },
+    path: "/news/edit/:id(\\d+)",
+    redirect: (to) => ({ name: "news-article-edit", params: { id: to.params.id } }),
   },
   {
     path: "/news/sources/:id(\\d+)",
-    name: "news-source",
-    component: () => import("@/pages/admin/tools/NewsSourcesPage.vue"),
-    meta: {
-      requiresAuth: true,
-      scrollRestore: "volatile",
-      title: "News source",
-      noindex: true,
-    },
+    redirect: (to) => ({ name: "news-source", params: { id: to.params.id } }),
   },
   {
-    path: "/news/edit/:id(\\d+)",
-    name: "news-article-edit",
-    component: () => import("@/pages/admin/tools/NewsArticleAdminPage.vue"),
-    meta: {
-      requiresAuth: true,
-      scrollRestore: "volatile",
-      title: "Edit news article",
-      noindex: true,
-    },
+    path: "/news/sources",
+    redirect: { name: "news-sources" },
   },
   {
     path: "/news/:slug",
@@ -274,7 +292,7 @@ const routes: RouteRecordRaw[] = [
   { path: "/admin/tools/audit", redirect: { name: "tool-audit" } },
   { path: "/admin/tools/app-logs", redirect: { name: "tool-app-logs" } },
   { path: "/admin/tools/search", redirect: { name: "tool-search" } },
-  { path: "/admin/tools/news", redirect: { name: "news", query: { manage: "1" } } },
+  { path: "/admin/tools/news", redirect: { name: "admin-news" } },
   {
     path: "/admin/tools/news/:id",
     redirect: (to) => ({ name: "news-article-edit", params: { id: to.params.id } }),
@@ -323,6 +341,7 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "tool-file-share": "file-share",
   "tool-email": "email",
   "tool-feedback": "feedback",
+  "admin-news": "news",
   "news-article-edit": "news",
   "news-sources": "news-sources",
   "news-source": "news-sources",
@@ -346,6 +365,10 @@ const router = createRouter({
 installScrollRestore(router);
 
 router.beforeEach(async (to, _from, next) => {
+  if (to.name === "news" && String(to.query.manage ?? "") === "1") {
+    next({ name: "admin-news", replace: true });
+    return;
+  }
   if (to.name === "tool-ai-chat" && !isAiChatEnabled()) {
     next({ name: "admin" });
     return;
