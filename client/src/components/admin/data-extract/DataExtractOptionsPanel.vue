@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { computed } from "vue";
-
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
@@ -20,29 +18,15 @@ defineProps<{
   showDelimitedOptions: boolean;
   showXmlOptions: boolean;
 }>();
-
-const optionLabels = computed(() => [
-  "auto",
-  "csv",
-  "JSON",
-  "xml",
-  "delimited",
-  "custom delimiters",
-  "pipe embed",
-  "rows",
-  "tree",
-]);
 </script>
 
 <template>
   <AdminFilterDropdown
     label="options"
     anchor="local"
-    :show-filter-icon="false"
     :show-clear="false"
     :has-active-filters="hasCustomOptions"
     :active-label="optionsActiveLabel"
-    :option-labels="optionLabels"
   >
     <BaseSelect
       id="data-extract-format"

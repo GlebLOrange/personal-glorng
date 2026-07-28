@@ -30,12 +30,15 @@ const emit = defineEmits<{ select: [id: number] }>();
           :label="statusLabel(task.status)"
           :class-name="statusBadgeClass(task.status)"
         />
-        <span class="whitespace-nowrap text-xs lowercase text-surface-muted">
+        <span class="text-datetime whitespace-nowrap lowercase">
           {{ formatDate(task.scheduled_at) }}
         </span>
-        <span v-if="task.location" class="inline-flex min-w-0 items-center gap-1 lowercase">
+        <span
+          v-if="task.location"
+          class="inline-flex min-w-0 items-center gap-1 text-xs lowercase text-surface-muted"
+        >
           <LocationIcon class-name="size-3.5 shrink-0" />
-          <span class="max-w-[8rem] truncate text-xs text-surface-muted">{{ task.location }}</span>
+          <span class="max-w-[8rem] truncate">{{ task.location }}</span>
         </span>
         <span
           v-if="task.google_event_id"

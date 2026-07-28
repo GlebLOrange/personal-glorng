@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends
 
-from app.core.deps import AdminUser, CurrencyServiceDep
+from app.core.deps import AdminUser, CurrencyServiceDep, require_expenses_enabled
 from app.core.rate_limit import rate_limit_api
 from app.db.deps import DbRegistry
 from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
@@ -13,6 +13,7 @@ from app.services.expense_calculator import get_calculator_state, save_calculato
 router = APIRouter(
     prefix="/expense-calculator",
     tags=["expense-calculator"],
+    dependencies=[Depends(require_expenses_enabled)],
 )
 
 

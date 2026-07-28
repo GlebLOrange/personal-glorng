@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
+import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { Card } from "@/components/ui/card";
 import { newsStatusClass } from "@/constants/filterColors";
+import { newsStatusLabel } from "@/constants/news";
 import { formatNewsDate } from "@/composables/useNews";
 import type { NewsArticle, NewsStatus } from "@/types";
 import { safeNavigationHref } from "@/utils/safeUrl";
@@ -17,6 +19,7 @@ const emit = defineEmits<{
   setStatus: [articleId: number, status: NewsStatus];
   repost: [articleId: number];
 }>();
+
 </script>
 
 <template>
@@ -35,13 +38,16 @@ const emit = defineEmits<{
       @click="canWrite ? emit('edit', item) : undefined"
       @keydown.enter.prevent="canWrite ? emit('edit', item) : undefined"
     >
-      <div
-        class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-xs"
-        :class="newsStatusClass(item.status)"
-        :aria-label="item.status"
-      >
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <time :datetime="item.published_at ?? item.created_at">
+          <StatusBadge
+            :label="newsStatusLabel(item.status)"
+            :class-name="newsStatusClass(item.status)"
+          />
+          <time
+            class="text-datetime whitespace-nowrap lowercase"
+            :datetime="item.published_at ?? item.created_at"
+          >
             {{ formatNewsDate(item.published_at ?? item.created_at) }}
           </time>
           <span v-if="item.telegram_message_id" class="text-accent-blue">
@@ -64,46 +70,52 @@ const emit = defineEmits<{
       <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
       <p class="text-sm text-surface-mid mb-3 break-words">{{ item.summary }}</p>
 
-      <div class="mb-4 flex flex-wrap gap-2">
-        <span
-          v-for="tag in item.tags"
-          :key="tag"
-          class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
-        >
-          #{{ tag }}
-        </span>
-      </div>
+      <div class="flex w-full flex-col gap-3">
+        <div v-if="item.tags.length" class="flex flex-wrap gap-2">
+          <span
+            v-for="tag in item.tags"
+            :key="tag"
+            class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
+          >
+            #{{ tag }}
+          </span>
+        </div>
 
-      <div class="flex flex-wrap gap-2" @click.stop @keydown.stop>
-        <BaseButton
-          v-if="canWrite && item.status !== 'published'"
-          variant="success"
-          size="sm"
-          :disabled="actionLoading"
-          @click="emit('setStatus', item.id, 'published')"
-        >
-          publish
-        </BaseButton>
-        <BaseButton
-          v-if="canWrite && item.status === 'published'"
-          variant="ghost"
-          quiet
-          size="sm"
-          :disabled="actionLoading"
-          @click="emit('setStatus', item.id, 'private')"
-        >
-          unpublish
-        </BaseButton>
-        <BaseButton
+        <div
           v-if="canWrite"
-          variant="ghost"
-          quiet
-          size="sm"
-          :disabled="actionLoading"
-          @click="emit('repost', item.id)"
+          class="flex flex-wrap justify-end gap-2"
+          @click.stop
+          @keydown.stop
         >
-          repost telegram
-        </BaseButton>
+          <BaseButton
+            variant="ghost"
+            quiet
+            size="sm"
+            :disabled="actionLoading"
+            @click="emit('repost', item.id)"
+          >
+            repost telegram
+          </BaseButton>
+          <BaseButton
+            v-if="item.status !== 'published'"
+            variant="success"
+            size="sm"
+            :disabled="actionLoading"
+            @click="emit('setStatus', item.id, 'published')"
+          >
+            publish
+          </BaseButton>
+          <BaseButton
+            v-else
+            variant="ghost"
+            quiet
+            size="sm"
+            :disabled="actionLoading"
+            @click="emit('setStatus', item.id, 'private')"
+          >
+            unpublish
+          </BaseButton>
+        </div>
       </div>
     </Card>
   </section>

@@ -3,7 +3,7 @@ import { computed, ref, type ComputedRef } from "vue";
 import { api } from "@/composables/useApi";
 import { PLATFORM_SERVICES, type PlatformService } from "@/platform/services";
 import { useAuthStore } from "@/stores/auth";
-import { isAiChatEnabled } from "@/utils/featureFlags";
+import { isAiChatEnabled, isExpensesEnabled } from "@/utils/featureFlags";
 import { SUPERUSER_PERMISSION } from "@/utils/permissions";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
@@ -27,6 +27,11 @@ function filterAiChat(services: PlatformService[]): PlatformService[] {
   const isSuperuser = auth.user?.permissions.includes(SUPERUSER_PERMISSION) ?? false;
   if (isAiChatEnabled() && isSuperuser) return services;
   return services.filter((s) => s.slug !== "ai-chat");
+}
+
+function filterDisabledServices(services: PlatformService[]): PlatformService[] {
+  if (isExpensesEnabled()) return services;
+  return services.filter((s) => s.slug !== "expenses");
 }
 
 /**
@@ -74,7 +79,7 @@ export function usePlatformCatalog(): {
   load: () => Promise<void>;
 } {
   // Derive when a Vue/Pinia context exists (not at module import time).
-  const services = computed(() => filterAiChat(rawServices.value));
+  const services = computed(() => filterDisabledServices(filterAiChat(rawServices.value)));
 
   async function load(): Promise<void> {
     if (loaded.value) return;

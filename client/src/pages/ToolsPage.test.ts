@@ -5,14 +5,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ToolsPage from "@/pages/ToolsPage.vue";
 import { groupServicesByCategory, publicToolsAsServices } from "@/platform/services";
 
-const mocks = vi.hoisted(() => ({
-  replace: vi.fn(),
-  routeQuery: {} as Record<string, unknown>,
-}));
-
 vi.mock("vue-router", () => ({
-  useRoute: () => ({ query: mocks.routeQuery }),
-  useRouter: () => ({ replace: mocks.replace }),
+  useRoute: () => ({ query: {} }),
+  useRouter: () => ({ replace: vi.fn() }),
   RouterLink: {
     name: "RouterLink",
     props: ["to"],
@@ -20,11 +15,9 @@ vi.mock("vue-router", () => ({
   },
 }));
 
-describe("ToolsPage category tabs", () => {
+describe("ToolsPage sectioned layout", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
-    vi.clearAllMocks();
-    mocks.routeQuery = {};
   });
 
   function mountPage() {
@@ -41,59 +34,29 @@ describe("ToolsPage category tabs", () => {
     });
   }
 
-  it("defaults to content and writes ?category=content", async () => {
-    mountPage();
-    await flushPromises();
-
-    expect(mocks.replace).toHaveBeenCalledWith({
-      query: { category: "content" },
-    });
-  });
-
-  it("keeps a valid category query without rewriting", async () => {
-    mocks.routeQuery = { category: "utilities" };
+  it("shows all category headings and tiles without tabs", async () => {
     const wrapper = mountPage();
     await flushPromises();
 
-    expect(mocks.replace).not.toHaveBeenCalled();
+    expect(wrapper.findAll('[role="tab"]')).toHaveLength(0);
+    expect(wrapper.text()).toContain("content");
+    expect(wrapper.text()).toContain("utilities");
+    expect(wrapper.text()).toContain("recipes");
     expect(wrapper.text()).toContain("calculator");
+    // expenses (only public productivity tool) is off by default via feature flag
+    expect(wrapper.text()).not.toContain("expenses");
+    expect(wrapper.text()).not.toContain("productivity");
     expect(wrapper.text()).not.toContain("news");
-  });
-
-  it("shows category breadcrumb and hides empty-category tabs", async () => {
-    mocks.routeQuery = { category: "content" };
-    const wrapper = mountPage();
-    await flushPromises();
-
-    const crumbText = wrapper.get('[data-testid="crumbs"]').text();
-    expect(crumbText).toContain("tools");
-    expect(crumbText).toContain("content");
-
-    const tabLabels = wrapper.findAll('[role="tab"]').map((tab) => tab.text());
-    expect(tabLabels).toEqual(["content", "productivity", "utilities"]);
-    expect(tabLabels).not.toContain("operations");
-  });
-
-  it("switches category via tab and updates the query", async () => {
-    mocks.routeQuery = { category: "content" };
-    const wrapper = mountPage();
-    await flushPromises();
-
-    const utilitiesTab = wrapper.findAll('[role="tab"]').find((tab) => tab.text() === "utilities");
-    expect(utilitiesTab).toBeTruthy();
-    await utilitiesTab!.trigger("click");
-
-    expect(mocks.replace).toHaveBeenCalledWith({
-      query: { category: "utilities" },
-    });
+    expect(wrapper.get('[data-testid="crumbs"]').text()).toBe("tools");
   });
 });
 
 describe("tools content tile order", () => {
-  it("lists news before other content tools", () => {
+  it("lists recipes before other content tools when news is not public", () => {
     const content = groupServicesByCategory(publicToolsAsServices()).find(
       (section) => section.category === "content",
     );
-    expect(content?.services.map((tool) => tool.slug)[0]).toBe("news");
+    expect(content?.services.map((tool) => tool.slug)).not.toContain("news");
+    expect(content?.services.map((tool) => tool.slug)[0]).toBe("recipes");
   });
 });

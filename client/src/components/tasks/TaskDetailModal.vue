@@ -88,7 +88,7 @@ watch(
         <div class="space-y-1">
           <div class="flex min-w-0 items-baseline justify-between gap-3 text-sm">
             <span class="shrink-0 text-surface-mid">deadline</span>
-            <span class="min-w-0 text-right text-surface-light">{{ schedule?.headline }}</span>
+            <span class="min-w-0 text-right text-datetime">{{ schedule?.headline }}</span>
           </div>
           <p v-if="schedule?.detail" class="text-right text-xs text-surface-mid">
             {{ schedule.detail }}
@@ -122,7 +122,7 @@ watch(
             :key="reminder.id"
             class="flex min-w-0 items-baseline gap-2 text-sm"
           >
-            <span class="min-w-0 flex-1 text-surface-light">
+            <span class="min-w-0 flex-1 text-datetime">
               {{ formatScheduleDate(reminder.remind_at).headline }}
             </span>
             <span
@@ -210,13 +210,13 @@ watch(
           </div>
           <div class="flex min-w-0 items-baseline justify-between gap-3">
             <dt class="shrink-0 text-surface-mid">created</dt>
-            <dd class="min-w-0 text-right text-surface-light">
+            <dd class="min-w-0 text-right text-datetime">
               {{ formatDate(task.created_at) }}
             </dd>
           </div>
           <div class="flex min-w-0 items-baseline justify-between gap-3">
             <dt class="shrink-0 text-surface-mid">updated</dt>
-            <dd class="min-w-0 text-right text-surface-light">
+            <dd class="min-w-0 text-right text-datetime">
               {{ formatDate(task.updated_at) }}
             </dd>
           </div>

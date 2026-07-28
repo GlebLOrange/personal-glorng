@@ -16,6 +16,7 @@ from app.core.deps import (
     ExpenseCategoryServiceDep,
     ExpenseServiceDep,
     require_capability,
+    require_expenses_enabled,
 )
 from app.core.utils import DEFAULT_PER_PAGE
 from app.openapi import requires_capability
@@ -42,7 +43,10 @@ from app.todobot.utils.expense_nlp import parse_expense_text
 router = APIRouter(
     prefix="/expenses",
     tags=["expenses"],
-    dependencies=[Depends(require_capability("expenses", "read"))],
+    dependencies=[
+        Depends(require_expenses_enabled),
+        Depends(require_capability("expenses", "read")),
+    ],
 )
 
 

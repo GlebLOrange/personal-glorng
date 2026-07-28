@@ -3,7 +3,6 @@ import { onMounted, watch } from "vue";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
-import NewsTabs from "@/components/news/NewsTabs.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import ListSkeleton from "@/components/ui/ListSkeleton.vue";
@@ -42,8 +41,6 @@ watch(page, () => {
     back-to="/"
     :narrow="false"
   >
-    <NewsTabs />
-
     <ListSkeleton
       v-if="listLoading"
       :rows="5"
@@ -72,7 +69,10 @@ watch(page, () => {
         <div
           class="relative z-20 mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted"
         >
-          <time class="mr-auto" :datetime="newsArticleDisplayDate(item)">
+          <time
+            class="text-datetime mr-auto whitespace-nowrap lowercase"
+            :datetime="newsArticleDisplayDate(item)"
+          >
             {{ formatNewsDate(newsArticleDisplayDate(item)) }}
           </time>
           <a
@@ -108,7 +108,7 @@ watch(page, () => {
     <EmptyState
       v-else
       title="no news yet"
-      description="the digest has not published anything yet. Check back after the next ingestion run."
+      description="the digest has not published anything yet — check back after the next ingestion run"
     />
 
     <AdminListFooter

@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useRouter } from "vue-router";
-
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
-import AdminTabBar, { type AdminTab } from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
@@ -21,10 +17,6 @@ import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { newsSourceEnabledClass } from "@/constants/filterColors";
 import { ENABLED_FILTERS, useNewsSources } from "@/composables/useNewsSources";
-import { usePermissions } from "@/composables/usePermissions";
-
-const router = useRouter();
-const { can } = usePermissions();
 
 const {
   sources,
@@ -65,34 +57,10 @@ const {
   confirmDeleteSource,
   cancelDeleteSource,
 } = useNewsSources();
-
-const surfaceTabs = computed((): AdminTab[] => {
-  const items: AdminTab[] = [{ id: "digest", label: "digest", family: "1xx" }];
-  if (can("news", "read")) {
-    items.push({ id: "manage", label: "manage", family: "1xx" });
-  }
-  return items;
-});
-
-/** Neither digest nor manage is selected while on this page. */
-const surfaceTab = computed({
-  get: () => "sources",
-  set: (id: string) => {
-    void onSurfaceTab(id);
-  },
-});
-
-async function onSurfaceTab(id: string): Promise<void> {
-  if (id === "manage") {
-    await router.push({ name: "news", query: { manage: "1" } });
-    return;
-  }
-  await router.push({ name: "news", query: {} });
-}
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="news sources" max-width="xl" back-to="/news">
+  <AdminPageLayout hub="admin" title="manage news sources" max-width="xl" back-to="/admin">
     <div class="mb-3 flex min-w-0 flex-wrap items-center gap-2">
       <AdminFilterDropdown
         ref="filterDropdown"
@@ -113,14 +81,6 @@ async function onSurfaceTab(id: string): Promise<void> {
           />
         </template>
       </AdminFilterDropdown>
-
-      <AdminTabBar
-        v-if="surfaceTabs.length > 0"
-        v-model="surfaceTab"
-        flush
-        panel-id-prefix="news-sources-surface"
-        :tabs="surfaceTabs"
-      />
 
       <template v-if="canWrite">
         <ToolbarPillButton

@@ -5,6 +5,7 @@ from html import escape
 from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse, Response
 
+from app.core.feature_flags import is_expenses_enabled
 from app.db.deps import DbRegistry
 from app.settings import get_settings
 
@@ -25,6 +26,13 @@ _PUBLIC_PATHS: tuple[tuple[str, str], ...] = (
 )
 
 
+def _public_paths() -> tuple[tuple[str, str], ...]:
+    """Static sitemap paths, omitting expenses surfaces when the flag is off."""
+    if is_expenses_enabled():
+        return _PUBLIC_PATHS
+    return tuple(item for item in _PUBLIC_PATHS if item[0] != "/expense-calculator")
+
+
 @router.get(
     "/sitemap.xml",
     response_class=Response,
@@ -38,7 +46,7 @@ async def sitemap_xml(registry: DbRegistry) -> Response:
         f"    <loc>{base}{path}</loc>\n"
         f"    <changefreq>{freq}</changefreq>\n"
         f"  </url>"
-        for path, freq in _PUBLIC_PATHS
+        for path, freq in _public_paths()
     ]
     news_urls: list[str] = []
     if registry.news is not None:

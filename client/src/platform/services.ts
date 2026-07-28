@@ -22,6 +22,8 @@ export const ADMIN_HUB_SERVICE_SLUGS = new Set([
   "api-docs",
   "ai-chat",
   "email",
+  "news",
+  "news-sources",
 ]);
 
 /** Capability tools listed on /tools for signed-in users (alongside public tools). */
@@ -69,16 +71,15 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "news",
-    name: "news",
+    name: "manage news",
     category: "content",
     categoryLabel: "content",
     description: "curated worldwide news digest with source attribution",
     apiPrefix: "/tools/news",
-    adminRoute: "/news",
+    adminRoute: "/admin/news",
     icon: "◇",
     capabilities: ["read", "write"],
     external: false,
-    public: true,
   },
   {
     slug: "recipes",
@@ -195,12 +196,12 @@ export const PLATFORM_SERVICES: PlatformService[] = [
   },
   {
     slug: "news-sources",
-    name: "news sources",
+    name: "manage news sources",
     category: "content",
     categoryLabel: "content",
     description: "manage rss sources for the public news page",
     apiPrefix: "/tools/news/sources",
-    adminRoute: "/news/sources",
+    adminRoute: "/admin/news/sources",
     icon: "◇",
     capabilities: ["read", "write"],
     external: false,

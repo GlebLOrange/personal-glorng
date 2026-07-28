@@ -605,6 +605,8 @@ class Settings(BaseSettings):
     GROQ_API_BASE_URL: str = "https://api.groq.com/openai/v1"
     AI_CHAT_ENABLED: bool
     AI_SEARCH_ENABLED: bool
+    # Ledger + public expense calculator (opt-in; off until re-enabled)
+    EXPENSES_ENABLED: bool = False
 
     # Curated news
     NEWS_INGEST_ENABLED: bool = False

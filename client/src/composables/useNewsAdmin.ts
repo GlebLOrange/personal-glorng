@@ -1,5 +1,4 @@
 import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
-import { useRouter } from "vue-router";
 
 import {
   NEWS_STATUS_META,
@@ -75,11 +74,9 @@ export function formFromArticle(article: NewsArticle): NewsArticleFormData {
 }
 
 export function useNewsAdmin() {
-  const router = useRouter();
   const { can } = usePermissions();
   const { toast } = useNotify();
   const canWrite = computed(() => can("news", "write"));
-  const canManageSources = computed(() => can("news-sources", "read"));
   const drawerOpen = ref(false);
   const drawerMode = ref<DrawerMode>("create");
   const editingArticleId = ref<number | null>(null);
@@ -390,10 +387,6 @@ export function useNewsAdmin() {
     await reloadAdminNews();
   }
 
-  function goToSources(): void {
-    void router.push("/news/sources");
-  }
-
   onMounted(async () => {
     await Promise.all([reloadAdminNews(), loadSources()]);
   });
@@ -404,7 +397,6 @@ export function useNewsAdmin() {
 
   return {
     canWrite,
-    canManageSources,
     drawerOpen,
     drawerMode,
     form,
@@ -435,6 +427,5 @@ export function useNewsAdmin() {
     updateForm,
     saveDrawer,
     deleteDrawerArticle,
-    goToSources,
   };
 }

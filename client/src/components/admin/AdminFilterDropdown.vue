@@ -91,6 +91,8 @@ const rootStyle = computed((): CSSProperties | undefined => {
 
 const triggerStyle = computed((): CSSProperties | undefined => {
   if (isLocalAnchor.value || contentMinWidthPx.value <= 0) return undefined;
+  // ponytail: compact trigger — panel still floors width when matchTriggerWidth is false.
+  if (!props.matchTriggerWidth) return undefined;
   return { minWidth: `${contentMinWidthPx.value}px` };
 });
 

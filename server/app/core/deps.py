@@ -169,6 +169,15 @@ def require_capability(
     return _dep
 
 
+def require_expenses_enabled() -> None:
+    """Reject expenses and expense-calculator routes when the feature flag is off."""
+    from app.core.exceptions import ApiError
+    from app.core.feature_flags import is_expenses_enabled
+
+    if not is_expenses_enabled():
+        raise ApiError(503, "Expenses is disabled")
+
+
 AuthorizedUser = CurrentUser
 
 

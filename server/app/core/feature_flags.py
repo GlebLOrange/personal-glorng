@@ -23,7 +23,14 @@ def is_task_intake_ai_enabled() -> bool:
     return settings.TASK_INTAKE_AI_ENABLED and bool(settings.GROQ_API_KEY)
 
 
+def is_expenses_enabled() -> bool:
+    """Whether expenses ledger and public calculator are available."""
+    return get_settings().EXPENSES_ENABLED
+
+
 def is_service_enabled(slug: ServiceSlug) -> bool:
     if slug == "ai-chat":
         return is_ai_chat_enabled()
+    if slug == "expenses":
+        return is_expenses_enabled()
     return True
