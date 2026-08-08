@@ -45,7 +45,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "ruff==0.15.*",
+    "ruff==0.16.*",
     "pytest==9.1.*",
     "pytest-asyncio==1.4.*",
     "aiosqlite==0.22.*",
