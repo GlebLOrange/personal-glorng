@@ -3,11 +3,13 @@ import { computed, ref } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
+import IconActionButton from "@/components/ui/IconActionButton.vue";
 import IconCopyButton from "@/components/ui/IconCopyButton.vue";
 import { Card } from "@/components/ui/card";
-import BaseInput from "@/components/ui/BaseInput.vue";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
@@ -74,6 +76,12 @@ function clearOptions(): void {
   excludeAmbiguous.value = false;
 }
 
+function resetState(): void {
+  clearOptions();
+  generated.value = "";
+  showPassword.value = false;
+}
+
 async function generatePassword(): Promise<void> {
   if (!hasCharset.value) return;
   length.value = clampedLength.value;
@@ -109,23 +117,14 @@ async function generatePassword(): Promise<void> {
     <Card variant="ghost" class="mx-auto w-full max-w-md">
       <form class="space-y-3" @submit.prevent="generatePassword">
         <div class="flex min-w-0 items-end gap-2">
-          <BaseInput
-            v-model.number="length"
-            type="number"
-            :min="PASSWORD_MIN_LENGTH"
-            :max="128"
-            label="length"
-            :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
-            class="w-28 shrink-0"
-          />
-
+          <!-- Swapped positions: ToolbarPillButton (AdminFilterDropdown) first -->
           <AdminFilterDropdown
             label="options"
             class="shrink-0"
             :match-trigger-width="false"
             :has-active-filters="hasCustomOptions"
             :active-label="optionsActiveLabel"
-            @clear="clearOptions"
+            @clear="resetState"
           >
             <template #chips>
               <AdminFilterChip
@@ -165,16 +164,38 @@ async function generatePassword(): Promise<void> {
               />
             </template>
           </AdminFilterDropdown>
+
+          <!-- Swapped positions: BaseInput second -->
+          <BaseInput
+            v-model.number="length"
+            type="number"
+            :min="PASSWORD_MIN_LENGTH"
+            :max="128"
+            label="length"
+            :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
+            class="w-28 shrink-0"
+          />
         </div>
 
-        <BaseButton
-          variant="primary"
-          type="submit"
-          class="w-full"
-          :disabled="loading || !hasCharset"
-        >
-          {{ loading ? "generating…" : "generate" }}
-        </BaseButton>
+        <div class="flex items-center gap-2">
+          <BaseButton
+            variant="primary"
+            type="submit"
+            class="w-auto flex-1"
+            :disabled="loading || !hasCharset"
+          >
+            {{ loading ? "generating…" : "generate" }}
+          </BaseButton>
+
+          <IconActionButton
+            family="1xx"
+            :aria-label="'reset options and clear generated password'"
+            title="reset state & clear password"
+            @click="resetState"
+          >
+            <RefreshIcon class-name="size-4" />
+          </IconActionButton>
+        </div>
       </form>
 
       <div v-if="generated" class="mt-4 space-y-2">
