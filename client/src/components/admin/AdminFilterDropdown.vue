@@ -258,7 +258,7 @@ defineExpose({ close });
           · {{ activeLabel }}
         </span>
       </span>
-      <ChevronIcon :open="open" />
+      <ChevronIcon :open="open" class="ml-auto shrink-0" />
     </ToolbarPillButton>
 
     <!-- Probe: natural width of dropdown lines (not stretched). CSS max-w still caps the trigger. -->
