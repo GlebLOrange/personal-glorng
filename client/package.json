@@ -25,17 +25,17 @@
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans": "^5.3.0",
-    "@sentry/vue": "^10.69.0",
-    "axios": "^1.19.0",
+    "@sentry/vue": "^10.72.0",
+    "axios": "^1.20.0",
     "chart.js": "^4.5.1",
-    "dompurify": "^3.4.13",
-    "firebase": "^12.17.1",
-    "pinia": "^4.0.2",
-    "simple-icons": "^16.28.0",
+    "dompurify": "^3.4.14",
+    "firebase": "^12.18.0",
+    "pinia": "^4.0.3",
+    "simple-icons": "^16.29.0",
     "vanilla-cookieconsent": "^3.1.0",
-    "vue": "^3.5.41",
+    "vue": "^3.5.42",
     "vue-chartjs": "^5.3.4",
-    "vue-router": "^5.2.0"
+    "vue-router": "^5.3.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
