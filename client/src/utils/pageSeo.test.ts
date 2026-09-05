@@ -25,9 +25,7 @@ describe("absoluteUrl / publicOrigin", () => {
   it("prefers VITE_PUBLIC_ORIGIN when set", () => {
     vi.stubEnv("VITE_PUBLIC_ORIGIN", "https://example.test/");
     expect(publicOrigin()).toBe("https://example.test");
-    expect(absoluteUrl("/apple-touch-icon.png")).toBe(
-      "https://example.test/apple-touch-icon.png",
-    );
+    expect(absoluteUrl("/apple-touch-icon.png")).toBe("https://example.test/apple-touch-icon.png");
   });
 
   it("falls back to window.location.origin", () => {

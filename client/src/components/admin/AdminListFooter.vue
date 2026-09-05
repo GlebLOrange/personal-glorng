@@ -3,18 +3,23 @@ import { computed } from "vue";
 
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 
-const props = defineProps<{
-  total: number;
-  page: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-  itemLabel?: string;
-  ariaLabel: string;
-  loading?: boolean;
-  visibleCount?: number;
-  countLabel?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    total: number;
+    page: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    itemLabel?: string;
+    ariaLabel?: string;
+    loading?: boolean;
+    visibleCount?: number;
+    countLabel?: string;
+  }>(),
+  {
+    ariaLabel: "pagination",
+  },
+);
 
 const emit = defineEmits<{ prev: []; next: []; first: []; last: [] }>();
 

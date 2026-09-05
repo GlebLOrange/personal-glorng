@@ -246,12 +246,7 @@ watch(articleId, () => {
       <Card v-else-if="detailError" role="alert">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-sm text-status-warning">{{ detailError }}</p>
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            class="gap-1.5"
-            @click="loadCurrentArticle"
-          >
+          <BaseButton variant="ghost" size="sm" class="gap-1.5" @click="loadCurrentArticle">
             <RefreshIcon class-name="size-3.5" />
             retry
           </BaseButton>
