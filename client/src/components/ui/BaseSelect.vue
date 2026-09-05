@@ -2,10 +2,7 @@
 import { computed, useAttrs, useId } from "vue";
 
 import FieldHelp from "@/components/ui/FieldHelp.vue";
-import {
-  buildFieldAccessibleName,
-  buildFieldDescribedBy,
-} from "@/components/ui/fieldA11y";
+import { buildFieldAccessibleName, buildFieldDescribedBy } from "@/components/ui/fieldA11y";
 import {
   FIELD_NOTCH_BG_CLASS,
   FIELD_NOTCH_CLASS,
@@ -57,9 +54,7 @@ const notchClass = FIELD_NOTCH_CLASS;
 </script>
 
 <template>
-  <div
-    :class="[FIELD_WRAPPER_CLASS, hasBorderNotch ? 'pt-2.5' : undefined, attrs.class]"
-  >
+  <div :class="[FIELD_WRAPPER_CLASS, hasBorderNotch ? 'pt-2.5' : undefined, attrs.class]">
     <select
       :id="selectId"
       v-model="model"
@@ -74,10 +69,7 @@ const notchClass = FIELD_NOTCH_CLASS;
     >
       <slot />
     </select>
-    <div
-      v-if="showNotchRow"
-      :class="[FIELD_NOTCH_ROW_CLASS, notchBgClass]"
-    >
+    <div v-if="showNotchRow" :class="[FIELD_NOTCH_ROW_CLASS, notchBgClass]">
       <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
       <label
         v-if="showLabelNotch"

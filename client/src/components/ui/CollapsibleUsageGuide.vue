@@ -74,10 +74,7 @@ onBeforeUnmount(() => {
           <span
             role="tooltip"
             class="absolute top-full z-20 mt-1 w-max max-w-[min(100vw-2rem,18rem)] rounded-md border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs lowercase leading-normal text-surface-mid shadow-lg"
-            :class="[
-              slots.start ? 'right-0' : 'left-0',
-              hintOpen && !open ? undefined : 'sr-only',
-            ]"
+            :class="[slots.start ? 'right-0' : 'left-0', hintOpen && !open ? undefined : 'sr-only']"
           >
             {{ props.title }}
           </span>

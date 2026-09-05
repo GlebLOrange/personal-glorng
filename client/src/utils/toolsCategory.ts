@@ -5,10 +5,7 @@ export function defaultToolsCategory(available: readonly string[]): string {
 }
 
 /** Resolve ?category= against non-empty hub categories. */
-export function resolveToolsCategory(
-  queryValue: unknown,
-  available: readonly string[],
-): string {
+export function resolveToolsCategory(queryValue: unknown, available: readonly string[]): string {
   if (typeof queryValue === "string" && available.includes(queryValue)) {
     return queryValue;
   }

@@ -6,11 +6,15 @@ import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 import type { ExpenseCategory, ExpenseSummary } from "@/types";
 
-const ExpenseBarChart = defineAsyncComponent(() => import("@/components/charts/ExpenseBarChart.vue"));
+const ExpenseBarChart = defineAsyncComponent(
+  () => import("@/components/charts/ExpenseBarChart.vue"),
+);
 const ExpenseDoughnutChart = defineAsyncComponent(
   () => import("@/components/charts/ExpenseDoughnutChart.vue"),
 );
-const ExpenseLineChart = defineAsyncComponent(() => import("@/components/charts/ExpenseLineChart.vue"));
+const ExpenseLineChart = defineAsyncComponent(
+  () => import("@/components/charts/ExpenseLineChart.vue"),
+);
 
 const props = defineProps<{
   hasChartData: boolean;
@@ -31,7 +35,11 @@ const MAX_SERIES = 6;
 function foldSeries(
   labels: string[],
   values: number[],
-): { labels: string[]; values: number[]; rows: Array<{ label: string; value: number; percent: number }> } {
+): {
+  labels: string[];
+  values: number[];
+  rows: Array<{ label: string; value: number; percent: number }>;
+} {
   const pairs = labels.map((label, i) => ({ label, value: values[i] ?? 0 }));
   pairs.sort((a, b) => b.value - a.value);
   const total = pairs.reduce((sum, p) => sum + p.value, 0);
@@ -54,9 +62,7 @@ function foldSeries(
   };
 }
 
-const categorySeries = computed(() =>
-  foldSeries(props.barChart.labels, props.barChart.values),
-);
+const categorySeries = computed(() => foldSeries(props.barChart.labels, props.barChart.values));
 const productSeries = computed(() =>
   foldSeries(props.doughnutChart.labels, props.doughnutChart.values),
 );
@@ -141,7 +147,9 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
         </div>
       </div>
       <table v-if="budgetRows.length" class="mt-4 w-full text-left text-xs">
-        <caption class="sr-only">Category budget status</caption>
+        <caption class="sr-only">
+          Category budget status
+        </caption>
         <thead>
           <tr class="text-surface-mid">
             <th class="py-1 font-medium">category</th>
@@ -151,7 +159,11 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in budgetRows" :key="row.category" class="border-t border-surface-border/50">
+          <tr
+            v-for="row in budgetRows"
+            :key="row.category"
+            class="border-t border-surface-border/50"
+          >
             <td class="py-1.5 text-surface-light">{{ row.category }}</td>
             <td class="py-1.5 text-right font-data">{{ formatMoney(row.spent, currency) }}</td>
             <td class="py-1.5 text-right font-data">
@@ -173,7 +185,9 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
         <h3 class="mb-3 text-xs text-surface-mid">monthly trend</h3>
         <ExpenseLineChart :labels="lineChart.labels" :values="lineChart.values" />
         <table class="mt-3 w-full text-left text-xs">
-          <caption class="sr-only">Monthly totals</caption>
+          <caption class="sr-only">
+            Monthly totals
+          </caption>
           <thead>
             <tr class="text-surface-mid">
               <th class="py-1 font-medium">period</th>
@@ -203,7 +217,9 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
           horizontal
         />
         <table class="mt-3 w-full text-left text-xs">
-          <caption class="sr-only">Spend by category</caption>
+          <caption class="sr-only">
+            Spend by category
+          </caption>
           <thead>
             <tr class="text-surface-mid">
               <th class="py-1 font-medium">category</th>
@@ -231,11 +247,7 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
     <Card>
       <h3 class="mb-3 text-xs text-surface-mid">by product</h3>
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <ExpenseBarChart
-          :labels="productSeries.labels"
-          :values="productSeries.values"
-          horizontal
-        />
+        <ExpenseBarChart :labels="productSeries.labels" :values="productSeries.values" horizontal />
         <ExpenseDoughnutChart
           v-if="showProductDoughnut"
           :labels="productSeries.labels"
@@ -243,7 +255,9 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
         />
       </div>
       <table class="mt-3 w-full text-left text-xs">
-        <caption class="sr-only">Spend by product</caption>
+        <caption class="sr-only">
+          Spend by product
+        </caption>
         <thead>
           <tr class="text-surface-mid">
             <th class="py-1 font-medium">product</th>

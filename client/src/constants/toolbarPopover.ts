@@ -18,8 +18,7 @@ export const TOOLBAR_POPOVER_WIDTH_CLASS = TOOLBAR_POPOVER_MAX_WIDTH_CLASS;
  * - `min-w-full` covers absolute panels under a trigger-sized parent.
  * - Teleported panels set inline minWidth from the trigger in JS.
  */
-export const TOOLBAR_POPOVER_PANEL_WIDTH_CLASS =
-  `w-max min-w-full ${TOOLBAR_POPOVER_MAX_WIDTH_CLASS}`;
+export const TOOLBAR_POPOVER_PANEL_WIDTH_CLASS = `w-max min-w-full ${TOOLBAR_POPOVER_MAX_WIDTH_CLASS}`;
 
 /** Panel surface chrome only. */
 export const TOOLBAR_POPOVER_PANEL_CHROME_CLASS =

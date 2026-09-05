@@ -331,14 +331,7 @@ export function isoDateFromUnix(unixtime: number, offsetHours: number): string {
 }
 
 export type WeatherConditionKind =
-  | "clear"
-  | "partly"
-  | "cloud"
-  | "fog"
-  | "rain"
-  | "snow"
-  | "storm"
-  | "unknown";
+  "clear" | "partly" | "cloud" | "fog" | "rain" | "snow" | "storm" | "unknown";
 
 // ponytail: coarse wttr code buckets; extend map if a code renders wrong often.
 const WEATHER_CODE_KIND: Record<number, WeatherConditionKind> = {

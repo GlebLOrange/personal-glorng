@@ -22,6 +22,11 @@ type ApiPlatformService = {
   public_route?: string | null;
 };
 
+/** Unfiltered catalog; AI-chat visibility is derived in usePlatformCatalog. */
+const rawServices = ref<PlatformService[]>(PLATFORM_SERVICES);
+const loaded = ref(false);
+let loadPromise: Promise<void> | null = null;
+
 function filterAiChat(services: PlatformService[]): PlatformService[] {
   const auth = useAuthStore();
   const isSuperuser = auth.user?.permissions.includes(SUPERUSER_PERMISSION) ?? false;
@@ -60,11 +65,6 @@ export function mapApiPlatformService(s: ApiPlatformService): PlatformService | 
     publicRoute,
   };
 }
-
-/** Unfiltered catalog; AI-chat visibility is derived in usePlatformCatalog. */
-const rawServices = ref<PlatformService[]>(PLATFORM_SERVICES);
-const loaded = ref(false);
-let loadPromise: Promise<void> | null = null;
 
 /** Reset module cache (call on logout so the next session can refetch). */
 export function clearPlatformCatalog(): void {
