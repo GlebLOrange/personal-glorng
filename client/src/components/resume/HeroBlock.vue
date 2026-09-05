@@ -83,7 +83,9 @@ async function downloadCv(): Promise<void> {
         {{ availability }}
       </a>
     </p>
-    <p class="text-lg md:text-xl max-w-2xl mx-auto text-surface-sage leading-relaxed text-pretty lowercase">
+    <p
+      class="text-lg md:text-xl max-w-2xl mx-auto text-surface-sage leading-relaxed text-pretty lowercase"
+    >
       {{ bio }}
     </p>
 

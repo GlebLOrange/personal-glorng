@@ -1,10 +1,7 @@
 import type { NewsStatus } from "@/types";
 
 /** Editorial workflow statuses (slug → chip label). */
-export const NEWS_STATUS_META: Record<
-  NewsStatus,
-  { label: string; description: string }
-> = {
+export const NEWS_STATUS_META: Record<NewsStatus, { label: string; description: string }> = {
   draft: {
     label: "draft",
     description: "still being written",

@@ -373,10 +373,7 @@ router.beforeEach(async (to, _from, next) => {
     next({ name: "admin" });
     return;
   }
-  if (
-    !isExpensesEnabled() &&
-    (to.name === "tool-expenses" || to.name === "expense-calculator")
-  ) {
+  if (!isExpensesEnabled() && (to.name === "tool-expenses" || to.name === "expense-calculator")) {
     next({ name: "tools", replace: true });
     return;
   }

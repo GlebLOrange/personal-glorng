@@ -5,10 +5,7 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminUsersGrid from "@/components/admin/users/AdminUsersGrid.vue";
 import AdminUsersPermissionsDrawer from "@/components/admin/users/AdminUsersPermissionsDrawer.vue";
 import AdminUsersToolbar from "@/components/admin/users/AdminUsersToolbar.vue";
-import type {
-  RoleFilter,
-  StatusFilter,
-} from "@/components/admin/users/AdminUsersToolbar.vue";
+import type { RoleFilter, StatusFilter } from "@/components/admin/users/AdminUsersToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import { Card } from "@/components/ui/card";
 import EmptyState from "@/components/ui/EmptyState.vue";

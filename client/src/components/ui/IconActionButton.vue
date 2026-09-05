@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed, useAttrs } from "vue";
 
-import {
-  iconActionClass,
-  type HttpStatusFamily,
-} from "@/constants/httpStatusColors";
+import { iconActionClass, type HttpStatusFamily } from "@/constants/httpStatusColors";
 
 defineOptions({ inheritAttrs: false });
 
@@ -18,8 +15,8 @@ const props = withDefaults(
     selected?: boolean;
     disabled?: boolean;
     type?: "button" | "submit" | "reset";
-    /** Required accessible name for icon-only chrome. */
-    ariaLabel: string;
+    /** Accessible name for icon-only chrome (can also pass aria-label directly). */
+    ariaLabel?: string;
     /** Opt-in native tooltip — omitted by default (aria-label covers a11y). */
     title?: string;
     /** field = in-shell clear (same h-10 square); default matches CONTROL_SIZE (h-10). */
@@ -39,6 +36,10 @@ const props = withDefaults(
 defineEmits<{ click: [MouseEvent] }>();
 
 const attrs = useAttrs();
+
+const accessibleName = computed(
+  () => props.ariaLabel ?? (attrs["aria-label"] as string | undefined) ?? props.title,
+);
 
 const classes = computed(() =>
   [
@@ -66,7 +67,7 @@ const nativeAttrs = computed(() => {
   <button
     :type="type"
     :disabled="disabled"
-    :aria-label="ariaLabel"
+    :aria-label="accessibleName"
     :aria-pressed="selected ? true : undefined"
     :title="title || undefined"
     :class="classes"

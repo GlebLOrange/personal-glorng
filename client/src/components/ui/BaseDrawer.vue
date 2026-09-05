@@ -63,10 +63,7 @@ const hasCustomTitle = computed(() => Boolean(slots.title));
           >
             <div class="flex min-h-10 min-w-0 flex-1 items-center">
               <slot name="title" :title-id="titleId">
-                <h2
-                  :id="titleId"
-                  class="truncate text-lg font-bold leading-none"
-                >
+                <h2 :id="titleId" class="truncate text-lg font-bold leading-none">
                   {{ title }}
                 </h2>
               </slot>

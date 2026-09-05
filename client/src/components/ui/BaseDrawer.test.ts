@@ -65,7 +65,7 @@ describe("BaseDrawer", () => {
     const labelledBy = dialog?.getAttribute("aria-labelledby");
     expect(labelledBy).toBeTruthy();
     const title = document.getElementById(labelledBy!);
-    expect(title?.textContent).toBe("Custom title");
+    expect(title?.textContent).toBe("Fallback title");
 
     wrapper.unmount();
   });

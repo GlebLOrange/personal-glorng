@@ -66,11 +66,7 @@ const hasTypedValue = computed(() => {
 const hasClearableValue = computed(() => isClearableType.value && hasTypedValue.value);
 const useShell = computed(() =>
   Boolean(
-    hasPrefix.value ||
-      props.placeholder ||
-      hasSuffix.value ||
-      props.labelInside ||
-      props.label,
+    hasPrefix.value || props.placeholder || hasSuffix.value || props.labelInside || props.label,
   ),
 );
 const showClear = computed(() => useShell.value && hasClearableValue.value);
@@ -90,7 +86,9 @@ const tipInsetClass = computed(() => [
 /** Error replaces label on the border notch; hint rides beside the label when present. */
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
 /** Persistent sr-only label when labelInside so naming survives hide-on-type. */
-const hasVisibleLabel = computed(() => showLabelNotch.value || Boolean(props.label && props.labelInside));
+const hasVisibleLabel = computed(
+  () => showLabelNotch.value || Boolean(props.label && props.labelInside),
+);
 const showNotchRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
 const describedBy = computed(() =>
@@ -142,10 +140,13 @@ const inputAttrs = computed(() => {
   return pickNativeAttrs(attrs, ["aria-describedby"]);
 });
 /** Avoid UA size=20; prefer placeholder length so shrink-wrapped panels fit tips. */
-const shellTextAttrs = computed(() => ({
-  ...inputAttrs.value,
-  size: inputAttrs.value.size ?? Math.max(props.placeholder?.length ?? 1, 1),
-}));
+const shellTextAttrs = computed(() => {
+  const customSize = typeof inputAttrs.value.size === "number" ? inputAttrs.value.size : undefined;
+  return {
+    ...inputAttrs.value,
+    size: customSize ?? Math.max(props.placeholder?.length ?? 1, 1),
+  };
+});
 const accessibleName = computed(() =>
   buildFieldAccessibleName({
     ariaLabel: attrs["aria-label"],
@@ -178,10 +179,7 @@ defineExpose({ focus });
     :style="$attrs.style"
   >
     <div v-if="useShell" :class="shellClass">
-      <span
-        v-if="prefix"
-        class="relative z-10 shrink-0 pl-3 text-xs font-medium text-surface-mid"
-      >
+      <span v-if="prefix" class="relative z-10 shrink-0 pl-3 text-xs font-medium text-surface-mid">
         {{ prefix }}
       </span>
       <span
@@ -281,10 +279,7 @@ defineExpose({ focus });
     </div>
 
     <!-- Outside the control box so scroll/overflow parents cannot clip the notch into the value. -->
-    <div
-      v-if="showNotchRow"
-      :class="[FIELD_NOTCH_ROW_CLASS, notchBgClass]"
-    >
+    <div v-if="showNotchRow" :class="[FIELD_NOTCH_ROW_CLASS, notchBgClass]">
       <!-- associated via :for / :id; FieldHelp sits beside the label -->
       <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
       <label

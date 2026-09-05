@@ -22,8 +22,9 @@ const chartData = computed(() => {
   const { colors } = theme.value;
   const border =
     typeof document !== "undefined"
-      ? getComputedStyle(document.documentElement).getPropertyValue("--color-surface-dark").trim() ||
-        "#111827"
+      ? getComputedStyle(document.documentElement)
+          .getPropertyValue("--color-surface-dark")
+          .trim() || "#111827"
       : "#111827";
   return {
     labels: props.labels,
