@@ -44,7 +44,7 @@ const isBusy = computed(() => props.loading || props.seeding);
 
     <EmptyState
       v-else-if="locations.length === 0"
-      description="no cities yet. Search above to add your first location."
+      description="No cities yet. Search above to add your first location."
     />
 
     <div v-else-if="otherCities.length" class="page-tool-grid min-w-0">

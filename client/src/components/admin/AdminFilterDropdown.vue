@@ -101,9 +101,7 @@ const bareTriggerClass = computed(() => {
   const active = open.value;
   return [
     "!bg-transparent hover:enabled:!bg-transparent",
-    active
-      ? "!border-accent-blue/40"
-      : "!border-transparent hover:enabled:!border-accent-blue/40",
+    active ? "!border-accent-blue/40" : "!border-transparent hover:enabled:!border-accent-blue/40",
   ];
 });
 
@@ -231,6 +229,7 @@ defineExpose({ close });
       family="1xx"
       :class="[
         TOOLBAR_POPOVER_MAX_WIDTH_CLASS,
+        '!justify-between',
         isLocalAnchor ? 'w-full' : undefined,
         bareTriggerClass,
       ]"
@@ -240,25 +239,27 @@ defineExpose({ close });
       :aria-expanded="open"
       @click.stop="toggle"
     >
-      <FilterIcon v-if="showFilterIcon" class-name="size-3.5" />
-      {{ label }}
-      <span v-if="sizingLabels.length" class="inline-grid justify-items-start">
-        <span
-          v-for="opt in sizingLabels"
-          :key="opt"
-          class="invisible col-start-1 row-start-1 whitespace-nowrap"
-          aria-hidden="true"
-        >
-          · {{ opt }}
-        </span>
-        <span
-          v-if="activeLabel"
-          class="col-start-1 row-start-1 truncate whitespace-nowrap text-surface-muted"
-        >
-          · {{ activeLabel }}
+      <span class="inline-flex min-w-0 items-center gap-1.5">
+        <FilterIcon v-if="showFilterIcon" class-name="size-3.5" />
+        {{ label }}
+        <span v-if="sizingLabels.length" class="inline-grid justify-items-start">
+          <span
+            v-for="opt in sizingLabels"
+            :key="opt"
+            class="invisible col-start-1 row-start-1 whitespace-nowrap"
+            aria-hidden="true"
+          >
+            · {{ opt }}
+          </span>
+          <span
+            v-if="activeLabel"
+            class="col-start-1 row-start-1 truncate whitespace-nowrap text-surface-muted"
+          >
+            · {{ activeLabel }}
+          </span>
         </span>
       </span>
-      <ChevronIcon :open="open" class="ml-auto shrink-0" />
+<ChevronIcon :open="open" class-name="size-3.5 shrink-0" />
     </ToolbarPillButton>
 
     <!-- Probe: natural width of dropdown lines (not stretched). CSS max-w still caps the trigger. -->

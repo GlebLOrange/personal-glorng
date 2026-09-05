@@ -111,11 +111,7 @@ function onCategoryRowKeydown(event: KeyboardEvent, category: ExpenseCategory): 
             <ToolbarPillButton family="2xx" @click.stop="emit('saveCategoryRename')">
               save
             </ToolbarPillButton>
-            <BaseButton
-              variant="secondary"
-              size="sm"
-              @click.stop="emit('cancelEditCategory')"
-            >
+            <BaseButton variant="secondary" size="sm" @click.stop="emit('cancelEditCategory')">
               cancel
             </BaseButton>
           </template>

@@ -7,6 +7,7 @@ cd "$root"
 
 allowed_prefixes=(
   "./client/node_modules/"
+  "./docs/node_modules/"
   "./server/.venv/"
 )
 

@@ -27,9 +27,7 @@ const statusFilter = defineModel<StatusFilter>("statusFilter", { required: true 
 
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
-const hasActiveFilters = computed(
-  () => roleFilter.value !== "all" || statusFilter.value !== "all",
-);
+const hasActiveFilters = computed(() => roleFilter.value !== "all" || statusFilter.value !== "all");
 const activeFilterLabel = computed(() => {
   const parts: string[] = [];
   const role = ROLE_FILTERS.find((chip) => chip.value === roleFilter.value)?.label;

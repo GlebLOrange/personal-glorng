@@ -25,12 +25,16 @@ import type { HttpStatusFamily } from "@/constants/httpStatusColors";
 
 type Tab = "queue" | "intakes" | "sync";
 
-const TASK_TABS: { id: Tab; label: string; icon?: "sync" | "refresh"; family?: HttpStatusFamily }[] =
-  [
-    { id: "queue", label: "queue" },
-    { id: "intakes", label: "intakes" },
-    { id: "sync", label: "sync", icon: "sync", family: "5xx" },
-  ];
+const TASK_TABS: {
+  id: Tab;
+  label: string;
+  icon?: "sync" | "refresh";
+  family?: HttpStatusFamily;
+}[] = [
+  { id: "queue", label: "queue" },
+  { id: "intakes", label: "intakes" },
+  { id: "sync", label: "sync", icon: "sync", family: "5xx" },
+];
 
 const STATUS_FILTERS = [
   { label: "pending", value: "pending" },

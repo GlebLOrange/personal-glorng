@@ -63,13 +63,8 @@ const showInsideLabel = computed(
 const showTip = computed(
   () => Boolean(props.placeholder) && !hasClearableValue.value && !showInsideLabel.value,
 );
-const tipInsetClass = computed(() => [
-  "left-3",
-  reserveClear.value ? "right-10" : "right-3",
-]);
-const showLabelNotch = computed(
-  () => Boolean(props.label) && !props.error && !props.labelInside,
-);
+const tipInsetClass = computed(() => ["left-3", reserveClear.value ? "right-10" : "right-3"]);
+const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
 const hasVisibleLabel = computed(
   () => showLabelNotch.value || Boolean(props.label && props.labelInside),
 );
@@ -94,12 +89,11 @@ const shellClass = computed(() => [
     ? "border-status-error"
     : "border-surface-border focus-within:border-accent-blue focus-within:ring-2 focus-within:ring-accent-blue/50",
 ]);
-const shellTextareaClass = computed(
-  () =>
-    [
-      "relative z-10 min-w-0 flex-1 resize-y border-0 bg-transparent px-3 text-left text-sm text-surface-light outline-none disabled:opacity-60",
-      props.compact ? "min-h-9 py-1.5" : "min-h-10 py-2",
-    ].join(" "),
+const shellTextareaClass = computed(() =>
+  [
+    "relative z-10 min-w-0 flex-1 resize-y border-0 bg-transparent px-3 text-left text-sm text-surface-light outline-none disabled:opacity-60",
+    props.compact ? "min-h-9 py-1.5" : "min-h-10 py-2",
+  ].join(" "),
 );
 const textareaAttrs = computed(() => pickNativeAttrs(attrs, ["aria-describedby"]));
 const accessibleName = computed(() =>
@@ -182,10 +176,7 @@ function clear(): void {
       />
     </div>
 
-    <div
-      v-if="showNotchRow"
-      :class="[FIELD_NOTCH_ROW_CLASS, notchBgClass]"
-    >
+    <div v-if="showNotchRow" :class="[FIELD_NOTCH_ROW_CLASS, notchBgClass]">
       <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
       <label
         v-if="showLabelNotch"

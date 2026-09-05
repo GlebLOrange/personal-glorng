@@ -1,8 +1,4 @@
-import {
-  CONTROL_SIZE,
-  CONTROL_SIZE_ICON,
-  CONTROL_SIZE_ICON_FIELD,
-} from "@/constants/formClasses";
+import { CONTROL_SIZE, CONTROL_SIZE_ICON, CONTROL_SIZE_ICON_FIELD } from "@/constants/formClasses";
 
 /** HTTP status family keys used for badges and action pills. */
 export type HttpStatusFamily = "1xx" | "2xx" | "3xx" | "4xx" | "5xx";
@@ -182,8 +178,7 @@ export function familyToneClass(
 }
 
 /** Shared shape for toolbar/tab action pills. */
-export const ACTION_PILL_BASE =
-  `inline-flex ${CONTROL_SIZE} shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50`;
+export const ACTION_PILL_BASE = `inline-flex ${CONTROL_SIZE} shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50`;
 
 /** Square icon chrome matching CONTROL_SIZE (overrides pill padding). */
 export const ICON_ACTION_SIZE = CONTROL_SIZE_ICON;

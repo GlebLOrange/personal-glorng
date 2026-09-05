@@ -27,12 +27,7 @@ defineEmits<{ click: [MouseEvent] }>();
     @click="$emit('click', $event)"
   >
     <!-- SVG so the glyph centers optically (✕ text sits high in the em box) -->
-    <svg
-      class="size-3.5 shrink-0"
-      viewBox="0 0 14 14"
-      fill="none"
-      aria-hidden="true"
-    >
+    <svg class="size-3.5 shrink-0" viewBox="0 0 14 14" fill="none" aria-hidden="true">
       <path
         d="M3.5 3.5l7 7m0-7l-7 7"
         stroke="currentColor"

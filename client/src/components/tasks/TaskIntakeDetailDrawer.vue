@@ -65,11 +65,10 @@ const draftEntries = [
       <dl v-if="intake.draft_json" class="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
         <template v-for="entry in draftEntries" :key="entry.key">
           <template v-if="draftFields(intake.draft_json)[entry.key] != null">
-            <dt class="flex items-center gap-1 text-[10px] uppercase tracking-wide text-surface-mid">
-              <LocationIcon
-                v-if="entry.key === 'location'"
-                class-name="size-3 shrink-0"
-              />
+            <dt
+              class="flex items-center gap-1 text-[10px] uppercase tracking-wide text-surface-mid"
+            >
+              <LocationIcon v-if="entry.key === 'location'" class-name="size-3 shrink-0" />
               {{ entry.label }}
             </dt>
             <dd class="text-xs text-surface-light">

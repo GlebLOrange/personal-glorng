@@ -17,19 +17,16 @@ const CONTROL_SIZE_ICON_CHROME =
   "inline-flex shrink-0 items-center justify-center box-border rounded-lg border !px-0 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50";
 
 /** Square icon control matching CONTROL_SIZE (40×40 touch target). */
-export const CONTROL_SIZE_ICON =
-  `${CONTROL_SIZE_ICON_CHROME} ${CONTROL_SIZE} ${CONTROL_SIZE_SQUARE}`;
+export const CONTROL_SIZE_ICON = `${CONTROL_SIZE_ICON_CHROME} ${CONTROL_SIZE} ${CONTROL_SIZE_SQUARE}`;
 
 /**
  * In-field clear — fill the shell (not another h-10 outside the border box).
  * (ponytail: ceiling is nested bordered icons; upgrade to size token if shells gain padding.)
  */
-export const CONTROL_SIZE_ICON_FIELD =
-  `${CONTROL_SIZE_ICON_CHROME} !h-full !w-10 !min-h-0 !min-w-10`;
+export const CONTROL_SIZE_ICON_FIELD = `${CONTROL_SIZE_ICON_CHROME} !h-full !w-10 !min-h-0 !min-w-10`;
 
 /** Reserved clear-slot inside field shells (matches shell content box). */
-export const FIELD_CLEAR_SLOT =
-  `flex h-full ${CONTROL_SIZE_SQUARE} shrink-0 items-center justify-center`;
+export const FIELD_CLEAR_SLOT = `flex h-full ${CONTROL_SIZE_SQUARE} shrink-0 items-center justify-center`;
 export const FIELD_CLEAR_HIDDEN_CLASS = "invisible pointer-events-none";
 
 const FIELD_FOCUS =

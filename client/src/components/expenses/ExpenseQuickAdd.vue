@@ -169,7 +169,11 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       >
         {{ parsed.error || "Could not parse expense" }}
       </p>
-      <p v-else-if="previewLabel" class="rounded-md bg-surface-dark/60 px-3 py-2 text-sm text-surface-light" role="status">
+      <p
+        v-else-if="previewLabel"
+        class="rounded-md bg-surface-dark/60 px-3 py-2 text-sm text-surface-light"
+        role="status"
+      >
         <span class="text-xs text-surface-mid">Will add · </span>{{ previewLabel }}
       </p>
       <BaseButton
