@@ -102,11 +102,7 @@ function toNullableNumber(value: string | number | null | undefined): number | n
         @update:steps="patch({ steps: $event })"
       />
 
-      <RecipeTagFields
-        :tags="form.tags"
-        :form-open="open"
-        @update:tags="patch({ tags: $event })"
-      />
+      <RecipeTagFields :tags="form.tags" :form-open="open" @update:tags="patch({ tags: $event })" />
 
       <BaseTextarea
         compact

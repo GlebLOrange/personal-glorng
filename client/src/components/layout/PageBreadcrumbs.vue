@@ -54,18 +54,12 @@ const ancestorClass =
             <ToolIcon
               v-if="crumbIconSlug(seg.label) === 'tools'"
               slug="tools"
-              :class="
-                isCurrent(idx) && elevated ? 'size-5 shrink-0' : 'size-3.5 shrink-0'
-              "
+              :class="isCurrent(idx) && elevated ? 'size-5 shrink-0' : 'size-3.5 shrink-0'"
             />
             {{ crumbLabel(seg.label) }}
           </span>
         </RouterLink>
-        <span
-          v-else
-          :class="currentClass()"
-          aria-current="page"
-        >
+        <span v-else :class="currentClass()" aria-current="page">
           <ToolIcon
             v-if="crumbIconSlug(seg.label) === 'tools'"
             slug="tools"

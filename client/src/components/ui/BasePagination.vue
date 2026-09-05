@@ -9,11 +9,12 @@ const props = withDefaults(
     hasNextPage: boolean;
     hasPreviousPage?: boolean;
     totalPages?: number;
-    ariaLabel: string;
+    ariaLabel?: string;
     loading?: boolean;
     layout?: "bar" | "compact";
   }>(),
   {
+    ariaLabel: "pagination",
     loading: false,
     layout: "bar",
     hasPreviousPage: undefined,

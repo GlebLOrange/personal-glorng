@@ -23,16 +23,19 @@ node_modules/
 client/.vite/
 client/playwright-report/
 client/test-results/
+coverage/
+.eslintcache
 dist/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 docs/.vitepress/.temp/
 *.tsbuildinfo
 
-# IDE
+# IDE & AI Tools
 .vscode/
 !.vscode/tasks.json
 .idea/
+.gortex/
 *.swp
 *.swo
 *.cursorrules
@@ -43,6 +46,7 @@ docs/.vitepress/.temp/
 .cursor/settings.json
 .cursor/worktrees.json
 .cursor/setup-worktree-unix.sh
+latestcommit.mdc
 
 # Celery beat (dev/runtime schedule db)
 celerybeat-schedule*
@@ -50,6 +54,8 @@ celerybeat-schedule*
 # Docker
 .docker-cache/
 *.log
+docker-compose.override.yml
+docker-compose.*.override.yml
 backups/
 logs/backup.log
 
@@ -58,6 +64,10 @@ media/
 
 # OS
 .DS_Store
+._*
+.AppleDouble
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 # Local git worktrees (created under repo root)

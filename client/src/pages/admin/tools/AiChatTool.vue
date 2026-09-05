@@ -160,12 +160,7 @@ onBeforeUnmount(() => {
   <AdminPageLayout title="ai chat" back-to="/admin">
     <AdminTabBar v-model="activeTab" :tabs="[...AI_CHAT_TABS]" aria-label="ai chat sections">
       <template #end>
-        <div
-          ref="helpRoot"
-          class="relative"
-          @mouseenter="showHelp"
-          @mouseleave="scheduleHideHelp"
-        >
+        <div ref="helpRoot" class="relative" @mouseenter="showHelp" @mouseleave="scheduleHideHelp">
           <button
             type="button"
             :class="helpButtonClass"
@@ -247,7 +242,9 @@ onBeforeUnmount(() => {
                   <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
                   troubleshooting
                 </summary>
-                <ul class="list-disc space-y-2 border-t border-surface-border/60 px-2 py-2 pl-7 text-xs leading-relaxed text-surface-mid">
+                <ul
+                  class="list-disc space-y-2 border-t border-surface-border/60 px-2 py-2 pl-7 text-xs leading-relaxed text-surface-mid"
+                >
                   <li>
                     <strong class="font-medium text-surface-light">Quota or rate limit</strong> —
                     wait for the retry window, then try again. Check RPM limits in
@@ -259,14 +256,14 @@ onBeforeUnmount(() => {
                     >
                       Groq Console
                     </a>
-                    . Disable competing features in <code class="text-surface-sage">.env</code> while
-                    testing chat:
+                    . Disable competing features in
+                    <code class="text-surface-sage">.env</code> while testing chat:
                     <code class="text-surface-sage">TASK_INTAKE_AI_ENABLED=false</code>,
                     <code class="text-surface-sage">NEWS_INGEST_ENABLED=false</code>
                   </li>
                   <li>
-                    <strong class="font-medium text-surface-light">App rate limit</strong> — this tool
-                    caps chat to 5 messages per 5 minutes per signed-in superuser
+                    <strong class="font-medium text-surface-light">App rate limit</strong> — this
+                    tool caps chat to 5 messages per 5 minutes per signed-in superuser
                   </li>
                   <li>
                     <strong class="font-medium text-surface-light">After .env changes</strong> — set
@@ -278,14 +275,18 @@ onBeforeUnmount(() => {
                 </ul>
               </details>
 
-              <details class="group rounded-md border border-surface-border/60 open:border-surface-border">
+              <details
+                class="group rounded-md border border-surface-border/60 open:border-surface-border"
+              >
                 <summary
                   class="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
                 >
                   <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
                   how it works
                 </summary>
-                <div class="space-y-2 border-t border-surface-border/60 px-2 py-2 text-xs leading-relaxed text-surface-mid">
+                <div
+                  class="space-y-2 border-t border-surface-border/60 px-2 py-2 text-xs leading-relaxed text-surface-mid"
+                >
                   <p>
                     Superuser-only plain LLM chat. Set
                     <code class="text-surface-sage">GROQ_API_KEY</code> and
@@ -302,7 +303,9 @@ onBeforeUnmount(() => {
                 </div>
               </details>
 
-              <details class="group rounded-md border border-surface-border/60 open:border-surface-border">
+              <details
+                class="group rounded-md border border-surface-border/60 open:border-surface-border"
+              >
                 <summary
                   class="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
                 >
@@ -378,7 +381,7 @@ onBeforeUnmount(() => {
         <BaseTextarea
           v-model="input"
           class="min-w-0 flex-1 [&>div]:box-border [&>div]:min-h-[calc(2.5rem+0.5rem+2.5rem)] [&>div]:items-stretch [&_textarea]:h-full [&_textarea]:min-h-full [&_textarea]:resize-none"
-          rows="3"
+          :rows="3"
           placeholder="message the assistant…"
           aria-label="message"
           @keydown.enter.exact.prevent="handleSend"

@@ -29,15 +29,13 @@ const props = withDefaults(
 );
 
 const sectionClass = computed(() =>
-  props.showCategoryHeadings
-    ? props.density === "compact"
-      ? "mb-8"
-      : "mb-10"
-    : "mb-0",
+  props.showCategoryHeadings ? (props.density === "compact" ? "mb-8" : "mb-10") : "mb-0",
 );
 
 const headingClass = computed(() =>
-  props.density === "compact" ? "text-meta mb-3 uppercase tracking-wider" : "text-meta mb-4 uppercase tracking-wider",
+  props.density === "compact"
+    ? "text-meta mb-3 uppercase tracking-wider"
+    : "text-meta mb-4 uppercase tracking-wider",
 );
 </script>
 

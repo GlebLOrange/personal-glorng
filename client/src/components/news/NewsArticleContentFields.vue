@@ -65,12 +65,7 @@ function onTagsToggle(event: Event): void {
   <Card>
     <h2 class="card-title mb-4">article</h2>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <BaseInput
-        v-model="form.slug"
-        placeholder="slug"
-        aria-label="slug"
-        :disabled="!canWrite"
-      />
+      <BaseInput v-model="form.slug" placeholder="slug" aria-label="slug" :disabled="!canWrite" />
       <div
         class="grid grid-cols-2 gap-2 sm:col-span-2 sm:grid-cols-3"
         role="group"
@@ -107,10 +102,7 @@ function onTagsToggle(event: Event): void {
         :disabled="!canWrite"
       />
     </div>
-    <details
-      class="mt-4 rounded border border-surface-border px-3 py-2"
-      @toggle="onTagsToggle"
-    >
+    <details class="mt-4 rounded border border-surface-border px-3 py-2" @toggle="onTagsToggle">
       <summary
         class="flex cursor-pointer list-none items-center gap-1.5 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
       >
@@ -135,9 +127,7 @@ function onTagsToggle(event: Event): void {
             type="checkbox"
             class="sr-only"
             :checked="tagIsSelected(tag)"
-            :disabled="
-              !canWrite || (!tagIsSelected(tag) && parsedTags().length >= NEWS_TAG_LIMIT)
-            "
+            :disabled="!canWrite || (!tagIsSelected(tag) && parsedTags().length >= NEWS_TAG_LIMIT)"
             @change="toggleTag(tag)"
           />
           {{ tag }}

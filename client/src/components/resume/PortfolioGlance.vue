@@ -20,7 +20,9 @@ const stats = computed(() => buildGlanceStats(props.resume));
       class="!bg-surface-card ring-1 ring-inset ring-surface-border/70"
     >
       <p class="text-label text-accent-blue mb-2 lowercase">{{ stat.label }}</p>
-      <p class="font-data text-3xl font-semibold text-surface-light mb-2 lowercase">{{ stat.value }}</p>
+      <p class="font-data text-3xl font-semibold text-surface-light mb-2 lowercase">
+        {{ stat.value }}
+      </p>
       <p class="text-meta lowercase">{{ stat.detail }}</p>
     </Card>
   </div>

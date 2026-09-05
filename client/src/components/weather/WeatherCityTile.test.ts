@@ -6,7 +6,7 @@ import WeatherCityTile from "@/components/weather/WeatherCityTile.vue";
 vi.mock("@/components/weather/WeatherSummaryContent.vue", () => ({
   default: {
     name: "WeatherSummaryContent",
-    template: "<div data-testid=\"summary\" />",
+    template: '<div data-testid="summary" />',
   },
 }));
 

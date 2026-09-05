@@ -108,11 +108,7 @@ function onStepPaste(event: ClipboardEvent, index: number): void {
     </summary>
     <div class="space-y-1 border-t border-surface-border px-2 py-2">
       <ul role="list" class="space-y-1">
-        <li
-          v-for="(_, idx) in steps"
-          :key="`step-${idx}`"
-          class="flex min-w-0 items-start gap-1"
-        >
+        <li v-for="(_, idx) in steps" :key="`step-${idx}`" class="flex min-w-0 items-start gap-1">
           <span
             class="inline-flex h-8 w-5 shrink-0 items-center justify-center text-xs text-surface-mid"
             aria-hidden="true"

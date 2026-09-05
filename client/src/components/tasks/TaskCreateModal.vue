@@ -23,11 +23,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
     <form id="task-create-drawer-form" class="space-y-4" @submit.prevent="emit('submit')">
       <BaseInput v-model="form.title" placeholder="title" />
       <BaseInput v-model="form.scheduled_at" type="datetime-local" aria-label="scheduled at" />
-      <BaseInput
-        v-model="form.location"
-        placeholder="(optional)"
-        aria-label="location"
-      >
+      <BaseInput v-model="form.location" placeholder="(optional)" aria-label="location">
         <template #prefix>
           <LocationIcon class-name="size-4 shrink-0" />
         </template>

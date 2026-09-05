@@ -134,7 +134,9 @@ describe("BaseModal", () => {
     const dialog = document.body.querySelector('[role="dialog"]');
     const labelledBy = dialog?.getAttribute("aria-labelledby");
     expect(labelledBy).toBeTruthy();
-    expect(document.getElementById(labelledBy! as string)?.textContent).toBe("Custom title fallback");
+    expect(document.getElementById(labelledBy! as string)?.textContent).toBe(
+      "Custom title fallback",
+    );
 
     wrapper.unmount();
   });

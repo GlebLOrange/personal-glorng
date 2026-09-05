@@ -2,10 +2,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { api } from "@/composables/useApi";
-import {
-  clearWeatherLocations,
-  useWeatherLocations,
-} from "@/composables/useWeatherLocations";
+import { clearWeatherLocations, useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useAuthStore } from "@/stores/auth";
 import type { UserResponse, WeatherLocation } from "@/types";
 

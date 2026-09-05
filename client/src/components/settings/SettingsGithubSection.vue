@@ -39,12 +39,7 @@ const emit = defineEmits<{
               >@{{ status.github_username ?? "github" }}</span
             >
           </p>
-          <BaseButton
-            variant="secondary"
-            size="sm"
-            :disabled="unlinking"
-            @click="emit('unlink')"
-          >
+          <BaseButton variant="secondary" size="sm" :disabled="unlinking" @click="emit('unlink')">
             {{ unlinking ? "unlinking…" : "unlink" }}
           </BaseButton>
         </template>

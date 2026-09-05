@@ -96,11 +96,7 @@ function onAddBudgetLine(): void {
           class="space-y-2 border-b border-surface-border pb-4 last:border-0 last:pb-0"
         >
           <div class="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-3 items-end">
-            <BaseInput
-              v-model="row.name"
-              data-budget-name
-              placeholder="name (food, transport…)"
-            />
+            <BaseInput v-model="row.name" data-budget-name placeholder="name (food, transport…)" />
             <BaseInput
               v-model="row.budget"
               type="number"
