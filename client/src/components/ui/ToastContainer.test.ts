@@ -115,18 +115,18 @@ describe("ToastContainer", () => {
     expect(statuses[0].text()).toContain("location removed");
   });
 
-  it("keeps sticky errors in the tile until dismiss", async () => {
+  it("auto-dismisses errors in the tile after default 4000ms", async () => {
     vi.useFakeTimers();
-    const { toast, dismiss, toasts } = useNotify();
+    const { toast } = useNotify();
     toast("failed", "error");
-    const id = toasts.value[0]!.id;
 
     const wrapper = mount(ToastContainer, { props: { variant: "tile" } });
     expect(wrapper.get("[role='alert']").text()).toContain("failed");
-    vi.advanceTimersByTime(60_000);
+
+    vi.advanceTimersByTime(3999);
     expect(wrapper.get("[role='alert']").text()).toContain("failed");
 
-    dismiss(id);
+    vi.advanceTimersByTime(1);
     await nextTick();
     expect(wrapper.find("[role='alert']").exists()).toBe(false);
     vi.useRealTimers();

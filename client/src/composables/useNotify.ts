@@ -33,8 +33,6 @@ export function useNotify() {
   function toast(message: string, type: Toast["type"] = "info", duration?: number): void {
     const id = nextId++;
     toasts.value.push({ id, message, type });
-    // Errors stay in the mid tile until dismiss unless a duration is passed explicitly.
-    if (duration === undefined && type === "error") return;
     const ms = duration ?? 4000;
     durations.set(id, ms);
     scheduleDismiss(id, ms);

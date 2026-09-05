@@ -71,32 +71,15 @@ describe("useNotify", () => {
     expect(toasts.value).toHaveLength(0);
   });
 
-  it("keeps errors sticky until dismiss unless duration is set", () => {
-    const { toast, toasts, dismiss } = useNotify();
+  it("auto-dismisses errors after default 4000ms", () => {
+    const { toast, toasts } = useNotify();
 
     toast("err", "error");
     const errorId = toasts.value[0]!.id;
-    vi.advanceTimersByTime(60_000);
-    expect(toasts.value.some((t) => t.id === errorId)).toBe(true);
-    dismiss(errorId);
-    expect(toasts.value.some((t) => t.id === errorId)).toBe(false);
-
-    toast("ok", "success");
-    const successId = toasts.value[0]!.id;
     vi.advanceTimersByTime(3999);
-    expect(toasts.value.some((t) => t.id === successId)).toBe(true);
+    expect(toasts.value.some((t) => t.id === errorId)).toBe(true);
     vi.advanceTimersByTime(1);
-    expect(toasts.value.some((t) => t.id === successId)).toBe(false);
-  });
-
-  it("still auto-dismisses errors when duration is explicit", () => {
-    const { toast, toasts } = useNotify();
-
-    toast("brief", "error", 1000);
-    vi.advanceTimersByTime(999);
-    expect(toasts.value).toHaveLength(1);
-    vi.advanceTimersByTime(1);
-    expect(toasts.value).toHaveLength(0);
+    expect(toasts.value.some((t) => t.id === errorId)).toBe(false);
   });
 
   it("claimTileHost and releaseTileHost toggle the tile claim", () => {
