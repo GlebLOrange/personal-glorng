@@ -1,4 +1,4 @@
-FROM python:3.14.5-bookworm
+FROM python:3.15.0rc2-bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \

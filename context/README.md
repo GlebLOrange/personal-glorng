@@ -6,7 +6,7 @@ development workflow changes.
 
 ## Stack
 
-- **Backend:** FastAPI on Python 3.14, managed with `uv`.
+- **Backend:** FastAPI on Python 3.15, managed with `uv`.
 - **Frontend:** Vue 3, Vite 8, and TypeScript 7.
 - **Core data:** MongoDB is the primary datastore; Redis supports application
   state and a separate Redis instance is used as the cache.
