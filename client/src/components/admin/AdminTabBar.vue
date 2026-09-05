@@ -77,12 +77,7 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
 
 <template>
   <div class="flex min-w-0 flex-wrap items-center gap-2" :class="flush ? undefined : 'mb-6'">
-    <div
-      ref="tablistRef"
-      class="flex flex-wrap gap-2"
-      role="tablist"
-      :aria-label="ariaLabel"
-    >
+    <div ref="tablistRef" class="flex flex-wrap gap-2" role="tablist" :aria-label="ariaLabel">
       <button
         v-for="(tab, index) in tabs"
         :id="tabButtonId(tab.id)"

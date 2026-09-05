@@ -271,12 +271,7 @@ export interface PaginatedRecipes {
 }
 
 export type NewsStatus =
-  | "draft"
-  | "pending_review"
-  | "scheduled"
-  | "published"
-  | "private"
-  | "trash";
+  "draft" | "pending_review" | "scheduled" | "published" | "private" | "trash";
 
 export interface NewsArticle {
   id: number;

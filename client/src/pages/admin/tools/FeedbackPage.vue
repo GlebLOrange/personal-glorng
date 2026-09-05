@@ -216,7 +216,9 @@ onMounted(load);
               <span class="whitespace-nowrap text-xs lowercase text-surface-muted">
                 {{ formatDate(item.created_at) }}
               </span>
-              <span class="hidden max-w-[12rem] truncate text-xs lowercase text-surface-muted sm:inline">
+              <span
+                class="hidden max-w-[12rem] truncate text-xs lowercase text-surface-muted sm:inline"
+              >
                 {{ item.email }}
               </span>
             </div>
