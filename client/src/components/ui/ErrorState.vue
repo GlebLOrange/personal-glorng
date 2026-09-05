@@ -25,13 +25,7 @@ const emit = defineEmits<{ retry: [] }>();
 <template>
   <Card as="section" role="alert" class="!p-8 text-center">
     <p class="mb-4 text-sm text-status-error">{{ message }}</p>
-    <BaseButton
-      v-if="showRetry"
-      variant="ghost"
-      size="sm"
-      class="gap-1.5"
-      @click="emit('retry')"
-    >
+    <BaseButton v-if="showRetry" variant="ghost" size="sm" class="gap-1.5" @click="emit('retry')">
       <SyncIcon v-if="retryIcon === 'sync'" class-name="size-3.5" />
       <RefreshIcon v-else class-name="size-3.5" />
       {{ retryLabel }}

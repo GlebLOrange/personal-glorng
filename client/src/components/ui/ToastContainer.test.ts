@@ -1,5 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 
 import ToastContainer from "@/components/ui/ToastContainer.vue";
 import { useNotify } from "@/composables/useNotify";
@@ -114,7 +115,7 @@ describe("ToastContainer", () => {
     expect(statuses[0].text()).toContain("location removed");
   });
 
-  it("keeps sticky errors in the tile until dismiss", () => {
+  it("keeps sticky errors in the tile until dismiss", async () => {
     vi.useFakeTimers();
     const { toast, dismiss, toasts } = useNotify();
     toast("failed", "error");
@@ -126,6 +127,7 @@ describe("ToastContainer", () => {
     expect(wrapper.get("[role='alert']").text()).toContain("failed");
 
     dismiss(id);
+    await nextTick();
     expect(wrapper.find("[role='alert']").exists()).toBe(false);
     vi.useRealTimers();
   });

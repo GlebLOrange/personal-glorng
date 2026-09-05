@@ -94,18 +94,10 @@ const emit = defineEmits<{
     >
       <p class="text-sm text-surface-mid">{{ persistenceHint }}</p>
       <div v-if="isSuperuser" class="flex flex-wrap gap-2">
-        <BaseButton
-          variant="ghost"
-          :disabled="loadingState"
-          @click="emit('loadState')"
-        >
+        <BaseButton variant="ghost" :disabled="loadingState" @click="emit('loadState')">
           {{ loadingState ? "loading…" : "load" }}
         </BaseButton>
-        <BaseButton
-          variant="success"
-          :disabled="saving || !stateDirty"
-          @click="emit('saveState')"
-        >
+        <BaseButton variant="success" :disabled="saving || !stateDirty" @click="emit('saveState')">
           {{ saving ? "saving…" : "save" }}
         </BaseButton>
       </div>

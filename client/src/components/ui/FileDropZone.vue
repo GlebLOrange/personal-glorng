@@ -26,9 +26,7 @@ const emit = defineEmits<{
 const dragOver = ref(false);
 const fileInputRef = useTemplateRef<HTMLInputElement>("fileInput");
 const hintId = useId();
-const describedBy = computed(() =>
-  props.selectedName || !props.hint ? undefined : hintId,
-);
+const describedBy = computed(() => (props.selectedName || !props.hint ? undefined : hintId));
 
 function openPicker(): void {
   fileInputRef.value?.click();
@@ -73,13 +71,7 @@ defineExpose({ clear });
     @keydown.enter.prevent="openPicker"
     @keydown.space.prevent="openPicker"
   >
-    <input
-      ref="fileInput"
-      type="file"
-      class="hidden"
-      :accept="accept"
-      @change="onFileSelect"
-    />
+    <input ref="fileInput" type="file" class="hidden" :accept="accept" @change="onFileSelect" />
     <p v-if="selectedName" class="text-sm text-surface-light">{{ selectedName }}</p>
     <template v-else>
       <p class="text-sm text-surface-mid">drop a file here or click to browse</p>

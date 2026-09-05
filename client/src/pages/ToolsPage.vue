@@ -47,11 +47,6 @@ function toolRoute(tool: PlatformService): string {
     :narrow="false"
   >
     <EmptyState v-if="tools.length === 0" description="no tools available." />
-    <ToolTileGrid
-      v-else
-      :sections="sections"
-      :resolve-route="toolRoute"
-      gap-class="gap-4"
-    />
+    <ToolTileGrid v-else :sections="sections" :resolve-route="toolRoute" gap-class="gap-4" />
   </PageShell>
 </template>
