@@ -157,12 +157,7 @@ function onKeydown(event: KeyboardEvent): void {
       data-admin-list-header
       :class="['flex w-full min-w-0 shrink-0 items-center gap-2', CONTROL_SIZE]"
     >
-      <div
-        v-if="$slots.leading"
-        class="flex shrink-0 items-center"
-        @click.stop
-        @keydown.stop
-      >
+      <div v-if="$slots.leading" class="flex shrink-0 items-center" @click.stop @keydown.stop>
         <slot name="leading" />
       </div>
       <div v-if="$slots.badge" class="flex h-full shrink-0 items-center">
@@ -196,7 +191,9 @@ function onKeydown(event: KeyboardEvent): void {
         v-if="$slots.meta && centerMeta"
         class="pointer-events-none absolute inset-0 hidden items-center justify-center sm:flex"
       >
-        <span class="pointer-events-auto max-w-[min(100%,24rem)] truncate px-2 text-xs lowercase leading-none text-surface-muted">
+        <span
+          class="pointer-events-auto max-w-[min(100%,24rem)] truncate px-2 text-xs lowercase leading-none text-surface-muted"
+        >
           <slot name="meta" />
         </span>
       </div>

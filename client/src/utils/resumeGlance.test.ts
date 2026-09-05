@@ -28,6 +28,8 @@ describe("resumeGlance", () => {
     expect(stats).toHaveLength(4);
     expect(stats.find((s) => s.label === "Availability")?.value).toBe("open");
     expect(stats.find((s) => s.label === "Core stack")?.value).toBe("Python · Vue 3 · Django");
-    expect(stats.find((s) => s.label === "Experience")?.detail).toBe("building and shipping products");
+    expect(stats.find((s) => s.label === "Experience")?.detail).toBe(
+      "building and shipping products",
+    );
   });
 });

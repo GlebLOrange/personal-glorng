@@ -191,7 +191,9 @@ function goToTransactions(): void {
       />
 
       <div class="flex flex-col gap-3">
-        <div class="flex w-full min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div
+          class="flex w-full min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between"
+        >
           <AdminTabBar
             flush
             panel-id-prefix="expenses-tab"
@@ -213,9 +215,7 @@ function goToTransactions(): void {
             <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
               {{ exporting ? "exporting…" : "export csv" }}
             </ToolbarPillButton>
-            <ToolbarPillButton family="2xx" @click="openCreate">
-              + expense
-            </ToolbarPillButton>
+            <ToolbarPillButton family="2xx" @click="openCreate"> + expense </ToolbarPillButton>
           </div>
         </div>
 

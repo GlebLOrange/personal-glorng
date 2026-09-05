@@ -4,6 +4,7 @@ import { computed, ref } from "vue";
 
 import { api } from "@/composables/useApi";
 import { clearCachedApi } from "@/composables/useCachedApi";
+import { clearPlatformCatalog } from "@/composables/usePlatformCatalog";
 import { tryRefreshSession } from "@/utils/authSession";
 import type { UserPreferences, UserResponse } from "@/types";
 
@@ -31,10 +32,7 @@ export const useAuthStore = defineStore("auth", () => {
   function clearUser(): void {
     user.value = null;
     clearCachedApi();
-    // Dynamic import avoids a static cycle (catalog composable uses this store).
-    void import("@/composables/usePlatformCatalog").then(({ clearPlatformCatalog }) => {
-      clearPlatformCatalog();
-    });
+    clearPlatformCatalog();
   }
 
   function logout(): void {

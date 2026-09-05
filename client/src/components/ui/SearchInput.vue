@@ -81,9 +81,7 @@ function clear(): void {
       </span>
     </div>
     <!-- Reserved clear slot — always present so overlay/value never shift. -->
-    <div
-      :class="[FIELD_CLEAR_SLOT, hasValue ? undefined : FIELD_CLEAR_HIDDEN_CLASS]"
-    >
+    <div :class="[FIELD_CLEAR_SLOT, hasValue ? undefined : FIELD_CLEAR_HIDDEN_CLASS]">
       <IconCloseButton v-if="hasValue" size="field" aria-label="clear search" @click="clear" />
     </div>
   </div>

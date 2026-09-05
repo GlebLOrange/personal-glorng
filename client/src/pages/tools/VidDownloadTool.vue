@@ -92,12 +92,7 @@ async function download(): Promise<void> {
             :active-label="optionsActiveLabel"
             :option-labels="optionLabels"
           >
-            <BaseSelect
-              id="vid-download-quality"
-              v-model="format"
-              compact
-              aria-label="quality"
-            >
+            <BaseSelect id="vid-download-quality" v-model="format" compact aria-label="quality">
               <option v-for="f in formats" :key="f.value" :value="f.value">
                 {{ f.label }}
               </option>
@@ -112,11 +107,7 @@ async function download(): Promise<void> {
           </AdminFilterDropdown>
         </template>
         <template #actions>
-          <ToolbarPillButton
-            family="2xx"
-            type="submit"
-            :disabled="loading || !url.trim()"
-          >
+          <ToolbarPillButton family="2xx" type="submit" :disabled="loading || !url.trim()">
             {{ loading ? "downloading…" : "download" }}
           </ToolbarPillButton>
         </template>
@@ -129,12 +120,12 @@ async function download(): Promise<void> {
             <ul class="ml-2 list-inside list-disc space-y-1 text-surface-mid">
               <li><code class="text-surface-light">best</code> -- best single file (default)</li>
               <li>
-                <code class="text-surface-light">bestvideo+bestaudio/best</code> -- merge best streams
-                (needs ffmpeg)
+                <code class="text-surface-light">bestvideo+bestaudio/best</code> -- merge best
+                streams (needs ffmpeg)
               </li>
               <li>
-                <code class="text-surface-light">bestvideo[height&lt;=720]+bestaudio</code> -- cap at
-                720p
+                <code class="text-surface-light">bestvideo[height&lt;=720]+bestaudio</code> -- cap
+                at 720p
               </li>
               <li><code class="text-surface-light">bestaudio</code> -- audio stream only</li>
             </ul>
@@ -152,17 +143,17 @@ async function download(): Promise<void> {
             <h3 class="mb-2 font-bold text-accent-blue">Audio extraction</h3>
             <p class="text-surface-mid">
               Check "Audio only" to extract the audio track as MP3. This uses
-              <code class="text-surface-light">-x --audio-format mp3</code> under the hood. Great for
-              downloading music or podcast episodes.
+              <code class="text-surface-light">-x --audio-format mp3</code> under the hood. Great
+              for downloading music or podcast episodes.
             </p>
           </div>
 
           <div>
             <h3 class="mb-2 font-bold text-accent-blue">Limits</h3>
             <p class="text-surface-mid">
-              Downloads are limited to 500 MB and 2 minutes per request. Each IP may run one download
-              at a time, with at most two concurrent downloads across the server. Public use is also
-              rate limited to five downloads per hour per IP.
+              Downloads are limited to 500 MB and 2 minutes per request. Each IP may run one
+              download at a time, with at most two concurrent downloads across the server. Public
+              use is also rate limited to five downloads per hour per IP.
             </p>
           </div>
 

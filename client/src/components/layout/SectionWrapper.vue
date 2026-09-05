@@ -39,10 +39,7 @@ const showHeader = computed(() => Boolean(props.title || slots.headerActions));
     ]"
   >
     <div class="page-tile-scope mx-auto w-full max-w-5xl">
-      <div
-        v-if="showHeader"
-        class="mb-8 flex min-w-0 flex-wrap items-center justify-between gap-4"
-      >
+      <div v-if="showHeader" class="mb-8 flex min-w-0 flex-wrap items-center justify-between gap-4">
         <h2 v-if="title" class="section-title min-w-0">
           <span aria-hidden="true" class="text-accent-blue">§ </span>
           {{ title }}
