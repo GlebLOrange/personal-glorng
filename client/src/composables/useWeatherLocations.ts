@@ -58,9 +58,7 @@ migrateLegacyGuestLocations();
 
 /** Shared across all useWeatherLocations() callers (WeatherPage, WeatherBar, …). */
 const serverLocations = ref<WeatherLocation[]>([]);
-const guestLocations = ref<GuestWeatherLocation[]>(
-  readGuestLocations(SAVED_LOCATIONS_STORAGE_KEY),
-);
+const guestLocations = ref<GuestWeatherLocation[]>(readGuestLocations(SAVED_LOCATIONS_STORAGE_KEY));
 const loading = ref(false);
 const seeding = ref(false);
 const error = ref<string | null>(null);

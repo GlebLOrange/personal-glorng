@@ -9,10 +9,13 @@ withDefaults(
     disabled?: boolean;
     /** field = in-shell (same h-10 square); default chrome (h-10). */
     size?: "md" | "field";
+    /** Muted until hover; set false to match ghost 1xx wash (e.g. beside show). */
+    quiet?: boolean;
   }>(),
   {
     ariaLabel: "copy",
     size: "md",
+    quiet: true,
   },
 );
 
@@ -21,7 +24,8 @@ defineEmits<{ click: [MouseEvent] }>();
 
 <template>
   <IconActionButton
-    quiet
+    :quiet="quiet"
+    family="1xx"
     :size="size"
     :aria-label="ariaLabel"
     :disabled="disabled"

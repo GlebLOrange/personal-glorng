@@ -144,7 +144,12 @@ function onIngredientPaste(event: ClipboardEvent, index: number): void {
           </IconActionButton>
         </li>
       </ul>
-      <IconActionButton type="button" title="add ingredient" aria-label="add ingredient" @click="addIngredient">
+      <IconActionButton
+        type="button"
+        title="add ingredient"
+        aria-label="add ingredient"
+        @click="addIngredient"
+      >
         +
       </IconActionButton>
     </div>

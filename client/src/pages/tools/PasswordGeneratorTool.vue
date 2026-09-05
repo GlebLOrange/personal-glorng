@@ -78,8 +78,17 @@ function clearOptions(): void {
 
 function resetState(): void {
   clearOptions();
+  clearGenerated();
+}
+
+/** Forget generated password only — charset options stay as set. */
+function clearGenerated(): void {
   generated.value = "";
   showPassword.value = false;
+}
+
+function onPasswordModelUpdate(value: string | number): void {
+  if (value === "") clearGenerated();
 }
 
 async function generatePassword(): Promise<void> {
@@ -117,7 +126,6 @@ async function generatePassword(): Promise<void> {
     <Card variant="ghost" class="mx-auto w-full max-w-md">
       <form class="space-y-3" @submit.prevent="generatePassword">
         <div class="flex min-w-0 items-end gap-2">
-          <!-- Swapped positions: ToolbarPillButton (AdminFilterDropdown) first -->
           <AdminFilterDropdown
             label="options"
             class="shrink-0"
@@ -165,7 +173,6 @@ async function generatePassword(): Promise<void> {
             </template>
           </AdminFilterDropdown>
 
-          <!-- Swapped positions: BaseInput second -->
           <BaseInput
             v-model.number="length"
             type="number"
@@ -181,10 +188,15 @@ async function generatePassword(): Promise<void> {
           <BaseButton
             variant="primary"
             type="submit"
-            class="w-auto flex-1"
+            class="shrink-0"
             :disabled="loading || !hasCharset"
           >
-            {{ loading ? "generating…" : "generate" }}
+            <span class="inline-grid justify-items-center">
+              <span class="invisible col-start-1 row-start-1" aria-hidden="true">generating…</span>
+              <span class="col-start-1 row-start-1">
+                {{ loading ? "generating…" : "generate" }}
+              </span>
+            </span>
           </BaseButton>
 
           <IconActionButton
@@ -206,6 +218,7 @@ async function generatePassword(): Promise<void> {
             label="password"
             placeholder="generated password"
             class="min-w-0 flex-1 font-data"
+            @update:model-value="onPasswordModelUpdate"
           />
           <div class="flex shrink-0 items-end gap-2">
             <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
@@ -215,7 +228,7 @@ async function generatePassword(): Promise<void> {
                 <span class="col-start-1 row-start-1">{{ showPassword ? "hide" : "show" }}</span>
               </span>
             </BaseButton>
-            <IconCopyButton @click="copy(generated)" />
+            <IconCopyButton :quiet="false" @click="copy(generated)" />
           </div>
         </div>
         <p v-if="!strength.valid" class="text-xs text-surface-mid">

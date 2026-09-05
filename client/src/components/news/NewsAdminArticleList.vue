@@ -19,7 +19,6 @@ const emit = defineEmits<{
   setStatus: [articleId: number, status: NewsStatus];
   repost: [articleId: number];
 }>();
-
 </script>
 
 <template>
@@ -81,12 +80,7 @@ const emit = defineEmits<{
           </span>
         </div>
 
-        <div
-          v-if="canWrite"
-          class="flex flex-wrap justify-end gap-2"
-          @click.stop
-          @keydown.stop
-        >
+        <div v-if="canWrite" class="flex flex-wrap justify-end gap-2" @click.stop @keydown.stop>
           <BaseButton
             variant="ghost"
             quiet
