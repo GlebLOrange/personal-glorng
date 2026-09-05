@@ -259,7 +259,7 @@ defineExpose({ close });
           </span>
         </span>
       </span>
-      <ChevronIcon :open="open" class-name="size-3.5 shrink-0" />
+<ChevronIcon :open="open" class-name="size-3.5 shrink-0" />
     </ToolbarPillButton>
 
     <!-- Probe: natural width of dropdown lines (not stretched). CSS max-w still caps the trigger. -->
