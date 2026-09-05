@@ -25,7 +25,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM base AS dev
 
 RUN apk add --no-cache ffmpeg build-base bash libstdc++ wget \
-    pango cairo gdk-pixbuf libffi fontconfig ttf-dejavu
+    pango cairo gdk-pixbuf libffi fontconfig ttf-dejavu \
+    pango-dev cairo-dev gdk-pixbuf-dev libffi-dev
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.19 /uv /usr/local/bin/uv
 
