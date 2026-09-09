@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import * as CookieConsent from "vanilla-cookieconsent";
 
-import BackLink from "@/components/ui/BackLink.vue";
+import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import { isFirebaseAnalyticsEnabled } from "@/constants/firebase";
@@ -15,8 +16,12 @@ function openPreferences() {
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto px-6 py-16 text-surface-light">
-    <h1 class="text-3xl font-bold mb-2 accent-gradient">Privacy Policy</h1>
+  <PageShell
+    title="Privacy policy"
+    :breadcrumbs="[{ label: 'Privacy policy' }]"
+    back-to="/"
+    max-width="md"
+  >
     <p class="text-surface-muted text-sm mb-10">Last updated: May 26, 2026</p>
 
     <section class="mb-10">
@@ -146,21 +151,9 @@ function openPreferences() {
       <p class="text-surface-sage leading-relaxed mb-3">
         Questions about this policy? Reach out through any of these:
       </p>
-      <ul class="list-disc list-inside text-surface-sage space-y-1.5 ml-2">
-        <li v-for="link in contactLinks" :key="link.id">
-          <a
-            :href="link.href"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-accent-blue hover:text-accent-violet transition-colors"
-            >{{ link.label }}</a
-          >
-        </li>
-      </ul>
+      <div class="flex flex-wrap gap-4">
+        <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
+      </div>
     </section>
-
-    <div class="pt-6 border-t border-surface-border">
-      <BackLink to="/" />
-    </div>
-  </div>
+  </PageShell>
 </template>
