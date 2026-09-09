@@ -84,6 +84,7 @@ describe("AdminListRow", () => {
     });
     const header = wrapper.find("[data-admin-list-header]");
     expect(header.classes()).toContain("h-10");
+    expect(header.classes()).toContain("min-h-10");
   });
 
   it("draws an inset hairline that hides on the last sibling", () => {
