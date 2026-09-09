@@ -5,6 +5,7 @@ from collections.abc import Generator
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import quote
+from zoneinfo import ZoneInfo
 
 _ASCII_FILENAME_RE = re.compile(r"[^\x20-\x7E]+")
 
@@ -18,6 +19,16 @@ def as_utc(value: datetime) -> datetime:
     if value.tzinfo is None:
         return value.replace(tzinfo=UTC)
     return value.astimezone(UTC)
+
+
+def local_naive_to_utc(value: datetime) -> datetime:
+    """Interpret naive wall-clock as settings.TIMEZONE, return UTC-aware."""
+    if value.tzinfo is not None:
+        return value.astimezone(UTC)
+    from app.settings import get_settings
+
+    local = value.replace(tzinfo=ZoneInfo(get_settings().TIMEZONE))
+    return local.astimezone(UTC)
 
 
 def format_scheduled_at(value: datetime) -> str:

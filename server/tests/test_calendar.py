@@ -44,6 +44,7 @@ class TestBuildEventBody:
         assert body["summary"] == "Dentist"
         assert "description" not in body
         assert "location" not in body
+        assert body["reminders"] == {"useDefault": False, "overrides": []}
 
     async def test_all_fields(self, registry: DatabaseRegistry) -> None:
         task = await create_task(
@@ -60,6 +61,29 @@ class TestBuildEventBody:
         expected = calendar_datetime(task.scheduled_at)
         assert body["start"]["dateTime"] == expected
         assert body["end"]["dateTime"] == expected
+        assert body["reminders"]["useDefault"] is False
+
+    async def test_reminder_overrides(
+        self, registry: DatabaseRegistry
+    ) -> None:
+        task = await create_task(registry, title="Call")
+        body = _build_event_body(task, reminder_minutes=[30, 60])
+
+        assert body["reminders"] == {
+            "useDefault": False,
+            "overrides": [
+                {"method": "popup", "minutes": 30},
+                {"method": "popup", "minutes": 60},
+            ],
+        }
+
+    async def test_empty_reminder_minutes_disables_defaults(
+        self, registry: DatabaseRegistry
+    ) -> None:
+        task = await create_task(registry, title="No nudge")
+        body = _build_event_body(task, reminder_minutes=[])
+
+        assert body["reminders"] == {"useDefault": False, "overrides": []}
 
 
 # --- enqueue_calendar_sync ---

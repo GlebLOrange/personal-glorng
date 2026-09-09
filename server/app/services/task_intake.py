@@ -9,7 +9,7 @@ from typing import Any
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.feature_flags import is_task_intake_ai_enabled
 from app.core.pagination import build_paginated
-from app.core.utils import DEFAULT_PER_PAGE, as_utc, paginate_params
+from app.core.utils import DEFAULT_PER_PAGE, local_naive_to_utc, paginate_params
 from app.db.documents.task import IntakeStatus, Task, TaskIntake
 from app.db.documents.telegram import TelegramInboundMessage
 from app.db.registry import DatabaseRegistry
@@ -235,7 +235,9 @@ class TaskIntakeService:
     def scheduled_at_from_draft(self, draft: TaskDraft) -> datetime:
         task_date = draft.scheduled_date or date.today().isoformat()
         task_time = draft.scheduled_time or "12:00"
-        return as_utc(datetime.fromisoformat(f"{task_date}T{task_time}:00"))
+        return local_naive_to_utc(
+            datetime.fromisoformat(f"{task_date}T{task_time}:00"),
+        )
 
     async def confirm_intake(
         self,

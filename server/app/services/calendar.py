@@ -7,7 +7,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 from app.core.logging import logger
-from app.core.utils import calendar_datetime
+from app.core.utils import as_utc, calendar_datetime
 from app.db.documents.credential import GoogleCredential
 from app.db.documents.task import GoogleSyncQueue, SyncAction, Task
 from app.db.registry import DatabaseRegistry
@@ -29,13 +29,24 @@ def _build_service(cred: GoogleCredential) -> object:
     return build("calendar", "v3", credentials=credentials)
 
 
-def _build_event_body(task: Task) -> dict[str, object]:
+def _build_event_body(
+    task: Task,
+    *,
+    reminder_minutes: list[int] | None = None,
+) -> dict[str, object]:
     """Build Google Calendar event body from task."""
     scheduled = calendar_datetime(task.scheduled_at)
+    minutes = reminder_minutes if reminder_minutes is not None else []
     body: dict[str, object] = {
         "summary": task.title,
         "start": {"dateTime": scheduled, "timeZone": "UTC"},
         "end": {"dateTime": scheduled, "timeZone": "UTC"},
+        "reminders": {
+            "useDefault": False,
+            "overrides": [
+                {"method": "popup", "minutes": m} for m in minutes if m > 0
+            ],
+        },
     }
     if task.description:
         body["description"] = task.description
@@ -47,11 +58,15 @@ def _build_event_body(task: Task) -> dict[str, object]:
 def _create_event_sync(
     cred: GoogleCredential,
     task: Task,
+    reminder_minutes: list[int] | None = None,
 ) -> str:
     service = _build_service(cred)
     event = (
         service.events()
-        .insert(calendarId=cred.calendar_id, body=_build_event_body(task))
+        .insert(
+            calendarId=cred.calendar_id,
+            body=_build_event_body(task, reminder_minutes=reminder_minutes),
+        )
         .execute()
     )
     return event["id"]
@@ -61,12 +76,13 @@ def _update_event_sync(
     cred: GoogleCredential,
     task: Task,
     event_id: str,
+    reminder_minutes: list[int] | None = None,
 ) -> None:
     service = _build_service(cred)
     service.events().update(
         calendarId=cred.calendar_id,
         eventId=event_id,
-        body=_build_event_body(task),
+        body=_build_event_body(task, reminder_minutes=reminder_minutes),
     ).execute()
 
 
@@ -79,6 +95,26 @@ def _delete_event_sync(
         calendarId=cred.calendar_id,
         eventId=event_id,
     ).execute()
+
+
+async def _reminder_minutes_for_task(
+    registry: DatabaseRegistry,
+    task: Task,
+) -> list[int]:
+    """Derive Google popup lead times from unsent Telegram reminders."""
+    assert registry.tasks is not None
+    reminders = await registry.tasks.list_reminders_for_task(task.id)
+    scheduled = as_utc(task.scheduled_at)
+    minutes: list[int] = []
+    seen: set[int] = set()
+    for rem in reminders:
+        if rem.sent:
+            continue
+        delta_minutes = int((scheduled - as_utc(rem.remind_at)).total_seconds() // 60)
+        if delta_minutes > 0 and delta_minutes not in seen:
+            seen.add(delta_minutes)
+            minutes.append(delta_minutes)
+    return minutes
 
 
 async def sync_task_to_google(
@@ -108,11 +144,14 @@ async def sync_task_to_google(
         )
         return
 
+    reminder_minutes = await _reminder_minutes_for_task(registry, task)
+
     if queue_item.action == SyncAction.CREATE:
         event_id = await asyncio.to_thread(
             _create_event_sync,
             cred,
             task,
+            reminder_minutes,
         )
         await registry.tasks.update_fields(task.id, google_event_id=event_id)
         logger.info(
@@ -128,6 +167,7 @@ async def sync_task_to_google(
                 cred,
                 task,
                 event_id,
+                reminder_minutes,
             )
             logger.info(
                 "Calendar event updated",

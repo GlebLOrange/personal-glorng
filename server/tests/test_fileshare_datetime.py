@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta, timezone
 import pytest
 
 from app.core.exceptions import ApiError
-from app.core.utils import as_utc
+from app.core.utils import as_utc, local_naive_to_utc
 from app.db.documents.fileshare import SharedFile
 from app.db.registry import DatabaseRegistry
 from app.services import fileshare as fileshare_service
@@ -25,6 +25,19 @@ async def test_as_utc_converts_non_utc_aware_datetime() -> None:
     converted = as_utc(aware)
     assert converted.tzinfo == UTC
     assert converted.hour == 12
+
+
+def test_local_naive_to_utc_interprets_settings_timezone() -> None:
+    # .env.test TIMEZONE=Europe/Warsaw; June is CEST (UTC+2)
+    naive = datetime(2026, 6, 1, 12, 0, 0)
+    converted = local_naive_to_utc(naive)
+    assert converted.tzinfo == UTC
+    assert converted == datetime(2026, 6, 1, 10, 0, 0, tzinfo=UTC)
+
+
+def test_local_naive_to_utc_passes_through_aware() -> None:
+    aware = datetime(2026, 6, 1, 12, 0, 0, tzinfo=UTC)
+    assert local_naive_to_utc(aware) == aware
 
 
 @pytest.mark.asyncio

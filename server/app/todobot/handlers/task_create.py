@@ -1,13 +1,14 @@
 """AI intake and guided task creation flows."""
 
 from contextlib import suppress
-from datetime import UTC, date, datetime
+from datetime import date, datetime
 
 from aiogram import Bot, F, Router
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from app.core.utils import local_naive_to_utc
 from app.db.registry import DatabaseRegistry
 from app.schemas.task_intake import TaskDraft
 from app.services.task import create_with_sync
@@ -459,8 +460,8 @@ async def confirm_task(
 
     task_date = data.get("date", date.today().isoformat())
     task_time = data.get("time", "12:00")
-    scheduled_at = datetime.fromisoformat(f"{task_date}T{task_time}:00").replace(
-        tzinfo=UTC,
+    scheduled_at = local_naive_to_utc(
+        datetime.fromisoformat(f"{task_date}T{task_time}:00"),
     )
     reminder_minutes = data.get("reminder_minutes")
 
