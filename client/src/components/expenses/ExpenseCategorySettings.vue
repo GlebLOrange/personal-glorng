@@ -81,7 +81,7 @@ function onCategoryRowKeydown(event: KeyboardEvent, category: ExpenseCategory): 
         >
           <template v-if="editingCategoryId === category.id">
             <div class="flex min-w-[8rem] flex-1 flex-col gap-1" @click.stop>
-              <label class="text-label text-surface-sage" :for="`cat-name-${category.id}`">
+              <label class="text-label text-surface-muted" :for="`cat-name-${category.id}`">
                 name
               </label>
               <input
@@ -93,7 +93,7 @@ function onCategoryRowKeydown(event: KeyboardEvent, category: ExpenseCategory): 
               />
             </div>
             <div class="flex w-36 flex-col gap-1" @click.stop>
-              <label class="text-label text-surface-sage" :for="`cat-budget-${category.id}`">
+              <label class="text-label text-surface-muted" :for="`cat-budget-${category.id}`">
                 monthly budget
               </label>
               <input

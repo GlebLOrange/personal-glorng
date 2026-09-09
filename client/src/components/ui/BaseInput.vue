@@ -14,6 +14,7 @@ import {
   FIELD_CLEAR_HIDDEN_CLASS,
   FIELD_INPUT_CLASS,
   FIELD_INPUT_CLASS_COMPACT,
+  FIELD_LABEL_TEXT_CLASS,
   FIELD_NOTCH_BG_CLASS,
   FIELD_NOTCH_CLASS,
   FIELD_NOTCH_ROW_CLASS,
@@ -40,9 +41,14 @@ const props = withDefaults(
     compact?: boolean;
     /** Render the label inside the input bar instead of the outer border notch. */
     labelInside?: boolean;
+    /**
+     * When not labelInside: `start` = border notch; `end` = inside trailing (before clear).
+     */
+    labelAlign?: "start" | "end";
   }>(),
   {
     labelInside: true,
+    labelAlign: "start",
   },
 );
 
@@ -64,9 +70,15 @@ const hasTypedValue = computed(() => {
   return false;
 });
 const hasClearableValue = computed(() => isClearableType.value && hasTypedValue.value);
+const isInlineEnd = computed(() => props.labelAlign === "end" && !props.labelInside);
 const useShell = computed(() =>
   Boolean(
-    hasPrefix.value || props.placeholder || hasSuffix.value || props.labelInside || props.label,
+    hasPrefix.value ||
+      props.placeholder ||
+      hasSuffix.value ||
+      props.labelInside ||
+      props.label ||
+      isInlineEnd.value,
   ),
 );
 const showClear = computed(() => useShell.value && hasClearableValue.value);
@@ -79,18 +91,20 @@ const showInsideLabel = computed(
 const showTip = computed(
   () => Boolean(props.placeholder) && !hasTypedValue.value && !showInsideLabel.value,
 );
-const tipInsetClass = computed(() => [
-  hasPrefix.value ? "left-10" : "left-3",
-  reserveClear.value || hasSuffix.value ? "right-10" : "right-3",
-]);
 /** Error replaces label on the border notch; hint rides beside the label when present. */
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
 /** Persistent sr-only label when labelInside so naming survives hide-on-type. */
 const hasVisibleLabel = computed(
   () => showLabelNotch.value || Boolean(props.label && props.labelInside),
 );
-const showNotchRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
+const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
+const showInlineEndLabel = computed(() => isInlineEnd.value && showLabelRow.value);
+const showNotchRow = computed(() => !isInlineEnd.value && showLabelRow.value);
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
+const tipInsetClass = computed(() => [
+  hasPrefix.value ? "left-10" : "left-3",
+  reserveClear.value || hasSuffix.value || showInlineEndLabel.value ? "right-10" : "right-3",
+]);
 const describedBy = computed(() =>
   buildFieldDescribedBy({
     ariaDescribedBy: attrs["aria-describedby"],
@@ -161,6 +175,7 @@ const accessibleName = computed(() =>
  */
 const notchBgClass = FIELD_NOTCH_BG_CLASS;
 const notchClass = FIELD_NOTCH_CLASS;
+const helpAlign = computed(() => (isInlineEnd.value ? "end" : "start"));
 
 function clear(): void {
   model.value = "";
@@ -222,7 +237,7 @@ defineExpose({ focus });
         class="pointer-events-none absolute inset-y-0 z-0 flex items-center"
         :class="tipInsetClass"
       >
-        <span class="min-w-0 flex-1 truncate text-left text-xs font-medium text-surface-sage">
+        <span class="min-w-0 flex-1 truncate text-left text-xs font-medium text-surface-muted">
           {{ label }}
         </span>
       </span>
@@ -238,9 +253,29 @@ defineExpose({ focus });
         </span>
       </span>
       <div
-        v-if="reserveClear || hasSuffix"
-        class="relative z-10 flex shrink-0 items-center gap-0.5 self-stretch"
+        v-if="reserveClear || hasSuffix || showInlineEndLabel"
+        class="relative z-10 flex shrink-0 items-center gap-0.5 self-stretch pr-1"
       >
+        <div
+          v-if="showInlineEndLabel"
+          class="flex max-w-[11rem] items-center gap-1 bg-transparent"
+        >
+          <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
+          <label
+            v-if="showLabelNotch"
+            :for="inputId"
+            :class="['truncate', FIELD_LABEL_TEXT_CLASS]"
+          >
+            {{ label }}
+          </label>
+          <FieldHelp
+            v-if="hint"
+            size="sm"
+            :align="helpAlign"
+            :text="hint"
+            :content-id="hintId"
+          />
+        </div>
         <slot name="suffix" />
         <div
           v-if="reserveClear"
@@ -285,12 +320,18 @@ defineExpose({ focus });
       <label
         v-if="showLabelNotch"
         :for="inputId"
-        class="pointer-events-auto truncate text-label leading-4 text-surface-sage"
+        :class="['pointer-events-auto truncate', FIELD_LABEL_TEXT_CLASS]"
       >
         {{ label }}
       </label>
       <span class="pointer-events-auto">
-        <FieldHelp v-if="hint" :text="hint" :content-id="hintId" />
+        <FieldHelp
+          v-if="hint"
+          size="sm"
+          :align="helpAlign"
+          :text="hint"
+          :content-id="hintId"
+        />
       </span>
     </div>
     <p

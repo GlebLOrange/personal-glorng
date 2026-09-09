@@ -28,79 +28,90 @@ defineProps<{
     :has-active-filters="hasCustomOptions"
     :active-label="optionsActiveLabel"
   >
-    <BaseSelect
-      id="data-extract-format"
-      v-model="formatChoice"
-      name="format"
-      label="format"
-      hint="auto detects from the file extension"
-      compact
-    >
-      <option value="auto">auto</option>
-      <option value="csv">CSV</option>
-      <option value="json">JSON</option>
-      <option value="xml">XML</option>
-      <option value="delimited">delimited</option>
-    </BaseSelect>
+    <div class="space-y-3">
+      <BaseSelect
+        id="data-extract-format"
+        v-model="formatChoice"
+        name="format"
+        label="format"
+        hint="auto detects from the file extension"
+        compact
+        label-align="end"
+      >
+        <option value="auto">auto</option>
+        <option value="csv">CSV</option>
+        <option value="json">JSON</option>
+        <option value="xml">XML</option>
+        <option value="delimited">delimited</option>
+      </BaseSelect>
 
-    <BaseSelect
-      v-if="showDelimitedOptions"
-      id="data-extract-profile"
-      v-model="profileChoice"
-      name="profile"
-      label="profile"
-      hint="pipe embed: | fields with ; lists inside cells"
-      compact
-    >
-      <option value="custom">custom delimiters</option>
-      <option value="pipe_embed">pipe embed</option>
-    </BaseSelect>
+      <BaseSelect
+        v-if="showDelimitedOptions"
+        id="data-extract-profile"
+        v-model="profileChoice"
+        name="profile"
+        label="profile"
+        hint="pipe embed: | fields with ; lists inside cells"
+        compact
+        label-align="end"
+      >
+        <option value="custom">custom delimiters</option>
+        <option value="pipe_embed">pipe embed</option>
+      </BaseSelect>
 
-    <BaseInput
-      v-if="showDelimitedOptions && profileChoice === 'custom'"
-      id="data-extract-field-delimiter"
-      v-model="fieldDelimiter"
-      name="field_delimiter"
-      label="field delimiter"
-      hint="character between columns"
-      maxlength="4"
-      placeholder="|"
-      compact
-    />
+      <BaseInput
+        v-if="showDelimitedOptions && profileChoice === 'custom'"
+        id="data-extract-field-delimiter"
+        v-model="fieldDelimiter"
+        name="field_delimiter"
+        label="field delimiter"
+        hint="character between columns"
+        maxlength="4"
+        placeholder="|"
+        compact
+        :label-inside="false"
+        label-align="end"
+      />
 
-    <BaseInput
-      v-if="showDelimitedOptions && profileChoice === 'custom'"
-      id="data-extract-list-delimiter"
-      v-model="listDelimiter"
-      name="list_delimiter"
-      label="list delimiter"
-      hint="character between values inside one cell"
-      maxlength="4"
-      placeholder=";"
-      compact
-    />
+      <BaseInput
+        v-if="showDelimitedOptions && profileChoice === 'custom'"
+        id="data-extract-list-delimiter"
+        v-model="listDelimiter"
+        name="list_delimiter"
+        label="list delimiter"
+        hint="character between values inside one cell"
+        maxlength="4"
+        placeholder=";"
+        compact
+        :label-inside="false"
+        label-align="end"
+      />
 
-    <BaseInput
-      v-if="showXmlOptions"
-      id="data-extract-row-tag"
-      v-model="rowTag"
-      name="row_tag"
-      label="xml row tag"
-      hint="repeating element name, e.g. item or row"
-      compact
-    />
+      <BaseInput
+        v-if="showXmlOptions"
+        id="data-extract-row-tag"
+        v-model="rowTag"
+        name="row_tag"
+        label="xml row tag"
+        hint="repeating element name, e.g. item or row"
+        compact
+        :label-inside="false"
+        label-align="end"
+      />
 
-    <BaseSelect
-      v-if="showXmlOptions"
-      id="data-extract-xml-mode"
-      v-model="xmlMode"
-      name="xml_mode"
-      label="xml mode"
-      hint="rows = flat table; tree = nested JSON"
-      compact
-    >
-      <option value="rows">rows</option>
-      <option value="tree">tree</option>
-    </BaseSelect>
+      <BaseSelect
+        v-if="showXmlOptions"
+        id="data-extract-xml-mode"
+        v-model="xmlMode"
+        name="xml_mode"
+        label="xml mode"
+        hint="rows = flat table; tree = nested JSON"
+        compact
+        label-align="end"
+      >
+        <option value="rows">rows</option>
+        <option value="tree">tree</option>
+      </BaseSelect>
+    </div>
   </AdminFilterDropdown>
 </template>

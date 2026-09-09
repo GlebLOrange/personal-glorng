@@ -14,7 +14,7 @@ describe("BaseInput", () => {
 
     expect(wrapper.get("label.sr-only").attributes("for")).toBe("email");
     expect(wrapper.get("input").attributes("id")).toBe("email");
-    expect(wrapper.get("span.text-surface-sage").text()).toBe("Email");
+    expect(wrapper.get("span.text-surface-muted").text()).toBe("Email");
   });
 
   it("renders a border-notch label when labelInside is false", () => {
@@ -27,7 +27,7 @@ describe("BaseInput", () => {
     });
 
     expect(wrapper.get("label:not(.sr-only)").attributes("for")).toBe("email");
-    expect(wrapper.find("span.text-surface-sage").exists()).toBe(false);
+    expect(wrapper.find("span.text-surface-muted").exists()).toBe(false);
   });
 
   it("wires error text via aria-describedby and aria-invalid", () => {
@@ -125,7 +125,7 @@ describe("BaseInput", () => {
     });
 
     expect(wrapper.get("label.sr-only").attributes("for")).toBe("email");
-    expect(wrapper.get("span.text-surface-sage").text()).toBe("Email");
+    expect(wrapper.get("span.text-surface-muted").text()).toBe("Email");
     expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
     expect(wrapper.get("input").attributes("aria-describedby")).toBeUndefined();
     expect(wrapper.find("#email-tip").exists()).toBe(false);
@@ -161,8 +161,8 @@ describe("BaseInput", () => {
     expect(wrapper.get("label.sr-only").attributes("for")).toBe("pw");
     expect(wrapper.get("label.sr-only").text()).toBe("password");
     // visual label mirrors tip overlay (absolute, behind value)
-    expect(wrapper.get("span.text-surface-sage").text()).toBe("password");
-    expect(wrapper.get("span.text-surface-sage").classes()).toContain("truncate");
+    expect(wrapper.get("span.text-surface-muted").text()).toBe("password");
+    expect(wrapper.get("span.text-surface-muted").classes()).toContain("truncate");
     // tip suppressed when labelInside is active
     expect(wrapper.find("#pw-tip").exists()).toBe(false);
     expect(wrapper.find(".pt-2\\.5").exists()).toBe(false);
@@ -179,10 +179,10 @@ describe("BaseInput", () => {
       },
     });
 
-    expect(wrapper.find("span.text-surface-sage").exists()).toBe(true);
+    expect(wrapper.find("span.text-surface-muted").exists()).toBe(true);
     await wrapper.setProps({ modelValue: "secret" });
     // visual label gone; sr-only stays for a11y
-    expect(wrapper.find("span.text-surface-sage").exists()).toBe(false);
+    expect(wrapper.find("span.text-surface-muted").exists()).toBe(false);
     expect(wrapper.find("label.sr-only").exists()).toBe(true);
     expect(wrapper.get('button[aria-label="clear"]').exists()).toBe(true);
   });
