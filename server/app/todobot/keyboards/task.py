@@ -1,11 +1,10 @@
 """Inline keyboard builders for task creation and management."""
 
 from datetime import datetime, time, timedelta
-from zoneinfo import ZoneInfo
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from app.settings import get_settings
+from app.core.utils import local_now
 
 _TIME_SLOTS = [
     ("Morning (09:00)", "🌅", "time:09:00", time(9, 0)),
@@ -16,7 +15,7 @@ _TIME_SLOTS = [
 
 def _now_in_tz() -> datetime:
     """Current datetime in the configured timezone."""
-    return datetime.now(ZoneInfo(get_settings().TIMEZONE))
+    return local_now()
 
 
 def date_picker() -> InlineKeyboardMarkup:

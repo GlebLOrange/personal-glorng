@@ -8,6 +8,7 @@ from datetime import date, datetime, time
 
 import dateparser
 
+from app.core.utils import local_now
 from app.settings import get_settings
 
 _LOCATION_PATTERNS = [
@@ -49,7 +50,7 @@ def _extract_datetime(text: str) -> tuple[datetime | None, str]:
         "PREFER_DATES_FROM": "future",
         "RETURN_AS_TIMEZONE_AWARE": True,
         "TIMEZONE": settings.TIMEZONE,
-        "RELATIVE_BASE": datetime.now(),
+        "RELATIVE_BASE": local_now(),
     }
 
     parsed = dateparser.parse(text, settings=parser_settings)

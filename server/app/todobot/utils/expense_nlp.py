@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal, InvalidOperation
-from zoneinfo import ZoneInfo
 
 from app.core.catalogs import DEFAULT_EXPENSE_CATEGORY
+from app.core.utils import local_now
 from app.services.currency import ALLOWED_CURRENCIES
 from app.settings import get_settings
 
@@ -88,8 +88,7 @@ class ParsedExpense:
 
 def today_in_tz() -> date:
     """Return today's date in the configured timezone."""
-    settings = get_settings()
-    return datetime.now(ZoneInfo(settings.TIMEZONE)).date()
+    return local_now().date()
 
 
 def _normalize_amount(raw: str) -> Decimal:

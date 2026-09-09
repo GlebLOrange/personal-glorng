@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, date, datetime
+from datetime import date, datetime
 from typing import Any
 
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.feature_flags import is_task_intake_ai_enabled
 from app.core.pagination import build_paginated
-from app.core.utils import DEFAULT_PER_PAGE, local_naive_to_utc, paginate_params
+from app.core.utils import DEFAULT_PER_PAGE, local_naive_to_utc, local_now, paginate_params
 from app.db.documents.task import IntakeStatus, Task, TaskIntake
 from app.db.documents.telegram import TelegramInboundMessage
 from app.db.registry import DatabaseRegistry
@@ -342,7 +342,7 @@ class TaskIntakeService:
         hints: dict[str, Any],
         turns: list[dict[str, str]],
     ) -> ExtractionResult:
-        today = datetime.now(UTC).date().isoformat()
+        today = local_now().date().isoformat()
         user_payload = {
             "message": text,
             "timezone": self.settings.TIMEZONE,
