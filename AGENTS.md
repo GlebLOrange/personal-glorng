@@ -65,7 +65,7 @@ Cloud-specific notes:
   UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
   ```
 - **Backend via Docker:** prod images do not include `pytest`/`ruff`; dev targets may, but host `uv` is the canonical path for backend checks.
-- **Frontend:** Node 24 (`engines` + root `.nvmrc`; Cloud VM default `/exec-daemon/node` is often v22 — prepend `"$HOME/.nvm/versions/node/v24.18.0/bin"` to `PATH` or `nvm use`). From `client/`: `npm ci`, then `npm run lint && npm run format:check && npm run test:coverage && npm run build:check`. Use `npm run build` for a fast Vite-only bundle. TypeScript is pinned to `~5.8.3` so `typescript-eslint@8` peers resolve; do not bump to TS 7 until the ESLint stack supports it.
+- **Frontend:** Node 24 (`engines` + root `.nvmrc`; Cloud VM default `/exec-daemon/node` is often v22 — prepend `"$HOME/.nvm/versions/node/v24.18.0/bin"` to `PATH` or `nvm use`). From `client/`: `npm ci`, then `npm run lint && npm run format:check && npm run test:coverage && npm run build:check`. Use `npm run build` for a fast Vite-only bundle. TypeScript is pinned to `~7.0.2` (see `client/package.json`).
 
 ### Optional services
 

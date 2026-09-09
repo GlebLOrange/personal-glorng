@@ -1,6 +1,18 @@
 # Project Review — gLOrng Portfolio & Platform
 
+## 2026-09-09 — Stack / docs hygiene refresh
+
+Supersedes stale Aug 2026 stack bullets below (Python “3.12+”, TypeScript
+`~5.8.3`). Live versions: Python 3.15 + Vue 3 / Vite 8 / TypeScript `~7.0.2`
+— see [`AGENTS.md`](../AGENTS.md) and [`context/README.md`](README.md).
+
+- Removed root `BASEDIR.md` (ephemeral PR-review dump; do not revive).
+- Todobot wall-clock times use `settings.TIMEZONE` via `local_naive_to_utc`
+  in `server/app/core/utils.py` (not ad-hoc UTC tagging of naive datetimes).
+
 ## 2026-08-09 — Architecture & System State Review
+
+*(Superseded 2026-09-09 for stack version pins; keep for historical modes/layout.)*
 
 ### 1. Executive Summary
 **gLOrng** is a full-stack developer portfolio and personal platform built with FastAPI, Vue 3, MongoDB (via Motor), and Redis. It is containerized using Docker Compose with multiple operation modes (Lite default, Ultra-Lite, Docker client, Production).
