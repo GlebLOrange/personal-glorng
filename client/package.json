@@ -25,17 +25,17 @@
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans": "^5.3.0",
-    "@sentry/vue": "^10.72.0",
+    "@sentry/vue": "^10.73.0",
     "axios": "^1.20.0",
     "chart.js": "^4.5.1",
     "dompurify": "^3.4.14",
     "firebase": "^12.18.0",
     "pinia": "^4.0.3",
-    "simple-icons": "^16.29.0",
+    "simple-icons": "^16.30.0",
     "vanilla-cookieconsent": "^3.1.0",
     "vue": "^3.5.42",
     "vue-chartjs": "^5.3.4",
-    "vue-router": "^5.3.0"
+    "vue-router": "^5.3.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
