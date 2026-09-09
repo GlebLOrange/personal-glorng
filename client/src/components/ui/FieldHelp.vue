@@ -11,9 +11,19 @@ const props = withDefaults(
     contentId?: string;
     /** Tooltip edge alignment relative to the ? control. */
     align?: "start" | "end";
+    /** `sm` fits the border-notch label row; `md` is the standalone hit target. */
+    size?: "md" | "sm";
   }>(),
-  { align: "start" },
+  { align: "start", size: "md" },
 );
+
+const buttonClass = computed(() =>
+  props.size === "sm"
+    ? "inline-flex size-4 items-center justify-center rounded-full text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+    : "inline-flex h-10 w-10 items-center justify-center rounded-full text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
+);
+
+const iconClass = computed(() => (props.size === "sm" ? "size-3" : "size-3.5"));
 
 const open = ref(false);
 const rootRef = useTemplateRef<HTMLElement>("root");
@@ -93,7 +103,7 @@ watch(
   >
     <button
       type="button"
-      class="inline-flex h-10 w-10 items-center justify-center rounded-full text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+      :class="buttonClass"
       aria-label="help"
       :aria-expanded="open"
       :aria-controls="panelId"
@@ -101,7 +111,7 @@ watch(
       @focus="show"
       @blur="scheduleHide"
     >
-      <QuestionIcon class-name="size-3.5" />
+      <QuestionIcon :class-name="iconClass" />
     </button>
     <span
       :id="panelId"

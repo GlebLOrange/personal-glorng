@@ -14,7 +14,7 @@ describe("BaseTextarea", () => {
 
     expect(wrapper.get("label.sr-only").attributes("for")).toBe("message");
     expect(wrapper.get("textarea").attributes("id")).toBe("message");
-    expect(wrapper.get("span.text-surface-sage").text()).toBe("Message");
+    expect(wrapper.get("span.text-surface-muted").text()).toBe("Message");
   });
 
   it("renders a border-notch label when labelInside is false", () => {
@@ -27,7 +27,7 @@ describe("BaseTextarea", () => {
     });
 
     expect(wrapper.get("label:not(.sr-only)").attributes("for")).toBe("message");
-    expect(wrapper.find("span.text-surface-sage").exists()).toBe(false);
+    expect(wrapper.find("span.text-surface-muted").exists()).toBe(false);
   });
 
   it("wires hint text via aria-describedby", () => {
@@ -55,7 +55,7 @@ describe("BaseTextarea", () => {
     });
 
     expect(wrapper.get("label.sr-only").attributes("for")).toBe("notes");
-    expect(wrapper.get("span.text-surface-sage").text()).toBe("Notes");
+    expect(wrapper.get("span.text-surface-muted").text()).toBe("Notes");
     expect(wrapper.get("textarea").attributes("aria-label")).toBeUndefined();
     expect(wrapper.get("textarea").attributes("aria-describedby")).toBeUndefined();
     expect(wrapper.find("#notes-tip").exists()).toBe(false);

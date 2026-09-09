@@ -25,11 +25,23 @@ export function truncateBreadcrumbSlug(slug: string, maxLen = 14): string {
   return `${cleaned.slice(0, maxLen)}…`;
 }
 
+const DATE_ONLY_ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+const DATE_DISPLAY: Intl.DateTimeFormatOptions = {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+};
+
+/** Visible date: 22 Feb 2000. Timestamps keep hour and minute. */
 export function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
+  const dateOnly = DATE_ONLY_ISO_RE.test(iso);
+  const date = dateOnly ? new Date(`${iso}T00:00:00`) : new Date(iso);
+  if (dateOnly) {
+    return date.toLocaleDateString("en-GB", DATE_DISPLAY);
+  }
+  return date.toLocaleString("en-GB", {
+    ...DATE_DISPLAY,
     hour: "2-digit",
     minute: "2-digit",
   });

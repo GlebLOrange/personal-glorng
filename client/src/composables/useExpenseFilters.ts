@@ -7,6 +7,7 @@ import {
   monthDateBounds,
   monthValueLocal,
 } from "@/utils/dates";
+import { formatDate } from "@/utils/format";
 
 export type MonthPreset = "this_month" | "last_month" | "custom" | "range";
 export type DateFilterMode = "month" | "range";
@@ -47,11 +48,7 @@ export function useExpenseFilters(
 
   const monthLabel = computed(() => {
     if (dateFilterMode.value === "range" && dateFrom.value && dateTo.value) {
-      const from = new Date(dateFrom.value + "T00:00:00");
-      const to = new Date(dateTo.value + "T00:00:00");
-      const fmt = (d: Date) =>
-        d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-      return `${fmt(from)} – ${fmt(to)}`;
+      return `${formatDate(dateFrom.value)} – ${formatDate(dateTo.value)}`;
     }
     if (!selectedMonth.value) return "";
     const [year, month] = selectedMonth.value.split("-").map(Number);

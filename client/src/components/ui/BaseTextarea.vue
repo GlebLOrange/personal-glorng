@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/fieldA11y";
 import {
   FIELD_CLEAR_HIDDEN_CLASS,
+  FIELD_LABEL_TEXT_CLASS,
   FIELD_NOTCH_BG_CLASS,
   FIELD_NOTCH_CLASS,
   FIELD_NOTCH_ROW_CLASS,
@@ -140,7 +141,7 @@ function clear(): void {
       <span
         v-if="showInsideLabel"
         aria-hidden="true"
-        class="pointer-events-none absolute top-2.5 z-0 text-left text-xs font-medium text-surface-sage"
+        class="pointer-events-none absolute top-2.5 z-0 text-left text-xs font-medium text-surface-muted"
         :class="tipInsetClass"
       >
         {{ label }}
@@ -181,12 +182,12 @@ function clear(): void {
       <label
         v-if="showLabelNotch"
         :for="textareaId"
-        class="pointer-events-auto truncate text-label leading-4 text-surface-sage"
+        :class="['pointer-events-auto truncate', FIELD_LABEL_TEXT_CLASS]"
       >
         {{ label }}
       </label>
       <span class="pointer-events-auto">
-        <FieldHelp v-if="hint" :text="hint" :content-id="hintId" />
+        <FieldHelp v-if="hint" size="sm" :text="hint" :content-id="hintId" />
       </span>
     </div>
     <p

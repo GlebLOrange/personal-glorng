@@ -33,9 +33,20 @@ const FIELD_FOCUS =
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 focus-visible:border-accent-blue";
 
 export const FIELD_WRAPPER_CLASS = "relative min-w-0";
+/** Field name on notch / inside / trailing — quieter than body text. */
+export const FIELD_LABEL_TEXT_CLASS = "text-label leading-4 text-surface-muted";
 export const FIELD_NOTCH_BG_CLASS = "bg-surface-card";
 export const FIELD_NOTCH_ROW_CLASS =
   "absolute left-3 top-2.5 z-20 flex max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] items-center gap-1 px-1.5";
+/**
+ * In-control trailing label (same row as the value), left of the select chevron.
+ * Chevron sits at right 0.75rem; keep this at right-8 so the caret stays clear.
+ */
+export const FIELD_INLINE_END_LABEL_CLASS =
+  "absolute right-8 top-1/2 z-20 flex max-w-[min(50%,11rem)] -translate-y-1/2 items-center gap-1 bg-transparent";
+/** Extra end padding on native selects when an inline end label is present. */
+export const SELECT_INLINE_END_PAD_CLASS = "!pr-36";
+export const SELECT_INLINE_END_PAD_COMPACT_CLASS = "!pr-32";
 export const FIELD_NOTCH_CLASS =
   "pointer-events-none absolute left-3 top-2.5 z-20 max-w-[calc(100%-1.5rem)] -translate-y-[calc(100%-3px)] truncate px-1.5 text-xs leading-4";
 
