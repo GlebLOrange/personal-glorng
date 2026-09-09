@@ -15,7 +15,7 @@ Related security automation (not a test tier): [`.github/workflows/security.yml`
 
 ### P0 — PR gate (default)
 
-Jobs are path-filtered on pull requests; pushes to `main` run the full suite. Aggregator job `ci-ok` fails if any selected job failed. During development the `main-protection` ruleset is **disabled**, so CI is advisory; enable required checks before production ([DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd)).
+Jobs are path-filtered on pull requests; pushes to `main` run the full suite. Aggregator job `ci-ok` fails if any selected job failed. If no path filter matches (for example a root-only markdown change), every suite is skipped and `ci-ok` can still succeed — see the `ci-ok` job in [`ci.yml`](../../.github/workflows/ci.yml). During development the `main-protection` ruleset is **disabled**, so CI is advisory; enable required checks before production ([DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd)).
 
 - **backend** — Ruff check/format, mypy, `pytest -m "not integration"` with coverage (mongomock + FakeRedis)
 - **frontend** — `npm run lint` / `format:check`, `test:coverage`, `build:check`
