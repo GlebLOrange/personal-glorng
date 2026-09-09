@@ -152,6 +152,23 @@ async def test_build_questions_respects_threshold(registry: DatabaseRegistry) ->
     assert any(q.field == "title" for q in questions)
 
 
+def test_scheduled_at_from_draft_uses_local_timezone(
+    registry: DatabaseRegistry,
+) -> None:
+    from datetime import UTC, datetime
+
+    svc = TaskIntakeService(registry)
+    draft = TaskDraft(
+        title="Local noon",
+        scheduled_date="2026-06-01",
+        scheduled_time="12:00",
+    )
+    # .env.test TIMEZONE=Europe/Warsaw; June is CEST (UTC+2)
+    assert svc.scheduled_at_from_draft(draft) == datetime(
+        2026, 6, 1, 10, 0, 0, tzinfo=UTC
+    )
+
+
 @pytest.mark.asyncio
 async def test_cancel_intake(registry: DatabaseRegistry) -> None:
     svc = TaskIntakeService(registry)

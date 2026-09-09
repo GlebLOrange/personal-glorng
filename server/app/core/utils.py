@@ -5,6 +5,7 @@ from collections.abc import Generator
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import quote
+from zoneinfo import ZoneInfo
 
 _ASCII_FILENAME_RE = re.compile(r"[^\x20-\x7E]+")
 
@@ -20,9 +21,29 @@ def as_utc(value: datetime) -> datetime:
     return value.astimezone(UTC)
 
 
+def local_naive_to_utc(value: datetime) -> datetime:
+    """Interpret naive wall-clock as settings.TIMEZONE, return UTC-aware."""
+    if value.tzinfo is not None:
+        return value.astimezone(UTC)
+    from app.settings import get_settings
+
+    local = value.replace(tzinfo=ZoneInfo(get_settings().TIMEZONE))
+    return local.astimezone(UTC)
+
+
+def local_now() -> datetime:
+    """Current datetime in settings.TIMEZONE."""
+    from app.settings import get_settings
+
+    return datetime.now(ZoneInfo(get_settings().TIMEZONE))
+
+
 def format_scheduled_at(value: datetime) -> str:
-    """Format task scheduled time for display (UTC)."""
-    return as_utc(value).strftime("%Y-%m-%d %H:%M")
+    """Format task scheduled time for display in settings.TIMEZONE."""
+    from app.settings import get_settings
+
+    local = as_utc(value).astimezone(ZoneInfo(get_settings().TIMEZONE))
+    return local.strftime("%Y-%m-%d %H:%M")
 
 
 def calendar_datetime(value: datetime) -> str:
