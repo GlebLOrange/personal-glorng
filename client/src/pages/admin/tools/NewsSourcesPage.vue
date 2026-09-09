@@ -111,7 +111,7 @@ const {
       <template v-else>
         <EmptyState v-if="sources.length === 0" :description="emptyFilterDescription" />
 
-        <div v-else class="min-w-0">
+        <div v-else class="mt-1 min-w-0">
           <AdminListRow
             v-for="source in sources"
             :key="source.id"
