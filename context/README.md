@@ -42,6 +42,19 @@ frontend to host Vite, while RabbitMQ and the Docker client container stay off.
 | `make dev-bot` | Start the Telegram todobot with RabbitMQ. |
 | `make dev-full` | Run worker, bot, RabbitMQ, and Docker frontend together. |
 
+## Agent memory homes
+
+Prefer this order; do not dump the whole tree into a new chat:
+
+1. `.cursor/rules/` — always-on / path-triggered constraints
+2. `.cursor/skills/` — repeatable workflows
+3. [`AGENTS.md`](../AGENTS.md) — bootstrap / env / Cloud VM
+4. `docs/` — handbook, ADRs, testing
+5. `context/` — leftovers only (this folder)
+
+Do not commit ephemeral PR review dumps at the repo root (the old
+`BASEDIR.md` anti-pattern was removed).
+
 ## Source of Truth
 
 Use the [Makefile](../Makefile) for supported workflows, runtime commands, and
@@ -52,4 +65,4 @@ service composition. Confirm versions and dependency changes in
 [.env.example](../.env.example) for configuration requirements.
 
 For historical architecture notes, see the dated
-[project review](project-review.md) (2026-08-09).
+[project review](project-review.md).

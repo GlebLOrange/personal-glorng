@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Coding standards and agent behavior use a hybrid layout: thin always-on and path-triggered stubs in [`.cursor/rules/`](.cursor/rules/) (safety, git workflow, dependencies, backend FastAPI/Python, frontend Vue/Pinia/TypeScript, design system) that point at full guidance in [`.cursor/skills/`](.cursor/skills/), plus opt-in review/process skills such as `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, and `spec-driven-development`. This file covers environment and bootstrap only. Ecosystem skills from skills.sh: install with `npx skills add <pkg>@<skill> -g -y` (user-level under `~/.agents/skills/`); keep project skills in `.cursor/skills/` only — do not commit `.agents/`, `.claude/`, or `skills-lock.json`.
+Coding standards and agent behavior use a hybrid layout: thin always-on and path-triggered stubs in [`.cursor/rules/`](.cursor/rules/) (safety, git workflow, dependencies, backend FastAPI/Python, frontend Vue/Pinia/TypeScript, design system) that point at full guidance in [`.cursor/skills/`](.cursor/skills/), plus opt-in review/process skills such as `code-review-and-quality`, `incremental-implementation`, `test-driven-development`, `performance-optimization`, `security-and-hardening`, and `spec-driven-development`. This file covers environment and bootstrap only — do not commit ephemeral PR review dumps at the repo root (that anti-pattern lived as `BASEDIR.md`). Ecosystem skills from skills.sh: install with `npx skills add <pkg>@<skill> -g -y` (user-level under `~/.agents/skills/`); keep project skills in `.cursor/skills/` only — do not commit `.agents/`, `.claude/`, or `skills-lock.json`.
 
 ## Cursor Cloud specific instructions
 
@@ -65,7 +65,7 @@ Cloud-specific notes:
   UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
   ```
 - **Backend via Docker:** prod images do not include `pytest`/`ruff`; dev targets may, but host `uv` is the canonical path for backend checks.
-- **Frontend:** Node 24 (`engines` + root `.nvmrc`; Cloud VM default `/exec-daemon/node` is often v22 — prepend `"$HOME/.nvm/versions/node/v24.18.0/bin"` to `PATH` or `nvm use`). From `client/`: `npm ci`, then `npm run lint && npm run format:check && npm run test:coverage && npm run build:check`. Use `npm run build` for a fast Vite-only bundle. TypeScript is pinned to `~5.8.3` so `typescript-eslint@8` peers resolve; do not bump to TS 7 until the ESLint stack supports it.
+- **Frontend:** Node 24 (`engines` + root `.nvmrc`; Cloud VM default `/exec-daemon/node` is often v22 — prepend `"$HOME/.nvm/versions/node/v24.18.0/bin"` to `PATH` or `nvm use`). From `client/`: `npm ci`, then `npm run lint && npm run format:check && npm run test:coverage && npm run build:check`. Use `npm run build` for a fast Vite-only bundle. TypeScript is pinned to `~7.0.2` (see `client/package.json`).
 
 ### Optional services
 
