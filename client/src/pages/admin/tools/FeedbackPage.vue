@@ -10,9 +10,9 @@ import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
+import ArchiveIcon from "@/components/icons/ArchiveIcon.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
-import IconEditButton from "@/components/ui/IconEditButton.vue";
+import IconActionButton from "@/components/ui/IconActionButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { feedbackStatusClass } from "@/constants/filterColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
@@ -199,7 +199,7 @@ onMounted(load);
         "
       />
 
-      <div v-else class="mt-1 min-w-0 space-y-2">
+      <div v-else class="mt-1 min-w-0">
         <AdminListRow
           v-for="item in items"
           :key="item.id"
@@ -227,19 +227,26 @@ onMounted(load);
             <span class="lowercase" :title="item.theme">{{ item.theme }}</span>
           </template>
           <template #actions>
-            <IconEditButton aria-label="edit feedback" @click="openItem(item)" />
-            <BaseButton
+            <IconActionButton
               v-if="item.status === 'archived'"
-              variant="ghost"
               quiet
-              size="sm"
+              family="1xx"
+              aria-label="unarchive"
+              title="unarchive"
               @click="unarchiveItem(item)"
             >
-              unarchive
-            </BaseButton>
-            <BaseButton v-else variant="ghost" quiet size="sm" @click="archiveItem(item)">
-              archive
-            </BaseButton>
+              <ArchiveIcon restore class-name="size-4" />
+            </IconActionButton>
+            <IconActionButton
+              v-else
+              quiet
+              family="1xx"
+              aria-label="archive"
+              title="archive"
+              @click="archiveItem(item)"
+            >
+              <ArchiveIcon class-name="size-4" />
+            </IconActionButton>
           </template>
         </AdminListRow>
       </div>
