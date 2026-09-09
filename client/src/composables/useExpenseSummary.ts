@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import type { ExchangeRates, Expense, ExpenseSummary, PaginatedExpenses } from "@/types";
+import { formatDate } from "@/utils/format";
 
 import type { CurrencyCode } from "./useExpenseFilters";
 
@@ -138,11 +139,7 @@ export function useExpenseSummary(
   }
 
   function formatExpenseDate(iso: string): string {
-    return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
+    return formatDate(iso);
   }
 
   async function loadExpenses(): Promise<void> {

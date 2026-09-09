@@ -1,3 +1,5 @@
+import { formatDate } from "@/utils/format";
+
 /** Shared copy for expense calculator persistence status. */
 export function buildPersistenceHint(input: {
   isSuperuser: boolean;
@@ -6,7 +8,7 @@ export function buildPersistenceHint(input: {
 }): string {
   if (input.isSuperuser) {
     if (input.lastSavedAt && !input.stateDirty) {
-      return `saved ${new Date(input.lastSavedAt).toLocaleString()}`;
+      return `saved ${formatDate(input.lastSavedAt)}`;
     }
     if (input.stateDirty) return "unsaved changes";
     return "superuser: save to keep data across sessions";

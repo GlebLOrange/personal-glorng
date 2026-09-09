@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   displayBreadcrumbLabel,
   formatBreadcrumbLabel,
+  formatDate,
   formatRelativeTime,
   formatScheduleDate,
   truncateBreadcrumbSlug,
@@ -48,6 +49,18 @@ describe("displayBreadcrumbLabel", () => {
     expect(displayBreadcrumbLabel("calculator")).toBe("calculator");
     expect(displayBreadcrumbLabel("app logs")).toBe("app logs");
     expect(displayBreadcrumbLabel("§ tools")).toBe("tools");
+  });
+});
+
+describe("formatDate", () => {
+  it("formats a calendar date as day short-month year", () => {
+    expect(formatDate("2000-02-22")).toBe("22 Feb 2000");
+  });
+
+  it("keeps clock time on timestamps", () => {
+    const formatted = formatDate("2000-02-22T15:30:00");
+    expect(formatted).toContain("22 Feb 2000");
+    expect(formatted).toMatch(/15:30/);
   });
 });
 
