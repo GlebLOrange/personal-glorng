@@ -33,6 +33,12 @@ export interface GitHubStatus {
   github_username: string | null;
 }
 
+export interface ResumeGitHubPayload {
+  enabled: boolean;
+  username: string | null;
+  repos: PublicGitHubRepo[];
+}
+
 export interface ResumeData {
   name: string;
   title: string;
@@ -46,6 +52,8 @@ export interface ResumeData {
   projects: Project[];
   education?: Education[];
   links: Partial<Record<ContactLinkId, string>>;
+  /** Attached by GET /resume when public GitHub listing is configured. */
+  github?: ResumeGitHubPayload;
 }
 
 export interface SkillGroup {

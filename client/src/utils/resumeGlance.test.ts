@@ -28,8 +28,12 @@ describe("resumeGlance", () => {
     expect(stats).toHaveLength(4);
     expect(stats.find((s) => s.label === "Availability")?.value).toBe("open");
     expect(stats.find((s) => s.label === "Core stack")?.value).toBe("Python · Vue 3 · FastAPI");
+    expect(stats.find((s) => s.label === "Experience")?.value).toBe("since 2017");
     expect(stats.find((s) => s.label === "Experience")?.detail).toBe(
-      "building and shipping products",
+      "platform sample since 2022",
+    );
+    expect(stats.find((s) => s.label === "Projects")?.detail).toBe(
+      "one platform with live facets",
     );
   });
 });

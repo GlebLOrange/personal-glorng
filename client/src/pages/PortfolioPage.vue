@@ -16,9 +16,11 @@ import { useCachedApi } from "@/composables/useCachedApi";
 import { useSpotifyNowPlaying } from "@/composables/useSpotifyNowPlaying";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
-import type { DonationsConfig, PublicGitHubRepo, ResumeData } from "@/types";
+import type { DonationsConfig, ResumeData } from "@/types";
 
 const FLAGSHIP_REPO_URL = "https://github.com/GlebLOrange/personal-glorng";
+/** ponytail: hide thin strip — hero already links the flagship; one card looks weak */
+const MIN_GITHUB_STRIP_REPOS = 2;
 
 const ExperienceList = defineAsyncComponent(() => import("@/components/resume/ExperienceList.vue"));
 const ProjectsGrid = defineAsyncComponent(() => import("@/components/resume/ProjectsGrid.vue"));
@@ -37,10 +39,6 @@ const {
   loading: donationsLoading,
   fetch: fetchDonations,
 } = useCachedApi<DonationsConfig>("/donations/config");
-const {
-  data: githubRepos,
-  fetch: fetchGithubRepos,
-} = useCachedApi<PublicGitHubRepo[]>("/github/repos");
 const { playback, isVisible } = useSpotifyNowPlaying();
 const apiError = ref(false);
 const donationsError = ref(false);
@@ -55,10 +53,19 @@ const contactLinks = computed(() => buildContactLinks(resume.value.links));
 const education = computed(() => resume.value.education ?? []);
 const githubProfileUrl = computed(() => resume.value.links.github);
 const highlightedRepos = computed(() => {
-  const repos = githubRepos.value ?? [];
-  return repos
-    .filter((repo) => !repo.fork && !repo.private)
-    .slice(0, 4);
+  const repos = resume.value.github?.repos ?? [];
+  const profileLogin = resume.value.github?.username?.toLowerCase() ?? "";
+  const publicRepos = repos.filter((repo) => {
+    if (repo.fork || repo.private) return false;
+    // GitHub profile README repo is not an engineering sample.
+    if (profileLogin && repo.name.toLowerCase() === profileLogin) return false;
+    return true;
+  });
+  // Hide a one-card gallery that duplicates the hero flagship link.
+  if (publicRepos.length < MIN_GITHUB_STRIP_REPOS) {
+    return [];
+  }
+  return publicRepos.slice(0, 4);
 });
 
 async function loadResume(): Promise<void> {
@@ -68,14 +75,6 @@ async function loadResume(): Promise<void> {
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
     apiError.value = true;
-  }
-}
-
-async function loadGithubRepos(): Promise<void> {
-  try {
-    await fetchGithubRepos();
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
   }
 }
 
@@ -113,7 +112,6 @@ function observeSupportSection(): void {
 
 onMounted(() => {
   void loadResume();
-  void loadGithubRepos();
   void nextTick(() => observeSupportSection());
 });
 

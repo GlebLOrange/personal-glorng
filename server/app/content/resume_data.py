@@ -18,6 +18,9 @@ RESUME_DATA: dict[str, Any] = {
         "For hiring managers: this site is the live product. Expect auth/RBAC,"
         " rate limits, background jobs, search indexing, OpenAPI, tests, and CI."
         " Source and handbook links sit next to download CV above."
+        " Tenure note: shipping independently since 2017; the inspectable"
+        " production sample is this platform (2022–present) — personal-glorng"
+        " is the primary public repo."
     ),
     "skills": [
         {
@@ -26,7 +29,7 @@ RESUME_DATA: dict[str, Any] = {
             "items": [
                 "Python",
                 "FastAPI",
-                "SQLAlchemy",
+                "Motor",
                 "Celery",
                 "Redis",
             ],
@@ -38,8 +41,8 @@ RESUME_DATA: dict[str, Any] = {
         },
         {
             "category": "Databases",
-            "summary": "Relational and document stores with caching layers",
-            "items": ["PostgreSQL", "MongoDB", "Redis"],
+            "summary": "Document-first with optional relational search and caching",
+            "items": ["MongoDB", "PostgreSQL (optional)", "Redis"],
         },
         {
             "category": "DevOps",
@@ -78,12 +81,12 @@ RESUME_DATA: dict[str, Any] = {
     ],
     "experience": [
         {
-            "role": "Python Backend / Platform Engineer",
+            "role": "Independent Python Backend Engineer",
             "company": "Independent — Gleb.Y platform",
             "period": "2022-Present",
             "description": (
-                "Own the FastAPI + Vue portfolio platform end-to-end"
-                " (APIs, data stores, workers, and ops)."
+                "Primary engineering sample: own the FastAPI + Vue platform"
+                " end-to-end (APIs, MongoDB/Motor, workers, and ops)."
             ),
             "highlights": [
                 (
@@ -109,8 +112,8 @@ RESUME_DATA: dict[str, Any] = {
             "company": "Independent / client projects",
             "period": "2017-2022",
             "description": (
-                "Delivered APIs, admin tools, and automation for small teams"
-                " and personal products."
+                "Earlier independent API/admin/automation work for small teams"
+                " — less public artifact surface than the current platform."
             ),
             "highlights": [
                 (
@@ -137,15 +140,14 @@ RESUME_DATA: dict[str, Any] = {
             "name": "Gleb.Y portfolio platform",
             "description": (
                 "Problem: need a hire-ready live demo of production backend skills."
-                " Approach: FastAPI platform with auth, workers, search, admin,"
-                " and a Vue 3 client. Outcome: public repo + handbook + OpenAPI"
-                " as the primary engineering sample."
+                " Approach: FastAPI platform with auth, Motor/MongoDB, workers,"
+                " search, admin, and a Vue 3 client. Outcome: personal-glorng"
+                " is the primary public engineering sample (repo + handbook + OpenAPI)."
             ),
             "tech": [
                 "FastAPI",
                 "Vue 3",
                 "MongoDB",
-                "PostgreSQL",
                 "Redis",
                 "Celery",
                 "Docker",
@@ -155,23 +157,22 @@ RESUME_DATA: dict[str, Any] = {
             "url": "https://github.com/GlebLOrange/personal-glorng",
         },
         {
-            "name": "Automation & Telegram workers",
+            "name": "Platform facet: Celery / Telegram workers",
             "description": (
-                "Problem: notifications and async jobs without blocking the API."
-                " Approach: Celery + Redis workers for reminders, cleanup,"
-                " news ingest, and Telegram publish. Outcome: reusable worker"
-                " patterns demonstrated in the same platform."
+                "Part of the Gleb.Y platform — notifications and async jobs"
+                " without blocking the API. Approach: Celery + Redis workers"
+                " for reminders, cleanup, news ingest, and Telegram publish."
+                " Outcome: reusable worker patterns in the same codebase."
             ),
             "tech": ["Python", "Celery", "Redis", "Telegram"],
             "url": "/tools",
         },
         {
-            "name": "Architecture handbook & ops runbooks",
+            "name": "Platform facet: architecture handbook",
             "description": (
-                "Problem: platform depth stays invisible to reviewers."
-                " Approach: VitePress docs, ADRs, OpenAPI generation,"
-                " and deployment runbooks. Outcome: published handbook for"
-                " hiring-manager deep-dives."
+                "Docs for the same platform — VitePress handbook, ADRs,"
+                " OpenAPI generation, and deployment runbooks so reviewers"
+                " can deep-dive without guessing at architecture."
             ),
             "tech": ["VitePress", "OpenAPI", "Docker", "GitHub Actions"],
             "url": "https://gleblorange.github.io/personal-glorng/",

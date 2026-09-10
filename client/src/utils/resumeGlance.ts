@@ -53,12 +53,22 @@ export function primaryStack(skills: SkillGroup[]): string {
 export function buildGlanceStats(resume: ResumeData): GlanceStat[] {
   const years = computeYearsExperience(resume.experience);
   const skillCount = countSkills(resume.skills);
+  const starts = resume.experience
+    .map((entry) => parsePeriodStart(entry.period))
+    .filter((year): year is number => year !== null);
+  const earliest = starts.length > 0 ? Math.min(...starts) : null;
 
   return [
     {
       label: "Experience",
-      value: years > 0 ? `${years}+ yrs` : "—",
-      detail: years > 0 ? "building and shipping products" : "no entries yet",
+      // ponytail: avoid bare "N+ yrs" seniority claim from calendar span
+      value: earliest !== null ? `since ${earliest}` : years > 0 ? `${years}+ yrs` : "—",
+      detail:
+        earliest !== null
+          ? "platform sample since 2022"
+          : years > 0
+            ? "building and shipping products"
+            : "no entries yet",
     },
     {
       label: "Core stack",
@@ -68,7 +78,7 @@ export function buildGlanceStats(resume: ResumeData): GlanceStat[] {
     {
       label: "Projects",
       value: String(resume.projects.length),
-      detail: "highlighted work with live links",
+      detail: "one platform with live facets",
     },
     {
       label: "Availability",
