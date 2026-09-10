@@ -5,7 +5,7 @@ import { buildContactLinks } from "@/constants/contactMeta";
 describe("buildContactLinks", () => {
   it("returns links in stable order with mailto inquiry prefills for email", () => {
     const result = buildContactLinks({
-      github: "https://github.com/glorange",
+      github: "https://github.com/GlebLOrange",
       email: "hello@example.com",
       telegram: "https://t.me/glorange",
       linkedin: "https://www.linkedin.com/in/glorange",
@@ -27,7 +27,7 @@ describe("buildContactLinks", () => {
       email: "hello@example.com",
       telegram: "   ",
       linkedin: "",
-      github: "https://github.com/glorange",
+      github: "https://github.com/GlebLOrange",
     });
 
     expect(result.map((link) => link.id)).toEqual(["email", "github"]);
@@ -38,7 +38,7 @@ describe("buildContactLinks", () => {
       email: "not an email",
       telegram: "javascript:alert(1)",
       linkedin: "http://example.com/profile",
-      github: "https://github.com/glorange",
+      github: "https://github.com/GlebLOrange",
     });
 
     expect(result.map((link) => link.id)).toEqual(["github"]);

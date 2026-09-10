@@ -3,19 +3,25 @@ import type { ResumeData } from "@/types";
 /** Static resume mirror of server/app/content/resume_data.py — keep in sync. */
 export const RESUME_FALLBACK: ResumeData = {
   name: "Gleb.Y",
-  title: "Full-Stack Developer",
+  title: "Python Backend / FastAPI Engineer",
+  tagline:
+    "Python/FastAPI backend engineer who builds production platforms" +
+    " end-to-end — APIs, auth, workers, data stores, and CI/CD.",
   location: "EU",
   availability: "open to full-time and contract (remote)",
   bio:
-    "end-to-end delivery of web apps, APIs, and automation for clients" +
-    " and personal products. I build clean, maintainable systems across" +
-    " backend, frontend, and deployment — with a focus on clarity," +
-    " reliability, and long-term maintainability.",
+    "I design and ship backend-heavy platforms: FastAPI services," +
+    " auth and permissions, Redis/Celery workers, and deployable Docker stacks." +
+    " Full-stack capable when the product needs a Vue UI — backend ownership first.",
+  hiring_note:
+    "For hiring managers: this site is the live product. Expect auth/RBAC," +
+    " rate limits, background jobs, search indexing, OpenAPI, tests, and CI." +
+    " Source and handbook links sit next to download CV above.",
   skills: [
     {
       category: "Backend",
       summary: "Production APIs, auth, workers, and service boundaries",
-      items: ["Python", "FastAPI", "Django", "SQLAlchemy", "Celery", "Redis"],
+      items: ["Python", "FastAPI", "SQLAlchemy", "Celery", "Redis"],
     },
     {
       category: "Frontend",
@@ -53,57 +59,69 @@ export const RESUME_FALLBACK: ResumeData = {
   ],
   experience: [
     {
-      role: "Full-Stack Developer",
-      company: "Freelance / Independent",
-      period: "2017-Present",
-      description: "",
+      role: "Python Backend / Platform Engineer",
+      company: "Independent — gLOrng platform",
+      period: "2022-Present",
+      description:
+        "Own the FastAPI + Vue portfolio platform end-to-end (APIs, data stores, workers, and ops).",
       highlights: [
-        "Deliver complete web applications, backend services, and automation tools for clients",
-        "Design and ship production APIs with authentication, rate limiting, caching, and monitoring",
-        "Build admin dashboards, internal tools, and workflow automation (Celery, Redis, Telegram bots)",
-        "Implement CI/CD pipelines, containerized deployments, and environment-based configuration",
-        "Integrate third-party services (payments, messaging, analytics, search engines)",
+        "Built production FastAPI services with cookie auth, capability RBAC, CSRF protection, and rate limiting",
+        "Shipped Celery/Redis workers for email, task automation, news ingest, and cleanup jobs",
+        "Maintained 80+ server pytest modules, path-filtered GitHub Actions CI, and multi-service Docker Compose deploys",
+        "Added optional Postgres/Elasticsearch search, Redis caching, OpenTelemetry hooks, and a VitePress architecture handbook",
+      ],
+    },
+    {
+      role: "Freelance Backend & Full-Stack Engineer",
+      company: "Independent / client projects",
+      period: "2017-2022",
+      description:
+        "Delivered APIs, admin tools, and automation for small teams and personal products.",
+      highlights: [
+        "Designed REST APIs with authentication, caching, and third-party integrations (payments, messaging)",
+        "Built admin dashboards and internal automation (Telegram bots, scheduled jobs, CLI maintenance tools)",
+        "Containerized deployments with Nginx reverse proxy and environment-based configuration",
+        "Owned delivery from schema design through deploy — typically solo or small-team engagements",
       ],
     },
   ],
   projects: [
     {
-      name: "Portfolio Platform",
+      name: "gLOrng portfolio platform",
       description:
-        "Built and maintain a full platform powering personal projects, blog, and API demos. " +
-        "Backend includes auth, rate limiting, search indexing, background workers, and caching. " +
-        "Frontend built with Vue 3 + TypeScript, fully responsive and optimized. " +
-        "Automated deployments with Docker, Nginx, and GitHub Actions.",
+        "Problem: need a hire-ready live demo of production backend skills. " +
+        "Approach: FastAPI platform with auth, workers, search, admin, and a Vue 3 client. " +
+        "Outcome: public repo + handbook + OpenAPI as the primary engineering sample.",
       tech: [
         "FastAPI",
         "Vue 3",
-        "PostgreSQL",
         "MongoDB",
+        "PostgreSQL",
         "Redis",
         "Celery",
         "Docker",
         "Nginx",
         "GitHub Actions",
       ],
-      url: "https://github.com/glorange",
+      url: "https://github.com/GlebLOrange/personal-glorng",
     },
     {
-      name: "API-Driven Automation Tools",
+      name: "Automation & Telegram workers",
       description:
-        "Developed Telegram integrations for notifications, task automation, and admin workflows. " +
-        "Built background workers for scheduled jobs, data processing, and async tasks. " +
-        "Created internal CLI tools for deployments, migrations, and maintenance.",
-      tech: ["Telegram", "Celery", "Redis", "Python"],
+        "Problem: notifications and async jobs without blocking the API. " +
+        "Approach: Celery + Redis workers for reminders, cleanup, news ingest, and Telegram publish. " +
+        "Outcome: reusable worker patterns demonstrated in the same platform.",
+      tech: ["Python", "Celery", "Redis", "Telegram"],
       url: "/tools",
     },
     {
-      name: "Client Web Applications",
+      name: "Architecture handbook & ops runbooks",
       description:
-        "Delivered full-stack apps with dashboards, CRUD flows, and real-time features. " +
-        "Implemented secure authentication, RBAC, and audit logging. " +
-        "Optimized database queries, caching layers, and API performance.",
-      tech: ["FastAPI", "Vue 3", "PostgreSQL", "Redis"],
-      url: "/",
+        "Problem: platform depth stays invisible to reviewers. " +
+        "Approach: VitePress docs, ADRs, OpenAPI generation, and deployment runbooks. " +
+        "Outcome: published handbook for hiring-manager deep-dives.",
+      tech: ["VitePress", "OpenAPI", "Docker", "GitHub Actions"],
+      url: "https://gleblorange.github.io/portfolio-glorng/",
     },
   ],
   education: [],
@@ -111,6 +129,6 @@ export const RESUME_FALLBACK: ResumeData = {
     email: "glorange@gmail.com",
     telegram: "https://t.me/glorange",
     linkedin: "https://www.linkedin.com/in/glorange",
-    github: "https://github.com/glorange",
+    github: "https://github.com/GlebLOrange",
   },
 };
