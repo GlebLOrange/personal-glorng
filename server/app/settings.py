@@ -35,9 +35,14 @@ def _env_file_path() -> Path:
     return _repo_root() / ".env"
 
 
+def _is_deployed_env(app_env: str) -> bool:
+    """True for production and staging (same secret hardening)."""
+    return app_env in {"production", "staging"}
+
+
 def _validate_production_password(name: str, value: str, *, min_len: int) -> None:
     if len(value) < min_len or any(m in value.lower() for m in _WEAK_SECRET_MARKERS):
-        msg = f"{name} is too weak for production; use {min_len}+ chars"
+        msg = f"{name} is too weak for production/staging; use {min_len}+ chars"
         raise ValueError(msg)
 
 
@@ -251,47 +256,56 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _check_production_secrets(self) -> Settings:
-        if self.APP_ENV == "production" and (
+        if _is_deployed_env(self.APP_ENV) and (
             len(self.JWT_SECRET) < 32
             or any(m in self.JWT_SECRET.lower() for m in _WEAK_SECRET_MARKERS)
         ):
-            msg = "JWT_SECRET is too weak for production; use 32+ chars"
+            msg = "JWT_SECRET is too weak for production/staging; use 32+ chars"
             raise ValueError(msg)
-        if self.APP_ENV == "production":
+        if _is_deployed_env(self.APP_ENV):
             fernet = self.FERNET_SECRET.strip()
             if len(fernet) < 32 or any(
                 m in fernet.lower() for m in _WEAK_SECRET_MARKERS
             ):
-                msg = "FERNET_SECRET is too weak for production; use 32+ chars"
+                msg = (
+                    "FERNET_SECRET is too weak for production/staging; "
+                    "use 32+ chars"
+                )
                 raise ValueError(msg)
             if fernet == self.JWT_SECRET:
-                msg = "FERNET_SECRET must differ from JWT_SECRET in production"
+                msg = (
+                    "FERNET_SECRET must differ from JWT_SECRET "
+                    "in production/staging"
+                )
                 raise ValueError(msg)
-        if self.APP_ENV == "production" and any(
+        if _is_deployed_env(self.APP_ENV) and any(
             origin.strip() == "*" for origin in self.CORS_ORIGINS
         ):
             msg = "CORS_ORIGINS cannot include '*' when allow_credentials is enabled"
             raise ValueError(msg)
-        if self.APP_ENV == "production" and self.LOG_REQUEST_BODIES:
-            msg = "LOG_REQUEST_BODIES must be false in production"
+        if _is_deployed_env(self.APP_ENV) and self.LOG_REQUEST_BODIES:
+            msg = "LOG_REQUEST_BODIES must be false in production/staging"
             raise ValueError(msg)
-        if self.APP_ENV == "production" and (
+        if _is_deployed_env(self.APP_ENV) and (
             len(self.RABBITMQ_PASSWORD) < 16
             or any(m in self.RABBITMQ_PASSWORD.lower() for m in _WEAK_SECRET_MARKERS)
         ):
-            msg = "RABBITMQ_PASSWORD is too weak for production; use 16+ chars"
+            msg = (
+                "RABBITMQ_PASSWORD is too weak for production/staging; "
+                "use 16+ chars"
+            )
             raise ValueError(msg)
         if (
-            self.APP_ENV == "production"
+            _is_deployed_env(self.APP_ENV)
             and self.TELEGRAM_BOT_TO_DO_TOKEN
             and not self.TELEGRAM_ALLOWED_USER_ID
         ):
             msg = (
                 "TELEGRAM_ALLOWED_USER_ID must be set when "
-                "TELEGRAM_BOT_TO_DO_TOKEN is configured in production"
+                "TELEGRAM_BOT_TO_DO_TOKEN is configured in production/staging"
             )
             raise ValueError(msg)
-        if self.APP_ENV == "production":
+        if _is_deployed_env(self.APP_ENV):
             _validate_production_password(
                 "REDIS_PASSWORD",
                 _password_from_redis_url(self.REDIS_URL),
