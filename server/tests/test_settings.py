@@ -90,3 +90,58 @@ def test_production_forbids_request_body_logging(
         Settings()
 
     get_settings.cache_clear()
+
+
+def test_staging_requires_strong_jwt_secret(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Staging uses the same secret gates as production."""
+    env_file = scenario_env(
+        tmp_path,
+        base=ENV_SCENARIOS_DIR / "production-csrf.env",
+        APP_ENV="staging",
+        JWT_SECRET="too-short",
+    )
+    activate_env_file(monkeypatch, env_file)
+
+    with pytest.raises(ValueError, match="JWT_SECRET"):
+        Settings()
+
+    get_settings.cache_clear()
+
+
+def test_staging_requires_distinct_fernet_secret(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    env_file = scenario_env(
+        tmp_path,
+        base=ENV_SCENARIOS_DIR / "production-csrf.env",
+        APP_ENV="staging",
+        FERNET_SECRET="",
+    )
+    activate_env_file(monkeypatch, env_file)
+
+    with pytest.raises(ValueError, match="FERNET_SECRET"):
+        Settings()
+
+    get_settings.cache_clear()
+
+
+def test_staging_forbids_request_body_logging(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    env_file = scenario_env(
+        tmp_path,
+        base=ENV_SCENARIOS_DIR / "production-csrf.env",
+        APP_ENV="staging",
+        LOG_REQUEST_BODIES="true",
+    )
+    activate_env_file(monkeypatch, env_file)
+
+    with pytest.raises(ValueError, match="LOG_REQUEST_BODIES"):
+        Settings()
+
+    get_settings.cache_clear()

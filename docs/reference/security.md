@@ -28,7 +28,7 @@ HTTPS termination is expected upstream of compose nginx (port 80 by default); `s
 - Password policy: 12+ chars, upper, lower, digit, special; common passwords rejected
 - `ALLOWED_EMAIL` is seed-only for the bootstrap superuser; GitHub OAuth uses `GITHUB_ALLOWED_USERS`
 - Users manage profile, password, email, and preferences via `/settings`; permissions are admin-only
-- GitHub/Google OAuth tokens are **encrypted at rest** (Fernet, key from `FERNET_SECRET`; decrypt falls back to `JWT_SECRET` for pre-split ciphertext). Production requires a dedicated `FERNET_SECRET` distinct from `JWT_SECRET` — see [`core/fernet_secrets.py`](../../server/app/core/fernet_secrets.py)
+- GitHub/Google OAuth tokens are **encrypted at rest** (Fernet, key from `FERNET_SECRET`; decrypt falls back to `JWT_SECRET` for pre-split ciphertext). Production/staging require a dedicated `FERNET_SECRET` distinct from `JWT_SECRET` — see [`core/fernet_secrets.py`](../../server/app/core/fernet_secrets.py)
 
 ## CSRF and CORS {#csrf-and-cors}
 
@@ -152,14 +152,14 @@ Structured API logs (Loguru / [`logging.py`](../../server/app/core/logging.py)) 
 | Admin access | `GET /api/tools/app-logs` requires `app-logs:read` |
 | Health noise | `/api/health` request logs are not persisted |
 | Failure mode | Queue is bounded; overflow drops oldest entries; DB errors never crash the app |
-| Body logging | `LOG_REQUEST_BODIES` logs redacted JSON only; skips multipart/binary and bodies over 64 KiB; forbidden in production |
+| Body logging | `LOG_REQUEST_BODIES` logs redacted JSON only; skips multipart/binary and bodies over 64 KiB; forbidden in production/staging |
 
 Audit events ([`audit_events`](../../server/app/db/repositories/audit.py)) remain a separate, intentional change trail — not general application logs.
 
 ## Secrets and CI
 
 - Never commit `.env` (see [Configuration](/reference/configuration))
-- Production startup validates strength of `JWT_SECRET`, `FERNET_SECRET` (must differ from `JWT_SECRET`), `RABBITMQ_PASSWORD`, `POSTGRES_PASSWORD`, and the password embedded in `REDIS_URL` — see [`server/app/settings.py`](../../server/app/settings.py)
+- Production/staging startup validates strength of `JWT_SECRET`, `FERNET_SECRET` (must differ from `JWT_SECRET`), `RABBITMQ_PASSWORD`, `POSTGRES_PASSWORD`, and the password embedded in `REDIS_URL` — see [`server/app/settings.py`](../../server/app/settings.py)
 - Weekly Dependabot updates for `/server` (uv + Docker), `/client` (npm + Docker), `/docs` (npm), and GitHub Actions; [`security.yml`](../../.github/workflows/security.yml) runs gitleaks on every PR/push, and pip-audit / npm audit on schedule (or when lockfiles change)
 - **Development:** GitHub branch ruleset / required checks are **disabled** so CI stays advisory. **Before production:** enable `main-protection` (require `ci-ok` + `gitleaks`), keep Actions token permissions read-only, and set any deploy secrets — full matrix in [DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd)
 

@@ -1,5 +1,7 @@
 # Environment & secrets
 .env
+.env.production
+.env.staging
 *.env.local
 /env
 /deploy/cloudflare/*.pem

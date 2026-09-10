@@ -26,7 +26,7 @@ Keep `RUN_MIGRATIONS` / `RUN_SEED` in `.env` (or secrets) — avoid setting them
 | `MEDIA_DIR` | `/app/media` | Uploaded file storage path |
 | `CORS_ORIGINS` | localhost variants | Comma-separated allowed origins (required explicit list in production) |
 | `LOG_REQUESTS` | `false` (dev) / `true` (prod) | Log request start/complete; skipped for `/api/health` and `/api/ready` |
-| `LOG_REQUEST_BODIES` | `false` | Log redacted JSON bodies (POST/PUT/PATCH); forbidden in production |
+| `LOG_REQUEST_BODIES` | `false` | Log redacted JSON bodies (POST/PUT/PATCH); forbidden in production/staging |
 | `APP_LOG_PERSIST_ENABLED` | `true` | Persist structured logs to MongoDB |
 | `APP_LOG_PERSIST_MIN_LEVEL` | `WARNING` (dev) / `INFO` (prod) | Min level for DB log persistence |
 | `APP_LOG_RETENTION_DAYS` | `30` | TTL for `app_logs` collection |
@@ -85,8 +85,8 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `JWT_SECRET` | — | **Required.** 32+ chars in production (JWT signing only) |
-| `FERNET_SECRET` | empty | OAuth token encryption at rest; required and distinct from `JWT_SECRET` in production |
+| `JWT_SECRET` | — | **Required.** 32+ chars in production/staging (JWT signing only) |
+| `FERNET_SECRET` | empty | OAuth token encryption at rest; required and distinct from `JWT_SECRET` in production/staging |
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access token TTL |
 | `JWT_REFRESH_TOKEN_EXPIRE_DAYS` | `7` | Refresh token TTL |
 | `JWT_ALGORITHM` | `HS256` | Signing algorithm |

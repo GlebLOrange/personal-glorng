@@ -32,14 +32,14 @@ npm run test
 npm run build:check
 ```
 
-## Full gate (CI-equivalent)
+## Local full gate
 
 ```bash
-make check
+make check                 # lint + pytest + client lint/test/build
 cd client && npm run e2e   # optional; needs running API
 ```
 
-CI workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). Testing tiers: [Testing](/reference/testing).
+`make check` is a local convenience gate — CI also runs coverage, `not integration`, postgres, e2e, and docs freshness. Workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). Testing tiers: [Testing](/reference/testing).
 
 Merge gates (`ci-ok`, `gitleaks`) are **disabled during development**; turn them on before production — [DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd).
 
