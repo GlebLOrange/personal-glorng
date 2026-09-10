@@ -45,7 +45,8 @@ export function countSkills(skills: SkillGroup[]): number {
 export function primaryStack(skills: SkillGroup[]): string {
   const backend = skills.find((group) => group.category === "Backend")?.items ?? [];
   const frontend = skills.find((group) => group.category === "Frontend")?.items ?? [];
-  const picks = [backend[0], frontend[0], backend[2]].filter(Boolean);
+  // Prefer FastAPI (backend[1]) over later libs for hiring glance signal
+  const picks = [backend[0], frontend[0], backend[1]].filter(Boolean);
   return picks.length > 0 ? picks.join(" · ") : "Full-stack";
 }
 

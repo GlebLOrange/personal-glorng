@@ -35,6 +35,7 @@ def _resume_documents() -> list[SearchDocumentInput]:
             body="\n".join(
                 [
                     str(RESUME_DATA.get("tagline", "")),
+                    str(RESUME_DATA.get("hiring_note", "")),
                     str(RESUME_DATA.get("location", "")),
                     str(RESUME_DATA.get("availability", "")),
                     RESUME_DATA["bio"],

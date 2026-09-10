@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
@@ -8,20 +8,37 @@ import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessageFromBlob } from "@/types/api";
 
 const CV_FILENAME = "gleb.y.cv.pdf";
+const HANDBOOK_URL = "https://gleblorange.github.io/portfolio-glorng/";
+const OPENAPI_PATH = "/api/docs";
 
-defineProps<{
+const props = defineProps<{
   name: string;
   title: string;
   tagline?: string;
   location?: string;
   availability?: string;
   bio: string;
+  githubUrl?: string;
+  repoUrl?: string;
 }>();
 
 const emit = defineEmits<{ inquire: [] }>();
 
 const isDownloadingCv = ref(false);
 const { toast } = useNotify();
+
+const proofLinks = computed(() => {
+  const links: Array<{ href: string; label: string; external: boolean }> = [
+    { href: HANDBOOK_URL, label: "architecture docs", external: true },
+    { href: OPENAPI_PATH, label: "openapi", external: false },
+  ];
+  if (props.repoUrl) {
+    links.unshift({ href: props.repoUrl, label: "source repo", external: true });
+  } else if (props.githubUrl) {
+    links.unshift({ href: props.githubUrl, label: "github", external: true });
+  }
+  return links;
+});
 
 async function downloadCv(): Promise<void> {
   if (isDownloadingCv.value) return;
@@ -97,6 +114,23 @@ async function downloadCv(): Promise<void> {
         {{ isDownloadingCv ? "downloading…" : "download cv" }}
       </ToolbarPillButton>
     </div>
+
+    <nav
+      class="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-surface-sage print:hidden"
+      aria-label="engineering proof links"
+    >
+      <a
+        v-for="link in proofLinks"
+        :key="link.href"
+        :href="link.href"
+        :target="link.external ? '_blank' : undefined"
+        :rel="link.external ? 'noopener noreferrer' : undefined"
+        class="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded lowercase"
+      >
+        {{ link.label }}
+        <span v-if="link.external" class="sr-only">(opens in new tab)</span>
+      </a>
+    </nav>
 
     <slot name="after-actions" />
   </div>

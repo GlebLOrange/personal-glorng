@@ -5,6 +5,7 @@ import ContactIcon from "@/components/contact/ContactIcon.vue";
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
+import GitHubReposStrip from "@/components/resume/GitHubReposStrip.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
 import NowPlayingEmbed from "@/components/resume/NowPlayingEmbed.vue";
 import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
@@ -15,7 +16,9 @@ import { useCachedApi } from "@/composables/useCachedApi";
 import { useSpotifyNowPlaying } from "@/composables/useSpotifyNowPlaying";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
-import type { DonationsConfig, ResumeData } from "@/types";
+import type { DonationsConfig, PublicGitHubRepo, ResumeData } from "@/types";
+
+const FLAGSHIP_REPO_URL = "https://github.com/GlebLOrange/personal-glorng";
 
 const ExperienceList = defineAsyncComponent(() => import("@/components/resume/ExperienceList.vue"));
 const ProjectsGrid = defineAsyncComponent(() => import("@/components/resume/ProjectsGrid.vue"));
@@ -34,6 +37,10 @@ const {
   loading: donationsLoading,
   fetch: fetchDonations,
 } = useCachedApi<DonationsConfig>("/donations/config");
+const {
+  data: githubRepos,
+  fetch: fetchGithubRepos,
+} = useCachedApi<PublicGitHubRepo[]>("/github/repos");
 const { playback, isVisible } = useSpotifyNowPlaying();
 const apiError = ref(false);
 const donationsError = ref(false);
@@ -46,6 +53,13 @@ let supportObserver: IntersectionObserver | null = null;
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
 const contactLinks = computed(() => buildContactLinks(resume.value.links));
 const education = computed(() => resume.value.education ?? []);
+const githubProfileUrl = computed(() => resume.value.links.github);
+const highlightedRepos = computed(() => {
+  const repos = githubRepos.value ?? [];
+  return repos
+    .filter((repo) => !repo.fork && !repo.private)
+    .slice(0, 4);
+});
 
 async function loadResume(): Promise<void> {
   apiError.value = false;
@@ -54,6 +68,14 @@ async function loadResume(): Promise<void> {
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
     apiError.value = true;
+  }
+}
+
+async function loadGithubRepos(): Promise<void> {
+  try {
+    await fetchGithubRepos();
+  } catch (err) {
+    if (import.meta.env.DEV) console.error(err);
   }
 }
 
@@ -91,6 +113,7 @@ function observeSupportSection(): void {
 
 onMounted(() => {
   void loadResume();
+  void loadGithubRepos();
   void nextTick(() => observeSupportSection());
 });
 
@@ -120,6 +143,8 @@ onUnmounted(() => {
         :location="resume.location"
         :availability="resume.availability"
         :bio="resume.bio"
+        :github-url="githubProfileUrl"
+        :repo-url="FLAGSHIP_REPO_URL"
         @inquire="contactModal = 'inquiry'"
       >
         <template #after-actions>
@@ -134,7 +159,13 @@ onUnmounted(() => {
     </SectionWrapper>
 
     <SectionWrapper id="about" title="about" width="full" dark alternate>
+      <p v-if="resume.hiring_note" class="text-body mb-6 max-w-3xl lowercase">
+        {{ resume.hiring_note }}
+      </p>
       <PortfolioGlance :resume="resume" />
+      <div v-if="highlightedRepos.length" class="mt-8 print:hidden">
+        <GitHubReposStrip :repos="highlightedRepos" :profile-url="githubProfileUrl" />
+      </div>
     </SectionWrapper>
 
     <SectionWrapper id="skills" title="skills" width="full" dark>

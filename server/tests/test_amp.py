@@ -24,5 +24,5 @@ class TestAmpPage:
             for host in script_hosts
         )
         assert "Gleb.Y" in body
-        assert "Full-Stack Developer" in body
+        assert "Python Backend / FastAPI Engineer" in body
         assert 'rel="canonical"' in body

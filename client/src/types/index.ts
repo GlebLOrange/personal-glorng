@@ -40,6 +40,7 @@ export interface ResumeData {
   location?: string;
   availability?: string;
   bio: string;
+  hiring_note?: string;
   skills: SkillGroup[];
   experience: Experience[];
   projects: Project[];
@@ -73,6 +74,18 @@ export interface Project {
   description: string;
   tech: string[];
   url: string;
+}
+
+export interface PublicGitHubRepo {
+  name: string;
+  full_name: string;
+  html_url: string;
+  description: string | null;
+  language: string | null;
+  stargazers_count: number;
+  fork: boolean;
+  private: boolean;
+  updated_at: string | null;
 }
 
 export interface DonationsConfig {

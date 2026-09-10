@@ -16,9 +16,9 @@ const routes: RouteRecordRaw[] = [
     name: "portfolio",
     component: () => import("@/pages/PortfolioPage.vue"),
     meta: {
-      title: "Developer Portfolio",
+      title: "Python Backend / FastAPI Engineer",
       description:
-        "Gleb.Y — developer portfolio, tools, and curated news. Full-stack delivery of web apps, APIs, and product platforms.",
+        "Gleb.Y — Python/FastAPI backend engineer. Production platforms: APIs, auth, workers, data stores, and CI/CD. Full-stack capable.",
     },
   },
   {
