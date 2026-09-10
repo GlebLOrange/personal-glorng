@@ -4,6 +4,7 @@ from app.db.init_service import DatabaseInitService
 from app.db.registry import DatabaseRegistry
 from app.db.seed.core.admin import WEAK_PASSWORDS, seed_admin
 from app.db.seed.core.expenses import seed_expense_categories, seed_expenses
+from app.db.seed.core.news import seed_news
 from app.db.seed.core.recipes import seed_recipes
 from app.db.seed.core.tasks import seed_tasks
 from app.settings import get_settings
@@ -24,5 +25,6 @@ async def seed() -> None:
         await seed_expense_categories(registry)
         await seed_expenses(registry)
         await seed_tasks(registry, settings, owner)
+        await seed_news(registry)
     finally:
         await init_svc.shutdown()
