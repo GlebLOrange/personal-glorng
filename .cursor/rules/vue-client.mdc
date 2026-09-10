@@ -1,0 +1,7 @@
+---
+description: Vue 3 component and TypeScript guidance for the Vite client.
+globs: ["client/src/**/*.ts", "client/src/**/*.vue"]
+alwaysApply: false
+---
+
+When this rule applies, follow the `vue-client` skill: read `.cursor/skills/vue-client/SKILL.md` and apply it.

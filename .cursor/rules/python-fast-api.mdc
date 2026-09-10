@@ -1,5 +1,5 @@
 ---
-description: "FastAPI backend guidance for the server package."
+description: "FastAPI and Python backend guidance for the server package."
 globs: ["server/**/*.py"]
 alwaysApply: false
 ---

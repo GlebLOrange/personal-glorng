@@ -1,10 +1,18 @@
 ---
 name: python-fast-api
-description: FastAPI backend guidance for the server package.
+description: FastAPI and Python backend guidance for the server package.
 ---
 # FastAPI Backend
 
-Use this rule when changing Python code under `server/`.
+Use this when changing Python code under `server/`.
+
+## Project Fit
+
+- Source lives under `server/app`; tests live under `server/tests`.
+- Dependencies are managed by `uv` in `server/pyproject.toml` and `server/uv.lock`.
+- Ruff is the source of truth for formatting and linting.
+- Configuration belongs in environment-backed settings, not hardcoded constants.
+- Primary data store is Motor/MongoDB. Optional Postgres is secondary. Do not assume SQLAlchemy, Alembic, Poetry, or `fastapi-users`.
 
 ## Key Principles
 
@@ -13,6 +21,13 @@ Use this rule when changing Python code under `server/`.
 - Use descriptive `snake_case` names with clear state booleans such as `is_active` and `has_permission`.
 - Use Pydantic models for request/response validation instead of raw dictionaries at API boundaries.
 - Validate external input at the boundary and keep authorization checks close to protected routes or service entrypoints.
+
+## Python Style
+
+- Add type annotations to new or changed function signatures, including explicit `-> None` where applicable.
+- Add docstrings when they explain non-obvious behavior, public APIs, fixtures, or test intent. Do not add boilerplate docstrings that only repeat the function name.
+- Keep existing comments unless they are stale because of the current change.
+- Prefer standard library and existing helpers before adding dependencies.
 
 ## FastAPI
 
@@ -34,6 +49,13 @@ Use this rule when changing Python code under `server/`.
 - Keep list endpoints paginated or explicitly bounded.
 - Check MongoDB/PostgreSQL indexes before adding query patterns that sort, filter, or search at scale.
 - Treat Redis, RabbitMQ, external APIs, and LLM output as fallible external boundaries.
+
+## Tests
+
+- Use pytest only; do not introduce `unittest`.
+- Put backend tests under `server/tests`.
+- Keep tests behavior-focused and as small as possible.
+- Import pytest typing helpers under `TYPE_CHECKING` only when a test actually needs them.
 
 ## Verification
 
