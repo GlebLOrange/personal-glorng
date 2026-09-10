@@ -9,7 +9,7 @@ description: Creates specs before coding. Use when starting a new project, featu
 
 This rule supplements always-on agent rules; it does not override them.
 
-- **Implementation:** After spec approval, follow `incremental-implementation.mdc` for delivery slices.
+- **Implementation:** After spec approval, follow the `incremental-implementation` skill for delivery slices.
 
 ## Overview
 
