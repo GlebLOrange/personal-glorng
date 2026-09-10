@@ -1,6 +1,15 @@
 # Gleb.Y — Developer Portfolio & Personal Platform
 
+[![CI](https://github.com/GlebLOrange/personal-glorng/actions/workflows/ci.yml/badge.svg)](https://github.com/GlebLOrange/personal-glorng/actions/workflows/ci.yml)
+[![Security](https://github.com/GlebLOrange/personal-glorng/actions/workflows/security.yml/badge.svg)](https://github.com/GlebLOrange/personal-glorng/actions/workflows/security.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + MongoDB + Redis, fully containerized with Docker. The same domain services power the public site, admin panel, Telegram todobot, and background workers.
+
+**Live handbook:** [gleblorange.github.io/personal-glorng](https://gleblorange.github.io/personal-glorng/)  
+**Source:** [github.com/GlebLOrange/personal-glorng](https://github.com/GlebLOrange/personal-glorng)
+
+> The published site is the VitePress architecture handbook (GitHub Pages). The full Vue + FastAPI app runs via `make prod` on a VPS — see [Deployment](docs/operations/deployment.md).
 
 ## Quick start
 
@@ -14,11 +23,17 @@ make seed              # admin user (set SEED_PASSWORD in .env)
 
 Open [http://localhost](http://localhost) or [http://localhost:3000](http://localhost:3000). API docs (dev): [http://localhost:8000/api/docs](http://localhost:8000/api/docs).
 
+## Screenshots
+
+| Portfolio | Tools | Handbook |
+|-----------|-------|----------|
+| ![Portfolio hero](docs/public/screenshots/portfolio.png) | ![Public tools](docs/public/screenshots/tools.png) | ![Docs handbook](docs/public/screenshots/handbook.png) |
+
 ## Documentation
 
 | Resource | Link |
 |----------|------|
-| **Handbook (published)** | [gleblorange.github.io/portfolio-glorng](https://gleblorange.github.io/portfolio-glorng/) |
+| **Handbook (published)** | [gleblorange.github.io/personal-glorng](https://gleblorange.github.io/personal-glorng/) |
 | **Handbook (local)** | `make docs-dev` → [http://localhost:5173](http://localhost:5173) |
 | **Handbook (source)** | [docs/index.md](docs/index.md) |
 | **API / Postman** | [docs/reference/postman.md](docs/reference/postman.md) |
@@ -60,4 +75,4 @@ See [Development](docs/guide/development.md) for all `make` targets.
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).

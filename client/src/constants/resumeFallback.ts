@@ -121,7 +121,7 @@ export const RESUME_FALLBACK: ResumeData = {
         "Approach: VitePress docs, ADRs, OpenAPI generation, and deployment runbooks. " +
         "Outcome: published handbook for hiring-manager deep-dives.",
       tech: ["VitePress", "OpenAPI", "Docker", "GitHub Actions"],
-      url: "https://gleblorange.github.io/portfolio-glorng/",
+      url: "https://gleblorange.github.io/personal-glorng/",
     },
   ],
   education: [],

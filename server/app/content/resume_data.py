@@ -174,7 +174,7 @@ RESUME_DATA: dict[str, Any] = {
                 " hiring-manager deep-dives."
             ),
             "tech": ["VitePress", "OpenAPI", "Docker", "GitHub Actions"],
-            "url": "https://gleblorange.github.io/portfolio-glorng/",
+            "url": "https://gleblorange.github.io/personal-glorng/",
         },
     ],
     "education": [],
