@@ -1,6 +1,6 @@
 # Contributing
 
-How to change gLOrng and open a pull request.
+How to change Gleb.Y and open a pull request.
 
 ## Branch workflow
 

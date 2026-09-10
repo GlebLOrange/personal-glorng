@@ -8,7 +8,7 @@ import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessageFromBlob } from "@/types/api";
 
 const CV_FILENAME = "gleb.y.cv.pdf";
-const HANDBOOK_URL = "https://gleblorange.github.io/portfolio-glorng/";
+const HANDBOOK_URL = "https://gleblorange.github.io/personal-glorng/";
 const OPENAPI_PATH = "/api/docs";
 
 const props = defineProps<{

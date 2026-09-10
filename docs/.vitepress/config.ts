@@ -1,10 +1,10 @@
 import { defineConfig } from "vitepress";
 
-// Project Pages URL uses /portfolio-glorng/; local `make docs-dev` stays at /.
-const base = process.env.CI ? "/portfolio-glorng/" : "/";
+// Project Pages URL uses /personal-glorng/; local `make docs-dev` stays at /.
+const base = process.env.CI ? "/personal-glorng/" : "/";
 
 export default defineConfig({
-  title: "gLOrng",
+  title: "Gleb.Y",
   description: "Developer portfolio and personal platform documentation",
   base,
   ignoreDeadLinks: true,
@@ -98,7 +98,7 @@ export default defineConfig({
     socialLinks: [
       {
         icon: "github",
-        link: "https://github.com/GlebLOrange/portfolio-glorng",
+        link: "https://github.com/GlebLOrange/personal-glorng",
       },
     ],
   },

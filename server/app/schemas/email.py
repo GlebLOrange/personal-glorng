@@ -19,7 +19,7 @@ class EmailSend(BaseModel):
         json_schema_extra={
             "example": {
                 "to": "user@example.com",
-                "subject": "Hello from gLOrng",
+                "subject": "Hello from Gleb.Y",
                 "body": "This is a test message.",
             }
         }

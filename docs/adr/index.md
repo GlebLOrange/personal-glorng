@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-Lightweight ADRs for gLOrng. Copy the template for new decisions:
+Lightweight ADRs for Gleb.Y. Copy the template for new decisions:
 
 ```bash
 make adr-new TITLE="short title"

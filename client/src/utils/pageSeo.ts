@@ -67,7 +67,7 @@ export function applyPageSeo(input: PageSeoInput = {}): void {
   const description = (input.description?.trim() || DEFAULT_DESCRIPTION).slice(0, 300);
   const path = input.path ?? `${window.location.pathname}${window.location.search}`;
   const url = absoluteUrl(path);
-  const image = absoluteUrl(input.image?.trim() || "/apple-touch-icon.png");
+  const image = absoluteUrl(input.image?.trim() || "/social-preview.png");
 
   document.title = title;
 
@@ -81,7 +81,7 @@ export function applyPageSeo(input: PageSeoInput = {}): void {
   upsertMeta("property", "og:url", url);
   upsertMeta("property", "og:image", image);
 
-  upsertMeta("name", "twitter:card", "summary");
+  upsertMeta("name", "twitter:card", "summary_large_image");
   upsertMeta("name", "twitter:title", title);
   upsertMeta("name", "twitter:description", description);
   upsertMeta("name", "twitter:image", image);

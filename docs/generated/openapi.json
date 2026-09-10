@@ -797,7 +797,7 @@
       "EmailSend": {
         "example": {
           "body": "This is a test message.",
-          "subject": "Hello from gLOrng",
+          "subject": "Hello from Gleb.Y",
           "to": "user@example.com"
         },
         "properties": {

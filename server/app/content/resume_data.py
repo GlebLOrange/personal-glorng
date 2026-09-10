@@ -79,7 +79,7 @@ RESUME_DATA: dict[str, Any] = {
     "experience": [
         {
             "role": "Python Backend / Platform Engineer",
-            "company": "Independent — gLOrng platform",
+            "company": "Independent — Gleb.Y platform",
             "period": "2022-Present",
             "description": (
                 "Own the FastAPI + Vue portfolio platform end-to-end"
@@ -134,7 +134,7 @@ RESUME_DATA: dict[str, Any] = {
     ],
     "projects": [
         {
-            "name": "gLOrng portfolio platform",
+            "name": "Gleb.Y portfolio platform",
             "description": (
                 "Problem: need a hire-ready live demo of production backend skills."
                 " Approach: FastAPI platform with auth, workers, search, admin,"
@@ -174,7 +174,7 @@ RESUME_DATA: dict[str, Any] = {
                 " hiring-manager deep-dives."
             ),
             "tech": ["VitePress", "OpenAPI", "Docker", "GitHub Actions"],
-            "url": "https://gleblorange.github.io/portfolio-glorng/",
+            "url": "https://gleblorange.github.io/personal-glorng/",
         },
     ],
     "education": [],

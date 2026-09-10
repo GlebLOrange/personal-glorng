@@ -1,6 +1,6 @@
 # Platform overview
 
-gLOrng is a **personal platform** where the same domain services power the public portfolio, admin panel, Telegram todobot, and Celery background workers.
+Gleb.Y is a **personal platform** where the same domain services power the public portfolio, admin panel, Telegram todobot, and Celery background workers.
 
 ## Channels
 

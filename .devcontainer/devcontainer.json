@@ -1,5 +1,5 @@
 {
-  "name": "gLOrng (ultra-lite)",
+  "name": "Gleb.Y (ultra-lite)",
   "dockerComposeFile": [
     "../docker-compose.yml",
     "../docker-compose.ultra-lite.yml",

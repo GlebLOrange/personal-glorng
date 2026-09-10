@@ -6,7 +6,7 @@ Coding standards and agent behavior use a hybrid layout: thin always-on and path
 
 ### Product overview
 
-**gLOrng** is a FastAPI + Vue 3 developer portfolio and personal platform. The default dev workflow is **lite mode** (`make` / `make dev`): MongoDB, Redis, API, and nginx in Docker; Vite on the host with `make dev-lite-client`. RabbitMQ and the Vite client container stay off until you opt in.
+**Gleb.Y** is a FastAPI + Vue 3 developer portfolio and personal platform. The default dev workflow is **lite mode** (`make` / `make dev`): MongoDB, Redis, API, and nginx in Docker; Vite on the host with `make dev-lite-client`. RabbitMQ and the Vite client container stay off until you opt in.
 
 ### Cloud VM Docker caveat
 
@@ -51,7 +51,7 @@ Default E2E credentials: `admin@admin.admin` / `MyTestPass123!`
 
 See `README.md` for canonical commands. Agents prefer targeted checks in dev by default; CI runs the full suite on pull requests. Use the commands below manually when you want local full-suite verification.
 
-Docs: published handbook at https://gleblorange.github.io/portfolio-glorng/ ; regenerate OpenAPI/inventory with `make docs-generate` after router or registry changes.
+Docs: published handbook at https://gleblorange.github.io/personal-glorng/ ; regenerate OpenAPI/inventory with `make docs-generate` after router or registry changes.
 
 Cloud-specific notes:
 

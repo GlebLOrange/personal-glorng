@@ -1,6 +1,6 @@
-# gLOrng documentation
+# Gleb.Y documentation
 
-**gLOrng** is a FastAPI + Vue 3 developer portfolio and personal platform. The same domain services power the public site, admin panel, Telegram todobot, and background workers.
+**Gleb.Y** is a FastAPI + Vue 3 developer portfolio and personal platform. The same domain services power the public site, admin panel, Telegram todobot, and background workers.
 
 ## Quick links
 
@@ -12,7 +12,7 @@
 | [API endpoints](/generated/api-endpoints) | Generated OpenAPI path table |
 | [Architecture inventory](/generated/architecture-inventory) | Generated platform + Compose inventory |
 
-Published site: [gleblorange.github.io/portfolio-glorng](https://gleblorange.github.io/portfolio-glorng/) (GitHub Pages via Actions).
+Published site: [gleblorange.github.io/personal-glorng](https://gleblorange.github.io/personal-glorng/) (GitHub Pages via Actions).
 
 ## Browse locally
 
@@ -31,4 +31,4 @@ nginx/     Reverse proxy (:80)
 docs/      This handbook (VitePress)
 ```
 
-For Cursor agents and cloud VM bootstrap, see [AGENTS.md](https://github.com/GlebLOrange/portfolio-glorng/blob/main/AGENTS.md) in the repo root.
+For Cursor agents and cloud VM bootstrap, see [AGENTS.md](https://github.com/GlebLOrange/personal-glorng/blob/main/AGENTS.md) in the repo root.

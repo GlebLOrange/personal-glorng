@@ -1,6 +1,6 @@
 # Architecture
 
-gLOrng is a **personal platform** where shared domain services power multiple channels.
+Gleb.Y is a **personal platform** where shared domain services power multiple channels.
 
 ## Traffic flow
 
