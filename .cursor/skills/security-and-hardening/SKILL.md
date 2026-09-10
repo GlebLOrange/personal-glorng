@@ -9,7 +9,7 @@ description: Hardens code against vulnerabilities. Use when handling user input,
 
 This rule supplements always-on agent rules; it does not override them.
 
-- **Reviews:** Use as the Security axis detail for `code-review-and-quality.mdc`.
+- **Reviews:** Use as the Security axis detail for the `code-review-and-quality` skill.
 - **Stack:** Follow the frontend Vue/Pinia and design-system rules for client rendering, links, forms, and accessibility.
 
 ## Overview

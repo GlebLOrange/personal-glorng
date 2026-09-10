@@ -9,7 +9,7 @@ description: Performance review and optimization guidance for code changes. Use 
 
 This rule supplements always-on agent rules; it does not override them.
 
-- **Reviews:** Use as the Performance axis detail for `code-review-and-quality.mdc`.
+- **Reviews:** Use as the Performance axis detail for the `code-review-and-quality` skill.
 - **Tests:** Do not run the full suite during routine dev unless the user asks, CI is failing, or the task is test-focused.
 
 ## When to Use
@@ -108,4 +108,4 @@ Work through [performance-checklist.md](../references/performance-checklist.md).
 ## See Also
 
 - [performance-checklist.md](../references/performance-checklist.md) — detailed checklist
-- `code-review-and-quality.mdc` — full five-axis review process
+- `code-review-and-quality` skill — full five-axis review process

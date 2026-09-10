@@ -1,7 +1,0 @@
----
-description: "Python backend quality rules for server code."
-globs: ["server/**/*.py", "server/tests/**/*.py"]
-alwaysApply: false
----
-
-When this rule applies, follow the `python-cursorrules-prompt-file-best-practices` skill: read `.cursor/skills/python-cursorrules-prompt-file-best-practices/SKILL.md` and apply it.

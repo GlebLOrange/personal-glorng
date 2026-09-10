@@ -1,6 +1,6 @@
 ---
-name: vue-claude-stack
-description: Vue 3 component guidance for the Vite client.
+name: vue-client
+description: Vue 3 component and TypeScript guidance for the Vite client.
 ---
 # Vue 3 Client
 
@@ -10,12 +10,15 @@ description: Vue 3 component guidance for the Vite client.
 - Write strict TypeScript and avoid `any`.
 - Prefer composables for reusable reactive logic.
 - Keep templates readable; move complex logic into `computed` values, composables, or small helpers.
+- Keep changes small and local to the task. Prefer clear names, early returns, and existing composables, stores, utilities, and components.
 
 ## Component Rules
 - Use `defineProps<T>()` with TypeScript generics for props.
 - Use typed `defineEmits<T>()` for emitted events.
 - Use `defineModel()` for new v-model bindings when it keeps the component simpler.
 - Keep one component per file; component filenames should stay PascalCase.
+- Name template/child event handlers clearly: prefer `handle*` **or** a clear verb (`openCreate`, `runIngest`, `setStatusFilter`). Stay consistent within a file.
+- Move complex template expressions into `computed` values or small helpers.
 
 ## State Management (Pinia)
 - Use setup stores with `defineStore('name', () => { ... })`.
@@ -34,6 +37,8 @@ description: Vue 3 component guidance for the Vite client.
 - Prefer `type` for local aliases and `interface` for shared object contracts that are extended.
 - Use `satisfies` when it improves checking without widening types.
 - Avoid type assertions unless the value has already been validated or narrowed.
+- Prefer `const`; use `let` only when reassignment is needed.
+- Use `unknown` at external boundaries and narrow it. Treat API responses, persisted store data, URL params, and browser state as untrusted until validated.
 
 ## Testing
 - Use Vitest and `@vue/test-utils`.
@@ -45,10 +50,11 @@ description: Vue 3 component guidance for the Vite client.
 - Extract repeated UI patterns to components before adding ad hoc CSS.
 - Respect dark mode and reduced motion patterns already in the client.
 
-## Do NOT
-- Generate Options API code.
-- Use `any` where `unknown` plus narrowing works.
-- Put large business workflows in page components.
-- Use `v-html` with unsanitized content.
-- Mutate props.
-- Use `var`.
+## Safety
+- Never use raw `v-html`; only use sanitized HTML through existing utilities.
+- Use safe URL/image helpers for dynamic navigation or media sources.
+- Do not mutate props. Do not use `var`.
+
+## Verification
+- Prefer focused Vitest files, `npm run typecheck`, or `npm run lint` for touched client code.
+- Run Playwright only when the user asks, CI is failing, or the change affects a critical browser flow.

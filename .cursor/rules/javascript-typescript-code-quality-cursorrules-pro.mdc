@@ -1,7 +1,0 @@
----
-description: "TypeScript quality rules for the Vite Vue client."
-globs: ["client/src/**/*.ts", "client/src/**/*.vue"]
-alwaysApply: false
----
-
-When this rule applies, follow the `javascript-typescript-code-quality-cursorrules-pro` skill: read `.cursor/skills/javascript-typescript-code-quality-cursorrules-pro/SKILL.md` and apply it.

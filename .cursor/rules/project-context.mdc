@@ -1,0 +1,38 @@
+---
+description: Portfolio/CV product context, hiring goal, real stack, and change guardrails
+alwaysApply: true
+---
+
+# Project context
+
+## Purpose
+
+This is a personal portfolio/CV website (gLOrng).
+
+Primary goal: present technical experience clearly and increase the chance of interviews for IT / Python / backend roles.
+
+Keep the product focused on professional presentation.
+
+## Stack (inspect the repo; do not assume)
+
+- **Backend:** FastAPI, Motor (MongoDB), optional Postgres/SQLAlchemy, Redis, Celery + RabbitMQ (opt-in)
+- **Frontend:** Vue 3, Vite, TypeScript, Tailwind CSS, Pinia
+- **Proxy / ops:** Nginx, Docker Compose
+- **Tooling:** uv, Ruff, pytest, ESLint, Vitest, Playwright
+- **Docs:** VitePress handbook under `docs/`
+
+Verify against the repository before treating a technology as in use. Do not apply generic React, Nuxt, Svelte, or SQLAlchemy-first agent dumps.
+
+## Before changing code
+
+- Inspect the existing architecture first.
+- Preserve existing functionality.
+- Do not introduce unnecessary dependencies.
+- Do not make large architectural changes without approval.
+- Prefer simple solutions; do not rewrite working code unnecessarily.
+- Test changes before declaring a task complete.
+
+## Pointers
+
+- Bootstrap / env / Cloud VM: [`AGENTS.md`](../../AGENTS.md)
+- Deeper coding standards: `.cursor/skills/` (path-triggered rules point there)
