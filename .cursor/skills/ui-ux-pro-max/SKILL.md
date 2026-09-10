@@ -50,7 +50,7 @@ For non-trivial UI design or review, also read the user-level skill at `~/.agent
 ```bash
 python3 "$HOME/.agents/skills/ui-ux-pro-max/scripts/search.py" "<query>" --stack vue
 # New pages / redesigns:
-python3 "$HOME/.agents/skills/ui-ux-pro-max/scripts/search.py" "<product keywords>" --design-system -p "gLOrng" --stack vue
+python3 "$HOME/.agents/skills/ui-ux-pro-max/scripts/search.py" "<product keywords>" --design-system -p "Gleb.Y" --stack vue
 ```
 
 If the script is missing, install the ecosystem skill (`npx skills add …`) or fall back to the priority overview above and the a11y checklist—say when recommendations came from defaults, not a database match.

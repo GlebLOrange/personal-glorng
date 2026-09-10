@@ -4,7 +4,7 @@ import { defineConfig } from "vitepress";
 const base = process.env.CI ? "/portfolio-glorng/" : "/";
 
 export default defineConfig({
-  title: "gLOrng",
+  title: "Gleb.Y",
   description: "Developer portfolio and personal platform documentation",
   base,
   ignoreDeadLinks: true,

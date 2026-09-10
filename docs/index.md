@@ -1,6 +1,6 @@
-# gLOrng documentation
+# Gleb.Y documentation
 
-**gLOrng** is a FastAPI + Vue 3 developer portfolio and personal platform. The same domain services power the public site, admin panel, Telegram todobot, and background workers.
+**Gleb.Y** is a FastAPI + Vue 3 developer portfolio and personal platform. The same domain services power the public site, admin panel, Telegram todobot, and background workers.
 
 ## Quick links
 

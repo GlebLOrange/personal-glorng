@@ -1,6 +1,6 @@
 # Current Project Snapshot
 
-**gLOrng** is a developer portfolio and personal platform. This page captures
+**Gleb.Y** is a developer portfolio and personal platform. This page captures
 the checked project state; update it whenever the runtime, dependency, or
 development workflow changes.
 

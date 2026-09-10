@@ -1,4 +1,4 @@
-name: gLOrng Local
+name: Gleb.Y Local
 values:
   - key: base_url
     value: http://127.0.0.1:8000

@@ -41,7 +41,7 @@ async def create_checkout_session(settings: Settings | None = None) -> dict[str,
         "line_items[0][price_data][unit_amount]": str(
             active.STRIPE_DONATION_AMOUNT_CENTS
         ),
-        "line_items[0][price_data][product_data][name]": "Support gLOrng",
+        "line_items[0][price_data][product_data][name]": "Support Gleb.Y",
         "line_items[0][quantity]": "1",
     }
 

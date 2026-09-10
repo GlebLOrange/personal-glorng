@@ -1,6 +1,6 @@
 # UI components
 
-Shared primitives for the gLOrng client. Prefer these over one-off markup.
+Shared primitives for the Gleb.Y client. Prefer these over one-off markup.
 
 ## Base* components (`BaseButton`, `BaseModal`, `BaseDrawer`, …)
 

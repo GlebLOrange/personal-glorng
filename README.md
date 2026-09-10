@@ -1,4 +1,4 @@
-# gLOrng — Developer Portfolio & Personal Platform
+# Gleb.Y — Developer Portfolio & Personal Platform
 
 Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + MongoDB + Redis, fully containerized with Docker. The same domain services power the public site, admin panel, Telegram todobot, and background workers.
 

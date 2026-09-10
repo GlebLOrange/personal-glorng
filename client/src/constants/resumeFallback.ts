@@ -60,7 +60,7 @@ export const RESUME_FALLBACK: ResumeData = {
   experience: [
     {
       role: "Python Backend / Platform Engineer",
-      company: "Independent — gLOrng platform",
+      company: "Independent — Gleb.Y platform",
       period: "2022-Present",
       description:
         "Own the FastAPI + Vue portfolio platform end-to-end (APIs, data stores, workers, and ops).",
@@ -87,7 +87,7 @@ export const RESUME_FALLBACK: ResumeData = {
   ],
   projects: [
     {
-      name: "gLOrng portfolio platform",
+      name: "Gleb.Y portfolio platform",
       description:
         "Problem: need a hire-ready live demo of production backend skills. " +
         "Approach: FastAPI platform with auth, workers, search, admin, and a Vue 3 client. " +
