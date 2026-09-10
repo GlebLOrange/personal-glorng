@@ -64,14 +64,14 @@ Entrypoints (backward-compatible module paths unchanged):
 
 | Command | Module |
 |---------|--------|
-| `python -m app.db.seed` | Core dev seed — admin, sample recipes, expenses, tasks |
+| `python -m app.db.seed` | Core dev seed — admin, sample recipes, expenses, tasks, news |
 | `python -m app.db.seed_demo` | Demo bulk seed per tool |
 | `python -m app.db.seed_multicooker_recipes` | External recipe import |
 
 Implementation lives under [`server/app/db/seed/`](../../server/app/db/seed/):
 
-- `core/` — admin user, sample recipes (`data/sample_recipes.json`), expenses, tasks
-- `demo/tools/` — per-platform-tool demo seeders (recipes, expenses, tasks, feedback, URLs)
+- `core/` — admin user, sample recipes (`data/sample_recipes.json`), expenses, tasks, news
+- `demo/tools/` — per-platform-tool demo seeders (recipes, expenses, tasks, feedback, URLs, news)
 - `builders/` — deterministic factories (`expense`, `task`, `demo`)
 - `cli/` — argparse wrappers for demo and multicooker scripts
 

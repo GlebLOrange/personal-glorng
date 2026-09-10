@@ -10,8 +10,10 @@ def test_seed_builders_imports() -> None:
 
 def test_seed_run_imports() -> None:
     from app.db.seed import seed
+    from app.db.seed.core.news import seed_news
 
     assert callable(seed)
+    assert callable(seed_news)
 
 
 def test_demo_builders_imports() -> None:
