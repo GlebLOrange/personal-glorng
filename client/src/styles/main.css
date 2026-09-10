@@ -11,6 +11,7 @@
 :root,
 html[data-theme="dark"] {
   color-scheme: dark;
+  /* Palette A — cooler slate lift: deep navy page, slate card, pale sky accent */
   --palette-accent-blue: #8ec4e0;
   --palette-status-success: #7bc49a;
   --palette-status-cyan: #7eb8b0;
@@ -21,37 +22,37 @@ html[data-theme="dark"] {
   --palette-surface-sage: #d5dcd3;
   --palette-surface-mid: #d1d5db;
   --palette-surface-muted: #a39d97;
-  --palette-surface-dark: #111827;
-  --palette-surface-card: #1c2230;
-  --palette-surface-border: #6b7a90;
-  --palette-surface-grid: #2e3a4e;
+  --palette-surface-dark: #0f172a;
+  --palette-surface-card: #1b2436;
+  --palette-surface-border: #5b6b82;
+  --palette-surface-grid: #2a3548;
   --palette-accent-violet: #b8a3c8;
   --palette-accent-golden: #e0b08a;
-  --palette-on-accent: #111827;
-  --palette-theme-color: #111827;
+  --palette-on-accent: #0f172a;
+  --palette-theme-color: #0f172a;
 }
 
 html[data-theme="light"] {
   color-scheme: light;
-  --palette-accent-blue: #7aa3d4;
+  --palette-accent-blue: #6f9fd0;
   --palette-status-success: #86c9a0;
   --palette-status-cyan: #6bb8ae;
   --palette-status-error: #e08a8a;
   --palette-status-critical: #d98aad;
   --palette-status-warning: #d4b86a;
-  --palette-surface-light: #111827;
+  --palette-surface-light: #0f172a;
   --palette-surface-sage: #374151;
   --palette-surface-mid: #6b7280;
   --palette-surface-muted: #9ca3af;
-  /* Page bg: light gray so elevated white cards read clearly (dev-friendly hierarchy) */
-  --palette-surface-dark: #e5e7eb;
+  /* Page bg: cool light gray so elevated white cards read clearly */
+  --palette-surface-dark: #e8edf3;
   --palette-surface-card: #ffffff;
-  --palette-surface-border: #d1d5db;
+  --palette-surface-border: #c9d2de;
   --palette-surface-grid: #d1d5db;
   --palette-accent-violet: #a78bdb;
   --palette-accent-golden: #e0a878;
-  --palette-on-accent: #111827;
-  --palette-theme-color: #e5e7eb;
+  --palette-on-accent: #0f172a;
+  --palette-theme-color: #e8edf3;
 }
 
 @theme {
@@ -345,12 +346,12 @@ html[data-theme="light"] {
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 0.875rem 0.875rem;
-  /* dark theme (default): surface-mid #d1d5db */
+  /* dark theme (default): surface-mid */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%23d1d5db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 html[data-theme="light"] .field-select-chevron {
-  /* light theme: surface-mid #6b7280 */
+  /* light theme: surface-mid */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 

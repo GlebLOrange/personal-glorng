@@ -24,8 +24,8 @@ const chartData = computed(() => {
     typeof document !== "undefined"
       ? getComputedStyle(document.documentElement)
           .getPropertyValue("--color-surface-dark")
-          .trim() || "#111827"
-      : "#111827";
+          .trim() || "#0f172a"
+      : "#0f172a";
   return {
     labels: props.labels,
     datasets: [

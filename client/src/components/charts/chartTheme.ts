@@ -9,10 +9,10 @@ const CHART_COLOR_VARS = [
   ["--color-status-critical", "#d98aad"],
   ["--color-surface-mid", "#d1d5db"],
   ["--color-surface-muted", "#a39d97"],
-  ["--color-surface-border", "#6b7a90"],
+  ["--color-surface-border", "#5b6b82"],
 ] as const;
 
-const CHART_GRID_FALLBACK = "#2e3a4e";
+const CHART_GRID_FALLBACK = "#2a3548";
 const CHART_TEXT_FALLBACK = "#d1d5db";
 const FONT_FAMILY = "IBM Plex Sans, Segoe UI, system-ui, sans-serif";
 
