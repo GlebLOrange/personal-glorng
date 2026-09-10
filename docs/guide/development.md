@@ -49,7 +49,7 @@ Leave `ELASTICSEARCH_URL` empty for lite. MongoDB text search and optional Postg
 | `make reindex-search` | Rebuild search index |
 | `make test` | Backend tests in Docker |
 | `make lint` / `make lint-check` | Ruff (fix / check-only) |
-| `make check` | Backend lint + tests + client lint/test/build |
+| `make check` | Local backend lint + tests + client lint/test/build (not full CI) |
 | `make logs` | Tail container logs |
 | `make down` | Stop containers |
 
@@ -113,7 +113,7 @@ Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN`.
 ```bash
 make lint-check
 cd client && npm ci && npm run lint && npm run format:check && npm run build:check
-make check   # full CI-equivalent (backend + frontend)
+make check   # local backend + frontend gate (CI also: coverage, postgres, e2e, docs)
 ```
 
 E2E smoke (API on :8000):

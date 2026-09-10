@@ -47,9 +47,9 @@ flowchart TD
 
 | Command | Description |
 |---------|-------------|
-| `make dev-lite` | Default dev stack: MongoDB + Redis + API in Docker, with nginx for host Vite |
-| `make dev-lite-client` | Host Vite client; pair with `make dev-lite` |
-| `make dev` | Full Docker UI stack with nginx + containerized client |
+| `make` / `make dev` / `make dev-lite` | Default lite stack: MongoDB + Redis + API + nginx in Docker (host Vite) |
+| `make dev-lite-client` | Host Vite client; pair with `make dev` |
+| `make dev-docker` | Full Docker UI stack with nginx + containerized Vite client |
 | `make dev-postgres` | Adds Postgres profile for search/audit secondary |
 | `make db-init` | Run migrations (`docker compose run --rm migrate`) |
 | `make migrate` | Alias for `db-init` |

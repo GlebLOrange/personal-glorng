@@ -5,7 +5,7 @@ Minimal setup for local development with the recommended **lite mode**: API in D
 ## Prerequisites
 
 - Docker and Docker Compose
-- Node.js 22+ (24 recommended per CI)
+- Node.js 24 (matches `.nvmrc` and `client/package.json` engines)
 - [uv](https://docs.astral.sh/uv/) for host-side backend work (optional)
 
 ## First-time setup
@@ -29,10 +29,10 @@ API docs (dev only): [http://localhost:8000/api/docs](http://localhost:8000/api/
 | Variable | Requirement |
 |----------|-------------|
 | `JWT_SECRET` | 32+ random characters (JWT signing) |
-| `FERNET_SECRET` | 32+ random characters in production, different from `JWT_SECRET` |
+| `FERNET_SECRET` | 32+ random characters in production/staging, different from `JWT_SECRET` |
 | `REDIS_PASSWORD` | Strong password |
 | `MONGODB_PASSWORD` | Strong password |
-| `SEED_PASSWORD` | Password for bootstrap admin |
+| `SEED_PASSWORD` | Bootstrap admin password (12+ chars with upper, lower, digit, special — login rejects weak seeds) |
 
 Bootstrap knobs `RUN_MIGRATIONS` and `RUN_SEED` live in `.env` only — not Docker Compose overrides.
 

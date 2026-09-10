@@ -52,7 +52,7 @@ docs/      VitePress handbook
 | `make` / `make dev` + `make dev-lite-client` | Default lite stack (API in Docker, Vite on host) |
 | `make dev-docker` | Full stack in Docker including Vite client |
 | `make prod` | Production stack |
-| `make check` | CI-equivalent lint + tests + client build |
+| `make check` | Local lint + pytest (Docker) + client lint/test/build (CI also runs coverage, postgres, e2e, docs) |
 | `make docs-dev` / `make docs-build` | Documentation site (`docs-generate` first) |
 | `make docs-generate` | Export OpenAPI + architecture inventory |
 

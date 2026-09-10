@@ -63,6 +63,3 @@ service composition. Confirm versions and dependency changes in
 [server/pyproject.toml](../server/pyproject.toml); check
 [Docker Compose files](../docker-compose.yml) for service topology and
 [.env.example](../.env.example) for configuration requirements.
-
-For historical architecture notes, see the dated
-[project review](project-review.md).
