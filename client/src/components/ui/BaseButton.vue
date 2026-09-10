@@ -22,7 +22,7 @@ const props = withDefaults(
     danger?: boolean;
     /** Ghost only: muted text until hover / focus-visible. */
     quiet?: boolean;
-    /** Persist hover styles (pale tint + accent text). */
+    /** Persist selected/pressed chrome (solid primary ring, or grayscale wash). */
     selected?: boolean;
     disabled?: boolean;
     loading?: boolean;
@@ -62,17 +62,29 @@ const variantClass = computed(() => {
   }
 
   if (props.variant === "ghost") {
+    // Grayscale only (same paint family as secondary); accent reserved for solid primary
     if (props.quiet && !selected) {
-      return familyToneClass("1xx", false, {
-        quiet: true,
-        includeFocusTint: true,
-      });
+      return [
+        "border-transparent bg-transparent text-surface-light/60",
+        "hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light",
+        "focus-visible:border-surface-light/40 focus-visible:bg-surface-light/10 focus-visible:text-surface-light",
+      ].join(" ");
     }
-    return familyToneClass("1xx", selected, { includeActive: true });
+    if (selected) {
+      return "border-surface-light/40 bg-surface-light/15 text-surface-light";
+    }
+    return "border-transparent bg-transparent text-surface-light/80 hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light active:enabled:bg-surface-light/15";
   }
 
   if (props.variant === "primary") {
-    return familyToneClass("1xx", selected, { includeActive: true });
+    // Align with cta-primary: solid pale accent + dark on-accent ink
+    return [
+      "border-transparent bg-accent-blue text-on-accent",
+      "hover:enabled:bg-accent-blue/90 active:enabled:bg-accent-blue/80",
+      selected ? "ring-1 ring-inset ring-accent-blue/40" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
   }
 
   // secondary — grayscale hierarchy (Toss); not accent wash
