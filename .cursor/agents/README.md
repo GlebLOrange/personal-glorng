@@ -7,6 +7,10 @@ Custom agent definitions for this repository live in `.cursor/agents/`.
 | Persona | File | Use when |
 |---------|------|----------|
 | Code reviewer | [`code-reviewer.mdc`](code-reviewer.mdc) | Thorough five-axis review before merge |
+| Manager | [`manager.md`](manager.md) | Prioritize next portfolio work and coordinate specialists |
+| QA | [`qa.md`](qa.md) | Find reproducible bugs (do not change app code) |
+| Recruiter | [`recruiter.md`](recruiter.md) | Screen the site for Python/backend hiring signal |
+| UX | [`ux.md`](ux.md) | Audit UI, usability, and accessibility (do not change app code) |
 
 ## Composition
 
