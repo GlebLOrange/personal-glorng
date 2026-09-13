@@ -7,13 +7,21 @@ import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { effectiveSearchQuery } from "@/constants/search";
 import { statusLabel, type TaskStatus } from "@/constants/taskStatus";
 import { datetimeLocalValue, parseDatetimeLocalToIso } from "@/utils/dates";
-import type { PaginatedList, SyncQueueItem, TaskDetail, TaskIntakeItem, TaskItem } from "@/types";
+import type {
+  PaginatedList,
+  SyncQueueItem,
+  TaskDetail,
+  TaskIntakeItem,
+  TaskItem,
+  TaskStats,
+} from "@/types";
 
 export interface TaskCreateForm {
   title: string;
   scheduled_at: string;
   description: string;
   location: string;
+  reminder_minutes: string;
 }
 
 export function useTasks() {
@@ -21,6 +29,7 @@ export function useTasks() {
   const syncQueue = ref<SyncQueueItem[]>([]);
   const intakes = ref<TaskIntakeItem[]>([]);
   const selectedTask = ref<TaskDetail | null>(null);
+  const stats = ref<TaskStats | null>(null);
   const filterStatus = ref("");
   const searchQuery = ref("");
   const page = ref(1);
@@ -38,6 +47,7 @@ export function useTasks() {
     scheduled_at: "",
     description: "",
     location: "",
+    reminder_minutes: "",
   });
 
   const { loading: listLoading, run: runList } = useApiAction();
@@ -46,7 +56,9 @@ export function useTasks() {
   const { loading: detailLoading, run: runDetail } = useApiAction();
   const { loading: saving, run: runSave } = useApiAction();
   const { loading: statusUpdating, run: runStatusUpdate } = useApiAction();
+  const { loading: rescheduling, run: runReschedule } = useApiAction();
   const { run: runRetry } = useApiAction();
+  const { run: runStats } = useApiAction();
   const { toast } = useNotify();
 
   const hasNextPage = computed(() => page.value < totalPages.value);
@@ -118,6 +130,19 @@ export function useTasks() {
     }
   }
 
+  async function loadStats(): Promise<void> {
+    const data = await runStats(
+      async () => {
+        const response = await api.get<TaskStats>("/tools/tasks/stats");
+        return response.data;
+      },
+      { errorFallback: "Failed to load task stats" },
+    );
+    if (data) {
+      stats.value = data;
+    }
+  }
+
   async function openDetail(taskId: number): Promise<void> {
     const data = await runDetail(
       async () => {
@@ -143,6 +168,7 @@ export function useTasks() {
       { successMessage: "Sync retry queued", errorFallback: "Failed to retry sync" },
     );
     await loadSyncQueue();
+    await loadStats();
   }
 
   async function updateTaskStatus(taskId: number, status: TaskStatus): Promise<void> {
@@ -160,7 +186,28 @@ export function useTasks() {
     if (selectedTask.value?.id === taskId) {
       await openDetail(taskId);
     }
-    await loadTasks();
+    await Promise.all([loadTasks(), loadStats()]);
+  }
+
+  async function rescheduleTask(taskId: number, scheduledAtLocal: string): Promise<void> {
+    const scheduledAt = parseDatetimeLocalToIso(scheduledAtLocal);
+    if (!scheduledAt) {
+      toast("Scheduled time is invalid", "error");
+      return;
+    }
+
+    const result = await runReschedule(
+      async () => {
+        await api.patch(`/tools/tasks/${taskId}`, { scheduled_at: scheduledAt });
+      },
+      { successMessage: "Task rescheduled", errorFallback: "Failed to reschedule" },
+    );
+    if (result === null) return;
+
+    if (selectedTask.value?.id === taskId) {
+      await openDetail(taskId);
+    }
+    await Promise.all([loadTasks(), loadStats()]);
   }
 
   function openCreate(): void {
@@ -169,6 +216,7 @@ export function useTasks() {
       scheduled_at: datetimeLocalValue(),
       description: "",
       location: "",
+      reminder_minutes: "",
     };
     showCreateForm.value = true;
   }
@@ -184,6 +232,13 @@ export function useTasks() {
       return;
     }
 
+    const reminderRaw = createForm.value.reminder_minutes.trim();
+    const reminderMinutes = reminderRaw ? Number(reminderRaw) : null;
+    if (reminderRaw && (!Number.isInteger(reminderMinutes) || (reminderMinutes ?? 0) < 1)) {
+      toast("Reminder minutes must be a positive integer", "error");
+      return;
+    }
+
     const result = await runSave(
       async () => {
         await api.post("/tools/tasks", {
@@ -191,6 +246,7 @@ export function useTasks() {
           scheduled_at: scheduledAt,
           description: createForm.value.description.trim() || null,
           location: createForm.value.location.trim() || null,
+          reminder_minutes: reminderMinutes,
         });
       },
       { successMessage: "Task created", errorFallback: "Failed to create task" },
@@ -198,7 +254,7 @@ export function useTasks() {
     if (result !== null) {
       showCreateForm.value = false;
       page.value = 1;
-      await loadTasks();
+      await Promise.all([loadTasks(), loadStats()]);
     }
   }
 
@@ -255,6 +311,7 @@ export function useTasks() {
     syncQueue,
     intakes,
     selectedTask,
+    stats,
     filterStatus,
     searchQuery,
     page,
@@ -274,6 +331,7 @@ export function useTasks() {
     detailLoading,
     saving,
     statusUpdating,
+    rescheduling,
     hasNextPage,
     hasPreviousPage,
     hasNextIntakePage,
@@ -283,10 +341,12 @@ export function useTasks() {
     loadTasks,
     loadIntakes,
     loadSyncQueue,
+    loadStats,
     openDetail,
     closeDetail,
     retrySync,
     updateTaskStatus,
+    rescheduleTask,
     openCreate,
     createTask,
     goToPage,

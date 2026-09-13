@@ -77,7 +77,7 @@ class TaskService:
             description=fields.description,
             location=fields.location,
             scheduled_at=as_utc(scheduled_at),
-            status=TaskStatus.NOT_COMPLETED,
+            status=TaskStatus.PENDING,
             intake_id=intake_id,
         )
         task = await self._tasks().insert(task)
@@ -153,6 +153,12 @@ class TaskService:
                 },
             ),
         )
+        if task.google_event_id:
+            await self.enqueue_calendar_sync(
+                task_id=task.id,
+                action=SyncAction.UPDATE,
+                google_event_id=task.google_event_id,
+            )
         return task
 
     async def change_status(

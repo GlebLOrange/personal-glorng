@@ -5,6 +5,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
 import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import PencilIcon from "@/components/icons/PencilIcon.vue";
@@ -21,6 +22,7 @@ import {
   type TaskStatus,
 } from "@/constants/taskStatus";
 import type { TaskDetail } from "@/types";
+import { datetimeLocalValue } from "@/utils/dates";
 import { formatDate, formatRelativeTime, formatScheduleDate } from "@/utils/format";
 
 const props = defineProps<{
@@ -29,15 +31,18 @@ const props = defineProps<{
   loading: boolean;
   canMutate?: boolean;
   statusUpdating?: boolean;
+  rescheduling?: boolean;
 }>();
 
 const emit = defineEmits<{
   close: [];
   retrySync: [taskId: number];
   updateStatus: [status: TaskStatus];
+  reschedule: [scheduledAtLocal: string];
 }>();
 
 const technicalOpen = ref(false);
+const scheduleDraft = ref("");
 
 const availableStatuses = computed(() => {
   const task = props.task;
@@ -56,10 +61,22 @@ const menuStatuses = computed(() =>
 
 const recentStatusHistory = computed(() => (props.task?.status_history ?? []).slice(-4));
 
+const scheduleDirty = computed(() => {
+  if (!props.task || !scheduleDraft.value) return false;
+  return scheduleDraft.value !== datetimeLocalValue(new Date(props.task.scheduled_at));
+});
+
 watch(
-  () => props.open,
-  (isOpen) => {
-    if (!isOpen) technicalOpen.value = false;
+  () => [props.open, props.task?.id, props.task?.scheduled_at] as const,
+  ([isOpen, , scheduledAt]) => {
+    if (!isOpen) {
+      technicalOpen.value = false;
+      scheduleDraft.value = "";
+      return;
+    }
+    if (scheduledAt) {
+      scheduleDraft.value = datetimeLocalValue(new Date(scheduledAt));
+    }
   },
 );
 </script>
@@ -93,6 +110,22 @@ watch(
           <p v-if="schedule?.detail" class="text-right text-xs text-surface-mid">
             {{ schedule.detail }}
           </p>
+        </div>
+
+        <div v-if="canMutate" class="flex min-w-0 flex-wrap items-end gap-2">
+          <BaseInput
+            v-model="scheduleDraft"
+            type="datetime-local"
+            class="min-w-0 flex-1"
+            aria-label="reschedule"
+          />
+          <ToolbarPillButton
+            family="1xx"
+            :disabled="!scheduleDirty || rescheduling"
+            @click="emit('reschedule', scheduleDraft)"
+          >
+            {{ rescheduling ? "saving…" : "reschedule" }}
+          </ToolbarPillButton>
         </div>
 
         <div v-if="task.location" class="flex min-w-0 items-center justify-between gap-3 text-sm">
