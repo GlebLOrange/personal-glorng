@@ -13,12 +13,6 @@ from app.core.exceptions import ApiError
 from app.core.logging import logger
 
 CONTACT_ORDER = ("email", "telegram", "linkedin", "github")
-CONTACT_LABELS = {
-    "email": "Email",
-    "telegram": "Telegram",
-    "linkedin": "LinkedIn",
-    "github": "GitHub",
-}
 RESUME_PDF_RENDER_TIMEOUT_SECONDS = 30.0
 _cached_pdf: bytes | None = None
 _cache_lock = asyncio.Lock()
@@ -52,23 +46,18 @@ def _header_meta_line(resume: dict[str, Any]) -> str:
     if not location and not availability:
         return ""
     parts = [part for part in (location, availability) if part]
-    return f'<p class="header-meta">{_esc(" | ".join(parts))}</p>'
+    return f'<p class="header-meta">{_esc(" · ".join(parts))}</p>'
 
 
 def _skills_html(resume: dict[str, Any]) -> str:
-    """Render grouped skills in compact rows."""
+    """Render grouped skills in compact rows (category + items only)."""
     blocks: list[str] = []
     for group in resume.get("skills", []):
         items = ", ".join(_esc(item) for item in group.get("items", []))
-        summary = str(group.get("summary", "")).strip()
-        summary_html = (
-            f'<p class="skill-summary">{_esc(summary)}</p>' if summary else ""
-        )
         blocks.append(
             f"""
         <div class="skill-group">
           <h3>{_esc(group["category"])}</h3>
-          {summary_html}
           <p>{items}</p>
         </div>""",
         )
@@ -152,7 +141,7 @@ def _education_html(resume: dict[str, Any]) -> str:
 
 
 def _contact_html(resume: dict[str, Any]) -> str:
-    """Render contact links for the PDF header."""
+    """Render contact links for the PDF header (middot-separated, no labels)."""
     chips: list[str] = []
     resume_links = resume.get("links", {})
     for link_id in CONTACT_ORDER:
@@ -160,22 +149,18 @@ def _contact_html(resume: dict[str, Any]) -> str:
         if not raw:
             continue
         href = _contact_href(link_id, raw)
-        label = CONTACT_LABELS[link_id]
-        chips.append(
-            f'<span class="contact-item">'
-            f"<span>{_esc(label)}</span> "
-            f'<a href="{_esc(href)}">{_esc(raw)}</a>'
-            f"</span>",
-        )
-    return "".join(chips)
+        chips.append(f'<a class="contact-item" href="{_esc(href)}">{_esc(raw)}</a>')
+    return '<span class="contact-sep" aria-hidden="true">·</span>'.join(chips)
 
 
 def render_resume_html(resume: dict[str, Any]) -> str:
     """Build print-ready HTML for the public resume."""
     name = _esc(resume["name"])
     title = _esc(resume["title"])
+    tagline = _esc(str(resume.get("tagline", "")).strip())
     bio = _esc(resume["bio"])
     education = _education_html(resume)
+    tagline_html = f'<p class="tagline">{tagline}</p>' if tagline else ""
 
     return f"""<!doctype html>
 <html lang="en">
@@ -185,58 +170,72 @@ def render_resume_html(resume: dict[str, Any]) -> str:
   <style>
     @page {{
       size: A4;
-      margin: 1.25cm 1.35cm;
+      margin: 1.15cm 1.35cm;
     }}
     body {{
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 9.7pt;
-      line-height: 1.36;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.32;
       color: #111827;
       margin: 0;
     }}
     header {{
-      border-bottom: 2px solid #7aa3d4;
-      padding-bottom: 0.45rem;
-      margin-bottom: 0.75rem;
+      border-bottom: 3px solid #7aa3d4;
+      padding-bottom: 0.35rem;
+      margin-bottom: 0.55rem;
     }}
     h1 {{
-      font-size: 24pt;
-      line-height: 1;
+      font-size: 23pt;
+      line-height: 1.05;
       letter-spacing: -0.03em;
-      margin: 0 0 0.18rem;
+      font-weight: 700;
+      margin: 0 0 0.12rem;
       color: #111827;
     }}
     .title {{
-      font-size: 12.5pt;
-      font-weight: 700;
+      font-size: 11pt;
+      font-weight: 600;
       color: #7aa3d4;
-      margin: 0 0 0.22rem;
+      margin: 0 0 0.12rem;
+    }}
+    .tagline {{
+      font-size: 9pt;
+      color: #4b5563;
+      margin: 0 0 0.2rem;
     }}
     .header-meta {{
-      font-size: 9.5pt;
+      font-size: 8.6pt;
       color: #6b7280;
-      margin: 0 0 0.45rem;
+      margin: 0 0 0.25rem;
     }}
     .bio {{
-      margin: 0.45rem 0 0;
+      margin: 0.28rem 0 0;
       color: #374151;
     }}
     h2 {{
-      font-size: 8.5pt;
-      letter-spacing: 0.09em;
+      font-size: 8.2pt;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #7aa3d4;
-      border-bottom: 1px solid #d1d5db;
-      padding-bottom: 0.14rem;
-      margin: 0.82rem 0 0.38rem;
+      color: #6b7280;
+      border-bottom: none;
+      padding-bottom: 0;
+      margin: 0.7rem 0 0.32rem;
+    }}
+    h2::after {{
+      content: "";
+      display: block;
+      width: 1.6rem;
+      height: 2px;
+      background: #7aa3d4;
+      margin-top: 0.14rem;
     }}
     h3 {{
-      font-size: 10pt;
-      margin: 0 0 0.06rem;
+      font-size: 9.8pt;
+      margin: 0 0 0.05rem;
       color: #111827;
     }}
     .entry {{
-      margin-bottom: 0.55rem;
+      margin-bottom: 0.45rem;
       page-break-inside: avoid;
     }}
     .entry-header {{
@@ -244,20 +243,21 @@ def render_resume_html(resume: dict[str, Any]) -> str:
       justify-content: space-between;
       align-items: flex-start;
       gap: 0.75rem;
-      margin-bottom: 0.16rem;
+      margin-bottom: 0.18rem;
     }}
     .period {{
-      font-size: 8.8pt;
+      font-size: 9pt;
       color: #9ca3af;
       white-space: nowrap;
     }}
     .subtle {{
       color: #7aa3d4;
-      font-weight: 700;
+      font-weight: 600;
       margin: 0;
     }}
     .summary {{
-      margin: 0.1rem 0 0;
+      margin: 0.12rem 0 0;
+      color: #374151;
     }}
     .skills {{
       columns: 2;
@@ -265,11 +265,11 @@ def render_resume_html(resume: dict[str, Any]) -> str:
     }}
     .skill-group {{
       break-inside: avoid;
-      margin-bottom: 0.28rem;
+      margin-bottom: 0.32rem;
     }}
     .skill-group h3 {{
       display: inline;
-      font-size: 9.2pt;
+      font-size: 9.3pt;
       color: #111827;
       margin: 0;
     }}
@@ -277,28 +277,22 @@ def render_resume_html(resume: dict[str, Any]) -> str:
       content: ": ";
       color: #9ca3af;
     }}
-    .skill-summary {{
-      display: block;
-      font-size: 8.5pt;
-      color: #9ca3af;
-      margin: 0.02rem 0 0.04rem;
-    }}
-    .skill-group p:not(.skill-summary) {{
+    .skill-group p {{
       display: inline;
       color: #374151;
     }}
     .highlights {{
-      margin: 0.18rem 0 0;
+      margin: 0.2rem 0 0;
       padding-left: 0.95rem;
       color: #374151;
     }}
     .highlights li {{
-      margin-bottom: 0.12rem;
+      margin-bottom: 0.14rem;
     }}
     .tech {{
       color: #9ca3af;
       font-size: 8.8pt;
-      margin: 0.16rem 0 0;
+      margin: 0.18rem 0 0;
     }}
     a {{
       color: #7aa3d4;
@@ -307,16 +301,17 @@ def render_resume_html(resume: dict[str, Any]) -> str:
     .contact {{
       display: flex;
       flex-wrap: wrap;
-      gap: 0.16rem 0.7rem;
-      margin-top: 0.35rem;
+      align-items: center;
+      gap: 0.2rem 0.35rem;
+      margin-top: 0.2rem;
     }}
     .contact-item {{
-      font-size: 8.7pt;
+      font-size: 8.8pt;
       white-space: nowrap;
     }}
-    .contact-item span {{
+    .contact-sep {{
       color: #9ca3af;
-      font-weight: 700;
+      font-size: 8.8pt;
     }}
   </style>
 </head>
@@ -324,6 +319,7 @@ def render_resume_html(resume: dict[str, Any]) -> str:
   <header>
     <h1>{name}</h1>
     <p class="title">{title}</p>
+    {tagline_html}
     {_header_meta_line(resume)}
     <div class="contact">{_contact_html(resume)}</div>
     <p class="bio">{bio}</p>

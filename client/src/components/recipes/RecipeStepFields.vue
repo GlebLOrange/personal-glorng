@@ -2,8 +2,6 @@
 import { computed, nextTick, ref, watch } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
-import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
-import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
@@ -63,14 +61,6 @@ function updateStep(index: number, value: string): void {
   patch(steps);
 }
 
-function moveStep(index: number, direction: -1 | 1): void {
-  const nextIndex = index + direction;
-  if (nextIndex < 0 || nextIndex >= props.steps.length) return;
-  const steps = [...props.steps];
-  [steps[index], steps[nextIndex]] = [steps[nextIndex], steps[index]];
-  patch(steps);
-}
-
 function onStepModEnter(event: KeyboardEvent, index: number): void {
   if (event.key !== "Enter" || !(event.metaKey || event.ctrlKey)) return;
   event.preventDefault();
@@ -109,6 +99,15 @@ function onStepPaste(event: ClipboardEvent, index: number): void {
     <div class="space-y-1 border-t border-surface-border px-2 py-2">
       <ul role="list" class="space-y-1">
         <li v-for="(_, idx) in steps" :key="`step-${idx}`" class="flex min-w-0 items-start gap-1">
+          <IconActionButton
+            v-if="idx === steps.length - 1"
+            type="button"
+            title="add step"
+            aria-label="add step"
+            @click="addStep"
+          >
+            +
+          </IconActionButton>
           <span
             class="inline-flex h-8 w-5 shrink-0 items-center justify-center text-xs text-surface-mid"
             aria-hidden="true"
@@ -118,7 +117,7 @@ function onStepPaste(event: ClipboardEvent, index: number): void {
           <BaseTextarea
             compact
             :model-value="steps[idx]"
-            class="min-w-0 flex-1"
+            class="min-w-0 w-full flex-1"
             :rows="2"
             placeholder="Preheat oven to 200°C"
             :aria-label="`step ${idx + 1}`"
@@ -132,37 +131,8 @@ function onStepPaste(event: ClipboardEvent, index: number): void {
             :aria-label="`remove step ${idx + 1}`"
             @click="removeStep(idx)"
           />
-          <BaseDropdownMenu
-            v-if="steps.length > 1"
-            :aria-label="`step ${idx + 1} actions`"
-            placement="bottom"
-          >
-            <template #default="{ close: closeMenu }">
-              <BaseDropdownMenuItem
-                v-if="idx > 0"
-                @select="
-                  closeMenu();
-                  moveStep(idx, -1);
-                "
-              >
-                move up
-              </BaseDropdownMenuItem>
-              <BaseDropdownMenuItem
-                v-if="idx < steps.length - 1"
-                @select="
-                  closeMenu();
-                  moveStep(idx, 1);
-                "
-              >
-                move down
-              </BaseDropdownMenuItem>
-            </template>
-          </BaseDropdownMenu>
         </li>
       </ul>
-      <IconActionButton type="button" title="add step" aria-label="add step" @click="addStep">
-        +
-      </IconActionButton>
     </div>
   </details>
 </template>

@@ -65,14 +65,6 @@ function updateIngredient(index: number, value: string): void {
   patch(ingredients);
 }
 
-function moveIngredient(index: number, direction: -1 | 1): void {
-  const nextIndex = index + direction;
-  if (nextIndex < 0 || nextIndex >= props.ingredients.length) return;
-  const ingredients = [...props.ingredients];
-  [ingredients[index], ingredients[nextIndex]] = [ingredients[nextIndex], ingredients[index]];
-  patch(ingredients);
-}
-
 function onIngredientEnter(event: KeyboardEvent, index: number): void {
   if (event.key !== "Enter") return;
   event.preventDefault();
@@ -116,10 +108,19 @@ function onIngredientPaste(event: ClipboardEvent, index: number): void {
           :key="`ingredient-${idx}`"
           class="flex min-w-0 items-center gap-1"
         >
+          <IconActionButton
+            v-if="idx === ingredients.length - 1"
+            type="button"
+            title="add ingredient"
+            aria-label="add ingredient"
+            @click="addIngredient"
+          >
+            +
+          </IconActionButton>
           <BaseInput
             compact
             :model-value="ingredients[idx]"
-            class="min-w-0 flex-1"
+            class="min-w-0 w-full flex-1"
             placeholder="200g flour"
             :aria-label="`ingredient ${idx + 1}`"
             data-recipe-ingredient
@@ -132,26 +133,8 @@ function onIngredientPaste(event: ClipboardEvent, index: number): void {
             :aria-label="`remove ingredient ${idx + 1}`"
             @click="removeIngredient(idx)"
           />
-          <IconActionButton
-            v-if="idx > 0"
-            type="button"
-            quiet
-            :title="`move ingredient ${idx + 1} up`"
-            :aria-label="`move ingredient ${idx + 1} up`"
-            @click="moveIngredient(idx, -1)"
-          >
-            ↑
-          </IconActionButton>
         </li>
       </ul>
-      <IconActionButton
-        type="button"
-        title="add ingredient"
-        aria-label="add ingredient"
-        @click="addIngredient"
-      >
-        +
-      </IconActionButton>
     </div>
   </details>
 </template>
