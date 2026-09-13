@@ -120,8 +120,12 @@ async def _reminder_minutes_for_task(
 async def sync_task_to_google(
     registry: DatabaseRegistry,
     queue_item: GoogleSyncQueue,
-) -> None:
-    """Process a single sync queue item."""
+) -> str | None:
+    """Process a single sync queue item.
+
+    Returns ``None`` on success, or a skip reason when the item cannot be
+    synced yet (so the worker can mark it failed and allow admin retry).
+    """
     if registry.tasks is None or registry.credentials is None:
         msg = "Task or credential repository is not initialized"
         raise RuntimeError(msg)
@@ -132,7 +136,7 @@ async def sync_task_to_google(
             "Sync: task not found",
             context={"task_id": queue_item.task_id},
         )
-        return
+        return "Task not found"
 
     cred = await registry.credentials.get_google_for_telegram_user(
         task.telegram_user_id,
@@ -142,7 +146,7 @@ async def sync_task_to_google(
             "Sync: no Google credentials",
             context={"telegram_user_id": task.telegram_user_id},
         )
-        return
+        return "No Google credentials"
 
     reminder_minutes = await _reminder_minutes_for_task(registry, task)
 
@@ -186,3 +190,5 @@ async def sync_task_to_google(
                 "Calendar event deleted",
                 context={"task_id": task.id, "event_id": event_id},
             )
+
+    return None

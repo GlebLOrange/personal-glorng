@@ -56,6 +56,7 @@ const {
   syncQueue,
   intakes,
   selectedTask,
+  stats,
   filterStatus,
   searchQuery,
   page,
@@ -67,6 +68,7 @@ const {
   detailLoading,
   saving,
   statusUpdating,
+  rescheduling,
   hasNextPage,
   hasPreviousPage,
   hasNextIntakePage,
@@ -84,10 +86,12 @@ const {
   loadTasks,
   loadIntakes,
   loadSyncQueue,
+  loadStats,
   openDetail,
   closeDetail,
   retrySync,
   updateTaskStatus,
+  rescheduleTask,
   openCreate,
   createTask,
   goToPage,
@@ -146,6 +150,7 @@ onMounted(() => {
     if (tab === "sync") void loadSyncQueue();
   }
   void loadTasks();
+  void loadStats();
 });
 </script>
 
@@ -222,12 +227,14 @@ onMounted(() => {
         :tasks="tasks"
         :loading="listLoading"
         :filter-status="filterStatus"
+        :stats="stats"
         :total="total"
         :page="page"
         :total-pages="totalPages"
         :has-next-page="hasNextPage"
         :has-previous-page="hasPreviousPage"
         @select="openDetail"
+        @failed-syncs="switchTab('sync')"
         @first-page="goToPage(1)"
         @prev-page="goToPage(page - 1)"
         @next-page="goToPage(page + 1)"
@@ -281,9 +288,11 @@ onMounted(() => {
         :loading="detailLoading"
         :can-mutate="isSuperuser"
         :status-updating="statusUpdating"
+        :rescheduling="rescheduling"
         @close="closeDetail"
         @retry-sync="retrySync"
         @update-status="selectedTask && updateTaskStatus(selectedTask.id, $event)"
+        @reschedule="selectedTask && rescheduleTask(selectedTask.id, $event)"
       />
     </div>
   </AdminPageLayout>

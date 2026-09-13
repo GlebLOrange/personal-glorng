@@ -178,7 +178,8 @@ class TestSyncTaskToGoogle:
             registry, task_id=task.id, action=SyncAction.CREATE
         )
 
-        await sync_task_to_google(registry, item)
+        reason = await sync_task_to_google(registry, item)
+        assert reason == "No Google credentials"
         assert registry.tasks is not None
         updated = await registry.tasks.get(task.id)
         assert updated.google_event_id is None
@@ -191,7 +192,8 @@ class TestSyncTaskToGoogle:
         assert registry.tasks is not None
         await registry.tasks.delete(task.id)
 
-        await sync_task_to_google(registry, item)
+        reason = await sync_task_to_google(registry, item)
+        assert reason == "Task not found"
 
 
 # --- process_sync_queue ---
@@ -289,6 +291,29 @@ class TestProcessSyncQueue:
         assert updated is not None
         assert updated.status == SyncStatus.FAILED
         assert updated.attempts == 5
+
+    @patch(
+        "app.workers.tasks.get_worker_registry",
+        new_callable=AsyncMock,
+    )
+    async def test_marks_failed_when_no_credentials(
+        self,
+        mock_registry_fn: AsyncMock,
+        registry: DatabaseRegistry,
+    ) -> None:
+        task = await create_task(registry, telegram_user_id=999999)
+        item = await create_sync_queue_item(
+            registry, task_id=task.id, action=SyncAction.CREATE
+        )
+
+        mock_registry_fn.return_value = registry
+
+        await process_sync_queue()
+
+        updated = await _reload_sync_item(registry, item.id)
+        assert updated is not None
+        assert updated.status == SyncStatus.FAILED
+        assert updated.last_error == "No Google credentials"
 
     @patch(
         "app.workers.tasks.get_worker_registry",

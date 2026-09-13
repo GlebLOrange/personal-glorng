@@ -266,8 +266,12 @@ async def process_sync_queue() -> None:
         try:
             from app.services.calendar import sync_task_to_google
 
-            await sync_task_to_google(registry, item)
-            item.status = SyncStatus.COMPLETED
+            skip_reason = await sync_task_to_google(registry, item)
+            if skip_reason:
+                item.status = SyncStatus.FAILED
+                item.last_error = skip_reason
+            else:
+                item.status = SyncStatus.COMPLETED
         except Exception as exc:
             item.attempts += 1
             item.last_error = str(exc)[:500]
