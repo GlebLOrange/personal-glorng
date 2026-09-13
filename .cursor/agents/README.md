@@ -19,8 +19,6 @@ Custom agent definitions for this repository live in `.cursor/agents/`.
 
 ## Severity labels
 
-Findings use the same scheme as [`code-review-and-quality`](../skills/code-review-and-quality/SKILL.md):
-
 | Prefix | Meaning |
 |--------|---------|
 | **Critical:** | Blocks merge |

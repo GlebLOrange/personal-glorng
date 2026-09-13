@@ -6,14 +6,14 @@ user-invocable: false
 
 # Saving Workspace Context
 
-Build institutional memory. Prefer the project's existing homes; use `context/` only for leftovers.
+Build institutional memory. Prefer the project's existing homes (`AGENTS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
 
 ## Modes
 
 | Mode | When | What to do |
 |------|------|------------|
-| **Micro-save** | Skill in context / auto-attached mid-task | One short append to the correct home; mention the path; **no** full `context/` scan |
-| **Full pass** | User invokes this skill or asks to persist session memory | Discover homes → selective load → save leftovers → end checklist |
+| **Micro-save** | Skill in context / auto-attached mid-task | One short append to the correct home; mention the path |
+| **Full pass** | User invokes this skill or asks to persist session memory | Discover homes → selective load → save → end checklist |
 
 Do **not** load the whole memory tree at the start of unrelated coding tasks.
 
@@ -26,18 +26,14 @@ Route knowledge to the first matching home:
 3. **Bootstrap, environment, & agent setup** → `AGENTS.md`
 4. **Architecture decisions** → `docs/adr/` (when ADR structure exists)
 5. **Product & handbook docs** → existing `docs/` guides/specs
-6. **Only then** → `context/{topic-slug}.md` for durable notes with nowhere else to live
 
-If the project already documents truth in `AGENTS.md`, `docs/`, or `.cursor/rules/`, update or extend those — do not invent a parallel context tree.
+If the project already documents truth in `AGENTS.md`, `docs/`, or `.cursor/rules/`, update or extend those — do not invent a parallel dump tree.
 
 ## Full Pass: Selective Load
 
-1. List known homes (`AGENTS.md`, `docs/`, `.cursor/rules/`, `context/`).
-2. Read `context/README.md` or an index if present.
-3. Open at most a few files whose names/topics match the current task.
-4. Never dump the whole tree into the conversation context.
-
-When first creating `context/`, add a short `context/README.md` agents can skim (one line per topic file).
+1. List known homes (`AGENTS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
+2. Open at most a few files whose names/topics match the current task.
+3. Never dump the whole tree into the conversation context.
 
 ## What to Save vs Skip
 
@@ -49,12 +45,11 @@ When first creating `context/`, add a short `context/README.md` agents can skim 
 
 - Append dated entries (newest first); don't overwrite history without reason.
 - Mark superseded entries with `Superseded YYYY-MM-DD` instead of silent contradiction.
-- Check for an existing slug before creating a new file.
-- Use clear filenames so a directory listing is enough to find topics.
+- Prefer updating an existing doc over creating a new file.
 
 ## Permission and Mention Rules
 
-- **Micro-saves** to `context/` or one-line factual appends to docs: do without asking; **mention the file path**.
+- **One-line factual appends** to docs: do without asking; **mention the file path**.
 - **New skills or rules**: **ask permission** first.
 - **Non-trivial edits** to `AGENTS.md` or tracked handbook docs: ask permission, or keep to a clean one-line append.
 
@@ -67,25 +62,9 @@ Before finishing a full pass:
 - Did a pattern emerge that should become a skill or rule? (ask before creating)
 - Is there content that should be templated?
 
-## File Formats
+## Project Stub (Only if no better home exists)
 
-### `context/{slug}.md`
-
-```markdown
-# {Topic}
-
-## {YYYY-MM-DD} — {Brief title}
-
-{What was learned, decided, or discovered}
-
-## {Earlier date} — {Earlier entry}
-
-{Previous context}
-```
-
-### Project Stub (Only if no better home exists)
-
-Prefer `AGENTS.md` / `docs/` when they exist. Otherwise a thin stub:
+Prefer `AGENTS.md` / `docs/` when they exist. Otherwise a thin stub in docs:
 
 ```markdown
 # {Project Name} — Context
