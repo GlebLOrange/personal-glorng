@@ -10,6 +10,8 @@ const KNOWN_SLUGS = [
   "sync",
   "location",
   "tools",
+  "admin",
+  "settings",
   "unknown-fallback",
 ] as const;
 

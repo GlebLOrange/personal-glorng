@@ -68,7 +68,7 @@ const passwordsMatch = computed(
           </BaseButton>
         </form>
 
-        <form class="space-y-2" @submit.prevent="emit('savePassword')">
+        <form class="space-y-2 border-t border-surface-border pt-4" @submit.prevent="emit('savePassword')">
           <div class="flex items-center justify-between gap-2">
             <p class="text-xs text-surface-mid">password</p>
             <RouterLink
