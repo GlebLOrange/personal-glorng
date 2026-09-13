@@ -5,7 +5,7 @@ alwaysApply: true
 
 ## Gortex in Cursor
 
-Use Gortex MCP tools for indexed code. This is mandatory.
+Use Gortex MCP tools for indexed code when they are available.
 
 1. Start every coding task with **explore** using `operation: "task"` and the user's task text.
 2. Use **search**, **read**, **relations**, and **trace** instead of text search or whole-file source reads.
@@ -13,6 +13,6 @@ Use Gortex MCP tools for indexed code. This is mandatory.
 4. Mutate only with **edit** or **refactor**. After mutation, call **change** operations `detect`, `tests`, `guards`, and `contract`.
 5. Call **capabilities** with `domain`, `operation`, and `detail: "schema"` when exact arguments are not visible.
 
-If the configured Gortex tools are missing from the callable MCP tools, report a Gortex MCP integration failure and stop. Do not start a daemon or use a CLI/shell fallback.
+If the configured Gortex tools are missing from the callable MCP tools: report a Gortex MCP integration failure once, then continue with Read / Grep / Glob. Do not start a daemon, and do not use a CLI/shell fallback as a substitute graph. Do not invent Gortex impact, verify, detect, tests, guards, or contract results when the tools are unavailable.
 
 Use **recall** before editing known code and **remember** for durable decisions or invariants.
