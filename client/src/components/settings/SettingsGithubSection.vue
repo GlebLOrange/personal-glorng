@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import BaseButton from "@/components/ui/BaseButton.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
-import { Card, CardBody } from "@/components/ui/card";
+import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import type { GitHubStatus } from "@/types";
 
 defineProps<{
@@ -21,6 +21,9 @@ const emit = defineEmits<{
 <template>
   <Card variant="compact">
     <CardBody>
+      <CardHeader class="!mb-2">
+        <CardTitle>connections</CardTitle>
+      </CardHeader>
       <div class="flex flex-wrap items-center gap-2">
         <p v-if="error" class="w-full text-sm text-status-warning">{{ error }}</p>
         <BaseButton

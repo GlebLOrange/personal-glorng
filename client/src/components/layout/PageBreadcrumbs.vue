@@ -12,6 +12,14 @@ const props = withDefaults(
   { elevated: false },
 );
 
+/** Exact hub labels that get a ToolIcon in the trail. */
+const CRUMB_ICONS: Record<string, string> = {
+  tools: "tools",
+  admin: "admin",
+  news: "news",
+  settings: "settings",
+};
+
 function crumbLabel(label: string): string {
   return formatBreadcrumbLabel(label);
 }
@@ -21,7 +29,7 @@ function isCurrent(idx: number): boolean {
 }
 
 function crumbIconSlug(label: string): string | null {
-  return crumbLabel(label) === "tools" ? "tools" : null;
+  return CRUMB_ICONS[crumbLabel(label)] ?? null;
 }
 
 function currentClass(): string {
@@ -52,8 +60,8 @@ const ancestorClass =
         >
           <span :class="isCurrent(idx) ? currentClass() : ancestorClass">
             <ToolIcon
-              v-if="crumbIconSlug(seg.label) === 'tools'"
-              slug="tools"
+              v-if="crumbIconSlug(seg.label)"
+              :slug="crumbIconSlug(seg.label)!"
               :class="isCurrent(idx) && elevated ? 'size-5 shrink-0' : 'size-3.5 shrink-0'"
             />
             {{ crumbLabel(seg.label) }}
@@ -61,8 +69,8 @@ const ancestorClass =
         </RouterLink>
         <span v-else :class="currentClass()" aria-current="page">
           <ToolIcon
-            v-if="crumbIconSlug(seg.label) === 'tools'"
-            slug="tools"
+            v-if="crumbIconSlug(seg.label)"
+            :slug="crumbIconSlug(seg.label)!"
             :class="elevated ? 'size-5 shrink-0' : 'size-3.5 shrink-0'"
           />
           {{ crumbLabel(seg.label) }}

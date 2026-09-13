@@ -207,11 +207,6 @@ function onTagsToggle(event: Event): void {
             </label>
           </div>
         </details>
-        <BaseInput
-          :model-value="form.language"
-          placeholder="language (en)"
-          @update:model-value="patch({ language: toStringValue($event) })"
-        />
       </section>
     </form>
 

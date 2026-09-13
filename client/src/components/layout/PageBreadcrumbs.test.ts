@@ -24,12 +24,14 @@ describe("PageBreadcrumbs", () => {
     expect(wrapper.get("a span").text()).toBe("admin");
     expect(wrapper.get("a span").classes()).toContain("text-surface-mid");
     expect(wrapper.get("a span").classes()).not.toContain("accent-gradient");
+    expect(wrapper.get("a span").find("svg").exists()).toBe(true);
 
     const current = wrapper.get("[aria-current=page]");
     expect(current.text()).toBe("app logs");
     expect(current.classes()).toContain("text-surface-light");
     expect(current.classes()).toContain("text-xl");
     expect(current.classes()).not.toContain("accent-gradient");
+    expect(current.find("svg").exists()).toBe(false);
     expect(wrapper.text()).toMatch(/admin\s*\/\s*app logs/);
   });
 
@@ -51,6 +53,7 @@ describe("PageBreadcrumbs", () => {
     expect(current.get("span").classes()).toContain("text-surface-light");
     expect(current.get("span").classes()).toContain("text-xl");
     expect(current.get("span").classes()).not.toContain("accent-gradient");
+    expect(current.get("span").find("svg").exists()).toBe(true);
   });
 
   it("highlights current without elevated title scale", () => {

@@ -38,7 +38,7 @@ Re-run `make docs-generate` after router changes so the handbook schema stays cu
 
 ## Environment
 
-Template in [`postman/environments/glorng-local.environment.yaml`](../../postman/environments/glorng-local.environment.yaml). Postman **Local View** loads everything under `postman/` (see [`.postman/resources.yaml`](../../.postman/resources.yaml)).
+Template in [`postman/environments/glorng-local.environment.yaml`](../../postman/environments/glorng-local.environment.yaml). Import it into Postman as an environment (or duplicate for staging/production).
 
 | Variable | Example | Purpose |
 |----------|---------|---------|
@@ -146,10 +146,9 @@ Full table: [Security — rate limiting](/reference/security#rate-limiting).
 ```
 postman/
   environments/glorng-local.environment.yaml   # template vars (no secrets)
-.postman/resources.yaml                        # Local View workspace id
 ```
 
-Commit collections and environment **templates** only. Keep passwords and webhook secrets in Postman local vault or `.env`, not in git.
+Commit environment **templates** only. Keep passwords and webhook secrets in Postman local vault or `.env`, not in git. Local View metadata under `.postman/` is gitignored.
 
 ## Related
 

@@ -209,54 +209,60 @@ async function deleteAccount(): Promise<void> {
     max-width="5xl"
     :narrow="false"
   >
-    <div class="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2">
-      <SettingsProfileSection
-        v-model:display-name="displayName"
-        :saving="savingProfile"
-        :can-save="canSaveProfile"
-        @save="saveProfile"
-      />
+    <div class="grid min-w-0 grid-cols-1 items-start gap-3 md:grid-cols-2">
+      <div class="flex min-w-0 flex-col gap-3">
+        <SettingsProfileSection
+          v-model:display-name="displayName"
+          :saving="savingProfile"
+          :can-save="canSaveProfile"
+          @save="saveProfile"
+        />
 
-      <SettingsPreferencesSection
-        v-model:timezone="timezone"
-        v-model:display-currency="displayCurrency"
-        :permissions="permissions"
-        :saving="savingPrefs"
-        :can-save="canSavePrefs"
-        @save="savePreferences"
-      />
+        <SettingsAccountSection
+          v-model:new-email="newEmail"
+          v-model:email-password="emailPassword"
+          v-model:current-password="currentPassword"
+          v-model:new-password="newPassword"
+          v-model:new-password-confirm="newPasswordConfirm"
+          :saving-email="savingEmail"
+          :can-save-email="canSaveEmail"
+          :saving-password="savingPassword"
+          :can-save-password="canSavePassword"
+          @save-email="saveEmail"
+          @save-password="savePassword"
+        />
+      </div>
 
-      <SettingsAccountSection
-        v-model:new-email="newEmail"
-        v-model:email-password="emailPassword"
-        v-model:current-password="currentPassword"
-        v-model:new-password="newPassword"
-        v-model:new-password-confirm="newPasswordConfirm"
-        :saving-email="savingEmail"
-        :can-save-email="canSaveEmail"
-        :saving-password="savingPassword"
-        :can-save-password="canSavePassword"
-        @save-email="saveEmail"
-        @save-password="savePassword"
-      />
+      <div class="flex min-w-0 flex-col gap-3">
+        <SettingsPreferencesSection
+          v-model:timezone="timezone"
+          v-model:display-currency="displayCurrency"
+          :permissions="permissions"
+          :saving="savingPrefs"
+          :can-save="canSavePrefs"
+          @save="savePreferences"
+        />
 
-      <SettingsGithubSection
-        :status="githubStatus"
-        :loading="githubLoading"
-        :error="githubError"
-        :unlinking="unlinkingGithub"
-        @connect="connectGithub"
-        @unlink="unlinkGithub"
-        @retry="loadGithubStatus"
-      />
+        <SettingsGithubSection
+          :status="githubStatus"
+          :loading="githubLoading"
+          :error="githubError"
+          :unlinking="unlinkingGithub"
+          @connect="connectGithub"
+          @unlink="unlinkGithub"
+          @retry="loadGithubStatus"
+        />
+      </div>
 
-      <SettingsDeleteSection
-        v-model:delete-password="deletePassword"
-        v-model:delete-confirm="deleteConfirm"
-        :deleting="deleting"
-        :can-delete="canDeleteAccount"
-        @delete="deleteAccount"
-      />
+      <div class="md:col-span-2">
+        <SettingsDeleteSection
+          v-model:delete-password="deletePassword"
+          v-model:delete-confirm="deleteConfirm"
+          :deleting="deleting"
+          :can-delete="canDeleteAccount"
+          @delete="deleteAccount"
+        />
+      </div>
     </div>
   </PageShell>
 </template>
