@@ -7,12 +7,12 @@ from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
 from aiogram.types import BotCommand
 
 from app.core.logging import logger
+from app.core.redis import close_redis, init_redis
 from app.db.worker_registry import get_worker_registry
 from app.services.task import get_unsent_reminders
 from app.settings import get_settings
 from app.todobot.handlers import (
     calendar,
-    expense,
     reminder,
     start,
     task_create,
@@ -38,7 +38,6 @@ def _build_dispatcher(registry) -> Dispatcher:
     dp.message.middleware(AllowedUserMiddleware())
 
     dp.include_router(start.router)
-    dp.include_router(expense.router)
     dp.include_router(task_create.router)
     dp.include_router(task_manage.router)
     dp.include_router(reminder.router)
@@ -85,6 +84,9 @@ async def main() -> None:
         logger.error("TELEGRAM_BOT_TO_DO_TOKEN is not set")
         return
 
+    # OAuth state / security Redis helpers need the app client (separate from FSM storage).
+    await init_redis(settings.REDIS_URL, settings.REDIS_CACHE_URL or None)
+
     registry = await get_worker_registry()
     bot = Bot(token=settings.TELEGRAM_BOT_TO_DO_TOKEN)
     dp = _build_dispatcher(registry)
@@ -98,10 +100,8 @@ async def main() -> None:
     await _recover_reminders(registry)
     await bot.set_my_commands(
         [
-            BotCommand(command="new", description="Create a new task"),
+            BotCommand(command="new", description="Quick-create a task"),
             BotCommand(command="tasks", description="View pending tasks"),
-            BotCommand(command="spend", description="Log an expense"),
-            BotCommand(command="expenses", description="This month's expenses"),
             BotCommand(command="connect_calendar", description="Link Google Calendar"),
             BotCommand(command="help", description="Show help & menu"),
         ]
@@ -112,6 +112,7 @@ async def main() -> None:
     finally:
         await bot.session.close()
         await close_job_queue()
+        await close_redis()
 
 
 if __name__ == "__main__":

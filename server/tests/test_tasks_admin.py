@@ -1,5 +1,6 @@
 import pytest
 from httpx import AsyncClient
+from unittest.mock import AsyncMock, patch
 
 from app.core.security import create_access_token
 from app.db.documents.task import TaskStatus
@@ -123,6 +124,30 @@ async def test_sync_queue_includes_task_title(
     items = resp.json()["items"]
     match = next(item for item in items if item["task_id"] == task.id)
     assert match["task_title"] == "Sync me please"
+
+
+@pytest.mark.asyncio
+async def test_process_sync_queue_now_requires_admin(
+    tasks_reader_client: AsyncClient,
+) -> None:
+    resp = await tasks_reader_client.post("/api/tools/tasks/sync-queue/process")
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+@patch("app.workers.tasks.process_sync_queue", new_callable=AsyncMock)
+async def test_process_sync_queue_now_endpoint(
+    mock_process: AsyncMock,
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+) -> None:
+    task = await create_task(registry, title="Drain me")
+    await create_sync_queue_item(registry, task_id=task.id)
+
+    resp = await auth_client.post("/api/tools/tasks/sync-queue/process")
+    assert resp.status_code == 200
+    assert "pending entries" in resp.json()["message"]
+    mock_process.assert_awaited()
 
 
 @pytest.mark.asyncio

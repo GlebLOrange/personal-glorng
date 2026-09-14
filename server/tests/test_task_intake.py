@@ -1,6 +1,6 @@
 """Tests for AI task intake service."""
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import AsyncClient
@@ -47,9 +47,14 @@ async def test_store_inbound_idempotent(registry: DatabaseRegistry) -> None:
 
 
 @pytest.mark.asyncio
+@patch("app.workers.tasks.process_sync_queue", new_callable=AsyncMock)
+@patch("app.workers.queue.get_job_queue")
 async def test_confirm_intake_creates_task_and_sync_queue(
+    mock_get_queue: MagicMock,
+    mock_process: AsyncMock,
     registry: DatabaseRegistry,
 ) -> None:
+    mock_get_queue.return_value = AsyncMock()
     svc = TaskIntakeService(registry)
     inbound = await svc.store_inbound_message(
         telegram_user_id=123,

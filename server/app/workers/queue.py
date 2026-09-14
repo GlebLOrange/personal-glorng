@@ -10,6 +10,7 @@ from app.core.exceptions import ServiceUnavailableError
 from app.core.logging import logger
 from app.workers.job_names import JobName
 from app.workers.tasks import (
+    process_sync_queue_task,
     send_reminder_task,
     send_reset_email_task,
     send_verification_email_task,
@@ -55,6 +56,12 @@ def _sanitize_enqueue_args(job: JobName, args: tuple[object, ...]) -> tuple[Any,
             raise ValueError(msg)
         return (reminder_id,)
 
+    if job == JobName.PROCESS_SYNC_QUEUE:
+        if args:
+            msg = "process_sync_queue takes no arguments"
+            raise ValueError(msg)
+        return ()
+
     msg = f"Unsupported on-demand job: {job}"
     raise ValueError(msg)
 
@@ -68,6 +75,7 @@ class CeleryJobQueue:
             JobName.SEND_VERIFICATION_EMAIL: send_verification_email_task,
             JobName.SEND_RESET_EMAIL: send_reset_email_task,
             JobName.SEND_REMINDER: send_reminder_task,
+            JobName.PROCESS_SYNC_QUEUE: process_sync_queue_task,
         }
 
     async def enqueue(

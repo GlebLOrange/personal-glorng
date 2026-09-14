@@ -9,6 +9,7 @@ from app.db.documents.audit import AuditActorType, AuditSource
 from app.db.documents.task import TaskStatus
 from app.db.registry import DatabaseRegistry
 from app.services.task import change_status, get_pending_tasks, get_task
+from app.todobot.keyboards.task import completion_options
 
 router = Router()
 
@@ -26,13 +27,15 @@ async def cmd_tasks(message: Message, registry: DatabaseRegistry) -> None:
         await message.answer("No pending tasks. Use /new to create one!")
         return
 
-    lines = ["*Your pending tasks:*\n"]
-    for i, task in enumerate(tasks, 1):
+    await message.answer("*Your pending tasks:*", parse_mode="Markdown")
+    for task in tasks:
         scheduled = format_scheduled_at(task.scheduled_at) if task.scheduled_at else "—"
         loc = f" ({task.location})" if task.location else ""
-        lines.append(f"{i}. {task.title} — {scheduled}{loc}")
-
-    await message.answer("\n".join(lines), parse_mode="Markdown")
+        await message.answer(
+            f"*{task.title}* — {scheduled}{loc}",
+            parse_mode="Markdown",
+            reply_markup=completion_options(task.id),
+        )
 
 
 _STATUS_MAP = {

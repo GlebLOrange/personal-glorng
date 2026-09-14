@@ -129,6 +129,22 @@ async def list_sync_queue(
     return await svc.list_sync_queue(page=page, per_page=per_page)
 
 
+@router.post(
+    "/sync-queue/process",
+    response_model=MessageResponse,
+    summary="Process calendar sync queue now",
+    description=requires_capability("tasks", "write"),
+)
+async def process_sync_queue_now(
+    _user: AdminUser,
+    svc: TaskServiceDep,
+) -> MessageResponse:
+    count = await svc.process_sync_queue_now()
+    return MessageResponse(
+        message=f"Sync drain kicked for {count} pending entries",
+    )
+
+
 @router.get(
     "/{task_id}",
     response_model=TaskDetailResponse,

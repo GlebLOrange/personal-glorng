@@ -9,7 +9,7 @@ from app.core.utils import calendar_datetime
 from app.db.documents.task import SyncAction, SyncStatus
 from app.db.registry import DatabaseRegistry
 from app.services.calendar import _build_event_body, sync_task_to_google
-from app.services.task import enqueue_calendar_sync
+from app.services.task import TaskService, enqueue_calendar_sync
 from app.workers.tasks import process_sync_queue
 from tests.factories import (
     create_google_credential,
@@ -77,6 +77,20 @@ class TestBuildEventBody:
             ],
         }
 
+    async def test_reminder_overrides_include_zero(
+        self, registry: DatabaseRegistry
+    ) -> None:
+        task = await create_task(registry, title="At start")
+        body = _build_event_body(task, reminder_minutes=[0, 15])
+
+        assert body["reminders"] == {
+            "useDefault": False,
+            "overrides": [
+                {"method": "popup", "minutes": 0},
+                {"method": "popup", "minutes": 15},
+            ],
+        }
+
     async def test_empty_reminder_minutes_disables_defaults(
         self, registry: DatabaseRegistry
     ) -> None:
@@ -90,8 +104,14 @@ class TestBuildEventBody:
 
 
 class TestEnqueueCalendarSync:
-    async def test_creates_pending_entry(self, registry: DatabaseRegistry) -> None:
+    @patch("app.workers.tasks.process_sync_queue", new_callable=AsyncMock)
+    async def test_creates_pending_entry(
+        self,
+        mock_process: AsyncMock,
+        registry: DatabaseRegistry,
+    ) -> None:
         task = await create_task(registry)
+        before = datetime.now(UTC)
         entry = await enqueue_calendar_sync(
             registry, task_id=task.id, action=SyncAction.CREATE
         )
@@ -100,8 +120,15 @@ class TestEnqueueCalendarSync:
         assert entry.action == SyncAction.CREATE
         assert entry.status == SyncStatus.PENDING
         assert entry.next_retry_at is not None
+        assert abs((entry.next_retry_at - before).total_seconds()) < 2
+        mock_process.assert_awaited_once()
 
-    async def test_preserves_google_event_id(self, registry: DatabaseRegistry) -> None:
+    @patch("app.workers.tasks.process_sync_queue", new_callable=AsyncMock)
+    async def test_preserves_google_event_id(
+        self,
+        mock_process: AsyncMock,
+        registry: DatabaseRegistry,
+    ) -> None:
         task = await create_task(registry)
         entry = await enqueue_calendar_sync(
             registry,
@@ -112,6 +139,101 @@ class TestEnqueueCalendarSync:
 
         assert entry.google_event_id == "evt_abc"
         assert entry.action == SyncAction.DELETE
+        mock_process.assert_awaited_once()
+
+    @patch("app.services.calendar._build_service")
+    @patch("app.workers.tasks.get_worker_registry", new_callable=AsyncMock)
+    async def test_kick_drains_queue_under_eager(
+        self,
+        mock_registry_fn: AsyncMock,
+        mock_service_fn: MagicMock,
+        registry: DatabaseRegistry,
+    ) -> None:
+        """enqueue_calendar_sync kicks process_sync_queue so CREATE completes."""
+        mock_registry_fn.return_value = registry
+        task = await create_task(registry)
+        await create_google_credential(registry, telegram_user_id=task.telegram_user_id)
+
+        mock_service = MagicMock()
+        mock_service.events().insert().execute.return_value = {"id": "gcal_kick"}
+        mock_service_fn.return_value = mock_service
+
+        entry = await enqueue_calendar_sync(
+            registry, task_id=task.id, action=SyncAction.CREATE
+        )
+
+        updated = await _reload_sync_item(registry, entry.id)
+        assert updated is not None
+        assert updated.status == SyncStatus.COMPLETED
+        assert registry.tasks is not None
+        refreshed = await registry.tasks.get(task.id)
+        assert refreshed.google_event_id == "gcal_kick"
+
+
+# --- retry_sync / process_sync_queue_now ---
+
+
+class TestRetryAndProcessSyncNow:
+    @patch("app.workers.tasks.process_sync_queue", new_callable=AsyncMock)
+    async def test_retry_sync_kicks_drain(
+        self,
+        mock_process: AsyncMock,
+        registry: DatabaseRegistry,
+    ) -> None:
+        task = await create_task(registry)
+        item = await create_sync_queue_item(
+            registry,
+            task_id=task.id,
+            status=SyncStatus.FAILED,
+            attempts=3,
+        )
+        item.last_error = "No Google credentials"
+        assert registry.tasks is not None
+        await registry.tasks.update_sync(item)
+
+        count = await TaskService(registry).retry_sync(task.id)
+
+        assert count == 1
+        mock_process.assert_awaited_once()
+        updated = await _reload_sync_item(registry, item.id)
+        assert updated is not None
+        assert updated.status == SyncStatus.PENDING
+        assert updated.attempts == 0
+
+    @patch("app.services.calendar._build_service")
+    @patch("app.workers.tasks.get_worker_registry", new_callable=AsyncMock)
+    async def test_process_sync_queue_now_drains_pending(
+        self,
+        mock_registry_fn: AsyncMock,
+        mock_service_fn: MagicMock,
+        registry: DatabaseRegistry,
+    ) -> None:
+        mock_registry_fn.return_value = registry
+        task = await create_task(registry)
+        await create_google_credential(registry, telegram_user_id=task.telegram_user_id)
+        item = await create_sync_queue_item(
+            registry,
+            task_id=task.id,
+            action=SyncAction.CREATE,
+            status=SyncStatus.PENDING,
+        )
+        # Stuck future retry (pre-kick backlog).
+        item.next_retry_at = datetime.now(UTC) + timedelta(hours=1)
+        assert registry.tasks is not None
+        await registry.tasks.update_sync(item)
+
+        mock_service = MagicMock()
+        mock_service.events().insert().execute.return_value = {"id": "gcal_now"}
+        mock_service_fn.return_value = mock_service
+
+        armed = await TaskService(registry).process_sync_queue_now()
+
+        assert armed == 1
+        updated = await _reload_sync_item(registry, item.id)
+        assert updated is not None
+        assert updated.status == SyncStatus.COMPLETED
+        refreshed = await registry.tasks.get(task.id)
+        assert refreshed.google_event_id == "gcal_now"
 
 
 # --- sync_task_to_google ---
