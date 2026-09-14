@@ -210,6 +210,36 @@ class TestRecipesCRUD:
         )
         assert resp.status_code == 422
 
+    async def test_create_rejects_too_many_ingredients(self, auth_client: AsyncClient):
+        resp = await auth_client.post(
+            "/api/tools/recipes",
+            json={
+                **RECIPE_DATA,
+                "ingredients": [f"item-{i}" for i in range(51)],
+            },
+        )
+        assert resp.status_code == 422
+
+    async def test_create_rejects_too_many_tags(self, auth_client: AsyncClient):
+        resp = await auth_client.post(
+            "/api/tools/recipes",
+            json={
+                **RECIPE_DATA,
+                "tags": [f"tag-{i}" for i in range(7)],
+            },
+        )
+        assert resp.status_code == 422
+
+    async def test_create_rejects_http_image_url(self, auth_client: AsyncClient):
+        resp = await auth_client.post(
+            "/api/tools/recipes",
+            json={
+                **RECIPE_DATA,
+                "image_url": "http://example.com/food.jpg",
+            },
+        )
+        assert resp.status_code == 422
+
 
 class TestRecipesList:
     async def test_pagination(self, auth_client: AsyncClient):

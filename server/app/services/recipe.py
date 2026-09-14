@@ -3,7 +3,6 @@ from math import ceil
 from typing import Any
 
 from app.core.json_lists import parse_json_string_list
-from app.core.logging import logger
 from app.core.utils import DEFAULT_PER_PAGE, paginate_params
 from app.db.documents.recipe import Recipe
 from app.db.documents.search import SearchVisibility
@@ -62,9 +61,17 @@ def _apply_recipe_updates(recipe: Recipe, data: RecipeUpdate) -> Recipe:
 
 
 class RecipeService:
-    def __init__(self, registry: DatabaseRegistry, audit_svc: AuditService) -> None:
+    def __init__(
+        self,
+        registry: DatabaseRegistry,
+        audit_svc: AuditService,
+        search_svc: SearchIndexService | None = None,
+    ) -> None:
         self.registry = registry
         self._audit = audit_svc
+        # ponytail: default constructs SearchIndexService without optional Postgres;
+        # HTTP path injects get_search_index_service via deps.
+        self._search = search_svc or SearchIndexService(registry)
 
     def _recipes(self):
         if self.registry.recipes is None:
@@ -156,7 +163,7 @@ class RecipeService:
         offset, limit = paginate_params(page, per_page)
         recipe_ids: list[int] | None = None
         if search:
-            results = await SearchIndexService(self.registry).search(
+            results = await self._search.search(
                 search,
                 visibilities=[SearchVisibility.PUBLIC],
                 source_types=[RECIPE_SOURCE_TYPE],
@@ -190,21 +197,8 @@ class RecipeService:
         all_recipes = await self._recipes().list(limit=10_000)
         all_tags: set[str] = set()
         for recipe in all_recipes:
-            try:
-                tags = json.loads(recipe.tags)
-            except json.JSONDecodeError:
-                logger.warning(
-                    "Skipping recipe row with corrupted tags JSON",
-                    context={"tags_json": recipe.tags},
-                )
-                continue
-            if not isinstance(tags, list):
-                logger.warning(
-                    "Skipping recipe row with invalid tags JSON shape",
-                    context={"tags_json": recipe.tags},
-                )
-                continue
-            for tag in tags:
-                if isinstance(tag, str):
+            # Non-strict: corrupt rows contribute no tags (same as empty).
+            for tag in parse_json_string_list(recipe.tags, field="tags"):
+                if tag:
                     all_tags.add(tag)
         return sorted(all_tags)

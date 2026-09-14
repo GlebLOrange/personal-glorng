@@ -23,3 +23,19 @@ def test_validate_clean_optional_returns_none_for_blank() -> None:
 def test_validate_clean_string_list_sanitizes_each_item() -> None:
     result = validate_clean_string_list(["  a\x00  ", "b"])
     assert result == ["a", "b"]
+
+
+def test_task_draft_description_allows_5000_chars() -> None:
+    from app.schemas.task_intake import TaskDraft
+
+    draft = TaskDraft(description="x" * 6000)
+    assert draft.description is not None
+    assert len(draft.description) == 5000
+
+
+def test_task_text_fields_description_caps_at_5000() -> None:
+    from app.schemas.task import TaskTextFields
+
+    fields = TaskTextFields(title="Task", description="y" * 6000)
+    assert fields.description is not None
+    assert len(fields.description) == 5000
