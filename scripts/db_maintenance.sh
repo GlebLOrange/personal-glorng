@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Daily DB maintenance: migrate, backup MongoDB/Redis/media (+ Postgres if enabled),
-# rotate, verify, notify.
+# Daily DB maintenance: backup MongoDB/Redis/media (+ Postgres if enabled),
+# verify, rotate, migrate, optional offsite, notify.
+# Dumps run before migrate so a failed migrate still leaves a pre-change archive.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -17,6 +18,20 @@ fail() {
 
 postgres_enabled() {
   [[ "${ENABLE_POSTGRES:-false}" == "true" ]]
+}
+
+require_nonempty() {
+  local path="$1"
+  local label="$2"
+  if [[ ! -s "$path" ]]; then
+    fail "${label} is empty: $path"
+  fi
+}
+
+verify_gzip() {
+  local path="$1"
+  local label="$2"
+  gzip -t "$path" || fail "${label} failed gzip -t: $path"
 }
 
 load_env() {
@@ -43,6 +58,7 @@ load_env() {
   BACKUP_RETENTION_WEEKS="${BACKUP_RETENTION_WEEKS:-4}"
   BACKUP_NOTIFY="${BACKUP_NOTIFY:-true}"
   BACKUP_OFFSITE_CMD="${BACKUP_OFFSITE_CMD:-}"
+  BACKUP_REQUIRE_OFFSITE="${BACKUP_REQUIRE_OFFSITE:-false}"
   LOCK_DIR="${BACKUP_DIR}/.db_maintenance.lock.d"
 }
 
@@ -88,9 +104,8 @@ backup_mongodb() {
     --authenticationDatabase admin \
     --archive | gzip >"$dump_path"
 
-  if [[ ! -s "$dump_path" ]]; then
-    fail "MongoDB dump is empty: $dump_path"
-  fi
+  require_nonempty "$dump_path" "MongoDB dump"
+  verify_gzip "$dump_path" "MongoDB dump"
 
   ln -sf "$(basename "$dump_path")" "$out_dir/proj_portfolio_mongo_latest.archive.gz"
   echo "$dump_path"
@@ -104,6 +119,8 @@ backup_postgres() {
 
   log "Backing up Postgres to $dump_path"
   compose_postgres exec -T db pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB" | gzip >"$dump_path"
+  require_nonempty "$dump_path" "Postgres dump"
+  verify_gzip "$dump_path" "Postgres dump"
   ln -sf "$(basename "$dump_path")" "$out_dir/proj_portfolio_latest.dump.gz"
   echo "$dump_path"
 }
@@ -117,6 +134,7 @@ backup_redis() {
   log "Backing up Redis to $out_path"
   compose exec -T redis redis-cli -a "$REDIS_PASSWORD" SAVE >/dev/null
   compose cp "redis:/data/dump.rdb" "$out_path"
+  require_nonempty "$out_path" "Redis dump"
   ln -sf "$(basename "$out_path")" "$out_dir/proj_portfolio_redis_latest.rdb"
 }
 
@@ -127,11 +145,14 @@ backup_media() {
   mkdir -p "$out_dir"
 
   log "Backing up media volume to $out_path"
+  # Use compose so the project-prefixed volume (e.g. portfolio-glorng_server_media) is used.
   compose run --rm --no-deps \
     -v server_media:/data:ro \
     -v "$out_dir:/out" \
     alpine:3.21 \
     sh -c "tar czf /out/proj_portfolio_media_${stamp}.tar.gz -C /data ."
+  require_nonempty "$out_path" "Media archive"
+  verify_gzip "$out_path" "Media archive"
   ln -sf "$(basename "$out_path")" "$out_dir/proj_portfolio_media_latest.tar.gz"
 }
 
@@ -225,9 +246,14 @@ notify_result() {
 }
 
 # Optional offsite copy after local verify. Operator supplies the full command
-# (e.g. rsync). Fail the run if it exits non-zero so Telegram notify sees failure.
+# (e.g. rsync without --delete). Fail the run if it exits non-zero so Telegram
+# notify sees failure.
 run_offsite_backup() {
   if [[ -z "$BACKUP_OFFSITE_CMD" ]]; then
+    if [[ "$BACKUP_REQUIRE_OFFSITE" == "true" ]]; then
+      fail "BACKUP_REQUIRE_OFFSITE=true but BACKUP_OFFSITE_CMD is empty"
+    fi
+    log "WARNING: BACKUP_OFFSITE_CMD unset — local disk only (not durable). Set it for prod, or BACKUP_REQUIRE_OFFSITE=true to fail closed."
     return 0
   fi
   log "Running offsite backup: $BACKUP_OFFSITE_CMD"
@@ -268,7 +294,8 @@ main() {
   trap 'release_lock; notify_result failure "${detail:-unexpected error}"' ERR
 
   ensure_stack_ready
-  run_migrate
+
+  # Dump + verify first so migrate failures leave a usable pre-change archive.
   mongo_dump_path="$(backup_mongodb "$stamp")"
   if postgres_enabled; then
     pg_dump_path="$(backup_postgres "$stamp")"
@@ -281,6 +308,8 @@ main() {
     verify_postgres_backup "$pg_dump_path"
   fi
   run_offsite_backup
+
+  run_migrate
 
   log "DB maintenance completed successfully"
   notify_result success "$detail"

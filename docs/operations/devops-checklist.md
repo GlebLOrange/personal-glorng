@@ -39,7 +39,7 @@ Workflow inventory and local test tiers: [Testing](/reference/testing). Deploy r
 | **HTTPS** | Cloudflare overlay TLS ([`nginx.prod.cloudflare.conf`](../../nginx/nginx.prod.cloudflare.conf)); default prod is HTTP behind edge | Origin certs in `deploy/cloudflare/` | No certbot/ACME in-repo |
 | **Cloudflare** | Real-IP restore, runbook ([Cloudflare](/operations/cloudflare)) | DNS, Full (strict), cache rules, host firewall allowlist | WAF rules only if abuse |
 | **GitHub Actions** | CI, security, nightly, pre-release, optional Sentry upload — **merge gates off in development** (see table above) | Repo secrets (`SENTRY_*`); enable ruleset before production | Full CD to VPS |
-| **Backups** | `make backup`, cron install, Mongo/Redis/media (+ optional Postgres), optional `BACKUP_OFFSITE_CMD` | Cron on host, offsite target, restore drills | Managed object-storage product |
+| **Backups** | `make backup`, cron install (PATH/HOME), Mongo/Redis/media (+ optional Postgres), `BACKUP_OFFSITE_CMD` + `BACKUP_REQUIRE_OFFSITE` | Cron on host, offsite target (no `rsync --delete`), restore drills | Managed object-storage product |
 | **Logging** | Quiet dev defaults (`LOG_REQUESTS=false`, persist `WARNING+`); prod request logs on; JSON Loguru stderr + optional Mongo/ES; prod `json-file` rotation | `docker logs` / host retention | Loki/Fluent Bit shipper |
 | **EDOT / OTLP** | Opt-in `elastic-opentelemetry`; entrypoint wraps with `opentelemetry-instrument` when `OTEL_EXPORTER_OTLP_ENDPOINT` is set; Compose sets `OTEL_SERVICE_NAME` per process | Elastic managed OTLP or EDOT Collector + API key/headers | Leave endpoint empty in lite |
 | **Prometheus** | — | — | Covered by EDOT OTLP metrics when configured; no separate scrape stack |
