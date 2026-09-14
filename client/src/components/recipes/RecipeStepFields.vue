@@ -5,6 +5,15 @@ import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
+import {
+  filledListCount,
+  focusRecipeListField,
+  insertBlankAfter,
+  replaceWithPasteLines,
+  splitPasteLines,
+} from "@/utils/recipeListFields";
+
+const FIELD_SELECTOR = "[data-recipe-step]";
 
 const props = defineProps<{
   steps: string[];
@@ -16,12 +25,7 @@ const emit = defineEmits<{
   "update:steps": [value: string[]];
 }>();
 
-/** Filled (trimmed) lines — same filter as save. */
-function filledCount(items: string[]): number {
-  return items.map((item) => item.trim()).filter(Boolean).length;
-}
-
-const stepCount = computed(() => filledCount(props.steps));
+const stepCount = computed(() => filledListCount(props.steps));
 
 // Uncontrolled <details>; set .open on drawer open so Vue doesn't fight native toggles.
 const detailsRef = ref<HTMLDetailsElement | null>(null);
@@ -40,9 +44,7 @@ function patch(steps: string[]): void {
 }
 
 async function focusField(index: number): Promise<void> {
-  await nextTick();
-  const fields = document.querySelectorAll<HTMLElement>("[data-recipe-step]");
-  fields[index]?.focus();
+  await focusRecipeListField(detailsRef.value, FIELD_SELECTOR, index);
 }
 
 function addStep(): void {
@@ -64,26 +66,15 @@ function updateStep(index: number, value: string): void {
 function onStepModEnter(event: KeyboardEvent, index: number): void {
   if (event.key !== "Enter" || !(event.metaKey || event.ctrlKey)) return;
   event.preventDefault();
-  const steps = [...props.steps];
-  steps.splice(index + 1, 0, "");
-  patch(steps);
+  patch(insertBlankAfter(props.steps, index));
   void focusField(index + 1);
-}
-
-function splitPasteLines(text: string): string[] {
-  return text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
 }
 
 function onStepPaste(event: ClipboardEvent, index: number): void {
   const lines = splitPasteLines(event.clipboardData?.getData("text") ?? "");
   if (lines.length < 2) return;
   event.preventDefault();
-  const steps = [...props.steps];
-  steps.splice(index, 1, ...lines);
-  patch(steps);
+  patch(replaceWithPasteLines(props.steps, index, lines));
   void focusField(index + lines.length - 1);
 }
 </script>

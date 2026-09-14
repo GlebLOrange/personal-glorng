@@ -5,6 +5,15 @@ import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
+import {
+  filledListCount,
+  focusRecipeListField,
+  insertBlankAfter,
+  replaceWithPasteLines,
+  splitPasteLines,
+} from "@/utils/recipeListFields";
+
+const FIELD_SELECTOR = "[data-recipe-ingredient]";
 
 const props = defineProps<{
   ingredients: string[];
@@ -16,12 +25,7 @@ const emit = defineEmits<{
   "update:ingredients": [value: string[]];
 }>();
 
-/** Filled (trimmed) lines — same filter as save. */
-function filledCount(items: string[]): number {
-  return items.map((item) => item.trim()).filter(Boolean).length;
-}
-
-const ingredientCount = computed(() => filledCount(props.ingredients));
+const ingredientCount = computed(() => filledListCount(props.ingredients));
 
 // Uncontrolled <details>; set .open on drawer open so Vue doesn't fight native toggles.
 const detailsRef = ref<HTMLDetailsElement | null>(null);
@@ -40,9 +44,7 @@ function patch(ingredients: string[]): void {
 }
 
 async function focusField(index: number): Promise<void> {
-  await nextTick();
-  const fields = document.querySelectorAll<HTMLElement>("[data-recipe-ingredient]");
-  fields[index]?.focus();
+  await focusRecipeListField(detailsRef.value, FIELD_SELECTOR, index);
 }
 
 function toStringValue(value: string | number | null | undefined): string {
@@ -69,26 +71,15 @@ function onIngredientEnter(event: KeyboardEvent, index: number): void {
   if (event.key !== "Enter") return;
   event.preventDefault();
   // Insert after current row so Enter mid-list adds the next line in place.
-  const ingredients = [...props.ingredients];
-  ingredients.splice(index + 1, 0, "");
-  patch(ingredients);
+  patch(insertBlankAfter(props.ingredients, index));
   void focusField(index + 1);
-}
-
-function splitPasteLines(text: string): string[] {
-  return text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
 }
 
 function onIngredientPaste(event: ClipboardEvent, index: number): void {
   const lines = splitPasteLines(event.clipboardData?.getData("text") ?? "");
   if (lines.length < 2) return;
   event.preventDefault();
-  const ingredients = [...props.ingredients];
-  ingredients.splice(index, 1, ...lines);
-  patch(ingredients);
+  patch(replaceWithPasteLines(props.ingredients, index, lines));
   void focusField(index + lines.length - 1);
 }
 </script>

@@ -1,6 +1,7 @@
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from httpx import AsyncClient
-from unittest.mock import AsyncMock, patch
 
 from app.core.security import create_access_token
 from app.db.documents.task import TaskStatus
@@ -64,6 +65,22 @@ async def test_create_task_rejects_empty_title_after_sanitize(
         },
     )
     assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_create_task_truncates_long_description(
+    auth_client: AsyncClient,
+) -> None:
+    resp = await auth_client.post(
+        "/api/tools/tasks",
+        json={
+            "title": "Long notes",
+            "scheduled_at": "2026-06-01T10:00:00",
+            "description": "x" * 6000,
+        },
+    )
+    assert resp.status_code == 201
+    assert len(resp.json()["description"]) == 5000
 
 
 @pytest.mark.asyncio

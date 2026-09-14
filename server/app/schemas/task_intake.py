@@ -28,7 +28,12 @@ class TaskDraft(BaseModel):
     def clean_title(cls, value: str | None) -> str | None:
         return validate_clean_optional(value, max_length=255)
 
-    @field_validator("description", "location", "assignee_hint")
+    @field_validator("description")
+    @classmethod
+    def clean_description(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=5000)
+
+    @field_validator("location", "assignee_hint")
     @classmethod
     def clean_optional_text(cls, value: str | None) -> str | None:
         return validate_clean_optional(value, max_length=255)

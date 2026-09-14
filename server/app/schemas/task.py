@@ -26,7 +26,7 @@ class TaskTextFields(BaseModel):
     @field_validator("description")
     @classmethod
     def clean_description(cls, value: str | None) -> str | None:
-        return validate_clean_optional(value)
+        return validate_clean_optional(value, max_length=5000)
 
     @field_validator("location")
     @classmethod

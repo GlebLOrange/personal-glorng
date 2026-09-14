@@ -261,15 +261,21 @@ def get_audit_service(
 AuditServiceDep = Annotated[AuditService, Depends(get_audit_service)]
 
 
-def get_task_service(registry: DbRegistry) -> TaskService:
-    return TaskService(registry)
+def get_task_service(
+    registry: DbRegistry,
+    audit_svc: AuditServiceDep,
+) -> TaskService:
+    return TaskService(registry, audit_svc)
 
 
 TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]
 
 
-def get_task_intake_service(registry: DbRegistry) -> TaskIntakeService:
-    return TaskIntakeService(registry)
+def get_task_intake_service(
+    registry: DbRegistry,
+    task_svc: TaskServiceDep,
+) -> TaskIntakeService:
+    return TaskIntakeService(registry, task_svc)
 
 
 TaskIntakeServiceDep = Annotated[TaskIntakeService, Depends(get_task_intake_service)]
@@ -278,8 +284,9 @@ TaskIntakeServiceDep = Annotated[TaskIntakeService, Depends(get_task_intake_serv
 def get_recipe_service(
     registry: DbRegistry,
     audit_svc: AuditServiceDep,
+    search_svc: SearchIndexServiceDep,
 ) -> RecipeService:
-    return RecipeService(registry, audit_svc)
+    return RecipeService(registry, audit_svc, search_svc)
 
 
 RecipeServiceDep = Annotated[RecipeService, Depends(get_recipe_service)]

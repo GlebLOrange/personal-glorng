@@ -34,8 +34,14 @@ _TASK_WORKER_BATCH_LIMIT = 100
 
 
 class TaskService:
-    def __init__(self, registry: DatabaseRegistry) -> None:
+    def __init__(
+        self,
+        registry: DatabaseRegistry,
+        audit_svc: AuditService | None = None,
+    ) -> None:
         self.registry = registry
+        # ponytail: default skips optional Postgres; HTTP injects AuditServiceDep.
+        self._audit = audit_svc or AuditService(registry)
 
     def _tasks(self):
         if self.registry.tasks is None:
@@ -84,7 +90,7 @@ class TaskService:
         await index_task(self.registry, task)
         logger.info("Task created", context={"task_id": task.id, "title": fields.title})
 
-        await AuditService(self.registry).record(
+        await self._audit.record(
             domain_event(
                 action="task.created",
                 actor_type=actor_type,
@@ -139,7 +145,7 @@ class TaskService:
             },
         )
 
-        await AuditService(self.registry).record(
+        await self._audit.record(
             domain_event(
                 action="task.status_changed",
                 actor_type=actor_type,
@@ -195,7 +201,7 @@ class TaskService:
         task = await self._tasks().update_fields(task_id, **fields)
         await index_task(self.registry, task)
 
-        await AuditService(self.registry).record(
+        await self._audit.record(
             domain_event(
                 action="task.rescheduled",
                 actor_type=actor_type,

@@ -9,7 +9,13 @@ from typing import Any
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.feature_flags import is_task_intake_ai_enabled
 from app.core.pagination import build_paginated
-from app.core.utils import DEFAULT_PER_PAGE, format_display_date, local_naive_to_utc, local_now, paginate_params
+from app.core.utils import (
+    DEFAULT_PER_PAGE,
+    format_display_date,
+    local_naive_to_utc,
+    local_now,
+    paginate_params,
+)
 from app.db.documents.task import IntakeStatus, Task, TaskIntake
 from app.db.documents.telegram import TelegramInboundMessage
 from app.db.registry import DatabaseRegistry
@@ -65,9 +71,15 @@ REQUIRED_FIELDS = ("title", "scheduled_date", "scheduled_time")
 
 
 class TaskIntakeService:
-    def __init__(self, registry: DatabaseRegistry) -> None:
+    def __init__(
+        self,
+        registry: DatabaseRegistry,
+        task_svc: TaskService | None = None,
+    ) -> None:
         self.registry = registry
         self.settings = get_settings()
+        # ponytail: default builds TaskService without AuditServiceDep; HTTP injects.
+        self._task_svc = task_svc or TaskService(registry)
 
     def _tasks(self):
         if self.registry.tasks is None:
@@ -248,7 +260,7 @@ class TaskIntakeService:
     ) -> Task:
         intake = await self.get_intake(intake_id)
         if intake.status == IntakeStatus.CONFIRMED and intake.task_id:
-            task = await TaskService(self.registry).get_task(task_id=intake.task_id)
+            task = await self._task_svc.get_task(task_id=intake.task_id)
             if task:
                 return task
 
@@ -263,8 +275,7 @@ class TaskIntakeService:
             reminder_minutes if reminder_minutes is not None else draft.reminder_minutes
         )
 
-        task_svc = TaskService(self.registry)
-        task = await task_svc.create_with_sync(
+        task = await self._task_svc.create_with_sync(
             telegram_user_id=telegram_user_id,
             title=draft.title,
             scheduled_at=scheduled_at,
