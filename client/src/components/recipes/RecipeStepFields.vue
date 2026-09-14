@@ -31,7 +31,7 @@ watch(
   async (isOpen) => {
     if (!isOpen) return;
     await nextTick();
-    if (detailsRef.value) detailsRef.value.open = true;
+    if (detailsRef.value) detailsRef.value.open = false;
   },
 );
 
@@ -89,7 +89,7 @@ function onStepPaste(event: ClipboardEvent, index: number): void {
 </script>
 
 <template>
-  <details ref="detailsRef" class="group rounded border border-surface-border" open>
+  <details ref="detailsRef" class="group rounded border border-surface-border">
     <summary
       class="flex h-8 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
     >
@@ -99,6 +99,12 @@ function onStepPaste(event: ClipboardEvent, index: number): void {
     <div class="space-y-1 border-t border-surface-border px-2 py-2">
       <ul role="list" class="space-y-1">
         <li v-for="(_, idx) in steps" :key="`step-${idx}`" class="flex min-w-0 items-start gap-1">
+          <span
+            class="inline-flex h-8 w-5 shrink-0 items-center justify-center text-xs text-surface-mid"
+            aria-hidden="true"
+          >
+            {{ idx + 1 }}
+          </span>
           <IconActionButton
             v-if="idx === steps.length - 1"
             type="button"
@@ -109,11 +115,10 @@ function onStepPaste(event: ClipboardEvent, index: number): void {
             +
           </IconActionButton>
           <span
-            class="inline-flex h-8 w-5 shrink-0 items-center justify-center text-xs text-surface-mid"
+            v-else
+            class="box-border h-10 w-10 min-w-10 shrink-0"
             aria-hidden="true"
-          >
-            {{ idx + 1 }}
-          </span>
+          />
           <BaseTextarea
             compact
             :model-value="steps[idx]"

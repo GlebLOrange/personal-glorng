@@ -117,6 +117,11 @@ function onIngredientPaste(event: ClipboardEvent, index: number): void {
           >
             +
           </IconActionButton>
+          <span
+            v-else
+            class="box-border h-10 w-10 min-w-10 shrink-0"
+            aria-hidden="true"
+          />
           <BaseInput
             compact
             :model-value="ingredients[idx]"
