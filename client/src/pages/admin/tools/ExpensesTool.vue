@@ -169,27 +169,6 @@ function goToTransactions(): void {
 <template>
   <AdminPageLayout hub="tools" title="expenses" max-width="xl">
     <div class="min-w-0">
-      <ExpenseLedgerHeader
-        v-if="showLedgerHeader"
-        v-model:month-preset="monthPreset"
-        v-model:date-filter-mode="dateFilterMode"
-        v-model:selected-month="selectedMonth"
-        v-model:date-from="dateFrom"
-        v-model:date-to="dateTo"
-        :month-label="monthLabel"
-        :has-active-filters="hasActiveFilters"
-        :range-error="rangeError"
-        :summary="summary"
-        :expense-categories="expenseCategories"
-        :period-change="periodChange"
-        :format-money="formatMoney"
-        :summary-error="summaryError"
-        :rates-error="ratesError"
-        @apply-preset="handleDatePreset"
-        @clear-filters="clearFilters"
-        @retry="retrySummaryAndRates"
-      />
-
       <div class="flex flex-col gap-3">
         <div
           class="flex w-full min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between"
@@ -218,6 +197,27 @@ function goToTransactions(): void {
             <ToolbarPillButton family="2xx" @click="openCreate"> + expense </ToolbarPillButton>
           </div>
         </div>
+
+        <ExpenseLedgerHeader
+          v-if="showLedgerHeader"
+          v-model:month-preset="monthPreset"
+          v-model:date-filter-mode="dateFilterMode"
+          v-model:selected-month="selectedMonth"
+          v-model:date-from="dateFrom"
+          v-model:date-to="dateTo"
+          :month-label="monthLabel"
+          :has-active-filters="hasActiveFilters"
+          :range-error="rangeError"
+          :summary="summary"
+          :expense-categories="expenseCategories"
+          :period-change="periodChange"
+          :format-money="formatMoney"
+          :summary-error="summaryError"
+          :rates-error="ratesError"
+          @apply-preset="handleDatePreset"
+          @clear-filters="clearFilters"
+          @retry="retrySummaryAndRates"
+        />
 
         <ExpenseTransactionsPanel
           v-if="activeTab === 'transactions'"
