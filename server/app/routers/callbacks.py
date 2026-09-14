@@ -100,7 +100,6 @@ async def google_oauth_callback(
             "Google Calendar connected",
             context={"telegram_user_id": telegram_user_id},
         )
-
         return HTMLResponse(_SUCCESS_HTML)
 
     except Exception as exc:

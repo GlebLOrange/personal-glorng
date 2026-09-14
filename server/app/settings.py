@@ -615,7 +615,7 @@ class Settings(BaseSettings):
 
     # Groq API
     GROQ_API_KEY: str = ""
-    GROQ_CHAT_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_CHAT_MODEL: str = "openai/gpt-oss-120b"
     GROQ_API_BASE_URL: str = "https://api.groq.com/openai/v1"
     AI_CHAT_ENABLED: bool
     AI_SEARCH_ENABLED: bool
