@@ -2,7 +2,7 @@ import re
 import secrets
 import string
 from collections.abc import Generator
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
@@ -43,7 +43,14 @@ def format_scheduled_at(value: datetime) -> str:
     from app.settings import get_settings
 
     local = as_utc(value).astimezone(ZoneInfo(get_settings().TIMEZONE))
-    return local.strftime("%Y-%m-%d %H:%M")
+    return local.strftime("%d.%m.%Y %H:%M")
+
+
+def format_display_date(value: date | str) -> str:
+    """Format a calendar date for Telegram display (DD.MM.YYYY)."""
+    if isinstance(value, str):
+        value = date.fromisoformat(value)
+    return value.strftime("%d.%m.%Y")
 
 
 def calendar_datetime(value: datetime) -> str:

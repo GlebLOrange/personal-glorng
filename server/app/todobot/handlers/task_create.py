@@ -8,7 +8,7 @@ from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from app.core.utils import local_naive_to_utc
+from app.core.utils import format_display_date, local_naive_to_utc
 from app.db.registry import DatabaseRegistry
 from app.schemas.task_intake import TaskDraft
 from app.services.task import create_with_sync
@@ -64,7 +64,7 @@ def _extract_parsed_fields(text: str) -> dict[str, str | None]:
 def _format_summary(data: dict[str, str | None]) -> str:
     lines = [f"*Task:* {data.get('title', '—')}"]
     if data.get("date"):
-        lines.append(f"*Date:* {data['date']}")
+        lines.append(f"*Date:* {format_display_date(data['date'])}")
     if data.get("time"):
         lines.append(f"*Time:* {data['time']}")
     if data.get("location"):
@@ -272,7 +272,7 @@ async def handle_date_callback(
     if value == "custom":
         await state.set_state(TaskCreation.waiting_for_date)
         sent = await callback.message.answer(
-            "Send the date (e.g., June 2, 2026-06-15, next Friday):",
+            "Send the date (e.g., June 2, 15.06.2026, next Friday):",
         )
         await _track_msg(state, sent.message_id)
         return

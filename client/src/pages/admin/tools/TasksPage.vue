@@ -90,6 +90,7 @@ const {
   openDetail,
   closeDetail,
   retrySync,
+  processSyncQueueNow,
   updateTaskStatus,
   rescheduleTask,
   openCreate,
@@ -267,6 +268,7 @@ onMounted(() => {
         :has-next-page="hasNextSyncPage"
         :has-previous-page="hasPreviousSyncPage"
         @retry="retrySync"
+        @sync-now="processSyncQueueNow"
         @first-page="goToSyncPage(1)"
         @prev-page="goToSyncPage(syncPage - 1)"
         @next-page="goToSyncPage(syncPage + 1)"

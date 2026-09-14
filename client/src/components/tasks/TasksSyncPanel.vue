@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
+import SyncIcon from "@/components/icons/SyncIcon.vue";
 import TaskSyncQueue from "@/components/tasks/TaskSyncQueue.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import type { SyncQueueItem } from "@/types";
 
 defineProps<{
@@ -12,10 +14,12 @@ defineProps<{
   totalPages: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
+  processing?: boolean;
 }>();
 
 const emit = defineEmits<{
   retry: [taskId: number];
+  syncNow: [];
   firstPage: [];
   prevPage: [];
   nextPage: [];
@@ -31,6 +35,22 @@ const emit = defineEmits<{
     tabindex="0"
     class="outline-none"
   >
+    <div
+      v-if="canMutate"
+      class="mb-3 flex justify-end"
+    >
+      <BaseButton
+        variant="ghost"
+        size="sm"
+        class="gap-1.5"
+        :disabled="loading || processing"
+        aria-label="process sync queue now"
+        @click="emit('syncNow')"
+      >
+        <SyncIcon class-name="size-3.5" />
+        Sync now
+      </BaseButton>
+    </div>
     <TaskSyncQueue
       :items="items"
       :loading="loading"

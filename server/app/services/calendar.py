@@ -44,7 +44,8 @@ def _build_event_body(
         "reminders": {
             "useDefault": False,
             "overrides": [
-                {"method": "popup", "minutes": m} for m in minutes if m > 0
+                # Include 0 so Calendar fires with the at-start Telegram ping.
+                {"method": "popup", "minutes": m} for m in minutes if m >= 0
             ],
         },
     }
@@ -111,7 +112,7 @@ async def _reminder_minutes_for_task(
         if rem.sent:
             continue
         delta_minutes = int((scheduled - as_utc(rem.remind_at)).total_seconds() // 60)
-        if delta_minutes > 0 and delta_minutes not in seen:
+        if delta_minutes >= 0 and delta_minutes not in seen:
             seen.add(delta_minutes)
             minutes.append(delta_minutes)
     return minutes

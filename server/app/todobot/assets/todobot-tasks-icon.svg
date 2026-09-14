@@ -1,0 +1,15 @@
+<!-- Todobot profile mark: checklist / tasks icon.
+     Export: use todobot-tasks-icon.png (512x512) in BotFather ’ Edit Botpic.
+     Telegram does not accept SVG for bot profile photos. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tasks checklist">
+  <rect width="512" height="512" rx="112" fill="#1F6FEB"/>
+  <rect x="96" y="88" width="320" height="336" rx="36" fill="#FFFFFF"/>
+  <rect x="136" y="148" width="40" height="40" rx="8" fill="none" stroke="#1F6FEB" stroke-width="12"/>
+  <path d="M144 168 L152 178 L172 152" fill="none" stroke="#1F6FEB" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="200" y="158" width="168" height="20" rx="10" fill="#1F6FEB" opacity="0.85"/>
+  <rect x="136" y="236" width="40" height="40" rx="8" fill="none" stroke="#1F6FEB" stroke-width="12"/>
+  <path d="M144 256 L152 266 L172 240" fill="none" stroke="#1F6FEB" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="200" y="246" width="168" height="20" rx="10" fill="#1F6FEB" opacity="0.85"/>
+  <rect x="136" y="324" width="40" height="40" rx="8" fill="none" stroke="#94A3B8" stroke-width="12"/>
+  <rect x="200" y="334" width="140" height="20" rx="10" fill="#94A3B8"/>
+</svg>

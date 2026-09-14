@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import ClockIcon from "@/components/icons/ClockIcon.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
@@ -73,25 +74,37 @@ const emit = defineEmits<{
         </span>
       </div>
 
-      <section>
-        <h3 class="text-sm font-medium text-surface-mid mb-2">ingredients</h3>
-        <ul class="text-sm text-surface-light space-y-1">
-          <li v-for="(ing, i) in recipe.ingredients" :key="i" class="flex gap-2">
-            <span class="text-accent-blue shrink-0">·</span>
-            <span>{{ ing }}</span>
-          </li>
-        </ul>
-      </section>
+      <div :key="`${recipe.id}-${open}`" class="space-y-3">
+        <details class="group rounded border border-surface-border" open>
+          <summary
+            class="flex h-8 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+          >
+            <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
+            ingredients ({{ recipe.ingredients.length }})
+          </summary>
+          <ul class="space-y-1 border-t border-surface-border px-2 py-2 text-sm text-surface-light">
+            <li v-for="(ing, i) in recipe.ingredients" :key="i" class="flex gap-2">
+              <span class="text-accent-blue shrink-0">·</span>
+              <span>{{ ing }}</span>
+            </li>
+          </ul>
+        </details>
 
-      <section>
-        <h3 class="text-sm font-medium text-surface-mid mb-2">steps</h3>
-        <ol class="text-sm text-surface-light space-y-2">
-          <li v-for="(step, i) in recipe.steps" :key="i" class="flex gap-2">
-            <span class="text-accent-blue font-data shrink-0 w-5">{{ i + 1 }}.</span>
-            <span>{{ step }}</span>
-          </li>
-        </ol>
-      </section>
+        <details class="group rounded border border-surface-border">
+          <summary
+            class="flex h-8 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+          >
+            <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
+            steps ({{ recipe.steps.length }})
+          </summary>
+          <ol class="space-y-2 border-t border-surface-border px-2 py-2 text-sm text-surface-light">
+            <li v-for="(step, i) in recipe.steps" :key="i" class="flex gap-2">
+              <span class="w-5 shrink-0 font-data text-accent-blue">{{ i + 1 }}.</span>
+              <span>{{ step }}</span>
+            </li>
+          </ol>
+        </details>
+      </div>
 
       <section v-if="recipe.notes">
         <h3 class="text-sm font-medium text-surface-mid mb-2">notes</h3>

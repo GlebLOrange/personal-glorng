@@ -27,7 +27,7 @@ If `npm run dev` fails with a missing `@rolldown/binding-*` module (common when 
 | `make dev-bot` | bot + broker | Telegram todobot development |
 | `make dev-full` | worker + bot + broker + docker-client | Everything in Docker |
 
-Leave `ELASTICSEARCH_URL` empty for lite. MongoDB text search and optional Postgres FTS cover search without Elasticsearch. Default `.env.example` sets `CELERY_TASK_ALWAYS_EAGER=true` (emails, news ingest, sync, and beat schedules run **inside the API process**). For real queues and beat, run `make dev-worker` and set `CELERY_TASK_ALWAYS_EAGER=false`.
+Leave `ELASTICSEARCH_URL` empty for lite. MongoDB text search and optional Postgres FTS cover search without Elasticsearch. Default `.env.example` sets `CELERY_TASK_ALWAYS_EAGER=true` so on-demand Celery jobs (emails, reminders) run inline when dispatched. Calendar sync drain after enqueue / Retry / Sync now runs **in-process** via `process_sync_queue` (no worker required). Periodic beat schedules still need `make dev-worker` when `CELERY_TASK_ALWAYS_EAGER=false`. For real queues and beat, run `make dev-worker` and set `CELERY_TASK_ALWAYS_EAGER=false`.
 
 ## Services and ports
 

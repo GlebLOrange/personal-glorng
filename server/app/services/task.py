@@ -257,7 +257,13 @@ class TaskService:
             actor_type=actor_type,
             actor_id=actor_id,
         )
-        if reminder_minutes:
+        # Always ping at event start; optional early heads-up when minutes > 0.
+        await self.schedule_reminder_minutes_before(
+            task_id=task.id,
+            scheduled_at=scheduled_at,
+            minutes_before=0,
+        )
+        if reminder_minutes and reminder_minutes > 0:
             await self.schedule_reminder_minutes_before(
                 task_id=task.id,
                 scheduled_at=scheduled_at,
@@ -354,18 +360,57 @@ class TaskService:
             status_history=[StatusHistoryResponse.model_validate(h) for h in history],
         )
 
+    async def _kick_calendar_sync_drain(
+        self,
+        *,
+        context: dict[str, object] | None = None,
+    ) -> None:
+        """Drain due sync rows in-process (works without Celery worker/eager)."""
+        try:
+            from app.workers.tasks import process_sync_queue
+
+            await process_sync_queue()
+        except Exception as exc:
+            logger.warning(
+                "Failed to kick calendar sync drain",
+                error=exc,
+                context=context or {},
+            )
+
     async def retry_sync(self, task_id: int) -> int:
         items = await self._tasks().list_failed_sync_for_task(task_id)
         if not items:
             raise NotFoundError("No failed sync entries for this task")
 
+        now = datetime.now(UTC)
         for item in items:
             item.status = SyncStatus.PENDING
             item.attempts = 0
-            item.next_retry_at = datetime.now(UTC) + timedelta(seconds=5)
+            item.next_retry_at = now
             await self._tasks().update_sync(item)
 
+        await self._kick_calendar_sync_drain(context={"task_id": task_id})
         return len(items)
+
+    async def process_sync_queue_now(self) -> int:
+        """Arm pending sync rows and kick drain (admin Sync now)."""
+        now = datetime.now(UTC)
+        pending = await self._tasks().list_pending_sync(limit=_TASK_WORKER_BATCH_LIMIT)
+        for item in pending:
+            item.next_retry_at = now
+            await self._tasks().update_sync(item)
+
+        # process_sync_queue drains 10 per tick; loop kicks until idle or capped.
+        max_kicks = max(1, (len(pending) // 10) + 1)
+        for _ in range(max_kicks):
+            await self._kick_calendar_sync_drain(context={"armed": len(pending)})
+            due = await self._tasks().list_pending_sync_due(
+                now=datetime.now(UTC),
+                limit=1,
+            )
+            if not due:
+                break
+        return len(pending)
 
     async def get_pending_tasks(
         self,
@@ -434,10 +479,14 @@ class TaskService:
             task_id=task_id,
             action=action,
             status=SyncStatus.PENDING,
-            next_retry_at=datetime.now(UTC) + timedelta(seconds=5),
+            next_retry_at=datetime.now(UTC),
             google_event_id=google_event_id,
         )
-        return await self._tasks().enqueue_sync(entry)
+        entry = await self._tasks().enqueue_sync(entry)
+        await self._kick_calendar_sync_drain(
+            context={"task_id": task_id, "queue_id": entry.id},
+        )
+        return entry
 
     async def delete_old_tasks(self, *, months: int = 4) -> int:
         cutoff = datetime.now(UTC) - timedelta(days=months * 30)

@@ -70,3 +70,23 @@ async def test_enqueue_surfaces_broker_failure(
 
     with pytest.raises(ServiceUnavailableError, match="Unable to queue"):
         await queue.enqueue(JobName.SEND_REMINDER, 42)
+
+
+@pytest.mark.asyncio
+@patch("app.workers.queue.asyncio.to_thread")
+async def test_enqueue_process_sync_queue(
+    mock_to_thread: MagicMock,
+    queue: CeleryJobQueue,
+) -> None:
+    mock_to_thread.return_value = "sync-task"
+
+    result = await queue.enqueue(JobName.PROCESS_SYNC_QUEUE)
+
+    assert result == "sync-task"
+    mock_to_thread.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_enqueue_rejects_process_sync_with_args(queue: CeleryJobQueue) -> None:
+    with pytest.raises(ServiceUnavailableError):
+        await queue.enqueue(JobName.PROCESS_SYNC_QUEUE, 1)

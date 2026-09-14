@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta, timezone
 import pytest
 
 from app.core.exceptions import ApiError
-from app.core.utils import as_utc, format_scheduled_at, local_naive_to_utc
+from app.core.utils import as_utc, format_display_date, format_scheduled_at, local_naive_to_utc
 from app.db.documents.fileshare import SharedFile
 from app.db.registry import DatabaseRegistry
 from app.services import fileshare as fileshare_service
@@ -43,7 +43,12 @@ def test_local_naive_to_utc_passes_through_aware() -> None:
 def test_format_scheduled_at_uses_settings_timezone() -> None:
     # .env.test TIMEZONE=Europe/Warsaw; June is CEST (UTC+2)
     utc_value = datetime(2026, 6, 1, 10, 0, 0, tzinfo=UTC)
-    assert format_scheduled_at(utc_value) == "2026-06-01 12:00"
+    assert format_scheduled_at(utc_value) == "01.06.2026 12:00"
+
+
+def test_format_display_date_accepts_iso_and_date() -> None:
+    assert format_display_date("2026-06-01") == "01.06.2026"
+    assert format_display_date(datetime(2026, 6, 1).date()) == "01.06.2026"
 
 
 @pytest.mark.asyncio

@@ -171,6 +171,20 @@ export function useTasks() {
     await loadStats();
   }
 
+  async function processSyncQueueNow(): Promise<void> {
+    await runRetry(
+      async () => {
+        await api.post("/tools/tasks/sync-queue/process");
+      },
+      {
+        successMessage: "Sync queue drain started",
+        errorFallback: "Failed to process sync queue",
+      },
+    );
+    await loadSyncQueue();
+    await loadStats();
+  }
+
   async function updateTaskStatus(taskId: number, status: TaskStatus): Promise<void> {
     const result = await runStatusUpdate(
       async () => {
@@ -345,6 +359,7 @@ export function useTasks() {
     openDetail,
     closeDetail,
     retrySync,
+    processSyncQueueNow,
     updateTaskStatus,
     rescheduleTask,
     openCreate,
