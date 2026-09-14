@@ -160,6 +160,10 @@ Set in `.env`:
 
 Run `make reindex-search` after deploy or schema changes.
 
+### Firebase Analytics in production
+
+Set `VITE_FIREBASE_ENABLED=true` and the other `VITE_FIREBASE_*` IDs in host `.env`, then rebuild the client (`make prod`). Those values are Docker build args, not runtime env. Visitors still must accept the Analytics cookie category.
+
 ---
 
 ## Sentry releases (optional CI)

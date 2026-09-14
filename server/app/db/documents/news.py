@@ -49,3 +49,5 @@ class NewsSource(TimestampedDocument):
     enabled: bool = True
     last_error: str | None = None
     last_fetched_at: datetime | None = None
+    etag: str | None = None
+    last_modified: str | None = None

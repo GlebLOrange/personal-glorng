@@ -41,7 +41,7 @@ def groq_chat_service() -> None:
     def _service() -> GroqChatService:
         return GroqChatService(
             api_key="test-key",
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
         )
 
     app.dependency_overrides[get_groq_chat_service] = _service
@@ -143,7 +143,7 @@ async def test_ai_chat_streams_sse(
     assert 'data: {"delta": "Hi "}' in body
     assert 'data: {"delta": "there"}' in body
     assert '"done": true' in body
-    assert '"model": "llama-3.3-70b-versatile"' in body
+    assert '"model": "openai/gpt-oss-120b"' in body
 
 
 @pytest.fixture
@@ -191,7 +191,7 @@ async def test_ai_chat_config_returns_status_without_secret(
     body = resp.json()
     assert body["enabled"] is True
     assert body["configured"] is True
-    assert body["model"] == "llama-3.3-70b-versatile"
+    assert body["model"] == "openai/gpt-oss-120b"
     assert body["provider"] == "groq"
     assert body["base_url"] == GROQ_API_BASE_URL
     assert "api_key" not in body
@@ -258,7 +258,7 @@ async def test_groq_service_streams_text_deltas() -> None:
         'data: {"choices":[{"delta":{"content":" world"}}]}',
         "data: [DONE]",
     ]
-    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
+    service = GroqChatService(api_key="test-key", model="openai/gpt-oss-120b")
 
     with patch("app.services.ai_chat.httpx.AsyncClient", _fake_client(lines)):
         chunks = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
@@ -273,7 +273,7 @@ async def test_groq_service_skips_contentless_stream_chunks() -> None:
         'data: {"choices":[{"delta":{}}]}',
         'data: {"choices":[{"delta":{"content":"Hi"}}]}',
     ]
-    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
+    service = GroqChatService(api_key="test-key", model="openai/gpt-oss-120b")
 
     with patch("app.services.ai_chat.httpx.AsyncClient", _fake_client(lines)):
         chunks = [chunk async for chunk in service.stream(CHAT_PAYLOAD["messages"])]
@@ -288,7 +288,7 @@ async def test_groq_service_rejects_stream_without_text() -> None:
         'data: {"choices":[{"delta":{}}]}',
         "data: [DONE]",
     ]
-    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
+    service = GroqChatService(api_key="test-key", model="openai/gpt-oss-120b")
 
     with (
         pytest.raises(ApiError, match="no response text"),
@@ -326,7 +326,7 @@ def test_retry_after_seconds_reads_header() -> None:
 async def test_groq_service_retries_on_429_then_succeeds() -> None:
     """Retry short-lived Groq 429 when Retry-After is present."""
     lines = ['data: {"choices":[{"delta":{"content":"Hi"}}]}']
-    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
+    service = GroqChatService(api_key="test-key", model="openai/gpt-oss-120b")
 
     with (
         patch("app.services.ai_chat.asyncio.sleep", new_callable=AsyncMock),
@@ -343,7 +343,7 @@ async def test_groq_service_retries_on_429_then_succeeds() -> None:
 @pytest.mark.asyncio
 async def test_groq_service_raises_after_retry_exhausted() -> None:
     """Surface quota error after short-lived 429 retries are exhausted."""
-    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
+    service = GroqChatService(api_key="test-key", model="openai/gpt-oss-120b")
     max_attempts = GROQ_MAX_RETRIES + 1
 
     with (
@@ -360,7 +360,7 @@ async def test_groq_service_raises_after_retry_exhausted() -> None:
 @pytest.mark.asyncio
 async def test_groq_service_fails_fast_on_429_without_retry_after() -> None:
     """Do not burn extra quota when Groq omits a short retry hint."""
-    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
+    service = GroqChatService(api_key="test-key", model="openai/gpt-oss-120b")
     client_cls, call_state = _quota_error_client(retry_after=None)
 
     with (
@@ -375,7 +375,7 @@ async def test_groq_service_fails_fast_on_429_without_retry_after() -> None:
 @pytest.mark.asyncio
 async def test_groq_service_fails_fast_on_429_long_retry_after() -> None:
     """Do not wait out long quota windows inside one request."""
-    service = GroqChatService(api_key="test-key", model="llama-3.3-70b-versatile")
+    service = GroqChatService(api_key="test-key", model="openai/gpt-oss-120b")
     client_cls, call_state = _quota_error_client(retry_after="120")
 
     with (

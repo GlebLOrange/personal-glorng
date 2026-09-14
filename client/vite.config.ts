@@ -5,9 +5,19 @@ import { fileURLToPath, URL } from "node:url";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig, loadEnv } from "vite";
 
+function applyRepoRootViteEnv(mode: string): Record<string, string> {
+  const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+  const clientDir = fileURLToPath(new URL(".", import.meta.url));
+  const rootEnv = loadEnv(mode, repoRoot, "VITE_");
+  for (const [key, value] of Object.entries(rootEnv)) {
+    if (!process.env[key]) process.env[key] = value;
+  }
+  return { ...rootEnv, ...loadEnv(mode, clientDir, "") };
+}
+
 export default defineConfig(({ mode }) => {
-  // .env.* is not auto-injected into process.env inside vite.config — load explicitly.
-  const env = loadEnv(mode, process.cwd(), "");
+  // Client .env.* plus repo-root VITE_* (root .env is not Vite's default envDir).
+  const env = applyRepoRootViteEnv(mode);
   const apiProxyTarget =
     env.VITE_API_PROXY_TARGET || process.env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8000";
   const behindNginx =

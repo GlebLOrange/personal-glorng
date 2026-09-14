@@ -94,7 +94,7 @@ npm run test
 npm run build:check  # typecheck + production build
 ```
 
-Host Vite uses `client/.env.development` (`VITE_API_PROXY_TARGET=http://127.0.0.1:8000` by default).
+Host Vite uses `client/.env.development` (`VITE_API_PROXY_TARGET=http://127.0.0.1:8000` by default) and also applies `VITE_*` from repo-root `.env`.
 
 ## Telegram todobot
 

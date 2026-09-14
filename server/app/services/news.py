@@ -632,6 +632,27 @@ class NewsService:
         )
         return updated
 
+    async def record_source_fetch(
+        self,
+        source_id: int,
+        *,
+        last_error: str | None = None,
+        etag: str | None = None,
+        last_modified: str | None = None,
+        clear_error: bool = False,
+    ) -> NewsSource:
+        """Persist last-fetch metadata after an ingest attempt."""
+        fields: dict[str, object] = {"last_fetched_at": utc_now()}
+        if clear_error:
+            fields["last_error"] = None
+        elif last_error is not None:
+            fields["last_error"] = last_error[:500]
+        if etag is not None:
+            fields["etag"] = etag
+        if last_modified is not None:
+            fields["last_modified"] = last_modified
+        return await self._sources().update_fields(source_id, **fields)
+
     async def delete_source(
         self,
         source_id: int,

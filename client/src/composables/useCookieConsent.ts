@@ -9,6 +9,10 @@ import router from "@/router";
 let hasLoadedFirebaseAnalytics = false;
 let hasLoadedSentry = false;
 
+function isViteDev(): boolean {
+  return import.meta.env.MODE === "development";
+}
+
 function applyConsent(app: App): void {
   if (isSentryEnabled) {
     if (CookieConsent.acceptedCategory("monitoring")) {
@@ -20,7 +24,8 @@ function applyConsent(app: App): void {
   }
 
   if (isFirebaseAnalyticsEnabled) {
-    if (CookieConsent.acceptedCategory("analytics")) {
+    // ponytail: Vite `development` skips the consent gate so localhost hits reach GA.
+    if (isViteDev() || CookieConsent.acceptedCategory("analytics")) {
       hasLoadedFirebaseAnalytics = true;
       void import("@/services/firebase").then(({ initFirebaseAnalytics }) =>
         initFirebaseAnalytics(router),
@@ -153,4 +158,6 @@ export function setupCookieConsent(app: App): void {
       },
     },
   });
+
+  if (isViteDev()) applyConsent(app);
 }

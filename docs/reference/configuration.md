@@ -154,7 +154,7 @@ Smoke check: set endpoint + headers, hit `/api/health`, confirm the service appe
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `GROQ_API_KEY` | | Required when AI features enabled |
-| `GROQ_CHAT_MODEL` | `llama-3.3-70b-versatile` | Model id |
+| `GROQ_CHAT_MODEL` | `openai/gpt-oss-120b` | Model id |
 | `GROQ_API_BASE_URL` | `https://api.groq.com/openai/v1` | API base URL |
 | `AI_CHAT_ENABLED` | `true` | Admin AI chat |
 | `AI_SEARCH_ENABLED` | `true` | Public search chat |
@@ -217,11 +217,12 @@ Client mirrors: `VITE_AI_CHAT_ENABLED`, `VITE_AI_SEARCH_ENABLED`.
 
 ## Frontend dev (host Vite)
 
-Defaults in `client/.env.development`. Override via commented `VITE_*` block in `.env.example`:
+Defaults in `client/.env.development`. `VITE_*` from repo-root `.env` are also applied (used for Firebase Analytics). Override via the `VITE_*` block in `.env.example`:
 
 - `VITE_API_PROXY_TARGET` — API proxy target (`http://127.0.0.1:8000`)
 - `VITE_BEHIND_NGINX` — set when using nginx dev-lite
-- `VITE_FIREBASE_*`, `VITE_SENTRY_*`, `VITE_AI_*` — client feature toggles
+- `VITE_FIREBASE_*` — client Firebase / Analytics (`VITE_FIREBASE_ENABLED=true` plus IDs; baked into the prod client image)
+- `VITE_SENTRY_*`, `VITE_AI_*` — other client feature toggles
 
 ## Backups
 

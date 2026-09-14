@@ -53,12 +53,20 @@ export async function initFirebaseAnalytics(router: Router): Promise<void> {
 
   if (removeAnalyticsRouteHook) return;
 
-  removeAnalyticsRouteHook = router.afterEach((to) => {
+  const debugMode = import.meta.env.MODE === "development";
+  const emitPageView = (fullPath: string, title?: string): void => {
     if (!analytics) return;
     logEvent(analytics, "page_view", {
-      page_path: scrubSensitivePath(to.fullPath),
-      page_title: to.name?.toString(),
+      page_path: scrubSensitivePath(fullPath),
+      page_title: title,
+      ...(debugMode ? { debug_mode: true } : {}),
     });
+  };
+
+  const current = router.currentRoute.value;
+  emitPageView(current.fullPath, current.name?.toString());
+  removeAnalyticsRouteHook = router.afterEach((to) => {
+    emitPageView(to.fullPath, to.name?.toString());
   });
 }
 
