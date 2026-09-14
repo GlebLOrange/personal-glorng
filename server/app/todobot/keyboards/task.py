@@ -4,7 +4,7 @@ from datetime import datetime, time, timedelta
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from app.core.utils import local_now
+from app.core.utils import format_display_date, local_now
 
 _TIME_SLOTS = [
     ("Morning (09:00)", "🌅", "time:09:00", time(9, 0)),
@@ -25,11 +25,11 @@ def date_picker() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text=f"📅 Today ({today.strftime('%b %d')})",
+                    text=f"📅 Today ({format_display_date(today)})",
                     callback_data=f"date:{today.isoformat()}",
                 ),
                 InlineKeyboardButton(
-                    text=f"📅 Tomorrow ({tomorrow.strftime('%b %d')})",
+                    text=f"📅 Tomorrow ({format_display_date(tomorrow)})",
                     callback_data=f"date:{tomorrow.isoformat()}",
                 ),
             ],

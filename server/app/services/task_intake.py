@@ -9,7 +9,7 @@ from typing import Any
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.feature_flags import is_task_intake_ai_enabled
 from app.core.pagination import build_paginated
-from app.core.utils import DEFAULT_PER_PAGE, local_naive_to_utc, local_now, paginate_params
+from app.core.utils import DEFAULT_PER_PAGE, format_display_date, local_naive_to_utc, local_now, paginate_params
 from app.db.documents.task import IntakeStatus, Task, TaskIntake
 from app.db.documents.telegram import TelegramInboundMessage
 from app.db.registry import DatabaseRegistry
@@ -216,7 +216,7 @@ class TaskIntakeService:
     def build_confirmation_summary(self, draft: TaskDraft) -> str:
         lines = [f"*Task:* {draft.title or '—'}"]
         if draft.scheduled_date:
-            lines.append(f"*Date:* {draft.scheduled_date}")
+            lines.append(f"*Date:* {format_display_date(draft.scheduled_date)}")
         if draft.scheduled_time:
             lines.append(f"*Time:* {draft.scheduled_time}")
         if draft.location:
