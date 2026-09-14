@@ -343,13 +343,17 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Default: host Vite via host.docker.internal (make / make dev).
+      # docker-compose.docker-client.yml remounts nginx.conf for in-Docker Vite.
+      - ./nginx/nginx.dev-lite.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/http_common.conf:/etc/nginx/http_common.conf:ro
       - ./nginx/security_headers.conf:/etc/nginx/security_headers.conf:ro
       - ./nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
       - ./nginx/proxy_sse_params.conf:/etc/nginx/proxy_sse_params.conf:ro
       - ./nginx/locations.conf:/etc/nginx/locations.conf:ro
       - server_media:/app/media:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - frontend
       - backend
