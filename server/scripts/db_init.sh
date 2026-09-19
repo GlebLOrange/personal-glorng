@@ -97,15 +97,8 @@ if get_settings().RUN_SEED:
 raise SystemExit(1)
 PY
 then
-    echo "Running demo database seed..."
-    count="$(python - <<'PY'
-from app.settings import get_settings
-
-print(get_settings().SEED_DEMO_COUNT)
-PY
-)"
-    python -m app.db.seed_demo \
-        --count "$count" \
+    echo "Running database seed..."
+    python -m app.db.seed \
         --no-reset \
         --skip-if-populated
 fi

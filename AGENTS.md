@@ -31,7 +31,7 @@ For Elasticsearch-backed search, use `make dev-search` (add `-f docker-compose.s
 
 1. Copy env: `cp .env.example .env` and fill in all values (see `.env.example` for the full contract). Minimum secrets: `JWT_SECRET` (32+ chars), `REDIS_PASSWORD`, `MONGODB_PASSWORD`, and `SEED_PASSWORD`. Bootstrap knobs `RUN_MIGRATIONS` / `RUN_SEED` live in `.env` only—not Docker Compose overrides. **`SEED_PASSWORD` must satisfy the login password policy** (12+ chars with upper, lower, digit, and special char, e.g. `MyTestPass123!`) — the `.env.example` default `password_seed` seeds an admin that then cannot log in (the login schema rejects it). `seed_admin` skips existing users, so if you seeded with a bad password, recreate the DB (`docker compose ... down -v` then up) after fixing `SEED_PASSWORD`.
 2. Start backend: `make dev-lite` (or the lite compose command above with the cloud overlay).
-3. Seed admin: `make seed` with `SEED_PASSWORD` set.
+3. Seed admin + mock data: `make seed-db` with `SEED_PASSWORD` set.
 4. Backfill search index (first deploy or after schema changes): `make reindex-search`
 5. Frontend: `make dev-lite-client` → http://localhost (dev-lite nginx) or http://localhost:3000
 

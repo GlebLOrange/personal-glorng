@@ -85,7 +85,7 @@ Cloudflare edge (DNS, origin certs, Real-IP): [Cloudflare](/operations/cloudflar
 
 ```bash
 # Bootstrap admin once (requires SEED_PASSWORD in .env)
-make seed
+make seed-db
 
 # Backfill search index after first deploy or schema changes
 make reindex-search

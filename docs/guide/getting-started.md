@@ -17,7 +17,7 @@ cp .env.example .env
 make                   # terminal 1: mongodb, redis, API, nginx (lite default)
 make dev-lite-client   # terminal 2: Vite on :3000
 make db-init           # if migrate did not run on stack start
-make seed              # admin user (needs SEED_PASSWORD in .env)
+make seed-db           # admin + mock data (needs SEED_PASSWORD in .env)
 ```
 
 Open [http://localhost](http://localhost) (nginx + Vite) or [http://localhost:3000](http://localhost:3000).

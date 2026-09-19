@@ -53,27 +53,21 @@ flowchart TD
 | `make dev-postgres` | Adds Postgres profile for search/audit secondary |
 | `make db-init` | Run migrations (`docker compose run --rm migrate`) |
 | `make migrate` | Alias for `db-init` |
-| `make seed` | Idempotent admin + sample data (Mongo) |
-| `make seed-demo` | Bulk random demo data per platform tool (wipe + fill) |
-| `make seed-demo-add` | Append demo data without wiping |
-| `make seed-multicooker-recipes` | Fetch multicooker recipes from TheMealDB |
+| `make seed-db` | Admin + fixed-volume mock test data (Mongo; wipe + fill) |
+| `make seed-db-ultra-lite` | Same as `seed-db` against host ultra-lite API |
 
 ### Seed package layout
 
-Entrypoints (backward-compatible module paths unchanged):
-
 | Command | Module |
 |---------|--------|
-| `python -m app.db.seed` | Core dev seed — admin, sample recipes, expenses, tasks, news |
-| `python -m app.db.seed_demo` | Demo bulk seed per tool |
-| `python -m app.db.seed_multicooker_recipes` | External recipe import |
+| `python -m app.db.seed` | Unified seed — admin, demo users, mock tools, TheMealDB multicooker recipes |
 
 Implementation lives under [`server/app/db/seed/`](../../server/app/db/seed/):
 
-- `core/` — admin user, sample recipes (`data/sample_recipes.json`), expenses, tasks, news
-- `demo/tools/` — per-platform-tool demo seeders (recipes, expenses, tasks, feedback, URLs, news)
+- `core/` — thin `seed()` wrapper
+- `demo/` — orchestrator, reset helpers, per-tool seeders (recipes, expenses, tasks, feedback, URLs, news)
 - `builders/` — deterministic factories (`expense`, `task`, `demo`)
-- `cli/` — argparse wrappers for demo and multicooker scripts
+- `cli/multicooker.py` — TheMealDB multicooker recipe import (called from unified seed)
 
 First-time dev with seed:
 

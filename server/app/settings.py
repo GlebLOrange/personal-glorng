@@ -331,7 +331,6 @@ class Settings(BaseSettings):
     PRIMARY_DATABASE: Literal["mongodb"]
     RUN_MIGRATIONS: bool
     RUN_SEED: bool
-    SEED_DEMO_COUNT: int
 
     # Postgres (optional secondary store)
     POSTGRES_USER: str
