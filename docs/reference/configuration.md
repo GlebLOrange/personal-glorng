@@ -40,7 +40,6 @@ Keep `RUN_MIGRATIONS` / `RUN_SEED` in `.env` (or secrets) — avoid setting them
 | `PRIMARY_DATABASE` | `mongodb` | Primary backend name |
 | `RUN_MIGRATIONS` | `true` (dev) | Server-side migration on boot (dev only; prod uses `migrate` service) |
 | `RUN_SEED` | `true` (dev) | Seed on server boot (dev only) |
-| `SEED_DEMO_COUNT` | `50` | Demo seed volume |
 
 ## MongoDB
 
@@ -198,7 +197,7 @@ Client mirrors: `VITE_AI_CHAT_ENABLED`, `VITE_AI_SEARCH_ENABLED`.
 
 | Variable | Purpose |
 |----------|---------|
-| `ALLOWED_EMAIL` | Bootstrap admin email for `make seed` |
+| `ALLOWED_EMAIL` | Bootstrap admin email for `make seed-db` |
 | `SEED_PASSWORD` | Admin password for seed |
 | `E2E_EMAIL`, `E2E_PASSWORD` | Playwright credentials |
 

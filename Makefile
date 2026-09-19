@@ -1,6 +1,6 @@
 .PHONY: dev rebuild dev-lite dev-lite-client dev-docker docs-dev docs-build docs-generate adr-new
 .PHONY: dev-ultra-lite-infra dev-ultra-lite-server dev-search dev-postgres dev-worker dev-bot dev-full
-.PHONY: prod prod-cloudflare test lint lint-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed seed-ultra-lite seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
+.PHONY: prod prod-cloudflare test lint lint-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed-db seed-db-ultra-lite reindex-search backup backup-install db-pull-prod down logs bot-logs
 
 msg ?=
 TITLE ?=
@@ -119,20 +119,11 @@ db-downgrade:
 db-check:
 	docker compose $(COMPOSE_LITE) exec server alembic check
 
-seed:
+seed-db:
 	docker compose $(COMPOSE_LITE) exec server python -m app.db.seed
 
-seed-ultra-lite:
+seed-db-ultra-lite:
 	cd server && $(ULTRA_LITE_ENV) uv run python -m app.db.seed
-
-seed-multicooker-recipes:
-	docker compose $(COMPOSE_LITE) exec server python -m app.db.seed_multicooker_recipes
-
-seed-demo:
-	docker compose $(COMPOSE_LITE) exec server python -m app.db.seed_demo --count 50 --reset
-
-seed-demo-add:
-	docker compose $(COMPOSE_LITE) exec server python -m app.db.seed_demo --count 50 --no-reset
 
 reindex-search:
 	docker compose $(COMPOSE_LITE) exec server python scripts/reindex_search.py

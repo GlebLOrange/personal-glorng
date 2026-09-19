@@ -48,7 +48,7 @@ Leave `ELASTICSEARCH_URL` empty for lite. MongoDB text search and optional Postg
 |---------|-------------|
 | `make rebuild` | Rebuild images then start lite stack (after Dockerfile / lockfile changes) |
 | `make db-init` / `make migrate` | Run migrations |
-| `make seed` | Create admin + sample data |
+| `make seed-db` | Create admin + fixed-volume mock test data |
 | `make reindex-search` | Rebuild search index |
 | `make test` | Backend tests in Docker |
 | `make lint` / `make lint-check` | Ruff (fix / check-only) |
