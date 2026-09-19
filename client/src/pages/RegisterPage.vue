@@ -20,7 +20,6 @@ const email = ref("");
 const password = ref("");
 const passwordConfirm = ref("");
 const displayName = ref("");
-const timezone = ref(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
 const acceptTerms = ref(false);
 const loading = ref(false);
 const submitted = ref(false);
@@ -54,7 +53,8 @@ async function handleRegister(): Promise<void> {
       password: password.value,
       password_confirm: passwordConfirm.value,
       display_name: displayName.value.trim() || undefined,
-      timezone: timezone.value,
+      // ponytail: browser IANA zone — settings can change later; no register field
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
       accept_terms: acceptTerms.value,
     });
     submitted.value = true;
@@ -98,14 +98,6 @@ async function handleRegister(): Promise<void> {
         autocomplete="nickname"
         label="display name"
         placeholder="optional"
-      />
-      <BaseInput
-        v-model="timezone"
-        type="text"
-        name="timezone"
-        autocomplete="off"
-        label="timezone"
-        placeholder="Europe/Warsaw"
       />
       <PasswordFields
         v-model:password="password"

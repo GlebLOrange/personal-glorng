@@ -279,7 +279,7 @@ const routes: RouteRecordRaw[] = [
   { path: "/admin/tools/vid-download", redirect: { name: "vid-download" } },
   {
     path: "/admin/tools/currency",
-    redirect: { name: "tool-expenses", query: { tab: "calculator", mode: "convert" } },
+    redirect: { name: "tool-expenses", query: { tab: "converter", mode: "convert" } },
   },
   { path: "/admin/tools/file-share", redirect: { name: "tool-file-share" } },
   { path: "/admin/tools/tasks", redirect: { name: "tool-tasks" } },
@@ -403,10 +403,10 @@ router.beforeEach(async (to, _from, next) => {
           : typeof to.query.mode === "string"
             ? to.query.mode
             : "convert";
-      if (rawTab === "converter" || isCalculatorMode(rawTab)) {
+      if (rawTab === "converter" || rawTab === "calculator" || isCalculatorMode(rawTab)) {
         next({
           name: "tool-expenses",
-          query: { tab: "calculator", mode: normalizeCalculatorMode(rawTab) },
+          query: { tab: "converter", mode: normalizeCalculatorMode(rawTab) },
           replace: true,
         });
         return;

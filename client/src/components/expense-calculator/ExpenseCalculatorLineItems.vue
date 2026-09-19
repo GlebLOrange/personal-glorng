@@ -62,7 +62,7 @@ function onAddItem(): void {
         <li
           v-for="(item, index) in lineItems"
           :key="item.id"
-          class="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-3 items-end"
+          class="grid grid-cols-1 md:grid-cols-[1fr_minmax(9rem,11rem)_120px_auto] gap-3 items-end"
         >
           <BaseInput
             v-model="item.label"
@@ -80,7 +80,7 @@ function onAddItem(): void {
             inputmode="decimal"
             @keydown="onAmountEnter($event, index)"
           />
-          <BaseSelect v-model="item.currency" label="currency">
+          <BaseSelect v-model="item.currency" aria-label="currency">
             <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
           </BaseSelect>
           <IconCloseButton

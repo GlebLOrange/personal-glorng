@@ -45,7 +45,7 @@ describe("isSafeNavigationUrl", () => {
 describe("safeRouterPath", () => {
   it("allows same-origin relative paths", () => {
     expect(safeRouterPath("/tasks")).toBe("/tasks");
-    expect(safeRouterPath("/expenses?tab=insights")).toBe("/expenses?tab=insights");
+    expect(safeRouterPath("/expenses?tab=expenses")).toBe("/expenses?tab=expenses");
   });
 
   it("rejects protocol-relative and dangerous schemes", () => {

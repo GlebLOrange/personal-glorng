@@ -115,7 +115,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
     </div>
 
     <form
-      class="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(7rem,10rem)_1fr_minmax(5rem,6.5rem)_auto] sm:items-end"
+      class="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(7rem,10rem)_1fr_minmax(7rem,8.5rem)_auto] sm:items-end"
       @submit.prevent="emit('submit')"
     >
       <BaseSelect v-model="category" class="w-full" label="category">

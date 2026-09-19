@@ -39,10 +39,11 @@ defineExpose({ strength, passwordsMatch, valid });
     autocomplete="new-password"
     :label="passwordLabel"
     :placeholder="passwordPlaceholder"
-    :aria-describedby="describedById"
+    :aria-describedby="password ? describedById : undefined"
     required
   />
   <p
+    v-if="password"
     :id="describedById"
     class="text-xs"
     :class="strength.valid ? 'text-status-success' : 'text-surface-mid'"

@@ -47,8 +47,8 @@ const props = withDefaults(
     labelAlign?: "start" | "end";
   }>(),
   {
-    labelInside: true,
-    labelAlign: "start",
+    labelInside: false,
+    labelAlign: "end",
   },
 );
 
@@ -89,7 +89,11 @@ const showInsideLabel = computed(
   () => Boolean(props.labelInside && props.label) && !hasTypedValue.value,
 );
 const showTip = computed(
-  () => Boolean(props.placeholder) && !hasTypedValue.value && !showInsideLabel.value,
+  () =>
+    Boolean(props.placeholder) &&
+    !hasTypedValue.value &&
+    !showInsideLabel.value &&
+    !props.label,
 );
 /** Error replaces label on the border notch; hint rides beside the label when present. */
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);

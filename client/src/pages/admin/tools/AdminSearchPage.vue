@@ -115,31 +115,29 @@ onUnmounted(() => {
 
 <template>
   <AdminPageLayout title="search">
-    <div class="mb-6 space-y-2">
-      <div class="flex min-w-0 flex-wrap items-center gap-2">
-        <AdminFilterDropdown
-          ref="filterDropdown"
-          :has-active-filters="hasActiveFilters"
-          :active-label="activeFilterLabel"
-          :option-labels="sourceTypeOptions.map((option) => option.label)"
-          @clear="clearFilters"
-        >
-          <template #chips>
-            <AdminFilterChip
-              v-for="option in sourceTypeOptions"
-              :key="option.value"
-              :label="option.label"
-              :active="sourceType === option.value"
-              @click="setSourceTypeFilter(option.value)"
-            />
-          </template>
-        </AdminFilterDropdown>
-      </div>
+    <div class="mb-6 flex min-w-0 flex-wrap items-center gap-2">
+      <AdminFilterDropdown
+        ref="filterDropdown"
+        :has-active-filters="hasActiveFilters"
+        :active-label="activeFilterLabel"
+        :option-labels="sourceTypeOptions.map((option) => option.label)"
+        @clear="clearFilters"
+      >
+        <template #chips>
+          <AdminFilterChip
+            v-for="option in sourceTypeOptions"
+            :key="option.value"
+            :label="option.label"
+            :active="sourceType === option.value"
+            @click="setSourceTypeFilter(option.value)"
+          />
+        </template>
+      </AdminFilterDropdown>
       <SearchInput
         :model-value="query"
         placeholder="search (admin content)"
         aria-label="search admin content"
-        class="w-full"
+        class="min-w-0 flex-1"
         @update:model-value="onQueryChange"
       />
     </div>

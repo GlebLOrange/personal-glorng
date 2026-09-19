@@ -135,7 +135,7 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
 
   function openSmartText(): void {
     smartTextOpen.value = true;
-    switchTab("transactions");
+    switchTab("expenses");
     void nextTick(() => {
       quickAddRef.value?.focusSmartText();
     });
@@ -389,7 +389,7 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
       price: expense.amount,
       category: resolvedCategory(expense.category ?? lastCategory.value),
     };
-    switchTab("transactions");
+    switchTab("expenses");
     toast("Ready to add again — adjust if needed", "success");
     await nextTick();
     focusQuickAdd();

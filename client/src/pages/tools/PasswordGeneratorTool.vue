@@ -125,7 +125,7 @@ async function generatePassword(): Promise<void> {
   >
     <Card variant="ghost" class="mx-auto w-full max-w-md">
       <form class="space-y-3" @submit.prevent="generatePassword">
-        <div class="flex min-w-0 items-center gap-2">
+        <div class="flex min-w-0 items-center justify-start gap-2">
           <AdminFilterDropdown
             label="options"
             class="shrink-0"
@@ -180,31 +180,33 @@ async function generatePassword(): Promise<void> {
             :max="128"
             label="length"
             :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
-            class="w-20 shrink-0"
+            class="w-28 shrink-0"
           />
 
-          <BaseButton
-            variant="primary"
-            type="submit"
-            class="min-w-0 flex-1"
-            :disabled="loading || !hasCharset"
-          >
-            <span class="inline-grid justify-items-center">
-              <span class="invisible col-start-1 row-start-1" aria-hidden="true">generating…</span>
-              <span class="col-start-1 row-start-1">
-                {{ loading ? "generating…" : "generate" }}
+          <div class="ml-auto flex min-w-0 shrink-0 items-center gap-2">
+            <BaseButton
+              variant="primary"
+              type="submit"
+              class="min-w-0"
+              :disabled="loading || !hasCharset"
+            >
+              <span class="inline-grid justify-items-center">
+                <span class="invisible col-start-1 row-start-1" aria-hidden="true">generating…</span>
+                <span class="col-start-1 row-start-1">
+                  {{ loading ? "generating…" : "generate" }}
+                </span>
               </span>
-            </span>
-          </BaseButton>
+            </BaseButton>
 
-          <IconActionButton
-            family="1xx"
-            :aria-label="'reset options and clear generated password'"
-            title="reset state & clear password"
-            @click="resetState"
-          >
-            <RefreshIcon class-name="size-4" />
-          </IconActionButton>
+            <IconActionButton
+              family="1xx"
+              :aria-label="'reset options and clear generated password'"
+              title="reset state & clear password"
+              @click="resetState"
+            >
+              <RefreshIcon class-name="size-4" />
+            </IconActionButton>
+          </div>
         </div>
       </form>
 

@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
-import SettingsDeleteSection from "@/components/settings/SettingsDeleteSection.vue";
 import SettingsGithubSection from "@/components/settings/SettingsGithubSection.vue";
 import SettingsPreferencesSection from "@/components/settings/SettingsPreferencesSection.vue";
 import SettingsProfileSection from "@/components/settings/SettingsProfileSection.vue";
@@ -18,7 +16,6 @@ import type { GitHubStatus } from "@/types";
 import { passwordStrength } from "@/utils/passwordPolicy";
 
 const auth = useAuthStore();
-const router = useRouter();
 const { permissions } = usePermissions();
 const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPreferences();
 
@@ -30,8 +27,6 @@ const emailPassword = ref("");
 const currentPassword = ref("");
 const newPassword = ref("");
 const newPasswordConfirm = ref("");
-const deletePassword = ref("");
-const deleteConfirm = ref(false);
 const githubStatus = ref<GitHubStatus>({ linked: false, github_username: null });
 const githubLoading = ref(false);
 const githubError = ref<string | null>(null);
@@ -40,7 +35,6 @@ const { run: runEmail, loading: savingEmail } = useApiAction();
 const { run: runPassword, loading: savingPassword } = useApiAction();
 const { run: runPrefs, loading: savingPrefs } = useApiAction();
 const { run: runUnlinkGithub, loading: unlinkingGithub } = useApiAction();
-const { run: runDelete, loading: deleting } = useApiAction();
 
 const passwordCheck = computed(() => passwordStrength(newPassword.value));
 const profileDisplayName = computed(() => displayName.value.trim() || null);
@@ -75,9 +69,6 @@ const canSavePassword = computed(
     passwordCheck.value.valid &&
     passwordsMatch.value &&
     !savingPassword.value,
-);
-const canDeleteAccount = computed(
-  () => !!deletePassword.value && deleteConfirm.value && !deleting.value,
 );
 
 function syncFormFromUser(): void {
@@ -185,20 +176,6 @@ async function unlinkGithub(): Promise<void> {
   if (data) githubStatus.value = data;
 }
 
-async function deleteAccount(): Promise<void> {
-  if (!canDeleteAccount.value) return;
-  const ok = await runDelete(
-    async () => {
-      await auth.deleteAccount(deletePassword.value);
-      return true;
-    },
-    {
-      successMessage: "Account deleted",
-      errorMessage: "Account deletion failed",
-    },
-  );
-  if (ok) router.push("/");
-}
 </script>
 
 <template>
@@ -251,16 +228,6 @@ async function deleteAccount(): Promise<void> {
           @connect="connectGithub"
           @unlink="unlinkGithub"
           @retry="loadGithubStatus"
-        />
-      </div>
-
-      <div class="md:col-span-2">
-        <SettingsDeleteSection
-          v-model:delete-password="deletePassword"
-          v-model:delete-confirm="deleteConfirm"
-          :deleting="deleting"
-          :can-delete="canDeleteAccount"
-          @delete="deleteAccount"
         />
       </div>
     </div>

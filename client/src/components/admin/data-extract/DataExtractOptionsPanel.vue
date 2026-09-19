@@ -69,8 +69,6 @@ defineProps<{
         maxlength="4"
         placeholder="|"
         compact
-        :label-inside="false"
-        label-align="end"
       />
 
       <BaseInput
@@ -83,8 +81,6 @@ defineProps<{
         maxlength="4"
         placeholder=";"
         compact
-        :label-inside="false"
-        label-align="end"
       />
 
       <BaseInput
@@ -95,8 +91,6 @@ defineProps<{
         label="xml row tag"
         hint="repeating element name, e.g. item or row"
         compact
-        :label-inside="false"
-        label-align="end"
       />
 
       <BaseSelect

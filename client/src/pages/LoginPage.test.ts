@@ -45,7 +45,7 @@ describe("LoginPage", () => {
 
     expect(wrapper.get('input[type="email"]').exists()).toBe(true);
     expect(wrapper.get('input[type="password"]').exists()).toBe(true);
-    // labelInside uses the label overlay (placeholders suppressed while empty)
+    // trailing labels stay visible; placeholder tips suppressed when labeled
     expect(wrapper.text()).toContain("email");
     expect(wrapper.text()).toContain("password");
     expect(wrapper.text()).not.toContain("you@example.com");

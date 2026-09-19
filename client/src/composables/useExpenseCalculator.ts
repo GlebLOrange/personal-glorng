@@ -90,7 +90,11 @@ export function useExpenseCalculator() {
   const activeMode = computed<ExpenseCalculatorMode>(() => {
     const tab = route.query.tab;
     const mode = route.query.mode;
-    if (tab === "calculator" && typeof mode === "string" && isCalculatorMode(mode)) {
+    if (
+      (tab === "converter" || tab === "calculator") &&
+      typeof mode === "string" &&
+      isCalculatorMode(mode)
+    ) {
       return mode;
     }
     if (typeof tab === "string" && isCalculatorMode(tab)) {
@@ -111,7 +115,7 @@ export function useExpenseCalculator() {
 
   function switchMode(mode: ExpenseCalculatorMode): void {
     if (route.name === "tool-expenses") {
-      void router.replace({ query: { ...route.query, tab: "calculator", mode } });
+      void router.replace({ query: { ...route.query, tab: "converter", mode } });
       return;
     }
     const { mode: _legacyMode, ...rest } = route.query;
@@ -313,7 +317,7 @@ export function useExpenseCalculator() {
   );
 
   onMounted(async () => {
-    // Public calculator only: normalize ?mode=X → ?tab=X. Admin uses tab=calculator&mode=X.
+    // Public calculator only: normalize ?mode=X → ?tab=X. Admin uses tab=converter&mode=X.
     if (route.name !== "tool-expenses") {
       const legacyMode = route.query.mode;
       if (

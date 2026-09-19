@@ -91,13 +91,13 @@ function editRecipeFromCard(recipe: Recipe): void {
     max-width="xl"
     :narrow="false"
   >
-    <div v-if="canWrite" class="mb-3 flex min-w-0 flex-wrap items-center justify-end gap-2">
-      <ToolbarPillButton family="2xx" :disabled="listLoading" @click="openCreate">
-        + recipe
-      </ToolbarPillButton>
-    </div>
-
     <RecipeFilters v-model:search="search">
+      <template v-if="canWrite" #actions>
+        <ToolbarPillButton family="2xx" :disabled="listLoading" @click="openCreate">
+          + recipe
+        </ToolbarPillButton>
+      </template>
+
       <div
         v-if="listLoading"
         class="flex flex-col gap-1"

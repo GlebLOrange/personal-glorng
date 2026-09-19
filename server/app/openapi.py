@@ -44,7 +44,7 @@ OPENAPI_TAGS: list[dict[str, str]] = [
     },
     {
         "name": "vid-download",
-        "description": "YouTube video metadata and download helpers.",
+        "description": "Video download helpers powered by yt-dlp.",
     },
     {"name": "ai-chat", "description": "Superuser-only plain LLM chat."},
     {

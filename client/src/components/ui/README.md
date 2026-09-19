@@ -116,4 +116,4 @@ Typography: IBM Plex Sans; use `font-data` for status codes, counts, and money.
 
 When tabs are shareable, sync with `router.replace({ query: { ...route.query, tab } })`.
 
-Examples: `ExpensesTool` (`?tab=insights`), `TasksPage` (`?tab=sync`).
+Examples: `ExpensesTool` (`?tab=expenses`), `TasksPage` (`?tab=sync`).

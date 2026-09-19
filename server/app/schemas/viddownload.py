@@ -1,24 +1,10 @@
 import re
-from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
+from app.core.url_safety import is_public_http_url
+
 _FORMAT_PATTERN = re.compile(r"^[a-zA-Z0-9+._/\[\]<=\s-]{1,100}$")
-_ALLOWED_VIDEO_HOSTS = frozenset(
-    {
-        "youtube.com",
-        "youtu.be",
-        "m.youtube.com",
-        "music.youtube.com",
-    }
-)
-
-
-def _normalize_host(hostname: str) -> str:
-    host = hostname.lower()
-    if host.startswith("www."):
-        return host[4:]
-    return host
 
 
 class VidDownloadRequest(BaseModel):
@@ -46,9 +32,9 @@ class VidDownloadRequest(BaseModel):
 
     @field_validator("url")
     @classmethod
-    def validate_video_host(cls, value: HttpUrl) -> HttpUrl:
-        host = urlparse(str(value)).hostname
-        if not host or _normalize_host(host) not in _ALLOWED_VIDEO_HOSTS:
-            msg = "URL host is not an allowed video provider"
+    def validate_public_url(cls, value: HttpUrl) -> HttpUrl:
+        """Accept any public http(s) URL; reject private/local targets (SSRF)."""
+        if not is_public_http_url(str(value)):
+            msg = "URL must be a public http(s) address"
             raise ValueError(msg)
         return value

@@ -1,4 +1,4 @@
-"""YouTube download tool. Public endpoint with strict rate and concurrency limits."""
+"""Video download tool via yt-dlp. Public endpoint with strict rate and concurrency limits."""
 
 import asyncio
 import mimetypes
@@ -141,7 +141,7 @@ def _stream_and_cleanup(path: Path, tmp_dir: str) -> Generator[bytes]:
 @router.post(
     "",
     summary="Download video via yt-dlp",
-    description="Public YouTube download (rate limited).",
+    description="Public video download via yt-dlp (rate limited).",
     dependencies=[Depends(rate_limit_vid_download)],
 )
 async def download_video(

@@ -195,6 +195,13 @@ onMounted(() => {
             </template>
           </AdminFilterDropdown>
 
+          <SearchInput
+            v-if="activeTab === 'queue'"
+            v-model="searchQuery"
+            class="min-w-0 flex-1"
+            placeholder="search tasks"
+          />
+
           <AdminTabBar
             flush
             panel-id-prefix="tasks-tab"
@@ -215,12 +222,9 @@ onMounted(() => {
           </ToolbarPillButton>
         </div>
 
-        <template v-if="activeTab === 'queue'">
-          <SearchInput v-model="searchQuery" class="w-full" placeholder="search tasks" />
-          <p v-if="!isSuperuser" class="text-xs text-surface-mid">
-            View only — creating and status changes need superuser.
-          </p>
-        </template>
+        <p v-if="activeTab === 'queue' && !isSuperuser" class="text-xs text-surface-mid">
+          View only — creating and status changes need superuser.
+        </p>
       </div>
 
       <TasksListPanel

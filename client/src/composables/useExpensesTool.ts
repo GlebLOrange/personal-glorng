@@ -17,15 +17,23 @@ import { useUserPreferences } from "@/composables/useUserPreferences";
 export type { ExpenseCalculatorMode, ExpenseQuickAddTarget };
 export { isCalculatorMode, normalizeCalculatorMode };
 
-export type ExpenseTab = "transactions" | "insights" | "calculator" | "settings";
+export type ExpenseTab = "expenses" | "categories" | "converter";
 
-const EXPENSE_TABS: ExpenseTab[] = ["transactions", "insights", "calculator", "settings"];
+const EXPENSE_TABS: ExpenseTab[] = ["expenses", "categories", "converter"];
+
+/** Legacy ?tab= values → current tab ids. */
+const TAB_ALIASES: Record<string, ExpenseTab> = {
+  transactions: "expenses",
+  insights: "expenses",
+  settings: "categories",
+  calculator: "converter",
+  converter: "converter",
+};
 
 const TAB_LABELS: Record<ExpenseTab, string> = {
-  transactions: "transactions",
-  insights: "insights",
-  calculator: "calculator",
-  settings: "settings",
+  expenses: "expenses",
+  categories: "categories",
+  converter: "currency converter",
 };
 
 export const expenseTabItems = EXPENSE_TABS.map((tab) => ({
@@ -33,9 +41,20 @@ export const expenseTabItems = EXPENSE_TABS.map((tab) => ({
   label: TAB_LABELS[tab],
 }));
 
-/** True when the top-level expenses tab is the nested calculator panel. */
+/** True when the top-level expenses tab is the currency converter panel. */
+export function isConverterTab(tab: string): boolean {
+  return tab === "converter";
+}
+
+/** @deprecated Prefer isConverterTab */
 export function isCalculatorTab(tab: string): boolean {
-  return tab === "calculator";
+  return isConverterTab(tab) || tab === "calculator";
+}
+
+function resolveExpenseTab(value: unknown): ExpenseTab | null {
+  if (typeof value !== "string") return null;
+  if (EXPENSE_TABS.includes(value as ExpenseTab)) return value as ExpenseTab;
+  return TAB_ALIASES[value] ?? null;
 }
 
 /**
@@ -45,7 +64,7 @@ export function isCalculatorTab(tab: string): boolean {
 export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> = ref(null)) {
   const route = useRoute();
   const router = useRouter();
-  const activeTab = ref<ExpenseTab>("transactions");
+  const activeTab = ref<ExpenseTab>("expenses");
 
   const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPreferences();
 
@@ -54,36 +73,47 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
 
   const categorySettings = useExpenseCategorySettings(() => reloadAfterMutation());
 
-  function parseExpenseTab(value: unknown): ExpenseTab | null {
-    if (typeof value !== "string") return null;
-    return EXPENSE_TABS.includes(value as ExpenseTab) ? (value as ExpenseTab) : null;
-  }
-
   function syncTabFromRoute(): void {
     const raw = route.query.tab;
     if (typeof raw === "string" && (isCalculatorMode(raw) || raw === "converter")) {
       const mode = normalizeCalculatorMode(raw);
-      activeTab.value = "calculator";
-      void router.replace({ query: { ...route.query, tab: "calculator", mode } });
+      activeTab.value = "converter";
+      void router.replace({ query: { ...route.query, tab: "converter", mode } });
       return;
     }
-    const tab = parseExpenseTab(raw);
-    if (tab) activeTab.value = tab;
+    const tab = resolveExpenseTab(raw);
+    if (!tab) return;
+    activeTab.value = tab;
+    // Canonicalize legacy aliases in the URL.
+    if (typeof raw === "string" && raw !== tab) {
+      if (tab === "converter") {
+        const existing =
+          typeof route.query.mode === "string"
+            ? normalizeCalculatorMode(route.query.mode)
+            : "convert";
+        void router.replace({ query: { ...route.query, tab: "converter", mode: existing } });
+        return;
+      }
+      const { mode: _mode, ...rest } = route.query;
+      const hash = raw === "insights" ? "#expenses-analytics" : undefined;
+      void router.replace({ query: { ...rest, tab }, hash });
+    }
   }
 
   function switchTab(tab: string): void {
-    if (!EXPENSE_TABS.includes(tab as ExpenseTab)) return;
-    activeTab.value = tab as ExpenseTab;
-    if (tab === "calculator") {
+    const resolved = resolveExpenseTab(tab);
+    if (!resolved) return;
+    activeTab.value = resolved;
+    if (resolved === "converter") {
       const existing =
         typeof route.query.mode === "string"
           ? normalizeCalculatorMode(route.query.mode)
           : "convert";
-      void router.replace({ query: { ...route.query, tab: "calculator", mode: existing } });
+      void router.replace({ query: { ...route.query, tab: "converter", mode: existing } });
       return;
     }
     const { mode: _mode, ...rest } = route.query;
-    void router.replace({ query: { ...rest, tab } });
+    void router.replace({ query: { ...rest, tab: resolved } });
   }
 
   const transactions = useExpenseTransactions({
@@ -155,7 +185,6 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
     newCategoryName: categorySettings.newCategoryName,
     editingCategoryId: categorySettings.editingCategoryId,
     editingCategoryName: categorySettings.editingCategoryName,
-    editingCategoryBudget: categorySettings.editingCategoryBudget,
     categoryOptions: categorySettings.categoryOptions,
     addCategory: categorySettings.addCategory,
     startEditCategory: categorySettings.startEditCategory,

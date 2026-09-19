@@ -5,11 +5,12 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_viddownload_rejects_disallowed_host(auth_client: AsyncClient) -> None:
+async def test_viddownload_rejects_private_host(auth_client: AsyncClient) -> None:
+    """Private/local URLs stay blocked for SSRF prevention."""
     resp = await auth_client.post(
         "/api/tools/vid-download",
         json={
-            "url": "https://example.com/video",
+            "url": "https://127.0.0.1/video",
             "format": "best",
             "audio_only": False,
         },
@@ -50,10 +51,10 @@ async def test_viddownload_public_access(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_viddownload_youtube_url_passes_validation(
+async def test_viddownload_any_public_url_passes_validation(
     auth_client: AsyncClient,
 ) -> None:
-    """Valid YouTube URLs pass schema checks; yt-dlp failure returns 502."""
+    """Non-YouTube public URLs pass schema checks; yt-dlp failure returns 502."""
     with patch(
         "app.routers.tools.viddownload._run_download",
         new_callable=AsyncMock,
@@ -62,7 +63,7 @@ async def test_viddownload_youtube_url_passes_validation(
         resp = await auth_client.post(
             "/api/tools/vid-download",
             json={
-                "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                "url": "https://example.com/watch?v=abc",
                 "format": "best",
                 "audio_only": False,
             },
