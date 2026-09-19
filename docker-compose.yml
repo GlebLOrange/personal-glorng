@@ -149,8 +149,11 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+      target: dev
     entrypoint: ["/bin/sh", "/app/scripts/db_init.sh"]
     volumes:
+      - ./server:/app
+      - server_venv:/app/.venv
       - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app

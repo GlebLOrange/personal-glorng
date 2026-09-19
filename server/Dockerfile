@@ -35,6 +35,10 @@ ENV UV_COMPILE_BYTECODE=1 \
     UV_PYTHON_DOWNLOADS=never \
     PATH="/app/.venv/bin:$PATH"
 
+# Bake builder venv so first start skips compiling pydantic-core/grpcio on Alpine.
+COPY --from=builder /app/.venv /app/.venv
+RUN touch /app/.venv/.deps-synced
+
 COPY docker-entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
