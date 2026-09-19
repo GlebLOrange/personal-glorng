@@ -41,29 +41,29 @@ async function submit(): Promise<void> {
 
 <template>
   <form @submit.prevent="submit">
-    <div class="mb-4 flex min-w-0 flex-wrap items-center gap-2">
-      <h2 class="flex items-center gap-2 text-lg font-bold text-surface-light">
-        <slot name="heading" />
-        <FieldHelp v-if="props.helperText" :text="props.helperText" />
-      </h2>
+    <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-surface-light">
+      <slot name="heading" />
+      <FieldHelp v-if="props.helperText" :text="props.helperText" />
+    </h2>
+    <div class="flex min-w-0 items-center gap-2">
+      <BaseInput
+        id="weather-city"
+        v-model="city"
+        placeholder="location (3+ chars)"
+        class="min-w-0 flex-1"
+        aria-label="location"
+        :minlength="SEARCH_MIN_QUERY_LENGTH"
+        :error="error ?? undefined"
+      />
       <ToolbarPillButton
         type="submit"
         family="2xx"
-        class="ml-auto"
+        class="shrink-0"
         aria-label="add location"
         :disabled="!canSubmit"
       >
         {{ saving ? "adding…" : "+ location" }}
       </ToolbarPillButton>
     </div>
-    <BaseInput
-      id="weather-city"
-      v-model="city"
-      placeholder="location (3+ chars)"
-      class="min-w-0 w-full"
-      aria-label="location"
-      :minlength="SEARCH_MIN_QUERY_LENGTH"
-      :error="error ?? undefined"
-    />
   </form>
 </template>

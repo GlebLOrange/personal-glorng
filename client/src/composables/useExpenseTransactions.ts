@@ -170,7 +170,11 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
     price: "",
     category: lastCategory.value,
     product: "",
+    expense_date: isoDateLocal(),
   });
+
+  const quickAddNameError = ref<string | null>(null);
+  const quickAddAmountError = ref<string | null>(null);
 
   const form = ref({
     tool_name: "",
@@ -223,9 +227,12 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
   function resetQuickAdd(): void {
     quickAdd.value = {
       price: "",
-      category: resolvedCategory(lastCategory.value),
+      category: lastCategory.value,
       product: "",
+      expense_date: isoDateLocal(),
     };
+    quickAddNameError.value = null;
+    quickAddAmountError.value = null;
   }
 
   async function postExpense(payload: {
@@ -251,16 +258,16 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
 
   async function saveExpense(): Promise<void> {
     if (!form.value.tool_name.trim()) {
-      toast("Product is required", "error");
+      toast("Name is required", "error");
       return;
     }
     if (!form.value.amount || !form.value.expense_date) {
-      toast("Price and date are required", "error");
+      toast("Amount and date are required", "error");
       return;
     }
     const amount = parseFloat(form.value.amount);
     if (Number.isNaN(amount) || amount <= 0) {
-      toast("Price must be greater than zero", "error");
+      toast("Amount must be greater than zero", "error");
       return;
     }
 
@@ -288,25 +295,44 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
 
   async function quickSaveExpense(): Promise<void> {
     const product = quickAdd.value.product.trim();
-    if (!product) {
-      toast("Enter a product name", "error");
-      return;
-    }
-
     const amount = parseFloat(quickAdd.value.price);
-    if (Number.isNaN(amount) || amount <= 0) {
-      toast("Enter a valid price", "error");
-      return;
+    let hasError = false;
+
+    if (!product) {
+      quickAddNameError.value = "Name is required";
+      hasError = true;
+    } else {
+      quickAddNameError.value = null;
     }
 
-    const category = resolvedCategory(quickAdd.value.category);
+    if (Number.isNaN(amount) || amount <= 0) {
+      quickAddAmountError.value = "Enter a valid amount";
+      hasError = true;
+    } else {
+      quickAddAmountError.value = null;
+    }
+
+    if (!quickAdd.value.expense_date) {
+      toast("Date is required", "error");
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    const categoryName = quickAdd.value.category.trim();
+    const category = categoryName
+      ? categoryOptions.value.includes(categoryName)
+        ? categoryName
+        : resolvedCategory(categoryName)
+      : null;
+
     const ok = await runSaveExpense(
       async () => {
         await postExpense({
           tool_name: product,
           amount: amount.toFixed(2),
           currency: defaultCurrency(),
-          expense_date: isoDateLocal(),
+          expense_date: quickAdd.value.expense_date,
           category,
           notes: null,
         });
@@ -331,7 +357,7 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
       async () => {
         await postExpense({
           ...payload,
-          category: payload.category ? resolvedCategory(payload.category) : resolvedCategory(""),
+          category: payload.category ? resolvedCategory(payload.category) : null,
           notes: null,
         });
         return true;
@@ -387,8 +413,11 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
     quickAdd.value = {
       product: expense.tool_name,
       price: expense.amount,
-      category: resolvedCategory(expense.category ?? lastCategory.value),
+      category: expense.category ?? "",
+      expense_date: isoDateLocal(),
     };
+    quickAddNameError.value = null;
+    quickAddAmountError.value = null;
     switchTab("expenses");
     toast("Ready to add again — adjust if needed", "success");
     await nextTick();
@@ -442,7 +471,7 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
   });
 
   watch(defaultCategoryName, (name) => {
-    if (!categoryOptions.value.includes(quickAdd.value.category)) {
+    if (quickAdd.value.category && !categoryOptions.value.includes(quickAdd.value.category)) {
       quickAdd.value.category = name;
     }
   });
@@ -510,6 +539,8 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
     applyMonthPreset,
     quickAddCurrency,
     quickAdd,
+    quickAddNameError,
+    quickAddAmountError,
     form,
     formTitle,
     hasPreviousExpensePage,

@@ -27,6 +27,9 @@ const filtersOpen = defineModel<boolean>("filtersOpen", { required: true });
 const quickAddCategory = defineModel<string>("quickAddCategory", { required: true });
 const quickAddProduct = defineModel<string>("quickAddProduct", { required: true });
 const quickAddPrice = defineModel<string>("quickAddPrice", { required: true });
+const quickAddExpenseDate = defineModel<string>("quickAddExpenseDate", { required: true });
+const quickAddNameError = defineModel<string | null>("quickAddNameError", { required: true });
+const quickAddAmountError = defineModel<string | null>("quickAddAmountError", { required: true });
 
 defineProps<{
   canWrite: boolean;
@@ -99,6 +102,9 @@ defineExpose({
       v-model:category="quickAddCategory"
       v-model:product="quickAddProduct"
       v-model:price="quickAddPrice"
+      v-model:expense-date="quickAddExpenseDate"
+      v-model:name-error="quickAddNameError"
+      v-model:amount-error="quickAddAmountError"
       v-model:currency="displayCurrency"
       v-model:smart-text-open="smartTextOpen"
       :loading="savingExpense"

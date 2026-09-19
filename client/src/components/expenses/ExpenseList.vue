@@ -72,7 +72,7 @@ const sortButtonClass =
             </th>
             <th class="px-3" :aria-sort="sortAriaSort('product')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'product')">
-                product{{ sortIndicator("product") }}
+                name{{ sortIndicator("product") }}
               </button>
             </th>
             <th class="px-3 text-right" :aria-sort="sortAriaSort('amount')">
@@ -81,7 +81,7 @@ const sortButtonClass =
                 :class="[sortButtonClass, 'w-full justify-end text-right']"
                 @click="emit('sort', 'amount')"
               >
-                price{{ sortIndicator("amount") }}
+                amount{{ sortIndicator("amount") }}
               </button>
             </th>
             <th class="px-3">

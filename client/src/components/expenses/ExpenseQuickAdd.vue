@@ -17,8 +17,12 @@ const props = defineProps<{
 const category = defineModel<string>("category", { required: true });
 const product = defineModel<string>("product", { required: true });
 const price = defineModel<string>("price", { required: true });
+const expenseDate = defineModel<string>("expenseDate", { required: true });
 const currency = defineModel<CurrencyCode>("currency", { required: true });
 const smartTextOpen = defineModel<boolean>("smartTextOpen", { default: false });
+
+const nameError = defineModel<string | null>("nameError", { default: null });
+const amountError = defineModel<string | null>("amountError", { default: null });
 
 const emit = defineEmits<{
   submit: [];
@@ -115,29 +119,38 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
     </div>
 
     <form
-      class="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(7rem,10rem)_1fr_minmax(7rem,8.5rem)_auto] sm:items-end"
+      class="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(7rem,9rem)_1fr_minmax(6rem,7.5rem)_minmax(8rem,9rem)_auto] sm:items-end"
       @submit.prevent="emit('submit')"
     >
       <BaseSelect v-model="category" class="w-full" label="category">
+        <option value="">—</option>
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </BaseSelect>
       <BaseInput
-        id="expense-quick-product"
+        id="expense-quick-name"
         ref="productInputRef"
         v-model="product"
-        label="product"
+        label="name"
         list="expense-product-suggestions"
-        placeholder="qty and product name"
+        placeholder="e.g. groceries"
         autocomplete="off"
+        :error="nameError ?? undefined"
       />
       <BaseInput
         v-model="price"
         type="number"
         step="0.01"
         min="0.01"
-        label="price"
+        label="amount"
         placeholder="0.00"
         inputmode="decimal"
+        :error="amountError ?? undefined"
+      />
+      <BaseInput
+        v-model="expenseDate"
+        type="date"
+        label="date"
+        class="min-w-0 w-full"
       />
       <BaseButton variant="success" type="submit" :disabled="loading">
         {{ loading ? "saving…" : "save" }}

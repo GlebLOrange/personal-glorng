@@ -15,15 +15,20 @@ import {
 } from "@/composables/useExpenseCurrency";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExchangeRates } from "@/types";
+import {
+  readConverterSnapshot,
+  writeConverterSnapshot,
+} from "@/utils/expenseConverterStorage";
 
 const props = defineProps<{
   exchangeRates: ExchangeRates | null;
   ratesLoading: boolean;
 }>();
 
-const amount = ref("100");
-const fromCurrency = ref<CurrencyCode>("EUR");
-const toCurrency = ref<CurrencyCode>(EXPENSE_DEFAULT_CURRENCY);
+const restored = readConverterSnapshot();
+const amount = ref(restored.amount);
+const fromCurrency = ref<CurrencyCode>(restored.fromCurrency);
+const toCurrency = ref<CurrencyCode>(restored.toCurrency);
 const converted = ref<string | null>(null);
 const converting = ref(false);
 const ratesUpdatedAt = ref<string | null>(null);
@@ -33,7 +38,22 @@ const canConvert = computed(() => {
   return Number.isFinite(value) && value > 0;
 });
 
+const forwardRateLabel = computed(() => {
+  if (!props.exchangeRates) return null;
+  const rate = formatRate(props.exchangeRates.rates, fromCurrency.value, toCurrency.value);
+  if (rate === "N/A") return null;
+  return `1 ${fromCurrency.value} = ${rate} ${toCurrency.value}`;
+});
+
+const inverseRateLabel = computed(() => {
+  if (!props.exchangeRates) return null;
+  const rate = formatRate(props.exchangeRates.rates, toCurrency.value, fromCurrency.value);
+  if (rate === "N/A") return null;
+  return `1 ${toCurrency.value} = ${rate} ${fromCurrency.value}`;
+});
+
 let convertTimer: ReturnType<typeof setTimeout> | null = null;
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
 
 async function runConvert(): Promise<void> {
   if (!canConvert.value) {
@@ -63,8 +83,20 @@ function scheduleConvert(): void {
   }, 300);
 }
 
+function schedulePersist(): void {
+  if (persistTimer) clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    writeConverterSnapshot({
+      amount: String(amount.value),
+      fromCurrency: fromCurrency.value,
+      toCurrency: toCurrency.value,
+    });
+  }, 300);
+}
+
 onUnmounted(() => {
   if (convertTimer) clearTimeout(convertTimer);
+  if (persistTimer) clearTimeout(persistTimer);
 });
 
 function swapCurrencies(): void {
@@ -73,15 +105,20 @@ function swapCurrencies(): void {
   toCurrency.value = prev;
   converted.value = null;
   scheduleConvert();
+  schedulePersist();
 }
 
-watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
+watch([amount, fromCurrency, toCurrency], () => {
+  scheduleConvert();
+  schedulePersist();
+}, { immediate: true });
 </script>
 
 <template>
   <Card class="space-y-4">
     <p class="text-xs text-surface-mid">
-      Convert between EUR, USD, PLN, and BYN using live rates. Results update as you type.
+      Convert between EUR, USD, PLN, and BYN using live rates. Last amount and pair are remembered
+      on this device.
     </p>
 
     <BaseInput
@@ -94,33 +131,36 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
       inputmode="decimal"
     />
 
-    <div class="flex items-end gap-3">
-      <BaseSelect v-model="fromCurrency" label="from" class="min-w-0 flex-1">
+    <div
+      class="flex flex-col gap-3 sm:flex-row sm:items-end"
+    >
+      <BaseSelect v-model="fromCurrency" label="from" class="min-w-0 w-full sm:flex-1">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>
-      <IconActionButton
-        class="mb-0.5"
-        family="1xx"
-        aria-label="swap currencies"
-        @click="swapCurrencies"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="size-4"
-          aria-hidden="true"
+      <div class="flex justify-center sm:mb-0.5">
+        <IconActionButton
+          family="1xx"
+          aria-label="swap currencies"
+          @click="swapCurrencies"
         >
-          <path d="M8 8 4 12l4 4" />
-          <path d="M4 12h16" />
-          <path d="M16 8l4 4-4 4" />
-        </svg>
-      </IconActionButton>
-      <BaseSelect v-model="toCurrency" label="to" class="min-w-0 flex-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="size-4"
+            aria-hidden="true"
+          >
+            <path d="M8 8 4 12l4 4" />
+            <path d="M4 12h16" />
+            <path d="M16 8l4 4-4 4" />
+          </svg>
+        </IconActionButton>
+      </div>
+      <BaseSelect v-model="toCurrency" label="to" class="min-w-0 w-full sm:flex-1">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>
     </div>
@@ -145,6 +185,13 @@ watch([amount, fromCurrency, toCurrency], scheduleConvert, { immediate: true });
       <p v-if="converted && canConvert" class="text-sm text-surface-mid mt-1">
         {{ formatMoney(amount, fromCurrency) }} → {{ toCurrency }}
       </p>
+      <div
+        v-if="forwardRateLabel || inverseRateLabel"
+        class="mt-2 flex flex-col gap-0.5 text-xs text-surface-mid"
+      >
+        <span v-if="forwardRateLabel">{{ forwardRateLabel }}</span>
+        <span v-if="inverseRateLabel">{{ inverseRateLabel }}</span>
+      </div>
       <p v-if="ratesUpdatedAt" class="text-[10px] text-surface-mid mt-2">
         Rates updated {{ ratesUpdatedAt }}
       </p>

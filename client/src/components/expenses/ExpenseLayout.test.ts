@@ -26,18 +26,25 @@ const sampleSummary: ExpenseSummary = {
 };
 
 describe("expenses layout restore", () => {
-  it("keeps filters toolbar above tabs, tabs above the dashboard panel", () => {
-    const toolbarIdx = expensesToolSource.indexOf('v-if="showToolbar"');
+  it("keeps tabs above the dashboard panel and footer export/settings", () => {
     const tabIdx = expensesToolSource.indexOf("<AdminTabBar");
-    const addCategoryIdx = expensesToolSource.indexOf('activeTab === \'categories\' && canWriteExpenses');
     const dashboardIdx = expensesToolSource.indexOf("<ExpenseDashboardPanel");
-    expect(toolbarIdx).toBeGreaterThan(-1);
+    const footerIdx = expensesToolSource.indexOf("<footer");
+    const exportIdx = expensesToolSource.indexOf("export csv");
+    const settingsIdx = expensesToolSource.indexOf("settings");
     expect(tabIdx).toBeGreaterThan(-1);
-    expect(addCategoryIdx).toBeGreaterThan(-1);
     expect(dashboardIdx).toBeGreaterThan(-1);
-    expect(toolbarIdx).toBeLessThan(tabIdx);
-    expect(tabIdx).toBeLessThan(addCategoryIdx);
+    expect(footerIdx).toBeGreaterThan(-1);
     expect(tabIdx).toBeLessThan(dashboardIdx);
+    expect(dashboardIdx).toBeLessThan(footerIdx);
+    expect(exportIdx).toBeGreaterThan(footerIdx);
+    expect(settingsIdx).toBeGreaterThan(footerIdx);
+    expect(expensesToolSource).not.toMatch(/\+ expense/);
+  });
+
+  it("keeps the converter mounted after first visit", () => {
+    expect(expensesToolSource).toMatch(/converterMounted/);
+    expect(expensesToolSource).toMatch(/v-show="activeTab === 'converter'"/);
   });
 
   it("defers calculator composable and category settings until those tabs", () => {
@@ -50,7 +57,7 @@ describe("expenses layout restore", () => {
     );
   });
 
-  it("renders ExpenseFlow KPI strip: total, transactions, top category", () => {
+  it("renders a single total with transaction count", () => {
     const wrapper = mount(ExpenseSummaryCard, {
       props: {
         summary: sampleSummary,
@@ -59,13 +66,10 @@ describe("expenses layout restore", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Total Expenses");
-    expect(wrapper.text()).toContain("Transactions");
-    expect(wrapper.text()).toContain("Top Category");
+    expect(wrapper.text()).toContain("Total");
     expect(wrapper.text()).toContain("120.00 PLN");
-    expect(wrapper.text()).toContain("12");
-    expect(wrapper.text()).toContain("Groceries");
-    expect(wrapper.text()).not.toContain("Transport");
+    expect(wrapper.text()).toContain("12 transactions");
+    expect(wrapper.text()).not.toContain("Top Category");
   });
 
   it("flattens the period strip without a wrapping Card on the section", () => {
@@ -101,6 +105,7 @@ describe("expenses layout restore", () => {
     });
 
     expect(wrapper.find("section[aria-label='expense period summary']").exists()).toBe(true);
+    expect(wrapper.text()).toContain("Expenses");
     expect(wrapper.html()).not.toMatch(/class="[^"]*card/i);
   });
 });
