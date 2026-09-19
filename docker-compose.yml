@@ -149,8 +149,11 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+      target: dev
     entrypoint: ["/bin/sh", "/app/scripts/db_init.sh"]
     volumes:
+      - ./server:/app
+      - server_venv:/app/.venv
       - ./.env:/run/glorng/.env:ro
     environment:
       PYTHONPATH: /app
@@ -198,7 +201,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 300s
+      start_period: 60s
     develop:
       watch:
         - action: rebuild

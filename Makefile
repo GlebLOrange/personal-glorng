@@ -1,10 +1,11 @@
-.PHONY: dev dev-lite dev-lite-client dev-docker docs-dev docs-build docs-generate adr-new
+.PHONY: dev rebuild dev-lite dev-lite-client dev-docker docs-dev docs-build docs-generate adr-new
 .PHONY: dev-ultra-lite-infra dev-ultra-lite-server dev-search dev-postgres dev-worker dev-bot dev-full
 .PHONY: prod prod-cloudflare test lint lint-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed seed-ultra-lite seed-multicooker-recipes reindex-search backup backup-install db-pull-prod down logs bot-logs
 
 msg ?=
 TITLE ?=
 CHECK_DB ?= 1
+BUILD_FLAG ?=
 COMPOSE_CACHE = -f docker-compose.cache.yml
 COMPOSE_LITE = -f docker-compose.yml -f docker-compose.lite.yml $(COMPOSE_CACHE)
 COMPOSE_BASE_CACHE = -f docker-compose.yml $(COMPOSE_CACHE)
@@ -21,7 +22,10 @@ dev:
 	@echo "  http://localhost needs host Vite — run in another terminal: make dev-lite-client"
 	@echo "  Or use http://localhost:3000 after Vite is up (API docs: http://127.0.0.1:8000/api/docs)"
 	@echo ""
-	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) up --build $(LITE_SERVICES)
+	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) up $(BUILD_FLAG) $(LITE_SERVICES)
+
+rebuild:
+	@$(MAKE) BUILD_FLAG=--build dev
 
 dev-lite: dev
 
@@ -32,7 +36,7 @@ dev-docker:
 	@echo ""
 	@echo "dev-docker: full stack in Docker including Vite client container."
 	@echo ""
-	$(DOCKER_BUILD) docker compose $(COMPOSE_DOCKER) --profile docker-client up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_DOCKER) --profile docker-client up $(BUILD_FLAG)
 
 dev-ultra-lite-infra:
 	$(DOCKER_BUILD) $(COMPOSE_ULTRA) $(COMPOSE_CACHE) up -d mongodb redis redis-cache
@@ -42,19 +46,19 @@ dev-ultra-lite-server:
 	cd server && $(ULTRA_LITE_ENV) uv sync --frozen && $(ULTRA_LITE_ENV) uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir app --forwarded-allow-ips=127.0.0.1 --no-access-log
 
 dev-search:
-	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) -f docker-compose.search.yml --profile search up --build mongodb redis redis-cache elasticsearch server
+	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) -f docker-compose.search.yml --profile search up $(BUILD_FLAG) mongodb redis redis-cache elasticsearch server
 
 dev-postgres:
-	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) --profile postgres up --build mongodb redis redis-cache db server
+	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) --profile postgres up $(BUILD_FLAG) mongodb redis redis-cache db server
 
 dev-worker:
-	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) --profile worker --profile broker up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) --profile worker --profile broker up $(BUILD_FLAG)
 
 dev-bot:
-	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) --profile bot --profile broker up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_BASE_CACHE) --profile bot --profile broker up $(BUILD_FLAG)
 
 dev-full:
-	$(DOCKER_BUILD) docker compose $(COMPOSE_DOCKER) --profile worker --profile broker --profile bot --profile docker-client up --build
+	$(DOCKER_BUILD) docker compose $(COMPOSE_DOCKER) --profile worker --profile broker --profile bot --profile docker-client up $(BUILD_FLAG)
 
 prod:
 	$(DOCKER_BUILD) docker compose -f docker-compose.prod.yml $(COMPOSE_CACHE) up --build -d
@@ -90,7 +94,7 @@ endif
 	cd client && npm run lint && npm run format:check && npm run test && npm run build:check
 
 db-init:
-	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) run --rm --build migrate
+	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) run --rm migrate
 
 db-init-ultra-lite:
 	$(COMPOSE_ULTRA) run --rm migrate
@@ -100,7 +104,7 @@ migrate: db-init
 db-reset:
 	docker compose $(COMPOSE_LITE) --profile postgres down -v
 	docker compose $(COMPOSE_LITE) --profile postgres up -d db
-	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) run --rm --build migrate
+	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) run --rm migrate
 
 db-revision:
 	@test -n "$(msg)" || (echo "Usage: make db-revision msg='description'" && exit 1)

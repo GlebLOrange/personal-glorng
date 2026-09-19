@@ -11,6 +11,8 @@ make dev-lite-client   # terminal 2: Vite (:3000)
 
 `make` / `make dev` alone does **not** start Vite — [http://localhost:3000](http://localhost:3000) will refuse connections until `make dev-lite-client` runs. RabbitMQ and the Docker Vite client stay off.
 
+Daily `make` reuses the existing server image (app code is bind-mounted). Run `make rebuild` after `server/Dockerfile` or `server/uv.lock` changes.
+
 If `npm run dev` fails with a missing `@rolldown/binding-*` module (common when `client/node_modules` was installed inside a Linux devcontainer), run `npm install` in `client/` on your host OS and retry.
 
 ## Dev modes
@@ -44,6 +46,7 @@ Leave `ELASTICSEARCH_URL` empty for lite. MongoDB text search and optional Postg
 
 | Command | Description |
 |---------|-------------|
+| `make rebuild` | Rebuild images then start lite stack (after Dockerfile / lockfile changes) |
 | `make db-init` / `make migrate` | Run migrations |
 | `make seed` | Create admin + sample data |
 | `make reindex-search` | Rebuild search index |
