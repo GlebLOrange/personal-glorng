@@ -146,67 +146,77 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
           />
         </div>
       </div>
-      <table v-if="budgetRows.length" class="mt-4 w-full text-left text-xs">
-        <caption class="sr-only">
-          Category budget status
-        </caption>
-        <thead>
-          <tr class="text-surface-mid">
-            <th class="py-1 font-medium">category</th>
-            <th class="py-1 font-medium text-right">spent</th>
-            <th class="py-1 font-medium text-right">budget</th>
-            <th class="py-1 font-medium text-right">%</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="row in budgetRows"
-            :key="row.category"
-            class="border-t border-surface-border/50"
-          >
-            <td class="py-1.5 text-surface-light">{{ row.category }}</td>
-            <td class="py-1.5 text-right font-data">{{ formatMoney(row.spent, currency) }}</td>
-            <td class="py-1.5 text-right font-data">
-              {{ formatMoney(row.budget ?? 0, currency) }}
-            </td>
-            <td
-              class="py-1.5 text-right font-data"
-              :class="row.overBudget ? 'text-status-error' : 'text-surface-mid'"
+      <details v-if="budgetRows.length" class="mt-3 group">
+        <summary
+          class="cursor-pointer list-none text-xs text-surface-mid marker:content-none [&::-webkit-details-marker]:hidden"
+        >
+          <span class="underline-offset-2 group-open:underline">category budgets</span>
+        </summary>
+        <table class="mt-2 w-full text-left text-xs">
+          <caption class="sr-only">Category budget status</caption>
+          <thead>
+            <tr class="text-surface-mid">
+              <th class="py-1 font-medium">category</th>
+              <th class="py-1 font-medium text-right">spent</th>
+              <th class="py-1 font-medium text-right">budget</th>
+              <th class="py-1 font-medium text-right">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="row in budgetRows"
+              :key="row.category"
+              class="border-t border-surface-border/50"
             >
-              {{ row.percent }}%
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <td class="py-1.5 text-surface-light">{{ row.category }}</td>
+              <td class="py-1.5 text-right font-data">{{ formatMoney(row.spent, currency) }}</td>
+              <td class="py-1.5 text-right font-data">
+                {{ formatMoney(row.budget ?? 0, currency) }}
+              </td>
+              <td
+                class="py-1.5 text-right font-data"
+                :class="row.overBudget ? 'text-status-error' : 'text-surface-mid'"
+              >
+                {{ row.percent }}%
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </details>
     </Card>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card>
         <h3 class="mb-3 text-xs text-surface-mid">monthly trend</h3>
         <ExpenseLineChart :labels="lineChart.labels" :values="lineChart.values" />
-        <table class="mt-3 w-full text-left text-xs">
-          <caption class="sr-only">
-            Monthly totals
-          </caption>
-          <thead>
-            <tr class="text-surface-mid">
-              <th class="py-1 font-medium">period</th>
-              <th class="py-1 font-medium text-right">total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(label, i) in lineChart.labels"
-              :key="label"
-              class="border-t border-surface-border/50"
-            >
-              <td class="py-1.5 text-surface-light">{{ label }}</td>
-              <td class="py-1.5 text-right font-data">
-                {{ formatMoney(lineChart.values[i] ?? 0, currency) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <details class="mt-3 group">
+          <summary
+            class="cursor-pointer list-none text-xs text-surface-mid marker:content-none [&::-webkit-details-marker]:hidden"
+          >
+            <span class="underline-offset-2 group-open:underline">data table</span>
+          </summary>
+          <table class="mt-2 w-full text-left text-xs">
+            <caption class="sr-only">Monthly totals</caption>
+            <thead>
+              <tr class="text-surface-mid">
+                <th class="py-1 font-medium">period</th>
+                <th class="py-1 font-medium text-right">total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(label, i) in lineChart.labels"
+                :key="label"
+                class="border-t border-surface-border/50"
+              >
+                <td class="py-1.5 text-surface-light">{{ label }}</td>
+                <td class="py-1.5 text-right font-data">
+                  {{ formatMoney(lineChart.values[i] ?? 0, currency) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
       </Card>
 
       <Card>
@@ -216,31 +226,36 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
           :values="categorySeries.values"
           horizontal
         />
-        <table class="mt-3 w-full text-left text-xs">
-          <caption class="sr-only">
-            Spend by category
-          </caption>
-          <thead>
-            <tr class="text-surface-mid">
-              <th class="py-1 font-medium">category</th>
-              <th class="py-1 font-medium text-right">total</th>
-              <th class="py-1 font-medium text-right">%</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="row in categorySeries.rows"
-              :key="row.label"
-              class="border-t border-surface-border/50"
-            >
-              <td class="py-1.5 text-surface-light">{{ row.label }}</td>
-              <td class="py-1.5 text-right font-data">
-                {{ formatMoney(row.value, currency) }}
-              </td>
-              <td class="py-1.5 text-right font-data text-surface-mid">{{ row.percent }}%</td>
-            </tr>
-          </tbody>
-        </table>
+        <details class="mt-3 group">
+          <summary
+            class="cursor-pointer list-none text-xs text-surface-mid marker:content-none [&::-webkit-details-marker]:hidden"
+          >
+            <span class="underline-offset-2 group-open:underline">data table</span>
+          </summary>
+          <table class="mt-2 w-full text-left text-xs">
+            <caption class="sr-only">Spend by category</caption>
+            <thead>
+              <tr class="text-surface-mid">
+                <th class="py-1 font-medium">category</th>
+                <th class="py-1 font-medium text-right">total</th>
+                <th class="py-1 font-medium text-right">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in categorySeries.rows"
+                :key="row.label"
+                class="border-t border-surface-border/50"
+              >
+                <td class="py-1.5 text-surface-light">{{ row.label }}</td>
+                <td class="py-1.5 text-right font-data">
+                  {{ formatMoney(row.value, currency) }}
+                </td>
+                <td class="py-1.5 text-right font-data text-surface-mid">{{ row.percent }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
       </Card>
     </div>
 
@@ -254,31 +269,36 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
           :values="productSeries.values"
         />
       </div>
-      <table class="mt-3 w-full text-left text-xs">
-        <caption class="sr-only">
-          Spend by product
-        </caption>
-        <thead>
-          <tr class="text-surface-mid">
-            <th class="py-1 font-medium">product</th>
-            <th class="py-1 font-medium text-right">total</th>
-            <th class="py-1 font-medium text-right">%</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="row in productSeries.rows"
-            :key="row.label"
-            class="border-t border-surface-border/50"
-          >
-            <td class="py-1.5 text-surface-light">{{ row.label }}</td>
-            <td class="py-1.5 text-right font-data">
-              {{ formatMoney(row.value, currency) }}
-            </td>
-            <td class="py-1.5 text-right font-data text-surface-mid">{{ row.percent }}%</td>
-          </tr>
-        </tbody>
-      </table>
+      <details class="mt-3 group">
+        <summary
+          class="cursor-pointer list-none text-xs text-surface-mid marker:content-none [&::-webkit-details-marker]:hidden"
+        >
+          <span class="underline-offset-2 group-open:underline">data table</span>
+        </summary>
+        <table class="mt-2 w-full text-left text-xs">
+          <caption class="sr-only">Spend by product</caption>
+          <thead>
+            <tr class="text-surface-mid">
+              <th class="py-1 font-medium">product</th>
+              <th class="py-1 font-medium text-right">total</th>
+              <th class="py-1 font-medium text-right">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="row in productSeries.rows"
+              :key="row.label"
+              class="border-t border-surface-border/50"
+            >
+              <td class="py-1.5 text-surface-light">{{ row.label }}</td>
+              <td class="py-1.5 text-right font-data">
+                {{ formatMoney(row.value, currency) }}
+              </td>
+              <td class="py-1.5 text-right font-data text-surface-mid">{{ row.percent }}%</td>
+            </tr>
+          </tbody>
+        </table>
+      </details>
     </Card>
   </div>
   <EmptyState

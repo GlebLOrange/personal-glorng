@@ -210,6 +210,13 @@ export function useExpenseSummary(
     await Promise.all([loadExpenses(), loadSummary(), loadPreviousSummary()]);
   }
 
+  /** First paint: list + current summary; period-change + rates follow without blocking. */
+  async function bootstrapListAndSummary(): Promise<void> {
+    await Promise.all([loadExpenses(), loadSummary()]);
+    void loadPreviousSummary();
+    void loadRates();
+  }
+
   return {
     expenses,
     expenseTotal,
@@ -236,5 +243,6 @@ export function useExpenseSummary(
     loadSummary,
     loadPreviousSummary,
     reloadListAndSummary,
+    bootstrapListAndSummary,
   };
 }

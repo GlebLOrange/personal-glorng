@@ -12,7 +12,6 @@ from app.routers.health import router as health_router
 from app.routers.platform import router as platform_router
 from app.routers.resume import router as resume_router
 from app.routers.search import router as search_router
-from app.routers.spotify import router as spotify_router
 from app.routers.tools import tools_router
 from app.routers.weather import legacy_router as weather_legacy_router
 from app.routers.weather import router as weather_router
@@ -38,11 +37,6 @@ api_router.include_router(
     donations_router,
     prefix="/donations",
     tags=["donations"],
-)
-api_router.include_router(
-    spotify_router,
-    prefix="/spotify",
-    tags=["spotify"],
 )
 api_router.include_router(
     callbacks_router,

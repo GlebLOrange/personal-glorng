@@ -51,7 +51,6 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/resume` | resume | Get resume data |
 | `GET` | `/api/resume/pdf` | resume | Download resume PDF |
 | `GET` | `/api/search` | search | Keyword search over public indexed content |
-| `GET` | `/api/spotify/now-playing` | spotify | Get now playing |
 | `GET` | `/api/time-date-weather-location/config` | weather | Get Weather Config |
 | `GET` | `/api/time-date-weather-location/locations` | weather | List Weather Locations |
 | `POST` | `/api/time-date-weather-location/locations` | weather | Add saved location |
@@ -122,6 +121,7 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/tools/tasks/intakes` | tasks | List task intakes |
 | `GET` | `/api/tools/tasks/stats` | tasks | Get task statistics |
 | `GET` | `/api/tools/tasks/sync-queue` | tasks | List calendar sync queue |
+| `POST` | `/api/tools/tasks/sync-queue/process` | tasks | Process calendar sync queue now |
 | `GET` | `/api/tools/tasks/{task_id}` | tasks | Get task detail |
 | `PATCH` | `/api/tools/tasks/{task_id}` | tasks | Reschedule Task |
 | `POST` | `/api/tools/tasks/{task_id}/reminders` | tasks | Add Task Reminder |

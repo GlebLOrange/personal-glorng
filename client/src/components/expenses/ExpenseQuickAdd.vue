@@ -2,7 +2,6 @@
 import { computed, nextTick, ref, watch } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
-import { Card } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import { useExpenseParse } from "@/composables/useExpenseParse";
@@ -101,8 +100,8 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
 </script>
 
 <template>
-  <Card variant="compact" class="flex flex-col gap-3">
-    <div class="flex flex-wrap items-end justify-between gap-2">
+  <div class="flex flex-col gap-2 rounded-lg bg-surface-dark/40 px-3 py-2.5">
+    <div class="flex flex-wrap items-center justify-between gap-2">
       <p class="text-xs font-medium text-surface-mid">quick add</p>
       <BaseButton
         variant="ghost"
@@ -116,7 +115,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
     </div>
 
     <form
-      class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(8rem,12rem)_1fr_minmax(5.5rem,7rem)_auto] sm:items-end"
+      class="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(7rem,10rem)_1fr_minmax(5rem,6.5rem)_auto] sm:items-end"
       @submit.prevent="emit('submit')"
     >
       <BaseSelect v-model="category" class="w-full" label="category">
@@ -151,7 +150,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
     <div
       v-if="smartTextOpen"
       id="expense-smart-text"
-      class="flex flex-col gap-3 border-t border-surface-border pt-3"
+      class="flex flex-col gap-2 border-t border-surface-border/60 pt-2"
     >
       <BaseInput
         ref="smartTextInputRef"
@@ -186,5 +185,5 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         {{ loading ? "saving…" : parsing ? "parsing…" : "+ parsed expense" }}
       </BaseButton>
     </div>
-  </Card>
+  </div>
 </template>

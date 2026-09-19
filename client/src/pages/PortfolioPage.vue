@@ -7,16 +7,14 @@ import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
 import GitHubReposStrip from "@/components/resume/GitHubReposStrip.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
-import NowPlayingEmbed from "@/components/resume/NowPlayingEmbed.vue";
 import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
-import { useSpotifyNowPlaying } from "@/composables/useSpotifyNowPlaying";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
-import type { DonationsConfig, ResumeData } from "@/types";
+import type { DonationsConfig, PublicGitHubRepo, ResumeData } from "@/types";
 
 const FLAGSHIP_REPO_URL = "https://github.com/GlebLOrange/personal-glorng";
 /** ponytail: hide thin strip — hero already links the flagship; one card looks weak */
@@ -39,21 +37,24 @@ const {
   loading: donationsLoading,
   fetch: fetchDonations,
 } = useCachedApi<DonationsConfig>("/donations/config");
-const { playback, isVisible } = useSpotifyNowPlaying();
 const apiError = ref(false);
 const donationsError = ref(false);
 const donationsFetched = ref(false);
 const donationsStarted = ref(false);
 const contactModal = ref<"inquiry" | "feedback" | null>(null);
 const supportSectionRef = ref<HTMLElement | null>(null);
+/** Filled via GET /github/repos when /resume returned a cold-cache empty strip. */
+const githubReposExtra = ref<PublicGitHubRepo[] | null>(null);
 let supportObserver: IntersectionObserver | null = null;
+let cancelGithubIdle: (() => void) | null = null;
 
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
 const contactLinks = computed(() => buildContactLinks(resume.value.links));
 const education = computed(() => resume.value.education ?? []);
 const githubProfileUrl = computed(() => resume.value.links.github);
 const highlightedRepos = computed(() => {
-  const repos = resume.value.github?.repos ?? [];
+  const fromResume = resume.value.github?.repos ?? [];
+  const repos = fromResume.length > 0 ? fromResume : (githubReposExtra.value ?? []);
   const profileLogin = resume.value.github?.username?.toLowerCase() ?? "";
   const publicRepos = repos.filter((repo) => {
     if (repo.fork || repo.private) return false;
@@ -75,6 +76,26 @@ async function loadResume(): Promise<void> {
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
     apiError.value = true;
+  }
+}
+
+function runWhenIdle(task: () => void): () => void {
+  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+    const id = window.requestIdleCallback(() => task(), { timeout: 2500 });
+    return () => window.cancelIdleCallback(id);
+  }
+  const id = window.setTimeout(task, 0);
+  return () => window.clearTimeout(id);
+}
+
+async function loadGithubReposIfNeeded(): Promise<void> {
+  if ((resume.value.github?.repos.length ?? 0) > 0) return;
+  try {
+    const { api } = await import("@/composables/useApi");
+    const { data } = await api.get<PublicGitHubRepo[]>("/github/repos");
+    githubReposExtra.value = data;
+  } catch (err) {
+    if (import.meta.env.DEV) console.error(err);
   }
 }
 
@@ -111,11 +132,17 @@ function observeSupportSection(): void {
 }
 
 onMounted(() => {
-  void loadResume();
+  void loadResume().then(() => {
+    cancelGithubIdle = runWhenIdle(() => {
+      void loadGithubReposIfNeeded();
+    });
+  });
   void nextTick(() => observeSupportSection());
 });
 
 onUnmounted(() => {
+  cancelGithubIdle?.();
+  cancelGithubIdle = null;
   supportObserver?.disconnect();
   supportObserver = null;
 });
@@ -144,16 +171,7 @@ onUnmounted(() => {
         :github-url="githubProfileUrl"
         :repo-url="FLAGSHIP_REPO_URL"
         @inquire="contactModal = 'inquiry'"
-      >
-        <template #after-actions>
-          <NowPlayingEmbed
-            v-if="isVisible"
-            :playback="playback"
-            :height="80"
-            class="max-w-md mx-auto mt-8 print:hidden"
-          />
-        </template>
-      </HeroBlock>
+      />
     </SectionWrapper>
 
     <SectionWrapper id="about" title="about" width="full" dark alternate>

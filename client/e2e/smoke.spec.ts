@@ -164,9 +164,10 @@ test.describe("auth guards", () => {
     expect(new URL(page.url()).searchParams.get("redirect")).toBe("/admin");
   });
 
-  test("expenses redirects to tools when disabled", async ({ page }) => {
+  test("expenses requires login when enabled", async ({ page }) => {
     await page.goto("/expenses");
-    await expect(page).toHaveURL(/\/tools/);
+    await expect(page).toHaveURL(/\/login/);
+    expect(new URL(page.url()).searchParams.get("redirect")).toBe("/expenses");
   });
 });
 
@@ -187,5 +188,13 @@ test.describe("authenticated admin", () => {
     await expect(page.getByRole("heading", { name: /^§ tools$/i })).toBeVisible();
     await expect(page.locator('a[href="/admin/users"]')).toBeVisible();
     await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
+  });
+
+  test("expenses ledger loads after login", async ({ page }) => {
+    await loginAsAdmin(page);
+
+    await page.goto("/expenses");
+    await expect(page.getByRole("heading", { name: /^expenses$/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /transactions/i })).toBeVisible();
   });
 });

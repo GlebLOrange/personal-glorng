@@ -32,35 +32,40 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="mb-3 flex flex-col gap-3" aria-label="expense period summary">
-    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-      <div class="min-w-0">
-        <p class="text-xs text-surface-mid">period</p>
-        <p class="text-lg font-semibold text-surface-light">{{ monthLabel }}</p>
+  <section
+    class="flex flex-col gap-3 border-b border-surface-border/50 pb-3"
+    aria-label="expense period summary"
+  >
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+      <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <div class="min-w-0 shrink-0">
+          <p class="text-xs text-surface-mid">period</p>
+          <p class="text-base font-semibold text-surface-light">{{ monthLabel }}</p>
+        </div>
+        <ExpenseDateFilters
+          v-model:month-preset="monthPreset"
+          v-model:date-filter-mode="dateFilterMode"
+          v-model:selected-month="selectedMonth"
+          v-model:date-from="dateFrom"
+          v-model:date-to="dateTo"
+          :has-active-filters="hasActiveFilters"
+          @apply-preset="emit('applyPreset', $event)"
+          @clear-filters="emit('clearFilters')"
+        />
       </div>
-      <ExpenseDateFilters
-        v-model:month-preset="monthPreset"
-        v-model:date-filter-mode="dateFilterMode"
-        v-model:selected-month="selectedMonth"
-        v-model:date-from="dateFrom"
-        v-model:date-to="dateTo"
-        :has-active-filters="hasActiveFilters"
-        @apply-preset="emit('applyPreset', $event)"
-        @clear-filters="emit('clearFilters')"
+
+      <ExpenseSummaryCard
+        class="min-w-0 flex-1 lg:max-w-xl"
+        :summary="summary"
+        :expense-categories="expenseCategories"
+        :period-change="periodChange"
+        :format-money="formatMoney"
       />
     </div>
 
     <p v-if="rangeError" class="text-sm text-status-error" role="alert">
       {{ rangeError }}
     </p>
-
-    <ExpenseSummaryCard
-      :summary="summary"
-      :month-label="monthLabel"
-      :expense-categories="expenseCategories"
-      :period-change="periodChange"
-      :format-money="formatMoney"
-    />
 
     <div
       v-if="summaryError || ratesError"

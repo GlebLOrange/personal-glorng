@@ -107,6 +107,7 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
     loadSummary,
     loadPreviousSummary,
     reloadListAndSummary,
+    bootstrapListAndSummary,
   } = summaryHook;
 
   useScrollListFingerprint(() => {
@@ -493,6 +494,7 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
     loadRates,
     loadPreviousSummary,
     reloadListAndSummary,
+    bootstrapListAndSummary,
     reloadAfterMutation,
     monthPreset,
     dateFilterMode,

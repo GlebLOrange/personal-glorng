@@ -1,26 +1,30 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, useTemplateRef } from "vue";
 
-import ExpenseCategorySettings from "@/components/expenses/ExpenseCategorySettings.vue";
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
-import ExpenseCalculatorPanel from "@/components/expenses/ExpenseCalculatorPanel.vue";
 import ExpenseFormDrawer from "@/components/expenses/ExpenseFormDrawer.vue";
 import ExpenseLedgerHeader from "@/components/expenses/ExpenseLedgerHeader.vue";
 import ExpenseTransactionsPanel from "@/components/expenses/ExpenseTransactionsPanel.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import FilterIcon from "@/components/icons/FilterIcon.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import SearchInput from "@/components/ui/SearchInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { useExpenseCalculator } from "@/composables/useExpenseCalculator";
 import {
   isCalculatorTab,
   useExpensesTool,
   type ExpenseQuickAddTarget,
 } from "@/composables/useExpensesTool";
-import { buildPersistenceHint } from "@/utils/expensePersistenceHint";
+import { usePermissions } from "@/composables/usePermissions";
 
 const ExpenseInsights = defineAsyncComponent(
   () => import("@/components/expenses/ExpenseInsights.vue"),
+);
+const ExpenseCalculatorTab = defineAsyncComponent(
+  () => import("@/components/expenses/ExpenseCalculatorTab.vue"),
+);
+const ExpenseCategorySettings = defineAsyncComponent(
+  () => import("@/components/expenses/ExpenseCategorySettings.vue"),
 );
 
 const transactionsPanelRef = useTemplateRef<ExpenseQuickAddTarget>("transactionsPanelRef");
@@ -107,58 +111,13 @@ const {
   saveSmartExpense,
 } = useExpensesTool(transactionsPanelRef);
 
-const {
-  activeMode,
-  modeTabs,
-  switchMode,
-  exchangeRates: calculatorRates,
-  ratesLoading,
-  displayCurrency: calculatorDisplayCurrency,
-  lineItems,
-  budgetRows,
-  whatIfCategoryId,
-  whatIfAmount,
-  whatIfCurrency,
-  sumTotal,
-  budgetSummary,
-  whatIfProjection,
-  isSuperuser,
-  stateDirty,
-  lastSavedAt,
-  saving,
-  loadingState,
-  formatMoney: formatCalculatorMoney,
-  addLineItem,
-  removeLineItem,
-  addBudgetRow,
-  removeBudgetRow,
-  applySumToBudget,
-  saveState,
-  loadState,
-} = useExpenseCalculator();
-
 const showLedgerHeader = computed(() => !isCalculatorTab(activeTab.value));
 
-const budgetOptions = computed(() =>
-  budgetRows.value
-    .filter((row) => row.name.trim())
-    .map((row) => ({ id: row.id, name: row.name.trim() })),
-);
-
-const persistenceHint = computed(() =>
-  buildPersistenceHint({
-    isSuperuser: isSuperuser.value,
-    stateDirty: stateDirty.value,
-    lastSavedAt: lastSavedAt.value,
-  }),
-);
+const { can } = usePermissions();
+const canWriteExpenses = computed(() => can("expenses", "write"));
 
 function retrySummaryAndRates(): void {
   void Promise.all([loadSummary(), loadRates()]);
-}
-
-function goToBudgetMode(): void {
-  switchMode("budget");
 }
 
 function goToTransactions(): void {
@@ -170,6 +129,14 @@ function goToTransactions(): void {
   <AdminPageLayout hub="tools" title="expenses" max-width="xl">
     <div class="min-w-0">
       <div class="flex flex-col gap-3">
+        <p
+          v-if="!canWriteExpenses"
+          class="rounded-lg bg-surface-dark px-3 py-2 text-sm text-surface-mid"
+          role="status"
+        >
+          view only — you can browse expenses but not add or edit them
+        </p>
+
         <div
           class="flex w-full min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between"
         >
@@ -180,7 +147,14 @@ function goToTransactions(): void {
             :tabs="expenseTabItems"
             @update:model-value="switchTab"
           />
-          <div v-if="activeTab === 'transactions'" class="flex flex-wrap gap-2">
+          <div v-if="activeTab === 'transactions'" class="flex min-w-0 flex-wrap items-center gap-2">
+            <SearchInput
+              v-model="productFilter"
+              class="w-full min-w-[12rem] max-w-xs"
+              placeholder="filter by product"
+              aria-label="filter by product"
+              :min-length="1"
+            />
             <ToolbarPillButton
               family="1xx"
               :selected="filtersOpen"
@@ -194,7 +168,9 @@ function goToTransactions(): void {
             <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
               {{ exporting ? "exporting…" : "export csv" }}
             </ToolbarPillButton>
-            <ToolbarPillButton family="2xx" @click="openCreate"> + expense </ToolbarPillButton>
+            <ToolbarPillButton v-if="canWriteExpenses" family="2xx" @click="openCreate">
+              + expense
+            </ToolbarPillButton>
           </div>
         </div>
 
@@ -230,6 +206,7 @@ function goToTransactions(): void {
           v-model:quick-add-category="quickAdd.category"
           v-model:quick-add-product="quickAdd.product"
           v-model:quick-add-price="quickAdd.price"
+          :can-write="canWriteExpenses"
           :saving-expense="savingExpense"
           :category-options="categoryOptions"
           :product-suggestions="productSuggestions"
@@ -283,38 +260,7 @@ function goToTransactions(): void {
           />
         </section>
 
-        <ExpenseCalculatorPanel
-          v-else-if="activeTab === 'calculator'"
-          v-model:display-currency="calculatorDisplayCurrency"
-          v-model:what-if-category-id="whatIfCategoryId"
-          v-model:what-if-amount="whatIfAmount"
-          v-model:what-if-currency="whatIfCurrency"
-          :persistence-hint="persistenceHint"
-          :is-superuser="isSuperuser"
-          :loading-state="loadingState"
-          :saving="saving"
-          :state-dirty="stateDirty"
-          :active-mode="activeMode"
-          :mode-tabs="modeTabs"
-          :exchange-rates="calculatorRates"
-          :rates-loading="ratesLoading"
-          :line-items="lineItems"
-          :sum-total="sumTotal"
-          :budget-rows="budgetRows"
-          :budget-summary="budgetSummary"
-          :budget-options="budgetOptions"
-          :what-if-projection="whatIfProjection"
-          :format-money="formatCalculatorMoney"
-          @load-state="loadState"
-          @save-state="saveState"
-          @change-mode="switchMode"
-          @add-line-item="addLineItem"
-          @remove-line-item="removeLineItem"
-          @apply-sum-to-budget="applySumToBudget"
-          @add-budget-row="addBudgetRow"
-          @remove-budget-row="removeBudgetRow"
-          @go-to-budget="goToBudgetMode"
-        />
+        <ExpenseCalculatorTab v-else-if="activeTab === 'calculator'" />
 
         <section
           v-else-if="activeTab === 'settings'"
@@ -341,6 +287,7 @@ function goToTransactions(): void {
       </div>
 
       <ExpenseFormDrawer
+        v-if="canWriteExpenses"
         v-model:category="form.category"
         v-model:tool-name="form.tool_name"
         v-model:amount="form.amount"
@@ -356,6 +303,7 @@ function goToTransactions(): void {
       />
 
       <ConfirmDialog
+        v-if="canWriteExpenses"
         :open="deleteTargetId !== null"
         title="delete expense"
         message="This expense will be permanently removed."
@@ -367,6 +315,7 @@ function goToTransactions(): void {
       />
 
       <ConfirmDialog
+        v-if="canWriteExpenses"
         :open="deleteCategoryTarget !== null"
         title="delete category"
         :message="deleteCategoryTarget ? `delete category '${deleteCategoryTarget.name}'?` : ''"

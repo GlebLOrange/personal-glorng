@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { useTemplateRef } from "vue";
+import { computed, useTemplateRef } from "vue";
 
 import ExpenseCategoryChips from "@/components/expenses/ExpenseCategoryChips.vue";
 import ExpenseList from "@/components/expenses/ExpenseList.vue";
 import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
-import BaseInput from "@/components/ui/BaseInput.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
-import { Card } from "@/components/ui/card";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExpenseSortKey } from "@/composables/useExpenseSort";
 import type { ExchangeRates, Expense } from "@/types";
@@ -31,6 +29,7 @@ const quickAddProduct = defineModel<string>("quickAddProduct", { required: true 
 const quickAddPrice = defineModel<string>("quickAddPrice", { required: true });
 
 defineProps<{
+  canWrite: boolean;
   savingExpense: boolean;
   categoryOptions: string[];
   productSuggestions: string[];
@@ -69,6 +68,10 @@ const emit = defineEmits<{
 
 const quickAddRef = useTemplateRef<InstanceType<typeof ExpenseQuickAdd>>("quickAddRef");
 
+const hasTransactionFilters = computed(
+  () => Boolean(productFilter.value.trim()) || categoryFilter.value !== null,
+);
+
 defineExpose({
   focusEntry: () => {
     quickAddRef.value?.focusEntry();
@@ -91,6 +94,7 @@ defineExpose({
     class="flex flex-col gap-3 outline-none"
   >
     <ExpenseQuickAdd
+      v-if="canWrite"
       ref="quickAddRef"
       v-model:category="quickAddCategory"
       v-model:product="quickAddProduct"
@@ -104,34 +108,27 @@ defineExpose({
       @smart-submit="emit('smartSubmit', $event)"
     />
 
-    <Card
-      v-if="filtersOpen"
+    <div
+      v-if="filtersOpen || hasTransactionFilters"
       id="expense-transaction-filters"
-      variant="compact"
-      class="flex w-[min(100vw-2rem,28rem)] min-w-[16rem] max-w-full flex-col gap-4"
+      class="flex flex-col gap-2"
     >
-      <div class="flex flex-col gap-3 md:flex-row md:items-end">
-        <div class="flex-1">
-          <BaseInput
-            v-model="productFilter"
-            label="product filter"
-            placeholder="filter by product…"
-          />
-        </div>
-        <BaseButton
-          v-if="productFilter || categoryFilter"
-          variant="ghost"
-          @click="emit('clearTransactionFilters')"
-        >
-          clear transaction filters
-        </BaseButton>
-      </div>
-
       <ExpenseCategoryChips
+        v-if="filtersOpen"
         v-model:category-filter="categoryFilter"
         :category-options="categoryOptions"
       />
-    </Card>
+      <div v-if="hasTransactionFilters" class="flex flex-wrap items-center gap-2">
+        <p class="text-xs text-surface-mid">
+          <span v-if="productFilter.trim()">product: {{ productFilter.trim() }}</span>
+          <span v-if="productFilter.trim() && categoryFilter"> · </span>
+          <span v-if="categoryFilter">category: {{ categoryFilter }}</span>
+        </p>
+        <BaseButton variant="ghost" size="sm" @click="emit('clearTransactionFilters')">
+          clear filters
+        </BaseButton>
+      </div>
+    </div>
 
     <ErrorState v-if="listError" :message="listError" show-retry @retry="emit('retryList')" />
 

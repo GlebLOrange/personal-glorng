@@ -3899,6 +3899,7 @@
             "items": {
               "type": "string"
             },
+            "maxItems": 50,
             "minItems": 1,
             "title": "Ingredients",
             "type": "array"
@@ -3942,6 +3943,7 @@
             "items": {
               "type": "string"
             },
+            "maxItems": 50,
             "minItems": 1,
             "title": "Steps",
             "type": "array"
@@ -3950,6 +3952,7 @@
             "items": {
               "type": "string"
             },
+            "maxItems": 6,
             "title": "Tags",
             "type": "array"
           },
@@ -4159,6 +4162,7 @@
                 "items": {
                   "type": "string"
                 },
+                "maxItems": 50,
                 "minItems": 1,
                 "type": "array"
               },
@@ -4209,6 +4213,7 @@
                 "items": {
                   "type": "string"
                 },
+                "maxItems": 50,
                 "minItems": 1,
                 "type": "array"
               },
@@ -4224,6 +4229,7 @@
                 "items": {
                   "type": "string"
                 },
+                "maxItems": 6,
                 "type": "array"
               },
               {
@@ -4550,123 +4556,6 @@
           "created_at"
         ],
         "title": "SharedFileResponse",
-        "type": "object"
-      },
-      "SpotifyNowPlayingResponse": {
-        "example": {
-          "album": "Example Album",
-          "album_art_url": "https://i.scdn.co/image/example",
-          "artist": "Example Artist",
-          "duration_ms": 180000,
-          "enabled": true,
-          "is_playing": true,
-          "progress_ms": 45000,
-          "title": "Example Track",
-          "track_url": "https://open.spotify.com/track/example"
-        },
-        "properties": {
-          "album": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Album"
-          },
-          "album_art_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Album Art Url"
-          },
-          "artist": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Artist"
-          },
-          "duration_ms": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Duration Ms"
-          },
-          "enabled": {
-            "title": "Enabled",
-            "type": "boolean"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
-          },
-          "is_playing": {
-            "title": "Is Playing",
-            "type": "boolean"
-          },
-          "progress_ms": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Progress Ms"
-          },
-          "title": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Title"
-          },
-          "track_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Track Url"
-          }
-        },
-        "required": [
-          "enabled",
-          "is_playing"
-        ],
-        "title": "SpotifyNowPlayingResponse",
         "type": "object"
       },
       "StatusHistoryResponse": {
@@ -9412,78 +9301,6 @@
         "summary": "Keyword search over public indexed content",
         "tags": [
           "search"
-        ]
-      }
-    },
-    "/api/spotify/now-playing": {
-      "get": {
-        "description": "Public Spotify playback state for the portfolio widget.",
-        "operationId": "now_playing_api_spotify_now_playing_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SpotifyNowPlayingResponse"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not authenticated"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Validation error"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Internal server error"
-          }
-        },
-        "summary": "Get now playing",
-        "tags": [
-          "spotify"
         ]
       }
     },
@@ -16481,6 +16298,83 @@
         ]
       }
     },
+    "/api/tools/tasks/sync-queue/process": {
+      "post": {
+        "description": "Requires permission `tasks:write`.",
+        "operationId": "process_sync_queue_now_api_tools_tasks_sync_queue_process_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not authenticated"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Process calendar sync queue now",
+        "tags": [
+          "tasks"
+        ]
+      }
+    },
     "/api/tools/tasks/{task_id}": {
       "get": {
         "description": "Requires permission `tasks:read`.",
@@ -18296,10 +18190,6 @@
     {
       "description": "Public donation configuration.",
       "name": "donations"
-    },
-    {
-      "description": "Public now-playing widget data.",
-      "name": "spotify"
     },
     {
       "description": "OAuth and third-party callback handlers.",
