@@ -21,7 +21,7 @@ ENV VITE_FIREBASE_ENABLED=$VITE_FIREBASE_ENABLED \
     VITE_FIREBASE_MEASUREMENT_ID=$VITE_FIREBASE_MEASUREMENT_ID
 RUN npm run build
 
-FROM nginx:1.31.5-alpine
+FROM nginx:1.31.6-alpine
 RUN adduser -D appuser
 USER appuser
 COPY --from=build /app/dist /dist
