@@ -34,8 +34,8 @@ const emit = defineEmits<{
   <section class="flex flex-col gap-4" aria-label="expense period summary">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       <div class="min-w-0 shrink-0">
-        <p class="text-xs text-surface-mid">period</p>
-        <p class="text-base font-semibold text-surface-light">{{ monthLabel }}</p>
+        <h2 class="text-base font-semibold text-surface-light">Expenses</h2>
+        <p class="text-xs text-surface-mid">{{ monthLabel }}</p>
       </div>
       <ExpenseDateFilters
         v-model:month-preset="monthPreset"

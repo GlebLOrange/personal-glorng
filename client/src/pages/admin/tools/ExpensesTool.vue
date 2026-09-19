@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, useTemplateRef } from "vue";
+import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from "vue";
 
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import ExpenseDashboardPanel from "@/components/expenses/ExpenseDashboardPanel.vue";
 import ExpenseFormDrawer from "@/components/expenses/ExpenseFormDrawer.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
-import FilterIcon from "@/components/icons/FilterIcon.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import SearchInput from "@/components/ui/SearchInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import {
   useExpensesTool,
@@ -33,7 +31,6 @@ const {
   deletingExpense,
   deletingCategory,
   smartTextOpen,
-  filtersOpen,
   showForm,
   deleteTargetId,
   deleteCategoryTarget,
@@ -77,12 +74,13 @@ const {
   rangeError,
   clearFilters,
   quickAdd,
+  quickAddNameError,
+  quickAddAmountError,
   form,
   formTitle,
   expenseTotal,
   hasPreviousExpensePage,
   hasNextExpensePage,
-  transactionFilterLabel,
   productSuggestions,
   sortIndicator,
   sortAriaSort,
@@ -91,7 +89,6 @@ const {
   goToExpensePage,
   handleExpenseSort,
   openEdit,
-  openCreate,
   openSmartText,
   duplicateExpense,
   exportCsv,
@@ -105,13 +102,25 @@ const {
   saveSmartExpense,
 } = useExpensesTool(dashboardPanelRef);
 
-const showToolbar = computed(() => activeTab.value === "expenses");
-
 const { can } = usePermissions();
 const canWriteExpenses = computed(() => can("expenses", "write"));
 
+/** Keep converter mounted after first visit so amount/pair survive tab switches. */
+const converterMounted = ref(false);
+watch(
+  activeTab,
+  (tab) => {
+    if (tab === "converter") converterMounted.value = true;
+  },
+  { immediate: true },
+);
+
 function retrySummaryAndRates(): void {
   void Promise.all([loadSummary(), loadRates()]);
+}
+
+function openSettings(): void {
+  switchTab("categories");
 }
 </script>
 
@@ -126,34 +135,6 @@ function retrySummaryAndRates(): void {
         >
           view only — you can browse expenses but not add or edit them
         </p>
-
-        <div v-if="showToolbar" class="flex min-w-0 flex-wrap items-center gap-2">
-          <ToolbarPillButton
-            family="1xx"
-            :selected="filtersOpen"
-            :aria-expanded="filtersOpen"
-            aria-controls="expense-transaction-filters"
-            @click="filtersOpen = !filtersOpen"
-          >
-            <FilterIcon class-name="size-3.5" />
-            {{ transactionFilterLabel }}
-          </ToolbarPillButton>
-          <SearchInput
-            v-model="productFilter"
-            class="min-w-0 flex-1"
-            placeholder="filter by product"
-            aria-label="filter by product"
-            :min-length="1"
-          />
-          <div class="ml-auto flex shrink-0 flex-wrap items-center gap-2">
-            <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
-              {{ exporting ? "exporting…" : "export csv" }}
-            </ToolbarPillButton>
-            <ToolbarPillButton v-if="canWriteExpenses" family="2xx" @click="openCreate">
-              + expense
-            </ToolbarPillButton>
-          </div>
-        </div>
 
         <AdminTabBar
           flush
@@ -181,7 +162,8 @@ function retrySummaryAndRates(): void {
         </form>
 
         <ExpenseDashboardPanel
-          v-if="activeTab === 'expenses'"
+          v-show="activeTab === 'expenses'"
+          :aria-hidden="activeTab !== 'expenses'"
           ref="dashboardPanelRef"
           v-model:month-preset="monthPreset"
           v-model:date-filter-mode="dateFilterMode"
@@ -192,10 +174,12 @@ function retrySummaryAndRates(): void {
           v-model:category-filter="categoryFilter"
           v-model:display-currency="displayCurrency"
           v-model:smart-text-open="smartTextOpen"
-          v-model:filters-open="filtersOpen"
           v-model:quick-add-category="quickAdd.category"
           v-model:quick-add-product="quickAdd.product"
           v-model:quick-add-price="quickAdd.price"
+          v-model:quick-add-expense-date="quickAdd.expense_date"
+          v-model:quick-add-name-error="quickAddNameError"
+          v-model:quick-add-amount-error="quickAddAmountError"
           :can-write="canWriteExpenses"
           :saving-expense="savingExpense"
           :category-options="categoryOptions"
@@ -243,10 +227,14 @@ function retrySummaryAndRates(): void {
           @last-page="goToExpensePage(expensePages)"
         />
 
-        <ExpenseCalculatorTab v-else-if="activeTab === 'converter'" />
+        <ExpenseCalculatorTab
+          v-if="converterMounted"
+          v-show="activeTab === 'converter'"
+          :aria-hidden="activeTab !== 'converter'"
+        />
 
         <section
-          v-else-if="activeTab === 'categories'"
+          v-if="activeTab === 'categories'"
           id="expenses-tab-panel-categories"
           role="tabpanel"
           aria-labelledby="expenses-tab-tab-categories"
@@ -263,6 +251,18 @@ function retrySummaryAndRates(): void {
             @remove-category="requestDeleteCategory"
           />
         </section>
+
+        <footer
+          v-if="activeTab === 'expenses'"
+          class="flex flex-wrap items-center justify-between gap-2 border-t border-surface-border/60 pt-4"
+        >
+          <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
+            {{ exporting ? "exporting…" : "export csv" }}
+          </ToolbarPillButton>
+          <ToolbarPillButton family="1xx" @click="openSettings">
+            settings
+          </ToolbarPillButton>
+        </footer>
       </div>
 
       <ExpenseFormDrawer

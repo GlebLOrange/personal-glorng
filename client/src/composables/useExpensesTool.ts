@@ -203,6 +203,8 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
     clearFilters: transactions.clearFilters,
     quickAddCurrency: transactions.quickAddCurrency,
     quickAdd: transactions.quickAdd,
+    quickAddNameError: transactions.quickAddNameError,
+    quickAddAmountError: transactions.quickAddAmountError,
     form: transactions.form,
     formTitle: transactions.formTitle,
     expenseTotal: transactions.expenseTotal,

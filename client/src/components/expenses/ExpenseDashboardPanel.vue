@@ -10,6 +10,7 @@ import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
+import SearchInput from "@/components/ui/SearchInput.vue";
 import { Card } from "@/components/ui/card";
 import type { DateFilterMode, MonthPreset, CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExpenseSortKey } from "@/composables/useExpenseSort";
@@ -32,10 +33,12 @@ const productFilter = defineModel<string>("productFilter", { required: true });
 const categoryFilter = defineModel<string | null>("categoryFilter", { required: true });
 const displayCurrency = defineModel<CurrencyCode>("displayCurrency", { required: true });
 const smartTextOpen = defineModel<boolean>("smartTextOpen", { required: true });
-const filtersOpen = defineModel<boolean>("filtersOpen", { required: true });
 const quickAddCategory = defineModel<string>("quickAddCategory", { required: true });
 const quickAddProduct = defineModel<string>("quickAddProduct", { required: true });
 const quickAddPrice = defineModel<string>("quickAddPrice", { required: true });
+const quickAddExpenseDate = defineModel<string>("quickAddExpenseDate", { required: true });
+const quickAddNameError = defineModel<string | null>("quickAddNameError", { required: true });
+const quickAddAmountError = defineModel<string | null>("quickAddAmountError", { required: true });
 
 defineProps<{
   canWrite: boolean;
@@ -157,6 +160,9 @@ defineExpose({
           v-model:category="quickAddCategory"
           v-model:product="quickAddProduct"
           v-model:price="quickAddPrice"
+          v-model:expense-date="quickAddExpenseDate"
+          v-model:name-error="quickAddNameError"
+          v-model:amount-error="quickAddAmountError"
           v-model:currency="displayCurrency"
           v-model:smart-text-open="smartTextOpen"
           :loading="savingExpense"
@@ -177,19 +183,21 @@ defineExpose({
             <p class="text-xs text-surface-mid">{{ expenseTotal }} items</p>
           </div>
 
-          <div
-            v-if="filtersOpen || hasTransactionFilters"
-            id="expense-transaction-filters"
-            class="flex flex-col gap-2"
-          >
+          <div id="expense-transaction-filters" class="flex flex-col gap-2">
+            <SearchInput
+              v-model="productFilter"
+              class="min-w-0 w-full"
+              placeholder="filter by name"
+              aria-label="filter by name"
+              :min-length="1"
+            />
             <ExpenseCategoryChips
-              v-if="filtersOpen"
               v-model:category-filter="categoryFilter"
               :category-options="categoryOptions"
             />
             <div v-if="hasTransactionFilters" class="flex flex-wrap items-center gap-2">
               <p class="text-xs text-surface-mid">
-                <span v-if="productFilter.trim()">product: {{ productFilter.trim() }}</span>
+                <span v-if="productFilter.trim()">name: {{ productFilter.trim() }}</span>
                 <span v-if="productFilter.trim() && categoryFilter"> · </span>
                 <span v-if="categoryFilter">category: {{ categoryFilter }}</span>
               </p>
