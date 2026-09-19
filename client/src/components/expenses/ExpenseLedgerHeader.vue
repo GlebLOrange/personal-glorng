@@ -4,7 +4,7 @@ import ExpenseSummaryCard from "@/components/expenses/ExpenseSummaryCard.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import type { DateFilterMode, MonthPreset } from "@/composables/useExpenseFilters";
-import type { ExpenseCategory, ExpenseSummary } from "@/types";
+import type { ExpenseSummary } from "@/types";
 
 const monthPreset = defineModel<MonthPreset>("monthPreset", { required: true });
 const dateFilterMode = defineModel<DateFilterMode>("dateFilterMode", { required: true });
@@ -17,8 +17,7 @@ defineProps<{
   hasActiveFilters: boolean;
   rangeError: string | null;
   summary: ExpenseSummary | null;
-  expenseCategories: ExpenseCategory[];
-  periodChange: { delta: number; increased: boolean } | null;
+  expenseTotal: number;
   formatMoney: (amount: string | number, currency: string) => string;
   summaryError: string | null;
   ratesError: string | null;
@@ -32,36 +31,29 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section
-    class="flex flex-col gap-3 border-b border-surface-border/50 pb-3"
-    aria-label="expense period summary"
-  >
-    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-      <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-        <div class="min-w-0 shrink-0">
-          <p class="text-xs text-surface-mid">period</p>
-          <p class="text-base font-semibold text-surface-light">{{ monthLabel }}</p>
-        </div>
-        <ExpenseDateFilters
-          v-model:month-preset="monthPreset"
-          v-model:date-filter-mode="dateFilterMode"
-          v-model:selected-month="selectedMonth"
-          v-model:date-from="dateFrom"
-          v-model:date-to="dateTo"
-          :has-active-filters="hasActiveFilters"
-          @apply-preset="emit('applyPreset', $event)"
-          @clear-filters="emit('clearFilters')"
-        />
+  <section class="flex flex-col gap-4" aria-label="expense period summary">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div class="min-w-0 shrink-0">
+        <p class="text-xs text-surface-mid">period</p>
+        <p class="text-base font-semibold text-surface-light">{{ monthLabel }}</p>
       </div>
-
-      <ExpenseSummaryCard
-        class="min-w-0 flex-1 lg:max-w-xl"
-        :summary="summary"
-        :expense-categories="expenseCategories"
-        :period-change="periodChange"
-        :format-money="formatMoney"
+      <ExpenseDateFilters
+        v-model:month-preset="monthPreset"
+        v-model:date-filter-mode="dateFilterMode"
+        v-model:selected-month="selectedMonth"
+        v-model:date-from="dateFrom"
+        v-model:date-to="dateTo"
+        :has-active-filters="hasActiveFilters"
+        @apply-preset="emit('applyPreset', $event)"
+        @clear-filters="emit('clearFilters')"
       />
     </div>
+
+    <ExpenseSummaryCard
+      :summary="summary"
+      :expense-total="expenseTotal"
+      :format-money="formatMoney"
+    />
 
     <p v-if="rangeError" class="text-sm text-status-error" role="alert">
       {{ rangeError }}

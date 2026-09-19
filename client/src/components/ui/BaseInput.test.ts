@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import BaseInput from "@/components/ui/BaseInput.vue";
 
 describe("BaseInput", () => {
-  it("associates the sr-only label with the input by default", () => {
+  it("renders a persistent trailing label by default", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "email",
@@ -12,17 +12,18 @@ describe("BaseInput", () => {
       },
     });
 
-    expect(wrapper.get("label.sr-only").attributes("for")).toBe("email");
+    expect(wrapper.find("label.sr-only").exists()).toBe(false);
+    expect(wrapper.get("label:not(.sr-only)").attributes("for")).toBe("email");
+    expect(wrapper.get("label:not(.sr-only)").text()).toBe("Email");
     expect(wrapper.get("input").attributes("id")).toBe("email");
-    expect(wrapper.get("span.text-surface-muted").text()).toBe("Email");
   });
 
-  it("renders a border-notch label when labelInside is false", () => {
+  it("renders a border-notch label when labelAlign is start", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "email",
         label: "Email",
-        labelInside: false,
+        labelAlign: "start",
       },
     });
 
@@ -115,12 +116,29 @@ describe("BaseInput", () => {
     expect(wrapper.find('button[aria-label="clear"]').exists()).toBe(false);
   });
 
-  it("shows inside label and suppresses placeholder tip when both are set", () => {
+  it("empty labeled field shows trailing title and suppresses placeholder tip", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "email",
         label: "Email",
         placeholder: "your@email.com",
+        modelValue: "",
+      },
+    });
+
+    expect(wrapper.get("label:not(.sr-only)").text()).toBe("Email");
+    expect(wrapper.find("#email-tip").exists()).toBe(false);
+    expect(wrapper.find("label.sr-only").exists()).toBe(false);
+    expect(wrapper.find("span.text-surface-muted").exists()).toBe(false);
+  });
+
+  it("labelInside shows overlay and suppresses placeholder tip when both are set", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "email",
+        label: "Email",
+        placeholder: "your@email.com",
+        labelInside: true,
       },
     });
 
@@ -138,14 +156,14 @@ describe("BaseInput", () => {
         label: "Email",
         placeholder: "your@email.com",
         hint: "we never share this",
-        labelInside: false,
+        labelAlign: "start",
       },
     });
 
     expect(wrapper.get("input").attributes("aria-describedby")).toBe("email-hint");
     expect(wrapper.get("#email-hint").text()).toBe("we never share this");
     expect(wrapper.get('button[aria-label="help"]').exists()).toBe(true);
-    expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
+    expect(wrapper.find("#email-tip").exists()).toBe(false);
   });
 
   it("labelInside shows overlay while empty and suppresses tip + outer notch", () => {
@@ -155,6 +173,7 @@ describe("BaseInput", () => {
         label: "password",
         placeholder: "password tip",
         modelValue: "",
+        labelInside: true,
       },
     });
 
@@ -176,6 +195,7 @@ describe("BaseInput", () => {
         id: "pw",
         label: "password",
         modelValue: "",
+        labelInside: true,
       },
     });
 
@@ -187,7 +207,7 @@ describe("BaseInput", () => {
     expect(wrapper.get('button[aria-label="clear"]').exists()).toBe(true);
   });
 
-  it("labelInside still shows error in outer notch when error is present", () => {
+  it("shows error in outer notch when error is present", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "pw",

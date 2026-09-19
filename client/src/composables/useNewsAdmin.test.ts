@@ -5,6 +5,7 @@ import { ref } from "vue";
 import { emptyForm, formFromArticle, useNewsAdmin } from "@/composables/useNewsAdmin";
 import { useAuthStore } from "@/stores/auth";
 import type { NewsArticle, UserResponse } from "@/types";
+import { datetimeLocalValue } from "@/utils/dates";
 
 const loadNews = vi.fn(async () => undefined);
 const loadSources = vi.fn(async () => undefined);
@@ -86,6 +87,7 @@ describe("emptyForm / formFromArticle", () => {
   it("builds a blank draft form", () => {
     expect(emptyForm().status).toBe("draft");
     expect(emptyForm().tags).toBe("world");
+    expect(emptyForm().source_published_at).toBe(datetimeLocalValue());
   });
 
   it("maps article fields into form data", () => {

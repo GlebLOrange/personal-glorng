@@ -308,7 +308,7 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
   >
     <template #action>
       <BaseButton variant="primary" size="sm" @click="emit('addExpense')">
-        go to transactions
+        go to expenses
       </BaseButton>
     </template>
   </EmptyState>

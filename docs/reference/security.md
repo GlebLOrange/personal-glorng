@@ -126,7 +126,7 @@ Client-side `VITE_AI_CHAT_ENABLED` hides the admin UI only; server flags and aut
 | URL shortener titles | Optional `title` via shared validators |
 | File share uploads | Extension denylist; sanitized stored filenames; daily expired-share cleanup |
 | Downloads | Safe `Content-Disposition` via [`attachment_content_disposition`](../../server/app/core/utils.py) |
-| Vid download | YouTube host allowlist; yt-dlp `format` character allowlist; public with rate/concurrency limits |
+| Vid download | Public http(s) URLs only (SSRF-safe); yt-dlp `format` character allowlist; public with rate/concurrency limits |
 | URL shortener/news fetch URLs | `HttpUrl` validation; private, localhost, internal, and non-routable host blocklists |
 | XML parsing | DTD/entity declarations rejected before stdlib XML parsing |
 
@@ -138,7 +138,7 @@ Client-side `VITE_AI_CHAT_ENABLED` hides the admin UI only; server flags and aut
 
 **Server-side URL fetch:** News metadata/ingest and similar fetchers use `is_public_http_url` with DNS resolution (fail closed) and manual redirect re-validation so names/hops that resolve to private or link-local addresses are rejected.
 
-**Vid download:** The download endpoint is public with strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). yt-dlp runs server-side; URLs are restricted to known YouTube hosts only.
+**Vid download:** The download endpoint is public with strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). yt-dlp runs server-side; URLs must be public http(s) (private/local targets rejected).
 
 ## Application log persistence
 

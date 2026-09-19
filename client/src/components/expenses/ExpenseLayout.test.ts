@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 
 import ExpenseLedgerHeader from "@/components/expenses/ExpenseLedgerHeader.vue";
 import ExpenseSummaryCard from "@/components/expenses/ExpenseSummaryCard.vue";
-import type { ExpenseCategory, ExpenseSummary } from "@/types";
+import type { ExpenseSummary } from "@/types";
 
 const expensesToolSource = readFileSync(
   resolve(__dirname, "../../pages/admin/tools/ExpensesTool.vue"),
@@ -25,35 +25,22 @@ const sampleSummary: ExpenseSummary = {
   ],
 };
 
-const sampleCategories: ExpenseCategory[] = [
-  {
-    id: 1,
-    name: "Groceries",
-    sort_order: 0,
-    monthly_budget: "100.00",
-    created_at: "2026-01-01T00:00:00Z",
-    updated_at: "2026-01-01T00:00:00Z",
-  },
-  {
-    id: 2,
-    name: "Transport",
-    sort_order: 1,
-    monthly_budget: "50.00",
-    created_at: "2026-01-01T00:00:00Z",
-    updated_at: "2026-01-01T00:00:00Z",
-  },
-];
-
 describe("expenses layout restore", () => {
-  it("keeps tabs above the period strip in ExpensesTool", () => {
+  it("keeps filters toolbar above tabs, tabs above the dashboard panel", () => {
+    const toolbarIdx = expensesToolSource.indexOf('v-if="showToolbar"');
     const tabIdx = expensesToolSource.indexOf("<AdminTabBar");
-    const headerIdx = expensesToolSource.indexOf("<ExpenseLedgerHeader");
+    const addCategoryIdx = expensesToolSource.indexOf('activeTab === \'categories\' && canWriteExpenses');
+    const dashboardIdx = expensesToolSource.indexOf("<ExpenseDashboardPanel");
+    expect(toolbarIdx).toBeGreaterThan(-1);
     expect(tabIdx).toBeGreaterThan(-1);
-    expect(headerIdx).toBeGreaterThan(-1);
-    expect(tabIdx).toBeLessThan(headerIdx);
+    expect(addCategoryIdx).toBeGreaterThan(-1);
+    expect(dashboardIdx).toBeGreaterThan(-1);
+    expect(toolbarIdx).toBeLessThan(tabIdx);
+    expect(tabIdx).toBeLessThan(addCategoryIdx);
+    expect(tabIdx).toBeLessThan(dashboardIdx);
   });
 
-  it("defers calculator composable and settings panel until those tabs", () => {
+  it("defers calculator composable and category settings until those tabs", () => {
     expect(expensesToolSource).not.toMatch(/useExpenseCalculator\(/);
     expect(expensesToolSource).toMatch(
       /defineAsyncComponent\(\s*\(\)\s*=>\s*import\("@\/components\/expenses\/ExpenseCalculatorTab\.vue"\)/,
@@ -63,27 +50,25 @@ describe("expenses layout restore", () => {
     );
   });
 
-  it("renders KPI strip without category breakdown bars", () => {
+  it("renders ExpenseFlow KPI strip: total, transactions, top category", () => {
     const wrapper = mount(ExpenseSummaryCard, {
       props: {
         summary: sampleSummary,
-        expenseCategories: sampleCategories,
-        periodChange: { delta: 5, increased: true },
+        expenseTotal: 12,
         formatMoney: (amount: string | number, currency: string) => `${amount} ${currency}`,
       },
     });
 
-    expect(wrapper.text()).toContain("total");
-    expect(wrapper.text()).toContain("Δ period");
-    expect(wrapper.text()).toContain("budget");
+    expect(wrapper.text()).toContain("Total Expenses");
+    expect(wrapper.text()).toContain("Transactions");
+    expect(wrapper.text()).toContain("Top Category");
     expect(wrapper.text()).toContain("120.00 PLN");
-    // Category bars moved to Insights — not in the ledger KPI strip.
-    expect(wrapper.text()).not.toContain("Groceries");
+    expect(wrapper.text()).toContain("12");
+    expect(wrapper.text()).toContain("Groceries");
     expect(wrapper.text()).not.toContain("Transport");
-    expect(wrapper.findAll('[role="progressbar"]')).toHaveLength(1);
   });
 
-  it("flattens the period strip without a wrapping Card", () => {
+  it("flattens the period strip without a wrapping Card on the section", () => {
     const wrapper = mount(ExpenseLedgerHeader, {
       props: {
         monthPreset: "this_month",
@@ -100,8 +85,7 @@ describe("expenses layout restore", () => {
         hasActiveFilters: false,
         rangeError: null,
         summary: null,
-        expenseCategories: [],
-        periodChange: null,
+        expenseTotal: 0,
         formatMoney: (amount: string | number, currency: string) => `${amount} ${currency}`,
         summaryError: null,
         ratesError: null,

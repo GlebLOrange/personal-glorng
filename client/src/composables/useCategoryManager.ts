@@ -42,7 +42,6 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
   const newCategoryName = ref("");
   const editingCategoryId = ref<number | null>(null);
   const editingCategoryName = ref("");
-  const editingCategoryBudget = ref("");
   const { toast } = useNotify();
   const { run: runApi } = useApiAction();
 
@@ -92,13 +91,11 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
   function startEditCategory(category: ExpenseCategory): void {
     editingCategoryId.value = category.id;
     editingCategoryName.value = category.name;
-    editingCategoryBudget.value = category.monthly_budget ?? "";
   }
 
   function cancelEditCategory(): void {
     editingCategoryId.value = null;
     editingCategoryName.value = "";
-    editingCategoryBudget.value = "";
   }
 
   async function saveCategoryRename(): Promise<void> {
@@ -113,24 +110,10 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
       return;
     }
 
-    const budgetRaw = editingCategoryBudget.value.trim();
-    let monthly_budget: string | null = null;
-    if (budgetRaw) {
-      const budgetValue = parseFloat(budgetRaw);
-      if (Number.isNaN(budgetValue) || budgetValue < 0) {
-        toast("Budget must be zero or greater", "error");
-        return;
-      }
-      monthly_budget = budgetValue.toFixed(2);
-    }
-
     const categoryId = editingCategoryId.value;
     const ok = await runApi(
       async () => {
-        await api.put(`/tools/expenses/categories/${categoryId}`, {
-          name,
-          monthly_budget,
-        });
+        await api.put(`/tools/expenses/categories/${categoryId}`, { name });
         return true;
       },
       { successMessage: "Category updated", errorMessage: "Failed to update category" },
@@ -160,7 +143,6 @@ export function useCategoryManager(onCategoriesChanged: () => void | Promise<voi
     newCategoryName,
     editingCategoryId,
     editingCategoryName,
-    editingCategoryBudget,
     categoryOptions,
     defaultCategoryName,
     loadCategories,

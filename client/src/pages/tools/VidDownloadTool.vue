@@ -134,8 +134,8 @@ async function download(): Promise<void> {
           <div>
             <h3 class="mb-2 font-bold text-accent-blue">Supported sites</h3>
             <p class="text-surface-mid">
-              This public tool accepts YouTube URLs only (youtube.com, youtu.be, m.youtube.com, and
-              music.youtube.com). Other hosts are rejected for security and abuse prevention.
+              Paste any public http(s) video URL yt-dlp can handle (YouTube, Vimeo, Twitter/X,
+              and many more). Private or local addresses are rejected.
             </p>
           </div>
 

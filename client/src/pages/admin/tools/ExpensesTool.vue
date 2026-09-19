@@ -2,24 +2,20 @@
 import { computed, defineAsyncComponent, useTemplateRef } from "vue";
 
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
+import ExpenseDashboardPanel from "@/components/expenses/ExpenseDashboardPanel.vue";
 import ExpenseFormDrawer from "@/components/expenses/ExpenseFormDrawer.vue";
-import ExpenseLedgerHeader from "@/components/expenses/ExpenseLedgerHeader.vue";
-import ExpenseTransactionsPanel from "@/components/expenses/ExpenseTransactionsPanel.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import FilterIcon from "@/components/icons/FilterIcon.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
 import SearchInput from "@/components/ui/SearchInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import {
-  isCalculatorTab,
   useExpensesTool,
   type ExpenseQuickAddTarget,
 } from "@/composables/useExpensesTool";
 import { usePermissions } from "@/composables/usePermissions";
 
-const ExpenseInsights = defineAsyncComponent(
-  () => import("@/components/expenses/ExpenseInsights.vue"),
-);
 const ExpenseCalculatorTab = defineAsyncComponent(
   () => import("@/components/expenses/ExpenseCalculatorTab.vue"),
 );
@@ -27,7 +23,7 @@ const ExpenseCategorySettings = defineAsyncComponent(
   () => import("@/components/expenses/ExpenseCategorySettings.vue"),
 );
 
-const transactionsPanelRef = useTemplateRef<ExpenseQuickAddTarget>("transactionsPanelRef");
+const dashboardPanelRef = useTemplateRef<ExpenseQuickAddTarget>("dashboardPanelRef");
 
 const {
   activeTab,
@@ -46,7 +42,6 @@ const {
   expenses,
   expensePages,
   summary,
-  periodChange,
   exchangeRates,
   listLoading,
   lineChart,
@@ -65,7 +60,6 @@ const {
   newCategoryName,
   editingCategoryId,
   editingCategoryName,
-  editingCategoryBudget,
   categoryOptions,
   addCategory,
   startEditCategory,
@@ -109,9 +103,9 @@ const {
   saveExpense,
   quickSaveExpense,
   saveSmartExpense,
-} = useExpensesTool(transactionsPanelRef);
+} = useExpensesTool(dashboardPanelRef);
 
-const showLedgerHeader = computed(() => !isCalculatorTab(activeTab.value));
+const showToolbar = computed(() => activeTab.value === "expenses");
 
 const { can } = usePermissions();
 const canWriteExpenses = computed(() => can("expenses", "write"));
@@ -119,16 +113,12 @@ const canWriteExpenses = computed(() => can("expenses", "write"));
 function retrySummaryAndRates(): void {
   void Promise.all([loadSummary(), loadRates()]);
 }
-
-function goToTransactions(): void {
-  switchTab("transactions");
-}
 </script>
 
 <template>
   <AdminPageLayout hub="tools" title="expenses" max-width="xl">
     <div class="min-w-0">
-      <div class="flex flex-col gap-3">
+      <div class="flex flex-col gap-4">
         <p
           v-if="!canWriteExpenses"
           class="rounded-lg bg-surface-dark px-3 py-2 text-sm text-surface-mid"
@@ -137,34 +127,25 @@ function goToTransactions(): void {
           view only — you can browse expenses but not add or edit them
         </p>
 
-        <div
-          class="flex w-full min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between"
-        >
-          <AdminTabBar
-            flush
-            panel-id-prefix="expenses-tab"
-            :model-value="activeTab"
-            :tabs="expenseTabItems"
-            @update:model-value="switchTab"
+        <div v-if="showToolbar" class="flex min-w-0 flex-wrap items-center gap-2">
+          <ToolbarPillButton
+            family="1xx"
+            :selected="filtersOpen"
+            :aria-expanded="filtersOpen"
+            aria-controls="expense-transaction-filters"
+            @click="filtersOpen = !filtersOpen"
+          >
+            <FilterIcon class-name="size-3.5" />
+            {{ transactionFilterLabel }}
+          </ToolbarPillButton>
+          <SearchInput
+            v-model="productFilter"
+            class="min-w-0 flex-1"
+            placeholder="filter by product"
+            aria-label="filter by product"
+            :min-length="1"
           />
-          <div v-if="activeTab === 'transactions'" class="flex min-w-0 flex-wrap items-center gap-2">
-            <SearchInput
-              v-model="productFilter"
-              class="w-full min-w-[12rem] max-w-xs"
-              placeholder="filter by product"
-              aria-label="filter by product"
-              :min-length="1"
-            />
-            <ToolbarPillButton
-              family="1xx"
-              :selected="filtersOpen"
-              :aria-expanded="filtersOpen"
-              aria-controls="expense-transaction-filters"
-              @click="filtersOpen = !filtersOpen"
-            >
-              <FilterIcon class-name="size-3.5" />
-              {{ transactionFilterLabel }}
-            </ToolbarPillButton>
+          <div class="ml-auto flex shrink-0 flex-wrap items-center gap-2">
             <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
               {{ exporting ? "exporting…" : "export csv" }}
             </ToolbarPillButton>
@@ -174,30 +155,39 @@ function goToTransactions(): void {
           </div>
         </div>
 
-        <ExpenseLedgerHeader
-          v-if="showLedgerHeader"
+        <AdminTabBar
+          flush
+          panel-id-prefix="expenses-tab"
+          :model-value="activeTab"
+          :tabs="expenseTabItems"
+          aria-label="expense sections"
+          @update:model-value="switchTab"
+        />
+
+        <form
+          v-if="activeTab === 'categories' && canWriteExpenses"
+          class="flex min-w-0 flex-wrap items-center gap-2"
+          @submit.prevent="addCategory"
+        >
+          <BaseInput
+            v-model="newCategoryName"
+            placeholder="category"
+            aria-label="category"
+            class="min-w-0 flex-1"
+          />
+          <ToolbarPillButton type="submit" family="2xx" class="shrink-0">
+            + category
+          </ToolbarPillButton>
+        </form>
+
+        <ExpenseDashboardPanel
+          v-if="activeTab === 'expenses'"
+          ref="dashboardPanelRef"
           v-model:month-preset="monthPreset"
           v-model:date-filter-mode="dateFilterMode"
           v-model:selected-month="selectedMonth"
           v-model:date-from="dateFrom"
           v-model:date-to="dateTo"
-          :month-label="monthLabel"
-          :has-active-filters="hasActiveFilters"
-          :range-error="rangeError"
-          :summary="summary"
-          :expense-categories="expenseCategories"
-          :period-change="periodChange"
-          :format-money="formatMoney"
-          :summary-error="summaryError"
-          :rates-error="ratesError"
-          @apply-preset="handleDatePreset"
-          @clear-filters="clearFilters"
-          @retry="retrySummaryAndRates"
-        />
-
-        <ExpenseTransactionsPanel
-          v-if="activeTab === 'transactions'"
-          ref="transactionsPanelRef"
           v-model:product-filter="productFilter"
           v-model:category-filter="categoryFilter"
           v-model:display-currency="displayCurrency"
@@ -216,6 +206,12 @@ function goToTransactions(): void {
           :sort-indicator="sortIndicator"
           :sort-aria-sort="sortAriaSort"
           :month-label="monthLabel"
+          :has-active-filters="hasActiveFilters"
+          :range-error="rangeError"
+          :summary="summary"
+          :expense-categories="expenseCategories"
+          :summary-error="summaryError"
+          :rates-error="ratesError"
           :exchange-rates="exchangeRates"
           :format-money="formatMoney"
           :format-expense-date="formatExpenseDate"
@@ -225,6 +221,13 @@ function goToTransactions(): void {
           :expense-pages="expensePages"
           :has-next-expense-page="hasNextExpensePage"
           :has-previous-expense-page="hasPreviousExpensePage"
+          :has-chart-data="hasChartData"
+          :line-chart="lineChart"
+          :bar-chart="barChart"
+          :doughnut-chart="doughnutChart"
+          @apply-preset="handleDatePreset"
+          @clear-filters="clearFilters"
+          @retry-summary="retrySummaryAndRates"
           @submit-quick="quickSaveExpense"
           @smart-submit="saveSmartExpense"
           @clear-transaction-filters="clearTransactionFilters"
@@ -240,44 +243,20 @@ function goToTransactions(): void {
           @last-page="goToExpensePage(expensePages)"
         />
 
-        <section
-          v-else-if="activeTab === 'insights'"
-          id="expenses-tab-panel-insights"
-          role="tabpanel"
-          aria-labelledby="expenses-tab-tab-insights"
-          tabindex="0"
-          class="outline-none"
-        >
-          <ExpenseInsights
-            :has-chart-data="hasChartData"
-            :line-chart="lineChart"
-            :bar-chart="barChart"
-            :doughnut-chart="doughnutChart"
-            :summary="summary"
-            :expense-categories="expenseCategories"
-            :format-money="formatMoney"
-            @add-expense="goToTransactions"
-          />
-        </section>
-
-        <ExpenseCalculatorTab v-else-if="activeTab === 'calculator'" />
+        <ExpenseCalculatorTab v-else-if="activeTab === 'converter'" />
 
         <section
-          v-else-if="activeTab === 'settings'"
-          id="expenses-tab-panel-settings"
+          v-else-if="activeTab === 'categories'"
+          id="expenses-tab-panel-categories"
           role="tabpanel"
-          aria-labelledby="expenses-tab-tab-settings"
+          aria-labelledby="expenses-tab-tab-categories"
           tabindex="0"
           class="outline-none"
         >
           <ExpenseCategorySettings
-            v-model:new-category-name="newCategoryName"
             v-model:editing-category-name="editingCategoryName"
-            v-model:editing-category-budget="editingCategoryBudget"
             :expense-categories="expenseCategories"
             :editing-category-id="editingCategoryId"
-            :exchange-rates="exchangeRates"
-            @add-category="addCategory"
             @start-edit-category="startEditCategory"
             @cancel-edit-category="cancelEditCategory"
             @save-category-rename="saveCategoryRename"

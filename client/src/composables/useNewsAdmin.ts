@@ -18,6 +18,7 @@ import type {
   NewsArticleUpdate,
   NewsStatus,
 } from "@/types";
+import { datetimeLocalValue } from "@/utils/dates";
 import { normalizeHttpUrl, titleFromNewsLink } from "@/utils/newsForms";
 
 export type DrawerMode = "create" | "edit";
@@ -35,7 +36,7 @@ export function emptyForm(): NewsArticleFormData {
     source_name: "",
     source_url: "",
     source_feed_url: "",
-    source_published_at: "",
+    source_published_at: datetimeLocalValue(),
     original_title: "",
     title: "",
     summary: "",

@@ -122,17 +122,17 @@ onMounted(loadUrls);
     :narrow="false"
   >
     <form class="mb-6 space-y-3" @submit.prevent="createUrl">
-      <div class="mb-3 flex w-full min-w-0 items-center justify-end">
-        <ToolbarPillButton family="2xx" type="submit" :disabled="!canShorten">
+      <div class="flex min-w-0 items-center gap-2">
+        <BaseInput
+          v-model="newUrl"
+          class="min-w-0 flex-1"
+          placeholder="url (example.com or https://…)"
+          aria-label="url (example.com or https://…)"
+        />
+        <ToolbarPillButton family="2xx" type="submit" class="shrink-0" :disabled="!canShorten">
           {{ loading ? "creating…" : "shorten" }}
         </ToolbarPillButton>
       </div>
-      <BaseInput
-        v-model="newUrl"
-        class="min-w-0 w-full"
-        placeholder="url (example.com or https://…)"
-        aria-label="url (example.com or https://…)"
-      />
       <BaseInput v-model="newTitle" placeholder="title (optional)" aria-label="title" />
     </form>
 
