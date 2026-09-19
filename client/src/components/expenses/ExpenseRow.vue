@@ -81,13 +81,17 @@ function convertedLabel(): string | null {
     </td>
   </tr>
 
-  <div v-else class="flex flex-col gap-3">
+  <div v-else class="flex flex-col gap-2">
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
         <p class="truncate text-sm font-semibold text-surface-light">{{ expense.tool_name }}</p>
-        <p class="mt-1 text-xs text-surface-mid">
+        <p class="mt-0.5 text-xs text-surface-mid">
           {{ expense.category ?? "Uncategorized" }} ·
           {{ formatExpenseDate(expense.expense_date) }}
+          <span class="text-surface-mid/80"> · {{ expenseSourceLabel(expense.source) }}</span>
+        </p>
+        <p v-if="expense.notes" class="mt-1 truncate text-xs text-surface-mid">
+          {{ expense.notes }}
         </p>
       </div>
       <div class="shrink-0 text-right font-data text-sm text-surface-light">
@@ -95,15 +99,7 @@ function convertedLabel(): string | null {
         <div v-if="convertedLabel()" class="text-xs text-surface-mid">≈ {{ convertedLabel() }}</div>
       </div>
     </div>
-    <div class="flex items-center justify-between gap-2">
-      <span class="rounded bg-surface-border px-1.5 py-0.5 text-xs text-surface-mid">
-        {{ expenseSourceLabel(expense.source) }}
-      </span>
-      <p v-if="expense.notes" class="min-w-0 truncate text-xs text-surface-mid">
-        {{ expense.notes }}
-      </p>
-    </div>
-    <div class="flex flex-wrap justify-end gap-1">
+    <div class="flex flex-wrap items-center justify-end gap-1 border-t border-surface-border/40 pt-2">
       <BaseButton
         variant="ghost"
         size="sm"

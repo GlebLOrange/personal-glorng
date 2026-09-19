@@ -53,11 +53,20 @@ describe("expenses layout restore", () => {
     expect(tabIdx).toBeLessThan(headerIdx);
   });
 
+  it("defers calculator composable and settings panel until those tabs", () => {
+    expect(expensesToolSource).not.toMatch(/useExpenseCalculator\(/);
+    expect(expensesToolSource).toMatch(
+      /defineAsyncComponent\(\s*\(\)\s*=>\s*import\("@\/components\/expenses\/ExpenseCalculatorTab\.vue"\)/,
+    );
+    expect(expensesToolSource).toMatch(
+      /defineAsyncComponent\(\s*\(\)\s*=>\s*import\("@\/components\/expenses\/ExpenseCategorySettings\.vue"\)/,
+    );
+  });
+
   it("renders KPI strip without category breakdown bars", () => {
     const wrapper = mount(ExpenseSummaryCard, {
       props: {
         summary: sampleSummary,
-        monthLabel: "this month",
         expenseCategories: sampleCategories,
         periodChange: { delta: 5, increased: true },
         formatMoney: (amount: string | number, currency: string) => `${amount} ${currency}`,
@@ -65,8 +74,8 @@ describe("expenses layout restore", () => {
     });
 
     expect(wrapper.text()).toContain("total");
-    expect(wrapper.text()).toContain("period change");
-    expect(wrapper.text()).toContain("budget status");
+    expect(wrapper.text()).toContain("Δ period");
+    expect(wrapper.text()).toContain("budget");
     expect(wrapper.text()).toContain("120.00 PLN");
     // Category bars moved to Insights — not in the ledger KPI strip.
     expect(wrapper.text()).not.toContain("Groceries");

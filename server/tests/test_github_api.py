@@ -57,6 +57,7 @@ async def test_resume_includes_github_section(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     async def fake_get_public_github_repos(*args: object, **kwargs: object):
+        assert kwargs.get("cache_only") is True
         return "octocat", [_sample_repo()]
 
     monkeypatch.setattr(
@@ -70,6 +71,28 @@ async def test_resume_includes_github_section(
     assert github["enabled"] is True
     assert github["username"] == "octocat"
     assert len(github["repos"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_resume_github_cache_miss_returns_empty_repos(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_get_public_github_repos(*args: object, **kwargs: object):
+        assert kwargs.get("cache_only") is True
+        return "octocat", []
+
+    monkeypatch.setattr(
+        "app.routers.resume.get_public_github_repos",
+        fake_get_public_github_repos,
+    )
+
+    resp = await client.get("/api/resume")
+    assert resp.status_code == 200
+    github = resp.json()["github"]
+    assert github["username"] == "octocat"
+    assert github["enabled"] is False
+    assert github["repos"] == []
 
 
 @pytest.mark.asyncio

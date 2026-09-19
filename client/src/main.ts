@@ -25,6 +25,17 @@ app.mount("#app");
 
 void router.isReady().then(() => restoreAuth());
 
+function loadDeferredFonts(): void {
+  void import("@fontsource/ibm-plex-sans/latin-600.css");
+  void import("@fontsource/ibm-plex-sans/latin-700.css");
+}
+
+if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+  window.requestIdleCallback(loadDeferredFonts, { timeout: 3000 });
+} else {
+  window.setTimeout(loadDeferredFonts, 0);
+}
+
 window.setTimeout(() => {
   void import("./composables/useCookieConsent").then(({ setupCookieConsent }) => {
     setupCookieConsent(app);

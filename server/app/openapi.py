@@ -62,7 +62,6 @@ OPENAPI_TAGS: list[dict[str, str]] = [
     {"name": "platform", "description": "Admin service catalog and capabilities."},
     {"name": "resume", "description": "Public portfolio resume content."},
     {"name": "donations", "description": "Public donation configuration."},
-    {"name": "spotify", "description": "Public now-playing widget data."},
     {"name": "callbacks", "description": "OAuth and third-party callback handlers."},
     {"name": "github", "description": "GitHub OAuth linking for admin."},
     {

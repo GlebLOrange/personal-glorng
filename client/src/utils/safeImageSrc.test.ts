@@ -27,9 +27,6 @@ describe("safeImageSrc", () => {
     expect(safeImageSrc("https://www.themealdb.com/images/media/meals/example.jpg")).toBe(
       "https://www.themealdb.com/images/media/meals/example.jpg",
     );
-    expect(safeImageSrc("https://i.scdn.co/image/ab67616d0000b273")).toBe(
-      "https://i.scdn.co/image/ab67616d0000b273",
-    );
   });
 
   it("rejects https hosts outside the CSP allowlist", () => {

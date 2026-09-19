@@ -608,11 +608,6 @@ class Settings(BaseSettings):
     # Inbound webhooks (slug → HMAC secret)
     WEBHOOK_SECRETS: Annotated[dict[str, str], NoDecode]
 
-    # Spotify
-    SPOTIFY_CLIENT_ID: str
-    SPOTIFY_CLIENT_SECRET: str
-    SPOTIFY_REFRESH_TOKEN: str
-
     # Groq API
     GROQ_API_KEY: str = ""
     GROQ_CHAT_MODEL: str = "openai/gpt-oss-120b"

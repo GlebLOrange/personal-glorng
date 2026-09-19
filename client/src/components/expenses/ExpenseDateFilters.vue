@@ -21,10 +21,11 @@ const emit = defineEmits<{
 
 <template>
   <div class="flex flex-col gap-3">
-    <div class="flex flex-wrap items-end gap-2">
+    <div class="flex flex-wrap items-center gap-1.5">
       <BaseButton
         v-for="preset in ['this_month', 'last_month', 'custom', 'range'] as MonthPreset[]"
         :key="preset"
+        size="sm"
         :variant="monthPreset === preset ? 'primary' : 'ghost'"
         @click="emit('applyPreset', preset)"
       >
@@ -53,7 +54,7 @@ const emit = defineEmits<{
         <BaseInput v-model="dateTo" type="date" label="to" />
       </template>
 
-      <BaseButton v-if="hasActiveFilters" variant="ghost" @click="emit('clearFilters')">
+      <BaseButton v-if="hasActiveFilters" variant="ghost" size="sm" @click="emit('clearFilters')">
         clear filters
       </BaseButton>
     </div>

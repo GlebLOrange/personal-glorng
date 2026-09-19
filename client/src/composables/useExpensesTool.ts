@@ -111,10 +111,10 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
   onMounted(() => {
     syncTabFromRoute();
     transactions.bootstrapOnMount();
+    // List + summary + categories first; rates / previous-summary deferred inside bootstrap.
     void Promise.all([
       loadPreferences(),
-      transactions.loadRates(),
-      transactions.reloadListAndSummary(),
+      transactions.bootstrapListAndSummary(),
       categorySettings.loadCategories(),
     ]);
   });

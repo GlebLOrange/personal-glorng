@@ -188,12 +188,6 @@ Client mirrors: `VITE_AI_CHAT_ENABLED`, `VITE_AI_SEARCH_ENABLED`.
 |----------|---------|
 | `WEBHOOK_SECRETS` | JSON object `{"slug":"secret",...}` for `POST /api/webhooks/{slug}` (only `ping` is supported) |
 
-## Spotify
-
-| Variable | Purpose |
-|----------|---------|
-| `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN` | Now-playing banner |
-
 ## Weather
 
 | Variable | Default | Purpose |

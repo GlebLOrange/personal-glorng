@@ -6,7 +6,6 @@ const BLOCKED_PROTOCOLS = new Set(["javascript:", "data:", "vbscript:", "blob:"]
  */
 const CSP_IMG_HOSTS = new Set([
   "fastapi.tiangolo.com",
-  "i.scdn.co",
   "www.paypal.com",
   "www.paypalobjects.com",
   "www.themealdb.com",

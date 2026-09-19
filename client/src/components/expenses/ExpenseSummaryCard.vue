@@ -5,7 +5,6 @@ import type { ExpenseCategory, ExpenseSummary } from "@/types";
 
 const props = defineProps<{
   summary: ExpenseSummary | null;
-  monthLabel: string;
   expenseCategories: ExpenseCategory[];
   periodChange: { delta: number; increased: boolean } | null;
   formatMoney: (amount: string | number, currency: string) => string;
@@ -45,21 +44,20 @@ const budgetTotals = computed(() => {
 </script>
 
 <template>
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-    <div>
+  <div class="grid grid-cols-3 gap-3 sm:gap-4">
+    <div class="min-w-0">
       <p class="text-xs text-surface-mid">total</p>
-      <p v-if="summary" class="mt-1 text-3xl font-bold font-data text-surface-light">
+      <p v-if="summary" class="mt-0.5 truncate text-xl font-bold font-data text-surface-light sm:text-2xl">
         {{ formatMoney(summary.total, summary.currency) }}
       </p>
-      <p v-else class="mt-1 animate-pulse text-3xl font-bold text-surface-border">—</p>
-      <p class="mt-1 text-xs text-surface-mid">{{ monthLabel }}</p>
+      <p v-else class="mt-0.5 animate-pulse text-xl font-bold text-surface-border sm:text-2xl">—</p>
     </div>
 
-    <div>
-      <p class="text-xs text-surface-mid">period change</p>
+    <div class="min-w-0">
+      <p class="text-xs text-surface-mid">Δ period</p>
       <p
         v-if="periodChange"
-        class="mt-1 text-xl font-bold font-data"
+        class="mt-0.5 text-lg font-bold font-data sm:text-xl"
         :class="periodChange.increased ? 'text-status-error' : 'text-status-success'"
       >
         {{ periodChange.increased ? "+" : "" }}{{ periodChange.delta }}%
@@ -67,15 +65,14 @@ const budgetTotals = computed(() => {
           {{ periodChange.increased ? "increase" : "decrease" }} versus previous period
         </span>
       </p>
-      <p v-else class="mt-1 text-xl font-bold font-data text-surface-border">—</p>
-      <p class="mt-1 text-xs text-surface-mid">vs previous period</p>
+      <p v-else class="mt-0.5 text-lg font-bold font-data text-surface-border sm:text-xl">—</p>
     </div>
 
-    <div>
-      <p class="text-xs text-surface-mid">budget status</p>
+    <div class="min-w-0">
+      <p class="text-xs text-surface-mid">budget</p>
       <p
         v-if="budgetTotals && summary"
-        class="mt-1 text-xl font-bold font-data"
+        class="mt-0.5 text-lg font-bold font-data sm:text-xl"
         :class="budgetTotals.overBudget ? 'text-status-error' : 'text-accent-blue'"
       >
         {{ budgetTotals.percent }}%
@@ -83,15 +80,10 @@ const budgetTotals = computed(() => {
           of budget{{ budgetTotals.overBudget ? ", over budget" : "" }}
         </span>
       </p>
-      <p v-else class="mt-1 text-xl font-bold font-data text-surface-border">—</p>
-      <p v-if="budgetTotals && summary" class="mt-1 text-xs text-surface-mid">
-        {{ formatMoney(budgetTotals.spent, summary.currency) }} of
-        {{ formatMoney(budgetTotals.budget, summary.currency) }}
-      </p>
-      <p v-else class="mt-1 text-xs text-surface-mid">No category budgets set</p>
+      <p v-else class="mt-0.5 text-lg font-bold font-data text-surface-border sm:text-xl">—</p>
       <div
         v-if="budgetTotals"
-        class="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-border"
+        class="mt-1.5 h-1 overflow-hidden rounded-full bg-surface-border"
         role="progressbar"
         :aria-valuenow="Math.min(budgetTotals.percent, 100)"
         aria-valuemin="0"

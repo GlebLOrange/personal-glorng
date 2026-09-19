@@ -19,8 +19,13 @@ async def get_public_github_repos(
     settings: Settings | None = None,
     *,
     registry: DatabaseRegistry | None = None,
+    cache_only: bool = False,
 ) -> tuple[str | None, list[GitHubRepoResponse]]:
-    """Return username and repos, using Redis cache when available."""
+    """Return username and repos, using Redis cache when available.
+
+    When ``cache_only`` is True, never hit the GitHub HTTP API — return
+    an empty repo list on cache miss so callers (e.g. GET /resume) stay fast.
+    """
     active = settings or get_settings()
     username = active.github_public_username()
     if not username:
@@ -32,6 +37,9 @@ async def get_public_github_repos(
         raw = safe_cache_json_loads(cached)
         if isinstance(raw, list):
             return username, [GitHubRepoResponse.model_validate(item) for item in raw]
+
+    if cache_only:
+        return username, []
 
     repos = await list_public_repos(username)
     await cache_set(

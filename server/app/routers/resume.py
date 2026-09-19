@@ -22,9 +22,12 @@ router = APIRouter()
 )
 async def get_resume(registry: DbRegistry) -> dict[str, Any]:
     data: dict[str, Any] = dict(RESUME_DATA)
+    # Cache-only: never block the CV payload on a cold GitHub HTTP miss.
+    # Client fills the strip via GET /github/repos when repos are empty.
     username, repos = await get_public_github_repos(
         get_settings(),
         registry=registry,
+        cache_only=True,
     )
     data["github"] = {
         "enabled": bool(username and repos),
