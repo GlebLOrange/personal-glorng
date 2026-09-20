@@ -278,9 +278,8 @@ class Settings(BaseSettings):
                     "in production/staging"
                 )
                 raise ValueError(msg)
-        if _is_deployed_env(self.APP_ENV) and any(
-            origin.strip() == "*" for origin in self.CORS_ORIGINS
-        ):
+        # Credentials are always enabled in CORSMiddleware; never allow "*".
+        if any(origin.strip() == "*" for origin in self.CORS_ORIGINS):
             msg = "CORS_ORIGINS cannot include '*' when allow_credentials is enabled"
             raise ValueError(msg)
         if _is_deployed_env(self.APP_ENV) and self.LOG_REQUEST_BODIES:

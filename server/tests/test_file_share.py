@@ -143,6 +143,23 @@ async def test_upload_blocked_extension(auth_client: AsyncClient) -> None:
     assert ".html" in resp.json()["detail"]
 
 
+@pytest.mark.parametrize(
+    ("contents", "filename", "expected"),
+    [
+        (b"RIFF" + b"\x00\x00\x00\x00" + b"WEBP" + b"vp8 ", "photo.bin", "image/webp"),
+        (b"<html></html>", "fake.webp", "application/octet-stream"),
+        (b"\x1f\x8b\x08", "x.bin", "application/gzip"),
+        (b"not-gzip", "x.gz", "application/octet-stream"),
+    ],
+)
+def test_sniff_content_type_magic_bytes(
+    contents: bytes,
+    filename: str,
+    expected: str,
+) -> None:
+    assert fileshare_svc._sniff_content_type(contents, filename) == expected
+
+
 @pytest.mark.asyncio
 async def test_upload_blocked_js_extension(auth_client: AsyncClient) -> None:
     resp = await auth_client.post(
