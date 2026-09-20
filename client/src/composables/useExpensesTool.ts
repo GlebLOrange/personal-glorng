@@ -39,33 +39,13 @@ const TAB_ALIASES: Record<string, ExpenseTab> = {
   insights: "analytics",
   settings: "categories",
   calculator: "converter",
-  converter: "converter",
   "category-breakdown": "breakdown",
 };
 
-const TAB_LABELS: Record<ExpenseTab, string> = {
-  expenses: "expenses",
-  transactions: "transactions",
-  breakdown: "breakdown",
-  analytics: "analytics",
-  categories: "categories",
-  converter: "converter",
-};
-
-export const expenseTabItems = EXPENSE_TABS.map((tab) => ({
-  id: tab,
-  label: TAB_LABELS[tab],
+export const expenseTabItems = EXPENSE_TABS.map((id) => ({
+  id,
+  label: id,
 }));
-
-/** True when the top-level expenses tab is the currency converter panel. */
-export function isConverterTab(tab: string): boolean {
-  return tab === "converter";
-}
-
-/** @deprecated Prefer isConverterTab */
-export function isCalculatorTab(tab: string): boolean {
-  return isConverterTab(tab) || tab === "calculator";
-}
 
 function resolveExpenseTab(value: unknown): ExpenseTab | null {
   if (typeof value !== "string") return null;
