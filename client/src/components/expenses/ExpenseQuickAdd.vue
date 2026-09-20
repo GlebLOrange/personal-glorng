@@ -40,6 +40,24 @@ const emit = defineEmits<{
 const productInputRef = ref<{ focus: () => void } | null>(null);
 const smartTextInputRef = ref<{ focus: () => void } | null>(null);
 const smartText = ref("");
+const productSuggestionsOpen = ref(false);
+
+// ponytail: custom list replaces native datalist (Safari parks it at viewport corner)
+const filteredProductSuggestions = computed(() => {
+  const query = product.value.trim().toLowerCase();
+  if (!query) return [];
+  return props.productSuggestions
+    .filter((name) => {
+      const lower = name.toLowerCase();
+      return lower.includes(query) && lower !== query;
+    })
+    .slice(0, 8);
+});
+
+function selectProductSuggestion(name: string): void {
+  product.value = name;
+  productSuggestionsOpen.value = false;
+}
 
 const { parsed, parsing } = useExpenseParse(smartText, currency);
 
@@ -143,17 +161,41 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(7rem,9rem)_minmax(8rem,10rem)_minmax(9rem,11rem)_auto] lg:items-end"
       @submit.prevent="emit('submit')"
     >
-      <BaseInput
-        id="expense-quick-name"
-        ref="productInputRef"
-        v-model="product"
-        label="goods or services?"
-        list="expense-product-suggestions"
-        placeholder="e.g. groceries"
-        autocomplete="off"
-        class="min-w-0 sm:col-span-2 lg:col-span-1"
-        :error="nameError ?? undefined"
-      />
+      <div class="relative min-w-0 sm:col-span-2 lg:col-span-1">
+        <BaseInput
+          id="expense-quick-name"
+          ref="productInputRef"
+          v-model="product"
+          label="goods or services?"
+          placeholder="e.g. groceries"
+          autocomplete="off"
+          class="min-w-0"
+          :error="nameError ?? undefined"
+          role="combobox"
+          :aria-expanded="productSuggestionsOpen && filteredProductSuggestions.length > 0"
+          aria-controls="expense-product-suggestions"
+          aria-autocomplete="list"
+          @focus="productSuggestionsOpen = true"
+          @input="productSuggestionsOpen = true"
+          @blur="productSuggestionsOpen = false"
+        />
+        <ul
+          v-if="productSuggestionsOpen && filteredProductSuggestions.length"
+          id="expense-product-suggestions"
+          role="listbox"
+          class="absolute left-0 right-0 top-full z-20 mt-1 max-h-48 overflow-auto rounded-md border border-surface-border bg-surface-dark py-1 shadow-lg"
+        >
+          <li
+            v-for="name in filteredProductSuggestions"
+            :key="name"
+            role="option"
+            class="cursor-pointer truncate px-3 py-1.5 text-sm text-surface-light hover:bg-accent-blue/15"
+            @mousedown.prevent="selectProductSuggestion(name)"
+          >
+            {{ name }}
+          </li>
+        </ul>
+      </div>
       <BaseInput
         v-model="price"
         type="number"
@@ -183,9 +225,6 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       >
         {{ loading ? "saving…" : "save" }}
       </ToolbarPillButton>
-      <datalist id="expense-product-suggestions">
-        <option v-for="name in productSuggestions" :key="name" :value="name" />
-      </datalist>
     </form>
 
     <div
