@@ -81,7 +81,6 @@ async function handleGoogleLogin(): Promise<void> {
         name="password"
         autocomplete="current-password"
         label="password"
-        placeholder="password"
         required
       />
       <p

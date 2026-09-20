@@ -44,6 +44,18 @@ export function buildFieldAccessibleName({
   return prefix || undefined;
 }
 
+/** Visible title + overlay tip from one name; placeholder only when it differs. */
+export function resolveFieldCopy(
+  label?: string,
+  placeholder?: string,
+): { name: string | undefined; tip: string | undefined } {
+  // ponytail: one name drives title + tip; placeholder only when it actually differs
+  const name = label || undefined;
+  const tipCandidate = (placeholder ?? label) || undefined;
+  if (!tipCandidate || tipCandidate === name) return { name, tip: undefined };
+  return { name, tip: tipCandidate };
+}
+
 export function pickNativeAttrs(
   attrs: Record<string, unknown>,
   omittedKeys: string[] = [],

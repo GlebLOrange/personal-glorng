@@ -116,7 +116,23 @@ describe("BaseInput", () => {
     expect(wrapper.find('button[aria-label="clear"]').exists()).toBe(false);
   });
 
-  it("empty labeled field shows trailing title and suppresses placeholder tip", () => {
+  it("empty labeled field shows trailing title and suppresses matching placeholder tip", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "email",
+        label: "Email",
+        placeholder: "Email",
+        modelValue: "",
+      },
+    });
+
+    expect(wrapper.get("label:not(.sr-only)").text()).toBe("Email");
+    expect(wrapper.find("#email-tip").exists()).toBe(false);
+    expect(wrapper.find("label.sr-only").exists()).toBe(false);
+    expect(wrapper.get("input").attributes("title")).toBe("Email");
+  });
+
+  it("labeled field shows distinct placeholder tip while empty", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "email",
@@ -127,9 +143,19 @@ describe("BaseInput", () => {
     });
 
     expect(wrapper.get("label:not(.sr-only)").text()).toBe("Email");
-    expect(wrapper.find("#email-tip").exists()).toBe(false);
-    expect(wrapper.find("label.sr-only").exists()).toBe(false);
-    expect(wrapper.find("span.text-surface-muted").exists()).toBe(false);
+    expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
+    expect(wrapper.get("input").attributes("title")).toBe("Email");
+  });
+
+  it("inherits native title from label when caller omits title", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "email",
+        label: "Email",
+      },
+    });
+
+    expect(wrapper.get("input").attributes("title")).toBe("Email");
   });
 
   it("labelInside shows overlay and suppresses placeholder tip when both are set", () => {
@@ -163,7 +189,7 @@ describe("BaseInput", () => {
     expect(wrapper.get("input").attributes("aria-describedby")).toBe("email-hint");
     expect(wrapper.get("#email-hint").text()).toBe("we never share this");
     expect(wrapper.get('button[aria-label="help"]').exists()).toBe(true);
-    expect(wrapper.find("#email-tip").exists()).toBe(false);
+    expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
   });
 
   it("labelInside shows overlay while empty and suppresses tip + outer notch", () => {

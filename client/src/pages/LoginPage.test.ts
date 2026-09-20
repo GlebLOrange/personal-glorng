@@ -45,10 +45,10 @@ describe("LoginPage", () => {
 
     expect(wrapper.get('input[type="email"]').exists()).toBe(true);
     expect(wrapper.get('input[type="password"]').exists()).toBe(true);
-    // trailing labels stay visible; placeholder tips suppressed when labeled
+    // trailing labels stay visible; distinct email tip shows; matching password tip omitted
     expect(wrapper.text()).toContain("email");
     expect(wrapper.text()).toContain("password");
-    expect(wrapper.text()).not.toContain("you@example.com");
+    expect(wrapper.text()).toContain("you@example.com");
     expect(wrapper.text()).toContain("login");
     expect(wrapper.text()).toContain("continue with Google");
     expect(wrapper.text()).toContain("create account");
