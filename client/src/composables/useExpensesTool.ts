@@ -17,23 +17,39 @@ import { useUserPreferences } from "@/composables/useUserPreferences";
 export type { ExpenseCalculatorMode, ExpenseQuickAddTarget };
 export { isCalculatorMode, normalizeCalculatorMode };
 
-export type ExpenseTab = "expenses" | "categories" | "converter";
+export type ExpenseTab =
+  | "expenses"
+  | "transactions"
+  | "breakdown"
+  | "analytics"
+  | "categories"
+  | "converter";
 
-const EXPENSE_TABS: ExpenseTab[] = ["expenses", "categories", "converter"];
+const EXPENSE_TABS: ExpenseTab[] = [
+  "expenses",
+  "transactions",
+  "breakdown",
+  "analytics",
+  "categories",
+  "converter",
+];
 
 /** Legacy ?tab= values → current tab ids. */
 const TAB_ALIASES: Record<string, ExpenseTab> = {
-  transactions: "expenses",
-  insights: "expenses",
+  insights: "analytics",
   settings: "categories",
   calculator: "converter",
   converter: "converter",
+  "category-breakdown": "breakdown",
 };
 
 const TAB_LABELS: Record<ExpenseTab, string> = {
   expenses: "expenses",
+  transactions: "transactions",
+  breakdown: "breakdown",
+  analytics: "analytics",
   categories: "categories",
-  converter: "currency converter",
+  converter: "converter",
 };
 
 export const expenseTabItems = EXPENSE_TABS.map((tab) => ({
@@ -75,6 +91,12 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
 
   function syncTabFromRoute(): void {
     const raw = route.query.tab;
+    if (route.hash === "#expenses-analytics") {
+      activeTab.value = "analytics";
+      const { mode: _mode, ...rest } = route.query;
+      void router.replace({ query: { ...rest, tab: "analytics" }, hash: "" });
+      return;
+    }
     if (typeof raw === "string" && (isCalculatorMode(raw) || raw === "converter")) {
       const mode = normalizeCalculatorMode(raw);
       activeTab.value = "converter";
@@ -95,8 +117,7 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
         return;
       }
       const { mode: _mode, ...rest } = route.query;
-      const hash = raw === "insights" ? "#expenses-analytics" : undefined;
-      void router.replace({ query: { ...rest, tab }, hash });
+      void router.replace({ query: { ...rest, tab } });
     }
   }
 

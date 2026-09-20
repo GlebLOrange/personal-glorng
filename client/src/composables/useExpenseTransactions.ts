@@ -299,7 +299,7 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
     let hasError = false;
 
     if (!product) {
-      quickAddNameError.value = "Name is required";
+      quickAddNameError.value = "Goods or services is required";
       hasError = true;
     } else {
       quickAddNameError.value = null;

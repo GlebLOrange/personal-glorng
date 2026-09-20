@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, useTemplateRef, watch } from "vue";
+import { computed, defineAsyncComponent, nextTick, ref, useTemplateRef, watch } from "vue";
 
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
+import ExpenseCategoryBreakdown from "@/components/expenses/ExpenseCategoryBreakdown.vue";
 import ExpenseDashboardPanel from "@/components/expenses/ExpenseDashboardPanel.vue";
 import ExpenseFormDrawer from "@/components/expenses/ExpenseFormDrawer.vue";
-import AdminTabBar from "@/components/admin/AdminTabBar.vue";
+import ExpenseTransactionsPanel from "@/components/expenses/ExpenseTransactionsPanel.vue";
+import ExpenseOrbitNav from "@/components/expenses/ExpenseOrbitNav.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -19,6 +21,9 @@ const ExpenseCalculatorTab = defineAsyncComponent(
 );
 const ExpenseCategorySettings = defineAsyncComponent(
   () => import("@/components/expenses/ExpenseCategorySettings.vue"),
+);
+const ExpenseInsights = defineAsyncComponent(
+  () => import("@/components/expenses/ExpenseInsights.vue"),
 );
 
 const dashboardPanelRef = useTemplateRef<ExpenseQuickAddTarget>("dashboardPanelRef");
@@ -119,8 +124,17 @@ function retrySummaryAndRates(): void {
   void Promise.all([loadSummary(), loadRates()]);
 }
 
-function openSettings(): void {
-  switchTab("categories");
+function focusAddFromAnalytics(): void {
+  switchTab("expenses");
+  void nextTick(() => {
+    dashboardPanelRef.value?.focusEntry();
+  });
+}
+
+/** Category planet → filter transactions to that category. */
+function openCategoryTransactions(category: string): void {
+  categoryFilter.value = category;
+  switchTab("transactions");
 }
 </script>
 
@@ -136,14 +150,20 @@ function openSettings(): void {
           view only — you can browse expenses but not add or edit them
         </p>
 
-        <AdminTabBar
+        <ExpenseOrbitNav
           flush
           panel-id-prefix="expenses-tab"
           :model-value="activeTab"
           :tabs="expenseTabItems"
           aria-label="expense sections"
           @update:model-value="switchTab"
-        />
+        >
+          <template #end>
+            <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
+              {{ exporting ? "exporting…" : "export csv" }}
+            </ToolbarPillButton>
+          </template>
+        </ExpenseOrbitNav>
 
         <form
           v-if="activeTab === 'categories' && canWriteExpenses"
@@ -170,8 +190,6 @@ function openSettings(): void {
           v-model:selected-month="selectedMonth"
           v-model:date-from="dateFrom"
           v-model:date-to="dateTo"
-          v-model:product-filter="productFilter"
-          v-model:category-filter="categoryFilter"
           v-model:display-currency="displayCurrency"
           v-model:smart-text-open="smartTextOpen"
           v-model:quick-add-category="quickAdd.category"
@@ -184,18 +202,36 @@ function openSettings(): void {
           :saving-expense="savingExpense"
           :category-options="categoryOptions"
           :product-suggestions="productSuggestions"
+          :month-label="monthLabel"
+          :has-active-filters="hasActiveFilters"
+          :range-error="rangeError"
+          :summary="summary"
+          :summary-error="summaryError"
+          :rates-error="ratesError"
+          :format-money="formatMoney"
+          :expense-total="expenseTotal"
+          @apply-preset="handleDatePreset"
+          @clear-filters="clearFilters"
+          @retry-summary="retrySummaryAndRates"
+          @submit-quick="quickSaveExpense"
+          @smart-submit="saveSmartExpense"
+          @open-transactions="switchTab('transactions')"
+          @select-category="openCategoryTransactions"
+        />
+
+        <ExpenseTransactionsPanel
+          v-show="activeTab === 'transactions'"
+          :aria-hidden="activeTab !== 'transactions'"
+          v-model:product-filter="productFilter"
+          v-model:category-filter="categoryFilter"
+          v-model:display-currency="displayCurrency"
+          :category-options="categoryOptions"
           :list-error="listError"
           :expenses="expenses"
           :list-loading="listLoading"
           :sort-indicator="sortIndicator"
           :sort-aria-sort="sortAriaSort"
           :month-label="monthLabel"
-          :has-active-filters="hasActiveFilters"
-          :range-error="rangeError"
-          :summary="summary"
-          :expense-categories="expenseCategories"
-          :summary-error="summaryError"
-          :rates-error="ratesError"
           :exchange-rates="exchangeRates"
           :format-money="formatMoney"
           :format-expense-date="formatExpenseDate"
@@ -205,15 +241,6 @@ function openSettings(): void {
           :expense-pages="expensePages"
           :has-next-expense-page="hasNextExpensePage"
           :has-previous-expense-page="hasPreviousExpensePage"
-          :has-chart-data="hasChartData"
-          :line-chart="lineChart"
-          :bar-chart="barChart"
-          :doughnut-chart="doughnutChart"
-          @apply-preset="handleDatePreset"
-          @clear-filters="clearFilters"
-          @retry-summary="retrySummaryAndRates"
-          @submit-quick="quickSaveExpense"
-          @smart-submit="saveSmartExpense"
           @clear-transaction-filters="clearTransactionFilters"
           @retry-list="goToExpensePage(expensePage)"
           @edit="openEdit"
@@ -226,6 +253,43 @@ function openSettings(): void {
           @next-page="goToExpensePage(expensePage + 1)"
           @last-page="goToExpensePage(expensePages)"
         />
+
+        <section
+          v-show="activeTab === 'breakdown'"
+          id="expenses-tab-panel-breakdown"
+          role="tabpanel"
+          aria-labelledby="expenses-tab-tab-breakdown"
+          :aria-hidden="activeTab !== 'breakdown'"
+          tabindex="0"
+          class="outline-none"
+        >
+          <ExpenseCategoryBreakdown
+            :summary="summary"
+            :format-money="formatMoney"
+            @select-category="openCategoryTransactions"
+          />
+        </section>
+
+        <section
+          v-show="activeTab === 'analytics'"
+          id="expenses-tab-panel-analytics"
+          role="tabpanel"
+          aria-labelledby="expenses-tab-tab-analytics"
+          :aria-hidden="activeTab !== 'analytics'"
+          tabindex="0"
+          class="outline-none"
+        >
+          <ExpenseInsights
+            :has-chart-data="hasChartData"
+            :line-chart="lineChart"
+            :bar-chart="barChart"
+            :doughnut-chart="doughnutChart"
+            :summary="summary"
+            :expense-categories="expenseCategories"
+            :format-money="formatMoney"
+            @add-expense="focusAddFromAnalytics"
+          />
+        </section>
 
         <ExpenseCalculatorTab
           v-if="converterMounted"
@@ -251,18 +315,6 @@ function openSettings(): void {
             @remove-category="requestDeleteCategory"
           />
         </section>
-
-        <footer
-          v-if="activeTab === 'expenses'"
-          class="flex flex-wrap items-center justify-between gap-2 border-t border-surface-border/60 pt-4"
-        >
-          <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
-            {{ exporting ? "exporting…" : "export csv" }}
-          </ToolbarPillButton>
-          <ToolbarPillButton family="1xx" @click="openSettings">
-            settings
-          </ToolbarPillButton>
-        </footer>
       </div>
 
       <ExpenseFormDrawer

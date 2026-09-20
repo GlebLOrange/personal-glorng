@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import type { DateFilterMode, MonthPreset } from "@/composables/useExpenseFilters";
 
-defineProps<{
+const props = defineProps<{
   hasActiveFilters: boolean;
 }>();
 
@@ -17,46 +20,52 @@ const emit = defineEmits<{
   applyPreset: [preset: MonthPreset];
   clearFilters: [];
 }>();
+
+/** Presets shown in the period dropdown — no dedicated “month” (custom) picker. */
+const PERIOD_PRESETS: Array<{ id: MonthPreset; label: string }> = [
+  { id: "this_month", label: "this month" },
+  { id: "last_month", label: "last month" },
+  { id: "range", label: "range" },
+];
+
+const activeLabel = computed(() => {
+  if (monthPreset.value === "last_month") return "last month";
+  if (monthPreset.value === "range") return "range";
+  if (monthPreset.value === "this_month") return "this month";
+  // legacy custom → treat as this month for the trigger label
+  return "this month";
+});
+
+function selectPreset(preset: MonthPreset): void {
+  emit("applyPreset", preset);
+}
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
-    <div class="flex flex-wrap items-center gap-1.5">
+  <AdminFilterDropdown
+    label="period"
+    :has-active-filters="props.hasActiveFilters || monthPreset !== 'this_month'"
+    :active-label="activeLabel"
+    :option-labels="PERIOD_PRESETS.map((p) => p.label)"
+    :match-trigger-width="false"
+    @clear="emit('clearFilters')"
+  >
+    <template #chips>
       <BaseButton
-        v-for="preset in ['this_month', 'last_month', 'custom', 'range'] as MonthPreset[]"
-        :key="preset"
+        v-for="preset in PERIOD_PRESETS"
+        :key="preset.id"
         size="sm"
-        :variant="monthPreset === preset ? 'primary' : 'ghost'"
-        @click="emit('applyPreset', preset)"
+        class="w-full justify-start"
+        :variant="monthPreset === preset.id ? 'primary' : 'ghost'"
+        @click="selectPreset(preset.id)"
       >
-        {{
-          preset === "this_month"
-            ? "this month"
-            : preset === "last_month"
-              ? "last month"
-              : preset === "custom"
-                ? "month"
-                : "range"
-        }}
+        {{ preset.label }}
       </BaseButton>
+    </template>
 
-      <BaseInput
-        v-if="dateFilterMode === 'month'"
-        v-model="selectedMonth"
-        type="month"
-        label="month"
-        @change="monthPreset = 'custom'"
-      />
-
-      <template v-else>
-        <BaseInput v-model="dateFrom" type="date" label="from" />
-        <span class="pb-2 text-xs text-surface-mid">to</span>
-        <BaseInput v-model="dateTo" type="date" label="to" />
-      </template>
-
-      <BaseButton v-if="hasActiveFilters" variant="ghost" size="sm" @click="emit('clearFilters')">
-        clear filters
-      </BaseButton>
+    <div v-if="dateFilterMode === 'range'" class="flex flex-col gap-2">
+      <BaseInput v-model="dateFrom" type="date" label="from" />
+      <BaseInput v-model="dateTo" type="date" label="to" />
     </div>
-  </div>
+  </AdminFilterDropdown>
 </template>

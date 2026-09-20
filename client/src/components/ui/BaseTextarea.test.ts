@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 
 describe("BaseTextarea", () => {
-  it("associates the sr-only label with the textarea by default", () => {
+  it("renders a persistent trailing label by default", () => {
     const wrapper = mount(BaseTextarea, {
       props: {
         id: "message",
@@ -12,17 +12,19 @@ describe("BaseTextarea", () => {
       },
     });
 
-    expect(wrapper.get("label.sr-only").attributes("for")).toBe("message");
+    expect(wrapper.find("label.sr-only").exists()).toBe(false);
+    expect(wrapper.get("label:not(.sr-only)").attributes("for")).toBe("message");
+    expect(wrapper.get("label:not(.sr-only)").text()).toBe("Message");
     expect(wrapper.get("textarea").attributes("id")).toBe("message");
-    expect(wrapper.get("span.text-surface-muted").text()).toBe("Message");
+    expect(wrapper.get("textarea").attributes("title")).toBe("Message");
   });
 
-  it("renders a border-notch label when labelInside is false", () => {
+  it("renders a border-notch label when labelAlign is start", () => {
     const wrapper = mount(BaseTextarea, {
       props: {
         id: "message",
         label: "Message",
-        labelInside: false,
+        labelAlign: "start",
       },
     });
 
@@ -45,12 +47,13 @@ describe("BaseTextarea", () => {
     expect(wrapper.find("p#message-hint").exists()).toBe(false);
   });
 
-  it("shows inside label and suppresses placeholder tip when both are set", () => {
+  it("labelInside shows overlay and suppresses placeholder tip when both are set", () => {
     const wrapper = mount(BaseTextarea, {
       props: {
         id: "notes",
         label: "Notes",
         placeholder: "optional tips",
+        labelInside: true,
       },
     });
 
@@ -67,13 +70,13 @@ describe("BaseTextarea", () => {
         id: "notes",
         label: "Notes",
         placeholder: "optional tips",
-        labelInside: false,
         modelValue: "",
         "onUpdate:modelValue": (value: string | undefined) =>
           wrapper.setProps({ modelValue: value }),
       },
     });
 
+    expect(wrapper.get("label:not(.sr-only)").text()).toBe("Notes");
     expect(wrapper.get("#notes-tip").text()).toBe("optional tips");
     expect(wrapper.get("#notes-tip").classes()).toContain("text-left");
     expect(wrapper.get("#notes-tip").classes()).toContain("left-3");

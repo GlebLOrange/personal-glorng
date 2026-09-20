@@ -7,6 +7,7 @@ import {
   buildFieldAccessibleName,
   buildFieldDescribedBy,
   pickNativeAttrs,
+  resolveFieldCopy,
 } from "@/components/ui/fieldA11y";
 import {
   FIELD_CLEAR_HIDDEN_CLASS,
@@ -35,11 +36,16 @@ const props = withDefaults(
     error?: string;
     rows?: number;
     compact?: boolean;
-    /** Render the label inside the control instead of the outer border notch. */
+    /** Render the label inside the control instead of the trailing / notch title. */
     labelInside?: boolean;
+    /**
+     * When not labelInside: `start` = border notch; `end` = inside trailing (before clear).
+     */
+    labelAlign?: "start" | "end";
   }>(),
   {
-    labelInside: true,
+    labelInside: false,
+    labelAlign: "end",
   },
 );
 
@@ -49,9 +55,18 @@ const textareaId = computed(() => props.id ?? `base-textarea-${fallbackId}`);
 const hintId = computed(() => `${textareaId.value}-hint`);
 const errorId = computed(() => `${textareaId.value}-error`);
 const tipId = computed(() => `${textareaId.value}-tip`);
+const fieldCopy = computed(() => resolveFieldCopy(props.label, props.placeholder));
 const hasClearableValue = computed(() => Boolean(model.value?.length));
+const isInlineEnd = computed(() => props.labelAlign === "end" && !props.labelInside);
 const useShell = computed(() =>
-  Boolean(props.prefix || props.placeholder || props.labelInside || props.label),
+  Boolean(
+    props.prefix ||
+      fieldCopy.value.tip ||
+      props.placeholder ||
+      props.labelInside ||
+      props.label ||
+      isInlineEnd.value,
+  ),
 );
 /** Reserve clear width whenever shell is active so tip never jumps vs BaseInput. */
 const reserveClear = computed(() => useShell.value);
@@ -62,14 +77,16 @@ const showInsideLabel = computed(
 );
 /** Tip only when empty and no inside label is showing. */
 const showTip = computed(
-  () => Boolean(props.placeholder) && !hasClearableValue.value && !showInsideLabel.value,
+  () => Boolean(fieldCopy.value.tip) && !hasClearableValue.value && !showInsideLabel.value,
 );
-const tipInsetClass = computed(() => ["left-3", reserveClear.value ? "right-10" : "right-3"]);
+const tipInsetClass = computed(() => ["left-3", reserveClear.value || isInlineEnd.value ? "right-10" : "right-3"]);
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
 const hasVisibleLabel = computed(
   () => showLabelNotch.value || Boolean(props.label && props.labelInside),
 );
-const showNotchRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
+const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
+const showInlineEndLabel = computed(() => isInlineEnd.value && showLabelRow.value);
+const showNotchRow = computed(() => !isInlineEnd.value && showLabelRow.value);
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
 const describedBy = computed(() =>
   buildFieldDescribedBy({
@@ -96,7 +113,14 @@ const shellTextareaClass = computed(() =>
     props.compact ? "min-h-9 py-1.5" : "min-h-10 py-2",
   ].join(" "),
 );
-const textareaAttrs = computed(() => pickNativeAttrs(attrs, ["aria-describedby"]));
+const textareaAttrs = computed(() => {
+  const native = pickNativeAttrs(attrs, ["aria-describedby"]);
+  const callerTitle = typeof native.title === "string" ? native.title : undefined;
+  return {
+    ...native,
+    title: callerTitle ?? fieldCopy.value.name,
+  };
+});
 const accessibleName = computed(() =>
   buildFieldAccessibleName({
     ariaLabel: attrs["aria-label"],
@@ -107,6 +131,8 @@ const accessibleName = computed(() =>
 );
 const notchBgClass = FIELD_NOTCH_BG_CLASS;
 const notchClass = FIELD_NOTCH_CLASS;
+const helpAlign = computed(() => (isInlineEnd.value ? "end" : "start"));
+const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top" : "bottom"));
 
 function clear(): void {
   model.value = "";
@@ -153,14 +179,40 @@ function clear(): void {
         :class="tipInsetClass"
         aria-hidden="true"
       >
-        {{ placeholder }}
+        {{ fieldCopy.tip }}
       </span>
       <div
-        v-if="reserveClear"
-        class="absolute right-0 top-0 z-10 flex h-10 w-10 items-center justify-center"
-        :class="showClear ? undefined : FIELD_CLEAR_HIDDEN_CLASS"
+        v-if="reserveClear || showInlineEndLabel"
+        class="absolute right-0 top-0 z-10 flex h-10 items-center gap-0.5 pr-2"
       >
-        <IconCloseButton v-if="showClear" size="field" aria-label="clear" @click="clear" />
+        <div
+          v-if="showInlineEndLabel"
+          class="flex max-w-[11rem] items-center gap-1 bg-transparent"
+        >
+          <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
+          <label
+            v-if="showLabelNotch"
+            :for="textareaId"
+            :class="['truncate', FIELD_LABEL_TEXT_CLASS]"
+          >
+            {{ label }}
+          </label>
+          <FieldHelp
+            v-if="hint"
+            size="sm"
+            :align="helpAlign"
+            :placement="helpPlacement"
+            :text="hint"
+            :content-id="hintId"
+          />
+        </div>
+        <div
+          v-if="reserveClear"
+          class="flex h-10 w-10 items-center justify-center"
+          :class="showClear ? undefined : FIELD_CLEAR_HIDDEN_CLASS"
+        >
+          <IconCloseButton v-if="showClear" size="field" aria-label="clear" @click="clear" />
+        </div>
       </div>
     </div>
 
@@ -187,7 +239,13 @@ function clear(): void {
         {{ label }}
       </label>
       <span class="pointer-events-auto">
-        <FieldHelp v-if="hint" size="sm" :text="hint" :content-id="hintId" />
+        <FieldHelp
+          v-if="hint"
+          size="sm"
+          :align="helpAlign"
+          :text="hint"
+          :content-id="hintId"
+        />
       </span>
     </div>
     <p

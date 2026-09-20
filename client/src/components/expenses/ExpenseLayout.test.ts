@@ -26,19 +26,28 @@ const sampleSummary: ExpenseSummary = {
 };
 
 describe("expenses layout restore", () => {
-  it("keeps tabs above the dashboard panel and footer export/settings", () => {
-    const tabIdx = expensesToolSource.indexOf("<AdminTabBar");
-    const dashboardIdx = expensesToolSource.indexOf("<ExpenseDashboardPanel");
-    const footerIdx = expensesToolSource.indexOf("<footer");
+  it("keeps tabs above the dashboard with export in the tab end slot", () => {
+    const tabIdx = expensesToolSource.indexOf("<ExpenseOrbitNav");
+    const endSlotIdx = expensesToolSource.indexOf("#end");
     const exportIdx = expensesToolSource.indexOf("export csv");
-    const settingsIdx = expensesToolSource.indexOf("settings");
+    const dashboardIdx = expensesToolSource.indexOf("<ExpenseDashboardPanel");
+    const transactionsIdx = expensesToolSource.indexOf("<ExpenseTransactionsPanel");
+    const analyticsIdx = expensesToolSource.indexOf('id="expenses-tab-panel-analytics"');
     expect(tabIdx).toBeGreaterThan(-1);
-    expect(dashboardIdx).toBeGreaterThan(-1);
-    expect(footerIdx).toBeGreaterThan(-1);
-    expect(tabIdx).toBeLessThan(dashboardIdx);
-    expect(dashboardIdx).toBeLessThan(footerIdx);
-    expect(exportIdx).toBeGreaterThan(footerIdx);
-    expect(settingsIdx).toBeGreaterThan(footerIdx);
+    expect(endSlotIdx).toBeGreaterThan(tabIdx);
+    expect(exportIdx).toBeGreaterThan(endSlotIdx);
+    expect(dashboardIdx).toBeGreaterThan(exportIdx);
+    expect(transactionsIdx).toBeGreaterThan(dashboardIdx);
+    expect(analyticsIdx).toBeGreaterThan(transactionsIdx);
+    expect(expensesToolSource).toMatch(/activeTab === 'transactions'/);
+    expect(expensesToolSource).toMatch(/activeTab === 'breakdown'/);
+    expect(expensesToolSource).toMatch(/activeTab === 'analytics'/);
+    expect(expensesToolSource).toMatch(/ExpenseCategoryBreakdown/);
+    expect(expensesToolSource).toMatch(/id="expenses-tab-panel-breakdown"/);
+    expect(expensesToolSource).toMatch(/openCategoryTransactions/);
+    expect(expensesToolSource).not.toMatch(/<AdminTabBar/);
+    expect(expensesToolSource).not.toMatch(/<footer/);
+    expect(expensesToolSource).not.toMatch(/>\s*settings\s*</);
     expect(expensesToolSource).not.toMatch(/\+ expense/);
   });
 
@@ -57,7 +66,7 @@ describe("expenses layout restore", () => {
     );
   });
 
-  it("renders a single total with transaction count", () => {
+  it("renders a single total with clickable transaction count", async () => {
     const wrapper = mount(ExpenseSummaryCard, {
       props: {
         summary: sampleSummary,
@@ -68,8 +77,12 @@ describe("expenses layout restore", () => {
 
     expect(wrapper.text()).toContain("Total");
     expect(wrapper.text()).toContain("120.00 PLN");
-    expect(wrapper.text()).toContain("12 transactions");
+    expect(wrapper.text()).toContain("transactions · 12");
     expect(wrapper.text()).not.toContain("Top Category");
+    const link = wrapper.find("button");
+    expect(link.text()).toBe("transactions · 12");
+    await link.trigger("click");
+    expect(wrapper.emitted("openTransactions")).toHaveLength(1);
   });
 
   it("flattens the period strip without a wrapping Card on the section", () => {
@@ -105,7 +118,8 @@ describe("expenses layout restore", () => {
     });
 
     expect(wrapper.find("section[aria-label='expense period summary']").exists()).toBe(true);
-    expect(wrapper.text()).toContain("Expenses");
+    expect(wrapper.text()).toContain("Spent on");
+    expect(wrapper.text()).toContain("this month");
     expect(wrapper.html()).not.toMatch(/class="[^"]*card/i);
   });
 });

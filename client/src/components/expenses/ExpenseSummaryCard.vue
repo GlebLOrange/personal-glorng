@@ -7,6 +7,10 @@ defineProps<{
   expenseTotal: number;
   formatMoney: (amount: string | number, currency: string) => string;
 }>();
+
+defineEmits<{
+  openTransactions: [];
+}>();
 </script>
 
 <template>
@@ -24,9 +28,13 @@ defineProps<{
           —
         </p>
       </div>
-      <p class="text-sm text-surface-mid">
-        {{ expenseTotal }} {{ expenseTotal === 1 ? "transaction" : "transactions" }}
-      </p>
+      <button
+        type="button"
+        class="text-sm text-accent-blue underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+        @click="$emit('openTransactions')"
+      >
+        transactions · {{ expenseTotal }}
+      </button>
     </div>
   </Card>
 </template>

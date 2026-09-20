@@ -1,40 +1,59 @@
 <script setup lang="ts">
-import { actionFamilyClass } from "@/constants/httpStatusColors";
+import { computed, useTemplateRef } from "vue";
 
-defineProps<{
+import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
+
+const props = defineProps<{
   categoryOptions: string[];
 }>();
 
 const categoryFilter = defineModel<string | null>("categoryFilter", { required: true });
+const dropdownRef = useTemplateRef<InstanceType<typeof AdminFilterDropdown>>("dropdownRef");
 
-const chipClass = (active: boolean) => actionFamilyClass("1xx", active);
+const activeLabel = computed(() => categoryFilter.value ?? "all");
+
+const optionLabels = computed(() => ["all", ...props.categoryOptions]);
+
+function selectCategory(category: string | null): void {
+  categoryFilter.value = category;
+  dropdownRef.value?.close();
+}
+
+function clearCategory(): void {
+  categoryFilter.value = null;
+}
 </script>
 
 <template>
-  <div
-    class="flex flex-nowrap gap-2 overflow-x-auto pb-1"
-    role="group"
-    aria-label="filter by category"
+  <AdminFilterDropdown
+    ref="dropdownRef"
+    label="filter by category"
+    :has-active-filters="categoryFilter !== null"
+    :active-label="activeLabel"
+    :option-labels="optionLabels"
+    :match-trigger-width="false"
+    @clear="clearCategory"
   >
-    <button
-      type="button"
-      class="shrink-0"
-      :class="chipClass(categoryFilter === null)"
-      :aria-pressed="categoryFilter === null"
-      @click="categoryFilter = null"
-    >
-      all
-    </button>
-    <button
-      v-for="category in categoryOptions"
-      :key="category"
-      type="button"
-      class="shrink-0"
-      :class="chipClass(categoryFilter === category)"
-      :aria-pressed="categoryFilter === category"
-      @click="categoryFilter = category"
-    >
-      {{ category }}
-    </button>
-  </div>
+    <template #chips>
+      <BaseButton
+        size="sm"
+        class="w-full justify-start"
+        :variant="categoryFilter === null ? 'primary' : 'ghost'"
+        @click="selectCategory(null)"
+      >
+        all
+      </BaseButton>
+      <BaseButton
+        v-for="category in categoryOptions"
+        :key="category"
+        size="sm"
+        class="w-full justify-start"
+        :variant="categoryFilter === category ? 'primary' : 'ghost'"
+        @click="selectCategory(category)"
+      >
+        {{ category }}
+      </BaseButton>
+    </template>
+  </AdminFilterDropdown>
 </template>

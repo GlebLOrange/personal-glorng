@@ -36,7 +36,6 @@ defineProps<{
         label="format"
         hint="auto detects from the file extension"
         compact
-        label-align="end"
       >
         <option value="auto">auto</option>
         <option value="csv">CSV</option>
@@ -53,7 +52,6 @@ defineProps<{
         label="profile"
         hint="pipe embed: | fields with ; lists inside cells"
         compact
-        label-align="end"
       >
         <option value="custom">custom delimiters</option>
         <option value="pipe_embed">pipe embed</option>
@@ -101,7 +99,6 @@ defineProps<{
         label="xml mode"
         hint="rows = flat table; tree = nested JSON"
         compact
-        label-align="end"
       >
         <option value="rows">rows</option>
         <option value="tree">tree</option>

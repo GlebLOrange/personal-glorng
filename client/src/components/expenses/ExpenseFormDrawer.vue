@@ -38,10 +38,10 @@ const emit = defineEmits<{ submit: []; close: [] }>();
         <BaseInput
           v-model="amount"
           type="number"
-          step="0.01"
+          step="any"
           min="0.01"
           label="amount"
-          placeholder="0.00"
+          placeholder="1"
           inputmode="decimal"
         />
       </div>

@@ -7,6 +7,7 @@ import {
   buildFieldAccessibleName,
   buildFieldDescribedBy,
   pickNativeAttrs,
+  resolveFieldCopy,
 } from "@/components/ui/fieldA11y";
 import {
   CONTROL_SIZE,
@@ -60,6 +61,7 @@ const inputId = computed(() => props.id ?? `base-input-${fallbackId}`);
 const hintId = computed(() => `${inputId.value}-hint`);
 const errorId = computed(() => `${inputId.value}-error`);
 const tipId = computed(() => `${inputId.value}-tip`);
+const fieldCopy = computed(() => resolveFieldCopy(props.label, props.placeholder));
 const hasSuffix = computed(() => Boolean(slots.suffix));
 const hasPrefixSlot = computed(() => Boolean(slots.prefix));
 const hasPrefix = computed(() => Boolean(props.prefix) || hasPrefixSlot.value);
@@ -74,6 +76,7 @@ const isInlineEnd = computed(() => props.labelAlign === "end" && !props.labelIns
 const useShell = computed(() =>
   Boolean(
     hasPrefix.value ||
+      fieldCopy.value.tip ||
       props.placeholder ||
       hasSuffix.value ||
       props.labelInside ||
@@ -89,11 +92,7 @@ const showInsideLabel = computed(
   () => Boolean(props.labelInside && props.label) && !hasTypedValue.value,
 );
 const showTip = computed(
-  () =>
-    Boolean(props.placeholder) &&
-    !hasTypedValue.value &&
-    !showInsideLabel.value &&
-    !props.label,
+  () => Boolean(fieldCopy.value.tip) && !hasTypedValue.value && !showInsideLabel.value,
 );
 /** Error replaces label on the border notch; hint rides beside the label when present. */
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
@@ -145,24 +144,33 @@ const bareInputClass = computed(() => [
 ]);
 const shellClass = computed(() => [
   // Inset ring (not border) — content height matches CONTROL_SIZE / icon buttons.
-  "relative flex w-full items-center overflow-hidden rounded-lg bg-surface-dark transition-colors",
+  // Overflow visible when trailing help can open above the shell (top-right tip).
+  "relative flex w-full items-center rounded-lg bg-surface-dark transition-colors",
+  showInlineEndLabel.value && props.hint ? "overflow-visible" : "overflow-hidden",
   props.compact ? "box-border h-9" : CONTROL_SIZE,
   toneShellRingClass.value,
 ]);
+const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top" : "bottom"));
 const shellInputClass = computed(() => [
   "relative z-10 h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent px-3 text-left text-sm leading-none text-surface-light outline-none",
   props.type === "number" && "font-data",
   props.type === "search" && "base-input-search",
 ]);
 const inputAttrs = computed(() => {
-  return pickNativeAttrs(attrs, ["aria-describedby"]);
+  const native = pickNativeAttrs(attrs, ["aria-describedby"]);
+  const callerTitle = typeof native.title === "string" ? native.title : undefined;
+  return {
+    ...native,
+    title: callerTitle ?? fieldCopy.value.name,
+  };
 });
-/** Avoid UA size=20; prefer placeholder length so shrink-wrapped panels fit tips. */
+/** Avoid UA size=20; prefer tip length so shrink-wrapped panels fit tips. */
 const shellTextAttrs = computed(() => {
   const customSize = typeof inputAttrs.value.size === "number" ? inputAttrs.value.size : undefined;
+  const tipLen = fieldCopy.value.tip?.length ?? props.placeholder?.length ?? 1;
   return {
     ...inputAttrs.value,
-    size: customSize ?? Math.max(props.placeholder?.length ?? 1, 1),
+    size: customSize ?? Math.max(tipLen, 1),
   };
 });
 const accessibleName = computed(() =>
@@ -253,12 +261,12 @@ defineExpose({ focus });
         aria-hidden="true"
       >
         <span class="min-w-0 flex-1 truncate text-left text-xs text-surface-mid/65">
-          {{ placeholder }}
+          {{ fieldCopy.tip }}
         </span>
       </span>
       <div
         v-if="reserveClear || hasSuffix || showInlineEndLabel"
-        class="relative z-10 flex shrink-0 items-center gap-0.5 self-stretch pr-1"
+        class="relative z-10 flex shrink-0 items-center gap-0.5 self-stretch pr-2"
       >
         <div
           v-if="showInlineEndLabel"
@@ -276,6 +284,7 @@ defineExpose({ focus });
             v-if="hint"
             size="sm"
             :align="helpAlign"
+            :placement="helpPlacement"
             :text="hint"
             :content-id="hintId"
           />

@@ -15,7 +15,6 @@ const props = withDefaults(
   }>(),
   {
     passwordLabel: "password",
-    passwordPlaceholder: "password",
   },
 );
 
@@ -56,7 +55,6 @@ defineExpose({ strength, passwordsMatch, valid });
     name="password-confirm"
     autocomplete="new-password"
     label="confirm password"
-    placeholder="confirm password"
     :error="passwordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
     required
   />

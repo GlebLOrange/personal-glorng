@@ -74,7 +74,6 @@ async function handleSubmit(): Promise<void> {
         v-model:password="password"
         v-model:password-confirm="passwordConfirm"
         password-label="new password"
-        password-placeholder="new password"
         strength-id="reset-password-strength"
       />
       <p

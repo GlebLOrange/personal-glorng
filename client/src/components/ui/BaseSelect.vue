@@ -2,7 +2,7 @@
 import { computed, useAttrs, useId } from "vue";
 
 import FieldHelp from "@/components/ui/FieldHelp.vue";
-import { buildFieldAccessibleName, buildFieldDescribedBy } from "@/components/ui/fieldA11y";
+import { buildFieldAccessibleName, buildFieldDescribedBy, resolveFieldCopy } from "@/components/ui/fieldA11y";
 import {
   FIELD_INLINE_END_LABEL_CLASS,
   FIELD_LABEL_TEXT_CLASS,
@@ -28,12 +28,12 @@ const props = withDefaults(
     error?: string;
     compact?: boolean;
     /**
-     * `start` — border-notch label (default).
-     * `end` — label + help inside the control, left of the chevron.
+     * `start` — border-notch label.
+     * `end` — label + help inside the control, left of the chevron (default).
      */
     labelAlign?: "start" | "end";
   }>(),
-  { labelAlign: "start" },
+  { labelAlign: "end" },
 );
 
 const attrs = useAttrs();
@@ -41,6 +41,7 @@ const fallbackId = useId();
 const selectId = computed(() => props.id ?? `base-select-${fallbackId}`);
 const hintId = computed(() => `${selectId.value}-hint`);
 const errorId = computed(() => `${selectId.value}-error`);
+const fieldCopy = computed(() => resolveFieldCopy(props.label));
 const isInlineEnd = computed(() => props.labelAlign === "end");
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error);
 const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
@@ -69,8 +70,13 @@ const ariaLabel = computed(() =>
     label: props.label,
   }),
 );
+const nativeTitle = computed(() => {
+  const callerTitle = typeof attrs.title === "string" ? attrs.title : undefined;
+  return callerTitle ?? fieldCopy.value.name;
+});
 const notchBgClass = FIELD_NOTCH_BG_CLASS;
 const helpAlign = computed(() => (isInlineEnd.value ? "end" : "start"));
+const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top" : "bottom"));
 </script>
 
 <template>
@@ -81,6 +87,7 @@ const helpAlign = computed(() => (isInlineEnd.value ? "end" : "start"));
       :aria-label="ariaLabel"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="describedBy"
+      :title="nativeTitle"
       :class="[
         selectClass,
         'w-full',
@@ -103,6 +110,7 @@ const helpAlign = computed(() => (isInlineEnd.value ? "end" : "start"));
           v-if="hint"
           size="sm"
           :align="helpAlign"
+          :placement="helpPlacement"
           :text="hint"
           :content-id="hintId"
         />
