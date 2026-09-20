@@ -1,17 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import ExpenseCategoryOrbit from "@/components/expenses/ExpenseCategoryOrbit.vue";
 import { Card } from "@/components/ui/card";
 import type { ExpenseSummary } from "@/types";
 
 const props = defineProps<{
   summary: ExpenseSummary | null;
   formatMoney: (amount: string | number, currency: string) => string;
-}>();
-
-const emit = defineEmits<{
-  selectCategory: [category: string];
 }>();
 
 const currency = computed(() => props.summary?.currency ?? "PLN");
@@ -34,13 +29,6 @@ const rows = computed(() => {
 
 <template>
   <div class="flex flex-col gap-4">
-    <ExpenseCategoryOrbit
-      framed
-      :summary="summary"
-      :format-money="formatMoney"
-      @select-category="emit('selectCategory', $event)"
-    />
-
     <Card>
       <h3 class="mb-3 text-sm font-semibold text-surface-light">category breakdown</h3>
       <ul v-if="rows.length" class="flex flex-col gap-3" aria-label="spend by category bars">

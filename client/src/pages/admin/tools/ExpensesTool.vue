@@ -6,7 +6,7 @@ import ExpenseCategoryBreakdown from "@/components/expenses/ExpenseCategoryBreak
 import ExpenseDashboardPanel from "@/components/expenses/ExpenseDashboardPanel.vue";
 import ExpenseFormDrawer from "@/components/expenses/ExpenseFormDrawer.vue";
 import ExpenseTransactionsPanel from "@/components/expenses/ExpenseTransactionsPanel.vue";
-import ExpenseOrbitNav from "@/components/expenses/ExpenseOrbitNav.vue";
+import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -131,11 +131,6 @@ function focusAddFromAnalytics(): void {
   });
 }
 
-/** Category planet → filter transactions to that category. */
-function openCategoryTransactions(category: string): void {
-  categoryFilter.value = category;
-  switchTab("transactions");
-}
 </script>
 
 <template>
@@ -150,7 +145,7 @@ function openCategoryTransactions(category: string): void {
           view only — you can browse expenses but not add or edit them
         </p>
 
-        <ExpenseOrbitNav
+        <AdminTabBar
           flush
           panel-id-prefix="expenses-tab"
           :model-value="activeTab"
@@ -163,7 +158,7 @@ function openCategoryTransactions(category: string): void {
               {{ exporting ? "exporting…" : "export csv" }}
             </ToolbarPillButton>
           </template>
-        </ExpenseOrbitNav>
+        </AdminTabBar>
 
         <form
           v-if="activeTab === 'categories' && canWriteExpenses"
@@ -216,7 +211,6 @@ function openCategoryTransactions(category: string): void {
           @submit-quick="quickSaveExpense"
           @smart-submit="saveSmartExpense"
           @open-transactions="switchTab('transactions')"
-          @select-category="openCategoryTransactions"
         />
 
         <ExpenseTransactionsPanel
@@ -266,7 +260,6 @@ function openCategoryTransactions(category: string): void {
           <ExpenseCategoryBreakdown
             :summary="summary"
             :format-money="formatMoney"
-            @select-category="openCategoryTransactions"
           />
         </section>
 

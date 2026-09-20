@@ -27,7 +27,7 @@ const sampleSummary: ExpenseSummary = {
 
 describe("expenses layout restore", () => {
   it("keeps tabs above the dashboard with export in the tab end slot", () => {
-    const tabIdx = expensesToolSource.indexOf("<ExpenseOrbitNav");
+    const tabIdx = expensesToolSource.indexOf("<AdminTabBar");
     const endSlotIdx = expensesToolSource.indexOf("#end");
     const exportIdx = expensesToolSource.indexOf("export csv");
     const dashboardIdx = expensesToolSource.indexOf("<ExpenseDashboardPanel");
@@ -44,8 +44,8 @@ describe("expenses layout restore", () => {
     expect(expensesToolSource).toMatch(/activeTab === 'analytics'/);
     expect(expensesToolSource).toMatch(/ExpenseCategoryBreakdown/);
     expect(expensesToolSource).toMatch(/id="expenses-tab-panel-breakdown"/);
-    expect(expensesToolSource).toMatch(/openCategoryTransactions/);
-    expect(expensesToolSource).not.toMatch(/<AdminTabBar/);
+    expect(expensesToolSource).not.toMatch(/ExpenseOrbitNav/);
+    expect(expensesToolSource).not.toMatch(/openCategoryTransactions/);
     expect(expensesToolSource).not.toMatch(/<footer/);
     expect(expensesToolSource).not.toMatch(/>\s*settings\s*</);
     expect(expensesToolSource).not.toMatch(/\+ expense/);
