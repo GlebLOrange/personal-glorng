@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useTemplateRef } from "vue";
 
-import ExpenseCategoryOrbit from "@/components/expenses/ExpenseCategoryOrbit.vue";
 import ExpenseLedgerHeader from "@/components/expenses/ExpenseLedgerHeader.vue";
 import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
 import { Card } from "@/components/ui/card";
@@ -52,7 +51,6 @@ const emit = defineEmits<{
   submitQuick: [];
   smartSubmit: [payload: SmartExpensePayload];
   openTransactions: [];
-  selectCategory: [category: string];
 }>();
 
 const quickAddRef = useTemplateRef<InstanceType<typeof ExpenseQuickAdd>>("quickAddRef");
@@ -96,12 +94,6 @@ defineExpose({
       @clear-filters="emit('clearFilters')"
       @retry="emit('retrySummary')"
       @open-transactions="emit('openTransactions')"
-    />
-
-    <ExpenseCategoryOrbit
-      :summary="summary"
-      :format-money="formatMoney"
-      @select-category="emit('selectCategory', $event)"
     />
 
     <Card variant="compact" class="flex flex-col gap-3">
