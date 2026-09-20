@@ -2,6 +2,7 @@
 import {
   CategoryScale,
   Chart as ChartJS,
+  Filler,
   Legend,
   LineElement,
   LinearScale,
@@ -15,7 +16,16 @@ import { Line } from "vue-chartjs";
 import { resolveChartTheme } from "@/components/charts/chartTheme";
 import { colorThemeResolved } from "@/composables/useColorTheme";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+);
 
 const props = defineProps<{
   labels: string[];

@@ -364,18 +364,15 @@ const router = createRouter({
 
 installScrollRestore(router);
 
-router.beforeEach(async (to, _from, next) => {
+router.beforeEach(async (to, _from) => {
   if (to.name === "news" && String(to.query.manage ?? "") === "1") {
-    next({ name: "admin-news", replace: true });
-    return;
+    return { name: "admin-news", replace: true };
   }
   if (to.name === "tool-ai-chat" && !isAiChatEnabled()) {
-    next({ name: "admin" });
-    return;
+    return { name: "admin" };
   }
   if (!isExpensesEnabled() && (to.name === "tool-expenses" || to.name === "expense-calculator")) {
-    next({ name: "tools", replace: true });
-    return;
+    return { name: "tools", replace: true };
   }
   const auth = useAuthStore();
   const shouldResolveSession =
@@ -391,8 +388,7 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
   if (to.name === "login" && auth.isAuthenticated) {
-    next({ path: safeRedirectPath(to.query.redirect), replace: true });
-    return;
+    return { path: safeRedirectPath(to.query.redirect), replace: true };
   }
   if (to.name === "expense-calculator" && auth.isAuthenticated) {
     const { can } = usePermissions();
@@ -404,41 +400,35 @@ router.beforeEach(async (to, _from, next) => {
             ? to.query.mode
             : "convert";
       if (rawTab === "converter" || rawTab === "calculator" || isCalculatorMode(rawTab)) {
-        next({
+        return {
           name: "tool-expenses",
           query: { tab: "converter", mode: normalizeCalculatorMode(rawTab) },
           replace: true,
-        });
-        return;
+        };
       }
-      next({ name: "tool-expenses", query: { tab: rawTab }, replace: true });
-      return;
+      return { name: "tool-expenses", query: { tab: rawTab }, replace: true };
     }
   }
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    next({
+    return {
       name: "login",
       query: { redirect: scrubSensitivePath(to.fullPath) },
       replace: true,
-    });
-    return;
+    };
   }
   if (to.meta.requiresSuperuser && auth.isAuthenticated) {
     const { isSuperuser } = usePermissions();
     if (!isSuperuser.value) {
-      next({ name: "admin" });
-      return;
+      return { name: "admin" };
     }
   }
   const toolSlug = typeof to.name === "string" ? TOOL_ROUTE_SLUGS[to.name] : undefined;
   if (toolSlug && auth.isAuthenticated) {
     const { canAccess } = usePermissions();
     if (!canAccess(toolSlug)) {
-      next({ name: "admin" });
-      return;
+      return { name: "admin" };
     }
   }
-  next();
 });
 
 router.afterEach((to) => {
