@@ -27,6 +27,7 @@ const emit = defineEmits<{
   applyPreset: [preset: MonthPreset];
   clearFilters: [];
   retry: [];
+  openTransactions: [];
 }>();
 </script>
 
@@ -34,8 +35,11 @@ const emit = defineEmits<{
   <section class="flex flex-col gap-4" aria-label="expense period summary">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       <div class="min-w-0 shrink-0">
-        <h2 class="text-base font-semibold text-surface-light">Expenses</h2>
-        <p class="text-xs text-surface-mid">{{ monthLabel }}</p>
+        <h2 class="text-base font-semibold text-surface-light">
+          Spent on
+          <span v-if="monthLabel" class="text-surface-light">{{ monthLabel }}</span>
+          <span v-else class="text-surface-mid">…</span>
+        </h2>
       </div>
       <ExpenseDateFilters
         v-model:month-preset="monthPreset"
@@ -53,6 +57,7 @@ const emit = defineEmits<{
       :summary="summary"
       :expense-total="expenseTotal"
       :format-money="formatMoney"
+      @open-transactions="emit('openTransactions')"
     />
 
     <p v-if="rangeError" class="text-sm text-status-error" role="alert">

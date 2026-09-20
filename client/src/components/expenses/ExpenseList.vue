@@ -117,7 +117,7 @@ const sortButtonClass =
     <EmptyState
       v-if="expenses.length === 0"
       :title="`no expenses in ${monthLabel || 'this period'}`"
-      description="use quick add above, or smart text like 20 coffee"
+      description="add from the expenses tab, or smart text like 20 coffee"
     >
       <template #action>
         <BaseButton variant="primary" size="sm" @click="emit('smartText')">

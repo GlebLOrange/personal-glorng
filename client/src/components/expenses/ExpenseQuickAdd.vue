@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 
-import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
+import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { useExpenseParse } from "@/composables/useExpenseParse";
 import { EXPENSE_CURRENCIES, type CurrencyCode } from "@/composables/useExpenseFilters";
 import { isoDateLocal } from "@/utils/dates";
@@ -73,6 +73,14 @@ async function focusSmartText(): Promise<void> {
   smartTextInputRef.value?.focus();
 }
 
+function selectQuickAdd(): void {
+  smartTextOpen.value = false;
+}
+
+function selectSmartText(): void {
+  smartTextOpen.value = true;
+}
+
 async function confirmSmart(): Promise<void> {
   if (parsing.value || props.loading) return;
   const result = parsed.value;
@@ -104,75 +112,107 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
 </script>
 
 <template>
-  <div class="flex flex-col gap-2 rounded-lg bg-surface-dark/40 px-3 py-2.5">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-      <p class="text-xs font-medium text-surface-mid">quick add</p>
-      <BaseButton
-        variant="ghost"
-        size="sm"
-        :aria-expanded="smartTextOpen"
-        aria-controls="expense-smart-text"
-        @click="smartTextOpen = !smartTextOpen"
+  <div class="flex flex-col gap-3">
+    <div
+      class="flex flex-wrap gap-1.5"
+      role="tablist"
+      aria-label="add expense mode"
+    >
+      <ToolbarPillButton
+        family="1xx"
+        :selected="!smartTextOpen"
+        aria-controls="expense-quick-add-panel"
+        @click="selectQuickAdd"
       >
-        {{ smartTextOpen ? "hide smart text" : "smart text" }}
-      </BaseButton>
+        quick add
+      </ToolbarPillButton>
+      <ToolbarPillButton
+        family="1xx"
+        :selected="smartTextOpen"
+        aria-controls="expense-smart-text"
+        @click="selectSmartText"
+      >
+        smart text
+      </ToolbarPillButton>
     </div>
 
     <form
-      class="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(7rem,9rem)_1fr_minmax(6rem,7.5rem)_minmax(8rem,9rem)_auto] sm:items-end"
+      v-show="!smartTextOpen"
+      id="expense-quick-add-panel"
+      role="tabpanel"
+      class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(7rem,9rem)_minmax(8rem,10rem)_minmax(9rem,11rem)_auto] lg:items-end"
       @submit.prevent="emit('submit')"
     >
-      <BaseSelect v-model="category" class="w-full" label="category">
-        <option value="">—</option>
-        <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
-      </BaseSelect>
       <BaseInput
         id="expense-quick-name"
         ref="productInputRef"
         v-model="product"
-        label="name"
+        label="goods or services?"
         list="expense-product-suggestions"
         placeholder="e.g. groceries"
         autocomplete="off"
+        class="min-w-0 sm:col-span-2 lg:col-span-1"
         :error="nameError ?? undefined"
       />
       <BaseInput
         v-model="price"
         type="number"
-        step="0.01"
+        step="any"
         min="0.01"
         label="amount"
-        placeholder="0.00"
+        placeholder="1"
         inputmode="decimal"
+        class="min-w-0"
         :error="amountError ?? undefined"
       />
+      <BaseSelect v-model="category" class="min-w-0 w-full" label="category">
+        <option value="">—</option>
+        <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
+      </BaseSelect>
       <BaseInput
         v-model="expenseDate"
         type="date"
         label="date"
         class="min-w-0 w-full"
       />
-      <BaseButton variant="success" type="submit" :disabled="loading">
+      <ToolbarPillButton
+        type="submit"
+        family="2xx"
+        class="w-full shrink-0 sm:w-auto lg:mb-0.5"
+        :disabled="loading"
+      >
         {{ loading ? "saving…" : "save" }}
-      </BaseButton>
+      </ToolbarPillButton>
       <datalist id="expense-product-suggestions">
         <option v-for="name in productSuggestions" :key="name" :value="name" />
       </datalist>
     </form>
 
     <div
-      v-if="smartTextOpen"
+      v-show="smartTextOpen"
       id="expense-smart-text"
-      class="flex flex-col gap-2 border-t border-surface-border/60 pt-2"
+      role="tabpanel"
+      class="flex flex-col gap-3"
     >
-      <BaseInput
-        ref="smartTextInputRef"
-        v-model="smartText"
-        label="smart text"
-        placeholder="20 coffee"
-        hint="amount first — 20 coffee or 50 EUR lunch"
-        autocomplete="off"
-      />
+      <div class="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end">
+        <BaseInput
+          ref="smartTextInputRef"
+          v-model="smartText"
+          label="smart text"
+          placeholder="amount (important!) of goods or services?"
+          hint="e.g. 20 coffee or 50 EUR lunch"
+          autocomplete="off"
+          class="min-w-0 flex-1"
+        />
+        <ToolbarPillButton
+          family="2xx"
+          class="w-full shrink-0 sm:mb-0.5 sm:w-auto"
+          :disabled="loading || parsing || !canConfirmSmart"
+          @click="confirmSmart"
+        >
+          {{ loading ? "saving…" : parsing ? "parsing…" : "save" }}
+        </ToolbarPillButton>
+      </div>
       <p v-if="parsing" class="text-xs text-surface-mid" role="status">parsing…</p>
       <p
         v-else-if="parsed && !parsed.valid && smartText.trim()"
@@ -188,15 +228,6 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       >
         <span class="text-xs text-surface-mid">Will add · </span>{{ previewLabel }}
       </p>
-      <BaseButton
-        variant="success"
-        size="sm"
-        class="self-start"
-        :disabled="loading || parsing || !canConfirmSmart"
-        @click="confirmSmart"
-      >
-        {{ loading ? "saving…" : parsing ? "parsing…" : "+ parsed expense" }}
-      </BaseButton>
     </div>
   </div>
 </template>
