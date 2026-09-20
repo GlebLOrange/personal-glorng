@@ -91,6 +91,10 @@ def _sniff_content_type(contents: bytes, filename: str) -> str:
         return "image/jpeg"
     if contents.startswith(b"GIF87a") or contents.startswith(b"GIF89a"):
         return "image/gif"
+    if contents.startswith(b"RIFF") and contents[8:12] == b"WEBP":
+        return "image/webp"
+    if contents.startswith(b"\x1f\x8b"):
+        return "application/gzip"
     if contents.startswith(b"PK\x03\x04"):
         return "application/zip"
     ext = Path(filename).suffix.lower()
@@ -101,9 +105,7 @@ def _sniff_content_type(contents: bytes, filename: str) -> str:
         ".jpg": "image/jpeg",
         ".jpeg": "image/jpeg",
         ".gif": "image/gif",
-        ".webp": "image/webp",
         ".zip": "application/zip",
-        ".gz": "application/gzip",
     }
     return ext_map.get(ext, "application/octet-stream")
 

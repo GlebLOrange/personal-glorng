@@ -11,7 +11,7 @@ from starlette.responses import JSONResponse, Response
 from app.core.csrf import csrf_origin_rejected
 from app.core.logging import logger
 from app.core.request_context import request_id_var, user_id_var
-from app.core.security import access_token_from_request, decode_token
+from app.core.security import access_token_from_request, decode_token, user_id_from_payload
 from app.settings import get_settings
 
 _BODY_LOG_MAX_CHARS = 2048
@@ -79,19 +79,7 @@ def _optional_user_id(request: Request) -> int | None:
     request.state.access_token_payload = payload
     if payload.get("type") != "access":
         return None
-    uid = payload.get("uid")
-    if uid is not None:
-        try:
-            return int(uid)
-        except ValueError, TypeError:
-            pass
-    sub = payload.get("sub")
-    if sub is None:
-        return None
-    try:
-        return int(sub)
-    except ValueError, TypeError:
-        return None
+    return user_id_from_payload(payload)
 
 
 def _sanitize_body_for_log(

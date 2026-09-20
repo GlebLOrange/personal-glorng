@@ -145,3 +145,17 @@ def test_staging_forbids_request_body_logging(
         Settings()
 
     get_settings.cache_clear()
+
+
+def test_cors_star_rejected_in_development(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Wildcard origins are invalid because CORSMiddleware always sends credentials."""
+    env_file = scenario_env(tmp_path, CORS_ORIGINS="*")
+    activate_env_file(monkeypatch, env_file)
+
+    with pytest.raises(ValueError, match="CORS_ORIGINS cannot include"):
+        Settings()
+
+    get_settings.cache_clear()

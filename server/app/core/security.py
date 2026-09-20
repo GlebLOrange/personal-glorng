@@ -73,6 +73,19 @@ def create_access_token(
     )
 
 
+def user_id_from_payload(payload: dict) -> int | None:
+    """Coerce JWT ``uid`` or ``sub`` to an int user id."""
+    for key in ("uid", "sub"):
+        value = payload.get(key)
+        if value is None:
+            continue
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            continue
+    return None
+
+
 def user_id_from_access_token(raw: str) -> int | None:
     """Return the authenticated user's DB id from an access token, if present."""
     try:
@@ -81,19 +94,7 @@ def user_id_from_access_token(raw: str) -> int | None:
         return None
     if payload.get("type") != "access":
         return None
-    uid = payload.get("uid")
-    if uid is not None:
-        try:
-            return int(uid)
-        except ValueError, TypeError:
-            return None
-    sub = payload.get("sub")
-    if sub is None:
-        return None
-    try:
-        return int(sub)
-    except ValueError, TypeError:
-        return None
+    return user_id_from_payload(payload)
 
 
 def access_token_from_request(request: object) -> str | None:
