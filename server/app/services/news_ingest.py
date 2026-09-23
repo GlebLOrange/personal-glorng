@@ -413,7 +413,12 @@ def _conditional_headers(source: NewsSourceConfig) -> dict[str, str]:
 
 
 async def _read_feed_bytes(response: httpx.Response) -> bytes:
-    """Read a streamed feed body, aborting when it exceeds the size cap."""
+    """Read a feed body, aborting when it exceeds the size cap.
+
+    ponytail: httpx 0.28 dropped request(stream=True); use aread() and
+    enforce the cap after load (Content-Length still rejects oversized
+    declarations early). Upgrade: client.stream() if feeds grow huge.
+    """
     content_length = response.headers.get("content-length")
     if content_length is not None:
         try:
@@ -424,15 +429,11 @@ async def _read_feed_bytes(response: httpx.Response) -> bytes:
             if declared > _MAX_FEED_BYTES:
                 msg = "Feed response is too large"
                 raise ValueError(msg)
-    chunks: list[bytes] = []
-    total = 0
-    async for chunk in response.aiter_bytes():
-        total += len(chunk)
-        if total > _MAX_FEED_BYTES:
-            msg = "Feed response is too large"
-            raise ValueError(msg)
-        chunks.append(chunk)
-    return b"".join(chunks)
+    content = await response.aread()
+    if len(content) > _MAX_FEED_BYTES:
+        msg = "Feed response is too large"
+        raise ValueError(msg)
+    return content
 
 
 class NewsIngestService:
@@ -490,7 +491,6 @@ class NewsIngestService:
             client,
             source.feed_url,
             headers=_conditional_headers(source),
-            stream=True,
         )
         try:
             if response.status_code == 304:

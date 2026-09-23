@@ -125,6 +125,38 @@ export interface UrlItem {
   created_at: string;
 }
 
+export interface HealthDnsRecord {
+  family: string;
+  address: string;
+}
+
+export interface HealthMonitor {
+  id: number;
+  url: string;
+  label: string | null;
+  interval_minutes: number;
+  enabled: boolean;
+  next_check_at: string | null;
+  last_checked_at: string | null;
+  last_status_code: number | null;
+  last_response_ms: number | null;
+  last_ok: boolean | null;
+  last_error: string | null;
+  uptime_percent: number | null;
+  ssl_expires_at: string | null;
+  dns: HealthDnsRecord[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HealthHistoryPoint {
+  checked_at: string;
+  status_code: number | null;
+  response_ms: number | null;
+  ok: boolean;
+  error: string | null;
+}
+
 export interface WeatherLocation {
   id: number;
   query: string;

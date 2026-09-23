@@ -8,6 +8,11 @@ from app.db.documents.credential import GitHubCredential, GoogleCredential
 from app.db.documents.expense import Expense, ExpenseCategory
 from app.db.documents.feedback import Feedback
 from app.db.documents.fileshare import SharedFile
+from app.db.documents.health_checker import (
+    DnsRecord,
+    HealthCheckResult,
+    HealthMonitor,
+)
 from app.db.documents.import_batch import ImportBatch
 from app.db.documents.import_row import ImportRow
 from app.db.documents.recipe import Recipe
@@ -33,12 +38,15 @@ __all__ = [
     "AuditCategory",
     "AuditEvent",
     "AuditSource",
+    "DnsRecord",
     "Expense",
     "ExpenseCategory",
     "Feedback",
     "GitHubCredential",
     "GoogleCredential",
     "GoogleSyncQueue",
+    "HealthCheckResult",
+    "HealthMonitor",
     "ImportBatch",
     "ImportRow",
     "IntakeStatus",
