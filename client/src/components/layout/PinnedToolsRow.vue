@@ -6,9 +6,10 @@ import ToastContainer from "@/components/ui/ToastContainer.vue";
 import WeatherBar from "@/components/weather/WeatherBar.vue";
 import { WEATHER_ROUTE_NAME } from "@/constants/weather";
 
-/** Weather/toast strip only on tools hub + public utility routes — not news/settings/admin. */
+/** Weather/toast strip on tools hub, admin hub, and public utility routes — not news/settings/nested admin. */
 const PINNED_TOOLS_ROUTE_NAMES = new Set<string>([
   "tools",
+  "admin",
   WEATHER_ROUTE_NAME,
   "calculator",
   "expense-calculator",
