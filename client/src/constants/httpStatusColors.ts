@@ -116,6 +116,8 @@ type FamilyToneClassOptions = {
   anchor?: boolean;
   includeActive?: boolean;
   includeFocusTint?: boolean;
+  /** Idle bg transparent; hover/focus add family wash (icon clear/edit/remove/copy). */
+  transparentIdle?: boolean;
 };
 
 /** Map an HTTP status code to its 1xx–5xx family. */
@@ -153,13 +155,34 @@ export function familyToneClass(
     return [tone.tint, tone.border, tone.text].join(" ");
   }
 
+  const hoverBorder = options.anchor ? tone.hoverBorder : tone.hoverEnabledBorder;
+  const hoverTint = options.anchor ? tone.hoverTint : tone.hoverEnabledTint;
+  const hoverText = options.anchor ? tone.hoverText : tone.hoverEnabledText;
+  const focusClasses =
+    options.includeFocusTint || options.transparentIdle
+      ? [tone.focusBorder, tone.focusTint, tone.focusText].join(" ")
+      : "";
+
   if (options.quiet) {
     return [
       "border-transparent bg-transparent text-surface-light/60",
-      options.anchor ? tone.hoverBorder : tone.hoverEnabledBorder,
-      options.anchor ? tone.hoverTint : tone.hoverEnabledTint,
-      options.anchor ? tone.hoverText : tone.hoverEnabledText,
-      options.includeFocusTint ? [tone.focusBorder, tone.focusTint, tone.focusText].join(" ") : "",
+      hoverBorder,
+      hoverTint,
+      hoverText,
+      focusClasses,
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  if (options.transparentIdle) {
+    return [
+      "border-transparent bg-transparent",
+      tone.text,
+      hoverBorder,
+      hoverTint,
+      options.includeActive ? tone.activeEnabledTint : "",
+      focusClasses,
     ]
       .filter(Boolean)
       .join(" ");
@@ -169,8 +192,8 @@ export function familyToneClass(
     "border-transparent",
     tone.wash,
     tone.text,
-    options.anchor ? tone.hoverBorder : tone.hoverEnabledBorder,
-    options.anchor ? tone.hoverTint : tone.hoverEnabledTint,
+    hoverBorder,
+    hoverTint,
     options.includeActive ? tone.activeEnabledTint : "",
   ]
     .filter(Boolean)
@@ -198,6 +221,8 @@ export type IconActionClassOptions = {
   anchor?: boolean;
   /** field = in-shell clear (same square as CONTROL_SIZE); default matches CONTROL_SIZE. */
   size?: "md" | "field";
+  /** Idle bg transparent; hover/focus add family wash (clear/edit/remove/copy). */
+  transparentIdle?: boolean;
 };
 
 /**
@@ -214,5 +239,6 @@ export function iconActionClass(
   return `${sizeCls} ${familyToneClass(resolved, selected, {
     quiet: opts.quiet,
     anchor: opts.anchor,
+    transparentIdle: opts.transparentIdle,
   })}`;
 }

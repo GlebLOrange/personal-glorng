@@ -12,6 +12,8 @@ const props = withDefaults(
     danger?: boolean;
     /** Muted until hover — then 1xx. */
     quiet?: boolean;
+    /** Idle bg transparent; hover/focus add family wash. */
+    transparentIdle?: boolean;
     selected?: boolean;
     disabled?: boolean;
     type?: "button" | "submit" | "reset";
@@ -26,6 +28,7 @@ const props = withDefaults(
     family: "1xx",
     danger: false,
     quiet: false,
+    transparentIdle: false,
     selected: false,
     disabled: false,
     type: "button",
@@ -46,6 +49,7 @@ const classes = computed(() =>
     iconActionClass(props.family, props.selected, {
       danger: props.danger,
       quiet: props.quiet,
+      transparentIdle: props.transparentIdle,
       size: props.size,
     }),
     attrs.class,

@@ -59,6 +59,25 @@ describe("httpStatusColors", () => {
     expect(iconActionClass("1xx", false, { anchor: true })).not.toContain("hover:enabled:");
   });
 
+  it("builds transparent-idle icon actions for clear/edit/remove/copy", () => {
+    const edit = iconActionClass("3xx", false, { transparentIdle: true });
+    expect(edit).toContain("bg-transparent");
+    expect(edit).not.toContain("bg-status-warning/3");
+    expect(edit).toContain("hover:enabled:bg-status-warning/15");
+    expect(edit).toContain("focus-visible:bg-status-warning/15");
+
+    const remove = iconActionClass("1xx", false, { danger: true, transparentIdle: true });
+    expect(remove).toContain("bg-transparent");
+    expect(remove).not.toContain("bg-status-error/3");
+    expect(remove).toContain("hover:enabled:bg-status-error/15");
+    expect(remove).toContain("focus-visible:bg-status-error/15");
+
+    const copyQuiet = iconActionClass("1xx", false, { quiet: true, transparentIdle: true });
+    expect(copyQuiet).toContain("bg-transparent");
+    expect(copyQuiet).toContain("hover:enabled:bg-accent-blue/15");
+    expect(copyQuiet).toContain("focus-visible:bg-accent-blue/15");
+  });
+
   it("builds field-size icon action classes matching chrome", () => {
     const field = iconActionClass("4xx", false, { size: "field", danger: true });
     expect(field).toContain("!h-full");

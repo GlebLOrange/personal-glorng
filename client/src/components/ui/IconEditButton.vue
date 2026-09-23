@@ -22,6 +22,7 @@ defineEmits<{ click: [MouseEvent] }>();
 <template>
   <IconActionButton
     family="3xx"
+    transparent-idle
     :size="size"
     :aria-label="ariaLabel"
     :disabled="disabled"
