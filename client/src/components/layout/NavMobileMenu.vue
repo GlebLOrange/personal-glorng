@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollLock } from "@/composables/useScrollLock";
+import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 
 const props = defineProps<{
   open: boolean;
@@ -22,13 +23,7 @@ const isPortfolio = computed(
   () => route.path === "/" || route.name === "home" || route.name === "portfolio",
 );
 
-const sectionLinks = [
-  { href: "#about", label: "about" },
-  { href: "#skills", label: "skills" },
-  { href: "#experience", label: "experience" },
-  { href: "#projects", label: "projects" },
-  { href: "#contacts", label: "contacts" },
-];
+const sectionLinks = PORTFOLIO_SECTION_LINKS;
 
 useScrollLock(() => props.open);
 

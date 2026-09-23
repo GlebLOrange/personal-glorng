@@ -184,11 +184,7 @@ onUnmounted(() => {
       </div>
     </SectionWrapper>
 
-    <SectionWrapper id="skills" title="skills" width="full" dark>
-      <SkillsGrid :skills="resume.skills" />
-    </SectionWrapper>
-
-    <SectionWrapper id="experience" title="experience" width="full" dark alternate>
+    <SectionWrapper id="experience" title="experience" width="full" dark>
       <Suspense>
         <ExperienceList :experience="resume.experience" />
         <template #fallback>
@@ -197,13 +193,17 @@ onUnmounted(() => {
       </Suspense>
     </SectionWrapper>
 
-    <SectionWrapper id="projects" title="projects" width="full" dark>
+    <SectionWrapper id="projects" title="projects" width="full" dark alternate>
       <Suspense>
         <ProjectsGrid :projects="resume.projects" />
         <template #fallback>
           <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
         </template>
       </Suspense>
+    </SectionWrapper>
+
+    <SectionWrapper id="skills" title="skills" width="full" dark>
+      <SkillsGrid :skills="resume.skills" />
     </SectionWrapper>
 
     <SectionWrapper
@@ -224,7 +224,7 @@ onUnmounted(() => {
       dark
       :alternate="education.length === 0"
     >
-      <p class="text-body mb-2">
+      <p class="text-body mb-3 max-w-2xl">
         open to full-time and contract — usually reply within 24h (EU timezone)
       </p>
       <p class="text-meta mb-6 flex flex-wrap items-center gap-x-2 gap-y-2">
@@ -232,56 +232,60 @@ onUnmounted(() => {
         <button type="button" class="cta-primary print:hidden" @click="contactModal = 'inquiry'">
           send inquiry
         </button>
-        <button
-          type="button"
-          class="print:hidden text-surface-sage underline-offset-4 hover:underline inline-flex items-center gap-2 min-h-11 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
-          @click="contactModal = 'feedback'"
-        >
-          <ContactIcon id="feedback" class="size-4 shrink-0" />
-          send feedback instead
-        </button>
       </p>
       <div class="flex flex-wrap gap-4">
         <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
       </div>
+      <p class="mt-6 print:hidden">
+        <button
+          type="button"
+          class="text-surface-sage underline-offset-4 hover:underline inline-flex items-center gap-2 min-h-11 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+          @click="contactModal = 'feedback'"
+        >
+          <ContactIcon id="feedback" class="size-4 shrink-0" />
+          send feedback
+        </button>
+      </p>
       <FeedbackModal v-if="contactModal" :intent="contactModal" @close="contactModal = null" />
     </SectionWrapper>
-  </div>
 
-  <!-- Footer-adjacent support strip — kept off the hire CTA band -->
-  <div ref="supportSectionRef" id="support" class="print:hidden border-t border-surface-border/60">
-    <div class="mx-auto w-full max-w-5xl px-6 py-10 md:py-12">
-      <div class="flex min-w-0 flex-wrap items-center justify-between gap-4">
-        <div class="min-w-0">
-          <p class="text-meta mb-1">support</p>
-          <p class="text-body mb-1 max-w-xl">
-            if my tools or writing have helped you, a small contribution keeps the work going
-          </p>
-          <p class="text-meta">card, paypal, or monthly support — pick what works for you</p>
+    <!-- Footer-adjacent support strip — kept off the hire CTA band -->
+    <div ref="supportSectionRef" id="support" class="print:hidden border-t border-surface-border/60">
+      <div class="mx-auto w-full max-w-5xl px-6 py-10 md:py-12">
+        <div class="flex min-w-0 flex-wrap items-start justify-between gap-6">
+          <div class="min-w-0 max-w-xl">
+            <h2 class="section-title mb-3">support</h2>
+            <p class="text-body mb-2">
+              if my tools or writing have helped you, a small contribution keeps the work going
+            </p>
+            <p class="text-meta">
+              card, paypal, or monthly support — pick what works for you
+            </p>
+          </div>
+          <div class="flex min-w-0 flex-wrap items-center gap-4">
+            <div
+              v-if="donationsStarted && donationsLoading"
+              class="h-10 w-40 animate-pulse rounded-lg bg-surface-card"
+              aria-busy="true"
+            />
+            <DonationsBlock v-else-if="donations" :config="donations" />
+          </div>
         </div>
-        <div class="flex min-w-0 flex-wrap items-center gap-4">
-          <div
-            v-if="donationsStarted && donationsLoading"
-            class="h-10 w-40 animate-pulse rounded-lg bg-surface-card"
-            aria-busy="true"
-          />
-          <DonationsBlock v-else-if="donations" :config="donations" />
-        </div>
+        <ErrorState
+          v-if="donationsError"
+          class="mt-6"
+          message="Donation options are temporarily unavailable."
+          show-retry
+          retry-label="retry"
+          @retry="loadDonations"
+        />
+        <EmptyState
+          v-else-if="donationsFetched && !donations"
+          class="mt-6"
+          title="no donation options"
+          description="support options are not configured right now."
+        />
       </div>
-      <ErrorState
-        v-if="donationsError"
-        class="mt-6"
-        message="Donation options are temporarily unavailable."
-        show-retry
-        retry-label="retry"
-        @retry="loadDonations"
-      />
-      <EmptyState
-        v-else-if="donationsFetched && !donations"
-        class="mt-6"
-        title="no donation options"
-        description="support options are not configured right now."
-      />
     </div>
   </div>
 </template>

@@ -9,11 +9,11 @@ defineProps<{
 
 <template>
   <div class="space-y-4">
-    <Card v-for="(exp, i) in experience" :key="i" variant="ghost">
+    <Card v-for="(exp, i) in experience" :key="i" variant="compact" class="min-w-0">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
           <h3 class="card-title">{{ exp.role }}</h3>
-          <p class="text-base text-accent-blue">{{ exp.company }}</p>
+          <p class="text-meta mt-1">{{ exp.company }}</p>
         </div>
         <span class="text-meta shrink-0">
           {{ exp.period }}
