@@ -111,11 +111,15 @@ async def get_redis_memory_info() -> dict[str, Any]:
 
 async def cache_get(key: str) -> str | None:
     try:
-        return await get_redis_cache_client().get(key)
+        value = await get_redis_cache_client().get(key)
     except RedisError as exc:
         logger.warning("Redis cache_get failed", error=exc, context={"key": key})
         return None
-
+    if value is None:
+        return None
+    if isinstance(value, bytes):
+        return value.decode()
+    return str(value)
 
 async def cache_set(key: str, value: str, ttl: int = 300) -> None:
     try:

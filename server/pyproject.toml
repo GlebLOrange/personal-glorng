@@ -66,6 +66,7 @@ ignore_missing_imports = true
 check_untyped_defs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
+plugins = ["pydantic.mypy"]
 exclude = [
     "app/db/migrations",
     "app/db/seed",
@@ -74,15 +75,12 @@ exclude = [
 
 [[tool.mypy.overrides]]
 module = [
-    "app.settings",
     "app.routers.platform",
     "app.workers.celery_app",
     "app.services.calendar",
     "app.services.ai_chat",
     "app.db.mongo.client",
-    "app.core.redis",
     "app.services.world_time",
-    "app.services.auth",
     "app.services.weather",
     "app.services.search_index",
     "app.workers.tasks",
@@ -90,8 +88,6 @@ module = [
     "app.services.github_portfolio",
     "app.services.task_intake",
     "app.schemas.date_filters",
-    "app.core.deps",
-    "app.routers.auth",
 ]
 ignore_errors = true
 

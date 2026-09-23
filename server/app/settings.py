@@ -405,6 +405,14 @@ class Settings(BaseSettings):
     def enable_postgres(self) -> bool:
         return self.ENABLE_POSTGRES
 
+    # Opt-in Postgres mirror for search/audit dual-write (requires ENABLE_POSTGRES).
+    # Default off so Mongo remains the only write path even when Postgres is up.
+    POSTGRES_MIRROR_ENABLED: bool = False
+
+    def postgres_mirror_enabled(self) -> bool:
+        """Whether search/audit dual-write and Postgres FTS reads are active."""
+        return self.enable_postgres() and self.POSTGRES_MIRROR_ENABLED
+
     # Elasticsearch (optional; empty disables the external search backend)
     ELASTICSEARCH_URL: str = ""
     ELASTICSEARCH_INDEX: str = "search_documents"
@@ -614,6 +622,8 @@ class Settings(BaseSettings):
     AI_SEARCH_ENABLED: bool
     # Ledger + public expense calculator (opt-in; off until re-enabled)
     EXPENSES_ENABLED: bool = False
+    # yt-dlp, file-share, outbound health-checker (opt-in; off on public deploys)
+    UNTRUSTED_URL_TOOLS_ENABLED: bool = False
 
     # Curated news
     NEWS_INGEST_ENABLED: bool = False

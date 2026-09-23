@@ -1,18 +1,19 @@
 """OAuth callback endpoints (Google Calendar)."""
 
 from aiogram import Bot
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 
 from app.core.google_oauth_state import consume_google_oauth_state
 from app.core.logging import logger
+from app.core.rate_limit import rate_limit_api
 from app.db.deps import DbRegistry
 from app.db.documents.credential import GoogleCredential
 from app.settings import get_settings
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(rate_limit_api)])
 
 _SUCCESS_HTML = """
 <html><body style="font-family:sans-serif;text-align:center;padding:40px">

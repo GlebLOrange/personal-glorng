@@ -165,14 +165,16 @@ def create_app() -> FastAPI:
     from app.routers import api_router
     from app.routers.amp import router as amp_router
     from app.routers.seo import router as seo_router
-    from app.routers.tools.fileshare import download_router as file_download_router
     from app.routers.tools.urlshortener import redirect_router
 
     application.include_router(api_router, prefix="/api")
     application.include_router(seo_router)
     application.include_router(amp_router)
     application.include_router(redirect_router)
-    application.include_router(file_download_router)
+    if settings.UNTRUSTED_URL_TOOLS_ENABLED:
+        from app.routers.tools.fileshare import download_router as file_download_router
+
+        application.include_router(file_download_router)
 
     configure_openapi(application)
 

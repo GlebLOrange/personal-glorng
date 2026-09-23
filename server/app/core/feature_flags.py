@@ -7,6 +7,14 @@ Public portfolio search (``AI_SEARCH_ENABLED``) and admin AI chat
 from app.platform.registry import ServiceSlug
 from app.settings import get_settings
 
+_UNTRUSTED_URL_TOOL_SLUGS: frozenset[ServiceSlug] = frozenset(
+    {
+        "vid-download",
+        "file-share",
+        "health-checker",
+    },
+)
+
 
 def is_ai_chat_enabled() -> bool:
     settings = get_settings()
@@ -28,9 +36,16 @@ def is_expenses_enabled() -> bool:
     return get_settings().EXPENSES_ENABLED
 
 
+def is_untrusted_url_tools_enabled() -> bool:
+    """Whether yt-dlp, file-share, and outbound health-checker are mounted."""
+    return get_settings().UNTRUSTED_URL_TOOLS_ENABLED
+
+
 def is_service_enabled(slug: ServiceSlug) -> bool:
     if slug == "ai-chat":
         return is_ai_chat_enabled()
     if slug == "expenses":
         return is_expenses_enabled()
+    if slug in _UNTRUSTED_URL_TOOL_SLUGS:
+        return is_untrusted_url_tools_enabled()
     return True

@@ -10,15 +10,13 @@ from app.routers.tools import (
     email,
     expense_calculator,
     expenses,
-    fileshare,
-    health_checker,
     news,
     password_generator,
     recipes,
     tasks_admin,
     urlshortener,
-    viddownload,
 )
+from app.settings import get_settings
 
 tools_router = APIRouter(prefix="/tools")
 
@@ -32,13 +30,18 @@ for router_module in (
     email,
     expense_calculator,
     expenses,
-    fileshare,
-    health_checker,
     news,
     password_generator,
     recipes,
     tasks_admin,
     urlshortener,
-    viddownload,
 ):
     tools_router.include_router(router_module.router)
+
+# ponytail: skip yt-dlp / file-share / outbound probes unless explicitly enabled
+# so production images do not mount those routers by default.
+if get_settings().UNTRUSTED_URL_TOOLS_ENABLED:
+    from app.routers.tools import fileshare, health_checker, viddownload
+
+    for router_module in (fileshare, health_checker, viddownload):
+        tools_router.include_router(router_module.router)

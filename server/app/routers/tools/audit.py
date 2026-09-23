@@ -8,13 +8,17 @@ from app.core.pagination import (
     audit_pagination_params,
     build_paginated,
 )
+from app.core.rate_limit import rate_limit_api
 from app.schemas.audit import AuditEventListResponse, AuditEventResponse
 from app.schemas.date_filters import AuditDateFilter, audit_date_filter
 
 router = APIRouter(
     prefix="/audit",
     tags=["audit"],
-    dependencies=[Depends(require_capability("audit", "read"))],
+    dependencies=[
+        Depends(rate_limit_api),
+        Depends(require_capability("audit", "read")),
+    ],
 )
 
 

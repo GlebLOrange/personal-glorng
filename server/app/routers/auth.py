@@ -1,6 +1,6 @@
 import re
 from datetime import UTC, datetime
-from typing import Annotated
+from typing import Annotated, Literal, TypedDict
 from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -57,7 +57,14 @@ _ACCESS_COOKIE = "access_token"
 _REFRESH_COOKIE = "refresh_token"
 
 
-def _cookie_flags(settings: Settings) -> dict[str, object]:
+class _CookieFlags(TypedDict):
+    httponly: bool
+    secure: bool
+    samesite: Literal["lax", "strict", "none"]
+    path: str
+
+
+def _cookie_flags(settings: Settings) -> _CookieFlags:
     secure = settings.APP_ENV == "production"
     return {
         "httponly": True,

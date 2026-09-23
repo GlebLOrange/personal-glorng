@@ -1,10 +1,15 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.core.feature_flags import is_service_enabled
+from app.core.rate_limit import rate_limit_api
 from app.platform.registry import CATEGORY_LABELS, PLATFORM_SERVICES
 from app.schemas.platform import PlatformCatalogResponse, PlatformServiceResponse
 
-router = APIRouter(prefix="/platform", tags=["platform"])
+router = APIRouter(
+    prefix="/platform",
+    tags=["platform"],
+    dependencies=[Depends(rate_limit_api)],
+)
 
 
 async def _platform_catalog() -> PlatformCatalogResponse:

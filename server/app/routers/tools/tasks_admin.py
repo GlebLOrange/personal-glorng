@@ -13,6 +13,7 @@ from app.core.deps import (
     require_capability,
 )
 from app.core.exceptions import ValidationError
+from app.core.rate_limit import rate_limit_api
 from app.core.utils import DEFAULT_PER_PAGE
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.openapi import requires_capability
@@ -35,7 +36,10 @@ from app.settings import Settings
 router = APIRouter(
     prefix="/tasks",
     tags=["tasks"],
-    dependencies=[Depends(require_capability("tasks", "read"))],
+    dependencies=[
+        Depends(rate_limit_api),
+        Depends(require_capability("tasks", "read")),
+    ],
 )
 
 

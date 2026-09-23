@@ -64,7 +64,8 @@ async def _claim_payload(payload: dict[str, object]) -> None:
         return
     exp = payload.get("exp", 0)
     now = int(datetime.now(UTC).timestamp())
-    claimed = await try_blacklist_token(str(jti), max(int(exp) - now, 0))
+    ttl = max(int(exp) - now, 0) if isinstance(exp, (int, float, str)) else 0
+    claimed = await try_blacklist_token(str(jti), ttl)
     if not claimed:
         raise UnauthorizedError("Token has already been used")
 
