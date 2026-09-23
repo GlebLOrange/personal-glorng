@@ -10,6 +10,7 @@ from app.core.feature_flags import (
     is_ai_search_enabled,
     is_expenses_enabled,
     is_service_enabled,
+    is_untrusted_url_tools_enabled,
 )
 from app.settings import get_settings
 from tests.env_helpers import activate_env_file, scenario_env
@@ -102,6 +103,64 @@ def test_expenses_enabled_when_flag_on(
     get_settings.cache_clear()
 
 
+def test_untrusted_url_tools_disabled_by_default_flag(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    activate_env_file(
+        monkeypatch,
+        scenario_env(tmp_path, UNTRUSTED_URL_TOOLS_ENABLED="false"),
+    )
+    assert is_untrusted_url_tools_enabled() is False
+    assert is_service_enabled("vid-download") is False
+    assert is_service_enabled("file-share") is False
+    assert is_service_enabled("health-checker") is False
+    get_settings.cache_clear()
+
+
+def test_untrusted_url_tools_enabled_when_flag_on(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    activate_env_file(
+        monkeypatch,
+        scenario_env(tmp_path, UNTRUSTED_URL_TOOLS_ENABLED="true"),
+    )
+    assert is_untrusted_url_tools_enabled() is True
+    assert is_service_enabled("vid-download") is True
+    get_settings.cache_clear()
+
+
+def test_postgres_mirror_requires_both_flags(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    activate_env_file(
+        monkeypatch,
+        scenario_env(
+            tmp_path,
+            ENABLE_POSTGRES="true",
+            POSTGRES_MIRROR_ENABLED="false",
+        ),
+    )
+    settings = get_settings()
+    assert settings.enable_postgres() is True
+    assert settings.postgres_mirror_enabled() is False
+    get_settings.cache_clear()
+
+    activate_env_file(
+        monkeypatch,
+        scenario_env(
+            tmp_path,
+            ENABLE_POSTGRES="true",
+            POSTGRES_MIRROR_ENABLED="true",
+        ),
+    )
+    settings = get_settings()
+    assert settings.postgres_mirror_enabled() is True
+    get_settings.cache_clear()
+
+
 @pytest.mark.asyncio
 async def test_expenses_api_returns_503_when_disabled(
     client: AsyncClient,
@@ -116,6 +175,27 @@ async def test_expenses_api_returns_503_when_disabled(
         assert catalog.status_code == 200
         slugs = {item["slug"] for item in catalog.json()["services"]}
         assert "expenses" not in slugs
+    finally:
+        get_settings.cache_clear()
+
+
+@pytest.mark.asyncio
+async def test_untrusted_tools_omitted_from_catalog_when_disabled(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    activate_env_file(
+        monkeypatch,
+        scenario_env(tmp_path, UNTRUSTED_URL_TOOLS_ENABLED="false"),
+    )
+    try:
+        catalog = await client.get("/api/platform/catalog")
+        assert catalog.status_code == 200
+        slugs = {item["slug"] for item in catalog.json()["services"]}
+        assert "vid-download" not in slugs
+        assert "file-share" not in slugs
+        assert "health-checker" not in slugs
     finally:
         get_settings.cache_clear()
 

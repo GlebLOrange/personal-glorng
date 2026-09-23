@@ -78,7 +78,7 @@ class SearchIndexService:
 
         # Mongo is the source of truth; Postgres/ES mirrors are best-effort so a
         # secondary-store failure never breaks the request after Mongo wrote.
-        if self.postgres_db is not None and get_settings().enable_postgres():
+        if self.postgres_db is not None and get_settings().postgres_mirror_enabled():
             try:
                 await self._upsert_postgres(document)
             except Exception as exc:
@@ -141,7 +141,7 @@ class SearchIndexService:
             source_id=source_id,
         )
 
-        if self.postgres_db is not None and get_settings().enable_postgres():
+        if self.postgres_db is not None and get_settings().postgres_mirror_enabled():
             try:
                 from app.db.models.search_document import (
                     SearchDocument as PgSearchDocument,
@@ -178,7 +178,7 @@ class SearchIndexService:
     ) -> None:
         await self._search_repo().delete_stale_by_source(source_type, keep_source_ids)
 
-        if self.postgres_db is not None and get_settings().enable_postgres():
+        if self.postgres_db is not None and get_settings().postgres_mirror_enabled():
             try:
                 from app.db.models.search_document import (
                     SearchDocument as PgSearchDocument,
@@ -249,7 +249,7 @@ class SearchIndexService:
         if mongo_hits:
             return mongo_hits
 
-        if self.postgres_db is not None and get_settings().enable_postgres():
+        if self.postgres_db is not None and get_settings().postgres_mirror_enabled():
             return await self._search_postgres(
                 cleaned,
                 visibility_values=visibility_values,

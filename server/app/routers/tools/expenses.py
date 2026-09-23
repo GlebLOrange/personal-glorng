@@ -18,6 +18,7 @@ from app.core.deps import (
     require_capability,
     require_expenses_enabled,
 )
+from app.core.rate_limit import rate_limit_api
 from app.core.utils import DEFAULT_PER_PAGE
 from app.openapi import requires_capability
 from app.schemas.currency import CurrencyConvertRequest, CurrencyConvertResponse
@@ -44,6 +45,7 @@ router = APIRouter(
     prefix="/expenses",
     tags=["expenses"],
     dependencies=[
+        Depends(rate_limit_api),
         Depends(require_expenses_enabled),
         Depends(require_capability("expenses", "read")),
     ],

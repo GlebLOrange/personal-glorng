@@ -8,6 +8,7 @@ from app.core.pagination import (
     audit_pagination_params,
     build_paginated,
 )
+from app.core.rate_limit import rate_limit_api
 from app.db.deps import DbRegistry
 from app.schemas.app_log import AppLogListResponse, AppLogResponse
 from app.schemas.date_filters import AuditDateFilter, audit_date_filter
@@ -16,7 +17,10 @@ from app.services.app_log import AppLogService
 router = APIRouter(
     prefix="/app-logs",
     tags=["app-logs"],
-    dependencies=[Depends(require_capability("app-logs", "read"))],
+    dependencies=[
+        Depends(rate_limit_api),
+        Depends(require_capability("app-logs", "read")),
+    ],
 )
 
 

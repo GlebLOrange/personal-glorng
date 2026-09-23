@@ -14,6 +14,7 @@ async def test_ready_returns_dependency_checks(client: AsyncClient) -> None:
     assert body["status"] == "ok"
     assert body["checks"]["mongodb"] == "ok"
     assert body["checks"]["redis"] == "ok"
+    assert "redis_memory" not in body["checks"]
 
 
 async def test_ready_includes_rabbitmq_check(client: AsyncClient) -> None:
@@ -21,10 +22,3 @@ async def test_ready_includes_rabbitmq_check(client: AsyncClient) -> None:
     body = response.json()
     assert "rabbitmq" in body["checks"]
     assert body["checks"]["rabbitmq"] in {"ok", "degraded"}
-
-
-async def test_ready_includes_redis_memory_info(client: AsyncClient) -> None:
-    response = await client.get("/api/ready")
-    body = response.json()
-    assert "redis_memory" in body["checks"]
-    assert isinstance(body["checks"]["redis_memory"], dict)

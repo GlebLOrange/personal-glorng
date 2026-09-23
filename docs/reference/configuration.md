@@ -36,7 +36,8 @@ Keep `RUN_MIGRATIONS` / `RUN_SEED` in `.env` (or secrets) — avoid setting them
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `ENABLE_MONGODB` | `true` | Primary datastore |
-| `ENABLE_POSTGRES` | `false` | Secondary FTS + audit |
+| `ENABLE_POSTGRES` | `false` | Optional Postgres connection |
+| `POSTGRES_MIRROR_ENABLED` | `false` | Dual-write search/audit + Postgres FTS reads (requires `ENABLE_POSTGRES`) |
 | `PRIMARY_DATABASE` | `mongodb` | Primary backend name |
 | `RUN_MIGRATIONS` | `true` (dev) | Server-side migration on boot (dev only; prod uses `migrate` service) |
 | `RUN_SEED` | `true` (dev) | Seed on server boot (dev only) |
@@ -55,7 +56,7 @@ Keep `RUN_MIGRATIONS` / `RUN_SEED` in `.env` (or secrets) — avoid setting them
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Credentials |
 | `DATABASE_URL` | `postgresql+asyncpg://...` (host `db` in Docker, `localhost:5433` on host) |
 
-Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgres`.
+Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgres`. Set `POSTGRES_MIRROR_ENABLED=true` only when you want search/audit dual-write and Postgres FTS reads.
 
 ## Elasticsearch (optional)
 
@@ -157,6 +158,8 @@ Smoke check: set endpoint + headers, hit `/api/health`, confirm the service appe
 | `GROQ_API_BASE_URL` | `https://api.groq.com/openai/v1` | API base URL |
 | `AI_CHAT_ENABLED` | `true` | Admin AI chat |
 | `AI_SEARCH_ENABLED` | `true` | Public search chat |
+| `EXPENSES_ENABLED` | `false` | Expenses ledger + public calculator |
+| `UNTRUSTED_URL_TOOLS_ENABLED` | `false` | Mount yt-dlp, file-share, outbound health-checker |
 
 Client mirrors: `VITE_AI_CHAT_ENABLED`, `VITE_AI_SEARCH_ENABLED`.
 

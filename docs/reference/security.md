@@ -138,7 +138,7 @@ Client-side `VITE_AI_CHAT_ENABLED` hides the admin UI only; server flags and aut
 
 **Server-side URL fetch:** News metadata/ingest and similar fetchers use `is_public_http_url` with DNS resolution (fail closed) and manual redirect re-validation so names/hops that resolve to private or link-local addresses are rejected.
 
-**Vid download:** The download endpoint is public with strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). yt-dlp runs server-side; URLs must be public http(s) (private/local targets rejected).
+**Vid download:** Off by default on public deploys (`UNTRUSTED_URL_TOOLS_ENABLED=false` — routers not mounted). When enabled, the download endpoint is public with strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). yt-dlp runs server-side; URLs must be public http(s) (private/local targets rejected). The same flag gates file-share and outbound health-checker.
 
 ## Application log persistence
 
@@ -172,7 +172,7 @@ Decisions for known risks. **Accept** = intentional tradeoff; **Mitigated** = co
 | Medium | Open registration | **Accept** | New users get zero permissions; email verification required; suitable for portfolio use |
 | Medium | GitHub tokens in DB | **Addressed** | Encrypted at rest via Fernet; legacy plaintext decrypted on read until re-linked |
 | Medium | CSP `unsafe-inline` | **Accept** | Documented tradeoff; Vue escaping + DOMPurify are primary XSS defenses |
-| Low–Med | Public resource-heavy tools (vid-download, file-share) | **Mitigated** | Rate + concurrency limits |
+| Low–Med | Public resource-heavy tools (vid-download, file-share) | **Mitigated** | Off by default (`UNTRUSTED_URL_TOOLS_ENABLED`); rate + concurrency when enabled |
 | Low | Platform catalog info leak | **Accept** | Exposes service slugs/routes; acceptable for portfolio |
 | Low | Client feature flags bypassable | **Mitigated** | Server auth, flags, and rate limits are authoritative |
 | Low | Dev-lite API on all interfaces | **Accept** | Local development only; use firewall or bind to localhost |

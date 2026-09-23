@@ -3,12 +3,13 @@
 import secrets
 from urllib.parse import urlencode
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import RedirectResponse
 
 from app.core.deps import CurrentUser
 from app.core.exceptions import ApiError, UnauthorizedError
 from app.core.logging import logger
+from app.core.rate_limit import rate_limit_api
 from app.core.redis import cache_getdel, security_set
 from app.core.redis_keys import OAUTH_GITHUB_STATE_PREFIX
 from app.db.deps import DbRegistry
@@ -33,7 +34,7 @@ from app.services.github_credentials import (
 )
 from app.settings import get_settings
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(rate_limit_api)])
 
 _GITHUB_AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
 _STATE_TTL_SECONDS = 600

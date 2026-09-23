@@ -131,8 +131,9 @@ async def get_current_user(
         strict=True,
         request=request,
     )
-    return user  # strict=True raises before returning None
-
+    if user is None:
+        raise UnauthorizedError("Not authenticated")
+    return user
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
 

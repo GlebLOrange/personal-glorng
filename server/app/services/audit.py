@@ -118,7 +118,7 @@ class AuditService:
 
         # Mongo is the source of truth; the Postgres mirror is best-effort so a
         # secondary-store failure never breaks the request or desyncs the trail.
-        if self.postgres_db is not None and get_settings().enable_postgres():
+        if self.postgres_db is not None and get_settings().postgres_mirror_enabled():
             try:
                 await self._record_postgres(event, actor_id, request_id)
             except Exception as exc:

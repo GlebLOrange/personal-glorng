@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 
 from app.core.exceptions import ApiError
-from app.core.rate_limit import RateLimiter
+from app.core.rate_limit import RateLimiter, rate_limit_api
 from app.core.uploads import read_request_body_bounded
 from app.schemas.donations import (
     CheckoutSessionResponse,
@@ -18,7 +18,7 @@ from app.services.stripe_donations import (
 )
 from app.settings import get_settings
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(rate_limit_api)])
 
 STRIPE_WEBHOOK_MAX_BODY_BYTES = 1024 * 1024
 

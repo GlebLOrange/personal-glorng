@@ -10,12 +10,18 @@ Browser → Nginx (:80)
   ├── /admin/*       → Vue client (admin SPA)
   ├── /api/*         → FastAPI (:8000) → MongoDB / Redis
   ├── /s/:code       → FastAPI → redirect
-  └── /f/:code       → FastAPI → file download
+  └── /f/:code       → FastAPI → file download (when UNTRUSTED_URL_TOOLS_ENABLED)
 
 FastAPI + Worker + Todobot share MongoDB and Redis.
-PostgreSQL is optional for secondary FTS search and audit storage.
+PostgreSQL is optional; search/audit dual-write needs POSTGRES_MIRROR_ENABLED.
 Elasticsearch is optional for search (`make dev-search`).
 ```
+
+## Supported production topology
+
+**Nginx, API, MongoDB, Redis.** Add the Celery worker only when reminders or scheduled jobs are required. Postgres, Elasticsearch, RabbitMQ, and the Telegram bot stay opt-in.
+
+Public internet deploys should keep `UNTRUSTED_URL_TOOLS_ENABLED=false` so yt-dlp, file-share, and outbound health-checker routers are not mounted in the API process.
 
 ## Channels
 
@@ -33,7 +39,7 @@ Elasticsearch is optional for search (`make dev-search`).
 |-------|------|
 | **MongoDB** | Primary — users, tasks, recipes, expenses, files, etc. |
 | **Redis** | Token blacklist, rate limits, response cache, Telegram FSM, email dispatch claims |
-| **PostgreSQL** | Optional secondary — FTS search + audit (`--profile postgres`) |
+| **PostgreSQL** | Optional — connection/bootstrap; FTS + audit mirror only with `POSTGRES_MIRROR_ENABLED` |
 | **Elasticsearch** | Optional search backend (`make dev-search`) |
 
 See [Database](/operations/database) for bootstrap and migrations.

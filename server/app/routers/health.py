@@ -7,7 +7,7 @@ from redis.exceptions import RedisError
 from sqlalchemy import text
 
 from app.core.mongodb import get_mongodb_client, is_mongodb_enabled
-from app.core.redis import get_redis_client, get_redis_memory_info
+from app.core.redis import get_redis_client
 from app.settings import Settings, get_settings
 from app.workers.broker_health import check_broker_connection
 
@@ -35,16 +35,14 @@ async def _check_mongodb(settings: Settings) -> str:
     return "skipped"
 
 
-async def _check_redis() -> tuple[str, dict[str, Any] | None]:
+async def _check_redis() -> str:
     try:
         pong = await get_redis_client().ping()
         if not pong:
-            return "error", None
-        memory = await get_redis_memory_info()
-        status_value = "warn" if memory.get("warning") else "ok"
-        return status_value, memory
+            return "error"
+        return "ok"
     except RedisError:
-        return "error", None
+        return "error"
 
 
 async def _check_broker(settings: Settings) -> str | None:
@@ -82,7 +80,7 @@ async def ready(
 ) -> JSONResponse:
     (
         mongo_status,
-        (redis_status, redis_memory),
+        redis_status,
         broker_status,
         postgres_status,
     ) = await asyncio.gather(
@@ -96,8 +94,6 @@ async def ready(
     if mongo_status != "skipped":
         checks["mongodb"] = mongo_status
     checks["redis"] = redis_status
-    if redis_memory is not None:
-        checks["redis_memory"] = redis_memory
     if broker_status is not None:
         checks["rabbitmq"] = broker_status
     if postgres_status is not None:
