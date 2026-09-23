@@ -139,6 +139,8 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       <ToolbarPillButton
         family="1xx"
         :selected="!smartTextOpen"
+        role="tab"
+        :aria-selected="!smartTextOpen"
         aria-controls="expense-quick-add-panel"
         @click="selectQuickAdd"
       >
@@ -147,6 +149,8 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       <ToolbarPillButton
         family="1xx"
         :selected="smartTextOpen"
+        role="tab"
+        :aria-selected="smartTextOpen"
         aria-controls="expense-smart-text"
         @click="selectSmartText"
       >
@@ -166,7 +170,8 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
           id="expense-quick-name"
           ref="productInputRef"
           v-model="product"
-          label="goods or services?"
+          label="name"
+          label-align="start"
           placeholder="e.g. groceries"
           autocomplete="off"
           class="min-w-0"
@@ -202,12 +207,13 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         step="any"
         min="0.01"
         label="amount"
-        placeholder="1"
+        label-align="start"
+        placeholder="0.00"
         inputmode="decimal"
         class="min-w-0"
         :error="amountError ?? undefined"
       />
-      <BaseSelect v-model="category" class="min-w-0 w-full" label="category">
+      <BaseSelect v-model="category" class="min-w-0 w-full" label="category" label-align="start">
         <option value="">—</option>
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </BaseSelect>
@@ -215,6 +221,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         v-model="expenseDate"
         type="date"
         label="date"
+        label-align="start"
         class="min-w-0 w-full"
       />
       <ToolbarPillButton
@@ -238,8 +245,9 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
           ref="smartTextInputRef"
           v-model="smartText"
           label="smart text"
-          placeholder="amount (important!) of goods or services?"
-          hint="e.g. 20 coffee or 50 EUR lunch"
+          label-align="start"
+          placeholder="20 coffee or 50 EUR lunch"
+          hint="amount first, then what you bought"
           autocomplete="off"
           class="min-w-0 flex-1"
         />

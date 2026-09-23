@@ -74,7 +74,7 @@ defineExpose({
     role="tabpanel"
     aria-labelledby="expenses-tab-tab-expenses"
     tabindex="0"
-    class="flex flex-col gap-6 outline-none"
+    class="flex flex-col gap-4 outline-none"
   >
     <ExpenseLedgerHeader
       v-model:month-preset="monthPreset"
@@ -96,7 +96,8 @@ defineExpose({
       @open-transactions="emit('openTransactions')"
     />
 
-    <Card variant="compact" class="flex flex-col gap-3">
+    <Card variant="compact" class="flex flex-col gap-2">
+      <h3 class="text-sm font-semibold text-surface-light">add expense</h3>
       <ExpenseQuickAdd
         v-if="canWrite"
         ref="quickAddRef"
