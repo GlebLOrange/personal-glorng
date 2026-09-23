@@ -15,8 +15,7 @@ const year = new Date().getFullYear();
       </router-link>
     </div>
     <p class="text-base text-surface-sage text-center">
-      &copy; {{ year }} <span class="text-accent-blue font-bold">Gleb.Y</span>. Built with FastAPI +
-      Vue 3
+      &copy; {{ year }} <span class="text-accent-blue font-bold">Gleb.Y</span>
     </p>
   </footer>
 </template>
