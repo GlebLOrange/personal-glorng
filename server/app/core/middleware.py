@@ -11,7 +11,11 @@ from starlette.responses import JSONResponse, Response
 from app.core.csrf import csrf_origin_rejected
 from app.core.logging import logger
 from app.core.request_context import request_id_var, user_id_var
-from app.core.security import access_token_from_request, decode_token, user_id_from_payload
+from app.core.security import (
+    access_token_from_request,
+    decode_token,
+    user_id_from_payload,
+)
 from app.settings import get_settings
 
 _BODY_LOG_MAX_CHARS = 2048
@@ -129,7 +133,8 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
         settings = get_settings()
-        request_id = request.headers.get("x-request-id", str(uuid.uuid4()))
+        # Always generate server-side; never trust client X-Request-ID.
+        request_id = str(uuid.uuid4())
         request.state.request_id = request_id
         user_id = _optional_user_id(request)
         started_at = time.perf_counter()
@@ -137,67 +142,71 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
         req_token = request_id_var.set(request_id)
         user_token = user_id_var.set(user_id)
 
-        log_ctx: dict[str, str | int] = {
-            "request_id": request_id,
-            "method": request.method,
-            "path": str(request.url.path),
-        }
-        if user_id is not None:
-            log_ctx["user_id"] = user_id
+        try:
+            log_ctx: dict[str, str | int] = {
+                "request_id": request_id,
+                "method": request.method,
+                "path": str(request.url.path),
+            }
+            if user_id is not None:
+                log_ctx["user_id"] = user_id
 
-        path = str(request.url.path)
-        log_request = settings.LOG_REQUESTS and path not in _SKIP_REQUEST_LOG_PATHS
+            path = str(request.url.path)
+            log_request = settings.LOG_REQUESTS and path not in _SKIP_REQUEST_LOG_PATHS
 
-        body_log: str | None = None
-        if settings.LOG_REQUEST_BODIES and request.method in {"POST", "PUT", "PATCH"}:
-            body_bytes = await _read_body_for_log(request)
-            if body_bytes is not None:
+            body_log: str | None = None
+            if settings.LOG_REQUEST_BODIES and request.method in {
+                "POST",
+                "PUT",
+                "PATCH",
+            }:
+                body_bytes = await _read_body_for_log(request)
+                if body_bytes is not None:
 
-                async def receive() -> dict[str, object]:
-                    return {
-                        "type": "http.request",
-                        "body": body_bytes,
-                        "more_body": False,
-                    }
+                    async def receive() -> dict[str, object]:
+                        return {
+                            "type": "http.request",
+                            "body": body_bytes,
+                            "more_body": False,
+                        }
 
-                request = Request(request.scope, receive)
-                body_log = _sanitize_body_for_log(
-                    body_bytes,
-                    content_type=request.headers.get("content-type"),
+                    request = Request(request.scope, receive)
+                    body_log = _sanitize_body_for_log(
+                        body_bytes,
+                        content_type=request.headers.get("content-type"),
+                    )
+
+            if log_request:
+                started_context = dict(log_ctx)
+                if body_log is not None:
+                    started_context["body"] = body_log
+                logger.info("Request started", context=started_context)
+
+            if csrf_origin_rejected(request):
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "Origin not allowed"},
+                    headers={"X-Request-ID": request_id},
                 )
 
-        if log_request:
-            started_context = dict(log_ctx)
-            if body_log is not None:
-                started_context["body"] = body_log
-            logger.info("Request started", context=started_context)
-
-        if csrf_origin_rejected(request):
-            return JSONResponse(
-                status_code=403,
-                content={"detail": "Origin not allowed"},
-                headers={"X-Request-ID": request_id},
-            )
-
-        try:
             response = await call_next(request)
+
+            response.headers["X-Request-ID"] = request_id
+
+            completed_ctx: dict[str, str | int | float] = {
+                "request_id": request_id,
+                "method": request.method,
+                "path": str(request.url.path),
+                "status": response.status_code,
+                "duration_ms": round((time.perf_counter() - started_at) * 1000, 2),
+            }
+            if user_id is not None:
+                completed_ctx["user_id"] = user_id
+
+            if log_request:
+                logger.info("Request completed", context=completed_ctx)
+
+            return response
         finally:
             request_id_var.reset(req_token)
             user_id_var.reset(user_token)
-
-        response.headers["X-Request-ID"] = request_id
-
-        completed_ctx: dict[str, str | int | float] = {
-            "request_id": request_id,
-            "method": request.method,
-            "path": str(request.url.path),
-            "status": response.status_code,
-            "duration_ms": round((time.perf_counter() - started_at) * 1000, 2),
-        }
-        if user_id is not None:
-            completed_ctx["user_id"] = user_id
-
-        if log_request:
-            logger.info("Request completed", context=completed_ctx)
-
-        return response
