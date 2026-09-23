@@ -3,6 +3,7 @@
 import pytest
 from httpx import AsyncClient
 
+from app.core.request_context import request_id_var, user_id_var
 from app.core.security import create_access_token, create_refresh_token
 from app.settings import get_settings
 from tests.env_helpers import ENV_SCENARIOS_DIR, activate_env_file
@@ -32,6 +33,9 @@ async def test_csrf_rejects_cookie_post_without_origin(
     assert resp.status_code == 403
     assert resp.json()["detail"] == "Origin not allowed"
     assert "x-request-id" in resp.headers
+    # CSRF 403 must reset context vars (no leak into the next task).
+    assert request_id_var.get() is None
+    assert user_id_var.get() is None
     get_settings.cache_clear()
 
 

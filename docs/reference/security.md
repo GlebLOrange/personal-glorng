@@ -55,7 +55,7 @@ On Redis failure:
 | Token blacklist | **Fails closed** in production (rejects token) |
 | Cache reads | Fall through to origin APIs |
 
-`/api/ready` reports Redis memory usage (`used_memory`, `maxmemory`, `maxmemory_policy`) and warns when usage exceeds 85% of `maxmemory`.
+`/api/ready` sets `checks.redis` to `ok` / `warn` / `error` and, when Redis is reachable, includes `checks.redis_memory` with `used_memory`, `maxmemory`, and `maxmemory_policy`. Status is `warn` (still HTTP 200) when usage exceeds 85% of `maxmemory`.
 
 ## Rate limiting
 

@@ -38,6 +38,37 @@ async def test_request_completed_log_includes_request_id(
     get_settings.cache_clear()
 
 
+@pytest.mark.asyncio
+@pytest.mark.e2e_api
+async def test_forged_x_request_id_is_ignored(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    activate_env_file(
+        monkeypatch, scenario_env(tmp_path, APP_LOG_PERSIST_MIN_LEVEL="INFO")
+    )
+
+    forged = "client-forged-request-id"
+    _drain_queue()
+    resp = await client.get("/api/resume", headers={"X-Request-ID": forged})
+    assert resp.status_code == 200
+    response_id = resp.headers.get("x-request-id")
+    assert response_id is not None
+    assert response_id != forged
+
+    entries = _drain_queue()
+    completed = [
+        entry
+        for entry in entries
+        if entry.get("message") == "Request completed" and entry.get("request_id")
+    ]
+    assert completed
+    assert all(entry.get("request_id") != forged for entry in completed)
+    assert any(entry.get("request_id") == response_id for entry in completed)
+    get_settings.cache_clear()
+
+
 def test_body_log_redacts_nested_list_secrets() -> None:
     body = b'[{"token": "abc"}, {"nested": {"password": "secret"}}]'
 
