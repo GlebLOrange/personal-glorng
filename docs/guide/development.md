@@ -111,6 +111,8 @@ With `make dev-bot` and `TELEGRAM_BOT_TO_DO_TOKEN` set:
 
 Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN`.
 
+**2026-09-23 — Google Keep:** `notes.create` is Workspace-only; a personal Gmail account cannot create Keep notes via API. A Create menu (Note vs Event; one Telegram message → Keep note, no task/calendar) was designed but is not in this tree. Do not plan Keep again unless the operator has Workspace.
+
 ## Quality checks
 
 ```bash
