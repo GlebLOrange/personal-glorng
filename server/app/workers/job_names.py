@@ -13,3 +13,5 @@ class JobName(StrEnum):
     PROCESS_SYNC_QUEUE = "process_sync_queue"
     INGEST_NEWS = "ingest_news"
     PUBLISH_NEWS_TELEGRAM = "publish_news_telegram"
+    RUN_HEALTH_CHECKS = "run_health_checks"
+    CLEANUP_HEALTH_RESULTS = "cleanup_health_results"

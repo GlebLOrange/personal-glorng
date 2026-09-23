@@ -134,6 +134,14 @@ def create_celery_app() -> Celery:
             "task": JobName.INGEST_NEWS,
             "schedule": crontab(minute=15),
         },
+        "run-health-checks": {
+            "task": JobName.RUN_HEALTH_CHECKS,
+            "schedule": crontab(minute="*/1"),
+        },
+        "cleanup-health-results": {
+            "task": JobName.CLEANUP_HEALTH_RESULTS,
+            "schedule": crontab(hour=3, minute=45),
+        },
     }
     return app
 
