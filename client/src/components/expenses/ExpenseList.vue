@@ -30,7 +30,7 @@ const emit = defineEmits<{
 }>();
 
 const sortButtonClass =
-  "inline-flex h-10 items-center text-left text-xs tracking-wider transition-colors hover:text-surface-light";
+  "inline-flex h-8 items-center text-left text-xs tracking-wider transition-colors hover:text-surface-light";
 </script>
 
 <template>
@@ -38,8 +38,8 @@ const sortButtonClass =
 
   <template v-else>
     <!-- Mobile cards -->
-    <div class="flex flex-col gap-3 md:hidden">
-      <Card v-for="expense in expenses" :key="expense.id" variant="compact">
+    <div class="flex flex-col gap-2 md:hidden">
+      <Card v-for="expense in expenses" :key="expense.id" variant="dense">
         <ExpenseRow
           :expense="expense"
           layout="card"
@@ -55,11 +55,11 @@ const sortButtonClass =
       </Card>
     </div>
 
-    <!-- Desktop table -->
+    <!-- Desktop table: name carries notes + non-web source; actions are icon-only -->
     <div class="hidden min-w-0 overflow-x-auto rounded-lg border border-surface-border md:block">
       <table class="w-full min-w-0 font-data text-sm" :aria-label="`expenses for ${monthLabel}`">
-        <thead>
-          <tr class="border-b border-surface-border bg-surface-card/80 text-left text-surface-mid">
+        <thead class="sticky top-0 z-10">
+          <tr class="border-b border-surface-border bg-surface-card text-left text-surface-mid">
             <th class="px-3" :aria-sort="sortAriaSort('date')">
               <button type="button" :class="sortButtonClass" @click="emit('sort', 'date')">
                 date{{ sortIndicator("date") }}
@@ -84,14 +84,8 @@ const sortButtonClass =
                 amount{{ sortIndicator("amount") }}
               </button>
             </th>
-            <th class="px-3">
-              <span class="inline-flex h-10 items-center text-xs tracking-wider">source</span>
-            </th>
-            <th class="px-3">
-              <span class="inline-flex h-10 items-center text-xs tracking-wider">notes</span>
-            </th>
-            <th class="px-3 text-right">
-              <span class="inline-flex h-10 items-center text-xs tracking-wider">actions</span>
+            <th class="w-px px-2 text-right">
+              <span class="sr-only">actions</span>
             </th>
           </tr>
         </thead>
