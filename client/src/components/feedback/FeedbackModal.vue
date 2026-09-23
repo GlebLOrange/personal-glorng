@@ -47,6 +47,9 @@ const copy = computed(() =>
   isInquiry.value
     ? {
         title: "get in touch",
+        emailLabel: "email",
+        subjectLabel: "subject",
+        messageLabel: "message",
         subjectPlaceholder: "role, contract, or collaboration",
         messagePlaceholder: "what are you hiring for, timeline, and how to reach you…",
         submit: "send inquiry",
@@ -55,6 +58,9 @@ const copy = computed(() =>
       }
     : {
         title: "send feedback",
+        emailLabel: "email",
+        subjectLabel: "subject",
+        messageLabel: "message",
         subjectPlaceholder: "what is this about?",
         messagePlaceholder: "your feedback…",
         submit: "send feedback",
@@ -86,13 +92,23 @@ async function submit(): Promise<void> {
       <BaseInput
         v-model="email"
         type="email"
+        :label="copy.emailLabel"
         placeholder="your@email.com"
         autocomplete="email"
         :tone="emailTone"
         :error="emailError"
       />
-      <BaseInput v-model="theme" :placeholder="copy.subjectPlaceholder" />
-      <BaseTextarea v-model="message" :placeholder="copy.messagePlaceholder" :rows="3" />
+      <BaseInput
+        v-model="theme"
+        :label="copy.subjectLabel"
+        :placeholder="copy.subjectPlaceholder"
+      />
+      <BaseTextarea
+        v-model="message"
+        :label="copy.messageLabel"
+        :placeholder="copy.messagePlaceholder"
+        :rows="3"
+      />
     </form>
 
     <template #footer>

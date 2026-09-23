@@ -17,7 +17,7 @@ defineProps<{
         :href="profileUrl"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-sm text-accent-blue underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+        class="inline-flex min-h-11 items-center text-sm text-accent-blue underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         view profile
         <span class="sr-only">(opens in new tab)</span>
@@ -27,17 +27,16 @@ defineProps<{
       <Card
         v-for="repo in repos"
         :key="repo.full_name"
+        as="a"
+        :href="repo.html_url"
+        target="_blank"
+        rel="noopener noreferrer"
         hoverable
       >
-        <a
-          :href="repo.html_url"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="card-title text-inherit underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
-        >
+        <h3 class="card-title">
           {{ repo.name }}
           <span class="sr-only">(opens in new tab)</span>
-        </a>
+        </h3>
         <p class="text-body mt-2">
           {{ repo.description || "no description" }}
         </p>

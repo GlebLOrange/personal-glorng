@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
+import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { getApiErrorMessageFromBlob } from "@/types/api";
 
 const CV_FILENAME = "gleb.y.cv.pdf";
@@ -75,63 +75,88 @@ async function downloadCv(): Promise<void> {
 </script>
 
 <template>
-  <div class="py-12 md:py-20 text-center">
-    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 text-balance">
+  <div class="py-12 md:py-16">
+    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-3 text-balance">
       <span class="accent-gradient">{{ name }}</span>
     </h1>
     <p class="text-2xl md:text-3xl text-surface-sage mb-2">{{ title }}</p>
-    <p v-if="tagline" class="text-lg text-accent-blue mb-4 text-pretty max-w-2xl mx-auto">
+    <p v-if="tagline" class="text-lg text-accent-blue mb-3 text-pretty max-w-2xl">
       {{ tagline }}
     </p>
     <p
       v-if="location || availability"
-      class="text-meta mb-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1"
+      class="text-meta mb-4 flex flex-wrap items-center gap-x-3 gap-y-1"
     >
-      <span v-if="location" class="inline-flex items-center gap-1.5">
+      <span v-if="location" class="inline-flex min-h-11 items-center gap-1.5">
         <LocationIcon class-name="size-3.5 shrink-0" />
         {{ location }}
       </span>
-      <span v-if="location && availability" aria-hidden="true">·</span>
+      <span v-if="location && availability" class="inline-flex min-h-11 items-center" aria-hidden="true"
+        >·</span
+      >
       <a
         v-if="availability"
         href="#contacts"
-        class="text-meta underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+        class="inline-flex min-h-11 items-center px-1 text-meta underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         {{ availability }}
       </a>
     </p>
-    <p
-      class="text-lg md:text-xl max-w-2xl mx-auto text-surface-sage leading-relaxed text-pretty"
-    >
+    <p class="text-lg md:text-xl max-w-2xl text-surface-sage leading-relaxed text-pretty">
       {{ bio }}
     </p>
 
-    <div class="mt-8 flex flex-col sm:flex-row flex-wrap justify-center gap-2 print:hidden">
-      <ToolbarPillButton family="2xx" type="button" @click="emit('inquire')">
-        get in touch
-      </ToolbarPillButton>
-      <ToolbarPillButton family="1xx" type="button" :disabled="isDownloadingCv" @click="downloadCv">
+    <div class="mt-6 flex flex-col sm:flex-row flex-wrap gap-2 print:hidden">
+      <button type="button" class="cta-primary" @click="emit('inquire')">get in touch</button>
+      <button
+        type="button"
+        class="cta-secondary"
+        :disabled="isDownloadingCv"
+        @click="downloadCv"
+      >
         {{ isDownloadingCv ? "downloading…" : "download cv" }}
-      </ToolbarPillButton>
+      </button>
     </div>
 
-    <nav
-      class="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-surface-sage print:hidden"
-      aria-label="engineering proof links"
-    >
-      <a
-        v-for="link in proofLinks"
-        :key="link.href"
-        :href="link.href"
-        :target="link.external ? '_blank' : undefined"
-        :rel="link.external ? 'noopener noreferrer' : undefined"
-        class="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
-      >
-        {{ link.label }}
-        <span v-if="link.external" class="sr-only">(opens in new tab)</span>
-      </a>
-    </nav>
-
-    <slot name="after-actions" />
+    <!-- Jump + proof: middot lists, no eyebrows (labels live in aria-label). -->
+    <div class="portfolio-link-rail mt-5 flex flex-col gap-1 print:hidden">
+      <nav aria-label="On this page">
+        <ul class="m-0 flex list-none flex-wrap items-center gap-y-1 p-0">
+          <li
+            v-for="(link, i) in PORTFOLIO_SECTION_LINKS"
+            :key="link.href"
+            class="inline-flex items-center"
+          >
+            <span v-if="i > 0" class="px-1.5 text-surface-muted" aria-hidden="true">·</span>
+            <a
+              :href="link.href"
+              class="nav-link inline-flex min-h-11 items-center px-1 rounded-lg"
+            >
+              {{ link.label }}
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <nav aria-label="site proof">
+        <ul class="m-0 flex list-none flex-wrap items-center gap-y-1 p-0 text-sm">
+          <li
+            v-for="(link, i) in proofLinks"
+            :key="link.href"
+            class="inline-flex items-center"
+          >
+            <span v-if="i > 0" class="px-1.5 text-surface-muted" aria-hidden="true">·</span>
+            <a
+              :href="link.href"
+              :target="link.external ? '_blank' : undefined"
+              :rel="link.external ? 'noopener noreferrer' : undefined"
+              class="nav-link inline-flex min-h-11 items-center px-1 rounded-lg text-surface-mid"
+            >
+              {{ link.label }}
+              <span v-if="link.external" class="sr-only">(opens in new tab)</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
   </div>
 </template>

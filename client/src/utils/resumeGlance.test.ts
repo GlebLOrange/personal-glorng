@@ -35,5 +35,9 @@ describe("resumeGlance", () => {
     expect(stats.find((s) => s.label === "Projects")?.detail).toBe(
       "one platform with live facets",
     );
+    expect(stats.find((s) => s.label === "Experience")?.href).toBe("#experience");
+    expect(stats.find((s) => s.label === "Core stack")?.href).toBe("#skills");
+    expect(stats.find((s) => s.label === "Projects")?.href).toBe("#projects");
+    expect(stats.find((s) => s.label === "Availability")?.href).toBe("#contacts");
   });
 });

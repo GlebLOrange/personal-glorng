@@ -172,7 +172,6 @@ function focusAddFromAnalytics(): void {
             <BaseInput
               v-model="newCategoryName"
               label="category"
-              label-align="start"
               placeholder="new category"
               aria-label="new category"
               class="min-w-0 flex-1"

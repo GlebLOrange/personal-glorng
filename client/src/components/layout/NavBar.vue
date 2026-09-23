@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
@@ -23,8 +23,12 @@ const auth = useAuthStore();
 const { canUseAdminHub } = usePermissions();
 const { preference: colorThemePreference, cyclePreference } = useColorTheme();
 const router = useRouter();
+const route = useRoute();
 const mobileOpen = ref(false);
 const isMobileNav = ref(false);
+const isPortfolioHome = computed(
+  () => route.path === "/" || route.name === "home" || route.name === "portfolio",
+);
 const menuToggleClass = computed(() =>
   ["md:hidden self-center", iconActionClass("1xx", mobileOpen.value)].join(" "),
 );
@@ -37,7 +41,7 @@ const themeToggleLabel = computed(() => {
 });
 
 const { isHidden: isHeaderHidden, show: showHeader } = useScrollDirection({
-  disabled: () => mobileOpen.value || isMobileNav.value,
+  disabled: () => mobileOpen.value || isMobileNav.value || isPortfolioHome.value,
 });
 
 function setPageInert(open: boolean): void {

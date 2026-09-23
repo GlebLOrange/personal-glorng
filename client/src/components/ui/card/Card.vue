@@ -29,6 +29,7 @@ const needsKeyboardSemantics = computed(
 
 const rootClass = computed(() => [
   "border rounded-lg",
+  props.as === "a" && "card-as-link",
   props.variant === "default" && "p-6 bg-surface-card border-transparent",
   props.variant === "compact" && "p-4 bg-surface-card border-transparent",
   props.variant === "dense" && "px-3 py-2 bg-surface-card border-transparent rounded-lg",
@@ -37,7 +38,7 @@ const rootClass = computed(() => [
   props.tint === "danger" && "border-status-error/60 bg-status-error/10",
   props.hoverable &&
     "hover:border-accent-blue active:border-accent-blue/80 transition-colors duration-200",
-  props.interactive &&
+  (props.interactive || props.as === "a") &&
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 transition-colors duration-200",
   attrs.class,
 ]);

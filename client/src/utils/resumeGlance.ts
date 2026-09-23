@@ -4,6 +4,7 @@ export interface GlanceStat {
   label: string;
   value: string;
   detail: string;
+  href: string;
 }
 
 function parsePeriodStart(period: string): number | null {
@@ -69,21 +70,25 @@ export function buildGlanceStats(resume: ResumeData): GlanceStat[] {
           : years > 0
             ? "building and shipping products"
             : "no entries yet",
+      href: "#experience",
     },
     {
       label: "Core stack",
       value: primaryStack(resume.skills),
       detail: `${skillCount} tools across ${resume.skills.length} areas`,
+      href: "#skills",
     },
     {
       label: "Projects",
       value: String(resume.projects.length),
       detail: "one platform with live facets",
+      href: "#projects",
     },
     {
       label: "Availability",
       value: resume.availability ? "open" : "—",
       detail: resume.availability ?? resume.location ?? "add availability in resume data",
+      href: "#contacts",
     },
   ];
 }
