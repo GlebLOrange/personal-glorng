@@ -208,6 +208,15 @@ async def delete_account(
             )
     if registry.urls is not None:
         await registry.urls.delete_for_created_by(user_id)
+    if registry.health_monitors is not None:
+        monitors = await registry.health_monitors.list(
+            created_by=user_id,
+            limit=10_000,
+        )
+        monitor_ids = [m.id for m in monitors]
+        if registry.health_check_results is not None and monitor_ids:
+            await registry.health_check_results.delete_for_monitors(monitor_ids)
+        await registry.health_monitors.delete_for_created_by(user_id)
     if registry.data_imports is not None:
         batches = await registry.data_imports.batches.list_for_user(
             user_id,
