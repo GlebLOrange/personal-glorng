@@ -16,6 +16,10 @@ from app.db.repositories.data_import import DataImportRepository
 from app.db.repositories.expense import ExpenseRepository
 from app.db.repositories.feedback import FeedbackRepository
 from app.db.repositories.fileshare import FileShareRepository
+from app.db.repositories.health_checker import (
+    HealthCheckResultRepository,
+    HealthMonitorRepository,
+)
 from app.db.repositories.news import NewsRepository, NewsSourceRepository
 from app.db.repositories.recipe import RecipeRepository
 from app.db.repositories.search import SearchRepository
@@ -45,6 +49,8 @@ class DatabaseRegistry:
     feedback: FeedbackRepository | None = None
     credentials: CredentialRepository | None = None
     weather: WeatherRepository | None = None
+    health_monitors: HealthMonitorRepository | None = None
+    health_check_results: HealthCheckResultRepository | None = None
     telegram: TelegramRepository | None = None
     search: SearchRepository | None = None
     audit: AuditRepository | None = None
@@ -83,6 +89,8 @@ class DatabaseRegistry:
         self.feedback = FeedbackRepository(mongo)
         self.credentials = CredentialRepository(mongo)
         self.weather = WeatherRepository(mongo)
+        self.health_monitors = HealthMonitorRepository(mongo)
+        self.health_check_results = HealthCheckResultRepository(mongo)
         self.telegram = TelegramRepository(mongo)
         self.search = SearchRepository(mongo)
         self.audit = AuditRepository(mongo)

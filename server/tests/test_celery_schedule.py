@@ -15,3 +15,6 @@ def test_beat_schedule_entries_resolve() -> None:
     assert schedule["cleanup-old-tasks"]["task"] == JobName.CLEANUP_OLD_TASKS
     assert schedule["cleanup-expired-shares"]["task"] == JobName.CLEANUP_EXPIRED_SHARES
     assert schedule["process-sync-queue"]["task"] == JobName.PROCESS_SYNC_QUEUE
+    assert schedule["run-health-checks"]["task"] == JobName.RUN_HEALTH_CHECKS
+    assert isinstance(schedule["run-health-checks"]["schedule"], crontab)
+    assert schedule["cleanup-health-results"]["task"] == JobName.CLEANUP_HEALTH_RESULTS

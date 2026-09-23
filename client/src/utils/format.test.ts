@@ -4,6 +4,7 @@ import {
   displayBreadcrumbLabel,
   formatBreadcrumbLabel,
   formatDate,
+  formatEmbeddedDates,
   formatRelativeTime,
   formatScheduleDate,
   truncateBreadcrumbSlug,
@@ -61,6 +62,20 @@ describe("formatDate", () => {
     const formatted = formatDate("2000-02-22T15:30:00");
     expect(formatted).toContain("22 Feb 2000");
     expect(formatted).toMatch(/15:30/);
+  });
+});
+
+describe("formatEmbeddedDates", () => {
+  it("formats ISO timestamps inside free text", () => {
+    const formatted = formatEmbeddedDates("Published: 2026-09-23T17:45:00+00:00.");
+    expect(formatted).toMatch(/^Published: /);
+    expect(formatted).toMatch(/23 Sept? 2026/);
+    expect(formatted).not.toContain("T17:45");
+    expect(formatted).not.toMatch(/\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it("leaves text without dates unchanged", () => {
+    expect(formatEmbeddedDates("Reported by DW.")).toBe("Reported by DW.");
   });
 });
 

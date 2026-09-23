@@ -27,6 +27,10 @@ export function truncateBreadcrumbSlug(slug: string, maxLen = 14): string {
 
 const DATE_ONLY_ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+/** ISO-8601 date or datetime substring (optional fractional seconds / offset / Z). */
+const EMBEDDED_ISO_RE =
+  /\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?/g;
+
 const DATE_DISPLAY: Intl.DateTimeFormatOptions = {
   day: "numeric",
   month: "short",
@@ -44,6 +48,15 @@ export function formatDate(iso: string): string {
     ...DATE_DISPLAY,
     hour: "2-digit",
     minute: "2-digit",
+  });
+}
+
+/** Replace embedded ISO timestamps in free text with formatDate output. */
+export function formatEmbeddedDates(text: string): string {
+  return text.replace(EMBEDDED_ISO_RE, (match) => {
+    const parsed = new Date(DATE_ONLY_ISO_RE.test(match) ? `${match}T00:00:00` : match);
+    if (Number.isNaN(parsed.getTime())) return match;
+    return formatDate(match);
   });
 }
 
