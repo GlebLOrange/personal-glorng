@@ -83,7 +83,6 @@ describe("expenses layout restore", () => {
         rangeError: null,
         summary: sampleSummary,
         expenseTotal: 12,
-        formatMoney: (amount: string | number, currency: string) => `${amount} ${currency}`,
         summaryError: null,
         ratesError: null,
       },
@@ -98,7 +97,7 @@ describe("expenses layout restore", () => {
 
     expect(wrapper.text()).toContain("Spent on");
     expect(wrapper.text()).toContain("September 2026");
-    expect(wrapper.text()).toContain("Total");
+    expect(wrapper.text()).toContain("total");
     expect(wrapper.text()).toContain("120.00 PLN");
     expect(wrapper.text()).toContain("transactions · 12");
     expect(wrapper.text()).not.toContain("Top Category");
@@ -129,7 +128,6 @@ describe("expenses layout restore", () => {
         rangeError: null,
         summary: null,
         expenseTotal: 0,
-        formatMoney: (amount: string | number, currency: string) => `${amount} ${currency}`,
         summaryError: null,
         ratesError: null,
       },

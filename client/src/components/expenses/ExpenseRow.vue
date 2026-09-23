@@ -77,7 +77,7 @@ function secondarySource(): string | null {
     </td>
     <td class="whitespace-nowrap px-3 py-1.5 align-middle text-right leading-tight">
       <div class="text-sm">{{ formatMoney(expense.amount, expense.currency) }}</div>
-      <div v-if="convertedLabel()" class="text-[11px] text-surface-mid">
+      <div v-if="convertedLabel()" class="text-xs text-surface-mid">
         ≈ {{ convertedLabel() }}
       </div>
     </td>
