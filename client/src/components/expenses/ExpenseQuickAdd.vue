@@ -162,7 +162,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       v-show="!smartTextOpen"
       id="expense-quick-add-panel"
       role="tabpanel"
-      class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(7rem,9rem)_minmax(8rem,10rem)_minmax(9rem,11rem)_auto] lg:items-end"
+      class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(11rem,13rem)_minmax(16rem,18rem)_minmax(13rem,15rem)_auto] lg:items-end"
       @submit.prevent="emit('submit')"
     >
       <div class="relative min-w-0 sm:col-span-2 lg:col-span-1">
@@ -171,7 +171,6 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
           ref="productInputRef"
           v-model="product"
           label="name"
-          label-align="start"
           placeholder="e.g. groceries"
           autocomplete="off"
           class="min-w-0"
@@ -207,13 +206,12 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         step="any"
         min="0.01"
         label="amount"
-        label-align="start"
         placeholder="0.00"
         inputmode="decimal"
         class="min-w-0"
         :error="amountError ?? undefined"
       />
-      <BaseSelect v-model="category" class="min-w-0 w-full" label="category" label-align="start">
+      <BaseSelect v-model="category" class="min-w-0 w-full" label="category">
         <option value="">—</option>
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </BaseSelect>
@@ -221,13 +219,12 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         v-model="expenseDate"
         type="date"
         label="date"
-        label-align="start"
         class="min-w-0 w-full"
       />
       <ToolbarPillButton
         type="submit"
         family="2xx"
-        class="w-full shrink-0 sm:w-auto lg:mb-0.5"
+        class="w-full shrink-0 sm:w-auto"
         :disabled="loading"
       >
         {{ loading ? "saving…" : "save" }}
@@ -245,7 +242,6 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
           ref="smartTextInputRef"
           v-model="smartText"
           label="smart text"
-          label-align="start"
           placeholder="20 coffee or 50 EUR lunch"
           hint="amount first, then what you bought"
           autocomplete="off"
@@ -253,7 +249,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         />
         <ToolbarPillButton
           family="2xx"
-          class="w-full shrink-0 sm:mb-0.5 sm:w-auto"
+          class="w-full shrink-0 sm:w-auto"
           :disabled="loading || parsing || !canConfirmSmart"
           @click="confirmSmart"
         >
