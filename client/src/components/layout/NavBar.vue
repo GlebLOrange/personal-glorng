@@ -179,7 +179,7 @@ async function handleGoHome(): Promise<void> {
             <button
               v-if="auth.isAuthenticated"
               type="button"
-              class="nav-link-violet inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link text-status-error inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
               @click="handleLogout"
             >
               logout

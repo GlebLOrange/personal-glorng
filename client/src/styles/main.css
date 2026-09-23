@@ -251,13 +251,6 @@ html[data-theme="light"] {
   @apply nav-link;
 }
 
-@utility nav-link-violet {
-  @apply nav-link;
-  &:hover {
-    @apply text-accent-violet;
-  }
-}
-
 @utility interactive-surface {
   @apply bg-surface-card border border-surface-border rounded-lg;
   &:hover {

@@ -3,7 +3,6 @@ import ExpenseRow from "@/components/expenses/ExpenseRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
-import { Card } from "@/components/ui/card";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExpenseSortKey } from "@/composables/useExpenseSort";
 import type { ExchangeRates, Expense } from "@/types";
@@ -37,9 +36,13 @@ const sortButtonClass =
   <AdminListSkeleton v-if="loading" :rows="5" label="Loading expenses" />
 
   <template v-else>
-    <!-- Mobile cards -->
-    <div class="flex flex-col gap-2 md:hidden">
-      <Card v-for="expense in expenses" :key="expense.id" variant="dense">
+    <!-- Mobile rows: hairlines only — outer Card in transactions panel is the surface -->
+    <div class="flex flex-col md:hidden">
+      <div
+        v-for="expense in expenses"
+        :key="expense.id"
+        class="border-b border-surface-border/60 py-2 last:border-b-0"
+      >
         <ExpenseRow
           :expense="expense"
           layout="card"
@@ -52,7 +55,7 @@ const sortButtonClass =
           @delete="emit('delete', $event)"
           @duplicate="emit('duplicate', $event)"
         />
-      </Card>
+      </div>
     </div>
 
     <!-- Desktop table: name carries notes + non-web source; actions are icon-only -->

@@ -69,7 +69,7 @@ async function preview(): Promise<void> {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="email" back-to="/tools">
+  <AdminPageLayout hub="admin" title="email" back-to="/admin">
     <AdminListToolbar>
       <template #start>
         <div class="flex w-full min-w-0 items-center justify-between gap-2">

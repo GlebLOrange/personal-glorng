@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import ExpenseDateFilters from "@/components/expenses/ExpenseDateFilters.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
@@ -13,13 +15,12 @@ const selectedMonth = defineModel<string>("selectedMonth", { required: true });
 const dateFrom = defineModel<string>("dateFrom", { required: true });
 const dateTo = defineModel<string>("dateTo", { required: true });
 
-defineProps<{
+const props = defineProps<{
   monthLabel: string;
   hasActiveFilters: boolean;
   rangeError: string | null;
   summary: ExpenseSummary | null;
   expenseTotal: number;
-  formatMoney: (amount: string | number, currency: string) => string;
   summaryError: string | null;
   ratesError: string | null;
 }>();
@@ -30,6 +31,32 @@ const emit = defineEmits<{
   retry: [];
   openTransactions: [];
 }>();
+
+/** Metric amount + smaller currency unit (Toss: number dominant, unit legible). */
+const totalParts = computed((): { amount: string; unit: string | null } | null => {
+  if (!props.summary) return null;
+  const num =
+    typeof props.summary.total === "string"
+      ? parseFloat(props.summary.total)
+      : Number(props.summary.total);
+  if (!Number.isFinite(num)) return { amount: "N/A", unit: null };
+  const parts = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: props.summary.currency,
+    minimumFractionDigits: 2,
+  }).formatToParts(num);
+  const unit =
+    parts
+      .filter((part) => part.type === "currency")
+      .map((part) => part.value)
+      .join("") || null;
+  const amount = parts
+    .filter((part) => part.type !== "currency")
+    .map((part) => part.value)
+    .join("")
+    .trim();
+  return { amount, unit };
+});
 </script>
 
 <template>
@@ -55,16 +82,17 @@ const emit = defineEmits<{
 
       <div class="flex flex-wrap items-end justify-between gap-3 border-t border-surface-border/50 pt-3">
         <div class="min-w-0">
-          <p class="text-xs font-medium uppercase tracking-wide text-surface-mid">Total</p>
-          <p
-            v-if="summary"
-            class="mt-1 truncate text-2xl font-bold font-data text-surface-light sm:text-3xl"
-          >
-            {{ formatMoney(summary.total, summary.currency) }}
+          <p class="text-label text-surface-mid">total</p>
+          <p v-if="totalParts" class="mt-1 truncate text-metric">
+            <span>{{ totalParts.amount }}</span>
+            <span
+              v-if="totalParts.unit"
+              class="ml-1 text-sm font-medium text-surface-mid"
+            >{{ ` ${totalParts.unit}` }}</span>
           </p>
           <p
             v-else
-            class="mt-1 animate-pulse text-2xl font-bold text-surface-border sm:text-3xl"
+            class="mt-1 animate-pulse text-metric text-surface-border"
             aria-hidden="true"
           >
             —

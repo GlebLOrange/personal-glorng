@@ -118,13 +118,16 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
         <div>
           <h3 class="text-sm font-semibold text-surface-light">budget vs spend</h3>
           <p
-            class="mt-1 text-xl font-bold font-data"
+            class="mt-1 text-metric"
             :class="budgetTotals.overBudget ? 'text-status-error' : 'text-accent-blue'"
           >
-            {{ budgetTotals.percent }}%
-            <span class="sr-only">
-              of budget{{ budgetTotals.overBudget ? ", over budget" : "" }}
-            </span>
+            <span>{{ budgetTotals.percent }}</span>
+            <span class="text-sm font-medium">%</span>
+            <span
+              v-if="budgetTotals.overBudget"
+              class="ml-1.5 text-sm font-medium text-status-error"
+            >over</span>
+            <span class="sr-only"> of budget</span>
           </p>
           <p class="mt-1 text-xs text-surface-mid">
             {{ formatMoney(budgetTotals.spent, currency) }} of
@@ -178,6 +181,7 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
                 :class="row.overBudget ? 'text-status-error' : 'text-surface-mid'"
               >
                 {{ row.percent }}%
+                <span v-if="row.overBudget" class="ml-1 text-xs">over</span>
               </td>
             </tr>
           </tbody>

@@ -12,10 +12,13 @@ const props = withDefaults(
     titlePrefix?: string;
     breadcrumbs: BreadcrumbSegment[];
     backTo?: RouteLocationRaw;
+    /** Skip sr-only h1 when the page renders its own visible heading. */
+    omitHeading?: boolean;
   }>(),
   {
     titlePrefix: "",
     backTo: undefined,
+    omitHeading: false,
   },
 );
 
@@ -37,7 +40,7 @@ const displayTitle = computed(() => `${props.titlePrefix}${props.title}`);
           <PageBreadcrumbs :segments="displaySegments" :elevated="true" class="min-w-0" />
         </div>
         <!-- Breadcrumbs are the visible chrome title; keep a real h1 for outline/AT -->
-        <h1 class="sr-only">{{ displayTitle }}</h1>
+        <h1 v-if="!omitHeading" class="sr-only">{{ displayTitle }}</h1>
       </div>
 
       <!--

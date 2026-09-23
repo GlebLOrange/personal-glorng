@@ -175,7 +175,7 @@ onUnmounted(() => {
     </SectionWrapper>
 
     <SectionWrapper id="about" title="about" width="full" dark alternate>
-      <p v-if="resume.hiring_note" class="text-body mb-6 max-w-3xl lowercase">
+      <p v-if="resume.hiring_note" class="text-body mb-6 max-w-3xl">
         {{ resume.hiring_note }}
       </p>
       <PortfolioGlance :resume="resume" />
@@ -246,36 +246,42 @@ onUnmounted(() => {
       </div>
       <FeedbackModal v-if="contactModal" :intent="contactModal" @close="contactModal = null" />
     </SectionWrapper>
+  </div>
 
-    <div ref="supportSectionRef" class="print:hidden">
-      <SectionWrapper id="support" title="support my work" width="full" dark alternate>
-        <template #headerActions>
+  <!-- Footer-adjacent support strip — kept off the hire CTA band -->
+  <div ref="supportSectionRef" id="support" class="print:hidden border-t border-surface-border/60">
+    <div class="mx-auto w-full max-w-5xl px-6 py-10 md:py-12">
+      <div class="flex min-w-0 flex-wrap items-center justify-between gap-4">
+        <div class="min-w-0">
+          <p class="text-meta mb-1">support</p>
+          <p class="text-body mb-1 max-w-xl">
+            if my tools or writing have helped you, a small contribution keeps the work going
+          </p>
+          <p class="text-meta">card, paypal, or monthly support — pick what works for you</p>
+        </div>
+        <div class="flex min-w-0 flex-wrap items-center gap-4">
           <div
             v-if="donationsStarted && donationsLoading"
             class="h-10 w-40 animate-pulse rounded-lg bg-surface-card"
             aria-busy="true"
           />
           <DonationsBlock v-else-if="donations" :config="donations" />
-        </template>
-        <p class="text-body mb-2">
-          if my tools or writing have helped you, a small contribution keeps the work going
-        </p>
-        <p class="text-meta">card, paypal, or monthly support — pick what works for you</p>
-        <ErrorState
-          v-if="donationsError"
-          class="mt-6"
-          message="Donation options are temporarily unavailable."
-          show-retry
-          retry-label="retry"
-          @retry="loadDonations"
-        />
-        <EmptyState
-          v-else-if="donationsFetched && !donations"
-          class="mt-6"
-          title="no donation options"
-          description="support options are not configured right now."
-        />
-      </SectionWrapper>
+        </div>
+      </div>
+      <ErrorState
+        v-if="donationsError"
+        class="mt-6"
+        message="Donation options are temporarily unavailable."
+        show-retry
+        retry-label="retry"
+        @retry="loadDonations"
+      />
+      <EmptyState
+        v-else-if="donationsFetched && !donations"
+        class="mt-6"
+        title="no donation options"
+        description="support options are not configured right now."
+      />
     </div>
   </div>
 </template>

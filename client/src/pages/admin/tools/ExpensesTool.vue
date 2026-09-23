@@ -135,7 +135,7 @@ function focusAddFromAnalytics(): void {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="expenses" max-width="xl">
+  <AdminPageLayout hub="tools" title="expenses" max-width="xl" back-to="/tools">
     <div class="min-w-0">
       <div class="flex flex-col gap-3">
         <p
@@ -210,7 +210,6 @@ function focusAddFromAnalytics(): void {
           :summary="summary"
           :summary-error="summaryError"
           :rates-error="ratesError"
-          :format-money="formatMoney"
           :expense-total="expenseTotal"
           @apply-preset="handleDatePreset"
           @clear-filters="clearFilters"

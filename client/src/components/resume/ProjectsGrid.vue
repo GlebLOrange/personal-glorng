@@ -15,8 +15,8 @@ function isExternal(url: string): boolean {
 
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <Card v-for="proj in projects" :key="proj.name">
-      <h3 class="card-title mb-1 lowercase">
+    <Card v-for="proj in projects" :key="proj.name" :hoverable="Boolean(proj.url)">
+      <h3 class="card-title mb-1">
         <a
           v-if="proj.url && isExternal(proj.url)"
           :href="proj.url"
@@ -36,35 +36,16 @@ function isExternal(url: string): boolean {
         </RouterLink>
         <span v-else>{{ proj.name }}</span>
       </h3>
-      <p class="text-body mb-4 lowercase">{{ proj.description }}</p>
+      <p class="text-body mb-4">{{ proj.description }}</p>
       <div class="flex flex-wrap gap-2">
         <span
           v-for="t in proj.tech"
           :key="t"
-          class="px-2.5 py-1 text-sm bg-accent-blue/10 text-accent-blue rounded lowercase"
+          class="text-sm text-surface-sage"
         >
           {{ t }}
         </span>
       </div>
-      <p v-if="proj.url" class="mt-4 text-meta lowercase">
-        <a
-          v-if="isExternal(proj.url)"
-          :href="proj.url"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-accent-blue underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
-        >
-          view project
-          <span class="sr-only">(opens in new tab)</span>
-        </a>
-        <RouterLink
-          v-else
-          :to="proj.url"
-          class="text-accent-blue underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
-        >
-          view project
-        </RouterLink>
-      </p>
     </Card>
   </div>
 </template>

@@ -79,7 +79,7 @@ async function downloadCv(): Promise<void> {
     <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 text-balance">
       <span class="accent-gradient">{{ name }}</span>
     </h1>
-    <p class="text-2xl md:text-3xl text-surface-sage mb-2 lowercase">{{ title }}</p>
+    <p class="text-2xl md:text-3xl text-surface-sage mb-2">{{ title }}</p>
     <p v-if="tagline" class="text-lg text-accent-blue mb-4 text-pretty max-w-2xl mx-auto">
       {{ tagline }}
     </p>
@@ -95,13 +95,13 @@ async function downloadCv(): Promise<void> {
       <a
         v-if="availability"
         href="#contacts"
-        class="text-meta underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded lowercase"
+        class="text-meta underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         {{ availability }}
       </a>
     </p>
     <p
-      class="text-lg md:text-xl max-w-2xl mx-auto text-surface-sage leading-relaxed text-pretty lowercase"
+      class="text-lg md:text-xl max-w-2xl mx-auto text-surface-sage leading-relaxed text-pretty"
     >
       {{ bio }}
     </p>
@@ -125,7 +125,7 @@ async function downloadCv(): Promise<void> {
         :href="link.href"
         :target="link.external ? '_blank' : undefined"
         :rel="link.external ? 'noopener noreferrer' : undefined"
-        class="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded lowercase"
+        class="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         {{ link.label }}
         <span v-if="link.external" class="sr-only">(opens in new tab)</span>

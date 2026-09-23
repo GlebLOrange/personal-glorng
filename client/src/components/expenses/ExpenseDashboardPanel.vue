@@ -40,7 +40,6 @@ defineProps<{
   summary: ExpenseSummary | null;
   summaryError: string | null;
   ratesError: string | null;
-  formatMoney: (amount: string | number, currency: string) => string;
   expenseTotal: number;
 }>();
 
@@ -87,7 +86,6 @@ defineExpose({
       :range-error="rangeError"
       :summary="summary"
       :expense-total="expenseTotal"
-      :format-money="formatMoney"
       :summary-error="summaryError"
       :rates-error="ratesError"
       @apply-preset="emit('applyPreset', $event)"

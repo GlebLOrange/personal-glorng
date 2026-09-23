@@ -114,7 +114,6 @@ async function handleRegister(): Promise<void> {
         <span>
           I accept the
           <RouterLink to="/privacy" class="nav-link inline">privacy policy</RouterLink>
-          and terms of use
         </span>
       </label>
       <p

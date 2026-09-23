@@ -87,4 +87,18 @@ describe("PageChrome", () => {
     expect(wrapper.get("h1").text()).toBe("Some Article");
     expect(wrapper.find(".accent-gradient").exists()).toBe(false);
   });
+
+  it("omits the chrome h1 when the page renders its own heading", () => {
+    const wrapper = mount(PageChrome, {
+      props: {
+        title: "Some Article",
+        breadcrumbs: [{ label: "news", to: "/news" }, { label: "demo-news-1" }],
+        backTo: "/news",
+        omitHeading: true,
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.find("h1").exists()).toBe(false);
+  });
 });
