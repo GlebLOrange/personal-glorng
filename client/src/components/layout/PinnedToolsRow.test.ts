@@ -55,11 +55,23 @@ describe("PinnedToolsRow", () => {
     expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
   });
 
-  it("hides the strip on news and settings", () => {
+  it("shows the strip on the admin hub", () => {
+    mocks.routeName = "admin";
+
+    const wrapper = mount(PinnedToolsRow);
+
+    expect(wrapper.find(".page-tool-grid").exists()).toBe(true);
+    expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
+  });
+
+  it("hides the strip on news, settings, and nested admin routes", () => {
     mocks.routeName = "news";
     expect(mount(PinnedToolsRow).find(".page-tool-grid").exists()).toBe(false);
 
     mocks.routeName = "settings";
+    expect(mount(PinnedToolsRow).find(".page-tool-grid").exists()).toBe(false);
+
+    mocks.routeName = "admin-users";
     expect(mount(PinnedToolsRow).find(".page-tool-grid").exists()).toBe(false);
   });
 });
