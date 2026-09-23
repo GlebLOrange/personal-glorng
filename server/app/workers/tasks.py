@@ -333,6 +333,30 @@ async def publish_news_telegram(article_id: int) -> None:
     await news_svc.set_telegram_message_id(article_id, message_id)
 
 
+async def run_health_checks() -> None:
+    """Probe due health monitors."""
+    from app.services.health_checker import HealthMonitorService
+
+    registry = await get_worker_registry()
+    if registry.health_monitors is None:
+        return
+    checked = await HealthMonitorService(registry).run_due_checks()
+    if checked:
+        logger.info("Health checks completed", context={"checked": checked})
+
+
+async def cleanup_health_results() -> None:
+    """Delete health check results older than retention window."""
+    from app.services.health_checker import HealthMonitorService
+
+    registry = await get_worker_registry()
+    if registry.health_check_results is None:
+        return
+    deleted = await HealthMonitorService(registry).cleanup_old_results()
+    if deleted:
+        logger.info("Health check results cleaned up", context={"deleted": deleted})
+
+
 def _run_periodic_task(task: Task, job_name: str, coro_fn: Callable[[], Any]) -> None:
     try:
         run_async(coro_fn())
@@ -401,3 +425,23 @@ def publish_news_telegram_task(self: Task, article_id: int) -> None:
         return publish_news_telegram(article_id)
 
     _run_periodic_task(self, JobName.PUBLISH_NEWS_TELEGRAM, _publish)
+
+
+@celery_app.task(
+    bind=True,
+    name=JobName.RUN_HEALTH_CHECKS,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def run_health_checks_task(self: Task) -> None:
+    _run_periodic_task(self, JobName.RUN_HEALTH_CHECKS, run_health_checks)
+
+
+@celery_app.task(
+    bind=True,
+    name=JobName.CLEANUP_HEALTH_RESULTS,
+    max_retries=MAX_JOB_TRIES - 1,
+    ignore_result=True,
+)
+def cleanup_health_results_task(self: Task) -> None:
+    _run_periodic_task(self, JobName.CLEANUP_HEALTH_RESULTS, cleanup_health_results)

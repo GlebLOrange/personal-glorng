@@ -271,12 +271,24 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/pages/admin/tools/DataExtractTool.vue"),
     meta: { requiresAuth: true, title: "Data extract", noindex: true },
   },
+  {
+    path: "/health-checker",
+    name: "tool-health-checker",
+    component: () => import("@/pages/tools/HealthCheckerTool.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "Health checker",
+      description: "Monitor website and API uptime, latency, SSL, and DNS.",
+      noindex: true,
+    },
+  },
   // Legacy /admin/tools/* redirects
   { path: "/admin/tools/calculator", redirect: { name: "calculator" } },
   { path: "/admin/tools/password-generator", redirect: { name: "password-generator" } },
   { path: "/admin/tools/recipes", redirect: { name: "recipes" } },
   { path: "/admin/tools/url-shortener", redirect: { name: "shortener" } },
   { path: "/admin/tools/vid-download", redirect: { name: "vid-download" } },
+  { path: "/admin/tools/health-checker", redirect: { name: "tool-health-checker" } },
   {
     path: "/admin/tools/currency",
     redirect: { name: "tool-expenses", query: { tab: "converter", mode: "convert" } },
@@ -346,6 +358,7 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "news-sources": "news-sources",
   "news-source": "news-sources",
   "tool-data-extract": "data-extract",
+  "tool-health-checker": "health-checker",
   "tool-audit": "audit",
   "tool-app-logs": "app-logs",
   "tool-search": "search",
