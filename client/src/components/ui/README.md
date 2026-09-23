@@ -63,7 +63,7 @@ Product `BaseButton` / `ToolbarPillButton` labels must name the action with a sh
 | `IconActionButton` (+ wrappers) | **h-10 w-10** | Icon-only chrome; in-field clear uses `size="field"` (same square) |
 | `BaseSelect` | **h-10** (`compact` → h-9) | Dense toolbars only for compact |
 
-Wash recipe (idle → hover/selected → active): `/3` → `/15` + border `/40` → `/25`. Do **not** re-add `min-h-10` / `h-10` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `family`, `quiet`, and `selected`. Size tokens live in `constants/formClasses.ts` (`CONTROL_BUTTON_*`).
+Wash recipe (idle → hover/selected → active): `/3` → `/15` + border `/40` → `/25`. Icon clear/edit/remove/copy (`IconCloseButton` / `IconEditButton` / `IconCopyButton`) use `transparentIdle`: transparent at rest, family wash on hover or `focus-visible`; pills and other icon chrome keep the `/3` idle wash. Do **not** re-add `min-h-10` / `h-10` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `family`, `quiet`, `transparentIdle`, and `selected`. Size tokens live in `constants/formClasses.ts` (`CONTROL_BUTTON_*`).
 
 **Marketing vs product accents** — portfolio/marketing pages may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI uses only the **1xx–5xx** pale set + surfaces — no golden/violet on tools, chips, or product buttons.
 
