@@ -81,39 +81,40 @@ onMounted(() => {
   >
     <form
       v-if="canWrite"
-      class="mb-6 space-y-3"
+      class="mb-4 flex min-w-0 flex-wrap items-center gap-2"
       @submit.prevent="createMonitor"
     >
-      <div class="flex min-w-0 flex-wrap items-center gap-2">
-        <BaseInput
-          v-model="newUrl"
-          class="min-w-0 flex-1"
-          placeholder="url (example.com or https://…)"
-          aria-label="url to monitor"
-        />
-        <select
-          v-model.number="newInterval"
-          class="h-10 rounded-lg border border-surface-border bg-surface-card px-3 text-sm text-surface-fg"
-          aria-label="check interval minutes"
-        >
-          <option v-for="mins in HEALTH_INTERVALS" :key="mins" :value="mins">
-            every {{ mins }}m
-          </option>
-        </select>
-        <ToolbarPillButton
-          family="2xx"
-          type="submit"
-          class="shrink-0"
-          :disabled="!canCreate"
-        >
-          {{ creating ? "adding…" : "add" }}
-        </ToolbarPillButton>
-      </div>
+      <BaseInput
+        v-model="newUrl"
+        class="min-w-0 flex-1"
+        compact
+        placeholder="url (example.com or https://…)"
+        aria-label="url to monitor"
+      />
       <BaseInput
         v-model="newLabel"
+        class="min-w-0 w-full max-w-[12rem]"
+        compact
         placeholder="label (optional)"
         aria-label="monitor label"
       />
+      <select
+        v-model.number="newInterval"
+        class="h-9 rounded-lg border border-surface-border bg-surface-card px-2 text-xs text-surface-fg"
+        aria-label="check interval minutes"
+      >
+        <option v-for="mins in HEALTH_INTERVALS" :key="mins" :value="mins">
+          every {{ mins }}m
+        </option>
+      </select>
+      <ToolbarPillButton
+        family="2xx"
+        type="submit"
+        class="shrink-0"
+        :disabled="!canCreate"
+      >
+        {{ creating ? "adding…" : "add" }}
+      </ToolbarPillButton>
     </form>
 
     <p v-else-if="!canRead" class="text-sm text-surface-muted">
