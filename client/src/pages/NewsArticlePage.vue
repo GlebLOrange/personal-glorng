@@ -9,7 +9,7 @@ import FieldHelp from "@/components/ui/FieldHelp.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
 import { applyPageSeo } from "@/utils/pageSeo";
-import { truncateBreadcrumbSlug } from "@/utils/format";
+import { formatEmbeddedDates, truncateBreadcrumbSlug } from "@/utils/format";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
 const route = useRoute();
@@ -24,6 +24,10 @@ const breadcrumbs = computed((): BreadcrumbSegment[] => {
   if (crumbSlug.value) trail.push({ label: crumbSlug.value });
   return trail;
 });
+/** Drop publish-date bullets — header already shows newsArticleDisplayDate. */
+const keyPoints = computed(() =>
+  (article.value?.bullets ?? []).filter((bullet) => !/^Published:\s/i.test(bullet.trim())),
+);
 
 async function loadCurrentArticle(): Promise<void> {
   if (slug.value) {
@@ -95,15 +99,15 @@ watch(
         <p class="text-body break-words">{{ article.summary }}</p>
       </header>
 
-      <section v-if="article.bullets.length" class="mb-8 min-w-0">
+      <section v-if="keyPoints.length" class="mb-8 min-w-0">
         <h2 class="card-title mb-4">key points</h2>
         <ul class="min-w-0 space-y-3 text-sm text-surface-mid">
           <li
-            v-for="bullet in article.bullets"
+            v-for="bullet in keyPoints"
             :key="bullet"
             class="break-words border-l-2 border-accent-blue/40 pl-3 text-body"
           >
-            {{ bullet }}
+            {{ formatEmbeddedDates(bullet) }}
           </li>
         </ul>
       </section>
