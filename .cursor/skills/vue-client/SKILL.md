@@ -19,6 +19,7 @@ description: Vue 3 component and TypeScript guidance for the Vite client.
 - Keep one component per file; component filenames should stay PascalCase.
 - Name template/child event handlers clearly: prefer `handle*` **or** a clear verb (`openCreate`, `runIngest`, `setStatusFilter`). Stay consistent within a file.
 - Move complex template expressions into `computed` values or small helpers.
+- `BaseInput` / `BaseSelect` default to a trailing in-field label (`labelAlign: "end"`). Do not set `label-align="start"` (border notch) on expense or other forms.
 
 ## State Management (Pinia)
 - Use setup stores with `defineStore('name', () => { ... })`.
