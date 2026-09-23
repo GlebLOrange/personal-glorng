@@ -120,6 +120,11 @@ defineProps<{
       <path d="M3 9h12M3 14h12M8 4v16M17 12h4M19 10v4" />
     </template>
 
+    <!-- health-checker: pulse / activity -->
+    <template v-else-if="slug === 'health-checker'">
+      <path d="M22 12h-4l-3 7L9 5l-3 7H2" />
+    </template>
+
     <!-- feedback: speech bubble -->
     <template v-else-if="slug === 'feedback'">
       <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-4 4v-4H6a2 2 0 0 1-2-2V5Z" />

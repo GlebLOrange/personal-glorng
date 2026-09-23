@@ -107,6 +107,12 @@ INDEX_SPECS: list[tuple[str, list[tuple[str, int | str]], dict[str, Any] | None]
     ("embed_items", [("id", 1)], {"unique": True}),
     ("embed_items", [("embed_id", 1)], {"unique": True}),
     ("embed_items", [("source_batch_id", 1)], None),
+    ("health_monitors", [("id", 1)], {"unique": True}),
+    ("health_monitors", [("created_by", 1), ("created_at", -1)], None),
+    ("health_monitors", [("enabled", 1), ("next_check_at", 1)], None),
+    ("health_check_results", [("id", 1)], {"unique": True}),
+    ("health_check_results", [("monitor_id", 1), ("checked_at", 1)], None),
+    ("health_check_results", [("checked_at", 1)], None),
 ]
 
 # Single-field / short compounds superseded by ESR indexes above. Dropped on migrate.

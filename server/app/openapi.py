@@ -46,6 +46,10 @@ OPENAPI_TAGS: list[dict[str, str]] = [
         "name": "vid-download",
         "description": "Video download helpers powered by yt-dlp.",
     },
+    {
+        "name": "health-checker",
+        "description": "Monitor website and API uptime, latency, SSL, and DNS.",
+    },
     {"name": "ai-chat", "description": "Superuser-only plain LLM chat."},
     {
         "name": "data-extract",
