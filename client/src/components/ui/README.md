@@ -71,7 +71,7 @@ Wash recipe (idle → hover/selected → active): `/3` → `/15` + border `/40` 
 
 Use for **grouped content on a surface** — list items, settings sections, summary blocks.
 
-- `Card`, `CardHeader`, `CardBody`, `CardTitle`, `CardActions`
+- `Card`, `CardHeader`, `CardBody`, `CardTitle`
 - Variants: `default`, `compact`, `inset`, `ghost`, `dense`
 - Radius is always `rounded-lg` (interactive token)
 - Not a drop-in for every `div`; use when the block needs a border/background

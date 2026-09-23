@@ -170,7 +170,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <button
         v-if="auth.isAuthenticated"
         type="button"
-        class="nav-link-violet text-base px-3 py-3 rounded-lg hover:bg-surface-card text-left"
+        class="nav-link text-status-error text-base px-3 py-3 rounded-lg hover:bg-surface-card text-left"
         @click="handleLogout"
       >
         logout

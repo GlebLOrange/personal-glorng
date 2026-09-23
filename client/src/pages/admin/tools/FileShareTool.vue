@@ -101,7 +101,7 @@ onMounted(loadFiles);
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="file-share">
+  <AdminPageLayout hub="tools" title="file-share" back-to="/tools">
     <div class="mb-10 space-y-3">
       <div class="mb-3 flex w-full min-w-0 items-center justify-end">
         <ToolbarPillButton family="2xx" :disabled="uploading || !selectedFile" @click="upload">

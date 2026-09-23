@@ -55,7 +55,13 @@ watch(
 </script>
 
 <template>
-  <PageShell :title="articleTitle" :breadcrumbs="breadcrumbs" back-to="/news" :narrow="false">
+  <PageShell
+    :title="articleTitle"
+    :breadcrumbs="breadcrumbs"
+    back-to="/news"
+    :narrow="false"
+    omit-heading
+  >
     <Card
       v-if="detailLoading"
       class="h-96 animate-pulse"
@@ -72,6 +78,9 @@ watch(
 
     <article v-else-if="article" class="min-w-0 w-full">
       <header class="mb-8 min-w-0">
+        <h1 class="mb-4 text-2xl font-semibold text-surface-light text-balance break-words md:text-3xl">
+          {{ article.title }}
+        </h1>
         <div
           class="mb-4 flex w-full min-w-0 flex-wrap items-center justify-between gap-2 text-xs text-surface-muted"
         >

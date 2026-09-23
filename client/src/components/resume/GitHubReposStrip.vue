@@ -11,13 +11,13 @@ defineProps<{
 <template>
   <div v-if="repos.length" class="space-y-4">
     <div class="flex flex-wrap items-baseline justify-between gap-2">
-      <p class="text-meta lowercase">engineering highlights from github</p>
+      <p class="text-meta">engineering highlights from github</p>
       <a
         v-if="profileUrl"
         :href="profileUrl"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-sm text-accent-blue underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded lowercase"
+        class="text-sm text-accent-blue underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
       >
         view profile
         <span class="sr-only">(opens in new tab)</span>
@@ -27,21 +27,21 @@ defineProps<{
       <Card
         v-for="repo in repos"
         :key="repo.full_name"
-        class="!bg-surface-card ring-1 ring-inset ring-surface-border/70"
+        hoverable
       >
         <a
           :href="repo.html_url"
           target="_blank"
           rel="noopener noreferrer"
-          class="card-title lowercase text-inherit underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+          class="card-title text-inherit underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
         >
           {{ repo.name }}
           <span class="sr-only">(opens in new tab)</span>
         </a>
-        <p class="text-body mt-2 lowercase">
+        <p class="text-body mt-2">
           {{ repo.description || "no description" }}
         </p>
-        <p class="text-meta mt-3 lowercase">
+        <p class="text-meta mt-3">
           <span v-if="repo.language">{{ repo.language }} · </span>
           {{ repo.stargazers_count }} stars
         </p>

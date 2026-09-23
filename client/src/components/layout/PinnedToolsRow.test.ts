@@ -54,4 +54,12 @@ describe("PinnedToolsRow", () => {
     expect(wrapper.find('[data-testid="toast-host"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="weather-bar"]').exists()).toBe(true);
   });
+
+  it("hides the strip on news and settings", () => {
+    mocks.routeName = "news";
+    expect(mount(PinnedToolsRow).find(".page-tool-grid").exists()).toBe(false);
+
+    mocks.routeName = "settings";
+    expect(mount(PinnedToolsRow).find(".page-tool-grid").exists()).toBe(false);
+  });
 });

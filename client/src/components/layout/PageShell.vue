@@ -18,6 +18,8 @@ const props = withDefaults(
     paddingY?: string;
     as?: "main" | "div";
     bodyClass?: string;
+    /** Skip chrome sr-only h1 when the page renders its own visible heading. */
+    omitHeading?: boolean;
   }>(),
   {
     titlePrefix: "",
@@ -26,6 +28,7 @@ const props = withDefaults(
     paddingY: "pb-8 md:pb-10",
     as: "div",
     bodyClass: "",
+    omitHeading: false,
   },
 );
 
@@ -50,6 +53,7 @@ const bodyClass = computed(() => [
       :title-prefix="titlePrefix"
       :breadcrumbs="breadcrumbs"
       :back-to="backTo"
+      :omit-heading="omitHeading"
     />
     <div :class="bodyClass">
       <PinnedToolsRow />

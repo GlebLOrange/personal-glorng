@@ -61,7 +61,7 @@ const {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="data extract">
+  <AdminPageLayout hub="tools" title="data extract" back-to="/tools">
     <div class="min-w-0">
       <div class="mb-6 space-y-3">
         <CollapsibleUsageGuide title="data extract usage guide">

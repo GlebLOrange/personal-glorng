@@ -156,7 +156,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="tasks" max-width="xl">
+  <AdminPageLayout hub="tools" title="tasks" max-width="xl" back-to="/tools">
     <div class="min-w-0">
       <div class="mb-3 space-y-2">
         <div class="flex min-w-0 flex-wrap items-center gap-2">
