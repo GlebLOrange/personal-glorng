@@ -62,7 +62,7 @@ const hasTransactionFilters = computed(
     tabindex="0"
     class="outline-none"
   >
-    <Card class="flex w-full flex-col gap-3">
+    <Card variant="compact" class="flex w-full flex-col gap-2">
       <div class="flex items-center justify-between gap-2">
         <h3 class="text-sm font-semibold text-surface-light">recent transactions</h3>
         <p class="text-xs text-surface-mid">{{ expenseTotal }} items</p>

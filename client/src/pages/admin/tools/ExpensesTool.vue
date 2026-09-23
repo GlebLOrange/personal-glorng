@@ -10,6 +10,7 @@ import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
+import { Card } from "@/components/ui/card";
 import {
   useExpensesTool,
   type ExpenseQuickAddTarget,
@@ -136,7 +137,7 @@ function focusAddFromAnalytics(): void {
 <template>
   <AdminPageLayout hub="tools" title="expenses" max-width="xl">
     <div class="min-w-0">
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-3">
         <p
           v-if="!canWriteExpenses"
           class="rounded-lg bg-surface-dark px-3 py-2 text-sm text-surface-mid"
@@ -145,36 +146,42 @@ function focusAddFromAnalytics(): void {
           view only — you can browse expenses but not add or edit them
         </p>
 
-        <AdminTabBar
-          flush
-          panel-id-prefix="expenses-tab"
-          :model-value="activeTab"
-          :tabs="expenseTabItems"
-          aria-label="expense sections"
-          @update:model-value="switchTab"
-        >
-          <template #end>
-            <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
-              {{ exporting ? "exporting…" : "export csv" }}
-            </ToolbarPillButton>
-          </template>
-        </AdminTabBar>
+        <div class="border-b border-surface-border/50 pb-3">
+          <AdminTabBar
+            flush
+            panel-id-prefix="expenses-tab"
+            :model-value="activeTab"
+            :tabs="expenseTabItems"
+            aria-label="expense sections"
+            @update:model-value="switchTab"
+          >
+            <template #end>
+              <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
+                {{ exporting ? "exporting…" : "export csv" }}
+              </ToolbarPillButton>
+            </template>
+          </AdminTabBar>
+        </div>
 
-        <form
+        <Card
           v-if="activeTab === 'categories' && canWriteExpenses"
-          class="flex min-w-0 flex-wrap items-center gap-2"
-          @submit.prevent="addCategory"
+          variant="compact"
+          class="flex min-w-0 flex-wrap items-end gap-2"
         >
-          <BaseInput
-            v-model="newCategoryName"
-            placeholder="category"
-            aria-label="category"
-            class="min-w-0 flex-1"
-          />
-          <ToolbarPillButton type="submit" family="2xx" class="shrink-0">
-            + category
-          </ToolbarPillButton>
-        </form>
+          <form class="flex min-w-0 flex-1 flex-wrap items-end gap-2" @submit.prevent="addCategory">
+            <BaseInput
+              v-model="newCategoryName"
+              label="category"
+              label-align="start"
+              placeholder="new category"
+              aria-label="new category"
+              class="min-w-0 flex-1"
+            />
+            <ToolbarPillButton type="submit" family="2xx" class="shrink-0">
+              + category
+            </ToolbarPillButton>
+          </form>
+        </Card>
 
         <ExpenseDashboardPanel
           v-show="activeTab === 'expenses'"
@@ -298,15 +305,18 @@ function focusAddFromAnalytics(): void {
           tabindex="0"
           class="outline-none"
         >
-          <ExpenseCategorySettings
-            v-model:editing-category-name="editingCategoryName"
-            :expense-categories="expenseCategories"
-            :editing-category-id="editingCategoryId"
-            @start-edit-category="startEditCategory"
-            @cancel-edit-category="cancelEditCategory"
-            @save-category-rename="saveCategoryRename"
-            @remove-category="requestDeleteCategory"
-          />
+          <Card variant="compact">
+            <h3 class="mb-3 text-sm font-semibold text-surface-light">categories</h3>
+            <ExpenseCategorySettings
+              v-model:editing-category-name="editingCategoryName"
+              :expense-categories="expenseCategories"
+              :editing-category-id="editingCategoryId"
+              @start-edit-category="startEditCategory"
+              @cancel-edit-category="cancelEditCategory"
+              @save-category-rename="saveCategoryRename"
+              @remove-category="requestDeleteCategory"
+            />
+          </Card>
         </section>
       </div>
 

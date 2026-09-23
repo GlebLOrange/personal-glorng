@@ -28,9 +28,9 @@ const rows = computed(() => {
 </script>
 
 <template>
-  <Card>
+  <Card variant="compact">
     <h3 class="mb-3 text-sm font-semibold text-surface-light">category breakdown</h3>
-    <ul v-if="rows.length" class="flex flex-col gap-3" aria-label="spend by category">
+    <ul v-if="rows.length" class="flex flex-col gap-2.5" aria-label="spend by category">
       <li v-for="row in rows" :key="row.category" class="flex flex-col gap-1">
         <div class="flex items-baseline justify-between gap-2 text-sm">
           <span class="min-w-0 truncate text-surface-light">{{ row.category }}</span>

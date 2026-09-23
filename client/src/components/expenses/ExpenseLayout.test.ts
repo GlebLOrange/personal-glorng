@@ -5,7 +5,6 @@ import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
 import ExpenseLedgerHeader from "@/components/expenses/ExpenseLedgerHeader.vue";
-import ExpenseSummaryCard from "@/components/expenses/ExpenseSummaryCard.vue";
 import type { ExpenseSummary } from "@/types";
 
 const expensesToolSource = readFileSync(
@@ -66,26 +65,53 @@ describe("expenses layout restore", () => {
     );
   });
 
-  it("renders a single total with clickable transaction count", async () => {
-    const wrapper = mount(ExpenseSummaryCard, {
+  it("renders period, total, and clickable transaction count in one summary card", async () => {
+    const wrapper = mount(ExpenseLedgerHeader, {
       props: {
+        monthPreset: "this_month",
+        "onUpdate:monthPreset": () => undefined,
+        dateFilterMode: "month",
+        "onUpdate:dateFilterMode": () => undefined,
+        selectedMonth: "2026-09",
+        "onUpdate:selectedMonth": () => undefined,
+        dateFrom: "",
+        "onUpdate:dateFrom": () => undefined,
+        dateTo: "",
+        "onUpdate:dateTo": () => undefined,
+        monthLabel: "September 2026",
+        hasActiveFilters: false,
+        rangeError: null,
         summary: sampleSummary,
         expenseTotal: 12,
         formatMoney: (amount: string | number, currency: string) => `${amount} ${currency}`,
+        summaryError: null,
+        ratesError: null,
+      },
+      global: {
+        stubs: {
+          ExpenseDateFilters: true,
+          RefreshIcon: true,
+          BaseButton: true,
+        },
       },
     });
 
+    expect(wrapper.text()).toContain("Spent on");
+    expect(wrapper.text()).toContain("September 2026");
     expect(wrapper.text()).toContain("Total");
     expect(wrapper.text()).toContain("120.00 PLN");
     expect(wrapper.text()).toContain("transactions · 12");
     expect(wrapper.text()).not.toContain("Top Category");
-    const link = wrapper.find("button");
-    expect(link.text()).toBe("transactions · 12");
-    await link.trigger("click");
+
+    const txButton = wrapper
+      .findAll("button")
+      .find((btn) => btn.text().includes("transactions · 12"));
+    expect(txButton).toBeTruthy();
+    await txButton!.trigger("click");
     expect(wrapper.emitted("openTransactions")).toHaveLength(1);
   });
 
-  it("flattens the period strip without a wrapping Card on the section", () => {
+  it("keeps the period summary inside a single compact card", () => {
     const wrapper = mount(ExpenseLedgerHeader, {
       props: {
         monthPreset: "this_month",
@@ -110,7 +136,6 @@ describe("expenses layout restore", () => {
       global: {
         stubs: {
           ExpenseDateFilters: true,
-          ExpenseSummaryCard: true,
           RefreshIcon: true,
           BaseButton: true,
         },
@@ -120,6 +145,5 @@ describe("expenses layout restore", () => {
     expect(wrapper.find("section[aria-label='expense period summary']").exists()).toBe(true);
     expect(wrapper.text()).toContain("Spent on");
     expect(wrapper.text()).toContain("this month");
-    expect(wrapper.html()).not.toMatch(/class="[^"]*card/i);
   });
 });

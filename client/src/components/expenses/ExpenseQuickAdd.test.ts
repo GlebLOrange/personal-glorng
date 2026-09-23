@@ -60,7 +60,7 @@ describe("ExpenseQuickAdd", () => {
 
     expect(wrapper.text()).toContain("quick add");
     expect(wrapper.text()).toContain("smart text");
-    expect(wrapper.text()).toContain("goods or services?");
+    expect(wrapper.text()).toContain("name");
     expect(wrapper.text()).toContain("amount");
     expect(wrapper.text()).toContain("date");
     expect(wrapper.text()).toContain("category");

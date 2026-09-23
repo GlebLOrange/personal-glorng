@@ -112,11 +112,11 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
 </script>
 
 <template>
-  <div v-if="hasChartData" class="flex flex-col gap-4">
+  <div v-if="hasChartData" class="flex flex-col gap-3">
     <Card v-if="budgetTotals" variant="compact">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h3 class="text-xs text-surface-mid">budget vs spend</h3>
+          <h3 class="text-sm font-semibold text-surface-light">budget vs spend</h3>
           <p
             class="mt-1 text-xl font-bold font-data"
             :class="budgetTotals.overBudget ? 'text-status-error' : 'text-accent-blue'"
@@ -185,9 +185,9 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
       </details>
     </Card>
 
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <Card>
-        <h3 class="mb-3 text-xs text-surface-mid">monthly trend</h3>
+    <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+      <Card variant="compact">
+        <h3 class="mb-3 text-sm font-semibold text-surface-light">monthly trend</h3>
         <ExpenseLineChart :labels="lineChart.labels" :values="lineChart.values" />
         <details class="mt-3 group">
           <summary
@@ -219,8 +219,8 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
         </details>
       </Card>
 
-      <Card>
-        <h3 class="mb-3 text-xs text-surface-mid">by category</h3>
+      <Card variant="compact">
+        <h3 class="mb-3 text-sm font-semibold text-surface-light">by category</h3>
         <ExpenseBarChart
           :labels="categorySeries.labels"
           :values="categorySeries.values"
@@ -259,8 +259,8 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
       </Card>
     </div>
 
-    <Card>
-      <h3 class="mb-3 text-xs text-surface-mid">by product</h3>
+    <Card variant="compact">
+      <h3 class="mb-3 text-sm font-semibold text-surface-light">by product</h3>
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ExpenseBarChart :labels="productSeries.labels" :values="productSeries.values" horizontal />
         <ExpenseDoughnutChart
