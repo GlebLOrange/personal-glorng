@@ -1,0 +1,18 @@
+# Extend built-in rules; allowlist only known CI/test JWT fixtures.
+# Full-history scans (security.yml fetch-depth: 0) still see these in old commits.
+
+title = "glorng"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "CI and pytest JWT signing fixtures (not production secrets)"
+regexTarget = "secret"
+regexes = [
+  '''^ci-jwt-secret-at-least-32-characters-long$''',
+  '''^test-jwt-secret-with-enough-characters$''',
+  '''^production-jwt-key-with-32-characters-minimum$''',
+  '''^production-jwt-signing-key-for-csrf-tests-only-32chars$''',
+  '''^github-helper-test-jwt-secret-key-32chars$''',
+]
