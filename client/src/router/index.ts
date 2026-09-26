@@ -229,7 +229,7 @@ const routes: RouteRecordRaw[] = [
     path: "/qr-generator",
     name: "qr-generator",
     component: () => import("@/pages/tools/QrGeneratorTool.vue"),
-    meta: { title: "QR generator", description: "Create QR codes and browse recent ones." },
+    meta: { title: "QR generator", description: "Generate QR codes as downloadable SVG." },
   },
   {
     path: "/recipes",
