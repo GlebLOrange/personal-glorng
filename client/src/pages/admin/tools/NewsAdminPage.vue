@@ -73,7 +73,7 @@ const {
           </template>
         </AdminFilterDropdown>
         <template v-if="canWrite">
-          <ToolbarPillButton family="3xx" :disabled="actionLoading" @click="runIngest">
+          <ToolbarPillButton action="edit" :disabled="actionLoading" @click="runIngest">
             run ingest
           </ToolbarPillButton>
         </template>

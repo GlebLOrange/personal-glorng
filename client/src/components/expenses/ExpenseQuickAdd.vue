@@ -137,7 +137,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       aria-label="add expense mode"
     >
       <ToolbarPillButton
-        family="1xx"
+        action="create"
         :selected="!smartTextOpen"
         role="tab"
         :aria-selected="!smartTextOpen"
@@ -147,7 +147,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         quick add
       </ToolbarPillButton>
       <ToolbarPillButton
-        family="1xx"
+        action="create"
         :selected="smartTextOpen"
         role="tab"
         :aria-selected="smartTextOpen"

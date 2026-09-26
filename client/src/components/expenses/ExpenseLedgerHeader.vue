@@ -99,7 +99,7 @@ const totalParts = computed((): { amount: string; unit: string | null } | null =
           </p>
         </div>
         <ToolbarPillButton
-          family="1xx"
+          action="create"
           class="shrink-0"
           :aria-label="`open transactions, ${expenseTotal} items`"
           @click="emit('openTransactions')"

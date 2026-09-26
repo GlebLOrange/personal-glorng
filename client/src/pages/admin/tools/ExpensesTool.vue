@@ -156,7 +156,7 @@ function focusAddFromAnalytics(): void {
             @update:model-value="switchTab"
           >
             <template #end>
-              <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
+              <ToolbarPillButton action="save" :disabled="exporting" @click="exportCsv">
                 {{ exporting ? "exporting…" : "export csv" }}
               </ToolbarPillButton>
             </template>

@@ -22,7 +22,7 @@ Import explicitly per file (only `BaseImage` is global).
 
 Semantic names live in `constants/actionButtonVariants.ts` (`SEMANTIC_ACTION_HTTP_FAMILY`). Prefer **named actions** over raw HTTP families so create/save/cancel stay consistent.
 
-| User action | `BaseButton` `variant` | `ToolbarPillButton` `action` | HTTP family | Look |
+| User action | `BaseButton` `variant` | `action` on pill / icon / menu | HTTP family | Look |
 |---|---|---|---|---|
 | Create | `create` | `create` | 1xx | Solid `accent-blue` (same as `primary`) |
 | Add | `add` | `add` | 1xx | Solid `accent-blue` |
@@ -47,7 +47,7 @@ Three intentional systems — pick one per surface, do not mix adjacent CTAs:
 |---|---|---|
 | `cta-primary` / `cta-secondary` | Portfolio, donations, marketing moments | Pale 1xx / 3xx washes (`main.css`, same paint as product) |
 | `BaseButton` | Auth, forms, product dialogs, list rows | Pale HTTP-family wash; `secondary` grayscale |
-| `ToolbarPillButton` | Admin list toolbars, tool option bars | Prefer `action="create"` / `save` / `delete`; use raw `family` only for HTTP-literal UI (filters, pause, cook) |
+| `ToolbarPillButton` / `IconActionButton` / `BaseDropdownMenu` | Admin toolbars, icon chrome, edit menus | Prefer `action="create"` / `save` / `edit` / `delete`; raw `family` only for HTTP-literal tabs (e.g. `AdminTabBar`) |
 
 **Do not** use `cta-primary` inside tool screens; **do not** add gradients to `BaseButton`. Prefer `ToolbarPillButton` for admin toolbar primary actions and `BaseButton` for form/dialog actions.
 

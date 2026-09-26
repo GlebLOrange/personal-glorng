@@ -119,7 +119,7 @@ const emit = defineEmits<{
           <IconEditButton aria-label="edit recipe" @click="emit('edit', recipe)" />
         </template>
         <template #primary>
-          <ToolbarPillButton family="2xx" @click="emit('cook')">cook</ToolbarPillButton>
+          <ToolbarPillButton action="save" @click="emit('cook')">cook</ToolbarPillButton>
         </template>
       </DrawerFooterActions>
     </template>

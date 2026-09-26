@@ -199,7 +199,7 @@ async function generatePassword(): Promise<void> {
             </BaseButton>
 
             <IconActionButton
-              family="1xx"
+              action="create"
               :aria-label="'reset options and clear generated password'"
               title="reset state & clear password"
               @click="resetState"

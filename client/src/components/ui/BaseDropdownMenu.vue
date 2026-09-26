@@ -12,6 +12,10 @@ import {
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import {
+  SEMANTIC_ACTION_HTTP_FAMILY,
+  type SemanticButtonAction,
+} from "@/constants/actionButtonVariants";
+import {
   actionFamilyClass,
   iconActionClass,
   type HttpStatusFamily,
@@ -25,7 +29,8 @@ const props = withDefaults(
     placement?: "bottom" | "top";
     /** Custom `#trigger` is an icon (no chevron / labeled width). */
     iconOnly?: boolean;
-    /** Trigger paint family — edit menus use 3xx (pale yellow) to match IconEditButton. */
+    /** Prefer over raw `family` — edit menus use `action="edit"`. */
+    action?: SemanticButtonAction;
     family?: HttpStatusFamily;
   }>(),
   {
@@ -53,13 +58,17 @@ const menuPositionClass = computed(() =>
   props.placement === "top" ? "bottom-full mb-1" : "top-full mt-1",
 );
 
+const resolvedFamily = computed((): HttpStatusFamily =>
+  props.action ? SEMANTIC_ACTION_HTTP_FAMILY[props.action] : props.family,
+);
+
 const triggerClass = computed(() => {
   if (isLabeledTrigger.value) {
     // Labeled triggers (e.g. more actions) match ToolbarPillButton h-10.
-    return [actionFamilyClass(props.family, open.value), "w-full"];
+    return [actionFamilyClass(resolvedFamily.value, open.value), "w-full"];
   }
   // Icon-only — h-10 square chrome.
-  return iconActionClass(props.family, open.value);
+  return iconActionClass(resolvedFamily.value, open.value);
 });
 
 const rootStyle = computed(() =>

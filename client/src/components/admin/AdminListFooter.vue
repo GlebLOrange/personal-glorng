@@ -59,7 +59,7 @@ const navClass = computed(() => {
     <template v-if="showPagination">
       <div class="flex flex-wrap items-center gap-1">
         <IconActionButton
-          family="1xx"
+          action="create"
           :disabled="prevDisabled"
           title="to start"
           aria-label="to start"
@@ -68,7 +68,7 @@ const navClass = computed(() => {
           &lt;&lt;
         </IconActionButton>
         <IconActionButton
-          family="1xx"
+          action="create"
           :disabled="prevDisabled"
           title="previous"
           aria-label="previous"
@@ -94,7 +94,7 @@ const navClass = computed(() => {
       </div>
       <div class="flex flex-wrap items-center justify-end gap-1">
         <IconActionButton
-          family="1xx"
+          action="create"
           :disabled="nextDisabled"
           title="next"
           aria-label="next"
@@ -103,7 +103,7 @@ const navClass = computed(() => {
           &gt;
         </IconActionButton>
         <IconActionButton
-          family="1xx"
+          action="create"
           :disabled="nextDisabled"
           title="to end"
           aria-label="to end"

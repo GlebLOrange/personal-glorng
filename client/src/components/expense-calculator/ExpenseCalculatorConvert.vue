@@ -139,7 +139,7 @@ watch([amount, fromCurrency, toCurrency], () => {
       </BaseSelect>
       <div class="flex justify-center sm:mb-0.5">
         <IconActionButton
-          family="1xx"
+          action="create"
           aria-label="swap currencies"
           @click="swapCurrencies"
         >

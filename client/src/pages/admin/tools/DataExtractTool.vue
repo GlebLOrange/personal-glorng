@@ -93,7 +93,7 @@ const {
             </ToolbarPillButton>
             <ToolbarPillButton
               v-if="canWrite"
-              family="3xx"
+              action="edit"
               type="button"
               :disabled="loading || !selectedFile"
               @click="

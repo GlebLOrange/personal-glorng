@@ -174,7 +174,7 @@ onUnmounted(() => {
           class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-t border-surface-border px-4 py-4"
         >
           <IconActionButton
-            family="1xx"
+            action="create"
             :disabled="stepIndex === 0"
             aria-label="previous"
             title="previous"
@@ -187,7 +187,7 @@ onUnmounted(() => {
           </p>
           <IconActionButton
             v-if="stepIndex < totalSteps - 1"
-            family="1xx"
+            action="create"
             aria-label="next"
             title="next"
             @click="goNext"

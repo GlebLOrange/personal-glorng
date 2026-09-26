@@ -84,7 +84,7 @@ const {
 
       <template v-if="canWrite">
         <ToolbarPillButton
-          family="1xx"
+          action="create"
           class="ml-auto gap-1.5"
           :disabled="refreshing || loading"
           @click="refreshSources"

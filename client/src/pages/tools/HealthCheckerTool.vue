@@ -187,7 +187,7 @@ onMounted(() => {
                 class="flex shrink-0 flex-col gap-1"
               >
                 <ToolbarPillButton
-                  family="1xx"
+                  action="create"
                   type="button"
                   class="!h-8 !px-2 !text-xs"
                   @click="toggleEnabled(monitor)"
@@ -286,7 +286,7 @@ onMounted(() => {
 
         <div v-if="canWrite" class="flex flex-wrap items-center gap-2">
           <ToolbarPillButton
-            family="2xx"
+            action="save"
             type="button"
             :disabled="checking"
             @click="checkNow(selected.id)"
