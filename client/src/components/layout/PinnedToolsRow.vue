@@ -14,6 +14,7 @@ const PINNED_TOOLS_ROUTE_NAMES = new Set<string>([
   "calculator",
   "expense-calculator",
   "password-generator",
+  "qr-generator",
   "recipes",
   "shortener",
   "vid-download",

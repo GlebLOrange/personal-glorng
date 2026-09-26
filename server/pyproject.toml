@@ -42,6 +42,7 @@ dependencies = [
     "opentelemetry-instrumentation-elasticsearch==0.64b0",
     "opentelemetry-instrumentation-sqlalchemy==0.64b0",
     "opentelemetry-instrumentation-logging==0.64b0",
+    "segno>=1.6,<2",
 ]
 
 [dependency-groups]

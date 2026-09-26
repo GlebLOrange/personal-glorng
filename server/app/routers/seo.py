@@ -18,6 +18,7 @@ _PUBLIC_PATHS: tuple[tuple[str, str], ...] = (
     ("/calculator", "monthly"),
     ("/expense-calculator", "monthly"),
     ("/password-generator", "monthly"),
+    ("/qr-generator", "monthly"),
     ("/recipes", "weekly"),
     ("/shortener", "monthly"),
     ("/vid-download", "monthly"),
