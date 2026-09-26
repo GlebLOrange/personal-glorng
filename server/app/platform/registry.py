@@ -147,11 +147,11 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         slug="qr-generator",
         name="qr generator",
         category="utilities",
-        description="generate qr codes (inline svg, not stored)",
+        description="generate qr codes; admins can save and update a library",
         api_prefix="/qr-generator",
         admin_route="/qr-generator",
         icon="▦",
-        capabilities=("read",),
+        capabilities=("read", "write"),
         public=True,
     ),
     PlatformService(

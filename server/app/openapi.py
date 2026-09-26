@@ -44,7 +44,7 @@ OPENAPI_TAGS: list[dict[str, str]] = [
     },
     {
         "name": "qr-generator",
-        "description": "Public QR code creation and SVG download (Segno).",
+        "description": "Public ephemeral QR generation; admin library for saved SVGs.",
     },
     {
         "name": "vid-download",

@@ -21,6 +21,7 @@ from app.db.repositories.health_checker import (
     HealthMonitorRepository,
 )
 from app.db.repositories.news import NewsRepository, NewsSourceRepository
+from app.db.repositories.qr_code import QrCodeRepository
 from app.db.repositories.recipe import RecipeRepository
 from app.db.repositories.search import SearchRepository
 from app.db.repositories.task import TaskRepository
@@ -45,6 +46,7 @@ class DatabaseRegistry:
     recipes: RecipeRepository | None = None
     expenses: ExpenseRepository | None = None
     urls: UrlRepository | None = None
+    qr_codes: QrCodeRepository | None = None
     files: FileShareRepository | None = None
     feedback: FeedbackRepository | None = None
     credentials: CredentialRepository | None = None
@@ -85,6 +87,7 @@ class DatabaseRegistry:
         self.recipes = RecipeRepository(mongo)
         self.expenses = ExpenseRepository(mongo)
         self.urls = UrlRepository(mongo)
+        self.qr_codes = QrCodeRepository(mongo)
         self.files = FileShareRepository(mongo)
         self.feedback = FeedbackRepository(mongo)
         self.credentials = CredentialRepository(mongo)
