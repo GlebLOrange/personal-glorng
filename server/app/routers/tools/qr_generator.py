@@ -49,12 +49,17 @@ async def generate_qr_code(data: QrCodeCreate) -> QrCodeGenerateResponse:
 )
 async def list_saved_qr_codes(
     registry: DbRegistry,
-    user: AuthorizedUser,  # noqa: ARG001
+    user: AuthorizedUser,
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> QrCodeListResponse:
     svc = QrLibraryService(registry)
-    return await svc.list_library(page=page, per_page=per_page)
+    return await svc.list_library(
+        actor_id=user.id,
+        is_superuser=user_has_permission(user, SUPERUSER_PERMISSION),
+        page=page,
+        per_page=per_page,
+    )
 
 
 @router.post(
@@ -72,6 +77,26 @@ async def create_saved_qr_code(
 ) -> QrCodeStoredResponse:
     svc = QrLibraryService(registry)
     return await svc.create_saved(data, created_by=user.id)
+
+
+@router.get(
+    "/library/{qr_id}",
+    response_model=QrCodeStoredResponse,
+    summary="Get saved QR code",
+    description=requires_capability("qr-generator", "read"),
+    dependencies=[Depends(require_capability("qr-generator", "read"))],
+)
+async def get_saved_qr_code(
+    qr_id: Annotated[int, Path(ge=1)],
+    registry: DbRegistry,
+    user: AuthorizedUser,
+) -> QrCodeStoredResponse:
+    svc = QrLibraryService(registry)
+    return await svc.get_stored(
+        qr_id,
+        actor_id=user.id,
+        is_superuser=user_has_permission(user, SUPERUSER_PERMISSION),
+    )
 
 
 @router.patch(

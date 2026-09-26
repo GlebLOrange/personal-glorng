@@ -89,19 +89,36 @@ class QrLibraryService:
             return
         raise ApiError(403, "You do not have permission to access this QR code")
 
+    async def get_stored(
+        self,
+        qr_id: int,
+        *,
+        actor_id: int,
+        is_superuser: bool = False,
+    ) -> QrCodeStoredResponse:
+        doc = await self.get(qr_id)
+        self._assert_can_access(doc, actor_id, is_superuser=is_superuser)
+        return self._to_response(doc)
+
     async def list_library(
         self,
         *,
+        actor_id: int,
+        is_superuser: bool = False,
         page: int = 1,
         per_page: int = DEFAULT_PER_PAGE,
     ) -> QrCodeListResponse:
         offset, limit = paginate_params(page, per_page)
+        filters: dict[str, int] = {}
+        if not is_superuser:
+            filters["created_by"] = actor_id
         rows = await self._repo().list(
             offset=offset,
             limit=limit,
             sort=[("created_at", -1)],
+            **filters,
         )
-        total = await self._repo().count()
+        total = await self._repo().count(**filters)
         items = [self._to_response(row) for row in rows]
         return build_paginated(items, total=total, page=page, per_page=per_page)
 

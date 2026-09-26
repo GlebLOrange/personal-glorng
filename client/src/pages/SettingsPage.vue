@@ -6,6 +6,7 @@ import SettingsAccountSection from "@/components/settings/SettingsAccountSection
 import SettingsGithubSection from "@/components/settings/SettingsGithubSection.vue";
 import SettingsPreferencesSection from "@/components/settings/SettingsPreferencesSection.vue";
 import SettingsProfileSection from "@/components/settings/SettingsProfileSection.vue";
+import SettingsQrLibrarySection from "@/components/settings/SettingsQrLibrarySection.vue";
 import { useUserPreferences } from "@/composables/useUserPreferences";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
@@ -231,5 +232,7 @@ async function unlinkGithub(): Promise<void> {
         />
       </div>
     </div>
+
+    <SettingsQrLibrarySection class="mt-3" />
   </PageShell>
 </template>

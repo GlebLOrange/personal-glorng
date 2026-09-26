@@ -1,20 +1,15 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { RouterLink, useRoute } from "vue-router";
 
-import AdminListFooter from "@/components/admin/AdminListFooter.vue";
-import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
-import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { usePermissions } from "@/composables/usePermissions";
-import type { PaginatedList } from "@/types";
-
-type QrErrorLevel = "L" | "M" | "Q" | "H";
+import { useQrLibrary, type QrErrorLevel, type QrStoredItem } from "@/composables/useQrLibrary";
 
 interface QrGenerateResponse {
   content_preview: string;
@@ -23,18 +18,7 @@ interface QrGenerateResponse {
   svg: string;
 }
 
-interface QrStoredItem {
-  id: number;
-  content: string;
-  content_preview: string;
-  label: string | null;
-  error_level: QrErrorLevel;
-  svg_url: string;
-  created_at: string;
-  updated_at: string;
-  svg?: string | null;
-}
-
+const route = useRoute();
 const content = ref("");
 const label = ref("");
 const errorLevel = ref<QrErrorLevel>("M");
@@ -42,25 +26,19 @@ const generated = ref<QrGenerateResponse | null>(null);
 const previewUrl = ref("");
 const editingId = ref<number | null>(null);
 
-const libraryItems = ref<QrStoredItem[]>([]);
-const libraryPage = ref(1);
-const libraryTotal = ref(0);
-const libraryTotalPages = ref(0);
-
 const { can } = usePermissions();
 const canReadLibrary = computed(() => can("qr-generator", "read"));
 const canWriteLibrary = computed(() => can("qr-generator", "write"));
+const { loadOne } = useQrLibrary();
 
 const { loading: creating, run: runCreate } = useApiAction();
 const { loading: savingLibrary, run: runSaveLibrary } = useApiAction();
-const { loading: listLoading, run: runList } = useApiAction();
+const loadingSaved = ref(false);
 
 const canCreate = computed(() => Boolean(content.value.trim()) && !creating.value);
 const canSaveLibrary = computed(
   () => canWriteLibrary.value && Boolean(content.value.trim()) && !savingLibrary.value,
 );
-const hasLibraryNext = computed(() => libraryPage.value < libraryTotalPages.value);
-const hasLibraryPrev = computed(() => libraryPage.value > 1);
 
 function payloadBody(): {
   content: string;
@@ -72,6 +50,21 @@ function payloadBody(): {
     label: label.value.trim() || null,
     error_level: errorLevel.value,
   };
+}
+
+function applyStored(item: QrStoredItem, svg?: string | null): void {
+  editingId.value = item.id;
+  content.value = item.content;
+  label.value = item.label ?? "";
+  errorLevel.value = item.error_level;
+  if (svg) {
+    generated.value = {
+      content_preview: item.content_preview,
+      label: item.label,
+      error_level: item.error_level,
+      svg,
+    };
+  }
 }
 
 function setPreviewFromSvg(svg: string): void {
@@ -96,27 +89,22 @@ onBeforeUnmount(() => {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
 });
 
-async function loadLibrary(): Promise<void> {
-  if (!canReadLibrary.value) return;
-  const data = await runList(
-    () =>
-      api.get<PaginatedList<QrStoredItem>>("/tools/qr-generator/library", {
-        params: { page: libraryPage.value, per_page: ADMIN_LIST_PAGE_SIZE },
-      }),
-    { errorFallback: "Failed to load saved QR codes" },
-  );
-  if (data) {
-    libraryItems.value = data.data.items;
-    libraryTotal.value = data.data.total;
-    libraryTotalPages.value = data.data.pages;
-  }
-}
+async function loadSavedFromQuery(): Promise<void> {
+  const raw = route.query.saved;
+  const id = typeof raw === "string" ? Number.parseInt(raw, 10) : Number.NaN;
+  if (!Number.isFinite(id) || id < 1 || !canReadLibrary.value) return;
 
-function goLibraryPage(next: number): void {
-  if (next < 1) return;
-  if (libraryTotalPages.value > 0 && next > libraryTotalPages.value) return;
-  libraryPage.value = next;
-  void loadLibrary();
+  loadingSaved.value = true;
+  const item = await loadOne(id);
+  loadingSaved.value = false;
+  if (!item) return;
+
+  let svg: string | null = item.svg ?? null;
+  if (!svg) {
+    const svgResp = await api.get<string>(item.svg_url, { responseType: "text" });
+    svg = svgResp.data;
+  }
+  applyStored(item, svg);
 }
 
 async function createQr(): Promise<void> {
@@ -145,33 +133,7 @@ async function saveToLibrary(): Promise<void> {
     },
   );
   if (result) {
-    const row = result.data;
-    editingId.value = row.id;
-    if (row.svg) {
-      generated.value = {
-        content_preview: row.content_preview,
-        label: row.label,
-        error_level: row.error_level,
-        svg: row.svg,
-      };
-    }
-    libraryPage.value = 1;
-    await loadLibrary();
-  }
-}
-
-function editLibraryItem(item: QrStoredItem): void {
-  editingId.value = item.id;
-  content.value = item.content;
-  label.value = item.label ?? "";
-  errorLevel.value = item.error_level;
-  if (item.svg) {
-    generated.value = {
-      content_preview: item.content_preview,
-      label: item.label,
-      error_level: item.error_level,
-      svg: item.svg,
-    };
+    applyStored(result.data, result.data.svg);
   }
 }
 
@@ -191,7 +153,7 @@ const previewAlt = computed(
 );
 
 onMounted(() => {
-  if (canReadLibrary.value) void loadLibrary();
+  void loadSavedFromQuery();
 });
 </script>
 
@@ -205,7 +167,10 @@ onMounted(() => {
   >
     <p class="mb-4 text-sm text-surface-mid">
       Quick generate does not store anything on the server — download the SVG if you need it later.
-      <span v-if="canWriteLibrary"> Admins with write access can save codes to the library below.</span>
+      <span v-if="canWriteLibrary">
+        Save to the library for reuse; manage saved codes on
+        <RouterLink to="/settings" class="text-accent hover:underline">settings</RouterLink>.
+      </span>
     </p>
 
     <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,280px)]">
@@ -262,6 +227,7 @@ onMounted(() => {
               }}
             </BaseButton>
           </div>
+          <p v-if="loadingSaved" class="text-xs text-surface-mid">Loading saved code…</p>
         </form>
       </Card>
 
@@ -285,51 +251,5 @@ onMounted(() => {
         </button>
       </Card>
     </div>
-
-    <section v-if="canReadLibrary" class="mt-8 min-w-0">
-      <h2 class="mb-3 text-sm font-medium text-surface-mid">saved library (admin)</h2>
-      <AdminListSkeleton v-if="listLoading && libraryItems.length === 0" />
-      <EmptyState v-else-if="!listLoading && libraryItems.length === 0" message="No saved QR codes." />
-      <ul v-else class="divide-y divide-surface-border rounded-md border border-surface-border">
-        <li v-for="item in libraryItems" :key="item.id">
-          <button
-            type="button"
-            class="flex w-full min-w-0 items-center gap-3 px-3 py-3 text-left hover:bg-surface-raised/60"
-            @click="editLibraryItem(item)"
-          >
-            <img
-              :src="item.svg_url"
-              alt=""
-              class="size-12 shrink-0 rounded bg-white p-1"
-              loading="lazy"
-            />
-            <span class="min-w-0 flex-1">
-              <span class="block truncate text-sm text-surface-high">
-                {{ item.label || item.content_preview }}
-              </span>
-              <span v-if="item.label" class="block truncate text-xs text-surface-mid">
-                {{ item.content_preview }}
-              </span>
-            </span>
-            <span class="shrink-0 text-xs text-surface-mid">{{ item.error_level }}</span>
-          </button>
-        </li>
-      </ul>
-      <AdminListFooter
-        v-if="libraryItems.length > 0"
-        :total="libraryTotal"
-        :page="libraryPage"
-        :total-pages="libraryTotalPages"
-        :has-next-page="hasLibraryNext"
-        :has-previous-page="hasLibraryPrev"
-        :loading="listLoading"
-        item-label="saved QR codes"
-        aria-label="Saved QR codes pagination"
-        @first="goLibraryPage(1)"
-        @prev="goLibraryPage(libraryPage - 1)"
-        @next="goLibraryPage(libraryPage + 1)"
-        @last="goLibraryPage(libraryTotalPages)"
-      />
-    </section>
   </PageShell>
 </template>

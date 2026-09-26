@@ -59,6 +59,16 @@ async def test_qr_library_create_update_and_svg(auth_client: AsyncClient) -> Non
 
 
 @pytest.mark.asyncio
+async def test_qr_library_get_saved(auth_client: AsyncClient) -> None:
+    create = await auth_client.post(_LIBRARY, json={"content": "get-one"})
+    assert create.status_code == 201
+    qr_id = create.json()["id"]
+    got = await auth_client.get(f"{_LIBRARY}/{qr_id}")
+    assert got.status_code == 200
+    assert got.json()["content"] == "get-one"
+
+
+@pytest.mark.asyncio
 async def test_qr_library_svg_forbidden_for_other_user(
     client: AsyncClient,
     auth_client: AsyncClient,
