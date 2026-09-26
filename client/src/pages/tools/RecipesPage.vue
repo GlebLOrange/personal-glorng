@@ -93,7 +93,7 @@ function editRecipeFromCard(recipe: Recipe): void {
   >
     <RecipeFilters v-model:search="search">
       <template v-if="canWrite" #actions>
-        <ToolbarPillButton family="2xx" :disabled="listLoading" @click="openCreate">
+        <ToolbarPillButton action="create" :disabled="listLoading" @click="openCreate">
           + recipe
         </ToolbarPillButton>
       </template>
@@ -142,7 +142,7 @@ function editRecipeFromCard(recipe: Recipe): void {
           <BaseButton v-if="hasFilters" variant="ghost" size="sm" @click="clearFilters">
             clear filters
           </BaseButton>
-          <BaseButton v-else-if="canWrite" variant="success" size="sm" @click="openCreate">
+          <BaseButton v-else-if="canWrite" variant="create" size="sm" @click="openCreate">
             + your first recipe
           </BaseButton>
         </template>

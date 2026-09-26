@@ -225,7 +225,7 @@ watch(articleId, () => {
   <AdminPageLayout hub="admin" :title="chromeTitle" max-width="xl" back-to="/admin/news">
     <header v-if="canWrite && article" class="page-intro">
       <div class="flex flex-wrap gap-2">
-        <BaseButton variant="success" :disabled="actionLoading" @click="saveArticle">
+        <BaseButton variant="save" :disabled="actionLoading" @click="saveArticle">
           {{ actionLoading ? "saving…" : "save article" }}
         </BaseButton>
       </div>

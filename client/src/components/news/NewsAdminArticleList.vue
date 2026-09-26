@@ -92,7 +92,7 @@ const emit = defineEmits<{
           </BaseButton>
           <BaseButton
             v-if="item.status !== 'published'"
-            variant="success"
+            variant="save"
             size="sm"
             :disabled="actionLoading"
             @click="emit('setStatus', item.id, 'published')"

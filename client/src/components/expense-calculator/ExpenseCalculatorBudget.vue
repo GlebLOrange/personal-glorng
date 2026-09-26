@@ -86,7 +86,7 @@ function onAddBudgetLine(): void {
 
     <Card class="space-y-4">
       <div class="flex items-center justify-end gap-3">
-        <BaseButton variant="primary" size="sm" @click="onAddBudgetLine">+ budget line</BaseButton>
+        <BaseButton variant="add" size="sm" @click="onAddBudgetLine">+ budget line</BaseButton>
       </div>
 
       <ul role="list" class="space-y-4">

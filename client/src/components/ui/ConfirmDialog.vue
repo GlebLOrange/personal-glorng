@@ -36,13 +36,12 @@ const emit = defineEmits<{
     </div>
     <template #footer>
       <div class="flex justify-between gap-3">
-        <BaseButton variant="secondary" size="sm" :disabled="loading" @click="emit('cancel')">
+        <BaseButton variant="cancel" size="sm" :disabled="loading" @click="emit('cancel')">
           cancel
         </BaseButton>
         <BaseButton
           size="sm"
-          :variant="danger ? 'secondary' : 'success'"
-          :danger="danger"
+          :variant="danger ? 'delete' : 'save'"
           :disabled="loading"
           @click="emit('confirm')"
         >

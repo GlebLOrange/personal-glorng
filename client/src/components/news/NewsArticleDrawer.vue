@@ -224,7 +224,7 @@ function onTagsToggle(event: Event): void {
           </BaseButton>
         </template>
         <template #primary>
-          <ToolbarPillButton family="2xx" :disabled="loading" @click="emit('save')">
+          <ToolbarPillButton action="save" :disabled="loading" @click="emit('save')">
             {{ loading ? "saving…" : "save" }}
           </ToolbarPillButton>
         </template>

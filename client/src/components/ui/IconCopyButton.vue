@@ -15,7 +15,7 @@ withDefaults(
   {
     ariaLabel: "copy",
     size: "md",
-    quiet: true,
+    quiet: false,
   },
 );
 
