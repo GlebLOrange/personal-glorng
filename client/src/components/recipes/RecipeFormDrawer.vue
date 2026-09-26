@@ -122,7 +122,7 @@ function toNullableNumber(value: string | number | null | undefined): number | n
           <ToolbarPillButton
             type="submit"
             form="recipe-form-drawer-form"
-            family="2xx"
+            action="save"
             :disabled="loading"
           >
             {{ loading ? "saving…" : "save" }}

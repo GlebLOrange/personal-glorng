@@ -65,7 +65,7 @@ function onCategoryRowClick(category: ExpenseCategory): void {
             class="min-w-[8rem] flex-1"
             @keyup.enter="emit('saveCategoryRename')"
           />
-          <ToolbarPillButton family="2xx" class="shrink-0" @click="emit('saveCategoryRename')">
+          <ToolbarPillButton action="save" class="shrink-0" @click="emit('saveCategoryRename')">
             save
           </ToolbarPillButton>
           <BaseButton variant="cancel" class="h-10 shrink-0" @click="emit('cancelEditCategory')">

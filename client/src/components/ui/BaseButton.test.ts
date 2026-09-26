@@ -78,6 +78,15 @@ describe("BaseButton", () => {
     expect(button.classes()).toContain("active:enabled:bg-accent-blue/80");
   });
 
+  it("colorizes create like solid primary (1xx)", () => {
+    const button = mount(BaseButton, {
+      props: { variant: "create" },
+    }).get("button");
+
+    expect(button.classes()).toContain("bg-accent-blue");
+    expect(button.classes()).toContain("text-on-accent");
+  });
+
   it("colorizes cancel with 5xx critical family (pink-red dismiss)", () => {
     const button = mount(BaseButton, {
       props: { variant: "cancel" },

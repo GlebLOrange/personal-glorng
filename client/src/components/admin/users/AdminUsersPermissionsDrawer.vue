@@ -106,7 +106,7 @@ function statusBadges(user: AdminUserSummary): BadgeView[] {
         </template>
         <template #primary>
           <ToolbarPillButton
-            family="2xx"
+            action="save"
             :disabled="user.is_protected || !hasDraftChanges || saving"
             @click="emit('save')"
           >

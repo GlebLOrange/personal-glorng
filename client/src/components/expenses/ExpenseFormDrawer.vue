@@ -70,7 +70,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
           <ToolbarPillButton
             type="submit"
             form="expense-form-drawer"
-            family="2xx"
+            action="save"
             :disabled="loading"
           >
             {{ loading ? "saving…" : "save" }}

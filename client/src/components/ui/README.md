@@ -18,23 +18,26 @@ Use for **interactive controls and overlays** in admin tools and feature UI.
 
 Import explicitly per file (only `BaseImage` is global).
 
-### Button action colors
+### Button action colors (standard)
 
-Use the pale **1xx–5xx** family tokens — map API action to variant:
+Semantic names live in `constants/actionButtonVariants.ts` (`SEMANTIC_ACTION_HTTP_FAMILY`). Prefer **named actions** over raw HTTP families so create/save/cancel stay consistent.
 
-| Action | Family | Variant / control | Token |
-|---|---|---|---|
-| Create / add / primary / info | 1xx | `BaseButton` `primary`, `ToolbarPillButton` `1xx` | `accent-blue` wash |
-| Save / success / created | 2xx | `BaseButton` `success`, pill `2xx` | `status-success` wash |
-| Update / redirect / caution | 3xx | pill `3xx`, edit chrome | `status-warning` wash |
-| Delete / client error | 4xx | `danger`, pill `4xx` | `status-error` |
-| Critical / server error | 5xx | pill `5xx`, critical badges | `status-critical` |
-| Secondary / cancel (non-destructive) | — | `secondary` | grayscale (`surface-light`) |
-| Quiet chrome / tertiary | — | `ghost` (+ optional `quiet`) | muted until hover accent |
+| User action | `BaseButton` `variant` | `ToolbarPillButton` `action` | HTTP family | Look |
+|---|---|---|---|---|
+| Create | `create` | `create` | 1xx | Solid `accent-blue` (same as `primary`) |
+| Add | `add` | `add` | 1xx | Solid `accent-blue` |
+| Save / submit / confirm | `save` (alias: `success`) | `save` | 2xx | Pale green wash |
+| Edit / update | `edit` | `edit` | 3xx | Pale gold wash |
+| Remove / delete | `delete` or `remove` | `delete` / `remove` | 4xx | Pale rose wash (`danger` prop = 4xx legacy) |
+| Cancel / dismiss | `cancel` | `cancel` | 5xx | Pink–red wash |
+| Neutral (OAuth, unlink, promote) | `secondary` | — (or explicit `family`) | — | Grayscale |
+| Tertiary / filter clear | `ghost` (+ optional `quiet`) | — | — | Muted until hover |
 
-`status-warning` is the 3xx family (pale yellow). Prefer `status-warning` for edit/pending/caution; leave `status-cyan` for legacy callouts only. Legacy `accent-red` / `accent-amber` map to error / warning.
+**Examples:** `variant="cancel"` + `variant="save"` in form footers; `action="create"` on `+ task` pills; `variant="delete"` on confirm dialogs with `danger`.
 
-Auth submits and marketing `cta-*` stay blue/neutral; do not invent new hex colors.
+Auth login/register submits may stay `primary`. Marketing `cta-*` stays separate. Do not invent new hex colors.
+
+`status-warning` is the 3xx family. Legacy `accent-red` / `accent-amber` map to error / warning.
 
 ## Marketing CTAs vs product buttons vs toolbar pills
 

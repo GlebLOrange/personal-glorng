@@ -94,7 +94,7 @@ function toStringValue(value: string | number | null | undefined): string {
           <BaseButton type="button" variant="cancel" @click="emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
-          <ToolbarPillButton type="submit" form="news-source-form" family="2xx" :disabled="loading">
+          <ToolbarPillButton type="submit" form="news-source-form" action="save" :disabled="loading">
             {{ loading ? "saving…" : "save" }}
           </ToolbarPillButton>
         </template>

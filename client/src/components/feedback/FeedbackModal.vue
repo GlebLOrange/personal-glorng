@@ -121,7 +121,7 @@ async function submit(): Promise<void> {
         <template #primary>
           <ToolbarPillButton
             form="feedback-modal-form"
-            family="2xx"
+            action="save"
             type="submit"
             :disabled="loading || !canSubmit"
           >

@@ -59,7 +59,7 @@ const passwordsMatch = computed(
           />
           <BaseButton
             type="submit"
-            variant="success"
+            variant="save"
             size="sm"
             :loading="savingEmail"
             :disabled="!canSaveEmail"
@@ -109,7 +109,7 @@ const passwordsMatch = computed(
           />
           <BaseButton
             type="submit"
-            variant="success"
+            variant="save"
             size="sm"
             :loading="savingPassword"
             :disabled="!canSavePassword"

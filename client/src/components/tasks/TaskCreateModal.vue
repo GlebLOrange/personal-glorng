@@ -53,7 +53,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
           <ToolbarPillButton
             type="submit"
             form="task-create-drawer-form"
-            family="2xx"
+            action="create"
             :disabled="saving"
           >
             {{ saving ? "creating…" : "create" }}

@@ -7,11 +7,15 @@ import {
   CONTROL_BUTTON_MD,
   CONTROL_BUTTON_SM,
 } from "@/constants/formClasses";
-import { familyToneClass } from "@/constants/httpStatusColors";
+import {
+  classesForActionButton,
+  type BaseButtonVariant,
+} from "@/constants/actionButtonVariants";
 
 const props = withDefaults(
   defineProps<{
-    variant?: "primary" | "secondary" | "cancel" | "ghost" | "success";
+    /** Semantic actions (`create`, `add`, `save`, …) map to HTTP 1xx–5xx colors — see ui/README.md. */
+    variant?: BaseButtonVariant;
     /**
      * Shared control height with inputs (h-10), except lg (h-12).
      * sm/md/field share the same height; sm only tightens padding/type.
@@ -43,60 +47,14 @@ const sizeClass = computed(() => {
   return CONTROL_BUTTON_MD;
 });
 
-const variantClass = computed(() => {
-  const selected = Boolean(props.selected);
-
-  if (props.variant === "success") {
-    return `${familyToneClass("2xx", selected, { includeActive: true })} focus-visible:ring-status-success/50`;
-  }
-
-  if (props.variant === "cancel") {
-    return `${familyToneClass("5xx", selected, { includeActive: true })} focus-visible:ring-status-critical/50`;
-  }
-
-  if (props.danger) {
-    // ponytail: danger ghost is always quiet (muted until hover/focus); wash matches pill 4xx (/15)
-    if (props.variant === "ghost" || props.quiet) {
-      return familyToneClass("4xx", selected, {
-        quiet: true,
-        includeFocusTint: true,
-      });
-    }
-    return familyToneClass("4xx", selected, { includeActive: true });
-  }
-
-  if (props.variant === "ghost") {
-    // Grayscale only (same paint family as secondary); accent reserved for solid primary
-    if (props.quiet && !selected) {
-      return [
-        "border-transparent bg-transparent text-surface-light/60",
-        "hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light",
-        "focus-visible:border-surface-light/40 focus-visible:bg-surface-light/10 focus-visible:text-surface-light",
-      ].join(" ");
-    }
-    if (selected) {
-      return "border-surface-light/40 bg-surface-light/15 text-surface-light";
-    }
-    return "border-transparent bg-transparent text-surface-light/80 hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light active:enabled:bg-surface-light/15";
-  }
-
-  if (props.variant === "primary") {
-    // Align with cta-primary: solid pale accent + dark on-accent ink
-    return [
-      "border-transparent bg-accent-blue text-on-accent",
-      "hover:enabled:bg-accent-blue/90 active:enabled:bg-accent-blue/80",
-      selected ? "ring-1 ring-inset ring-accent-blue/40" : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-  }
-
-  // secondary — grayscale hierarchy (Toss); not accent wash
-  if (selected) {
-    return "border-surface-light/40 bg-surface-light/15 text-surface-light";
-  }
-  return "border-transparent bg-transparent text-surface-light/80 hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light active:enabled:bg-surface-light/15";
-});
+const variantClass = computed(() =>
+  classesForActionButton({
+    variant: props.variant ?? "secondary",
+    selected: Boolean(props.selected),
+    quiet: props.quiet,
+    danger: props.danger,
+  }),
+);
 </script>
 
 <template>

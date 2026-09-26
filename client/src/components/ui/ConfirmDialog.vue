@@ -41,8 +41,7 @@ const emit = defineEmits<{
         </BaseButton>
         <BaseButton
           size="sm"
-          :variant="danger ? 'secondary' : 'success'"
-          :danger="danger"
+          :variant="danger ? 'delete' : 'save'"
           :disabled="loading"
           @click="emit('confirm')"
         >
