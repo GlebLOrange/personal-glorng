@@ -223,7 +223,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       />
       <ToolbarPillButton
         type="submit"
-        family="2xx"
+        action="save"
         class="w-full shrink-0 sm:w-auto"
         :disabled="loading"
       >
@@ -248,7 +248,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
           class="min-w-0 flex-1"
         />
         <ToolbarPillButton
-          family="2xx"
+          action="save"
           class="w-full shrink-0 sm:w-auto"
           :disabled="loading || parsing || !canConfirmSmart"
           @click="confirmSmart"

@@ -139,7 +139,7 @@ onMounted(loadUrls);
         placeholder="title (optional)"
         aria-label="title"
       />
-      <ToolbarPillButton family="2xx" type="submit" class="shrink-0" :disabled="!canShorten">
+      <ToolbarPillButton action="create" type="submit" class="shrink-0" :disabled="!canShorten">
         {{ loading ? "creating…" : "shorten" }}
       </ToolbarPillButton>
     </form>

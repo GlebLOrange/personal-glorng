@@ -108,7 +108,7 @@ onMounted(() => {
         </option>
       </select>
       <ToolbarPillButton
-        family="2xx"
+        action="add"
         type="submit"
         class="shrink-0"
         :disabled="!canCreate"
@@ -195,7 +195,7 @@ onMounted(() => {
                   {{ monitor.enabled ? "pause" : "resume" }}
                 </ToolbarPillButton>
                 <ToolbarPillButton
-                  family="4xx"
+                  action="delete"
                   type="button"
                   class="!h-8 !px-2 !text-xs"
                   @click="deleteMonitor(monitor.id)"

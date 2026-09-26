@@ -57,7 +57,7 @@ async function submit(): Promise<void> {
       />
       <ToolbarPillButton
         type="submit"
-        family="2xx"
+        action="save"
         class="shrink-0"
         aria-label="add location"
         :disabled="!canSubmit"

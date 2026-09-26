@@ -81,7 +81,7 @@ const {
           </template>
           <template #actions>
             <ToolbarPillButton
-              family="2xx"
+              action="save"
               type="button"
               :disabled="loading || !selectedFile"
               @click="

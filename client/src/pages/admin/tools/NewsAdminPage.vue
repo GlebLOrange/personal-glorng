@@ -80,7 +80,7 @@ const {
       </template>
       <ToolbarPillButton
         v-if="canWrite"
-        family="2xx"
+        action="create"
         class="ml-auto"
         :disabled="actionLoading"
         @click="openCreate"

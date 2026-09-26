@@ -47,7 +47,7 @@ Three intentional systems — pick one per surface, do not mix adjacent CTAs:
 |---|---|---|
 | `cta-primary` / `cta-secondary` | Portfolio, donations, marketing moments | Pale 1xx / 3xx washes (`main.css`, same paint as product) |
 | `BaseButton` | Auth, forms, product dialogs, list rows | Pale HTTP-family wash; `secondary` grayscale |
-| `ToolbarPillButton` | Admin list toolbars, tool option bars, HTTP-ish families | Compact pills (`1xx` blue, `2xx` green submit, …) |
+| `ToolbarPillButton` | Admin list toolbars, tool option bars | Prefer `action="create"` / `save` / `delete`; use raw `family` only for HTTP-literal UI (filters, pause, cook) |
 
 **Do not** use `cta-primary` inside tool screens; **do not** add gradients to `BaseButton`. Prefer `ToolbarPillButton` for admin toolbar primary actions and `BaseButton` for form/dialog actions.
 

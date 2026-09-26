@@ -387,11 +387,11 @@ onBeforeUnmount(() => {
           @keydown.enter.exact.prevent="handleSend"
         />
         <div class="flex flex-col gap-2">
-          <ToolbarPillButton family="4xx" type="button" :disabled="loading" @click="clear">
+          <ToolbarPillButton action="delete" type="button" :disabled="loading" @click="clear">
             clear
           </ToolbarPillButton>
           <ToolbarPillButton
-            family="2xx"
+            action="save"
             type="submit"
             :disabled="loading || !input.trim() || !isReady || !canSend"
           >

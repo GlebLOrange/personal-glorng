@@ -77,7 +77,7 @@ async function preview(): Promise<void> {
             preview
           </ToolbarPillButton>
           <ToolbarPillButton
-            family="2xx"
+            action="save"
             type="button"
             :disabled="!canSend || loading"
             @click="send"

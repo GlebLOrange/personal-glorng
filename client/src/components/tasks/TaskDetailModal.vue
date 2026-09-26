@@ -120,7 +120,7 @@ watch(
             aria-label="reschedule"
           />
           <ToolbarPillButton
-            family="1xx"
+            action="save"
             :disabled="!scheduleDirty || rescheduling"
             @click="emit('reschedule', scheduleDraft)"
           >
@@ -207,7 +207,7 @@ watch(
         </div>
         <ToolbarPillButton
           v-else
-          family="5xx"
+          family="1xx"
           class="gap-1.5"
           title="try syncing again"
           @click="emit('retrySync', task.id)"
@@ -281,7 +281,7 @@ watch(
         </template>
         <template v-if="primaryActionStatus" #primary>
           <ToolbarPillButton
-            family="2xx"
+            action="save"
             :disabled="statusUpdating"
             @click="emit('updateStatus', primaryActionStatus)"
           >

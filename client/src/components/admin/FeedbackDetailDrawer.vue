@@ -53,7 +53,7 @@ function displayMessage(message: string): string {
           <BaseButton danger size="sm" @click="emit('close')"> close </BaseButton>
         </template>
         <template #primary>
-          <ToolbarPillButton family="2xx" @click="emit('reply')">reply</ToolbarPillButton>
+          <ToolbarPillButton action="save" @click="emit('reply')">reply</ToolbarPillButton>
         </template>
       </DrawerFooterActions>
     </template>
