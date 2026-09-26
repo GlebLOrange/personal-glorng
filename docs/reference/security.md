@@ -140,6 +140,16 @@ Client-side `VITE_AI_CHAT_ENABLED` hides the admin UI only; server flags and aut
 
 **Vid download:** Off by default on public deploys (`UNTRUSTED_URL_TOOLS_ENABLED=false` — routers not mounted). When enabled, the download endpoint is public with strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). yt-dlp runs server-side; URLs must be public http(s) (private/local targets rejected). The same flag gates file-share and outbound health-checker.
 
+**QR generator** ([`qr_generator.py`](../../server/app/routers/tools/qr_generator.py)): Public create (general API rate limit) persists payload in Mongo and returns metadata plus an SVG URL. Unlike the URL shortener, **list/get/svg are not capability-gated** — `GET /api/tools/qr-generator` returns every visitor’s recent codes; `GET …/{id}/svg` is unauthenticated. JSON exposes `content_preview` (up to 80 chars); the SVG encodes the full payload (scannable/decodable). Rate limits slow abuse but do not fix disclosure.
+
+**2026-09-27 — privacy decision (pending, from branch review):** pick one before treating the tool as merge-ready for secret-bearing payloads (Wi‑Fi strings, tokens in URLs):
+
+1. **Drop public list** — create returns id/svg only (pattern: password generator; no “recent” API).
+2. **Scope list to owner** — filter by `created_by` when authenticated; hide list API + UI for anonymous users.
+3. **Public-by-design** — document that all payloads are world-readable (still unsafe for Wi‑Fi/secrets; optional TTL on `qr_codes`).
+
+Contrast: URL shortener **list** requires `url-shortener:read`; QR has no equivalent gate today.
+
 ## Application log persistence
 
 Structured API logs (Loguru / [`logging.py`](../../server/app/core/logging.py)) are written to **stderr** for Docker (`make logs`) and optionally persisted to MongoDB collection `app_logs` via [`app_log_persist.py`](../../server/app/core/app_log_persist.py).
@@ -178,6 +188,7 @@ Decisions for known risks. **Accept** = intentional tradeoff; **Mitigated** = co
 | Low | Dev-lite API on all interfaces | **Accept** | Local development only; use firewall or bind to localhost |
 | Low | No in-repo TLS | **Accept** | HTTPS expected at external reverse proxy |
 | By design | Superuser AI chat | **Mitigated** | Requires `platform:superuser`; plain LLM only |
+| Medium | QR generator global list + SVG | **Open** | 2026-09-27 review — choose option in [Public tools — QR generator](#public-tools); until then, do not encode secrets |
 
 ## Testing
 

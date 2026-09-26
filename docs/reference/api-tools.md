@@ -12,6 +12,7 @@ flowchart LR
     Calculator["POST /api/tools/calculator"]
     RecipesRead["GET /api/tools/recipes"]
     ShortCreate["POST /api/tools/url-shortener"]
+    QrGen["POST /api/tools/qr-generator"]
     VidDl["POST /api/tools/vid-download"]
     Weather["GET /api/time-date-weather-location/*"]
     Search["GET/POST /api/search/*"]
