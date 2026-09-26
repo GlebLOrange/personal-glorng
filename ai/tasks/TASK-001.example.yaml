@@ -1,0 +1,22 @@
+# Copy to TASK-001.yaml (or next id) when Manager assigns work.
+id: TASK-001
+title: Small technical improvement (example)
+goal: >
+  Inspect personal-glorng and implement one small technical improvement
+  without changing the public HTTP API contract.
+public_api_change: false
+affected_area: client # client | server | docs | infra
+branch: cursor/example-small-improvement
+specialist: developer
+acceptance:
+  - Change is limited in scope; no new runtime dependencies.
+  - Existing tests pass; add or adjust tests if behavior warrants it.
+  - OpenAPI / public route list unchanged (verify if server touched).
+  - Draft PR opened; no merge to main.
+constraints:
+  - No production credentials in logs or commits.
+  - Follow ai/context/agent-policy.md and .cursor/skills/agent-safety.
+evidence:
+  - test_commands_run: []
+  - pr_url: null
+status: proposed # proposed | in_progress | in_review | done | blocked
