@@ -96,7 +96,7 @@ function confirmDelete(): void {
       @keydown="onTitleKeydown"
     />
     <BaseButton
-      variant="secondary"
+      variant="cancel"
       size="sm"
       class="shrink-0"
       :disabled="saving"

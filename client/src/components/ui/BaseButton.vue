@@ -11,7 +11,7 @@ import { familyToneClass } from "@/constants/httpStatusColors";
 
 const props = withDefaults(
   defineProps<{
-    variant?: "primary" | "secondary" | "ghost" | "success";
+    variant?: "primary" | "secondary" | "cancel" | "ghost" | "success";
     /**
      * Shared control height with inputs (h-10), except lg (h-12).
      * sm/md/field share the same height; sm only tightens padding/type.
@@ -48,6 +48,10 @@ const variantClass = computed(() => {
 
   if (props.variant === "success") {
     return `${familyToneClass("2xx", selected, { includeActive: true })} focus-visible:ring-status-success/50`;
+  }
+
+  if (props.variant === "cancel") {
+    return `${familyToneClass("5xx", selected, { includeActive: true })} focus-visible:ring-status-critical/50`;
   }
 
   if (props.danger) {

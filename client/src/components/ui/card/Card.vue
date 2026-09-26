@@ -30,9 +30,9 @@ const needsKeyboardSemantics = computed(
 const rootClass = computed(() => [
   "border rounded-lg",
   props.as === "a" && "card-as-link",
-  props.variant === "default" && "p-6 bg-surface-card border-transparent",
-  props.variant === "compact" && "p-4 bg-surface-card border-transparent",
-  props.variant === "dense" && "px-3 py-2 bg-surface-card border-transparent rounded-lg",
+  props.variant === "default" && "p-6 bg-surface-card/92 backdrop-blur-md border-transparent",
+  props.variant === "compact" && "p-4 bg-surface-card/92 backdrop-blur-md border-transparent",
+  props.variant === "dense" && "px-3 py-2 bg-surface-card/92 backdrop-blur-md border-transparent rounded-lg",
   props.variant === "inset" && "p-3 bg-surface-dark/40 border-transparent",
   props.variant === "ghost" && "p-0 bg-transparent border-transparent",
   props.tint === "danger" && "border-status-error/60 bg-status-error/10",

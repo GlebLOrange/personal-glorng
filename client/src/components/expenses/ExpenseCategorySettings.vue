@@ -68,7 +68,7 @@ function onCategoryRowClick(category: ExpenseCategory): void {
           <ToolbarPillButton family="2xx" class="shrink-0" @click="emit('saveCategoryRename')">
             save
           </ToolbarPillButton>
-          <BaseButton variant="secondary" class="h-10 shrink-0" @click="emit('cancelEditCategory')">
+          <BaseButton variant="cancel" class="h-10 shrink-0" @click="emit('cancelEditCategory')">
             cancel
           </BaseButton>
         </div>

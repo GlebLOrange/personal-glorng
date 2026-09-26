@@ -78,6 +78,17 @@ describe("BaseButton", () => {
     expect(button.classes()).toContain("active:enabled:bg-accent-blue/80");
   });
 
+  it("colorizes cancel with 5xx critical family (pink-red dismiss)", () => {
+    const button = mount(BaseButton, {
+      props: { variant: "cancel" },
+    }).get("button");
+
+    expect(button.classes()).toContain("bg-status-critical/3");
+    expect(button.classes()).toContain("text-status-critical");
+    expect(button.classes()).toContain("hover:enabled:bg-status-critical/15");
+    expect(button.classes()).toContain("focus-visible:ring-status-critical/50");
+  });
+
   it("keeps secondary grayscale without accent wash", () => {
     const button = mount(BaseButton, {
       props: { variant: "secondary" },

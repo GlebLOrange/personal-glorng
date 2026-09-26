@@ -102,7 +102,7 @@ function statusBadges(user: AdminUserSummary): BadgeView[] {
           </p>
         </template>
         <template #dismiss>
-          <BaseButton variant="secondary" @click="emit('close')"> cancel </BaseButton>
+          <BaseButton variant="cancel" @click="emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton
