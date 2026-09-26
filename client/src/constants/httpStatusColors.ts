@@ -28,10 +28,7 @@ const FAMILY_BADGE: Record<HttpStatusFamily, string> = {
   "5xx": "text-status-critical bg-status-critical/15 border-status-critical/30",
 };
 
-/**
- * Pale product button washes — label ink at 88%, fills lighter than badges.
- * ponytail: static strings only so Tailwind keeps generating utilities.
- */
+/** Documented paint knobs — must stay in sync with literal `/10`, `/12`, `/88` in FAMILY_TONE below. */
 export const ACTION_BUTTON_PAINT = {
   idleFill: 10,
   hoverFill: 12,

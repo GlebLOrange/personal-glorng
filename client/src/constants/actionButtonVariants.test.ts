@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   classesForActionButton,
-  httpFamilyForSemanticAction,
   SEMANTIC_ACTION_HTTP_FAMILY,
 } from "@/constants/actionButtonVariants";
 
@@ -17,7 +16,7 @@ describe("actionButtonVariants", () => {
       delete: "4xx",
       cancel: "5xx",
     });
-    expect(httpFamilyForSemanticAction("delete")).toBe("4xx");
+    expect(SEMANTIC_ACTION_HTTP_FAMILY.delete).toBe("4xx");
   });
 
   it("paints create/add like pale primary (1xx wash)", () => {

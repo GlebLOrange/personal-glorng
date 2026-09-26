@@ -67,6 +67,7 @@ html[data-theme="light"] {
     color-mix(in srgb, var(--palette-surface-dark) 94%, transparent) 0%,
     color-mix(in srgb, var(--palette-surface-dark) 88%, transparent) 100%
   );
+  --site-bg-image: none;
 }
 
 @theme {
@@ -382,7 +383,7 @@ body {
   background-image: var(--site-bg-scrim), var(--site-bg-image);
   background-size: cover;
   background-position: center center;
-  background-attachment: fixed;
+  background-attachment: scroll;
   min-height: 100vh;
   color: var(--color-surface-light);
   line-height: 1.65;

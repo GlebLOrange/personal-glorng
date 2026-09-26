@@ -26,7 +26,7 @@ const props = withDefaults(
     danger?: boolean;
     /** Ghost only: muted text until hover / focus-visible. */
     quiet?: boolean;
-    /** Persist selected/pressed chrome (solid primary ring, or grayscale wash). */
+    /** Persist selected/pressed chrome (family tint or grayscale wash). */
     selected?: boolean;
     disabled?: boolean;
     loading?: boolean;
@@ -65,7 +65,7 @@ const variantClass = computed(() =>
     :aria-pressed="selected ? true : undefined"
     :class="[
       'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg border font-medium leading-none transition-colors duration-200',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50',
+      'focus-visible:outline-none focus-visible:ring-2',
       'disabled:cursor-not-allowed disabled:opacity-50',
       variantClass,
       sizeClass,

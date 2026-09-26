@@ -2,7 +2,7 @@
 import { computed, useAttrs } from "vue";
 
 import {
-  httpFamilyForSemanticAction,
+  SEMANTIC_ACTION_HTTP_FAMILY,
   type SemanticButtonAction,
 } from "@/constants/actionButtonVariants";
 import { actionFamilyClass, type HttpStatusFamily } from "@/constants/httpStatusColors";
@@ -30,7 +30,7 @@ defineEmits<{ click: [MouseEvent] }>();
 
 const attrs = useAttrs();
 const resolvedFamily = computed((): HttpStatusFamily =>
-  props.action ? httpFamilyForSemanticAction(props.action) : props.family,
+  props.action ? SEMANTIC_ACTION_HTTP_FAMILY[props.action] : props.family,
 );
 
 const classes = computed(() => [

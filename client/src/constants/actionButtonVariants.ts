@@ -31,26 +31,47 @@ export type BaseButtonVariant =
   | "success"
   | SemanticButtonAction;
 
-export function httpFamilyForSemanticAction(action: SemanticButtonAction): HttpStatusFamily {
-  return SEMANTIC_ACTION_HTTP_FAMILY[action];
-}
-
-type WashFamily = "2xx" | "3xx" | "4xx" | "5xx";
-
-const WASH_FOCUS_RING: Record<WashFamily, string> = {
+const FOCUS_RING: Record<HttpStatusFamily, string> = {
+  "1xx": "focus-visible:ring-accent-blue/50",
   "2xx": "focus-visible:ring-status-success/50",
   "3xx": "focus-visible:ring-status-warning/50",
   "4xx": "focus-visible:ring-status-error/50",
   "5xx": "focus-visible:ring-status-critical/50",
 };
 
-export type ActionButtonClassInput = {
+const WASHED_VARIANT_FAMILY: Partial<Record<BaseButtonVariant, HttpStatusFamily>> = {
+  primary: "1xx",
+  create: "1xx",
+  add: "1xx",
+  success: "2xx",
+  save: "2xx",
+  edit: "3xx",
+  remove: "4xx",
+  delete: "4xx",
+  cancel: "5xx",
+};
+
+const NEUTRAL_FOCUS = "focus-visible:ring-accent-blue/50";
+
+const NEUTRAL_GHOST_IDLE =
+  "border-transparent bg-transparent text-surface-light/80 hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light active:enabled:bg-surface-light/15";
+
+const NEUTRAL_GHOST_QUIET =
+  "border-transparent bg-transparent text-surface-light/60 hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light focus-visible:border-surface-light/40 focus-visible:bg-surface-light/10 focus-visible:text-surface-light";
+
+const NEUTRAL_SELECTED = "border-surface-light/40 bg-surface-light/15 text-surface-light";
+
+type ActionButtonClassInput = {
   variant: BaseButtonVariant;
   selected?: boolean;
   quiet?: boolean;
   /** Prefer variant `delete` / `remove`; still forces 4xx when true. */
   danger?: boolean;
 };
+
+function washedFamilyClasses(family: HttpStatusFamily, selected: boolean): string {
+  return `${familyToneClass(family, selected, { includeActive: true })} ${FOCUS_RING[family]}`;
+}
 
 /**
  * Tailwind classes for BaseButton from variant + flags.
@@ -59,56 +80,36 @@ export type ActionButtonClassInput = {
 export function classesForActionButton(input: ActionButtonClassInput): string {
   const selected = Boolean(input.selected);
   const quiet = Boolean(input.quiet);
+  const variant = input.variant;
 
   if (input.danger) {
-    if (input.variant === "ghost" || quiet) {
+    if (variant === "ghost" || quiet) {
       return familyToneClass("4xx", selected, {
         quiet: true,
         includeFocusTint: true,
       });
     }
-    return `${familyToneClass("4xx", selected, { includeActive: true })} ${WASH_FOCUS_RING["4xx"]}`;
+    return washedFamilyClasses("4xx", selected);
   }
 
-  const variant = input.variant === "success" ? "save" : input.variant;
-
-  if (variant === "save") {
-    return `${familyToneClass("2xx", selected, { includeActive: true })} ${WASH_FOCUS_RING["2xx"]}`;
-  }
-
-  if (variant === "cancel") {
-    return `${familyToneClass("5xx", selected, { includeActive: true })} ${WASH_FOCUS_RING["5xx"]}`;
-  }
-
-  if (variant === "edit") {
-    return `${familyToneClass("3xx", selected, { includeActive: true })} ${WASH_FOCUS_RING["3xx"]}`;
-  }
-
-  if (variant === "remove" || variant === "delete") {
-    return `${familyToneClass("4xx", selected, { includeActive: true })} ${WASH_FOCUS_RING["4xx"]}`;
-  }
-
-  if (variant === "create" || variant === "add" || variant === "primary") {
-    return `${familyToneClass("1xx", selected, { includeActive: true })} focus-visible:ring-accent-blue/50`;
+  const family = WASHED_VARIANT_FAMILY[variant];
+  if (family) {
+    return washedFamilyClasses(family, selected);
   }
 
   if (variant === "ghost") {
     if (quiet && !selected) {
-      return [
-        "border-transparent bg-transparent text-surface-light/60",
-        "hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light",
-        "focus-visible:border-surface-light/40 focus-visible:bg-surface-light/10 focus-visible:text-surface-light",
-      ].join(" ");
+      return NEUTRAL_GHOST_QUIET;
     }
     if (selected) {
-      return "border-surface-light/40 bg-surface-light/15 text-surface-light";
+      return `${NEUTRAL_SELECTED} ${NEUTRAL_FOCUS}`;
     }
-    return "border-transparent bg-transparent text-surface-light/80 hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light active:enabled:bg-surface-light/15";
+    return `${NEUTRAL_GHOST_IDLE} ${NEUTRAL_FOCUS}`;
   }
 
   // secondary — neutral OAuth / unlink / promote
   if (selected) {
-    return "border-surface-light/40 bg-surface-light/15 text-surface-light";
+    return `${NEUTRAL_SELECTED} ${NEUTRAL_FOCUS}`;
   }
-  return "border-transparent bg-transparent text-surface-light/80 hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light active:enabled:bg-surface-light/15";
+  return `${NEUTRAL_GHOST_IDLE} ${NEUTRAL_FOCUS}`;
 }
