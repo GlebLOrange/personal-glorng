@@ -18,23 +18,26 @@ Use for **interactive controls and overlays** in admin tools and feature UI.
 
 Import explicitly per file (only `BaseImage` is global).
 
-### Button action colors
+### Button action colors (standard)
 
-Use the pale **1xx–5xx** family tokens — map API action to variant:
+Semantic names live in `constants/actionButtonVariants.ts` (`SEMANTIC_ACTION_HTTP_FAMILY`). Prefer **named actions** over raw HTTP families so create/save/cancel stay consistent.
 
-| Action | Family | Variant / control | Token |
-|---|---|---|---|
-| Create / add / primary / info | 1xx | `BaseButton` `primary`, `ToolbarPillButton` `1xx` | `accent-blue` wash |
-| Save / success / created | 2xx | `BaseButton` `success`, pill `2xx` | `status-success` wash |
-| Update / redirect / caution | 3xx | pill `3xx`, edit chrome | `status-warning` wash |
-| Delete / client error | 4xx | `danger`, pill `4xx` | `status-error` |
-| Critical / server error | 5xx | pill `5xx`, critical badges | `status-critical` |
-| Secondary / cancel (non-destructive) | — | `secondary` | grayscale (`surface-light`) |
-| Quiet chrome / tertiary | — | `ghost` (+ optional `quiet`) | muted until hover accent |
+| User action | `BaseButton` `variant` | `action` on pill / icon / menu | HTTP family | Look |
+|---|---|---|---|---|
+| Create | `create` | `create` | 1xx | Solid `accent-blue` (same as `primary`) |
+| Add | `add` | `add` | 1xx | Solid `accent-blue` |
+| Save / submit / confirm | `save` (alias: `success`) | `save` | 2xx | Pale green wash |
+| Edit / update | `edit` | `edit` | 3xx | Pale gold wash |
+| Remove / delete | `delete` or `remove` | `delete` / `remove` | 4xx | Pale rose wash (`danger` prop = 4xx legacy) |
+| Cancel / dismiss | `cancel` | `cancel` | 5xx | Pink–red wash |
+| Neutral (OAuth, unlink, promote) | `secondary` | — (or explicit `family`) | — | Grayscale |
+| Tertiary / filter clear | `ghost` (+ optional `quiet`) | — | — | Muted until hover |
 
-`status-warning` is the 3xx family (pale yellow). Prefer `status-warning` for edit/pending/caution; leave `status-cyan` for legacy callouts only. Legacy `accent-red` / `accent-amber` map to error / warning.
+**Examples:** `variant="cancel"` + `variant="save"` in form footers; `action="create"` on `+ task` pills; `variant="delete"` on confirm dialogs with `danger`.
 
-Auth submits and marketing `cta-*` stay blue/neutral; do not invent new hex colors.
+Auth login/register submits may stay `primary`. Marketing `cta-*` stays separate. Do not invent new hex colors.
+
+`status-warning` is the 3xx family. Legacy `accent-red` / `accent-amber` map to error / warning.
 
 ## Marketing CTAs vs product buttons vs toolbar pills
 
@@ -42,9 +45,9 @@ Three intentional systems — pick one per surface, do not mix adjacent CTAs:
 
 | System | Where | Look |
 |---|---|---|
-| `cta-primary` / `cta-secondary` | Portfolio, donations, marketing moments | Solid brand taps (`main.css`) |
-| `BaseButton` | Auth, forms, product dialogs, list rows | Borderless wash; `primary` accent, `secondary` grayscale |
-| `ToolbarPillButton` | Admin list toolbars, tool option bars, HTTP-ish families | Compact pills (`1xx` blue, `2xx` green submit, …) |
+| `cta-primary` / `cta-secondary` | Portfolio, donations, marketing moments | Pale 1xx / 3xx washes (`main.css`, same paint as product) |
+| `BaseButton` | Auth, forms, product dialogs, list rows | Pale HTTP-family wash; `secondary` grayscale |
+| `ToolbarPillButton` / `IconActionButton` / `BaseDropdownMenu` | Admin toolbars, icon chrome, edit menus | Prefer `action="create"` / `save` / `edit` / `delete`; raw `family` only for HTTP-literal tabs (e.g. `AdminTabBar`) |
 
 **Do not** use `cta-primary` inside tool screens; **do not** add gradients to `BaseButton`. Prefer `ToolbarPillButton` for admin toolbar primary actions and `BaseButton` for form/dialog actions.
 
@@ -63,7 +66,7 @@ Product `BaseButton` / `ToolbarPillButton` labels must name the action with a sh
 | `IconActionButton` (+ wrappers) | **h-10 w-10** | Icon-only chrome; in-field clear uses `size="field"` (same square) |
 | `BaseSelect` | **h-10** (`compact` → h-9) | Dense toolbars only for compact |
 
-Wash recipe (idle → hover/selected → active): `/3` → `/15` + border `/40` → `/25`. Icon clear/edit/remove/copy (`IconCloseButton` / `IconEditButton` / `IconCopyButton`) use `transparentIdle`: transparent at rest, family wash on hover or `focus-visible`; pills and other icon chrome keep the `/3` idle wash. Do **not** re-add `min-h-10` / `h-10` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `family`, `quiet`, `transparentIdle`, and `selected`. Size tokens live in `constants/formClasses.ts` (`CONTROL_BUTTON_*`).
+Wash recipe (idle → hover/selected → active): fill `/10` → `/12` + border `/22` → active `/14`; labels `text-*/88` (`ACTION_BUTTON_PAINT` in `httpStatusColors.ts`). Primary / `cta-primary` use the same pale 1xx wash. Icon clear/edit/remove/copy use `transparentIdle`. Do **not** re-add `min-h-10` / `h-10` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `action`, `family`, `quiet`, `transparentIdle`, and `selected`. Size tokens live in `constants/formClasses.ts` (`CONTROL_BUTTON_*`).
 
 **Marketing vs product accents** — portfolio/marketing pages may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI uses only the **1xx–5xx** pale set + surfaces — no golden/violet on tools, chips, or product buttons.
 

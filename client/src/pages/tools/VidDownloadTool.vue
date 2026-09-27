@@ -107,7 +107,7 @@ async function download(): Promise<void> {
           </AdminFilterDropdown>
         </template>
         <template #actions>
-          <ToolbarPillButton family="2xx" type="submit" :disabled="loading || !url.trim()">
+          <ToolbarPillButton action="save" type="submit" :disabled="loading || !url.trim()">
             {{ loading ? "downloading…" : "download" }}
           </ToolbarPillButton>
         </template>

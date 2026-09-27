@@ -15,7 +15,7 @@ withDefaults(
   {
     ariaLabel: "copy",
     size: "md",
-    quiet: true,
+    quiet: false,
   },
 );
 
@@ -26,7 +26,7 @@ defineEmits<{ click: [MouseEvent] }>();
   <IconActionButton
     :quiet="quiet"
     transparent-idle
-    family="1xx"
+    action="create"
     :size="size"
     :aria-label="ariaLabel"
     :disabled="disabled"

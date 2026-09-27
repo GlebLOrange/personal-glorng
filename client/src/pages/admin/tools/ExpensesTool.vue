@@ -156,7 +156,7 @@ function focusAddFromAnalytics(): void {
             @update:model-value="switchTab"
           >
             <template #end>
-              <ToolbarPillButton family="1xx" :disabled="exporting" @click="exportCsv">
+              <ToolbarPillButton action="save" :disabled="exporting" @click="exportCsv">
                 {{ exporting ? "exporting…" : "export csv" }}
               </ToolbarPillButton>
             </template>
@@ -176,7 +176,7 @@ function focusAddFromAnalytics(): void {
               aria-label="new category"
               class="min-w-0 flex-1"
             />
-            <ToolbarPillButton type="submit" family="2xx" class="shrink-0">
+            <ToolbarPillButton type="submit" action="save" class="shrink-0">
               + category
             </ToolbarPillButton>
           </form>

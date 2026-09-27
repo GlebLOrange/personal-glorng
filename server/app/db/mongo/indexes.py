@@ -31,6 +31,8 @@ INDEX_SPECS: list[tuple[str, list[tuple[str, int | str]], dict[str, Any] | None]
     ("shortened_urls", [("id", 1)], {"unique": True}),
     ("shortened_urls", [("code", 1)], {"unique": True}),
     ("shortened_urls", [("created_by", 1), ("created_at", -1)], None),
+    ("qr_codes", [("id", 1)], {"unique": True}),
+    ("qr_codes", [("created_by", 1), ("created_at", -1)], None),
     ("shared_files", [("id", 1)], {"unique": True}),
     ("shared_files", [("code", 1)], {"unique": True}),
     ("shared_files", [("expires_at", 1)], None),

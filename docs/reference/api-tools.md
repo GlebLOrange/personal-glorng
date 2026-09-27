@@ -12,6 +12,7 @@ flowchart LR
     Calculator["POST /api/tools/calculator"]
     RecipesRead["GET /api/tools/recipes"]
     ShortCreate["POST /api/tools/url-shortener"]
+    QrGen["POST /api/tools/qr-generator"]
     VidDl["POST /api/tools/vid-download"]
     Weather["GET /api/time-date-weather-location/*"]
     Search["GET/POST /api/search/*"]
@@ -20,6 +21,7 @@ flowchart LR
   subgraph admin [Admin_JWT_plus_capability]
     Tasks["/api/tools/tasks/*"]
     Expenses["/api/tools/expenses/*"]
+    QrLib["/api/tools/qr-generator/library/*"]
     AiChat["/api/tools/ai-chat/*"]
     More["email, file-share, audit, ..."]
   end
@@ -42,6 +44,7 @@ Regenerate after router or registry changes: `make docs-generate`.
 ## Public vs admin (summary)
 
 - **Public tools** appear on **`/tools`** ([`ToolsPage.vue`](../../client/src/pages/ToolsPage.vue)) and are rate-limited. Capability gates still apply on write paths where noted in OpenAPI summaries.
+- **QR generator:** public `POST /api/tools/qr-generator` (ephemeral inline SVG). Owner library at `/api/tools/qr-generator/library` (`GET` list preview-only, `POST`/`PATCH`/`DELETE`, `GET /{id}`, `GET /{id}/svg`) requires `qr-generator:read` / `write`.
 - **Admin hub** lives under **`/admin/*`** (feedback, audit-logs, app-logs, search, ai-chat, send-email, api docs, users). Capability tools use top-level paths (`/tasks`, `/expenses`, `/news`, …). API prefix is usually **`/api/tools/<slug>`** (feedback uses **`/api/feedback`**; news sources are **`/api/tools/news/sources`**).
 - **AI chat** requires `platform:superuser` plus `AI_CHAT_ENABLED` + `GROQ_API_KEY`.
 

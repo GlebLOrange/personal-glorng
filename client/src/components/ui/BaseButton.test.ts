@@ -49,33 +49,53 @@ describe("BaseButton", () => {
       props: { variant: "ghost", danger: true },
     }).get("button");
 
-    expect(button.classes()).toContain("hover:enabled:text-status-error");
-    expect(button.classes()).toContain("hover:enabled:bg-status-error/15");
+    expect(button.classes()).toContain("hover:enabled:text-status-error/88");
+    expect(button.classes()).toContain("hover:enabled:bg-status-error/12");
     expect(button.classes()).toContain("text-surface-light/60");
     expect(button.classes()).toContain("border-transparent");
   });
 
-  it("colorizes success with fill/3 matching accent text and pale hover", () => {
+  it("colorizes success with pale 2xx wash", () => {
     const button = mount(BaseButton, {
       props: { variant: "success" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-status-success/3");
-    expect(button.classes()).toContain("text-status-success");
-    expect(button.classes()).toContain("hover:enabled:bg-status-success/15");
-    expect(button.classes()).toContain("active:enabled:bg-status-success/25");
+    expect(button.classes()).toContain("bg-status-success/10");
+    expect(button.classes()).toContain("text-status-success/88");
+    expect(button.classes()).toContain("hover:enabled:bg-status-success/12");
+    expect(button.classes()).toContain("active:enabled:bg-status-success/14");
     expect(button.classes()).toContain("focus-visible:ring-status-success/50");
   });
 
-  it("colorizes primary as solid accent fill with on-accent ink (cta-primary)", () => {
+  it("colorizes primary as pale 1xx wash (matches cta-primary)", () => {
     const button = mount(BaseButton, {
       props: { variant: "primary" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-accent-blue");
-    expect(button.classes()).toContain("text-on-accent");
-    expect(button.classes()).toContain("hover:enabled:bg-accent-blue/90");
-    expect(button.classes()).toContain("active:enabled:bg-accent-blue/80");
+    expect(button.classes()).toContain("bg-accent-blue/10");
+    expect(button.classes()).toContain("text-accent-blue/88");
+    expect(button.classes()).toContain("hover:enabled:bg-accent-blue/12");
+    expect(button.classes()).toContain("active:enabled:bg-accent-blue/14");
+  });
+
+  it("colorizes create like pale primary (1xx)", () => {
+    const button = mount(BaseButton, {
+      props: { variant: "create" },
+    }).get("button");
+
+    expect(button.classes()).toContain("bg-accent-blue/10");
+    expect(button.classes()).toContain("text-accent-blue/88");
+  });
+
+  it("colorizes cancel with 5xx critical family (pink-red dismiss)", () => {
+    const button = mount(BaseButton, {
+      props: { variant: "cancel" },
+    }).get("button");
+
+    expect(button.classes()).toContain("bg-status-critical/10");
+    expect(button.classes()).toContain("text-status-critical/88");
+    expect(button.classes()).toContain("hover:enabled:bg-status-critical/12");
+    expect(button.classes()).toContain("focus-visible:ring-status-critical/50");
   });
 
   it("keeps secondary grayscale without accent wash", () => {
@@ -86,19 +106,19 @@ describe("BaseButton", () => {
     expect(button.classes()).toContain("bg-transparent");
     expect(button.classes()).toContain("text-surface-light/80");
     expect(button.classes()).toContain("hover:enabled:bg-surface-light/10");
-    expect(button.classes()).not.toContain("bg-accent-blue/3");
-    expect(button.classes()).not.toContain("text-accent-blue");
+    expect(button.classes()).not.toContain("bg-accent-blue/10");
+    expect(button.classes()).not.toContain("text-accent-blue/88");
     expect(button.classes()).toContain("border-transparent");
   });
 
-  it("keeps solid primary fill when selected", () => {
+  it("uses selected 1xx tint when primary selected", () => {
     const button = mount(BaseButton, {
       props: { variant: "primary", selected: true },
     }).get("button");
 
     expect(button.attributes("aria-pressed")).toBe("true");
-    expect(button.classes()).toContain("bg-accent-blue");
-    expect(button.classes()).toContain("text-on-accent");
-    expect(button.classes()).toContain("ring-accent-blue/40");
+    expect(button.classes()).toContain("bg-accent-blue/12");
+    expect(button.classes()).toContain("text-accent-blue/88");
+    expect(button.classes()).toContain("border-accent-blue/22");
   });
 });

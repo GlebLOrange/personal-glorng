@@ -61,7 +61,7 @@ onBeforeUnmount(() => {
           @mouseleave="scheduleHideHint"
         >
           <ToolbarPillButton
-            family="1xx"
+            action="create"
             class="!w-10 !min-w-10 !px-0"
             :aria-label="props.title"
             :aria-expanded="open"

@@ -125,6 +125,32 @@ export interface UrlItem {
   created_at: string;
 }
 
+export type QrErrorLevel = "L" | "M" | "Q" | "H";
+
+/** Owner list row — preview only (no full payload). */
+export interface QrListItem {
+  id: number;
+  content_preview: string;
+  label: string | null;
+  error_level: QrErrorLevel;
+  svg_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Full saved QR from GET/create/update. */
+export interface QrStoredItem extends QrListItem {
+  content: string;
+  svg?: string | null;
+}
+
+export interface QrGenerateResponse {
+  content_preview: string;
+  label: string | null;
+  error_level: QrErrorLevel;
+  svg: string;
+}
+
 export interface HealthDnsRecord {
   family: string;
   address: string;

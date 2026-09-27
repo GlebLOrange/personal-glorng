@@ -84,7 +84,7 @@ const {
 
       <template v-if="canWrite">
         <ToolbarPillButton
-          family="5xx"
+          action="create"
           class="ml-auto gap-1.5"
           :disabled="refreshing || loading"
           @click="refreshSources"
@@ -92,7 +92,7 @@ const {
           <RefreshIcon class-name="size-3.5" />
           {{ refreshButtonText }}
         </ToolbarPillButton>
-        <ToolbarPillButton family="2xx" :disabled="loading" @click="openCreate">
+        <ToolbarPillButton action="create" :disabled="loading" @click="openCreate">
           + source
         </ToolbarPillButton>
       </template>

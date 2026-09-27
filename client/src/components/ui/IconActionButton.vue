@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { computed, useAttrs } from "vue";
 
+import {
+  SEMANTIC_ACTION_HTTP_FAMILY,
+  type SemanticButtonAction,
+} from "@/constants/actionButtonVariants";
 import { iconActionClass, type HttpStatusFamily } from "@/constants/httpStatusColors";
 
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
+    /** Prefer over raw `family` — same standard as ToolbarPillButton. */
+    action?: SemanticButtonAction;
     family?: HttpStatusFamily;
     /** Forces 4xx (delete / clear / close). */
     danger?: boolean;
@@ -44,9 +50,13 @@ const accessibleName = computed(
   () => props.ariaLabel ?? (attrs["aria-label"] as string | undefined) ?? props.title,
 );
 
+const resolvedFamily = computed((): HttpStatusFamily =>
+  props.action ? SEMANTIC_ACTION_HTTP_FAMILY[props.action] : props.family,
+);
+
 const classes = computed(() =>
   [
-    iconActionClass(props.family, props.selected, {
+    iconActionClass(resolvedFamily.value, props.selected, {
       danger: props.danger,
       quiet: props.quiet,
       transparentIdle: props.transparentIdle,

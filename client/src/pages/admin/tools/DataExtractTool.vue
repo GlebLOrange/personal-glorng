@@ -81,7 +81,7 @@ const {
           </template>
           <template #actions>
             <ToolbarPillButton
-              family="2xx"
+              action="save"
               type="button"
               :disabled="loading || !selectedFile"
               @click="
@@ -93,7 +93,7 @@ const {
             </ToolbarPillButton>
             <ToolbarPillButton
               v-if="canWrite"
-              family="3xx"
+              action="edit"
               type="button"
               :disabled="loading || !selectedFile"
               @click="

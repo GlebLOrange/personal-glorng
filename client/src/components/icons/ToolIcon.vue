@@ -102,6 +102,14 @@ defineProps<{
       <path d="M12 12h9M18 12v3M21 12v2" />
     </template>
 
+    <!-- qr-generator: matrix -->
+    <template v-else-if="slug === 'qr-generator'">
+      <rect x="4" y="4" width="7" height="7" rx="1" />
+      <rect x="13" y="4" width="7" height="7" rx="1" />
+      <rect x="4" y="13" width="7" height="7" rx="1" />
+      <path d="M14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z" />
+    </template>
+
     <!-- vid-download: play + down -->
     <template v-else-if="slug === 'vid-download'">
       <path d="M6 5.5v13l11-6.5L6 5.5Z" />

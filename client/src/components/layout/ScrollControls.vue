@@ -13,7 +13,7 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
   <div v-if="showToTop" class="pointer-events-none fixed inset-x-0 top-[14%] z-30 print:hidden">
     <div class="relative mx-auto w-full max-w-5xl px-6">
       <IconActionButton
-        family="1xx"
+        action="create"
         type="button"
         class="shell-outside-end pointer-events-auto"
         aria-label="to the top"
@@ -30,7 +30,7 @@ const { scrollToNextSection, scrollToTop } = useNextSectionScroll();
   >
     <div class="relative mx-auto w-full max-w-5xl px-6">
       <IconActionButton
-        family="1xx"
+        action="create"
         type="button"
         class="shell-outside-end pointer-events-auto"
         aria-label="scroll to next section"

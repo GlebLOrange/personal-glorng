@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { computed, useAttrs } from "vue";
 
+import {
+  SEMANTIC_ACTION_HTTP_FAMILY,
+  type SemanticButtonAction,
+} from "@/constants/actionButtonVariants";
 import { actionFamilyClass, type HttpStatusFamily } from "@/constants/httpStatusColors";
 
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
+    /** Prefer over raw `family` — same standard as BaseButton semantic variants. */
+    action?: SemanticButtonAction;
     family?: HttpStatusFamily;
     selected?: boolean;
     type?: "button" | "submit" | "reset";
@@ -23,7 +29,14 @@ const props = withDefaults(
 defineEmits<{ click: [MouseEvent] }>();
 
 const attrs = useAttrs();
-const classes = computed(() => [actionFamilyClass(props.family, props.selected), attrs.class]);
+const resolvedFamily = computed((): HttpStatusFamily =>
+  props.action ? SEMANTIC_ACTION_HTTP_FAMILY[props.action] : props.family,
+);
+
+const classes = computed(() => [
+  actionFamilyClass(resolvedFamily.value, props.selected),
+  attrs.class,
+]);
 const nativeAttrs = computed(() => {
   const next: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(attrs)) {

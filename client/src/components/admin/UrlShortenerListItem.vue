@@ -96,7 +96,7 @@ function confirmDelete(): void {
       @keydown="onTitleKeydown"
     />
     <BaseButton
-      variant="secondary"
+      variant="cancel"
       size="sm"
       class="shrink-0"
       :disabled="saving"
@@ -104,7 +104,7 @@ function confirmDelete(): void {
     >
       cancel
     </BaseButton>
-    <BaseButton variant="success" size="sm" class="shrink-0" :disabled="saving" @click="saveEdit">
+    <BaseButton variant="save" size="sm" class="shrink-0" :disabled="saving" @click="saveEdit">
       {{ saving ? "…" : "save" }}
     </BaseButton>
   </div>

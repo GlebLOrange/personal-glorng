@@ -230,7 +230,7 @@ onMounted(load);
             <IconActionButton
               v-if="item.status === 'archived'"
               quiet
-              family="1xx"
+              action="create"
               aria-label="unarchive"
               title="unarchive"
               @click="unarchiveItem(item)"
@@ -240,7 +240,7 @@ onMounted(load);
             <IconActionButton
               v-else
               quiet
-              family="1xx"
+              action="create"
               aria-label="archive"
               title="archive"
               @click="archiveItem(item)"

@@ -31,7 +31,7 @@ const emit = defineEmits<{
         />
         <BaseButton
           type="submit"
-          variant="success"
+          variant="save"
           size="sm"
           :loading="saving"
           :disabled="!canSave"

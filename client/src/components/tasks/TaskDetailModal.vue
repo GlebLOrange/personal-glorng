@@ -120,7 +120,7 @@ watch(
             aria-label="reschedule"
           />
           <ToolbarPillButton
-            family="1xx"
+            action="save"
             :disabled="!scheduleDirty || rescheduling"
             @click="emit('reschedule', scheduleDraft)"
           >
@@ -207,7 +207,7 @@ watch(
         </div>
         <ToolbarPillButton
           v-else
-          family="5xx"
+          action="create"
           class="gap-1.5"
           title="try syncing again"
           @click="emit('retrySync', task.id)"
@@ -260,7 +260,7 @@ watch(
     <template v-if="canMutate && task" #footer>
       <DrawerFooterActions>
         <template v-if="menuStatuses.length" #dismiss>
-          <BaseDropdownMenu placement="top" icon-only family="3xx" aria-label="edit">
+          <BaseDropdownMenu placement="top" icon-only action="edit" aria-label="edit">
             <template #trigger>
               <PencilIcon class-name="size-4" />
             </template>
@@ -281,7 +281,7 @@ watch(
         </template>
         <template v-if="primaryActionStatus" #primary>
           <ToolbarPillButton
-            family="2xx"
+            action="save"
             :disabled="statusUpdating"
             @click="emit('updateStatus', primaryActionStatus)"
           >

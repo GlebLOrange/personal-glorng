@@ -226,6 +226,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: "Password generator", description: "Generate strong random passwords." },
   },
   {
+    path: "/qr-generator",
+    name: "qr-generator",
+    component: () => import("@/pages/tools/QrGeneratorTool.vue"),
+    meta: { title: "QR generator", description: "Generate QR codes as downloadable SVG." },
+  },
+  {
     path: "/recipes",
     name: "recipes",
     component: () => import("@/pages/tools/RecipesPage.vue"),
@@ -285,6 +291,7 @@ const routes: RouteRecordRaw[] = [
   // Legacy /admin/tools/* redirects
   { path: "/admin/tools/calculator", redirect: { name: "calculator" } },
   { path: "/admin/tools/password-generator", redirect: { name: "password-generator" } },
+  { path: "/admin/tools/qr-generator", redirect: { name: "qr-generator" } },
   { path: "/admin/tools/recipes", redirect: { name: "recipes" } },
   { path: "/admin/tools/url-shortener", redirect: { name: "shortener" } },
   { path: "/admin/tools/vid-download", redirect: { name: "vid-download" } },

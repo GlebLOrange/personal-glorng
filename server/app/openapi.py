@@ -43,6 +43,10 @@ OPENAPI_TAGS: list[dict[str, str]] = [
         "description": "Public random password generation.",
     },
     {
+        "name": "qr-generator",
+        "description": "Public ephemeral QR generation; admin library for saved SVGs.",
+    },
+    {
         "name": "vid-download",
         "description": "Video download helpers powered by yt-dlp.",
     },

@@ -114,14 +114,14 @@ async function submit(): Promise<void> {
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton variant="secondary" type="button" @click="$emit('close')">
+          <BaseButton variant="cancel" type="button" @click="$emit('close')">
             cancel
           </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton
             form="feedback-modal-form"
-            family="2xx"
+            action="save"
             type="submit"
             :disabled="loading || !canSubmit"
           >
