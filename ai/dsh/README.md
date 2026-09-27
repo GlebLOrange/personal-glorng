@@ -15,7 +15,15 @@ DSH runs **outside** `server/` and `client/`. This folder holds profile patches 
 
 ## Boot web UI with Gortex tools
 
-From the repository root:
+**Default:** `make dev` / `make dev-lite` starts DSH in the background on `http://127.0.0.1:3080` (and `make down` stops it). Set `DEEPSEEK_API_KEY` in the repo `.env` (or the environment) for chat; the UI still boots without it.
+
+Foreground (logs in the terminal):
+
+```bash
+make dev-dsh
+```
+
+Manual equivalent from the repository root:
 
 ```bash
 export PATH="$HOME/.nvm/versions/node/v24.18.0/bin:$PATH"   # adjust if needed

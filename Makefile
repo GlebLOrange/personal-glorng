@@ -1,4 +1,4 @@
-.PHONY: dev rebuild dev-lite dev-lite-client dev-docker docs-dev docs-build docs-generate adr-new
+.PHONY: dev rebuild dev-lite dev-lite-client dev-dsh dev-docker docs-dev docs-build docs-generate adr-new
 .PHONY: dev-ultra-lite-infra dev-ultra-lite-server dev-search dev-postgres dev-worker dev-bot dev-full
 .PHONY: prod prod-cloudflare test lint lint-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed-db seed-db-ultra-lite reindex-search backup backup-install db-pull-prod down logs bot-logs
 
@@ -21,7 +21,9 @@ dev:
 	@echo "dev (lite): mongodb, redis, API, nginx are starting."
 	@echo "  http://localhost needs host Vite — run in another terminal: make dev-lite-client"
 	@echo "  Or use http://localhost:3000 after Vite is up (API docs: http://127.0.0.1:8000/api/docs)"
+	@echo "  DSH web UI: http://127.0.0.1:3080 (host; foreground logs: make dev-dsh)"
 	@echo ""
+	@bash scripts/dev-dsh.sh start
 	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) up $(BUILD_FLAG) $(LITE_SERVICES)
 
 rebuild:
@@ -31,6 +33,9 @@ dev-lite: dev
 
 dev-lite-client:
 	cd client && npm run dev
+
+dev-dsh:
+	bash scripts/dev-dsh.sh foreground
 
 dev-docker:
 	@echo ""
@@ -67,6 +72,7 @@ prod-cloudflare:
 	$(DOCKER_BUILD) docker compose -f docker-compose.prod.yml -f docker-compose.cloudflare.yml $(COMPOSE_CACHE) up --build -d
 
 down:
+	@bash scripts/dev-dsh.sh stop
 	docker compose $(COMPOSE_LITE) --profile broker --profile worker --profile bot --profile docker-client --profile postgres --profile search down
 
 logs:
