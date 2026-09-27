@@ -19,6 +19,9 @@ const appearance: Record<BadgeStatus, { label: string; className: string }> = {
   unreachable: { label: "API down", className: familyBadgeClass("5xx") },
 };
 
+/** Keep chip width stable across poll states. */
+const fitLabels = Object.values(appearance).map((entry) => entry.label);
+
 async function poll(): Promise<void> {
   try {
     const res = await api.get("/health", {
@@ -26,8 +29,9 @@ async function poll(): Promise<void> {
       // ponytail: skip auth refresh loop for anonymous liveness probe
       validateStatus: (code) => code >= 200 && code < 500,
     });
+    // 4xx (accepted by validateStatus) is odd, not down — down is network/5xx via catch
     if (res.status !== 200) {
-      status.value = "unreachable";
+      status.value = "unexpected";
       return;
     }
     status.value = parseHealthStatusPayload(res.data);
@@ -52,10 +56,12 @@ onUnmounted(() => {
   <p
     class="fixed bottom-[max(0.5rem,env(safe-area-inset-bottom))] right-2 z-40 print:hidden"
     aria-live="polite"
+    :aria-label="`Development API status: ${appearance[status].label}`"
   >
     <StatusBadge
       :label="appearance[status].label"
       :class-name="appearance[status].className"
+      :fit-labels="fitLabels"
     />
   </p>
 </template>
