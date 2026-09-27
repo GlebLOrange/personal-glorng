@@ -41,7 +41,9 @@ onMounted(() => {
       </CardHeader>
 
       <AdminListSkeleton v-if="loading && items.length === 0" />
-      <EmptyState v-else-if="!loading && items.length === 0" message="No saved QR codes yet." />
+      <EmptyState v-else-if="!loading && items.length === 0">
+        no saved QR codes yet.
+      </EmptyState>
 
       <div v-else class="page-tool-grid min-w-0">
         <RouterLink

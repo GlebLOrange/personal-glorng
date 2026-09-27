@@ -284,10 +284,9 @@ onMounted(() => {
     <section v-if="canReadLibrary" class="mt-8 min-w-0">
       <h2 class="mb-3 text-sm font-medium text-surface-mid">your saved qr codes</h2>
       <AdminListSkeleton v-if="listLoading && items.length === 0" />
-      <EmptyState
-        v-else-if="!listLoading && items.length === 0"
-        message="No saved QR codes yet. Generate one and save it."
-      />
+      <EmptyState v-else-if="!listLoading && items.length === 0">
+        no saved QR codes yet. generate one and save it.
+      </EmptyState>
       <ul v-else class="divide-y divide-surface-border rounded-md border border-surface-border">
         <li v-for="item in items" :key="item.id">
           <button
