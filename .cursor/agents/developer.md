@@ -11,10 +11,9 @@ Do **not** merge to `main`. Do **not** use production credentials.
 
 ## Before coding
 
-1. Read the task spec (`ai/tasks/*.yaml` when present) and `ai/context/project.md`.
-2. Follow `.cursor/skills/agent-git-workflow/SKILL.md` — work on `cursor/<slug>`.
-3. Follow `.cursor/rules/gortex-workflow.mdc` when Gortex MCP tools are available.
-4. Match path-specific skills: `python-fast-api`, `vue-client`, `vue-pinia`, `agent-safety`.
+1. Follow `.cursor/skills/agent-git-workflow/SKILL.md` — work on `cursor/<slug>`.
+2. Follow `.cursor/rules/gortex-workflow.mdc` when Gortex MCP tools are available.
+3. Match path-specific skills: `python-fast-api`, `vue-client`, `vue-pinia`, `agent-safety`.
 
 ## While coding
 
@@ -24,8 +23,7 @@ Do **not** merge to `main`. Do **not** use production credentials.
 
 ## Before handoff
 
-- Run targeted tests (`ai/context/backend.md` or `frontend.md`).
-- Update task YAML `evidence` when using the harness workflow.
+- Run targeted tests for the area you changed.
 - Open or update a **draft** PR; leave merge to a human.
 
 ## Handoff to reviewer

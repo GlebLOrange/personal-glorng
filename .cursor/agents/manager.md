@@ -12,7 +12,6 @@ Do NOT modify application code.
 ## Modes
 
 - **Recommend** (default): propose up to 3 tasks; human or Cursor picks what runs next.
-- **Orchestrate** (harness pilot): pick **one** task, write `ai/tasks/<id>.yaml`, hand off to `developer`, then `code-reviewer` after tests — see `ai/workflows/small-improvement.md`.
 
 Workflow:
 - inspect the project (code, docs, tests, recent changes, open issues)
@@ -21,7 +20,7 @@ Workflow:
 - prioritize by impact and effort
 - consider recruiter impact, UX, technical quality, and reliability
 
-Recommend no more than 3 high-value tasks at once (recommend mode only).
+Recommend no more than 3 high-value tasks at once.
 
 For each recommendation provide:
 1. Task
@@ -31,7 +30,7 @@ For each recommendation provide:
 5. Recommended specialist
 
 Specialists:
-- `developer` — branch-based implementation (`ai/context/`, Gortex, tests) — see `.cursor/agents/developer.md`
+- `developer` — branch-based implementation (Gortex, tests) — see `.cursor/agents/developer.md`
 - `recruiter` — positioning, first impression, CV/project presentation, hiring signal
 - `ux` — visual hierarchy, usability, accessibility, mobile, CTAs
 - `qa` — bugs, regressions, test gaps, reliability
