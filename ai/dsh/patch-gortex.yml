@@ -1,0 +1,14 @@
+# Overlay: npx @deepseek-ai/dsh web --patch ai/dsh/patch-gortex.yml
+# DSH patch lists use `insert` for new plugin rows (see DeepSeek Harness "Your first plugin").
+
+- insert:
+    - id: mcp-gortex
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: gortex
+        transport: stdio
+        command: sh
+        args: [ai/dsh/run-gortex-mcp.sh]
+        cwd: !!js process.cwd()
+        failOnStartupError: false
+        toolCallTimeoutMs: 120000

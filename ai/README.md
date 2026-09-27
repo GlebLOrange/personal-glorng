@@ -51,6 +51,8 @@ ai/
 
 Do not vendor DSH inside `server/` or `client/`. Clone/run DSH as a sibling directory or pinned version elsewhere; point it at this repo root and load prompts from `ai/`.
 
+Boot instructions and Gortex MCP patch: [`dsh/README.md`](dsh/README.md).
+
 ## First experiment (template)
 
 See [`workflows/small-improvement.md`](workflows/small-improvement.md) and [`tasks/TASK-001.example.yaml`](tasks/TASK-001.example.yaml).

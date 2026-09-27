@@ -1,0 +1,26 @@
+id: TASK-001
+title: Dev-only API liveness badge
+goal: >
+  Add a small development-only UI indicator that polls the existing GET /api/health
+  endpoint so local devs see API reachability without changing the public API contract.
+public_api_change: false
+affected_area: client
+branch: cursor/dsh-harness-ai-5409
+specialist: developer
+acceptance:
+  - Badge renders only when import.meta.env.DEV is true.
+  - Uses existing GET /api/health; no new backend routes or response fields.
+  - Includes a unit test for response parsing logic.
+  - Client lint and targeted Vitest pass.
+  - Draft PR; no merge to main.
+constraints:
+  - No production credentials in logs or commits.
+  - Follow ai/context/agent-policy.md and .cursor/skills/agent-safety.
+evidence:
+  test_commands_run:
+    - cd client && npx eslint src/components/dev/DevApiStatusBadge.vue src/utils/parseHealthStatus.ts src/App.vue
+    - cd client && npx vitest run src/utils/parseHealthStatus.test.ts
+    - npx @deepseek-ai/dsh --profile web --patch ai/dsh/patch-gortex.yml --dump-config
+  report: ai/reports/PILOT-001.md
+  pr_url: https://github.com/GlebLOrange/personal-glorng/pull/605
+status: in_review

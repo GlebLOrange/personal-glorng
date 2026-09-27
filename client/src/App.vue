@@ -6,6 +6,7 @@ import FooterBar from "@/components/layout/FooterBar.vue";
 import ScrollControls from "@/components/layout/ScrollControls.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import ToastContainer from "@/components/ui/ToastContainer.vue";
+import DevApiStatusBadge from "@/components/dev/DevApiStatusBadge.vue";
 import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
@@ -38,5 +39,6 @@ async function retrySession(): Promise<void> {
     </main>
     <FooterBar />
     <ToastContainer variant="overlay" />
+    <DevApiStatusBadge v-if="import.meta.env.DEV" />
   </div>
 </template>
