@@ -1,4 +1,4 @@
-# Overlay: npx @deepseek-ai/dsh web --patch ai/dsh/patch-gortex.yml
+# Overlay: npx @deepseek-ai/dsh --profile web --patch ai/dsh/patch-gortex.yml
 # DSH patch lists use `insert` for new plugin rows (see DeepSeek Harness "Your first plugin").
 
 - insert:

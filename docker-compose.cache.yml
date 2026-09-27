@@ -1,12 +1,14 @@
 # Local BuildKit layer cache overlay (pair with DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1).
 # Cache dirs live under .docker-cache/ (gitignored). CI uses docker-compose.ci.yml (GHA cache).
+#
+# Only one service may cache_to a given dest at a time. migrate/server (and other
+# images that share the server Dockerfile) build in parallel on `make rebuild`;
+# concurrent writers race on rename under .docker-cache/server/ingest/.
 services:
   migrate:
     build:
       cache_from:
         - type=local,src=.docker-cache/server
-      cache_to:
-        - type=local,dest=.docker-cache/server,mode=max
   server:
     build:
       cache_from:
@@ -17,20 +19,14 @@ services:
     build:
       cache_from:
         - type=local,src=.docker-cache/server
-      cache_to:
-        - type=local,dest=.docker-cache/server,mode=max
   beat:
     build:
       cache_from:
         - type=local,src=.docker-cache/server
-      cache_to:
-        - type=local,dest=.docker-cache/server,mode=max
   todobot:
     build:
       cache_from:
         - type=local,src=.docker-cache/server
-      cache_to:
-        - type=local,dest=.docker-cache/server,mode=max
   client:
     build:
       cache_from:

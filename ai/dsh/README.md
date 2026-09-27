@@ -30,7 +30,7 @@ export PATH="$HOME/.nvm/versions/node/v24.18.0/bin:$PATH"   # adjust if needed
 export DSH_HOME="${DSH_HOME:-$HOME/.dsh}"
 export DEEPSEEK_API_KEY=...                                  # required for default model
 
-npx @deepseek-ai/dsh web --patch ai/dsh/patch-gortex.yml
+npx @deepseek-ai/dsh --profile web --patch ai/dsh/patch-gortex.yml --no-open
 ```
 
 Inspect the composed profile without starting the server:
