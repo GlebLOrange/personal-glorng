@@ -31,7 +31,7 @@ describe("useColorTheme", () => {
 
     applyColorTheme("light");
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
-    expect(meta.getAttribute("content")).toBe("#f6f8fa");
+    expect(meta.getAttribute("content")).toBe("#e5e7eb");
 
     applyColorTheme("dark");
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");

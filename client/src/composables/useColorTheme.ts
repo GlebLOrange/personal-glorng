@@ -11,7 +11,7 @@ export const COLOR_THEME_STORAGE_KEY = "glorng-color-theme";
 /** Unset / invalid localStorage → dark (FOUC script must match). */
 export const DEFAULT_COLOR_THEME_PREFERENCE: ColorThemePreference = "dark";
 
-const THEME_COLOR_LIGHT = "#f6f8fa";
+const THEME_COLOR_LIGHT = "#e5e7eb";
 const THEME_COLOR_DARK = "#0d1117";
 
 const preference: Ref<ColorThemePreference> = ref(readPreference());
