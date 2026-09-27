@@ -15,13 +15,13 @@ Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + Mongo
 
 ```bash
 cp .env.example .env
-make dev               # terminal 1: mongodb, redis, API, nginx + DSH on :3080
+make dev               # terminal 1: mongodb, redis, API, nginx
 make dev-lite-client   # terminal 2: Vite on :3000
 make db-init           # if migrate did not run on stack start
 make seed-db           # admin + mock data (set SEED_PASSWORD in .env)
 ```
 
-Open [http://localhost](http://localhost) or [http://localhost:3000](http://localhost:3000). API docs (dev): [http://localhost:8000/api/docs](http://localhost:8000/api/docs). DeepSeek Harness: [http://127.0.0.1:3080](http://127.0.0.1:3080) (set `DEEPSEEK_API_KEY` in `.env` for chat).
+Open [http://localhost](http://localhost) or [http://localhost:3000](http://localhost:3000). API docs (dev): [http://localhost:8000/api/docs](http://localhost:8000/api/docs).
 
 ## Screenshots
 
@@ -64,8 +64,7 @@ docs/      VitePress handbook
 
 | Command | Description |
 |---------|-------------|
-| `make` / `make dev` + `make dev-lite-client` | Default lite stack (API in Docker, Vite on host; DSH on :3080) |
-| `make dev-dsh` | DSH web UI in the foreground (logs); `make down` stops the background instance |
+| `make` / `make dev` + `make dev-lite-client` | Default lite stack (API in Docker, Vite on host) |
 | `make dev-docker` | Full stack in Docker including Vite client |
 | `make prod` | Production stack |
 | `make check` | Local lint + pytest (Docker) + client lint/test/build (CI also runs coverage, postgres, e2e, docs) |
