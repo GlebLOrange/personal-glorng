@@ -11,6 +11,8 @@ import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
 const { sessionError } = storeToRefs(auth);
+/** Template cannot parse import.meta — expose DEV for the badge gate. */
+const isDev = import.meta.env.DEV;
 
 async function retrySession(): Promise<void> {
   try {
@@ -39,6 +41,6 @@ async function retrySession(): Promise<void> {
     </main>
     <FooterBar />
     <ToastContainer variant="overlay" />
-    <DevApiStatusBadge v-if="import.meta.env.DEV" />
+    <DevApiStatusBadge v-if="isDev" />
   </div>
 </template>

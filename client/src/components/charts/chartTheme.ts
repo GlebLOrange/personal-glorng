@@ -2,18 +2,18 @@
 
 /** Dark-theme pale fallbacks (match main.css :root / data-theme=dark). */
 const CHART_COLOR_VARS = [
-  ["--color-accent-blue", "#8ec4e0"],
-  ["--color-status-success", "#7bc49a"],
-  ["--color-status-warning", "#d4ce94"],
-  ["--color-status-error", "#e88a8a"],
-  ["--color-status-critical", "#d98aad"],
-  ["--color-surface-mid", "#d1d5db"],
-  ["--color-surface-muted", "#a39d97"],
-  ["--color-surface-border", "#5b6b82"],
+  ["--color-accent-blue", "#e8b07a"],
+  ["--color-status-success", "#8dcea8"],
+  ["--color-status-warning", "#e4c98a"],
+  ["--color-status-error", "#f0a8a4"],
+  ["--color-status-critical", "#e7a0b4"],
+  ["--color-surface-mid", "#9198a1"],
+  ["--color-surface-muted", "#7d8590"],
+  ["--color-surface-border", "#30363d"],
 ] as const;
 
-const CHART_GRID_FALLBACK = "#2a3548";
-const CHART_TEXT_FALLBACK = "#d1d5db";
+const CHART_GRID_FALLBACK = "#21262d";
+const CHART_TEXT_FALLBACK = "#9198a1";
 const FONT_FAMILY = "IBM Plex Sans, Segoe UI, system-ui, sans-serif";
 
 function cssVar(name: string, fallback: string): string {
