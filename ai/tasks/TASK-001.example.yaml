@@ -17,6 +17,6 @@ constraints:
   - No production credentials in logs or commits.
   - Follow ai/context/agent-policy.md and .cursor/skills/agent-safety.
 evidence:
-  - test_commands_run: []
-  - pr_url: null
+  test_commands_run: []
+  pr_url: null
 status: proposed # proposed | in_progress | in_review | done | blocked

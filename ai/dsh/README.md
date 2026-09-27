@@ -6,12 +6,12 @@ DSH runs **outside** `server/` and `client/`. This folder holds profile patches 
 
 - Node.js 24+ (see root `.nvmrc`)
 - `DEEPSEEK_API_KEY` in the environment (never commit)
-- [`gortex`](https://github.com/) on `PATH`, daemon running when using `--proxy` (same as Cursor `.cursor/mcp.json`)
+- `gortex` on `PATH`, daemon running when using `--proxy` (same as Cursor `.cursor/mcp.json`)
 - Optional: copy [`../dsh.env.example`](../dsh.env.example) to a local env file outside git
 
 ## Gortex MCP (stdio)
 
-[`run-gortex-mcp.sh`](run-gortex-mcp.sh) starts Gortex with the repo indexed. Paths are resolved from the script location so they work on macOS and Linux.
+[`run-gortex-mcp.sh`](run-gortex-mcp.sh) starts `gortex mcp --proxy` against the already-running daemon. The daemon holds the repo index; the script does not pass `--index`.
 
 ## Boot web UI with Gortex tools
 

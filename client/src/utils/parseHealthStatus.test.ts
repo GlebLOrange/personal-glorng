@@ -11,8 +11,10 @@ describe("parseHealthStatusPayload", () => {
     expect(parseHealthStatusPayload({ status: "degraded" })).toBe("unexpected");
   });
 
-  it("returns unexpected for non-objects", () => {
+  it("returns unexpected for non-objects and missing status", () => {
     expect(parseHealthStatusPayload(null)).toBe("unexpected");
     expect(parseHealthStatusPayload("ok")).toBe("unexpected");
+    expect(parseHealthStatusPayload({})).toBe("unexpected");
+    expect(parseHealthStatusPayload({ status: 1 })).toBe("unexpected");
   });
 });

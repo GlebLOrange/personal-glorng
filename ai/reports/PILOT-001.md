@@ -34,7 +34,7 @@ npx vitest run src/utils/parseHealthStatus.test.ts  → 3 passed
 | Correctness | Meets acceptance: DEV gate, existing endpoint, tests for parser. |
 | Readability | Small, named types; badge copy is terse. |
 | Architecture | Matches axios `api` helper; dev component isolated under `components/dev/`. |
-| Security | No secrets; public health endpoint; badge not in production bundle path (DEV tree-shaken in prod build for the branch). |
+| Security | No secrets; public health endpoint; badge mounts only when `import.meta.env.DEV` (static import still ships the module in the prod graph; it does not poll unless mounted). |
 | Performance | 30s poll, single in-flight request; acceptable for dev chrome. |
 
 **Verdict:** **PASS** — ready for human review/merge.

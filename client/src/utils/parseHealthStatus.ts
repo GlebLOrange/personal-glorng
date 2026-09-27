@@ -1,12 +1,13 @@
-export type HealthUiStatus = "ok" | "unexpected" | "unreachable";
+export type HealthUiStatus = "ok" | "unexpected";
 
 export function parseHealthStatusPayload(data: unknown): HealthUiStatus {
-  if (data && typeof data === "object" && "status" in data) {
-    const status = (data as { status: unknown }).status;
-    if (status === "ok") {
-      return "ok";
-    }
-    return "unexpected";
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "status" in data &&
+    data.status === "ok"
+  ) {
+    return "ok";
   }
   return "unexpected";
 }
