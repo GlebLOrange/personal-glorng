@@ -50,18 +50,18 @@ html[data-theme="light"] {
   --palette-status-error: #b42318;
   --palette-status-critical: #9f1239;
   --palette-status-warning: #a16207;
-  --palette-surface-light: #1f2328;
-  --palette-surface-sage: #424a53;
-  --palette-surface-mid: #59636e;
-  --palette-surface-muted: #656d76;
-  --palette-surface-dark: #f6f8fa;
-  --palette-surface-card: #ffffff;
-  --palette-surface-border: #d0d7de;
-  --palette-surface-grid: #eaeef2;
+  --palette-surface-light: #111827;
+  --palette-surface-sage: #2e3640;
+  --palette-surface-mid: #3e4854;
+  --palette-surface-muted: #515b67;
+  --palette-surface-dark: #e5e7eb;
+  --palette-surface-card: #f7f8fa;
+  --palette-surface-border: #c3cad3;
+  --palette-surface-grid: #dde1e6;
   --palette-accent-violet: #b42318;
   --palette-accent-golden: #a16207;
   --palette-on-accent: #ffffff;
-  --palette-theme-color: #f6f8fa;
+  --palette-theme-color: #e5e7eb;
   --site-bg-scrim: linear-gradient(
     180deg,
     color-mix(in srgb, var(--palette-surface-dark) 94%, transparent) 0%,
@@ -361,8 +361,8 @@ html[data-theme="light"] {
 }
 
 html[data-theme="light"] .field-select-chevron {
-  /* light theme: surface-mid #59636e */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%2359636e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  /* light theme: surface-mid #3e4854 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%233e4854' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 @utility alert-surface-warning {
