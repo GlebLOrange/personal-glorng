@@ -103,24 +103,27 @@ class QrLibraryService:
     async def list_library(
         self,
         *,
-        actor_id: int,
-        is_superuser: bool = False,
+        created_by: int,
         page: int = 1,
         per_page: int = DEFAULT_PER_PAGE,
     ) -> QrCodeListResponse:
+        """List QR codes owned by ``created_by`` (url-shortener-style owner scope)."""
         offset, limit = paginate_params(page, per_page)
-        filters: dict[str, int] = {}
-        if not is_superuser:
-            filters["created_by"] = actor_id
         rows = await self._repo().list(
             offset=offset,
             limit=limit,
+            created_by=created_by,
             sort=[("created_at", -1)],
-            **filters,
         )
-        total = await self._repo().count(**filters)
+        total = await self._repo().count(created_by=created_by)
         items = [self._to_response(row) for row in rows]
-        return build_paginated(items, total=total, page=page, per_page=per_page)
+        safe_page = max(1, page)
+        return build_paginated(
+            items,
+            total=total,
+            page=safe_page,
+            per_page=limit,
+        )
 
     async def update_saved(
         self,

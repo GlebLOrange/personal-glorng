@@ -140,7 +140,7 @@ Client-side `VITE_AI_CHAT_ENABLED` hides the admin UI only; server flags and aut
 
 **Vid download:** Off by default on public deploys (`UNTRUSTED_URL_TOOLS_ENABLED=false` — routers not mounted). When enabled, the download endpoint is public with strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). yt-dlp runs server-side; URLs must be public http(s) (private/local targets rejected). The same flag gates file-share and outbound health-checker.
 
-**QR generator** ([`qr_generator.py`](../../server/app/routers/tools/qr_generator.py)): **Public A1/B1** — `POST /api/tools/qr-generator` returns inline `svg` only (not stored). **Admin library** — `GET/POST/PATCH /api/tools/qr-generator/library` and `GET …/library/{id}/svg` require `qr-generator:read` / `write`; SVG downloads are private (`Cache-Control: private`) and scoped to owner or superuser. Grant capabilities only to trusted admins.
+**QR generator** ([`qr_generator.py`](../../server/app/routers/tools/qr_generator.py)): **Public A1/B1** — `POST /api/tools/qr-generator` returns inline `svg` only (not stored). **Owner library** (url-shortener style) — `GET/POST/PATCH /api/tools/qr-generator/library` and `GET …/library/{id}/svg` require `qr-generator:read` / `write`; list is always scoped to the caller’s `created_by`; get/update/svg allow owner or superuser. SVG downloads use `Cache-Control: private`.
 
 ## Application log persistence
 

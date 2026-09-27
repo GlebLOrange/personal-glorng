@@ -156,7 +156,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     name: "qr generator",
     category: "utilities",
     categoryLabel: "utilities",
-    description: "generate qr codes; admins can save and update a library",
+    description: "generate qr codes; save and list your own library",
     apiPrefix: "/qr-generator",
     adminRoute: "/qr-generator",
     icon: "",

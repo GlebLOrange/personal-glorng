@@ -54,12 +54,7 @@ async def list_saved_qr_codes(
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> QrCodeListResponse:
     svc = QrLibraryService(registry)
-    return await svc.list_library(
-        actor_id=user.id,
-        is_superuser=user_has_permission(user, SUPERUSER_PERMISSION),
-        page=page,
-        per_page=per_page,
-    )
+    return await svc.list_library(created_by=user.id, page=page, per_page=per_page)
 
 
 @router.post(

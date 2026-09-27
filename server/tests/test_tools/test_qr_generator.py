@@ -94,3 +94,41 @@ async def test_qr_library_svg_forbidden_for_other_user(
         assert resp.status_code == 403
     finally:
         client.headers.pop("Authorization", None)
+
+
+@pytest.mark.asyncio
+async def test_qr_library_list_scoped_to_owner(
+    client: AsyncClient,
+    auth_client: AsyncClient,
+    registry,
+) -> None:
+    """List returns only the caller's codes (url-shortener owner scope)."""
+    from app.core.security import create_access_token
+    from tests.factories import create_user
+
+    mine = await auth_client.post(_LIBRARY, json={"content": "owner-payload", "label": "mine"})
+    assert mine.status_code == 201
+
+    other = await create_user(
+        registry,
+        email="other-qr@glorng.dev",
+        permissions=["qr-generator:read", "qr-generator:write"],
+    )
+    other_token = create_access_token(str(other.public_id), user_id=other.id)
+    other_create = await client.post(
+        _LIBRARY,
+        json={"content": "other-payload", "label": "theirs"},
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+    assert other_create.status_code == 201
+
+    listed = await client.get(
+        _LIBRARY,
+        params={"page": 1, "per_page": 20},
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+    assert listed.status_code == 200
+    items = listed.json()["items"]
+    assert len(items) == 1
+    assert items[0]["label"] == "theirs"
+    assert items[0]["content_preview"] == "other-payload"

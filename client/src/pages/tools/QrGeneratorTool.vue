@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { RouterLink, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 
+import AdminListFooter from "@/components/admin/AdminListFooter.vue";
+import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
@@ -29,7 +32,18 @@ const editingId = ref<number | null>(null);
 const { can } = usePermissions();
 const canReadLibrary = computed(() => can("qr-generator", "read"));
 const canWriteLibrary = computed(() => can("qr-generator", "write"));
-const { loadOne } = useQrLibrary();
+const {
+  loadOne,
+  loadList,
+  items,
+  page,
+  total,
+  totalPages,
+  loading: listLoading,
+  hasNextPage,
+  hasPreviousPage,
+  goToPage,
+} = useQrLibrary();
 
 const { loading: creating, run: runCreate } = useApiAction();
 const { loading: savingLibrary, run: runSaveLibrary } = useApiAction();
@@ -134,7 +148,22 @@ async function saveToLibrary(): Promise<void> {
   );
   if (result) {
     applyStored(result.data, result.data.svg);
+    page.value = 1;
+    await loadList();
   }
+}
+
+async function selectSaved(item: QrStoredItem): Promise<void> {
+  loadingSaved.value = true;
+  const full = await loadOne(item.id);
+  loadingSaved.value = false;
+  if (!full) return;
+  let svg: string | null = full.svg ?? null;
+  if (!svg) {
+    const svgResp = await api.get<string>(full.svg_url, { responseType: "text" });
+    svg = svgResp.data;
+  }
+  applyStored(full, svg);
 }
 
 function downloadSvg(): void {
@@ -154,6 +183,7 @@ const previewAlt = computed(
 
 onMounted(() => {
   void loadSavedFromQuery();
+  if (canReadLibrary.value) void loadList();
 });
 </script>
 
@@ -168,8 +198,7 @@ onMounted(() => {
     <p class="mb-4 text-sm text-surface-mid">
       Quick generate does not store anything on the server — download the SVG if you need it later.
       <span v-if="canWriteLibrary">
-        Save to the library for reuse; manage saved codes on
-        <RouterLink to="/settings" class="text-accent hover:underline">settings</RouterLink>.
+        Save to your library to reuse codes (your list only).
       </span>
     </p>
 
@@ -251,5 +280,54 @@ onMounted(() => {
         </button>
       </Card>
     </div>
+
+    <section v-if="canReadLibrary" class="mt-8 min-w-0">
+      <h2 class="mb-3 text-sm font-medium text-surface-mid">your saved qr codes</h2>
+      <AdminListSkeleton v-if="listLoading && items.length === 0" />
+      <EmptyState
+        v-else-if="!listLoading && items.length === 0"
+        message="No saved QR codes yet. Generate one and save it."
+      />
+      <ul v-else class="divide-y divide-surface-border rounded-md border border-surface-border">
+        <li v-for="item in items" :key="item.id">
+          <button
+            type="button"
+            class="flex w-full min-w-0 items-center gap-3 px-3 py-3 text-left hover:bg-surface-raised/60"
+            @click="selectSaved(item)"
+          >
+            <img
+              :src="item.svg_url"
+              alt=""
+              class="size-12 shrink-0 rounded bg-white p-1"
+              loading="lazy"
+            />
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-sm text-surface-high">
+                {{ item.label || item.content_preview }}
+              </span>
+              <span v-if="item.label" class="block truncate text-xs text-surface-mid">
+                {{ item.content_preview }}
+              </span>
+            </span>
+            <span class="shrink-0 text-xs text-surface-mid">{{ item.error_level }}</span>
+          </button>
+        </li>
+      </ul>
+      <AdminListFooter
+        v-if="items.length > 0"
+        :total="total"
+        :page="page"
+        :total-pages="totalPages"
+        :has-next-page="hasNextPage"
+        :has-previous-page="hasPreviousPage"
+        :loading="listLoading"
+        item-label="QR codes"
+        aria-label="your QR codes pagination"
+        @first="goToPage(1)"
+        @prev="goToPage(page - 1)"
+        @next="goToPage(page + 1)"
+        @last="goToPage(totalPages)"
+      />
+    </section>
   </PageShell>
 </template>
