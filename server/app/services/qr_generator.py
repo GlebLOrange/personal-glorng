@@ -208,4 +208,8 @@ def render_qr_svg(content: str, error_level: QrErrorLevel) -> str:
             422,
             "Content is too long for the selected error correction level",
         ) from exc
-    return qr.svg_inline(scale=SvgScale, border=2)
+    svg = qr.svg_inline(scale=SvgScale, border=2)
+    # segno omits xmlns; required for standalone img/data: and downloaded .svg files
+    if "xmlns=" not in svg:
+        svg = svg.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"', 1)
+    return svg

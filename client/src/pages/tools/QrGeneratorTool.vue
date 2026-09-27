@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 
 import QrLibraryListItem from "@/components/admin/QrLibraryListItem.vue";
@@ -22,7 +22,6 @@ const content = ref("");
 const label = ref("");
 const errorLevel = ref<QrErrorLevel>("M");
 const generated = ref<QrGenerateResponse | null>(null);
-const previewUrl = ref("");
 const editingId = ref<number | null>(null);
 const deletingId = ref<number | null>(null);
 
@@ -85,28 +84,6 @@ function clearEditSession(): void {
   generated.value = null;
 }
 
-function setPreviewFromSvg(svg: string): void {
-  if (previewUrl.value) {
-    URL.revokeObjectURL(previewUrl.value);
-  }
-  previewUrl.value = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
-}
-
-watch(
-  () => generated.value?.svg,
-  (svg) => {
-    if (svg) setPreviewFromSvg(svg);
-    else if (previewUrl.value) {
-      URL.revokeObjectURL(previewUrl.value);
-      previewUrl.value = "";
-    }
-  },
-);
-
-onBeforeUnmount(() => {
-  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
-});
-
 async function openSaved(id: number): Promise<void> {
   if (!canReadLibrary.value) return;
   const item = await loadOne(id);
@@ -166,13 +143,17 @@ async function deleteSaved(id: number): Promise<void> {
   await loadList();
 }
 
+/** data: URL — CSP img-src allows data:, not blob:. */
+const previewUrl = computed(() => {
+  const svg = generated.value?.svg;
+  if (!svg) return "";
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+});
+
 function downloadSvg(): void {
-  if (!previewUrl.value && !generated.value?.svg) return;
-  const href =
-    previewUrl.value ||
-    URL.createObjectURL(new Blob([generated.value!.svg], { type: "image/svg+xml" }));
+  if (!previewUrl.value) return;
   const anchor = document.createElement("a");
-  anchor.href = href;
+  anchor.href = previewUrl.value;
   anchor.download = "qr-code.svg";
   anchor.click();
 }
@@ -271,14 +252,14 @@ onMounted(() => {
         <p v-else class="text-center text-sm text-surface-mid">
           Generate a code to preview it here.
         </p>
-        <button
-          v-if="generated?.svg"
+        <BaseButton
+          v-if="previewUrl"
+          variant="ghost"
           type="button"
-          class="min-h-11 text-sm text-accent hover:underline"
           @click="downloadSvg"
         >
           download svg
-        </button>
+        </BaseButton>
       </Card>
     </div>
 

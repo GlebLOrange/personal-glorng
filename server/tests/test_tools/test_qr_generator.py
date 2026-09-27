@@ -18,6 +18,7 @@ async def test_qr_generator_returns_inline_svg(client: AsyncClient) -> None:
     assert data["content_preview"] == "https://example.com"
     assert data["error_level"] == "M"
     assert data["svg"].startswith("<svg")
+    assert 'xmlns="http://www.w3.org/2000/svg"' in data["svg"]
     assert "example.com" not in data["svg"]
 
 
