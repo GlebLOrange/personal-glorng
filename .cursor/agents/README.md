@@ -7,7 +7,8 @@ Custom agent definitions for this repository live in `.cursor/agents/`.
 | Persona | File | Use when |
 |---------|------|----------|
 | Code reviewer | [`code-reviewer.mdc`](code-reviewer.mdc) | Thorough five-axis review before merge |
-| Manager | [`manager.md`](manager.md) | Prioritize next portfolio work and coordinate specialists |
+| Manager | [`manager.md`](manager.md) | Prioritize next portfolio work; optional orchestration via `ai/workflows/` |
+| Developer | [`developer.md`](developer.md) | Implement a scoped task on a `cursor/*` branch |
 | QA | [`qa.md`](qa.md) | Inspect/test for bugs and regressions (readonly; links, nav, forms, console/API, responsive, tests) |
 | Recruiter | [`recruiter.md`](recruiter.md) | Screen the site for Python/backend hiring signal |
 | UX | [`ux.md`](ux.md) | Audit UI, usability, and accessibility (do not change app code) |
