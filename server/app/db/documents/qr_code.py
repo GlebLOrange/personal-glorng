@@ -1,4 +1,4 @@
-"""QR code records saved by admins (public tool stays ephemeral)."""
+"""QR code records saved to the owner library (public generate stays ephemeral)."""
 
 from typing import Literal
 

@@ -1,19 +1,32 @@
-"""Schemas for QR generator (public ephemeral + admin library)."""
+"""Schemas for QR generator (public ephemeral + owner library)."""
 
 from datetime import datetime
-from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.db.documents.qr_code import QrErrorLevel
 from app.schemas.common import PaginatedResponse
 from app.schemas.validators import validate_clean_optional
 
-QrErrorLevel = Literal["L", "M", "Q", "H"]
 _CONTENT_PREVIEW_LEN = 80
 
 
+def _strip_required_content(value: str) -> str:
+    trimmed = value.strip()
+    if not trimmed:
+        msg = "content must not be empty"
+        raise ValueError(msg)
+    return trimmed
+
+
+def _strip_optional_content(value: str | None) -> str | None:
+    if value is None:
+        return None
+    return _strip_required_content(value)
+
+
 class QrCodeCreate(BaseModel):
-    """Request body for generating a QR code."""
+    """Request body for generating or saving a QR code."""
 
     content: str = Field(..., min_length=1, max_length=2000)
     label: str | None = Field(None, max_length=120)
@@ -22,11 +35,7 @@ class QrCodeCreate(BaseModel):
     @field_validator("content")
     @classmethod
     def strip_content(cls, value: str) -> str:
-        trimmed = value.strip()
-        if not trimmed:
-            msg = "content must not be empty"
-            raise ValueError(msg)
-        return trimmed
+        return _strip_required_content(value)
 
     @field_validator("label")
     @classmethod
@@ -64,13 +73,7 @@ class QrCodeUpdate(BaseModel):
     @field_validator("content")
     @classmethod
     def strip_content(cls, value: str | None) -> str | None:
-        if value is None:
-            return None
-        trimmed = value.strip()
-        if not trimmed:
-            msg = "content must not be empty"
-            raise ValueError(msg)
-        return trimmed
+        return _strip_optional_content(value)
 
     @field_validator("label")
     @classmethod
@@ -78,8 +81,22 @@ class QrCodeUpdate(BaseModel):
         return validate_clean_optional(value, max_length=120)
 
 
+class QrCodeListItem(BaseModel):
+    """Owner list row — preview only (no full payload)."""
+
+    id: int
+    content_preview: str
+    label: str | None
+    error_level: QrErrorLevel
+    svg_url: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class QrCodeStoredResponse(BaseModel):
-    """Saved QR metadata (SVG via ``svg_url`` or inline on write)."""
+    """Full saved QR (GET/create/update); SVG inline when rendered."""
 
     id: int
     content: str
@@ -94,12 +111,12 @@ class QrCodeStoredResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class QrCodeListResponse(PaginatedResponse[QrCodeStoredResponse]):
-    """Paginated admin library."""
+class QrCodeListResponse(PaginatedResponse[QrCodeListItem]):
+    """Paginated owner library (preview-only rows)."""
 
 
 def content_preview(content: str) -> str:
-    """Truncate payload for client display (full payload is only in the QR matrix)."""
+    """Truncate payload for list/display responses."""
     if len(content) <= _CONTENT_PREVIEW_LEN:
         return content
     return f"{content[: _CONTENT_PREVIEW_LEN - 1]}…"

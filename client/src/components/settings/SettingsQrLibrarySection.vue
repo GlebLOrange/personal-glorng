@@ -6,7 +6,8 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQrLibrary, type QrStoredItem } from "@/composables/useQrLibrary";
+import { useQrLibrary } from "@/composables/useQrLibrary";
+import type { QrListItem } from "@/types";
 
 const {
   canReadLibrary,
@@ -21,7 +22,7 @@ const {
   goToPage,
 } = useQrLibrary();
 
-function tileTitle(item: QrStoredItem): string {
+function tileTitle(item: QrListItem): string {
   return item.label?.trim() || item.content_preview;
 }
 

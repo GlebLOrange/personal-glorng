@@ -1,4 +1,4 @@
-"""Public QR generator (ephemeral) + admin library (persisted SVGs)."""
+"""Public QR generator (ephemeral) + owner library (persisted payloads)."""
 
 from typing import Annotated
 
@@ -54,7 +54,7 @@ async def list_saved_qr_codes(
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> QrCodeListResponse:
     svc = QrLibraryService(registry)
-    return await svc.list_library(created_by=user.id, page=page, per_page=per_page)
+    return await svc.list_by_owner(created_by=user.id, page=page, per_page=per_page)
 
 
 @router.post(
@@ -116,6 +116,26 @@ async def update_saved_qr_code(
     )
 
 
+@router.delete(
+    "/library/{qr_id}",
+    status_code=204,
+    summary="Delete saved QR code",
+    description=requires_capability("qr-generator", "write"),
+    dependencies=[Depends(require_capability("qr-generator", "write"))],
+)
+async def delete_saved_qr_code(
+    qr_id: Annotated[int, Path(ge=1)],
+    registry: DbRegistry,
+    user: AuthorizedUser,
+) -> None:
+    svc = QrLibraryService(registry)
+    await svc.delete_saved(
+        qr_id,
+        actor_id=user.id,
+        is_superuser=user_has_permission(user, SUPERUSER_PERMISSION),
+    )
+
+
 @router.get(
     "/library/{qr_id}/svg",
     summary="Download saved QR SVG",
@@ -137,5 +157,9 @@ async def get_saved_qr_svg(
     return Response(
         content=svg,
         media_type="image/svg+xml",
-        headers={"Cache-Control": "private, max-age=300"},
+        headers={
+            "Cache-Control": "private, max-age=300",
+            "Content-Disposition": f'inline; filename="qr-{qr_id}.svg"',
+            "X-Content-Type-Options": "nosniff",
+        },
     )

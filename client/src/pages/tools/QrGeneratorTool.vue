@@ -2,24 +2,20 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
+import QrLibraryListItem from "@/components/admin/QrLibraryListItem.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
+import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
-import { usePermissions } from "@/composables/usePermissions";
-import { useQrLibrary, type QrErrorLevel, type QrStoredItem } from "@/composables/useQrLibrary";
-
-interface QrGenerateResponse {
-  content_preview: string;
-  label: string | null;
-  error_level: QrErrorLevel;
-  svg: string;
-}
+import { useQrLibrary } from "@/composables/useQrLibrary";
+import type { QrErrorLevel, QrGenerateResponse, QrListItem, QrStoredItem } from "@/types";
 
 const route = useRoute();
 const content = ref("");
@@ -28,18 +24,21 @@ const errorLevel = ref<QrErrorLevel>("M");
 const generated = ref<QrGenerateResponse | null>(null);
 const previewUrl = ref("");
 const editingId = ref<number | null>(null);
+const deletingId = ref<number | null>(null);
 
-const { can } = usePermissions();
-const canReadLibrary = computed(() => can("qr-generator", "read"));
-const canWriteLibrary = computed(() => can("qr-generator", "write"));
 const {
+  canReadLibrary,
+  canWriteLibrary,
   loadOne,
   loadList,
+  remove,
   items,
   page,
   total,
   totalPages,
   loading: listLoading,
+  detailLoading,
+  deleting,
   hasNextPage,
   hasPreviousPage,
   goToPage,
@@ -47,18 +46,14 @@ const {
 
 const { loading: creating, run: runCreate } = useApiAction();
 const { loading: savingLibrary, run: runSaveLibrary } = useApiAction();
-const loadingSaved = ref(false);
 
 const canCreate = computed(() => Boolean(content.value.trim()) && !creating.value);
 const canSaveLibrary = computed(
   () => canWriteLibrary.value && Boolean(content.value.trim()) && !savingLibrary.value,
 );
+const isEditing = computed(() => editingId.value != null);
 
-function payloadBody(): {
-  content: string;
-  label: string | null;
-  error_level: QrErrorLevel;
-} {
+function payloadBody() {
   return {
     content: content.value.trim(),
     label: label.value.trim() || null,
@@ -71,14 +66,23 @@ function applyStored(item: QrStoredItem, svg?: string | null): void {
   content.value = item.content;
   label.value = item.label ?? "";
   errorLevel.value = item.error_level;
-  if (svg) {
+  const resolvedSvg = svg ?? item.svg ?? null;
+  if (resolvedSvg) {
     generated.value = {
       content_preview: item.content_preview,
       label: item.label,
       error_level: item.error_level,
-      svg,
+      svg: resolvedSvg,
     };
   }
+}
+
+function clearEditSession(): void {
+  editingId.value = null;
+  content.value = "";
+  label.value = "";
+  errorLevel.value = "M";
+  generated.value = null;
 }
 
 function setPreviewFromSvg(svg: string): void {
@@ -103,22 +107,18 @@ onBeforeUnmount(() => {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
 });
 
+async function openSaved(id: number): Promise<void> {
+  if (!canReadLibrary.value) return;
+  const item = await loadOne(id);
+  if (!item) return;
+  applyStored(item);
+}
+
 async function loadSavedFromQuery(): Promise<void> {
   const raw = route.query.saved;
   const id = typeof raw === "string" ? Number.parseInt(raw, 10) : Number.NaN;
-  if (!Number.isFinite(id) || id < 1 || !canReadLibrary.value) return;
-
-  loadingSaved.value = true;
-  const item = await loadOne(id);
-  loadingSaved.value = false;
-  if (!item) return;
-
-  let svg: string | null = item.svg ?? null;
-  if (!svg) {
-    const svgResp = await api.get<string>(item.svg_url, { responseType: "text" });
-    svg = svgResp.data;
-  }
-  applyStored(item, svg);
+  if (!Number.isFinite(id) || id < 1) return;
+  await openSaved(id);
 }
 
 async function createQr(): Promise<void> {
@@ -153,28 +153,28 @@ async function saveToLibrary(): Promise<void> {
   }
 }
 
-async function selectSaved(item: QrStoredItem): Promise<void> {
-  loadingSaved.value = true;
-  const full = await loadOne(item.id);
-  loadingSaved.value = false;
-  if (!full) return;
-  let svg: string | null = full.svg ?? null;
-  if (!svg) {
-    const svgResp = await api.get<string>(full.svg_url, { responseType: "text" });
-    svg = svgResp.data;
-  }
-  applyStored(full, svg);
+async function selectSaved(item: QrListItem): Promise<void> {
+  await openSaved(item.id);
+}
+
+async function deleteSaved(id: number): Promise<void> {
+  deletingId.value = id;
+  const ok = await remove(id);
+  deletingId.value = null;
+  if (!ok) return;
+  if (editingId.value === id) clearEditSession();
+  await loadList();
 }
 
 function downloadSvg(): void {
-  const svg = generated.value?.svg;
-  if (!svg) return;
-  const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+  if (!previewUrl.value && !generated.value?.svg) return;
+  const href =
+    previewUrl.value ||
+    URL.createObjectURL(new Blob([generated.value!.svg], { type: "image/svg+xml" }));
   const anchor = document.createElement("a");
-  anchor.href = url;
+  anchor.href = href;
   anchor.download = "qr-code.svg";
   anchor.click();
-  URL.revokeObjectURL(url);
 }
 
 const previewAlt = computed(
@@ -205,16 +205,13 @@ onMounted(() => {
     <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,280px)]">
       <Card variant="ghost" class="min-w-0">
         <form class="space-y-3" @submit.prevent="createQr">
-          <label class="block text-sm text-surface-mid">
-            payload
-            <textarea
-              v-model="content"
-              rows="4"
-              maxlength="2000"
-              placeholder="URL, text, Wi‑Fi string, etc."
-              class="mt-1 w-full resize-y rounded-md border border-surface-border bg-surface-base px-3 py-2 text-sm text-surface-high focus:border-accent focus:outline-none"
-            />
-          </label>
+          <BaseTextarea
+            v-model="content"
+            label="payload"
+            :rows="4"
+            maxlength="2000"
+            placeholder="URL, text, Wi‑Fi string, etc."
+          />
           <div class="flex flex-wrap gap-3">
             <BaseInput
               v-model="label"
@@ -223,18 +220,12 @@ onMounted(() => {
               class="min-w-0 flex-1"
               maxlength="120"
             />
-            <label class="block text-sm text-surface-mid">
-              error correction
-              <select
-                v-model="errorLevel"
-                class="mt-1 block w-full rounded-md border border-surface-border bg-surface-base px-3 py-2 text-sm"
-              >
-                <option value="L">L (~7%)</option>
-                <option value="M">M (~15%)</option>
-                <option value="Q">Q (~25%)</option>
-                <option value="H">H (~30%)</option>
-              </select>
-            </label>
+            <BaseSelect v-model="errorLevel" label="error correction" class="min-w-[10rem]">
+              <option value="L">L (~7%)</option>
+              <option value="M">M (~15%)</option>
+              <option value="Q">Q (~25%)</option>
+              <option value="H">H (~30%)</option>
+            </BaseSelect>
           </div>
           <div class="flex flex-wrap gap-2">
             <BaseButton variant="primary" type="submit" :disabled="!canCreate">
@@ -250,13 +241,21 @@ onMounted(() => {
               {{
                 savingLibrary
                   ? "saving…"
-                  : editingId
+                  : isEditing
                     ? "update saved qr"
                     : "save to library"
               }}
             </BaseButton>
+            <BaseButton
+              v-if="isEditing"
+              variant="cancel"
+              type="button"
+              @click="clearEditSession"
+            >
+              new / discard
+            </BaseButton>
           </div>
-          <p v-if="loadingSaved" class="text-xs text-surface-mid">Loading saved code…</p>
+          <p v-if="detailLoading" class="text-xs text-surface-mid">Loading saved code…</p>
         </form>
       </Card>
 
@@ -265,6 +264,8 @@ onMounted(() => {
           v-if="previewUrl"
           :src="previewUrl"
           :alt="previewAlt"
+          width="256"
+          height="256"
           class="max-h-64 max-w-full rounded-md bg-white p-2"
         />
         <p v-else class="text-center text-sm text-surface-mid">
@@ -273,7 +274,7 @@ onMounted(() => {
         <button
           v-if="generated?.svg"
           type="button"
-          class="text-sm text-accent hover:underline"
+          class="min-h-11 text-sm text-accent hover:underline"
           @click="downloadSvg"
         >
           download svg
@@ -287,31 +288,17 @@ onMounted(() => {
       <EmptyState v-else-if="!listLoading && items.length === 0">
         no saved QR codes yet. generate one and save it.
       </EmptyState>
-      <ul v-else class="divide-y divide-surface-border rounded-md border border-surface-border">
-        <li v-for="item in items" :key="item.id">
-          <button
-            type="button"
-            class="flex w-full min-w-0 items-center gap-3 px-3 py-3 text-left hover:bg-surface-raised/60"
-            @click="selectSaved(item)"
-          >
-            <img
-              :src="item.svg_url"
-              alt=""
-              class="size-12 shrink-0 rounded bg-white p-1"
-              loading="lazy"
-            />
-            <span class="min-w-0 flex-1">
-              <span class="block truncate text-sm text-surface-high">
-                {{ item.label || item.content_preview }}
-              </span>
-              <span v-if="item.label" class="block truncate text-xs text-surface-mid">
-                {{ item.content_preview }}
-              </span>
-            </span>
-            <span class="shrink-0 text-xs text-surface-mid">{{ item.error_level }}</span>
-          </button>
-        </li>
-      </ul>
+      <div v-else class="min-w-0">
+        <QrLibraryListItem
+          v-for="item in items"
+          :key="item.id"
+          :item="item"
+          :can-write="canWriteLibrary"
+          :deleting="deleting && deletingId === item.id"
+          @select="selectSaved(item)"
+          @delete="deleteSaved(item.id)"
+        />
+      </div>
       <AdminListFooter
         v-if="items.length > 0"
         :total="total"

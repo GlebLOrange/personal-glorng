@@ -1,7 +1,10 @@
-"""Tests for QR generator (public ephemeral + admin library)."""
+"""Tests for QR generator (public ephemeral + owner library)."""
 
 import pytest
 from httpx import AsyncClient
+
+from app.core.security import create_access_token
+from tests.factories import create_user
 
 _BASE = "/api/tools/qr-generator"
 _LIBRARY = f"{_BASE}/library"
@@ -38,15 +41,21 @@ async def test_qr_library_create_update_and_svg(auth_client: AsyncClient) -> Non
     qr_id = body["id"]
     assert body["svg"].startswith("<svg")
     assert body["svg_url"].endswith("/svg")
+    assert body["content"] == "https://saved.example"
 
     listed = await auth_client.get(_LIBRARY, params={"page": 1, "per_page": 20})
     assert listed.status_code == 200
-    ids = [item["id"] for item in listed.json()["items"]]
+    items = listed.json()["items"]
+    ids = [item["id"] for item in items]
     assert qr_id in ids
+    listed_item = next(item for item in items if item["id"] == qr_id)
+    assert "content" not in listed_item
+    assert listed_item["content_preview"] == "https://saved.example"
 
     svg_resp = await auth_client.get(body["svg_url"])
     assert svg_resp.status_code == 200
     assert svg_resp.headers["content-type"].startswith("image/svg+xml")
+    assert "qr-" in svg_resp.headers.get("content-disposition", "")
 
     updated = await auth_client.patch(
         f"{_LIBRARY}/{qr_id}",
@@ -59,41 +68,65 @@ async def test_qr_library_create_update_and_svg(auth_client: AsyncClient) -> Non
 
 
 @pytest.mark.asyncio
-async def test_qr_library_get_saved(auth_client: AsyncClient) -> None:
+async def test_qr_library_get_saved_includes_svg(auth_client: AsyncClient) -> None:
     create = await auth_client.post(_LIBRARY, json={"content": "get-one"})
     assert create.status_code == 201
     qr_id = create.json()["id"]
     got = await auth_client.get(f"{_LIBRARY}/{qr_id}")
     assert got.status_code == 200
     assert got.json()["content"] == "get-one"
+    assert got.json()["svg"].startswith("<svg")
 
 
 @pytest.mark.asyncio
-async def test_qr_library_svg_forbidden_for_other_user(
+async def test_qr_library_empty_patch_rejected(auth_client: AsyncClient) -> None:
+    create = await auth_client.post(_LIBRARY, json={"content": "patch-me"})
+    assert create.status_code == 201
+    qr_id = create.json()["id"]
+    resp = await auth_client.patch(f"{_LIBRARY}/{qr_id}", json={})
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_qr_library_delete(auth_client: AsyncClient) -> None:
+    create = await auth_client.post(_LIBRARY, json={"content": "to-delete"})
+    assert create.status_code == 201
+    qr_id = create.json()["id"]
+    deleted = await auth_client.delete(f"{_LIBRARY}/{qr_id}")
+    assert deleted.status_code == 204
+    missing = await auth_client.get(f"{_LIBRARY}/{qr_id}")
+    assert missing.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_qr_library_forbidden_for_other_user(
     client: AsyncClient,
     auth_client: AsyncClient,
     registry,
 ) -> None:
-    from tests.factories import create_user
-
     create = await auth_client.post(_LIBRARY, json={"content": "secret-payload"})
     assert create.status_code == 201
+    qr_id = create.json()["id"]
     svg_url = create.json()["svg_url"]
 
     other = await create_user(
         registry,
         email="other@glorng.dev",
-        permissions=["qr-generator:read"],
+        permissions=["qr-generator:read", "qr-generator:write"],
     )
-    from app.core.security import create_access_token
-
     token = create_access_token(str(other.public_id), user_id=other.id)
-    client.headers["Authorization"] = f"Bearer {token}"
-    try:
-        resp = await client.get(svg_url)
-        assert resp.status_code == 403
-    finally:
-        client.headers.pop("Authorization", None)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    assert (await client.get(svg_url, headers=headers)).status_code == 403
+    assert (await client.get(f"{_LIBRARY}/{qr_id}", headers=headers)).status_code == 403
+    assert (
+        await client.patch(
+            f"{_LIBRARY}/{qr_id}",
+            json={"label": "hijack"},
+            headers=headers,
+        )
+    ).status_code == 403
+    assert (await client.delete(f"{_LIBRARY}/{qr_id}", headers=headers)).status_code == 403
 
 
 @pytest.mark.asyncio
@@ -103,9 +136,6 @@ async def test_qr_library_list_scoped_to_owner(
     registry,
 ) -> None:
     """List returns only the caller's codes (url-shortener owner scope)."""
-    from app.core.security import create_access_token
-    from tests.factories import create_user
-
     mine = await auth_client.post(_LIBRARY, json={"content": "owner-payload", "label": "mine"})
     assert mine.status_code == 201
 
@@ -132,3 +162,4 @@ async def test_qr_library_list_scoped_to_owner(
     assert len(items) == 1
     assert items[0]["label"] == "theirs"
     assert items[0]["content_preview"] == "other-payload"
+    assert "content" not in items[0]

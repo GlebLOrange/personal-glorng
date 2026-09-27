@@ -140,7 +140,7 @@ Client-side `VITE_AI_CHAT_ENABLED` hides the admin UI only; server flags and aut
 
 **Vid download:** Off by default on public deploys (`UNTRUSTED_URL_TOOLS_ENABLED=false` — routers not mounted). When enabled, the download endpoint is public with strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). yt-dlp runs server-side; URLs must be public http(s) (private/local targets rejected). The same flag gates file-share and outbound health-checker.
 
-**QR generator** ([`qr_generator.py`](../../server/app/routers/tools/qr_generator.py)): **Public A1/B1** — `POST /api/tools/qr-generator` returns inline `svg` only (not stored). **Owner library** (url-shortener style) — `GET/POST/PATCH /api/tools/qr-generator/library` and `GET …/library/{id}/svg` require `qr-generator:read` / `write`; list is always scoped to the caller’s `created_by`; get/update/svg allow owner or superuser. SVG downloads use `Cache-Control: private`.
+**QR generator** ([`qr_generator.py`](../../server/app/routers/tools/qr_generator.py)): **Public A1/B1** — `POST /api/tools/qr-generator` returns inline `svg` only (not stored). **Owner library** (url-shortener style) — `GET/POST/PATCH/DELETE /api/tools/qr-generator/library` and `GET …/library/{id}/svg` require `qr-generator:read` / `write`; list is always scoped to the caller’s `created_by` and returns **preview only** (full `content` on GET-by-id); get/update/delete/svg allow owner or superuser. SVG downloads use `Cache-Control: private`. Account deletion purges owned `qr_codes`.
 
 ## Application log persistence
 
@@ -180,7 +180,7 @@ Decisions for known risks. **Accept** = intentional tradeoff; **Mitigated** = co
 | Low | Dev-lite API on all interfaces | **Accept** | Local development only; use firewall or bind to localhost |
 | Low | No in-repo TLS | **Accept** | HTTPS expected at external reverse proxy |
 | By design | Superuser AI chat | **Mitigated** | Requires `platform:superuser`; plain LLM only |
-| Medium | QR generator payload disclosure | **Mitigated** | A1/B1 (2026-09-27) — POST-only inline SVG, nothing stored server-side |
+| Medium | QR generator payload disclosure | **Mitigated** | Public POST is ephemeral (inline SVG only). Library stores payloads for capability holders; list is owner-scoped preview-only; SVG/get/update/delete require owner or superuser; account delete purges `qr_codes` |
 
 ## Testing
 
