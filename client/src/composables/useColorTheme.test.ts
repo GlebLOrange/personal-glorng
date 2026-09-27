@@ -26,16 +26,16 @@ describe("useColorTheme", () => {
   it("applyColorTheme sets data-theme and theme-color meta", () => {
     const meta = document.createElement("meta");
     meta.setAttribute("name", "theme-color");
-    meta.setAttribute("content", "#0f172a");
+    meta.setAttribute("content", "#0d1117");
     document.head.appendChild(meta);
 
     applyColorTheme("light");
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
-    expect(meta.getAttribute("content")).toBe("#e8edf3");
+    expect(meta.getAttribute("content")).toBe("#f6f8fa");
 
     applyColorTheme("dark");
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
-    expect(meta.getAttribute("content")).toBe("#0f172a");
+    expect(meta.getAttribute("content")).toBe("#0d1117");
 
     meta.remove();
   });
