@@ -10,10 +10,9 @@ export type BreadcrumbSegment = { label: string; to?: RouteLocationRaw };
 const props = withDefaults(
   defineProps<{
     title: string;
-    titlePrefix?: string;
     breadcrumbs: BreadcrumbSegment[];
     backTo?: RouteLocationRaw;
-    maxWidth?: "sm" | "md" | "xl" | "5xl";
+    maxWidth?: "sm" | "md" | "5xl";
     narrow?: boolean;
     paddingY?: string;
     as?: "main" | "div";
@@ -22,7 +21,6 @@ const props = withDefaults(
     omitHeading?: boolean;
   }>(),
   {
-    titlePrefix: "",
     narrow: true,
     maxWidth: "5xl",
     paddingY: "pb-8 md:pb-10",
@@ -33,7 +31,6 @@ const props = withDefaults(
 );
 
 const shellClass = computed(() => {
-  // "xl" and "5xl" both map to max-w-5xl (content column); modal/drawer sizes are separate
   const widthClass =
     props.maxWidth === "sm" ? "max-w-sm" : props.maxWidth === "md" ? "max-w-3xl" : "max-w-5xl";
   return ["page-shell", widthClass, props.paddingY].filter(Boolean);
@@ -50,7 +47,6 @@ const bodyClass = computed(() => [
   <component :is="as" :class="shellClass">
     <PageChrome
       :title="title"
-      :title-prefix="titlePrefix"
       :breadcrumbs="breadcrumbs"
       :back-to="backTo"
       :omit-heading="omitHeading"

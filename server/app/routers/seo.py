@@ -5,7 +5,6 @@ from html import escape
 from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse, Response
 
-from app.core.feature_flags import is_expenses_enabled
 from app.db.deps import DbRegistry
 from app.settings import get_settings
 
@@ -16,22 +15,18 @@ _PUBLIC_PATHS: tuple[tuple[str, str], ...] = (
     ("/news", "daily"),
     ("/tools", "weekly"),
     ("/calculator", "monthly"),
-    ("/expense-calculator", "monthly"),
     ("/password-generator", "monthly"),
     ("/qr-generator", "monthly"),
     ("/recipes", "weekly"),
     ("/shortener", "monthly"),
-    ("/vid-download", "monthly"),
     ("/weather", "daily"),
     ("/privacy", "monthly"),
 )
 
 
 def _public_paths() -> tuple[tuple[str, str], ...]:
-    """Static sitemap paths, omitting expenses surfaces when the flag is off."""
-    if is_expenses_enabled():
-        return _PUBLIC_PATHS
-    return tuple(item for item in _PUBLIC_PATHS if item[0] != "/expense-calculator")
+    """Static sitemap paths."""
+    return _PUBLIC_PATHS
 
 
 @router.get(

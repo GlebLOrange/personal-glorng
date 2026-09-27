@@ -118,7 +118,7 @@ onMounted(loadUrls);
     title="url shortener"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'url shortener' }]"
     back-to="/tools"
-    max-width="xl"
+    max-width="5xl"
     :narrow="false"
   >
     <form
@@ -181,5 +181,19 @@ onMounted(loadUrls);
         />
       </template>
     </div>
+    <EmptyState
+      v-else
+      title="sign in to manage"
+      description="view, edit, and delete your short urls after signing in."
+    >
+      <template #action>
+        <RouterLink
+          :to="{ name: 'login', query: { redirect: '/shortener' } }"
+          class="nav-link inline"
+        >
+          sign in
+        </RouterLink>
+      </template>
+    </EmptyState>
   </PageShell>
 </template>

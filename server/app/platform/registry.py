@@ -15,6 +15,7 @@ ServiceSlug = Literal[
     "password-generator",
     "qr-generator",
     "vid-download",
+    "weather",
     "ai-chat",
     "data-extract",
     "health-checker",
@@ -76,8 +77,6 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         admin_route="/expenses",
         icon="¤",
         capabilities=("read", "write"),
-        public=True,
-        public_route="/expense-calculator",
     ),
     PlatformService(
         slug="recipes",
@@ -163,6 +162,16 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         admin_route="/vid-download",
         icon="▶",
         capabilities=("read", "write"),
+    ),
+    PlatformService(
+        slug="weather",
+        name="weather",
+        category="utilities",
+        description="weather lookup, saved locations, and local time",
+        api_prefix="/weather",
+        admin_route="/weather",
+        icon="☼",
+        capabilities=("read",),
         public=True,
     ),
     PlatformService(
@@ -194,8 +203,6 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         admin_route="/health-checker",
         icon="♥",
         capabilities=("read", "write"),
-        public=True,
-        public_route="/health-checker",
     ),
     PlatformService(
         slug="feedback",

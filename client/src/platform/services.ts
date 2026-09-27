@@ -24,6 +24,7 @@ export const ADMIN_HUB_SERVICE_SLUGS = new Set([
   "email",
   "news",
   "news-sources",
+  "health-checker",
 ]);
 
 /** Capability tools listed on /tools for signed-in users (alongside public tools). */
@@ -32,7 +33,7 @@ export const TOOLS_PAGE_EXTRA_SLUGS = new Set([
   "expenses",
   "file-share",
   "data-extract",
-  "health-checker",
+  "vid-download",
 ]);
 
 /** Static fallback when API is unavailable; kept in sync with server registry. */
@@ -69,11 +70,9 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     description: "track spending, convert currencies, sum items, and plan budgets",
     apiPrefix: "/expenses",
     adminRoute: "/expenses",
-    publicRoute: "/expense-calculator",
     icon: "",
     capabilities: ["read", "write"],
     external: false,
-    public: true,
   },
   {
     slug: "news",
@@ -175,6 +174,18 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     icon: "",
     capabilities: ["read", "write"],
     external: false,
+  },
+  {
+    slug: "weather",
+    name: "weather",
+    category: "utilities",
+    categoryLabel: "utilities",
+    description: "weather lookup, saved locations, and local time",
+    apiPrefix: "/weather",
+    adminRoute: "/weather",
+    icon: "",
+    capabilities: ["read"],
+    external: false,
     public: true,
   },
   {
@@ -212,8 +223,6 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     icon: "",
     capabilities: ["read", "write"],
     external: false,
-    public: false,
-    publicRoute: "/health-checker",
   },
   {
     slug: "feedback",

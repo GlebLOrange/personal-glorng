@@ -73,20 +73,10 @@ test.describe("public pages", () => {
     await expect(page.getByRole("button", { name: "7" })).toBeVisible();
   });
 
-  test("old calculator admin URL redirects to public route", async ({ page }) => {
-    await page.goto("/admin/tools/calculator");
-    await expect(page).toHaveURL(/\/calculator$/);
-  });
-
   test("guest can use public password generator", async ({ page }) => {
     await page.goto("/password-generator");
     await expect(page.getByRole("heading", { name: /^password generator$/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /^generate$/i })).toBeVisible();
-  });
-
-  test("old password generator admin URL redirects to public route", async ({ page }) => {
-    await page.goto("/admin/tools/password-generator");
-    await expect(page).toHaveURL(/\/password-generator$/);
   });
 
   test("guest can open public recipes page", async ({ page }) => {
@@ -98,12 +88,12 @@ test.describe("public pages", () => {
     await page.goto("/shortener");
     await expect(page.getByRole("heading", { name: /url shortener/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /shorten/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /sign in to manage/i })).toBeVisible();
   });
 
-  test("guest can open public video download page", async ({ page }) => {
+  test("guest is redirected from video download to login", async ({ page }) => {
     await page.goto("/vid-download");
-    await expect(page.getByRole("heading", { name: /video downloader/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /download/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
   });
 
   test("guest sees weather tile on calculator page", async ({ page }) => {
@@ -130,17 +120,6 @@ test.describe("public pages", () => {
     await articleLink.click();
     await expect(page).toHaveURL(new RegExp(`^${href}$`));
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
-  });
-
-  test("old admin tool URLs redirect to public routes", async ({ page }) => {
-    await page.goto("/admin/tools/recipes");
-    await expect(page).toHaveURL(/\/recipes$/);
-
-    await page.goto("/admin/tools/url-shortener");
-    await expect(page).toHaveURL(/\/shortener$/);
-
-    await page.goto("/admin/tools/vid-download");
-    await expect(page).toHaveURL(/\/vid-download$/);
   });
 
   test("guest can add a city on weather page", async ({ page }) => {

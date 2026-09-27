@@ -100,7 +100,7 @@ function buttonAriaLabel(val: string): string | undefined {
     title="calculator"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'calculator' }]"
     back-to="/tools"
-    max-width="xl"
+    max-width="5xl"
     :narrow="false"
   >
     <Card class="mx-auto max-w-sm w-full">

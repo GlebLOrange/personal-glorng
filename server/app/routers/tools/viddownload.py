@@ -1,4 +1,4 @@
-"""Video download tool via yt-dlp. Public endpoint with strict rate and concurrency limits."""
+"""Video download tool via yt-dlp. Authenticated endpoint with rate and concurrency limits."""
 
 import asyncio
 import mimetypes
@@ -12,20 +12,23 @@ from urllib.parse import urlparse
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 
-from app.core.deps import OptionalUser
+from app.core.deps import AuthorizedUser, require_capability
 from app.core.exceptions import ApiError
 from app.core.logging import logger
-from app.core.permissions import permission_key, user_has_permission
 from app.core.rate_limit import client_ip, rate_limit_api, rate_limit_vid_download
 from app.core.redis_keys import VID_DOWNLOAD_GLOBAL_KEY, VID_DOWNLOAD_IP_PREFIX
 from app.core.redis_slots import release_slot, try_acquire_slot
 from app.core.utils import attachment_content_disposition
+from app.openapi import requires_capability
 from app.schemas.viddownload import VidDownloadRequest
 
 router = APIRouter(
     prefix="/vid-download",
     tags=["vid-download"],
-    dependencies=[Depends(rate_limit_api)],
+    dependencies=[
+        Depends(require_capability("vid-download", "write")),
+        Depends(rate_limit_api),
+    ],
 )
 
 DOWNLOAD_TIMEOUT = 120
@@ -141,19 +144,16 @@ def _stream_and_cleanup(path: Path, tmp_dir: str) -> Generator[bytes]:
 @router.post(
     "",
     summary="Download video via yt-dlp",
-    description="Public video download via yt-dlp (rate limited).",
+    description=requires_capability("vid-download", "write"),
     dependencies=[Depends(rate_limit_vid_download)],
 )
 async def download_video(
     data: VidDownloadRequest,
     request: Request,
-    user: OptionalUser,
+    user: AuthorizedUser,
 ) -> StreamingResponse:
     request_ip = client_ip(request)
     url_host = urlparse(str(data.url)).hostname or "unknown"
-    privileged = user is not None and user_has_permission(
-        user, permission_key("vid-download", "write")
-    )
 
     await _acquire_ip_slot(request_ip)
     try:
@@ -184,7 +184,7 @@ async def download_video(
                     "url_host": url_host,
                     "file_size": file_size,
                     "duration_s": round(time.monotonic() - started, 2),
-                    "privileged": privileged,
+                    "user_id": str(user.id),
                 },
             )
 

@@ -36,7 +36,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <AdminPageLayout title="admin" max-width="xl" back-to="/">
+  <AdminPageLayout title="admin" max-width="5xl" back-to="/">
     <div v-if="catalogLoading" aria-busy="true" aria-label="loading tools">
       <section v-for="block in 2" :key="block" class="mb-8 min-w-0">
         <div class="mb-3 h-3 w-24 animate-pulse rounded bg-surface-card" aria-hidden="true" />

@@ -222,7 +222,7 @@ watch(articleId, () => {
 </script>
 
 <template>
-  <AdminPageLayout hub="admin" :title="chromeTitle" max-width="xl" back-to="/admin/news">
+  <AdminPageLayout hub="admin" :title="chromeTitle" max-width="5xl" back-to="/admin/news">
     <header v-if="canWrite && article" class="page-intro">
       <div class="flex flex-wrap gap-2">
         <BaseButton variant="save" :disabled="actionLoading" @click="saveArticle">

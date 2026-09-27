@@ -111,10 +111,10 @@ describe("mapApiPlatformService", () => {
   it("keeps safe public_route", () => {
     const mapped = mapApiPlatformService({
       ...base,
-      admin_route: "/expenses",
-      public_route: "/expense-calculator",
+      admin_route: "/weather",
+      public_route: "/weather",
     });
-    expect(mapped?.publicRoute).toBe("/expense-calculator");
+    expect(mapped?.publicRoute).toBe("/weather");
   });
 });
 

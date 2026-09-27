@@ -197,7 +197,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout title="users" max-width="xl">
+  <AdminPageLayout title="users" max-width="5xl">
     <div v-if="loading" class="space-y-4" aria-busy="true" aria-label="loading users">
       <Card v-for="index in 3" :key="index">
         <div class="animate-pulse space-y-4">
