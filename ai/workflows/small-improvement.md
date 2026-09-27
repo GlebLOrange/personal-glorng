@@ -10,7 +10,8 @@ Manager → Developer → Reviewer, optional QA if user-facing.
 
 - Inspect repo (Gortex explore or readonly search).
 - Emit one task file under `ai/tasks/` from [`../tasks/TASK-001.example.yaml`](../tasks/TASK-001.example.yaml).
-- Set `specialist: developer`, explicit acceptance criteria, and `public_api_change: false`.
+- Fill the structured fields: `goal`, `scope`, `requirements`, `acceptance`, `tools`, `constraints`.
+- Set `specialist: developer` and `public_api_change: false`.
 
 **Output:** Task ID + branch name suggestion (`cursor/<slug>`).
 

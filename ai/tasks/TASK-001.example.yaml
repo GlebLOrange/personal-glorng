@@ -4,18 +4,30 @@ title: Small technical improvement (example)
 goal: >
   Inspect personal-glorng and implement one small technical improvement
   without changing the public HTTP API contract.
-public_api_change: false
-affected_area: client # client | server | docs | infra
-branch: cursor/example-small-improvement
-specialist: developer
+scope: >
+  One focused area (client | server | docs | infra | harness). List paths
+  the change may touch; exclude everything else.
+requirements:
+  - Minimal diff that preserves existing behavior outside the stated goal.
+  - No new runtime dependencies unless the human explicitly approves.
+  - public_api_change remains false unless the human overrides it.
 acceptance:
   - Change is limited in scope; no new runtime dependencies.
   - Existing tests pass; add or adjust tests if behavior warrants it.
   - OpenAPI / public route list unchanged (verify if server touched).
   - Draft PR opened; no merge to main.
+tools:
+  - Gortex MCP (explore → impact → edit → detect/tests/guards/contract) when available
+  - Repo Read / Grep / Glob fallback if Gortex is down
+  - Targeted lint/tests from ai/context/backend.md or frontend.md
+  - Git on branch cursor/<slug> only (no merge to main)
 constraints:
   - No production credentials in logs or commits.
   - Follow ai/context/agent-policy.md and .cursor/skills/agent-safety.
+public_api_change: false
+affected_area: client # client | server | docs | infra | harness
+branch: cursor/example-small-improvement
+specialist: developer
 evidence:
   test_commands_run: []
   pr_url: null

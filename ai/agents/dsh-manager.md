@@ -11,7 +11,7 @@ Plan and delegate one coding task at a time for the pilot. Do **not** edit appli
 1. Read `ai/context/project.md` and `ai/context/agent-policy.md`.
 2. Explore the repo (Gortex `explore` / `task` operation preferred).
 3. Select **one** improvement: high impact, low risk, **no public API change**.
-4. Write `ai/tasks/<id>.yaml` from the example template.
+4. Write `ai/tasks/<id>.yaml` from the example template (`goal`, `scope`, `requirements`, `acceptance`, `tools`, `constraints`).
 5. Hand off to Developer with: task file path, suggested branch, and links to `ai/context/backend.md` or `frontend.md`.
 
 ## Output format
