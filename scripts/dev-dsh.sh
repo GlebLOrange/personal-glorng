@@ -14,6 +14,9 @@ patch="ai/dsh/patch-gortex.yml"
 # Cursor/agent shells sometimes set npm_config_devdir; that breaks npx for DSH.
 unset npm_config_devdir NPM_CONFIG_DEVDIR 2>/dev/null || true
 
+# --patch is a top-level launcher flag; `dsh web --patch` fails with unknown option.
+dsh_cmd=(npx --yes @deepseek-ai/dsh --profile web --patch "$patch")
+
 usage() {
   echo "Usage: $0 {start|stop|status|foreground}" >&2
   exit 2
@@ -140,7 +143,7 @@ cmd_start() {
 
   # nohup so make/docker compose foreground does not kill DSH when the shell exits.
   # --no-open: make/dev background must not steal focus with a browser tab.
-  nohup npx --yes @deepseek-ai/dsh web --no-open --patch "$patch" >>"$log_file" 2>&1 &
+  nohup "${dsh_cmd[@]}" --no-open >>"$log_file" 2>&1 &
   local launcher_pid=$!
   echo "$launcher_pid" >"$pid_file"
 
@@ -179,7 +182,7 @@ cmd_foreground() {
   load_deepseek_key
   warn_missing_key
   warn_gortex
-  exec npx --yes @deepseek-ai/dsh web --patch "$patch"
+  exec "${dsh_cmd[@]}"
 }
 
 case "${1:-}" in

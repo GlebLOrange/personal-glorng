@@ -23,7 +23,7 @@ dev:
 	@echo "  Or use http://localhost:3000 after Vite is up (API docs: http://127.0.0.1:8000/api/docs)"
 	@echo "  DSH web UI: http://127.0.0.1:3080 (host; foreground logs: make dev-dsh)"
 	@echo ""
-	@bash scripts/dev-dsh.sh start
+	@bash scripts/dev-dsh.sh start || echo "dev-dsh: skipped (stack continues)"
 	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) up $(BUILD_FLAG) $(LITE_SERVICES)
 
 rebuild:
