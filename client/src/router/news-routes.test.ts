@@ -22,7 +22,7 @@ describe("news routes", () => {
     expect(byPath["/news/edit/:id(\\d+)"]?.redirect).toBeTruthy();
     expect(byPath["/news/sources"]?.redirect).toEqual({ name: "news-sources" });
     expect(byPath["/news/sources/:id(\\d+)"]?.redirect).toBeTruthy();
-    expect(byPath["/admin/tools/news"]?.redirect).toEqual({ name: "admin-news" });
+    expect(byPath["/admin/tools/news"]).toBeUndefined();
   });
 
   it("keeps public list on /news", () => {

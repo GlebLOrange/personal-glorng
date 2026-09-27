@@ -201,15 +201,10 @@ async def test_untrusted_tools_omitted_from_catalog_when_disabled(
 
 
 @pytest.mark.asyncio
-async def test_sitemap_omits_expense_calculator_when_disabled(
+async def test_sitemap_omits_retired_expense_calculator(
     client: AsyncClient,
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
 ) -> None:
-    activate_env_file(monkeypatch, scenario_env(tmp_path, EXPENSES_ENABLED="false"))
-    try:
-        resp = await client.get("/sitemap.xml")
-        assert resp.status_code == 200
-        assert "/expense-calculator" not in resp.text
-    finally:
-        get_settings.cache_clear()
+    resp = await client.get("/sitemap.xml")
+    assert resp.status_code == 200
+    assert "/expense-calculator" not in resp.text
+    assert "/vid-download" not in resp.text

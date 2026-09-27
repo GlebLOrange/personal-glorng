@@ -4,7 +4,7 @@ import { computed, ref } from "vue";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import CollapsibleUsageGuide from "@/components/ui/CollapsibleUsageGuide.vue";
-import PageShell from "@/components/layout/PageShell.vue";
+import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -75,13 +75,7 @@ async function download(): Promise<void> {
 </script>
 
 <template>
-  <PageShell
-    title="video downloader"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'video downloader' }]"
-    back-to="/tools"
-    max-width="xl"
-    :narrow="false"
-  >
+  <AdminPageLayout hub="tools" title="video downloader" max-width="5xl" back-to="/tools">
     <form class="mb-8 space-y-3" @submit.prevent="download">
       <CollapsibleUsageGuide title="yt-dlp usage guide">
         <template #start>
@@ -152,8 +146,8 @@ async function download(): Promise<void> {
             <h3 class="mb-2 font-bold text-accent-blue">Limits</h3>
             <p class="text-surface-mid">
               Downloads are limited to 500 MB and 2 minutes per request. Each IP may run one
-              download at a time, with at most two concurrent downloads across the server. Public
-              use is also rate limited to five downloads per hour per IP.
+              download at a time, with at most two concurrent downloads across the server. Use is
+              also rate limited to five downloads per hour per IP.
             </p>
           </div>
 
@@ -175,5 +169,5 @@ async function download(): Promise<void> {
         class="w-full"
       />
     </form>
-  </PageShell>
+  </AdminPageLayout>
 </template>

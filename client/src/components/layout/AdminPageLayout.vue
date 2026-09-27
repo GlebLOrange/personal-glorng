@@ -9,18 +9,15 @@ import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
 const props = withDefaults(
   defineProps<{
     title: string;
-    maxWidth?: "sm" | "md" | "xl";
+    maxWidth?: "sm" | "md" | "5xl";
     backTo?: RouteLocationRaw;
     /** Breadcrumb root: admin hub or tools hub. */
     hub?: "admin" | "tools";
-    /** Brand prefix on the page title (h1). */
-    titlePrefix?: string;
   }>(),
   {
     backTo: "/admin",
     hub: "admin",
-    maxWidth: "xl",
-    titlePrefix: "",
+    maxWidth: "5xl",
   },
 );
 
@@ -36,21 +33,14 @@ const breadcrumbs = computed((): BreadcrumbSegment[] => {
   }
   return [{ label: "admin", to: "/admin" }, { label }];
 });
-
-const shellMaxWidth = computed((): "sm" | "md" | "5xl" => {
-  if (props.maxWidth === "sm") return "sm";
-  if (props.maxWidth === "md") return "md";
-  return "5xl";
-});
 </script>
 
 <template>
   <PageShell
     :title="title"
-    :title-prefix="titlePrefix"
     :breadcrumbs="breadcrumbs"
     :back-to="backTo"
-    :max-width="shellMaxWidth"
+    :max-width="maxWidth"
     :narrow="false"
     as="div"
   >

@@ -111,7 +111,7 @@ Typography: IBM Plex Sans; use `font-data` for status codes, counts, and money.
 
 ## Overlay max-width naming
 
-- `PageShell` `maxWidth`: `"xl"` | `"5xl"` both map to `max-w-5xl` (content column)
+- `PageShell` `maxWidth`: `"sm"` | `"md"` | `"5xl"` (`"5xl"` → `max-w-5xl` content column)
 - `BaseModal` sizes: `"md"` | `"lg"` | `"2xl"`
 - `BaseDrawer` sizes are independent (drawer panel width) — do not assume the same token means the same width as PageShell
 

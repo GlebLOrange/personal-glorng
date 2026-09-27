@@ -88,7 +88,7 @@ function editRecipeFromCard(recipe: Recipe): void {
     title="recipes"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'recipes' }]"
     back-to="/tools"
-    max-width="xl"
+    max-width="5xl"
     :narrow="false"
   >
     <RecipeFilters v-model:search="search">

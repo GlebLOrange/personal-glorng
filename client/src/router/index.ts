@@ -2,7 +2,6 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router"
 
 import { WEATHER_ROUTE_NAME } from "@/constants/weather";
 import { useAuthStore } from "@/stores/auth";
-import { isCalculatorMode, normalizeCalculatorMode } from "@/composables/useExpenseCalculator";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled, isExpensesEnabled } from "@/utils/featureFlags";
 import { installScrollRestore, resolveScrollBehavior } from "@/utils/scrollRestore";
@@ -211,13 +210,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/expense-calculator",
-    name: "expense-calculator",
-    component: () => import("@/pages/tools/ExpenseCalculatorTool.vue"),
-    meta: {
-      resolveSession: true,
-      title: "Expense calculator",
-      description: "Convert currencies, sum line items, and plan budgets.",
-    },
+    redirect: { name: "tool-expenses" },
   },
   {
     path: "/password-generator",
@@ -251,7 +244,12 @@ const routes: RouteRecordRaw[] = [
     path: "/vid-download",
     name: "vid-download",
     component: () => import("@/pages/tools/VidDownloadTool.vue"),
-    meta: { title: "Video downloader", description: "Download videos with yt-dlp." },
+    meta: {
+      requiresAuth: true,
+      title: "Video downloader",
+      description: "Download videos with yt-dlp.",
+      noindex: true,
+    },
   },
   {
     path: "/file-share",
@@ -287,34 +285,6 @@ const routes: RouteRecordRaw[] = [
       description: "Monitor website and API uptime, latency, SSL, and DNS.",
       noindex: true,
     },
-  },
-  // Legacy /admin/tools/* redirects
-  { path: "/admin/tools/calculator", redirect: { name: "calculator" } },
-  { path: "/admin/tools/password-generator", redirect: { name: "password-generator" } },
-  { path: "/admin/tools/qr-generator", redirect: { name: "qr-generator" } },
-  { path: "/admin/tools/recipes", redirect: { name: "recipes" } },
-  { path: "/admin/tools/url-shortener", redirect: { name: "shortener" } },
-  { path: "/admin/tools/vid-download", redirect: { name: "vid-download" } },
-  { path: "/admin/tools/health-checker", redirect: { name: "tool-health-checker" } },
-  {
-    path: "/admin/tools/currency",
-    redirect: { name: "tool-expenses", query: { tab: "converter", mode: "convert" } },
-  },
-  { path: "/admin/tools/file-share", redirect: { name: "tool-file-share" } },
-  { path: "/admin/tools/tasks", redirect: { name: "tool-tasks" } },
-  { path: "/admin/tools/expenses", redirect: { name: "tool-expenses" } },
-  { path: "/admin/tools/email", redirect: { name: "tool-email" } },
-  { path: "/admin/tools/data-extract", redirect: { name: "tool-data-extract" } },
-  { path: "/admin/tools/feedback", redirect: { name: "tool-feedback" } },
-  { path: "/admin/tools/news-sources", redirect: { name: "news-sources" } },
-  { path: "/admin/tools/ai-chat", redirect: { name: "tool-ai-chat" } },
-  { path: "/admin/tools/audit", redirect: { name: "tool-audit" } },
-  { path: "/admin/tools/app-logs", redirect: { name: "tool-app-logs" } },
-  { path: "/admin/tools/search", redirect: { name: "tool-search" } },
-  { path: "/admin/tools/news", redirect: { name: "admin-news" } },
-  {
-    path: "/admin/tools/news/:id",
-    redirect: (to) => ({ name: "news-article-edit", params: { id: to.params.id } }),
   },
   {
     path: "/callback",
@@ -366,6 +336,7 @@ const TOOL_ROUTE_SLUGS: Partial<Record<string, string>> = {
   "news-source": "news-sources",
   "tool-data-extract": "data-extract",
   "tool-health-checker": "health-checker",
+  "vid-download": "vid-download",
   "tool-audit": "audit",
   "tool-app-logs": "app-logs",
   "tool-search": "search",
@@ -391,7 +362,7 @@ router.beforeEach(async (to, _from) => {
   if (to.name === "tool-ai-chat" && !isAiChatEnabled()) {
     return { name: "admin" };
   }
-  if (!isExpensesEnabled() && (to.name === "tool-expenses" || to.name === "expense-calculator")) {
+  if (!isExpensesEnabled() && to.name === "tool-expenses") {
     return { name: "tools", replace: true };
   }
   const auth = useAuthStore();
@@ -409,25 +380,6 @@ router.beforeEach(async (to, _from) => {
   }
   if (to.name === "login" && auth.isAuthenticated) {
     return { path: safeRedirectPath(to.query.redirect), replace: true };
-  }
-  if (to.name === "expense-calculator" && auth.isAuthenticated) {
-    const { can } = usePermissions();
-    if (can("expenses", "read")) {
-      const rawTab =
-        typeof to.query.tab === "string"
-          ? to.query.tab
-          : typeof to.query.mode === "string"
-            ? to.query.mode
-            : "convert";
-      if (rawTab === "converter" || rawTab === "calculator" || isCalculatorMode(rawTab)) {
-        return {
-          name: "tool-expenses",
-          query: { tab: "converter", mode: normalizeCalculatorMode(rawTab) },
-          replace: true,
-        };
-      }
-      return { name: "tool-expenses", query: { tab: rawTab }, replace: true };
-    }
   }
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return {

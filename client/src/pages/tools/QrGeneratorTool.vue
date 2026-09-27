@@ -173,7 +173,7 @@ onMounted(() => {
     title="qr generator"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'qr generator' }]"
     back-to="/tools"
-    max-width="xl"
+    max-width="5xl"
     :narrow="false"
   >
     <p class="mb-4 text-sm text-surface-mid">
@@ -181,6 +181,7 @@ onMounted(() => {
       <span v-if="canWriteLibrary">
         Save to your library to reuse codes (your list only).
       </span>
+      <span v-else> Sign in to save codes to your library. </span>
     </p>
 
     <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,280px)]">
@@ -295,6 +296,21 @@ onMounted(() => {
         @next="goToPage(page + 1)"
         @last="goToPage(totalPages)"
       />
+    </section>
+    <section v-else class="mt-8 min-w-0">
+      <EmptyState
+        title="sign in to manage"
+        description="save and list your QR codes after signing in."
+      >
+        <template #action>
+          <RouterLink
+            :to="{ name: 'login', query: { redirect: '/qr-generator' } }"
+            class="nav-link inline"
+          >
+            sign in
+          </RouterLink>
+        </template>
+      </EmptyState>
     </section>
   </PageShell>
 </template>

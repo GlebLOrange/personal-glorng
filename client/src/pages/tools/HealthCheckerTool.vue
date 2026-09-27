@@ -3,7 +3,7 @@ import { computed, defineAsyncComponent, onMounted } from "vue";
 
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
-import PageShell from "@/components/layout/PageShell.vue";
+import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -72,13 +72,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <PageShell
-    title="health checker"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'health checker' }]"
-    back-to="/tools"
-    max-width="xl"
-    :narrow="false"
-  >
+  <AdminPageLayout hub="admin" title="health checker" max-width="5xl" back-to="/admin">
     <form
       v-if="canWrite"
       class="mb-4 flex min-w-0 flex-wrap items-center gap-2"
@@ -326,5 +320,5 @@ onMounted(() => {
         select a monitor to see details and history
       </EmptyState>
     </div>
-  </PageShell>
+  </AdminPageLayout>
 </template>

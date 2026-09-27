@@ -12,13 +12,11 @@ const PINNED_TOOLS_ROUTE_NAMES = new Set<string>([
   "admin",
   WEATHER_ROUTE_NAME,
   "calculator",
-  "expense-calculator",
   "password-generator",
   "qr-generator",
   "recipes",
   "shortener",
   "vid-download",
-  "tool-health-checker",
 ]);
 
 const route = useRoute();

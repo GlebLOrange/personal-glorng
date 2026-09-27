@@ -60,7 +60,11 @@ describe("tools content tile order", () => {
     expect(content?.services.map((tool) => tool.slug)[0]).toBe("recipes");
   });
 
-  it("excludes health-checker from the guest public catalog", () => {
-    expect(publicToolsAsServices().map((tool) => tool.slug)).not.toContain("health-checker");
+  it("excludes health-checker and vid-download from the guest public catalog", () => {
+    const slugs = publicToolsAsServices().map((tool) => tool.slug);
+    expect(slugs).not.toContain("health-checker");
+    expect(slugs).not.toContain("vid-download");
+    expect(slugs).not.toContain("expenses");
+    expect(slugs).toContain("weather");
   });
 });

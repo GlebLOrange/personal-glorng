@@ -120,7 +120,7 @@ async function generatePassword(): Promise<void> {
     title="password generator"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'password generator' }]"
     back-to="/tools"
-    max-width="xl"
+    max-width="5xl"
     :narrow="false"
   >
     <Card variant="ghost" class="mx-auto w-full max-w-md">
