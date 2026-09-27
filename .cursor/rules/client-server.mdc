@@ -1,0 +1,7 @@
+---
+description: How the Vue client and FastAPI server meet — request path and feature pairing.
+globs: ["client/src/**/*.ts", "client/src/**/*.vue", "server/**/*.py"]
+alwaysApply: false
+---
+
+When this rule applies, follow the `client-server` skill: read `.cursor/skills/client-server/SKILL.md` and apply it.
