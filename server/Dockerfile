@@ -35,9 +35,17 @@ ENV UV_COMPILE_BYTECODE=1 \
     UV_PYTHON_DOWNLOADS=never \
     PATH="/app/.venv/bin:$PATH"
 
+# Copy dependencies first for better layer caching
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
+
 # Bake builder venv so first start skips compiling pydantic-core/grpcio on Alpine.
 COPY --from=builder /app/.venv /app/.venv
 RUN touch /app/.venv/.deps-synced
+
+# Copy source code
+COPY . .
 
 COPY docker-entrypoint.sh /usr/local/bin/
 
