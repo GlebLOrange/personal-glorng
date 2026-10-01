@@ -15,7 +15,6 @@ describe("useColorTheme", () => {
       // jsdom / node may omit localStorage
     }
     document.documentElement.removeAttribute("data-theme");
-    document.documentElement.removeAttribute("data-atmosphere");
     vi.restoreAllMocks();
   });
 
@@ -38,22 +37,6 @@ describe("useColorTheme", () => {
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
     expect(meta.getAttribute("content")).toBe("#0d1117");
 
-    meta.remove();
-  });
-
-  it("applyColorTheme uses space theme-color when data-atmosphere=space", () => {
-    const meta = document.createElement("meta");
-    meta.setAttribute("name", "theme-color");
-    document.head.appendChild(meta);
-    document.documentElement.setAttribute("data-atmosphere", "space");
-
-    applyColorTheme("dark");
-    expect(meta.getAttribute("content")).toBe("#070b14");
-
-    applyColorTheme("light");
-    expect(meta.getAttribute("content")).toBe("#e8eef5");
-
-    document.documentElement.removeAttribute("data-atmosphere");
     meta.remove();
   });
 

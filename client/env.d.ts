@@ -33,7 +33,5 @@ declare module "vue-router" {
     requiresSuperuser?: boolean;
     resolveSession?: boolean;
     scrollRestore?: "volatile" | "live" | string;
-    /** Quiet space tokens + glass CTAs on the public portfolio route. */
-    atmosphere?: "space";
   }
 }

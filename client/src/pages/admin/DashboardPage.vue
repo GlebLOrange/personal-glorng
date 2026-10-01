@@ -6,7 +6,6 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
-import { api } from "@/composables/useApi";
 import { usePlatformCatalog } from "@/composables/usePlatformCatalog";
 import { ADMIN_HUB_SERVICE_SLUGS, groupServicesByCategory } from "@/platform/services";
 import { usePermissions } from "@/composables/usePermissions";
@@ -16,7 +15,6 @@ const route = useRoute();
 const { canAccess, isSuperuser } = usePermissions();
 const { services, load } = usePlatformCatalog();
 const catalogLoading = ref(true);
-const apiHealth = ref<"ok" | "error" | "loading">("loading");
 
 const aiChatOffNotice = computed(() => String(route.query.aichat ?? "") === "off");
 
@@ -32,18 +30,9 @@ const visibleServices = computed(() =>
 
 const sections = computed(() => groupServicesByCategory(visibleServices.value));
 
-async function loadHealth(): Promise<void> {
-  try {
-    const { data } = await api.get<{ status: string }>("/health");
-    apiHealth.value = data.status === "ok" ? "ok" : "error";
-  } catch {
-    apiHealth.value = "error";
-  }
-}
-
 onMounted(async () => {
   try {
-    await Promise.all([load(), loadHealth()]);
+    await load();
   } finally {
     catalogLoading.value = false;
   }
@@ -52,12 +41,6 @@ onMounted(async () => {
 
 <template>
   <AdminPageLayout title="admin" max-width="5xl" back-to="/">
-    <p class="mb-4 text-sm text-surface-mid" role="status">
-      API health:
-      <span v-if="apiHealth === 'loading'">checking…</span>
-      <span v-else-if="apiHealth === 'ok'" class="text-status-success">ok</span>
-      <span v-else class="text-status-error">unreachable</span>
-    </p>
     <p
       v-if="aiChatOffNotice"
       class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"

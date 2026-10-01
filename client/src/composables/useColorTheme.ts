@@ -13,21 +13,8 @@ export const DEFAULT_COLOR_THEME_PREFERENCE: ColorThemePreference = "dark";
 
 const THEME_COLOR_LIGHT = "#e5e7eb";
 const THEME_COLOR_DARK = "#0d1117";
-/** Match space dark void / light sky when `data-atmosphere=space` (FOUC must match). */
-export const THEME_COLOR_SPACE_LIGHT = "#e8eef5";
-export const THEME_COLOR_SPACE_DARK = "#070b14";
-
-function isSpaceAtmosphereDocument(): boolean {
-  if (typeof document === "undefined") {
-    return false;
-  }
-  return document.documentElement.getAttribute("data-atmosphere") === "space";
-}
 
 function themeColorFor(theme: ColorThemeResolved): string {
-  if (isSpaceAtmosphereDocument()) {
-    return theme === "light" ? THEME_COLOR_SPACE_LIGHT : THEME_COLOR_SPACE_DARK;
-  }
   return theme === "light" ? THEME_COLOR_LIGHT : THEME_COLOR_DARK;
 }
 
@@ -80,7 +67,7 @@ export function resolveTheme(pref: ColorThemePreference): ColorThemeResolved {
   return pref;
 }
 
-/** Apply theme-color meta from resolved theme + current atmosphere. */
+/** Apply theme-color meta from the resolved theme. */
 export function syncThemeColorMeta(theme: ColorThemeResolved): void {
   if (typeof document === "undefined") {
     return;
