@@ -88,35 +88,50 @@ async function preview(): Promise<void> {
       </template>
     </AdminListToolbar>
 
-    <form class="space-y-3 mb-8" @submit.prevent="send">
-      <BaseInput
-        id="email-to"
-        v-model="to"
-        type="email"
-        placeholder="to"
-        aria-label="to"
-        autocomplete="email"
-        spellcheck="false"
-      />
-      <BaseInput
-        id="email-subject"
-        v-model="subject"
-        placeholder="subject"
-        aria-label="subject"
-        autocomplete="off"
-      />
-      <BaseTextarea
-        id="email-body"
-        v-model="body"
-        :rows="6"
-        placeholder="body"
-        aria-label="body"
-        autocomplete="off"
-      />
-    </form>
+    <div class="grid min-w-0 gap-6 lg:grid-cols-2">
+      <form class="space-y-3" @submit.prevent="send">
+        <BaseInput
+          id="email-to"
+          v-model="to"
+          type="email"
+          placeholder="to"
+          aria-label="to"
+          autocomplete="email"
+          spellcheck="false"
+        />
+        <BaseInput
+          id="email-subject"
+          v-model="subject"
+          placeholder="subject"
+          aria-label="subject"
+          autocomplete="off"
+        />
+        <BaseTextarea
+          id="email-body"
+          v-model="body"
+          :rows="6"
+          placeholder="body"
+          aria-label="body"
+          autocomplete="off"
+        />
+      </form>
 
-    <div v-if="previewHtml" class="space-y-2" role="status" aria-live="polite">
-      <h3 class="text-sm text-surface-mid">preview</h3>
+      <aside
+        class="min-w-0 rounded-lg border border-surface-border bg-surface-card p-4"
+        aria-label="draft preview"
+      >
+        <h3 class="mb-2 text-sm text-surface-mid">draft preview</h3>
+        <p class="mb-2 text-sm font-medium text-surface-light break-words">
+          {{ subject.trim() || "(no subject)" }}
+        </p>
+        <pre class="whitespace-pre-wrap break-words text-sm text-surface-sage font-sans">{{
+          body.trim() || "(empty body)"
+        }}</pre>
+      </aside>
+    </div>
+
+    <div v-if="previewHtml" class="mt-8 space-y-2" role="status" aria-live="polite">
+      <h3 class="text-sm text-surface-mid">html preview</h3>
       <!-- eslint-disable-next-line vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
       <div
         class="border border-surface-border rounded-lg p-4 bg-white"

@@ -11,8 +11,9 @@ async def test_sitemap_xml(client: AsyncClient) -> None:
     assert "<loc>http://localhost/</loc>" in body
     assert "<loc>http://localhost/privacy</loc>" in body
     assert "<loc>http://localhost/tools</loc>" in body
-    assert "<loc>http://localhost/calculator</loc>" in body
-    assert "<loc>http://localhost/weather</loc>" in body
+    assert "<loc>http://localhost/news</loc>" in body
+    assert "<loc>http://localhost/calculator</loc>" not in body
+    assert "<loc>http://localhost/weather</loc>" not in body
     assert "/admin" not in body
 
 

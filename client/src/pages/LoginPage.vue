@@ -65,6 +65,10 @@ async function handleGoogleLogin(): Promise<void> {
 
 <template>
   <AuthPageShell title="login" variant="login" back-to="/">
+    <p class="text-sm text-surface-mid">
+      Operator sign-in for this site.
+      <RouterLink to="/" class="nav-link underline-offset-4">Back to the portfolio</RouterLink>.
+    </p>
     <form class="space-y-4" @submit.prevent="handleLogin">
       <BaseInput
         v-model="email"

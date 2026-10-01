@@ -9,7 +9,6 @@ import { getApiErrorMessageFromBlob } from "@/types/api";
 
 const CV_FILENAME = "gleb.y.cv.pdf";
 const HANDBOOK_URL = "https://gleblorange.github.io/personal-glorng/";
-const OPENAPI_PATH = "/api/docs";
 
 const props = defineProps<{
   name: string;
@@ -30,7 +29,6 @@ const { toast } = useNotify();
 const proofLinks = computed(() => {
   const links: Array<{ href: string; label: string; external: boolean }> = [
     { href: HANDBOOK_URL, label: "architecture docs", external: true },
-    { href: OPENAPI_PATH, label: "openapi", external: false },
   ];
   if (props.repoUrl) {
     links.unshift({ href: props.repoUrl, label: "source repo", external: true });
