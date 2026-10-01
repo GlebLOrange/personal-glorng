@@ -38,7 +38,7 @@ async function handleSubmit(): Promise<void> {
   <AuthPageShell title="forgot password?" back-to="/login">
     <div v-if="submitted" class="space-y-4 text-center" role="status">
       <p class="text-surface-mid text-sm">
-        If an account exists for {{ email }}, you will receive a reset link shortly.
+        Check your inbox — if an account exists for {{ email }}, you will receive a reset link shortly.
       </p>
       <RouterLink to="/login" class="nav-link text-sm"> return to login </RouterLink>
     </div>

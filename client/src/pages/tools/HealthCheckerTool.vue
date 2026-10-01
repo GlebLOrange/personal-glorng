@@ -44,6 +44,7 @@ const {
   updateInterval,
   deleteMonitor,
   goToPage,
+  toolDisabled,
 } = useHealthChecker();
 
 const hasNextPage = computed(() => page.value < totalPages.value);
@@ -73,6 +74,14 @@ onMounted(() => {
 
 <template>
   <AdminPageLayout hub="admin" title="health checker" max-width="5xl" back-to="/admin">
+    <p
+      v-if="toolDisabled"
+      class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
+      role="status"
+    >
+      This tool is turned off on this server.
+    </p>
+    <template v-else>
     <form
       v-if="canWrite"
       class="mb-4 flex min-w-0 flex-wrap items-center gap-2"
@@ -320,5 +329,6 @@ onMounted(() => {
         select a monitor to see details and history
       </EmptyState>
     </div>
+    </template>
   </AdminPageLayout>
 </template>

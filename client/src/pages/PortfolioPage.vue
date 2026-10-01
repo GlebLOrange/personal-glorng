@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref } from "vue";
 
-import ContactIcon from "@/components/contact/ContactIcon.vue";
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
@@ -41,7 +40,7 @@ const apiError = ref(false);
 const donationsError = ref(false);
 const donationsFetched = ref(false);
 const donationsStarted = ref(false);
-const contactModal = ref<"inquiry" | "feedback" | null>(null);
+const contactModal = ref<"inquiry" | null>(null);
 const supportSectionRef = ref<HTMLElement | null>(null);
 /** Filled via GET /github/repos when /resume returned a cold-cache empty strip. */
 const githubReposExtra = ref<PublicGitHubRepo[] | null>(null);
@@ -236,16 +235,6 @@ onUnmounted(() => {
       <div class="flex flex-wrap gap-4">
         <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
       </div>
-      <p class="mt-6 print:hidden">
-        <button
-          type="button"
-          class="text-surface-sage underline-offset-4 hover:underline inline-flex items-center gap-2 min-h-11 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
-          @click="contactModal = 'feedback'"
-        >
-          <ContactIcon id="feedback" class="size-4 shrink-0" />
-          send feedback
-        </button>
-      </p>
       <FeedbackModal v-if="contactModal" :intent="contactModal" @close="contactModal = null" />
     </SectionWrapper>
 

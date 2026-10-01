@@ -36,8 +36,10 @@
     />
     <title>Gleb.Y — Developer Portfolio</title>
     <script>
-      /* FOUC: apply data-theme before CSS paint. Key must match COLOR_THEME_STORAGE_KEY.
-         light|dark as stored; legacy `system` → OS once; unset/invalid → dark. */
+      /* FOUC: apply data-theme (+ space atmosphere on /) before CSS paint.
+         Theme key must match COLOR_THEME_STORAGE_KEY.
+         light|dark as stored; legacy `system` → OS once; unset/invalid → dark.
+         Atmosphere theme-color hexes must match THEME_COLOR_SPACE_* / base. */
       (function () {
         try {
           var key = "glorng-color-theme";
@@ -57,9 +59,22 @@
             }
           }
           document.documentElement.setAttribute("data-theme", theme);
+          var path = window.location.pathname || "/";
+          var space = path === "/" || path === "";
+          if (space) {
+            document.documentElement.setAttribute("data-atmosphere", "space");
+          } else {
+            document.documentElement.removeAttribute("data-atmosphere");
+          }
           var meta = document.querySelector('meta[name="theme-color"]');
           if (meta) {
-            meta.setAttribute("content", theme === "light" ? "#e5e7eb" : "#0d1117");
+            var color;
+            if (space) {
+              color = theme === "light" ? "#e8eef5" : "#070b14";
+            } else {
+              color = theme === "light" ? "#e5e7eb" : "#0d1117";
+            }
+            meta.setAttribute("content", color);
           }
         } catch (e) {
           document.documentElement.setAttribute("data-theme", "dark");
