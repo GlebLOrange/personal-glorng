@@ -11,14 +11,21 @@ import { useUserPreferences } from "@/composables/useUserPreferences";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { usePermissions } from "@/composables/usePermissions";
+import { PLATFORM_SERVICES } from "@/platform/services";
 import { useAuthStore } from "@/stores/auth";
 import { getApiErrorMessage } from "@/types/api";
 import type { GitHubStatus } from "@/types";
 import { passwordStrength } from "@/utils/passwordPolicy";
 
 const auth = useAuthStore();
-const { permissions } = usePermissions();
+const { permissions, canAccess } = usePermissions();
 const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPreferences();
+
+const accessibleTools = computed(() =>
+  PLATFORM_SERVICES.filter(
+    (service) => Boolean(service.adminRoute) && !service.external && canAccess(service.slug),
+  ),
+);
 
 const displayName = ref("");
 const timezone = ref("UTC");
@@ -234,5 +241,25 @@ async function unlinkGithub(): Promise<void> {
     </div>
 
     <SettingsQrLibrarySection class="mt-3" />
+
+    <section
+      v-if="accessibleTools.length"
+      class="mt-6 rounded-lg border border-surface-border bg-surface-card p-4"
+      aria-labelledby="settings-tools-heading"
+    >
+      <h2 id="settings-tools-heading" class="mb-2 text-sm font-medium text-surface-light">
+        tools you can open
+      </h2>
+      <p class="mb-3 text-sm text-surface-mid">
+        A tool you cannot access redirects to admin. Your account can open:
+      </p>
+      <ul class="flex flex-wrap gap-x-3 gap-y-2">
+        <li v-for="tool in accessibleTools" :key="tool.slug">
+          <RouterLink :to="tool.adminRoute" class="nav-link text-sm">
+            {{ tool.name }}
+          </RouterLink>
+        </li>
+      </ul>
+    </section>
   </PageShell>
 </template>

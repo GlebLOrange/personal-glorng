@@ -135,7 +135,7 @@ function editRecipeFromCard(recipe: Recipe): void {
         :description="
           hasFilters
             ? 'no recipes match your filters'
-            : 'no recipes yet. add your first one to get started.'
+            : 'no recipes yet — run seed to load sample recipes, or add your first one.'
         "
       >
         <template v-if="hasFilters || canWrite" #action>

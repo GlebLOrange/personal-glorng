@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, useTemplateRef } from "vue";
+import axios from "axios";
 
 import ShareableListItem from "@/components/admin/ShareableListItem.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
@@ -12,7 +13,9 @@ import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
+import { useNotify } from "@/composables/useNotify";
 import type { PaginatedList, SharedFile } from "@/types";
+import { getApiErrorMessage } from "@/types/api";
 import { formatBytes, formatTimeRemaining } from "@/utils/format";
 import { publicUrl } from "@/utils/publicLinks";
 
@@ -21,8 +24,10 @@ const page = ref(1);
 const total = ref(0);
 const totalPages = ref(0);
 const selectedFile = ref<File | null>(null);
+const toolDisabled = ref(false);
+const listLoading = ref(false);
 const { copy } = useClipboard();
-const { loading: listLoading, run: runList } = useApiAction();
+const { toast } = useNotify();
 const { loading: uploading, run: runUpload } = useApiAction();
 const { run: runDelete } = useApiAction();
 
@@ -34,19 +39,23 @@ const hasNextPage = computed(() => page.value < totalPages.value);
 const hasPreviousPage = computed(() => page.value > 1);
 
 async function loadFiles(): Promise<void> {
-  const data = await runList(
-    () =>
-      api.get<PaginatedList<SharedFile>>("/tools/file-share", {
-        params: { page: page.value, per_page: LIST_PAGE_SIZE },
-      }),
-    {
-      errorFallback: "Failed to load files",
-    },
-  );
-  if (data) {
-    files.value = data.data.items;
-    total.value = data.data.total;
-    totalPages.value = data.data.pages;
+  listLoading.value = true;
+  try {
+    const { data } = await api.get<PaginatedList<SharedFile>>("/tools/file-share", {
+      params: { page: page.value, per_page: LIST_PAGE_SIZE },
+    });
+    toolDisabled.value = false;
+    files.value = data.items;
+    total.value = data.total;
+    totalPages.value = data.pages;
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      toolDisabled.value = true;
+      return;
+    }
+    toast(getApiErrorMessage(err, "Failed to load files"), "error");
+  } finally {
+    listLoading.value = false;
   }
 }
 
@@ -102,63 +111,72 @@ onMounted(loadFiles);
 
 <template>
   <AdminPageLayout hub="tools" title="file-share" back-to="/tools">
-    <div class="mb-10 space-y-3">
-      <div class="mb-3 flex w-full min-w-0 items-center justify-end">
-        <ToolbarPillButton action="save" :disabled="uploading || !selectedFile" @click="upload">
-          {{ uploading ? "uploading…" : "upload & share" }}
-        </ToolbarPillButton>
+    <p
+      v-if="toolDisabled"
+      class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
+      role="status"
+    >
+      This tool is turned off on this server.
+    </p>
+    <template v-if="!toolDisabled">
+      <div class="mb-10 space-y-3">
+        <div class="mb-3 flex w-full min-w-0 items-center justify-end">
+          <ToolbarPillButton action="save" :disabled="uploading || !selectedFile" @click="upload">
+            {{ uploading ? "uploading…" : "upload & share" }}
+          </ToolbarPillButton>
+        </div>
+
+        <FileDropZone
+          ref="dropZone"
+          class="w-full"
+          aria-label="choose a file to share"
+          :selected-name="selectedName"
+          @select="onSelectFile"
+        />
       </div>
 
-      <FileDropZone
-        ref="dropZone"
-        class="w-full"
-        aria-label="choose a file to share"
-        :selected-name="selectedName"
-        @select="onSelectFile"
-      />
-    </div>
+      <div class="space-y-3">
+        <div v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="loading shared files">
+          <Card v-for="n in 3" :key="n" variant="compact" class="animate-pulse">
+            <div class="h-4 w-48 bg-surface-border rounded mb-2" />
+            <div class="h-3 w-32 bg-surface-border rounded" />
+          </Card>
+        </div>
 
-    <div class="space-y-3">
-      <div v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="loading shared files">
-        <Card v-for="n in 3" :key="n" variant="compact" class="animate-pulse">
-          <div class="h-4 w-48 bg-surface-border rounded mb-2" />
-          <div class="h-3 w-32 bg-surface-border rounded" />
-        </Card>
+        <template v-else>
+          <ShareableListItem
+            v-for="f in files"
+            :key="f.id"
+            :title="f.original_filename"
+            :link="publicUrl('f', f.code)"
+            :meta="fileMeta(f)"
+            @copy="copy(publicUrl('f', f.code))"
+            @delete="deleteFile(f.id)"
+          />
+
+          <EmptyState
+            v-if="files.length === 0"
+            title="no shared files"
+            description="upload a file above to get a shareable link"
+          />
+
+          <AdminListFooter
+            v-if="files.length > 0"
+            :total="total"
+            :page="page"
+            :total-pages="totalPages"
+            :has-next-page="hasNextPage"
+            :has-previous-page="hasPreviousPage"
+            :loading="listLoading"
+            item-label="files"
+            aria-label="shared files pagination"
+            @first="goToPage(1)"
+            @prev="goToPage(page - 1)"
+            @next="goToPage(page + 1)"
+            @last="goToPage(totalPages)"
+          />
+        </template>
       </div>
-
-      <template v-else>
-        <ShareableListItem
-          v-for="f in files"
-          :key="f.id"
-          :title="f.original_filename"
-          :link="publicUrl('f', f.code)"
-          :meta="fileMeta(f)"
-          @copy="copy(publicUrl('f', f.code))"
-          @delete="deleteFile(f.id)"
-        />
-
-        <EmptyState
-          v-if="files.length === 0"
-          title="no shared files"
-          description="upload a file above to get a shareable link"
-        />
-
-        <AdminListFooter
-          v-if="files.length > 0"
-          :total="total"
-          :page="page"
-          :total-pages="totalPages"
-          :has-next-page="hasNextPage"
-          :has-previous-page="hasPreviousPage"
-          :loading="listLoading"
-          item-label="files"
-          aria-label="shared files pagination"
-          @first="goToPage(1)"
-          @prev="goToPage(page - 1)"
-          @next="goToPage(page + 1)"
-          @last="goToPage(totalPages)"
-        />
-      </template>
-    </div>
+    </template>
   </AdminPageLayout>
 </template>

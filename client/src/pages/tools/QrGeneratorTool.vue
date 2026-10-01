@@ -163,6 +163,11 @@ const previewAlt = computed(
 );
 
 onMounted(() => {
+  if (!content.value.trim()) {
+    content.value = `${window.location.origin}/`;
+    label.value = "this site";
+    void createQr();
+  }
   void loadSavedFromQuery();
   if (canReadLibrary.value) void loadList();
 });

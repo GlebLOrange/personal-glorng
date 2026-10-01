@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled, isExpensesEnabled } from "@/utils/featureFlags";
 import { installScrollRestore, resolveScrollBehavior } from "@/utils/scrollRestore";
+import { applyRouteAtmosphere } from "@/composables/useAtmosphere";
 import { applyRouteSeo } from "@/composables/useRouteSeo";
 import { safeRedirectPath } from "@/utils/safeUrl";
 import { scrubSensitivePath } from "@/utils/sensitiveUrl";
@@ -15,6 +16,7 @@ const routes: RouteRecordRaw[] = [
     name: "portfolio",
     component: () => import("@/pages/PortfolioPage.vue"),
     meta: {
+      atmosphere: "space",
       title: "Python Backend / FastAPI Engineer",
       description:
         "Gleb.Y — Python/FastAPI backend engineer. Production platforms: APIs, auth, workers, data stores, and CI/CD. Full-stack capable.",
@@ -206,7 +208,7 @@ const routes: RouteRecordRaw[] = [
     path: "/calculator",
     name: "calculator",
     component: () => import("@/pages/tools/CalculatorTool.vue"),
-    meta: { title: "Calculator", description: "Quick math calculations." },
+    meta: { title: "Calculator", description: "Quick math calculations.", noindex: true },
   },
   {
     path: "/expense-calculator",
@@ -216,13 +218,21 @@ const routes: RouteRecordRaw[] = [
     path: "/password-generator",
     name: "password-generator",
     component: () => import("@/pages/tools/PasswordGeneratorTool.vue"),
-    meta: { title: "Password generator", description: "Generate strong random passwords." },
+    meta: {
+      title: "Password generator",
+      description: "Generate strong random passwords.",
+      noindex: true,
+    },
   },
   {
     path: "/qr-generator",
     name: "qr-generator",
     component: () => import("@/pages/tools/QrGeneratorTool.vue"),
-    meta: { title: "QR generator", description: "Generate QR codes as downloadable SVG." },
+    meta: {
+      title: "QR generator",
+      description: "Generate QR codes as downloadable SVG.",
+      noindex: true,
+    },
   },
   {
     path: "/recipes",
@@ -232,13 +242,14 @@ const routes: RouteRecordRaw[] = [
       scrollRestore: "volatile",
       title: "Recipes",
       description: "Personal recipe book and food notes.",
+      noindex: true,
     },
   },
   {
     path: "/shortener",
     name: "shortener",
     component: () => import("@/pages/tools/UrlShortenerTool.vue"),
-    meta: { title: "URL shortener", description: "Create and manage short URLs." },
+    meta: { title: "URL shortener", description: "Create and manage short URLs.", noindex: true },
   },
   {
     path: "/vid-download",
@@ -300,6 +311,7 @@ const routes: RouteRecordRaw[] = [
       scrollRestore: "live",
       title: "Weather",
       description: "Weather lookup, saved locations, and local time.",
+      noindex: true,
     },
   },
   {
@@ -360,10 +372,10 @@ router.beforeEach(async (to, _from) => {
     return { name: "admin-news", replace: true };
   }
   if (to.name === "tool-ai-chat" && !isAiChatEnabled()) {
-    return { name: "admin" };
+    return { name: "admin", query: { aichat: "off" }, replace: true };
   }
   if (!isExpensesEnabled() && to.name === "tool-expenses") {
-    return { name: "tools", replace: true };
+    return { name: "tools", query: { expenses: "off" }, replace: true };
   }
   const auth = useAuthStore();
   const shouldResolveSession =
@@ -405,6 +417,7 @@ router.beforeEach(async (to, _from) => {
 
 router.afterEach((to) => {
   applyRouteSeo(to);
+  applyRouteAtmosphere(to);
 });
 
 export default router;

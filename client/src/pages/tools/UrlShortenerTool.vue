@@ -121,6 +121,12 @@ onMounted(loadUrls);
     max-width="5xl"
     :narrow="false"
   >
+    <p class="mb-4 text-sm text-surface-mid">
+      Short links resolve at
+      <code class="font-data text-surface-light">/s/{code}</code>
+      — a FastAPI redirect, not a Vue page. Example path:
+      <code class="font-data text-surface-light">/s/demo</code>.
+    </p>
     <form
       class="mb-4 flex min-w-0 flex-wrap items-center gap-2"
       @submit.prevent="createUrl"

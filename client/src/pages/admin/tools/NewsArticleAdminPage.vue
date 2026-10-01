@@ -224,6 +224,15 @@ watch(articleId, () => {
 <template>
   <AdminPageLayout hub="admin" :title="chromeTitle" max-width="5xl" back-to="/admin/news">
     <header v-if="canWrite && article" class="page-intro">
+      <p v-if="form.slug.trim()" class="mb-3 text-sm text-surface-mid">
+        Public URL:
+        <RouterLink
+          :to="`/news/${form.slug.trim()}`"
+          class="nav-link font-data"
+        >
+          /news/{{ form.slug.trim() }}
+        </RouterLink>
+      </p>
       <div class="flex flex-wrap gap-2">
         <BaseButton variant="save" :disabled="actionLoading" @click="saveArticle">
           {{ actionLoading ? "saving…" : "save article" }}
