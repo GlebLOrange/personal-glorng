@@ -155,7 +155,7 @@ RESUME_DATA: dict[str, Any] = {
                 " and Telegram publish without blocking the API."
             ),
             "tech": ["Python", "Celery", "Redis", "Telegram"],
-            "url": "/tools",
+            "url": "/news",
         },
         {
             "name": "architecture handbook",

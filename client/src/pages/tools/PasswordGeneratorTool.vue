@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
@@ -113,6 +113,10 @@ async function generatePassword(): Promise<void> {
     showPassword.value = false;
   }
 }
+
+onMounted(() => {
+  void generatePassword();
+});
 </script>
 
 <template>

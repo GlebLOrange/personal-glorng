@@ -37,7 +37,7 @@ onMounted(async () => {
     status.value = "success";
     message.value = `Connected as ${data.github_username}`;
     toast(data.message, "success");
-    redirectTimer = setTimeout(() => router.push("/admin"), 2000);
+    redirectTimer = setTimeout(() => router.push("/settings"), 2000);
   } catch (err: unknown) {
     status.value = "error";
     message.value = getApiErrorMessage(err, "Failed to link GitHub account.");
@@ -50,7 +50,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <AuthPageShell title="" :back-to="status === 'error' ? '/admin' : undefined">
+  <AuthPageShell title="" :back-to="status === 'error' ? '/settings' : undefined">
     <div class="text-center" role="status" aria-live="polite" :aria-busy="status === 'loading'">
       <div v-if="status === 'loading'" class="space-y-4">
         <div
@@ -63,13 +63,14 @@ onUnmounted(() => {
       <div v-else-if="status === 'success'" class="space-y-4">
         <StatusIcon status="success" class-name="mx-auto size-8" />
         <p class="text-surface-light font-medium">{{ message }}</p>
-        <p class="text-xs text-surface-mid">Redirecting to admin…</p>
-        <RouterLink to="/admin" class="nav-link text-sm">Continue to admin</RouterLink>
+        <p class="text-xs text-surface-mid">Redirecting to settings…</p>
+        <RouterLink to="/settings" class="nav-link text-sm">Continue to settings</RouterLink>
       </div>
 
       <div v-else class="space-y-4" role="alert">
         <StatusIcon status="error" class-name="mx-auto size-8" />
         <p class="text-surface-light font-medium">{{ message }}</p>
+        <RouterLink to="/settings" class="nav-link text-sm">Back to settings</RouterLink>
       </div>
     </div>
   </AuthPageShell>

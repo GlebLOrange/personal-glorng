@@ -71,6 +71,9 @@ async function handleRegister(): Promise<void> {
 
 <template>
   <AuthPageShell title="create account" max-width="md" back-to="/login">
+    <p v-if="!submitted" class="text-sm text-surface-mid">
+      An account can save recipes, weather locations, and short links on this site.
+    </p>
     <div v-if="submitted" class="text-center space-y-4" role="status">
       <p class="text-surface-mid text-sm">
         We sent a verification link to <strong class="text-surface-light">{{ email }}</strong
