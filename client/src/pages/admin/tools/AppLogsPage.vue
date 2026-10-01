@@ -37,9 +37,10 @@ interface AppLogEntry {
 const items = ref<AppLogEntry[]>([]);
 const total = ref(0);
 const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: true });
-const level = ref("");
+const level = ref("error");
 const requestId = ref("");
 const page = ref(1);
+const dateFrom = ref(new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
 const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
@@ -60,7 +61,9 @@ const appliedRequestId = computed(() => {
   const value = requestId.value.trim();
   return value.length >= MIN_REQUEST_ID_LENGTH ? value : "";
 });
-const hasActiveFilters = computed(() => Boolean(level.value || appliedRequestId.value));
+const hasActiveFilters = computed(
+  () => Boolean(level.value || appliedRequestId.value || dateFrom.value),
+);
 const activeFilterLabel = computed(() => {
   const parts: string[] = [];
   if (level.value) parts.push(level.value);
@@ -70,7 +73,7 @@ const activeFilterLabel = computed(() => {
 
 useScrollListFingerprint(
   () =>
-    `${page.value}:${total.value}:${level.value}:${appliedRequestId.value}:${items.value[0]?.id ?? ""}`,
+    `${page.value}:${total.value}:${level.value}:${appliedRequestId.value}:${dateFrom.value}:${items.value[0]?.id ?? ""}`,
 );
 
 async function load(): Promise<void> {
@@ -82,6 +85,7 @@ async function load(): Promise<void> {
       };
       if (level.value) params.level = level.value;
       if (appliedRequestId.value) params.request_id = appliedRequestId.value;
+      if (dateFrom.value) params.date_from = dateFrom.value;
       const { data: response } = await api.get<{ items: AppLogEntry[]; total: number }>(
         "/tools/app-logs",
         { params },
@@ -123,6 +127,7 @@ function clearFilters(): void {
   clearTimeout(requestIdTimer);
   level.value = "";
   requestId.value = "";
+  dateFrom.value = "";
   lastAppliedRequestId = "";
   page.value = 1;
   void load();

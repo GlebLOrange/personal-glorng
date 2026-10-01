@@ -12,16 +12,21 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("vue-router", () => ({
   useRoute: () => ({ fullPath: mocks.fullPath }),
-  RouterLink: {
-    props: ["to"],
-    template: "<a :href=\"typeof to === 'string' ? to : '#'\"><slot /></a>",
-  },
 }));
+
+const routerLinkStub = {
+  props: ["to"],
+  template: "<a :href=\"typeof to === 'string' ? to : '#'\"><slot /></a>",
+};
 
 describe("NotFoundPage", () => {
   it("shows the heading, requested path, and recovery links", () => {
     mocks.fullPath = "/this-does-not-exist";
-    const wrapper = mount(NotFoundPage);
+    const wrapper = mount(NotFoundPage, {
+      global: {
+        stubs: { RouterLink: routerLinkStub },
+      },
+    });
 
     expect(wrapper.get("h1").text()).toBe("This path isn't on Gleb.Y.");
     expect(wrapper.text()).toContain("404");
@@ -29,6 +34,7 @@ describe("NotFoundPage", () => {
 
     const hrefs = wrapper.findAll("a").map((link) => link.attributes("href"));
     expect(hrefs).toContain("/");
+    expect(hrefs).toContain("/#experience");
     expect(hrefs).toContain("/tools");
     expect(hrefs).toContain("/news");
   });

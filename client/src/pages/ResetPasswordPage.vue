@@ -97,9 +97,9 @@ async function handleSubmit(): Promise<void> {
     </form>
 
     <div v-else class="space-y-3 text-center" role="alert">
-      <p class="text-status-error text-sm">Invalid or missing reset link.</p>
+      <p class="text-status-error text-sm">Link expired or invalid.</p>
       <RouterLink to="/forgot-password" class="nav-link text-sm">
-        request a new reset link
+        request another reset link
       </RouterLink>
     </div>
   </AuthPageShell>

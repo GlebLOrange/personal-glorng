@@ -23,6 +23,12 @@ const route = useRoute();
         class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2"
       >
         <RouterLink
+          to="/#experience"
+          class="nav-link inline-flex min-h-11 items-center text-sm"
+        >
+          Experience
+        </RouterLink>
+        <RouterLink
           to="/tools"
           class="nav-link inline-flex min-h-11 items-center text-sm"
         >

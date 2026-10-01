@@ -58,6 +58,12 @@ const {
   copyResult,
   downloadResult,
 } = useDataExtractTool();
+
+const SAMPLE_CSV = "name,amount\ncoffee,3.50\nlunch,12.00\n";
+
+function loadSampleCsv(): void {
+  selectFile(new File([SAMPLE_CSV], "sample.csv", { type: "text/csv" }));
+}
 </script>
 
 <template>
@@ -160,6 +166,11 @@ const {
           :selected-name="selectedName"
           @select="selectFile"
         />
+        <div class="mt-2">
+          <ToolbarPillButton action="create" type="button" @click="loadSampleCsv">
+            load sample csv
+          </ToolbarPillButton>
+        </div>
       </div>
 
       <DataExtractBatchPanel

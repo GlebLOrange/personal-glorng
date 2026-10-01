@@ -36,8 +36,9 @@ interface AuditEvent {
 const items = ref<AuditEvent[]>([]);
 const total = ref(0);
 const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: true });
-const category = ref("");
+const category = ref("security");
 const page = ref(1);
+const dateFrom = ref(new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
 const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
@@ -49,13 +50,13 @@ const CATEGORY_FILTERS = [
 const totalPages = computed(() => Math.ceil(total.value / ADMIN_LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
-const hasActiveFilters = computed(() => Boolean(category.value));
+const hasActiveFilters = computed(() => Boolean(category.value || dateFrom.value));
 const activeFilterLabel = computed(
   () => CATEGORY_FILTERS.find((chip) => chip.value === category.value)?.label,
 );
 
 useScrollListFingerprint(
-  () => `${page.value}:${total.value}:${category.value}:${items.value[0]?.id ?? ""}`,
+  () => `${page.value}:${total.value}:${category.value}:${dateFrom.value}:${items.value[0]?.id ?? ""}`,
 );
 
 async function load(): Promise<void> {
@@ -66,6 +67,7 @@ async function load(): Promise<void> {
         per_page: ADMIN_LIST_PAGE_SIZE,
       };
       if (category.value) params.category = category.value;
+      if (dateFrom.value) params.date_from = dateFrom.value;
       const { data: response } = await api.get<{ items: AuditEvent[]; total: number }>(
         "/tools/audit",
         { params },
@@ -89,6 +91,7 @@ function setCategoryFilter(next: string): void {
 
 function clearFilters(): void {
   category.value = "";
+  dateFrom.value = "";
   page.value = 1;
   filterDropdownRef.value?.close();
   void load();

@@ -41,6 +41,9 @@ watch(page, () => {
     back-to="/"
     :narrow="false"
   >
+    <p class="text-body mb-6 max-w-3xl">
+      Curated digest from scheduled RSS ingest — each article links back to its source.
+    </p>
     <ListSkeleton
       v-if="listLoading"
       :rows="5"
