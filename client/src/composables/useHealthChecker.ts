@@ -1,10 +1,13 @@
 import { computed, ref } from "vue";
+import axios from "axios";
 
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
+import { useNotify } from "@/composables/useNotify";
 import { usePermissions } from "@/composables/usePermissions";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import type { HealthHistoryPoint, HealthMonitor, PaginatedList } from "@/types";
+import { getApiErrorMessage } from "@/types/api";
 import { ensureHttpsUrl } from "@/utils/ensureHttpsUrl";
 
 export type HealthInterval = 1 | 5 | 15 | 60;
@@ -26,8 +29,10 @@ export function useHealthChecker() {
   const newUrl = ref("");
   const newLabel = ref("");
   const newInterval = ref<HealthInterval>(5);
+  const toolDisabled = ref(false);
+  const listLoading = ref(false);
+  const { toast } = useNotify();
 
-  const { loading: listLoading, run: runList } = useApiAction();
   const { loading: creating, run: runCreate } = useApiAction();
   const { loading: checking, run: runCheck } = useApiAction();
   const { loading: historyLoading, run: runHistory } = useApiAction();
@@ -51,17 +56,15 @@ export function useHealthChecker() {
 
   async function loadMonitors(): Promise<void> {
     if (!canRead.value) return;
-    const data = await runList(
-      () =>
-        api.get<PaginatedList<HealthMonitor>>("/tools/health-checker", {
-          params: { page: page.value, per_page: ADMIN_LIST_PAGE_SIZE },
-        }),
-      { errorFallback: "Failed to load monitors" },
-    );
-    if (data) {
-      monitors.value = data.data.items;
-      total.value = data.data.total;
-      totalPages.value = data.data.pages;
+    listLoading.value = true;
+    try {
+      const { data } = await api.get<PaginatedList<HealthMonitor>>("/tools/health-checker", {
+        params: { page: page.value, per_page: ADMIN_LIST_PAGE_SIZE },
+      });
+      toolDisabled.value = false;
+      monitors.value = data.items;
+      total.value = data.total;
+      totalPages.value = data.pages;
       if (
         selectedId.value != null &&
         !monitors.value.some((m) => m.id === selectedId.value)
@@ -69,6 +72,14 @@ export function useHealthChecker() {
         selectedId.value = null;
         history.value = [];
       }
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 404) {
+        toolDisabled.value = true;
+        return;
+      }
+      toast(getApiErrorMessage(err, "Failed to load monitors"), "error");
+    } finally {
+      listLoading.value = false;
     }
   }
 
@@ -212,6 +223,7 @@ export function useHealthChecker() {
     newUrl,
     newLabel,
     newInterval,
+    toolDisabled,
     listLoading,
     creating,
     checking,

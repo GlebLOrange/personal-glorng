@@ -12,11 +12,13 @@ import { familyBadgeClass } from "@/constants/httpStatusColors";
 import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { getApiErrorMessageFromBlob } from "@/types/api";
+import axios from "axios";
 
 const url = ref("");
 const format = ref("best");
 const audioOnly = ref(false);
 const loading = ref(false);
+const toolDisabled = ref(false);
 const { toast } = useNotify();
 
 const formats = [
@@ -66,6 +68,11 @@ async function download(): Promise<void> {
 
     toast("Download complete", "success");
   } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      toolDisabled.value = true;
+      toast("This tool is turned off on this server.", "error");
+      return;
+    }
     const msg = await getApiErrorMessageFromBlob(err, "Download failed");
     toast(msg, "error");
   } finally {
@@ -76,7 +83,14 @@ async function download(): Promise<void> {
 
 <template>
   <AdminPageLayout hub="tools" title="video downloader" max-width="5xl" back-to="/tools">
-    <form class="mb-8 space-y-3" @submit.prevent="download">
+    <p
+      v-if="toolDisabled"
+      class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
+      role="status"
+    >
+      This tool is turned off on this server.
+    </p>
+    <form v-else class="mb-8 space-y-3" @submit.prevent="download">
       <CollapsibleUsageGuide title="yt-dlp usage guide">
         <template #start>
           <AdminFilterDropdown

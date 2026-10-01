@@ -54,7 +54,11 @@ onMounted(async () => {
       }"
     >
       <p v-if="status === 'loading'">Verifying your email…</p>
-      <p v-else>{{ message }}</p>
+      <p v-else-if="status === 'success'">{{ message }}</p>
+      <template v-else>
+        <p>{{ message }}</p>
+        <p class="mt-2 text-surface-mid">Link expired or invalid — request another from login.</p>
+      </template>
     </div>
 
     <BaseButton

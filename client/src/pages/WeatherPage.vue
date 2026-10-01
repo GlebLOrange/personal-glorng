@@ -48,6 +48,9 @@ function handleSelect(query: string): void {
     back-to="/tools"
     :narrow="false"
   >
+    <p class="mb-4 text-sm text-surface-mid">
+      Guests can pin a few cities in this browser. Sign in to keep locations across devices.
+    </p>
     <section class="mb-8 min-w-0">
       <WeatherLocationForm
         :add-location="handleAdd"
