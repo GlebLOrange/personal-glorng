@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled, isExpensesEnabled } from "@/utils/featureFlags";
 import { installScrollRestore, resolveScrollBehavior } from "@/utils/scrollRestore";
+import { applyRouteAtmosphere } from "@/composables/useAtmosphere";
 import { applyRouteSeo } from "@/composables/useRouteSeo";
 import { safeRedirectPath } from "@/utils/safeUrl";
 import { scrubSensitivePath } from "@/utils/sensitiveUrl";
@@ -15,6 +16,7 @@ const routes: RouteRecordRaw[] = [
     name: "portfolio",
     component: () => import("@/pages/PortfolioPage.vue"),
     meta: {
+      atmosphere: "space",
       title: "Python Backend / FastAPI Engineer",
       description:
         "Gleb.Y — Python/FastAPI backend engineer. Production platforms: APIs, auth, workers, data stores, and CI/CD. Full-stack capable.",
@@ -415,6 +417,7 @@ router.beforeEach(async (to, _from) => {
 
 router.afterEach((to) => {
   applyRouteSeo(to);
+  applyRouteAtmosphere(to);
 });
 
 export default router;
