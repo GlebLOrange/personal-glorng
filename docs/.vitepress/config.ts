@@ -34,6 +34,7 @@ export default defineConfig({
           items: [
             { text: "Deployment", link: "/operations/deployment" },
             { text: "Database", link: "/operations/database" },
+            { text: "Logging", link: "/operations/logging" },
             { text: "Backup & restore", link: "/operations/backup-restore" },
             { text: "Cloudflare", link: "/operations/cloudflare" },
             { text: "DevOps checklist", link: "/operations/devops-checklist" },

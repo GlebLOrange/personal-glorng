@@ -10,6 +10,7 @@ from starlette.responses import JSONResponse, Response
 
 from app.core.csrf import csrf_origin_rejected
 from app.core.logging import logger
+from app.core.probe_paths import PROBE_LOG_SKIP_PATHS
 from app.core.request_context import request_id_var, user_id_var
 from app.core.security import (
     access_token_from_request,
@@ -40,7 +41,6 @@ _SENSITIVE_BODY_KEYS = frozenset(
         "apikey",
     },
 )
-_SKIP_REQUEST_LOG_PATHS = frozenset({"/api/health", "/api/ready"})
 
 
 def _should_skip_body_log(content_type: str | None) -> bool:
@@ -152,7 +152,7 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
                 log_ctx["user_id"] = user_id
 
             path = str(request.url.path)
-            log_request = settings.LOG_REQUESTS and path not in _SKIP_REQUEST_LOG_PATHS
+            log_request = settings.LOG_REQUESTS and path not in PROBE_LOG_SKIP_PATHS
 
             body_log: str | None = None
             if settings.LOG_REQUEST_BODIES and request.method in {

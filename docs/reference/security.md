@@ -152,11 +152,13 @@ Structured API logs (Loguru / [`logging.py`](../../server/app/core/logging.py)) 
 | Min level stored | `APP_LOG_PERSIST_MIN_LEVEL` (dev default `WARNING`; prod example `INFO`; DEBUG stays stderr-only) |
 | Retention | TTL index on `occurred_at` — `APP_LOG_RETENTION_DAYS` (default 30) |
 | Admin access | `GET /api/tools/app-logs` requires `app-logs:read` |
-| Health noise | `/api/health` request logs are not persisted |
+| Health noise | `/api/health` and `/api/ready` request logs are not persisted |
 | Failure mode | Queue is bounded; overflow drops oldest entries; DB errors never crash the app |
 | Body logging | `LOG_REQUEST_BODIES` logs redacted JSON only; skips multipart/binary and bodies over 64 KiB; forbidden in production/staging |
 
 Audit events ([`audit_events`](../../server/app/db/repositories/audit.py)) remain a separate, intentional change trail — not general application logs.
+
+Day-to-day retention and probe exclusion: [Logging](/operations/logging).
 
 ## Secrets and CI
 

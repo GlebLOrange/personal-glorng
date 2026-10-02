@@ -33,6 +33,12 @@ def test_enqueue_skips_health_probe() -> None:
     assert _drain_queue() == []
 
 
+def test_enqueue_skips_ready_probe() -> None:
+    _drain_queue()
+    enqueue_log_entry(_sample_entry(path="/api/ready"))
+    assert _drain_queue() == []
+
+
 def test_enqueue_respects_min_level(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
