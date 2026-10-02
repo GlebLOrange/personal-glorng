@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import { api } from "@/composables/useApi";
@@ -8,35 +8,20 @@ import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { getApiErrorMessageFromBlob } from "@/types/api";
 
 const CV_FILENAME = "gleb.y.cv.pdf";
-const HANDBOOK_URL = "https://gleblorange.github.io/personal-glorng/";
 
-const props = defineProps<{
+defineProps<{
   name: string;
   title: string;
   tagline?: string;
   location?: string;
   availability?: string;
   bio: string;
-  githubUrl?: string;
-  repoUrl?: string;
 }>();
 
 const emit = defineEmits<{ inquire: [] }>();
 
 const isDownloadingCv = ref(false);
 const { toast } = useNotify();
-
-const proofLinks = computed(() => {
-  const links: Array<{ href: string; label: string; external: boolean }> = [
-    { href: HANDBOOK_URL, label: "architecture docs", external: true },
-  ];
-  if (props.repoUrl) {
-    links.unshift({ href: props.repoUrl, label: "source repo", external: true });
-  } else if (props.githubUrl) {
-    links.unshift({ href: props.githubUrl, label: "github", external: true });
-  }
-  return links;
-});
 
 async function downloadCv(): Promise<void> {
   if (isDownloadingCv.value) return;
@@ -116,7 +101,7 @@ async function downloadCv(): Promise<void> {
       </button>
     </div>
 
-    <!-- Jump + proof: middot lists, no eyebrows (labels live in aria-label). -->
+    <!-- Jump links: middot list, no eyebrows (label lives in aria-label). -->
     <div class="portfolio-link-rail mt-5 flex flex-col gap-1 print:hidden">
       <nav aria-label="On this page">
         <ul class="m-0 flex list-none flex-wrap items-center gap-y-1 p-0">
@@ -131,26 +116,6 @@ async function downloadCv(): Promise<void> {
               class="nav-link inline-flex min-h-11 items-center px-1 rounded-lg"
             >
               {{ link.label }}
-            </a>
-          </li>
-        </ul>
-      </nav>
-      <nav aria-label="site proof">
-        <ul class="m-0 flex list-none flex-wrap items-center gap-y-1 p-0 text-sm">
-          <li
-            v-for="(link, i) in proofLinks"
-            :key="link.href"
-            class="inline-flex items-center"
-          >
-            <span v-if="i > 0" class="px-1.5 text-surface-muted" aria-hidden="true">·</span>
-            <a
-              :href="link.href"
-              :target="link.external ? '_blank' : undefined"
-              :rel="link.external ? 'noopener noreferrer' : undefined"
-              class="nav-link inline-flex min-h-11 items-center px-1 rounded-lg text-surface-mid"
-            >
-              {{ link.label }}
-              <span v-if="link.external" class="sr-only">(opens in new tab)</span>
             </a>
           </li>
         </ul>

@@ -15,8 +15,7 @@ import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import type { DonationsConfig, PublicGitHubRepo, ResumeData } from "@/types";
 
-const FLAGSHIP_REPO_URL = "https://github.com/GlebLOrange/personal-glorng";
-/** ponytail: hide thin strip — hero already links the flagship; one card looks weak */
+/** ponytail: hide a one-card gallery — looks thin without a peer */
 const MIN_GITHUB_STRIP_REPOS = 2;
 
 const ExperienceList = defineAsyncComponent(() => import("@/components/resume/ExperienceList.vue"));
@@ -61,7 +60,7 @@ const highlightedRepos = computed(() => {
     if (profileLogin && repo.name.toLowerCase() === profileLogin) return false;
     return true;
   });
-  // Hide a one-card gallery that duplicates the hero flagship link.
+  // Hide a one-card gallery — looks thin without a peer.
   if (publicRepos.length < MIN_GITHUB_STRIP_REPOS) {
     return [];
   }
@@ -167,8 +166,6 @@ onUnmounted(() => {
         :location="resume.location"
         :availability="resume.availability"
         :bio="resume.bio"
-        :github-url="githubProfileUrl"
-        :repo-url="FLAGSHIP_REPO_URL"
         @inquire="contactModal = 'inquiry'"
       />
     </SectionWrapper>
