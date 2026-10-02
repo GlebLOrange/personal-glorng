@@ -66,6 +66,22 @@ class NewsRepository(MongoRepository[NewsArticle]):
             self._query(status=status, source_id=source_id)
         )
 
+    async def count_articles_by_status(self) -> tuple[dict[str, int], int]:
+        """Count articles by status in one aggregation; total includes missing status."""
+        cursor = self._col().aggregate(
+            [{"$group": {"_id": "$status", "count": {"$sum": 1}}}],
+        )
+        counts: dict[str, int] = {}
+        total = 0
+        async for row in cursor:
+            count = int(row["count"])
+            total += count
+            status = row.get("_id")
+            if status is None:
+                continue
+            counts[str(status)] = count
+        return counts, total
+
     async def clear_source_id(self, source_id: int) -> int:
         """Detach articles from a deleted source; keep denormalized source fields."""
         result = await self._col().update_many(
