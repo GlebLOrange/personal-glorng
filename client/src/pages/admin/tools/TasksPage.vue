@@ -52,6 +52,7 @@ const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown"
 const { isSuperuser } = usePermissions();
 
 const {
+  DEFAULT_FILTER_STATUS,
   tasks,
   syncQueue,
   intakes,
@@ -124,10 +125,16 @@ function setStatusFilter(status: string): void {
 }
 
 function clearFilters(): void {
-  filterStatus.value = "";
+  filterStatus.value = DEFAULT_FILTER_STATUS;
   searchQuery.value = "";
   filterDropdownRef.value?.close();
 }
+
+const hasActiveFilters = computed(
+  () =>
+    filterStatus.value !== DEFAULT_FILTER_STATUS ||
+    Boolean(effectiveSearchQuery(searchQuery.value)),
+);
 
 function onFailedSyncs(): void {
   filterDropdownRef.value?.close();
@@ -166,7 +173,7 @@ onMounted(() => {
           <AdminFilterDropdown
             v-show="activeTab === 'queue'"
             ref="filterDropdown"
-            :has-active-filters="Boolean(filterStatus || effectiveSearchQuery(searchQuery))"
+            :has-active-filters="hasActiveFilters"
             :active-label="activeFilterLabel"
             :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
             @clear="clearFilters"

@@ -11,6 +11,13 @@ export function isoDateLocal(d: Date = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
+/** Local calendar date for yesterday as YYYY-MM-DD. */
+export function yesterdayIsoDate(d: Date = new Date()): string {
+  const yesterday = new Date(d);
+  yesterday.setDate(yesterday.getDate() - 1);
+  return isoDateLocal(yesterday);
+}
+
 /** Local calendar month as YYYY-MM (HTML month input value). */
 export function monthValueLocal(d: Date = new Date()): string {
   const { year, month } = localYearMonth(d);

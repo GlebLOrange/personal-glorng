@@ -30,7 +30,8 @@ export function useTasks() {
   const intakes = ref<TaskIntakeItem[]>([]);
   const selectedTask = ref<TaskDetail | null>(null);
   const stats = ref<TaskStats | null>(null);
-  const filterStatus = ref("");
+  const DEFAULT_FILTER_STATUS = "pending";
+  const filterStatus = ref(DEFAULT_FILTER_STATUS);
   const searchQuery = ref("");
   const page = ref(1);
   const intakePage = ref(1);
@@ -321,6 +322,7 @@ export function useTasks() {
   });
 
   return {
+    DEFAULT_FILTER_STATUS,
     tasks,
     syncQueue,
     intakes,
