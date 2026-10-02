@@ -49,6 +49,7 @@ Workflow inventory and local test tiers: [Testing](/reference/testing). Deploy r
 ## Quick links
 
 - [Deployment](/operations/deployment)
+- [Logging](/operations/logging)
 - [Cloudflare](/operations/cloudflare)
 - [Backup & restore](/operations/backup-restore)
 - [Security](/reference/security)

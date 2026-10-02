@@ -225,6 +225,7 @@ Replace `TASK_NAME` / args from the DLQ message. After a successful replay, ack/
 ## Related
 
 - [Database](/operations/database) — migrations and seeds
+- [Logging](/operations/logging) — audit trail vs app logs
 - [Backup & restore](/operations/backup-restore)
 - [Cloudflare](/operations/cloudflare)
 - [Security](/reference/security)

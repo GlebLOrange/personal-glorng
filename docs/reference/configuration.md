@@ -31,6 +31,8 @@ Keep `RUN_MIGRATIONS` / `RUN_SEED` in `.env` (or secrets) — avoid setting them
 | `APP_LOG_PERSIST_MIN_LEVEL` | `WARNING` (dev) / `INFO` (prod) | Min level for DB log persistence |
 | `APP_LOG_RETENTION_DAYS` | `30` | TTL for `app_logs` collection |
 
+How to retain and browse app logs vs audit events: [Logging](/operations/logging).
+
 ## Database bootstrap
 
 | Variable | Default | Purpose |

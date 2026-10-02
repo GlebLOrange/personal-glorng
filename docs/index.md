@@ -7,7 +7,8 @@
 | Section | Topics |
 |---------|--------|
 | [Guide](/guide/getting-started) | Setup, architecture, dev workflow, frontend, contributing |
-| [Operations](/operations/deployment) | Prod container workflow, database, backups, Cloudflare, [DevOps / CI gates](/operations/devops-checklist) || [Reference](/reference/platform) | API catalog, Postman, env vars, security, testing, automation |
+| [Operations](/operations/deployment) | Prod container workflow, database, [logging](/operations/logging), backups, Cloudflare, [DevOps / CI gates](/operations/devops-checklist) |
+| [Reference](/reference/platform) | API catalog, Postman, env vars, security, testing, automation |
 | [ADRs](/adr/) | Architecture decision records |
 | [API endpoints](/generated/api-endpoints) | Generated OpenAPI path table |
 | [Architecture inventory](/generated/architecture-inventory) | Generated platform + Compose inventory |
