@@ -109,7 +109,7 @@ export const RESUME_FALLBACK: ResumeData = {
         "Celery + Redis workers for reminders, cleanup, news ingest," +
         " and Telegram publish without blocking the API.",
       tech: ["Python", "Celery", "Redis", "Telegram"],
-      url: "/tools",
+      url: "/news",
     },
     {
       name: "architecture handbook",
