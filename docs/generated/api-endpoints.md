@@ -5,11 +5,13 @@
 
 Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Download the raw schema: [openapi.json](/openapi.json).
 
-**133** operations.
+**149** operations.
 
 | Method | Path | Tags | Summary |
 |--------|------|------|---------|
 | `GET` | `/amp` | amp | Get AMP portfolio page |
+| `GET` | `/api/admin/maintenance` | admin | Get DB maintenance status |
+| `POST` | `/api/admin/maintenance/run` | admin | Start DB maintenance |
 | `GET` | `/api/admin/users` | admin | List users |
 | `GET` | `/api/admin/users/stats` | admin | Get user summary stats |
 | `GET` | `/api/admin/users/{public_id}` | admin | Get user |
@@ -92,6 +94,13 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/tools/file-share` | file-share | List shared files |
 | `POST` | `/api/tools/file-share` | file-share | Upload shared file |
 | `DELETE` | `/api/tools/file-share/{file_id}` | file-share | Delete shared file |
+| `GET` | `/api/tools/health-checker` | health-checker | List health monitors |
+| `POST` | `/api/tools/health-checker` | health-checker | Create health monitor |
+| `DELETE` | `/api/tools/health-checker/{monitor_id}` | health-checker | Delete health monitor |
+| `GET` | `/api/tools/health-checker/{monitor_id}` | health-checker | Get health monitor |
+| `PATCH` | `/api/tools/health-checker/{monitor_id}` | health-checker | Update health monitor |
+| `POST` | `/api/tools/health-checker/{monitor_id}/check` | health-checker | Run health check now |
+| `GET` | `/api/tools/health-checker/{monitor_id}/history` | health-checker | Health check history |
 | `GET` | `/api/tools/news` | news | List news |
 | `POST` | `/api/tools/news` | news | Create news article |
 | `GET` | `/api/tools/news/by-id/{article_id}` | news | Get news article by id |
@@ -109,6 +118,13 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `POST` | `/api/tools/news/{article_id}/telegram` | news | Publish news article to Telegram |
 | `GET` | `/api/tools/news/{slug}` | news | Get news article |
 | `POST` | `/api/tools/password-generator` | password-generator | Generate a random password |
+| `POST` | `/api/tools/qr-generator` | qr-generator | Generate QR code |
+| `GET` | `/api/tools/qr-generator/library` | qr-generator | List saved QR codes |
+| `POST` | `/api/tools/qr-generator/library` | qr-generator | Save QR code to library |
+| `DELETE` | `/api/tools/qr-generator/library/{qr_id}` | qr-generator | Delete saved QR code |
+| `GET` | `/api/tools/qr-generator/library/{qr_id}` | qr-generator | Get saved QR code |
+| `PATCH` | `/api/tools/qr-generator/library/{qr_id}` | qr-generator | Update saved QR code |
+| `GET` | `/api/tools/qr-generator/library/{qr_id}/svg` | qr-generator | Download saved QR SVG |
 | `GET` | `/api/tools/recipes` | recipes | List recipes |
 | `POST` | `/api/tools/recipes` | recipes | Create recipe |
 | `GET` | `/api/tools/recipes/tags` | recipes | List recipe tags |

@@ -9,24 +9,28 @@ Auto-generated from [`server/app/platform/registry.py`](../../server/app/platfor
 
 | Slug | Category | API prefix | Admin route | Public | Public route | Capabilities |
 |------|----------|------------|-------------|--------|--------------|--------------|
-| tasks | productivity | `/tasks` | `/tasks` | no | — | read, write, schedule |
+| tasks | productivity | `/tasks` | `/tasks` | no | — | read |
 | email | productivity | `/email` | `/admin/send-email` | no | — | write |
-| expenses | productivity | `/expenses` | `/expenses` | yes | /expense-calculator | read, write |
+| expenses | productivity | `/expenses` | `/expenses` | no | — | read, write |
 | recipes | content | `/recipes` | `/recipes` | yes | — | read, write |
 | news | content | `/tools/news` | `/admin/news` | no | — | read, write |
 | file-share | content | `/file-share` | `/file-share` | no | — | read, write |
 | url-shortener | content | `/url-shortener` | `/shortener` | yes | — | read, write |
 | calculator | utilities | `/calculator` | `/calculator` | yes | — | read |
 | password-generator | utilities | `/password-generator` | `/password-generator` | yes | — | read |
-| vid-download | utilities | `/vid-download` | `/vid-download` | yes | — | read, write |
-| ai-chat | utilities | `/ai-chat` | `/admin/ai-chat` | no | — | read, write |
+| qr-generator | utilities | `/qr-generator` | `/qr-generator` | yes | — | read, write |
+| vid-download | utilities | `/vid-download` | `/vid-download` | no | — | read, write |
+| weather | utilities | `/weather` | `/weather` | yes | — | read |
+| ai-chat | utilities | `/ai-chat` | `/admin/ai-chat` | no | — |  |
 | data-extract | utilities | `/data-extract` | `/data-extract` | no | — | read, write |
+| health-checker | utilities | `/health-checker` | `/health-checker` | no | — | read, write |
 | feedback | operations | `/feedback` | `/admin/feedback` | no | — | read, write |
 | news-sources | content | `/tools/news/sources` | `/admin/news/sources` | no | — | read, write |
 | audit | operations | `/audit` | `/admin/audit-logs` | no | — | read |
 | app-logs | operations | `/app-logs` | `/admin/app-logs` | no | — | read |
 | search | operations | `/search` | `/admin/search` | no | — | read |
 | api-docs | operations | `/docs` | `/api/docs` | no | — | read |
+| db-maintenance | operations | `/admin/maintenance` | `/admin/db-maintenance` | no | — |  |
 
 ## Compose services (`docker-compose.yml`)
 
