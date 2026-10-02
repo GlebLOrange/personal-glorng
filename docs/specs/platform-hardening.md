@@ -78,7 +78,7 @@ flowchart TD
 | Phase | Theme | Depends on | Risk |
 |-------|--------|------------|------|
 | 0 | Land this plan | — | None |
-| 1 | Mongo backup/restore | 0 | Ops script mistakes; verify restore before declaring done |
+| 1 | Mongo backup/restore (**done**) | 0 | Ops script mistakes; verify restore before declaring done |
 | 2 | Session revocation | 0 | Auth regressions; needs careful JWT claim migration |
 | 3 | SSRF, Stripe RL, XML, body-log | 0 | False-positive URL blocks; keep tests tight |
 | 4 | Secrets posture, Dependabot, CI/docs, prod hardening | 1 helpful for backup docs | Compose hardening can break prod — ship behind review |
@@ -89,6 +89,8 @@ Phases 3 and 5 can start in parallel with 2 after Phase 1 if staffing allows. Ph
 ---
 
 ## Phase 1 — Mongo backup & restore
+
+**Status: done.** Primary Mongo dumps, `mongorestore --dryRun` verify, rotation, and restore steps live in [`scripts/db_maintenance.sh`](../../scripts/db_maintenance.sh) and [`docs/operations/backup-restore.md`](../operations/backup-restore.md). Cron / `make backup` remain the normal entrypoint; the admin panel button is optional (host / ultra-lite API only).
 
 ### Goal
 
@@ -103,12 +105,12 @@ Primary datastore is backed up and restorable with the same retention/notify pat
 
 ### Tasks
 
-- [ ] Task: Add Mongo dump + rotation to `db_maintenance.sh`
+- [x] Task: Add Mongo dump + rotation to `db_maintenance.sh`
   - Acceptance: Daily run writes `backups/mongodb/*` and `*_latest` symlink; retention matches other assets
   - Verify: Script dry-run or unit-style shell check; dump file exists and is non-trivial size
   - Files: `scripts/db_maintenance.sh`, maybe `Makefile`, `.env.example`
 
-- [ ] Task: Document restore + update ops docs
+- [x] Task: Document restore + update ops docs
   - Acceptance: Backup-restore doc lists Mongo; restore steps work on a throwaway DB
   - Verify: Manual restore drill noted in PR; `make docs-build`
   - Files: `docs/operations/backup-restore.md`, `docs/operations/database.md` if needed

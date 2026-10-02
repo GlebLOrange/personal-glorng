@@ -34,13 +34,28 @@ verify_gzip() {
   gzip -t "$path" || fail "${label} failed gzip -t: $path"
 }
 
-load_env() {
+source_dotenv() {
   if [[ -f .env ]]; then
     set -a
     # shellcheck disable=SC1091
     source .env
     set +a
   fi
+}
+
+apply_backup_defaults() {
+  BACKUP_DIR="${BACKUP_DIR:-./backups}"
+  BACKUP_COMPOSE_FILE="${BACKUP_COMPOSE_FILE:-docker-compose.prod.yml}"
+  BACKUP_RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-7}"
+  BACKUP_RETENTION_WEEKS="${BACKUP_RETENTION_WEEKS:-4}"
+  BACKUP_NOTIFY="${BACKUP_NOTIFY:-true}"
+  BACKUP_OFFSITE_CMD="${BACKUP_OFFSITE_CMD:-}"
+  BACKUP_REQUIRE_OFFSITE="${BACKUP_REQUIRE_OFFSITE:-false}"
+  LOCK_DIR="${BACKUP_DIR}/.db_maintenance.lock.d"
+}
+
+load_env() {
+  source_dotenv
 
   : "${MONGODB_USER:?MONGODB_USER is required}"
   : "${MONGODB_PASSWORD:?MONGODB_PASSWORD is required}"
@@ -52,14 +67,7 @@ load_env() {
     : "${POSTGRES_DB:?POSTGRES_DB is required when ENABLE_POSTGRES=true}"
   fi
 
-  BACKUP_DIR="${BACKUP_DIR:-./backups}"
-  BACKUP_COMPOSE_FILE="${BACKUP_COMPOSE_FILE:-docker-compose.prod.yml}"
-  BACKUP_RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-7}"
-  BACKUP_RETENTION_WEEKS="${BACKUP_RETENTION_WEEKS:-4}"
-  BACKUP_NOTIFY="${BACKUP_NOTIFY:-true}"
-  BACKUP_OFFSITE_CMD="${BACKUP_OFFSITE_CMD:-}"
-  BACKUP_REQUIRE_OFFSITE="${BACKUP_REQUIRE_OFFSITE:-false}"
-  LOCK_DIR="${BACKUP_DIR}/.db_maintenance.lock.d"
+  apply_backup_defaults
 }
 
 compose() {
