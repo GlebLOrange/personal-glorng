@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import html
 import multiprocessing
 from multiprocessing.connection import Connection
 from time import perf_counter
@@ -11,32 +10,16 @@ from typing import Any, cast
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
+from app.services.resume_html import (
+    CONTACT_ORDER,
+    contact_href,
+    escape_text,
+    highlights_html,
+)
 
-CONTACT_ORDER = ("email", "telegram", "linkedin", "github")
 RESUME_PDF_RENDER_TIMEOUT_SECONDS = 30.0
 _cached_pdf: bytes | None = None
 _cache_lock = asyncio.Lock()
-
-
-def _esc(value: str) -> str:
-    """Escape plain text for safe HTML output."""
-    return html.escape(value, quote=True)
-
-
-def _contact_href(link_id: str, raw: str) -> str:
-    """Return the href target for a resume contact link."""
-    if link_id == "email":
-        return f"mailto:{raw}"
-    return raw
-
-
-def _highlights_html(highlights: list[Any]) -> str:
-    """Render bullet highlights when valid strings are present."""
-    items = [_esc(str(item)) for item in highlights if isinstance(item, str) and item]
-    if not items:
-        return ""
-    bullets = "".join(f"<li>{item}</li>" for item in items)
-    return f'<ul class="highlights">{bullets}</ul>'
 
 
 def _header_meta_line(resume: dict[str, Any]) -> str:
@@ -46,18 +29,18 @@ def _header_meta_line(resume: dict[str, Any]) -> str:
     if not location and not availability:
         return ""
     parts = [part for part in (location, availability) if part]
-    return f'<p class="header-meta">{_esc(" · ".join(parts))}</p>'
+    return f'<p class="header-meta">{escape_text(" · ".join(parts))}</p>'
 
 
 def _skills_html(resume: dict[str, Any]) -> str:
     """Render grouped skills in compact rows (category + items only)."""
     blocks: list[str] = []
     for group in resume.get("skills", []):
-        items = ", ".join(_esc(item) for item in group.get("items", []))
+        items = ", ".join(escape_text(item) for item in group.get("items", []))
         blocks.append(
             f"""
         <div class="skill-group">
-          <h3>{_esc(group["category"])}</h3>
+          <h3>{escape_text(group["category"])}</h3>
           <p>{items}</p>
         </div>""",
         )
@@ -69,17 +52,17 @@ def _experience_html(resume: dict[str, Any]) -> str:
     blocks: list[str] = []
     for job in resume.get("experience", []):
         description = str(job.get("description", "")).strip()
-        description_html = f"<p>{_esc(description)}</p>" if description else ""
-        highlights = _highlights_html(job.get("highlights", []))
+        description_html = f"<p>{escape_text(description)}</p>" if description else ""
+        highlights = highlights_html(job.get("highlights", []))
         blocks.append(
             f"""
         <section class="entry">
           <div class="entry-header">
             <div>
-              <h3>{_esc(job["role"])}</h3>
-              <p class="subtle">{_esc(job["company"])}</p>
+              <h3>{escape_text(job["role"])}</h3>
+              <p class="subtle">{escape_text(job["company"])}</p>
             </div>
-            <span class="period">{_esc(job["period"])}</span>
+            <span class="period">{escape_text(job["period"])}</span>
           </div>
           {description_html}
           {highlights}
@@ -92,18 +75,18 @@ def _projects_html(resume: dict[str, Any]) -> str:
     """Render selected project entries."""
     blocks: list[str] = []
     for project in resume.get("projects", []):
-        tech = ", ".join(_esc(t) for t in project.get("tech", []))
+        tech = ", ".join(escape_text(t) for t in project.get("tech", []))
         url = str(project.get("url", "")).strip()
         link_html = (
-            f'<a href="{_esc(url)}">{_esc(project["name"])}</a>'
+            f'<a href="{escape_text(url)}">{escape_text(project["name"])}</a>'
             if url
-            else f"<span>{_esc(project['name'])}</span>"
+            else f"<span>{escape_text(project['name'])}</span>"
         )
         blocks.append(
             f"""
         <section class="entry">
           <h3>{link_html}</h3>
-          <p class="summary">{_esc(project["description"])}</p>
+          <p class="summary">{escape_text(project["description"])}</p>
           <p class="tech">{tech}</p>
         </section>""",
         )
@@ -114,23 +97,23 @@ def _education_html(resume: dict[str, Any]) -> str:
     """Render education entries when resume data provides them."""
     blocks: list[str] = []
     for item in resume.get("education", []):
-        name = str(item.get("name", "")).strip()
+        institution = str(item.get("institution", "")).strip()
         degree = str(item.get("degree", "")).strip()
         period = str(item.get("period", "")).strip()
-        details = str(item.get("details", "")).strip()
-        if not name and not degree:
+        description = str(item.get("description", "")).strip()
+        if not institution and not degree:
             continue
         blocks.append(
             f"""
         <section class="entry">
           <div class="entry-header">
             <div>
-              <h3>{_esc(degree or name)}</h3>
-              <p class="subtle">{_esc(name)}</p>
+              <h3>{escape_text(degree or institution)}</h3>
+              <p class="subtle">{escape_text(institution)}</p>
             </div>
-            <span class="period">{_esc(period)}</span>
+            <span class="period">{escape_text(period)}</span>
           </div>
-          {f'<p class="summary">{_esc(details)}</p>' if details else ""}
+          {f'<p class="summary">{escape_text(description)}</p>' if description else ""}
         </section>""",
         )
     if not blocks:
@@ -148,17 +131,19 @@ def _contact_html(resume: dict[str, Any]) -> str:
         raw = (resume_links.get(link_id) or "").strip()
         if not raw:
             continue
-        href = _contact_href(link_id, raw)
-        chips.append(f'<a class="contact-item" href="{_esc(href)}">{_esc(raw)}</a>')
+        href = contact_href(link_id, raw)
+        chips.append(
+            f'<a class="contact-item" href="{escape_text(href)}">{escape_text(raw)}</a>'
+        )
     return '<span class="contact-sep" aria-hidden="true">·</span>'.join(chips)
 
 
 def render_resume_html(resume: dict[str, Any]) -> str:
     """Build print-ready HTML for the public resume."""
-    name = _esc(resume["name"])
-    title = _esc(resume["title"])
-    tagline = _esc(str(resume.get("tagline", "")).strip())
-    bio = _esc(resume["bio"])
+    name = escape_text(resume["name"])
+    title = escape_text(resume["title"])
+    tagline = escape_text(str(resume.get("tagline", "")).strip())
+    bio = escape_text(resume["bio"])
     education = _education_html(resume)
     tagline_html = f'<p class="tagline">{tagline}</p>' if tagline else ""
 

@@ -1,24 +1,18 @@
-import html
 from typing import Any
 
+from app.services.resume_html import (
+    CONTACT_ORDER,
+    contact_href,
+    escape_text,
+    highlights_html,
+)
 
-def _esc(value: str) -> str:
-    return html.escape(value, quote=True)
-
-
-CONTACT_ORDER = ("email", "telegram", "linkedin", "github")
 CONTACT_LABELS = {
     "email": "Email",
     "telegram": "Telegram",
     "linkedin": "LinkedIn",
     "github": "GitHub",
 }
-
-
-def _contact_href(link_id: str, raw: str) -> str:
-    if link_id == "email":
-        return f"mailto:{raw}"
-    return raw
 
 
 def _meta_description(resume: dict[str, Any]) -> str:
@@ -34,27 +28,19 @@ def _header_meta_line(resume: dict[str, Any]) -> str:
     if not location and not availability:
         return ""
     parts = [part for part in (location, availability) if part]
-    return f'<p class="meta">{_esc(" · ".join(parts))}</p>'
-
-
-def _highlights_html(highlights: list[Any]) -> str:
-    items = [_esc(str(item)) for item in highlights if isinstance(item, str) and item]
-    if not items:
-        return ""
-    bullets = "".join(f"<li>{item}</li>" for item in items)
-    return f'<ul class="highlights">{bullets}</ul>'
+    return f'<p class="meta">{escape_text(" · ".join(parts))}</p>'
 
 
 def _experience_html(resume: dict[str, Any]) -> str:
     blocks: list[str] = []
     for job in resume.get("experience", []):
-        highlights = _highlights_html(job.get("highlights", []))
+        highlights = highlights_html(job.get("highlights", []))
         blocks.append(
             f"""
         <section class="block card">
-          <h3>{_esc(job["role"])}</h3>
-          <p class="meta">{_esc(job["company"])} · {_esc(job["period"])}</p>
-          <p>{_esc(job["description"])}</p>
+          <h3>{escape_text(job["role"])}</h3>
+          <p class="meta">{escape_text(job["company"])} · {escape_text(job["period"])}</p>
+          <p>{escape_text(job["description"])}</p>
           {highlights}
         </section>""",
         )
@@ -68,12 +54,14 @@ def _education_html(resume: dict[str, Any]) -> str:
     blocks: list[str] = []
     for entry in education:
         description = entry.get("description")
-        description_html = f"<p>{_esc(str(description))}</p>" if description else ""
+        description_html = (
+            f"<p>{escape_text(str(description))}</p>" if description else ""
+        )
         blocks.append(
             f"""
         <section class="block card">
-          <h3>{_esc(entry["degree"])}</h3>
-          <p class="meta">{_esc(entry["institution"])} · {_esc(entry["period"])}</p>
+          <h3>{escape_text(entry["degree"])}</h3>
+          <p class="meta">{escape_text(entry["institution"])} · {escape_text(entry["period"])}</p>
           {description_html}
         </section>""",
         )
@@ -84,20 +72,20 @@ def _education_html(resume: dict[str, Any]) -> str:
 
 def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
     """Render a valid AMP HTML page for the public portfolio."""
-    name = _esc(resume["name"])
-    title = _esc(resume["title"])
+    name = escape_text(resume["name"])
+    title = escape_text(resume["title"])
     tagline = str(resume.get("tagline", "")).strip()
-    bio = _esc(resume["bio"])
-    canonical = _esc(canonical_url)
-    description = _esc(_meta_description(resume))
-    tagline_html = f'<p class="tagline">{_esc(tagline)}</p>' if tagline else ""
+    bio = escape_text(resume["bio"])
+    canonical = escape_text(canonical_url)
+    description = escape_text(_meta_description(resume))
+    tagline_html = f'<p class="tagline">{escape_text(tagline)}</p>' if tagline else ""
 
     skills_html = ""
     for group in resume.get("skills", []):
-        items = ", ".join(_esc(item) for item in group.get("items", []))
+        items = ", ".join(escape_text(item) for item in group.get("items", []))
         skills_html += f"""
         <section class="block">
-          <h2>{_esc(group["category"])}</h2>
+          <h2>{escape_text(group["category"])}</h2>
           <p>{items}</p>
         </section>"""
 
@@ -108,15 +96,15 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
     for project in resume.get("projects", []):
         url = project.get("url") or ""
         link = (
-            f'<a href="{_esc(url)}">{_esc(project["name"])}</a>'
+            f'<a href="{escape_text(url)}">{escape_text(project["name"])}</a>'
             if url
-            else f"<span>{_esc(project['name'])}</span>"
+            else f"<span>{escape_text(project['name'])}</span>"
         )
-        tech = ", ".join(_esc(t) for t in project.get("tech", []))
+        tech = ", ".join(escape_text(t) for t in project.get("tech", []))
         projects_html += f"""
         <section class="block card">
           <h3>{link}</h3>
-          <p>{_esc(project["description"])}</p>
+          <p>{escape_text(project["description"])}</p>
           <p class="meta">{tech}</p>
         </section>"""
 
@@ -126,16 +114,18 @@ def render_portfolio_amp(resume: dict[str, Any], canonical_url: str) -> str:
         raw = (resume_links.get(link_id) or "").strip()
         if not raw:
             continue
-        href = _contact_href(link_id, raw)
+        href = contact_href(link_id, raw)
         label = CONTACT_LABELS[link_id]
-        contact_html += f'<a class="chip" href="{_esc(href)}">{_esc(label)}</a>'
+        contact_html += (
+            f'<a class="chip" href="{escape_text(href)}">{escape_text(label)}</a>'
+        )
 
     return f"""<!doctype html>
 <html ⚡ lang="en">
 <head>
   <meta charset="utf-8" />
   <script async src="https://cdn.ampproject.org/v0.js"></script>
-  <title>{name} — {_esc(title)}</title>
+  <title>{name} — {title}</title>
   <link rel="canonical" href="{canonical}" />
   <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1" />
   <meta name="description" content="{description}" />

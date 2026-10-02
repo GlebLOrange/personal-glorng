@@ -5,11 +5,3 @@ export function formatRecipeTime(minutes: number | null): string {
   const m = minutes % 60;
   return m ? `${h}h ${m}m` : `${h}h`;
 }
-
-export function totalRecipeMinutes(
-  prepTime: number | null,
-  cookTime: number | null,
-): number | null {
-  if (prepTime == null && cookTime == null) return null;
-  return (prepTime ?? 0) + (cookTime ?? 0);
-}
