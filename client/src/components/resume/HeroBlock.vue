@@ -58,17 +58,17 @@ async function downloadCv(): Promise<void> {
 </script>
 
 <template>
-  <div class="py-12 md:py-16">
+  <div class="py-12 md:py-16 text-center">
     <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-3 text-balance">
       <span class="accent-gradient">{{ name }}</span>
     </h1>
     <p class="text-2xl md:text-3xl text-surface-sage mb-2">{{ title }}</p>
-    <p v-if="tagline" class="text-lg text-accent-blue mb-3 text-pretty max-w-2xl">
+    <p v-if="tagline" class="text-lg text-accent-blue mb-3 text-pretty max-w-2xl mx-auto">
       {{ tagline }}
     </p>
     <p
       v-if="location || availability"
-      class="text-meta mb-4 flex flex-wrap items-center gap-x-3 gap-y-1"
+      class="text-meta mb-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1"
     >
       <span v-if="location" class="inline-flex min-h-11 items-center gap-1.5">
         <LocationIcon class-name="size-3.5 shrink-0" />
@@ -85,11 +85,11 @@ async function downloadCv(): Promise<void> {
         {{ availability }}
       </a>
     </p>
-    <p class="text-lg md:text-xl max-w-2xl text-surface-sage leading-relaxed text-pretty">
+    <p class="text-lg md:text-xl max-w-2xl mx-auto text-surface-sage leading-relaxed text-pretty">
       {{ bio }}
     </p>
 
-    <div class="mt-6 flex flex-col sm:flex-row flex-wrap gap-2 print:hidden">
+    <div class="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 print:hidden">
       <button type="button" class="cta-primary" @click="emit('inquire')">get in touch</button>
       <button
         type="button"
@@ -104,7 +104,7 @@ async function downloadCv(): Promise<void> {
     <!-- Jump links: middot list, no eyebrows (label lives in aria-label). -->
     <div class="portfolio-link-rail mt-5 flex flex-col gap-1 print:hidden">
       <nav aria-label="On this page">
-        <ul class="m-0 flex list-none flex-wrap items-center gap-y-1 p-0">
+        <ul class="m-0 flex list-none flex-wrap items-center justify-center gap-y-1 p-0">
           <li
             v-for="(link, i) in PORTFOLIO_SECTION_LINKS"
             :key="link.href"
