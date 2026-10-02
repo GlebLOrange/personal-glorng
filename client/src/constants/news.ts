@@ -60,6 +60,5 @@ export const NEWS_TAGS = [
 export const NEWS_TAG_LIMIT = 4;
 export const NEWS_TITLE_MAX_LENGTH = 90;
 export const NEWS_SUMMARY_MAX_LENGTH = 600;
-export const NEWS_BULLET_MAX_LENGTH = 180;
 
 export const NEWS_TAG_SET = new Set<string>(NEWS_TAGS);

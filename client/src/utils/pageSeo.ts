@@ -1,9 +1,4 @@
-import {
-  DEFAULT_DESCRIPTION,
-  DEFAULT_DOCUMENT_TITLE,
-  formatDocumentTitle,
-  SITE_NAME,
-} from "@/constants/seo";
+import { DEFAULT_DESCRIPTION, formatDocumentTitle, SITE_NAME } from "@/constants/seo";
 
 export type PageSeoInput = {
   title?: string | null;
@@ -89,14 +84,4 @@ export function applyPageSeo(input: PageSeoInput = {}): void {
   if (input.amphtml !== undefined) {
     setAmphtmlLink(input.amphtml);
   }
-}
-
-/** Reset to the default portfolio SEO shell (used by catch-all / errors). */
-export function applyDefaultPageSeo(): void {
-  applyPageSeo({
-    title: DEFAULT_DOCUMENT_TITLE,
-    description: DEFAULT_DESCRIPTION,
-    path: "/",
-    amphtml: true,
-  });
 }
