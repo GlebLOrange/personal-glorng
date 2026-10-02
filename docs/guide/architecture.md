@@ -129,11 +129,14 @@ Three complementary streams:
 2. **Traces / metrics (opt-in)** — EDOT OpenTelemetry via `opentelemetry-instrument` when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. See [Configuration — EDOT](/reference/configuration#edot-opentelemetry-opt-in).
 3. **Audit trail** — `audit_events` with `security` and `domain` categories. Review at `/admin/audit-logs`.
 
+How to retain and browse both streams: [Logging](/operations/logging).
+
 Health: `/api/health` (liveness), `/api/ready` (Mongo + Redis; optional Postgres; RabbitMQ non-critical).
 
 ## Related
 
 - [Platform overview](/reference/platform)
 - [Security](/reference/security)
+- [Logging](/operations/logging)
 - [API & tools](/reference/api-tools)
 - [Architecture inventory (generated)](/generated/architecture-inventory)

@@ -30,6 +30,7 @@ def _level_value(level: str) -> int:
 
 
 def _should_persist(entry: dict[str, Any]) -> bool:
+    from app.core.probe_paths import PROBE_LOG_SKIP_PATHS
     from app.settings import get_settings
 
     settings = get_settings()
@@ -38,7 +39,7 @@ def _should_persist(entry: dict[str, Any]) -> bool:
     min_level = _level_value(settings.APP_LOG_PERSIST_MIN_LEVEL)
     if _level_value(str(entry.get("level", "info"))) < min_level:
         return False
-    return entry.get("path") != "/api/health"
+    return entry.get("path") not in PROBE_LOG_SKIP_PATHS
 
 
 def enqueue_log_entry(entry: dict[str, Any]) -> None:
