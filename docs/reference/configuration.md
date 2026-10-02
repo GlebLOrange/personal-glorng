@@ -26,6 +26,7 @@ Keep `RUN_MIGRATIONS` / `RUN_SEED` in `.env` (or secrets) — avoid setting them
 | `MEDIA_DIR` | `/app/media` | Uploaded file storage path |
 | `CORS_ORIGINS` | localhost variants | Comma-separated allowed origins (required explicit list in production) |
 | `LOG_REQUESTS` | `false` (dev) / `true` (prod) | Log request start/complete; skipped for `/api/health` and `/api/ready` |
+| `LOG_LEVEL` | `INFO` | Min level for stderr JSON logs (DEBUG/INFO/WARNING/ERROR) |
 | `LOG_REQUEST_BODIES` | `false` | Log redacted JSON bodies (POST/PUT/PATCH); forbidden in production/staging |
 | `APP_LOG_PERSIST_ENABLED` | `true` | Persist structured logs to MongoDB |
 | `APP_LOG_PERSIST_MIN_LEVEL` | `WARNING` (dev) / `INFO` (prod) | Min level for DB log persistence |
@@ -232,9 +233,10 @@ Used by [`scripts/db_maintenance.sh`](../../scripts/db_maintenance.sh). Always d
 | `REDIS_PASSWORD` | — | Required for Redis dump |
 | `BACKUP_DIR` | `./backups` | Backup root |
 | `BACKUP_RETENTION_DAYS` | `7` | Daily retention |
-| `BACKUP_RETENTION_WEEKS` | `4` | Weekly Sunday keepers (Mongo/Postgres) |
+| `BACKUP_RETENTION_WEEKS` | `4` | Weekly Sunday keepers (Mongo/Postgres/media) |
 | `BACKUP_COMPOSE_FILE` | `docker-compose.prod.yml` | Compose file for backup |
-| `BACKUP_NOTIFY` | `true` | Notify on result |
+| `BACKUP_NOTIFY` | `true` | Host Telegram notify on result |
+| `BACKUP_STALE_HOURS` | `26` | Stale stamp threshold for `--check-stale` |
 | `BACKUP_TIMEZONE` | `Europe/Warsaw` | Cron timezone |
 | `BACKUP_OFFSITE_CMD` | | Shell command after verify (e.g. rsync without `--delete`); failure fails the run |
 | `BACKUP_REQUIRE_OFFSITE` | `false` | When `true`, fail if `BACKUP_OFFSITE_CMD` is empty (prod) |

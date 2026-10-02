@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Install a daily 4:20 AM cron job for db_maintenance.sh (Europe/Warsaw by default).
+# Install daily cron jobs for db_maintenance.sh (backup + stale check).
+# Default: backup 04:20, stale check 12:00 Europe/Warsaw.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -14,6 +15,7 @@ fi
 
 BACKUP_TIMEZONE="${BACKUP_TIMEZONE:-Europe/Warsaw}"
 CRON_SCHEDULE="${BACKUP_CRON_SCHEDULE:-20 4 * * *}"
+STALE_CRON_SCHEDULE="${BACKUP_STALE_CRON_SCHEDULE:-0 12 * * *}"
 LOG_FILE="${BACKUP_CRON_LOG:-$root/logs/backup.log}"
 MAINTENANCE_SCRIPT="$root/scripts/db_maintenance.sh"
 # Cron often has a minimal PATH; docker / docker compose must resolve.
@@ -41,13 +43,15 @@ filtered="$(printf '%s\n' "$existing" | awk '
   printf '%s\n' "PATH=${CRON_PATH}"
   printf '%s\n' "HOME=${CRON_HOME}"
   printf '%s\n' "${CRON_SCHEDULE} cd ${root} && ${MAINTENANCE_SCRIPT} >> ${LOG_FILE} 2>&1"
+  printf '%s\n' "${STALE_CRON_SCHEDULE} cd ${root} && ${MAINTENANCE_SCRIPT} --check-stale >> ${LOG_FILE} 2>&1"
   printf '%s\n' "# portfolio-glorng-db-maintenance-end"
 } | crontab -
 
 cat <<EOF
-Installed daily DB maintenance cron job.
+Installed daily DB maintenance cron jobs.
 
-  Schedule : ${CRON_SCHEDULE} (${BACKUP_TIMEZONE})
+  Backup   : ${CRON_SCHEDULE} (${BACKUP_TIMEZONE})
+  Stale    : ${STALE_CRON_SCHEDULE} (${BACKUP_TIMEZONE}) — alerts if LAST_SUCCESS is missing/old
   Script   : ${MAINTENANCE_SCRIPT}
   Log      : ${LOG_FILE}
   PATH     : ${CRON_PATH}
@@ -85,4 +89,6 @@ macOS launchd alternative (save as ~/Library/LaunchAgents/com.glorng.db-maintena
 </plist>
 
 Load with: launchctl load ~/Library/LaunchAgents/com.glorng.db-maintenance.plist
+
+Also install a second LaunchAgent for --check-stale (e.g. noon) if not using cron.
 EOF

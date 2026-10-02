@@ -2,10 +2,14 @@
 # Daily DB maintenance: backup MongoDB/Redis/media (+ Postgres if enabled),
 # verify, rotate, migrate, optional offsite, notify.
 # Dumps run before migrate so a failed migrate still leaves a pre-change archive.
+# Usage: scripts/db_maintenance.sh [--check-stale]
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
+
+BACKUP_LOG_PATH="${BACKUP_CRON_LOG:-$root/logs/backup.log}"
+BACKUP_LOG_MAX_BYTES="${BACKUP_LOG_MAX_BYTES:-5242880}"
 
 log() {
   printf '[%s] %s\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" "$*" >&2
@@ -51,7 +55,9 @@ apply_backup_defaults() {
   BACKUP_NOTIFY="${BACKUP_NOTIFY:-true}"
   BACKUP_OFFSITE_CMD="${BACKUP_OFFSITE_CMD:-}"
   BACKUP_REQUIRE_OFFSITE="${BACKUP_REQUIRE_OFFSITE:-false}"
+  BACKUP_STALE_HOURS="${BACKUP_STALE_HOURS:-26}"
   LOCK_DIR="${BACKUP_DIR}/.db_maintenance.lock.d"
+  LAST_SUCCESS_PATH="${BACKUP_DIR}/LAST_SUCCESS"
 }
 
 load_env() {
@@ -67,6 +73,12 @@ load_env() {
     : "${POSTGRES_DB:?POSTGRES_DB is required when ENABLE_POSTGRES=true}"
   fi
 
+  apply_backup_defaults
+}
+
+# Stale check only needs notify knobs + BACKUP_DIR (no DB passwords).
+load_env_notify() {
+  source_dotenv
   apply_backup_defaults
 }
 
@@ -216,8 +228,11 @@ rotate_backups() {
     rotate_dated_backups "$BACKUP_DIR/postgres" "proj_portfolio_*.dump.gz" "proj_portfolio_latest.dump.gz"
   fi
 
+  # Media is durable user content — same daily + Sunday policy as Mongo.
+  rotate_dated_backups "$BACKUP_DIR/media" "proj_portfolio_media_*.tar.gz" "proj_portfolio_media_latest.tar.gz"
+
+  # Redis is optional state; keep short daily retention only.
   find "$BACKUP_DIR/redis" -name 'proj_portfolio_redis_*.rdb' -mtime +"$BACKUP_RETENTION_DAYS" ! -name 'proj_portfolio_redis_latest.rdb' -delete 2>/dev/null || true
-  find "$BACKUP_DIR/media" -name 'proj_portfolio_media_*.tar.gz' -mtime +"$BACKUP_RETENTION_DAYS" ! -name 'proj_portfolio_media_latest.tar.gz' -delete 2>/dev/null || true
 }
 
 verify_mongodb_backup() {
@@ -238,19 +253,99 @@ verify_postgres_backup() {
   gunzip -c "$dump_path" | compose_postgres exec -T db pg_restore --list >/dev/null
 }
 
+# Host Telegram notify — does not require the API container.
 notify_result() {
   local status="$1"
   local detail="${2:-}"
+  local text token chat_id http_code
 
   if [[ "$BACKUP_NOTIFY" != "true" ]]; then
     return 0
   fi
 
-  if [[ -z "$(compose ps -q server 2>/dev/null || true)" ]]; then
-    compose up -d server
+  token="${TELEGRAM_BOT_CHAT_TOKEN:-}"
+  chat_id="${TELEGRAM_ALLOWED_USER_ID:-}"
+  if [[ -z "$token" || -z "$chat_id" ]]; then
+    log "WARNING: BACKUP_NOTIFY=true but TELEGRAM_BOT_CHAT_TOKEN or TELEGRAM_ALLOWED_USER_ID unset"
+    return 0
   fi
 
-  compose exec -T server python -m app.scripts.notify_backup_result "$status" "$detail" || true
+  if [[ "$status" == "success" ]]; then
+    text="<b>DB maintenance OK</b>\n${detail}"
+  else
+    text="<b>DB maintenance FAILED</b>\n${detail}"
+  fi
+
+  http_code="$(curl -sS -o /dev/null -w '%{http_code}' \
+    --max-time 10 \
+    -X POST "https://api.telegram.org/bot${token}/sendMessage" \
+    --data-urlencode "chat_id=${chat_id}" \
+    --data-urlencode "text=${text}" \
+    --data-urlencode "parse_mode=HTML" \
+    --data-urlencode "disable_web_page_preview=true" \
+    || true)"
+
+  if [[ "$http_code" != "200" ]]; then
+    log "WARNING: Telegram notify failed (HTTP ${http_code:-curl-error})"
+  fi
+}
+
+write_last_success() {
+  mkdir -p "$BACKUP_DIR"
+  date -u +"%Y-%m-%dT%H:%M:%SZ" >"$LAST_SUCCESS_PATH"
+}
+
+rotate_backup_log() {
+  local log_path="$BACKUP_LOG_PATH"
+  local size=0
+
+  mkdir -p "$(dirname "$log_path")"
+  if [[ ! -f "$log_path" ]]; then
+    return 0
+  fi
+  size="$(stat -f %z "$log_path" 2>/dev/null || stat -c %s "$log_path" 2>/dev/null || echo 0)"
+  if (( size <= BACKUP_LOG_MAX_BYTES )); then
+    return 0
+  fi
+  # Cron keeps the old inode open; next append opens the new file.
+  mv -f "$log_path" "${log_path}.1"
+  log "Rotated backup log (>${BACKUP_LOG_MAX_BYTES} bytes) to ${log_path}.1"
+}
+
+# Alert if LAST_SUCCESS is missing or older than BACKUP_STALE_HOURS.
+check_stale() {
+  load_env_notify
+  mkdir -p "$BACKUP_DIR"
+
+  local now_ts stamp_ts age_hours detail
+  now_ts="$(date -u +%s)"
+
+  if [[ ! -f "$LAST_SUCCESS_PATH" ]]; then
+    detail="LAST_SUCCESS missing under ${BACKUP_DIR} (stale>${BACKUP_STALE_HOURS}h)"
+    log "ERROR: $detail"
+    notify_result failure "$detail"
+    exit 1
+  fi
+
+  stamp_ts="$(date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$(tr -d '[:space:]' <"$LAST_SUCCESS_PATH")" +%s 2>/dev/null \
+    || date -u -d "$(tr -d '[:space:]' <"$LAST_SUCCESS_PATH")" +%s 2>/dev/null \
+    || echo 0)"
+  if [[ "$stamp_ts" -le 0 ]]; then
+    detail="LAST_SUCCESS unreadable under ${BACKUP_DIR}"
+    log "ERROR: $detail"
+    notify_result failure "$detail"
+    exit 1
+  fi
+
+  age_hours=$(( (now_ts - stamp_ts) / 3600 ))
+  if (( age_hours > BACKUP_STALE_HOURS )); then
+    detail="LAST_SUCCESS age=${age_hours}h exceeds BACKUP_STALE_HOURS=${BACKUP_STALE_HOURS}"
+    log "ERROR: $detail"
+    notify_result failure "$detail"
+    exit 1
+  fi
+
+  log "Backup stamp fresh (age=${age_hours}h, limit=${BACKUP_STALE_HOURS}h)"
 }
 
 # Optional offsite copy after local verify. Operator supplies the full command
@@ -285,12 +380,14 @@ release_lock() {
   fi
 }
 
-main() {
+run_maintenance() {
   load_env
   mkdir -p "$BACKUP_DIR/mongodb" "$BACKUP_DIR/redis" "$BACKUP_DIR/media" logs
   if postgres_enabled; then
     mkdir -p "$BACKUP_DIR/postgres"
   fi
+
+  rotate_backup_log
 
   acquire_lock
   trap release_lock EXIT
@@ -319,8 +416,23 @@ main() {
 
   run_migrate
 
+  write_last_success
   log "DB maintenance completed successfully"
   notify_result success "$detail"
+}
+
+main() {
+  case "${1:-}" in
+    --check-stale)
+      check_stale
+      ;;
+    "" )
+      run_maintenance
+      ;;
+    *)
+      fail "unknown argument: $1 (use --check-stale or no args)"
+      ;;
+  esac
 }
 
 main "$@"
