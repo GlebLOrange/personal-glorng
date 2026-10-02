@@ -24,7 +24,9 @@ const visibleServices = computed(() =>
     if (!service.adminRoute) return false;
     if (!ADMIN_HUB_SERVICE_SLUGS.has(service.slug)) return false;
     if (service.slug === "ai-chat" && !isAiChatEnabled()) return false;
-    if (service.slug === "api-docs") return isSuperuser.value;
+    if (service.slug === "api-docs" || service.slug === "db-maintenance") {
+      return isSuperuser.value;
+    }
     return canAccess(service.slug);
   }),
 );

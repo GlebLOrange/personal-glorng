@@ -11,6 +11,10 @@ make backup           # run once
 make backup-install   # install cron via scripts/install_backup_cron.sh
 ```
 
+### Admin panel button (optional)
+
+Superusers can open **db maintenance** under `/admin` and start the same script after Cloudflare Turnstile plus a confirm dialog. This only works on a **host / ultra-lite API** process that can execute the script (the Docker API container has no compose socket and does not mount `scripts/`). Set `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `DB_MAINTENANCE_ENABLED=true`, and `DB_MAINTENANCE_SCRIPT` to the absolute path of `scripts/db_maintenance.sh`. Cron and `make backup` remain the normal path.
+
 ### What gets backed up
 
 | Asset | When | Output path pattern |

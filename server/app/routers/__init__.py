@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.routers.account import router as account_router
+from app.routers.admin.maintenance import router as admin_maintenance_router
 from app.routers.admin.users import router as admin_users_router
 from app.routers.auth import router as auth_router
 from app.routers.callbacks import router as callbacks_router
@@ -25,6 +26,11 @@ api_router.include_router(account_router, prefix="/auth", tags=["auth"])
 api_router.include_router(
     admin_users_router,
     prefix="/admin/users",
+    tags=["admin"],
+)
+api_router.include_router(
+    admin_maintenance_router,
+    prefix="/admin/maintenance",
     tags=["admin"],
 )
 api_router.include_router(github_router, prefix="/auth/github", tags=["github"])

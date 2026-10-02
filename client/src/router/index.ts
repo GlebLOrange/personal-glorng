@@ -103,6 +103,17 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, requiresSuperuser: true, title: "AI chat", noindex: true },
   },
   {
+    path: "/admin/db-maintenance",
+    name: "tool-db-maintenance",
+    component: () => import("@/pages/admin/tools/DbMaintenanceTool.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresSuperuser: true,
+      title: "DB maintenance",
+      noindex: true,
+    },
+  },
+  {
     path: "/admin/send-email",
     name: "tool-email",
     component: () => import("@/pages/admin/tools/EmailTool.vue"),
