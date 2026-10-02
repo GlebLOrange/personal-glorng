@@ -9,6 +9,14 @@ import {
 } from "@/utils/resumeGlance";
 
 describe("resumeGlance", () => {
+  it("keeps offline project urls aligned with resume_data", () => {
+    const jobs = RESUME_FALLBACK.projects.find(
+      (project) => project.name === "background jobs & telegram",
+    );
+    // mirrors server/app/content/resume_data.py project url
+    expect(jobs?.url).toBe("/news");
+  });
+
   it("computes years of experience from period strings", () => {
     expect(computeYearsExperience(RESUME_FALLBACK.experience)).toBeGreaterThan(0);
   });
