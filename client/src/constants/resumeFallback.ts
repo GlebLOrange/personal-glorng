@@ -14,7 +14,6 @@ export const RESUME_FALLBACK: ResumeData = {
     " I own a Vue UI when the product needs one.",
   hiring_note:
     "This site is the live product — auth, jobs, search, OpenAPI, tests, and CI." +
-    " Source and handbook sit next to download CV." +
     " Independent since 2017; this personal website (2022–present)" +
     " is the public sample.",
   skills: [
