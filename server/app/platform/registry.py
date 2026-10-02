@@ -265,6 +265,16 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         capabilities=("read",),
         external=True,
     ),
+    PlatformService(
+        slug="db-maintenance",
+        name="db maintenance",
+        category="operations",
+        description="run backup and migrate with a captcha gate",
+        api_prefix="/admin/maintenance",
+        admin_route="/admin/db-maintenance",
+        icon="⚙",
+        capabilities=("write",),
+    ),
 )
 
 CATEGORY_LABELS: dict[str, str] = {

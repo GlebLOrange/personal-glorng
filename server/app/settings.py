@@ -625,6 +625,27 @@ class Settings(BaseSettings):
     # yt-dlp, file-share, outbound health-checker (opt-in; off on public deploys)
     UNTRUSTED_URL_TOOLS_ENABLED: bool = False
 
+    # Cloudflare Turnstile (public site key; secret stays on the server)
+    TURNSTILE_SITE_KEY: str = ""
+    TURNSTILE_SECRET_KEY: str = ""
+    # Host-only DB maintenance button (ultra-lite / host API; off in Docker API)
+    DB_MAINTENANCE_ENABLED: bool = False
+    DB_MAINTENANCE_SCRIPT: str = ""
+
+    def turnstile_configured(self) -> bool:
+        """Whether both Turnstile keys are set."""
+        return bool(
+            self.TURNSTILE_SITE_KEY.strip() and self.TURNSTILE_SECRET_KEY.strip()
+        )
+
+    def db_maintenance_ready(self) -> bool:
+        """Whether the admin button may spawn the maintenance script."""
+        return (
+            self.DB_MAINTENANCE_ENABLED
+            and bool(self.DB_MAINTENANCE_SCRIPT.strip())
+            and self.turnstile_configured()
+        )
+
     # Curated news
     NEWS_INGEST_ENABLED: bool = False
     NEWS_SOURCES_JSON: str = "[]"

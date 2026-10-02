@@ -20,6 +20,7 @@ export const ADMIN_HUB_SERVICE_SLUGS = new Set([
   "app-logs",
   "search",
   "api-docs",
+  "db-maintenance",
   "ai-chat",
   "email",
   "news",
@@ -295,6 +296,18 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     icon: "",
     capabilities: ["read"],
     external: true,
+  },
+  {
+    slug: "db-maintenance",
+    name: "db maintenance",
+    category: "operations",
+    categoryLabel: "operations",
+    description: "run backup and migrate with a captcha gate",
+    apiPrefix: "/admin/maintenance",
+    adminRoute: "/admin/db-maintenance",
+    icon: "",
+    capabilities: ["write"],
+    external: false,
   },
 ];
 
