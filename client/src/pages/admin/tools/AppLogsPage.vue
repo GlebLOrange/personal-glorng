@@ -19,6 +19,7 @@ import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useExpandableIds } from "@/composables/useExpandableIds";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
+import { yesterdayIsoDate } from "@/utils/dates";
 import { formatDate } from "@/utils/format";
 
 interface AppLogEntry {
@@ -34,13 +35,15 @@ interface AppLogEntry {
   request_id: string | null;
 }
 
+const DEFAULT_LEVEL = "error";
+
 const items = ref<AppLogEntry[]>([]);
 const total = ref(0);
 const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: true });
-const level = ref("error");
+const level = ref(DEFAULT_LEVEL);
 const requestId = ref("");
 const page = ref(1);
-const dateFrom = ref(new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+const dateFrom = ref(yesterdayIsoDate());
 const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
@@ -62,7 +65,10 @@ const appliedRequestId = computed(() => {
   return value.length >= MIN_REQUEST_ID_LENGTH ? value : "";
 });
 const hasActiveFilters = computed(
-  () => Boolean(level.value || appliedRequestId.value || dateFrom.value),
+  () =>
+    level.value !== DEFAULT_LEVEL ||
+    dateFrom.value !== yesterdayIsoDate() ||
+    Boolean(appliedRequestId.value),
 );
 const activeFilterLabel = computed(() => {
   const parts: string[] = [];
@@ -125,9 +131,9 @@ function onRequestIdChange(value: string | number | null | undefined): void {
 
 function clearFilters(): void {
   clearTimeout(requestIdTimer);
-  level.value = "";
+  level.value = DEFAULT_LEVEL;
   requestId.value = "";
-  dateFrom.value = "";
+  dateFrom.value = yesterdayIsoDate();
   lastAppliedRequestId = "";
   page.value = 1;
   void load();

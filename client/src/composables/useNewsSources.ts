@@ -48,7 +48,8 @@ export function useNewsSources() {
   const router = useRouter();
   const sources = ref<NewsSource[]>([]);
   const page = ref(1);
-  const enabledFilter = ref<EnabledFilter>("");
+  const DEFAULT_ENABLED_FILTER: Exclude<EnabledFilter, ""> = "enabled";
+  const enabledFilter = ref<EnabledFilter>(DEFAULT_ENABLED_FILTER);
   const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
   const total = ref(0);
   const totalPages = ref(0);
@@ -85,7 +86,7 @@ export function useNewsSources() {
 
   const hasNextPage = computed(() => page.value < totalPages.value);
   const hasPreviousPage = computed(() => page.value > 1);
-  const hasActiveFilters = computed(() => Boolean(enabledFilter.value));
+  const hasActiveFilters = computed(() => enabledFilter.value !== DEFAULT_ENABLED_FILTER);
   const activeFilterLabel = computed(
     () => ENABLED_FILTERS.find((chip) => chip.value === enabledFilter.value)?.label,
   );
@@ -117,7 +118,7 @@ export function useNewsSources() {
   }
 
   function clearFilters(): void {
-    enabledFilter.value = "";
+    enabledFilter.value = DEFAULT_ENABLED_FILTER;
     page.value = 1;
     filterDropdownRef.value?.close();
     void loadSources();

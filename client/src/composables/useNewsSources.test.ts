@@ -120,18 +120,46 @@ describe("useNewsSources", () => {
     expect(form.value.name).toBe("");
   });
 
-  it("filters enabled sources and resets page", async () => {
+  it("defaults to enabled and restores that on clear", async () => {
     vi.mocked(api.get).mockResolvedValue({
       data: { items: [makeSource()], total: 1, pages: 1, page: 1 },
     });
 
-    const { setEnabledFilter, enabledFilter, page, loadSources } = useNewsSources();
+    const {
+      setEnabledFilter,
+      clearFilters,
+      enabledFilter,
+      hasActiveFilters,
+      page,
+      loadSources,
+    } = useNewsSources();
     await loadSources();
+    expect(enabledFilter.value).toBe("enabled");
+    expect(hasActiveFilters.value).toBe(false);
+    expect(api.get).toHaveBeenCalledWith(
+      "/tools/news/sources",
+      expect.objectContaining({
+        params: expect.objectContaining({ enabled: true, page: 1 }),
+      }),
+    );
 
     page.value = 3;
-    setEnabledFilter("enabled");
-    expect(enabledFilter.value).toBe("enabled");
+    setEnabledFilter("disabled");
+    expect(enabledFilter.value).toBe("disabled");
+    expect(hasActiveFilters.value).toBe(true);
     expect(page.value).toBe(1);
+    await vi.waitFor(() =>
+      expect(api.get).toHaveBeenCalledWith(
+        "/tools/news/sources",
+        expect.objectContaining({
+          params: expect.objectContaining({ enabled: false, page: 1 }),
+        }),
+      ),
+    );
+
+    clearFilters();
+    expect(enabledFilter.value).toBe("enabled");
+    expect(hasActiveFilters.value).toBe(false);
     await vi.waitFor(() =>
       expect(api.get).toHaveBeenCalledWith(
         "/tools/news/sources",

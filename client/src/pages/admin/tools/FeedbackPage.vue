@@ -33,6 +33,8 @@ interface FeedbackItem {
 
 type StatusFilter = "unread" | "read" | "archived";
 
+const DEFAULT_STATUS_FILTER: StatusFilter = "unread";
+
 const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
   { label: "unread", value: "unread" },
   { label: "read", value: "read" },
@@ -42,8 +44,7 @@ const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
 const items = ref<FeedbackItem[]>([]);
 const selectedItem = ref<FeedbackItem | null>(null);
 const drawerOpen = ref(false);
-/** null = show all statuses. Default opens on unread. */
-const filter = ref<StatusFilter | null>("unread");
+const filter = ref<StatusFilter>(DEFAULT_STATUS_FILTER);
 const page = ref(1);
 const total = ref(0);
 const totalPages = ref(0);
@@ -52,7 +53,7 @@ const { run: runStatus } = useApiAction();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 const router = useRouter();
 
-const hasActiveFilters = computed(() => filter.value !== null);
+const hasActiveFilters = computed(() => filter.value !== DEFAULT_STATUS_FILTER);
 const activeFilterLabel = computed(
   () => STATUS_FILTERS.find((chip) => chip.value === filter.value)?.label,
 );
@@ -80,7 +81,7 @@ async function load(): Promise<void> {
         params: {
           page: page.value,
           per_page: ADMIN_LIST_PAGE_SIZE,
-          ...(filter.value ? { status: filter.value } : {}),
+          status: filter.value,
         },
       });
       return response.data;
@@ -101,7 +102,7 @@ function setFilter(next: StatusFilter): void {
 }
 
 function clearFilters(): void {
-  filter.value = null;
+  filter.value = DEFAULT_STATUS_FILTER;
   page.value = 1;
   filterDropdownRef.value?.close();
 }
@@ -126,7 +127,7 @@ async function setStatus(id: number, status: string): Promise<void> {
   if (selectedItem.value?.id === id) {
     selectedItem.value = { ...selectedItem.value, status };
   }
-  if (filter.value !== null && status !== filter.value) {
+  if (status !== filter.value) {
     removeFromList(id);
   }
 }
@@ -195,7 +196,7 @@ onMounted(load);
         v-if="items.length === 0"
         class="mt-4"
         :description="
-          filter ? `no feedback messages with status '${filter}'` : 'no feedback messages'
+          `no feedback messages with status '${filter}'`
         "
       />
 
