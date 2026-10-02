@@ -1,0 +1,67 @@
+# After CI succeeds on main: mirror git to Bitbucket and push the production server image to GHCR.
+name: publish
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-main
+  cancel-in-progress: false
+
+jobs:
+  mirror-bitbucket:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - name: Push main to Bitbucket
+        env:
+          BITBUCKET_REPO: ${{ secrets.BITBUCKET_REPO }}
+          BITBUCKET_TOKEN: ${{ secrets.BITBUCKET_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${BITBUCKET_TOKEN:-}" ] || [ -z "${BITBUCKET_REPO:-}" ]; then
+            echo "Skipping Bitbucket mirror (BITBUCKET_REPO / BITBUCKET_TOKEN not set)."
+            exit 0
+          fi
+          git remote add bitbucket "https://x-token-auth:${BITBUCKET_TOKEN}@bitbucket.org/${BITBUCKET_REPO}.git"
+          git push bitbucket "HEAD:refs/heads/main"
+
+  publish-server-image:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          target: production
+          push: true
+          tags: |
+            ghcr.io/gleblorange/personal-glorng-server:${{ github.event.workflow_run.head_sha }}
+            ghcr.io/gleblorange/personal-glorng-server:main
