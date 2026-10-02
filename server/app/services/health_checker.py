@@ -91,6 +91,7 @@ def _resolve_dns(hostname: str) -> list[DnsRecord]:
 def _ssl_expiry(hostname: str, port: int = 443) -> datetime | None:
     """Return certificate notAfter in UTC, or None on failure."""
     context = ssl.create_default_context()
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
     try:
         with (
             socket.create_connection((hostname, port), timeout=PROBE_TIMEOUT_SECONDS) as sock,
