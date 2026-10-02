@@ -112,21 +112,15 @@ watch(
           </p>
         </div>
 
-        <div v-if="canMutate" class="flex min-w-0 flex-wrap items-end gap-2">
-          <BaseInput
-            v-model="scheduleDraft"
-            type="datetime-local"
-            class="min-w-0 flex-1"
-            aria-label="reschedule"
-          />
-          <ToolbarPillButton
-            action="save"
-            :disabled="!scheduleDirty || rescheduling"
-            @click="emit('reschedule', scheduleDraft)"
-          >
-            {{ rescheduling ? "saving…" : "reschedule" }}
-          </ToolbarPillButton>
-        </div>
+        <section
+          v-if="task.description"
+          class="flex min-w-0 items-baseline justify-between gap-3 text-sm"
+        >
+          <span class="shrink-0 text-surface-mid">about</span>
+          <p class="min-w-0 whitespace-pre-wrap text-right lowercase text-surface-light">
+            {{ task.description }}
+          </p>
+        </section>
 
         <div v-if="task.location" class="flex min-w-0 items-center justify-between gap-3 text-sm">
           <span class="inline-flex shrink-0 items-center gap-1.5 text-surface-mid">
@@ -137,15 +131,21 @@ watch(
         </div>
       </section>
 
-      <section
-        v-if="task.description"
-        class="flex min-w-0 items-baseline justify-between gap-3 text-sm"
-      >
-        <span class="shrink-0 text-surface-mid">about</span>
-        <p class="min-w-0 whitespace-pre-wrap text-right lowercase text-surface-light">
-          {{ task.description }}
-        </p>
-      </section>
+      <div v-if="canMutate" class="flex min-w-0 flex-wrap items-end gap-2">
+        <BaseInput
+          v-model="scheduleDraft"
+          type="datetime-local"
+          class="min-w-0 flex-1"
+          aria-label="reschedule"
+        />
+        <ToolbarPillButton
+          action="save"
+          :disabled="!scheduleDirty || rescheduling"
+          @click="emit('reschedule', scheduleDraft)"
+        >
+          {{ rescheduling ? "saving…" : "reschedule" }}
+        </ToolbarPillButton>
+      </div>
 
       <section v-if="task.reminders.length" class="border-t border-surface-border pt-4">
         <h3 class="mb-2 text-sm font-medium text-surface-mid">reminders</h3>
@@ -196,41 +196,40 @@ watch(
       </section>
 
       <section v-if="canMutate" class="space-y-3 border-t border-surface-border pt-4">
-        <div v-if="task.google_event_id" class="flex items-center gap-2">
-          <span
-            class="inline-flex items-center gap-1.5 rounded-full bg-accent-blue/10 px-2 py-0.5 text-xs text-accent-blue"
-            title="synced to Google Calendar"
+        <div class="flex min-w-0 items-center justify-between gap-3">
+          <div v-if="task.google_event_id" class="flex min-w-0 items-center gap-2">
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full bg-accent-blue/10 px-2 py-0.5 text-xs text-accent-blue"
+              title="synced to Google Calendar"
+            >
+              <SyncIcon class-name="size-3.5" />
+              synced to google calendar
+            </span>
+          </div>
+          <ToolbarPillButton
+            v-else
+            action="create"
+            class="gap-1.5"
+            title="try syncing again"
+            @click="emit('retrySync', task.id)"
           >
             <SyncIcon class-name="size-3.5" />
-            synced to google calendar
-          </span>
+            try syncing again
+          </ToolbarPillButton>
+          <BaseButton
+            variant="ghost"
+            quiet
+            size="sm"
+            class="ml-auto gap-1.5"
+            :selected="technicalOpen"
+            :aria-expanded="technicalOpen"
+            aria-controls="task-technical-details"
+            @click="technicalOpen = !technicalOpen"
+          >
+            technical details
+            <ChevronIcon :open="technicalOpen" />
+          </BaseButton>
         </div>
-        <ToolbarPillButton
-          v-else
-          action="create"
-          class="gap-1.5"
-          title="try syncing again"
-          @click="emit('retrySync', task.id)"
-        >
-          <SyncIcon class-name="size-3.5" />
-          try syncing again
-        </ToolbarPillButton>
-      </section>
-
-      <section v-if="canMutate" class="space-y-2 border-t border-surface-border pt-4">
-        <BaseButton
-          variant="ghost"
-          quiet
-          size="sm"
-          class="gap-1.5"
-          :selected="technicalOpen"
-          :aria-expanded="technicalOpen"
-          aria-controls="task-technical-details"
-          @click="technicalOpen = !technicalOpen"
-        >
-          technical details
-          <ChevronIcon :open="technicalOpen" />
-        </BaseButton>
         <dl v-if="technicalOpen" id="task-technical-details" class="space-y-1 text-xs">
           <div
             v-if="task.google_event_id"
