@@ -1,4 +1,4 @@
-"""Todobot task admin API. Default: `tasks:read`; writes: `tasks:write`."""
+"""Todobot task admin API. Default: `tasks:read`; mutations require superuser."""
 
 from typing import Annotated
 
@@ -137,7 +137,7 @@ async def list_sync_queue(
     "/sync-queue/process",
     response_model=MessageResponse,
     summary="Process calendar sync queue now",
-    description=requires_capability("tasks", "write"),
+    description="Requires platform superuser.",
 )
 async def process_sync_queue_now(
     _user: AdminUser,

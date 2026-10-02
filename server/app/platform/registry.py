@@ -56,7 +56,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         api_prefix="/tasks",
         admin_route="/tasks",
         icon="☐",
-        capabilities=("read", "write", "schedule"),
+        capabilities=("read",),
     ),
     PlatformService(
         slug="email",
@@ -182,7 +182,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         api_prefix="/ai-chat",
         admin_route="/admin/ai-chat",
         icon="⊛",
-        capabilities=("read", "write"),
+        capabilities=(),
     ),
     PlatformService(
         slug="data-extract",
@@ -273,7 +273,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         api_prefix="/admin/maintenance",
         admin_route="/admin/db-maintenance",
         icon="⚙",
-        capabilities=("write",),
+        capabilities=(),
     ),
 )
 

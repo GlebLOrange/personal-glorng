@@ -48,7 +48,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     apiPrefix: "/tasks",
     adminRoute: "/tasks",
     icon: "",
-    capabilities: ["read", "write", "schedule"],
+    capabilities: ["read"],
     external: false,
   },
   {
@@ -198,7 +198,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     apiPrefix: "/ai-chat",
     adminRoute: "/admin/ai-chat",
     icon: "",
-    capabilities: ["read", "write"],
+    capabilities: [],
     external: false,
   },
   {
@@ -306,7 +306,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     apiPrefix: "/admin/maintenance",
     adminRoute: "/admin/db-maintenance",
     icon: "",
-    capabilities: ["write"],
+    capabilities: [],
     external: false,
   },
 ];
