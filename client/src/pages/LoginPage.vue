@@ -125,9 +125,7 @@ async function handleGoogleLogin(): Promise<void> {
       </BaseButton>
     </div>
 
-    <p class="text-center text-xs text-surface-mid mt-4 space-x-3">
-      <RouterLink to="/register" class="nav-link underline-offset-4"> create account </RouterLink>
-      <span>·</span>
+    <p class="text-center text-xs text-surface-mid mt-4">
       <RouterLink to="/forgot-password" class="nav-link underline-offset-4">
         forgot password?
       </RouterLink>

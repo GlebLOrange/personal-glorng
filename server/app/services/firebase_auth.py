@@ -1,5 +1,4 @@
 import json
-import secrets
 from dataclasses import dataclass
 from typing import Any
 
@@ -13,7 +12,7 @@ from app.db.documents.audit import AuditActorType, AuditCategory, AuditSource
 from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
 from app.services.audit import AuditRecord, AuditService
-from app.services.user import create_user, get_user_by_email
+from app.services.user import get_user_by_email
 from app.settings import Settings
 
 
@@ -28,7 +27,6 @@ class FirebaseLoginResult:
     user: User
     access_token: str
     refresh_token: str
-    created: bool
 
 
 def _firebase_app(settings: Settings) -> firebase_admin.App:
@@ -88,31 +86,13 @@ async def login_with_firebase_google(
     identity: FirebaseIdentity,
 ) -> FirebaseLoginResult:
     user = await get_user_by_email(registry, identity.email)
-    created = False
 
     if user is None:
-        user = await create_user(
-            registry,
-            email=identity.email,
-            password=secrets.token_urlsafe(48),
-            permissions=[],
-            is_verified=True,
-            display_name=identity.display_name,
+        raise UnauthorizedError(
+            "No account exists for this email. "
+            "Ask the site owner to create one."
         )
-        created = True
-        await audit.record(
-            AuditRecord(
-                category=AuditCategory.SECURITY,
-                action="auth.firebase_registered",
-                actor_type=AuditActorType.USER,
-                actor_id=user.id,
-                source=AuditSource.PUBLIC,
-                resource_type="user",
-                resource_id=user.id,
-                metadata={"email": identity.email},
-            ),
-        )
-    elif not user.is_verified:
+    if not user.is_verified:
         # Refuse linking: auto-verify would let an attacker who registered the
         # email (unverified) take over when the real owner signs in with Google.
         raise ConflictError(
@@ -146,5 +126,4 @@ async def login_with_firebase_google(
         user=user,
         access_token=access_token,
         refresh_token=refresh_token,
-        created=created,
     )

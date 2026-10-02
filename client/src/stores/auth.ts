@@ -8,15 +8,6 @@ import { clearPlatformCatalog } from "@/composables/usePlatformCatalog";
 import { tryRefreshSession } from "@/utils/authSession";
 import type { UserPreferences, UserResponse } from "@/types";
 
-export interface RegisterPayload {
-  email: string;
-  password: string;
-  password_confirm: string;
-  display_name?: string;
-  timezone?: string;
-  accept_terms: boolean;
-}
-
 export interface UpdateProfilePayload {
   display_name?: string | null;
   timezone?: string;
@@ -57,10 +48,6 @@ export const useAuthStore = defineStore("auth", () => {
       id_token: idToken,
     });
     await fetchUser();
-  }
-
-  async function register(payload: RegisterPayload): Promise<void> {
-    await api.post("/auth/register", payload);
   }
 
   async function fetchUser(): Promise<void> {
@@ -185,7 +172,6 @@ export const useAuthStore = defineStore("auth", () => {
     logout,
     login,
     loginWithGoogle,
-    register,
     fetchUser,
     updateProfile,
     changeEmail,

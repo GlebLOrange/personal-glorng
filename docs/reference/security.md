@@ -23,8 +23,8 @@ HTTPS termination is expected upstream of compose nginx (port 80 by default); `s
 - Body-based `/api/auth/refresh` still returns tokens for scripts/Bearer clients; cookie-only refresh returns a message body
 - Refresh rotation uses atomic Redis `SET NX` on JTI (concurrent reuse fails closed) plus blacklist on logout
 - Per-user `session_version` claim (`sv`) on access/refresh tokens — bumped on password change/reset and email change; missing or stale `sv` fails closed (401). Deploying this invalidates tokens issued before the claim existed (one re-login).
-- Open self-service registration with email verification (`POST /api/auth/verify`); `GET /api/auth/verify` only redirects to the SPA without consuming the token
-- Firebase Google sign-in refuses to auto-verify an existing unverified password account (pre-account takeover mitigation)
+- Public self-registration is disabled (`POST /api/auth/register` returns 403). Accounts are created by the site owner (seed / scripts). Email verification remains for legacy verify links (`POST /api/auth/verify`); `GET /api/auth/verify` only redirects to the SPA without consuming the token
+- Firebase Google sign-in requires an existing verified account (no auto-create); refuses to auto-verify an existing unverified password account (pre-account takeover mitigation)
 - Password policy: 12+ chars, upper, lower, digit, special; common passwords rejected
 - `ALLOWED_EMAIL` is seed-only for the bootstrap superuser; GitHub OAuth uses `GITHUB_ALLOWED_USERS`
 - Users manage profile, password, email, and preferences via `/settings`; permissions are admin-only

@@ -13,11 +13,11 @@ from app.core.deps import (
     JobQueueDep,
     oauth2_scheme,
 )
-from app.core.exceptions import UnauthorizedError
+from app.core.exceptions import ForbiddenError, UnauthorizedError
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_auth
 from app.core.redis import blacklist_token
-from app.core.security import create_verification_token, decode_token
+from app.core.security import decode_token
 from app.db.deps import DbRegistry
 from app.schemas.auth import (
     FirebaseLoginRequest,
@@ -25,7 +25,6 @@ from app.schemas.auth import (
     LoginRequest,
     LogoutRequest,
     RefreshRequest,
-    RegisterRequest,
     ResetPasswordRequest,
     TokenResponse,
     UserResponse,
@@ -36,7 +35,6 @@ from app.services.auth import (
     login_user,
     record_logout,
     refresh_access_token,
-    register_user,
     request_password_reset,
     reset_user_password,
     verify_user_email,
@@ -107,32 +105,16 @@ def _clear_auth_cookies(response: Response) -> None:
 @router.post(
     "/register",
     response_model=MessageResponse,
-    status_code=201,
     summary="Register new account",
-    description="Create a user account and send a verification email.",
+    description=(
+        "Public self-registration is disabled. Accounts are created by the "
+        "site owner (seed / scripts)."
+    ),
     dependencies=[Depends(rate_limit_auth)],
 )
-async def register(
-    data: RegisterRequest,
-    registry: DbRegistry,
-    audit_svc: AuditServiceDep,
-    job_queue: JobQueueDep,
-) -> MessageResponse:
-    user = await register_user(
-        registry,
-        audit_svc,
-        data.email,
-        data.password,
-        display_name=data.display_name,
-        timezone=data.timezone,
-    )
-    _token = create_verification_token(user.email)
-
-    logger.info("User registered", context={"email": user.email})
-    await job_queue.enqueue(JobName.SEND_VERIFICATION_EMAIL, user.email, _token)
-    return MessageResponse(
-        message="Registration successful. Check your email to verify your account."
-    )
+async def register() -> MessageResponse:
+    # ponytail: keep route so clients get a clear 403 instead of 404
+    raise ForbiddenError("Public registration is disabled")
 
 
 @router.post(
@@ -172,9 +154,9 @@ async def login(
     response_model=MessageResponse,
     summary="Log in with Firebase Google auth",
     description=(
-        "Verify a Firebase Google ID token, create a restricted app account "
-        "when needed, and set HttpOnly auth cookies "
-        "(tokens are not returned in the JSON body)."
+        "Verify a Firebase Google ID token for an existing app account and "
+        "set HttpOnly auth cookies (tokens are not returned in the JSON body). "
+        "Does not create accounts."
     ),
     dependencies=[Depends(rate_limit_auth)],
 )
@@ -182,7 +164,6 @@ async def firebase_login(
     data: FirebaseLoginRequest,
     registry: DbRegistry,
     audit_svc: AuditServiceDep,
-    job_queue: JobQueueDep,
     response: Response,
     settings: AppSettings,
 ) -> MessageResponse:
@@ -194,14 +175,6 @@ async def firebase_login(
         refresh_token=result.refresh_token,
         settings=settings,
     )
-    if result.created:
-        reset_token = await request_password_reset(registry, audit_svc, identity.email)
-        if reset_token:
-            await job_queue.enqueue(
-                JobName.SEND_RESET_EMAIL,
-                identity.email,
-                reset_token,
-            )
     return MessageResponse(message="Login successful")
 
 

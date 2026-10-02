@@ -28,9 +28,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/register",
-    name: "register",
-    component: () => import("@/pages/RegisterPage.vue"),
-    meta: { title: "Create account", noindex: true },
+    redirect: "/login",
   },
   {
     path: "/verify-email",
@@ -401,14 +399,14 @@ router.beforeEach(async (to, _from) => {
   if (to.meta.requiresSuperuser && auth.isAuthenticated) {
     const { isSuperuser } = usePermissions();
     if (!isSuperuser.value) {
-      return { name: "admin" };
+      return { name: "admin", query: { access: "denied" }, replace: true };
     }
   }
   const toolSlug = typeof to.name === "string" ? TOOL_ROUTE_SLUGS[to.name] : undefined;
   if (toolSlug && auth.isAuthenticated) {
     const { canAccess } = usePermissions();
     if (!canAccess(toolSlug)) {
-      return { name: "admin" };
+      return { name: "admin", query: { access: "denied" }, replace: true };
     }
   }
 });
