@@ -1,6 +1,7 @@
 .PHONY: dev rebuild dev-lite dev-lite-client dev-docker docs-dev docs-build docs-generate adr-new
 .PHONY: dev-ultra-lite-infra dev-ultra-lite-server dev-search dev-postgres dev-worker dev-bot dev-full
 .PHONY: prod prod-cloudflare test lint lint-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed-db seed-db-ultra-lite reindex-search backup backup-install db-pull-prod down logs bot-logs
+.PHONY: update-deps
 
 msg ?=
 TITLE ?=
@@ -150,3 +151,6 @@ docs-build: docs-generate
 
 adr-new:
 	TITLE="$(TITLE)" bash scripts/adr-new.sh
+
+update-deps:
+	python3 scripts/update_dependency_versions.py
