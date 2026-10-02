@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { useScrollLock } from "@/composables/useScrollLock";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
+import { resolveNavSection } from "@/utils/navCurrent";
 
 const props = defineProps<{
   open: boolean;
@@ -22,6 +23,7 @@ const menuRoot = ref<HTMLElement | null>(null);
 const isPortfolio = computed(
   () => route.path === "/" || route.name === "home" || route.name === "portfolio",
 );
+const navSection = computed(() => resolveNavSection(route.path));
 
 const sectionLinks = PORTFOLIO_SECTION_LINKS;
 
@@ -120,7 +122,9 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         to="/"
         class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        active-class="text-accent-blue"
+        :class="{ 'text-accent-blue': navSection === 'portfolio' }"
+        :aria-current-value="false"
+        :aria-current="navSection === 'portfolio' ? 'page' : undefined"
         @click.prevent="emit('go-home')"
       >
         portfolio
@@ -128,7 +132,9 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         to="/news"
         class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        active-class="text-accent-blue"
+        :class="{ 'text-accent-blue': navSection === 'news' }"
+        :aria-current-value="false"
+        :aria-current="navSection === 'news' ? 'page' : undefined"
         @click="emit('close')"
       >
         news
@@ -137,7 +143,9 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         to="/tools"
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        active-class="text-accent-blue"
+        :class="{ 'text-accent-blue': navSection === 'tools' }"
+        :aria-current-value="false"
+        :aria-current="navSection === 'tools' ? 'page' : undefined"
         @click="emit('close')"
       >
         tools
@@ -146,7 +154,9 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         v-if="canUseAdminHub"
         to="/admin"
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        active-class="text-accent-blue"
+        :class="{ 'text-accent-blue': navSection === 'admin' }"
+        :aria-current-value="false"
+        :aria-current="navSection === 'admin' ? 'page' : undefined"
         @click="emit('close')"
       >
         admin
@@ -156,7 +166,9 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         v-if="auth.isAuthenticated"
         to="/settings"
         class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        active-class="text-accent-blue"
+        :class="{ 'text-accent-blue': navSection === 'settings' }"
+        :aria-current-value="false"
+        :aria-current="navSection === 'settings' ? 'page' : undefined"
         @click="emit('close')"
       >
         settings
@@ -174,7 +186,9 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         v-else
         to="/login"
         class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
-        active-class="text-accent-blue"
+        :class="{ 'text-accent-blue': navSection === 'login' }"
+        :aria-current-value="false"
+        :aria-current="navSection === 'login' ? 'page' : undefined"
         @click="emit('close')"
       >
         login

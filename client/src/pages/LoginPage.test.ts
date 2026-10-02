@@ -51,7 +51,7 @@ describe("LoginPage", () => {
     expect(wrapper.text()).toContain("you@example.com");
     expect(wrapper.text()).toContain("login");
     expect(wrapper.text()).toContain("continue with Google");
-    expect(wrapper.text()).toContain("create account");
+    expect(wrapper.text()).not.toContain("create account");
     expect(wrapper.text()).toContain("forgot password?");
   });
 

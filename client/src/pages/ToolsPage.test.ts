@@ -46,7 +46,7 @@ describe("ToolsPage sectioned layout", () => {
     expect(wrapper.text()).toContain("utilities");
     expect(wrapper.text()).toContain("recipes");
     expect(wrapper.text()).toContain("calculator");
-    expect(wrapper.text()).toMatch(/same FastAPI as the portfolio/i);
+    expect(wrapper.text()).toMatch(/Public utilities you can try without signing in/i);
     // expenses (only public productivity tool) is off by default via feature flag
     expect(wrapper.text()).not.toContain("expenses");
     expect(wrapper.text()).not.toContain("productivity");

@@ -10,6 +10,7 @@ import { useScrollDirection } from "@/composables/useScrollDirection";
 import { iconActionClass } from "@/constants/httpStatusColors";
 import { useAuthStore } from "@/stores/auth";
 import { goHome } from "@/utils/goHome";
+import { resolveNavSection } from "@/utils/navCurrent";
 
 const headerEl = ref<HTMLElement | null>(null);
 const menuToggleButton = ref<HTMLButtonElement | null>(null);
@@ -29,6 +30,7 @@ const isMobileNav = ref(false);
 const isPortfolioHome = computed(
   () => route.path === "/" || route.name === "home" || route.name === "portfolio",
 );
+const navSection = computed(() => resolveNavSection(route.path));
 const menuToggleClass = computed(() =>
   ["md:hidden self-center", iconActionClass("1xx", mobileOpen.value)].join(" "),
 );
@@ -142,7 +144,9 @@ async function handleGoHome(): Promise<void> {
             <RouterLink
               to="/"
               class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              active-class="text-accent-blue"
+              :class="{ 'text-accent-blue': navSection === 'portfolio' }"
+              :aria-current-value="false"
+              :aria-current="navSection === 'portfolio' ? 'page' : undefined"
               @click.prevent="handleGoHome"
             >
               portfolio
@@ -150,7 +154,9 @@ async function handleGoHome(): Promise<void> {
             <RouterLink
               to="/news"
               class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              active-class="text-accent-blue"
+              :class="{ 'text-accent-blue': navSection === 'news' }"
+              :aria-current-value="false"
+              :aria-current="navSection === 'news' ? 'page' : undefined"
             >
               news
             </RouterLink>
@@ -158,7 +164,9 @@ async function handleGoHome(): Promise<void> {
             <RouterLink
               to="/tools"
               class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              active-class="text-accent-blue"
+              :class="{ 'text-accent-blue': navSection === 'tools' }"
+              :aria-current-value="false"
+              :aria-current="navSection === 'tools' ? 'page' : undefined"
             >
               tools
             </RouterLink>
@@ -166,7 +174,9 @@ async function handleGoHome(): Promise<void> {
               v-if="canUseAdminHub"
               to="/admin"
               class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              active-class="text-accent-blue"
+              :class="{ 'text-accent-blue': navSection === 'admin' }"
+              :aria-current-value="false"
+              :aria-current="navSection === 'admin' ? 'page' : undefined"
             >
               admin
             </RouterLink>
@@ -175,7 +185,9 @@ async function handleGoHome(): Promise<void> {
               v-if="auth.isAuthenticated"
               to="/settings"
               class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              active-class="text-accent-blue"
+              :class="{ 'text-accent-blue': navSection === 'settings' }"
+              :aria-current-value="false"
+              :aria-current="navSection === 'settings' ? 'page' : undefined"
             >
               settings
             </RouterLink>
@@ -192,7 +204,9 @@ async function handleGoHome(): Promise<void> {
               v-else
               to="/login"
               class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
-              active-class="text-accent-blue"
+              :class="{ 'text-accent-blue': navSection === 'login' }"
+              :aria-current-value="false"
+              :aria-current="navSection === 'login' ? 'page' : undefined"
             >
               login
             </RouterLink>

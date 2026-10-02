@@ -1,29 +1,50 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { RouterLink } from "vue-router";
+import { onMounted, ref } from "vue";
+import { RouterLink, useRouter } from "vue-router";
 
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import QrLibraryListItem from "@/components/admin/QrLibraryListItem.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQrLibrary } from "@/composables/useQrLibrary";
 import type { QrListItem } from "@/types";
 
+const router = useRouter();
+const deletingId = ref<number | null>(null);
+
 const {
   canReadLibrary,
+  canWriteLibrary,
   items,
   page,
   total,
   totalPages,
   loading,
+  deleting,
   hasNextPage,
   hasPreviousPage,
   loadList,
+  remove,
   goToPage,
 } = useQrLibrary();
 
-function tileTitle(item: QrListItem): string {
-  return item.label?.trim() || item.content_preview;
+function openSaved(item: QrListItem): void {
+  void router.push({ name: "qr-generator", query: { saved: String(item.id) } });
+}
+
+async function deleteSaved(id: number): Promise<void> {
+  deletingId.value = id;
+  try {
+    if (await remove(id)) {
+      if (items.value.length === 1 && page.value > 1) {
+        page.value -= 1;
+      }
+      await loadList();
+    }
+  } finally {
+    deletingId.value = null;
+  }
 }
 
 onMounted(() => {
@@ -32,7 +53,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <Card v-if="canReadLibrary" variant="compact" class="col-span-full">
+  <Card v-if="canReadLibrary" variant="compact">
     <CardBody>
       <CardHeader class="!mb-3 flex flex-wrap items-center justify-between gap-2">
         <CardTitle>saved qr codes</CardTitle>
@@ -46,33 +67,16 @@ onMounted(() => {
         no saved QR codes yet.
       </EmptyState>
 
-      <div v-else class="page-tool-grid min-w-0">
-        <RouterLink
+      <div v-else class="min-w-0">
+        <QrLibraryListItem
           v-for="item in items"
           :key="item.id"
-          class="page-tile"
-          :to="{ name: 'qr-generator', query: { saved: String(item.id) } }"
-          :aria-label="`Edit ${tileTitle(item)}`"
-        >
-          <Card hoverable class="page-tile-card h-full items-center text-center">
-            <img
-              :src="item.svg_url"
-              alt=""
-              class="mx-auto size-20 rounded-md bg-white p-1.5"
-              loading="lazy"
-            />
-            <h3 class="mt-2 w-full truncate text-sm font-semibold text-surface-light">
-              {{ tileTitle(item) }}
-            </h3>
-            <p
-              v-if="item.label"
-              class="mt-0.5 w-full truncate text-xs lowercase text-surface-mid"
-            >
-              {{ item.content_preview }}
-            </p>
-            <p class="mt-1 text-xs text-surface-muted">correction {{ item.error_level }}</p>
-          </Card>
-        </RouterLink>
+          :item="item"
+          :can-write="canWriteLibrary"
+          :deleting="deleting && deletingId === item.id"
+          @select="openSaved(item)"
+          @delete="deleteSaved(item.id)"
+        />
       </div>
 
       <AdminListFooter

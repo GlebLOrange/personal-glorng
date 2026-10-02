@@ -19,7 +19,7 @@ Source: [`client/`](../../client/).
 | Area | Paths | Notes |
 |------|-------|-------|
 | Public | `/`, `/tools`, `/recipes`, `/news`, … | Portfolio and guest tools |
-| Auth | `/login`, `/register`, `/settings`, … | `meta.requiresAuth` guards |
+| Auth | `/login`, `/settings`, … | `meta.requiresAuth` guards |
 | Admin | `/admin`, `/admin/*` hub routes | Capability / superuser checks via `usePermissions` |
 | Tools | `/tools`, `/tasks`, `/expenses`, … | Public catalog + capability-gated top-level tools |
 

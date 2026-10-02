@@ -19,7 +19,7 @@ from app.db.registry import DatabaseRegistry
 from app.main import app
 from app.services.audit import AuditService
 from app.services.auth import login_user
-from app.services.user import get_user_by_email
+from app.services.user import create_user, get_user_by_email
 from app.settings import get_settings
 from app.workers.job_names import JobName
 from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, STRONG_PASSWORD
@@ -28,9 +28,7 @@ from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, STRONG_PASSWORD
 
 
 @pytest.mark.asyncio
-async def test_register_open_email(
-    client: AsyncClient, registry: DatabaseRegistry
-) -> None:
+async def test_register_disabled(client: AsyncClient, registry: DatabaseRegistry) -> None:
     resp = await client.post(
         "/api/auth/register",
         json={
@@ -40,103 +38,24 @@ async def test_register_open_email(
             "accept_terms": True,
         },
     )
-    assert resp.status_code == 201
-    assert "Registration successful" in resp.json()["message"]
-
-    user = await get_user_by_email(registry, "new.user@glorng.dev")
-    assert user is not None
-    assert user.permissions == []
-    assert user.is_verified is False
-
-
-@pytest.mark.asyncio
-async def test_register_normalizes_email(
-    client: AsyncClient, registry: DatabaseRegistry
-) -> None:
-    resp = await client.post(
-        "/api/auth/register",
-        json={
-            "email": "  MixedCase@Glorng.dev ",
-            "password": STRONG_PASSWORD,
-            "password_confirm": STRONG_PASSWORD,
-            "accept_terms": True,
-        },
-    )
-    assert resp.status_code == 201
-
-    user = await get_user_by_email(registry, "mixedcase@glorng.dev")
-    assert user is not None
-
-
-@pytest.mark.asyncio
-async def test_register_duplicate(client: AsyncClient, admin_user: object) -> None:
-    resp = await client.post(
-        "/api/auth/register",
-        json={
-            "email": ADMIN_EMAIL,
-            "password": STRONG_PASSWORD,
-            "password_confirm": STRONG_PASSWORD,
-            "accept_terms": True,
-        },
-    )
-    assert resp.status_code == 409
-
-
-@pytest.mark.asyncio
-async def test_register_weak_password(client: AsyncClient) -> None:
-    resp = await client.post(
-        "/api/auth/register",
-        json={
-            "email": "weak@glorng.dev",
-            "password": "short",
-            "password_confirm": "short",
-            "accept_terms": True,
-        },
-    )
-    assert resp.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_register_common_password(client: AsyncClient) -> None:
-    resp = await client.post(
-        "/api/auth/register",
-        json={
-            "email": "common@glorng.dev",
-            "password": "MyCommonPass1!",
-            "password_confirm": "MyCommonPass1!",
-            "accept_terms": True,
-        },
-    )
-    assert resp.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_register_requires_terms(client: AsyncClient) -> None:
-    resp = await client.post(
-        "/api/auth/register",
-        json={
-            "email": "terms@glorng.dev",
-            "password": STRONG_PASSWORD,
-            "password_confirm": STRONG_PASSWORD,
-            "accept_terms": False,
-        },
-    )
-    assert resp.status_code == 422
+    assert resp.status_code == 403
+    assert "disabled" in resp.json()["detail"].lower()
+    assert await get_user_by_email(registry, "new.user@glorng.dev") is None
 
 
 # --- Login ---
 
 
 @pytest.mark.asyncio
-async def test_login_unverified(client: AsyncClient) -> None:
-    await client.post(
-        "/api/auth/register",
-        json={
-            "email": "unverified@glorng.dev",
-            "password": STRONG_PASSWORD,
-            "password_confirm": STRONG_PASSWORD,
-            "accept_terms": True,
-        },
+async def test_login_unverified(
+    client: AsyncClient, registry: DatabaseRegistry
+) -> None:
+    await create_user(
+        registry,
+        email="unverified@glorng.dev",
+        password=STRONG_PASSWORD,
+        permissions=[],
+        is_verified=False,
     )
     resp = await client.post(
         "/api/auth/login",
@@ -200,7 +119,7 @@ def _mock_firebase_token(
 
 
 @pytest.mark.asyncio
-async def test_firebase_login_creates_restricted_user_and_enqueues_reset(
+async def test_firebase_login_rejects_unknown_email(
     client: AsyncClient,
     registry: DatabaseRegistry,
     monkeypatch: pytest.MonkeyPatch,
@@ -214,25 +133,11 @@ async def test_firebase_login_creates_restricted_user_and_enqueues_reset(
             "firebase": {"sign_in_provider": "google.com"},
         },
     )
-    mock_queue = AsyncMock()
-    mock_queue.enqueue = AsyncMock(return_value="job-reset")
-    app.dependency_overrides[get_job_queue_dep] = lambda: mock_queue
-    try:
-        resp = await client.post("/api/auth/firebase", json={"id_token": "x" * 24})
-    finally:
-        app.dependency_overrides.pop(get_job_queue_dep, None)
+    resp = await client.post("/api/auth/firebase", json={"id_token": "x" * 24})
 
-    assert resp.status_code == 200
-    assert resp.cookies.get("access_token")
-    assert resp.cookies.get("refresh_token")
-    user = await get_user_by_email(registry, "google.user@glorng.dev")
-    assert user is not None
-    assert user.is_verified is True
-    assert user.permissions == []
-    assert user.display_name == "Google User"
-    mock_queue.enqueue.assert_awaited_once()
-    assert mock_queue.enqueue.await_args.args[0] == JobName.SEND_RESET_EMAIL
-    assert mock_queue.enqueue.await_args.args[1] == "google.user@glorng.dev"
+    assert resp.status_code == 401
+    assert "no account" in resp.json()["detail"].lower()
+    assert await get_user_by_email(registry, "google.user@glorng.dev") is None
 
 
 @pytest.mark.asyncio
@@ -241,7 +146,7 @@ async def test_firebase_login_existing_user_does_not_grant_permissions_or_email(
     registry: DatabaseRegistry,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    existing = await firebase_auth_service.create_user(
+    existing = await create_user(
         registry,
         email="existing@glorng.dev",
         password=STRONG_PASSWORD,
@@ -257,30 +162,22 @@ async def test_firebase_login_existing_user_does_not_grant_permissions_or_email(
             "firebase": {"sign_in_provider": "google.com"},
         },
     )
-    mock_queue = AsyncMock()
-    mock_queue.enqueue = AsyncMock(return_value="job-reset")
-    app.dependency_overrides[get_job_queue_dep] = lambda: mock_queue
-    try:
-        resp = await client.post("/api/auth/firebase", json={"id_token": "x" * 24})
-    finally:
-        app.dependency_overrides.pop(get_job_queue_dep, None)
+    resp = await client.post("/api/auth/firebase", json={"id_token": "x" * 24})
 
     assert resp.status_code == 200
     user = await get_user_by_email(registry, "existing@glorng.dev")
     assert user is not None
     assert user.id == existing.id
     assert user.permissions == []
-    mock_queue.enqueue.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 @pytest.mark.asyncio
 async def test_firebase_login_rejects_unverified_password_account(
     client: AsyncClient,
     registry: DatabaseRegistry,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    await firebase_auth_service.create_user(
+    await create_user(
         registry,
         email="preaccount@glorng.dev",
         password=STRONG_PASSWORD,
@@ -475,16 +372,14 @@ async def test_access_after_logout(
 
 
 @pytest.mark.asyncio
-async def test_verify_email(client: AsyncClient) -> None:
+async def test_verify_email(client: AsyncClient, registry: DatabaseRegistry) -> None:
     email = "verify-me@glorng.dev"
-    await client.post(
-        "/api/auth/register",
-        json={
-            "email": email,
-            "password": STRONG_PASSWORD,
-            "password_confirm": STRONG_PASSWORD,
-            "accept_terms": True,
-        },
+    await create_user(
+        registry,
+        email=email,
+        password=STRONG_PASSWORD,
+        permissions=[],
+        is_verified=False,
     )
     token = create_verification_token(email)
     resp = await client.post("/api/auth/verify", json={"token": token})
@@ -499,17 +394,17 @@ async def test_verify_invalid_token(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_verify_reuse_prevented(client: AsyncClient) -> None:
+async def test_verify_reuse_prevented(
+    client: AsyncClient, registry: DatabaseRegistry
+) -> None:
     """Verification token should be single-use."""
     email = "verify-once@glorng.dev"
-    await client.post(
-        "/api/auth/register",
-        json={
-            "email": email,
-            "password": STRONG_PASSWORD,
-            "password_confirm": STRONG_PASSWORD,
-            "accept_terms": True,
-        },
+    await create_user(
+        registry,
+        email=email,
+        password=STRONG_PASSWORD,
+        permissions=[],
+        is_verified=False,
     )
     token = create_verification_token(email)
     await client.post("/api/auth/verify", json={"token": token})
@@ -518,32 +413,6 @@ async def test_verify_reuse_prevented(client: AsyncClient) -> None:
 
 
 # --- Forgot / Reset Password ---
-
-
-@pytest.mark.asyncio
-async def test_register_enqueues_verification_email(
-    client: AsyncClient,
-) -> None:
-    mock_queue = AsyncMock()
-    mock_queue.enqueue = AsyncMock(return_value="job-verify")
-    app.dependency_overrides[get_job_queue_dep] = lambda: mock_queue
-    email = "enqueue@glorng.dev"
-    try:
-        resp = await client.post(
-            "/api/auth/register",
-            json={
-                "email": email,
-                "password": STRONG_PASSWORD,
-                "password_confirm": STRONG_PASSWORD,
-                "accept_terms": True,
-            },
-        )
-        assert resp.status_code == 201
-        mock_queue.enqueue.assert_awaited_once()
-        assert mock_queue.enqueue.await_args.args[0] == JobName.SEND_VERIFICATION_EMAIL
-        assert mock_queue.enqueue.await_args.args[1] == email
-    finally:
-        app.dependency_overrides.pop(get_job_queue_dep, None)
 
 
 @pytest.mark.asyncio

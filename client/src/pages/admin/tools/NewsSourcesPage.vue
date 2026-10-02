@@ -143,11 +143,8 @@ const {
             <template #primary>
               <span :title="source.name">{{ source.name }}</span>
             </template>
-            <template v-if="source.last_fetched_at || source.last_error" #meta>
-              <span v-if="source.last_fetched_at">{{ sourceMeta(source) }}</span>
-              <span v-if="source.last_error" class="mt-1 block text-status-warning break-words">
-                {{ source.last_error }}
-              </span>
+            <template v-if="source.last_fetched_at" #meta>
+              {{ sourceMeta(source) }}
             </template>
             <template #actions>
               <span

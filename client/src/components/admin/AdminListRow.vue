@@ -40,6 +40,15 @@ const focusable = computed(() => props.interactive && !props.nestedInteractive);
 const primaryAsOpenControl = computed(
   () => props.interactive && props.nestedInteractive && Boolean(slots.primary),
 );
+const inlineMeta = computed(() => Boolean(slots.meta) && !props.centerMeta);
+const primaryClass = computed(() =>
+  [
+    "min-w-0 truncate rounded text-left text-sm font-medium leading-none text-surface-light",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
+    // ponytail: without this, flex-1 on the title shoves #meta to the far end of the row
+    inlineMeta.value ? "shrink" : "flex-1",
+  ].join(" "),
+);
 
 /**
  * Full static class strings so Tailwind keeps them.
@@ -168,21 +177,18 @@ function onKeydown(event: KeyboardEvent): void {
           v-if="primaryAsOpenControl"
           type="button"
           data-admin-list-open
-          class="min-w-0 flex-1 truncate rounded text-left text-sm font-medium leading-none text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+          :class="primaryClass"
           :aria-label="openLabel"
           @click="onPrimaryOpen"
         >
           <slot name="primary" />
         </button>
-        <span
-          v-else-if="$slots.primary"
-          class="min-w-0 flex-1 truncate text-sm font-medium leading-none text-surface-light"
-        >
+        <span v-else-if="$slots.primary" :class="primaryClass">
           <slot name="primary" />
         </span>
         <span
-          v-if="$slots.meta && !centerMeta"
-          class="hidden truncate text-xs lowercase leading-none text-surface-muted sm:inline"
+          v-if="inlineMeta"
+          class="hidden max-w-[min(40%,18rem)] shrink-0 truncate text-xs lowercase leading-none text-surface-muted sm:inline"
         >
           <slot name="meta" />
         </span>

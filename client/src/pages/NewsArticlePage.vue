@@ -21,7 +21,8 @@ const { article, detailLoading, detailError, loadArticle } = useNews();
 const articleTitle = computed(() => article.value?.title ?? "article");
 const breadcrumbs = computed((): BreadcrumbSegment[] => {
   const trail: BreadcrumbSegment[] = [{ label: "news", to: "/news" }];
-  if (crumbSlug.value) trail.push({ label: crumbSlug.value });
+  const crumbLabel = article.value?.title?.trim() || crumbSlug.value;
+  if (crumbLabel) trail.push({ label: crumbLabel });
   return trail;
 });
 /** Drop publish-date bullets — header already shows newsArticleDisplayDate. */

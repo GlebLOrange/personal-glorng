@@ -61,16 +61,10 @@ watch(page, () => {
         as="article"
         variant="compact"
         hoverable
-        class="relative min-w-0"
+        class="min-w-0"
       >
-        <RouterLink
-          :to="{ name: 'news-article', params: { slug: item.slug } }"
-          class="absolute inset-0 z-10 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-          :aria-label="item.title"
-        />
-
         <div
-          class="relative z-20 mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted"
+          class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted"
         >
           <time
             class="text-datetime mr-auto whitespace-nowrap lowercase"
@@ -83,20 +77,28 @@ watch(page, () => {
             :href="safeNavigationHref(item.source_url) ?? '#'"
             target="_blank"
             rel="noopener noreferrer"
-            title="source"
-            class="shrink-0 text-xs text-accent-blue hover:underline"
-            @click.stop
+            class="inline-flex min-h-11 items-center shrink-0 text-xs text-accent-blue hover:underline"
           >
             {{ item.source_name }}
+            <span class="sr-only"> (opens in new tab)</span>
           </a>
-          <span v-else class="shrink-0 text-xs text-accent-blue">{{ item.source_name }}</span>
+          <span v-else class="inline-flex min-h-11 items-center shrink-0 text-xs text-accent-blue">
+            {{ item.source_name }}
+          </span>
         </div>
 
-        <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
+        <h2 class="card-title mb-2 break-words">
+          <RouterLink
+            :to="{ name: 'news-article', params: { slug: item.slug } }"
+            class="rounded-sm text-inherit hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+          >
+            {{ item.title }}
+          </RouterLink>
+        </h2>
 
         <p class="mb-4 break-words text-sm text-surface-mid">{{ item.summary }}</p>
 
-        <div class="relative z-20 flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <span
             v-for="tag in item.tags"
             :key="tag"

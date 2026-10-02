@@ -31,19 +31,8 @@ const { can, canAccess } = usePermissions();
 
 const expensesOffNotice = computed(() => String(route.query.expenses ?? "") === "off");
 
-const tools = computed((): PlatformService[] => {
-  const bySlug = new Map<string, PlatformService>();
-  for (const tool of publicToolsAsServices()) {
-    if (tool.slug === "expenses" && !isExpensesEnabled()) continue;
-    bySlug.set(tool.slug, tool);
-  }
-  for (const tool of PLATFORM_SERVICES) {
-    if (tool.slug === "expenses" && !isExpensesEnabled()) continue;
-    if (TOOLS_PAGE_EXTRA_SLUGS.has(tool.slug) && canAccess(tool.slug)) {
-      bySlug.set(tool.slug, tool);
-    }
-  }
-  return [...bySlug.values()].sort((a, b) => {
+function sortPublicTools(tools: PlatformService[]): PlatformService[] {
+  return [...tools].sort((a, b) => {
     const ai = PUBLIC_TILE_ORDER.indexOf(a.slug);
     const bi = PUBLIC_TILE_ORDER.indexOf(b.slug);
     if (ai === -1 && bi === -1) return 0;
@@ -51,9 +40,29 @@ const tools = computed((): PlatformService[] => {
     if (bi === -1) return -1;
     return ai - bi;
   });
+}
+
+const publicTools = computed((): PlatformService[] => {
+  const tools = publicToolsAsServices().filter(
+    (tool) => !(tool.slug === "expenses" && !isExpensesEnabled()),
+  );
+  return sortPublicTools(tools);
 });
 
-const sections = computed(() => groupServicesByCategory(tools.value));
+const signedInTools = computed((): PlatformService[] => {
+  return PLATFORM_SERVICES.filter((tool) => {
+    if (!TOOLS_PAGE_EXTRA_SLUGS.has(tool.slug)) return false;
+    if (tool.slug === "expenses" && !isExpensesEnabled()) return false;
+    return canAccess(tool.slug);
+  });
+});
+
+const publicSections = computed(() => groupServicesByCategory(publicTools.value));
+const signedInSections = computed(() => groupServicesByCategory(signedInTools.value));
+
+const hasAnyTools = computed(
+  () => publicTools.value.length > 0 || signedInTools.value.length > 0,
+);
 
 function toolRoute(tool: PlatformService): string {
   return resolveToolRoute(tool, can);
@@ -68,8 +77,7 @@ function toolRoute(tool: PlatformService): string {
     :narrow="false"
   >
     <p class="text-body mb-4 max-w-3xl">
-      These tiles call the same FastAPI as the portfolio — live routes, auth, and workers on this
-      site.
+      Public utilities you can try without signing in — weather, short links, recipes, and more.
     </p>
     <p
       v-if="expensesOffNotice"
@@ -78,7 +86,23 @@ function toolRoute(tool: PlatformService): string {
     >
       Expenses are turned off on this deploy.
     </p>
-    <EmptyState v-if="tools.length === 0" description="no tools available." />
-    <ToolTileGrid v-else :sections="sections" :resolve-route="toolRoute" gap-class="gap-4" />
+    <EmptyState v-if="!hasAnyTools" description="no tools available." />
+    <template v-else>
+      <ToolTileGrid
+        v-if="publicSections.length"
+        :sections="publicSections"
+        :resolve-route="toolRoute"
+        gap-class="gap-4"
+      />
+      <section v-if="signedInSections.length" class="min-w-0">
+        <h2 class="text-meta mb-4 uppercase tracking-wider">your tools</h2>
+        <ToolTileGrid
+          :sections="signedInSections"
+          :resolve-route="toolRoute"
+          category-heading="h3"
+          gap-class="gap-4"
+        />
+      </section>
+    </template>
   </PageShell>
 </template>
