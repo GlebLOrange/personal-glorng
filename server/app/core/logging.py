@@ -2,12 +2,26 @@
 
 import json
 import logging
+import os
 import sys
 import traceback
 from typing import Any
 
 import sentry_sdk
 from loguru import logger as _loguru
+
+
+def _stderr_level() -> str:
+    """Min level for stderr JSON sink (Mongo persist uses APP_LOG_PERSIST_MIN_LEVEL)."""
+    try:
+        from app.settings import get_settings
+
+        raw = get_settings().LOG_LEVEL.strip().upper()
+    except Exception:
+        raw = os.environ.get("LOG_LEVEL", "INFO").strip().upper()
+    if raw in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
+        return raw
+    return "INFO"
 
 
 def _build_log_entry(record: dict[str, Any]) -> dict[str, Any]:
@@ -48,7 +62,7 @@ def _persist_sink(message: Any) -> None:  # noqa: ANN401
 
 
 _loguru.remove()
-_loguru.add(_json_sink, level="DEBUG", serialize=False)
+_loguru.add(_json_sink, level=_stderr_level(), serialize=False)
 _loguru.add(_persist_sink, level="DEBUG", serialize=False)
 
 

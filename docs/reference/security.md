@@ -149,7 +149,8 @@ Structured API logs (Loguru / [`logging.py`](../../server/app/core/logging.py)) 
 | Control | Detail |
 |---------|--------|
 | Master switch | `APP_LOG_PERSIST_ENABLED` (default `true`) |
-| Min level stored | `APP_LOG_PERSIST_MIN_LEVEL` (dev default `WARNING`; prod example `INFO`; DEBUG stays stderr-only) |
+| Stderr min level | `LOG_LEVEL` (default `INFO`; DEBUG when debugging) |
+| Min level stored | `APP_LOG_PERSIST_MIN_LEVEL` (dev default `WARNING`; prod example `INFO`) |
 | Retention | TTL index on `occurred_at` — `APP_LOG_RETENTION_DAYS` (default 30) |
 | Admin access | `GET /api/tools/app-logs` requires `app-logs:read` |
 | Health noise | `/api/health` and `/api/ready` request logs are not persisted |

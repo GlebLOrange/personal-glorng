@@ -671,6 +671,7 @@ class Settings(BaseSettings):
 
     # App
     APP_ENV: str
+    LOG_LEVEL: str = "INFO"
     LOG_REQUESTS: bool
     LOG_REQUEST_BODIES: bool
     CELERY_TASK_ALWAYS_EAGER: bool

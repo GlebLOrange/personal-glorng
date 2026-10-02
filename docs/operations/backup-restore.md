@@ -24,7 +24,9 @@ Superusers can open **db maintenance** under `/admin` and start the same script 
 | Redis RDB | Always | `backups/redis/proj_portfolio_redis_*.rdb` |
 | Media volume | Always | `backups/media/proj_portfolio_media_*.tar.gz` |
 
-Symlinks `*_latest.*` point to the newest dump per type. Mongo and Postgres keep Sunday copies for `BACKUP_RETENTION_WEEKS`.
+Symlinks `*_latest.*` point to the newest dump per type. Mongo, Postgres, and media keep Sunday copies for `BACKUP_RETENTION_WEEKS`. Redis stays on daily retention only.
+
+On success the script writes `backups/LAST_SUCCESS` (UTC ISO stamp). Cron also runs `--check-stale` (default noon) and Telegram-alerts if that stamp is missing or older than `BACKUP_STALE_HOURS` (default 26). Notify uses host `curl` to Telegram (`TELEGRAM_BOT_CHAT_TOKEN` + `TELEGRAM_ALLOWED_USER_ID`) — it does not need the API container.
 
 **Not source of truth:** Elasticsearch (rebuild with `make reindex-search`), Redis sessions/rate-limits (optional), `.env` (password manager — never next to dumps).
 
@@ -39,8 +41,9 @@ Symlinks `*_latest.*` point to the newest dump per type. Mongo and Postgres keep
 | `BACKUP_DIR` | `./backups` | Root backup directory |
 | `BACKUP_COMPOSE_FILE` | `docker-compose.prod.yml` | Compose file for `mongodb` / `redis` / optional `db` |
 | `BACKUP_RETENTION_DAYS` | `7` | Daily retention |
-| `BACKUP_RETENTION_WEEKS` | `4` | Weekly Sunday copies kept longer |
-| `BACKUP_NOTIFY` | `true` | Telegram notify on result |
+| `BACKUP_RETENTION_WEEKS` | `4` | Weekly Sunday copies kept longer (Mongo/Postgres/media) |
+| `BACKUP_NOTIFY` | `true` | Telegram notify on result (host curl; no API container) |
+| `BACKUP_STALE_HOURS` | `26` | `--check-stale` fails when LAST_SUCCESS is older |
 | `BACKUP_TIMEZONE` | `Europe/Warsaw` | Cron timezone |
 | `BACKUP_OFFSITE_CMD` | _(empty)_ | Shell command after verify (e.g. rsync); failure fails the run |
 | `BACKUP_REQUIRE_OFFSITE` | `false` | When `true`, fail if `BACKUP_OFFSITE_CMD` is empty (use on prod) |
@@ -50,10 +53,10 @@ The script brings up `mongodb` and `redis` before dumping. With Postgres enabled
 ### Operator loop (durable)
 
 1. On the prod host, set `BACKUP_COMPOSE_FILE` to the compose file that is actually running.
-2. Run `make backup` once; confirm `backups/mongodb/proj_portfolio_mongo_latest.archive.gz` is non-empty.
+2. Run `make backup` once; confirm `backups/mongodb/proj_portfolio_mongo_latest.archive.gz` is non-empty and `backups/LAST_SUCCESS` exists.
 3. Set `BACKUP_OFFSITE_CMD` (no `--delete`) and `BACKUP_REQUIRE_OFFSITE=true` for prod.
-4. `make backup-install` (04:20 Europe/Warsaw). Confirm `crontab -l` and that cron’s `PATH` can see `docker`.
-5. Confirm Telegram “DB maintenance OK/FAILED”.
+4. `make backup-install` (backup 04:20 + stale check 12:00 Europe/Warsaw). Confirm `crontab -l` and that cron’s `PATH` can see `docker`.
+5. Confirm Telegram “DB maintenance OK/FAILED” (and a stale alert if you delete `LAST_SUCCESS` and run `--check-stale`).
 6. Run a restore drill on a **throwaway** volume (below). Record the date.
 
 RPO for this site: last good daily Mongo + media. Redis is optional.
