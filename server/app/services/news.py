@@ -716,20 +716,13 @@ class NewsService:
 
     async def news_stats(self) -> NewsStatsResponse:
         """Return article counts grouped by status for admin dashboards."""
-        repo = self._news()
-        total = await repo.count_articles()
-        draft = await repo.count_articles(status="draft")
-        pending_review = await repo.count_articles(status="pending_review")
-        scheduled = await repo.count_articles(status="scheduled")
-        published = await repo.count_articles(status="published")
-        private = await repo.count_articles(status="private")
-        trash = await repo.count_articles(status="trash")
+        counts, total = await self._news().count_articles_by_status()
         return NewsStatsResponse(
             total=total,
-            draft=draft,
-            pending_review=pending_review,
-            scheduled=scheduled,
-            published=published,
-            private=private,
-            trash=trash,
+            draft=counts.get("draft", 0),
+            pending_review=counts.get("pending_review", 0),
+            scheduled=counts.get("scheduled", 0),
+            published=counts.get("published", 0),
+            private=counts.get("private", 0),
+            trash=counts.get("trash", 0),
         )
