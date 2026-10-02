@@ -19,11 +19,14 @@ const props = withDefaults(
     gapClass?: string;
     /** When false, hide per-section h2 (e.g. category already shown in tabs). */
     showCategoryHeadings?: boolean;
+    /** Use h3 when this grid sits under a parent section heading (e.g. “your tools”). */
+    categoryHeading?: "h2" | "h3";
     /** Compact rhythm for ops hubs (admin); default keeps airier tools layout. */
     density?: "default" | "compact";
   }>(),
   {
     showCategoryHeadings: true,
+    categoryHeading: "h2",
     density: "default",
   },
 );
@@ -37,6 +40,8 @@ const headingClass = computed(() =>
     ? "text-meta mb-3 uppercase tracking-wider"
     : "text-meta mb-4 uppercase tracking-wider",
 );
+
+const tileTitleTag = computed(() => (props.categoryHeading === "h3" ? "h4" : "h3"));
 </script>
 
 <template>
@@ -46,9 +51,13 @@ const headingClass = computed(() =>
     class="min-w-0"
     :class="sectionClass"
   >
-    <h2 v-if="showCategoryHeadings" :class="headingClass">
+    <component
+      :is="categoryHeading"
+      v-if="showCategoryHeadings"
+      :class="headingClass"
+    >
       {{ section.label }}
-    </h2>
+    </component>
     <div class="page-tool-grid" :class="gapClass">
       <template v-for="tool in section.services" :key="tool.slug">
         <a
@@ -62,10 +71,13 @@ const headingClass = computed(() =>
           <Card hoverable class="page-tile-card h-full">
             <div class="flex min-w-0 items-center gap-2">
               <ToolIcon :slug="tool.slug" class="h-6 w-6 shrink-0 text-surface-light" />
-              <h3 class="min-w-0 text-sm font-semibold text-surface-light break-words">
+              <component
+                :is="tileTitleTag"
+                class="min-w-0 text-sm font-semibold text-surface-light break-words"
+              >
                 {{ tool.name }}
                 <span class="text-surface-mid font-normal" aria-hidden="true"> ↗</span>
-              </h3>
+              </component>
             </div>
             <p class="line-clamp-3 text-xs lowercase leading-relaxed text-surface-mid break-words">
               {{ tool.description }}
@@ -80,9 +92,12 @@ const headingClass = computed(() =>
           <Card hoverable class="page-tile-card h-full">
             <div class="flex min-w-0 items-center gap-2">
               <ToolIcon :slug="tool.slug" class="h-6 w-6 shrink-0 text-surface-light" />
-              <h3 class="min-w-0 text-sm font-semibold text-surface-light break-words">
+              <component
+                :is="tileTitleTag"
+                class="min-w-0 text-sm font-semibold text-surface-light break-words"
+              >
                 {{ tool.name }}
-              </h3>
+              </component>
             </div>
             <p class="line-clamp-3 text-xs lowercase leading-relaxed text-surface-mid break-words">
               {{ tool.description }}
