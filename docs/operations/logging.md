@@ -19,3 +19,4 @@ Written only through `AuditService.record`. Mongo `audit_events` is the source o
 - [Security — Application log persistence](/reference/security#application-log-persistence)
 - [Architecture — Observability](/guide/architecture#observability)
 - [Configuration](/reference/configuration)
+- Admin UI: `/admin/app-logs`, `/admin/audit-logs`
