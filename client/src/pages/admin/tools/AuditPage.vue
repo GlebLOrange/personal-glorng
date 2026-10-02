@@ -17,6 +17,7 @@ import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useExpandableIds } from "@/composables/useExpandableIds";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
+import { yesterdayIsoDate } from "@/utils/dates";
 import { formatDate } from "@/utils/format";
 
 interface AuditEvent {
@@ -33,12 +34,14 @@ interface AuditEvent {
   request_id: string | null;
 }
 
+const DEFAULT_CATEGORY = "security";
+
 const items = ref<AuditEvent[]>([]);
 const total = ref(0);
 const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: true });
-const category = ref("security");
+const category = ref(DEFAULT_CATEGORY);
 const page = ref(1);
-const dateFrom = ref(new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+const dateFrom = ref(yesterdayIsoDate());
 const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
@@ -50,7 +53,9 @@ const CATEGORY_FILTERS = [
 const totalPages = computed(() => Math.ceil(total.value / ADMIN_LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
-const hasActiveFilters = computed(() => Boolean(category.value || dateFrom.value));
+const hasActiveFilters = computed(
+  () => category.value !== DEFAULT_CATEGORY || dateFrom.value !== yesterdayIsoDate(),
+);
 const activeFilterLabel = computed(
   () => CATEGORY_FILTERS.find((chip) => chip.value === category.value)?.label,
 );
@@ -90,8 +95,8 @@ function setCategoryFilter(next: string): void {
 }
 
 function clearFilters(): void {
-  category.value = "";
-  dateFrom.value = "";
+  category.value = DEFAULT_CATEGORY;
+  dateFrom.value = yesterdayIsoDate();
   page.value = 1;
   filterDropdownRef.value?.close();
   void load();

@@ -84,7 +84,8 @@ export function useNewsAdmin() {
   const form = ref<NewsArticleFormData>(emptyForm());
   const lastAutoTitle = ref<string | null>(null);
   const metadataRequestId = ref(0);
-  const statusFilter = ref<StatusFilter>("");
+  const DEFAULT_STATUS_FILTER: NewsStatus = "published";
+  const statusFilter = ref<StatusFilter>(DEFAULT_STATUS_FILTER);
   const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
   const {
@@ -109,7 +110,7 @@ export function useNewsAdmin() {
     repostToTelegram,
   } = useNews();
 
-  const hasActiveFilters = computed(() => Boolean(statusFilter.value));
+  const hasActiveFilters = computed(() => statusFilter.value !== DEFAULT_STATUS_FILTER);
   const activeFilterLabel = computed(
     () => STATUS_FILTERS.find((chip) => chip.value === statusFilter.value)?.label,
   );
@@ -122,7 +123,7 @@ export function useNewsAdmin() {
   }
 
   function clearFilters(): void {
-    statusFilter.value = "";
+    statusFilter.value = DEFAULT_STATUS_FILTER;
     page.value = 1;
     filterDropdownRef.value?.close();
     void loadAdminNews();
@@ -132,7 +133,7 @@ export function useNewsAdmin() {
     if (!statusFilter.value) {
       return "no news articles yet. run ingestion after configuring trusted sources.";
     }
-    return `no ${statusFilter.value} articles match this filter.`;
+    return `no ${statusFilter.value.replaceAll("_", " ")} articles match this filter.`;
   });
 
   async function reloadAdminNews(): Promise<void> {
@@ -322,7 +323,10 @@ export function useNewsAdmin() {
   }
 
   async function loadAdminNews(): Promise<void> {
-    await loadNews({ admin: true, status: statusFilter.value || undefined });
+    await loadNews({
+      admin: true,
+      status: statusFilter.value || undefined,
+    });
   }
 
   async function runIngest(): Promise<void> {
