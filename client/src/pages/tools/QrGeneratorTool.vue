@@ -189,31 +189,9 @@ onMounted(() => {
       <span v-else> Sign in to save codes to your library. </span>
     </p>
 
-    <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,280px)]">
-      <Card variant="ghost" class="min-w-0">
+    <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
+      <Card variant="ghost" class="min-w-0 lg:order-2">
         <form class="space-y-3" @submit.prevent="createQr">
-          <BaseTextarea
-            v-model="content"
-            label="payload"
-            :rows="4"
-            maxlength="2000"
-            placeholder="URL, text, Wi‑Fi string, etc."
-          />
-          <div class="flex flex-wrap gap-3">
-            <BaseInput
-              v-model="label"
-              label="label (optional)"
-              placeholder="My link"
-              class="min-w-0 flex-1"
-              maxlength="120"
-            />
-            <BaseSelect v-model="errorLevel" label="error correction" class="min-w-[10rem]">
-              <option value="L">L (~7%)</option>
-              <option value="M">M (~15%)</option>
-              <option value="Q">Q (~25%)</option>
-              <option value="H">H (~30%)</option>
-            </BaseSelect>
-          </div>
           <div class="flex flex-wrap gap-2">
             <BaseButton variant="primary" type="submit" :disabled="!canCreate">
               {{ creating ? "generating…" : "generate qr" }}
@@ -242,30 +220,51 @@ onMounted(() => {
               new / discard
             </BaseButton>
           </div>
+          <div class="flex flex-wrap gap-3">
+            <BaseInput
+              v-model="label"
+              label="label (optional)"
+              placeholder="My link"
+              class="min-w-0 flex-1"
+              maxlength="120"
+            />
+            <BaseSelect v-model="errorLevel" label="error correction" class="min-w-[10rem]">
+              <option value="L">L (~7%)</option>
+              <option value="M">M (~15%)</option>
+              <option value="Q">Q (~25%)</option>
+              <option value="H">H (~30%)</option>
+            </BaseSelect>
+          </div>
+          <BaseTextarea
+            v-model="content"
+            label="payload"
+            :rows="4"
+            maxlength="2000"
+            placeholder="URL, text, Wi‑Fi string, etc."
+          />
           <p v-if="detailLoading" class="text-xs text-surface-mid">Loading saved code…</p>
         </form>
       </Card>
 
-      <Card variant="ghost" class="flex min-h-[280px] flex-col items-center justify-center gap-3 p-4">
-        <img
-          v-if="previewUrl"
-          :src="previewUrl"
-          :alt="previewAlt"
-          width="256"
-          height="256"
-          class="max-h-64 max-w-full rounded-md bg-white p-2"
-        />
-        <p v-else class="text-center text-sm text-surface-mid">
+      <Card
+        variant="ghost"
+        class="flex min-h-[280px] flex-col items-center justify-center gap-3 p-4 lg:order-1"
+      >
+        <p v-if="!previewUrl" class="text-center text-sm text-surface-mid">
           Generate a code to preview it here.
         </p>
-        <BaseButton
-          v-if="previewUrl"
-          variant="ghost"
-          type="button"
-          @click="downloadSvg"
-        >
-          download svg
-        </BaseButton>
+        <div v-else class="flex w-full max-w-64 flex-col items-center gap-3">
+          <img
+            :src="previewUrl"
+            :alt="previewAlt"
+            width="256"
+            height="256"
+            class="h-auto w-full rounded-md bg-white p-2"
+          />
+          <BaseButton variant="ghost" type="button" class="w-full" @click="downloadSvg">
+            download svg
+          </BaseButton>
+        </div>
       </Card>
     </div>
 
