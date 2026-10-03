@@ -12,9 +12,11 @@ const props = defineProps<{
 const isStartingCheckout = ref(false);
 const checkoutError = ref(false);
 
+type DonationBrand = "stripe" | "paypal" | "patreon";
+
 type DonationAction = {
   id: "stripe-url" | "stripe-checkout" | "paypal" | "patreon";
-  label: string;
+  brand: DonationBrand;
   href?: string;
 };
 
@@ -26,17 +28,17 @@ const actions = computed((): DonationAction[] => {
   const items: DonationAction[] = [];
   const stripeUrl = safeHref(props.config.stripe.url);
   if (props.config.stripe.enabled && stripeUrl) {
-    items.push({ id: "stripe-url", label: "donate by card", href: stripeUrl });
+    items.push({ id: "stripe-url", brand: "stripe", href: stripeUrl });
   } else if (props.config.stripe.checkout_enabled) {
-    items.push({ id: "stripe-checkout", label: "donate by card" });
+    items.push({ id: "stripe-checkout", brand: "stripe" });
   }
   const paypalUrl = safeHref(props.config.paypal.url);
   if (props.config.paypal.enabled && paypalUrl) {
-    items.push({ id: "paypal", label: "donate with paypal", href: paypalUrl });
+    items.push({ id: "paypal", brand: "paypal", href: paypalUrl });
   }
   const patreonUrl = safeHref(props.config.patreon.url);
   if (props.config.patreon.enabled && patreonUrl) {
-    items.push({ id: "patreon", label: "monthly support", href: patreonUrl });
+    items.push({ id: "patreon", brand: "patreon", href: patreonUrl });
   }
   return items;
 });
@@ -65,25 +67,25 @@ async function startStripeCheckout(): Promise<void> {
 
 <template>
   <div class="flex min-w-0 flex-col items-end gap-2">
-    <div class="flex flex-wrap items-center justify-end gap-4">
+    <div class="flex flex-wrap items-center justify-end gap-3 sm:flex-nowrap sm:gap-4">
       <template v-if="primaryAction">
         <a
           v-if="primaryAction.id !== 'stripe-checkout' && primaryAction.href"
           :href="primaryAction.href"
-          class="cta-primary"
+          :class="`donation-brand-${primaryAction.brand}`"
           target="_blank"
           rel="noopener noreferrer"
         >
-          {{ primaryAction.label }}
+          {{ primaryAction.brand }}
         </a>
         <button
           v-else-if="primaryAction.id === 'stripe-checkout'"
           type="button"
-          class="cta-primary"
+          :class="`donation-brand-${primaryAction.brand}`"
           :disabled="isStartingCheckout"
           @click="startStripeCheckout"
         >
-          {{ isStartingCheckout ? "opening…" : primaryAction.label }}
+          {{ isStartingCheckout ? "opening…" : primaryAction.brand }}
         </button>
       </template>
 
@@ -91,16 +93,16 @@ async function startStripeCheckout(): Promise<void> {
         v-for="action in secondaryActions"
         :key="action.id"
         :href="action.href"
-        class="cta-secondary inline-flex items-center"
+        :class="`donation-brand-${action.brand}`"
         target="_blank"
         rel="noopener noreferrer"
       >
-        {{ action.label }}
+        {{ action.brand }}
       </a>
     </div>
 
-    <p v-if="checkoutError" class="text-label text-status-error" role="status">
-      Could not open card checkout. Please try again in a moment.
+    <p v-if="checkoutError" class="text-label text-status-error" role="alert">
+      Could not open Stripe checkout. Please try again in a moment.
     </p>
   </div>
 </template>
