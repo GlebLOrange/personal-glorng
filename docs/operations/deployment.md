@@ -46,6 +46,8 @@ Compose service inventory: [architecture inventory (generated)](/generated/archi
 5. `BASE_URL` — public HTTPS origin (sitemap, robots, redirects). Set `VITE_PUBLIC_ORIGIN` to the same value so the SPA build bakes correct Open Graph image URLs (compose falls back to `BASE_URL` when unset).
 6. `RUN_MIGRATIONS=false` and `RUN_SEED=false` — schema work goes through the one-shot `migrate` service, not API boot seed.
 
+**Public SPA loading:** `/` paints from client `RESUME_FALLBACK` even if the API is down; `/news` shows a list skeleton until the API responds. CSS remains a single Tailwind bundle (~126 KB raw) — route-level CSS split is deferred unless LCP regresses after deploy.
+
 Process env overrides dotenv when you inject secrets without editing `.env`. Full variable list: [Configuration](/reference/configuration).
 
 ## 3. Start stack

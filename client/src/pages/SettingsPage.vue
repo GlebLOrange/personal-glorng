@@ -192,15 +192,17 @@ async function savePassword(): Promise<void> {
       </div>
     </div>
 
-    <section
+    <details
       v-if="accessibleTools.length"
-      class="mt-6 rounded-lg border border-surface-border bg-surface-card p-4"
-      aria-labelledby="settings-tools-heading"
+      class="group mt-6 rounded-lg border border-surface-border bg-surface-card p-4"
     >
-      <h2 id="settings-tools-heading" class="mb-2 text-sm font-medium text-surface-light">
-        tools you can open
-      </h2>
-      <p class="mb-3 text-sm text-surface-mid">
+      <summary
+        id="settings-tools-heading"
+        class="cursor-pointer list-none text-sm font-medium text-surface-light marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded [&::-webkit-details-marker]:hidden"
+      >
+        <span class="underline-offset-2 group-open:underline">tools you can open</span>
+      </summary>
+      <p class="mb-3 mt-3 text-sm text-surface-mid">
         A tool you cannot access redirects to admin. Your account can open:
       </p>
       <ul class="flex flex-wrap gap-x-3 gap-y-2">
@@ -210,6 +212,6 @@ async function savePassword(): Promise<void> {
           </RouterLink>
         </li>
       </ul>
-    </section>
+    </details>
   </PageShell>
 </template>

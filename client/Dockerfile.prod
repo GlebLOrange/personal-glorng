@@ -2,7 +2,7 @@ FROM node:26.10.0-alpine AS build
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package*.json .npmrc ./
 RUN --mount=type=cache,target=/root/.npm \
     npm ci
 

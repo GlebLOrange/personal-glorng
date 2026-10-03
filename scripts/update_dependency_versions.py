@@ -227,7 +227,7 @@ def refresh_uv_lock() -> None:
 def refresh_npm_lock(directory: Path) -> None:
     """Refresh package-lock.json for ``directory``.
 
-    Uses ``--legacy-peer-deps`` to match client Docker/CI (TypeScript 7 is
+    Uses ``--legacy-peer-deps`` to match client/.npmrc (TypeScript 7 is
     ahead of typescript-eslint's declared peer range).
     """
     subprocess.run(

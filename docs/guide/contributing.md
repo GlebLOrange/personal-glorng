@@ -26,7 +26,7 @@ In Docker (when stack is up): `make lint-check` and `make test`.
 
 ```bash
 cd client
-npm ci
+npm ci   # client/.npmrc enables legacy-peer-deps for TypeScript 7
 npm run lint
 npm run test
 npm run build:check

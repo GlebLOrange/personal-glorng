@@ -9,6 +9,11 @@ export type PageSeoInput = {
   noindex?: boolean;
   /** When true, set `<link rel="amphtml">` to absolute `/amp`; otherwise remove it. */
   amphtml?: boolean;
+  /**
+   * JSON-LD graph for the page. Pass `null` to remove a previously injected script.
+   * Omit to leave existing JSON-LD untouched.
+   */
+  jsonLd?: Record<string, unknown> | null;
 };
 
 function upsertMeta(attr: "name" | "property", key: string, content: string): void {
@@ -53,6 +58,34 @@ function setAmphtmlLink(enabled: boolean): void {
   el.setAttribute("href", absoluteUrl("/amp"));
 }
 
+function setCanonicalLink(url: string): void {
+  let el = document.head.querySelector('link[rel="canonical"]');
+  if (!(el instanceof HTMLLinkElement)) {
+    el = document.createElement("link");
+    el.setAttribute("rel", "canonical");
+    document.head.appendChild(el);
+  }
+  el.setAttribute("href", url);
+}
+
+const JSON_LD_SCRIPT_ID = "glorng-json-ld";
+
+function setJsonLd(data: Record<string, unknown> | null): void {
+  const existing = document.getElementById(JSON_LD_SCRIPT_ID);
+  if (!data) {
+    existing?.remove();
+    return;
+  }
+  let el = existing;
+  if (!(el instanceof HTMLScriptElement)) {
+    el = document.createElement("script");
+    el.id = JSON_LD_SCRIPT_ID;
+    el.type = "application/ld+json";
+    document.head.appendChild(el);
+  }
+  el.textContent = JSON.stringify(data);
+}
+
 /**
  * Apply document title + description / Open Graph / Twitter tags for the current view.
  * Safe for CSR only (touches `document`).
@@ -68,6 +101,7 @@ export function applyPageSeo(input: PageSeoInput = {}): void {
 
   upsertMeta("name", "description", description);
   upsertMeta("name", "robots", input.noindex ? "noindex, nofollow" : "index, follow");
+  setCanonicalLink(url);
 
   upsertMeta("property", "og:site_name", SITE_NAME);
   upsertMeta("property", "og:type", "website");
@@ -83,5 +117,9 @@ export function applyPageSeo(input: PageSeoInput = {}): void {
 
   if (input.amphtml !== undefined) {
     setAmphtmlLink(input.amphtml);
+  }
+
+  if (input.jsonLd !== undefined) {
+    setJsonLd(input.jsonLd);
   }
 }

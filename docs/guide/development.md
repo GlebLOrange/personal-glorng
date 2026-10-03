@@ -90,14 +90,23 @@ UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
 
 ```bash
 cd client
-npm ci
+npm ci               # uses client/.npmrc (legacy-peer-deps for TypeScript 7)
 npm run dev          # dev server
 npm run lint
 npm run test
-npm run build:check  # typecheck + production build
+npm run build:check  # typecheck + production build + entry preload guard
 ```
 
 Host Vite uses `client/.env.development` (`VITE_API_PROXY_TARGET=http://127.0.0.1:8000` by default) and also applies `VITE_*` from repo-root `.env`.
+
+### Public route loading (perf / Lighthouse)
+
+| Route | Without API | Notes |
+|-------|-------------|--------|
+| `/` (portfolio) | Renders from `RESUME_FALLBACK` immediately | Live `/resume` sync is non-blocking; failed sync shows a banner |
+| `/news` | List skeleton until `loadNews()` resolves | Needs the API for article rows |
+
+Do not treat a blank Lighthouse FCP on `vite preview` as “portfolio waits on the API” — check entry JS/CSS first (`npm run build:check` includes a no-chart-on-entry preload guard).
 
 ## Telegram todobot
 
