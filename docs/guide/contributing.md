@@ -26,10 +26,10 @@ In Docker (when stack is up): `make lint-check` and `make test`.
 
 ```bash
 cd client
-npm ci   # client/.npmrc enables legacy-peer-deps for TypeScript 7
+npm ci
 npm run lint
 npm run test
-npm run build:check
+VITE_PUBLIC_ORIGIN=https://your-domain.example npm run build:check
 ```
 
 ## Local full gate

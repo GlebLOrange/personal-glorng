@@ -90,11 +90,12 @@ UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
 
 ```bash
 cd client
-npm ci               # uses client/.npmrc (legacy-peer-deps for TypeScript 7)
+npm ci               # TypeScript ~5.9.x (typescript-eslint 8 peer range)
 npm run dev          # dev server
 npm run lint
 npm run test
-npm run build:check  # typecheck + production build + entry preload guard
+# Production build needs a public HTTPS origin (not localhost):
+VITE_PUBLIC_ORIGIN=https://your-domain.example npm run build:check
 ```
 
 Host Vite uses `client/.env.development` (`VITE_API_PROXY_TARGET=http://127.0.0.1:8000` by default) and also applies `VITE_*` from repo-root `.env`.
@@ -131,7 +132,8 @@ How tasks, Telegram reminders, and Google Calendar sync connect: [Telegram + tas
 
 ```bash
 make lint-check
-cd client && npm ci && npm run lint && npm run format:check && npm run build:check
+cd client && npm ci && npm run lint && npm run format:check
+VITE_PUBLIC_ORIGIN=https://your-domain.example npm run build:check
 make check   # local backend + frontend gate (CI also: coverage, postgres, e2e, docs)
 ```
 

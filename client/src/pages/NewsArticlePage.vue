@@ -48,7 +48,7 @@ watch(
     applyPageSeo({
       title: value.title,
       description: value.summary || undefined,
-      path: route.fullPath,
+      path: `/news/${value.slug}`,
     });
   },
   { immediate: true },

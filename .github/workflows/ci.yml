@@ -119,6 +119,9 @@ jobs:
     if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 8
+    env:
+      # Production vite build rejects localhost/missing origin (OG tags in index.html).
+      VITE_PUBLIC_ORIGIN: https://ci.example.test
     defaults:
       run:
         working-directory: client

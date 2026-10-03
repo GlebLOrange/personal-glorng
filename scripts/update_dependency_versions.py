@@ -35,6 +35,8 @@ _REQ_RE = re.compile(
 _SPEC_PIECE_RE = re.compile(r"(==|>=|<=|~=|!=|<|>)([^,<>=!]+)")
 _NPM_RANGE_RE = re.compile(r"^(?P<op>[\^~]?)(?P<ver>.+)$")
 _OTEL_PREFIX = "opentelemetry-instrumentation-"
+# typescript-eslint@8 peers require typescript <6.1; do not auto-bump to TS 7+.
+_NPM_SKIP_AUTO_BUMP = frozenset({"typescript"})
 
 
 def version_parts(version: str) -> list[int]:
@@ -208,6 +210,8 @@ def update_package_json(path: Path, dry_run: bool) -> list[tuple[str, str, str]]
         for name, current in list(block.items()):
             if not isinstance(current, str):
                 continue
+            if name in _NPM_SKIP_AUTO_BUMP:
+                continue
             latest = fetch_npm_latest(name)
             rewritten = rewrite_npm_range(current, latest)
             if rewritten == current:
@@ -227,11 +231,10 @@ def refresh_uv_lock() -> None:
 def refresh_npm_lock(directory: Path) -> None:
     """Refresh package-lock.json for ``directory``.
 
-    Uses ``--legacy-peer-deps`` to match client/.npmrc (TypeScript 7 is
-    ahead of typescript-eslint's declared peer range).
+    Client TypeScript stays on ~5.9.x for typescript-eslint peer compatibility.
     """
     subprocess.run(
-        ["npm", "install", "--legacy-peer-deps"],
+        ["npm", "install"],
         cwd=directory,
         check=True,
     )
