@@ -1,11 +1,14 @@
 """Public SEO routes (sitemap, robots)."""
 
 from html import escape
+from typing import Annotated
 
-from fastapi import APIRouter
-from fastapi.responses import PlainTextResponse, Response
+from fastapi import APIRouter, Path
+from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 
+from app.core.exceptions import NotFoundError
 from app.db.deps import DbRegistry
+from app.services.news_og_html import render_news_og_html
 from app.settings import get_settings
 
 router = APIRouter(tags=["seo"])
@@ -79,6 +82,29 @@ _ROBOTS_DISALLOW: tuple[str, ...] = (
     "/forgot-password",
     "/reset-password",
 )
+
+
+@router.get(
+    "/og/news/{slug}",
+    response_class=HTMLResponse,
+    include_in_schema=True,
+    summary="News article Open Graph HTML",
+    description=(
+        "Static HTML with OG/Twitter meta for link previews. "
+        "Canonical URL points at the SPA route `/news/{slug}`."
+    ),
+)
+async def news_og_html(
+    registry: DbRegistry,
+    slug: Annotated[str, Path(pattern=r"^[a-z0-9][a-z0-9-]{0,119}$")],
+) -> HTMLResponse:
+    if registry.news is None:
+        raise NotFoundError("Article not found")
+    article = await registry.news.get_by_slug(slug)
+    if article is None or article.status != "published":
+        raise NotFoundError("Article not found")
+    html = render_news_og_html(article, base_url=get_settings().BASE_URL)
+    return HTMLResponse(content=html)
 
 
 @router.get(

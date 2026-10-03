@@ -5,12 +5,10 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_EXPENSE_CATEGORIES,
   DEFAULT_EXPENSE_CATEGORY,
-} from "@/constants/expenseCategories";
-import {
   EXPENSE_CURRENCIES,
   EXPENSE_DEFAULT_CURRENCY,
   EXPENSE_EXCHANGE_RATE_TARGETS,
-} from "@/composables/useExpenseFilters";
+} from "@/constants/expenseCatalog";
 
 const catalogPath = resolve(__dirname, "../../../shared/expense_catalog.json");
 
