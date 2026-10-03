@@ -44,7 +44,7 @@ from app.services.firebase_auth import (
     verify_firebase_google_token,
 )
 from app.services.user import get_user_by_public_id
-from app.settings import Settings
+from app.settings import Settings, is_deployed_env
 from app.workers.job_names import JobName
 
 router = APIRouter()
@@ -63,7 +63,8 @@ class _CookieFlags(TypedDict):
 
 
 def _cookie_flags(settings: Settings) -> _CookieFlags:
-    secure = settings.APP_ENV == "production"
+    base = settings.BASE_URL.strip().lower()
+    secure = is_deployed_env(settings.APP_ENV) or base.startswith("https://")
     return {
         "httponly": True,
         "secure": secure,

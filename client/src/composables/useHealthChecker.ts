@@ -8,7 +8,7 @@ import { usePermissions } from "@/composables/usePermissions";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import type { HealthHistoryPoint, HealthMonitor, PaginatedList } from "@/types";
 import { getApiErrorMessage } from "@/types/api";
-import { ensureHttpsUrl } from "@/utils/ensureHttpsUrl";
+import { ensureHttpsUrl } from "@/utils/safeUrl";
 
 export type HealthInterval = 1 | 5 | 15 | 60;
 

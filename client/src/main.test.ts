@@ -34,6 +34,10 @@ vi.mock("./router", () => ({
   default: mocks.router,
 }));
 
+vi.mock("@/composables/useCookieConsent", () => ({
+  setupCookieConsent: vi.fn(),
+}));
+
 describe("main", () => {
   it("starts auth restoration after mounting the app", async () => {
     await import("@/main");

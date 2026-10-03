@@ -12,6 +12,25 @@ import httpx
 _BLOCKED_HOST_SUFFIXES = (".local", ".localhost", ".internal")
 _LOCALHOST_NAMES = frozenset({"localhost", "localhost.localdomain"})
 _MAX_PUBLIC_REDIRECTS = 5
+_HAS_AUTHORITY_SCHEME = re.compile(r"^[a-z][a-z0-9+.-]*://", re.IGNORECASE)
+
+
+def ensure_http_scheme(value: object) -> object:
+    """Prepend https:// when there is no scheme (does not invent www)."""
+    if not isinstance(value, str):
+        return value
+    trimmed = value.strip()
+    if not trimmed:
+        return trimmed
+    lower = trimmed.lower()
+    if lower.startswith(("http://", "https://")):
+        return trimmed
+    if trimmed.startswith("//"):
+        return f"https:{trimmed}"
+    # Leave ftp:// etc. alone so HttpUrl / safety can reject them.
+    if _HAS_AUTHORITY_SCHEME.match(trimmed):
+        return trimmed
+    return f"https://{trimmed}"
 
 
 def _hostname_from_url(url: str) -> str | None:

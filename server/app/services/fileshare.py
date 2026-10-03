@@ -67,6 +67,15 @@ def _shares_dir() -> Path:
     return Path(get_settings().MEDIA_DIR) / "shares"
 
 
+def _resolve_share_path(file_path: str) -> Path | None:
+    """Resolve a stored path under shares; None if it escapes the shares dir."""
+    shares = _shares_dir().resolve()
+    candidate = (shares / file_path).resolve()
+    if not candidate.is_relative_to(shares):
+        return None
+    return candidate
+
+
 def _sanitize_filename(name: str) -> str:
     return "".join(c if c.isalnum() or c in ".-_" else "_" for c in name)[:100]
 
@@ -206,8 +215,9 @@ async def delete(registry: DatabaseRegistry, *, file_id: int, user_id: int) -> N
     if not shared or shared.created_by != user_id:
         raise NotFoundError("File not found")
 
-    disk_path = _shares_dir() / shared.file_path
-    await asyncio.to_thread(_unlink_existing, disk_path)
+    disk_path = _resolve_share_path(shared.file_path)
+    if disk_path is not None:
+        await asyncio.to_thread(_unlink_existing, disk_path)
 
     await _files(registry).delete(file_id)
 
@@ -232,8 +242,8 @@ async def get_by_code(
     if utc_now() > as_utc(shared.expires_at):
         raise ApiError(410, "This file has expired")
 
-    disk_path = _shares_dir() / shared.file_path
-    if not await asyncio.to_thread(disk_path.exists):
+    disk_path = _resolve_share_path(shared.file_path)
+    if disk_path is None or not await asyncio.to_thread(disk_path.exists):
         raise NotFoundError("File not found on disk")
 
     await _files(registry).update_fields(shared.id, downloads=shared.downloads + 1)
@@ -249,20 +259,20 @@ async def cleanup_expired(registry: DatabaseRegistry) -> dict[str, int]:
     deleted_rows = 0
     deleted_files = 0
     errors = 0
-    shares_dir = _shares_dir()
 
     for shared in expired:
-        disk_path = shares_dir / shared.file_path
-        try:
-            if await asyncio.to_thread(_unlink_existing, disk_path):
-                deleted_files += 1
-        except OSError as exc:
-            errors += 1
-            logger.error(
-                "Failed to delete expired share file",
-                error=exc,
-                context={"file_id": shared.id, "path": str(disk_path)},
-            )
+        disk_path = _resolve_share_path(shared.file_path)
+        if disk_path is not None:
+            try:
+                if await asyncio.to_thread(_unlink_existing, disk_path):
+                    deleted_files += 1
+            except OSError as exc:
+                errors += 1
+                logger.error(
+                    "Failed to delete expired share file",
+                    error=exc,
+                    context={"file_id": shared.id, "path": str(disk_path)},
+                )
         await _files(registry).delete(shared.id)
         deleted_rows += 1
 

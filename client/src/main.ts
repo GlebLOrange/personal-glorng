@@ -33,10 +33,10 @@ function loadDeferredFonts(): void {
 if (typeof window !== "undefined" && "requestIdleCallback" in window) {
   window.requestIdleCallback(loadDeferredFonts, { timeout: 3000 });
 } else {
-  window.setTimeout(loadDeferredFonts, 0);
+  globalThis.setTimeout(loadDeferredFonts, 0);
 }
 
-window.setTimeout(() => {
+globalThis.setTimeout(() => {
   void import("./composables/useCookieConsent").then(({ setupCookieConsent }) => {
     setupCookieConsent(app);
   });

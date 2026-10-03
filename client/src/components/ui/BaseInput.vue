@@ -166,7 +166,8 @@ const inputAttrs = computed(() => {
 });
 /** Avoid UA size=20; prefer tip length so shrink-wrapped panels fit tips. */
 const shellTextAttrs = computed(() => {
-  const customSize = typeof inputAttrs.value.size === "number" ? inputAttrs.value.size : undefined;
+  const attrsRecord = inputAttrs.value as Record<string, unknown>;
+  const customSize = typeof attrsRecord.size === "number" ? attrsRecord.size : undefined;
   const tipLen = fieldCopy.value.tip?.length ?? props.placeholder?.length ?? 1;
   return {
     ...inputAttrs.value,

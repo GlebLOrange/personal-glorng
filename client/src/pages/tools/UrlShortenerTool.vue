@@ -14,7 +14,7 @@ import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
 import { usePermissions } from "@/composables/usePermissions";
 import type { PaginatedList, UrlItem } from "@/types";
-import { ensureHttpsUrl } from "@/utils/ensureHttpsUrl";
+import { ensureHttpsUrl } from "@/utils/safeUrl";
 import { publicUrl } from "@/utils/publicLinks";
 
 const urls = ref<UrlItem[]>([]);

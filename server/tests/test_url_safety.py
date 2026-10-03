@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from app.core.url_safety import (
+    ensure_http_scheme,
     is_public_http_url,
     is_safe_redirect_url,
     validate_redirect_url,
@@ -73,3 +74,19 @@ def test_shortener_safety_does_not_require_dns() -> None:
         side_effect=OSError("dns down"),
     ):
         assert is_safe_redirect_url("https://example.com/path") is True
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("example.com/path", "https://example.com/path"),
+        ("http://example.com", "http://example.com"),
+        ("https://example.com", "https://example.com"),
+        ("//cdn.example.com/a", "https://cdn.example.com/a"),
+        ("ftp://example.com/file", "ftp://example.com/file"),
+        ("  ", ""),
+        (42, 42),
+    ],
+)
+def test_ensure_http_scheme(raw: object, expected: object) -> None:
+    assert ensure_http_scheme(raw) == expected

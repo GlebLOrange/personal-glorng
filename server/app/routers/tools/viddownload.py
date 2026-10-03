@@ -1,4 +1,4 @@
-"""Video download tool via yt-dlp. Authenticated endpoint with rate and concurrency limits."""
+"""Video download via yt-dlp (authenticated; rate and concurrency limits)."""
 
 import asyncio
 import mimetypes
@@ -9,6 +9,7 @@ from collections.abc import Generator
 from pathlib import Path
 from urllib.parse import urlparse
 
+import httpx
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 
@@ -18,9 +19,10 @@ from app.core.logging import logger
 from app.core.rate_limit import client_ip, rate_limit_api, rate_limit_vid_download
 from app.core.redis_keys import VID_DOWNLOAD_GLOBAL_KEY, VID_DOWNLOAD_IP_PREFIX
 from app.core.redis_slots import release_slot, try_acquire_slot
+from app.core.url_safety import get_public_http_url, is_public_http_url
 from app.core.utils import attachment_content_disposition
 from app.openapi import requires_capability
-from app.schemas.viddownload import VidDownloadRequest
+from app.schemas.viddownload import VidDownloadRequest, is_allowed_viddownload_host
 
 router = APIRouter(
     prefix="/vid-download",
@@ -81,7 +83,26 @@ async def _release_global_slot() -> None:
     await release_slot(VID_DOWNLOAD_GLOBAL_KEY)
 
 
-def _build_command(data: VidDownloadRequest, tmp_dir: str) -> list[str]:
+async def _resolve_public_download_url(url: str) -> str:
+    """Follow redirects with the same SSRF checks as other server-side fetches."""
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await get_public_http_url(client, url)
+        resolved = str(response.url)
+        await response.aclose()
+    if not is_public_http_url(resolved):
+        raise ApiError(422, "URL must be a public http(s) address")
+    if not is_allowed_viddownload_host(resolved):
+        raise ApiError(422, "URL host is not an allowed video platform")
+    return resolved
+
+
+def _build_command(
+    resolved_url: str,
+    data: VidDownloadRequest,
+    tmp_dir: str,
+) -> list[str]:
+    # ponytail: pinned yt-dlp has no --max-redirects CLI flag; redirect
+    # budget is enforced in _resolve_public_download_url via get_public_http_url.
     cmd = [
         "yt-dlp",
         "--no-playlist",
@@ -97,7 +118,7 @@ def _build_command(data: VidDownloadRequest, tmp_dir: str) -> list[str]:
     ]
     if data.audio_only:
         cmd += ["-x", "--audio-format", "mp3"]
-    cmd.append(str(data.url))
+    cmd.append(resolved_url)
     return cmd
 
 
@@ -166,7 +187,11 @@ async def download_video(
     try:
         tmp_dir = tempfile.mkdtemp(prefix="ytdlp_")
         try:
-            cmd = _build_command(data, tmp_dir)
+            try:
+                resolved_url = await _resolve_public_download_url(str(data.url))
+            except ValueError as exc:
+                raise ApiError(422, str(exc)) from exc
+            cmd = _build_command(resolved_url, data, tmp_dir)
             _stdout, stderr, returncode = await _run_download(cmd)
 
             if returncode != 0:

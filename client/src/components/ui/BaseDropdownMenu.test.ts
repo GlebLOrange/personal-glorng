@@ -75,8 +75,8 @@ describe("BaseDropdownMenu", () => {
     });
 
     const trigger = wrapper.get('button[aria-label="edit"]');
-    expect(trigger.classes()).toContain("text-status-warning");
-    expect(trigger.classes()).toContain("bg-status-warning/3");
+    expect(trigger.classes()).toContain("text-status-warning/88");
+    expect(trigger.classes()).toContain("bg-status-warning/10");
   });
 
   it("sizes a labeled trigger to the longest menu item to avoid jumping", async () => {

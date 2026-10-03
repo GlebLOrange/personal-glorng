@@ -12,7 +12,8 @@ const props = defineProps<{
 
 const monthPreset = defineModel<MonthPreset>("monthPreset", { required: true });
 const dateFilterMode = defineModel<DateFilterMode>("dateFilterMode", { required: true });
-const selectedMonth = defineModel<string>("selectedMonth", { required: true });
+/** Passthrough for parent v-model; month value is updated via applyPreset on the parent. */
+defineModel<string>("selectedMonth", { required: true });
 const dateFrom = defineModel<string>("dateFrom", { required: true });
 const dateTo = defineModel<string>("dateTo", { required: true });
 

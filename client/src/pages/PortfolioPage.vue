@@ -93,8 +93,8 @@ function runWhenIdle(task: () => void): () => void {
     const id = window.requestIdleCallback(() => task(), { timeout: 2500 });
     return () => window.cancelIdleCallback(id);
   }
-  const id = window.setTimeout(task, 0);
-  return () => window.clearTimeout(id);
+  const id = globalThis.setTimeout(task, 0);
+  return () => globalThis.clearTimeout(id);
 }
 
 async function loadGithubReposIfNeeded(): Promise<void> {
