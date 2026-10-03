@@ -6,6 +6,7 @@ import {
   EXPENSE_DEFAULT_CURRENCY,
   type CurrencyCode,
 } from "@/composables/useExpenseFilters";
+import { isCurrencyCode } from "@/constants/expenseCatalog";
 import { useAuthStore } from "@/stores/auth";
 
 export interface UserPreferences {
@@ -19,7 +20,7 @@ function readLocalCurrency(): CurrencyCode {
     return EXPENSE_DEFAULT_CURRENCY;
   }
   const stored = localStorage.getItem(EXPENSE_CURRENCY_STORAGE_KEY)?.trim().toUpperCase();
-  if (stored === "USD" || stored === "EUR" || stored === "PLN" || stored === "BYN") {
+  if (isCurrencyCode(stored)) {
     return stored;
   }
   return EXPENSE_DEFAULT_CURRENCY;
@@ -43,12 +44,7 @@ export function useUserPreferences() {
     loading.value = true;
     try {
       const { data } = await api.get<UserPreferences>("/auth/me/preferences");
-      if (
-        data.display_currency === "USD" ||
-        data.display_currency === "EUR" ||
-        data.display_currency === "PLN" ||
-        data.display_currency === "BYN"
-      ) {
+      if (isCurrencyCode(data.display_currency)) {
         displayCurrency.value = data.display_currency;
         localStorage.setItem(EXPENSE_CURRENCY_STORAGE_KEY, data.display_currency);
       } else {

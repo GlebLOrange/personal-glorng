@@ -40,6 +40,10 @@ Admin dashboard tools come from `GET /api/platform/services`. Client mirror:
 
 Capability gating in UI: [`client/src/composables/usePermissions.ts`](../../client/src/composables/usePermissions.ts).
 
+## CSS bundle
+
+Single global Tailwind bundle (`main.css` → `index-*.css`). Audit, budgets, and follow-ups: [Frontend CSS audit](/guide/frontend-css-audit). Production `build:check` runs `check-css-budget.mjs` (132 KB raw cap on entry CSS).
+
 ## Feature flags
 
 Server flags are authoritative. Client `VITE_*` flags only hide UI:
