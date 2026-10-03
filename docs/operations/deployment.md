@@ -43,7 +43,8 @@ Compose service inventory: [architecture inventory (generated)](/generated/archi
    - `REDIS_CACHE_URL` pointing at the `redis-cache` service (cache isolation; staging/production warn if shared with `REDIS_URL`)
    - Optional EDOT: `OTEL_EXPORTER_OTLP_ENDPOINT` + `OTEL_EXPORTER_OTLP_HEADERS` (see [Configuration](/reference/configuration#edot-opentelemetry-opt-in))
 4. `CORS_ORIGINS` — explicit HTTPS origins (no `*`).
-5. `RUN_MIGRATIONS=false` and `RUN_SEED=false` — schema work goes through the one-shot `migrate` service, not API boot seed.
+5. `BASE_URL` — public HTTPS origin (sitemap, robots, redirects). Set `VITE_PUBLIC_ORIGIN` to the same value so the SPA build bakes correct Open Graph image URLs (compose falls back to `BASE_URL` when unset).
+6. `RUN_MIGRATIONS=false` and `RUN_SEED=false` — schema work goes through the one-shot `migrate` service, not API boot seed.
 
 Process env overrides dotenv when you inject secrets without editing `.env`. Full variable list: [Configuration](/reference/configuration).
 

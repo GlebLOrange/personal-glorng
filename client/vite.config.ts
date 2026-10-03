@@ -31,8 +31,16 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (id.includes("node_modules/chart.js") || id.includes("node_modules/vue-chartjs")) {
-              return "charts";
+            // Do not force chart.js into a named chunk: with Vite 8/Rolldown that
+            // shared chunk pulls Vue into it and index.html modulepreloads ~265KB on `/`.
+            // Chart components already use defineAsyncComponent.
+            if (
+              id.includes("node_modules/vue/") ||
+              id.includes("node_modules/@vue/") ||
+              id.includes("node_modules/vue-router") ||
+              id.includes("node_modules/pinia")
+            ) {
+              return "vue-vendor";
             }
             if (id.includes("node_modules/firebase")) {
               return "firebase";
@@ -45,14 +53,6 @@ export default defineConfig(({ mode }) => {
             }
             if (id.includes("node_modules/vanilla-cookieconsent")) {
               return "cookieconsent";
-            }
-            if (
-              id.includes("node_modules/vue/") ||
-              id.includes("node_modules/@vue/") ||
-              id.includes("node_modules/vue-router") ||
-              id.includes("node_modules/pinia")
-            ) {
-              return "vue-vendor";
             }
           },
         },

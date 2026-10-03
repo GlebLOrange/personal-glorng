@@ -23,4 +23,6 @@ async def test_robots_txt(client: AsyncClient) -> None:
     assert resp.status_code == 200
     body = resp.text
     assert "Disallow: /admin" in body
+    assert "Disallow: /login" in body
+    assert "Disallow: /settings" in body
     assert "Sitemap: http://localhost/sitemap.xml" in body

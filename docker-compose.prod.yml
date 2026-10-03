@@ -252,6 +252,8 @@ services:
       context: ./client
       dockerfile: Dockerfile.prod
       args:
+        # OG/Twitter image absolute URLs; fall back to BASE_URL when unset.
+        VITE_PUBLIC_ORIGIN: ${VITE_PUBLIC_ORIGIN:-${BASE_URL:-}}
         VITE_FIREBASE_ENABLED: ${VITE_FIREBASE_ENABLED:-}
         VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY:-}
         VITE_FIREBASE_AUTH_DOMAIN: ${VITE_FIREBASE_AUTH_DOMAIN:-}
