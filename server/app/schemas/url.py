@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from typing import Annotated
 
@@ -11,32 +10,11 @@ from pydantic import (
     field_validator,
 )
 
-from app.core.url_safety import validate_redirect_url
+from app.core.url_safety import ensure_http_scheme, validate_redirect_url
 from app.schemas.common import PaginatedResponse
 from app.schemas.validators import validate_clean_optional
 
-_HAS_AUTHORITY_SCHEME = re.compile(r"^[a-z][a-z0-9+.-]*://", re.IGNORECASE)
-
-
-def _ensure_http_scheme(value: object) -> object:
-    """Prepend https:// when there is no scheme (does not invent www)."""
-    if not isinstance(value, str):
-        return value
-    trimmed = value.strip()
-    if not trimmed:
-        return trimmed
-    lower = trimmed.lower()
-    if lower.startswith(("http://", "https://")):
-        return trimmed
-    if trimmed.startswith("//"):
-        return f"https:{trimmed}"
-    # Leave ftp:// etc. alone so HttpUrl / safety can reject them.
-    if _HAS_AUTHORITY_SCHEME.match(trimmed):
-        return trimmed
-    return f"https://{trimmed}"
-
-
-HttpRedirectUrl = Annotated[HttpUrl, BeforeValidator(_ensure_http_scheme)]
+HttpRedirectUrl = Annotated[HttpUrl, BeforeValidator(ensure_http_scheme)]
 
 
 class UrlCreate(BaseModel):
