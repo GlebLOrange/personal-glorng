@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import pluginVue from "eslint-plugin-vue";
 import pluginVueA11y from "eslint-plugin-vuejs-accessibility";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 import vueTsConfig from "@vue/eslint-config-typescript";
 import prettier from "eslint-config-prettier";
@@ -19,6 +20,12 @@ export default tseslint.config(
   ...pluginVue.configs["flat/recommended"],
   ...vueTsConfig(),
   prettier,
+  {
+    files: ["scripts/**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
   {
     files: ["**/*.{ts,vue}"],
     plugins: {

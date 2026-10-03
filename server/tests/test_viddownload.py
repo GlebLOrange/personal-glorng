@@ -15,7 +15,12 @@ def test_allowed_viddownload_hosts() -> None:
     assert not is_allowed_viddownload_host("https://example.com/watch?v=abc")
 
 
-def test_viddownload_schema_rejects_non_allowlisted_public_host() -> None:
+def test_viddownload_schema_rejects_non_allowlisted_public_host(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "app.schemas.viddownload.is_public_http_url", lambda _url: True
+    )
     with pytest.raises(ValidationError, match="allowed video platform"):
         VidDownloadRequest(url="https://example.com/watch?v=abc")
 
