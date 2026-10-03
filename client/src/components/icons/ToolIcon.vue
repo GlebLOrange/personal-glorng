@@ -32,12 +32,12 @@ defineProps<{
       />
     </template>
 
-    <!-- admin: 2x2 dashboard grid — gap kept after stroke so tiles stay distinct at breadcrumb size -->
+    <!-- admin: spaced dashboard (4-unit gaps so stroke 1.75 does not merge) -->
     <template v-else-if="slug === 'admin'">
-      <rect x="3.5" y="3.5" width="6" height="6" rx="1.25" />
-      <rect x="14.5" y="3.5" width="6" height="6" rx="1.25" />
-      <rect x="3.5" y="14.5" width="6" height="6" rx="1.25" />
-      <rect x="14.5" y="14.5" width="6" height="6" rx="1.25" />
+      <rect x="3" y="3" width="7" height="9" rx="1.5" />
+      <rect x="14" y="3" width="7" height="5" rx="1.5" />
+      <rect x="14" y="12" width="7" height="9" rx="1.5" />
+      <rect x="3" y="16" width="7" height="5" rx="1.5" />
     </template>
 
     <!-- settings: gear -->
@@ -102,12 +102,15 @@ defineProps<{
       <path d="M12 12h9M18 12v3M21 12v2" />
     </template>
 
-    <!-- qr-generator: matrix -->
+    <!-- qr-generator: finder frames + filled modules (6-unit gaps) -->
     <template v-else-if="slug === 'qr-generator'">
-      <rect x="4" y="4" width="7" height="7" rx="1" />
-      <rect x="13" y="4" width="7" height="7" rx="1" />
-      <rect x="4" y="13" width="7" height="7" rx="1" />
-      <path d="M14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z" />
+      <rect x="3" y="3" width="6" height="6" rx="1" />
+      <rect x="15" y="3" width="6" height="6" rx="1" />
+      <rect x="3" y="15" width="6" height="6" rx="1" />
+      <rect x="14" y="14" width="2" height="2" fill="currentColor" stroke="none" />
+      <rect x="18" y="14" width="2" height="2" fill="currentColor" stroke="none" />
+      <rect x="14" y="18" width="2" height="2" fill="currentColor" stroke="none" />
+      <rect x="18" y="18" width="2" height="2" fill="currentColor" stroke="none" />
     </template>
 
     <!-- weather: sun + cloud -->
@@ -182,6 +185,13 @@ defineProps<{
       <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
     </template>
 
+    <!-- db-maintenance: database cylinder -->
+    <template v-else-if="slug === 'db-maintenance'">
+      <ellipse cx="12" cy="6" rx="7" ry="2.5" />
+      <path d="M5 6v12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6" />
+      <path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5" />
+    </template>
+
     <!-- sync: circular arrows (keep in sync with SyncIcon.vue) -->
     <template v-else-if="slug === 'sync'">
       <path d="M21 12a9 9 0 0 0-15.5-6.4" />
@@ -198,7 +208,7 @@ defineProps<{
 
     <!-- fallback -->
     <template v-else>
-      <rect x="5" y="5" width="14" height="14" rx="2" />
+      <rect data-icon="fallback" x="5" y="5" width="14" height="14" rx="2" />
     </template>
   </svg>
 </template>

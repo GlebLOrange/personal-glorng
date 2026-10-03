@@ -345,6 +345,45 @@ html[data-theme="light"] {
   }
 }
 
+/* Support CTAs — solid vendor brand fills (Stripe / PayPal / Patreon site colors). */
+@utility donation-brand {
+  @apply h-10 px-4 rounded-lg border border-transparent text-sm font-medium text-white transition-[filter,colors] inline-flex items-center justify-center;
+  background-color: var(--donation-bg);
+  --donation-hover-brightness: 1.08;
+  &:hover:not(:disabled) {
+    filter: brightness(var(--donation-hover-brightness));
+  }
+  &:active:not(:disabled) {
+    filter: brightness(0.96);
+  }
+  &:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  &:focus-visible {
+    @apply outline-none ring-2;
+    --tw-ring-color: var(--donation-ring);
+  }
+}
+
+@utility donation-brand-stripe {
+  @apply donation-brand;
+  --donation-bg: #635bff;
+  --donation-ring: rgb(99 91 255 / 0.55);
+}
+
+@utility donation-brand-paypal {
+  @apply donation-brand;
+  --donation-bg: #003087;
+  --donation-ring: rgb(0 112 186 / 0.55);
+  --donation-hover-brightness: 1.12;
+}
+
+@utility donation-brand-patreon {
+  @apply donation-brand;
+  --donation-bg: #ff424d;
+  --donation-ring: rgb(255 66 77 / 0.55);
+}
+
 @utility alert-surface-error {
   @apply rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error;
 }
@@ -422,6 +461,12 @@ a.cta-primary:hover,
 a.cta-primary:focus-visible,
 a.cta-secondary:hover,
 a.cta-secondary:focus-visible,
+a.donation-brand-stripe:hover,
+a.donation-brand-stripe:focus-visible,
+a.donation-brand-paypal:hover,
+a.donation-brand-paypal:focus-visible,
+a.donation-brand-patreon:hover,
+a.donation-brand-patreon:focus-visible,
 a.contact-link-chip:hover,
 a.contact-link-chip:focus-visible,
 a.card-as-link:hover,

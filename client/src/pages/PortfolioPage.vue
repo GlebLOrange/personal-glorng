@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
@@ -14,6 +15,7 @@ import { useCachedApi } from "@/composables/useCachedApi";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import type { DonationsConfig, PublicGitHubRepo, ResumeData } from "@/types";
+import { consumeQueryParams } from "@/utils/consumeQueryParams";
 
 /** ponytail: hide a one-card gallery — looks thin without a peer */
 const MIN_GITHUB_STRIP_REPOS = 2;
@@ -24,6 +26,10 @@ const DonationsBlock = defineAsyncComponent(
   () => import("@/components/donations/DonationsBlock.vue"),
 );
 const FeedbackModal = defineAsyncComponent(() => import("@/components/feedback/FeedbackModal.vue"));
+
+const route = useRoute();
+const router = useRouter();
+const showDonationThanks = ref(false);
 
 const {
   data: resumeApi,
@@ -129,13 +135,29 @@ function observeSupportSection(): void {
   supportObserver.observe(supportSectionRef.value);
 }
 
+async function consumeDonationThanks(): Promise<void> {
+  if (String(route.query.donated ?? "") !== "1") {
+    return;
+  }
+  showDonationThanks.value = true;
+  await consumeQueryParams(router, route.path, route.query, ["donated"]);
+  supportSectionRef.value?.scrollIntoView({ behavior: "smooth", block: "start" });
+  void loadDonations();
+}
+
 onMounted(() => {
   void loadResume().then(() => {
     cancelGithubIdle = runWhenIdle(() => {
       void loadGithubReposIfNeeded();
     });
   });
-  void nextTick(() => observeSupportSection());
+  void nextTick(async () => {
+    if (String(route.query.donated ?? "") === "1") {
+      await consumeDonationThanks();
+      return;
+    }
+    observeSupportSection();
+  });
 });
 
 onUnmounted(() => {
@@ -245,7 +267,14 @@ onUnmounted(() => {
               if my tools or writing have helped you, a small contribution keeps the work going
             </p>
             <p class="text-meta">
-              card, paypal, or monthly support — pick what works for you
+              stripe, paypal, or monthly support — pick what works for you
+            </p>
+            <p
+              v-if="showDonationThanks"
+              class="text-label mt-3 text-status-success"
+              role="status"
+            >
+              thanks for your support
             </p>
           </div>
           <div class="flex min-w-0 flex-wrap items-center gap-4">
