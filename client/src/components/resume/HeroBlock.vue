@@ -2,7 +2,6 @@
 import { ref } from "vue";
 
 import LocationIcon from "@/components/icons/LocationIcon.vue";
-import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { getApiErrorMessageFromBlob } from "@/types/api";
@@ -28,6 +27,7 @@ async function downloadCv(): Promise<void> {
   isDownloadingCv.value = true;
   showPrintFallback.value = false;
   try {
+    const { api } = await import("@/composables/useApi");
     const response = await api.get<Blob>("/resume/pdf", {
       responseType: "blob",
       headers: { Accept: "application/pdf" },

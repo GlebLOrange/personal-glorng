@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { defineAsyncComponent } from "vue";
 import { storeToRefs } from "pinia";
 
 import NavBar from "@/components/layout/NavBar.vue";
@@ -6,13 +7,14 @@ import FooterBar from "@/components/layout/FooterBar.vue";
 import ScrollControls from "@/components/layout/ScrollControls.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import ToastContainer from "@/components/ui/ToastContainer.vue";
-import DevApiStatusBadge from "@/components/dev/DevApiStatusBadge.vue";
 import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
 const { sessionError } = storeToRefs(auth);
-/** Template cannot parse import.meta — expose DEV for the badge gate. */
-const isDev = import.meta.env.DEV;
+// ponytail: badge pulls axios — keep it out of the production entry graph
+const DevApiStatusBadge = import.meta.env.DEV
+  ? defineAsyncComponent(() => import("@/components/dev/DevApiStatusBadge.vue"))
+  : null;
 
 async function retrySession(): Promise<void> {
   try {
@@ -41,6 +43,6 @@ async function retrySession(): Promise<void> {
     </main>
     <FooterBar />
     <ToastContainer variant="overlay" />
-    <DevApiStatusBadge v-if="isDev" />
+    <component :is="DevApiStatusBadge" v-if="DevApiStatusBadge" />
   </div>
 </template>

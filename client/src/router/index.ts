@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 
 import { WEATHER_ROUTE_NAME } from "@/constants/weather";
-import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled, isExpensesEnabled } from "@/utils/featureFlags";
 import { installScrollRestore, resolveScrollBehavior } from "@/utils/scrollRestore";
@@ -384,12 +383,21 @@ router.beforeEach(async (to, _from) => {
   if (!isExpensesEnabled() && to.name === "tool-expenses") {
     return { name: "tools", query: { expenses: "off" }, replace: true };
   }
-  const auth = useAuthStore();
   const shouldResolveSession =
     to.name === "login" ||
     Boolean(to.meta.resolveSession) ||
     Boolean(to.meta.requiresAuth) ||
     Boolean(to.meta.requiresSuperuser);
+  const needsAuthState =
+    shouldResolveSession ||
+    Boolean(to.meta.requiresAuth) ||
+    Boolean(to.meta.requiresSuperuser) ||
+    (typeof to.name === "string" && to.name in TOOL_ROUTE_SLUGS);
+  if (!needsAuthState) {
+    return;
+  }
+  const { useAuthStore } = await import("@/stores/auth");
+  const auth = useAuthStore();
   if (shouldResolveSession && !auth.sessionResolved) {
     try {
       await auth.resolveSession();

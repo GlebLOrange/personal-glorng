@@ -26,8 +26,8 @@ app.mount("#app");
 void router.isReady().then(() => restoreAuth());
 
 function loadDeferredFonts(): void {
+  // 700 is critical (hero) — see index.html preload + main.css @font-face.
   void import("@fontsource/ibm-plex-sans/latin-600.css");
-  void import("@fontsource/ibm-plex-sans/latin-700.css");
 }
 
 if (typeof window !== "undefined" && "requestIdleCallback" in window) {
