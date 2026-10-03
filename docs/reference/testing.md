@@ -92,7 +92,7 @@ REDIS_URL=redis://:local@127.0.0.1:6379/0 uv run pytest -m redis -v
 cd client && npm run test:coverage
 
 # E2E (API must be up)
-cd client && npm run build:check && \
+cd client && VITE_PUBLIC_ORIGIN=https://ci.example.test npm run build:check && \
   VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run preview &
 npm run e2e
 ```

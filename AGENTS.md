@@ -65,7 +65,7 @@ Cloud-specific notes:
   UV_PROJECT_ENVIRONMENT=/tmp/glorng-server-venv uv run pytest -v
   ```
 - **Backend via Docker:** prod images do not include `pytest`/`ruff`; dev targets may, but host `uv` is the canonical path for backend checks.
-- **Frontend:** Node 24 (`engines` + root `.nvmrc`; Cloud VM default `/exec-daemon/node` is often v22 — prepend `"$HOME/.nvm/versions/node/v24.18.0/bin"` to `PATH` or `nvm use`). From `client/`: `npm ci`, then `npm run lint && npm run format:check && npm run test:coverage && npm run build:check`. Use `npm run build` for a fast Vite-only bundle. TypeScript is pinned to `~5.9.3` (see `client/package.json`).
+- **Frontend:** Node 24 (`engines` + root `.nvmrc`; Cloud VM default `/exec-daemon/node` is often v22 — prepend `"$HOME/.nvm/versions/node/v24.18.0/bin"` to `PATH` or `nvm use`). From `client/`: `npm ci`, then `npm run lint && npm run format:check && npm run test:coverage`. For `npm run build:check`, set `VITE_PUBLIC_ORIGIN` to a public HTTPS origin (CI uses `https://ci.example.test`; prod uses your `BASE_URL`). Use `npm run build` only for a fast local bundle without the OG origin guard. TypeScript is pinned to `~5.9.3` (see `client/package.json`).
 
 ### Optional services
 
