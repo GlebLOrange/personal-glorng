@@ -9,9 +9,9 @@ Gleb.Y is a **personal platform** where the same domain services power the publi
 | Public web | `/` | Resume, donations, feedback |
 | Admin panel | `/admin` | Ops hub (feedback, logs, search, …) via `/api/tools/*` and `/api/admin/*` |
 | Tools | `/tools`, `/tasks`, `/news`, … | Public + capability-gated tools |
-| Telegram bot | `app.todobot.main` | Task creation and reminders |
+| Telegram bot | `app.todobot.main` | Task creation, reminders, Google Calendar OAuth entry |
 | Worker | `celery -A app.workers.celery_app worker` | Reminders, calendar sync, cleanup |
-| Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks |
+| Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks (incl. sync queue every 2m) |
 
 ## Service catalog
 
@@ -53,6 +53,7 @@ Services emit audit events on mutations and auth flows. HTTP middleware correlat
 
 ## Related docs
 
+- [Telegram + tasks + calendar sync](/guide/telegram-tasks-calendar) — todobot, outbox, Google Calendar
 - [API & tools](/reference/api-tools) — public and admin endpoints, capabilities, programmatic access
 - [Security](/reference/security) — CSP, auth, CSRF, sanitization, admin-tool risks
 - [Database](/operations/database) — migrations and test database notes

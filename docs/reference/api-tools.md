@@ -62,8 +62,10 @@ Permissions are assigned only via admin user management (`/api/admin/users` — 
 
 These reuse the same service layer but are not REST “site API tools”:
 
-- **Telegram todobot** — tasks, reminders, quick expenses (`/spend`, `/expenses`)
-- **Celery worker/beat** — reminders, calendar sync, cleanup
+- **Telegram todobot** — tasks, reminders, Google Calendar OAuth, quick expenses (`/spend`, `/expenses`)
+- **Celery worker/beat** — reminders, calendar sync queue drain, cleanup
+
+Flow detail: [Telegram + tasks + calendar sync](/guide/telegram-tasks-calendar). Admin task sync endpoints: `GET/POST /api/tools/tasks/sync-queue`, `POST /api/tools/tasks/{id}/retry-sync`.
 
 ## Discover what is enabled on your deploy
 
