@@ -29,7 +29,7 @@ Public internet deploys should keep `UNTRUSTED_URL_TOOLS_ENABLED=false` so yt-dl
 |---------|-------|------|
 | Public web | `/` | Resume, donations, feedback, public tools |
 | Admin panel | `/admin` | Ops hub via `/api/tools/*` and `/api/admin/*` |
-| Telegram bot | `app.todobot.main` | Tasks, reminders, expense logging |
+| Telegram bot | `app.todobot.main` | Tasks, reminders, expense logging, Calendar OAuth |
 | Worker | `celery -A app.workers.celery_app worker` | Reminders, calendar sync, cleanup |
 | Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks |
 
@@ -135,6 +135,7 @@ Health: `/api/health` (liveness), `/api/ready` (Mongo + Redis; optional Postgres
 
 ## Related
 
+- [Telegram + tasks + calendar sync](/guide/telegram-tasks-calendar)
 - [Platform overview](/reference/platform)
 - [Security](/reference/security)
 - [Logging](/operations/logging)

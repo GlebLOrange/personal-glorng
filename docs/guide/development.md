@@ -105,11 +105,16 @@ With `make dev-bot` and `TELEGRAM_BOT_TO_DO_TOKEN` set:
 
 | Command | Example |
 |---------|---------|
+| `/new` | Quick-create a task (also menu Quick / Guided) |
+| `/tasks` | List pending tasks |
+| `/connect_calendar` | Link Google Calendar |
 | `/spend <text>` | `/spend 89.50 biedronka` |
-| `/spend` | Guided flow |
+| `/spend` | Guided expense flow |
 | `/expenses` | This month's total and recent entries |
 
 Default currency: `EXPENSE_DEFAULT_CURRENCY=PLN`.
+
+How tasks, Telegram reminders, and Google Calendar sync connect: [Telegram + tasks + calendar sync](/guide/telegram-tasks-calendar).
 
 **2026-09-23 — Google Keep:** `notes.create` is Workspace-only; a personal Gmail account cannot create Keep notes via API. A Create menu (Note vs Event; one Telegram message → Keep note, no task/calendar) was designed but is not in this tree. Do not plan Keep again unless the operator has Workspace.
 

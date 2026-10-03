@@ -22,6 +22,10 @@ export default defineConfig({
           items: [
             { text: "Getting started", link: "/guide/getting-started" },
             { text: "Architecture", link: "/guide/architecture" },
+            {
+              text: "Telegram + tasks + calendar",
+              link: "/guide/telegram-tasks-calendar",
+            },
             { text: "Development", link: "/guide/development" },
             { text: "Frontend", link: "/guide/frontend" },
             { text: "Contributing", link: "/guide/contributing" },
