@@ -43,7 +43,7 @@ Compose service inventory: [architecture inventory (generated)](/generated/archi
    - `REDIS_CACHE_URL` pointing at the `redis-cache` service (cache isolation; staging/production warn if shared with `REDIS_URL`)
    - Optional EDOT: `OTEL_EXPORTER_OTLP_ENDPOINT` + `OTEL_EXPORTER_OTLP_HEADERS` (see [Configuration](/reference/configuration#edot-opentelemetry-opt-in))
 4. `CORS_ORIGINS` — explicit HTTPS origins (no `*`).
-5. `BASE_URL` — public HTTPS origin (sitemap, robots, redirects). Set `VITE_PUBLIC_ORIGIN` to the same value so the SPA build bakes correct Open Graph image URLs (compose falls back to `BASE_URL` when unset). For news link previews without executing the SPA, the API serves static OG HTML at `/og/news/{slug}` (proxied like `/sitemap.xml`).
+5. `BASE_URL` — public HTTPS origin (sitemap, robots, redirects). Set `VITE_PUBLIC_ORIGIN` to the same value so the SPA build bakes correct Open Graph image URLs (compose falls back to `BASE_URL` when unset). For news link previews without executing the SPA, the API serves static OG HTML at `/og/news/{slug}` (proxied like `/sitemap.xml`). Production nginx routes link-preview bots (Facebook, Slack, etc.) from `/news/{slug}` to that endpoint; search crawlers still get the SPA shell.
 6. `RUN_MIGRATIONS=false` and `RUN_SEED=false` — schema work goes through the one-shot `migrate` service, not API boot seed.
 
 **Public SPA loading:** `/` paints from client `RESUME_FALLBACK` even if the API is down; `/news` shows a list skeleton until the API responds. CSS remains a single Tailwind bundle (~126 KB raw) — route-level CSS split is deferred unless LCP regresses after deploy.

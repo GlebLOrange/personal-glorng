@@ -88,11 +88,15 @@ lint-check:
 check-symlinks:
 	bash scripts/check_symlinks.sh
 
+# Public HTTPS origin required for client production build (Open Graph in index.html).
+CLIENT_BUILD_ORIGIN ?= https://ci.example.test
+
 check: lint-check test
 ifeq ($(CHECK_DB),1)
 	$(MAKE) db-check
 endif
-	cd client && npm run lint && npm run format:check && npm run test && npm run build:check
+	cd client && npm run lint && npm run format:check && npm run test
+	cd client && VITE_PUBLIC_ORIGIN=$(CLIENT_BUILD_ORIGIN) npm run build:check
 
 db-init:
 	$(DOCKER_BUILD) docker compose $(COMPOSE_LITE) run --rm migrate

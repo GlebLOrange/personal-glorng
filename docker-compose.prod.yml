@@ -277,6 +277,8 @@ services:
       - ./nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
       - ./nginx/proxy_sse_params.conf:/etc/nginx/proxy_sse_params.conf:ro
       - ./nginx/locations.conf:/etc/nginx/locations.conf:ro
+      - ./nginx/social_preview_map.conf:/etc/nginx/social_preview_map.conf:ro
+      - ./nginx/news_social_preview_location.conf:/etc/nginx/news_social_preview_location.conf:ro
       - server_media:/app/media:ro
       - client_dist:/usr/share/nginx/html:ro
     networks:
