@@ -1,5 +1,36 @@
-import { applyPageSeo } from "@/utils/pageSeo";
+import { DEFAULT_DESCRIPTION, SITE_NAME } from "@/constants/seo";
+import { RESUME_FALLBACK } from "@/constants/resumeFallback";
+import { absoluteUrl, applyPageSeo } from "@/utils/pageSeo";
 import { scrubSensitivePath } from "@/utils/sensitiveUrl";
+
+function portfolioJsonLd(): Record<string, unknown> {
+  const resume = RESUME_FALLBACK;
+  const sameAs = [resume.links.github, resume.links.telegram, resume.links.linkedin].filter(
+    (value): value is string => Boolean(value),
+  );
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        name: SITE_NAME,
+        url: absoluteUrl("/"),
+        description: DEFAULT_DESCRIPTION,
+      },
+      {
+        "@type": "Person",
+        name: resume.name,
+        jobTitle: resume.title,
+        description: resume.tagline || resume.bio,
+        url: absoluteUrl("/"),
+        ...(resume.location
+          ? { address: { "@type": "PostalAddress", addressRegion: resume.location } }
+          : {}),
+        ...(sameAs.length > 0 ? { sameAs } : {}),
+      },
+    ],
+  };
+}
 
 /**
  * Apply SEO from the active route's `meta.title` / `meta.description`.
@@ -28,5 +59,6 @@ export function applyRouteSeo(to: {
     path: noindex ? pathname : scrubbed,
     noindex,
     amphtml: isPortfolio,
+    jsonLd: isPortfolio ? portfolioJsonLd() : null,
   });
 }

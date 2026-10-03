@@ -27,9 +27,7 @@ const rawServices = ref<PlatformService[]>(PLATFORM_SERVICES);
 const loaded = ref(false);
 let loadPromise: Promise<void> | null = null;
 
-function filterAiChat(services: PlatformService[]): PlatformService[] {
-  const auth = useAuthStore();
-  const isSuperuser = auth.user?.permissions.includes(SUPERUSER_PERMISSION) ?? false;
+function filterAiChat(services: PlatformService[], isSuperuser: boolean): PlatformService[] {
   if (isAiChatEnabled() && isSuperuser) return services;
   return services.filter((s) => s.slug !== "ai-chat");
 }
@@ -78,8 +76,12 @@ export function usePlatformCatalog(): {
   services: ComputedRef<PlatformService[]>;
   load: () => Promise<void>;
 } {
-  // Derive when a Vue/Pinia context exists (not at module import time).
-  const services = computed(() => filterDisabledServices(filterAiChat(rawServices.value)));
+  // Auth read stays inside the composable so plain helpers stay store-free.
+  const auth = useAuthStore();
+  const services = computed(() => {
+    const isSuperuser = auth.user?.permissions.includes(SUPERUSER_PERMISSION) ?? false;
+    return filterDisabledServices(filterAiChat(rawServices.value, isSuperuser));
+  });
 
   async function load(): Promise<void> {
     if (loaded.value) return;
