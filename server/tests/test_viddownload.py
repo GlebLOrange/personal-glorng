@@ -49,10 +49,17 @@ async def test_viddownload_any_public_url_passes_validation(
     auth_client: AsyncClient,
 ) -> None:
     """Non-YouTube public URLs pass schema checks; yt-dlp failure returns 502."""
-    with patch(
-        "app.routers.tools.viddownload._run_download",
-        new_callable=AsyncMock,
-        return_value=(b"", b"mock failure", 1),
+    with (
+        patch(
+            "app.routers.tools.viddownload._resolve_public_download_url",
+            new_callable=AsyncMock,
+            return_value="https://example.com/watch?v=abc",
+        ),
+        patch(
+            "app.routers.tools.viddownload._run_download",
+            new_callable=AsyncMock,
+            return_value=(b"", b"mock failure", 1),
+        ),
     ):
         resp = await auth_client.post(
             "/api/tools/vid-download",

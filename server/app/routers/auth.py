@@ -63,7 +63,8 @@ class _CookieFlags(TypedDict):
 
 
 def _cookie_flags(settings: Settings) -> _CookieFlags:
-    secure = settings.APP_ENV == "production"
+    base = settings.BASE_URL.strip().lower()
+    secure = settings.APP_ENV == "production" or base.startswith("https://")
     return {
         "httponly": True,
         "secure": secure,
