@@ -1,24 +1,19 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 
-import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import { useNotify } from "@/composables/useNotify";
-import type { ContactLink } from "@/constants/contactMeta";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { getApiErrorMessageFromBlob } from "@/types/api";
 
 const CV_FILENAME = "gleb.y.cv.pdf";
-/** Fastest hire channels in the hero — full set stays in #contacts. */
-const HERO_CONTACT_IDS = new Set(["email", "telegram"]);
 
-const props = defineProps<{
+defineProps<{
   name: string;
   title: string;
   tagline?: string;
   location?: string;
   availability?: string;
-  contactLinks: ContactLink[];
 }>();
 
 const emit = defineEmits<{ inquire: [] }>();
@@ -26,10 +21,6 @@ const emit = defineEmits<{ inquire: [] }>();
 const isDownloadingCv = ref(false);
 const showPrintFallback = ref(false);
 const { toast } = useNotify();
-
-const heroContactLinks = computed(() =>
-  props.contactLinks.filter((link) => HERO_CONTACT_IDS.has(link.id)),
-);
 
 async function downloadCv(): Promise<void> {
   if (isDownloadingCv.value) return;
@@ -126,13 +117,6 @@ function printPage(): void {
         print page instead
       </button>
     </p>
-
-    <div
-      v-if="heroContactLinks.length"
-      class="mt-5 flex flex-wrap items-center justify-center gap-2 print:hidden"
-    >
-      <ContactLinkChip v-for="link in heroContactLinks" :key="link.id" :link="link" />
-    </div>
 
     <!-- Mobile: disclosure. md+: light middot rail (sticky section nav covers scroll). -->
     <div class="portfolio-link-rail mt-5 print:hidden">
