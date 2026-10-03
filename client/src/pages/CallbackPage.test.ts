@@ -32,6 +32,28 @@ vi.mock("@/composables/useApi", () => ({
   api: { post: mocks.post },
 }));
 
+vi.mock("@/utils/consumeQueryParams", () => ({
+  consumeQueryParams: async (
+    _router: unknown,
+    _path: string,
+    query: Record<string, unknown>,
+    keys: string[],
+  ) => {
+    const values: Record<string, string | undefined> = {};
+    for (const key of keys) {
+      const raw = query[key];
+      values[key] = typeof raw === "string" ? raw : undefined;
+    }
+    await mocks.replace({
+      path: mocks.routePath,
+      query: Object.fromEntries(
+        Object.entries(query).filter(([key]) => !keys.includes(key)),
+      ),
+    });
+    return values;
+  },
+}));
+
 describe("CallbackPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -62,9 +84,9 @@ describe("CallbackPage", () => {
       state: "oauth-state",
     });
     expect(wrapper.text()).toContain("Connected as octocat");
-    expect(wrapper.text()).toContain("Continue to admin");
+    expect(wrapper.text()).toContain("Continue to settings");
 
     await vi.advanceTimersByTimeAsync(2000);
-    expect(mocks.push).toHaveBeenCalledWith("/admin");
+    expect(mocks.push).toHaveBeenCalledWith("/settings");
   });
 });

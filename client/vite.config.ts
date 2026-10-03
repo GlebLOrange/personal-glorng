@@ -15,6 +15,37 @@ function applyRepoRootViteEnv(mode: string): Record<string, string> {
   return { ...rootEnv, ...loadEnv(mode, clientDir, "") };
 }
 
+function resolvePublicOrigin(mode: string, env: Record<string, string>): string {
+  const fromEnv =
+    env.VITE_PUBLIC_ORIGIN?.trim() ||
+    process.env.VITE_PUBLIC_ORIGIN?.trim() ||
+    loadEnv(mode, fileURLToPath(new URL("..", import.meta.url)), "").BASE_URL?.trim() ||
+    "";
+  const origin = fromEnv.replace(/\/$/, "");
+  if (mode !== "production") {
+    return origin || "http://localhost:3000";
+  }
+  if (!origin) {
+    throw new Error(
+      "Production build requires VITE_PUBLIC_ORIGIN (or BASE_URL) to the public HTTPS site origin — " +
+        "Open Graph URLs in index.html must not default to localhost.",
+    );
+  }
+  const lower = origin.toLowerCase();
+  if (lower.includes("localhost") || lower.includes("127.0.0.1")) {
+    throw new Error(
+      `Production build refuses localhost VITE_PUBLIC_ORIGIN/BASE_URL (${origin}). ` +
+        "Set the real public HTTPS origin before vite build.",
+    );
+  }
+  if (!lower.startsWith("https://")) {
+    throw new Error(
+      `Production build requires an HTTPS VITE_PUBLIC_ORIGIN/BASE_URL (got ${origin}).`,
+    );
+  }
+  return origin;
+}
+
 export default defineConfig(({ mode }) => {
   // Client .env.* plus repo-root VITE_* (root .env is not Vite's default envDir).
   const env = applyRepoRootViteEnv(mode);
@@ -64,7 +95,7 @@ export default defineConfig(({ mode }) => {
       {
         name: "html-public-origin",
         transformIndexHtml(html) {
-          const origin = (env.VITE_PUBLIC_ORIGIN || "http://localhost:3000").replace(/\/$/, "");
+          const origin = resolvePublicOrigin(mode, env);
           return html.replaceAll("__PUBLIC_ORIGIN__", origin);
         },
       },

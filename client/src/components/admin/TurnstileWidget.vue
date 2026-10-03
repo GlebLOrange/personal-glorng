@@ -12,7 +12,6 @@ const emit = defineEmits<{
 
 const host = ref<HTMLElement | null>(null);
 let widgetId: string | undefined;
-let scriptEl: HTMLScriptElement | null = null;
 
 type TurnstileApi = {
   render: (
@@ -58,7 +57,6 @@ function loadScript(): Promise<TurnstileApi> {
       else reject(new Error("Turnstile failed to load"));
     };
     el.onerror = () => reject(new Error("Turnstile failed to load"));
-    scriptEl = el;
     document.head.appendChild(el);
   });
 }

@@ -87,8 +87,8 @@ function clearGenerated(): void {
   showPassword.value = false;
 }
 
-function onPasswordModelUpdate(value: string | number): void {
-  if (value === "") clearGenerated();
+function onPasswordModelUpdate(value: string | number | null | undefined): void {
+  if (value === "" || value == null) clearGenerated();
 }
 
 async function generatePassword(): Promise<void> {
