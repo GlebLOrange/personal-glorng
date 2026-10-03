@@ -1,30 +1,40 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
+import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import { useNotify } from "@/composables/useNotify";
+import type { ContactLink } from "@/constants/contactMeta";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { getApiErrorMessageFromBlob } from "@/types/api";
 
 const CV_FILENAME = "gleb.y.cv.pdf";
+/** Fastest hire channels in the hero — full set stays in #contacts. */
+const HERO_CONTACT_IDS = new Set(["email", "telegram"]);
 
-defineProps<{
+const props = defineProps<{
   name: string;
   title: string;
   tagline?: string;
   location?: string;
   availability?: string;
-  bio: string;
+  contactLinks: ContactLink[];
 }>();
 
 const emit = defineEmits<{ inquire: [] }>();
 
 const isDownloadingCv = ref(false);
+const showPrintFallback = ref(false);
 const { toast } = useNotify();
+
+const heroContactLinks = computed(() =>
+  props.contactLinks.filter((link) => HERO_CONTACT_IDS.has(link.id)),
+);
 
 async function downloadCv(): Promise<void> {
   if (isDownloadingCv.value) return;
   isDownloadingCv.value = true;
+  showPrintFallback.value = false;
   try {
     const { api } = await import("@/composables/useApi");
     const response = await api.get<Blob>("/resume/pdf", {
@@ -48,12 +58,16 @@ async function downloadCv(): Promise<void> {
     URL.revokeObjectURL(url);
   } catch (err) {
     const message = await getApiErrorMessageFromBlob(err, "Failed to download CV");
-    // ponytail: no static PDF asset — print stylesheet is the offline fallback
-    toast(`${message}. Opening print dialog as a fallback.`, "error");
-    window.print();
+    // ponytail: no static PDF — offer print only when the user chooses it
+    toast(message, "error");
+    showPrintFallback.value = true;
   } finally {
     isDownloadingCv.value = false;
   }
+}
+
+function printPage(): void {
+  window.print();
 }
 </script>
 
@@ -62,8 +76,8 @@ async function downloadCv(): Promise<void> {
     <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-3 text-balance">
       <span class="accent-gradient">{{ name }}</span>
     </h1>
-    <p class="text-xl md:text-3xl text-surface-sage mb-2">{{ title }}</p>
-    <p v-if="tagline" class="text-lg text-accent-blue mb-3 text-pretty max-w-2xl mx-auto">
+    <p class="text-2xl md:text-3xl text-surface-light mb-2">{{ title }}</p>
+    <p v-if="tagline" class="text-lg text-surface-sage mb-3 text-pretty max-w-2xl mx-auto">
       {{ tagline }}
     </p>
     <p
@@ -85,9 +99,6 @@ async function downloadCv(): Promise<void> {
         {{ availability }}
       </a>
     </p>
-    <p class="text-lg md:text-xl max-w-2xl mx-auto text-surface-sage leading-relaxed text-pretty">
-      {{ bio }}
-    </p>
 
     <div class="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 print:hidden">
       <button type="button" class="cta-primary" @click="emit('inquire')">get in touch</button>
@@ -101,9 +112,51 @@ async function downloadCv(): Promise<void> {
       </button>
     </div>
 
-    <!-- Jump links: middot list, no eyebrows (label lives in aria-label). -->
-    <div class="portfolio-link-rail mt-5 flex flex-col gap-1 print:hidden">
-      <nav aria-label="On this page">
+    <p
+      v-if="showPrintFallback"
+      class="mt-3 text-meta print:hidden"
+      role="status"
+    >
+      PDF unavailable.
+      <button
+        type="button"
+        class="ml-1 underline underline-offset-4 text-accent-blue hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+        @click="printPage"
+      >
+        print page instead
+      </button>
+    </p>
+
+    <div
+      v-if="heroContactLinks.length"
+      class="mt-5 flex flex-wrap items-center justify-center gap-2 print:hidden"
+    >
+      <ContactLinkChip v-for="link in heroContactLinks" :key="link.id" :link="link" />
+    </div>
+
+    <!-- Mobile: disclosure. md+: light middot rail (sticky section nav covers scroll). -->
+    <div class="portfolio-link-rail mt-5 print:hidden">
+      <details class="md:hidden group mx-auto max-w-xs text-left">
+        <summary
+          class="nav-link flex min-h-11 cursor-pointer list-none items-center justify-center rounded-lg px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 [&::-webkit-details-marker]:hidden"
+        >
+          jump to…
+        </summary>
+        <nav aria-label="On this page" class="mt-2">
+          <ul class="m-0 flex list-none flex-col items-stretch gap-1 p-0">
+            <li v-for="link in PORTFOLIO_SECTION_LINKS" :key="link.href">
+              <a
+                :href="link.href"
+                class="nav-link flex min-h-11 items-center justify-center rounded-lg px-3"
+              >
+                {{ link.label }}
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </details>
+
+      <nav aria-label="On this page" class="hidden md:block">
         <ul class="m-0 flex list-none flex-wrap items-center justify-center gap-y-1 p-0">
           <li
             v-for="(link, i) in PORTFOLIO_SECTION_LINKS"
