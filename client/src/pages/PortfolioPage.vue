@@ -247,7 +247,6 @@ onUnmounted(() => {
           :tagline="resume.tagline"
           :location="resume.location"
           :availability="resume.availability"
-          :contact-links="contactLinks"
           @inquire="contactModal = 'inquiry'"
         />
       </div>

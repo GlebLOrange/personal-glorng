@@ -2,7 +2,6 @@ import { mount, flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import HeroBlock from "@/components/resume/HeroBlock.vue";
-import type { ContactLink } from "@/constants/contactMeta";
 
 const toast = vi.fn();
 const apiGet = vi.fn();
@@ -17,33 +16,26 @@ vi.mock("@/composables/useApi", () => ({
   },
 }));
 
-const contactLinks: ContactLink[] = [
-  { id: "email", label: "email", href: "mailto:test@example.com" },
-  { id: "telegram", label: "telegram", href: "https://t.me/example" },
-  { id: "github", label: "github", href: "https://github.com/example" },
-];
-
 describe("HeroBlock", () => {
   beforeEach(() => {
     toast.mockReset();
     apiGet.mockReset();
   });
 
-  it("keeps bio out of the hero and shows email/telegram chips only", () => {
+  it("keeps bio out of the hero and does not show contact chips", () => {
     const wrapper = mount(HeroBlock, {
       props: {
         name: "Gleb.Y",
         title: "Python Backend / FastAPI Engineer",
         tagline: "I build production APIs",
-        contactLinks,
       },
     });
 
     expect(wrapper.text()).toContain("I build production APIs");
     expect(wrapper.text()).not.toContain("Backend-first");
-    expect(wrapper.text()).toContain("email");
-    expect(wrapper.text()).toContain("telegram");
-    expect(wrapper.text()).not.toContain("github");
+    expect(wrapper.find(".contact-link-chip").exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("email");
+    expect(wrapper.text()).not.toContain("telegram");
   });
 
   it("offers print fallback instead of auto-printing when PDF fails", async () => {
@@ -55,7 +47,6 @@ describe("HeroBlock", () => {
       props: {
         name: "Gleb.Y",
         title: "Engineer",
-        contactLinks,
       },
     });
 
