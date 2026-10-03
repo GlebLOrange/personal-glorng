@@ -32,12 +32,12 @@ defineProps<{
       />
     </template>
 
-    <!-- admin: 2x2 dashboard grid -->
+    <!-- admin: 2x2 dashboard grid — gap kept after stroke so tiles stay distinct at breadcrumb size -->
     <template v-else-if="slug === 'admin'">
-      <rect x="4" y="4" width="7" height="7" rx="1.5" />
-      <rect x="13" y="4" width="7" height="7" rx="1.5" />
-      <rect x="4" y="13" width="7" height="7" rx="1.5" />
-      <rect x="13" y="13" width="7" height="7" rx="1.5" />
+      <rect x="3.5" y="3.5" width="6" height="6" rx="1.25" />
+      <rect x="14.5" y="3.5" width="6" height="6" rx="1.25" />
+      <rect x="3.5" y="14.5" width="6" height="6" rx="1.25" />
+      <rect x="14.5" y="14.5" width="6" height="6" rx="1.25" />
     </template>
 
     <!-- settings: gear -->
