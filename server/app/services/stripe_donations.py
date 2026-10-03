@@ -29,12 +29,13 @@ async def create_checkout_session(settings: Settings | None = None) -> dict[str,
 
     success_url = (
         active.STRIPE_CHECKOUT_SUCCESS_URL
-        or f"{active.BASE_URL.rstrip('/')}/?donated=1"
+        or f"{active.BASE_URL.rstrip('/')}/?donated=1#support"
     )
     cancel_url = active.STRIPE_CHECKOUT_CANCEL_URL or active.BASE_URL.rstrip("/")
 
     data = {
         "mode": "payment",
+        "submit_type": "donate",
         "success_url": success_url,
         "cancel_url": cancel_url,
         "line_items[0][price_data][currency]": active.STRIPE_DONATION_CURRENCY.lower(),
@@ -43,6 +44,8 @@ async def create_checkout_session(settings: Settings | None = None) -> dict[str,
         ),
         "line_items[0][price_data][product_data][name]": "Support Gleb.Y",
         "line_items[0][quantity]": "1",
+        "metadata[purpose]": "donation",
+        "metadata[source]": "portfolio",
     }
 
     async with httpx.AsyncClient(timeout=20.0) as client:
