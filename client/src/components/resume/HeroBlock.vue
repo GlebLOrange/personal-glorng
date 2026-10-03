@@ -2,7 +2,6 @@
 import { ref } from "vue";
 
 import LocationIcon from "@/components/icons/LocationIcon.vue";
-import { api } from "@/composables/useApi";
 import { useNotify } from "@/composables/useNotify";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { getApiErrorMessageFromBlob } from "@/types/api";
@@ -27,6 +26,7 @@ async function downloadCv(): Promise<void> {
   if (isDownloadingCv.value) return;
   isDownloadingCv.value = true;
   try {
+    const { api } = await import("@/composables/useApi");
     const response = await api.get<Blob>("/resume/pdf", {
       responseType: "blob",
       headers: { Accept: "application/pdf" },
@@ -62,7 +62,7 @@ async function downloadCv(): Promise<void> {
     <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-3 text-balance">
       <span class="accent-gradient">{{ name }}</span>
     </h1>
-    <p class="text-2xl md:text-3xl text-surface-sage mb-2">{{ title }}</p>
+    <p class="text-xl md:text-3xl text-surface-sage mb-2">{{ title }}</p>
     <p v-if="tagline" class="text-lg text-accent-blue mb-3 text-pretty max-w-2xl mx-auto">
       {{ tagline }}
     </p>

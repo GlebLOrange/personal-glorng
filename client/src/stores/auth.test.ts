@@ -162,7 +162,9 @@ describe("useAuthStore", () => {
     const auth = useAuthStore();
     const first = auth.resolveSession();
     const second = auth.resolveSession();
-    expect(api.get).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => {
+      expect(api.get).toHaveBeenCalledTimes(1);
+    });
 
     resolveGet({
       data: {

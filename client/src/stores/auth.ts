@@ -1,16 +1,24 @@
-import axios from "axios";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
-import { api } from "@/composables/useApi";
 import { clearCachedApi } from "@/composables/useCachedApi";
-import { clearPlatformCatalog } from "@/composables/usePlatformCatalog";
-import { tryRefreshSession } from "@/utils/authSession";
+import { isApiError } from "@/types/api";
 import type { UserPreferences, UserResponse } from "@/types";
+import { tryRefreshSession } from "@/utils/authSession";
 
 export interface UpdateProfilePayload {
   display_name?: string | null;
   timezone?: string;
+}
+
+/** ponytail: keep axios out of the App/NavBar import graph until a method runs */
+async function getApi() {
+  const { api } = await import("@/composables/useApi");
+  return api;
+}
+
+function httpStatus(err: unknown): number | undefined {
+  return isApiError(err) ? err.response?.status : undefined;
 }
 
 export const useAuthStore = defineStore("auth", () => {
@@ -23,16 +31,20 @@ export const useAuthStore = defineStore("auth", () => {
   function clearUser(): void {
     user.value = null;
     clearCachedApi();
-    clearPlatformCatalog();
+    // Platform catalog module imports axios + auth — load it only when clearing.
+    void import("@/composables/usePlatformCatalog").then(({ clearPlatformCatalog }) =>
+      clearPlatformCatalog(),
+    );
   }
 
   function logout(): void {
     clearUser();
     sessionError.value = null;
-    void api.post("/auth/logout").catch(() => undefined);
+    void getApi().then((api) => api.post("/auth/logout").catch(() => undefined));
   }
 
   async function login(email: string, password: string): Promise<void> {
+    const api = await getApi();
     await api.post("/auth/login", {
       email,
       password,
@@ -44,6 +56,7 @@ export const useAuthStore = defineStore("auth", () => {
     const { signInWithGooglePopup } = await import("@/services/firebase");
     const credential = await signInWithGooglePopup();
     const idToken = await credential.user.getIdToken();
+    const api = await getApi();
     await api.post("/auth/firebase", {
       id_token: idToken,
     });
@@ -51,6 +64,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function fetchUser(): Promise<void> {
+    const api = await getApi();
     const { data } = await api.get<UserResponse>("/auth/me");
     user.value = data;
     const { syncGuestWeatherLocations } = await import("@/composables/useWeatherLocations");
@@ -58,11 +72,13 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function updateProfile(payload: UpdateProfilePayload): Promise<void> {
+    const api = await getApi();
     const { data } = await api.patch<UserResponse>("/auth/me", payload);
     user.value = data;
   }
 
   async function changeEmail(email: string, currentPassword: string): Promise<void> {
+    const api = await getApi();
     await api.patch("/auth/me/email", {
       email,
       current_password: currentPassword,
@@ -75,6 +91,7 @@ export const useAuthStore = defineStore("auth", () => {
     newPassword: string,
     passwordConfirm: string,
   ): Promise<void> {
+    const api = await getApi();
     await api.post("/auth/change-password", {
       current_password: currentPassword,
       new_password: newPassword,
@@ -83,6 +100,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function fetchPreferences(): Promise<UserPreferences> {
+    const api = await getApi();
     const { data } = await api.get<UserPreferences>("/auth/me/preferences");
     return data;
   }
@@ -90,6 +108,7 @@ export const useAuthStore = defineStore("auth", () => {
   async function updatePreferences(
     preferences: Partial<UserPreferences>,
   ): Promise<UserPreferences> {
+    const api = await getApi();
     const { data } = await api.patch<UserPreferences>("/auth/me/preferences", preferences);
     if (user.value) {
       user.value = {
@@ -104,6 +123,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function deleteAccount(currentPassword: string): Promise<void> {
+    const api = await getApi();
     await api.delete("/auth/me", {
       data: {
         current_password: currentPassword,
@@ -114,7 +134,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   function isUnauthorizedError(err: unknown): boolean {
-    return axios.isAxiosError(err) && err.response?.status === 401;
+    return httpStatus(err) === 401;
   }
 
   let resolveInFlight: Promise<void> | null = null;
@@ -128,8 +148,7 @@ export const useAuthStore = defineStore("auth", () => {
       try {
         await fetchUser();
       } catch (err) {
-        const status = axios.isAxiosError(err) ? err.response?.status : undefined;
-        if (status !== 401) {
+        if (httpStatus(err) !== 401) {
           throw err;
         }
         if (!(await tryRefreshSession())) {
@@ -143,9 +162,10 @@ export const useAuthStore = defineStore("auth", () => {
         clearUser();
         return;
       }
-      sessionError.value = axios.isAxiosError(err)
-        ? err.message || "Unable to restore session"
-        : "Unable to restore session";
+      sessionError.value =
+        err instanceof Error && err.message
+          ? err.message
+          : "Unable to restore session";
       throw err;
     } finally {
       sessionResolved.value = true;
