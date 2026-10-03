@@ -13,6 +13,7 @@ import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
 import { buildContactLinks } from "@/constants/contactMeta";
+import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import type { DonationsConfig, PublicGitHubRepo, ResumeData } from "@/types";
 import { consumeQueryParams } from "@/utils/consumeQueryParams";
@@ -47,9 +48,13 @@ const donationsFetched = ref(false);
 const donationsStarted = ref(false);
 const contactModal = ref<"inquiry" | null>(null);
 const supportSectionRef = ref<HTMLElement | null>(null);
+const heroSentinelRef = ref<HTMLElement | null>(null);
+const showSectionNav = ref(false);
+const sectionNavTop = ref(72);
 /** Filled via GET /github/repos when /resume returned a cold-cache empty strip. */
 const githubReposExtra = ref<PublicGitHubRepo[] | null>(null);
 let supportObserver: IntersectionObserver | null = null;
+let heroObserver: IntersectionObserver | null = null;
 let cancelGithubIdle: (() => void) | null = null;
 
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
@@ -116,6 +121,28 @@ async function loadDonations(): Promise<void> {
   }
 }
 
+function syncSectionNavTop(): void {
+  const header = document.getElementById("site-header");
+  sectionNavTop.value = header?.offsetHeight ?? 72;
+}
+
+function observeHeroSentinel(): void {
+  if (heroObserver || !heroSentinelRef.value) {
+    return;
+  }
+  syncSectionNavTop();
+  heroObserver = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      // Show sticky section nav once the hero leaves the top of the viewport.
+      showSectionNav.value = !entry.isIntersecting;
+    },
+    { rootMargin: `-${sectionNavTop.value}px 0px 0px 0px`, threshold: 0 },
+  );
+  heroObserver.observe(heroSentinelRef.value);
+}
+
 function observeSupportSection(): void {
   if (supportObserver || !supportSectionRef.value) {
     return;
@@ -152,6 +179,7 @@ onMounted(() => {
     });
   });
   void nextTick(async () => {
+    observeHeroSentinel();
     if (String(route.query.donated ?? "") === "1") {
       await consumeDonationThanks();
       return;
@@ -165,6 +193,8 @@ onUnmounted(() => {
   cancelGithubIdle = null;
   supportObserver?.disconnect();
   supportObserver = null;
+  heroObserver?.disconnect();
+  heroObserver = null;
 });
 </script>
 
@@ -180,19 +210,53 @@ onUnmounted(() => {
       />
     </div>
 
+    <div
+      class="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-4 transition-opacity duration-200 print:hidden"
+      :class="showSectionNav ? 'opacity-100' : 'opacity-0'"
+      :style="{ top: `${sectionNavTop}px` }"
+    >
+      <nav
+        class="pointer-events-auto max-w-5xl rounded-b-lg border border-t-0 border-surface-border/60 bg-surface-dark/90 px-3 py-1 backdrop-blur-md"
+        :class="showSectionNav ? '' : 'invisible'"
+        aria-label="On this page"
+        :inert="!showSectionNav"
+      >
+        <ul class="m-0 flex list-none flex-wrap items-center justify-center gap-y-0 p-0">
+          <li
+            v-for="(link, i) in PORTFOLIO_SECTION_LINKS"
+            :key="link.href"
+            class="inline-flex items-center"
+          >
+            <span v-if="i > 0" class="px-1.5 text-surface-muted" aria-hidden="true">·</span>
+            <a
+              :href="link.href"
+              class="nav-link inline-flex min-h-11 items-center px-1 rounded-lg text-sm"
+            >
+              {{ link.label }}
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
     <SectionWrapper width="full">
-      <HeroBlock
-        :name="resume.name"
-        :title="resume.title"
-        :tagline="resume.tagline"
-        :location="resume.location"
-        :availability="resume.availability"
-        :bio="resume.bio"
-        @inquire="contactModal = 'inquiry'"
-      />
+      <div ref="heroSentinelRef">
+        <HeroBlock
+          :name="resume.name"
+          :title="resume.title"
+          :tagline="resume.tagline"
+          :location="resume.location"
+          :availability="resume.availability"
+          :contact-links="contactLinks"
+          @inquire="contactModal = 'inquiry'"
+        />
+      </div>
     </SectionWrapper>
 
     <SectionWrapper id="about" title="about" width="full" dark alternate>
+      <p class="text-body mb-4 max-w-3xl text-pretty">
+        {{ resume.bio }}
+      </p>
       <p v-if="resume.hiring_note" class="text-body mb-6 max-w-3xl">
         {{ resume.hiring_note }}
       </p>
