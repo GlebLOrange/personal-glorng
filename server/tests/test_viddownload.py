@@ -42,7 +42,11 @@ async def test_viddownload_rejects_private_host(auth_client: AsyncClient) -> Non
 @pytest.mark.asyncio
 async def test_viddownload_rejects_non_allowlisted_host(
     auth_client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        "app.schemas.viddownload.is_public_http_url", lambda _url: True
+    )
     resp = await auth_client.post(
         "/api/tools/vid-download",
         json={
@@ -84,8 +88,12 @@ async def test_viddownload_requires_auth(client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_viddownload_allowlisted_url_reaches_yt_dlp(
     auth_client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Allowlisted public URLs pass schema checks; yt-dlp failure returns 502."""
+    monkeypatch.setattr(
+        "app.schemas.viddownload.is_public_http_url", lambda _url: True
+    )
     with (
         patch(
             "app.routers.tools.viddownload._resolve_public_download_url",
