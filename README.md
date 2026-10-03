@@ -9,7 +9,7 @@ Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + Mongo
 **Live handbook:** [gleblorange.github.io/personal-glorng](https://gleblorange.github.io/personal-glorng/)  
 **Source:** [github.com/GlebLOrange/personal-glorng](https://github.com/GlebLOrange/personal-glorng)
 
-> The published site is the VitePress architecture handbook (GitHub Pages). The full Vue + FastAPI app runs via `make prod` on a VPS — see [Deployment](docs/operations/deployment.md).
+> The published site above is the VitePress architecture handbook (GitHub Pages). The full Vue + FastAPI app runs via `make prod` on a VPS — set `BASE_URL` / `VITE_PUBLIC_ORIGIN` to that HTTPS origin (OG tags + sitemap). See [Deployment](docs/operations/deployment.md).
 
 ## Quick start
 
