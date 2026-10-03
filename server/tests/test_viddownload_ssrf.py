@@ -10,8 +10,12 @@ from httpx import AsyncClient
 @pytest.mark.asyncio
 async def test_viddownload_rejects_unsafe_redirect_target(
     auth_client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Redirect hops re-run url_safety; private final targets are rejected."""
+    monkeypatch.setattr(
+        "app.schemas.viddownload.is_public_http_url", lambda _url: True
+    )
     mock_response = MagicMock(spec=httpx.Response)
     mock_response.url = httpx.URL("http://127.0.0.1/internal")
     mock_response.is_redirect = False
@@ -38,8 +42,12 @@ async def test_viddownload_rejects_unsafe_redirect_target(
 @pytest.mark.asyncio
 async def test_viddownload_rejects_redirect_off_allowlist(
     auth_client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Final hop must stay on an allowlisted video host."""
+    monkeypatch.setattr(
+        "app.schemas.viddownload.is_public_http_url", lambda _url: True
+    )
     mock_response = MagicMock(spec=httpx.Response)
     mock_response.url = httpx.URL("https://example.com/bounce")
     mock_response.is_redirect = False
