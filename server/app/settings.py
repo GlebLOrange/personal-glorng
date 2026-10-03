@@ -35,8 +35,8 @@ def _env_file_path() -> Path:
     return _repo_root() / ".env"
 
 
-def _is_deployed_env(app_env: str) -> bool:
-    """True for production and staging (same secret hardening)."""
+def is_deployed_env(app_env: str) -> bool:
+    """True for production and staging (same secret hardening / Secure cookies)."""
     return app_env in {"production", "staging"}
 
 
@@ -256,13 +256,13 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _check_production_secrets(self) -> Settings:
-        if _is_deployed_env(self.APP_ENV) and (
+        if is_deployed_env(self.APP_ENV) and (
             len(self.JWT_SECRET) < 32
             or any(m in self.JWT_SECRET.lower() for m in _WEAK_SECRET_MARKERS)
         ):
             msg = "JWT_SECRET is too weak for production/staging; use 32+ chars"
             raise ValueError(msg)
-        if _is_deployed_env(self.APP_ENV):
+        if is_deployed_env(self.APP_ENV):
             fernet = self.FERNET_SECRET.strip()
             if len(fernet) < 32 or any(
                 m in fernet.lower() for m in _WEAK_SECRET_MARKERS
@@ -282,10 +282,10 @@ class Settings(BaseSettings):
         if any(origin.strip() == "*" for origin in self.CORS_ORIGINS):
             msg = "CORS_ORIGINS cannot include '*' when allow_credentials is enabled"
             raise ValueError(msg)
-        if _is_deployed_env(self.APP_ENV) and self.LOG_REQUEST_BODIES:
+        if is_deployed_env(self.APP_ENV) and self.LOG_REQUEST_BODIES:
             msg = "LOG_REQUEST_BODIES must be false in production/staging"
             raise ValueError(msg)
-        if _is_deployed_env(self.APP_ENV) and (
+        if is_deployed_env(self.APP_ENV) and (
             len(self.RABBITMQ_PASSWORD) < 16
             or any(m in self.RABBITMQ_PASSWORD.lower() for m in _WEAK_SECRET_MARKERS)
         ):
@@ -295,7 +295,7 @@ class Settings(BaseSettings):
             )
             raise ValueError(msg)
         if (
-            _is_deployed_env(self.APP_ENV)
+            is_deployed_env(self.APP_ENV)
             and self.TELEGRAM_BOT_TO_DO_TOKEN
             and not self.TELEGRAM_ALLOWED_USER_ID
         ):
@@ -304,7 +304,7 @@ class Settings(BaseSettings):
                 "TELEGRAM_BOT_TO_DO_TOKEN is configured in production/staging"
             )
             raise ValueError(msg)
-        if _is_deployed_env(self.APP_ENV):
+        if is_deployed_env(self.APP_ENV):
             _validate_production_password(
                 "REDIS_PASSWORD",
                 _password_from_redis_url(self.REDIS_URL),

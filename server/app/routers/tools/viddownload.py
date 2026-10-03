@@ -22,7 +22,7 @@ from app.core.redis_slots import release_slot, try_acquire_slot
 from app.core.url_safety import get_public_http_url, is_public_http_url
 from app.core.utils import attachment_content_disposition
 from app.openapi import requires_capability
-from app.schemas.viddownload import VidDownloadRequest
+from app.schemas.viddownload import VidDownloadRequest, is_allowed_viddownload_host
 
 router = APIRouter(
     prefix="/vid-download",
@@ -91,6 +91,8 @@ async def _resolve_public_download_url(url: str) -> str:
         await response.aclose()
     if not is_public_http_url(resolved):
         raise ApiError(422, "URL must be a public http(s) address")
+    if not is_allowed_viddownload_host(resolved):
+        raise ApiError(422, "URL host is not an allowed video platform")
     return resolved
 
 
@@ -99,6 +101,8 @@ def _build_command(
     data: VidDownloadRequest,
     tmp_dir: str,
 ) -> list[str]:
+    # ponytail: pinned yt-dlp has no --max-redirects CLI flag; redirect
+    # budget is enforced in _resolve_public_download_url via get_public_http_url.
     cmd = [
         "yt-dlp",
         "--no-playlist",

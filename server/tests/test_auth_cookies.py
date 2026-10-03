@@ -12,10 +12,18 @@ def test_cookie_secure_in_production() -> None:
     assert _cookie_flags(settings)["secure"] is True
 
 
-def test_cookie_secure_on_https_base_url_even_when_not_production() -> None:
+def test_cookie_secure_in_staging_even_on_http() -> None:
     settings = Settings.model_construct(
         APP_ENV="staging",
-        BASE_URL="https://staging.example.com",
+        BASE_URL="http://staging.example.com",
+    )
+    assert _cookie_flags(settings)["secure"] is True
+
+
+def test_cookie_secure_on_https_base_url_in_development() -> None:
+    settings = Settings.model_construct(
+        APP_ENV="development",
+        BASE_URL="https://preview.example.com",
     )
     assert _cookie_flags(settings)["secure"] is True
 

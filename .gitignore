@@ -51,6 +51,10 @@ docs/.vitepress/.temp/
 .cursor/setup-worktree-unix.sh
 latestcommit.mdc
 
+# Ephemeral agent review dumps (screenshots, Lighthouse JSON)
+.cursor-review-artifacts/
+.review-artifacts/
+
 # Celery beat (dev/runtime schedule db)
 celerybeat-schedule*
 

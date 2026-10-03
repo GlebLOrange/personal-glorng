@@ -8,7 +8,9 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_viddownload_rejects_unsafe_redirect_target(auth_client: AsyncClient) -> None:
+async def test_viddownload_rejects_unsafe_redirect_target(
+    auth_client: AsyncClient,
+) -> None:
     """Redirect hops re-run url_safety; private final targets are rejected."""
     mock_response = MagicMock(spec=httpx.Response)
     mock_response.url = httpx.URL("http://127.0.0.1/internal")
@@ -23,7 +25,7 @@ async def test_viddownload_rejects_unsafe_redirect_target(auth_client: AsyncClie
         resp = await auth_client.post(
             "/api/tools/vid-download",
             json={
-                "url": "https://example.com/watch?v=abc",
+                "url": "https://www.youtube.com/watch?v=abc",
                 "format": "best",
                 "audio_only": False,
             },
@@ -31,3 +33,37 @@ async def test_viddownload_rejects_unsafe_redirect_target(auth_client: AsyncClie
 
     assert resp.status_code == 422
     assert "public http" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_viddownload_rejects_redirect_off_allowlist(
+    auth_client: AsyncClient,
+) -> None:
+    """Final hop must stay on an allowlisted video host."""
+    mock_response = MagicMock(spec=httpx.Response)
+    mock_response.url = httpx.URL("https://example.com/bounce")
+    mock_response.is_redirect = False
+    mock_response.aclose = AsyncMock()
+
+    with (
+        patch(
+            "app.routers.tools.viddownload.get_public_http_url",
+            new_callable=AsyncMock,
+            return_value=mock_response,
+        ),
+        patch(
+            "app.routers.tools.viddownload.is_public_http_url",
+            return_value=True,
+        ),
+    ):
+        resp = await auth_client.post(
+            "/api/tools/vid-download",
+            json={
+                "url": "https://www.youtube.com/watch?v=abc",
+                "format": "best",
+                "audio_only": False,
+            },
+        )
+
+    assert resp.status_code == 422
+    assert "allowed video platform" in resp.json()["detail"].lower()
