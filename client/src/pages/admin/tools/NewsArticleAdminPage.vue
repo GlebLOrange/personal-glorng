@@ -226,10 +226,7 @@ watch(articleId, () => {
     <header v-if="canWrite && article" class="page-intro">
       <p v-if="form.slug.trim()" class="mb-3 text-sm text-surface-mid">
         Public URL:
-        <RouterLink
-          :to="`/news/${form.slug.trim()}`"
-          class="nav-link font-data"
-        >
+        <RouterLink :to="`/news/${form.slug.trim()}`" class="nav-link font-data">
           /news/{{ form.slug.trim() }}
         </RouterLink>
       </p>

@@ -35,10 +35,7 @@ const emit = defineEmits<{
     tabindex="0"
     class="outline-none"
   >
-    <div
-      v-if="canMutate"
-      class="mb-3 flex justify-end"
-    >
+    <div v-if="canMutate" class="mb-3 flex justify-end">
       <BaseButton
         variant="ghost"
         size="sm"

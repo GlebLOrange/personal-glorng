@@ -43,7 +43,9 @@ async def test_create_url(auth_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_create_url_prepends_https_for_schemeless_host(client: AsyncClient) -> None:
+async def test_create_url_prepends_https_for_schemeless_host(
+    client: AsyncClient,
+) -> None:
     resp = await client.post(
         "/api/tools/url-shortener",
         json={"original_url": "example.com/path"},

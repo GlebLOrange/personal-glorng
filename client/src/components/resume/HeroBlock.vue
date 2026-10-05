@@ -79,7 +79,10 @@ function printPage(): void {
         <LocationIcon class-name="size-3.5 shrink-0" />
         {{ location }}
       </span>
-      <span v-if="location && availability" class="inline-flex min-h-11 items-center" aria-hidden="true"
+      <span
+        v-if="location && availability"
+        class="inline-flex min-h-11 items-center"
+        aria-hidden="true"
         >·</span
       >
       <a
@@ -91,23 +94,16 @@ function printPage(): void {
       </a>
     </p>
 
-    <div class="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 print:hidden">
+    <div
+      class="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 print:hidden"
+    >
       <button type="button" class="cta-primary" @click="emit('inquire')">get in touch</button>
-      <button
-        type="button"
-        class="cta-secondary"
-        :disabled="isDownloadingCv"
-        @click="downloadCv"
-      >
+      <button type="button" class="cta-secondary" :disabled="isDownloadingCv" @click="downloadCv">
         {{ isDownloadingCv ? "downloading…" : "download cv" }}
       </button>
     </div>
 
-    <p
-      v-if="showPrintFallback"
-      class="mt-3 text-meta print:hidden"
-      role="status"
-    >
+    <p v-if="showPrintFallback" class="mt-3 text-meta print:hidden" role="status">
       PDF unavailable.
       <button
         type="button"
@@ -148,10 +144,7 @@ function printPage(): void {
             class="inline-flex items-center"
           >
             <span v-if="i > 0" class="px-1.5 text-surface-muted" aria-hidden="true">·</span>
-            <a
-              :href="link.href"
-              class="nav-link inline-flex min-h-11 items-center px-1 rounded-lg"
-            >
+            <a :href="link.href" class="nav-link inline-flex min-h-11 items-center px-1 rounded-lg">
               {{ link.label }}
             </a>
           </li>

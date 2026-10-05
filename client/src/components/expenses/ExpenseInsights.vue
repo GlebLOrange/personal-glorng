@@ -126,7 +126,8 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
             <span
               v-if="budgetTotals.overBudget"
               class="ml-1.5 text-sm font-medium text-status-error"
-            >over</span>
+              >over</span
+            >
             <span class="sr-only"> of budget</span>
           </p>
           <p class="mt-1 text-xs text-surface-mid">
@@ -156,7 +157,9 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
           <span class="underline-offset-2 group-open:underline">category budgets</span>
         </summary>
         <table class="mt-2 w-full text-left text-xs">
-          <caption class="sr-only">Category budget status</caption>
+          <caption class="sr-only">
+            Category budget status
+          </caption>
           <thead>
             <tr class="text-surface-mid">
               <th class="py-1 font-medium">category</th>
@@ -200,7 +203,9 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
             <span class="underline-offset-2 group-open:underline">data table</span>
           </summary>
           <table class="mt-2 w-full text-left text-xs">
-            <caption class="sr-only">Monthly totals</caption>
+            <caption class="sr-only">
+              Monthly totals
+            </caption>
             <thead>
               <tr class="text-surface-mid">
                 <th class="py-1 font-medium">period</th>
@@ -237,7 +242,9 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
             <span class="underline-offset-2 group-open:underline">data table</span>
           </summary>
           <table class="mt-2 w-full text-left text-xs">
-            <caption class="sr-only">Spend by category</caption>
+            <caption class="sr-only">
+              Spend by category
+            </caption>
             <thead>
               <tr class="text-surface-mid">
                 <th class="py-1 font-medium">category</th>
@@ -280,7 +287,9 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
           <span class="underline-offset-2 group-open:underline">data table</span>
         </summary>
         <table class="mt-2 w-full text-left text-xs">
-          <caption class="sr-only">Spend by product</caption>
+          <caption class="sr-only">
+            Spend by product
+          </caption>
           <thead>
             <tr class="text-surface-mid">
               <th class="py-1 font-medium">product</th>
@@ -311,9 +320,7 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
     description="add expenses for this period to see trends and breakdowns."
   >
     <template #action>
-      <BaseButton variant="add" size="sm" @click="emit('addExpense')">
-        go to expenses
-      </BaseButton>
+      <BaseButton variant="add" size="sm" @click="emit('addExpense')"> go to expenses </BaseButton>
     </template>
   </EmptyState>
 </template>

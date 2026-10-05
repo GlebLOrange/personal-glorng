@@ -183,9 +183,7 @@ onMounted(() => {
   >
     <p class="mb-4 text-sm text-surface-mid">
       Quick generate does not store anything on the server — download the SVG if you need it later.
-      <span v-if="canWriteLibrary">
-        Save to your library to reuse codes (your list only).
-      </span>
+      <span v-if="canWriteLibrary"> Save to your library to reuse codes (your list only). </span>
       <span v-else> Sign in to save codes to your library. </span>
     </p>
 
@@ -203,20 +201,9 @@ onMounted(() => {
               :disabled="!canSaveLibrary"
               @click="saveToLibrary"
             >
-              {{
-                savingLibrary
-                  ? "saving…"
-                  : isEditing
-                    ? "update saved qr"
-                    : "save to library"
-              }}
+              {{ savingLibrary ? "saving…" : isEditing ? "update saved qr" : "save to library" }}
             </BaseButton>
-            <BaseButton
-              v-if="isEditing"
-              variant="cancel"
-              type="button"
-              @click="clearEditSession"
-            >
+            <BaseButton v-if="isEditing" variant="cancel" type="button" @click="clearEditSession">
               new / discard
             </BaseButton>
           </div>

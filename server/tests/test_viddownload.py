@@ -18,9 +18,7 @@ def test_allowed_viddownload_hosts() -> None:
 def test_viddownload_schema_rejects_non_allowlisted_public_host(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(
-        "app.schemas.viddownload.is_public_http_url", lambda _url: True
-    )
+    monkeypatch.setattr("app.schemas.viddownload.is_public_http_url", lambda _url: True)
     with pytest.raises(ValidationError, match="allowed video platform"):
         VidDownloadRequest(url="https://example.com/watch?v=abc")
 
@@ -44,9 +42,7 @@ async def test_viddownload_rejects_non_allowlisted_host(
     auth_client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(
-        "app.schemas.viddownload.is_public_http_url", lambda _url: True
-    )
+    monkeypatch.setattr("app.schemas.viddownload.is_public_http_url", lambda _url: True)
     resp = await auth_client.post(
         "/api/tools/vid-download",
         json={
@@ -91,9 +87,7 @@ async def test_viddownload_allowlisted_url_reaches_yt_dlp(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Allowlisted public URLs pass schema checks; yt-dlp failure returns 502."""
-    monkeypatch.setattr(
-        "app.schemas.viddownload.is_public_http_url", lambda _url: True
-    )
+    monkeypatch.setattr("app.schemas.viddownload.is_public_http_url", lambda _url: True)
     with (
         patch(
             "app.routers.tools.viddownload._resolve_public_download_url",

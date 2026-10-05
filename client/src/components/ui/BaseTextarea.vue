@@ -61,11 +61,11 @@ const isInlineEnd = computed(() => props.labelAlign === "end" && !props.labelIns
 const useShell = computed(() =>
   Boolean(
     props.prefix ||
-      fieldCopy.value.tip ||
-      props.placeholder ||
-      props.labelInside ||
-      props.label ||
-      isInlineEnd.value,
+    fieldCopy.value.tip ||
+    props.placeholder ||
+    props.labelInside ||
+    props.label ||
+    isInlineEnd.value,
   ),
 );
 /** Reserve clear width whenever shell is active so tip never jumps vs BaseInput. */
@@ -79,7 +79,10 @@ const showInsideLabel = computed(
 const showTip = computed(
   () => Boolean(fieldCopy.value.tip) && !hasClearableValue.value && !showInsideLabel.value,
 );
-const tipInsetClass = computed(() => ["left-3", reserveClear.value || isInlineEnd.value ? "right-10" : "right-3"]);
+const tipInsetClass = computed(() => [
+  "left-3",
+  reserveClear.value || isInlineEnd.value ? "right-10" : "right-3",
+]);
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
 const hasVisibleLabel = computed(
   () => showLabelNotch.value || Boolean(props.label && props.labelInside),
@@ -185,10 +188,7 @@ function clear(): void {
         v-if="reserveClear || showInlineEndLabel"
         class="absolute right-0 top-0 z-10 flex h-10 items-center gap-0.5 pr-2"
       >
-        <div
-          v-if="showInlineEndLabel"
-          class="flex max-w-[11rem] items-center gap-1 bg-transparent"
-        >
+        <div v-if="showInlineEndLabel" class="flex max-w-[11rem] items-center gap-1 bg-transparent">
           <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
           <label
             v-if="showLabelNotch"
@@ -239,13 +239,7 @@ function clear(): void {
         {{ label }}
       </label>
       <span class="pointer-events-auto">
-        <FieldHelp
-          v-if="hint"
-          size="sm"
-          :align="helpAlign"
-          :text="hint"
-          :content-id="hintId"
-        />
+        <FieldHelp v-if="hint" size="sm" :align="helpAlign" :text="hint" :content-id="hintId" />
       </span>
     </div>
     <p

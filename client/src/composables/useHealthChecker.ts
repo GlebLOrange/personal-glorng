@@ -39,9 +39,7 @@ export function useHealthChecker() {
   const { run: runUpdate } = useApiAction();
   const { run: runDelete } = useApiAction();
 
-  const selected = computed(
-    () => monitors.value.find((m) => m.id === selectedId.value) ?? null,
-  );
+  const selected = computed(() => monitors.value.find((m) => m.id === selectedId.value) ?? null);
 
   const chartLabels = computed(() =>
     history.value.map((p) => {
@@ -65,10 +63,7 @@ export function useHealthChecker() {
       monitors.value = data.items;
       total.value = data.total;
       totalPages.value = data.pages;
-      if (
-        selectedId.value != null &&
-        !monitors.value.some((m) => m.id === selectedId.value)
-      ) {
+      if (selectedId.value != null && !monitors.value.some((m) => m.id === selectedId.value)) {
         selectedId.value = null;
         history.value = [];
       }
@@ -86,10 +81,9 @@ export function useHealthChecker() {
   async function loadHistory(monitorId: number): Promise<void> {
     const data = await runHistory(
       () =>
-        api.get<{ items: HealthHistoryPoint[] }>(
-          `/tools/health-checker/${monitorId}/history`,
-          { params: { hours: 24 } },
-        ),
+        api.get<{ items: HealthHistoryPoint[] }>(`/tools/health-checker/${monitorId}/history`, {
+          params: { hours: 24 },
+        }),
       { errorFallback: "Failed to load history" },
     );
     if (data) {
@@ -165,10 +159,7 @@ export function useHealthChecker() {
     }
   }
 
-  async function updateInterval(
-    monitor: HealthMonitor,
-    interval: HealthInterval,
-  ): Promise<void> {
+  async function updateInterval(monitor: HealthMonitor, interval: HealthInterval): Promise<void> {
     const result = await runUpdate(
       () =>
         api.patch<HealthMonitor>(`/tools/health-checker/${monitor.id}`, {

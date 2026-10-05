@@ -94,7 +94,9 @@ def _ssl_expiry(hostname: str, port: int = 443) -> datetime | None:
     context.minimum_version = ssl.TLSVersion.TLSv1_2
     try:
         with (
-            socket.create_connection((hostname, port), timeout=PROBE_TIMEOUT_SECONDS) as sock,
+            socket.create_connection(
+                (hostname, port), timeout=PROBE_TIMEOUT_SECONDS
+            ) as sock,
             context.wrap_socket(sock, server_hostname=hostname) as ssock,
         ):
             cert = ssock.getpeercert()
@@ -228,9 +230,7 @@ class HealthMonitorService:
         *,
         is_superuser: bool = False,
     ) -> HealthMonitor:
-        return await self._get_owned(
-            monitor_id, actor_id, is_superuser=is_superuser
-        )
+        return await self._get_owned(monitor_id, actor_id, is_superuser=is_superuser)
 
     async def create_monitor(
         self,
@@ -247,9 +247,7 @@ class HealthMonitorService:
 
         count = await self._monitors().count(created_by=created_by)
         if count >= MAX_MONITORS_PER_USER:
-            raise ConflictError(
-                f"Maximum of {MAX_MONITORS_PER_USER} monitors per user"
-            )
+            raise ConflictError(f"Maximum of {MAX_MONITORS_PER_USER} monitors per user")
 
         now = utc_now()
         monitor = HealthMonitor(
@@ -279,9 +277,7 @@ class HealthMonitorService:
         is_superuser: bool = False,
         fields: dict[str, object] | None = None,
     ) -> HealthMonitor:
-        monitor = await self._get_owned(
-            monitor_id, actor_id, is_superuser=is_superuser
-        )
+        monitor = await self._get_owned(monitor_id, actor_id, is_superuser=is_superuser)
         payload = dict(fields or {})
         updates: dict[str, object] = {}
         if "label" in payload:

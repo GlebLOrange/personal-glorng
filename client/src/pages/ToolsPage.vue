@@ -60,9 +60,7 @@ const signedInTools = computed((): PlatformService[] => {
 const publicSections = computed(() => groupServicesByCategory(publicTools.value));
 const signedInSections = computed(() => groupServicesByCategory(signedInTools.value));
 
-const hasAnyTools = computed(
-  () => publicTools.value.length > 0 || signedInTools.value.length > 0,
-);
+const hasAnyTools = computed(() => publicTools.value.length > 0 || signedInTools.value.length > 0);
 
 function toolRoute(tool: PlatformService): string {
   return resolveToolRoute(tool, can);

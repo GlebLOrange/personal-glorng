@@ -18,12 +18,7 @@ export type { ExpenseCalculatorMode, ExpenseQuickAddTarget };
 export { isCalculatorMode, normalizeCalculatorMode };
 
 export type ExpenseTab =
-  | "expenses"
-  | "transactions"
-  | "breakdown"
-  | "analytics"
-  | "categories"
-  | "converter";
+  "expenses" | "transactions" | "breakdown" | "analytics" | "categories" | "converter";
 
 const EXPENSE_TABS: ExpenseTab[] = [
   "expenses",

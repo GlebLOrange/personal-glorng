@@ -15,10 +15,7 @@ import {
 } from "@/composables/useExpenseCurrency";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExchangeRates } from "@/types";
-import {
-  readConverterSnapshot,
-  writeConverterSnapshot,
-} from "@/utils/expenseConverterStorage";
+import { readConverterSnapshot, writeConverterSnapshot } from "@/utils/expenseConverterStorage";
 
 const props = defineProps<{
   exchangeRates: ExchangeRates | null;
@@ -108,10 +105,14 @@ function swapCurrencies(): void {
   schedulePersist();
 }
 
-watch([amount, fromCurrency, toCurrency], () => {
-  scheduleConvert();
-  schedulePersist();
-}, { immediate: true });
+watch(
+  [amount, fromCurrency, toCurrency],
+  () => {
+    scheduleConvert();
+    schedulePersist();
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -131,18 +132,12 @@ watch([amount, fromCurrency, toCurrency], () => {
       inputmode="decimal"
     />
 
-    <div
-      class="flex flex-col gap-3 sm:flex-row sm:items-end"
-    >
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
       <BaseSelect v-model="fromCurrency" label="from" class="min-w-0 w-full sm:flex-1">
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>
       <div class="flex justify-center sm:mb-0.5">
-        <IconActionButton
-          action="create"
-          aria-label="swap currencies"
-          @click="swapCurrencies"
-        >
+        <IconActionButton action="create" aria-label="swap currencies" @click="swapCurrencies">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"

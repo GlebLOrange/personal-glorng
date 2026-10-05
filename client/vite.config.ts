@@ -76,9 +76,6 @@ export default defineConfig(({ mode }) => {
             if (id.includes("node_modules/firebase")) {
               return "firebase";
             }
-            if (id.includes("node_modules/axios")) {
-              return "axios";
-            }
             if (id.includes("node_modules/dompurify")) {
               return "dompurify";
             }

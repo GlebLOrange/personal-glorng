@@ -195,9 +195,7 @@ onMounted(load);
       <EmptyState
         v-if="items.length === 0"
         class="mt-4"
-        :description="
-          `no feedback messages with status '${filter}'`
-        "
+        :description="`no feedback messages with status '${filter}'`"
       />
 
       <div v-else class="mt-1 min-w-0">

@@ -80,21 +80,18 @@ const totalParts = computed((): { amount: string; unit: string | null } | null =
         />
       </div>
 
-      <div class="flex flex-wrap items-end justify-between gap-3 border-t border-surface-border/50 pt-3">
+      <div
+        class="flex flex-wrap items-end justify-between gap-3 border-t border-surface-border/50 pt-3"
+      >
         <div class="min-w-0">
           <p class="text-label text-surface-mid">total</p>
           <p v-if="totalParts" class="mt-1 truncate text-metric">
             <span>{{ totalParts.amount }}</span>
-            <span
-              v-if="totalParts.unit"
-              class="ml-1 text-sm font-medium text-surface-mid"
-            >{{ ` ${totalParts.unit}` }}</span>
+            <span v-if="totalParts.unit" class="ml-1 text-sm font-medium text-surface-mid">{{
+              ` ${totalParts.unit}`
+            }}</span>
           </p>
-          <p
-            v-else
-            class="mt-1 animate-pulse text-metric text-surface-border"
-            aria-hidden="true"
-          >
+          <p v-else class="mt-1 animate-pulse text-metric text-surface-border" aria-hidden="true">
             —
           </p>
         </div>

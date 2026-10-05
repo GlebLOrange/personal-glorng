@@ -77,9 +77,7 @@ function secondarySource(): string | null {
     </td>
     <td class="whitespace-nowrap px-3 py-1.5 align-middle text-right leading-tight">
       <div class="text-sm">{{ formatMoney(expense.amount, expense.currency) }}</div>
-      <div v-if="convertedLabel()" class="text-xs text-surface-mid">
-        ≈ {{ convertedLabel() }}
-      </div>
+      <div v-if="convertedLabel()" class="text-xs text-surface-mid">≈ {{ convertedLabel() }}</div>
     </td>
     <td class="whitespace-nowrap px-2 py-1.5 align-middle text-right">
       <div class="inline-flex items-center justify-end gap-0.5">
@@ -120,7 +118,9 @@ function secondarySource(): string | null {
         <div v-if="convertedLabel()" class="text-xs text-surface-mid">≈ {{ convertedLabel() }}</div>
       </div>
     </div>
-    <div class="flex flex-wrap items-center justify-end gap-0.5 border-t border-surface-border/40 pt-2">
+    <div
+      class="flex flex-wrap items-center justify-end gap-0.5 border-t border-surface-border/40 pt-2"
+    >
       <IconCopyButton
         :aria-label="`duplicate ${expense.tool_name || 'expense'}`"
         :quiet="false"

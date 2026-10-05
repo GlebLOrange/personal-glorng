@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import ipaddress
 import re
 import socket
@@ -147,12 +148,16 @@ def _url_with_ip_host(url: str, ip: str) -> str:
         netloc = f"{ipaddress.ip_address(ip).compressed}:{parsed.port}"
     if ":" in ip and not netloc.startswith("["):
         # Ensure IPv6 literals are bracketed in URL authority.
-        if parsed.port is None:
-            netloc = f"[{ip}]"
-        else:
-            netloc = f"[{ip}]:{parsed.port}"
+        netloc = f"[{ip}]" if parsed.port is None else f"[{ip}]:{parsed.port}"
     return urlunparse(
-        (parsed.scheme, netloc, parsed.path, parsed.params, parsed.query, parsed.fragment)
+        (
+            parsed.scheme,
+            netloc,
+            parsed.path,
+            parsed.params,
+            parsed.query,
+            parsed.fragment,
+        )
     )
 
 
@@ -190,10 +195,15 @@ async def get_public_http_url(
     max_redirects: int = _MAX_PUBLIC_REDIRECTS,
     **request_kwargs: object,
 ) -> httpx.Response:
-    """GET ``url`` without auto-follow; re-validate every hop including DNS."""
+    """GET ``url`` without auto-follow; re-validate every hop including DNS.
+
+    Connects to a resolved public IP while keeping Host and TLS SNI on the
+    original hostname. Redirect Location values are joined against the
+    pre-rewrite URL so relative hops keep that host.
+    """
     current = url
     for _ in range(max_redirects + 1):
-        if not is_public_http_url(current):
+        if not _is_syntactically_safe_http_url(current, allow_public_ip_literals=True):
             msg = "URL is not allowed for server-side fetch"
             raise ValueError(msg)
 
@@ -201,7 +211,9 @@ async def get_public_http_url(
         if not host:
             msg = "URL is not allowed for server-side fetch"
             raise ValueError(msg)
-        resolved_ip = _resolve_public_ip_for_host(host)
+
+        # One blocking DNS lookup off the event loop per hop.
+        resolved_ip = await asyncio.to_thread(_resolve_public_ip_for_host, host)
         if not resolved_ip:
             msg = "URL is not allowed for server-side fetch"
             raise ValueError(msg)
@@ -210,11 +222,17 @@ async def get_public_http_url(
         connect_url = _url_with_ip_host(current, resolved_ip)
 
         headers = dict(request_kwargs.get("headers", {}) or {})
-        host_header = host if parsed_current.port is None else f"{host}:{parsed_current.port}"
+        host_header = (
+            host if parsed_current.port is None else f"{host}:{parsed_current.port}"
+        )
         headers["Host"] = host_header
 
         request_args = dict(request_kwargs)
         request_args["headers"] = headers
+        # Preserve TLS cert verification against the hostname, not the IP.
+        existing_extensions = dict(request_args.get("extensions") or {})  # type: ignore[arg-type]
+        existing_extensions["sni_hostname"] = host
+        request_args["extensions"] = existing_extensions
 
         response = await client.request(
             "GET",
@@ -228,7 +246,8 @@ async def get_public_http_url(
             if not location:
                 msg = "Redirect missing Location header"
                 raise ValueError(msg)
-            current = urljoin(str(response.url), location)
+            # Join against the pre-rewrite URL — response.url is the IP connect URL.
+            current = urljoin(current, location)
             continue
         return response
     msg = "Too many redirects"

@@ -25,9 +25,7 @@ type QuickAddProps = {
   "onUpdate:amountError": (value: string | null) => void;
 };
 
-function mountQuickAdd(
-  overrides: Partial<QuickAddProps> = {},
-): VueWrapper {
+function mountQuickAdd(overrides: Partial<QuickAddProps> = {}): VueWrapper {
   return mount(ExpenseQuickAdd, {
     props: {
       loading: false,

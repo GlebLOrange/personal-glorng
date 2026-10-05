@@ -1,0 +1,171 @@
+# Manual / opt-in extended CI — postgres, Docker e2e, docs.
+# PR gate lives in ci.yml (backend + frontend + built-shell smoke).
+name: ci-extended
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  frontend-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      VITE_PUBLIC_ORIGIN: https://ci.example.test
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      - run: npm run build:check
+      - uses: actions/upload-artifact@v7
+        with:
+          name: client-dist
+          path: client/dist
+          retention-days: 1
+
+  postgres-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: server
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_USER: glorng
+          POSTGRES_PASSWORD: glorng_ci
+          POSTGRES_DB: glorng
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U glorng -d glorng"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.15"
+          enable-cache: true
+          cache-dependency-glob: "server/uv.lock"
+      - name: Install dependencies
+        run: uv sync --frozen
+      - name: Run Alembic migrations
+        env:
+          GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.postgres
+        run: uv run alembic upgrade head
+      - name: Postgres integration tests (P1)
+        env:
+          GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.postgres
+        run: uv run pytest -m postgres -v
+
+  e2e:
+    needs: [frontend-build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DOCKER_BUILDKIT: 1
+      COMPOSE_DOCKER_CLI_BUILD: 1
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: actions/download-artifact@v8
+        with:
+          name: client-dist
+          path: client/dist
+      - name: Write CI env file
+        run: |
+          cp server/tests/env/ci-docker.env .env
+          sed -i 's/^RUN_SEED=.*/RUN_SEED=true/' .env
+      - name: Start API stack
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d redis mongodb
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml build migrate server
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm migrate
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d server
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+      - name: Get Playwright version
+        id: playwright-version
+        working-directory: client
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+      - name: Install Playwright
+        working-directory: client
+        run: npx playwright install --with-deps chromium
+      - name: Playwright smoke tests
+        working-directory: client
+        env:
+          PLAYWRIGHT_SKIP_WEBSERVER: "1"
+          E2E_BASE_URL: http://127.0.0.1:4173
+          E2E_API_URL: http://127.0.0.1:8000
+          E2E_EMAIL: admin@admin.admin
+          E2E_PASSWORD: MyTestPass123!
+        run: |
+          VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run preview &
+          PREVIEW_PID=$!
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:4173/ >/dev/null && break
+            sleep 2
+          done
+          npm run e2e
+          kill $PREVIEW_PID
+
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Generate docs artifacts
+        working-directory: server
+        env:
+          GLORNG_ENV_FILE: ${{ github.workspace }}/server/tests/.env.test
+          UV_PROJECT_ENVIRONMENT: /tmp/glorng-server-venv
+        run: |
+          uv sync --frozen
+          uv run python ../scripts/generate_docs.py
+
+      - name: Check generated docs are committed
+        run: |
+          git add --intent-to-add docs/generated docs/public/openapi.json
+          git diff --exit-code -- docs/generated docs/public/openapi.json \
+            || (echo "::error::docs/generated is stale — run make docs-generate and commit" && exit 1)
+
+      - name: Build VitePress
+        working-directory: docs
+        run: |
+          npm ci
+          npm run build

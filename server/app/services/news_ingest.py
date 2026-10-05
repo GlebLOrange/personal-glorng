@@ -279,7 +279,9 @@ def _feed_entries(root: Element) -> list[Element]:
     return root.findall(".//{*}item")
 
 
-def _entries_to_items(entries: list[Element], source: NewsSourceConfig) -> list[FeedItem]:
+def _entries_to_items(
+    entries: list[Element], source: NewsSourceConfig
+) -> list[FeedItem]:
     """Normalize RSS/Atom entry elements into FeedItem values."""
     items: list[FeedItem] = []
     for entry in entries:
@@ -326,12 +328,12 @@ def decode_feed_body(content: bytes, *, fallback_encoding: str | None = None) ->
         encoding = match.group(1).decode("ascii", errors="ignore")
         try:
             return content.decode(encoding)
-        except (LookupError, UnicodeDecodeError):
+        except LookupError, UnicodeDecodeError:
             pass
     encoding = fallback_encoding or "utf-8"
     try:
         return content.decode(encoding)
-    except (LookupError, UnicodeDecodeError):
+    except LookupError, UnicodeDecodeError:
         return content.decode("utf-8", errors="replace")
 
 

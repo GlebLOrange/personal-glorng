@@ -47,9 +47,7 @@ def _url_entry(loc: str, changefreq: str, lastmod: str | None = None) -> str:
 )
 async def sitemap_xml(registry: DbRegistry) -> Response:
     base = get_settings().BASE_URL.rstrip("/")
-    static_urls = [
-        _url_entry(f"{base}{path}", freq) for path, freq in _public_paths()
-    ]
+    static_urls = [_url_entry(f"{base}{path}", freq) for path, freq in _public_paths()]
     news_urls: list[str] = []
     if registry.news is not None:
         articles = await registry.news.list_articles(status="published", limit=1_000)

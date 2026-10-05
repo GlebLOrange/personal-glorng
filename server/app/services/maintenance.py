@@ -98,7 +98,11 @@ async def start_maintenance(settings: Settings) -> tuple[MaintenanceStatus, str]
         raise ApiError(503, "Database maintenance script is missing")
 
     async with _lock:
-        if _status == "running" and _process is not None and _process.returncode is None:
+        if (
+            _status == "running"
+            and _process is not None
+            and _process.returncode is None
+        ):
             raise ConflictError("maintenance is already running. wait for it to finish")
 
         try:

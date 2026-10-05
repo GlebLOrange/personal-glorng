@@ -61,7 +61,9 @@ class QrLibraryService:
             updated_at=doc.updated_at,
         )
 
-    def _to_response(self, doc: QrCode, *, svg: str | None = None) -> QrCodeStoredResponse:
+    def _to_response(
+        self, doc: QrCode, *, svg: str | None = None
+    ) -> QrCodeStoredResponse:
         return QrCodeStoredResponse(
             id=doc.id,
             content=doc.content,
@@ -103,7 +105,9 @@ class QrLibraryService:
             raise NotFoundError(f"QR code with id {qr_id} not found")
         return row
 
-    def _assert_can_access(self, doc: QrCode, actor_id: int, *, is_superuser: bool) -> None:
+    def _assert_can_access(
+        self, doc: QrCode, actor_id: int, *, is_superuser: bool
+    ) -> None:
         if is_superuser or doc.created_by == actor_id:
             return
         raise ApiError(403, "You do not have permission to access this QR code")

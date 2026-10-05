@@ -40,10 +40,7 @@ function onCategoryRowClick(category: ExpenseCategory): void {
 </script>
 
 <template>
-  <EmptyState
-    v-if="expenseCategories.length === 0"
-    description="no categories yet"
-  />
+  <EmptyState v-if="expenseCategories.length === 0" description="no categories yet" />
 
   <div v-else class="mt-1 min-w-0">
     <AdminListRow
