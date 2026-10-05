@@ -5,7 +5,7 @@ from __future__ import annotations
 import ipaddress
 import re
 import socket
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlunparse
 
 import httpx
 
@@ -109,6 +109,53 @@ def _hostname_resolves_to_blocked(host: str) -> bool:
     return False
 
 
+def _resolve_public_ip_for_host(host: str) -> str | None:
+    """Resolve host and return a public IP only when all answers are public."""
+    try:
+        ipaddress.ip_address(host)
+    except ValueError:
+        pass
+    else:
+        return None if _is_blocked_ip(host) else host
+
+    try:
+        results = socket.getaddrinfo(host, None)
+    except OSError:
+        return None
+    if not results:
+        return None
+
+    public_ips: list[str] = []
+    for _family, _type, _proto, _canon, sockaddr in results:
+        if not sockaddr:
+            continue
+        ip = str(sockaddr[0])
+        if _is_blocked_ip(ip):
+            return None
+        public_ips.append(ip)
+
+    if not public_ips:
+        return None
+    return public_ips[0]
+
+
+def _url_with_ip_host(url: str, ip: str) -> str:
+    parsed = urlparse(url)
+    if parsed.port is None:
+        netloc = ipaddress.ip_address(ip).compressed
+    else:
+        netloc = f"{ipaddress.ip_address(ip).compressed}:{parsed.port}"
+    if ":" in ip and not netloc.startswith("["):
+        # Ensure IPv6 literals are bracketed in URL authority.
+        if parsed.port is None:
+            netloc = f"[{ip}]"
+        else:
+            netloc = f"[{ip}]:{parsed.port}"
+    return urlunparse(
+        (parsed.scheme, netloc, parsed.path, parsed.params, parsed.query, parsed.fragment)
+    )
+
+
 def is_safe_redirect_url(url: str) -> bool:
     """Return True when URL is safe for public short-link redirects (browser follow)."""
     return _is_syntactically_safe_http_url(url, allow_public_ip_literals=False)
@@ -149,11 +196,31 @@ async def get_public_http_url(
         if not is_public_http_url(current):
             msg = "URL is not allowed for server-side fetch"
             raise ValueError(msg)
+
+        host = _hostname_from_url(current)
+        if not host:
+            msg = "URL is not allowed for server-side fetch"
+            raise ValueError(msg)
+        resolved_ip = _resolve_public_ip_for_host(host)
+        if not resolved_ip:
+            msg = "URL is not allowed for server-side fetch"
+            raise ValueError(msg)
+
+        parsed_current = urlparse(current)
+        connect_url = _url_with_ip_host(current, resolved_ip)
+
+        headers = dict(request_kwargs.get("headers", {}) or {})
+        host_header = host if parsed_current.port is None else f"{host}:{parsed_current.port}"
+        headers["Host"] = host_header
+
+        request_args = dict(request_kwargs)
+        request_args["headers"] = headers
+
         response = await client.request(
             "GET",
-            current,
+            connect_url,
             follow_redirects=False,
-            **request_kwargs,  # type: ignore[arg-type]
+            **request_args,  # type: ignore[arg-type]
         )
         if response.is_redirect:
             location = response.headers.get("location")
