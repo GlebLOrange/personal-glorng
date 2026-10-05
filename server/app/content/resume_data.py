@@ -15,7 +15,7 @@ RESUME_DATA: dict[str, Any] = {
     ),
     "hiring_note": (
         "This site is the live product — auth, jobs, search, OpenAPI, tests, and CI."
-        " Independent since 2017; this personal website (2022–present)"
+        " Independent since 2017; this personal website (2022-present)"
         " is the public sample."
     ),
     "skills": [
