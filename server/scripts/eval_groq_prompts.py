@@ -6,7 +6,7 @@ rewritten prompts from the Groq prompt review on ``openai/gpt-oss-20b``.
 Does not change production prompt constants. Does not run unless both
 ``RUN_GROQ_EVAL=1`` and ``GROQ_API_KEY`` are set.
 
-Usage (from ``server/``)::
+Usage (from ``server/``, with the project venv / ``uv run`` so ``app`` imports)::
 
     RUN_GROQ_EVAL=1 uv run python scripts/eval_groq_prompts.py
 """
@@ -29,11 +29,12 @@ import httpx
 from app.schemas.news import ALLOWED_NEWS_TAGS
 from app.services.ai_chat import SYSTEM_PROMPT as CHAT_SYSTEM_PROMPT
 from app.services.ai_chat import _headers
+from app.services.news_ingest import _SYSTEM_PROMPT as NEWS_SYSTEM_PROMPT
 from app.services.news_ingest import (
     NewsSourceConfig,
-    _SYSTEM_PROMPT as NEWS_SYSTEM_PROMPT,
+    _validate_ai_payload,
+    parse_feed,
 )
-from app.services.news_ingest import _validate_ai_payload, parse_feed
 from app.services.task_intake import (
     EXTRACTION_SYSTEM_PROMPT as INTAKE_SYSTEM_PROMPT,
 )
@@ -188,7 +189,9 @@ class ArmResult:
     raw: dict[str, Any] | None = None
 
 
-def _estimate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float | None:
+def _estimate_cost(
+    model: str, prompt_tokens: int, completion_tokens: int
+) -> float | None:
     """Return an estimate-only USD cost from public list prices."""
     prices = PRICE_PER_M.get(model)
     if prices is None:
@@ -297,7 +300,7 @@ def _score_intake(
     svc = _intake_service()
     try:
         result = svc._parse_extraction_payload(raw)
-    except Exception as exc:  # noqa: BLE001 — eval records any parse failure
+    except Exception as exc:
         return [f"parse failed: {exc}"]
 
     time_val = result.draft.scheduled_time
@@ -322,7 +325,9 @@ def _score_intake(
         if needs and field_name not in asked:
             # Production fills empty questions via _build_questions; LLM may omit.
             # Re-check after the same fill path the service uses.
-            filled = {q.field for q in svc._build_questions(result.draft, result.confidence)}
+            filled = {
+                q.field for q in svc._build_questions(result.draft, result.confidence)
+            }
             if field_name not in filled and field_name not in asked:
                 failures.append(f"missing question for low/missing {field_name}")
 
@@ -337,7 +342,9 @@ def _score_intake(
     if expect_title_substr is not None:
         title = (result.draft.title or "").lower()
         if expect_title_substr.lower() not in title:
-            failures.append(f"title missing {expect_title_substr!r}: {result.draft.title!r}")
+            failures.append(
+                f"title missing {expect_title_substr!r}: {result.draft.title!r}"
+            )
     if expect_location is not None and result.draft.location != expect_location:
         failures.append(
             f"expected location {expect_location}, got {result.draft.location!r}",
@@ -358,12 +365,14 @@ def _score_intake(
     return failures
 
 
-def _score_news(raw: dict[str, Any], source: NewsSourceConfig, feed_text: str) -> list[str]:
+def _score_news(
+    raw: dict[str, Any], source: NewsSourceConfig, feed_text: str
+) -> list[str]:
     """Score a news JSON object with ``_validate_ai_payload`` and no invented digits."""
     failures: list[str] = []
     try:
         validated = _validate_ai_payload(raw, source)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         return [f"validate failed: {exc}"]
 
     joined = " ".join(
@@ -622,7 +631,7 @@ async def _run_arm(
             json_object=case.json_object,
             reasoning_effort=reasoning_effort,
         )
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         return ArmResult(
             arm=arm,
             case_id=case.case_id,
@@ -714,8 +723,17 @@ async def run_eval() -> int:
         )
         return 2
 
+    # Hard gate on the env var before loading Settings (which may need .env).
+    env_key = os.environ.get("GROQ_API_KEY", "").strip()
+    if not env_key:
+        print(  # noqa: T201
+            "Refusing to run: set GROQ_API_KEY in the environment.",
+            file=sys.stderr,
+        )
+        return 2
+
     settings = get_settings()
-    api_key = settings.GROQ_API_KEY.strip()
+    api_key = settings.GROQ_API_KEY.strip() or env_key
     if not api_key:
         print("Refusing to run: GROQ_API_KEY is empty.", file=sys.stderr)  # noqa: T201
         return 2
@@ -756,11 +774,7 @@ async def run_eval() -> int:
 
         # One extra probe only when a JSON arm hit the token cap.
         for arm_result, use_rewrite in ((current, False), (rewrite, True)):
-            if (
-                case.json_object
-                and arm_result.finish_reason == "length"
-                and "reasoning_effort" not in arm_result.arm
-            ):
+            if case.json_object and arm_result.finish_reason == "length":
                 extra = await _run_arm(
                     arm=f"{arm_result.arm}+reasoning_low",
                     case=case,
