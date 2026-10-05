@@ -28,7 +28,9 @@ from tests.conftest import ADMIN_EMAIL, ADMIN_PASSWORD, STRONG_PASSWORD
 
 
 @pytest.mark.asyncio
-async def test_register_disabled(client: AsyncClient, registry: DatabaseRegistry) -> None:
+async def test_register_disabled(
+    client: AsyncClient, registry: DatabaseRegistry
+) -> None:
     resp = await client.post(
         "/api/auth/register",
         json={

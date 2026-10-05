@@ -142,8 +142,8 @@ async function download(): Promise<void> {
           <div>
             <h3 class="mb-2 font-bold text-accent-blue">Supported sites</h3>
             <p class="text-surface-mid">
-              Paste any public http(s) video URL yt-dlp can handle (YouTube, Vimeo, Twitter/X,
-              and many more). Private or local addresses are rejected.
+              Paste any public http(s) video URL yt-dlp can handle (YouTube, Vimeo, Twitter/X, and
+              many more). Private or local addresses are rejected.
             </p>
           </div>
 

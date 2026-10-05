@@ -79,7 +79,9 @@ watch(
 
     <article v-else-if="article" class="min-w-0 w-full">
       <header class="mb-8 min-w-0">
-        <h1 class="mb-4 text-2xl font-semibold text-surface-light text-balance break-words md:text-3xl">
+        <h1
+          class="mb-4 text-2xl font-semibold text-surface-light text-balance break-words md:text-3xl"
+        >
           {{ article.title }}
         </h1>
         <div

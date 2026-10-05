@@ -5,14 +5,9 @@ import { resolve } from "node:path";
 
 describe("expenses bootstrap deferrals", () => {
   it("boots list+summary first without waiting on previous summary or rates", () => {
-    const source = readFileSync(
-      resolve(__dirname, "./useExpenseSummary.ts"),
-      "utf8",
-    );
+    const source = readFileSync(resolve(__dirname, "./useExpenseSummary.ts"), "utf8");
     expect(source).toMatch(/async function bootstrapListAndSummary/);
-    expect(source).toMatch(
-      /await Promise\.all\(\[loadExpenses\(\), loadSummary\(\)\]\)/,
-    );
+    expect(source).toMatch(/await Promise\.all\(\[loadExpenses\(\), loadSummary\(\)\]\)/);
     expect(source).toMatch(/void loadPreviousSummary\(\)/);
     expect(source).toMatch(/void loadRates\(\)/);
   });

@@ -5,8 +5,7 @@ export const RESUME_FALLBACK: ResumeData = {
   name: "Gleb.Y",
   title: "Python Backend / FastAPI Engineer",
   tagline:
-    "I build production APIs, auth, workers, and deploys" +
-    " — this site is a live example.",
+    "I build production APIs, auth, workers, and deploys" + " — this site is a live example.",
   location: "EU",
   availability: "open to full-time and contract (remote)",
   bio:
@@ -90,16 +89,7 @@ export const RESUME_FALLBACK: ResumeData = {
       description:
         "Public engineering sample: FastAPI + Vue with auth, workers," +
         " search, admin, OpenAPI, and a handbook (repo linked).",
-      tech: [
-        "FastAPI",
-        "Vue 3",
-        "MongoDB",
-        "Redis",
-        "Celery",
-        "Docker",
-        "Nginx",
-        "GitHub Actions",
-      ],
+      tech: ["FastAPI", "Vue 3", "MongoDB", "Redis", "Celery", "Docker", "Nginx", "GitHub Actions"],
       url: "https://github.com/GlebLOrange/personal-glorng",
     },
     {
@@ -113,8 +103,7 @@ export const RESUME_FALLBACK: ResumeData = {
     {
       name: "architecture handbook",
       description:
-        "VitePress handbook, ADRs, OpenAPI generation, and deployment" +
-        " runbooks for reviewers.",
+        "VitePress handbook, ADRs, OpenAPI generation, and deployment" + " runbooks for reviewers.",
       tech: ["VitePress", "OpenAPI", "Docker", "GitHub Actions"],
       url: "https://gleblorange.github.io/personal-glorng/",
     },

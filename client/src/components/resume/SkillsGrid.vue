@@ -9,12 +9,7 @@ defineProps<{
 
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <Card
-      v-for="group in skills"
-      :key="group.category"
-      variant="compact"
-      class="min-w-0 h-full"
-    >
+    <Card v-for="group in skills" :key="group.category" variant="compact" class="min-w-0 h-full">
       <h3 class="card-title mb-1">
         {{ group.category }}
       </h3>

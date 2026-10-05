@@ -40,10 +40,9 @@ export function useQrLibrary() {
   }
 
   async function loadOne(id: number): Promise<QrStoredItem | null> {
-    const data = await runDetail(
-      () => api.get<QrStoredItem>(`/tools/qr-generator/library/${id}`),
-      { errorFallback: "Failed to load QR code" },
-    );
+    const data = await runDetail(() => api.get<QrStoredItem>(`/tools/qr-generator/library/${id}`), {
+      errorFallback: "Failed to load QR code",
+    });
     return data?.data ?? null;
   }
 

@@ -37,9 +37,7 @@ declare global {
 function loadScript(): Promise<TurnstileApi> {
   if (window.turnstile) return Promise.resolve(window.turnstile);
   return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(
-      'script[data-turnstile="1"]',
-    );
+    const existing = document.querySelector<HTMLScriptElement>('script[data-turnstile="1"]');
     if (existing) {
       existing.addEventListener("load", () => {
         if (window.turnstile) resolve(window.turnstile);

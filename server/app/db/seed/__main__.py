@@ -28,8 +28,7 @@ def parse_args() -> argparse.Namespace:
         action=argparse.BooleanOptionalAction,
         default=True,
         help=(
-            "Wipe tool tables before seeding (default: true). "
-            "Use --no-reset to append."
+            "Wipe tool tables before seeding (default: true). Use --no-reset to append."
         ),
     )
     parser.add_argument(

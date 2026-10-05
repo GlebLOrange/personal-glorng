@@ -63,9 +63,7 @@ watch(page, () => {
         hoverable
         class="min-w-0"
       >
-        <div
-          class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted"
-        >
+        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
           <time
             class="text-datetime mr-auto whitespace-nowrap lowercase"
             :datetime="newsArticleDisplayDate(item)"

@@ -6,9 +6,9 @@ import { absoluteUrl, applyPageSeo, publicOrigin } from "@/utils/pageSeo";
 afterEach(() => {
   document.title = "";
   document.head.querySelectorAll("meta[name], meta[property]").forEach((el) => el.remove());
-  document.head.querySelectorAll('link[rel="amphtml"], link[rel="canonical"]').forEach((el) =>
-    el.remove(),
-  );
+  document.head
+    .querySelectorAll('link[rel="amphtml"], link[rel="canonical"]')
+    .forEach((el) => el.remove());
   document.getElementById("glorng-json-ld")?.remove();
   vi.unstubAllEnvs();
 });

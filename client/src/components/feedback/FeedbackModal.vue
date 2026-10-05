@@ -114,9 +114,7 @@ async function submit(): Promise<void> {
     <template #footer>
       <DrawerFooterActions>
         <template #dismiss>
-          <BaseButton variant="cancel" type="button" @click="$emit('close')">
-            cancel
-          </BaseButton>
+          <BaseButton variant="cancel" type="button" @click="$emit('close')"> cancel </BaseButton>
         </template>
         <template #primary>
           <ToolbarPillButton

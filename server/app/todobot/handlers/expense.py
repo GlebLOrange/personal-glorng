@@ -128,7 +128,7 @@ def _format_draft_summary(data: dict) -> str:
     tool_name = data.get("tool_name") or "—"
     try:
         money = _format_money(Decimal(str(amount)), str(currency))
-    except (InvalidOperation, TypeError):
+    except InvalidOperation, TypeError:
         money = f"{amount} {currency}"
     # Same · order as web preview / Logged line
     return f"Will add · {money} · {category} · {tool_name}"

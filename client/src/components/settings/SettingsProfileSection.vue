@@ -29,13 +29,7 @@ const emit = defineEmits<{
           placeholder="display name"
           aria-label="display name"
         />
-        <BaseButton
-          type="submit"
-          variant="save"
-          size="sm"
-          :loading="saving"
-          :disabled="!canSave"
-        >
+        <BaseButton type="submit" variant="save" size="sm" :loading="saving" :disabled="!canSave">
           {{ saving ? "saving…" : "save" }}
         </BaseButton>
       </form>

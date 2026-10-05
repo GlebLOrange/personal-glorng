@@ -81,7 +81,7 @@ def user_id_from_payload(payload: dict) -> int | None:
             continue
         try:
             return int(value)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             continue
     return None
 

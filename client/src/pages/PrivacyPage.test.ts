@@ -41,7 +41,9 @@ describe("PrivacyPage", () => {
     expect(wrapper.text()).toContain("What data is collected");
     expect(wrapper.text()).toContain("Cookies used");
     expect(wrapper.text()).toContain("cc_cookie");
-    expect(wrapper.text()).toContain("Optional analytics and error monitoring are currently disabled.");
+    expect(wrapper.text()).toContain(
+      "Optional analytics and error monitoring are currently disabled.",
+    );
     expect(wrapper.text()).not.toContain("Firebase Analytics");
 
     await wrapper.get('button[type="button"]').trigger("click");

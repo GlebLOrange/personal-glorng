@@ -57,9 +57,7 @@ describe("HeroBlock", () => {
     expect(toast).toHaveBeenCalled();
     expect(wrapper.text()).toContain("print page instead");
 
-    const printBtn = wrapper
-      .findAll("button")
-      .find((b) => b.text().includes("print page instead"));
+    const printBtn = wrapper.findAll("button").find((b) => b.text().includes("print page instead"));
     expect(printBtn).toBeTruthy();
     await printBtn!.trigger("click");
     expect(printSpy).toHaveBeenCalledTimes(1);

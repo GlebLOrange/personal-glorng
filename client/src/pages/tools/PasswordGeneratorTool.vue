@@ -195,7 +195,9 @@ onMounted(() => {
               :disabled="loading || !hasCharset"
             >
               <span class="inline-grid justify-items-center">
-                <span class="invisible col-start-1 row-start-1" aria-hidden="true">generating…</span>
+                <span class="invisible col-start-1 row-start-1" aria-hidden="true"
+                  >generating…</span
+                >
                 <span class="col-start-1 row-start-1">
                   {{ loading ? "generating…" : "generate" }}
                 </span>

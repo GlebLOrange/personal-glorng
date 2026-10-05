@@ -11,7 +11,10 @@ from aiogram.types import CallbackQuery, Chat, Message, User
 
 from app.db.documents.task import SyncStatus, TaskStatus
 from app.db.registry import DatabaseRegistry
-from app.todobot.handlers.reminder import handle_postpone_datetime, handle_reminder_action
+from app.todobot.handlers.reminder import (
+    handle_postpone_datetime,
+    handle_reminder_action,
+)
 from app.todobot.handlers.task_create import confirm_task
 from app.todobot.handlers.task_manage import cmd_tasks, handle_status_update
 from app.todobot.keyboards.task import completion_options
@@ -50,7 +53,9 @@ def _callback(
     return callback
 
 
-def _message(*, user_id: int = 123456, chat_id: int = 123456, text: str = "") -> Message:
+def _message(
+    *, user_id: int = 123456, chat_id: int = 123456, text: str = ""
+) -> Message:
     message = MagicMock(spec=Message)
     message.from_user = _user(user_id=user_id)
     message.chat = _chat(chat_id=chat_id)

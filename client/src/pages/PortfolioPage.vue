@@ -321,7 +321,11 @@ onUnmounted(() => {
     </SectionWrapper>
 
     <!-- Footer-adjacent support strip — kept off the hire CTA band -->
-    <div ref="supportSectionRef" id="support" class="print:hidden border-t border-surface-border/60">
+    <div
+      ref="supportSectionRef"
+      id="support"
+      class="print:hidden border-t border-surface-border/60"
+    >
       <div class="mx-auto w-full max-w-5xl px-6 py-10 md:py-12">
         <div class="flex min-w-0 flex-wrap items-start justify-between gap-6">
           <div class="min-w-0 max-w-xl">
@@ -329,14 +333,8 @@ onUnmounted(() => {
             <p class="text-body mb-2">
               if my tools or writing have helped you, a small contribution keeps the work going
             </p>
-            <p class="text-meta">
-              stripe, paypal, or monthly support — pick what works for you
-            </p>
-            <p
-              v-if="showDonationThanks"
-              class="text-label mt-3 text-status-success"
-              role="status"
-            >
+            <p class="text-meta">stripe, paypal, or monthly support — pick what works for you</p>
+            <p v-if="showDonationThanks" class="text-label mt-3 text-status-success" role="status">
               thanks for your support
             </p>
           </div>

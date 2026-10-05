@@ -89,8 +89,7 @@ async def login_with_firebase_google(
 
     if user is None:
         raise UnauthorizedError(
-            "No account exists for this email. "
-            "Ask the site owner to create one."
+            "No account exists for this email. Ask the site owner to create one."
         )
     if not user.is_verified:
         # Refuse linking: auto-verify would let an attacker who registered the

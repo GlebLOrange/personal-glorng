@@ -76,8 +76,7 @@ function setJsonLd(data: Record<string, unknown> | null): void {
     existing?.remove();
     return;
   }
-  let el: HTMLScriptElement | null =
-    existing instanceof HTMLScriptElement ? existing : null;
+  let el: HTMLScriptElement | null = existing instanceof HTMLScriptElement ? existing : null;
   if (!el) {
     el = document.createElement("script");
     el.id = JSON_LD_SCRIPT_ID;

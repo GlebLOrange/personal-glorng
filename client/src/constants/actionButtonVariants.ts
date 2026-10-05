@@ -5,13 +5,7 @@ import { familyToneClass, type HttpStatusFamily } from "@/constants/httpStatusCo
  * Use these names on BaseButton `variant` or ToolbarPillButton `action`.
  */
 export type SemanticButtonAction =
-  | "create"
-  | "add"
-  | "save"
-  | "edit"
-  | "remove"
-  | "delete"
-  | "cancel";
+  "create" | "add" | "save" | "edit" | "remove" | "delete" | "cancel";
 
 export const SEMANTIC_ACTION_HTTP_FAMILY: Record<SemanticButtonAction, HttpStatusFamily> = {
   create: "1xx",
@@ -25,11 +19,7 @@ export const SEMANTIC_ACTION_HTTP_FAMILY: Record<SemanticButtonAction, HttpStatu
 
 /** BaseButton variants — semantic actions plus layout/neutral chrome. */
 export type BaseButtonVariant =
-  | "primary"
-  | "secondary"
-  | "ghost"
-  | "success"
-  | SemanticButtonAction;
+  "primary" | "secondary" | "ghost" | "success" | SemanticButtonAction;
 
 const FOCUS_RING: Record<HttpStatusFamily, string> = {
   "1xx": "focus-visible:ring-accent-blue/50",

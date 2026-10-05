@@ -51,11 +51,7 @@ const tileTitleTag = computed(() => (props.categoryHeading === "h3" ? "h4" : "h3
     class="min-w-0"
     :class="sectionClass"
   >
-    <component
-      :is="categoryHeading"
-      v-if="showCategoryHeadings"
-      :class="headingClass"
-    >
+    <component :is="categoryHeading" v-if="showCategoryHeadings" :class="headingClass">
       {{ section.label }}
     </component>
     <div class="page-tool-grid" :class="gapClass">
