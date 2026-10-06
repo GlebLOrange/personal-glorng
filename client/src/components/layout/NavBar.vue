@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
@@ -11,6 +11,11 @@ import { iconActionClass } from "@/constants/httpStatusColors";
 import { useAuthStore } from "@/stores/auth";
 import { goHome } from "@/utils/goHome";
 import { resolveNavSection } from "@/utils/navCurrent";
+
+// ponytail: badge pulls axios — keep it out of the production entry graph
+const DevApiStatusBadge = import.meta.env.DEV
+  ? defineAsyncComponent(() => import("@/components/dev/DevApiStatusBadge.vue"))
+  : null;
 
 const headerEl = ref<HTMLElement | null>(null);
 const menuToggleButton = ref<HTMLButtonElement | null>(null);
@@ -131,14 +136,17 @@ async function handleGoHome(): Promise<void> {
         <div
           class="relative mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-[15px]"
         >
-          <RouterLink
-            to="/"
-            class="text-xl font-bold accent-gradient"
-            aria-label="gleb.y home"
-            @click.prevent="handleGoHome"
-          >
-            Gleb.Y
-          </RouterLink>
+          <div class="flex min-w-0 flex-col items-start gap-0.5">
+            <RouterLink
+              to="/"
+              class="text-xl font-bold accent-gradient"
+              aria-label="gleb.y home"
+              @click.prevent="handleGoHome"
+            >
+              Gleb.Y
+            </RouterLink>
+            <component :is="DevApiStatusBadge" v-if="DevApiStatusBadge" />
+          </div>
 
           <div class="hidden md:flex items-center gap-2 text-base shrink-0">
             <RouterLink

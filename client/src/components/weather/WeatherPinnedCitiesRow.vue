@@ -20,19 +20,18 @@ const emit = defineEmits<{
   remove: [id: number | string];
 }>();
 
-const otherCities = computed(() => {
-  const active = props.activeQuery.toLowerCase();
-  return props.locations.filter((loc) => loc.query.toLowerCase() !== active).slice(0, 2);
-});
-
 const isBusy = computed(() => props.loading || props.seeding);
+
+function isActive(query: string): boolean {
+  return query.toLowerCase() === props.activeQuery.toLowerCase();
+}
 </script>
 
 <template>
   <section class="min-w-0">
     <div v-if="isBusy" class="page-tool-grid min-w-0" aria-busy="true" aria-label="loading cities">
       <Card
-        v-for="n in 2"
+        v-for="n in 3"
         :key="n"
         variant="compact"
         class="page-tile page-weather-tile-card animate-pulse"
@@ -47,11 +46,12 @@ const isBusy = computed(() => props.loading || props.seeding);
       description="No cities yet. Search above to add your first location."
     />
 
-    <div v-else-if="otherCities.length" class="page-tool-grid min-w-0">
+    <div v-else class="page-tool-grid min-w-0">
       <WeatherCityTile
-        v-for="loc in otherCities"
+        v-for="loc in locations"
         :key="loc.id"
         :query="loc.query"
+        :active="isActive(loc.query)"
         :removable="!isDefaultLocation(loc)"
         @select="emit('select', loc.query)"
         @remove="emit('remove', loc.id)"

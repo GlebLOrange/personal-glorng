@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from "vue";
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 
@@ -13,10 +13,6 @@ import { useAuthStore } from "@/stores/auth";
 const auth = useAuthStore();
 const { sessionError } = storeToRefs(auth);
 const route = useRoute();
-// ponytail: badge pulls axios — keep it out of the production entry graph
-const DevApiStatusBadge = import.meta.env.DEV
-  ? defineAsyncComponent(() => import("@/components/dev/DevApiStatusBadge.vue"))
-  : null;
 
 /** Hide raw session errors on public portfolio pages; keep retry on login/admin. */
 const showSessionError = computed(() => {
@@ -53,6 +49,5 @@ async function retrySession(): Promise<void> {
     </main>
     <FooterBar />
     <ToastContainer variant="overlay" />
-    <component :is="DevApiStatusBadge" v-if="DevApiStatusBadge" />
   </div>
 </template>

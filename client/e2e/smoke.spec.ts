@@ -48,10 +48,11 @@ test.describe("public pages", () => {
     await expect(page.getByRole("link", { name: /video downloader/i })).toBeVisible();
   });
 
-  test("guest sees weather tile on tools page", async ({ page }) => {
+  test("guest opens weather from tools catalog, not a pinned tile", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto("/tools");
-    await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /^weather$/i })).toBeVisible();
   });
 
   test("portfolio page has no weather tile", async ({ page }) => {
@@ -96,10 +97,18 @@ test.describe("public pages", () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test("guest sees weather tile on calculator page", async ({ page }) => {
+  test("guest sees no pinned weather tile on calculator page", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto("/calculator");
-    await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toHaveCount(0);
+  });
+
+  test("guest sees city weather on the weather page", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto("/weather");
+    await expect(page.getByRole("heading", { name: /^weather$/i })).toBeVisible();
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /active city/i })).toBeVisible();
   });
 
   test("mobile nav stays reachable after scrolling down", async ({ page }) => {
@@ -126,7 +135,8 @@ test.describe("public pages", () => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto("/weather");
     await expect(page.getByRole("heading", { name: "weather", level: 1 })).toBeVisible();
-    await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /active city/i })).toBeVisible();
     await page.getByRole("button", { name: "help" }).click();
     await expect(page.getByText(/\d+\/8 locations saved in your browser/i)).toBeVisible();
     await page.getByPlaceholder(/^location$/i).fill("London");
@@ -166,7 +176,7 @@ test.describe("authenticated admin", () => {
     await page.goto("/admin");
     await expect(page.getByRole("heading", { name: /^§ tools$/i })).toBeVisible();
     await expect(page.locator('a[href="/admin/users"]')).toBeVisible();
-    await expect(page.getByRole("complementary", { name: /^weather$/i })).toBeVisible();
+    await expect(page.getByRole("complementary", { name: /^weather$/i })).toHaveCount(0);
   });
 
   test("expenses ledger loads after login", async ({ page }) => {
