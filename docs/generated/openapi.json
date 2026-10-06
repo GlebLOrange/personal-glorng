@@ -5113,6 +5113,469 @@
         "title": "ResetPasswordRequest",
         "type": "object"
       },
+      "ResumeCertification": {
+        "description": "Optional certification entry.",
+        "properties": {
+          "issuer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issuer"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ResumeCertification",
+        "type": "object"
+      },
+      "ResumeDocument": {
+        "additionalProperties": false,
+        "description": "Canonical CV payload used by the site and every export.",
+        "properties": {
+          "availability": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availability"
+          },
+          "bio": {
+            "default": "",
+            "title": "Bio",
+            "type": "string"
+          },
+          "certifications": {
+            "items": {
+              "$ref": "#/components/schemas/ResumeCertification"
+            },
+            "title": "Certifications",
+            "type": "array"
+          },
+          "education": {
+            "items": {
+              "$ref": "#/components/schemas/ResumeEducation"
+            },
+            "title": "Education",
+            "type": "array"
+          },
+          "experience": {
+            "items": {
+              "$ref": "#/components/schemas/ResumeExperience"
+            },
+            "title": "Experience",
+            "type": "array"
+          },
+          "hiring_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hiring Note"
+          },
+          "languages": {
+            "items": {
+              "$ref": "#/components/schemas/ResumeLanguage"
+            },
+            "title": "Languages",
+            "type": "array"
+          },
+          "links": {
+            "$ref": "#/components/schemas/ResumeLinks"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/ResumeProject"
+            },
+            "title": "Projects",
+            "type": "array"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/ResumeSkillGroup"
+            },
+            "title": "Skills",
+            "type": "array"
+          },
+          "tagline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tagline"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "title",
+          "links"
+        ],
+        "title": "ResumeDocument",
+        "type": "object"
+      },
+      "ResumeEducation": {
+        "description": "One education entry.",
+        "properties": {
+          "degree": {
+            "minLength": 1,
+            "title": "Degree",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "institution": {
+            "minLength": 1,
+            "title": "Institution",
+            "type": "string"
+          },
+          "period": {
+            "minLength": 1,
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": [
+          "degree",
+          "institution",
+          "period"
+        ],
+        "title": "ResumeEducation",
+        "type": "object"
+      },
+      "ResumeExperience": {
+        "description": "One work-history entry.",
+        "properties": {
+          "company": {
+            "minLength": 1,
+            "title": "Company",
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "highlights": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Highlights",
+            "type": "array"
+          },
+          "period": {
+            "minLength": 1,
+            "title": "Period",
+            "type": "string"
+          },
+          "role": {
+            "minLength": 1,
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "company",
+          "period",
+          "description"
+        ],
+        "title": "ResumeExperience",
+        "type": "object"
+      },
+      "ResumeLanguage": {
+        "description": "Spoken / written language proficiency.",
+        "properties": {
+          "language": {
+            "minLength": 1,
+            "title": "Language",
+            "type": "string"
+          },
+          "proficiency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proficiency"
+          }
+        },
+        "required": [
+          "language"
+        ],
+        "title": "ResumeLanguage",
+        "type": "object"
+      },
+      "ResumeLinks": {
+        "additionalProperties": false,
+        "description": "Contact and profile links.",
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "github": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Github"
+          },
+          "linkedin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linkedin"
+          },
+          "telegram": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telegram"
+          }
+        },
+        "title": "ResumeLinks",
+        "type": "object"
+      },
+      "ResumeProfileSelection": {
+        "description": "Filtered resume plus ids that did not match the canonical document.",
+        "properties": {
+          "ignored_projects": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ignored Projects",
+            "type": "array"
+          },
+          "ignored_sections": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ignored Sections",
+            "type": "array"
+          },
+          "ignored_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ignored Skills",
+            "type": "array"
+          },
+          "resume": {
+            "$ref": "#/components/schemas/ResumeDocument"
+          }
+        },
+        "required": [
+          "resume"
+        ],
+        "title": "ResumeProfileSelection",
+        "type": "object"
+      },
+      "ResumeProject": {
+        "description": "Case study / project with a stable slug for share URLs.",
+        "properties": {
+          "approach": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approach"
+          },
+          "description": {
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "problem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "slug": {
+            "minLength": 1,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "title": "Slug",
+            "type": "string"
+          },
+          "tech": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tech",
+            "type": "array"
+          },
+          "url": {
+            "default": "",
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "description"
+        ],
+        "title": "ResumeProject",
+        "type": "object"
+      },
+      "ResumeSkillGroup": {
+        "description": "Grouped skill list with optional category summary.",
+        "properties": {
+          "category": {
+            "minLength": 1,
+            "title": "Category",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Items",
+            "type": "array"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "required": [
+          "category",
+          "items"
+        ],
+        "title": "ResumeSkillGroup",
+        "type": "object"
+      },
       "SearchHit": {
         "properties": {
           "id": {
@@ -9869,6 +10332,146 @@
         ]
       }
     },
+    "/api/resume/json": {
+      "get": {
+        "description": "Download the canonical resume as structured JSON.",
+        "operationId": "download_resume_json_api_resume_json_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not authenticated"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Download resume JSON",
+        "tags": [
+          "resume"
+        ]
+      }
+    },
+    "/api/resume/markdown": {
+      "get": {
+        "description": "Download the canonical resume as a Markdown file.",
+        "operationId": "download_resume_markdown_api_resume_markdown_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not authenticated"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Download resume Markdown",
+        "tags": [
+          "resume"
+        ]
+      }
+    },
     "/api/resume/pdf": {
       "get": {
         "description": "Generate and download the public portfolio resume as a PDF.",
@@ -9934,6 +10537,206 @@
           }
         },
         "summary": "Download resume PDF",
+        "tags": [
+          "resume"
+        ]
+      }
+    },
+    "/api/resume/profile": {
+      "get": {
+        "description": "Return a subset of the canonical resume for shareable URLs. Unknown skill/project/section ids are ignored. Empty selections fall back to the full profile.",
+        "operationId": "get_resume_profile_api_resume_profile_get",
+        "parameters": [
+          {
+            "description": "Comma-separated skill ids",
+            "in": "query",
+            "name": "skills",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated skill ids",
+              "title": "Skills"
+            }
+          },
+          {
+            "description": "Comma-separated project slugs",
+            "in": "query",
+            "name": "projects",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated project slugs",
+              "title": "Projects"
+            }
+          },
+          {
+            "description": "Comma-separated section ids",
+            "in": "query",
+            "name": "sections",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated section ids",
+              "title": "Sections"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumeProfileSelection"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not authenticated"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get filtered shareable resume profile",
+        "tags": [
+          "resume"
+        ]
+      }
+    },
+    "/api/resume/recruiter-profile": {
+      "get": {
+        "description": "Concise recruiter-friendly profile derived from the canonical resume.",
+        "operationId": "get_recruiter_profile_api_resume_recruiter_profile_get",
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not authenticated"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get recruiter profile text",
         "tags": [
           "resume"
         ]
@@ -20009,6 +20812,128 @@
           }
         },
         "summary": "News article Open Graph HTML",
+        "tags": [
+          "seo"
+        ]
+      }
+    },
+    "/og/profile": {
+      "get": {
+        "description": "Static HTML with OG/Twitter meta for filtered resume profile link previews. Canonical URL points at the SPA route `/profile` with the same query.",
+        "operationId": "profile_og_html_og_profile_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "skills",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Skills"
+            }
+          },
+          {
+            "in": "query",
+            "name": "projects",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Projects"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sections",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sections"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not authenticated"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Shareable profile Open Graph HTML",
         "tags": [
           "seo"
         ]

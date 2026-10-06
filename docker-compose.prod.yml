@@ -284,6 +284,7 @@ services:
       - ./nginx/locations.conf:/etc/nginx/locations.conf:ro
       - ./nginx/social_preview_map.conf:/etc/nginx/social_preview_map.conf:ro
       - ./nginx/news_social_preview_location.conf:/etc/nginx/news_social_preview_location.conf:ro
+      - ./nginx/profile_social_preview_location.conf:/etc/nginx/profile_social_preview_location.conf:ro
       - server_media:/app/media:ro
       - client_dist:/usr/share/nginx/html:ro
     networks:
