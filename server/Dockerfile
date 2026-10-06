@@ -4,7 +4,7 @@ WORKDIR /app
 
 FROM base AS builder
 
-RUN apk add --no-cache build-base pango-dev cairo-dev gdk-pixbuf-dev libffi-dev
+RUN apk add --no-cache build-base rust cargo pango-dev cairo-dev gdk-pixbuf-dev libffi-dev
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.19 /uv /usr/local/bin/uv
 
@@ -34,11 +34,6 @@ ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PYTHON_DOWNLOADS=never \
     PATH="/app/.venv/bin:$PATH"
-
-# Copy dependencies first for better layer caching
-COPY pyproject.toml uv.lock ./
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
 
 # Bake builder venv so first start skips compiling pydantic-core/grpcio on Alpine.
 COPY --from=builder /app/.venv /app/.venv

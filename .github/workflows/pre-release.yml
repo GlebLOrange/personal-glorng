@@ -40,6 +40,7 @@ jobs:
           python-version: "3.15"
           enable-cache: true
           cache-dependency-glob: "server/uv.lock"
+      - uses: dtolnay/rust-toolchain@stable
       - run: uv sync --frozen
       - name: Celery beat schedule registry (P2 unit)
         env:

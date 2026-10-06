@@ -76,6 +76,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.15"
+      - uses: dtolnay/rust-toolchain@stable
       # Audit the uv-synced env — do not pip-install an exported requirements.txt.
       # pip's installer rejects packages whose Requires-Python excludes 3.15
       # (e.g. aiogram), even though uv already locked and installs them for this project.

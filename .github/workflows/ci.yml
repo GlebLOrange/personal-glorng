@@ -61,6 +61,7 @@ jobs:
           python-version: "3.15"
           enable-cache: true
           cache-dependency-glob: "server/uv.lock"
+      - uses: dtolnay/rust-toolchain@stable
       - name: Install dependencies
         run: uv sync --frozen
       - name: Ruff checks
