@@ -1,15 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="favicon-title">
-  <title id="favicon-title">Gleb.Y</title>
-  <rect width="32" height="32" rx="7" fill="#0d1117"/>
-  <g fill="#e8b07a">
-    <!-- Geometric GY — path letters so the tab mark does not depend on fonts -->
-    <!-- G outer shell (thick C) -->
-    <path d="M14.8 7.6H9.5A5.3 5.3 0 0 0 4.2 12.9v6.2A5.3 5.3 0 0 0 9.5 24.4h4.7A5.3 5.3 0 0 0 19.5 19.1v-2.2h-4.1v1.9a1.2 1.2 0 0 1-1.2 1.2H9.5a1.2 1.2 0 0 1-1.2-1.2v-6.2a1.2 1.2 0 0 1 1.2-1.2h5.3V7.6Z"/>
-    <!-- G top-right shoulder -->
-    <path d="M14.8 7.6h.3A5.3 5.3 0 0 1 20.4 12.9v1.4h-4.1v-1.1a1.2 1.2 0 0 0-1.2-1.2h-.3V7.6Z"/>
-    <!-- G mid spur (makes G, not C) -->
-    <path d="M12.6 14.7h7.2v3.5h-3.4v1.6h-3.8z"/>
-    <!-- Y -->
-    <path d="M20.6 7.6h3.1l1.85 5.05L27.4 7.6h3.1l-3.35 8.25V24.4h-3.2V15.85L20.6 7.6Z"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="logo-title logo-desc">
+  <title id="logo-title">Gleb.Y</title>
+  <desc id="logo-desc">GY period-hinge mark on a dark rounded tile</desc>
+  <rect width="64" height="64" rx="14" fill="#0d1117"/>
+  <path fill="#e6edf3" d="M41.28 14.38A23.00 23.00 0 1 0 41.28 49.62L35.18 42.34A13.50 13.50 0 1 1 35.18 21.66Z"/>
+  <path fill="#e6edf3" d="M45.15 30.54L37.65 19.54L33.35 22.46L40.85 33.46ZM44.87 33.81L59.87 18.31L56.13 14.69L41.13 30.19ZM40.40 32.00L40.40 53.50L45.60 53.50L45.60 32.00Z"/>
+  <circle cx="43.0" cy="32.0" r="3.8" fill="#e8b07a"/>
 </svg>

@@ -2,16 +2,20 @@
 
 Period-hinge mark: a geometric **G** whose right opening is the fork of a **Y**, with the brand period in the hinge.
 
-Nothing here is wired into the live header, favicon, or social image yet. Pick a file and say which surface to apply.
+## Live use
 
-## Files
+- App chrome: [`SiteLogo.vue`](../../src/components/brand/SiteLogo.vue) (nav + footer) — ink `currentColor`, period `--color-accent-blue`
+- Favicon / PWA icons: [`client/public/favicon.svg`](../../public/favicon.svg) and raster siblings from `tile.svg`
+- Social card: [`client/public/social-preview.png`](../../public/social-preview.png)
+
+## Source files
 
 | File | Use |
 | --- | --- |
 | `mark.svg` | Symbol, ink + accent period (transparent ground) |
-| `mark-mono.svg` | Same geometry, `currentColor` (nav / print) |
-| `lockup.svg` | Mark + outlined **Gleb.Y** (IBM Plex Sans Bold paths; accent only on the period) |
-| `tile.svg` | Mark on rounded `#0d1117` (favicon candidate) |
+| `mark-mono.svg` | Same geometry, `currentColor` (export / print) |
+| `lockup.svg` | Mark + outlined **Gleb.Y** |
+| `tile.svg` | Mark on rounded `#0d1117` (favicon source) |
 
 ## Colors (dark theme tokens)
 
@@ -19,4 +23,4 @@ Nothing here is wired into the live header, favicon, or social image yet. Pick a
 - Accent period: `#e8b07a` (`accent-blue` / pale orange)
 - Tile ground: `#0d1117` (`surface-dark`)
 
-Light UI: use `mark-mono.svg` with the local text color.
+Light UI: prefer `SiteLogo` (or `mark-mono.svg` with local text color).
