@@ -6,7 +6,7 @@ export const RESUME_FALLBACK: ResumeData = {
   title: "Python Backend / FastAPI Engineer",
   tagline:
     "I build production APIs, auth, workers, and deploys" + " — this site is a live example.",
-  location: "EU",
+  location: "Wrocław, Poland",
   availability: "open to full-time and contract (remote)",
   bio:
     "Backend-first: FastAPI, auth, Redis/Celery, Docker." +
@@ -19,7 +19,16 @@ export const RESUME_FALLBACK: ResumeData = {
     {
       category: "Backend",
       summary: "Production APIs, auth, workers, and service boundaries",
-      items: ["Python", "FastAPI", "Motor", "Celery", "Redis"],
+      items: [
+        "Python",
+        "FastAPI",
+        "Pydantic",
+        "SQLAlchemy",
+        "Motor",
+        "Celery",
+        "Redis",
+        "RabbitMQ",
+      ],
     },
     {
       category: "Frontend",
@@ -29,12 +38,20 @@ export const RESUME_FALLBACK: ResumeData = {
     {
       category: "Databases",
       summary: "Document-first with optional relational search and caching",
-      items: ["MongoDB", "PostgreSQL (optional)", "Redis"],
+      items: ["MongoDB", "PostgreSQL", "Redis", "Elasticsearch", "SQL"],
     },
     {
       category: "DevOps",
       summary: "Containerized deploys, CI/CD, and Linux ops",
-      items: ["Docker", "Docker Compose", "Nginx", "CI/CD (GitHub Actions)", "Linux"],
+      items: [
+        "Docker",
+        "Docker Compose",
+        "Nginx",
+        "CI/CD (GitHub Actions)",
+        "Linux",
+        "pytest",
+        "Ruff",
+      ],
     },
     {
       category: "Other",
@@ -68,6 +85,7 @@ export const RESUME_FALLBACK: ResumeData = {
         "SSRF-safe outbound HTTP: public DNS off the event loop, TLS SNI preserved on IP connect, redirect hop re-validation",
         "Celery/Redis workers for email, task automation, news ingest, and cleanup without blocking the API",
         "Path-filtered GitHub Actions CI, multi-service Docker Compose, OpenAPI, and a VitePress architecture handbook",
+        "Application monitoring and error tracking with Sentry and OpenTelemetry instrumentation",
       ],
     },
     {
@@ -85,6 +103,7 @@ export const RESUME_FALLBACK: ResumeData = {
   ],
   projects: [
     {
+      slug: "cookie-auth-csrf",
       name: "cookie auth & CSRF",
       description:
         "Browser sessions on this SPA need CSRF protection without" +
@@ -105,6 +124,7 @@ export const RESUME_FALLBACK: ResumeData = {
         "https://gleblorange.github.io/personal-glorng/" + "reference/security.html#csrf-and-cors",
     },
     {
+      slug: "ssrf-safe-fetch",
       name: "SSRF-safe outbound fetch",
       description:
         "Server-side HTTP for news and health checks must not reach" +
@@ -126,6 +146,8 @@ export const RESUME_FALLBACK: ResumeData = {
     },
   ],
   education: [],
+  certifications: [],
+  languages: [],
   links: {
     email: "glorange@gmail.com",
     telegram: "https://t.me/glorange",

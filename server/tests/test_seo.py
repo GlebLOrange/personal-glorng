@@ -14,6 +14,7 @@ async def test_sitemap_xml(client: AsyncClient) -> None:
     assert "application/xml" in resp.headers["content-type"]
     body = resp.text
     assert "<loc>http://localhost/</loc>" in body
+    assert "<loc>http://localhost/profile</loc>" in body
     assert "<loc>http://localhost/privacy</loc>" in body
     assert "<loc>http://localhost/tools</loc>" in body
     assert "<loc>http://localhost/news</loc>" in body
@@ -67,6 +68,24 @@ async def test_news_og_html_404_for_draft(
 
     resp = await client.get("/og/news/draft-only")
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_profile_og_html_includes_selected_skills(client: AsyncClient) -> None:
+    """Profile OG HTML title reflects selected skills."""
+    resp = await client.get(
+        "/og/profile",
+        params={"skills": "python,fastapi"},
+    )
+    assert resp.status_code == 200
+    assert "text/html" in resp.headers["content-type"]
+    body = resp.text
+    assert "Python" in body
+    assert "FastAPI" in body
+    assert 'property="og:title"' in body
+    assert "http://localhost/profile?skills=fastapi,python" in body or (
+        "http://localhost/profile?skills=python,fastapi" in body
+    )
 
 
 @pytest.mark.asyncio
