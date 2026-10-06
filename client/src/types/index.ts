@@ -51,6 +51,8 @@ export interface ResumeData {
   experience: Experience[];
   projects: Project[];
   education?: Education[];
+  certifications?: Certification[];
+  languages?: SpokenLanguage[];
   links: Partial<Record<ContactLinkId, string>>;
   /** Attached by GET /resume when public GitHub listing is configured. */
   github?: ResumeGitHubPayload;
@@ -77,7 +79,21 @@ export interface Education {
   description?: string;
 }
 
+export interface Certification {
+  name: string;
+  issuer?: string | null;
+  period?: string | null;
+  url?: string | null;
+}
+
+export interface SpokenLanguage {
+  language: string;
+  proficiency?: string | null;
+}
+
 export interface Project {
+  /** Stable id for shareable profile URLs. */
+  slug: string;
   name: string;
   description: string;
   tech: string[];
@@ -87,6 +103,23 @@ export interface Project {
   approach?: string;
   result?: string;
 }
+
+export interface ResumeProfileSelection {
+  resume: ResumeData;
+  ignored_skills: string[];
+  ignored_projects: string[];
+  ignored_sections: string[];
+}
+
+export type ResumeSectionId =
+  | "summary"
+  | "skills"
+  | "experience"
+  | "projects"
+  | "education"
+  | "certifications"
+  | "languages"
+  | "links";
 
 export interface PublicGitHubRepo {
   name: string;

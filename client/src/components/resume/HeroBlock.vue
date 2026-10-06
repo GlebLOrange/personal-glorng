@@ -4,9 +4,7 @@ import { ref } from "vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import { useNotify } from "@/composables/useNotify";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
-import { getApiErrorMessageFromBlob } from "@/types/api";
-
-const CV_FILENAME = "gleb.y.cv.pdf";
+import { downloadResumeExport, resumeDownloadErrorMessage } from "@/utils/resumeDownload";
 
 defineProps<{
   name: string;
@@ -27,28 +25,9 @@ async function downloadCv(): Promise<void> {
   isDownloadingCv.value = true;
   showPrintFallback.value = false;
   try {
-    const { api } = await import("@/composables/useApi");
-    const response = await api.get<Blob>("/resume/pdf", {
-      responseType: "blob",
-      headers: { Accept: "application/pdf" },
-    });
-    const contentType = String(
-      response.headers["content-type"] ?? response.data.type ?? "",
-    ).toLowerCase();
-    if (!contentType.includes("application/pdf")) {
-      throw new Error("CV download did not return a PDF");
-    }
-
-    const url = URL.createObjectURL(response.data);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = CV_FILENAME;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
+    await downloadResumeExport("pdf");
   } catch (err) {
-    const message = await getApiErrorMessageFromBlob(err, "Failed to download CV");
+    const message = await resumeDownloadErrorMessage(err, "Failed to download CV");
     // ponytail: no static PDF — offer print only when the user chooses it
     toast(message, "error");
     showPrintFallback.value = true;
