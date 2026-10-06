@@ -90,15 +90,13 @@ function toolRoute(tool: PlatformService): string {
         v-if="publicSections.length"
         :sections="publicSections"
         :resolve-route="toolRoute"
-        gap-class="gap-4"
       />
       <section v-if="signedInSections.length" class="min-w-0">
-        <h2 class="text-meta mb-4 uppercase tracking-wider">your tools</h2>
+        <h2 class="text-meta mb-3 uppercase tracking-wider">your tools</h2>
         <ToolTileGrid
           :sections="signedInSections"
           :resolve-route="toolRoute"
           category-heading="h3"
-          gap-class="gap-4"
         />
       </section>
     </template>
