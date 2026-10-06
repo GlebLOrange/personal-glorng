@@ -121,7 +121,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
       <RouterLink
         to="/"
-        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         :class="{ 'text-accent-blue': navSection === 'portfolio' }"
         :aria-current-value="false"
         :aria-current="navSection === 'portfolio' ? 'page' : undefined"
@@ -142,7 +142,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
       <RouterLink
         to="/tools"
-        class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         :class="{ 'text-accent-blue': navSection === 'tools' }"
         :aria-current-value="false"
         :aria-current="navSection === 'tools' ? 'page' : undefined"
@@ -153,7 +153,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         v-if="canUseAdminHub"
         to="/admin"
-        class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         :class="{ 'text-accent-blue': navSection === 'admin' }"
         :aria-current-value="false"
         :aria-current="navSection === 'admin' ? 'page' : undefined"
@@ -185,7 +185,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         v-else
         to="/login"
-        class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
         :class="{ 'text-accent-blue': navSection === 'login' }"
         :aria-current-value="false"
         :aria-current="navSection === 'login' ? 'page' : undefined"
