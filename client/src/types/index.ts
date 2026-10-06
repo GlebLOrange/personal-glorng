@@ -82,6 +82,10 @@ export interface Project {
   description: string;
   tech: string[];
   url: string;
+  /** Case-study fields — optional so older API payloads still type-check. */
+  problem?: string;
+  approach?: string;
+  result?: string;
 }
 
 export interface PublicGitHubRepo {

@@ -19,7 +19,7 @@ import type { PublicGitHubRepo, ResumeData } from "@/types";
 const MIN_GITHUB_STRIP_REPOS = 2;
 
 const ExperienceList = defineAsyncComponent(() => import("@/components/resume/ExperienceList.vue"));
-const ProjectsGrid = defineAsyncComponent(() => import("@/components/resume/ProjectsGrid.vue"));
+const CaseStudies = defineAsyncComponent(() => import("@/components/resume/CaseStudies.vue"));
 const FeedbackModal = defineAsyncComponent(() => import("@/components/feedback/FeedbackModal.vue"));
 
 const {
@@ -205,9 +205,9 @@ onUnmounted(() => {
       </Suspense>
     </SectionWrapper>
 
-    <SectionWrapper id="projects" title="projects" width="full" dark alternate>
+    <SectionWrapper id="case-studies" title="case studies" width="full" dark alternate>
       <Suspense>
-        <ProjectsGrid :projects="resume.projects" />
+        <CaseStudies :projects="resume.projects" />
         <template #fallback>
           <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
         </template>
