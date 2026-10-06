@@ -1,8 +1,8 @@
 /** Site-wide SEO defaults for the CSR SPA shell. */
 export const SITE_NAME = "Gleb.Y";
-export const DEFAULT_DOCUMENT_TITLE = `${SITE_NAME} — Developer Portfolio`;
+export const DEFAULT_DOCUMENT_TITLE = `${SITE_NAME} — Python Backend / FastAPI Engineer`;
 export const DEFAULT_DESCRIPTION =
-  "Gleb.Y — developer portfolio, tools, and curated news. Full-stack delivery of web apps, APIs, and product platforms.";
+  "Gleb.Y — Python Backend / FastAPI Engineer. Production APIs, auth, workers, data stores, and CI/CD. Full-stack capable.";
 
 export function formatDocumentTitle(pageTitle?: string | null): string {
   const trimmed = pageTitle?.trim();

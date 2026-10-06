@@ -335,6 +335,23 @@ html[data-theme="light"] {
   }
 }
 
+@utility cta-hero {
+  /* Solid hire CTA — hero only; do not reuse on 404 / in-app washes */
+  @apply h-11 px-5 rounded-lg border border-accent-blue bg-accent-blue text-white text-sm font-semibold transition-colors inline-flex items-center justify-center;
+  &:hover:not(:disabled) {
+    @apply brightness-110;
+  }
+  &:active:not(:disabled) {
+    @apply brightness-95;
+  }
+  &:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  &:focus-visible {
+    @apply outline-none ring-2 ring-accent-blue/50 ring-offset-2 ring-offset-surface-dark;
+  }
+}
+
 @utility cta-secondary {
   /* 3xx family — portfolio secondary taps align with redirect/edit HTTP tone */
   @apply h-10 px-4 rounded-lg border border-transparent bg-status-warning/10 text-status-warning/88 text-sm font-medium transition-colors inline-flex items-center justify-center;
