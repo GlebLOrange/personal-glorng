@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
 
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
@@ -9,51 +8,32 @@ import GitHubReposStrip from "@/components/resume/GitHubReposStrip.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
 import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
-import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
-import type { DonationsConfig, PublicGitHubRepo, ResumeData } from "@/types";
-import { consumeQueryParams } from "@/utils/consumeQueryParams";
+import type { PublicGitHubRepo, ResumeData } from "@/types";
 
 /** ponytail: hide a one-card gallery — looks thin without a peer */
 const MIN_GITHUB_STRIP_REPOS = 2;
 
 const ExperienceList = defineAsyncComponent(() => import("@/components/resume/ExperienceList.vue"));
-const ProjectsGrid = defineAsyncComponent(() => import("@/components/resume/ProjectsGrid.vue"));
-const DonationsBlock = defineAsyncComponent(
-  () => import("@/components/donations/DonationsBlock.vue"),
-);
+const CaseStudies = defineAsyncComponent(() => import("@/components/resume/CaseStudies.vue"));
 const FeedbackModal = defineAsyncComponent(() => import("@/components/feedback/FeedbackModal.vue"));
-
-const route = useRoute();
-const router = useRouter();
-const showDonationThanks = ref(false);
 
 const {
   data: resumeApi,
   loading: resumeLoading,
   fetch: fetchResume,
 } = useCachedApi<ResumeData>("/resume");
-const {
-  data: donations,
-  loading: donationsLoading,
-  fetch: fetchDonations,
-} = useCachedApi<DonationsConfig>("/donations/config");
 const apiError = ref(false);
-const donationsError = ref(false);
-const donationsFetched = ref(false);
-const donationsStarted = ref(false);
 const contactModal = ref<"inquiry" | null>(null);
-const supportSectionRef = ref<HTMLElement | null>(null);
 const heroSentinelRef = ref<HTMLElement | null>(null);
 const showSectionNav = ref(false);
 const sectionNavTop = ref(72);
 /** Filled via GET /github/repos when /resume returned a cold-cache empty strip. */
 const githubReposExtra = ref<PublicGitHubRepo[] | null>(null);
-let supportObserver: IntersectionObserver | null = null;
 let heroObserver: IntersectionObserver | null = null;
 let cancelGithubIdle: (() => void) | null = null;
 
@@ -108,19 +88,6 @@ async function loadGithubReposIfNeeded(): Promise<void> {
   }
 }
 
-async function loadDonations(): Promise<void> {
-  donationsStarted.value = true;
-  donationsError.value = false;
-  try {
-    await fetchDonations();
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    donationsError.value = true;
-  } finally {
-    donationsFetched.value = true;
-  }
-}
-
 function syncSectionNavTop(): void {
   const header = document.getElementById("site-header");
   sectionNavTop.value = header?.offsetHeight ?? 72;
@@ -143,56 +110,20 @@ function observeHeroSentinel(): void {
   heroObserver.observe(heroSentinelRef.value);
 }
 
-function observeSupportSection(): void {
-  if (supportObserver || !supportSectionRef.value) {
-    return;
-  }
-
-  supportObserver = new IntersectionObserver(
-    (entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) {
-        return;
-      }
-      supportObserver?.disconnect();
-      supportObserver = null;
-      void loadDonations();
-    },
-    { rootMargin: "200px 0px" },
-  );
-  supportObserver.observe(supportSectionRef.value);
-}
-
-async function consumeDonationThanks(): Promise<void> {
-  if (String(route.query.donated ?? "") !== "1") {
-    return;
-  }
-  showDonationThanks.value = true;
-  await consumeQueryParams(router, route.path, route.query, ["donated"]);
-  supportSectionRef.value?.scrollIntoView({ behavior: "smooth", block: "start" });
-  void loadDonations();
-}
-
 onMounted(() => {
   void loadResume().then(() => {
     cancelGithubIdle = runWhenIdle(() => {
       void loadGithubReposIfNeeded();
     });
   });
-  void nextTick(async () => {
+  void nextTick(() => {
     observeHeroSentinel();
-    if (String(route.query.donated ?? "") === "1") {
-      await consumeDonationThanks();
-      return;
-    }
-    observeSupportSection();
   });
 });
 
 onUnmounted(() => {
   cancelGithubIdle?.();
   cancelGithubIdle = null;
-  supportObserver?.disconnect();
-  supportObserver = null;
   heroObserver?.disconnect();
   heroObserver = null;
 });
@@ -274,9 +205,9 @@ onUnmounted(() => {
       </Suspense>
     </SectionWrapper>
 
-    <SectionWrapper id="projects" title="projects" width="full" dark alternate>
+    <SectionWrapper id="case-studies" title="case studies" width="full" dark alternate>
       <Suspense>
-        <ProjectsGrid :projects="resume.projects" />
+        <CaseStudies :projects="resume.projects" />
         <template #fallback>
           <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
         </template>
@@ -319,49 +250,5 @@ onUnmounted(() => {
       </div>
       <FeedbackModal v-if="contactModal" :intent="contactModal" @close="contactModal = null" />
     </SectionWrapper>
-
-    <!-- Footer-adjacent support strip — kept off the hire CTA band -->
-    <div
-      ref="supportSectionRef"
-      id="support"
-      class="print:hidden border-t border-surface-border/60"
-    >
-      <div class="mx-auto w-full max-w-5xl px-6 py-10 md:py-12">
-        <div class="flex min-w-0 flex-wrap items-start justify-between gap-6">
-          <div class="min-w-0 max-w-xl">
-            <h2 class="section-title mb-3">support</h2>
-            <p class="text-body mb-2">
-              if my tools or writing have helped you, a small contribution keeps the work going
-            </p>
-            <p class="text-meta">stripe, paypal, or monthly support — pick what works for you</p>
-            <p v-if="showDonationThanks" class="text-label mt-3 text-status-success" role="status">
-              thanks for your support
-            </p>
-          </div>
-          <div class="flex min-w-0 flex-wrap items-center gap-4">
-            <div
-              v-if="donationsStarted && donationsLoading"
-              class="h-10 w-40 animate-pulse rounded-lg bg-surface-card"
-              aria-busy="true"
-            />
-            <DonationsBlock v-else-if="donations" :config="donations" />
-          </div>
-        </div>
-        <ErrorState
-          v-if="donationsError"
-          class="mt-6"
-          message="Donation options are temporarily unavailable."
-          show-retry
-          retry-label="retry"
-          @retry="loadDonations"
-        />
-        <EmptyState
-          v-else-if="donationsFetched && !donations"
-          class="mt-6"
-          title="no donation options"
-          description="support options are not configured right now."
-        />
-      </div>
-    </div>
   </div>
 </template>

@@ -1,5 +1,51 @@
 <script setup lang="ts">
+import { defineAsyncComponent, onMounted, onUnmounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+
+import { useCachedApi } from "@/composables/useCachedApi";
+import type { DonationsConfig } from "@/types";
+import { consumeQueryParams } from "@/utils/consumeQueryParams";
+
+const DonationsBlock = defineAsyncComponent(
+  () => import("@/components/donations/DonationsBlock.vue"),
+);
+
 const year = new Date().getFullYear();
+const route = useRoute();
+const router = useRouter();
+const showDonationThanks = ref(false);
+
+const {
+  data: donations,
+  loading: donationsLoading,
+  fetch: fetchDonations,
+} = useCachedApi<DonationsConfig>("/donations/config");
+const donationsError = ref(false);
+const donationsFetched = ref(false);
+
+async function loadDonations(): Promise<void> {
+  donationsError.value = false;
+  try {
+    await fetchDonations();
+  } catch (err) {
+    if (import.meta.env.DEV) console.error(err);
+    donationsError.value = true;
+  } finally {
+    donationsFetched.value = true;
+  }
+}
+
+onMounted(() => {
+  void loadDonations();
+  if (String(route.query.donated ?? "") === "1") {
+    showDonationThanks.value = true;
+    void consumeQueryParams(router, route.path, route.query, ["donated"]);
+  }
+});
+
+onUnmounted(() => {
+  showDonationThanks.value = false;
+});
 </script>
 
 <template>
@@ -17,5 +63,21 @@ const year = new Date().getFullYear();
     <p class="text-base text-surface-sage text-center">
       &copy; {{ year }} <span class="text-accent-blue font-bold">Gleb.Y</span>
     </p>
+
+    <div class="mx-auto mt-6 flex max-w-lg flex-col items-center gap-2 print:hidden">
+      <p class="text-meta">support this work</p>
+      <p v-if="showDonationThanks" class="text-label text-status-success" role="status">
+        thanks for your support
+      </p>
+      <div
+        v-if="donationsLoading && !donationsFetched"
+        class="h-10 w-40 animate-pulse rounded-lg bg-surface-card"
+        aria-busy="true"
+      />
+      <DonationsBlock v-else-if="donations" layout="center" :config="donations" />
+      <p v-else-if="donationsError" class="text-label text-status-error" role="status">
+        support options unavailable
+      </p>
+    </div>
   </footer>
 </template>

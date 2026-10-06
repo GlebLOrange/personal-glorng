@@ -81,7 +81,7 @@ function printPage(): void {
       </span>
       <span
         v-if="location && availability"
-        class="inline-flex min-h-11 items-center"
+        class="hidden sm:inline-flex min-h-11 items-center"
         aria-hidden="true"
         >·</span
       >
@@ -97,7 +97,7 @@ function printPage(): void {
     <div
       class="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 print:hidden"
     >
-      <button type="button" class="cta-primary" @click="emit('inquire')">get in touch</button>
+      <button type="button" class="cta-hero" @click="emit('inquire')">get in touch</button>
       <button type="button" class="cta-secondary" :disabled="isDownloadingCv" @click="downloadCv">
         {{ isDownloadingCv ? "downloading…" : "download cv" }}
       </button>

@@ -72,7 +72,7 @@ def _experience_html(resume: dict[str, Any]) -> str:
 
 
 def _projects_html(resume: dict[str, Any]) -> str:
-    """Render selected project entries."""
+    """Render selected project / case-study entries."""
     blocks: list[str] = []
     for project in resume.get("projects", []):
         tech = ", ".join(escape_text(t) for t in project.get("tech", []))
@@ -82,11 +82,13 @@ def _projects_html(resume: dict[str, Any]) -> str:
             if url
             else f"<span>{escape_text(project['name'])}</span>"
         )
+        result = str(project.get("result") or "").strip()
+        summary = result or str(project.get("description", ""))
         blocks.append(
             f"""
         <section class="entry">
           <h3>{link_html}</h3>
-          <p class="summary">{escape_text(project["description"])}</p>
+          <p class="summary">{escape_text(summary)}</p>
           <p class="tech">{tech}</p>
         </section>""",
         )
@@ -316,7 +318,7 @@ def render_resume_html(resume: dict[str, Any]) -> str:
   <h2>Experience</h2>
   {_experience_html(resume)}
 
-  <h2>Projects</h2>
+  <h2>Case studies</h2>
   {_projects_html(resume)}
 
   {education}
