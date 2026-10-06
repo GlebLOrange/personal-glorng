@@ -143,7 +143,7 @@ async function handleGoHome(): Promise<void> {
           <div class="hidden md:flex items-center gap-2 text-base shrink-0">
             <RouterLink
               to="/"
-              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
               :class="{ 'text-accent-blue': navSection === 'portfolio' }"
               :aria-current-value="false"
               :aria-current="navSection === 'portfolio' ? 'page' : undefined"
@@ -163,7 +163,7 @@ async function handleGoHome(): Promise<void> {
 
             <RouterLink
               to="/tools"
-              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
               :class="{ 'text-accent-blue': navSection === 'tools' }"
               :aria-current-value="false"
               :aria-current="navSection === 'tools' ? 'page' : undefined"
@@ -173,7 +173,7 @@ async function handleGoHome(): Promise<void> {
             <RouterLink
               v-if="canUseAdminHub"
               to="/admin"
-              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
               :class="{ 'text-accent-blue': navSection === 'admin' }"
               :aria-current-value="false"
               :aria-current="navSection === 'admin' ? 'page' : undefined"
@@ -203,7 +203,7 @@ async function handleGoHome(): Promise<void> {
             <RouterLink
               v-else
               to="/login"
-              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
               :class="{ 'text-accent-blue': navSection === 'login' }"
               :aria-current-value="false"
               :aria-current="navSection === 'login' ? 'page' : undefined"
