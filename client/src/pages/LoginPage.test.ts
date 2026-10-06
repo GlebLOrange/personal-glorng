@@ -11,10 +11,6 @@ const mocks = vi.hoisted(() => ({
   toast: vi.fn(),
 }));
 
-vi.mock("@/constants/firebase", () => ({
-  isFirebaseEnabled: true,
-}));
-
 vi.mock("vue-router", () => ({
   useRoute: () => ({ query: mocks.routeQuery }),
   useRouter: () => ({ push: mocks.push }),
@@ -40,7 +36,7 @@ describe("LoginPage", () => {
     });
   }
 
-  it("shows email password login and Google sign-in", () => {
+  it("shows email password login", () => {
     const wrapper = mountPage();
 
     expect(wrapper.get('input[type="email"]').exists()).toBe(true);
@@ -50,7 +46,7 @@ describe("LoginPage", () => {
     expect(wrapper.text()).toContain("password");
     expect(wrapper.text()).toContain("you@example.com");
     expect(wrapper.text()).toContain("login");
-    expect(wrapper.text()).toContain("continue with Google");
+    expect(wrapper.text()).not.toContain("continue with Google");
     expect(wrapper.text()).not.toContain("create account");
     expect(wrapper.text()).toContain("forgot password?");
   });

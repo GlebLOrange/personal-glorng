@@ -1964,20 +1964,6 @@
         "title": "FeedbackStatusUpdate",
         "type": "object"
       },
-      "FirebaseLoginRequest": {
-        "properties": {
-          "id_token": {
-            "minLength": 20,
-            "title": "Id Token",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id_token"
-        ],
-        "title": "FirebaseLoginRequest",
-        "type": "object"
-      },
       "ForgotPasswordRequest": {
         "properties": {
           "email": {
@@ -7193,88 +7179,6 @@
           }
         ],
         "summary": "Change password",
-        "tags": [
-          "auth"
-        ]
-      }
-    },
-    "/api/auth/firebase": {
-      "post": {
-        "description": "Verify a Firebase Google ID token for an existing app account and set HttpOnly auth cookies (tokens are not returned in the JSON body). Does not create accounts.",
-        "operationId": "firebase_login_api_auth_firebase_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FirebaseLoginRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not authenticated"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Internal server error"
-          }
-        },
-        "summary": "Log in with Firebase Google auth",
         "tags": [
           "auth"
         ]

@@ -109,10 +109,6 @@ class LogoutRequest(BaseModel):
     refresh_token: str | None = None
 
 
-class FirebaseLoginRequest(BaseModel):
-    id_token: str = Field(min_length=20)
-
-
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
