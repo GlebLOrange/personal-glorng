@@ -122,6 +122,7 @@ services:
     entrypoint: ["/bin/sh", "/app/scripts/db_init.sh"]
     volumes:
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
@@ -142,6 +143,7 @@ services:
     volumes:
       - server_media:/app/media
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
@@ -175,6 +177,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
@@ -202,6 +205,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
@@ -229,6 +233,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
