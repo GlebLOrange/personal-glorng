@@ -5,7 +5,7 @@ import { fileURLToPath, URL } from "node:url";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig, loadEnv } from "vite";
 
-import { buildShellHeroHtml } from "./src/utils/shellHero";
+import { buildShellHeroHtml } from "./src/utils/shellHero.ts";
 
 function applyRepoRootViteEnv(mode: string): Record<string, string> {
   const repoRoot = fileURLToPath(new URL("..", import.meta.url));
