@@ -58,7 +58,6 @@ export function applyRouteSeo(to: {
     description,
     path: noindex ? pathname : scrubbed,
     noindex,
-    amphtml: isPortfolio,
     jsonLd: isPortfolio ? portfolioJsonLd() : null,
   });
 }

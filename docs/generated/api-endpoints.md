@@ -9,7 +9,6 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 
 | Method | Path | Tags | Summary |
 |--------|------|------|---------|
-| `GET` | `/amp` | amp | Get AMP portfolio page |
 | `GET` | `/api/admin/maintenance` | admin | Get DB maintenance status |
 | `POST` | `/api/admin/maintenance/run` | admin | Start DB maintenance |
 | `GET` | `/api/admin/users` | admin | List users |
@@ -156,6 +155,7 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/weather/lookup/{location}` | weather | Lookup weather |
 | `GET` | `/api/weather/time/{location}` | weather | Lookup World Time |
 | `POST` | `/api/webhooks/{slug}` | webhooks | Inbound webhook |
+| `GET` | `/og/news/{slug}` | seo | News article Open Graph HTML |
 | `GET` | `/robots.txt` | seo | Get robots.txt |
 | `GET` | `/sitemap.xml` | seo | Get sitemap |
 
