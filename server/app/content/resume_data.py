@@ -7,7 +7,7 @@ RESUME_DATA: dict[str, Any] = {
         "I build production APIs, auth, workers, and deploys"
         " — this site is a live example."
     ),
-    "location": "EU",
+    "location": "Wrocław, Poland",
     "availability": "open to full-time and contract (remote)",
     "bio": (
         "Backend-first: FastAPI, auth, Redis/Celery, Docker."
@@ -25,9 +25,12 @@ RESUME_DATA: dict[str, Any] = {
             "items": [
                 "Python",
                 "FastAPI",
+                "Pydantic",
+                "SQLAlchemy",
                 "Motor",
                 "Celery",
                 "Redis",
+                "RabbitMQ",
             ],
         },
         {
@@ -38,7 +41,7 @@ RESUME_DATA: dict[str, Any] = {
         {
             "category": "Databases",
             "summary": "Document-first with optional relational search and caching",
-            "items": ["MongoDB", "PostgreSQL (optional)", "Redis"],
+            "items": ["MongoDB", "PostgreSQL", "Redis", "Elasticsearch", "SQL"],
         },
         {
             "category": "DevOps",
@@ -49,6 +52,8 @@ RESUME_DATA: dict[str, Any] = {
                 "Nginx",
                 "CI/CD (GitHub Actions)",
                 "Linux",
+                "pytest",
+                "Ruff",
             ],
         },
         {
@@ -100,6 +105,10 @@ RESUME_DATA: dict[str, Any] = {
                 (
                     "Path-filtered GitHub Actions CI, multi-service Docker Compose,"
                     " OpenAPI, and a VitePress architecture handbook"
+                ),
+                (
+                    "Application monitoring and error tracking with Sentry"
+                    " and OpenTelemetry instrumentation"
                 ),
             ],
         },
