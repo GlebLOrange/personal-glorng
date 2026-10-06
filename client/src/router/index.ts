@@ -20,6 +20,15 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: "/profile",
+    name: "profile",
+    component: () => import("@/pages/ProfilePage.vue"),
+    meta: {
+      title: "Shared profile",
+      description: "Filtered portfolio profile — skills, projects, and experience.",
+    },
+  },
+  {
     path: "/login",
     name: "login",
     component: () => import("@/pages/LoginPage.vue"),

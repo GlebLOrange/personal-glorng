@@ -31,7 +31,9 @@ describe("HeroBlock", () => {
       },
     });
 
+    expect(wrapper.text()).toContain("Gleb.Y");
     expect(wrapper.text()).toContain("I build production APIs");
+    expect(wrapper.find("h1 .sr-only").exists()).toBe(false);
     expect(wrapper.text()).not.toContain("Backend-first");
     expect(wrapper.find(".contact-link-chip").exists()).toBe(false);
     expect(wrapper.text()).not.toContain("email");

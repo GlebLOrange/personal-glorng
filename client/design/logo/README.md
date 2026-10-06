@@ -1,26 +1,21 @@
 # Gleb.Y vector logo
 
-Period-hinge mark: a geometric **G** whose right opening is the fork of a **Y**, with the brand period in the hinge.
+Commissioned graffiti sticker-badge **GY** monogram (gears + wrench). Source files live in [`logo/vector/`](../../../logo/vector/).
 
 ## Live use
 
-- App chrome: [`SiteLogo.vue`](../../src/components/brand/SiteLogo.vue) (nav + footer) — ink `currentColor`, period `--color-accent-blue`
-- Favicon / PWA icons: [`client/public/favicon.svg`](../../public/favicon.svg) and raster siblings from `tile.svg`
+- App chrome: [`SiteLogo.vue`](../../src/components/brand/SiteLogo.vue) (nav + footer + hero) — `/brand/gy-mark-simple.svg` or `/brand/gy-logo.svg`
+- Favicon / touch icons: [`client/public/favicon.svg`](../../public/favicon.svg) and PNG/ICO siblings
 - Social card: [`client/public/social-preview.png`](../../public/social-preview.png)
 
-## Source files
+## Source files (`logo/vector/`)
 
 | File | Use |
 | --- | --- |
-| `mark.svg` | Symbol, ink + accent period (transparent ground) |
-| `mark-mono.svg` | Same geometry, `currentColor` (export / print) |
-| `lockup.svg` | Mark + outlined **Gleb.Y** |
-| `tile.svg` | Mark on rounded `#0d1117` (favicon source) |
+| `gy-logo.svg` | Full-color logo, transparent ground |
+| `gy-mark-simple.svg` | Simplified mark for favicon and small UI |
+| `gy-logo-512.png` | Raster fallback (email, PDF embed) |
 
-## Colors (dark theme tokens)
+## Deployed copies
 
-- Ink: `#e6edf3` (`surface-light`)
-- Accent period: `#e8b07a` (`accent-blue` / pale orange)
-- Tile ground: `#0d1117` (`surface-dark`)
-
-Light UI: prefer `SiteLogo` (or `mark-mono.svg` with local text color).
+Static assets are copied to `client/public/brand/` and favicon files at `client/public/` for Vite/nginx.

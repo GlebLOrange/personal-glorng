@@ -1,6 +1,12 @@
+"""Canonical resume content — validated against ResumeDocument at import."""
+
+from __future__ import annotations
+
 from typing import Any
 
-RESUME_DATA: dict[str, Any] = {
+from app.schemas.resume import ResumeDocument
+
+_RESUME_RAW: dict[str, Any] = {
     "name": "Gleb.Y",
     "title": "Python Backend / FastAPI Engineer",
     "tagline": (
@@ -139,6 +145,7 @@ RESUME_DATA: dict[str, Any] = {
     ],
     "projects": [
         {
+            "slug": "cookie-auth-csrf",
             "name": "cookie auth & CSRF",
             "description": (
                 "Browser sessions on this SPA need CSRF protection without"
@@ -165,6 +172,7 @@ RESUME_DATA: dict[str, Any] = {
             ),
         },
         {
+            "slug": "ssrf-safe-fetch",
             "name": "SSRF-safe outbound fetch",
             "description": (
                 "Server-side HTTP for news and health checks must not reach"
@@ -191,6 +199,8 @@ RESUME_DATA: dict[str, Any] = {
         },
     ],
     "education": [],
+    "certifications": [],
+    "languages": [],
     "links": {
         "email": "glorange@gmail.com",
         "telegram": "https://t.me/glorange",
@@ -198,3 +208,10 @@ RESUME_DATA: dict[str, Any] = {
         "github": "https://github.com/GlebLOrange",
     },
 }
+
+RESUME_DOCUMENT = ResumeDocument.model_validate(_RESUME_RAW)
+if not (
+    RESUME_DOCUMENT.bio and RESUME_DOCUMENT.skills and RESUME_DOCUMENT.experience
+):
+    raise ValueError("Canonical resume must include bio, skills, and experience")
+RESUME_DATA: dict[str, Any] = RESUME_DOCUMENT.model_dump(mode="json")

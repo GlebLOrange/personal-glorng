@@ -137,6 +137,21 @@ def _fallback_link(url: str) -> str:
     )
 
 
+def _brand_mark_html(site_url: str | None) -> str:
+    """Site identity row — hosted logo when base URL is known, else text."""
+    colors = EMAIL_COLORS
+    if site_url:
+        logo_href = f'{site_url.rstrip("/")}/brand/gy-logo-512.png'
+        return (
+            f'<img src="{escape(logo_href, quote=True)}" alt="{escape(SITE_NAME)}" '
+            'style="display:block;height:48px;width:auto;margin:0 0 8px;" />'
+        )
+    return (
+        f'<p style="margin:0 0 8px;font-family:{FONT_STACK};font-size:18px;'
+        f'font-weight:700;color:{colors["accent_blue"]};">{SITE_NAME}</p>'
+    )
+
+
 def _wrap_email(title: str, body: str, *, site_url: str | None = None) -> str:
     """Shared HTML email wrapper -- single source for layout."""
     colors = EMAIL_COLORS
@@ -161,8 +176,7 @@ def _wrap_email(title: str, body: str, *, site_url: str | None = None) -> str:
         "<tr><td "
         f'style="background:{colors["surface_card"]};border:1px solid '
         f'{colors["surface_border"]};border-radius:8px;padding:32px;">'
-        f'<p style="margin:0 0 8px;font-family:{FONT_STACK};font-size:18px;'
-        f'font-weight:700;color:{colors["accent_blue"]};">{SITE_NAME}</p>'
+        f"{_brand_mark_html(site_url)}"
         f'<div style="width:48px;height:3px;background:{colors["accent_blue"]};'
         f'margin-bottom:24px;border-radius:2px;"></div>'
         f'<h1 style="margin:0 0 16px;font-family:{FONT_STACK};font-size:22px;'

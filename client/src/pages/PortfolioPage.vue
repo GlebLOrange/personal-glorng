@@ -4,6 +4,7 @@ import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref }
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
+import ExportSharePanel from "@/components/resume/ExportSharePanel.vue";
 import GitHubReposStrip from "@/components/resume/GitHubReposStrip.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
 import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
@@ -218,13 +219,16 @@ onUnmounted(() => {
       <SkillsGrid :skills="resume.skills" />
     </SectionWrapper>
 
+    <SectionWrapper id="export" title="export / share" width="full" dark alternate>
+      <ExportSharePanel :resume="resume" />
+    </SectionWrapper>
+
     <SectionWrapper
       v-if="education.length > 0"
       id="education"
       title="education"
       width="prose"
       dark
-      alternate
     >
       <EducationList :education="education" />
     </SectionWrapper>
@@ -234,7 +238,7 @@ onUnmounted(() => {
       title="contacts"
       width="full"
       dark
-      :alternate="education.length === 0"
+      :alternate="education.length > 0"
     >
       <p class="text-body mb-3 max-w-2xl">
         open to full-time and contract — usually reply within 24h (EU timezone)
