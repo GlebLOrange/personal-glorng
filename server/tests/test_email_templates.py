@@ -24,6 +24,8 @@ def test_verification_email_contains_verify_url() -> None:
     assert f"{base_url}/verify-email?token={token}" in html
     assert "Verify email" in html
     assert "Welcome to Gleb.Y" in html
+    assert f'{base_url}/brand/gy-logo-512.png' in html
+    assert 'alt="Gleb.Y"' in html
 
 
 def test_verification_email_escapes_malicious_token() -> None:

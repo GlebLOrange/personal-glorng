@@ -80,7 +80,7 @@ onUnmounted(() => {
     </div>
     <p class="flex items-center justify-center gap-2 text-base text-surface-sage text-center">
       <span>&copy; {{ year }}</span>
-      <SiteLogo class-name="h-4 w-4 text-surface-light" />
+      <SiteLogo class-name="h-4 w-auto" />
       <span class="sr-only">Gleb.Y</span>
     </p>
   </footer>

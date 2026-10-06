@@ -138,7 +138,7 @@ async function handleGoHome(): Promise<void> {
             aria-label="gleb.y home"
             @click.prevent="handleGoHome"
           >
-            <SiteLogo class-name="h-7 w-7" />
+            <SiteLogo class-name="h-9 w-auto" />
           </RouterLink>
 
           <div class="hidden md:flex items-center gap-2 text-base shrink-0">

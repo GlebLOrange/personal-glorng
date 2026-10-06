@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
+import SiteLogo from "@/components/brand/SiteLogo.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import { useNotify } from "@/composables/useNotify";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
@@ -43,8 +44,12 @@ function printPage(): void {
 
 <template>
   <div class="py-12 md:py-16 text-center">
-    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-3 text-balance">
-      <span class="accent-gradient">{{ name }}</span>
+    <h1 class="mb-3 flex flex-col items-center gap-3 text-balance">
+      <SiteLogo
+        variant="full"
+        class-name="h-16 w-auto max-w-[min(100%,18rem)] sm:h-20 md:h-24"
+      />
+      <span class="text-xl font-bold tracking-tight sm:text-2xl accent-gradient">{{ name }}</span>
     </h1>
     <p class="text-2xl md:text-3xl text-surface-light mb-2">{{ title }}</p>
     <p v-if="tagline" class="text-lg text-surface-sage mb-3 text-pretty max-w-2xl mx-auto">

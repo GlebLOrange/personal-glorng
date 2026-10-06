@@ -66,8 +66,8 @@ describe("NavBar", () => {
     const home = wrapper.get('a[aria-label="gleb.y home"]');
     expect(home.classes()).toContain("min-h-11");
     expect(home.classes()).toContain("min-w-11");
-    expect(home.find("svg").exists()).toBe(true);
-    expect(home.find("svg").attributes("aria-hidden")).toBe("true");
+    expect(home.find("img").exists()).toBe(true);
+    expect(home.find("img").attributes("aria-hidden")).toBe("true");
     expect(home.text()).not.toContain("Gleb.Y");
   });
 });
