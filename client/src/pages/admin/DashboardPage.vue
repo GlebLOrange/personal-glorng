@@ -61,12 +61,8 @@ onMounted(async () => {
     <div v-if="catalogLoading" aria-busy="true" aria-label="loading tools">
       <section v-for="block in 2" :key="block" class="mb-8 min-w-0">
         <div class="mb-3 h-3 w-24 animate-pulse rounded bg-surface-card" aria-hidden="true" />
-        <div class="page-tool-grid">
-          <Card
-            v-for="i in 3"
-            :key="`${block}-${i}`"
-            class="page-tile-card min-h-36 animate-pulse sm:min-h-40"
-          />
+        <div class="page-launcher-grid" data-density="compact">
+          <Card v-for="i in 3" :key="`${block}-${i}`" class="page-tile-card animate-pulse" />
         </div>
       </section>
     </div>
