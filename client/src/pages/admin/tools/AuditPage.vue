@@ -17,7 +17,7 @@ import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useExpandableIds } from "@/composables/useExpandableIds";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
-import { yesterdayIsoDate } from "@/utils/dates";
+import { daysAgoIsoDate, isoDateLocal, yesterdayIsoDate } from "@/utils/dates";
 import { formatDate } from "@/utils/format";
 
 interface AuditEvent {
@@ -34,14 +34,17 @@ interface AuditEvent {
   request_id: string | null;
 }
 
+type PeriodFilter = "yesterday" | "today" | "7d" | "all";
+
 const DEFAULT_CATEGORY = "security";
+const DEFAULT_PERIOD: PeriodFilter = "yesterday";
 
 const items = ref<AuditEvent[]>([]);
 const total = ref(0);
 const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: true });
 const category = ref(DEFAULT_CATEGORY);
 const page = ref(1);
-const dateFrom = ref(yesterdayIsoDate());
+const period = ref<PeriodFilter>(DEFAULT_PERIOD);
 const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
@@ -50,19 +53,44 @@ const CATEGORY_FILTERS = [
   { label: "domain", value: "domain" },
 ] as const;
 
+const PERIOD_FILTERS: { label: string; value: PeriodFilter }[] = [
+  { label: "since yesterday", value: "yesterday" },
+  { label: "today", value: "today" },
+  { label: "last 7 days", value: "7d" },
+  { label: "all", value: "all" },
+];
+
+const PERIOD_CHIP_CLASS = "bg-surface-mid/15 text-surface-mid border-surface-border";
+
+function dateFromForPeriod(value: PeriodFilter): string | undefined {
+  if (value === "all") return undefined;
+  if (value === "today") return isoDateLocal();
+  if (value === "7d") return daysAgoIsoDate(7);
+  return yesterdayIsoDate();
+}
+
+const periodLabel = computed(
+  () => PERIOD_FILTERS.find((chip) => chip.value === period.value)?.label ?? "since yesterday",
+);
+const dateFrom = computed(() => dateFromForPeriod(period.value));
+
 const totalPages = computed(() => Math.ceil(total.value / ADMIN_LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
 const hasNextPage = computed(() => page.value < totalPages.value);
 const hasActiveFilters = computed(
-  () => category.value !== DEFAULT_CATEGORY || dateFrom.value !== yesterdayIsoDate(),
+  () => category.value !== DEFAULT_CATEGORY || period.value !== DEFAULT_PERIOD,
 );
-const activeFilterLabel = computed(
-  () => CATEGORY_FILTERS.find((chip) => chip.value === category.value)?.label,
+const activeFilterLabel = computed(() => {
+  const categoryLabel = CATEGORY_FILTERS.find((chip) => chip.value === category.value)?.label;
+  return [categoryLabel, periodLabel.value].filter(Boolean).join(" · ");
+});
+const emptyDescription = computed(
+  () => `no ${category.value} audit events ${periodLabel.value}`,
 );
 
 useScrollListFingerprint(
   () =>
-    `${page.value}:${total.value}:${category.value}:${dateFrom.value}:${items.value[0]?.id ?? ""}`,
+    `${page.value}:${total.value}:${category.value}:${period.value}:${items.value[0]?.id ?? ""}`,
 );
 
 async function load(): Promise<void> {
@@ -95,9 +123,16 @@ function setCategoryFilter(next: string): void {
   void load();
 }
 
+function setPeriodFilter(next: PeriodFilter): void {
+  period.value = next;
+  page.value = 1;
+  filterDropdownRef.value?.close();
+  void load();
+}
+
 function clearFilters(): void {
   category.value = DEFAULT_CATEGORY;
-  dateFrom.value = yesterdayIsoDate();
+  period.value = DEFAULT_PERIOD;
   page.value = 1;
   filterDropdownRef.value?.close();
   void load();
@@ -110,8 +145,16 @@ function goToPage(nextPage: number): void {
 }
 
 function actorLabel(event: AuditEvent): string {
-  const actor = event.actor_id ? `${event.actor_type}#${event.actor_id}` : event.actor_type;
-  return actor;
+  return event.actor_id ? `${event.actor_type}#${event.actor_id}` : event.actor_type;
+}
+
+function eventMeta(event: AuditEvent): string {
+  const actor = actorLabel(event);
+  if (!event.resource_type) return actor;
+  const resource = event.resource_id
+    ? `${event.resource_type}#${event.resource_id}`
+    : event.resource_type;
+  return `${actor} · ${resource}`;
 }
 
 onMounted(load);
@@ -131,7 +174,10 @@ onMounted(load);
             ref="filterDropdown"
             :has-active-filters="hasActiveFilters"
             :active-label="activeFilterLabel"
-            :option-labels="CATEGORY_FILTERS.map((chip) => chip.label)"
+            :option-labels="[
+              ...CATEGORY_FILTERS.map((chip) => chip.label),
+              ...PERIOD_FILTERS.map((chip) => chip.label),
+            ]"
             @clear="clearFilters"
           >
             <template #chips>
@@ -143,6 +189,14 @@ onMounted(load);
                 :color-class="auditCategoryClass(chip.value)"
                 @click="setCategoryFilter(chip.value)"
               />
+              <AdminFilterChip
+                v-for="chip in PERIOD_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :active="period === chip.value"
+                :color-class="PERIOD_CHIP_CLASS"
+                @click="setPeriodFilter(chip.value)"
+              />
             </template>
           </AdminFilterDropdown>
         </template>
@@ -153,7 +207,7 @@ onMounted(load);
       <EmptyState
         v-else-if="items.length === 0"
         class="mt-4"
-        description="no audit events found."
+        :description="emptyDescription"
       />
 
       <div v-else class="mt-1 min-w-0">
@@ -173,7 +227,7 @@ onMounted(load);
             <span :title="event.action">{{ event.action }}</span>
           </template>
           <template #meta>
-            <span>{{ actorLabel(event) }}</span>
+            <span :title="eventMeta(event)">{{ eventMeta(event) }}</span>
           </template>
           <template #time>{{ formatDate(event.occurred_at) }}</template>
           <template #detail>

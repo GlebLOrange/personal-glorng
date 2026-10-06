@@ -16,8 +16,8 @@ const emit = defineEmits<{
       <SearchInput
         :model-value="search"
         class="min-w-0 flex-1"
-        placeholder="search recipe"
-        aria-label="search recipe"
+        placeholder="search recipes by title, tag…"
+        aria-label="search recipes"
         @update:model-value="emit('update:search', String($event ?? ''))"
       />
       <div v-if="$slots.actions" class="shrink-0">

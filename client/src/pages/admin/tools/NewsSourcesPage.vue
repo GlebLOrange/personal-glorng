@@ -117,7 +117,6 @@ const {
             :key="source.id"
             :interactive="canWrite"
             :nested-interactive="canWrite"
-            reveal-actions-on-hover
             :status-class="newsSourceEnabledClass(source.enabled)"
             @click="openEditableSource(source)"
           >
@@ -143,7 +142,7 @@ const {
             <template #primary>
               <span :title="source.name">{{ source.name }}</span>
             </template>
-            <template v-if="source.last_fetched_at" #meta>
+            <template v-if="sourceMeta(source)" #meta>
               {{ sourceMeta(source) }}
             </template>
             <template #actions>

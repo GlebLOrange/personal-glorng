@@ -37,7 +37,7 @@ const emit = defineEmits<{
     max-width="lg"
     @close="emit('close')"
   >
-    <div v-if="loading || !recipe" class="space-y-3 animate-pulse">
+    <div v-if="loading || !recipe" class="space-y-3 animate-pulse" aria-busy="true" aria-label="loading recipe">
       <div class="h-40 bg-surface-border rounded-md" />
       <div class="h-4 w-full bg-surface-border rounded" />
       <div class="h-4 w-3/4 bg-surface-border rounded" />
@@ -50,34 +50,43 @@ const emit = defineEmits<{
         class="w-full h-48 rounded-md object-cover"
       />
 
-      <div class="flex w-full flex-wrap items-center justify-between gap-2 text-xs">
+      <div class="flex w-full flex-wrap items-center gap-2 text-xs">
         <span
           v-if="recipe.prep_time"
-          class="inline-flex items-center gap-1 rounded-full border border-accent-blue/30 bg-accent-blue/15 px-2 py-1 text-accent-blue"
+          class="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-accent-blue/30 bg-accent-blue/15 px-2.5 text-accent-blue"
         >
           <ClockIcon class-name="size-3.5 shrink-0" />
           {{ formatRecipeTime(recipe.prep_time) }} prep
         </span>
         <span
           v-if="recipe.cook_time"
-          class="inline-flex items-center gap-1 rounded-full border border-status-warning/30 bg-status-warning/15 px-2 py-1 text-status-warning"
+          class="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-status-warning/30 bg-status-warning/15 px-2.5 text-status-warning"
         >
           <ClockIcon class-name="size-3.5 shrink-0" />
           {{ formatRecipeTime(recipe.cook_time) }} cook
         </span>
         <span
           v-if="recipe.servings"
-          class="inline-flex items-center gap-1 rounded-full border border-status-success/30 bg-status-success/15 px-2 py-1 text-status-success"
+          class="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-status-success/30 bg-status-success/15 px-2.5 text-status-success"
         >
-          <ClockIcon class-name="size-3.5 shrink-0" />
           {{ recipe.servings }} servings
         </span>
       </div>
 
+      <ul v-if="recipe.tags.length" class="flex flex-wrap gap-1.5" aria-label="tags">
+        <li
+          v-for="tag in recipe.tags"
+          :key="tag"
+          class="rounded-md bg-surface-mid/15 px-2 py-1 text-xs lowercase text-surface-mid"
+        >
+          {{ tag }}
+        </li>
+      </ul>
+
       <div :key="`${recipe.id}-${open}`" class="space-y-3">
         <details class="group rounded border border-surface-border" open>
           <summary
-            class="flex h-8 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+            class="flex min-h-11 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
           >
             <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
             ingredients ({{ recipe.ingredients.length }})
@@ -90,9 +99,9 @@ const emit = defineEmits<{
           </ul>
         </details>
 
-        <details class="group rounded border border-surface-border">
+        <details class="group rounded border border-surface-border" open>
           <summary
-            class="flex h-8 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
+            class="flex min-h-11 cursor-pointer list-none items-center gap-1.5 px-2 text-sm text-surface-mid [&::-webkit-details-marker]:hidden"
           >
             <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
             steps ({{ recipe.steps.length }})
@@ -119,7 +128,7 @@ const emit = defineEmits<{
           <IconEditButton aria-label="edit recipe" @click="emit('edit', recipe)" />
         </template>
         <template #primary>
-          <ToolbarPillButton action="save" @click="emit('cook')">cook</ToolbarPillButton>
+          <ToolbarPillButton action="save" @click="emit('cook')">start cooking</ToolbarPillButton>
         </template>
       </DrawerFooterActions>
     </template>

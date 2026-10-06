@@ -133,7 +133,7 @@ async function handleGoHome(): Promise<void> {
         >
           <RouterLink
             to="/"
-            class="text-xl font-bold text-surface-light"
+            class="text-xl font-bold accent-gradient"
             aria-label="gleb.y home"
             @click.prevent="handleGoHome"
           >

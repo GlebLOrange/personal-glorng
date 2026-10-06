@@ -5,7 +5,7 @@ const props = withDefaults(
   defineProps<{
     /** Points down when closed; flips when open. Right = -90deg; open rotates to down. */
     open?: boolean;
-    direction?: "down" | "right";
+    direction?: "down" | "right" | "left";
     className?: string;
   }>(),
   {
@@ -16,6 +16,9 @@ const props = withDefaults(
 );
 
 const rotateClass = computed(() => {
+  if (props.direction === "left") {
+    return "rotate-90";
+  }
   if (props.direction === "right") {
     return props.open ? "rotate-0" : "-rotate-90";
   }

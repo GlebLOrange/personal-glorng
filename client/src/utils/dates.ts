@@ -13,9 +13,14 @@ export function isoDateLocal(d: Date = new Date()): string {
 
 /** Local calendar date for yesterday as YYYY-MM-DD. */
 export function yesterdayIsoDate(d: Date = new Date()): string {
-  const yesterday = new Date(d);
-  yesterday.setDate(yesterday.getDate() - 1);
-  return isoDateLocal(yesterday);
+  return daysAgoIsoDate(1, d);
+}
+
+/** Local calendar date N days before `d` as YYYY-MM-DD. */
+export function daysAgoIsoDate(days: number, d: Date = new Date()): string {
+  const past = new Date(d);
+  past.setDate(past.getDate() - days);
+  return isoDateLocal(past);
 }
 
 /** Local calendar month as YYYY-MM (HTML month input value). */

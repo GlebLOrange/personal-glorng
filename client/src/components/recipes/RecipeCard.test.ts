@@ -20,7 +20,7 @@ const recipe: Recipe = {
 };
 
 describe("RecipeCard", () => {
-  it("selects on row click and shows monogram without meta pills", async () => {
+  it("selects on row click and shows prep/cook meta under the title", async () => {
     const wrapper = mount(RecipeCard, {
       props: {
         recipe,
@@ -32,20 +32,21 @@ describe("RecipeCard", () => {
       },
     });
 
-    const row = wrapper.get('[aria-label="open recipe Tomato Soup"]');
-    await row.trigger("click");
+    const openBtn = wrapper.get("[data-admin-list-open]");
+    expect(openBtn.attributes("aria-label")).toBe("open recipe Tomato Soup");
+    await openBtn.trigger("click");
     expect(wrapper.emitted("select")).toEqual([[42]]);
+
     expect(wrapper.text()).toContain("TS");
     expect(wrapper.text()).toContain("Tomato Soup");
-    expect(wrapper.text()).not.toContain("prep 10m");
-    expect(wrapper.text()).not.toContain("cook 20m");
-    expect(wrapper.text()).not.toContain("2 servings");
-    expect(wrapper.text()).not.toContain("no image");
-    expect(wrapper.text()).not.toContain("quick");
+    expect(wrapper.get("[data-admin-list-meta]").text()).toContain("10m prep");
+    expect(wrapper.text()).toContain("20m cook");
+    expect(wrapper.text()).toContain("2 servings");
+    expect(wrapper.text()).toContain("quick");
     expect(wrapper.find('[aria-label="edit recipe"]').exists()).toBe(false);
   });
 
-  it("emits edit and delete when canWrite", async () => {
+  it("shows edit and delete actions when canWrite", async () => {
     const wrapper = mount(RecipeCard, {
       props: {
         recipe,
@@ -65,6 +66,9 @@ describe("RecipeCard", () => {
         },
       },
     });
+
+    expect(wrapper.find('[aria-label="edit recipe"]').exists()).toBe(true);
+    expect(wrapper.find('[aria-label="delete recipe"]').exists()).toBe(true);
 
     await wrapper.get('[aria-label="edit recipe"]').trigger("click");
     expect(wrapper.emitted("edit")?.[0]).toEqual([recipe]);

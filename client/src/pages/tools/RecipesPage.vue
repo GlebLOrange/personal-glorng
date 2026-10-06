@@ -107,12 +107,13 @@ function editRecipeFromCard(recipe: Recipe): void {
         <div
           v-for="i in 6"
           :key="i"
-          class="box-border h-10 w-full rounded-lg border border-transparent bg-surface-card px-3"
+          class="box-border w-full rounded-lg border border-transparent bg-surface-card px-2"
         >
-          <div class="flex items-center gap-2">
-            <div class="size-7 shrink-0 animate-pulse rounded bg-surface-border/40" />
+          <div class="flex h-10 items-center gap-2">
+            <div class="size-6 shrink-0 animate-pulse rounded bg-surface-border/40" />
             <div class="h-3 w-2/3 animate-pulse rounded bg-surface-border/40" />
           </div>
+          <div class="mb-1.5 h-3 w-1/2 animate-pulse rounded bg-surface-border/30" />
         </div>
       </div>
 
@@ -135,7 +136,7 @@ function editRecipeFromCard(recipe: Recipe): void {
         :description="
           hasFilters
             ? 'no recipes match your filters'
-            : 'no recipes yet — run seed to load sample recipes, or add your first one.'
+            : 'no recipes yet — add your first one to get cooking.'
         "
       >
         <template v-if="hasFilters || canWrite" #action>

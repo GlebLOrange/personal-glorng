@@ -61,14 +61,14 @@ html[data-theme="light"] {
   --palette-surface-sage: #2e3640;
   --palette-surface-mid: #3e4854;
   --palette-surface-muted: #515b67;
-  --palette-surface-dark: #e5e7eb;
+  --palette-surface-dark: #d9d9d9;
   --palette-surface-card: #f7f8fa;
   --palette-surface-border: #c3cad3;
   --palette-surface-grid: #dde1e6;
   --palette-accent-violet: #b42318;
   --palette-accent-golden: #a16207;
   --palette-on-accent: #ffffff;
-  --palette-theme-color: #e5e7eb;
+  --palette-theme-color: #d9d9d9;
   --site-bg-scrim: linear-gradient(
     180deg,
     color-mix(in srgb, var(--palette-surface-dark) 94%, transparent) 0%,
@@ -376,9 +376,10 @@ html[data-theme="light"] {
 
 @utility cta-hero {
   /* Solid hire CTA — hero only; do not reuse on 404 / in-app washes */
-  @apply h-11 px-5 rounded-lg border border-accent-blue bg-accent-blue text-white text-sm font-semibold transition-colors inline-flex items-center justify-center;
+  /* Match cta-secondary control size (h-10 px-4) so hero CTAs align. */
+  @apply h-10 px-4 rounded-lg border border-accent-blue bg-accent-blue text-on-accent text-sm font-semibold transition-colors inline-flex items-center justify-center;
   &:hover:not(:disabled) {
-    @apply brightness-110;
+    @apply brightness-95;
   }
   &:active:not(:disabled) {
     @apply brightness-95;

@@ -128,7 +128,7 @@ onUnmounted(() => {
 
         <div class="h-1 bg-surface-border">
           <div
-            class="h-full bg-accent-blue transition-[width] duration-300"
+            class="h-full bg-accent-blue motion-safe:transition-[width] motion-safe:duration-300"
             :style="{ width: `${progress}%` }"
           />
         </div>
@@ -139,7 +139,8 @@ onUnmounted(() => {
             variant="ghost"
             quiet
             size="sm"
-            class="gap-1.5"
+            class="min-h-11 gap-1.5"
+            :aria-expanded="showIngredients"
             @click="showIngredients = !showIngredients"
           >
             <ChevronIcon :open="showIngredients" />
@@ -176,25 +177,27 @@ onUnmounted(() => {
           <IconActionButton
             action="create"
             :disabled="stepIndex === 0"
-            aria-label="previous"
-            title="previous"
+            aria-label="previous step"
+            title="previous step"
             @click="goPrev"
           >
-            &lt;
+            <ChevronIcon direction="left" class-name="size-4" />
           </IconActionButton>
-          <p class="min-w-0 text-center text-sm text-accent-blue">
+          <p class="min-w-0 text-center text-sm text-accent-blue" aria-live="polite">
             step {{ stepIndex + 1 }} of {{ totalSteps }}
           </p>
           <IconActionButton
             v-if="stepIndex < totalSteps - 1"
             action="create"
-            aria-label="next"
-            title="next"
+            aria-label="next step"
+            title="next step"
             @click="goNext"
           >
-            &gt;
+            <ChevronIcon direction="right" class-name="size-4" />
           </IconActionButton>
-          <IconCloseButton v-else aria-label="done" @click="emit('close')" />
+          <BaseButton v-else variant="primary" size="sm" class="min-h-11" @click="emit('close')">
+            done
+          </BaseButton>
         </footer>
       </div>
     </Transition>
