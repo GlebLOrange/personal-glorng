@@ -6,7 +6,7 @@ Commissioned graffiti sticker-badge **GY** monogram (gears + wrench). Source fil
 
 - App chrome: [`SiteLogo.vue`](../../src/components/brand/SiteLogo.vue) (nav + footer + hero) — `/brand/gy-mark-simple.svg` or `/brand/gy-logo.svg`
 - Favicon / touch icons: [`client/public/favicon.svg`](../../public/favicon.svg) and PNG/ICO siblings
-- Social card: [`client/public/social-preview.png`](../../public/social-preview.png) (type-only OG until refreshed)
+- Social card: [`client/public/social-preview.png`](../../public/social-preview.png)
 
 ## Source files (`logo/vector/`)
 

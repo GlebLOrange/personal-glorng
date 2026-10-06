@@ -70,7 +70,7 @@ function printPage(): void {
         variant="full"
         class-name="h-16 w-auto max-w-[min(100%,18rem)] sm:h-20 md:h-24"
       />
-      <span class="sr-only">{{ name }}</span>
+      <span class="text-xl font-bold tracking-tight sm:text-2xl accent-gradient">{{ name }}</span>
     </h1>
     <p class="text-2xl md:text-3xl text-surface-light mb-2">{{ title }}</p>
     <p v-if="tagline" class="text-lg text-surface-sage mb-3 text-pretty max-w-2xl mx-auto">
