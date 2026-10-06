@@ -1,5 +1,5 @@
-import { RESUME_FALLBACK } from "../constants/resumeFallback";
-import type { ResumeData } from "../types";
+import { RESUME_FALLBACK } from "../constants/resumeFallback.ts";
+import type { ResumeData } from "../types/index.ts";
 
 /** Escape text for injection into the static HTML shell. */
 export function escapeHtml(text: string): string {
