@@ -155,6 +155,7 @@ services:
       - ./server:/app
       - server_venv:/app/.venv
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
@@ -177,6 +178,7 @@ services:
       - server_venv:/app/.venv
       - server_media:/app/media
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
@@ -222,6 +224,7 @@ services:
       - ./server:/app
       - server_venv:/app/.venv
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
@@ -259,6 +262,7 @@ services:
       - ./server:/app
       - server_venv:/app/.venv
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
@@ -296,6 +300,7 @@ services:
       - ./server:/app
       - server_venv:/app/.venv
       - ./.env:/run/glorng/.env:ro
+      - ./shared/expense_catalog.json:/shared/expense_catalog.json:ro
     environment:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
