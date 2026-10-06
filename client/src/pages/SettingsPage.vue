@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref } from "vue";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
@@ -12,6 +12,11 @@ import { usePermissions } from "@/composables/usePermissions";
 import { PLATFORM_SERVICES } from "@/platform/services";
 import { useAuthStore } from "@/stores/auth";
 import { passwordStrength } from "@/utils/passwordPolicy";
+
+// ponytail: badge pulls axios — keep it out of the production entry graph
+const DevApiStatusBadge = import.meta.env.DEV
+  ? defineAsyncComponent(() => import("@/components/dev/DevApiStatusBadge.vue"))
+  : null;
 
 const auth = useAuthStore();
 const { permissions, canAccess } = usePermissions();
@@ -189,6 +194,14 @@ async function savePassword(): Promise<void> {
         />
 
         <SettingsQrLibrarySection />
+
+        <div
+          v-if="DevApiStatusBadge"
+          class="flex flex-wrap items-center gap-2 rounded-lg border border-surface-border bg-surface-card px-4 py-3"
+        >
+          <p class="text-xs text-surface-mid">development API</p>
+          <component :is="DevApiStatusBadge" />
+        </div>
       </div>
     </div>
 

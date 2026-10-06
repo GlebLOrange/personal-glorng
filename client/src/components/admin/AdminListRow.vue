@@ -183,6 +183,14 @@ function onKeydown(event: KeyboardEvent): void {
         <span v-else-if="$slots.primary" :class="primaryClass">
           <slot name="primary" />
         </span>
+        <!-- Meta sits mid-row with primary so list items stay single-line / control height. -->
+        <div
+          v-if="$slots.meta"
+          data-admin-list-meta
+          class="min-w-0 shrink truncate text-xs lowercase leading-none text-surface-muted"
+        >
+          <slot name="meta" />
+        </div>
       </div>
       <div
         v-if="$slots.time"
@@ -205,13 +213,6 @@ function onKeydown(event: KeyboardEvent): void {
         :open="expanded"
         class-name="size-3.5 shrink-0 text-surface-muted"
       />
-    </div>
-    <div
-      v-if="$slots.meta"
-      data-admin-list-meta
-      class="min-w-0 truncate pb-1.5 text-xs lowercase leading-snug text-surface-muted"
-    >
-      <slot name="meta" />
     </div>
     <div
       v-if="$slots.actions && revealActionsOnHover"

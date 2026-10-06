@@ -96,7 +96,7 @@ describe("AdminListRow", () => {
     expect(wrapper.classes()).toContain("!border-0");
   });
 
-  it("renders meta as an always-visible subtitle under the header", () => {
+  it("renders meta inline in the header mid-row", () => {
     const wrapper = mount(AdminListRow, {
       props: { interactive: true },
       slots: {
@@ -110,7 +110,6 @@ describe("AdminListRow", () => {
 
     const meta = wrapper.get("[data-admin-list-meta]");
     expect(meta.text()).toContain("feeds.dw.com");
-    expect(meta.classes()).not.toContain("hidden");
-    expect(meta.classes()).not.toContain("sm:inline");
+    expect(header.element.contains(meta.element)).toBe(true);
   });
 });
