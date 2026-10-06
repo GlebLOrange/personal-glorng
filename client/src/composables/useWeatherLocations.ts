@@ -56,7 +56,7 @@ function migrateLegacyGuestLocations(): void {
 
 migrateLegacyGuestLocations();
 
-/** Shared across all useWeatherLocations() callers (WeatherPage, WeatherBar, …). */
+/** Shared across all useWeatherLocations() callers (WeatherPage, …). */
 const serverLocations = ref<WeatherLocation[]>([]);
 const guestLocations = ref<GuestWeatherLocation[]>(readGuestLocations(SAVED_LOCATIONS_STORAGE_KEY));
 const loading = ref(false);

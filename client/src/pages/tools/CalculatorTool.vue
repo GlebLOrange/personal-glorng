@@ -8,8 +8,8 @@ import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useNotify } from "@/composables/useNotify";
 
-const display = ref("42");
-const expression = ref("6 * 7");
+const display = ref("0");
+const expression = ref("");
 const { run: runEval, loading } = useApiAction();
 const { toast } = useNotify();
 

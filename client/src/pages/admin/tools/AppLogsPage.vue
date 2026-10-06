@@ -19,7 +19,7 @@ import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useExpandableIds } from "@/composables/useExpandableIds";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
-import { yesterdayIsoDate } from "@/utils/dates";
+import { daysAgoIsoDate, isoDateLocal, yesterdayIsoDate } from "@/utils/dates";
 import { formatDate } from "@/utils/format";
 
 interface AppLogEntry {
@@ -35,7 +35,10 @@ interface AppLogEntry {
   request_id: string | null;
 }
 
+type PeriodFilter = "yesterday" | "today" | "7d" | "all";
+
 const DEFAULT_LEVEL = "error";
+const DEFAULT_PERIOD: PeriodFilter = "yesterday";
 
 const items = ref<AppLogEntry[]>([]);
 const total = ref(0);
@@ -43,7 +46,7 @@ const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: t
 const level = ref(DEFAULT_LEVEL);
 const requestId = ref("");
 const page = ref(1);
-const dateFrom = ref(yesterdayIsoDate());
+const period = ref<PeriodFilter>(DEFAULT_PERIOD);
 const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
@@ -54,8 +57,29 @@ const LEVEL_FILTERS = [
   { label: "error", value: "error" },
 ] as const;
 
+const PERIOD_FILTERS: { label: string; value: PeriodFilter }[] = [
+  { label: "since yesterday", value: "yesterday" },
+  { label: "today", value: "today" },
+  { label: "last 7 days", value: "7d" },
+  { label: "all", value: "all" },
+];
+
 /** Don't hit the API for partial request-id typing. */
 const MIN_REQUEST_ID_LENGTH = 3;
+
+const PERIOD_CHIP_CLASS = "bg-surface-mid/15 text-surface-mid border-surface-border";
+
+function dateFromForPeriod(value: PeriodFilter): string | undefined {
+  if (value === "all") return undefined;
+  if (value === "today") return isoDateLocal();
+  if (value === "7d") return daysAgoIsoDate(7);
+  return yesterdayIsoDate();
+}
+
+const periodLabel = computed(
+  () => PERIOD_FILTERS.find((chip) => chip.value === period.value)?.label ?? "since yesterday",
+);
+const dateFrom = computed(() => dateFromForPeriod(period.value));
 
 const totalPages = computed(() => Math.ceil(total.value / ADMIN_LIST_PAGE_SIZE));
 const hasPreviousPage = computed(() => page.value > 1);
@@ -67,19 +91,23 @@ const appliedRequestId = computed(() => {
 const hasActiveFilters = computed(
   () =>
     level.value !== DEFAULT_LEVEL ||
-    dateFrom.value !== yesterdayIsoDate() ||
+    period.value !== DEFAULT_PERIOD ||
     Boolean(appliedRequestId.value),
 );
 const activeFilterLabel = computed(() => {
   const parts: string[] = [];
   if (level.value) parts.push(level.value);
+  parts.push(periodLabel.value);
   if (appliedRequestId.value) parts.push(appliedRequestId.value);
-  return parts.length ? parts.join(", ") : undefined;
+  return parts.join(" · ");
 });
+const emptyDescription = computed(
+  () => `no ${level.value} logs ${periodLabel.value}`,
+);
 
 useScrollListFingerprint(
   () =>
-    `${page.value}:${total.value}:${level.value}:${appliedRequestId.value}:${dateFrom.value}:${items.value[0]?.id ?? ""}`,
+    `${page.value}:${total.value}:${level.value}:${appliedRequestId.value}:${period.value}:${items.value[0]?.id ?? ""}`,
 );
 
 async function load(): Promise<void> {
@@ -113,6 +141,13 @@ function setLevelFilter(next: string): void {
   void load();
 }
 
+function setPeriodFilter(next: PeriodFilter): void {
+  period.value = next;
+  page.value = 1;
+  filterDropdownRef.value?.close();
+  void load();
+}
+
 let requestIdTimer: ReturnType<typeof setTimeout> | undefined;
 let lastAppliedRequestId = "";
 
@@ -133,10 +168,14 @@ function clearFilters(): void {
   clearTimeout(requestIdTimer);
   level.value = DEFAULT_LEVEL;
   requestId.value = "";
-  dateFrom.value = yesterdayIsoDate();
+  period.value = DEFAULT_PERIOD;
   lastAppliedRequestId = "";
   page.value = 1;
   void load();
+}
+
+function entryMeta(entry: AppLogEntry): string {
+  return entry.error_type ? `${entry.logger} · ${entry.error_type}` : entry.logger;
 }
 
 onUnmounted(() => {
@@ -179,7 +218,10 @@ onMounted(load);
             ref="filterDropdown"
             :has-active-filters="hasActiveFilters"
             :active-label="activeFilterLabel"
-            :option-labels="LEVEL_FILTERS.map((chip) => chip.label)"
+            :option-labels="[
+              ...LEVEL_FILTERS.map((chip) => chip.label),
+              ...PERIOD_FILTERS.map((chip) => chip.label),
+            ]"
             @clear="clearFilters"
           >
             <template #chips>
@@ -190,6 +232,14 @@ onMounted(load);
                 :active="level === chip.value"
                 :color-class="logLevelClass(chip.value)"
                 @click="setLevelFilter(chip.value)"
+              />
+              <AdminFilterChip
+                v-for="chip in PERIOD_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :active="period === chip.value"
+                :color-class="PERIOD_CHIP_CLASS"
+                @click="setPeriodFilter(chip.value)"
               />
             </template>
             <BaseInput
@@ -205,7 +255,7 @@ onMounted(load);
 
       <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
 
-      <EmptyState v-else-if="items.length === 0" class="mt-4" description="no log entries found" />
+      <EmptyState v-else-if="items.length === 0" class="mt-4" :description="emptyDescription" />
 
       <div v-else class="mt-1 min-w-0">
         <AdminListRow
@@ -232,7 +282,7 @@ onMounted(load);
             <span class="lowercase" :title="entry.message.toLowerCase()">{{ entry.message }}</span>
           </template>
           <template #meta>
-            <span class="font-data">{{ entry.logger }}</span>
+            <span class="font-data" :title="entryMeta(entry)">{{ entryMeta(entry) }}</span>
           </template>
           <template #time>{{ formatDate(entry.occurred_at) }}</template>
           <template #detail>

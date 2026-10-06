@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import AdminListRow from "@/components/admin/AdminListRow.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
-import { Card } from "@/components/ui/card";
-import { CONTROL_SIZE } from "@/constants/formClasses";
 import type { Recipe } from "@/types";
+import { formatRecipeTime } from "@/utils/recipe";
 
 const props = defineProps<{
   recipe: Recipe;
@@ -26,30 +26,28 @@ const thumbInitials = computed(() => {
   return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 });
 
-function onRowKeydown(event: KeyboardEvent): void {
-  if (event.key !== "Enter" && event.key !== " ") return;
-  event.preventDefault();
-  emit("select", props.recipe.id);
-}
+const recipeMeta = computed(() => {
+  const parts: string[] = [];
+  const prep = formatRecipeTime(props.recipe.prep_time);
+  if (prep) parts.push(`${prep} prep`);
+  const cook = formatRecipeTime(props.recipe.cook_time);
+  if (cook) parts.push(`${cook} cook`);
+  if (props.recipe.servings) parts.push(`${props.recipe.servings} servings`);
+  if (props.recipe.tags.length) {
+    parts.push(props.recipe.tags.slice(0, 3).join(", "));
+  }
+  return parts.join(" · ");
+});
 </script>
 
 <template>
-  <Card
-    as="div"
+  <AdminListRow
     interactive
-    :hoverable="false"
-    variant="ghost"
-    role="button"
-    tabindex="0"
-    :class="[
-      CONTROL_SIZE,
-      'min-h-10 admin-list-row-rule group flex w-full min-w-0 cursor-pointer items-center overflow-hidden rounded-md !border-0 !bg-surface-card px-3 text-left ring-1 ring-inset ring-transparent hover:bg-surface-light/10 hover:ring-accent-blue/40 focus-visible:bg-surface-light/10 focus-visible:ring-accent-blue/40 focus-within:bg-surface-light/10 focus-within:ring-accent-blue/40',
-    ]"
-    :aria-label="`open recipe ${recipe.title}`"
+    nested-interactive
+    :open-label="`open recipe ${recipe.title}`"
     @click="emit('select', recipe.id)"
-    @keydown="onRowKeydown"
   >
-    <div class="flex h-full min-w-0 flex-1 items-center gap-2">
+    <template #leading>
       <BaseImage
         v-if="recipe.image_url"
         :src="recipe.image_url"
@@ -63,20 +61,19 @@ function onRowKeydown(event: KeyboardEvent): void {
       >
         {{ thumbInitials }}
       </div>
+    </template>
 
-      <h3 class="min-w-0 flex-1 truncate text-sm font-semibold leading-none text-surface-light">
-        {{ recipe.title }}
-      </h3>
+    <template #primary>
+      <span :title="recipe.title">{{ recipe.title }}</span>
+    </template>
 
-      <div
-        v-if="canWrite"
-        class="flex h-full shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100"
-        @click.stop
-        @keydown.stop
-      >
-        <IconEditButton aria-label="edit recipe" @click="emit('edit', recipe)" />
-        <IconCloseButton aria-label="delete recipe" @click="emit('delete', recipe)" />
-      </div>
-    </div>
-  </Card>
+    <template v-if="recipeMeta" #meta>
+      <span :title="recipeMeta">{{ recipeMeta }}</span>
+    </template>
+
+    <template v-if="canWrite" #actions>
+      <IconEditButton aria-label="edit recipe" @click="emit('edit', recipe)" />
+      <IconCloseButton aria-label="delete recipe" @click="emit('delete', recipe)" />
+    </template>
+  </AdminListRow>
 </template>

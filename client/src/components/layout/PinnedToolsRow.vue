@@ -3,10 +3,9 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 
 import ToastContainer from "@/components/ui/ToastContainer.vue";
-import WeatherBar from "@/components/weather/WeatherBar.vue";
 import { WEATHER_ROUTE_NAME } from "@/constants/weather";
 
-/** Weather/toast strip on tools hub, admin hub, and public utility routes — not news/settings/nested admin. */
+/** Toast strip on tools hub, admin hub, and public utility routes — not news/settings/nested admin. */
 const PINNED_TOOLS_ROUTE_NAMES = new Set<string>([
   "tools",
   "admin",
@@ -29,6 +28,5 @@ const showPinnedRow = computed(() => {
 <template>
   <div v-if="showPinnedRow" class="page-tool-grid mb-8 min-w-0">
     <ToastContainer variant="tile" />
-    <WeatherBar wrapper-class="page-tile md:col-start-3" card-class="page-weather-tile-card" />
   </div>
 </template>

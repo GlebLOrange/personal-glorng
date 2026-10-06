@@ -52,6 +52,23 @@ onUnmounted(() => {
   <footer
     class="border-t border-surface-border py-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))]"
   >
+    <div
+      class="mx-auto mb-4 flex max-w-lg flex-wrap items-center justify-center gap-x-3 gap-y-2 print:hidden"
+    >
+      <p class="text-meta">support this work</p>
+      <p v-if="showDonationThanks" class="text-label text-status-success" role="status">
+        thanks for your support
+      </p>
+      <div
+        v-if="donationsLoading && !donationsFetched"
+        class="h-8 w-24 animate-pulse rounded-lg bg-surface-card"
+        aria-busy="true"
+      />
+      <DonationsBlock v-else-if="donations" layout="center" :config="donations" />
+      <p v-else-if="donationsError" class="text-label text-status-error" role="status">
+        support options unavailable
+      </p>
+    </div>
     <div class="flex justify-center mb-4">
       <router-link
         to="/privacy"
@@ -63,21 +80,5 @@ onUnmounted(() => {
     <p class="text-base text-surface-sage text-center">
       &copy; {{ year }} <span class="text-accent-blue font-bold">Gleb.Y</span>
     </p>
-
-    <div class="mx-auto mt-6 flex max-w-lg flex-col items-center gap-2 print:hidden">
-      <p class="text-meta">support this work</p>
-      <p v-if="showDonationThanks" class="text-label text-status-success" role="status">
-        thanks for your support
-      </p>
-      <div
-        v-if="donationsLoading && !donationsFetched"
-        class="h-10 w-40 animate-pulse rounded-lg bg-surface-card"
-        aria-busy="true"
-      />
-      <DonationsBlock v-else-if="donations" layout="center" :config="donations" />
-      <p v-else-if="donationsError" class="text-label text-status-error" role="status">
-        support options unavailable
-      </p>
-    </div>
   </footer>
 </template>

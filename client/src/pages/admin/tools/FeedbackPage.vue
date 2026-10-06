@@ -204,26 +204,21 @@ onMounted(load);
           :key="item.id"
           interactive
           nested-interactive
-          reveal-actions-on-hover
           :status-class="feedbackStatusClass(item.status)"
           :expanded="drawerOpen && selectedItem?.id === item.id"
           @click="openItem(item)"
         >
           <template #badge>
-            <div class="flex items-center gap-2">
-              <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
-              <span class="whitespace-nowrap text-xs lowercase text-surface-muted">
-                {{ formatDate(item.created_at) }}
-              </span>
-              <span
-                class="hidden max-w-[12rem] truncate text-xs lowercase text-surface-muted sm:inline"
-              >
-                {{ item.email }}
-              </span>
-            </div>
+            <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
           </template>
           <template #primary>
             <span class="lowercase" :title="item.theme">{{ item.theme }}</span>
+          </template>
+          <template #time>{{ formatDate(item.created_at) }}</template>
+          <template #meta>
+            <span :title="`${item.email} · ${item.message}`">
+              {{ item.email }} · {{ item.message }}
+            </span>
           </template>
           <template #actions>
             <IconActionButton

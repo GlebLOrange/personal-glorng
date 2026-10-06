@@ -95,4 +95,21 @@ describe("AdminListRow", () => {
     expect(wrapper.classes()).toContain("admin-list-row-rule");
     expect(wrapper.classes()).toContain("!border-0");
   });
+
+  it("renders meta inline in the header mid-row", () => {
+    const wrapper = mount(AdminListRow, {
+      props: { interactive: true },
+      slots: {
+        primary: "DW",
+        meta: "feeds.dw.com · fetched yesterday",
+      },
+    });
+
+    const header = wrapper.find("[data-admin-list-header]");
+    expect(header.classes()).toContain("h-10");
+
+    const meta = wrapper.get("[data-admin-list-meta]");
+    expect(meta.text()).toContain("feeds.dw.com");
+    expect(header.element.contains(meta.element)).toBe(true);
+  });
 });

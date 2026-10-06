@@ -108,7 +108,6 @@ function confirmDelete(): void {
     :interactive="canWrite"
     :nested-interactive="canWrite"
     hoverable
-    center-meta
     reveal-actions-on-hover
     @click="startEdit"
   >

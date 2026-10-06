@@ -33,7 +33,6 @@ function confirmDelete(): void {
     interactive
     nested-interactive
     hoverable
-    center-meta
     reveal-actions-on-hover
     @click="emit('select')"
   >

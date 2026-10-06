@@ -15,8 +15,6 @@ const props = withDefaults(
     nestedInteractive?: boolean;
     /** Hide row actions until hover or focus-within (keyboard accessible). */
     revealActionsOnHover?: boolean;
-    /** Absolutely center the meta slot in the row (e.g. short URL). */
-    centerMeta?: boolean;
     /** Optional accessible name override; omit to use primary slot text. */
     openLabel?: string;
     /** Status badge classes — border/bg tint the row on hover / focus / expanded. */
@@ -29,7 +27,6 @@ const props = withDefaults(
     expandable: false,
     nestedInteractive: false,
     revealActionsOnHover: false,
-    centerMeta: false,
   },
 );
 
@@ -40,13 +37,10 @@ const focusable = computed(() => props.interactive && !props.nestedInteractive);
 const primaryAsOpenControl = computed(
   () => props.interactive && props.nestedInteractive && Boolean(slots.primary),
 );
-const inlineMeta = computed(() => Boolean(slots.meta) && !props.centerMeta);
 const primaryClass = computed(() =>
   [
-    "min-w-0 truncate rounded text-left text-sm font-medium leading-none text-surface-light",
+    "min-w-0 flex-1 truncate rounded text-left text-sm font-medium leading-none text-surface-light",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
-    // ponytail: without this, flex-1 on the title shoves #meta to the far end of the row
-    inlineMeta.value ? "shrink" : "flex-1",
   ].join(" "),
 );
 
@@ -108,7 +102,7 @@ const showNeutralHover = computed(() => props.hoverable && !props.statusClass);
 /** Computed so Tailwind class strings never nest `"` inside a `:class="..."` attribute. */
 const rowClass = computed(() => [
   props.interactive ? "cursor-pointer" : undefined,
-  props.revealActionsOnHover || props.centerMeta ? "group relative" : undefined,
+  props.revealActionsOnHover ? "group relative" : undefined,
   showNeutralHover.value
     ? "hover:ring-accent-blue/40 hover:bg-surface-light/10 focus-visible:ring-accent-blue/40 focus-within:ring-accent-blue/40"
     : undefined,
@@ -189,22 +183,14 @@ function onKeydown(event: KeyboardEvent): void {
         <span v-else-if="$slots.primary" :class="primaryClass">
           <slot name="primary" />
         </span>
-        <span
-          v-if="inlineMeta"
-          class="hidden max-w-[min(40%,18rem)] shrink-0 truncate text-xs lowercase leading-none text-surface-muted sm:inline"
+        <!-- Meta sits mid-row with primary so list items stay single-line / control height. -->
+        <div
+          v-if="$slots.meta"
+          data-admin-list-meta
+          class="min-w-0 shrink truncate text-xs lowercase leading-none text-surface-muted"
         >
           <slot name="meta" />
-        </span>
-      </div>
-      <div
-        v-if="$slots.meta && centerMeta"
-        class="pointer-events-none absolute inset-0 hidden items-center justify-center sm:flex"
-      >
-        <span
-          class="pointer-events-auto max-w-[min(100%,24rem)] truncate px-2 text-xs lowercase leading-none text-surface-muted"
-        >
-          <slot name="meta" />
-        </span>
+        </div>
       </div>
       <div
         v-if="$slots.time"
@@ -230,7 +216,7 @@ function onKeydown(event: KeyboardEvent): void {
     </div>
     <div
       v-if="$slots.actions && revealActionsOnHover"
-      class="absolute inset-y-0 right-1 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 [&_button]:!h-full [&_button]:!max-h-full [&_button]:!min-h-0 [&_button]:!w-10 [&_button]:!min-w-0"
+      class="absolute top-0 right-1 z-10 flex h-10 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 [&_button]:!h-full [&_button]:!max-h-full [&_button]:!min-h-0 [&_button]:!w-10 [&_button]:!min-w-0"
       @click.stop
       @keydown.stop
     >
