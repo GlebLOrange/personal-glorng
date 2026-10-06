@@ -3,10 +3,8 @@ import { computed, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import AuthPageShell from "@/components/auth/AuthPageShell.vue";
-import GoogleMarkIcon from "@/components/icons/GoogleMarkIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import { isFirebaseEnabled } from "@/constants/firebase";
 import { useNotify } from "@/composables/useNotify";
 import { useAuthStore } from "@/stores/auth";
 import { getApiErrorMessage } from "@/types/api";
@@ -21,7 +19,6 @@ const { toast } = useNotify();
 const email = ref("");
 const password = ref("");
 const loading = ref(false);
-const googleLoading = ref(false);
 const formError = ref("");
 const formErrorEl = useTemplateRef<HTMLElement>("formErrorAlert");
 
@@ -42,23 +39,6 @@ async function handleLogin(): Promise<void> {
     await focusAfterPaint(() => formErrorEl.value);
   } finally {
     loading.value = false;
-  }
-}
-
-async function handleGoogleLogin(): Promise<void> {
-  googleLoading.value = true;
-  formError.value = "";
-  try {
-    await auth.loginWithGoogle();
-    toast("Logged in successfully", "success");
-    router.push(safeRedirectPath(route.query.redirect));
-  } catch (err) {
-    if (import.meta.env.DEV) console.error(err);
-    formError.value = getApiErrorMessage(err, "Google login failed");
-    toast(formError.value, "error");
-    await focusAfterPaint(() => formErrorEl.value);
-  } finally {
-    googleLoading.value = false;
   }
 }
 </script>
@@ -106,24 +86,6 @@ async function handleGoogleLogin(): Promise<void> {
         {{ loading ? "signing in…" : "login" }}
       </BaseButton>
     </form>
-
-    <div v-if="isFirebaseEnabled" class="mt-5">
-      <div class="flex items-center gap-3 text-xs text-surface-mid mb-4">
-        <span class="h-px flex-1 bg-surface-border" />
-        <span>or</span>
-        <span class="h-px flex-1 bg-surface-border" />
-      </div>
-      <BaseButton
-        type="button"
-        variant="secondary"
-        class="w-full gap-2"
-        :loading="googleLoading"
-        @click="handleGoogleLogin"
-      >
-        <GoogleMarkIcon class-name="size-4" />
-        {{ googleLoading ? "connecting…" : "continue with Google" }}
-      </BaseButton>
-    </div>
 
     <p class="text-center text-xs text-surface-mid mt-4">
       <RouterLink to="/forgot-password" class="nav-link underline-offset-4">
