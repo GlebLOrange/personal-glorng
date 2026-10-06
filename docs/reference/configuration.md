@@ -93,9 +93,6 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Access token TTL |
 | `JWT_REFRESH_TOKEN_EXPIRE_DAYS` | `7` | Refresh token TTL |
 | `JWT_ALGORITHM` | `HS256` | Signing algorithm |
-| `FIREBASE_AUTH_ENABLED` | `false` | Google sign-in via Firebase |
-| `FIREBASE_PROJECT_ID` | | Firebase project |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | | Service account JSON (prefer `GOOGLE_APPLICATION_CREDENTIALS` in deploy) |
 
 ## Email
 

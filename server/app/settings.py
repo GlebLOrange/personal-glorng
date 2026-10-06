@@ -540,9 +540,6 @@ class Settings(BaseSettings):
 
     # Auth
     ALLOWED_EMAIL: str
-    FIREBASE_AUTH_ENABLED: bool = False
-    FIREBASE_PROJECT_ID: str = ""
-    FIREBASE_SERVICE_ACCOUNT_JSON: str = ""
 
     # Email
     EMAIL_BACKEND: str

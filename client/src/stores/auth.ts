@@ -52,17 +52,6 @@ export const useAuthStore = defineStore("auth", () => {
     await fetchUser();
   }
 
-  async function loginWithGoogle(): Promise<void> {
-    const { signInWithGooglePopup } = await import("@/services/firebase");
-    const credential = await signInWithGooglePopup();
-    const idToken = await credential.user.getIdToken();
-    const api = await getApi();
-    await api.post("/auth/firebase", {
-      id_token: idToken,
-    });
-    await fetchUser();
-  }
-
   async function fetchUser(): Promise<void> {
     const api = await getApi();
     const { data } = await api.get<UserResponse>("/auth/me");
@@ -189,7 +178,6 @@ export const useAuthStore = defineStore("auth", () => {
     clearUser,
     logout,
     login,
-    loginWithGoogle,
     fetchUser,
     updateProfile,
     changeEmail,
