@@ -5,7 +5,7 @@
 
 Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Download the raw schema: [openapi.json](/openapi.json).
 
-**149** operations.
+**148** operations.
 
 | Method | Path | Tags | Summary |
 |--------|------|------|---------|
@@ -16,7 +16,6 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/admin/users/{public_id}` | admin | Get user |
 | `PATCH` | `/api/admin/users/{public_id}/permissions` | admin | Update user permissions |
 | `POST` | `/api/auth/change-password` | auth | Change password |
-| `POST` | `/api/auth/firebase` | auth | Log in with Firebase Google auth |
 | `POST` | `/api/auth/forgot-password` | auth | Request password reset |
 | `DELETE` | `/api/auth/github` | github | Unlink GitHub account |
 | `GET` | `/api/auth/github/authorize` | github | Start GitHub OAuth |

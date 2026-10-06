@@ -28,7 +28,6 @@ dependencies = [
     "elasticsearch[async]==9.5.*",
     "motor==3.7.*",
     "weasyprint==70.*",
-    "firebase-admin>=7.7.0",
     "defusedxml==0.7.*",
     "elastic-opentelemetry==1.15.*",
     "opentelemetry-instrumentation-fastapi==0.64b0",
