@@ -76,12 +76,12 @@ const isInlineEnd = computed(() => props.labelAlign === "end" && !props.labelIns
 const useShell = computed(() =>
   Boolean(
     hasPrefix.value ||
-      fieldCopy.value.tip ||
-      props.placeholder ||
-      hasSuffix.value ||
-      props.labelInside ||
-      props.label ||
-      isInlineEnd.value,
+    fieldCopy.value.tip ||
+    props.placeholder ||
+    hasSuffix.value ||
+    props.labelInside ||
+    props.label ||
+    isInlineEnd.value,
   ),
 );
 const showClear = computed(() => useShell.value && hasClearableValue.value);
@@ -269,16 +269,9 @@ defineExpose({ focus });
         v-if="reserveClear || hasSuffix || showInlineEndLabel"
         class="relative z-10 flex shrink-0 items-center gap-0.5 self-stretch pr-2"
       >
-        <div
-          v-if="showInlineEndLabel"
-          class="flex max-w-[11rem] items-center gap-1 bg-transparent"
-        >
+        <div v-if="showInlineEndLabel" class="flex max-w-[11rem] items-center gap-1 bg-transparent">
           <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
-          <label
-            v-if="showLabelNotch"
-            :for="inputId"
-            :class="['truncate', FIELD_LABEL_TEXT_CLASS]"
-          >
+          <label v-if="showLabelNotch" :for="inputId" :class="['truncate', FIELD_LABEL_TEXT_CLASS]">
             {{ label }}
           </label>
           <FieldHelp
@@ -339,13 +332,7 @@ defineExpose({ focus });
         {{ label }}
       </label>
       <span class="pointer-events-auto">
-        <FieldHelp
-          v-if="hint"
-          size="sm"
-          :align="helpAlign"
-          :text="hint"
-          :content-id="hintId"
-        />
+        <FieldHelp v-if="hint" size="sm" :align="helpAlign" :text="hint" :content-id="hintId" />
       </span>
     </div>
     <p

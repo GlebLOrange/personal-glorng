@@ -73,7 +73,11 @@ async function preview(): Promise<void> {
     <AdminListToolbar>
       <template #start>
         <div class="flex w-full min-w-0 items-center justify-between gap-2">
-          <ToolbarPillButton action="create" :disabled="!subject || !body || loading" @click="preview">
+          <ToolbarPillButton
+            action="create"
+            :disabled="!subject || !body || loading"
+            @click="preview"
+          >
             preview
           </ToolbarPillButton>
           <ToolbarPillButton

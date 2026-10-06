@@ -125,14 +125,8 @@ describe("useNewsSources", () => {
       data: { items: [makeSource()], total: 1, pages: 1, page: 1 },
     });
 
-    const {
-      setEnabledFilter,
-      clearFilters,
-      enabledFilter,
-      hasActiveFilters,
-      page,
-      loadSources,
-    } = useNewsSources();
+    const { setEnabledFilter, clearFilters, enabledFilter, hasActiveFilters, page, loadSources } =
+      useNewsSources();
     await loadSources();
     expect(enabledFilter.value).toBe("enabled");
     expect(hasActiveFilters.value).toBe(false);

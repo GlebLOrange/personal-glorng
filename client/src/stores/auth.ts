@@ -163,9 +163,7 @@ export const useAuthStore = defineStore("auth", () => {
         return;
       }
       sessionError.value =
-        err instanceof Error && err.message
-          ? err.message
-          : "Unable to restore session";
+        err instanceof Error && err.message ? err.message : "Unable to restore session";
       throw err;
     } finally {
       sessionResolved.value = true;

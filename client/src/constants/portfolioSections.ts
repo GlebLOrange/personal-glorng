@@ -7,7 +7,7 @@ export type PortfolioSectionLink = {
 export const PORTFOLIO_SECTION_LINKS: PortfolioSectionLink[] = [
   { href: "#about", label: "about" },
   { href: "#experience", label: "experience" },
-  { href: "#projects", label: "projects" },
+  { href: "#case-studies", label: "case studies" },
   { href: "#skills", label: "skills" },
   { href: "#contacts", label: "contacts" },
 ];

@@ -5,9 +5,14 @@ import { api } from "@/composables/useApi";
 import type { DonationsConfig } from "@/types";
 import { safeNavigationHref } from "@/utils/safeUrl";
 
-const props = defineProps<{
-  config: DonationsConfig;
-}>();
+const props = withDefaults(
+  defineProps<{
+    config: DonationsConfig;
+    /** Footer uses center; portfolio support strip used end. */
+    layout?: "end" | "center";
+  }>(),
+  { layout: "end" },
+);
 
 const isStartingCheckout = ref(false);
 const checkoutError = ref(false);
@@ -66,8 +71,14 @@ async function startStripeCheckout(): Promise<void> {
 </script>
 
 <template>
-  <div class="flex min-w-0 flex-col items-end gap-2">
-    <div class="flex flex-wrap items-center justify-end gap-3 sm:flex-nowrap sm:gap-4">
+  <div
+    class="flex min-w-0 flex-col gap-2"
+    :class="layout === 'center' ? 'items-center' : 'items-end'"
+  >
+    <div
+      class="flex flex-wrap items-center gap-3 sm:flex-nowrap sm:gap-4"
+      :class="layout === 'center' ? 'justify-center' : 'justify-end'"
+    >
       <template v-if="primaryAction">
         <a
           v-if="primaryAction.id !== 'stripe-checkout' && primaryAction.href"

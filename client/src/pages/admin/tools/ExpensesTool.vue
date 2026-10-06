@@ -11,10 +11,7 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
-import {
-  useExpensesTool,
-  type ExpenseQuickAddTarget,
-} from "@/composables/useExpensesTool";
+import { useExpensesTool, type ExpenseQuickAddTarget } from "@/composables/useExpensesTool";
 import { usePermissions } from "@/composables/usePermissions";
 
 const ExpenseCalculatorTab = defineAsyncComponent(
@@ -131,7 +128,6 @@ function focusAddFromAnalytics(): void {
     dashboardPanelRef.value?.focusEntry();
   });
 }
-
 </script>
 
 <template>
@@ -262,10 +258,7 @@ function focusAddFromAnalytics(): void {
           tabindex="0"
           class="outline-none"
         >
-          <ExpenseCategoryBreakdown
-            :summary="summary"
-            :format-money="formatMoney"
-          />
+          <ExpenseCategoryBreakdown :summary="summary" :format-money="formatMoney" />
         </section>
 
         <section

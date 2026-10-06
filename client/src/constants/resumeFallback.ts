@@ -5,8 +5,7 @@ export const RESUME_FALLBACK: ResumeData = {
   name: "Gleb.Y",
   title: "Python Backend / FastAPI Engineer",
   tagline:
-    "I build production APIs, auth, workers, and deploys" +
-    " — this site is a live example.",
+    "I build production APIs, auth, workers, and deploys" + " — this site is a live example.",
   location: "EU",
   availability: "open to full-time and contract (remote)",
   bio:
@@ -62,13 +61,13 @@ export const RESUME_FALLBACK: ResumeData = {
       company: "Independent — personal website",
       period: "2022-Present",
       description:
-        "Built and operate this FastAPI + Vue site as a production sample" +
-        " (APIs, MongoDB, workers, ops).",
+        "Operate this FastAPI + Vue platform as a public hiring sample:" +
+        " cookie auth, CSRF, SSRF-safe fetches, workers, and CI.",
       highlights: [
-        "Built production FastAPI services with cookie auth, capability RBAC, CSRF protection, and rate limiting",
-        "Shipped Celery/Redis workers for email, task automation, news ingest, and cleanup jobs",
-        "Maintained 80+ server pytest modules, path-filtered GitHub Actions CI, and multi-service Docker Compose deploys",
-        "Added optional Postgres/Elasticsearch search, Redis caching, OpenTelemetry hooks, and a VitePress architecture handbook",
+        "Cookie auth with capability RBAC, CSRF origin checks on mutating /api (staging/production), and fail-closed rate limits",
+        "SSRF-safe outbound HTTP: public DNS off the event loop, TLS SNI preserved on IP connect, redirect hop re-validation",
+        "Celery/Redis workers for email, task automation, news ingest, and cleanup without blocking the API",
+        "Path-filtered GitHub Actions CI, multi-service Docker Compose, OpenAPI, and a VitePress architecture handbook",
       ],
     },
     {
@@ -86,37 +85,44 @@ export const RESUME_FALLBACK: ResumeData = {
   ],
   projects: [
     {
-      name: "personal website",
+      name: "cookie auth & CSRF",
       description:
-        "Public engineering sample: FastAPI + Vue with auth, workers," +
-        " search, admin, OpenAPI, and a handbook (repo linked).",
-      tech: [
-        "FastAPI",
-        "Vue 3",
-        "MongoDB",
-        "Redis",
-        "Celery",
-        "Docker",
-        "Nginx",
-        "GitHub Actions",
-      ],
-      url: "https://github.com/GlebLOrange/personal-glorng",
+        "Browser sessions on this SPA need CSRF protection without" +
+        " breaking Bearer-token API clients.",
+      problem:
+        "Cookie auth on a Vue SPA is vulnerable to cross-site request" +
+        " forgery unless mutating API calls check Origin; Bearer clients" +
+        " must keep working.",
+      approach:
+        "HttpOnly cookie sessions with capability RBAC; CSRF origin" +
+        " checks on mutating /api in staging and production; Bearer-only" +
+        " requests skip CSRF; auth rate limits fail closed when Redis is down.",
+      result:
+        "Documented security path with CSRF middleware tests;" +
+        " bad Origin rejected in production; Bearer automation unaffected.",
+      tech: ["FastAPI", "cookies", "CSRF", "RBAC", "Redis"],
+      url:
+        "https://gleblorange.github.io/personal-glorng/" + "reference/security.html#csrf-and-cors",
     },
     {
-      name: "background jobs & telegram",
+      name: "SSRF-safe outbound fetch",
       description:
-        "Celery + Redis workers for reminders, cleanup, news ingest," +
-        " and Telegram publish without blocking the API.",
-      tech: ["Python", "Celery", "Redis", "Telegram"],
-      url: "/news",
-    },
-    {
-      name: "architecture handbook",
-      description:
-        "VitePress handbook, ADRs, OpenAPI generation, and deployment" +
-        " runbooks for reviewers.",
-      tech: ["VitePress", "OpenAPI", "Docker", "GitHub Actions"],
-      url: "https://gleblorange.github.io/personal-glorng/",
+        "Server-side HTTP for news and health checks must not reach" +
+        " private networks, and must keep TLS correct after DNS pin.",
+      problem:
+        "Connecting to a resolved IP without SNI fails HTTPS verification;" +
+        " joining redirects against the IP URL drops the original host.",
+      approach:
+        "get_public_http_url resolves public DNS in asyncio.to_thread," +
+        " connects to that IP with Host + sni_hostname, re-validates every" +
+        " hop, and joins Location against the pre-rewrite URL.",
+      result:
+        "Fail-closed public fetch with unit coverage for SNI, relative" +
+        " redirects, and off-loop DNS — used by outbound tool paths.",
+      tech: ["Python", "httpx", "asyncio", "DNS"],
+      url:
+        "https://github.com/GlebLOrange/personal-glorng/blob/main/" +
+        "server/app/core/url_safety.py",
     },
   ],
   education: [],

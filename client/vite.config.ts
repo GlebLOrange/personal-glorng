@@ -5,6 +5,8 @@ import { fileURLToPath, URL } from "node:url";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig, loadEnv } from "vite";
 
+import { buildShellHeroHtml } from "./src/utils/shellHero.ts";
+
 function applyRepoRootViteEnv(mode: string): Record<string, string> {
   const repoRoot = fileURLToPath(new URL("..", import.meta.url));
   const clientDir = fileURLToPath(new URL(".", import.meta.url));
@@ -76,9 +78,6 @@ export default defineConfig(({ mode }) => {
             if (id.includes("node_modules/firebase")) {
               return "firebase";
             }
-            if (id.includes("node_modules/axios")) {
-              return "axios";
-            }
             if (id.includes("node_modules/dompurify")) {
               return "dompurify";
             }
@@ -96,7 +95,10 @@ export default defineConfig(({ mode }) => {
         name: "html-public-origin",
         transformIndexHtml(html) {
           const origin = resolvePublicOrigin(mode, env);
-          return html.replaceAll("__PUBLIC_ORIGIN__", origin);
+          const hero = buildShellHeroHtml();
+          return html
+            .replaceAll("__PUBLIC_ORIGIN__", origin)
+            .replace('<div id="app"></div>', `<div id="app">${hero}</div>`);
         },
       },
       sentryVitePlugin({

@@ -267,16 +267,10 @@ class Settings(BaseSettings):
             if len(fernet) < 32 or any(
                 m in fernet.lower() for m in _WEAK_SECRET_MARKERS
             ):
-                msg = (
-                    "FERNET_SECRET is too weak for production/staging; "
-                    "use 32+ chars"
-                )
+                msg = "FERNET_SECRET is too weak for production/staging; use 32+ chars"
                 raise ValueError(msg)
             if fernet == self.JWT_SECRET:
-                msg = (
-                    "FERNET_SECRET must differ from JWT_SECRET "
-                    "in production/staging"
-                )
+                msg = "FERNET_SECRET must differ from JWT_SECRET in production/staging"
                 raise ValueError(msg)
         # Credentials are always enabled in CORSMiddleware; never allow "*".
         if any(origin.strip() == "*" for origin in self.CORS_ORIGINS):
@@ -289,10 +283,7 @@ class Settings(BaseSettings):
             len(self.RABBITMQ_PASSWORD) < 16
             or any(m in self.RABBITMQ_PASSWORD.lower() for m in _WEAK_SECRET_MARKERS)
         ):
-            msg = (
-                "RABBITMQ_PASSWORD is too weak for production/staging; "
-                "use 16+ chars"
-            )
+            msg = "RABBITMQ_PASSWORD is too weak for production/staging; use 16+ chars"
             raise ValueError(msg)
         if (
             is_deployed_env(self.APP_ENV)

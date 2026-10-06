@@ -95,13 +95,7 @@ function confirmDelete(): void {
       placeholder="title (optional)"
       @keydown="onTitleKeydown"
     />
-    <BaseButton
-      variant="cancel"
-      size="sm"
-      class="shrink-0"
-      :disabled="saving"
-      @click="cancelEdit"
-    >
+    <BaseButton variant="cancel" size="sm" class="shrink-0" :disabled="saving" @click="cancelEdit">
       cancel
     </BaseButton>
     <BaseButton variant="save" size="sm" class="shrink-0" :disabled="saving" @click="saveEdit">

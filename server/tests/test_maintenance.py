@@ -85,9 +85,7 @@ async def test_run_rejects_bad_token(
     auth_client: AsyncClient,
     maintenance_env: Path,
 ) -> None:
-    with patch(
-        "app.services.maintenance.httpx.AsyncClient"
-    ) as client_cls:
+    with patch("app.services.maintenance.httpx.AsyncClient") as client_cls:
         mock_client = AsyncMock()
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
@@ -124,9 +122,7 @@ async def test_run_disabled_never_spawns(
     )
     activate_env_file(monkeypatch, env)
     try:
-        with patch(
-            "app.services.maintenance.httpx.AsyncClient"
-        ) as client_cls:
+        with patch("app.services.maintenance.httpx.AsyncClient") as client_cls:
             mock_client = AsyncMock()
             mock_resp = MagicMock()
             mock_resp.raise_for_status = MagicMock()
@@ -159,9 +155,7 @@ async def test_run_spawns_configured_script(
     proc.returncode = None
     proc.wait = AsyncMock(return_value=0)
 
-    with patch(
-        "app.services.maintenance.httpx.AsyncClient"
-    ) as client_cls:
+    with patch("app.services.maintenance.httpx.AsyncClient") as client_cls:
         mock_client = AsyncMock()
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()

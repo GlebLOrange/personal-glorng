@@ -127,10 +127,7 @@ onMounted(loadUrls);
       — a FastAPI redirect, not a Vue page. Example path:
       <code class="font-data text-surface-light">/s/demo</code>.
     </p>
-    <form
-      class="mb-4 flex min-w-0 flex-wrap items-center gap-2"
-      @submit.prevent="createUrl"
-    >
+    <form class="mb-4 flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createUrl">
       <BaseInput
         v-model="newUrl"
         class="min-w-0 flex-1"

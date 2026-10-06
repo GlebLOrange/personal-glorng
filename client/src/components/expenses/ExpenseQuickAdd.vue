@@ -131,11 +131,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
 
 <template>
   <div class="flex flex-col gap-3">
-    <div
-      class="flex flex-wrap gap-1.5"
-      role="tablist"
-      aria-label="add expense mode"
-    >
+    <div class="flex flex-wrap gap-1.5" role="tablist" aria-label="add expense mode">
       <ToolbarPillButton
         action="create"
         :selected="!smartTextOpen"
@@ -215,12 +211,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
         <option value="">—</option>
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </BaseSelect>
-      <BaseInput
-        v-model="expenseDate"
-        type="date"
-        label="date"
-        class="min-w-0 w-full"
-      />
+      <BaseInput v-model="expenseDate" type="date" label="date" class="min-w-0 w-full" />
       <ToolbarPillButton
         type="submit"
         action="save"
@@ -231,12 +222,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       </ToolbarPillButton>
     </form>
 
-    <div
-      v-show="smartTextOpen"
-      id="expense-smart-text"
-      role="tabpanel"
-      class="flex flex-col gap-3"
-    >
+    <div v-show="smartTextOpen" id="expense-smart-text" role="tabpanel" class="flex flex-col gap-3">
       <div class="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end">
         <BaseInput
           ref="smartTextInputRef"

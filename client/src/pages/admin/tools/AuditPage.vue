@@ -61,7 +61,8 @@ const activeFilterLabel = computed(
 );
 
 useScrollListFingerprint(
-  () => `${page.value}:${total.value}:${category.value}:${dateFrom.value}:${items.value[0]?.id ?? ""}`,
+  () =>
+    `${page.value}:${total.value}:${category.value}:${dateFrom.value}:${items.value[0]?.id ?? ""}`,
 );
 
 async function load(): Promise<void> {

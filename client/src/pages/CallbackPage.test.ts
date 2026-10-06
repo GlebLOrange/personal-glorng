@@ -46,9 +46,7 @@ vi.mock("@/utils/consumeQueryParams", () => ({
     }
     await mocks.replace({
       path: mocks.routePath,
-      query: Object.fromEntries(
-        Object.entries(query).filter(([key]) => !keys.includes(key)),
-      ),
+      query: Object.fromEntries(Object.entries(query).filter(([key]) => !keys.includes(key))),
     });
     return values;
   },

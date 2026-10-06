@@ -84,7 +84,7 @@ async def main() -> None:
         logger.error("TELEGRAM_BOT_TO_DO_TOKEN is not set")
         return
 
-    # OAuth state / security Redis helpers need the app client (separate from FSM storage).
+    # OAuth/security Redis helpers need the app client (separate from FSM storage).
     await init_redis(settings.REDIS_URL, settings.REDIS_CACHE_URL or None)
 
     registry = await get_worker_registry()

@@ -40,12 +40,8 @@ describe("ToolIcon", () => {
 
   it("renders qr-generator with spaced finders and filled modules", () => {
     const wrapper = mount(ToolIcon, { props: { slug: "qr-generator" } });
-    const stroked = wrapper
-      .findAll("rect")
-      .filter((r) => r.attributes("stroke") !== "none");
-    const filled = wrapper
-      .findAll("rect")
-      .filter((r) => r.attributes("fill") === "currentColor");
+    const stroked = wrapper.findAll("rect").filter((r) => r.attributes("stroke") !== "none");
+    const filled = wrapper.findAll("rect").filter((r) => r.attributes("fill") === "currentColor");
     expect(stroked).toHaveLength(3);
     expect(filled).toHaveLength(4);
     expect(stroked.some((r) => r.attributes("x") === "4")).toBe(false);

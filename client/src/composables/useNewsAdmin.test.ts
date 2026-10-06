@@ -132,9 +132,7 @@ describe("useNewsAdmin", () => {
     expect(statusFilter.value).toBe("draft");
     expect(hasActiveFilters.value).toBe(true);
     expect(adminPage.value).toBe(1);
-    await vi.waitFor(() =>
-      expect(loadNews).toHaveBeenCalledWith({ admin: true, status: "draft" }),
-    );
+    await vi.waitFor(() => expect(loadNews).toHaveBeenCalledWith({ admin: true, status: "draft" }));
 
     clearFilters();
     expect(statusFilter.value).toBe("published");

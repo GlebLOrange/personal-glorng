@@ -2,7 +2,11 @@
 import { computed, useAttrs, useId } from "vue";
 
 import FieldHelp from "@/components/ui/FieldHelp.vue";
-import { buildFieldAccessibleName, buildFieldDescribedBy, resolveFieldCopy } from "@/components/ui/fieldA11y";
+import {
+  buildFieldAccessibleName,
+  buildFieldDescribedBy,
+  resolveFieldCopy,
+} from "@/components/ui/fieldA11y";
 import {
   FIELD_INLINE_END_LABEL_CLASS,
   FIELD_LABEL_TEXT_CLASS,
@@ -126,13 +130,7 @@ const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top
         {{ label }}
       </label>
       <span class="pointer-events-auto">
-        <FieldHelp
-          v-if="hint"
-          size="sm"
-          :align="helpAlign"
-          :text="hint"
-          :content-id="hintId"
-        />
+        <FieldHelp v-if="hint" size="sm" :align="helpAlign" :text="hint" :content-id="hintId" />
       </span>
     </div>
     <p

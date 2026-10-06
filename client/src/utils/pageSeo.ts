@@ -7,8 +7,6 @@ export type PageSeoInput = {
   /** Absolute or root-relative path; defaults to current location. */
   path?: string | null;
   noindex?: boolean;
-  /** When true, set `<link rel="amphtml">` to absolute `/amp`; otherwise remove it. */
-  amphtml?: boolean;
   /**
    * JSON-LD graph for the page. Pass `null` to remove a previously injected script.
    * Omit to leave existing JSON-LD untouched.
@@ -43,21 +41,6 @@ export function absoluteUrl(pathOrUrl: string): string {
   return new URL(path, `${publicOrigin()}/`).href;
 }
 
-function setAmphtmlLink(enabled: boolean): void {
-  const existing = document.head.querySelector('link[rel="amphtml"]');
-  if (!enabled) {
-    existing?.remove();
-    return;
-  }
-  let el = existing;
-  if (!(el instanceof HTMLLinkElement)) {
-    el = document.createElement("link");
-    el.setAttribute("rel", "amphtml");
-    document.head.appendChild(el);
-  }
-  el.setAttribute("href", absoluteUrl("/amp"));
-}
-
 function setCanonicalLink(url: string): void {
   let el = document.head.querySelector('link[rel="canonical"]');
   if (!(el instanceof HTMLLinkElement)) {
@@ -76,8 +59,7 @@ function setJsonLd(data: Record<string, unknown> | null): void {
     existing?.remove();
     return;
   }
-  let el: HTMLScriptElement | null =
-    existing instanceof HTMLScriptElement ? existing : null;
+  let el: HTMLScriptElement | null = existing instanceof HTMLScriptElement ? existing : null;
   if (!el) {
     el = document.createElement("script");
     el.id = JSON_LD_SCRIPT_ID;
@@ -116,9 +98,8 @@ export function applyPageSeo(input: PageSeoInput = {}): void {
   upsertMeta("name", "twitter:description", description);
   upsertMeta("name", "twitter:image", image);
 
-  if (input.amphtml !== undefined) {
-    setAmphtmlLink(input.amphtml);
-  }
+  // Always strip legacy amphtml links left from older builds.
+  document.head.querySelector('link[rel="amphtml"]')?.remove();
 
   if (input.jsonLd !== undefined) {
     setJsonLd(input.jsonLd);

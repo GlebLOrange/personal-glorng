@@ -51,38 +51,45 @@ export function primaryStack(skills: SkillGroup[]): string {
   return picks.length > 0 ? picks.join(" · ") : "Full-stack";
 }
 
+/** Short glance value for a case study — prefer an explicit result line. */
+function caseOutcomeValue(name: string): string {
+  const lower = name.toLowerCase();
+  if (lower.includes("csrf") || lower.includes("auth")) return "CSRF";
+  if (lower.includes("ssrf") || lower.includes("fetch")) return "SSRF-safe";
+  return "shipped";
+}
+
 export function buildGlanceStats(resume: ResumeData): GlanceStat[] {
-  const years = computeYearsExperience(resume.experience);
-  const skillCount = countSkills(resume.skills);
-  const starts = resume.experience
+  const cases = resume.projects.filter((project) => project.result).slice(0, 2);
+  const platformStart = resume.experience
     .map((entry) => parsePeriodStart(entry.period))
-    .filter((year): year is number => year !== null);
-  const earliest = starts.length > 0 ? Math.min(...starts) : null;
+    .filter((year): year is number => year !== null)
+    .filter((year) => year >= 2022);
+  const since = platformStart.length > 0 ? Math.min(...platformStart) : 2022;
+
+  const outcomeStats: GlanceStat[] = cases.map((project) => ({
+    label: project.name,
+    value: caseOutcomeValue(project.name),
+    detail: project.result ?? project.description,
+    href: "#case-studies",
+  }));
+
+  while (outcomeStats.length < 2) {
+    outcomeStats.push({
+      label: "Case study",
+      value: "—",
+      detail: "add problem / approach / result on a project",
+      href: "#case-studies",
+    });
+  }
 
   return [
+    ...outcomeStats,
     {
-      label: "Experience",
-      // ponytail: avoid bare "N+ yrs" seniority claim from calendar span
-      value: earliest !== null ? `since ${earliest}` : years > 0 ? `${years}+ yrs` : "—",
-      detail:
-        earliest !== null
-          ? "platform sample since 2022"
-          : years > 0
-            ? "building and shipping products"
-            : "no entries yet",
+      label: "Platform sample",
+      value: `since ${since}`,
+      detail: "this site is the live FastAPI + Vue product",
       href: "#experience",
-    },
-    {
-      label: "Core stack",
-      value: primaryStack(resume.skills),
-      detail: `${skillCount} tools across ${resume.skills.length} areas`,
-      href: "#skills",
-    },
-    {
-      label: "Projects",
-      value: String(resume.projects.length),
-      detail: "one platform with live facets",
-      href: "#projects",
     },
     {
       label: "Availability",

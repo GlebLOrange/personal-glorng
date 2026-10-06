@@ -7,10 +7,7 @@ import {
   CONTROL_BUTTON_MD,
   CONTROL_BUTTON_SM,
 } from "@/constants/formClasses";
-import {
-  classesForActionButton,
-  type BaseButtonVariant,
-} from "@/constants/actionButtonVariants";
+import { classesForActionButton, type BaseButtonVariant } from "@/constants/actionButtonVariants";
 
 const props = withDefaults(
   defineProps<{

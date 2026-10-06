@@ -45,7 +45,9 @@ def _build_event_body(
             "useDefault": False,
             "overrides": [
                 # Include 0 so Calendar fires with the at-start Telegram ping.
-                {"method": "popup", "minutes": m} for m in minutes if m >= 0
+                {"method": "popup", "minutes": m}
+                for m in minutes
+                if m >= 0
             ],
         },
     }
@@ -103,7 +105,9 @@ async def _reminder_minutes_for_task(
     task: Task,
 ) -> list[int]:
     """Derive Google popup lead times from unsent Telegram reminders."""
-    assert registry.tasks is not None
+    if registry.tasks is None:
+        msg = "Task repository is not configured"
+        raise RuntimeError(msg)
     reminders = await registry.tasks.list_reminders_for_task(task.id)
     scheduled = as_utc(task.scheduled_at)
     minutes: list[int] = []

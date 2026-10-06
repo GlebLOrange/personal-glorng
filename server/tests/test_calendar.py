@@ -63,9 +63,7 @@ class TestBuildEventBody:
         assert body["end"]["dateTime"] == expected
         assert body["reminders"]["useDefault"] is False
 
-    async def test_reminder_overrides(
-        self, registry: DatabaseRegistry
-    ) -> None:
+    async def test_reminder_overrides(self, registry: DatabaseRegistry) -> None:
         task = await create_task(registry, title="Call")
         body = _build_event_body(task, reminder_minutes=[30, 60])
 
