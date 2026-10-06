@@ -15,6 +15,7 @@ from app.services.resume_html import (
     contact_href,
     escape_text,
     highlights_html,
+    resume_brand_logo_html,
 )
 
 RESUME_PDF_RENDER_TIMEOUT_SECONDS = 30.0
@@ -171,6 +172,12 @@ def render_resume_html(resume: dict[str, Any]) -> str:
       padding-bottom: 0.35rem;
       margin-bottom: 0.55rem;
     }}
+    .brand-logo {{
+      height: 42px;
+      width: auto;
+      display: block;
+      margin: 0 0 0.2rem;
+    }}
     h1 {{
       font-size: 23pt;
       line-height: 1.05;
@@ -304,6 +311,7 @@ def render_resume_html(resume: dict[str, Any]) -> str:
 </head>
 <body>
   <header>
+    {resume_brand_logo_html()}
     <h1>{name}</h1>
     <p class="title">{title}</p>
     {tagline_html}
