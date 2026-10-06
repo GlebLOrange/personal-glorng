@@ -85,6 +85,7 @@ export const RESUME_FALLBACK: ResumeData = {
   ],
   projects: [
     {
+      slug: "cookie-auth-csrf",
       name: "cookie auth & CSRF",
       description:
         "Browser sessions on this SPA need CSRF protection without" +
@@ -105,6 +106,7 @@ export const RESUME_FALLBACK: ResumeData = {
         "https://gleblorange.github.io/personal-glorng/" + "reference/security.html#csrf-and-cors",
     },
     {
+      slug: "ssrf-safe-fetch",
       name: "SSRF-safe outbound fetch",
       description:
         "Server-side HTTP for news and health checks must not reach" +
@@ -126,6 +128,8 @@ export const RESUME_FALLBACK: ResumeData = {
     },
   ],
   education: [],
+  certifications: [],
+  languages: [],
   links: {
     email: "glorange@gmail.com",
     telegram: "https://t.me/glorange",
