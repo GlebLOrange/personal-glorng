@@ -34,5 +34,8 @@ Verify against the repository before treating a technology as in use. Do not app
 
 ## Pointers
 
-- Bootstrap / env / Cloud VM: [`AGENTS.md`](../../AGENTS.md)
-- Deeper coding standards: `.cursor/skills/` (path-triggered rules point there)
+- Agent entry map: [`AGENTS.md`](../../AGENTS.md)
+- Skill index: [`CODING_STANDARDS.md`](../../CODING_STANDARDS.md)
+- Setup / ports: [`docs/guide/getting-started.md`](../../docs/guide/getting-started.md), [`README.md`](../../README.md)
+- Cloud VM: [`docs/operations/cloud-vm.md`](../../docs/operations/cloud-vm.md)
+- Personas / requirement bar: [`.cursor/agents/README.md`](../agents/README.md)
