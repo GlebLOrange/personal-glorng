@@ -6,7 +6,7 @@ user-invocable: false
 
 # Saving Workspace Context
 
-Build institutional memory. Prefer the project's existing homes (`AGENTS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
+Build institutional memory. Prefer the project's existing homes (`AGENTS.md`, `CODING_STANDARDS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
 
 ## Modes
 
@@ -23,15 +23,19 @@ Route knowledge to the first matching home:
 
 1. **Always-on constraints & conventions** → `.cursor/rules/` (**ask permission** first)
 2. **Repeatable workflows** → new skill in `.cursor/skills/` or `~/.agents/skills/` (**ask permission** first)
-3. **Bootstrap, environment, & agent setup** → `AGENTS.md`
-4. **Architecture decisions** → `docs/adr/` (when ADR structure exists)
-5. **Product & handbook docs** → existing `docs/` guides/specs
+3. **Agent entry map (dispatch only)** → `AGENTS.md`
+4. **Which skill to open / coding standards index** → `CODING_STANDARDS.md`
+5. **Setup, ports, seed** → `docs/guide/getting-started.md`, `README.md`
+6. **Cloud VM Docker** → `docs/operations/cloud-vm.md`
+7. **Persona / requirement bar** → `.cursor/agents/README.md`
+8. **Architecture decisions** → `docs/adr/` (when ADR structure exists)
+9. **Product & handbook docs** → existing `docs/` guides/specs
 
-If the project already documents truth in `AGENTS.md`, `docs/`, or `.cursor/rules/`, update or extend those — do not invent a parallel dump tree.
+If the project already documents truth in those homes, update or extend them — do not invent a parallel dump tree.
 
 ## Full Pass: Selective Load
 
-1. List known homes (`AGENTS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
+1. List known homes (`AGENTS.md`, `CODING_STANDARDS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`, `.cursor/agents/`).
 2. Open at most a few files whose names/topics match the current task.
 3. Never dump the whole tree into the conversation context.
 
@@ -64,7 +68,7 @@ Before finishing a full pass:
 
 ## Project Stub (Only if no better home exists)
 
-Prefer `AGENTS.md` / `docs/` when they exist. Otherwise a thin stub in docs:
+Prefer `AGENTS.md` / `CODING_STANDARDS.md` / `docs/` when they exist. Otherwise a thin stub in docs:
 
 ```markdown
 # {Project Name} — Context
