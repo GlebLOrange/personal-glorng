@@ -3,18 +3,21 @@
 from html import escape
 from typing import Annotated
 
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Path, Query
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 
 from app.core.exceptions import NotFoundError
 from app.db.deps import DbRegistry
 from app.services.news_og_html import render_news_og_html
+from app.services.profile_og_html import render_profile_og_html
+from app.services.resume_export import build_share_query, parse_csv_ids, select_resume
 from app.settings import get_settings
 
 router = APIRouter(tags=["seo"])
 
 _PUBLIC_PATHS: tuple[tuple[str, str], ...] = (
     ("/", "weekly"),
+    ("/profile", "weekly"),
     ("/news", "daily"),
     ("/tools", "weekly"),
     ("/privacy", "monthly"),
@@ -102,6 +105,35 @@ async def news_og_html(
     if article is None or article.status != "published":
         raise NotFoundError("Article not found")
     html = render_news_og_html(article, base_url=get_settings().BASE_URL)
+    return HTMLResponse(content=html)
+
+
+@router.get(
+    "/og/profile",
+    response_class=HTMLResponse,
+    include_in_schema=True,
+    summary="Shareable profile Open Graph HTML",
+    description=(
+        "Static HTML with OG/Twitter meta for filtered resume profile link previews. "
+        "Canonical URL points at the SPA route `/profile` with the same query."
+    ),
+)
+async def profile_og_html(
+    skills: Annotated[str | None, Query()] = None,
+    projects: Annotated[str | None, Query()] = None,
+    sections: Annotated[str | None, Query()] = None,
+) -> HTMLResponse:
+    selection = select_resume(skills=skills, projects=projects, sections=sections)
+    query = build_share_query(
+        sections=parse_csv_ids(sections),
+        skills=parse_csv_ids(skills),
+        projects=parse_csv_ids(projects),
+    )
+    html = render_profile_og_html(
+        selection,
+        base_url=get_settings().BASE_URL,
+        query=query,
+    )
     return HTMLResponse(content=html)
 
 

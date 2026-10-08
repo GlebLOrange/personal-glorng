@@ -14,14 +14,14 @@ If `$ARGUMENTS` is empty, ask once for the task text and stop.
 
 - Do **not** modify application code yourself. Delegate.
 - Do **not** commit, push, open a PR, or merge unless the user later asks.
-- Git branch prefix is **`cursor/<slug>`** only (never `agent/TASK-*`).
-- Gortex is a **tool** for agents, not a persona. Do not spawn a Gortex agent.
+- **You (parent) create** the git branch `cursor/<slug>` before spawning Developer (never `agent/TASK-*`). Derive `<slug>` from Manager `branch_hint` or the user request.
+- Gortex is a **tool**, not a persona. Do not spawn a Gortex agent.
 - **QA is out of this loop.** Do not spawn `qa` here.
-- At most **one** changes-requested retry (developer fix → reviewer re-check), then stop.
+- At most **one** changes-requested retry, and only when the reviewer reports **Critical:** or required (no-prefix) findings. Then stop.
 
 ## Step 1 — Manager (Assign)
 
-Spawn the `manager` subagent with this prompt:
+Spawn the `manager` subagent with:
 
 ```text
 Mode: Assign (task-loop).
@@ -29,36 +29,41 @@ Mode: Assign (task-loop).
 User request:
 <paste $ARGUMENTS>
 
-Do NOT modify files.
+Do NOT modify files. Do NOT spawn personas. Do not write a task file.
 
-1. Use Gortex (explore/task, search, relations as needed) to find scope.
-2. Emit exactly one TASK yaml contract (see manager Assign mode), then stop.
+1. Use Gortex (explore/task, search, relations as needed). On missing tools or repo_not_tracked: report once, use Read/Grep; do not invent graph results; do not run gortex track.
+2. Emit exactly one TASK yaml in your reply that passes the requirement bar in .cursor/agents/README.md, then stop.
 ```
 
-Wait for the TASK yaml. If Manager returns recommendations instead of a single TASK, ask Manager once to emit Assign-mode yaml only. If still no TASK, stop and show the user what Manager returned.
+Wait for the TASK yaml. If Manager returns recommendations instead, ask once for Assign-mode yaml only. If still no TASK, stop and show the user what Manager returned.
 
-## Step 2 — Developer
+## Step 2 — Branch (parent)
 
-Spawn the `developer` subagent with **only** the TASK yaml (plus this instruction):
+Create `cursor/<slug>` from Manager `branch_hint` (or a short kebab from the request) if not already on that branch. Do not leave Developer to create it during `/task-loop`.
+
+## Step 3 — Developer
+
+Spawn the `developer` subagent with **only** the TASK yaml plus:
 
 ```text
 Implement this TASK from /task-loop.
 
-- Follow agent-git-workflow: work on cursor/<slug> (create if on main after asking once).
-- Use Gortex before mutating (impact; verify if signatures change).
-- Run only the checks listed under `checks:` in the TASK (that counts as the user asking for those checks).
+- Work on the existing branch cursor/<slug> (parent already created it). Do not ask about the branch.
+- Read CODING_STANDARDS.md before app edits. Stay inside scope; honor requirements and acceptance.
+- Use Gortex before mutating when available. On missing tools or repo_not_tracked: report once, use Read/Grep/normal edits; do not invent graph results; do not run gortex track.
+- Run only the checks listed under `checks:` in the TASK. If `checks` is empty, record SKIPPED (empty checks) — do not ask to run tests.
 - Do NOT commit, push, open a PR, or merge.
-- Return the evidence handoff block required by developer.md.
+- Return the developer evidence block (including requirement-bar one-liner).
 ```
 
-Wait for the evidence report (changed files, check results, `git diff --stat`).
+Wait for the evidence report.
 
-## Step 3 — Reviewer
+## Step 4 — Reviewer
 
 Spawn the `code-reviewer` subagent with:
 
 ```text
-Review this /task-loop handoff.
+Review this /task-loop handoff (readonly).
 
 TASK yaml:
 <paste TASK>
@@ -66,27 +71,28 @@ TASK yaml:
 Developer evidence:
 <paste developer report>
 
-Inspect the branch diff (git diff against the base branch). Review against the TASK acceptance criteria.
-Verdict must be APPROVE or REQUEST CHANGES.
+Inspect the branch diff (git diff against the base branch).
+Judge TASK requirements AND acceptance (both). Use checks evidence as-is.
+Verdict: APPROVE only if no Critical and no required findings; otherwise REQUEST CHANGES.
 ```
 
-## Step 4 — Retry or stop
+## Step 5 — Retry or stop
 
-- If **APPROVE**: stop. Summarize for the user: branch name, TASK id/goal, reviewer overview. Tell them merge/commit is theirs.
-- If **REQUEST CHANGES**:
-  1. Spawn `developer` once with the TASK, prior evidence, and the reviewer’s required findings. Same constraints (checks in TASK, no commit/PR/merge).
+- If **APPROVE**: stop. Summarize branch, TASK id/goal, reviewer overview. Merge/commit is the user's.
+- If **REQUEST CHANGES** with at least one **Critical:** or required (no-prefix) finding:
+  1. Spawn `developer` once with TASK, prior evidence, and those Critical + required findings. Same constraints.
   2. Spawn `code-reviewer` once with updated evidence + diff.
-  3. Stop with the final verdict. Do **not** retry again.
+  3. Stop. Do **not** retry again.
+- If **REQUEST CHANGES** with only Nit / Optional / FYI: do **not** retry; stop with that verdict.
 
 ## Final message to the user
-
-Always end with:
 
 ```text
 ## Task-loop result
 - Branch: …
 - Verdict: APPROVE | REQUEST CHANGES
-- Changed: … (from developer evidence)
-- Checks: … (from developer evidence)
+- Requirement bar: …
+- Changed: …
+- Checks: …
 - Next: you commit / open PR / merge when ready
 ```

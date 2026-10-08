@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import SiteLogo from "@/components/brand/SiteLogo.vue";
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import { useColorTheme } from "@/composables/useColorTheme";
@@ -133,11 +134,11 @@ async function handleGoHome(): Promise<void> {
         >
           <RouterLink
             to="/"
-            class="text-xl font-bold accent-gradient"
+            class="inline-flex min-h-11 min-w-11 items-center justify-center text-surface-light"
             aria-label="gleb.y home"
             @click.prevent="handleGoHome"
           >
-            Gleb.Y
+            <SiteLogo class-name="h-9 w-auto" />
           </RouterLink>
 
           <div class="hidden md:flex items-center gap-2 text-base shrink-0">

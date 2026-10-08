@@ -2,6 +2,7 @@
 import { defineAsyncComponent, onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import SiteLogo from "@/components/brand/SiteLogo.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
 import type { DonationsConfig } from "@/types";
 import { consumeQueryParams } from "@/utils/consumeQueryParams";
@@ -77,8 +78,10 @@ onUnmounted(() => {
         Privacy Policy
       </router-link>
     </div>
-    <p class="text-base text-surface-sage text-center">
-      &copy; {{ year }} <span class="text-accent-blue font-bold">Gleb.Y</span>
+    <p class="flex items-center justify-center gap-2 text-base text-surface-sage text-center">
+      <span>&copy; {{ year }}</span>
+      <SiteLogo class-name="h-4 w-auto" />
+      <span class="sr-only">Gleb.Y</span>
     </p>
   </footer>
 </template>

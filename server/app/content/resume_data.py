@@ -1,13 +1,19 @@
+"""Canonical resume content — validated against ResumeDocument at import."""
+
+from __future__ import annotations
+
 from typing import Any
 
-RESUME_DATA: dict[str, Any] = {
+from app.schemas.resume import ResumeDocument
+
+_RESUME_RAW: dict[str, Any] = {
     "name": "Gleb.Y",
     "title": "Python Backend / FastAPI Engineer",
     "tagline": (
         "I build production APIs, auth, workers, and deploys"
         " — this site is a live example."
     ),
-    "location": "EU",
+    "location": "Wrocław, Poland",
     "availability": "open to full-time and contract (remote)",
     "bio": (
         "Backend-first: FastAPI, auth, Redis/Celery, Docker."
@@ -25,9 +31,12 @@ RESUME_DATA: dict[str, Any] = {
             "items": [
                 "Python",
                 "FastAPI",
+                "Pydantic",
+                "SQLAlchemy",
                 "Motor",
                 "Celery",
                 "Redis",
+                "RabbitMQ",
             ],
         },
         {
@@ -38,7 +47,7 @@ RESUME_DATA: dict[str, Any] = {
         {
             "category": "Databases",
             "summary": "Document-first with optional relational search and caching",
-            "items": ["MongoDB", "PostgreSQL (optional)", "Redis"],
+            "items": ["MongoDB", "PostgreSQL", "Redis", "Elasticsearch", "SQL"],
         },
         {
             "category": "DevOps",
@@ -49,6 +58,8 @@ RESUME_DATA: dict[str, Any] = {
                 "Nginx",
                 "CI/CD (GitHub Actions)",
                 "Linux",
+                "pytest",
+                "Ruff",
             ],
         },
         {
@@ -101,6 +112,10 @@ RESUME_DATA: dict[str, Any] = {
                     "Path-filtered GitHub Actions CI, multi-service Docker Compose,"
                     " OpenAPI, and a VitePress architecture handbook"
                 ),
+                (
+                    "Application monitoring and error tracking with Sentry"
+                    " and OpenTelemetry instrumentation"
+                ),
             ],
         },
         {
@@ -130,6 +145,7 @@ RESUME_DATA: dict[str, Any] = {
     ],
     "projects": [
         {
+            "slug": "cookie-auth-csrf",
             "name": "cookie auth & CSRF",
             "description": (
                 "Browser sessions on this SPA need CSRF protection without"
@@ -156,6 +172,7 @@ RESUME_DATA: dict[str, Any] = {
             ),
         },
         {
+            "slug": "ssrf-safe-fetch",
             "name": "SSRF-safe outbound fetch",
             "description": (
                 "Server-side HTTP for news and health checks must not reach"
@@ -182,6 +199,8 @@ RESUME_DATA: dict[str, Any] = {
         },
     ],
     "education": [],
+    "certifications": [],
+    "languages": [],
     "links": {
         "email": "glorange@gmail.com",
         "telegram": "https://t.me/glorange",
@@ -189,3 +208,10 @@ RESUME_DATA: dict[str, Any] = {
         "github": "https://github.com/GlebLOrange",
     },
 }
+
+RESUME_DOCUMENT = ResumeDocument.model_validate(_RESUME_RAW)
+if not (
+    RESUME_DOCUMENT.bio and RESUME_DOCUMENT.skills and RESUME_DOCUMENT.experience
+):
+    raise ValueError("Canonical resume must include bio, skills, and experience")
+RESUME_DATA: dict[str, Any] = RESUME_DOCUMENT.model_dump(mode="json")

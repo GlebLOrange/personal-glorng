@@ -15,6 +15,7 @@ from app.services.resume_html import (
     contact_href,
     escape_text,
     highlights_html,
+    resume_brand_logo_html,
 )
 
 RESUME_PDF_RENDER_TIMEOUT_SECONDS = 30.0
@@ -125,6 +126,58 @@ def _education_html(resume: dict[str, Any]) -> str:
   {"".join(blocks)}"""
 
 
+def _certifications_html(resume: dict[str, Any]) -> str:
+    """Render certifications when resume data provides them."""
+    blocks: list[str] = []
+    for item in resume.get("certifications", []):
+        name = str(item.get("name", "")).strip()
+        if not name:
+            continue
+        issuer = str(item.get("issuer", "") or "").strip()
+        period = str(item.get("period", "") or "").strip()
+        url = str(item.get("url", "") or "").strip()
+        title = (
+            f'<a href="{escape_text(url)}">{escape_text(name)}</a>'
+            if url
+            else escape_text(name)
+        )
+        subtle = escape_text(issuer) if issuer else ""
+        blocks.append(
+            f"""
+        <section class="entry">
+          <div class="entry-header">
+            <div>
+              <h3>{title}</h3>
+              {f'<p class="subtle">{subtle}</p>' if subtle else ""}
+            </div>
+            <span class="period">{escape_text(period)}</span>
+          </div>
+        </section>""",
+        )
+    if not blocks:
+        return ""
+    return f"""
+  <h2>Certifications</h2>
+  {"".join(blocks)}"""
+
+
+def _languages_html(resume: dict[str, Any]) -> str:
+    """Render languages when resume data provides them."""
+    chips: list[str] = []
+    for item in resume.get("languages", []):
+        language = str(item.get("language", "")).strip()
+        if not language:
+            continue
+        proficiency = str(item.get("proficiency", "") or "").strip()
+        label = f"{language} ({proficiency})" if proficiency else language
+        chips.append(f"<li>{escape_text(label)}</li>")
+    if not chips:
+        return ""
+    return f"""
+  <h2>Languages</h2>
+  <ul class="lang-list">{"".join(chips)}</ul>"""
+
+
 def _contact_html(resume: dict[str, Any]) -> str:
     """Render contact links for the PDF header (middot-separated, no labels)."""
     chips: list[str] = []
@@ -147,6 +200,8 @@ def render_resume_html(resume: dict[str, Any]) -> str:
     tagline = escape_text(str(resume.get("tagline", "")).strip())
     bio = escape_text(resume["bio"])
     education = _education_html(resume)
+    certifications = _certifications_html(resume)
+    languages = _languages_html(resume)
     tagline_html = f'<p class="tagline">{tagline}</p>' if tagline else ""
 
     return f"""<!doctype html>
@@ -170,6 +225,12 @@ def render_resume_html(resume: dict[str, Any]) -> str:
       border-bottom: 3px solid #7aa3d4;
       padding-bottom: 0.35rem;
       margin-bottom: 0.55rem;
+    }}
+    .brand-logo {{
+      height: 42px;
+      width: auto;
+      display: block;
+      margin: 0 0 0.2rem;
     }}
     h1 {{
       font-size: 23pt;
@@ -300,10 +361,18 @@ def render_resume_html(resume: dict[str, Any]) -> str:
       color: #9ca3af;
       font-size: 8.8pt;
     }}
+    .lang-list {{
+      margin: 0;
+      padding-left: 1.1rem;
+    }}
+    .lang-list li {{
+      margin: 0.1rem 0;
+    }}
   </style>
 </head>
 <body>
   <header>
+    {resume_brand_logo_html()}
     <h1>{name}</h1>
     <p class="title">{title}</p>
     {tagline_html}
@@ -322,6 +391,8 @@ def render_resume_html(resume: dict[str, Any]) -> str:
   {_projects_html(resume)}
 
   {education}
+  {certifications}
+  {languages}
 </body>
 </html>"""
 

@@ -8,7 +8,24 @@ export default defineConfig({
   description: "Developer portfolio and personal platform documentation",
   base,
   ignoreDeadLinks: true,
+  head: [
+    ["link", { rel: "icon", href: `${base}favicon.svg`, type: "image/svg+xml" }],
+    ["link", { rel: "icon", type: "image/x-icon", href: `${base}favicon.ico` }],
+    [
+      "link",
+      { rel: "icon", type: "image/png", sizes: "32x32", href: `${base}favicon-32x32.png` },
+    ],
+    [
+      "link",
+      { rel: "icon", type: "image/png", sizes: "16x16", href: `${base}favicon-16x16.png` },
+    ],
+    [
+      "link",
+      { rel: "apple-touch-icon", sizes: "180x180", href: `${base}apple-touch-icon.png` },
+    ],
+  ],
   themeConfig: {
+    logo: { src: `${base}brand/gy-mark-simple.svg`, alt: "Gleb.Y" },
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
       { text: "Operations", link: "/operations/deployment" },
@@ -41,6 +58,7 @@ export default defineConfig({
             { text: "Logging", link: "/operations/logging" },
             { text: "Backup & restore", link: "/operations/backup-restore" },
             { text: "Cloudflare", link: "/operations/cloudflare" },
+            { text: "Cloud VM", link: "/operations/cloud-vm" },
             { text: "DevOps checklist", link: "/operations/devops-checklist" },
           ],
         },

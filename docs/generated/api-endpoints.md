@@ -5,7 +5,7 @@
 
 Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Download the raw schema: [openapi.json](/openapi.json).
 
-**148** operations.
+**153** operations.
 
 | Method | Path | Tags | Summary |
 |--------|------|------|---------|
@@ -49,7 +49,11 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/platform/services` | platform | List platform services |
 | `GET` | `/api/ready` | health | Readiness check |
 | `GET` | `/api/resume` | resume | Get resume data |
+| `GET` | `/api/resume/json` | resume | Download resume JSON |
+| `GET` | `/api/resume/markdown` | resume | Download resume Markdown |
 | `GET` | `/api/resume/pdf` | resume | Download resume PDF |
+| `GET` | `/api/resume/profile` | resume | Get filtered shareable resume profile |
+| `GET` | `/api/resume/recruiter-profile` | resume | Get recruiter profile text |
 | `GET` | `/api/search` | search | Keyword search over public indexed content |
 | `GET` | `/api/time-date-weather-location/config` | weather | Get Weather Config |
 | `GET` | `/api/time-date-weather-location/locations` | weather | List Weather Locations |
@@ -155,6 +159,7 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/weather/time/{location}` | weather | Lookup World Time |
 | `POST` | `/api/webhooks/{slug}` | webhooks | Inbound webhook |
 | `GET` | `/og/news/{slug}` | seo | News article Open Graph HTML |
+| `GET` | `/og/profile` | seo | Shareable profile Open Graph HTML |
 | `GET` | `/robots.txt` | seo | Get robots.txt |
 | `GET` | `/sitemap.xml` | seo | Get sitemap |
 
