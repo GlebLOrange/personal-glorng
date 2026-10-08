@@ -4,6 +4,7 @@ import { RouterLink } from "vue-router";
 
 import ToolIcon from "@/components/icons/ToolIcon.vue";
 import { Card } from "@/components/ui/card";
+import { tileHintForSlug } from "@/constants/toolIntros";
 import type { PlatformService } from "@/platform/services";
 
 export type ToolTileSection = {
@@ -73,6 +74,10 @@ function showSectionHeading(section: ToolTileSection): boolean {
   if (props.categoryHeading === "h3" && section.services.length === 1) return false;
   return true;
 }
+
+function tileHint(tool: PlatformService): string | undefined {
+  return tileHintForSlug(tool.slug);
+}
 </script>
 
 <template>
@@ -119,9 +124,10 @@ function showSectionHeading(section: ToolTileSection): boolean {
               </span>
             </component>
             <p
-              class="mt-0.5 line-clamp-2 text-xs leading-snug break-words text-surface-mid lowercase"
+              v-if="tileHint(tool)"
+              class="mt-0.5 line-clamp-2 text-xs leading-snug break-words text-surface-mid"
             >
-              {{ tool.description }}
+              {{ tileHint(tool) }}
             </p>
             <span v-if="tool.external" class="sr-only">opens in a new tab</span>
           </span>
