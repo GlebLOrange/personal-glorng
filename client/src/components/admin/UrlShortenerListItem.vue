@@ -120,7 +120,7 @@ function confirmDelete(): void {
         :title="`${url.original_url} · ${shortLink}`"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-accent-blue underline-offset-2 hover:underline"
+        class="normal-case text-accent-blue underline-offset-2 hover:underline"
         @click.stop
       >
         {{ shortLink }}
