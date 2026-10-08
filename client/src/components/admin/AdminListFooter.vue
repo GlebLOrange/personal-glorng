@@ -31,6 +31,10 @@ const showPagination = computed(() => props.totalPages > 1);
 const hasLeading = computed(() =>
   props.showLeading !== undefined ? props.showLeading : Boolean(slots.leading),
 );
+/** Hide empty-list chrome when the page already shows EmptyState. */
+const showBar = computed(
+  () => showPagination.value || hasLeading.value || props.total > 0,
+);
 
 const totalLabel = computed(() => {
   if (props.countLabel) return props.countLabel;
@@ -55,7 +59,7 @@ const navClass = computed(() => {
 </script>
 
 <template>
-  <nav :class="navClass" :aria-label="ariaLabel">
+  <nav v-if="showBar" :class="navClass" :aria-label="ariaLabel">
     <template v-if="showPagination">
       <div class="flex flex-wrap items-center gap-1">
         <IconActionButton

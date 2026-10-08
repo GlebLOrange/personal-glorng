@@ -37,9 +37,13 @@ const focusable = computed(() => props.interactive && !props.nestedInteractive);
 const primaryAsOpenControl = computed(
   () => props.interactive && props.nestedInteractive && Boolean(slots.primary),
 );
+const hasMeta = computed(() => Boolean(slots.meta));
 const primaryClass = computed(() =>
   [
-    "min-w-0 flex-1 truncate rounded text-left text-sm font-medium leading-none text-surface-light",
+    // ponytail: without shrink, flex-1 on the title shoves #meta to the far end of the row
+    hasMeta.value
+      ? "min-w-0 shrink truncate rounded text-left text-sm font-medium leading-none text-surface-light"
+      : "min-w-0 flex-1 truncate rounded text-left text-sm font-medium leading-none text-surface-light",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
   ].join(" "),
 );
@@ -187,7 +191,7 @@ function onKeydown(event: KeyboardEvent): void {
         <div
           v-if="$slots.meta"
           data-admin-list-meta
-          class="min-w-0 shrink truncate text-xs lowercase leading-none text-surface-muted"
+          class="min-w-0 flex-1 truncate text-xs lowercase leading-none text-surface-muted"
         >
           <slot name="meta" />
         </div>

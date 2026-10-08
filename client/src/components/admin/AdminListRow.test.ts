@@ -111,5 +111,10 @@ describe("AdminListRow", () => {
     const meta = wrapper.get("[data-admin-list-meta]");
     expect(meta.text()).toContain("feeds.dw.com");
     expect(header.element.contains(meta.element)).toBe(true);
+    expect(meta.classes()).toContain("flex-1");
+
+    const primary = wrapper.get("span.min-w-0");
+    expect(primary.classes()).toContain("shrink");
+    expect(primary.classes()).not.toContain("flex-1");
   });
 });
