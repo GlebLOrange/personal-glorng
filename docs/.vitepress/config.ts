@@ -58,6 +58,7 @@ export default defineConfig({
             { text: "Logging", link: "/operations/logging" },
             { text: "Backup & restore", link: "/operations/backup-restore" },
             { text: "Cloudflare", link: "/operations/cloudflare" },
+            { text: "Cloud VM", link: "/operations/cloud-vm" },
             { text: "DevOps checklist", link: "/operations/devops-checklist" },
           ],
         },

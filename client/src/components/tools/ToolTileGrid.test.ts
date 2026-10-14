@@ -47,7 +47,40 @@ describe("ToolTileGrid", () => {
     expect(wrapper.get("h2").text()).toContain("1 tool");
     expect(wrapper.get("a").attributes("href")).toBe("/tools/calculator");
     expect(wrapper.get("a").attributes("target")).toBeUndefined();
-    expect(wrapper.text()).toContain("short description");
+    expect(wrapper.text()).not.toContain("short description");
+  });
+
+  it("shows a tile hint for ambiguous tool names only", () => {
+    const wrapper = mount(ToolTileGrid, {
+      props: {
+        sections: [
+          {
+            category: "utilities",
+            label: "utilities",
+            services: [
+              service({
+                slug: "health-checker",
+                name: "health checker",
+                description: "catalog blurb should stay hidden",
+              }),
+              service({ slug: "calculator", name: "calculator" }),
+            ],
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          RouterLink: {
+            props: ["to"],
+            template: '<a class="page-tile" :href="to"><slot /></a>',
+          },
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain("Check uptime, latency, SSL, and DNS.");
+    expect(wrapper.text()).not.toContain("catalog blurb should stay hidden");
+    expect(wrapper.text()).not.toContain("short description");
   });
 
   it("hides a one-tool h3 category heading under a parent section", () => {
@@ -77,7 +110,7 @@ describe("ToolTileGrid", () => {
     expect(wrapper.text()).toContain("file share");
   });
 
-  it("marks external tools as a new tab without dropping the description", () => {
+  it("marks external tools as a new tab without a catalog subtitle", () => {
     const wrapper = mount(ToolTileGrid, {
       props: {
         sections: [
@@ -102,7 +135,7 @@ describe("ToolTileGrid", () => {
     expect(link.attributes("href")).toBe("https://example.test/docs");
     expect(link.attributes("target")).toBe("_blank");
     expect(link.attributes("rel")).toBe("noopener noreferrer");
-    expect(link.text()).toContain("openapi reference");
+    expect(link.text()).not.toContain("openapi reference");
     expect(link.text()).toContain("opens in a new tab");
   });
 });

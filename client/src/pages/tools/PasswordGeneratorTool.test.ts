@@ -1,7 +1,8 @@
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { api } from "@/composables/useApi";
 import PasswordGeneratorTool from "@/pages/tools/PasswordGeneratorTool.vue";
 
 vi.mock("@/composables/useApi", () => ({
@@ -11,6 +12,10 @@ vi.mock("@/composables/useApi", () => ({
 }));
 
 describe("PasswordGeneratorTool", () => {
+  beforeEach(() => {
+    vi.mocked(api.post).mockClear();
+  });
+
   it("renders with options dropdown first, then length input, then generate button and reset button", () => {
     const wrapper = mount(PasswordGeneratorTool, {
       global: {
@@ -35,6 +40,21 @@ describe("PasswordGeneratorTool", () => {
       filterDropdown.element.compareDocumentPosition(lengthInput!.element) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  it("keeps the result hidden on mount and does not generate until submit", async () => {
+    const wrapper = mount(PasswordGeneratorTool, {
+      global: {
+        stubs: {
+          PageShell: { template: "<div><slot /></div>" },
+        },
+      },
+    });
+
+    await nextTick();
+
+    expect(wrapper.findAllComponents({ name: "BaseInput" })).toHaveLength(1);
+    expect(api.post).not.toHaveBeenCalled();
   });
 
   it("resets options and forgets generated password when reset button is clicked", async () => {

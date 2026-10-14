@@ -135,9 +135,7 @@ export function useNewsSources() {
     if (source.last_fetched_at) {
       parts.push(`fetched ${formatDate(source.last_fetched_at)}`);
     }
-    if (source.last_error?.trim()) {
-      parts.push(source.last_error.trim());
-    }
+    // last_error stays on the warning icon title — keep the subtitle short
     return parts.join(" · ");
   }
 

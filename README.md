@@ -38,7 +38,7 @@ Open [http://localhost](http://localhost) or [http://localhost:3000](http://loca
 | **Handbook (source)** | [docs/index.md](docs/index.md) |
 | **API / Postman** | [docs/reference/postman.md](docs/reference/postman.md) |
 | **ADRs** | [docs/adr/](docs/adr/) |
-| **Cursor / agents** | [AGENTS.md](AGENTS.md) |
+| **Cursor / agents** | [AGENTS.md](AGENTS.md), [CODING_STANDARDS.md](CODING_STANDARDS.md) |
 
 Topics: [getting started](docs/guide/getting-started.md), [architecture](docs/guide/architecture.md), [development](docs/guide/development.md), [deployment](docs/operations/deployment.md), [API reference](docs/reference/api-tools.md), [Postman](docs/reference/postman.md), [configuration](docs/reference/configuration.md), [security](docs/reference/security.md).
 

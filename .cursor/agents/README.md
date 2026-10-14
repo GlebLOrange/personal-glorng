@@ -1,43 +1,57 @@
 # Agent Personas
 
-Custom agent definitions for this repository live in `.cursor/agents/`.
+Definitions live in `.cursor/agents/`. Shared rules live **here** (and Gortex fallback in `.cursor/rules/gortex-workflow.mdc`) — not duplicated inside personas.
 
 ## Available personas
 
 | Persona | File | Use when |
 |---------|------|----------|
-| Code reviewer | [`code-reviewer.mdc`](code-reviewer.mdc) | Thorough five-axis review before merge |
-| Manager | [`manager.md`](manager.md) | Prioritize next portfolio work, or Assign a TASK yaml for `/task-loop` |
-| Developer | [`developer.md`](developer.md) | Implement a scoped task on a `cursor/*` branch |
-| QA | [`qa.md`](qa.md) | Inspect/test for bugs and regressions (readonly; links, nav, forms, console/API, responsive, tests) |
-| Recruiter | [`recruiter.md`](recruiter.md) | Screen the site for Python/backend hiring signal |
-| UX | [`ux.md`](ux.md) | Audit UI, usability, and accessibility (do not change app code) |
+| Code reviewer | [`code-reviewer.md`](code-reviewer.md) | Pre-merge review (diff + TASK evidence) |
+| Manager | [`manager.md`](manager.md) | Recommend work, or Assign one TASK yaml for `/task-loop` (does not spawn) |
+| Developer | [`developer.md`](developer.md) | Implement on `cursor/*` (only mutating persona) |
+| QA | [`qa.md`](qa.md) | Readonly defects / regressions |
+| Recruiter | [`recruiter.md`](recruiter.md) | Hiring-signal screen |
+| UX | [`ux.md`](ux.md) | Readonly UX/UI/a11y audit |
 
 ## Orchestration
 
-**`/task-loop`** (`.cursor/commands/task-loop.md`) is the only orchestrator for the controlled loop:
+**`/task-loop`** (`.cursor/commands/task-loop.md`) is the only repo slash orchestrator:
 
 ```text
-Manager (Assign TASK) → Developer (implement + evidence) → code-reviewer (APPROVE | REQUEST CHANGES)
+Manager (Assign TASK) → parent creates cursor/<slug> → Developer → code-reviewer
 ```
 
-- Parent Cursor chat runs the command and spawns personas in order.
-- Personas **do not** invoke each other.
-- Gortex is a shared **tool** (repository intelligence), not a persona.
-- Git boundary: work on `cursor/<slug>`; human merges after approval.
-- **QA is not in this loop yet.** After `/task-loop` is proven, QA can be inserted between Developer and Reviewer.
+- Parent Cursor chat spawns personas in order. Personas **never** spawn personas.
+- Gortex is a **tool**, not a persona. On missing tools or `repo_not_tracked`, follow `.cursor/rules/gortex-workflow.mdc`.
+- QA is **not** in `/task-loop`.
+- There is no `/review` or `/ship` command in this repo.
 
-## Composition
+## Requirement bar
 
-- **Invoke directly** when the user asks for a review of a specific change, file, or PR.
-- **Do not invoke from another persona.** If a persona wants specialized security or test coverage, surface that as a recommendation in the report — orchestration belongs to slash commands (`/task-loop`, `/review`, `/ship`), not nested persona calls.
+When writing `requirements` / `acceptance` / `checks` (Manager Assign or human TASK):
 
-## Severity labels
+- Each item is **one sentence** a reviewer can mark met or unmet from the diff or a named check.
+- Items must be inside TASK `scope`. Do not restate `agent-safety`, git workflow, or [`CODING_STANDARDS.md`](../../CODING_STANDARDS.md).
+- Not a new dependency, public route, or response-contract change unless the user asked.
+
+| Field | Means | Verdict language |
+|-------|--------|------------------|
+| `requirements` | Constraints on the outcome | met \| unmet |
+| `acceptance` | Observable done-when behavior | met \| unmet |
+| `checks` | Exact commands the developer must run (empty only for docs/prompts-only) | PASS \| FAIL \| SKIPPED |
+
+Do not conflate them: unmet `acceptance` is not “checks failed”; empty `checks` is SKIPPED, not PASS.
+
+## Severity schemes
+
+**Code review** (`code-reviewer`):
 
 | Prefix | Meaning |
 |--------|---------|
 | **Critical:** | Blocks merge |
 | *(no prefix)* | Required — must fix before merge |
-| **Nit:** | Minor, optional |
+| **Nit:** | Optional |
 | **Optional:** / **Consider:** | Suggestion |
-| **FYI** | Informational only |
+| **FYI** | Informational |
+
+**QA / Recruiter / UX findings:** Critical | High | Medium | Low (see each persona template).

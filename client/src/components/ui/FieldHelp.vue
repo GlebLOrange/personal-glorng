@@ -31,10 +31,10 @@ const props = withDefaults(
 const buttonClass = computed(() =>
   props.size === "sm"
     ? "inline-flex size-4 items-center justify-center rounded-full text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-    : "inline-flex size-[18px] items-center justify-center rounded-full text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
+    : "inline-flex size-6 items-center justify-center rounded-full text-surface-mid transition-colors hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
 );
 
-const iconClass = computed(() => (props.size === "sm" ? "size-3" : "size-[18px]"));
+const iconClass = computed(() => (props.size === "sm" ? "size-3" : "size-3.5"));
 
 const open = ref(false);
 const rootRef = useTemplateRef<HTMLElement>("root");
