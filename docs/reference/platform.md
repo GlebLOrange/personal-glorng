@@ -2,16 +2,7 @@
 
 Gleb.Y is a **personal platform** where the same domain services power the public portfolio, admin panel, Telegram todobot, and Celery background workers.
 
-## Channels
-
-| Channel | Entry | Uses |
-|---------|-------|------|
-| Public web | `/` | Resume, donations, feedback |
-| Admin panel | `/admin` | Ops hub (feedback, logs, search, …) via `/api/tools/*` and `/api/admin/*` |
-| Tools | `/tools`, `/tasks`, `/news`, … | Public + capability-gated tools |
-| Telegram bot | `app.todobot.main` | Task creation, reminders, Google Calendar OAuth entry |
-| Worker | `celery -A app.workers.celery_app worker` | Reminders, calendar sync, cleanup |
-| Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks (incl. sync queue every 2m) |
+Channels, data stores, and the module-as-service pattern: [Architecture](/guide/architecture).
 
 ## Service catalog
 
@@ -20,13 +11,6 @@ Registry source of truth: [`server/app/platform/registry.py`](../../server/app/p
 Exposed via `GET /api/platform/services` for the admin dashboard.
 
 Full endpoint reference (public vs admin, capabilities, UI routes): [API & tools](/reference/api-tools).
-
-## Module-as-service pattern
-
-```
-Router (HTTP/auth) → Service (logic + audit) → MongoDB / Redis (+ optional PostgreSQL for search/audit)
-Channel adapter (Vue page, bot handler) → Service
-```
 
 ## Platform pillars
 
@@ -53,8 +37,8 @@ Services emit audit events on mutations and auth flows. HTTP middleware correlat
 
 ## Related docs
 
+- [Architecture](/guide/architecture) — channels, stores, request pipeline, module-as-service
 - [Telegram + tasks + calendar sync](/guide/telegram-tasks-calendar) — todobot, outbox, Google Calendar
 - [API & tools](/reference/api-tools) — public and admin endpoints, capabilities, programmatic access
 - [Security](/reference/security) — CSP, auth, CSRF, sanitization, admin-tool risks
 - [Database](/operations/database) — migrations and test database notes
-- [Architecture](/guide/architecture) — request pipeline and data stores
