@@ -35,4 +35,5 @@ Verify against the repository before treating a technology as in use. Do not app
 ## Pointers
 
 - Bootstrap / env / Cloud VM: [`AGENTS.md`](../../AGENTS.md)
-- Deeper coding standards: `.cursor/skills/` (path-triggered rules point there)
+- Coding standards index: [`CODING_STANDARDS.md`](../../CODING_STANDARDS.md)
+- Skill bodies: `.cursor/skills/` (path-triggered rules point there)

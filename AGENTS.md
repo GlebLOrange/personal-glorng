@@ -1,14 +1,20 @@
 # AGENTS.md
 
-Coding standards and agent behavior use a hybrid layout: thin always-on and path-triggered stubs in [`.cursor/rules/`](.cursor/rules/) (safety, git workflow, dependencies, backend FastAPI/Python, frontend Vue/Pinia/TypeScript, design system) that point at full guidance in [`.cursor/skills/`](.cursor/skills/) (`agent-safety`, `agent-git-workflow`, `dependencies`, `python-fast-api`, `vue-client`, `vue-pinia`, `client-server`, `toss-style-design-system`, `ui-ux-pro-max`, `saving-workspace-context`). This file covers environment and bootstrap only — do not commit ephemeral PR review dumps at the repo root (that anti-pattern lived as `BASEDIR.md`). Generic process skills (TDD, code-review, security hardening, etc.) live user-level under `~/.cursor/skills` / `~/.agents/skills` — install with `npx skills add <pkg>@<skill> -g -y`; keep project skills in `.cursor/skills/` only — do not commit `.agents/`, `.claude/`, or `skills-lock.json`.
+## Where guidance lives
 
-## Cursor Cloud specific instructions
+- **Coding standards:** [`CODING_STANDARDS.md`](CODING_STANDARDS.md) — language, style, lint policy, dependencies, and design system (links into [`.cursor/skills/`](.cursor/skills/); path-triggered [`.cursor/rules/`](.cursor/rules/) stubs load those skills).
+- **This file:** Environment, bootstrap, and **Cursor Cloud VM** operational caveats — always injected; see [Cursor Cloud VM — Docker caveats](#cursor-cloud-vm--docker-caveats) and [Cloud VM lint / test / build](#cloud-vm-lint--test--build).
+- **Handbook:** https://gleblorange.github.io/personal-glorng/ — human-oriented docs. Step-by-step first-time setup: [`docs/guide/getting-started.md`](docs/guide/getting-started.md).
 
-### Product overview
+Do not commit ephemeral PR review dumps at the repo root (that anti-pattern lived as `BASEDIR.md`). Generic process skills (TDD, code-review, security hardening, etc.) live user-level under `~/.cursor/skills` / `~/.agents/skills` — install with `npx skills add <pkg>@<skill> -g -y`; keep project skills in `.cursor/skills/` only — do not commit `.agents/`, `.claude/`, or `skills-lock.json`.
 
-**Gleb.Y** is a FastAPI + Vue 3 developer portfolio and personal platform. The default dev workflow is **lite mode** (`make` / `make dev`): MongoDB, Redis, API, and nginx in Docker; Vite on the host with `make dev-lite-client`. RabbitMQ and the Vite client container stay off until you opt in.
+## Product and default dev
 
-### Cloud VM Docker caveat
+**Gleb.Y** is a FastAPI + Vue 3 developer portfolio and personal platform.
+
+Default dev is **lite mode**: MongoDB, Redis, API, and nginx in Docker; Vite on the host with `make dev-lite-client`. RabbitMQ and the Vite client container stay off until you opt in ([Optional services](#optional-services)).
+
+## Cursor Cloud VM — Docker caveats
 
 Nested Docker on Cloud Agent VMs cannot apply Compose `deploy.resources` memory limits (cgroupv2 threaded mode). Always include the cloud overlay when starting services:
 
@@ -27,17 +33,20 @@ The Docker daemon is not auto-started on a fresh VM. Start it once per session b
 
 For Elasticsearch-backed search, use `make dev-search` (add `-f docker-compose.search.yml` and `--profile search` to the compose command above) and set `ELASTICSEARCH_URL=http://elasticsearch:9200` in `.env`. Leave `ELASTICSEARCH_URL` empty for lite mode.
 
-### First-time / manual setup
+## Agent setup traps
 
-1. Copy env: `cp .env.example .env` and fill in all values (see `.env.example` for the full contract). Minimum secrets: `JWT_SECRET` (32+ chars), `REDIS_PASSWORD`, `MONGODB_PASSWORD`, and `SEED_PASSWORD`. Bootstrap knobs `RUN_MIGRATIONS` / `RUN_SEED` live in `.env` only—not Docker Compose overrides. **`SEED_PASSWORD` must satisfy the login password policy** (12+ chars with upper, lower, digit, and special char, e.g. `MyTestPass123!`) — the `.env.example` default `password_seed` seeds an admin that then cannot log in (the login schema rejects it). `seed_admin` skips existing users, so if you seeded with a bad password, recreate the DB (`docker compose ... down -v` then up) after fixing `SEED_PASSWORD`.
-2. Start backend: `make dev-lite` (or the lite compose command above with the cloud overlay).
-3. Seed admin + mock data: `make seed-db` with `SEED_PASSWORD` set.
-4. Backfill search index (first deploy or after schema changes): `make reindex-search`
-5. Frontend: `make dev-lite-client` → http://localhost (dev-lite nginx) or http://localhost:3000
+Full bootstrap (env, stack, seed, search index, frontend URLs): follow [Getting started](docs/guide/getting-started.md).
+
+Keep these agent-specific traps in mind:
+
+- **`SEED_PASSWORD` must satisfy the login password policy** (12+ chars with upper, lower, digit, and special char, e.g. `MyTestPass123!`). The `.env.example` default `password_seed` seeds an admin that then **cannot log in** (the login schema rejects it).
+- **`seed_admin` skips existing users** — if you seeded with a bad password, fix `SEED_PASSWORD` and **recreate the DB** (`docker compose ... down -v` then up) before re-seeding.
+- Bootstrap knobs `RUN_MIGRATIONS` / `RUN_SEED` live in **`.env` only** — not Docker Compose overrides.
+- On **Cursor Cloud VM**, start the backend with the [cloud overlay compose commands](#cursor-cloud-vm--docker-caveats) (not bare `make dev-lite` alone).
 
 Default E2E credentials: `admin@admin.admin` / `MyTestPass123!`
 
-### Services and ports
+## Services and ports
 
 | Service | URL / port |
 |---------|------------|
@@ -47,13 +56,11 @@ Default E2E credentials: `admin@admin.admin` / `MyTestPass123!`
 | Redis (host tools, ultra-lite only) | `127.0.0.1:6379` |
 | PostgreSQL (optional secondary) | `127.0.0.1:5433` with `--profile postgres` |
 
-### Lint / test / build
+## Cloud VM lint / test / build
 
-See `README.md` for canonical commands. Agents prefer targeted checks in dev by default; CI runs the full suite on pull requests. Use the commands below manually when you want local full-suite verification.
+Agents prefer targeted checks in dev; CI runs the full suite on pull requests. README lists the full command matrix — use the commands below on Cursor Cloud VM for host-side full-suite checks.
 
-Docs: published handbook at https://gleblorange.github.io/personal-glorng/ ; regenerate OpenAPI/inventory with `make docs-generate` after router or registry changes.
-
-Cloud-specific notes:
+Regenerate OpenAPI/inventory with `make docs-generate` after router or registry changes.
 
 - **Backend lint/tests (host, matches CI backend job):** use an isolated venv because Docker mounts `server/.venv`:
   ```bash
@@ -67,10 +74,9 @@ Cloud-specific notes:
 - **Backend via Docker:** prod images do not include `pytest`/`ruff`; dev targets may, but host `uv` is the canonical path for backend checks.
 - **Frontend:** Node 24 (`engines` + root `.nvmrc`; Cloud VM default `/exec-daemon/node` is often v22 — prepend `"$HOME/.nvm/versions/node/v24.18.0/bin"` to `PATH` or `nvm use`). From `client/`: `npm ci`, then `npm run lint && npm run format:check && npm run test:coverage`. For `npm run build:check`, set `VITE_PUBLIC_ORIGIN` to a public HTTPS origin (CI uses `https://ci.example.test`; prod uses your `BASE_URL`). Use `npm run build` only for a fast local bundle without the OG origin guard. TypeScript is pinned to `~5.9.3` (see `client/package.json`).
 
-### Optional services
+## Optional services
 
-- `make` / `make dev` — lite default: mongodb, redis, redis-cache, server, nginx (no RabbitMQ / client container).
-- `make dev-lite` — alias for `make dev`.
+- **`make` / `make dev` / `make dev-lite`** — same lite stack: mongodb, redis, redis-cache, server, nginx (no RabbitMQ / client container).
 - `make dev-docker` — Vite client container + nginx (profile `docker-client`).
 - `make dev-ultra-lite-infra` / `make dev-ultra-lite-server` — host API with inline Celery (no RabbitMQ).
 - `make dev-postgres` — adds Postgres for FTS search / audit secondary storage.

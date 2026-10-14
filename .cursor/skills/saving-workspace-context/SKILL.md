@@ -6,7 +6,7 @@ user-invocable: false
 
 # Saving Workspace Context
 
-Build institutional memory. Prefer the project's existing homes (`AGENTS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
+Build institutional memory. Prefer the project's existing homes (`AGENTS.md`, `CODING_STANDARDS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
 
 ## Modes
 
@@ -24,14 +24,15 @@ Route knowledge to the first matching home:
 1. **Always-on constraints & conventions** → `.cursor/rules/` (**ask permission** first)
 2. **Repeatable workflows** → new skill in `.cursor/skills/` or `~/.agents/skills/` (**ask permission** first)
 3. **Bootstrap, environment, & agent setup** → `AGENTS.md`
-4. **Architecture decisions** → `docs/adr/` (when ADR structure exists)
-5. **Product & handbook docs** → existing `docs/` guides/specs
+4. **Language-agnostic coding standards & style routing** → `CODING_STANDARDS.md` (index only — link to or extend `.cursor/skills/`; do not duplicate skill bodies)
+5. **Architecture decisions** → `docs/adr/` (when ADR structure exists)
+6. **Product & handbook docs** → existing `docs/` guides/specs
 
-If the project already documents truth in `AGENTS.md`, `docs/`, or `.cursor/rules/`, update or extend those — do not invent a parallel dump tree.
+If the project already documents truth in `AGENTS.md`, `CODING_STANDARDS.md`, `docs/`, or `.cursor/rules/`, update or extend those — do not invent a parallel dump tree.
 
 ## Full Pass: Selective Load
 
-1. List known homes (`AGENTS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
+1. List known homes (`AGENTS.md`, `CODING_STANDARDS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
 2. Open at most a few files whose names/topics match the current task.
 3. Never dump the whole tree into the conversation context.
 
