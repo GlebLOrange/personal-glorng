@@ -179,6 +179,7 @@ onUnmounted(() => {
           :tagline="resume.tagline"
           :location="resume.location"
           :availability="resume.availability"
+          :section-nav-active="showSectionNav"
           @inquire="contactModal = 'inquiry'"
         />
       </div>
