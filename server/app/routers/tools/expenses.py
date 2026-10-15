@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import Response
 
 from app.core.catalogs import (
@@ -36,6 +36,7 @@ from app.schemas.expense import (
 )
 from app.schemas.expense_category import (
     ExpenseCategoryCreate,
+    ExpenseCategoryDelete,
     ExpenseCategoryResponse,
     ExpenseCategoryUpdate,
 )
@@ -126,8 +127,9 @@ async def delete_category(
     category_id: int,
     svc: ExpenseCategoryServiceDep,
     user: AuthorizedUser,  # noqa: ARG001
+    body: Annotated[ExpenseCategoryDelete | None, Body()] = None,
 ) -> None:
-    await svc.delete_category(category_id)
+    await svc.delete_category(category_id, replacement=body)
 
 
 @router.get(

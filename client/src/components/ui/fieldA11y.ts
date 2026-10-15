@@ -11,6 +11,8 @@ type FieldAccessibleNameOptions = {
   hasVisibleLabel: boolean;
   label?: string;
   prefix?: string;
+  /** Overlay tip — used as accessible name when label / aria-label are absent. */
+  placeholder?: string;
 };
 
 export function buildFieldDescribedBy({
@@ -37,11 +39,14 @@ export function buildFieldAccessibleName({
   hasVisibleLabel,
   label,
   prefix,
+  placeholder,
 }: FieldAccessibleNameOptions): string | undefined {
   if (typeof ariaLabel === "string" && ariaLabel.trim()) return ariaLabel;
   if (hasVisibleLabel) return undefined;
   if (label) return label;
-  return prefix || undefined;
+  if (prefix) return prefix;
+  const tip = placeholder?.trim();
+  return tip || undefined;
 }
 
 /** Visible title + overlay tip from one name; placeholder only when it differs. */

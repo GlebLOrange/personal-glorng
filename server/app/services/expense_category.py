@@ -4,6 +4,7 @@ from app.db.documents.expense import ExpenseCategory
 from app.db.registry import DatabaseRegistry
 from app.schemas.expense_category import (
     ExpenseCategoryCreate,
+    ExpenseCategoryDelete,
     ExpenseCategoryResponse,
     ExpenseCategoryUpdate,
 )
@@ -44,6 +45,10 @@ class ExpenseCategoryService:
         await self._expenses().categories.insert(category)
 
     async def ensure_defaults(self) -> None:
+        """Seed starter categories once; never reinsert after the marker is set."""
+        if await self._expenses().categories_defaults_seeded():
+            return
+
         existing_rows = await self._expenses().categories.list(limit=500)
         existing = {row.name.lower() for row in existing_rows}
         next_order = await self._expenses().next_category_sort_order()
@@ -55,8 +60,10 @@ class ExpenseCategoryService:
             )
             next_order += 1
             existing.add(name.lower())
+        await self._expenses().mark_categories_defaults_seeded()
 
     async def list_categories(self) -> list[ExpenseCategoryResponse]:
+        # One-time starter seed only; never reinserts after the seeded marker is set.
         await self.ensure_defaults()
         rows = await self._expenses().categories.list(
             limit=500,
@@ -122,11 +129,30 @@ class ExpenseCategoryService:
 
         return ExpenseCategoryResponse.model_validate(row)
 
-    async def delete_category(self, category_id: int) -> None:
+    async def delete_category(
+        self,
+        category_id: int,
+        replacement: ExpenseCategoryDelete | None = None,
+    ) -> None:
+        """Delete a category; reassign in-use expenses when replacement is provided."""
         row = await self.get(category_id)
         in_use = await self._expenses().count_expenses_in_category(row.name)
-        if in_use > 0:
+        if in_use == 0:
+            await self._expenses().categories.delete(category_id)
+            return
+
+        if replacement is None:
             raise ValidationError(
-                "Category is used by expenses; reassign or delete those expenses first",
+                "Category is used by expenses; provide replacement_category_id",
             )
+
+        if replacement.replacement_category_id == category_id:
+            raise ValidationError("Cannot reassign a category to itself")
+
+        if replacement.replacement_category_id is None:
+            await self._expenses().reassign_category_on_expenses(row.name, None)
+        else:
+            target = await self.get(replacement.replacement_category_id)
+            await self._expenses().reassign_category_on_expenses(row.name, target.name)
+
         await self._expenses().categories.delete(category_id)

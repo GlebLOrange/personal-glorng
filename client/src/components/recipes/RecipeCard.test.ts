@@ -24,6 +24,7 @@ describe("RecipeCard", () => {
     const wrapper = mount(RecipeCard, {
       props: {
         recipe,
+        layout: "card",
       },
       global: {
         stubs: {
@@ -32,14 +33,13 @@ describe("RecipeCard", () => {
       },
     });
 
-    const openBtn = wrapper.get("[data-admin-list-open]");
-    expect(openBtn.attributes("aria-label")).toBe("open recipe Tomato Soup");
-    await openBtn.trigger("click");
+    const row = wrapper.get('[aria-label="open recipe Tomato Soup"]');
+    await row.trigger("click");
     expect(wrapper.emitted("select")).toEqual([[42]]);
 
     expect(wrapper.text()).toContain("TS");
     expect(wrapper.text()).toContain("Tomato Soup");
-    expect(wrapper.get("[data-admin-list-meta]").text()).toContain("10m prep");
+    expect(wrapper.text()).toContain("10m prep");
     expect(wrapper.text()).toContain("20m cook");
     expect(wrapper.text()).toContain("2 servings");
     expect(wrapper.text()).toContain("quick");
@@ -51,6 +51,7 @@ describe("RecipeCard", () => {
       props: {
         recipe,
         canWrite: true,
+        layout: "card",
       },
       global: {
         stubs: {
@@ -75,5 +76,23 @@ describe("RecipeCard", () => {
 
     await wrapper.get('[aria-label="delete recipe"]').trigger("click");
     expect(wrapper.emitted("delete")?.[0]).toEqual([recipe]);
+  });
+
+  it("renders table cells when layout is table", () => {
+    const wrapper = mount(RecipeCard, {
+      props: {
+        recipe,
+        layout: "table",
+      },
+      global: {
+        stubs: {
+          BaseImage: true,
+        },
+      },
+    });
+
+    expect(wrapper.element.tagName).toBe("TR");
+    expect(wrapper.text()).toContain("Tomato Soup");
+    expect(wrapper.text()).toContain("10m prep");
   });
 });

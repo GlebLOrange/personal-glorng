@@ -4,7 +4,6 @@ import { computed, defineAsyncComponent, onMounted, ref } from "vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
 import SettingsPreferencesSection from "@/components/settings/SettingsPreferencesSection.vue";
-import SettingsProfileSection from "@/components/settings/SettingsProfileSection.vue";
 import SettingsQrLibrarySection from "@/components/settings/SettingsQrLibrarySection.vue";
 import { useUserPreferences } from "@/composables/useUserPreferences";
 import { useApiAction } from "@/composables/useApiAction";
@@ -161,29 +160,6 @@ async function savePassword(): Promise<void> {
   >
     <div class="grid min-w-0 grid-cols-1 items-start gap-3 md:grid-cols-2">
       <div class="flex min-w-0 flex-col gap-3">
-        <SettingsAccountSection
-          v-model:new-email="newEmail"
-          v-model:email-password="emailPassword"
-          v-model:current-password="currentPassword"
-          v-model:new-password="newPassword"
-          v-model:new-password-confirm="newPasswordConfirm"
-          :saving-email="savingEmail"
-          :can-save-email="canSaveEmail"
-          :saving-password="savingPassword"
-          :can-save-password="canSavePassword"
-          @save-email="saveEmail"
-          @save-password="savePassword"
-        />
-
-        <SettingsProfileSection
-          v-model:display-name="displayName"
-          :saving="savingProfile"
-          :can-save="canSaveProfile"
-          @save="saveProfile"
-        />
-      </div>
-
-      <div class="flex min-w-0 flex-col gap-3">
         <SettingsPreferencesSection
           v-model:timezone="timezone"
           v-model:display-currency="displayCurrency"
@@ -191,17 +167,37 @@ async function savePassword(): Promise<void> {
           :saving="savingPrefs"
           :can-save="canSavePrefs"
           @save="savePreferences"
-        />
+        >
+          <div
+            v-if="DevApiStatusBadge"
+            class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-surface-border px-3 py-2"
+          >
+            <p class="text-xs text-surface-mid">development API</p>
+            <component :is="DevApiStatusBadge" />
+          </div>
+        </SettingsPreferencesSection>
 
         <SettingsQrLibrarySection />
+      </div>
 
-        <div
-          v-if="DevApiStatusBadge"
-          class="flex flex-wrap items-center gap-2 rounded-lg border border-surface-border bg-surface-card px-4 py-3"
-        >
-          <p class="text-xs text-surface-mid">development API</p>
-          <component :is="DevApiStatusBadge" />
-        </div>
+      <div class="flex min-w-0 flex-col gap-3">
+        <SettingsAccountSection
+          v-model:display-name="displayName"
+          v-model:new-email="newEmail"
+          v-model:email-password="emailPassword"
+          v-model:current-password="currentPassword"
+          v-model:new-password="newPassword"
+          v-model:new-password-confirm="newPasswordConfirm"
+          :saving-profile="savingProfile"
+          :can-save-profile="canSaveProfile"
+          :saving-email="savingEmail"
+          :can-save-email="canSaveEmail"
+          :saving-password="savingPassword"
+          :can-save-password="canSavePassword"
+          @save-profile="saveProfile"
+          @save-email="saveEmail"
+          @save-password="savePassword"
+        />
       </div>
     </div>
 

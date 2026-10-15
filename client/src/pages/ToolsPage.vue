@@ -74,9 +74,6 @@ function toolRoute(tool: PlatformService): string {
     back-to="/"
     :narrow="false"
   >
-    <p class="text-body mb-4 max-w-3xl">
-      Public utilities you can try without signing in — weather, short links, recipes, and more.
-    </p>
     <p
       v-if="expensesOffNotice"
       class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"

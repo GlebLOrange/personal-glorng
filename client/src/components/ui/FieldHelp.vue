@@ -24,8 +24,10 @@ const props = withDefaults(
     placement?: "bottom" | "top";
     /** `sm` fits the border-notch label row; `md` is the standalone hit target. */
     size?: "md" | "sm";
+    /** When false, tip shows only while hovered (no click pin / focus open). */
+    interactive?: boolean;
   }>(),
-  { align: "start", placement: "bottom", size: "md" },
+  { align: "start", placement: "bottom", size: "md", interactive: true },
 );
 
 const buttonClass = computed(() =>
@@ -123,11 +125,13 @@ function hide(): void {
 }
 
 function onFocus(): void {
+  if (!props.interactive) return;
   suppressClickToggle = true;
   void show();
 }
 
 function toggle(): void {
+  if (!props.interactive) return;
   if (suppressClickToggle) {
     suppressClickToggle = false;
     return;
