@@ -50,6 +50,18 @@ const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
   { label: "archived", value: "archived" },
 ];
 
+const NEXT_STATUS: Record<string, string> = {
+  unread: "read",
+  read: "archived",
+  archived: "read",
+};
+
+const ADVANCE_STATUS_LABEL: Record<string, string> = {
+  unread: "mark as read",
+  read: "archive",
+  archived: "unarchive",
+};
+
 const items = ref<FeedbackItem[]>([]);
 const selectedItem = ref<FeedbackItem | null>(null);
 const drawerOpen = ref(false);
@@ -141,9 +153,18 @@ async function setStatus(id: number, status: string): Promise<void> {
   }
 }
 
+async function advanceStatus(item: FeedbackItem): Promise<void> {
+  const next = NEXT_STATUS[item.status];
+  if (!next) return;
+  await setStatus(item.id, next);
+}
+
 function openItem(item: FeedbackItem): void {
   selectedItem.value = item;
   drawerOpen.value = true;
+  if (item.status === "unread") {
+    void setStatus(item.id, "read");
+  }
 }
 
 function closeDrawer(): void {
@@ -223,7 +244,15 @@ onMounted(load);
             @keydown.enter.prevent="openItem(item)"
             @keydown.space.prevent="openItem(item)"
           >
-            <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
+            <button
+              type="button"
+              class="shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+              :aria-label="ADVANCE_STATUS_LABEL[item.status] ?? 'change status'"
+              @click.stop="advanceStatus(item)"
+              @keydown.stop
+            >
+              <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
+            </button>
             <span class="shrink-0 text-xs lowercase text-surface-muted" :title="item.email">
               {{ item.email }}
             </span>
@@ -284,7 +313,15 @@ onMounted(load);
             @click="openItem(item)"
           >
             <td :class="ADMIN_TD_CLASS">
-              <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
+              <button
+                type="button"
+                class="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+                :aria-label="ADVANCE_STATUS_LABEL[item.status] ?? 'change status'"
+                @click.stop="advanceStatus(item)"
+                @keydown.stop
+              >
+                <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
+              </button>
             </td>
             <td :class="ADMIN_TD_MUTED_CLASS" :title="item.email">{{ item.email }}</td>
             <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(item.created_at) }}</td>
