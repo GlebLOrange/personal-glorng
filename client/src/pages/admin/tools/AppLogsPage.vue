@@ -1,17 +1,27 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, useTemplateRef } from "vue";
 
+import AdminDataRow from "@/components/admin/AdminDataRow.vue";
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
-import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import {
+  ADMIN_MOBILE_LIST_CLASS,
+  ADMIN_MOBILE_ROW_WRAP_CLASS,
+  ADMIN_TD_CLASS,
+  ADMIN_TD_MUTED_CLASS,
+  ADMIN_TD_TITLE_CLASS,
+  ADMIN_TH_CLASS,
+} from "@/constants/adminDataTable";
 import { logLevelClass } from "@/constants/filterColors";
 import { httpStatusClass } from "@/constants/httpStatusColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
@@ -174,7 +184,7 @@ function clearFilters(): void {
   void load();
 }
 
-function entryMeta(entry: AppLogEntry): string {
+function loggerLabel(entry: AppLogEntry): string {
   return entry.error_type ? `${entry.logger} · ${entry.error_type}` : entry.logger;
 }
 
@@ -258,46 +268,121 @@ onMounted(load);
       <EmptyState v-else-if="items.length === 0" class="mt-4" :description="emptyDescription" />
 
       <div v-else class="mt-1 min-w-0">
-        <AdminListRow
-          v-for="entry in items"
-          :key="entry.id"
-          :interactive="hasDetails(entry)"
-          :expandable="hasDetails(entry)"
-          :expanded="isExpanded(entry.id)"
-          :hoverable="hasDetails(entry)"
-          :status-class="logLevelClass(entry.level)"
-          @click="onRowClick(entry)"
-        >
-          <template #badge>
-            <div class="flex items-center gap-1">
-              <StatusBadge :label="entry.level" :class-name="logLevelClass(entry.level)" />
-              <StatusBadge
-                v-if="contextStatus(entry) !== null"
-                :label="String(contextStatus(entry))"
-                :class-name="httpStatusClass(contextStatus(entry)!)"
+        <div :class="ADMIN_MOBILE_LIST_CLASS">
+          <div
+            v-for="entry in items"
+            :key="`m-${entry.id}`"
+            :class="ADMIN_MOBILE_ROW_WRAP_CLASS"
+          >
+            <component
+              :is="hasDetails(entry) ? 'button' : 'div'"
+              :type="hasDetails(entry) ? 'button' : undefined"
+              class="flex w-full min-w-0 items-center gap-2 text-left"
+              :class="hasDetails(entry) ? 'cursor-pointer' : undefined"
+              :aria-expanded="hasDetails(entry) ? isExpanded(entry.id) : undefined"
+              @click="onRowClick(entry)"
+            >
+              <div class="flex shrink-0 items-center gap-1">
+                <StatusBadge :label="entry.level" :class-name="logLevelClass(entry.level)" />
+                <StatusBadge
+                  v-if="contextStatus(entry) !== null"
+                  :label="String(contextStatus(entry))"
+                  :class-name="httpStatusClass(contextStatus(entry)!)"
+                />
+              </div>
+              <span class="shrink-0 text-xs lowercase text-surface-muted">
+                {{ formatDate(entry.occurred_at) }}
+              </span>
+              <span
+                class="min-w-0 shrink truncate font-data text-xs text-surface-muted"
+                :title="loggerLabel(entry)"
+              >
+                {{ loggerLabel(entry) }}
+              </span>
+              <p
+                class="min-w-0 flex-1 truncate text-sm lowercase text-surface-light"
+                :title="entry.message.toLowerCase()"
+              >
+                {{ entry.message }}
+              </p>
+              <ChevronIcon
+                v-if="hasDetails(entry)"
+                direction="right"
+                :open="isExpanded(entry.id)"
+                class-name="size-3.5 shrink-0 text-surface-muted"
               />
+            </component>
+            <div
+              v-if="isExpanded(entry.id)"
+              class="mt-2 border-t border-surface-border pt-2 text-xs text-surface-mid"
+            >
+              <p v-if="entry.request_id" class="font-data">Request: {{ entry.request_id }}</p>
+              <p v-if="entry.error_type">Error: {{ entry.error_type }} — {{ entry.error }}</p>
+              <pre
+                v-if="entry.context"
+                class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
+                >{{ JSON.stringify(entry.context, null, 2) }}</pre>
+              <pre
+                v-if="entry.traceback"
+                class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs text-status-error/80"
+                >{{ entry.traceback }}</pre>
             </div>
+          </div>
+        </div>
+
+        <AdminDataTable table-label="app log entries">
+          <template #header>
+            <th :class="ADMIN_TH_CLASS">type</th>
+            <th :class="ADMIN_TH_CLASS">when</th>
+            <th :class="ADMIN_TH_CLASS">logger</th>
+            <th :class="ADMIN_TH_CLASS">info</th>
           </template>
-          <template #primary>
-            <span class="lowercase" :title="entry.message.toLowerCase()">{{ entry.message }}</span>
-          </template>
-          <template #meta>
-            <span class="font-data" :title="entryMeta(entry)">{{ entryMeta(entry) }}</span>
-          </template>
-          <template #time>{{ formatDate(entry.occurred_at) }}</template>
-          <template #detail>
-            <p v-if="entry.request_id" class="font-data">Request: {{ entry.request_id }}</p>
-            <p v-if="entry.error_type">Error: {{ entry.error_type }} — {{ entry.error }}</p>
-            <pre
-              v-if="entry.context"
-              class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
-              >{{ JSON.stringify(entry.context, null, 2) }}</pre>
-            <pre
-              v-if="entry.traceback"
-              class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs text-status-error/80"
-              >{{ entry.traceback }}</pre>
-          </template>
-        </AdminListRow>
+
+          <AdminDataRow
+            v-for="entry in items"
+            :key="entry.id"
+            :interactive="hasDetails(entry)"
+            :expandable="hasDetails(entry)"
+            :expanded="isExpanded(entry.id)"
+            :col-span="4"
+            @click="onRowClick(entry)"
+          >
+            <td :class="ADMIN_TD_CLASS">
+              <div class="flex items-center gap-1">
+                <StatusBadge :label="entry.level" :class-name="logLevelClass(entry.level)" />
+                <StatusBadge
+                  v-if="contextStatus(entry) !== null"
+                  :label="String(contextStatus(entry))"
+                  :class-name="httpStatusClass(contextStatus(entry)!)"
+                />
+              </div>
+            </td>
+            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(entry.occurred_at) }}</td>
+            <td :class="[ADMIN_TD_MUTED_CLASS, 'font-data']" :title="loggerLabel(entry)">
+              {{ loggerLabel(entry) }}
+            </td>
+            <td :class="ADMIN_TD_TITLE_CLASS">
+              <p
+                class="truncate text-sm lowercase text-surface-light"
+                :title="entry.message.toLowerCase()"
+              >
+                {{ entry.message }}
+              </p>
+            </td>
+            <template v-if="hasDetails(entry)" #detail>
+              <p v-if="entry.request_id" class="font-data">Request: {{ entry.request_id }}</p>
+              <p v-if="entry.error_type">Error: {{ entry.error_type }} — {{ entry.error }}</p>
+              <pre
+                v-if="entry.context"
+                class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
+                >{{ JSON.stringify(entry.context, null, 2) }}</pre>
+              <pre
+                v-if="entry.traceback"
+                class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs text-status-error/80"
+                >{{ entry.traceback }}</pre>
+            </template>
+          </AdminDataRow>
+        </AdminDataTable>
       </div>
 
       <AdminListFooter

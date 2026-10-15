@@ -6,38 +6,25 @@ How to change Gleb.Y and open a pull request.
 
 1. Branch from `main`: `cursor/<short-kebab-description>` (agents) or your own feature branch name.
 2. Make focused changes; avoid unrelated files.
-3. Run targeted checks before pushing (see below).
+3. Run targeted checks before pushing (see [Quality checks](/guide/development#quality-checks) and [Testing](/reference/testing)).
 4. Open a PR with a short title and **Summary** + **Test plan** sections.
 
 Do not push directly to `main`. Never commit `.env` or credentials.
 
-## Backend checks
+## Where facts live
 
-```bash
-cd server
-uv sync --frozen
-uv run ruff check .
-uv run pytest -m "not integration" -v
-```
+| Topic | Page |
+|-------|------|
+| First-run setup and secrets | [Getting started](/guide/getting-started) |
+| Dev modes, ports, quality commands | [Development](/guide/development) |
+| Channels, stores, request pipeline | [Architecture](/guide/architecture) |
+| Service catalog and terminology | [Platform overview](/reference/platform) |
+| Test tiers and markers | [Testing](/reference/testing) |
+| Handbook information architecture | [Handbook structure](/specs/handbook-structure) |
 
-In Docker (when stack is up): `make lint-check` and `make test`.
+## Checks
 
-## Frontend checks
-
-```bash
-cd client
-npm ci
-npm run lint
-npm run test
-VITE_PUBLIC_ORIGIN=https://your-domain.example npm run build:check
-```
-
-## Local full gate
-
-```bash
-make check                 # lint + pytest + client lint/test/build
-cd client && npm run e2e   # optional; needs running API
-```
+Backend, frontend, and local full-gate commands: [Development → Quality checks](/guide/development#quality-checks).
 
 `make check` is a local convenience gate — CI also runs coverage, `not integration`, postgres, e2e, and docs freshness. Workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). Testing tiers: [Testing](/reference/testing).
 
@@ -60,7 +47,7 @@ Runs ruff, client eslint/prettier/typecheck, and gitleaks.
 
 ## Documentation
 
-When changing behavior, update the relevant page under `docs/` and run:
+When changing behavior, update the relevant page under `docs/` (see the ownership table above) and run:
 
 ```bash
 make docs-build

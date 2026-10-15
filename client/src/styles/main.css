@@ -716,6 +716,13 @@ h6,
     background: #ffffff !important;
     box-shadow: none !important;
   }
+
+  /* Closed details hide the body; this list still prints the case-study copy. */
+  .case-study-list details::details-content,
+  .case-study-list details > :not(summary) {
+    content-visibility: visible;
+    display: block !important;
+  }
 }
 
 /* Bottom hairline for AdminListRow — ::after so expand/hover rings (box-shadow) don't wipe it. */
