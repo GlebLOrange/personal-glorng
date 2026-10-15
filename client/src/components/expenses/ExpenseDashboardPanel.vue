@@ -3,6 +3,7 @@ import { computed, useTemplateRef } from "vue";
 
 import ExpenseLedgerHeader from "@/components/expenses/ExpenseLedgerHeader.vue";
 import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { Expense, ExpenseCategory, ExpenseSummary } from "@/types";
@@ -197,13 +198,9 @@ defineExpose({
     <Card variant="compact" class="flex flex-col gap-2">
       <div class="flex items-center justify-between gap-2">
         <h3 class="text-sm font-semibold text-surface-light">recent activity</h3>
-        <button
-          type="button"
-          class="min-h-11 min-w-11 rounded-md px-2 text-xs text-accent-blue underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-          @click="emit('openActivity')"
-        >
+        <BaseButton variant="ghost" quiet size="sm" @click="emit('openActivity')">
           view all
-        </button>
+        </BaseButton>
       </div>
       <ul v-if="recentExpenses.length" class="flex flex-col gap-1.5" aria-label="recent expenses">
         <li

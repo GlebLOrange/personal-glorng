@@ -5,6 +5,7 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { httpStatusClass } from "@/constants/httpStatusColors";
@@ -105,15 +106,16 @@ onMounted(() => {
           placeholder="label (optional)"
           aria-label="monitor label"
         />
-        <select
-          v-model.number="newInterval"
-          class="h-9 rounded-lg border border-surface-border bg-surface-card px-2 text-xs text-surface-fg"
+        <BaseSelect
+          v-model="newInterval"
+          class="w-auto shrink-0"
+          compact
           aria-label="check interval minutes"
         >
           <option v-for="mins in HEALTH_INTERVALS" :key="mins" :value="mins">
             every {{ mins }}m
           </option>
-        </select>
+        </BaseSelect>
         <ToolbarPillButton action="add" type="submit" class="shrink-0" :disabled="!canCreate">
           {{ creating ? "adding…" : "add" }}
         </ToolbarPillButton>
@@ -140,7 +142,7 @@ onMounted(() => {
                   :class="selectedId === monitor.id ? 'bg-surface-muted/30 -mx-2 px-2 py-1' : ''"
                   @click="selectMonitor(monitor.id)"
                 >
-                  <div class="truncate text-sm font-medium text-surface-fg">
+                  <div class="truncate text-sm font-medium text-surface-light">
                     {{ monitor.label || monitor.url }}
                   </div>
                   <div v-if="monitor.label" class="truncate text-xs text-surface-muted">
@@ -220,7 +222,7 @@ onMounted(() => {
 
         <div v-if="selected" class="min-w-0 space-y-4">
           <div class="space-y-1">
-            <h2 class="text-base font-medium text-surface-fg">
+            <h2 class="text-base font-medium text-surface-light">
               {{ selected.label || selected.url }}
             </h2>
             <p class="break-all text-xs text-surface-muted">{{ selected.url }}</p>
@@ -279,21 +281,18 @@ onMounted(() => {
             >
               {{ checking ? "checking…" : "check now" }}
             </ToolbarPillButton>
-            <select
-              class="h-10 rounded-lg border border-surface-border bg-surface-card px-3 text-sm"
-              :value="selected.interval_minutes"
+            <BaseSelect
+              class="w-auto shrink-0"
+              :model-value="selected.interval_minutes"
               aria-label="change interval"
-              @change="
-                updateInterval(
-                  selected,
-                  Number(($event.target as HTMLSelectElement).value) as HealthInterval,
-                )
+              @update:model-value="
+                updateInterval(selected, Number($event) as HealthInterval)
               "
             >
               <option v-for="mins in HEALTH_INTERVALS" :key="mins" :value="mins">
                 every {{ mins }}m
               </option>
-            </select>
+            </BaseSelect>
           </div>
 
           <div>

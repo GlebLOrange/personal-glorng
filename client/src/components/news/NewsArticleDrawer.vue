@@ -6,11 +6,11 @@ import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { newsStatusClass } from "@/constants/filterColors";
-import { SELECT_CLASS } from "@/constants/formClasses";
 import {
   NEWS_STATUSES,
   NEWS_TAG_LIMIT,
@@ -101,17 +101,16 @@ function onTagsToggle(event: Event): void {
   >
     <form class="space-y-6" @submit.prevent="emit('save')">
       <section class="space-y-4">
-        <select
-          :value="form.source_id ?? ''"
+        <BaseSelect
+          :model-value="form.source_id ?? ''"
           aria-label="source"
-          :class="SELECT_CLASS"
-          @change="patch({ source_id: toSourceId(($event.target as HTMLSelectElement).value) })"
+          @update:model-value="patch({ source_id: toSourceId(toStringValue($event)) })"
         >
           <option value="">auto from URL host</option>
           <option v-for="source in sources" :key="source.id" :value="source.id">
             {{ source.name }}{{ source.host ? ` (${source.host})` : "" }}
           </option>
-        </select>
+        </BaseSelect>
         <BaseInput
           :model-value="form.source_url"
           placeholder="article url (example.com or https://…)"

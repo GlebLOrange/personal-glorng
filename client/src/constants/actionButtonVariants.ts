@@ -49,6 +49,10 @@ const NEUTRAL_GHOST_IDLE =
 const NEUTRAL_GHOST_QUIET =
   "border-transparent bg-transparent text-surface-light/60 hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light focus-visible:border-surface-light/40 focus-visible:bg-surface-light/10 focus-visible:text-surface-light";
 
+/** Resting grayscale fill — distinct from transparent ghost. */
+const NEUTRAL_SECONDARY_IDLE =
+  "border-surface-border bg-surface-card text-surface-light/80 hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light active:enabled:bg-surface-light/15";
+
 const NEUTRAL_SELECTED = "border-surface-light/40 bg-surface-light/15 text-surface-light";
 
 type ActionButtonClassInput = {
@@ -101,5 +105,5 @@ export function classesForActionButton(input: ActionButtonClassInput): string {
   if (selected) {
     return `${NEUTRAL_SELECTED} ${NEUTRAL_FOCUS}`;
   }
-  return `${NEUTRAL_GHOST_IDLE} ${NEUTRAL_FOCUS}`;
+  return `${NEUTRAL_SECONDARY_IDLE} ${NEUTRAL_FOCUS}`;
 }

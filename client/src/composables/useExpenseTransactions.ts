@@ -43,7 +43,6 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
   } = options;
 
   const { run: runExport, loading: exporting } = useApiAction();
-  const filtersOpen = ref(false);
   const expensePage = ref(1);
 
   const filtersRef = shallowRef<ReturnType<typeof useExpenseFilters> | null>(null);
@@ -144,11 +143,6 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
 
   const hasPreviousExpensePage = computed(() => expensePage.value > 1);
   const hasNextExpensePage = computed(() => expensePage.value < expensePages.value);
-  const transactionFilterLabel = computed(() => {
-    const count = [productFilter.value.trim(), categoryFilter.value].filter(Boolean).length;
-    if (count === 0) return "filters";
-    return `filters (${count})`;
-  });
 
   const productSuggestions = computed(
     () => summary.value?.by_tool.map((item) => item.tool_name) ?? [],
@@ -156,11 +150,6 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
 
   function handleDatePreset(preset: MonthPreset): void {
     applyMonthPreset(preset);
-  }
-
-  function clearTransactionFilters(): void {
-    productFilter.value = "";
-    categoryFilter.value = null;
   }
 
   function goToExpensePage(page: number): void {
@@ -210,7 +199,6 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
   return {
     summaryHook,
     exporting,
-    filtersOpen,
     expensePage,
     expenses,
     expensePages,
@@ -250,12 +238,10 @@ export function useExpenseTransactions(options: UseExpenseTransactionsOptions) {
     applyMonthPreset,
     hasPreviousExpensePage,
     hasNextExpensePage,
-    transactionFilterLabel,
     productSuggestions,
     sortIndicator,
     sortAriaSort,
     handleDatePreset,
-    clearTransactionFilters,
     goToExpensePage,
     handleExpenseSort,
     exportCsv,

@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
+import {
+  ADMIN_MOBILE_LIST_CLASS,
+  ADMIN_TH_CLASS,
+} from "@/constants/adminDataTable";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -147,17 +152,42 @@ onMounted(loadUrls);
 
       <template v-else>
         <div v-if="urls.length > 0" class="min-w-0">
-          <UrlShortenerListItem
-            v-for="url in urls"
-            :key="url.id"
-            :url="url"
-            :can-write="canWrite"
-            :saving="savingId === url.id"
-            :deleting="deletingId === url.id"
-            @copy="copy(publicUrl('s', url.code))"
-            @save="updateUrl(url.id, $event)"
-            @delete="deleteUrl(url.id)"
-          />
+          <div :class="ADMIN_MOBILE_LIST_CLASS">
+            <UrlShortenerListItem
+              v-for="url in urls"
+              :key="`m-${url.id}`"
+              layout="card"
+              :url="url"
+              :can-write="canWrite"
+              :saving="savingId === url.id"
+              :deleting="deletingId === url.id"
+              @copy="copy(publicUrl('s', url.code))"
+              @save="updateUrl(url.id, $event)"
+              @delete="deleteUrl(url.id)"
+            />
+          </div>
+
+          <AdminDataTable table-label="shortened URLs">
+            <template #header>
+              <th :class="ADMIN_TH_CLASS">title</th>
+              <th :class="ADMIN_TH_CLASS">short link</th>
+              <th class="w-px px-2 text-right">
+                <span class="sr-only">actions</span>
+              </th>
+            </template>
+            <UrlShortenerListItem
+              v-for="url in urls"
+              :key="url.id"
+              layout="table"
+              :url="url"
+              :can-write="canWrite"
+              :saving="savingId === url.id"
+              :deleting="deletingId === url.id"
+              @copy="copy(publicUrl('s', url.code))"
+              @save="updateUrl(url.id, $event)"
+              @delete="deleteUrl(url.id)"
+            />
+          </AdminDataTable>
         </div>
 
         <EmptyState v-else>no shortened URLs yet. create one above.</EmptyState>
