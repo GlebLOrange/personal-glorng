@@ -139,7 +139,7 @@ onUnmounted(() => {
             variant="ghost"
             quiet
             size="sm"
-            class="min-h-11 gap-1.5"
+            class="gap-1.5"
             :aria-expanded="showIngredients"
             @click="showIngredients = !showIngredients"
           >
@@ -195,7 +195,7 @@ onUnmounted(() => {
           >
             <ChevronIcon direction="right" class-name="size-4" />
           </IconActionButton>
-          <BaseButton v-else variant="primary" size="sm" class="min-h-11" @click="emit('close')">
+          <BaseButton v-else variant="primary" size="sm" @click="emit('close')">
             done
           </BaseButton>
         </footer>

@@ -13,11 +13,14 @@ const props = withDefaults(
     backTo?: RouteLocationRaw;
     /** Breadcrumb root: admin hub or tools hub. */
     hub?: "admin" | "tools";
+    /** Optional page help (forwarded to PageShell → chrome ?). */
+    description?: string;
   }>(),
   {
     backTo: "/admin",
     hub: "admin",
     maxWidth: "5xl",
+    description: undefined,
   },
 );
 
@@ -42,6 +45,7 @@ const breadcrumbs = computed((): BreadcrumbSegment[] => {
     :back-to="backTo"
     :max-width="maxWidth"
     :narrow="false"
+    :description="description"
     as="div"
   >
     <slot />

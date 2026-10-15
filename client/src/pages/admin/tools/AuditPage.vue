@@ -1,16 +1,26 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, useTemplateRef } from "vue";
 
+import AdminDataRow from "@/components/admin/AdminDataRow.vue";
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
-import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import {
+  ADMIN_MOBILE_LIST_CLASS,
+  ADMIN_MOBILE_ROW_WRAP_CLASS,
+  ADMIN_TD_CLASS,
+  ADMIN_TD_MUTED_CLASS,
+  ADMIN_TD_TITLE_CLASS,
+  ADMIN_TH_CLASS,
+} from "@/constants/adminDataTable";
 import { auditCategoryClass } from "@/constants/filterColors";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
@@ -148,13 +158,11 @@ function actorLabel(event: AuditEvent): string {
   return event.actor_id ? `${event.actor_type}#${event.actor_id}` : event.actor_type;
 }
 
-function eventMeta(event: AuditEvent): string {
-  const actor = actorLabel(event);
-  if (!event.resource_type) return actor;
-  const resource = event.resource_id
+function resourceLabel(event: AuditEvent): string | null {
+  if (!event.resource_type) return null;
+  return event.resource_id
     ? `${event.resource_type}#${event.resource_id}`
     : event.resource_type;
-  return `${actor} · ${resource}`;
 }
 
 onMounted(load);
@@ -211,42 +219,135 @@ onMounted(load);
       />
 
       <div v-else class="mt-1 min-w-0">
-        <AdminListRow
-          v-for="event in items"
-          :key="event.id"
-          interactive
-          expandable
-          :expanded="isExpanded(event.id)"
-          :status-class="auditCategoryClass(event.category)"
-          @click="toggleExpanded(event.id)"
-        >
-          <template #badge>
-            <StatusBadge :label="event.category" :class-name="auditCategoryClass(event.category)" />
+        <div :class="ADMIN_MOBILE_LIST_CLASS">
+          <div
+            v-for="event in items"
+            :key="`m-${event.id}`"
+            :class="ADMIN_MOBILE_ROW_WRAP_CLASS"
+          >
+            <button
+              type="button"
+              class="flex w-full min-w-0 items-center gap-2 text-left"
+              :aria-expanded="isExpanded(event.id)"
+              @click="toggleExpanded(event.id)"
+            >
+              <StatusBadge
+                :label="event.category"
+                :class-name="auditCategoryClass(event.category)"
+              />
+              <span class="shrink-0 text-xs lowercase text-surface-muted" :title="actorLabel(event)">
+                {{ actorLabel(event) }}
+              </span>
+              <span class="shrink-0 text-xs lowercase text-surface-muted">
+                {{ formatDate(event.occurred_at) }}
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm text-surface-light" :title="event.action">
+                  {{ event.action }}
+                </p>
+                <p
+                  v-if="resourceLabel(event)"
+                  class="mt-0.5 truncate text-xs text-surface-mid"
+                  :title="resourceLabel(event)!"
+                >
+                  {{ resourceLabel(event) }}
+                </p>
+              </div>
+              <ChevronIcon
+                direction="right"
+                :open="isExpanded(event.id)"
+                class-name="size-3.5 shrink-0 text-surface-muted"
+              />
+            </button>
+            <div
+              v-if="isExpanded(event.id)"
+              class="mt-2 border-t border-surface-border pt-2 text-xs text-surface-mid"
+            >
+              <p>
+                actor: {{ event.actor_type }}
+                <span v-if="event.actor_id">#{{ event.actor_id }}</span>
+                · source: {{ event.source }}
+              </p>
+              <p v-if="event.resource_type">
+                resource: {{ event.resource_type }}
+                <span v-if="event.resource_id">#{{ event.resource_id }}</span>
+              </p>
+              <p v-if="event.request_id" class="font-data">request: {{ event.request_id }}</p>
+              <pre
+                v-if="event.metadata"
+                class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
+                >{{ JSON.stringify(event.metadata, null, 2) }}</pre>
+            </div>
+          </div>
+        </div>
+
+        <AdminDataTable table-label="audit log events">
+          <template #header>
+            <th :class="ADMIN_TH_CLASS">type</th>
+            <th :class="ADMIN_TH_CLASS">who</th>
+            <th :class="ADMIN_TH_CLASS">when</th>
+            <th :class="ADMIN_TH_CLASS">title</th>
+            <th class="w-px px-2 text-right">
+              <span class="sr-only">expand</span>
+            </th>
           </template>
-          <template #primary>
-            <span :title="event.action">{{ event.action }}</span>
-          </template>
-          <template #meta>
-            <span :title="eventMeta(event)">{{ eventMeta(event) }}</span>
-          </template>
-          <template #time>{{ formatDate(event.occurred_at) }}</template>
-          <template #detail>
-            <p>
-              actor: {{ event.actor_type }}
-              <span v-if="event.actor_id">#{{ event.actor_id }}</span>
-              · source: {{ event.source }}
-            </p>
-            <p v-if="event.resource_type">
-              resource: {{ event.resource_type }}
-              <span v-if="event.resource_id">#{{ event.resource_id }}</span>
-            </p>
-            <p v-if="event.request_id" class="font-data">request: {{ event.request_id }}</p>
-            <pre
-              v-if="event.metadata"
-              class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
-              >{{ JSON.stringify(event.metadata, null, 2) }}</pre>
-          </template>
-        </AdminListRow>
+
+          <AdminDataRow
+            v-for="event in items"
+            :key="event.id"
+            interactive
+            expandable
+            :expanded="isExpanded(event.id)"
+            :col-span="5"
+            @click="toggleExpanded(event.id)"
+          >
+            <td :class="ADMIN_TD_CLASS">
+              <StatusBadge
+                :label="event.category"
+                :class-name="auditCategoryClass(event.category)"
+              />
+            </td>
+            <td :class="ADMIN_TD_MUTED_CLASS" :title="actorLabel(event)">
+              {{ actorLabel(event) }}
+            </td>
+            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(event.occurred_at) }}</td>
+            <td :class="ADMIN_TD_TITLE_CLASS">
+              <p class="truncate text-sm text-surface-light" :title="event.action">
+                {{ event.action }}
+              </p>
+              <p
+                v-if="resourceLabel(event)"
+                class="mt-0.5 truncate text-xs text-surface-mid"
+                :title="resourceLabel(event)!"
+              >
+                {{ resourceLabel(event) }}
+              </p>
+            </td>
+            <template #actions>
+              <ChevronIcon
+                direction="right"
+                :open="isExpanded(event.id)"
+                class-name="size-3.5 shrink-0 text-surface-muted"
+              />
+            </template>
+            <template #detail>
+              <p>
+                actor: {{ event.actor_type }}
+                <span v-if="event.actor_id">#{{ event.actor_id }}</span>
+                · source: {{ event.source }}
+              </p>
+              <p v-if="event.resource_type">
+                resource: {{ event.resource_type }}
+                <span v-if="event.resource_id">#{{ event.resource_id }}</span>
+              </p>
+              <p v-if="event.request_id" class="font-data">request: {{ event.request_id }}</p>
+              <pre
+                v-if="event.metadata"
+                class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
+                >{{ JSON.stringify(event.metadata, null, 2) }}</pre>
+            </template>
+          </AdminDataRow>
+        </AdminDataTable>
       </div>
 
       <AdminListFooter

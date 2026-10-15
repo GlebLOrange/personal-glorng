@@ -1,6 +1,6 @@
 # P3 roadmap (post P0–P2)
 
-Tracking larger items from the review plan. P0/P1/P2 toolchain, security, SEO, and CSS guardrails are on `main` or PR [#666](https://github.com/GlebLOrange/personal-glorng/pull/666).
+**Status:** Snapshot — backlog tracker after P0–P2 shipped on `main`. Not a current how-to.
 
 ## Status key
 
@@ -25,10 +25,9 @@ Tracking larger items from the review plan. P0/P1/P2 toolchain, security, SEO, a
 
 ## Suggested order
 
-1. Merge PR #666 (CI + P2 SEO/nginx/catalog).
-2. Monitor **`check-css-budget`** and Lighthouse on prod `/` after deploy.
-3. If LCP regresses: prototype **admin CSS entry** (one vertical slice, e.g. `/admin` layout only).
-4. Evaluate **prerender** only if search/social still miss content after `/og/*` and JSON-LD.
+1. Monitor **`check-css-budget`** and Lighthouse on prod `/` after deploy.
+2. If LCP regresses: prototype **admin CSS entry** (one vertical slice, e.g. `/admin` layout only).
+3. Evaluate **prerender** only if search/social still miss content after `/og/*` and JSON-LD.
 
 ## Out of scope
 

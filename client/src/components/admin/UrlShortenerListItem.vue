@@ -2,21 +2,32 @@
 import { computed, nextTick, ref, watch } from "vue";
 
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
-import AdminListRow from "@/components/admin/AdminListRow.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconCopyButton from "@/components/ui/IconCopyButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
+import {
+  ADMIN_ACTIONS_CLASS,
+  ADMIN_MOBILE_ROW_WRAP_CLASS,
+  ADMIN_TD_ACTIONS_CLASS,
+  ADMIN_TD_CLASS,
+  ADMIN_TD_TITLE_CLASS,
+  ADMIN_TR_CLASS,
+} from "@/constants/adminDataTable";
 import type { UrlItem } from "@/types";
 import { publicUrl } from "@/utils/publicLinks";
 
-const props = defineProps<{
-  url: UrlItem;
-  canWrite: boolean;
-  saving?: boolean;
-  deleting?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    url: UrlItem;
+    canWrite: boolean;
+    saving?: boolean;
+    deleting?: boolean;
+    layout?: "card" | "table";
+  }>(),
+  { layout: "card" },
+);
 
 const emit = defineEmits<{
   copy: [];
@@ -81,12 +92,42 @@ function confirmDelete(): void {
   showDeleteConfirm.value = false;
   emit("delete");
 }
+
+/** Row click opens edit; links and action buttons keep their own handlers. */
+function onRowClick(event: MouseEvent): void {
+  if (!props.canWrite) return;
+  const target = event.target;
+  if (target instanceof Element && target.closest("button, a, input, [data-admin-row-stop]")) {
+    return;
+  }
+  void startEdit();
+}
 </script>
 
 <template>
+  <tr v-if="editing && layout === 'table'" :class="ADMIN_TR_CLASS">
+    <td colspan="3" class="px-3 py-1.5">
+      <div class="flex w-full min-w-0 items-stretch gap-1">
+        <BaseInput
+          ref="titleInput"
+          v-model="draftTitle"
+          class="min-w-0 flex-1"
+          placeholder="title (optional)"
+          @keydown="onTitleKeydown"
+        />
+        <BaseButton variant="cancel" size="sm" class="shrink-0" :disabled="saving" @click="cancelEdit">
+          cancel
+        </BaseButton>
+        <BaseButton variant="save" size="sm" class="shrink-0" :disabled="saving" @click="saveEdit">
+          {{ saving ? "…" : "save" }}
+        </BaseButton>
+      </div>
+    </td>
+  </tr>
+
   <div
-    v-if="editing"
-    class="relative flex w-full min-w-0 items-stretch gap-1 after:pointer-events-none after:absolute after:bottom-0 after:left-2 after:right-2 after:z-[1] after:h-px after:bg-surface-border/60 after:content-[''] last:after:hidden"
+    v-else-if="editing"
+    :class="[ADMIN_MOBILE_ROW_WRAP_CLASS, 'relative flex w-full min-w-0 items-stretch gap-1']"
   >
     <BaseInput
       ref="titleInput"
@@ -103,30 +144,63 @@ function confirmDelete(): void {
     </BaseButton>
   </div>
 
-  <AdminListRow
-    v-else
-    :interactive="canWrite"
-    :nested-interactive="canWrite"
-    hoverable
-    reveal-actions-on-hover
-    @click="startEdit"
+  <tr
+    v-else-if="layout === 'table'"
+    :class="[ADMIN_TR_CLASS, canWrite ? 'cursor-pointer' : undefined]"
+    @click="onRowClick"
   >
-    <template #primary>
-      <span :title="displayTitle">{{ displayTitle }}</span>
-    </template>
-    <template #meta>
+    <td :class="ADMIN_TD_TITLE_CLASS">
+      <p class="truncate text-sm text-surface-light" :title="displayTitle">
+        {{ displayTitle }}
+      </p>
+    </td>
+    <td :class="ADMIN_TD_CLASS">
       <a
         :href="shortLink"
         :title="`${url.original_url} · ${shortLink}`"
         target="_blank"
         rel="noopener noreferrer"
-        class="normal-case text-accent-blue underline-offset-2 hover:underline"
-        @click.stop
+        class="block w-full truncate text-xs text-accent-blue underline-offset-2 hover:underline"
       >
         {{ shortLink }}
       </a>
-    </template>
-    <template #actions>
+    </td>
+    <td :class="ADMIN_TD_ACTIONS_CLASS" data-admin-row-stop @click.stop @keydown.stop>
+      <div :class="ADMIN_ACTIONS_CLASS">
+        <IconEditButton v-if="canWrite" aria-label="edit title" @click="startEdit" />
+        <IconCopyButton aria-label="copy short link" @click="emit('copy')" />
+        <IconCloseButton
+          v-if="canWrite"
+          aria-label="delete short URL"
+          @click="showDeleteConfirm = true"
+        />
+      </div>
+    </td>
+  </tr>
+
+  <div
+    v-else
+    :class="[
+      ADMIN_MOBILE_ROW_WRAP_CLASS,
+      'flex min-w-0 items-center gap-2',
+      canWrite ? 'cursor-pointer' : undefined,
+    ]"
+    @click="onRowClick"
+  >
+    <p class="min-w-0 flex-1 truncate text-sm text-surface-light" :title="displayTitle">
+      {{ displayTitle }}
+    </p>
+    <a
+      :href="shortLink"
+      :title="`${url.original_url} · ${shortLink}`"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="max-w-[40%] shrink truncate text-xs text-accent-blue underline-offset-2 hover:underline"
+      @click.stop
+    >
+      {{ shortLink }}
+    </a>
+    <div :class="ADMIN_ACTIONS_CLASS" data-admin-row-stop @click.stop @keydown.stop>
       <IconEditButton v-if="canWrite" aria-label="edit title" @click="startEdit" />
       <IconCopyButton aria-label="copy short link" @click="emit('copy')" />
       <IconCloseButton
@@ -134,8 +208,8 @@ function confirmDelete(): void {
         aria-label="delete short URL"
         @click="showDeleteConfirm = true"
       />
-    </template>
-  </AdminListRow>
+    </div>
+  </div>
 
   <ConfirmDialog
     :open="showDeleteConfirm"

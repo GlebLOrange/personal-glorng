@@ -39,3 +39,22 @@ def test_task_text_fields_description_caps_at_5000() -> None:
     fields = TaskTextFields(title="Task", description="y" * 6000)
     assert fields.description is not None
     assert len(fields.description) == 5000
+
+
+def test_news_article_create_sanitizes_shared_text_fields() -> None:
+    from app.schemas.news import NewsArticleCreate, NewsArticleUpdate
+
+    article = NewsArticleCreate(
+        source_url="https://example.com/story",
+        original_title="  Orig\x00 title  ",
+        title="  Short\x00 title  ",
+        summary="  Summary\x00 text  ",
+        tags=["tech"],
+    )
+    assert article.original_title == "Orig title"
+    assert article.title == "Short title"
+    assert article.summary == "Summary text"
+
+    update = NewsArticleUpdate(title="  Patch\x00 title  ", slug="  my\x00-slug  ")
+    assert update.title == "Patch title"
+    assert update.slug == "my-slug"
