@@ -15,6 +15,7 @@ from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.core.json_lists import parse_json_string_list
 from app.core.logging import logger
 from app.core.pagination import build_paginated
+from app.core.text import sanitize_fetched_text
 from app.core.url_safety import get_public_http_url, is_public_http_url
 from app.core.utils import DEFAULT_PER_PAGE, paginate_params, utc_now
 from app.db.documents.news import NewsArticle, NewsSource, NewsStatus
@@ -171,7 +172,7 @@ def _clean_metadata_text(value: str | None, *, max_length: int) -> str:
     """Normalize fetched metadata text."""
     if not value:
         return ""
-    return " ".join(html.unescape(value).split())[:max_length]
+    return sanitize_fetched_text(html.unescape(value), max_length=max_length)
 
 
 def _extract_title(document: str) -> str | None:

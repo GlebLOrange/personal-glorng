@@ -2,6 +2,8 @@
 
 Day-to-day workflow, dev modes, ports, and quality checks.
 
+First-time setup (`.env`, seed, minimum secrets): [Getting started](/guide/getting-started).
+
 ## Recommended workflow
 
 ```bash

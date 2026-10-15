@@ -29,9 +29,10 @@ Public internet deploys should keep `UNTRUSTED_URL_TOOLS_ENABLED=false` so yt-dl
 |---------|-------|------|
 | Public web | `/` | Resume, donations, feedback, public tools |
 | Admin panel | `/admin` | Ops hub via `/api/tools/*` and `/api/admin/*` |
+| Tools | `/tools`, `/tasks`, `/news`, … | Public + capability-gated tools |
 | Telegram bot | `app.todobot.main` | Tasks, reminders, expense logging, Calendar OAuth |
 | Worker | `celery -A app.workers.celery_app worker` | Reminders, calendar sync, cleanup |
-| Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks |
+| Beat | `celery -A app.workers.celery_app beat` | Scheduled cron tasks (incl. sync queue every 2m) |
 
 ## Data stores
 

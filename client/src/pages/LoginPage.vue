@@ -55,8 +55,8 @@ async function handleLogin(): Promise<void> {
         type="email"
         name="email"
         autocomplete="email"
-        label="email"
-        placeholder="you@example.com"
+        placeholder="email@example.com"
+        aria-label="email"
         required
       />
       <BaseInput
@@ -64,7 +64,8 @@ async function handleLogin(): Promise<void> {
         type="password"
         name="password"
         autocomplete="current-password"
-        label="password"
+        placeholder="password"
+        aria-label="password"
         required
       />
       <p

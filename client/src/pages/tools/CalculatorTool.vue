@@ -102,6 +102,7 @@ function buttonAriaLabel(val: string): string | undefined {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    description="Client-side arithmetic — results stay in the browser."
   >
     <Card class="mx-auto max-w-sm w-full">
       <div

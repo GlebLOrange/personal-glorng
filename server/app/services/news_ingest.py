@@ -17,6 +17,7 @@ from defusedxml.common import DefusedXmlException
 
 from app.core.exceptions import ApiError
 from app.core.logging import logger
+from app.core.text import sanitize_fetched_text
 from app.core.url_safety import get_public_http_url, is_public_http_url
 from app.core.xml_security import has_unsafe_xml_declaration, parse_xml
 from app.db.documents.news import NewsSource
@@ -89,11 +90,11 @@ class FeedItem:
 
 
 def _clean_text(value: str | None, *, max_length: int = 2_000) -> str:
-    """Strip HTML tags and normalize whitespace."""
+    """Strip HTML tags, then sanitize control chars and whitespace."""
     if not value:
         return ""
     text = html.unescape(_TAG_RE.sub(" ", value))
-    return " ".join(text.split())[:max_length]
+    return sanitize_fetched_text(text, max_length=max_length)
 
 
 def _local_name(tag: str) -> str:

@@ -2,6 +2,14 @@
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconCopyButton from "@/components/ui/IconCopyButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
+import {
+  ADMIN_ACTIONS_CLASS,
+  ADMIN_TD_ACTIONS_CLASS,
+  ADMIN_TD_CLASS,
+  ADMIN_TD_MUTED_CLASS,
+  ADMIN_TD_TITLE_CLASS,
+  ADMIN_TR_CLASS,
+} from "@/constants/adminDataTable";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExchangeRates, Expense } from "@/types";
 import { expenseSourceLabel } from "@/utils/expenseSource";
@@ -46,14 +54,11 @@ function secondarySource(): string | null {
 </script>
 
 <template>
-  <tr
-    v-if="layout === 'table'"
-    class="border-b border-surface-border/60 text-surface-light hover:bg-surface-card/50"
-  >
-    <td class="whitespace-nowrap px-3 py-1.5 align-middle text-xs text-surface-mid">
+  <tr v-if="layout === 'table'" :class="ADMIN_TR_CLASS">
+    <td :class="ADMIN_TD_MUTED_CLASS">
       {{ formatExpenseDate(expense.expense_date) }}
     </td>
-    <td class="px-3 py-1.5 align-middle">
+    <td :class="ADMIN_TD_CLASS">
       <span
         class="inline-flex max-w-[9rem] truncate rounded-md bg-surface-dark/60 px-1.5 py-0.5 text-xs text-surface-mid"
         :title="expense.category ?? 'Uncategorized'"
@@ -61,7 +66,7 @@ function secondarySource(): string | null {
         {{ expense.category ?? "—" }}
       </span>
     </td>
-    <td class="max-w-[16rem] px-3 py-1.5 align-middle font-sans">
+    <td :class="ADMIN_TD_TITLE_CLASS">
       <p class="truncate text-sm text-surface-light" :title="expense.tool_name">
         {{ expense.tool_name }}
       </p>
@@ -75,12 +80,12 @@ function secondarySource(): string | null {
         <span v-if="secondarySource()">{{ secondarySource() }}</span>
       </p>
     </td>
-    <td class="whitespace-nowrap px-3 py-1.5 align-middle text-right leading-tight">
+    <td :class="[ADMIN_TD_CLASS, 'whitespace-nowrap text-right leading-tight']">
       <div class="text-sm">{{ formatMoney(expense.amount, expense.currency) }}</div>
       <div v-if="convertedLabel()" class="text-xs text-surface-mid">≈ {{ convertedLabel() }}</div>
     </td>
-    <td class="whitespace-nowrap px-2 py-1.5 align-middle text-right">
-      <div class="inline-flex items-center justify-end gap-0.5">
+    <td :class="ADMIN_TD_ACTIONS_CLASS">
+      <div :class="ADMIN_ACTIONS_CLASS">
         <IconCopyButton
           :aria-label="`duplicate ${expense.tool_name || 'expense'}`"
           :quiet="false"

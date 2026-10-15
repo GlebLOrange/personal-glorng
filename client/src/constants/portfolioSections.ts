@@ -9,6 +9,5 @@ export const PORTFOLIO_SECTION_LINKS: PortfolioSectionLink[] = [
   { href: "#experience", label: "experience" },
   { href: "#case-studies", label: "case studies" },
   { href: "#skills", label: "skills" },
-  { href: "#export", label: "export" },
   { href: "#contacts", label: "contacts" },
 ];
