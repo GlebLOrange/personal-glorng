@@ -52,6 +52,7 @@ function printPage(): void {
     <h1 class="mb-3 flex flex-col items-center gap-3 text-balance">
       <SiteLogo
         variant="full"
+        priority
         class-name="h-16 w-auto max-w-[min(100%,18rem)] sm:h-20 md:h-24"
       />
       <span class="text-xl font-bold tracking-tight sm:text-2xl accent-gradient">{{ name }}</span>
