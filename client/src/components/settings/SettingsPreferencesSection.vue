@@ -2,7 +2,7 @@
 import { computed } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
-import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardBody } from "@/components/ui/card";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import { EXPENSE_CURRENCIES, type CurrencyCode } from "@/composables/useExpenseFilters";
 
@@ -55,16 +55,13 @@ const timezoneOptions = computed((): TimezoneOption[] => {
 <template>
   <Card variant="compact">
     <CardBody>
-      <CardHeader class="!mb-2">
-        <CardTitle>preferences</CardTitle>
-      </CardHeader>
       <form class="space-y-2" @submit.prevent="emit('save')">
-        <div class="flex flex-wrap items-end gap-2">
+        <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto_auto] items-end gap-2">
           <BaseSelect
             v-model="timezone"
             compact
             aria-label="timezone"
-            class="w-auto min-w-[11rem] max-w-[16rem]"
+            class="min-w-0 w-full"
           >
             <option v-for="zone in timezoneOptions" :key="zone.value" :value="zone.value">
               {{ zone.label }}
@@ -74,7 +71,7 @@ const timezoneOptions = computed((): TimezoneOption[] => {
             v-model="displayCurrency"
             compact
             aria-label="display currency"
-            class="w-auto min-w-[5.5rem] max-w-[7.5rem]"
+            class="w-auto shrink-0"
           >
             <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
               {{ code }}
@@ -84,20 +81,27 @@ const timezoneOptions = computed((): TimezoneOption[] => {
             {{ saving ? "saving…" : "save" }}
           </BaseButton>
         </div>
-        <div>
-          <p class="mb-1.5 text-xs text-surface-mid">permissions</p>
-          <div v-if="permissions.length" class="flex flex-wrap gap-1.5">
-            <span
-              v-for="perm in permissions"
-              :key="perm"
-              class="break-words rounded-full border border-surface-border px-2 py-0.5 text-xs text-surface-muted"
-            >
-              {{ perm }}
-            </span>
+        <div class="mt-3 border-t border-surface-border pt-3">
+          <div
+            class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-surface-border px-3 py-2"
+          >
+            <p class="text-xs text-surface-mid">permissions</p>
+            <div v-if="permissions.length" class="flex flex-wrap justify-end gap-1.5">
+              <span
+                v-for="perm in permissions"
+                :key="perm"
+                class="break-words rounded-full border border-surface-border px-2 py-0.5 text-xs text-surface-muted"
+              >
+                {{ perm }}
+              </span>
+            </div>
+            <p v-else class="text-xs text-surface-mid">No tool permissions — contact an admin.</p>
           </div>
-          <p v-else class="text-xs text-surface-mid">No tool permissions — contact an admin.</p>
         </div>
       </form>
+      <div v-if="$slots.default" class="mt-3 border-t border-surface-border pt-3">
+        <slot />
+      </div>
     </CardBody>
   </Card>
 </template>
