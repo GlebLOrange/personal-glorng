@@ -35,7 +35,6 @@ const {
   deletingExpense,
   deletingCategory,
   smartTextOpen,
-  filtersOpen,
   showForm,
   deleteTargetId,
   deleteCategoryTarget,
@@ -63,7 +62,6 @@ const {
   newCategoryName,
   editingCategoryId,
   editingCategoryName,
-  editingCategoryBudget,
   categoryOptions,
   addCategory,
   startEditCategory,
@@ -92,7 +90,6 @@ const {
   sortIndicator,
   sortAriaSort,
   handleDatePreset,
-  clearTransactionFilters,
   goToExpensePage,
   handleExpenseSort,
   openEdit,
@@ -194,7 +191,6 @@ function focusAddFromInsights(): void {
           v-model:product-filter="productFilter"
           v-model:category-filter="categoryFilter"
           v-model:display-currency="displayCurrency"
-          v-model:filters-open="filtersOpen"
           v-model:month-preset="monthPreset"
           v-model:date-filter-mode="dateFilterMode"
           v-model:selected-month="selectedMonth"
@@ -220,7 +216,6 @@ function focusAddFromInsights(): void {
           :has-previous-expense-page="hasPreviousExpensePage"
           @apply-preset="handleDatePreset"
           @clear-filters="clearFilters"
-          @clear-transaction-filters="clearTransactionFilters"
           @retry-list="goToExpensePage(expensePage)"
           @edit="openEdit"
           @delete="requestDeleteExpense"
@@ -275,7 +270,6 @@ function focusAddFromInsights(): void {
               >
                 <BaseInput
                   v-model="newCategoryName"
-                  label="category"
                   placeholder="new category"
                   aria-label="new category"
                   class="min-w-0 flex-1"
@@ -287,7 +281,6 @@ function focusAddFromInsights(): void {
             </Card>
             <ExpenseCategorySettings
               v-model:editing-category-name="editingCategoryName"
-              v-model:editing-category-budget="editingCategoryBudget"
               :expense-categories="expenseCategories"
               :editing-category-id="editingCategoryId"
               @start-edit-category="startEditCategory"

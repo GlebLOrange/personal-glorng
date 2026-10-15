@@ -36,4 +36,13 @@ describe("actionButtonVariants", () => {
     expect(classesForActionButton({ variant: "cancel" })).toContain("text-status-critical/88");
     expect(classesForActionButton({ variant: "delete" })).toContain("text-status-error/88");
   });
+
+  it("gives secondary a resting grayscale fill distinct from ghost", () => {
+    const secondary = classesForActionButton({ variant: "secondary" });
+    const ghost = classesForActionButton({ variant: "ghost" });
+    expect(secondary).toContain("bg-surface-card");
+    expect(secondary).toContain("border-surface-border");
+    expect(ghost).toContain("bg-transparent");
+    expect(ghost).not.toContain("bg-surface-card");
+  });
 });

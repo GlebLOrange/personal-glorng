@@ -158,7 +158,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       v-show="!smartTextOpen"
       id="expense-quick-add-panel"
       role="tabpanel"
-      class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(11rem,13rem)_minmax(0,1.4fr)_minmax(16rem,18rem)_minmax(13rem,15rem)_auto] lg:items-end"
+      class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(9rem,11rem)_minmax(14rem,1.6fr)_minmax(10rem,12rem)_minmax(9.5rem,11rem)_auto] lg:items-end"
       @submit.prevent="emit('submit')"
     >
       <BaseInput
@@ -208,7 +208,11 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
           </li>
         </ul>
       </div>
-      <BaseSelect v-model="category" class="min-w-0 w-full" label="category">
+      <BaseSelect
+        v-model="category"
+        class="min-w-0 w-full [&_select]:!pr-28"
+        label="category"
+      >
         <option value="">—</option>
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </BaseSelect>
@@ -216,7 +220,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       <ToolbarPillButton
         type="submit"
         action="save"
-        class="min-h-11 w-full shrink-0 sm:w-auto"
+        class="w-full shrink-0 sm:w-auto"
         :disabled="loading"
       >
         {{ loading ? "saving…" : "save" }}
