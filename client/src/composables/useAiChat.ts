@@ -9,7 +9,7 @@ import type { AdminChatConfig } from "@/types/search";
 
 /**
  * Admin AI chat: config, transcript, send/clear, and stream errors.
- * Help-popover UI stays in the page.
+ * Setup status stays on the settings tab.
  */
 export function useAiChat(chatEnd: Ref<HTMLElement | null>) {
   const { toast } = useNotify();
@@ -47,7 +47,7 @@ export function useAiChat(chatEnd: Ref<HTMLElement | null>) {
         return false;
       }
       if (!isReady.value) {
-        toast("AI chat is not configured — open setup help", "error");
+        toast("AI chat is not configured — open the settings tab", "error");
         return false;
       }
       return true;
@@ -73,7 +73,7 @@ export function useAiChat(chatEnd: Ref<HTMLElement | null>) {
   onMounted(() => {
     void loadConfig().then(() => {
       if (chatConfig.value && !chatConfig.value.configured) {
-        toast("AI chat is not configured — open setup help", "error");
+        toast("AI chat is not configured — open the settings tab", "error");
       }
     });
   });
