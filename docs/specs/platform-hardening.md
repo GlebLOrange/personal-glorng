@@ -267,7 +267,7 @@ Do not pull into phases above unless idle:
 | Atomic `$inc` click/download counters | Correctness under concurrency; low urgency |
 | Shared `httpx.AsyncClient` | Perf nicety |
 | Type-aware ESLint / typecheck tests | Tooling; separate PR |
-| VitePress `ignoreDeadLinks: false` | Needs link cleanup pass first |
+| VitePress dead-link checking | Done — handbook routes enforced; localhost and repo-relative `../../` source links allowlisted (outside VitePress root) |
 | Cloudflare real visitor IP (nginx overlay) | Done — `nginx/cloudflare_real_ip.conf` + `make prod-cloudflare` |
 | Origin allowlist (host firewall) | Operator-owned — documented in [Cloudflare](/operations/cloudflare#origin-allowlist-host-firewall) |
 | Full CodeQL/Trivy/SBOM | Security CI expansion; after Dependabot |

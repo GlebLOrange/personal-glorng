@@ -118,9 +118,6 @@ onUnmounted(() => {
 
 <template>
   <AdminPageLayout title="search">
-    <p class="mb-4 text-sm text-surface-mid">
-      Indexed kinds: resume, news, recipes, tasks, expenses, feedback, and short URLs.
-    </p>
     <div class="mb-6 flex min-w-0 flex-wrap items-center gap-2">
       <AdminFilterDropdown
         ref="filterDropdown"

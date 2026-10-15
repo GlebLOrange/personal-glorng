@@ -180,6 +180,7 @@ const accessibleName = computed(() =>
     hasVisibleLabel: hasVisibleLabel.value,
     label: props.label,
     prefix: props.prefix,
+    placeholder: props.placeholder,
   }),
 );
 /**

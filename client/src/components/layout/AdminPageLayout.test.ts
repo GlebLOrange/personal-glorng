@@ -4,10 +4,14 @@ import { describe, expect, it } from "vitest";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 
 const pageShellStub = {
-  props: ["breadcrumbs", "backTo", "title"],
+  props: ["breadcrumbs", "backTo", "title", "description"],
   template:
-    '<div><span v-for="(seg, i) in breadcrumbs" :key="i" :data-to="seg.to || undefined">{{ seg.label }}</span></div>',
+    '<div><span data-testid="description">{{ description || "" }}</span><span v-for="(seg, i) in breadcrumbs" :key="i" data-testid="crumb" :data-to="seg.to || undefined">{{ seg.label }}</span></div>',
 };
+
+function crumbNodes(wrapper: ReturnType<typeof mount>) {
+  return wrapper.findAll('[data-testid="crumb"]');
+}
 
 describe("AdminPageLayout", () => {
   it("renders admin / tool crumbs for admin hub pages", () => {
@@ -17,7 +21,7 @@ describe("AdminPageLayout", () => {
       slots: { default: "content" },
     });
 
-    const crumbs = wrapper.findAll("span");
+    const crumbs = crumbNodes(wrapper);
     expect(crumbs.map((c) => c.text())).toEqual(["admin", "users"]);
     expect(crumbs[0].attributes("data-to")).toBe("/admin");
   });
@@ -29,7 +33,7 @@ describe("AdminPageLayout", () => {
       slots: { default: "content" },
     });
 
-    const crumbs = wrapper.findAll("span");
+    const crumbs = crumbNodes(wrapper);
     expect(crumbs.map((c) => c.text())).toEqual(["tools", "tasks"]);
     expect(crumbs[0].attributes("data-to")).toBe("/tools");
   });
@@ -41,7 +45,7 @@ describe("AdminPageLayout", () => {
       slots: { default: "content" },
     });
 
-    const crumbs = wrapper.findAll("span");
+    const crumbs = crumbNodes(wrapper);
     expect(crumbs).toHaveLength(1);
     expect(crumbs[0].text()).toBe("admin");
     expect(crumbs[0].attributes("data-to")).toBe("/admin");
@@ -54,7 +58,7 @@ describe("AdminPageLayout", () => {
       slots: { default: "content" },
     });
 
-    expect(wrapper.findAll("span").map((c) => c.text())).toEqual(["admin", "users"]);
+    expect(crumbNodes(wrapper).map((c) => c.text())).toEqual(["admin", "users"]);
   });
 
   it("keeps multi-word admin titles as a phrase crumb", () => {
@@ -64,6 +68,21 @@ describe("AdminPageLayout", () => {
       slots: { default: "content" },
     });
 
-    expect(wrapper.findAll("span").map((c) => c.text())).toEqual(["tools", "app logs"]);
+    expect(crumbNodes(wrapper).map((c) => c.text())).toEqual(["tools", "app logs"]);
+  });
+
+  it("forwards description to PageShell", () => {
+    const wrapper = mount(AdminPageLayout, {
+      props: {
+        title: "health checker",
+        description: "Monitor URLs on a schedule — status history stays on this server.",
+      },
+      global: { stubs: { PageShell: pageShellStub } },
+      slots: { default: "content" },
+    });
+
+    expect(wrapper.get('[data-testid="description"]').text()).toBe(
+      "Monitor URLs on a schedule — status history stays on this server.",
+    );
   });
 });

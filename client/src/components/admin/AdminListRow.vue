@@ -163,8 +163,10 @@ function onKeydown(event: KeyboardEvent): void {
     <div
       data-admin-list-header
       :class="[
-        'flex w-full min-w-0 shrink-0 items-center gap-2 overflow-hidden min-h-10',
-        CONTROL_SIZE,
+        'flex w-full min-w-0 shrink-0 gap-2 min-h-10',
+        expanded
+          ? 'h-auto flex-wrap items-end overflow-visible py-2'
+          : ['items-center overflow-hidden', CONTROL_SIZE],
       ]"
     >
       <div v-if="$slots.leading" class="flex shrink-0 items-center" @click.stop @keydown.stop>

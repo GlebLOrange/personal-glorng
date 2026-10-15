@@ -2,10 +2,11 @@
 import { computed } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
-import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardBody } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { passwordStrength } from "@/utils/passwordPolicy";
 
+const displayName = defineModel<string>("displayName", { required: true });
 const newEmail = defineModel<string>("newEmail", { required: true });
 const emailPassword = defineModel<string>("emailPassword", { required: true });
 const currentPassword = defineModel<string>("currentPassword", { required: true });
@@ -13,6 +14,8 @@ const newPassword = defineModel<string>("newPassword", { required: true });
 const newPasswordConfirm = defineModel<string>("newPasswordConfirm", { required: true });
 
 defineProps<{
+  savingProfile: boolean;
+  canSaveProfile: boolean;
   savingEmail: boolean;
   canSaveEmail: boolean;
   savingPassword: boolean;
@@ -20,6 +23,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
+  saveProfile: [];
   saveEmail: [];
   savePassword: [];
 }>();
@@ -33,12 +37,34 @@ const passwordsMatch = computed(
 <template>
   <Card variant="compact">
     <CardBody>
-      <CardHeader class="!mb-2">
-        <CardTitle>account</CardTitle>
-      </CardHeader>
       <div class="space-y-4">
-        <form class="space-y-2" @submit.prevent="emit('saveEmail')">
-          <p class="text-xs text-surface-mid">email</p>
+        <form
+          class="flex min-w-0 items-center gap-2"
+          @submit.prevent="emit('saveProfile')"
+        >
+          <BaseInput
+            v-model="displayName"
+            class="min-w-0 flex-1"
+            name="display-name"
+            autocomplete="name"
+            placeholder="display name"
+            aria-label="display name"
+          />
+          <BaseButton
+            type="submit"
+            variant="save"
+            size="sm"
+            :loading="savingProfile"
+            :disabled="!canSaveProfile"
+          >
+            {{ savingProfile ? "saving…" : "save" }}
+          </BaseButton>
+        </form>
+
+        <form
+          class="space-y-2 border-t border-surface-border pt-4"
+          @submit.prevent="emit('saveEmail')"
+        >
           <BaseInput
             v-model="newEmail"
             type="email"
@@ -48,39 +74,34 @@ const passwordsMatch = computed(
             aria-label="email address"
             required
           />
-          <BaseInput
-            v-model="emailPassword"
-            type="password"
-            name="current-password-for-email"
-            autocomplete="current-password"
-            placeholder="current password"
-            aria-label="current password for email change"
-            required
-          />
-          <BaseButton
-            type="submit"
-            variant="save"
-            size="sm"
-            :loading="savingEmail"
-            :disabled="!canSaveEmail"
-          >
-            {{ savingEmail ? "saving…" : "change email" }}
-          </BaseButton>
+          <div class="flex min-w-0 items-center gap-2">
+            <BaseInput
+              v-model="emailPassword"
+              class="min-w-0 flex-1"
+              type="password"
+              name="current-password-for-email"
+              autocomplete="current-password"
+              placeholder="current password"
+              aria-label="current password for email change"
+              required
+            />
+            <BaseButton
+              type="submit"
+              variant="save"
+              size="sm"
+              class="shrink-0"
+              :loading="savingEmail"
+              :disabled="!canSaveEmail"
+            >
+              {{ savingEmail ? "saving…" : "change email" }}
+            </BaseButton>
+          </div>
         </form>
 
         <form
           class="space-y-2 border-t border-surface-border pt-4"
           @submit.prevent="emit('savePassword')"
         >
-          <div class="flex items-center justify-between gap-2">
-            <p class="text-xs text-surface-mid">password</p>
-            <RouterLink
-              to="/forgot-password"
-              class="text-xs text-accent-blue hover:underline focus:underline"
-            >
-              forgot password?
-            </RouterLink>
-          </div>
           <BaseInput
             v-model="currentPassword"
             type="password"
@@ -110,15 +131,23 @@ const passwordsMatch = computed(
             :error="newPasswordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
             required
           />
-          <BaseButton
-            type="submit"
-            variant="save"
-            size="sm"
-            :loading="savingPassword"
-            :disabled="!canSavePassword"
-          >
-            {{ savingPassword ? "saving…" : "change password" }}
-          </BaseButton>
+          <div class="flex items-center justify-between gap-2">
+            <RouterLink
+              to="/forgot-password"
+              class="text-xs text-accent-blue hover:underline focus:underline"
+            >
+              forgot password?
+            </RouterLink>
+            <BaseButton
+              type="submit"
+              variant="save"
+              size="sm"
+              :loading="savingPassword"
+              :disabled="!canSavePassword"
+            >
+              {{ savingPassword ? "saving…" : "change password" }}
+            </BaseButton>
+          </div>
         </form>
       </div>
     </CardBody>

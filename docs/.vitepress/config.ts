@@ -7,7 +7,12 @@ export default defineConfig({
   title: "Gleb.Y",
   description: "Developer portfolio and personal platform documentation",
   base,
-  ignoreDeadLinks: true,
+  // Enforce handbook routes; allow localhost how-tos and repo-relative source links
+  // (../../server/…, ../../AGENTS.md) which are outside the VitePress root.
+  ignoreDeadLinks: [
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/,
+    (url: string) => /(^|\/)\.\.(\/|$)/.test(url),
+  ],
   head: [
     ["link", { rel: "icon", href: `${base}favicon.svg`, type: "image/svg+xml" }],
     ["link", { rel: "icon", type: "image/x-icon", href: `${base}favicon.ico` }],
@@ -31,6 +36,7 @@ export default defineConfig({
       { text: "Operations", link: "/operations/deployment" },
       { text: "Reference", link: "/reference/platform" },
       { text: "ADRs", link: "/adr/" },
+      { text: "Specs", link: "/specs/handbook-structure" },
     ],
     sidebar: {
       "/guide/": [
@@ -45,6 +51,10 @@ export default defineConfig({
             },
             { text: "Development", link: "/guide/development" },
             { text: "Frontend", link: "/guide/frontend" },
+            {
+              text: "Frontend CSS audit",
+              link: "/guide/frontend-css-audit",
+            },
             { text: "Contributing", link: "/guide/contributing" },
           ],
         },
@@ -109,11 +119,16 @@ export default defineConfig({
         {
           text: "Specs",
           items: [
+            {
+              text: "Handbook structure",
+              link: "/specs/handbook-structure",
+            },
             { text: "News", link: "/specs/news" },
             {
               text: "Platform hardening",
               link: "/specs/platform-hardening",
             },
+            { text: "P3 roadmap", link: "/specs/p3-roadmap" },
           ],
         },
       ],

@@ -56,6 +56,8 @@ flowchart TD
 | `make seed-db` | Admin + fixed-volume mock test data (Mongo; wipe + fill) |
 | `make seed-db-ultra-lite` | Same as `seed-db` against host ultra-lite API |
 
+Optional seed flags (pass after `python -m app.db.seed`): `--only recipes,expenses,…`, per-tool counts (`--expenses 50`), and `--no-multicooker` to skip the live TheMealDB fetch.
+
 ### Seed package layout
 
 | Command | Module |
