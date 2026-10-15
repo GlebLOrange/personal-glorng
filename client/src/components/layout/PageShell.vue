@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRoute } from "vue-router";
 import type { RouteLocationRaw } from "vue-router";
 
 import PageChrome from "@/components/layout/PageChrome.vue";
 import PinnedToolsRow from "@/components/layout/PinnedToolsRow.vue";
-import { introForRoute } from "@/constants/toolIntros";
 
 export type BreadcrumbSegment = { label: string; to?: RouteLocationRaw };
 
@@ -32,9 +30,6 @@ const props = withDefaults(
   },
 );
 
-const route = useRoute();
-const toolIntro = computed(() => introForRoute(route.name));
-
 const shellClass = computed(() => {
   const widthClass =
     props.maxWidth === "sm" ? "max-w-sm" : props.maxWidth === "md" ? "max-w-3xl" : "max-w-5xl";
@@ -58,7 +53,6 @@ const bodyClass = computed(() => [
     />
     <div :class="bodyClass">
       <PinnedToolsRow />
-      <p v-if="toolIntro" class="text-body mb-4 max-w-3xl">{{ toolIntro }}</p>
       <slot />
     </div>
   </component>
