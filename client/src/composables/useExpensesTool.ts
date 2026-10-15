@@ -18,28 +18,44 @@ export type { ExpenseCalculatorMode, ExpenseQuickAddTarget };
 export { isCalculatorMode, normalizeCalculatorMode };
 
 export type ExpenseTab =
-  "expenses" | "transactions" | "breakdown" | "analytics" | "categories" | "converter";
+  | "today"
+  | "activity"
+  | "insights"
+  | "categories"
+  | "converter";
 
 const EXPENSE_TABS: ExpenseTab[] = [
-  "expenses",
-  "transactions",
-  "breakdown",
-  "analytics",
+  "today",
+  "activity",
+  "insights",
   "categories",
   "converter",
 ];
 
+const TAB_LABELS: Record<ExpenseTab, string> = {
+  today: "today",
+  activity: "activity",
+  insights: "insights",
+  categories: "categories",
+  converter: "converter",
+};
+
 /** Legacy ?tab= values → current tab ids. */
 const TAB_ALIASES: Record<string, ExpenseTab> = {
-  insights: "analytics",
+  expenses: "today",
+  transactions: "activity",
+  breakdown: "insights",
+  analytics: "insights",
+  insights: "insights",
+  "category-breakdown": "insights",
   settings: "categories",
+  currency: "today",
   calculator: "converter",
-  "category-breakdown": "breakdown",
 };
 
 export const expenseTabItems = EXPENSE_TABS.map((id) => ({
   id,
-  label: id,
+  label: TAB_LABELS[id],
 }));
 
 function resolveExpenseTab(value: unknown): ExpenseTab | null {
@@ -55,7 +71,10 @@ function resolveExpenseTab(value: unknown): ExpenseTab | null {
 export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> = ref(null)) {
   const route = useRoute();
   const router = useRouter();
-  const activeTab = ref<ExpenseTab>("expenses");
+  const activeTab = ref<ExpenseTab>("today");
+  const converterMode = ref<ExpenseCalculatorMode>("convert");
+  /** Keep converter mounted after first visit so amount/pair survive. */
+  const converterMounted = ref(false);
 
   const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPreferences();
 
@@ -66,33 +85,61 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
 
   function syncTabFromRoute(): void {
     const raw = route.query.tab;
+
     if (route.hash === "#expenses-analytics") {
-      activeTab.value = "analytics";
-      const { mode: _mode, ...rest } = route.query;
-      void router.replace({ query: { ...rest, tab: "analytics" }, hash: "" });
+      activeTab.value = "insights";
+      const { mode: _mode, panel: _panel, ...rest } = route.query;
+      void router.replace({ query: { ...rest, tab: "insights" }, hash: "" });
       return;
     }
-    if (typeof raw === "string" && (isCalculatorMode(raw) || raw === "converter")) {
+
+    // Legacy ?panel= overflow deep-links → real tabs.
+    const panel = route.query.panel;
+    if (typeof panel === "string") {
+      const resolvedPanel =
+        (EXPENSE_TABS.includes(panel as ExpenseTab) ? (panel as ExpenseTab) : null) ??
+        TAB_ALIASES[panel] ??
+        null;
+      if (resolvedPanel) {
+        const { panel: _panel, ...rest } = route.query;
+        void router.replace({ query: { ...rest, tab: resolvedPanel } });
+        return;
+      }
+    }
+
+    // Calculator mode ids as ?tab= → converter tab + mode.
+    if (typeof raw === "string" && isCalculatorMode(raw)) {
       const mode = normalizeCalculatorMode(raw);
       activeTab.value = "converter";
+      converterMode.value = mode;
+      converterMounted.value = true;
       void router.replace({ query: { ...route.query, tab: "converter", mode } });
       return;
     }
+
     const tab = resolveExpenseTab(raw);
-    if (!tab) return;
+    if (!tab) {
+      if (raw == null) {
+        activeTab.value = "today";
+      }
+      return;
+    }
     activeTab.value = tab;
+    if (tab === "converter") {
+      converterMounted.value = true;
+      if (typeof route.query.mode === "string") {
+        converterMode.value = normalizeCalculatorMode(route.query.mode);
+      }
+    }
+
     // Canonicalize legacy aliases in the URL.
     if (typeof raw === "string" && raw !== tab) {
-      if (tab === "converter") {
-        const existing =
-          typeof route.query.mode === "string"
-            ? normalizeCalculatorMode(route.query.mode)
-            : "convert";
-        void router.replace({ query: { ...route.query, tab: "converter", mode: existing } });
-        return;
-      }
-      const { mode: _mode, ...rest } = route.query;
-      void router.replace({ query: { ...rest, tab } });
+      const { mode: _mode, panel: _panel, ...rest } = route.query;
+      const query =
+        tab === "converter"
+          ? { ...rest, tab, mode: converterMode.value }
+          : { ...rest, tab };
+      void router.replace({ query });
     }
   }
 
@@ -101,15 +148,14 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
     if (!resolved) return;
     activeTab.value = resolved;
     if (resolved === "converter") {
-      const existing =
-        typeof route.query.mode === "string"
-          ? normalizeCalculatorMode(route.query.mode)
-          : "convert";
-      void router.replace({ query: { ...route.query, tab: "converter", mode: existing } });
-      return;
+      converterMounted.value = true;
     }
-    const { mode: _mode, ...rest } = route.query;
-    void router.replace({ query: { ...rest, tab: resolved } });
+    const { mode: _mode, panel: _panel, ...rest } = route.query;
+    const query =
+      resolved === "converter"
+        ? { ...rest, tab: resolved, mode: converterMode.value }
+        : { ...rest, tab: resolved };
+    void router.replace({ query });
   }
 
   const transactions = useExpenseTransactions({
@@ -134,6 +180,12 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
     },
   );
 
+  watch(activeTab, (tab) => {
+    if (tab === "today") {
+      transactions.handleDatePreset("this_month");
+    }
+  });
+
   onMounted(() => {
     syncTabFromRoute();
     transactions.bootstrapOnMount();
@@ -148,6 +200,8 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
   return {
     activeTab,
     expenseTabItems,
+    converterMode,
+    converterMounted,
     savingExpense: transactions.savingExpense,
     exporting: transactions.exporting,
     deletingExpense: transactions.deletingExpense,
@@ -157,6 +211,7 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
     showForm: transactions.showForm,
     deleteTargetId: transactions.deleteTargetId,
     deleteCategoryTarget: categorySettings.deleteCategoryTarget,
+    deleteCategoryReplacementId: categorySettings.deleteCategoryReplacementId,
     expensePage: transactions.expensePage,
     displayCurrency,
     expenses: transactions.expenses,
@@ -181,6 +236,7 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
     newCategoryName: categorySettings.newCategoryName,
     editingCategoryId: categorySettings.editingCategoryId,
     editingCategoryName: categorySettings.editingCategoryName,
+    editingCategoryBudget: categorySettings.editingCategoryBudget,
     categoryOptions: categorySettings.categoryOptions,
     addCategory: categorySettings.addCategory,
     startEditCategory: categorySettings.startEditCategory,
@@ -227,5 +283,6 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
     saveExpense: transactions.saveExpense,
     quickSaveExpense: transactions.quickSaveExpense,
     saveSmartExpense: transactions.saveSmartExpense,
+    saveDisplayCurrency,
   };
 }

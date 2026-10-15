@@ -37,5 +37,11 @@ describe("NotFoundPage", () => {
     expect(hrefs).toContain("/#experience");
     expect(hrefs).toContain("/tools");
     expect(hrefs).toContain("/news");
+    expect(wrapper.text()).toContain("experience");
+    expect(wrapper.text()).toContain("tools");
+    expect(wrapper.text()).toContain("news");
+    expect(wrapper.text()).not.toMatch(/\bExperience\b/);
+    expect(wrapper.text()).not.toMatch(/\bTools\b/);
+    expect(wrapper.text()).not.toMatch(/\bNews\b/);
   });
 });

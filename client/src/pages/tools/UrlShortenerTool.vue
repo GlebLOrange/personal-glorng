@@ -6,7 +6,6 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
-import FieldHelp from "@/components/ui/FieldHelp.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
@@ -121,34 +120,27 @@ onMounted(loadUrls);
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    description="Short links resolve at /s/{code} — a FastAPI redirect, not a Vue page. Example path: /s/demo."
   >
-    <div class="relative mb-4">
-      <span class="shell-outside-end !-right-6 top-0">
-        <FieldHelp
-          align="end"
-          text="Short links resolve at /s/{code} — a FastAPI redirect, not a Vue page. Example path: /s/demo."
-        />
-      </span>
-      <form class="flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createUrl">
-        <BaseInput
-          v-model="newUrl"
-          class="min-w-0 flex-1"
-          compact
-          placeholder="url (example.com or https://…)"
-          aria-label="url (example.com or https://…)"
-        />
-        <BaseInput
-          v-model="newTitle"
-          class="min-w-0 w-full max-w-[14rem]"
-          compact
-          placeholder="title (optional)"
-          aria-label="title"
-        />
-        <ToolbarPillButton action="create" type="submit" class="shrink-0" :disabled="!canShorten">
-          {{ loading ? "creating…" : "shorten" }}
-        </ToolbarPillButton>
-      </form>
-    </div>
+    <form class="mb-4 flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createUrl">
+      <BaseInput
+        v-model="newUrl"
+        class="min-w-0 flex-1"
+        compact
+        placeholder="url (example.com or https://…)"
+        aria-label="url (example.com or https://…)"
+      />
+      <BaseInput
+        v-model="newTitle"
+        class="min-w-0 w-full max-w-[14rem]"
+        compact
+        placeholder="title (optional)"
+        aria-label="title"
+      />
+      <ToolbarPillButton action="create" type="submit" class="shrink-0" :disabled="!canShorten">
+        {{ loading ? "creating…" : "shorten" }}
+      </ToolbarPillButton>
+    </form>
 
     <div v-if="canManage" class="min-w-0">
       <AdminListSkeleton v-if="listLoading" label="loading shortened URLs" />

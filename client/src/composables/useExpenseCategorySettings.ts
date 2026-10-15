@@ -3,11 +3,13 @@ import { ref } from "vue";
 import { useCategoryManager } from "@/composables/useCategoryManager";
 
 /**
- * Settings-tab category concerns: useCategoryManager plus delete-confirm dialog state.
+ * Category admin: useCategoryManager plus delete-confirm dialog state with reassignment.
  */
 export function useExpenseCategorySettings(onCategoriesChanged: () => void | Promise<void>) {
   const deletingCategory = ref(false);
   const deleteCategoryTarget = ref<{ id: number; name: string } | null>(null);
+  /** null = Uncategorized; undefined = unused category (no body). */
+  const deleteCategoryReplacementId = ref<number | null | undefined>(undefined);
 
   const categoryManager = useCategoryManager(onCategoriesChanged);
 
@@ -16,6 +18,7 @@ export function useExpenseCategorySettings(onCategoriesChanged: () => void | Pro
     newCategoryName,
     editingCategoryId,
     editingCategoryName,
+    editingCategoryBudget,
     categoryOptions,
     defaultCategoryName,
     loadCategories,
@@ -28,6 +31,8 @@ export function useExpenseCategorySettings(onCategoriesChanged: () => void | Pro
 
   function requestDeleteCategory(category: { id: number; name: string }): void {
     deleteCategoryTarget.value = category;
+    // Default destination: Uncategorized (null).
+    deleteCategoryReplacementId.value = null;
   }
 
   async function confirmDeleteCategory(): Promise<void> {
@@ -40,8 +45,16 @@ export function useExpenseCategorySettings(onCategoriesChanged: () => void | Pro
 
     deletingCategory.value = true;
     try {
-      await removeCategoryRaw(category);
-      deleteCategoryTarget.value = null;
+      // Always send reassignment payload so in-use deletes succeed atomically.
+      const replacement =
+        deleteCategoryReplacementId.value === undefined
+          ? null
+          : deleteCategoryReplacementId.value;
+      const ok = await removeCategoryRaw(category, replacement);
+      if (ok) {
+        deleteCategoryTarget.value = null;
+        deleteCategoryReplacementId.value = undefined;
+      }
     } finally {
       deletingCategory.value = false;
     }
@@ -50,10 +63,12 @@ export function useExpenseCategorySettings(onCategoriesChanged: () => void | Pro
   return {
     deletingCategory,
     deleteCategoryTarget,
+    deleteCategoryReplacementId,
     expenseCategories,
     newCategoryName,
     editingCategoryId,
     editingCategoryName,
+    editingCategoryBudget,
     categoryOptions,
     defaultCategoryName,
     loadCategories,

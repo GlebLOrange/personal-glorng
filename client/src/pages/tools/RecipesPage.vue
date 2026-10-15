@@ -90,6 +90,7 @@ function editRecipeFromCard(recipe: Recipe): void {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    description="Personal recipe list with cook mode — saved to your account when signed in."
   >
     <RecipeFilters v-model:search="search">
       <template v-if="canWrite" #actions>

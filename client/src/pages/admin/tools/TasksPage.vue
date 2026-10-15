@@ -163,10 +163,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="tasks" max-width="5xl" back-to="/tools">
-    <p class="mb-4 text-sm text-surface-mid">
-      Telegram reminders and Google Calendar sync share this queue with the web UI.
-    </p>
+  <AdminPageLayout
+    hub="tools"
+    title="tasks"
+    max-width="5xl"
+    back-to="/tools"
+    description="Telegram reminders and Google Calendar sync share this queue with the web UI."
+  >
     <div class="min-w-0">
       <div class="mb-3 space-y-2">
         <div class="flex min-w-0 flex-wrap items-center gap-2">
