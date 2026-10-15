@@ -71,7 +71,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout hub="admin" title="health checker" max-width="5xl" back-to="/admin">
+  <AdminPageLayout
+    hub="admin"
+    title="health checker"
+    max-width="5xl"
+    back-to="/admin"
+    description="Monitor URLs on a schedule — status history stays on this server."
+  >
     <p
       v-if="toolDisabled"
       class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"

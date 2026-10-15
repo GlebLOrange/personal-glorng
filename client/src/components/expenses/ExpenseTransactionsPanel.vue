@@ -2,19 +2,26 @@
 import { computed } from "vue";
 
 import ExpenseCategoryChips from "@/components/expenses/ExpenseCategoryChips.vue";
+import ExpenseDateFilters from "@/components/expenses/ExpenseDateFilters.vue";
 import ExpenseList from "@/components/expenses/ExpenseList.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import SearchInput from "@/components/ui/SearchInput.vue";
 import { Card } from "@/components/ui/card";
-import type { CurrencyCode } from "@/composables/useExpenseFilters";
+import type { CurrencyCode, DateFilterMode, MonthPreset } from "@/composables/useExpenseFilters";
 import type { ExpenseSortKey } from "@/composables/useExpenseSort";
 import type { ExchangeRates, Expense } from "@/types";
 
 const productFilter = defineModel<string>("productFilter", { required: true });
 const categoryFilter = defineModel<string | null>("categoryFilter", { required: true });
 const displayCurrency = defineModel<CurrencyCode>("displayCurrency", { required: true });
+const filtersOpen = defineModel<boolean>("filtersOpen", { required: true });
+const monthPreset = defineModel<MonthPreset>("monthPreset", { required: true });
+const dateFilterMode = defineModel<DateFilterMode>("dateFilterMode", { required: true });
+const selectedMonth = defineModel<string>("selectedMonth", { required: true });
+const dateFrom = defineModel<string>("dateFrom", { required: true });
+const dateTo = defineModel<string>("dateTo", { required: true });
 
 defineProps<{
   categoryOptions: string[];
@@ -24,6 +31,8 @@ defineProps<{
   sortIndicator: (key: ExpenseSortKey) => string;
   sortAriaSort: (key: ExpenseSortKey) => "ascending" | "descending" | "none";
   monthLabel: string;
+  hasActiveFilters: boolean;
+  rangeError: string | null;
   exchangeRates: ExchangeRates | null;
   formatMoney: (amount: string | number, currency: string) => string;
   formatExpenseDate: (iso: string) => string;
@@ -36,6 +45,8 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
+  applyPreset: [preset: MonthPreset];
+  clearFilters: [];
   clearTransactionFilters: [];
   retryList: [];
   edit: [expense: Expense];
@@ -56,19 +67,41 @@ const hasTransactionFilters = computed(
 
 <template>
   <section
-    id="expenses-tab-panel-transactions"
+    id="expenses-tab-panel-activity"
     role="tabpanel"
-    aria-labelledby="expenses-tab-tab-transactions"
+    aria-labelledby="expenses-tab-tab-activity"
     tabindex="0"
     class="outline-none"
   >
     <Card variant="compact" class="flex w-full flex-col gap-2">
-      <div class="flex items-center justify-between gap-2">
-        <h3 class="text-sm font-semibold text-surface-light">recent transactions</h3>
-        <p class="text-xs text-surface-mid">{{ expenseTotal }} items</p>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h3 class="text-sm font-semibold text-surface-light">activity</h3>
+        <div class="flex flex-wrap items-center gap-2">
+          <p class="text-xs text-surface-mid">{{ expenseTotal }} items · {{ monthLabel }}</p>
+          <BaseButton
+            variant="ghost"
+            size="sm"
+            class="min-h-11"
+            :aria-expanded="filtersOpen"
+            aria-controls="expense-transaction-filters"
+            @click="filtersOpen = !filtersOpen"
+          >
+            {{ filtersOpen ? "hide filters" : "filters" }}
+          </BaseButton>
+        </div>
       </div>
 
-      <div id="expense-transaction-filters" class="flex flex-col gap-2">
+      <div v-show="filtersOpen" id="expense-transaction-filters" class="flex flex-col gap-2">
+        <ExpenseDateFilters
+          v-model:month-preset="monthPreset"
+          v-model:date-filter-mode="dateFilterMode"
+          v-model:selected-month="selectedMonth"
+          v-model:date-from="dateFrom"
+          v-model:date-to="dateTo"
+          :has-active-filters="hasActiveFilters"
+          @apply-preset="emit('applyPreset', $event)"
+          @clear-filters="emit('clearFilters')"
+        />
         <div class="flex min-w-0 flex-wrap items-center gap-2">
           <ExpenseCategoryChips
             v-model:category-filter="categoryFilter"
@@ -88,10 +121,13 @@ const hasTransactionFilters = computed(
             <span v-if="productFilter.trim() && categoryFilter"> · </span>
             <span v-if="categoryFilter">category: {{ categoryFilter }}</span>
           </p>
-          <BaseButton variant="ghost" size="sm" @click="emit('clearTransactionFilters')">
+          <BaseButton variant="ghost" size="sm" class="min-h-11" @click="emit('clearTransactionFilters')">
             clear filters
           </BaseButton>
         </div>
+        <p v-if="rangeError" class="text-sm text-status-error" role="alert">
+          {{ rangeError }}
+        </p>
       </div>
 
       <ErrorState v-if="listError" :message="listError" show-retry @retry="emit('retryList')" />

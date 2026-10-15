@@ -98,7 +98,7 @@ export function useExpenseFormMutations(options: UseExpenseFormMutationsOptions)
 
   function openSmartText(): void {
     smartTextOpen.value = true;
-    switchTab("expenses");
+    switchTab("today");
     void nextTick(() => {
       quickAddRef.value?.focusSmartText();
     });
@@ -289,7 +289,7 @@ export function useExpenseFormMutations(options: UseExpenseFormMutationsOptions)
     };
     quickAddNameError.value = null;
     quickAddAmountError.value = null;
-    switchTab("expenses");
+    switchTab("today");
     toast("Ready to add again — adjust if needed", "success");
     await nextTick();
     focusQuickAdd();

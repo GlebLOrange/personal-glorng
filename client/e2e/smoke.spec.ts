@@ -184,6 +184,8 @@ test.describe("authenticated admin", () => {
 
     await page.goto("/expenses");
     await expect(page.getByRole("heading", { name: /^expenses$/i })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /expenses/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^today$/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^activity$/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^insights$/i })).toBeVisible();
   });
 });

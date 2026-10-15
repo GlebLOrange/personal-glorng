@@ -37,7 +37,7 @@ const emit = defineEmits<{
   ];
 }>();
 
-const productInputRef = ref<{ focus: () => void } | null>(null);
+const amountInputRef = ref<{ focus: () => void } | null>(null);
 const smartTextInputRef = ref<{ focus: () => void } | null>(null);
 const smartText = ref("");
 const productSuggestionsOpen = ref(false);
@@ -82,7 +82,7 @@ const canConfirmSmart = computed(() => {
 });
 
 function focusEntry(): void {
-  productInputRef.value?.focus();
+  amountInputRef.value?.focus();
 }
 
 async function focusSmartText(): Promise<void> {
@@ -158,13 +158,25 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       v-show="!smartTextOpen"
       id="expense-quick-add-panel"
       role="tabpanel"
-      class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(11rem,13rem)_minmax(16rem,18rem)_minmax(13rem,15rem)_auto] lg:items-end"
+      class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(11rem,13rem)_minmax(0,1.4fr)_minmax(16rem,18rem)_minmax(13rem,15rem)_auto] lg:items-end"
       @submit.prevent="emit('submit')"
     >
+      <BaseInput
+        id="expense-quick-amount"
+        ref="amountInputRef"
+        v-model="price"
+        type="number"
+        step="any"
+        min="0.01"
+        label="amount"
+        placeholder="0.00"
+        inputmode="decimal"
+        class="min-w-0"
+        :error="amountError ?? undefined"
+      />
       <div class="relative min-w-0 sm:col-span-2 lg:col-span-1">
         <BaseInput
           id="expense-quick-name"
-          ref="productInputRef"
           v-model="product"
           label="name"
           placeholder="e.g. groceries"
@@ -196,17 +208,6 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
           </li>
         </ul>
       </div>
-      <BaseInput
-        v-model="price"
-        type="number"
-        step="any"
-        min="0.01"
-        label="amount"
-        placeholder="0.00"
-        inputmode="decimal"
-        class="min-w-0"
-        :error="amountError ?? undefined"
-      />
       <BaseSelect v-model="category" class="min-w-0 w-full" label="category">
         <option value="">—</option>
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
@@ -215,7 +216,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
       <ToolbarPillButton
         type="submit"
         action="save"
-        class="w-full shrink-0 sm:w-auto"
+        class="min-h-11 w-full shrink-0 sm:w-auto"
         :disabled="loading"
       >
         {{ loading ? "saving…" : "save" }}

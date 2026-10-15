@@ -51,6 +51,13 @@ const canSaveLibrary = computed(
   () => canWriteLibrary.value && Boolean(content.value.trim()) && !savingLibrary.value,
 );
 const isEditing = computed(() => editingId.value != null);
+const pageDescription = computed(() => {
+  const base =
+    "Quick generate does not store anything on the server — download the SVG if you need it later.";
+  return canWriteLibrary.value
+    ? `${base} Save to your library to reuse codes (your list only).`
+    : `${base} Sign in to save codes to your library.`;
+});
 
 function payloadBody() {
   return {
@@ -180,13 +187,8 @@ onMounted(() => {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    :description="pageDescription"
   >
-    <p class="mb-4 text-sm text-surface-mid">
-      Quick generate does not store anything on the server — download the SVG if you need it later.
-      <span v-if="canWriteLibrary"> Save to your library to reuse codes (your list only). </span>
-      <span v-else> Sign in to save codes to your library. </span>
-    </p>
-
     <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
       <Card variant="ghost" class="min-w-0 lg:order-2">
         <form class="space-y-3" @submit.prevent="createQr">

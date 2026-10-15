@@ -16,6 +16,7 @@ const props = defineProps<{
 }>();
 
 const editingCategoryName = defineModel<string>("editingCategoryName", { required: true });
+const editingCategoryBudget = defineModel<string>("editingCategoryBudget", { required: true });
 
 const emit = defineEmits<{
   startEditCategory: [category: ExpenseCategory];
@@ -42,7 +43,7 @@ function onCategoryRowClick(category: ExpenseCategory): void {
 <template>
   <EmptyState v-if="expenseCategories.length === 0" description="no categories yet" />
 
-  <div v-else class="mt-1 min-w-0">
+  <div v-else class="mt-1 flex min-w-0 flex-col gap-2">
     <AdminListRow
       v-for="category in expenseCategories"
       :key="category.id"
@@ -62,16 +63,32 @@ function onCategoryRowClick(category: ExpenseCategory): void {
             class="min-w-[8rem] flex-1"
             @keyup.enter="emit('saveCategoryRename')"
           />
-          <ToolbarPillButton action="save" class="shrink-0" @click="emit('saveCategoryRename')">
+          <BaseInput
+            v-model="editingCategoryBudget"
+            type="number"
+            step="any"
+            min="0"
+            label="monthly budget"
+            placeholder="optional"
+            inputmode="decimal"
+            class="min-w-[7rem] w-28"
+            @keyup.enter="emit('saveCategoryRename')"
+          />
+          <ToolbarPillButton action="save" class="min-h-11 shrink-0" @click="emit('saveCategoryRename')">
             save
           </ToolbarPillButton>
-          <BaseButton variant="cancel" class="h-10 shrink-0" @click="emit('cancelEditCategory')">
+          <BaseButton variant="cancel" class="h-10 min-h-11 shrink-0" @click="emit('cancelEditCategory')">
             cancel
           </BaseButton>
         </div>
       </template>
       <template v-else #primary>
-        <span :title="category.name">{{ category.name }}</span>
+        <span :title="category.name">
+          {{ category.name }}
+          <span v-if="category.monthly_budget" class="ml-1 text-xs text-surface-mid">
+            · budget {{ category.monthly_budget }}
+          </span>
+        </span>
       </template>
       <template v-if="editingCategoryId !== category.id" #actions>
         <IconEditButton
