@@ -40,9 +40,9 @@ describe("AiChatTool", () => {
 
     expect(wrapper.get("#ai-chat-panel-chat").exists()).toBe(true);
     expect(wrapper.find("#ai-chat-panel-settings").exists()).toBe(false);
-    expect(
-      wrapper.findAll("button").some((button) => /setup[-\s]?help/i.test(button.text())),
-    ).toBe(false);
+    expect(wrapper.findAll("button").some((button) => /setup[-\s]?help/i.test(button.text()))).toBe(
+      false,
+    );
 
     await wrapper.get("#ai-chat-tab-settings").trigger("click");
 

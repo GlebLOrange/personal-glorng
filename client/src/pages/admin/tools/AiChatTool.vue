@@ -216,9 +216,7 @@ const {
         </ul>
       </details>
 
-      <details
-        class="group rounded-md border border-surface-border/60 open:border-surface-border"
-      >
+      <details class="group rounded-md border border-surface-border/60 open:border-surface-border">
         <summary
           class="flex min-h-11 cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
         >
@@ -242,9 +240,7 @@ const {
         </div>
       </details>
 
-      <details
-        class="group rounded-md border border-surface-border/60 open:border-surface-border"
-      >
+      <details class="group rounded-md border border-surface-border/60 open:border-surface-border">
         <summary
           class="flex min-h-11 cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
         >
