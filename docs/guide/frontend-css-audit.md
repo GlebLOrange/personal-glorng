@@ -1,6 +1,8 @@
 # Frontend CSS audit
 
-Read-only audit of the production Vite bundle (March 2026). Regenerate numbers with:
+**Status:** Snapshot (March 2026) — historical bundle numbers and follow-ups, not a current how-to. Live budgets and commands: [Frontend](/guide/frontend).
+
+Read-only audit of the production Vite bundle. Regenerate numbers with:
 
 ```bash
 cd client

@@ -2,11 +2,13 @@
 import { onMounted, ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import QrLibraryListItem from "@/components/admin/QrLibraryListItem.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { ADMIN_MOBILE_LIST_CLASS, ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import { useQrLibrary } from "@/composables/useQrLibrary";
 import type { QrListItem } from "@/types";
 
@@ -66,15 +68,40 @@ onMounted(() => {
       <EmptyState v-else-if="!loading && items.length === 0"> no saved QR codes yet. </EmptyState>
 
       <div v-else class="min-w-0">
-        <QrLibraryListItem
-          v-for="item in items"
-          :key="item.id"
-          :item="item"
-          :can-write="canWriteLibrary"
-          :deleting="deleting && deletingId === item.id"
-          @select="openSaved(item)"
-          @delete="deleteSaved(item.id)"
-        />
+        <div :class="ADMIN_MOBILE_LIST_CLASS">
+          <QrLibraryListItem
+            v-for="item in items"
+            :key="`m-${item.id}`"
+            layout="card"
+            :item="item"
+            :can-write="canWriteLibrary"
+            :deleting="deleting && deletingId === item.id"
+            @select="openSaved(item)"
+            @delete="deleteSaved(item.id)"
+          />
+        </div>
+        <AdminDataTable table-label="saved QR codes">
+          <template #header>
+            <th class="w-px px-3 py-1.5">
+              <span class="sr-only">preview</span>
+            </th>
+            <th :class="ADMIN_TH_CLASS">content</th>
+            <th :class="ADMIN_TH_CLASS">level</th>
+            <th class="w-px px-2 text-right">
+              <span class="sr-only">actions</span>
+            </th>
+          </template>
+          <QrLibraryListItem
+            v-for="item in items"
+            :key="item.id"
+            layout="table"
+            :item="item"
+            :can-write="canWriteLibrary"
+            :deleting="deleting && deletingId === item.id"
+            @select="openSaved(item)"
+            @delete="deleteSaved(item.id)"
+          />
+        </AdminDataTable>
       </div>
 
       <AdminListFooter

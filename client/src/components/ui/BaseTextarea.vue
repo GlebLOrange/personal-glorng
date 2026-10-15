@@ -105,10 +105,12 @@ const bareClass = computed(() => [
   props.error && "border-status-error",
 ]);
 const shellClass = computed(() => [
-  "relative flex w-full items-start rounded-lg border bg-surface-dark transition-colors",
+  // Inset ring (not border) — matches BaseInput field chrome.
+  "relative flex w-full items-start rounded-lg bg-surface-dark transition-colors",
+  showInlineEndLabel.value && props.hint ? "overflow-visible" : "overflow-hidden",
   props.error
-    ? "border-status-error"
-    : "border-surface-border focus-within:border-accent-blue focus-within:ring-2 focus-within:ring-accent-blue/50",
+    ? "ring-1 ring-inset ring-status-error focus-within:ring-status-error"
+    : "ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-blue/50",
 ]);
 const shellTextareaClass = computed(() =>
   [
@@ -130,6 +132,7 @@ const accessibleName = computed(() =>
     hasVisibleLabel: hasVisibleLabel.value,
     label: props.label,
     prefix: props.prefix,
+    placeholder: props.placeholder,
   }),
 );
 const notchBgClass = FIELD_NOTCH_BG_CLASS;

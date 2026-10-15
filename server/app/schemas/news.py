@@ -28,107 +28,51 @@ NewsTag = Literal[
 ALLOWED_NEWS_TAGS: set[str] = set(NewsTag.__args__)
 
 
-class NewsArticleCreate(BaseModel):
-    """Admin/create payload for curated news articles."""
+class NewsArticleTextFields(BaseModel):
+    """Shared news article text sanitization for create and update payloads."""
 
-    source_id: int | None = Field(None, gt=0)
     source_name: str | None = Field(None, min_length=1, max_length=120)
-    source_url: HttpUrl
-    source_feed_url: HttpUrl | None = None
-    source_published_at: datetime | None = None
-    original_title: str = Field(min_length=1, max_length=255)
-    title: str = Field(min_length=1, max_length=90)
-    summary: str = Field(min_length=1, max_length=600)
-    bullets: list[str] = Field(default_factory=list, max_length=5)
-    tags: list[NewsTag] = Field(min_length=1, max_length=4)
-    language: str = Field(default="en", min_length=2, max_length=12)
-    status: NewsStatus = "draft"
+    original_title: str | None = Field(None, min_length=1, max_length=255)
+    title: str | None = Field(None, min_length=1, max_length=90)
+    summary: str | None = Field(None, min_length=1, max_length=600)
+    bullets: list[str] | None = Field(None, max_length=5)
+    language: str | None = Field(None, min_length=2, max_length=12)
     ai_model: str | None = Field(None, max_length=120)
     ai_input_hash: str | None = Field(None, max_length=128)
     ingest_error: str | None = Field(None, max_length=500)
 
     @field_validator("source_name")
     @classmethod
-    def clean_optional_source_name(cls, value: str | None) -> str | None:
-        """Sanitize optional source name."""
+    def clean_source_name(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        return validate_clean_required(value, max_length=120)
-
-    @field_validator("original_title", "title")
-    @classmethod
-    def clean_required_short(cls, value: str) -> str:
-        """Sanitize required short text fields."""
-        return validate_clean_required(value, max_length=255)
-
-    @field_validator("summary")
-    @classmethod
-    def clean_summary(cls, value: str) -> str:
-        """Sanitize article summary."""
-        return validate_clean_required(value, max_length=600, field_name="Summary")
-
-    @field_validator("bullets")
-    @classmethod
-    def clean_bullets(cls, value: list[str]) -> list[str]:
-        """Sanitize bullet points."""
-        return validate_clean_string_list(
+        return validate_clean_required(
             value,
-            item_max_length=180,
-            field_name="Bullet",
+            max_length=120,
+            field_name="Source name",
         )
 
-    @field_validator("language")
+    @field_validator("original_title")
     @classmethod
-    def clean_language(cls, value: str) -> str:
-        """Normalize language code."""
-        cleaned = validate_clean_required(
-            value,
-            max_length=12,
-            field_name="Language",
-        )
-        return cleaned.lower()
-
-    @field_validator("ai_model", "ai_input_hash", "ingest_error")
-    @classmethod
-    def clean_optional_meta(cls, value: str | None) -> str | None:
-        """Sanitize optional metadata fields."""
-        return validate_clean_optional(value, max_length=500)
-
-
-class NewsArticleUpdate(BaseModel):
-    """Admin update payload for curated news articles."""
-
-    slug: str | None = Field(None, min_length=1, max_length=120)
-    status: NewsStatus | None = None
-    source_id: int | None = Field(None, gt=0)
-    source_name: str | None = Field(None, min_length=1, max_length=120)
-    source_url: HttpUrl | None = None
-    source_feed_url: HttpUrl | None = None
-    source_published_at: datetime | None = None
-    original_title: str | None = Field(None, min_length=1, max_length=255)
-    title: str | None = Field(None, min_length=1, max_length=90)
-    summary: str | None = Field(None, min_length=1, max_length=600)
-    bullets: list[str] | None = Field(None, max_length=5)
-    tags: list[NewsTag] | None = Field(None, min_length=1, max_length=4)
-    language: str | None = Field(None, min_length=2, max_length=12)
-    published_at: datetime | None = None
-    telegram_message_id: int | None = Field(None, ge=0)
-    ai_model: str | None = Field(None, max_length=120)
-    ai_input_hash: str | None = Field(None, max_length=128)
-    ingest_error: str | None = Field(None, max_length=500)
-
-    @field_validator("slug", "source_name", "original_title", "title")
-    @classmethod
-    def clean_required_short(cls, value: str | None) -> str | None:
-        """Sanitize optional short text fields."""
+    def clean_original_title(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        return validate_clean_required(value, max_length=255)
+        return validate_clean_required(
+            value,
+            max_length=255,
+            field_name="Original title",
+        )
+
+    @field_validator("title")
+    @classmethod
+    def clean_title(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return validate_clean_required(value, max_length=90, field_name="Title")
 
     @field_validator("summary")
     @classmethod
     def clean_summary(cls, value: str | None) -> str | None:
-        """Sanitize optional summary."""
         if value is None:
             return None
         return validate_clean_required(value, max_length=600, field_name="Summary")
@@ -136,7 +80,6 @@ class NewsArticleUpdate(BaseModel):
     @field_validator("bullets")
     @classmethod
     def clean_bullets(cls, value: list[str] | None) -> list[str] | None:
-        """Sanitize optional bullet points."""
         if value is None:
             return None
         return validate_clean_string_list(
@@ -148,7 +91,6 @@ class NewsArticleUpdate(BaseModel):
     @field_validator("language")
     @classmethod
     def clean_language(cls, value: str | None) -> str | None:
-        """Normalize optional language code."""
         if value is None:
             return None
         cleaned = validate_clean_required(
@@ -158,11 +100,57 @@ class NewsArticleUpdate(BaseModel):
         )
         return cleaned.lower()
 
-    @field_validator("ai_model", "ai_input_hash", "ingest_error")
+    @field_validator("ai_model")
     @classmethod
-    def clean_optional_meta(cls, value: str | None) -> str | None:
-        """Sanitize optional metadata fields."""
+    def clean_ai_model(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=120)
+
+    @field_validator("ai_input_hash")
+    @classmethod
+    def clean_ai_input_hash(cls, value: str | None) -> str | None:
+        return validate_clean_optional(value, max_length=128)
+
+    @field_validator("ingest_error")
+    @classmethod
+    def clean_ingest_error(cls, value: str | None) -> str | None:
         return validate_clean_optional(value, max_length=500)
+
+
+class NewsArticleCreate(NewsArticleTextFields):
+    """Admin/create payload for curated news articles."""
+
+    source_id: int | None = Field(None, gt=0)
+    source_url: HttpUrl
+    source_feed_url: HttpUrl | None = None
+    source_published_at: datetime | None = None
+    original_title: str = Field(min_length=1, max_length=255)
+    title: str = Field(min_length=1, max_length=90)
+    summary: str = Field(min_length=1, max_length=600)
+    bullets: list[str] = Field(default_factory=list, max_length=5)
+    tags: list[NewsTag] = Field(min_length=1, max_length=4)
+    language: str = Field(default="en", min_length=2, max_length=12)
+    status: NewsStatus = "draft"
+
+
+class NewsArticleUpdate(NewsArticleTextFields):
+    """Admin update payload for curated news articles."""
+
+    slug: str | None = Field(None, min_length=1, max_length=120)
+    status: NewsStatus | None = None
+    source_id: int | None = Field(None, gt=0)
+    source_url: HttpUrl | None = None
+    source_feed_url: HttpUrl | None = None
+    source_published_at: datetime | None = None
+    tags: list[NewsTag] | None = Field(None, min_length=1, max_length=4)
+    published_at: datetime | None = None
+    telegram_message_id: int | None = Field(None, ge=0)
+
+    @field_validator("slug")
+    @classmethod
+    def clean_slug(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return validate_clean_required(value, max_length=120, field_name="Slug")
 
 
 class NewsArticleResponse(BaseModel):

@@ -41,10 +41,11 @@ describe("LoginPage", () => {
 
     expect(wrapper.get('input[type="email"]').exists()).toBe(true);
     expect(wrapper.get('input[type="password"]').exists()).toBe(true);
-    // trailing labels stay visible; distinct email tip shows; matching password tip omitted
-    expect(wrapper.text()).toContain("email");
+    // tips show while empty; accessible names come from aria-label (no trailing labels)
+    expect(wrapper.get('input[type="email"]').attributes("aria-label")).toBe("email");
+    expect(wrapper.get('input[type="password"]').attributes("aria-label")).toBe("password");
+    expect(wrapper.text()).toContain("email@example.com");
     expect(wrapper.text()).toContain("password");
-    expect(wrapper.text()).toContain("you@example.com");
     expect(wrapper.text()).toContain("login");
     expect(wrapper.text()).not.toContain("continue with Google");
     expect(wrapper.text()).not.toContain("create account");

@@ -123,6 +123,7 @@ async function generatePassword(): Promise<void> {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    description="Generate passwords locally — nothing is sent to the server."
   >
     <Card variant="ghost" class="mx-auto w-full max-w-md">
       <form class="space-y-3" @submit.prevent="generatePassword">

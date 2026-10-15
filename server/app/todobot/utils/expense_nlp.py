@@ -22,7 +22,7 @@ _CURRENCY_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
 )
 
 _CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
-    "Groceries": (
+    "Food": (
         "groceries",
         "grocery",
         "biedronka",
@@ -40,7 +40,7 @@ _CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
         "coffee",
         "pizza",
     ),
-    "Home": (
+    "Home & bills": (
         "home",
         "rent",
         "housing",
@@ -65,6 +65,9 @@ _CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
         "bp",
         "petrol",
     ),
+    "Health": ("health", "pharmacy", "doctor", "medicine"),
+    "Personal": ("personal", "haircut", "clothes"),
+    "Entertainment": ("entertainment", "cinema", "movie", "concert"),
 }
 
 DEFAULT_CATEGORY = DEFAULT_EXPENSE_CATEGORY

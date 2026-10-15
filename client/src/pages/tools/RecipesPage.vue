@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import PageShell from "@/components/layout/PageShell.vue";
@@ -90,6 +91,7 @@ function editRecipeFromCard(recipe: Recipe): void {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    description="Personal recipe list with cook mode — saved to your account when signed in."
   >
     <RecipeFilters v-model:search="search">
       <template v-if="canWrite" #actions>
@@ -120,15 +122,40 @@ function editRecipeFromCard(recipe: Recipe): void {
       <ErrorState v-else-if="listError" :message="listError" show-retry @retry="loadRecipes" />
 
       <div v-else-if="recipes.length" class="mt-1 min-w-0">
-        <RecipeCard
-          v-for="recipe in recipes"
-          :key="recipe.id"
-          :recipe="recipe"
-          :can-write="canWrite"
-          @select="openRecipeFromCard"
-          @edit="editRecipeFromCard"
-          @delete="requestDelete"
-        />
+        <div class="flex flex-col md:hidden">
+          <RecipeCard
+            v-for="recipe in recipes"
+            :key="`m-${recipe.id}`"
+            layout="card"
+            :recipe="recipe"
+            :can-write="canWrite"
+            @select="openRecipeFromCard"
+            @edit="editRecipeFromCard"
+            @delete="requestDelete"
+          />
+        </div>
+        <AdminDataTable table-label="recipes">
+          <template #header>
+            <th class="w-px px-3 py-1.5 text-xs tracking-wider">
+              <span class="sr-only">thumb</span>
+            </th>
+            <th class="px-3 py-1.5 text-xs tracking-wider">title</th>
+            <th class="px-3 py-1.5 text-xs tracking-wider">meta</th>
+            <th class="w-px px-2 text-right">
+              <span class="sr-only">actions</span>
+            </th>
+          </template>
+          <RecipeCard
+            v-for="recipe in recipes"
+            :key="recipe.id"
+            layout="table"
+            :recipe="recipe"
+            :can-write="canWrite"
+            @select="openRecipeFromCard"
+            @edit="editRecipeFromCard"
+            @delete="requestDelete"
+          />
+        </AdminDataTable>
       </div>
 
       <EmptyState

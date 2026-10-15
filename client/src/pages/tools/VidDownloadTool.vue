@@ -82,7 +82,13 @@ async function download(): Promise<void> {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="video downloader" max-width="5xl" back-to="/tools">
+  <AdminPageLayout
+    hub="tools"
+    title="video downloader"
+    max-width="5xl"
+    back-to="/tools"
+    description="Download media via yt-dlp — pick quality or audio-only, then save the file."
+  >
     <p
       v-if="toolDisabled"
       class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
