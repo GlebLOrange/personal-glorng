@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import { colorThemeResolved } from "@/composables/useColorTheme";
+
 const props = withDefaults(
   defineProps<{
     /** `mark` for chrome/favicon scale; `full` for hero and large brand moments. */
@@ -14,9 +16,13 @@ const props = withDefaults(
   },
 );
 
-const src = computed(() =>
-  props.variant === "full" ? "/brand/gy-logo.svg" : "/brand/gy-mark-simple.svg",
-);
+const src = computed(() => {
+  const light = colorThemeResolved.value === "light";
+  if (props.variant === "full") {
+    return light ? "/brand/gy-logo-light.svg" : "/brand/gy-logo.svg";
+  }
+  return light ? "/brand/gy-mark-simple-light.svg" : "/brand/gy-mark-simple.svg";
+});
 </script>
 
 <template>
