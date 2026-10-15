@@ -16,12 +16,24 @@ describe("SiteLogo", () => {
     expect(img.attributes("aria-hidden")).toBe("true");
     expect(img.attributes("src")).toBe("/brand/gy-mark-simple.svg");
     expect(img.attributes("alt")).toBe("");
+    expect(img.attributes("width")).toBe("100");
+    expect(img.attributes("height")).toBe("100");
+    expect(img.attributes("fetchpriority")).toBeUndefined();
   });
 
   it("uses the full logo asset when variant is full", () => {
     const wrapper = mount(SiteLogo, { props: { variant: "full" } });
 
-    expect(wrapper.get("img").attributes("src")).toBe("/brand/gy-logo.svg");
+    const img = wrapper.get("img");
+    expect(img.attributes("src")).toBe("/brand/gy-logo.svg");
+    expect(img.attributes("width")).toBe("220");
+    expect(img.attributes("height")).toBe("100");
+  });
+
+  it("sets fetchpriority high when priority is true", () => {
+    const wrapper = mount(SiteLogo, { props: { priority: true } });
+
+    expect(wrapper.get("img").attributes("fetchpriority")).toBe("high");
   });
 
   it("uses light mark and lockup assets when theme is light", async () => {

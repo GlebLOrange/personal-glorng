@@ -1,6 +1,6 @@
 # Gleb.Y — gear G + circuit Y
 
-Primary brand lockup from the G.Y gear/circuit reference. Transparent ground.
+Primary brand lockup: **cog-styled letter G** (thick C-bowl, wide right mouth, bold spur + 12-tooth rim) with circuit Y. Transparent ground.
 
 **Live:** `lockup.svg` → `gy-logo.svg`; `mark.svg` → `gy-mark-simple.svg` / favicon. Light theme: `*-light.svg` → `gy-logo-light.svg` / `gy-mark-simple-light.svg` via `SiteLogo`.
 
