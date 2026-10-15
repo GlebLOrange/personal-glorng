@@ -40,6 +40,18 @@ describe("HeroBlock", () => {
     expect(wrapper.text()).not.toContain("telegram");
   });
 
+  it("marks the link rail inert when the sticky section nav is active", () => {
+    const wrapper = mount(HeroBlock, {
+      props: {
+        name: "Gleb.Y",
+        title: "Engineer",
+        sectionNavActive: true,
+      },
+    });
+
+    expect(wrapper.get(".portfolio-link-rail").attributes("inert")).toBeDefined();
+  });
+
   it("offers print fallback instead of auto-printing when PDF fails", async () => {
     window.print = window.print ?? (() => {});
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => {});

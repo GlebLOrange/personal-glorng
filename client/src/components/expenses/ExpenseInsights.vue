@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from "vue";
 
+import ExpenseCategoryBreakdown from "@/components/expenses/ExpenseCategoryBreakdown.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
@@ -113,6 +114,8 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
 
 <template>
   <div v-if="hasChartData" class="flex flex-col gap-3">
+    <ExpenseCategoryBreakdown :summary="summary" :format-money="formatMoney" />
+
     <Card v-if="budgetTotals" variant="compact">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -320,7 +323,9 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
     description="add expenses for this period to see trends and breakdowns."
   >
     <template #action>
-      <BaseButton variant="add" size="sm" @click="emit('addExpense')"> go to expenses </BaseButton>
+      <BaseButton variant="add" size="sm" @click="emit('addExpense')">
+        go to today
+      </BaseButton>
     </template>
   </EmptyState>
 </template>

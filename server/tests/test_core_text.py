@@ -2,6 +2,7 @@ import pytest
 
 from app.core.text import (
     sanitize_email_subject,
+    sanitize_fetched_text,
     sanitize_optional_text,
     sanitize_required_text,
     sanitize_text,
@@ -14,6 +15,14 @@ def test_sanitize_text_strips_control_chars() -> None:
 
 def test_sanitize_text_truncates() -> None:
     assert sanitize_text("abcdef", max_length=3) == "abc"
+
+
+def test_sanitize_fetched_text_strips_control_chars() -> None:
+    assert sanitize_fetched_text("  feed\x00 item  ", max_length=20) == "feed item"
+
+
+def test_sanitize_fetched_text_empty_for_none() -> None:
+    assert sanitize_fetched_text(None, max_length=10) == ""
 
 
 def test_sanitize_optional_text_returns_none_for_blank() -> None:

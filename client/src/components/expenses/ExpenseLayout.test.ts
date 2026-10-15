@@ -19,43 +19,54 @@ const sampleSummary: ExpenseSummary = {
   by_month: [],
   by_tool: [],
   by_category: [
-    { category: "Groceries", total: "80.00" },
+    { category: "Food", total: "80.00" },
     { category: "Transport", total: "40.00" },
   ],
 };
 
 describe("expenses layout restore", () => {
-  it("keeps tabs above the dashboard with export in the tab end slot", () => {
+  it("keeps five tabs above the dashboard with export in the tab end slot", () => {
     const tabIdx = expensesToolSource.indexOf("<AdminTabBar");
     const endSlotIdx = expensesToolSource.indexOf("#end");
     const exportIdx = expensesToolSource.indexOf("export csv");
     const dashboardIdx = expensesToolSource.indexOf("<ExpenseDashboardPanel");
-    const transactionsIdx = expensesToolSource.indexOf("<ExpenseTransactionsPanel");
-    const analyticsIdx = expensesToolSource.indexOf('id="expenses-tab-panel-analytics"');
+    const activityIdx = expensesToolSource.indexOf("<ExpenseTransactionsPanel");
+    const insightsIdx = expensesToolSource.indexOf('id="expenses-tab-panel-insights"');
+    const categoriesIdx = expensesToolSource.indexOf('id="expenses-tab-panel-categories"');
+    const converterIdx = expensesToolSource.indexOf('id="expenses-tab-panel-converter"');
     expect(tabIdx).toBeGreaterThan(-1);
     expect(endSlotIdx).toBeGreaterThan(tabIdx);
     expect(exportIdx).toBeGreaterThan(endSlotIdx);
     expect(dashboardIdx).toBeGreaterThan(exportIdx);
-    expect(transactionsIdx).toBeGreaterThan(dashboardIdx);
-    expect(analyticsIdx).toBeGreaterThan(transactionsIdx);
-    expect(expensesToolSource).toMatch(/activeTab === 'transactions'/);
-    expect(expensesToolSource).toMatch(/activeTab === 'breakdown'/);
-    expect(expensesToolSource).toMatch(/activeTab === 'analytics'/);
-    expect(expensesToolSource).toMatch(/ExpenseCategoryBreakdown/);
-    expect(expensesToolSource).toMatch(/id="expenses-tab-panel-breakdown"/);
+    expect(activityIdx).toBeGreaterThan(dashboardIdx);
+    expect(insightsIdx).toBeGreaterThan(activityIdx);
+    expect(categoriesIdx).toBeGreaterThan(insightsIdx);
+    expect(converterIdx).toBeGreaterThan(categoriesIdx);
+    expect(expensesToolSource).toMatch(/activeTab === 'today'/);
+    expect(expensesToolSource).toMatch(/activeTab === 'activity'/);
+    expect(expensesToolSource).toMatch(/activeTab === 'insights'/);
+    expect(expensesToolSource).toMatch(/activeTab === 'categories'/);
+    expect(expensesToolSource).toMatch(/activeTab === 'converter'/);
+    expect(expensesToolSource).not.toMatch(/expenses-tab-panel-currency/);
+    expect(expensesToolSource).not.toMatch(/activeTab === 'currency'/);
+    expect(expensesToolSource).not.toMatch(/BaseDropdownMenu/);
+    expect(expensesToolSource).not.toMatch(/openOverflow/);
+    expect(expensesToolSource).not.toMatch(/expense settings/);
     expect(expensesToolSource).not.toMatch(/ExpenseOrbitNav/);
     expect(expensesToolSource).not.toMatch(/openCategoryTransactions/);
     expect(expensesToolSource).not.toMatch(/<footer/);
-    expect(expensesToolSource).not.toMatch(/>\s*settings\s*</);
     expect(expensesToolSource).not.toMatch(/\+ expense/);
   });
 
-  it("keeps the converter mounted after first visit", () => {
+  it("keeps the converter mounted after first open as a tab panel", () => {
     expect(expensesToolSource).toMatch(/converterMounted/);
-    expect(expensesToolSource).toMatch(/v-show="activeTab === 'converter'"/);
+    expect(expensesToolSource).toMatch(/activeTab === 'converter'/);
+    expect(expensesToolSource).toMatch(/ExpenseCalculatorTab/);
+    expect(expensesToolSource).not.toMatch(/overflowPanel/);
+    expect(expensesToolSource).not.toMatch(/BaseDrawer/);
   });
 
-  it("defers calculator composable and category settings until those tabs", () => {
+  it("defers calculator composable and category settings until those surfaces", () => {
     expect(expensesToolSource).not.toMatch(/useExpenseCalculator\(/);
     expect(expensesToolSource).toMatch(
       /defineAsyncComponent\(\s*\(\)\s*=>\s*import\("@\/components\/expenses\/ExpenseCalculatorTab\.vue"\)/,
@@ -65,22 +76,10 @@ describe("expenses layout restore", () => {
     );
   });
 
-  it("renders period, total, and clickable transaction count in one summary card", async () => {
+  it("renders period, total, and clickable activity count in one summary card", async () => {
     const wrapper = mount(ExpenseLedgerHeader, {
       props: {
-        monthPreset: "this_month",
-        "onUpdate:monthPreset": () => undefined,
-        dateFilterMode: "month",
-        "onUpdate:dateFilterMode": () => undefined,
-        selectedMonth: "2026-09",
-        "onUpdate:selectedMonth": () => undefined,
-        dateFrom: "",
-        "onUpdate:dateFrom": () => undefined,
-        dateTo: "",
-        "onUpdate:dateTo": () => undefined,
         monthLabel: "September 2026",
-        hasActiveFilters: false,
-        rangeError: null,
         summary: sampleSummary,
         expenseTotal: 12,
         summaryError: null,
@@ -88,7 +87,6 @@ describe("expenses layout restore", () => {
       },
       global: {
         stubs: {
-          ExpenseDateFilters: true,
           RefreshIcon: true,
           BaseButton: true,
         },
@@ -99,33 +97,21 @@ describe("expenses layout restore", () => {
     expect(wrapper.text()).toContain("September 2026");
     expect(wrapper.text()).toContain("total");
     expect(wrapper.text()).toContain("120.00 PLN");
-    expect(wrapper.text()).toContain("transactions · 12");
+    expect(wrapper.text()).toContain("activity · 12");
     expect(wrapper.text()).not.toContain("Top Category");
 
-    const txButton = wrapper
+    const activityButton = wrapper
       .findAll("button")
-      .find((btn) => btn.text().includes("transactions · 12"));
-    expect(txButton).toBeTruthy();
-    await txButton!.trigger("click");
-    expect(wrapper.emitted("openTransactions")).toHaveLength(1);
+      .find((btn) => btn.text().includes("activity · 12"));
+    expect(activityButton).toBeTruthy();
+    await activityButton!.trigger("click");
+    expect(wrapper.emitted("openActivity")).toHaveLength(1);
   });
 
   it("keeps the period summary inside a single compact card", () => {
     const wrapper = mount(ExpenseLedgerHeader, {
       props: {
-        monthPreset: "this_month",
-        "onUpdate:monthPreset": () => undefined,
-        dateFilterMode: "month",
-        "onUpdate:dateFilterMode": () => undefined,
-        selectedMonth: "2026-09",
-        "onUpdate:selectedMonth": () => undefined,
-        dateFrom: "",
-        "onUpdate:dateFrom": () => undefined,
-        dateTo: "",
-        "onUpdate:dateTo": () => undefined,
         monthLabel: "this month",
-        hasActiveFilters: false,
-        rangeError: null,
         summary: null,
         expenseTotal: 0,
         summaryError: null,
@@ -133,7 +119,6 @@ describe("expenses layout restore", () => {
       },
       global: {
         stubs: {
-          ExpenseDateFilters: true,
           RefreshIcon: true,
           BaseButton: true,
         },

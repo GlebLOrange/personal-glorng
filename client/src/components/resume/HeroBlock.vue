@@ -7,13 +7,18 @@ import { useNotify } from "@/composables/useNotify";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { downloadResumeExport, resumeDownloadErrorMessage } from "@/utils/resumeDownload";
 
-defineProps<{
-  name: string;
-  title: string;
-  tagline?: string;
-  location?: string;
-  availability?: string;
-}>();
+withDefaults(
+  defineProps<{
+    name: string;
+    title: string;
+    tagline?: string;
+    location?: string;
+    availability?: string;
+    /** When sticky section nav is active, hide this rail from the a11y tree. */
+    sectionNavActive?: boolean;
+  }>(),
+  { sectionNavActive: false },
+);
 
 const emit = defineEmits<{ inquire: [] }>();
 
@@ -47,6 +52,7 @@ function printPage(): void {
     <h1 class="mb-3 flex flex-col items-center gap-3 text-balance">
       <SiteLogo
         variant="full"
+        priority
         class-name="h-16 w-auto max-w-[min(100%,18rem)] sm:h-20 md:h-24"
       />
       <span class="text-xl font-bold tracking-tight sm:text-2xl accent-gradient">{{ name }}</span>
@@ -99,7 +105,7 @@ function printPage(): void {
     </p>
 
     <!-- Mobile: disclosure. md+: light middot rail (sticky section nav covers scroll). -->
-    <div class="portfolio-link-rail mt-5 print:hidden">
+    <div class="portfolio-link-rail mt-5 print:hidden" :inert="sectionNavActive">
       <details class="md:hidden group mx-auto max-w-xs text-left">
         <summary
           class="nav-link flex min-h-11 cursor-pointer list-none items-center justify-center rounded-lg px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 [&::-webkit-details-marker]:hidden"

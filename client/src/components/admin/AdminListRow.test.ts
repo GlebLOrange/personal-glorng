@@ -87,6 +87,18 @@ describe("AdminListRow", () => {
     expect(header.classes()).toContain("min-h-10");
   });
 
+  it("lets the header grow when expanded for inline editors", () => {
+    const wrapper = mount(AdminListRow, {
+      props: { interactive: true, expanded: true },
+      slots: { primary: "rename category" },
+    });
+    const header = wrapper.find("[data-admin-list-header]");
+    expect(header.classes()).toContain("h-auto");
+    expect(header.classes()).toContain("min-h-10");
+    expect(header.classes()).not.toContain("h-10");
+    expect(header.classes()).toContain("overflow-visible");
+  });
+
   it("draws an inset hairline that hides on the last sibling", () => {
     const wrapper = mount(AdminListRow, {
       props: { interactive: true },

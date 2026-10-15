@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveFieldCopy } from "@/components/ui/fieldA11y";
+import { buildFieldAccessibleName, resolveFieldCopy } from "@/components/ui/fieldA11y";
 
 describe("resolveFieldCopy", () => {
   it("uses label as name and omits tip when placeholder is absent", () => {
@@ -30,5 +30,36 @@ describe("resolveFieldCopy", () => {
 
   it("returns empty copy when both are absent", () => {
     expect(resolveFieldCopy()).toEqual({ name: undefined, tip: undefined });
+  });
+});
+
+describe("buildFieldAccessibleName", () => {
+  it("prefers an explicit aria-label", () => {
+    expect(
+      buildFieldAccessibleName({
+        ariaLabel: "article url",
+        hasVisibleLabel: false,
+        placeholder: "title",
+      }),
+    ).toBe("article url");
+  });
+
+  it("skips naming when a visible label is present", () => {
+    expect(
+      buildFieldAccessibleName({
+        hasVisibleLabel: true,
+        label: "name",
+        placeholder: "title",
+      }),
+    ).toBeUndefined();
+  });
+
+  it("uses placeholder when label and aria-label are absent", () => {
+    expect(
+      buildFieldAccessibleName({
+        hasVisibleLabel: false,
+        placeholder: "title",
+      }),
+    ).toBe("title");
   });
 });

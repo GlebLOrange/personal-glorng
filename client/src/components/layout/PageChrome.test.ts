@@ -15,6 +15,11 @@ const stubs = {
     template:
       '<nav data-testid="crumbs"><span v-for="(s, i) in segments" :key="i" :data-elevated="elevated ? \'true\' : \'false\'" :data-to="s.to || \'\'">{{ s.label }}</span></nav>',
   },
+  FieldHelp: {
+    props: ["text", "size", "align", "placement", "interactive"],
+    template:
+      '<span data-testid="field-help" :data-text="text" :data-size="size" :data-align="align" :data-placement="placement" :data-interactive="interactive === false ? \'false\' : \'true\'">?</span>',
+  },
 };
 
 describe("PageChrome", () => {
@@ -100,5 +105,38 @@ describe("PageChrome", () => {
     });
 
     expect(wrapper.find("h1").exists()).toBe(false);
+  });
+
+  it("renders FieldHelp tip bottom-right when description is set", () => {
+    const wrapper = mount(PageChrome, {
+      props: {
+        title: "db maintenance",
+        breadcrumbs: [{ label: "admin", to: "/admin" }, { label: "db maintenance" }],
+        backTo: "/admin",
+        description: "backs up mongo, redis, and media.",
+      },
+      global: { stubs },
+    });
+
+    const pin = wrapper.get('[data-testid="page-chrome-help"]');
+    expect(pin.classes()).toEqual(expect.arrayContaining(["absolute", "bottom-2", "right-0"]));
+    const help = pin.get('[data-testid="field-help"]');
+    expect(help.attributes("data-text")).toBe("backs up mongo, redis, and media.");
+    expect(help.attributes("data-size")).toBe("sm");
+    expect(help.attributes("data-align")).toBe("end");
+    expect(help.attributes("data-placement")).toBe("top");
+    expect(help.attributes("data-interactive")).toBe("false");
+  });
+
+  it("omits FieldHelp when description is unset", () => {
+    const wrapper = mount(PageChrome, {
+      props: {
+        title: "admin",
+        breadcrumbs: [{ label: "admin", to: "/admin" }],
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('[data-testid="page-chrome-help"]').exists()).toBe(false);
   });
 });

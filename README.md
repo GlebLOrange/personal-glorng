@@ -13,15 +13,11 @@ Minimal, monospace-styled developer portfolio built with FastAPI + Vue 3 + Mongo
 
 ## Quick start
 
-```bash
-cp .env.example .env
-make dev               # terminal 1: mongodb, redis, API, nginx
-make dev-lite-client   # terminal 2: Vite on :3000
-make db-init           # if migrate did not run on stack start
-make seed-db           # admin + mock data (set SEED_PASSWORD in .env)
-```
+First-time setup (`.env`, lite stack, seed): [Getting started](docs/guide/getting-started.md).
 
-Open [http://localhost](http://localhost) or [http://localhost:3000](http://localhost:3000). API docs (dev): [http://localhost:8000/api/docs](http://localhost:8000/api/docs).
+```bash
+make docs-dev   # local handbook → http://localhost:5173
+```
 
 ## Screenshots
 
@@ -33,14 +29,16 @@ Open [http://localhost](http://localhost) or [http://localhost:3000](http://loca
 
 | Resource | Link |
 |----------|------|
+| **First-time setup** | [Getting started](docs/guide/getting-started.md) |
 | **Handbook (published)** | [gleblorange.github.io/personal-glorng](https://gleblorange.github.io/personal-glorng/) |
 | **Handbook (local)** | `make docs-dev` → [http://localhost:5173](http://localhost:5173) |
 | **Handbook (source)** | [docs/index.md](docs/index.md) |
+| **Dev modes / make targets** | [Development](docs/guide/development.md) |
 | **API / Postman** | [docs/reference/postman.md](docs/reference/postman.md) |
 | **ADRs** | [docs/adr/](docs/adr/) |
 | **Cursor / agents** | [AGENTS.md](AGENTS.md), [CODING_STANDARDS.md](CODING_STANDARDS.md) |
 
-Topics: [getting started](docs/guide/getting-started.md), [architecture](docs/guide/architecture.md), [development](docs/guide/development.md), [deployment](docs/operations/deployment.md), [API reference](docs/reference/api-tools.md), [Postman](docs/reference/postman.md), [configuration](docs/reference/configuration.md), [security](docs/reference/security.md).
+Topics: [architecture](docs/guide/architecture.md), [deployment](docs/operations/deployment.md), [API reference](docs/reference/api-tools.md), [configuration](docs/reference/configuration.md), [security](docs/reference/security.md).
 
 After API or platform-registry changes, refresh generated docs: `make docs-generate`.
 
@@ -59,19 +57,6 @@ client/    Vue 3 frontend (:3000)
 nginx/     Reverse proxy (:80)
 docs/      VitePress handbook
 ```
-
-## Common commands
-
-| Command | Description |
-|---------|-------------|
-| `make` / `make dev` + `make dev-lite-client` | Default lite stack (API in Docker, Vite on host) |
-| `make dev-docker` | Full stack in Docker including Vite client |
-| `make prod` | Production stack |
-| `make check` | Local lint + pytest (Docker) + client lint/test/build (CI also runs coverage, postgres, e2e, docs) |
-| `make docs-dev` / `make docs-build` | Documentation site (`docs-generate` first) |
-| `make docs-generate` | Export OpenAPI + architecture inventory |
-
-See [Development](docs/guide/development.md) for all `make` targets.
 
 ## License
 
