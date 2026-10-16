@@ -49,9 +49,15 @@ const fieldCopy = computed(() => resolveFieldCopy(props.label));
 const isInlineEnd = computed(() => props.labelAlign === "end");
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error);
 const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
-const showInlineEndLabel = computed(() => isInlineEnd.value && showLabelRow.value);
+/** End alignment: only reserve trailing chrome for FieldHelp (no visible field name). */
+const showInlineEndLabel = computed(
+  () => isInlineEnd.value && Boolean(props.hint && !props.error),
+);
 const showBorderNotchRow = computed(() => !isInlineEnd.value && showLabelRow.value);
 const hasBorderNotch = computed(() => showBorderNotchRow.value || Boolean(props.error));
+const showSrOnlyLabel = computed(
+  () => isInlineEnd.value && Boolean(props.label) && !props.error,
+);
 const describedBy = computed(() =>
   buildFieldDescribedBy({
     ariaDescribedBy: attrs["aria-describedby"],
@@ -70,7 +76,7 @@ const selectClass = computed(() => {
 const ariaLabel = computed(() =>
   buildFieldAccessibleName({
     ariaLabel: attrs["aria-label"],
-    hasVisibleLabel: showLabelNotch.value,
+    hasVisibleLabel: showLabelNotch.value || showSrOnlyLabel.value,
     label: props.label,
   }),
 );
@@ -85,6 +91,7 @@ const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top
 
 <template>
   <div :class="[FIELD_WRAPPER_CLASS, hasBorderNotch ? 'pt-2.5' : undefined, attrs.class]">
+    <label v-if="showSrOnlyLabel" :for="selectId" class="sr-only">{{ label }}</label>
     <select
       :id="selectId"
       v-model="model"
@@ -101,17 +108,8 @@ const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top
       <slot />
     </select>
     <div v-if="showInlineEndLabel" :class="FIELD_INLINE_END_LABEL_CLASS">
-      <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
-      <label
-        v-if="showLabelNotch"
-        :for="selectId"
-        :class="['pointer-events-auto truncate', FIELD_LABEL_TEXT_CLASS]"
-      >
-        {{ label }}
-      </label>
       <span class="pointer-events-auto">
         <FieldHelp
-          v-if="hint"
           size="sm"
           :align="helpAlign"
           :placement="helpPlacement"

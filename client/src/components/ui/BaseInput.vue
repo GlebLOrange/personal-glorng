@@ -96,13 +96,22 @@ const showTip = computed(
 );
 /** Error replaces label on the border notch; hint rides beside the label when present. */
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
-/** Persistent sr-only label when labelInside so naming survives hide-on-type. */
+/** Border-notch / labelInside / end-mode sr-only — all count as a named control. */
 const hasVisibleLabel = computed(
-  () => showLabelNotch.value || Boolean(props.label && props.labelInside),
+  () =>
+    showLabelNotch.value ||
+    Boolean(props.label && props.labelInside) ||
+    (isInlineEnd.value && Boolean(props.label) && !props.error),
 );
 const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
-const showInlineEndLabel = computed(() => isInlineEnd.value && showLabelRow.value);
+/** End alignment: only reserve trailing chrome for FieldHelp (no visible field name). */
+const showInlineEndLabel = computed(
+  () => isInlineEnd.value && Boolean(props.hint && !props.error),
+);
 const showNotchRow = computed(() => !isInlineEnd.value && showLabelRow.value);
+const showSrOnlyLabel = computed(
+  () => Boolean(props.label) && (props.labelInside || (isInlineEnd.value && !props.error)),
+);
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
 const tipInsetClass = computed(() => [
   hasPrefix.value ? "left-10" : "left-3",
@@ -217,8 +226,8 @@ defineExpose({ focus });
       >
         <slot name="prefix" />
       </span>
-      <!-- sr-only keeps for/id naming always; visual label mirrors tip overlay when empty -->
-      <label v-if="props.labelInside && props.label" :for="inputId" class="sr-only">
+      <!-- sr-only keeps for/id naming; labelInside also draws a tip-style overlay while empty -->
+      <label v-if="showSrOnlyLabel" :for="inputId" class="sr-only">
         {{ props.label }}
       </label>
       <input
@@ -271,12 +280,7 @@ defineExpose({ focus });
         class="relative z-10 flex shrink-0 items-center gap-0.5 self-stretch pr-2"
       >
         <div v-if="showInlineEndLabel" class="flex max-w-[11rem] items-center gap-1 bg-transparent">
-          <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
-          <label v-if="showLabelNotch" :for="inputId" :class="['truncate', FIELD_LABEL_TEXT_CLASS]">
-            {{ label }}
-          </label>
           <FieldHelp
-            v-if="hint"
             size="sm"
             :align="helpAlign"
             :placement="helpPlacement"

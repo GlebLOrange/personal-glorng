@@ -65,8 +65,6 @@ const emit = defineEmits<{
     class="outline-none"
   >
     <Card variant="compact" class="flex w-full flex-col gap-2">
-      <h3 class="text-sm font-semibold text-surface-light">activity</h3>
-
       <div class="flex min-w-0 flex-wrap items-center gap-2">
         <ExpenseDateFilters
           v-model:month-preset="monthPreset"

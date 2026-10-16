@@ -5,8 +5,8 @@ from app.core.pagination import pagination_params_factory
 from app.core.utils import DEFAULT_PER_PAGE
 
 
-def test_default_per_page_is_nine() -> None:
-    assert DEFAULT_PER_PAGE == 9
+def test_default_per_page_is_twenty_five() -> None:
+    assert DEFAULT_PER_PAGE == 25
 
 
 def test_pagination_params_clamps_per_page() -> None:

@@ -3,19 +3,18 @@ import { computed, onUnmounted, ref, watch } from "vue";
 
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
+import FieldHelp from "@/components/ui/FieldHelp.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import { Card } from "@/components/ui/card";
 import {
   convertCurrency,
   EXPENSE_CURRENCIES,
-  EXPENSE_DEFAULT_CURRENCY,
-  EXPENSE_EXCHANGE_RATE_TARGETS,
-  formatMoney,
   formatRate,
 } from "@/composables/useExpenseCurrency";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExchangeRates } from "@/types";
 import { readConverterSnapshot, writeConverterSnapshot } from "@/utils/expenseConverterStorage";
+import { formatDate } from "@/utils/format";
 
 const props = defineProps<{
   exchangeRates: ExchangeRates | null;
@@ -29,6 +28,16 @@ const toCurrency = ref<CurrencyCode>(restored.toCurrency);
 const converted = ref<string | null>(null);
 const converting = ref(false);
 const ratesUpdatedAt = ref<string | null>(null);
+
+/** Numbers only — currency sits in the adjacent select. */
+function formatResult(value: string): string {
+  const num = parseFloat(value);
+  if (!Number.isFinite(num)) return "N/A";
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(num);
+}
 
 const canConvert = computed(() => {
   const value = parseFloat(amount.value);
@@ -47,6 +56,15 @@ const inverseRateLabel = computed(() => {
   const rate = formatRate(props.exchangeRates.rates, toCurrency.value, fromCurrency.value);
   if (rate === "N/A") return null;
   return `1 ${toCurrency.value} = ${rate} ${fromCurrency.value}`;
+});
+
+/** Pair rates for FieldHelp tip (hidden behind ?). */
+const ratesHelpText = computed(() => {
+  const lines: string[] = [];
+  if (ratesUpdatedAt.value) lines.push(formatDate(ratesUpdatedAt.value));
+  if (forwardRateLabel.value) lines.push(forwardRateLabel.value);
+  if (inverseRateLabel.value) lines.push(inverseRateLabel.value);
+  return lines.join("\n");
 });
 
 let convertTimer: ReturnType<typeof setTimeout> | null = null;
@@ -116,27 +134,33 @@ watch(
 </script>
 
 <template>
-  <Card class="space-y-4">
-    <p class="text-xs text-surface-mid">
-      Convert between EUR, USD, PLN, and BYN using live rates. Last amount and pair are remembered
-      on this device.
-    </p>
+  <Card variant="compact" class="space-y-3">
+    <div class="flex items-start justify-end gap-1">
+      <p class="text-xs text-surface-mid text-right">
+        Live EUR, USD, PLN, and BYN rates. Amount and pair stay on this device.
+      </p>
+      <FieldHelp v-if="ratesHelpText" align="end" :text="ratesHelpText" />
+    </div>
 
-    <BaseInput
-      v-model="amount"
-      type="number"
-      step="0.01"
-      min="0.01"
-      label="amount"
-      placeholder="100.00"
-      inputmode="decimal"
-    />
-
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-      <BaseSelect v-model="fromCurrency" label="from" class="min-w-0 w-full sm:flex-1">
+    <div class="flex flex-wrap items-end justify-center gap-2">
+      <BaseInput
+        v-model="amount"
+        type="number"
+        step="0.01"
+        min="0.01"
+        label="amount"
+        placeholder="100.00"
+        inputmode="decimal"
+        class="w-[3cm] max-w-[3cm] shrink-0"
+      />
+      <BaseSelect
+        v-model="fromCurrency"
+        label="from"
+        class="w-[3cm] max-w-[3cm] shrink-0 [&_select]:!px-2 [&_select]:!pr-7"
+      >
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>
-      <div class="flex justify-center sm:mb-0.5">
+      <div class="flex shrink-0 items-center self-stretch pb-0.5">
         <IconActionButton action="create" aria-label="swap currencies" @click="swapCurrencies">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -155,51 +179,23 @@ watch(
           </svg>
         </IconActionButton>
       </div>
-      <BaseSelect v-model="toCurrency" label="to" class="min-w-0 w-full sm:flex-1">
+      <BaseSelect
+        v-model="toCurrency"
+        label="to"
+        class="w-[3cm] max-w-[3cm] shrink-0 [&_select]:!px-2 [&_select]:!pr-7"
+      >
         <option v-for="c in EXPENSE_CURRENCIES" :key="c" :value="c">{{ c }}</option>
       </BaseSelect>
-    </div>
-
-    <div
-      class="border-t border-surface-border pt-4"
-      role="status"
-      aria-live="polite"
-      :aria-busy="converting || ratesLoading"
-    >
-      <p class="text-xs text-surface-mid mb-2">result</p>
-      <p v-if="converted" class="text-3xl font-bold font-data text-surface-light">
-        {{ formatMoney(converted, toCurrency) }}
-      </p>
       <p
-        v-else-if="converting || ratesLoading"
-        class="text-3xl font-bold text-surface-border animate-pulse"
+        class="min-w-0 shrink-0 self-center pb-0.5 font-data text-[40px] font-bold text-surface-mid"
+        role="status"
+        aria-live="polite"
+        :aria-busy="converting || ratesLoading"
       >
-        —
+        <span v-if="converted">{{ formatResult(converted) }}</span>
+        <span v-else-if="converting || ratesLoading" class="animate-pulse">—</span>
+        <span v-else>result</span>
       </p>
-      <p v-else class="text-sm text-surface-mid">Enter an amount to convert.</p>
-      <p v-if="converted && canConvert" class="text-sm text-surface-mid mt-1">
-        {{ formatMoney(amount, fromCurrency) }} → {{ toCurrency }}
-      </p>
-      <div
-        v-if="forwardRateLabel || inverseRateLabel"
-        class="mt-2 flex flex-col gap-0.5 text-xs text-surface-mid"
-      >
-        <span v-if="forwardRateLabel">{{ forwardRateLabel }}</span>
-        <span v-if="inverseRateLabel">{{ inverseRateLabel }}</span>
-      </div>
-      <p v-if="ratesUpdatedAt" class="text-[10px] text-surface-mid mt-2">
-        Rates updated {{ ratesUpdatedAt }}
-      </p>
-    </div>
-
-    <div
-      v-if="props.exchangeRates"
-      class="flex flex-wrap gap-3 text-xs text-surface-mid border-t border-surface-border pt-3"
-    >
-      <span class="text-surface-light">1 {{ EXPENSE_DEFAULT_CURRENCY }} =</span>
-      <span v-for="c in EXPENSE_EXCHANGE_RATE_TARGETS" :key="c">
-        {{ formatRate(props.exchangeRates.rates, EXPENSE_DEFAULT_CURRENCY, c) }} {{ c }}
-      </span>
     </div>
   </Card>
 </template>
