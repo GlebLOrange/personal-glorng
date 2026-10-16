@@ -28,9 +28,12 @@ const projects: Project[] = [
 ];
 
 describe("CaseStudies", () => {
-  it("shows only the project name in each closed summary", () => {
-    const wrapper = mount(CaseStudies, { props: { projects } });
-    const rows = wrapper.findAll("details");
+  it("shows proof (problem / approach / result) without a click", () => {
+    const wrapper = mount(CaseStudies, {
+      props: { projects },
+      global: { stubs: { RouterLink: { template: "<a><slot /></a>" } } },
+    });
+    const rows = wrapper.findAll("article");
     expect(rows).toHaveLength(projects.length);
 
     projects.forEach((project, index) => {
@@ -38,10 +41,12 @@ describe("CaseStudies", () => {
       expect(row, project.name).toBeDefined();
       if (!row) return;
 
-      const summary = row.get("summary");
-      expect(summary.text()).toBe(project.name);
+      expect(row.get("h3").text()).toBe(project.name);
       expect(row.text()).toContain(project.description);
-      expect(summary.text()).not.toContain(project.description);
+      expect(row.text()).toContain(project.problem ?? "");
+      expect(row.text()).toContain(project.result ?? "");
+      expect(row.text()).toContain("live site");
+      expect(row.text()).not.toContain(project.url);
     });
   });
 });

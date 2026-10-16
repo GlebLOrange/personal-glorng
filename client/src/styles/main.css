@@ -61,14 +61,14 @@ html[data-theme="light"] {
   --palette-surface-sage: #2e3640;
   --palette-surface-mid: #3e4854;
   --palette-surface-muted: #515b67;
-  --palette-surface-dark: #d9d9d9;
+  --palette-surface-dark: #e5e7eb;
   --palette-surface-card: #f7f8fa;
   --palette-surface-border: #c3cad3;
   --palette-surface-grid: #dde1e6;
   --palette-accent-violet: #b42318;
   --palette-accent-golden: #a16207;
   --palette-on-accent: #ffffff;
-  --palette-theme-color: #d9d9d9;
+  --palette-theme-color: #e5e7eb;
   --site-bg-scrim: linear-gradient(
     180deg,
     color-mix(in srgb, var(--palette-surface-dark) 94%, transparent) 0%,
@@ -305,7 +305,18 @@ html[data-theme="light"] {
 }
 
 @utility nav-link-accent {
-  @apply nav-link;
+  @apply nav-link text-surface-light;
+}
+
+/** Secondary chrome — news / tools / login sit quieter than the CV entry. */
+@utility nav-link-quiet {
+  @apply text-sm text-surface-muted transition-colors;
+  &:hover {
+    @apply text-accent-blue;
+  }
+  &:focus-visible {
+    @apply outline-none ring-2 ring-accent-blue/50 rounded;
+  }
 }
 
 @utility interactive-surface {
@@ -359,7 +370,7 @@ html[data-theme="light"] {
 
 @utility cta-primary {
   /* Pale 1xx wash — matches BaseButton primary / ACTION_BUTTON_PAINT */
-  @apply h-10 px-4 rounded-lg border border-transparent bg-accent-blue/10 text-accent-blue/88 text-sm font-medium transition-colors inline-flex items-center justify-center;
+  @apply h-10 px-4 rounded-lg border border-transparent bg-accent-blue/10 text-accent-blue text-sm font-medium transition-colors inline-flex items-center justify-center;
   &:hover:not(:disabled) {
     @apply border-accent-blue/22 bg-accent-blue/12;
   }
@@ -393,19 +404,19 @@ html[data-theme="light"] {
 }
 
 @utility cta-secondary {
-  /* 3xx family — portfolio secondary taps align with redirect/edit HTTP tone */
-  @apply h-10 px-4 rounded-lg border border-transparent bg-status-warning/10 text-status-warning/88 text-sm font-medium transition-colors inline-flex items-center justify-center;
+  /* Grayscale secondary — download / quiet actions (not warning yellow). */
+  @apply h-10 px-4 rounded-lg border border-surface-border bg-surface-card text-surface-sage text-sm font-medium transition-colors inline-flex items-center justify-center;
   &:hover:not(:disabled) {
-    @apply border-status-warning/22 bg-status-warning/12;
+    @apply border-surface-mid text-surface-light;
   }
   &:active:not(:disabled) {
-    @apply border-status-warning/22 bg-status-warning/14;
+    @apply border-surface-mid text-surface-light opacity-90;
   }
   &:disabled {
     @apply opacity-50 cursor-not-allowed;
   }
   &:focus-visible {
-    @apply border-status-warning/40 outline-none ring-2 ring-status-warning/50;
+    @apply outline-none ring-2 ring-accent-blue/50;
   }
 }
 
@@ -541,10 +552,6 @@ a.card-as-link:hover *,
 a.card-as-link:focus-visible *,
 a.card-as-link[aria-current="page"] *,
 a.card-as-link[aria-selected="true"] *,
-.portfolio-link-rail a:hover,
-.portfolio-link-rail a:focus-visible,
-.portfolio-link-rail a[aria-current="page"],
-.portfolio-link-rail a[aria-selected="true"],
 #site-header a:hover,
 #site-header a:focus-visible,
 #site-header a[aria-current="page"],
@@ -717,12 +724,6 @@ h6,
     box-shadow: none !important;
   }
 
-  /* Closed details hide the body; this list still prints the case-study copy. */
-  .case-study-list details::details-content,
-  .case-study-list details > :not(summary) {
-    content-visibility: visible;
-    display: block !important;
-  }
 }
 
 /* Bottom hairline for AdminListRow — ::after so expand/hover rings (box-shadow) don't wipe it. */

@@ -51,51 +51,38 @@ export function primaryStack(skills: SkillGroup[]): string {
   return picks.length > 0 ? picks.join(" · ") : "Full-stack";
 }
 
-/** Short glance value for a case study — prefer an explicit result line. */
-function caseOutcomeValue(name: string): string {
-  const lower = name.toLowerCase();
-  if (lower.includes("csrf") || lower.includes("auth")) return "CSRF";
-  if (lower.includes("ssrf") || lower.includes("fetch")) return "SSRF-safe";
-  return "shipped";
-}
-
+/** Hiring-relevant glance only — years and shipped systems, not vanity cards. */
 export function buildGlanceStats(resume: ResumeData): GlanceStat[] {
-  const cases = resume.projects.filter((project) => project.result).slice(0, 2);
-  const platformStart = resume.experience
-    .map((entry) => parsePeriodStart(entry.period))
-    .filter((year): year is number => year !== null)
-    .filter((year) => year >= 2022);
-  const since = platformStart.length > 0 ? Math.min(...platformStart) : 2022;
+  const years = computeYearsExperience(resume.experience);
+  const shipped = resume.projects.filter((project) => Boolean(project.result)).length;
+  const stats: GlanceStat[] = [];
 
-  const outcomeStats: GlanceStat[] = cases.map((project) => ({
-    label: project.name,
-    value: caseOutcomeValue(project.name),
-    detail: project.result ?? project.description,
-    href: "#case-studies",
-  }));
+  if (years > 0) {
+    stats.push({
+      label: "Experience",
+      value: `${years}+`,
+      detail: "years across production backend roles",
+      href: "#experience",
+    });
+  }
 
-  while (outcomeStats.length < 2) {
-    outcomeStats.push({
-      label: "Case study",
-      value: "—",
-      detail: "add problem / approach / result on a project",
+  if (shipped > 0) {
+    stats.push({
+      label: "Case studies",
+      value: String(shipped),
+      detail: "production systems with written outcomes",
       href: "#case-studies",
     });
   }
 
-  return [
-    ...outcomeStats,
-    {
-      label: "Platform sample",
-      value: `since ${since}`,
-      detail: "this site is the live FastAPI + Vue product",
-      href: "#experience",
-    },
-    {
+  if (resume.availability) {
+    stats.push({
       label: "Availability",
-      value: resume.availability ? "open" : "—",
-      detail: resume.availability ?? resume.location ?? "add availability in resume data",
+      value: "open",
+      detail: resume.availability,
       href: "#contacts",
-    },
-  ];
+    });
+  }
+
+  return stats;
 }

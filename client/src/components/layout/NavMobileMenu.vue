@@ -121,19 +121,19 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
       <RouterLink
         to="/"
-        class="nav-link-accent text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        class="nav-link-accent text-base px-3 py-3 rounded-lg font-medium hover:bg-surface-card"
         :class="{ 'text-accent-blue': navSection === 'portfolio' }"
-        :aria-current-value="false"
         :aria-current="navSection === 'portfolio' ? 'page' : undefined"
         @click.prevent="emit('go-home')"
       >
         portfolio
       </RouterLink>
+
+      <p class="text-label text-surface-muted px-2 py-1 mt-2 mb-1">more</p>
       <RouterLink
         to="/news"
-        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
         :class="{ 'text-accent-blue': navSection === 'news' }"
-        :aria-current-value="false"
         :aria-current="navSection === 'news' ? 'page' : undefined"
         @click="emit('close')"
       >
@@ -142,9 +142,8 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 
       <RouterLink
         to="/tools"
-        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
         :class="{ 'text-accent-blue': navSection === 'tools' }"
-        :aria-current-value="false"
         :aria-current="navSection === 'tools' ? 'page' : undefined"
         @click="emit('close')"
       >
@@ -153,9 +152,8 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         v-if="canUseAdminHub"
         to="/admin"
-        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
         :class="{ 'text-accent-blue': navSection === 'admin' }"
-        :aria-current-value="false"
         :aria-current="navSection === 'admin' ? 'page' : undefined"
         @click="emit('close')"
       >
@@ -165,9 +163,8 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         v-if="auth.isAuthenticated"
         to="/settings"
-        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
         :class="{ 'text-accent-blue': navSection === 'settings' }"
-        :aria-current-value="false"
         :aria-current="navSection === 'settings' ? 'page' : undefined"
         @click="emit('close')"
       >
@@ -177,7 +174,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <button
         v-if="auth.isAuthenticated"
         type="button"
-        class="nav-link text-status-error text-base px-3 py-3 rounded-lg hover:bg-surface-card text-left"
+        class="nav-link-quiet text-status-error text-sm px-3 py-3 rounded-lg hover:bg-surface-card text-left"
         @click="handleLogout"
       >
         logout
@@ -185,9 +182,8 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         v-else
         to="/login"
-        class="nav-link text-base px-3 py-3 rounded-lg hover:bg-surface-card"
+        class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
         :class="{ 'text-accent-blue': navSection === 'login' }"
-        :aria-current-value="false"
         :aria-current="navSection === 'login' ? 'page' : undefined"
         @click="emit('close')"
       >

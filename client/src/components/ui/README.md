@@ -45,7 +45,7 @@ Three intentional systems — pick one per surface, do not mix adjacent CTAs:
 
 | System | Where | Look |
 |---|---|---|
-| `cta-primary` / `cta-secondary` | Portfolio, donations, marketing moments | Pale 1xx / 3xx washes (`main.css`, same paint as product) |
+| `cta-primary` / `cta-secondary` | Portfolio, donations, marketing moments | Pale 1xx wash / grayscale secondary (`main.css`) |
 | `BaseButton` | Auth, forms, product dialogs, list rows | Pale HTTP-family wash; `secondary` grayscale |
 | `ToolbarPillButton` / `IconActionButton` / `BaseDropdownMenu` | Admin toolbars, icon chrome, edit menus | Prefer `action="create"` / `save` / `edit` / `delete`; raw `family` only for HTTP-literal tabs (e.g. `AdminTabBar`) |
 

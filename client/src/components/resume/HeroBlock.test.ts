@@ -22,7 +22,7 @@ describe("HeroBlock", () => {
     apiGet.mockReset();
   });
 
-  it("keeps bio out of the hero and does not show contact chips", () => {
+  it("uses the role as the page heading and keeps bio out of the hero", () => {
     const wrapper = mount(HeroBlock, {
       props: {
         name: "Gleb.Y",
@@ -31,25 +31,15 @@ describe("HeroBlock", () => {
       },
     });
 
+    expect(wrapper.get("h1").text()).toBe("Python Backend / FastAPI Engineer");
     expect(wrapper.text()).toContain("Gleb.Y");
     expect(wrapper.text()).toContain("I build production APIs");
-    expect(wrapper.find("h1 .sr-only").exists()).toBe(false);
-    expect(wrapper.text()).not.toContain("Backend-first");
+    expect(wrapper.find("img").exists()).toBe(false);
+    expect(wrapper.find(".accent-gradient").exists()).toBe(false);
+    expect(wrapper.find(".portfolio-link-rail").exists()).toBe(false);
     expect(wrapper.find(".contact-link-chip").exists()).toBe(false);
     expect(wrapper.text()).not.toContain("email");
     expect(wrapper.text()).not.toContain("telegram");
-  });
-
-  it("marks the link rail inert when the sticky section nav is active", () => {
-    const wrapper = mount(HeroBlock, {
-      props: {
-        name: "Gleb.Y",
-        title: "Engineer",
-        sectionNavActive: true,
-      },
-    });
-
-    expect(wrapper.get(".portfolio-link-rail").attributes("inert")).toBeDefined();
   });
 
   it("offers print fallback instead of auto-printing when PDF fails", async () => {

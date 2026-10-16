@@ -242,10 +242,20 @@ watch(
     </SectionWrapper>
 
     <SectionWrapper v-if="showLinks" id="contacts" title="contacts" width="full">
+      <p class="text-body mb-3 max-w-2xl">
+        open to full-time and contract — usually reply within 24h (EU timezone)
+      </p>
+      <p class="text-meta mb-6 flex flex-wrap items-center gap-x-2 gap-y-2">
+        <span>fastest: telegram or email. or</span>
+        <button type="button" class="cta-primary print:hidden" @click="contactModal = 'inquiry'">
+          send inquiry
+        </button>
+      </p>
       <div class="flex flex-wrap gap-4">
         <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
       </div>
-      <FeedbackModal v-if="contactModal" :intent="contactModal" @close="contactModal = null" />
     </SectionWrapper>
+
+    <FeedbackModal v-if="contactModal" :intent="contactModal" @close="contactModal = null" />
   </div>
 </template>
