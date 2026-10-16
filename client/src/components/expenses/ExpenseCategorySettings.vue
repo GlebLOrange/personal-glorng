@@ -14,7 +14,6 @@ import {
   ADMIN_MOBILE_LIST_CLASS,
   ADMIN_MOBILE_ROW_WRAP_CLASS,
   ADMIN_TD_CLASS,
-  ADMIN_TD_MUTED_CLASS,
   ADMIN_TD_TITLE_CLASS,
   ADMIN_TH_CLASS,
   ADMIN_TR_CLASS,
@@ -94,9 +93,6 @@ function onCategoryRowClick(category: ExpenseCategory): void {
           <p class="min-w-0 flex-1 truncate text-sm text-surface-light" :title="category.name">
             {{ category.name }}
           </p>
-          <span class="shrink-0 text-xs text-surface-muted">
-            {{ category.monthly_budget ? `budget ${category.monthly_budget}` : "—" }}
-          </span>
           <div :class="ADMIN_ACTIONS_CLASS" @click.stop @keydown.stop>
             <IconEditButton
               :aria-label="`rename ${category.name}`"
@@ -114,7 +110,6 @@ function onCategoryRowClick(category: ExpenseCategory): void {
     <AdminDataTable table-label="expense categories">
       <template #header>
         <th :class="ADMIN_TH_CLASS">name</th>
-        <th :class="ADMIN_TH_CLASS">budget</th>
         <th class="w-px px-2 text-right">
           <span class="sr-only">actions</span>
         </th>
@@ -122,7 +117,7 @@ function onCategoryRowClick(category: ExpenseCategory): void {
 
       <template v-for="category in expenseCategories" :key="category.id">
         <tr v-if="editingCategoryId === category.id" :class="ADMIN_TR_CLASS">
-          <td :class="ADMIN_TD_CLASS" colspan="3">
+          <td :class="ADMIN_TD_CLASS" colspan="2">
             <div class="flex min-w-0 flex-wrap items-end gap-2 py-1">
               <BaseInput
                 :id="`cat-name-table-${category.id}`"
@@ -152,16 +147,13 @@ function onCategoryRowClick(category: ExpenseCategory): void {
           v-else
           interactive
           nested-interactive
-          :col-span="3"
+          :col-span="2"
           @click="onCategoryRowClick(category)"
         >
           <td :class="ADMIN_TD_TITLE_CLASS">
             <p class="truncate text-sm text-surface-light" :title="category.name">
               {{ category.name }}
             </p>
-          </td>
-          <td :class="ADMIN_TD_MUTED_CLASS">
-            {{ category.monthly_budget ? category.monthly_budget : "—" }}
           </td>
           <template #actions>
             <IconEditButton

@@ -33,7 +33,7 @@ const EXPENSE_TABS: ExpenseTab[] = [
 ];
 
 const TAB_LABELS: Record<ExpenseTab, string> = {
-  today: "today",
+  today: "money",
   activity: "activity",
   insights: "insights",
   categories: "categories",
@@ -235,7 +235,6 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
     newCategoryName: categorySettings.newCategoryName,
     editingCategoryId: categorySettings.editingCategoryId,
     editingCategoryName: categorySettings.editingCategoryName,
-    editingCategoryBudget: categorySettings.editingCategoryBudget,
     categoryOptions: categorySettings.categoryOptions,
     addCategory: categorySettings.addCategory,
     startEditCategory: categorySettings.startEditCategory,

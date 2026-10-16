@@ -176,7 +176,6 @@ function focusAddFromInsights(): void {
           :rates-error="ratesError"
           :expense-total="expenseTotal"
           :expenses="expenses"
-          :expense-categories="expenseCategories"
           :format-money="formatMoney"
           :format-expense-date="formatExpenseDate"
           @retry-summary="retrySummaryAndRates"
@@ -243,7 +242,6 @@ function focusAddFromInsights(): void {
             :bar-chart="barChart"
             :doughnut-chart="doughnutChart"
             :summary="summary"
-            :expense-categories="expenseCategories"
             :format-money="formatMoney"
             @add-expense="focusAddFromInsights"
           />
@@ -270,8 +268,8 @@ function focusAddFromInsights(): void {
               >
                 <BaseInput
                   v-model="newCategoryName"
-                  placeholder="new category"
-                  aria-label="new category"
+                  placeholder="title"
+                  aria-label="title"
                   class="min-w-0 flex-1"
                 />
                 <ToolbarPillButton type="submit" action="save" class="shrink-0">

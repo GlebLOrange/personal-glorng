@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 
 describe("BaseTextarea", () => {
-  it("renders a persistent trailing label by default", () => {
+  it("names the control with sr-only by default (no visible trailing label)", () => {
     const wrapper = mount(BaseTextarea, {
       props: {
         id: "message",
@@ -12,11 +12,12 @@ describe("BaseTextarea", () => {
       },
     });
 
-    expect(wrapper.find("label.sr-only").exists()).toBe(false);
-    expect(wrapper.get("label:not(.sr-only)").attributes("for")).toBe("message");
-    expect(wrapper.get("label:not(.sr-only)").text()).toBe("Message");
+    expect(wrapper.get("label.sr-only").attributes("for")).toBe("message");
+    expect(wrapper.get("label.sr-only").text()).toBe("Message");
+    expect(wrapper.find("label:not(.sr-only)").exists()).toBe(false);
     expect(wrapper.get("textarea").attributes("id")).toBe("message");
     expect(wrapper.get("textarea").attributes("title")).toBe("Message");
+    expect(wrapper.get("textarea").attributes("aria-label")).toBeUndefined();
   });
 
   it("renders a border-notch label when labelAlign is start", () => {
@@ -76,7 +77,8 @@ describe("BaseTextarea", () => {
       },
     });
 
-    expect(wrapper.get("label:not(.sr-only)").text()).toBe("Notes");
+    expect(wrapper.get("label.sr-only").text()).toBe("Notes");
+    expect(wrapper.find("label:not(.sr-only)").exists()).toBe(false);
     expect(wrapper.get("#notes-tip").text()).toBe("optional tips");
     expect(wrapper.get("#notes-tip").classes()).toContain("text-left");
     expect(wrapper.get("#notes-tip").classes()).toContain("left-3");

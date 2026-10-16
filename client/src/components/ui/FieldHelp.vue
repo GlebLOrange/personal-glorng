@@ -213,7 +213,7 @@ watch(
       <span
         v-if="open"
         role="tooltip"
-        class="pointer-events-none fixed z-50 w-max max-w-[min(100vw-2rem,18rem)] rounded-md border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs lowercase leading-normal text-surface-mid shadow-lg"
+        class="pointer-events-none fixed z-50 w-max max-w-[min(100vw-2rem,18rem)] whitespace-pre-line rounded-md border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs lowercase leading-normal text-surface-mid shadow-lg"
         :style="panelStyle"
         @mouseenter="show"
         @mouseleave="scheduleHide"

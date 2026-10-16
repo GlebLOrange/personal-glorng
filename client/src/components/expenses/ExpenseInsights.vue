@@ -5,7 +5,7 @@ import ExpenseCategoryBreakdown from "@/components/expenses/ExpenseCategoryBreak
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
-import type { ExpenseCategory, ExpenseSummary } from "@/types";
+import type { ExpenseSummary } from "@/types";
 
 const ExpenseBarChart = defineAsyncComponent(
   () => import("@/components/charts/ExpenseBarChart.vue"),
@@ -23,7 +23,6 @@ const props = defineProps<{
   barChart: { labels: string[]; values: number[] };
   doughnutChart: { labels: string[]; values: number[] };
   summary: ExpenseSummary | null;
-  expenseCategories: ExpenseCategory[];
   formatMoney: (amount: string | number, currency: string) => string;
 }>();
 
@@ -72,128 +71,12 @@ const showProductDoughnut = computed(
   () => productSeries.value.labels.length > 0 && productSeries.value.labels.length <= 5,
 );
 
-const budgetByCategory = computed(() => {
-  const map = new Map<string, number>();
-  for (const category of props.expenseCategories) {
-    if (category.monthly_budget) {
-      map.set(category.name, parseFloat(category.monthly_budget));
-    }
-  }
-  return map;
-});
-
-const budgetRows = computed(() => {
-  if (!props.summary) return [];
-  return props.summary.by_category
-    .map((item) => {
-      const spent = parseFloat(String(item.total));
-      const budget = budgetByCategory.value.get(item.category) ?? null;
-      const percent = budget && budget > 0 ? Math.round((spent / budget) * 100) : null;
-      return {
-        category: item.category,
-        spent,
-        budget,
-        percent,
-        overBudget: percent !== null && percent > 100,
-      };
-    })
-    .filter((row) => row.budget !== null);
-});
-
-const budgetTotals = computed(() => {
-  if (!props.summary || budgetRows.value.length === 0) return null;
-  const spent = budgetRows.value.reduce((sum, row) => sum + row.spent, 0);
-  const budget = budgetRows.value.reduce((sum, row) => sum + (row.budget ?? 0), 0);
-  if (budget <= 0) return null;
-  const percent = Math.round((spent / budget) * 100);
-  return { spent, budget, percent, overBudget: percent > 100 };
-});
-
 const currency = computed(() => props.summary?.currency ?? "PLN");
 </script>
 
 <template>
   <div v-if="hasChartData" class="flex flex-col gap-3">
     <ExpenseCategoryBreakdown :summary="summary" :format-money="formatMoney" />
-
-    <Card v-if="budgetTotals" variant="compact">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h3 class="text-sm font-semibold text-surface-light">budget vs spend</h3>
-          <p
-            class="mt-1 text-metric"
-            :class="budgetTotals.overBudget ? 'text-status-error' : 'text-accent-blue'"
-          >
-            <span>{{ budgetTotals.percent }}</span>
-            <span class="text-sm font-medium">%</span>
-            <span
-              v-if="budgetTotals.overBudget"
-              class="ml-1.5 text-sm font-medium text-status-error"
-              >over</span
-            >
-            <span class="sr-only"> of budget</span>
-          </p>
-          <p class="mt-1 text-xs text-surface-mid">
-            {{ formatMoney(budgetTotals.spent, currency) }} of
-            {{ formatMoney(budgetTotals.budget, currency) }}
-          </p>
-        </div>
-        <div
-          class="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-surface-border sm:mb-1"
-          role="progressbar"
-          :aria-valuenow="Math.min(budgetTotals.percent, 100)"
-          aria-valuemin="0"
-          aria-valuemax="100"
-          :aria-label="`budget used ${budgetTotals.percent}%`"
-        >
-          <div
-            class="h-full rounded-full"
-            :class="budgetTotals.overBudget ? 'bg-status-error' : 'bg-accent-blue'"
-            :style="{ width: `${Math.min(budgetTotals.percent, 100)}%` }"
-          />
-        </div>
-      </div>
-      <details v-if="budgetRows.length" class="mt-3 group">
-        <summary
-          class="cursor-pointer list-none text-xs text-surface-mid marker:content-none [&::-webkit-details-marker]:hidden"
-        >
-          <span class="underline-offset-2 group-open:underline">category budgets</span>
-        </summary>
-        <table class="mt-2 w-full text-left text-xs">
-          <caption class="sr-only">
-            Category budget status
-          </caption>
-          <thead>
-            <tr class="text-surface-mid">
-              <th class="py-1 font-medium">category</th>
-              <th class="py-1 font-medium text-right">spent</th>
-              <th class="py-1 font-medium text-right">budget</th>
-              <th class="py-1 font-medium text-right">%</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="row in budgetRows"
-              :key="row.category"
-              class="border-t border-surface-border/50"
-            >
-              <td class="py-1.5 text-surface-light">{{ row.category }}</td>
-              <td class="py-1.5 text-right font-data">{{ formatMoney(row.spent, currency) }}</td>
-              <td class="py-1.5 text-right font-data">
-                {{ formatMoney(row.budget ?? 0, currency) }}
-              </td>
-              <td
-                class="py-1.5 text-right font-data"
-                :class="row.overBudget ? 'text-status-error' : 'text-surface-mid'"
-              >
-                {{ row.percent }}%
-                <span v-if="row.overBudget" class="ml-1 text-xs">over</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </details>
-    </Card>
 
     <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
       <Card variant="compact">

@@ -5,7 +5,7 @@ import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { Card } from "@/components/ui/card";
-import type { ExpenseSummary } from "@/types";
+import type { Expense, ExpenseSummary } from "@/types";
 
 const props = defineProps<{
   monthLabel: string;
@@ -13,6 +13,9 @@ const props = defineProps<{
   expenseTotal: number;
   summaryError: string | null;
   ratesError: string | null;
+  recentExpenses: Expense[];
+  formatMoney: (amount: string | number, currency: string) => string;
+  formatExpenseDate: (iso: string) => string;
 }>();
 
 const emit = defineEmits<{
@@ -57,7 +60,7 @@ const totalParts = computed((): { amount: string; unit: string | null } | null =
       </h2>
 
       <div
-        class="flex flex-wrap items-end justify-between gap-3 border-t border-surface-border/50 pt-3"
+        class="flex flex-wrap items-start justify-between gap-3 border-t border-surface-border/50 pt-3"
       >
         <div class="min-w-0">
           <p class="text-label text-surface-mid">total</p>
@@ -71,14 +74,39 @@ const totalParts = computed((): { amount: string; unit: string | null } | null =
             —
           </p>
         </div>
-        <ToolbarPillButton
-          action="create"
-          class="shrink-0"
-          :aria-label="`open activity, ${expenseTotal} items`"
-          @click="emit('openActivity')"
-        >
-          activity · {{ expenseTotal }}
-        </ToolbarPillButton>
+
+        <div class="ml-auto flex w-full max-w-xs flex-col items-stretch gap-1.5 sm:w-[15rem]">
+          <ul
+            v-if="recentExpenses.length"
+            class="flex w-full flex-col gap-1"
+            aria-label="recent expenses"
+          >
+            <li
+              v-for="expense in recentExpenses"
+              :key="expense.id"
+              class="flex items-baseline justify-between gap-2 text-xs"
+            >
+              <span class="min-w-0 truncate text-surface-light">
+                {{ expense.tool_name }}
+                <span class="text-[10px] text-surface-mid">
+                  · {{ formatExpenseDate(expense.expense_date) }}
+                </span>
+              </span>
+              <span class="shrink-0 font-data text-surface-mid">
+                {{ formatMoney(expense.amount, expense.currency) }}
+              </span>
+            </li>
+          </ul>
+          <p v-else class="text-xs text-surface-mid">No expenses this month yet.</p>
+          <ToolbarPillButton
+            action="create"
+            class="mt-auto w-full shrink-0"
+            :aria-label="`open recent activity, ${expenseTotal} items`"
+            @click="emit('openActivity')"
+          >
+            recent activity
+          </ToolbarPillButton>
+        </div>
       </div>
 
       <div

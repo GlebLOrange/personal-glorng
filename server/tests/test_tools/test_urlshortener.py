@@ -85,7 +85,7 @@ async def test_list_urls_empty(auth_client: AsyncClient) -> None:
     assert resp.status_code == 200
     data = resp.json()
     assert data["items"] == []
-    assert data["per_page"] == 9
+    assert data["per_page"] == 25
 
 
 @pytest.mark.asyncio
