@@ -2,12 +2,21 @@
 import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
 import { useRouter } from "vue-router";
 
+import AdminDataRow from "@/components/admin/AdminDataRow.vue";
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
-import AdminListRow from "@/components/admin/AdminListRow.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
+import {
+  ADMIN_MOBILE_LIST_CLASS,
+  ADMIN_MOBILE_ROW_WRAP_CLASS,
+  ADMIN_TD_CLASS,
+  ADMIN_TD_MUTED_CLASS,
+  ADMIN_TD_TITLE_CLASS,
+  ADMIN_TH_CLASS,
+} from "@/constants/adminDataTable";
 import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import ArchiveIcon from "@/components/icons/ArchiveIcon.vue";
@@ -40,6 +49,18 @@ const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
   { label: "read", value: "read" },
   { label: "archived", value: "archived" },
 ];
+
+const NEXT_STATUS: Record<string, string> = {
+  unread: "read",
+  read: "archived",
+  archived: "read",
+};
+
+const ADVANCE_STATUS_LABEL: Record<string, string> = {
+  unread: "mark as read",
+  read: "archive",
+  archived: "unarchive",
+};
 
 const items = ref<FeedbackItem[]>([]);
 const selectedItem = ref<FeedbackItem | null>(null);
@@ -132,9 +153,18 @@ async function setStatus(id: number, status: string): Promise<void> {
   }
 }
 
+async function advanceStatus(item: FeedbackItem): Promise<void> {
+  const next = NEXT_STATUS[item.status];
+  if (!next) return;
+  await setStatus(item.id, next);
+}
+
 function openItem(item: FeedbackItem): void {
   selectedItem.value = item;
   drawerOpen.value = true;
+  if (item.status === "unread") {
+    void setStatus(item.id, "read");
+  }
 }
 
 function closeDrawer(): void {
@@ -199,50 +229,134 @@ onMounted(load);
       />
 
       <div v-else class="mt-1 min-w-0">
-        <AdminListRow
-          v-for="item in items"
-          :key="item.id"
-          interactive
-          nested-interactive
-          :status-class="feedbackStatusClass(item.status)"
-          :expanded="drawerOpen && selectedItem?.id === item.id"
-          @click="openItem(item)"
-        >
-          <template #badge>
-            <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
-          </template>
-          <template #primary>
-            <span class="lowercase" :title="item.theme">{{ item.theme }}</span>
-          </template>
-          <template #time>{{ formatDate(item.created_at) }}</template>
-          <template #meta>
-            <span :title="`${item.email} · ${item.message}`">
-              {{ item.email }} · {{ item.message }}
+        <div :class="ADMIN_MOBILE_LIST_CLASS">
+          <div
+            v-for="item in items"
+            :key="`m-${item.id}`"
+            :class="[
+              ADMIN_MOBILE_ROW_WRAP_CLASS,
+              'flex min-w-0 cursor-pointer items-center gap-2',
+              drawerOpen && selectedItem?.id === item.id ? 'bg-surface-card/50' : undefined,
+            ]"
+            role="button"
+            tabindex="0"
+            @click="openItem(item)"
+            @keydown.enter.prevent="openItem(item)"
+            @keydown.space.prevent="openItem(item)"
+          >
+            <button
+              type="button"
+              class="shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+              :aria-label="ADVANCE_STATUS_LABEL[item.status] ?? 'change status'"
+              @click.stop="advanceStatus(item)"
+              @keydown.stop
+            >
+              <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
+            </button>
+            <span class="shrink-0 text-xs lowercase text-surface-muted" :title="item.email">
+              {{ item.email }}
             </span>
+            <span class="shrink-0 text-xs lowercase text-surface-muted">
+              {{ formatDate(item.created_at) }}
+            </span>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm lowercase text-surface-light" :title="item.theme">
+                {{ item.theme }}
+              </p>
+              <p class="mt-0.5 truncate text-xs text-surface-mid" :title="item.message">
+                {{ item.message }}
+              </p>
+            </div>
+            <div class="flex shrink-0 items-center" @click.stop @keydown.stop>
+              <IconActionButton
+                v-if="item.status === 'archived'"
+                quiet
+                action="create"
+                aria-label="unarchive"
+                title="unarchive"
+                @click="unarchiveItem(item)"
+              >
+                <ArchiveIcon restore class-name="size-4" />
+              </IconActionButton>
+              <IconActionButton
+                v-else
+                quiet
+                action="create"
+                aria-label="archive"
+                title="archive"
+                @click="archiveItem(item)"
+              >
+                <ArchiveIcon class-name="size-4" />
+              </IconActionButton>
+            </div>
+          </div>
+        </div>
+
+        <AdminDataTable table-label="feedback messages">
+          <template #header>
+            <th :class="ADMIN_TH_CLASS">status</th>
+            <th :class="ADMIN_TH_CLASS">who</th>
+            <th :class="ADMIN_TH_CLASS">when</th>
+            <th :class="ADMIN_TH_CLASS">title</th>
+            <th class="w-px px-2 text-right">
+              <span class="sr-only">actions</span>
+            </th>
           </template>
-          <template #actions>
-            <IconActionButton
-              v-if="item.status === 'archived'"
-              quiet
-              action="create"
-              aria-label="unarchive"
-              title="unarchive"
-              @click="unarchiveItem(item)"
-            >
-              <ArchiveIcon restore class-name="size-4" />
-            </IconActionButton>
-            <IconActionButton
-              v-else
-              quiet
-              action="create"
-              aria-label="archive"
-              title="archive"
-              @click="archiveItem(item)"
-            >
-              <ArchiveIcon class-name="size-4" />
-            </IconActionButton>
-          </template>
-        </AdminListRow>
+
+          <AdminDataRow
+            v-for="item in items"
+            :key="item.id"
+            interactive
+            nested-interactive
+            :col-span="5"
+            :expanded="drawerOpen && selectedItem?.id === item.id"
+            @click="openItem(item)"
+          >
+            <td :class="ADMIN_TD_CLASS">
+              <button
+                type="button"
+                class="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+                :aria-label="ADVANCE_STATUS_LABEL[item.status] ?? 'change status'"
+                @click.stop="advanceStatus(item)"
+                @keydown.stop
+              >
+                <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
+              </button>
+            </td>
+            <td :class="ADMIN_TD_MUTED_CLASS" :title="item.email">{{ item.email }}</td>
+            <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(item.created_at) }}</td>
+            <td :class="ADMIN_TD_TITLE_CLASS">
+              <p class="truncate text-sm lowercase text-surface-light" :title="item.theme">
+                {{ item.theme }}
+              </p>
+              <p class="mt-0.5 truncate text-xs text-surface-mid" :title="item.message">
+                {{ item.message }}
+              </p>
+            </td>
+            <template #actions>
+              <IconActionButton
+                v-if="item.status === 'archived'"
+                quiet
+                action="create"
+                aria-label="unarchive"
+                title="unarchive"
+                @click="unarchiveItem(item)"
+              >
+                <ArchiveIcon restore class-name="size-4" />
+              </IconActionButton>
+              <IconActionButton
+                v-else
+                quiet
+                action="create"
+                aria-label="archive"
+                title="archive"
+                @click="archiveItem(item)"
+              >
+                <ArchiveIcon class-name="size-4" />
+              </IconActionButton>
+            </template>
+          </AdminDataRow>
+        </AdminDataTable>
       </div>
 
       <AdminListFooter

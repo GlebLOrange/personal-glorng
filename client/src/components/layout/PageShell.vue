@@ -19,6 +19,8 @@ const props = withDefaults(
     bodyClass?: string;
     /** Skip chrome sr-only h1 when the page renders its own visible heading. */
     omitHeading?: boolean;
+    /** Optional page help forwarded to chrome as a ? tip. */
+    description?: string;
   }>(),
   {
     narrow: true,
@@ -27,6 +29,7 @@ const props = withDefaults(
     as: "div",
     bodyClass: "",
     omitHeading: false,
+    description: undefined,
   },
 );
 
@@ -50,6 +53,7 @@ const bodyClass = computed(() => [
       :breadcrumbs="breadcrumbs"
       :back-to="backTo"
       :omit-heading="omitHeading"
+      :description="description"
     />
     <div :class="bodyClass">
       <PinnedToolsRow />

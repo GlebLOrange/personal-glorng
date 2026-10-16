@@ -75,7 +75,7 @@ async def test_list_files(auth_client: AsyncClient) -> None:
     data = resp.json()
     assert isinstance(data["items"], list)
     assert len(data["items"]) >= 1
-    assert data["per_page"] == 9
+    assert data["per_page"] == 25
 
 
 @pytest.mark.asyncio

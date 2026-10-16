@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import BaseInput from "@/components/ui/BaseInput.vue";
 
 describe("BaseInput", () => {
-  it("renders a persistent trailing label by default", () => {
+  it("names the control with sr-only by default (no visible trailing label)", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "email",
@@ -12,10 +12,11 @@ describe("BaseInput", () => {
       },
     });
 
-    expect(wrapper.find("label.sr-only").exists()).toBe(false);
-    expect(wrapper.get("label:not(.sr-only)").attributes("for")).toBe("email");
-    expect(wrapper.get("label:not(.sr-only)").text()).toBe("Email");
+    expect(wrapper.get("label.sr-only").attributes("for")).toBe("email");
+    expect(wrapper.get("label.sr-only").text()).toBe("Email");
+    expect(wrapper.find("label:not(.sr-only)").exists()).toBe(false);
     expect(wrapper.get("input").attributes("id")).toBe("email");
+    expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
   });
 
   it("renders a border-notch label when labelAlign is start", () => {
@@ -64,7 +65,7 @@ describe("BaseInput", () => {
     expect(wrapper.get("#title-tip").classes()).toContain("right-10");
     expect(wrapper.get("#title-tip").find(".truncate").classes()).toContain("text-left");
     expect(wrapper.get("#title-tip").attributes("aria-hidden")).toBe("true");
-    expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
+    expect(wrapper.get("input").attributes("aria-label")).toBe("enter title");
     expect(wrapper.find('button[aria-label="clear"]').exists()).toBe(false);
     expect(wrapper.find(".invisible.pointer-events-none").exists()).toBe(true);
 
@@ -116,7 +117,7 @@ describe("BaseInput", () => {
     expect(wrapper.find('button[aria-label="clear"]').exists()).toBe(false);
   });
 
-  it("empty labeled field shows trailing title and suppresses matching placeholder tip", () => {
+  it("empty labeled field keeps sr-only name and suppresses matching placeholder tip", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "email",
@@ -126,9 +127,9 @@ describe("BaseInput", () => {
       },
     });
 
-    expect(wrapper.get("label:not(.sr-only)").text()).toBe("Email");
+    expect(wrapper.get("label.sr-only").text()).toBe("Email");
+    expect(wrapper.find("label:not(.sr-only)").exists()).toBe(false);
     expect(wrapper.find("#email-tip").exists()).toBe(false);
-    expect(wrapper.find("label.sr-only").exists()).toBe(false);
     expect(wrapper.get("input").attributes("title")).toBe("Email");
   });
 
@@ -142,7 +143,8 @@ describe("BaseInput", () => {
       },
     });
 
-    expect(wrapper.get("label:not(.sr-only)").text()).toBe("Email");
+    expect(wrapper.get("label.sr-only").text()).toBe("Email");
+    expect(wrapper.find("label:not(.sr-only)").exists()).toBe(false);
     expect(wrapper.get("#email-tip").text()).toBe("your@email.com");
     expect(wrapper.get("input").attributes("title")).toBe("Email");
   });

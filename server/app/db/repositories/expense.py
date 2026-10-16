@@ -64,6 +64,30 @@ class ExpenseRepository:
             {"$set": {"category": new_name}},
         )
 
+    async def reassign_category_on_expenses(
+        self,
+        old_name: str,
+        new_name: str | None,
+    ) -> None:
+        """Move expenses from old_name to new_name (None = Uncategorized)."""
+        await self.expenses._col().update_many(
+            {"category": old_name},
+            {"$set": {"category": new_name}},
+        )
+
+    async def categories_defaults_seeded(self) -> bool:
+        doc = await self.expenses.db["expense_meta"].find_one(
+            {"_id": "expense_categories_defaults"},
+        )
+        return doc is not None
+
+    async def mark_categories_defaults_seeded(self) -> None:
+        await self.expenses.db["expense_meta"].update_one(
+            {"_id": "expense_categories_defaults"},
+            {"$set": {"seeded_at": datetime.now(UTC)}},
+            upsert=True,
+        )
+
     @staticmethod
     def _date_bound(value: date, *, end_of_day: bool = False) -> datetime:
         when = datetime.combine(

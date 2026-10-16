@@ -24,8 +24,10 @@ const props = withDefaults(
     placement?: "bottom" | "top";
     /** `sm` fits the border-notch label row; `md` is the standalone hit target. */
     size?: "md" | "sm";
+    /** When false, tip shows only while hovered (no click pin / focus open). */
+    interactive?: boolean;
   }>(),
-  { align: "start", placement: "bottom", size: "md" },
+  { align: "start", placement: "bottom", size: "md", interactive: true },
 );
 
 const buttonClass = computed(() =>
@@ -123,11 +125,13 @@ function hide(): void {
 }
 
 function onFocus(): void {
+  if (!props.interactive) return;
   suppressClickToggle = true;
   void show();
 }
 
 function toggle(): void {
+  if (!props.interactive) return;
   if (suppressClickToggle) {
     suppressClickToggle = false;
     return;
@@ -209,7 +213,7 @@ watch(
       <span
         v-if="open"
         role="tooltip"
-        class="pointer-events-none fixed z-50 w-max max-w-[min(100vw-2rem,18rem)] rounded-md border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs lowercase leading-normal text-surface-mid shadow-lg"
+        class="pointer-events-none fixed z-50 w-max max-w-[min(100vw-2rem,18rem)] whitespace-pre-line rounded-md border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs lowercase leading-normal text-surface-mid shadow-lg"
         :style="panelStyle"
         @mouseenter="show"
         @mouseleave="scheduleHide"

@@ -125,13 +125,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout hub="admin" title="db maintenance" back-to="/admin">
+  <AdminPageLayout
+    hub="admin"
+    title="db maintenance"
+    back-to="/admin"
+    description="backs up mongo, redis, and media, verifies the archive, then runs migrations. a second run waits until this one finishes."
+  >
     <div class="space-y-4" :aria-busy="regionBusy || undefined">
-      <p class="text-sm lowercase text-surface-sage">
-        backs up mongo, redis, and media, verifies the archive, then runs migrations. a second run
-        waits until this one finishes.
-      </p>
-
       <p v-if="loadError" class="text-sm text-status-error" role="alert">{{ loadError }}</p>
 
       <p

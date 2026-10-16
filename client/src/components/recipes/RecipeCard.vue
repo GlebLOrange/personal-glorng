@@ -1,17 +1,29 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import AdminListRow from "@/components/admin/AdminListRow.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
+import {
+  ADMIN_ACTIONS_CLASS,
+  ADMIN_MOBILE_ROW_WRAP_CLASS,
+  ADMIN_TD_ACTIONS_CLASS,
+  ADMIN_TD_CLASS,
+  ADMIN_TD_MUTED_CLASS,
+  ADMIN_TD_TITLE_CLASS,
+  ADMIN_TR_CLASS,
+} from "@/constants/adminDataTable";
 import type { Recipe } from "@/types";
 import { formatRecipeTime } from "@/utils/recipe";
 
-const props = defineProps<{
-  recipe: Recipe;
-  canWrite?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    recipe: Recipe;
+    canWrite?: boolean;
+    layout?: "card" | "table";
+  }>(),
+  { layout: "card" },
+);
 
 const emit = defineEmits<{
   select: [id: number];
@@ -41,13 +53,17 @@ const recipeMeta = computed(() => {
 </script>
 
 <template>
-  <AdminListRow
-    interactive
-    nested-interactive
-    :open-label="`open recipe ${recipe.title}`"
+  <tr
+    v-if="layout === 'table'"
+    :class="[ADMIN_TR_CLASS, 'cursor-pointer']"
+    role="button"
+    tabindex="0"
+    :aria-label="`open recipe ${recipe.title}`"
     @click="emit('select', recipe.id)"
+    @keydown.enter.prevent="emit('select', recipe.id)"
+    @keydown.space.prevent="emit('select', recipe.id)"
   >
-    <template #leading>
+    <td :class="ADMIN_TD_CLASS">
       <BaseImage
         v-if="recipe.image_url"
         :src="recipe.image_url"
@@ -61,19 +77,53 @@ const recipeMeta = computed(() => {
       >
         {{ thumbInitials }}
       </div>
-    </template>
+    </td>
+    <td :class="ADMIN_TD_TITLE_CLASS">
+      <p class="truncate text-sm text-surface-light" :title="recipe.title">{{ recipe.title }}</p>
+    </td>
+    <td :class="ADMIN_TD_MUTED_CLASS" :title="recipeMeta || undefined">
+      {{ recipeMeta || "—" }}
+    </td>
+    <td :class="ADMIN_TD_ACTIONS_CLASS" @click.stop @keydown.stop>
+      <div v-if="canWrite" :class="ADMIN_ACTIONS_CLASS">
+        <IconEditButton aria-label="edit recipe" @click="emit('edit', recipe)" />
+        <IconCloseButton aria-label="delete recipe" @click="emit('delete', recipe)" />
+      </div>
+    </td>
+  </tr>
 
-    <template #primary>
-      <span :title="recipe.title">{{ recipe.title }}</span>
-    </template>
-
-    <template v-if="recipeMeta" #meta>
-      <span :title="recipeMeta">{{ recipeMeta }}</span>
-    </template>
-
-    <template v-if="canWrite" #actions>
+  <div
+    v-else
+    :class="[ADMIN_MOBILE_ROW_WRAP_CLASS, 'flex min-w-0 cursor-pointer items-center gap-2']"
+    role="button"
+    tabindex="0"
+    :aria-label="`open recipe ${recipe.title}`"
+    @click="emit('select', recipe.id)"
+    @keydown.enter.prevent="emit('select', recipe.id)"
+    @keydown.space.prevent="emit('select', recipe.id)"
+  >
+    <BaseImage
+      v-if="recipe.image_url"
+      :src="recipe.image_url"
+      :alt="recipe.title"
+      class="size-6 shrink-0 rounded object-cover"
+    />
+    <div
+      v-else
+      class="flex size-6 shrink-0 items-center justify-center rounded bg-surface-dark text-[10px] font-semibold leading-none text-surface-sage"
+      aria-hidden="true"
+    >
+      {{ thumbInitials }}
+    </div>
+    <div class="min-w-0 flex-1">
+      <p class="truncate text-sm text-surface-light" :title="recipe.title">{{ recipe.title }}</p>
+      <p v-if="recipeMeta" class="mt-0.5 truncate text-xs text-surface-mid" :title="recipeMeta">
+        {{ recipeMeta }}
+      </p>
+    </div>
+    <div v-if="canWrite" :class="ADMIN_ACTIONS_CLASS" @click.stop @keydown.stop>
       <IconEditButton aria-label="edit recipe" @click="emit('edit', recipe)" />
       <IconCloseButton aria-label="delete recipe" @click="emit('delete', recipe)" />
-    </template>
-  </AdminListRow>
+    </div>
+  </div>
 </template>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useTemplateRef } from "vue";
+import { computed, useTemplateRef } from "vue";
 
 import ExpenseLedgerHeader from "@/components/expenses/ExpenseLedgerHeader.vue";
 import ExpenseQuickAdd from "@/components/expenses/ExpenseQuickAdd.vue";
 import { Card } from "@/components/ui/card";
-import type { DateFilterMode, MonthPreset, CurrencyCode } from "@/composables/useExpenseFilters";
-import type { ExpenseSummary } from "@/types";
+import type { CurrencyCode } from "@/composables/useExpenseFilters";
+import type { Expense, ExpenseSummary } from "@/types";
 
 export type SmartExpensePayload = {
   tool_name: string;
@@ -15,12 +15,6 @@ export type SmartExpensePayload = {
   category: string | null;
 };
 
-const monthPreset = defineModel<MonthPreset>("monthPreset", { required: true });
-const dateFilterMode = defineModel<DateFilterMode>("dateFilterMode", { required: true });
-const selectedMonth = defineModel<string>("selectedMonth", { required: true });
-const dateFrom = defineModel<string>("dateFrom", { required: true });
-const dateTo = defineModel<string>("dateTo", { required: true });
-const displayCurrency = defineModel<CurrencyCode>("displayCurrency", { required: true });
 const smartTextOpen = defineModel<boolean>("smartTextOpen", { required: true });
 const quickAddCategory = defineModel<string>("quickAddCategory", { required: true });
 const quickAddProduct = defineModel<string>("quickAddProduct", { required: true });
@@ -28,31 +22,33 @@ const quickAddPrice = defineModel<string>("quickAddPrice", { required: true });
 const quickAddExpenseDate = defineModel<string>("quickAddExpenseDate", { required: true });
 const quickAddNameError = defineModel<string | null>("quickAddNameError", { required: true });
 const quickAddAmountError = defineModel<string | null>("quickAddAmountError", { required: true });
+const displayCurrency = defineModel<CurrencyCode>("displayCurrency", { required: true });
 
-defineProps<{
+const props = defineProps<{
   canWrite: boolean;
   savingExpense: boolean;
   categoryOptions: string[];
   productSuggestions: string[];
   monthLabel: string;
-  hasActiveFilters: boolean;
-  rangeError: string | null;
   summary: ExpenseSummary | null;
   summaryError: string | null;
   ratesError: string | null;
   expenseTotal: number;
+  expenses: Expense[];
+  formatMoney: (amount: string | number, currency: string) => string;
+  formatExpenseDate: (iso: string) => string;
 }>();
 
 const emit = defineEmits<{
-  applyPreset: [preset: MonthPreset];
-  clearFilters: [];
   retrySummary: [];
   submitQuick: [];
   smartSubmit: [payload: SmartExpensePayload];
-  openTransactions: [];
+  openActivity: [];
 }>();
 
 const quickAddRef = useTemplateRef<InstanceType<typeof ExpenseQuickAdd>>("quickAddRef");
+
+const recentExpenses = computed(() => props.expenses.slice(0, 5));
 
 defineExpose({
   focusEntry: () => {
@@ -69,33 +65,26 @@ defineExpose({
 
 <template>
   <section
-    id="expenses-tab-panel-expenses"
+    id="expenses-tab-panel-today"
     role="tabpanel"
-    aria-labelledby="expenses-tab-tab-expenses"
+    aria-labelledby="expenses-tab-tab-today"
     tabindex="0"
     class="flex flex-col gap-4 outline-none"
   >
     <ExpenseLedgerHeader
-      v-model:month-preset="monthPreset"
-      v-model:date-filter-mode="dateFilterMode"
-      v-model:selected-month="selectedMonth"
-      v-model:date-from="dateFrom"
-      v-model:date-to="dateTo"
       :month-label="monthLabel"
-      :has-active-filters="hasActiveFilters"
-      :range-error="rangeError"
       :summary="summary"
       :expense-total="expenseTotal"
       :summary-error="summaryError"
       :rates-error="ratesError"
-      @apply-preset="emit('applyPreset', $event)"
-      @clear-filters="emit('clearFilters')"
+      :recent-expenses="recentExpenses"
+      :format-money="formatMoney"
+      :format-expense-date="formatExpenseDate"
       @retry="emit('retrySummary')"
-      @open-transactions="emit('openTransactions')"
+      @open-activity="emit('openActivity')"
     />
 
     <Card variant="compact" class="flex flex-col gap-2">
-      <h3 class="text-sm font-semibold text-surface-light">add expense</h3>
       <ExpenseQuickAdd
         v-if="canWrite"
         ref="quickAddRef"

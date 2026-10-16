@@ -7,6 +7,7 @@ import { ref } from "vue";
 import NavBar from "@/components/layout/NavBar.vue";
 
 vi.mock("@/composables/useColorTheme", () => ({
+  colorThemeResolved: ref("dark"),
   useColorTheme: () => ({
     preference: ref("dark"),
     cyclePreference: vi.fn(),
