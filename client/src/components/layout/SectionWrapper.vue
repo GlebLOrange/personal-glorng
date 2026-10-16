@@ -4,7 +4,6 @@ import { computed, useSlots } from "vue";
 const props = defineProps<{
   id?: string;
   title?: string;
-  dark?: boolean;
   alternate?: boolean;
   width?: "full" | "content" | "prose";
 }>();
@@ -32,7 +31,6 @@ const showHeader = computed(() => Boolean(props.title || slots.headerActions));
     :class="[
       'py-20 md:py-24 px-6 scroll-mt-40 md:scroll-mt-44',
       alternate && 'bg-surface-card/30',
-      /* surface-light = primary text in both themes; `dark` kept for call-site compat */
       'text-surface-light',
     ]"
   >
