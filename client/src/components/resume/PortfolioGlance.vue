@@ -13,7 +13,11 @@ const stats = computed(() => buildGlanceStats(props.resume));
 </script>
 
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div
+    v-if="stats.length"
+    class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+    :class="stats.length >= 3 ? 'lg:grid-cols-3' : ''"
+  >
     <Card
       v-for="stat in stats"
       :key="stat.label"

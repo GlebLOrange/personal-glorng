@@ -1,24 +1,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import SiteLogo from "@/components/brand/SiteLogo.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import { useNotify } from "@/composables/useNotify";
-import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { downloadResumeExport, resumeDownloadErrorMessage } from "@/utils/resumeDownload";
 
-withDefaults(
-  defineProps<{
-    name: string;
-    title: string;
-    tagline?: string;
-    location?: string;
-    availability?: string;
-    /** When sticky section nav is active, hide this rail from the a11y tree. */
-    sectionNavActive?: boolean;
-  }>(),
-  { sectionNavActive: false },
-);
+defineProps<{
+  name: string;
+  title: string;
+  tagline?: string;
+  location?: string;
+  availability?: string;
+}>();
 
 const emit = defineEmits<{ inquire: [] }>();
 
@@ -49,15 +42,10 @@ function printPage(): void {
 
 <template>
   <div class="py-12 md:py-16 text-center">
-    <h1 class="mb-3 flex flex-col items-center gap-3 text-balance">
-      <SiteLogo
-        variant="full"
-        priority
-        class-name="h-16 w-auto max-w-[min(100%,18rem)] sm:h-20 md:h-24"
-      />
-      <span class="text-xl font-bold tracking-tight sm:text-2xl accent-gradient">{{ name }}</span>
+    <p class="mb-2 text-lg font-medium tracking-tight text-surface-light sm:text-xl">{{ name }}</p>
+    <h1 class="mb-3 text-balance text-2xl font-bold tracking-tight text-surface-light sm:text-3xl md:text-4xl">
+      {{ title }}
     </h1>
-    <p class="text-2xl md:text-3xl text-surface-light mb-2">{{ title }}</p>
     <p v-if="tagline" class="text-lg text-surface-sage mb-3 text-pretty max-w-2xl mx-auto">
       {{ tagline }}
     </p>
@@ -103,43 +91,5 @@ function printPage(): void {
         print page instead
       </button>
     </p>
-
-    <!-- Mobile: disclosure. md+: light middot rail (sticky section nav covers scroll). -->
-    <div class="portfolio-link-rail mt-5 print:hidden" :inert="sectionNavActive">
-      <details class="md:hidden group mx-auto max-w-xs text-left">
-        <summary
-          class="nav-link flex min-h-11 cursor-pointer list-none items-center justify-center rounded-lg px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 [&::-webkit-details-marker]:hidden"
-        >
-          jump to…
-        </summary>
-        <nav aria-label="On this page" class="mt-2">
-          <ul class="m-0 flex list-none flex-col items-stretch gap-1 p-0">
-            <li v-for="link in PORTFOLIO_SECTION_LINKS" :key="link.href">
-              <a
-                :href="link.href"
-                class="nav-link flex min-h-11 items-center justify-center rounded-lg px-3"
-              >
-                {{ link.label }}
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </details>
-
-      <nav aria-label="On this page" class="hidden md:block">
-        <ul class="m-0 flex list-none flex-wrap items-center justify-center gap-y-1 p-0">
-          <li
-            v-for="(link, i) in PORTFOLIO_SECTION_LINKS"
-            :key="link.href"
-            class="inline-flex items-center"
-          >
-            <span v-if="i > 0" class="px-1.5 text-surface-muted" aria-hidden="true">·</span>
-            <a :href="link.href" class="nav-link inline-flex min-h-11 items-center px-1 rounded-lg">
-              {{ link.label }}
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </div>
   </div>
 </template>

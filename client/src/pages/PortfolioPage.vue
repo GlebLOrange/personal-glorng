@@ -40,6 +40,12 @@ let cancelGithubIdle: (() => void) | null = null;
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
 const contactLinks = computed(() => buildContactLinks(resume.value.links));
 const education = computed(() => resume.value.education ?? []);
+/** Sticky in-page nav — drop education when that section is empty. */
+const sectionLinks = computed(() =>
+  PORTFOLIO_SECTION_LINKS.filter(
+    (link) => link.href !== "#education" || education.value.length > 0,
+  ),
+);
 const githubProfileUrl = computed(() => resume.value.links.github);
 const highlightedRepos = computed(() => {
   const fromResume = resume.value.github?.repos ?? [];
@@ -154,7 +160,7 @@ onUnmounted(() => {
       >
         <ul class="m-0 flex list-none flex-wrap items-center justify-center gap-y-0 p-0">
           <li
-            v-for="(link, i) in PORTFOLIO_SECTION_LINKS"
+            v-for="(link, i) in sectionLinks"
             :key="link.href"
             class="inline-flex items-center"
           >
@@ -178,7 +184,6 @@ onUnmounted(() => {
           :tagline="resume.tagline"
           :location="resume.location"
           :availability="resume.availability"
-          :section-nav-active="showSectionNav"
           @inquire="contactModal = 'inquiry'"
         />
       </div>

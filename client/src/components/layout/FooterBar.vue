@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, onUnmounted, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import SiteLogo from "@/components/brand/SiteLogo.vue";
@@ -15,6 +15,12 @@ const year = new Date().getFullYear();
 const route = useRoute();
 const router = useRouter();
 const showDonationThanks = ref(false);
+
+/** Hire surfaces — keep donations off the CV and shared profile. */
+const showDonations = computed(() => {
+  const name = route.name;
+  return name !== "portfolio" && name !== "profile" && name !== "home";
+});
 
 const {
   data: donations,
@@ -36,8 +42,17 @@ async function loadDonations(): Promise<void> {
   }
 }
 
+watch(
+  showDonations,
+  (visible) => {
+    if (visible && !donationsFetched.value) {
+      void loadDonations();
+    }
+  },
+  { immediate: true },
+);
+
 onMounted(() => {
-  void loadDonations();
   if (String(route.query.donated ?? "") === "1") {
     showDonationThanks.value = true;
     void consumeQueryParams(router, route.path, route.query, ["donated"]);
@@ -54,6 +69,7 @@ onUnmounted(() => {
     class="border-t border-surface-border py-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))]"
   >
     <div
+      v-if="showDonations"
       class="mx-auto mb-4 flex max-w-lg flex-wrap items-center justify-center gap-x-3 gap-y-2 print:hidden"
     >
       <p class="text-meta">support this work</p>
@@ -70,14 +86,29 @@ onUnmounted(() => {
         support options unavailable
       </p>
     </div>
-    <div class="flex justify-center mb-4">
+    <nav
+      aria-label="footer"
+      class="mb-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 print:hidden"
+    >
+      <router-link
+        to="/news"
+        class="nav-link-quiet inline-flex min-h-11 items-center px-1"
+      >
+        news
+      </router-link>
+      <router-link
+        to="/tools"
+        class="nav-link-quiet inline-flex min-h-11 items-center px-1"
+      >
+        tools
+      </router-link>
       <router-link
         to="/privacy"
-        class="text-base text-surface-sage hover:text-accent-blue transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+        class="nav-link-quiet inline-flex min-h-11 items-center px-1"
       >
-        Privacy Policy
+        privacy policy
       </router-link>
-    </div>
+    </nav>
     <p class="flex items-center justify-center gap-2 text-base text-surface-sage text-center">
       <span>&copy; {{ year }}</span>
       <SiteLogo class-name="h-7 w-auto" />

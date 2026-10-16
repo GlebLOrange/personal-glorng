@@ -34,16 +34,13 @@ describe("resumeGlance", () => {
     expect(stack).toBe("Python · Vue 3 · FastAPI");
   });
 
-  it("builds glance stats from case-study outcomes plus availability", () => {
+  it("builds hiring glance stats from years, shipped systems, and availability", () => {
     const stats = buildGlanceStats(RESUME_FALLBACK);
-    expect(stats).toHaveLength(4);
+    expect(stats.find((s) => s.label === "Experience")?.value).toMatch(/^\d+\+$/);
+    expect(stats.find((s) => s.label === "Experience")?.href).toBe("#experience");
+    expect(Number(stats.find((s) => s.label === "Case studies")?.value)).toBeGreaterThan(0);
+    expect(stats.find((s) => s.label === "Case studies")?.href).toBe("#case-studies");
     expect(stats.find((s) => s.label === "Availability")?.value).toBe("open");
-    expect(stats.find((s) => s.label === "cookie auth & CSRF")?.value).toBe("CSRF");
-    expect(stats.find((s) => s.label === "SSRF-safe outbound fetch")?.value).toBe("SSRF-safe");
-    expect(stats.find((s) => s.label === "Platform sample")?.value).toBe("since 2022");
-    expect(stats.find((s) => s.label === "cookie auth & CSRF")?.href).toBe("#case-studies");
-    expect(stats.find((s) => s.label === "SSRF-safe outbound fetch")?.href).toBe("#case-studies");
-    expect(stats.find((s) => s.label === "Platform sample")?.href).toBe("#experience");
     expect(stats.find((s) => s.label === "Availability")?.href).toBe("#contacts");
   });
 });

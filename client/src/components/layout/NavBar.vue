@@ -141,22 +141,23 @@ async function handleGoHome(): Promise<void> {
             <SiteLogo class-name="h-9 w-auto" />
           </RouterLink>
 
-          <div class="hidden md:flex items-center gap-2 text-base shrink-0">
+          <div class="hidden md:flex items-center gap-1 text-base shrink-0">
             <RouterLink
               to="/"
-              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link-accent inline-flex min-h-11 items-center px-3 py-2 rounded-lg font-medium"
               :class="{ 'text-accent-blue': navSection === 'portfolio' }"
-              :aria-current-value="false"
               :aria-current="navSection === 'portfolio' ? 'page' : undefined"
               @click.prevent="handleGoHome"
             >
               portfolio
             </RouterLink>
+
+            <span class="mx-1 h-4 w-px bg-surface-border" aria-hidden="true" />
+
             <RouterLink
               to="/news"
-              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link-quiet inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
               :class="{ 'text-accent-blue': navSection === 'news' }"
-              :aria-current-value="false"
               :aria-current="navSection === 'news' ? 'page' : undefined"
             >
               news
@@ -164,9 +165,8 @@ async function handleGoHome(): Promise<void> {
 
             <RouterLink
               to="/tools"
-              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link-quiet inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
               :class="{ 'text-accent-blue': navSection === 'tools' }"
-              :aria-current-value="false"
               :aria-current="navSection === 'tools' ? 'page' : undefined"
             >
               tools
@@ -174,9 +174,8 @@ async function handleGoHome(): Promise<void> {
             <RouterLink
               v-if="canUseAdminHub"
               to="/admin"
-              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link-quiet inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
               :class="{ 'text-accent-blue': navSection === 'admin' }"
-              :aria-current-value="false"
               :aria-current="navSection === 'admin' ? 'page' : undefined"
             >
               admin
@@ -185,9 +184,8 @@ async function handleGoHome(): Promise<void> {
             <RouterLink
               v-if="auth.isAuthenticated"
               to="/settings"
-              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link-quiet inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
               :class="{ 'text-accent-blue': navSection === 'settings' }"
-              :aria-current-value="false"
               :aria-current="navSection === 'settings' ? 'page' : undefined"
             >
               settings
@@ -196,7 +194,7 @@ async function handleGoHome(): Promise<void> {
             <button
               v-if="auth.isAuthenticated"
               type="button"
-              class="nav-link text-status-error inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link-quiet text-status-error inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
               @click="handleLogout"
             >
               logout
@@ -204,9 +202,8 @@ async function handleGoHome(): Promise<void> {
             <RouterLink
               v-else
               to="/login"
-              class="nav-link inline-flex min-h-11 items-center px-3 py-2 rounded-lg"
+              class="nav-link-quiet inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
               :class="{ 'text-accent-blue': navSection === 'login' }"
-              :aria-current-value="false"
               :aria-current="navSection === 'login' ? 'page' : undefined"
             >
               login
