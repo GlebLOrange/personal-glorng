@@ -50,7 +50,6 @@ const displaySegments = computed((): BreadcrumbSegment[] => {
       <BackLink
         v-if="backTo"
         :to="backTo"
-        size="compact"
         class="shell-outside-end !-right-6 top-1/2 -translate-y-1/2"
       />
     </div>

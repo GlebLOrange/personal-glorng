@@ -7,16 +7,9 @@ import { iconActionClass } from "@/constants/httpStatusColors";
 
 defineOptions({ inheritAttrs: false });
 
-withDefaults(
-  defineProps<{
-    to: RouteLocationRaw;
-    /** @deprecated Alias of default — both sizes match IconActionButton. */
-    size?: "default" | "compact";
-  }>(),
-  {
-    size: "default",
-  },
-);
+defineProps<{
+  to: RouteLocationRaw;
+}>();
 
 const attrs = useAttrs();
 

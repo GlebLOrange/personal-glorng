@@ -6,15 +6,13 @@ const props = defineProps<{
   title?: string;
   dark?: boolean;
   alternate?: boolean;
-  /** @deprecated Use width="full" instead */
-  centered?: boolean;
   width?: "full" | "content" | "prose";
 }>();
 
 const slots = useSlots();
 
 const innerClass = computed(() => {
-  const resolvedWidth = props.width ?? (props.centered ? "full" : "content");
+  const resolvedWidth = props.width ?? "content";
   if (resolvedWidth === "full") {
     return "w-full";
   }
