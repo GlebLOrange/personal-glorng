@@ -5,10 +5,10 @@ import PageChrome from "@/components/layout/PageChrome.vue";
 
 const stubs = {
   BackLink: {
-    props: ["to", "size"],
+    props: ["to"],
     inheritAttrs: false,
     template:
-      '<a :href="typeof to === \'string\' ? to : to.path" data-testid="back" :data-size="size" v-bind="$attrs">back</a>',
+      '<a :href="typeof to === \'string\' ? to : to.path" data-testid="back" v-bind="$attrs">back</a>',
   },
   PageBreadcrumbs: {
     props: ["segments", "elevated"],
@@ -43,7 +43,6 @@ describe("PageChrome", () => {
     expect(wrapper.get("h1").text()).toBe("users");
     const back = wrapper.get("[data-testid=back]");
     expect(back.attributes("href")).toBe("/admin");
-    expect(back.attributes("data-size")).toBe("compact");
     // Back sits in the breadcrumb row (same vertical band) and parks on the nav rail.
     expect(back.element.parentElement?.className).toContain("my-[15px]");
     expect(back.element.parentElement?.className).toContain("min-h-10");

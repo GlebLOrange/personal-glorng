@@ -170,7 +170,7 @@ watch(
       />
     </SectionWrapper>
 
-    <SectionWrapper v-if="showSummary" id="about" title="about" width="full" dark alternate>
+    <SectionWrapper v-if="showSummary" id="about" title="about" width="full" alternate>
       <p v-if="resume.bio" class="text-body mb-4 max-w-3xl text-pretty">
         {{ resume.bio }}
       </p>
@@ -179,7 +179,7 @@ watch(
       </p>
     </SectionWrapper>
 
-    <SectionWrapper v-if="showExperience" id="experience" title="experience" width="full" dark>
+    <SectionWrapper v-if="showExperience" id="experience" title="experience" width="full">
       <Suspense>
         <ExperienceList :experience="resume.experience" />
         <template #fallback>
@@ -193,7 +193,6 @@ watch(
       id="case-studies"
       title="case studies"
       width="full"
-      dark
       alternate
     >
       <Suspense>
@@ -204,7 +203,7 @@ watch(
       </Suspense>
     </SectionWrapper>
 
-    <SectionWrapper v-if="showSkills" id="skills" title="skills" width="full" dark>
+    <SectionWrapper v-if="showSkills" id="skills" title="skills" width="full">
       <SkillsGrid :skills="resume.skills" />
     </SectionWrapper>
 
@@ -213,7 +212,6 @@ watch(
       id="education"
       title="education"
       width="prose"
-      dark
       alternate
     >
       <EducationList :education="education" />
@@ -224,7 +222,6 @@ watch(
       id="certifications"
       title="certifications"
       width="prose"
-      dark
     >
       <ul class="m-0 list-none space-y-3 p-0">
         <li v-for="item in certifications" :key="item.name" class="text-body">
@@ -235,7 +232,7 @@ watch(
       </ul>
     </SectionWrapper>
 
-    <SectionWrapper v-if="showLanguages" id="languages" title="languages" width="prose" dark>
+    <SectionWrapper v-if="showLanguages" id="languages" title="languages" width="prose">
       <ul class="m-0 list-none space-y-2 p-0">
         <li v-for="item in languages" :key="item.language" class="text-body">
           {{ item.language
@@ -244,7 +241,7 @@ watch(
       </ul>
     </SectionWrapper>
 
-    <SectionWrapper v-if="showLinks" id="contacts" title="contacts" width="full" dark>
+    <SectionWrapper v-if="showLinks" id="contacts" title="contacts" width="full">
       <p class="text-body mb-3 max-w-2xl">
         open to full-time and contract — usually reply within 24h (EU timezone)
       </p>
