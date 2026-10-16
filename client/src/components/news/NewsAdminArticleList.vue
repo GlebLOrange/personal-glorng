@@ -37,22 +37,7 @@ const emit = defineEmits<{
       @click="canWrite ? emit('edit', item) : undefined"
       @keydown.enter.prevent="canWrite ? emit('edit', item) : undefined"
     >
-      <div class="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
-          <StatusBadge
-            :label="newsStatusLabel(item.status)"
-            :class-name="newsStatusClass(item.status)"
-          />
-          <time
-            class="text-datetime whitespace-nowrap lowercase"
-            :datetime="item.published_at ?? item.created_at"
-          >
-            {{ formatNewsDate(item.published_at ?? item.created_at) }}
-          </time>
-          <span v-if="item.telegram_message_id" class="text-accent-blue">
-            Telegram #{{ item.telegram_message_id }}
-          </span>
-        </div>
+      <div class="mb-2 flex min-w-0 items-center gap-2 text-xs">
         <a
           v-if="safeNavigationHref(item.source_url)"
           :href="safeNavigationHref(item.source_url) ?? '#'"
@@ -64,10 +49,23 @@ const emit = defineEmits<{
           {{ item.source_name }}
         </a>
         <span v-else class="shrink-0 text-accent-blue">{{ item.source_name }}</span>
+        <time
+          class="text-datetime shrink-0 whitespace-nowrap lowercase"
+          :datetime="item.published_at ?? item.created_at"
+        >
+          {{ formatNewsDate(item.published_at ?? item.created_at) }}
+        </time>
+        <StatusBadge
+          :label="newsStatusLabel(item.status)"
+          :class-name="newsStatusClass(item.status)"
+        />
+        <span v-if="item.telegram_message_id" class="shrink-0 text-accent-blue">
+          Telegram #{{ item.telegram_message_id }}
+        </span>
+        <h2 class="card-title ml-auto min-w-0 truncate text-right">{{ item.title }}</h2>
       </div>
 
-      <h2 class="card-title mb-2 break-words">{{ item.title }}</h2>
-      <p class="text-sm text-surface-mid mb-3 break-words">{{ item.summary }}</p>
+      <p class="mb-2 break-words text-sm text-surface-mid">{{ item.summary }}</p>
 
       <div class="flex w-full flex-col gap-3">
         <div v-if="item.tags.length" class="flex flex-wrap gap-2">

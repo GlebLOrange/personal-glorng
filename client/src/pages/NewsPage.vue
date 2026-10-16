@@ -61,38 +61,37 @@ watch(page, () => {
         hoverable
         class="min-w-0"
       >
-        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-surface-muted">
-          <time
-            class="text-datetime mr-auto whitespace-nowrap lowercase"
-            :datetime="newsArticleDisplayDate(item)"
-          >
-            {{ formatNewsDate(newsArticleDisplayDate(item)) }}
-          </time>
+        <div class="mb-2 flex min-w-0 items-center gap-2 text-xs text-surface-muted">
           <a
             v-if="safeNavigationHref(item.source_url)"
             :href="safeNavigationHref(item.source_url) ?? '#'"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex min-h-11 items-center shrink-0 text-xs text-accent-blue hover:underline"
+            class="shrink-0 text-xs text-accent-blue hover:underline"
           >
             {{ item.source_name }}
             <span class="sr-only"> (opens in new tab)</span>
           </a>
-          <span v-else class="inline-flex min-h-11 items-center shrink-0 text-xs text-accent-blue">
+          <span v-else class="shrink-0 text-xs text-accent-blue">
             {{ item.source_name }}
           </span>
+          <time
+            class="text-datetime shrink-0 whitespace-nowrap lowercase"
+            :datetime="newsArticleDisplayDate(item)"
+          >
+            {{ formatNewsDate(newsArticleDisplayDate(item)) }}
+          </time>
+          <h2 class="card-title ml-auto min-w-0 truncate text-right">
+            <RouterLink
+              :to="{ name: 'news-article', params: { slug: item.slug } }"
+              class="rounded-sm text-inherit hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+            >
+              {{ item.title }}
+            </RouterLink>
+          </h2>
         </div>
 
-        <h2 class="card-title mb-2 break-words">
-          <RouterLink
-            :to="{ name: 'news-article', params: { slug: item.slug } }"
-            class="rounded-sm text-inherit hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-          >
-            {{ item.title }}
-          </RouterLink>
-        </h2>
-
-        <p class="mb-4 break-words text-sm text-surface-mid">{{ item.summary }}</p>
+        <p class="mb-2 break-words text-sm text-surface-mid">{{ item.summary }}</p>
 
         <div class="flex flex-wrap items-center gap-2">
           <span

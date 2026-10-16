@@ -84,29 +84,24 @@ watch(
         >
           {{ article.title }}
         </h1>
-        <div
-          class="mb-4 flex w-full min-w-0 flex-wrap items-center justify-between gap-2 text-xs text-surface-muted"
-        >
+        <div class="mb-4 flex w-full min-w-0 flex-wrap items-center gap-2 text-xs text-surface-muted">
+          <a
+            v-if="safeNavigationHref(article.source_url)"
+            :href="safeNavigationHref(article.source_url) ?? '#'"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="source"
+            class="shrink-0 text-accent-blue hover:underline"
+          >
+            {{ article.source_name }}
+          </a>
+          <span v-else class="shrink-0 text-accent-blue">{{ article.source_name }}</span>
           <time class="shrink-0 text-left" :datetime="newsArticleDisplayDate(article)">
             {{ formatNewsDate(newsArticleDisplayDate(article)) }}
           </time>
-          <div class="flex shrink-0 items-center gap-2">
-            <a
-              v-if="safeNavigationHref(article.source_url)"
-              :href="safeNavigationHref(article.source_url) ?? '#'"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="source"
-              class="text-accent-blue hover:underline"
-            >
-              {{ article.source_name }}
-            </a>
-            <span v-else class="text-accent-blue">{{ article.source_name }}</span>
-            <FieldHelp
-              align="end"
-              :text="`this is a curated summary — read the original article from ${article.source_name} for full context`"
-            />
-          </div>
+          <FieldHelp
+            :text="`this is a curated summary — read the original article from ${article.source_name} for full context`"
+          />
         </div>
         <p class="text-body break-words">{{ article.summary }}</p>
       </header>

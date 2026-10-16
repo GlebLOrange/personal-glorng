@@ -84,12 +84,22 @@ const tipInsetClass = computed(() => [
   reserveClear.value || isInlineEnd.value ? "right-10" : "right-3",
 ]);
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error && !props.labelInside);
+/** Border-notch / labelInside / end-mode sr-only — all count as a named control. */
 const hasVisibleLabel = computed(
-  () => showLabelNotch.value || Boolean(props.label && props.labelInside),
+  () =>
+    showLabelNotch.value ||
+    Boolean(props.label && props.labelInside) ||
+    (isInlineEnd.value && Boolean(props.label) && !props.error),
 );
 const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
-const showInlineEndLabel = computed(() => isInlineEnd.value && showLabelRow.value);
+/** End alignment: only reserve trailing chrome for FieldHelp (no visible field name). */
+const showInlineEndLabel = computed(
+  () => isInlineEnd.value && Boolean(props.hint && !props.error),
+);
 const showNotchRow = computed(() => !isInlineEnd.value && showLabelRow.value);
+const showSrOnlyLabel = computed(
+  () => Boolean(props.label) && (props.labelInside || (isInlineEnd.value && !props.error)),
+);
 const hasBorderNotch = computed(() => showNotchRow.value || Boolean(props.error));
 const describedBy = computed(() =>
   buildFieldDescribedBy({
@@ -157,7 +167,7 @@ function clear(): void {
       >
         {{ prefix }}
       </span>
-      <label v-if="props.labelInside && props.label" :for="textareaId" class="sr-only">
+      <label v-if="showSrOnlyLabel" :for="textareaId" class="sr-only">
         {{ props.label }}
       </label>
       <textarea
@@ -192,16 +202,7 @@ function clear(): void {
         class="absolute right-0 top-0 z-10 flex h-10 items-center gap-0.5 pr-2"
       >
         <div v-if="showInlineEndLabel" class="flex max-w-[11rem] items-center gap-1 bg-transparent">
-          <!-- eslint-disable-next-line vuejs-accessibility/label-has-for -->
-          <label
-            v-if="showLabelNotch"
-            :for="textareaId"
-            :class="['truncate', FIELD_LABEL_TEXT_CLASS]"
-          >
-            {{ label }}
-          </label>
           <FieldHelp
-            v-if="hint"
             size="sm"
             :align="helpAlign"
             :placement="helpPlacement"

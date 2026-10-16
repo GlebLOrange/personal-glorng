@@ -63,7 +63,7 @@ def generate_short_code(length: int = 8) -> str:
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
-DEFAULT_PER_PAGE = 9
+DEFAULT_PER_PAGE = 25
 
 
 def paginate_params(

@@ -84,6 +84,9 @@ describe("expenses layout restore", () => {
         expenseTotal: 12,
         summaryError: null,
         ratesError: null,
+        recentExpenses: [],
+        formatMoney: (amount: string | number, currency: string) => `${amount} ${currency}`,
+        formatExpenseDate: (iso: string) => iso.slice(0, 10),
       },
       global: {
         stubs: {
@@ -97,12 +100,12 @@ describe("expenses layout restore", () => {
     expect(wrapper.text()).toContain("September 2026");
     expect(wrapper.text()).toContain("total");
     expect(wrapper.text()).toContain("120.00 PLN");
-    expect(wrapper.text()).toContain("activity · 12");
+    expect(wrapper.text()).toContain("recent activity");
     expect(wrapper.text()).not.toContain("Top Category");
 
     const activityButton = wrapper
       .findAll("button")
-      .find((btn) => btn.text().includes("activity · 12"));
+      .find((btn) => btn.text().includes("recent activity"));
     expect(activityButton).toBeTruthy();
     await activityButton!.trigger("click");
     expect(wrapper.emitted("openActivity")).toHaveLength(1);
@@ -116,6 +119,9 @@ describe("expenses layout restore", () => {
         expenseTotal: 0,
         summaryError: null,
         ratesError: null,
+        recentExpenses: [],
+        formatMoney: (amount: string | number, currency: string) => `${amount} ${currency}`,
+        formatExpenseDate: (iso: string) => iso.slice(0, 10),
       },
       global: {
         stubs: {
