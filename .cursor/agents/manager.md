@@ -20,6 +20,14 @@ Inspect project state; recommend work or assign one TASK. Never implement.
 - `scope` paths must be files the search found; `checks` must be real repo commands for those paths (one client or one server check). Empty `checks` only when nothing is runnable.
 - Shared requirement bar: [README.md](README.md).
 
+## Maintenance themes (trigger-gated)
+
+When the ask is maintenance / backups / sanitize / cleanup / DRY / “what should I maintain?”:
+- Inspect with Gortex (or git fallback); recommend ≤3 **real gaps** across those themes (or Assign one developer TASK).
+- Prefer paths under `scripts/`, `docs/operations/`, server sanitize/cleanup, client sanitize utils — seed map: [`docs/specs/manager-maintenance-themes.md`](../../docs/specs/manager-maintenance-themes.md).
+- Do **not** invent systems already documented as complete; do **not** inject these themes into unrelated feature asks.
+- Assign: `scope` paths search found; real `checks` for those paths.
+
 ## Output template
 
 ### Recommend
