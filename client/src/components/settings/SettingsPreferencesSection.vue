@@ -83,7 +83,7 @@ const timezoneOptions = computed((): TimezoneOption[] => {
         </div>
         <div class="mt-3 border-t border-surface-border pt-3">
           <div
-            class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-surface-border px-3 py-2"
+            class="flex flex-wrap items-center justify-between gap-2 px-3 py-2"
           >
             <p class="text-xs text-surface-mid">permissions</p>
             <div v-if="permissions.length" class="flex flex-wrap justify-end gap-1.5">
