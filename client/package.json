@@ -42,7 +42,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.0",
-    "@sentry/vite-plugin": "^5.4.1",
+    "@sentry/vite-plugin": "^11.8.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-vue": "^6.0.10",
     "@vitest/coverage-v8": "^5.0.3",
