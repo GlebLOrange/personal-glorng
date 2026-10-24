@@ -15,6 +15,8 @@ from app.services.ai_chat import (
     _retry_after_seconds,
     _should_retry_rate_limit_429,
     _sleep_for_retry,
+    log_groq_usage,
+    parse_groq_usage,
     raise_llm_http_error,
 )
 from app.settings import get_settings
@@ -41,6 +43,7 @@ async def complete_json(
     model: str,
     system_prompt: str,
     user_content: str,
+    task: str,
     temperature: float = 0.0,
     api_base_url: str = GROQ_API_BASE_URL,
 ) -> dict[str, Any]:
@@ -97,7 +100,15 @@ async def complete_json(
     if response is None:
         raise ApiError(502, "AI API unreachable")
 
-    raw = _extract_message_content(response.json())
+    body = response.json()
+    usage = parse_groq_usage(body.get("usage") if isinstance(body, dict) else None)
+    log_groq_usage(
+        task=task,
+        model=model,
+        usage=usage,
+        usage_present=usage is not None,
+    )
+    raw = _extract_message_content(body if isinstance(body, dict) else {})
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError as exc:
