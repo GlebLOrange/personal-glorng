@@ -6,19 +6,20 @@ Definitions live in `.cursor/agents/`. Shared rules live **here** (and Gortex fa
 
 | Persona | File | Use when |
 |---------|------|----------|
-| Code reviewer | [`code-reviewer.md`](code-reviewer.md) | Pre-merge review (diff + TASK evidence) |
 | Manager | [`manager.md`](manager.md) | Recommend work, or Assign one TASK yaml for `/task-loop` (does not spawn) |
 | Developer | [`developer.md`](developer.md) | Implement on `cursor/*` (only mutating persona) |
 | QA | [`qa.md`](qa.md) | Readonly defects / regressions |
 | Recruiter | [`recruiter.md`](recruiter.md) | Hiring-signal screen |
 | UX | [`ux.md`](ux.md) | Readonly UX/UI/a11y audit |
 
+The code-review prompt lives at [`../references/code-reviewer.md`](../references/code-reviewer.md) for Antigravity `/task-loop` only. It is **not** a Cursor subagent.
+
 ## Orchestration
 
 **`/task-loop`** (`.cursor/commands/task-loop.md`) is the only repo slash orchestrator:
 
 ```text
-Manager (Assign TASK) → parent creates cursor/<slug> → Developer → code-reviewer
+Manager (Assign TASK) → parent creates cursor/<slug> → Developer
 ```
 
 - Parent Cursor chat spawns personas in order. Personas **never** spawn personas.
@@ -44,7 +45,7 @@ Do not conflate them: unmet `acceptance` is not “checks failed”; empty `chec
 
 ## Severity schemes
 
-**Code review** (`code-reviewer`):
+**Code review** (Antigravity prompt in [`../references/code-reviewer.md`](../references/code-reviewer.md)):
 
 | Prefix | Meaning |
 |--------|---------|
