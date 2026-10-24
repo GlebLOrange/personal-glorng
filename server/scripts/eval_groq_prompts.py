@@ -1,7 +1,8 @@
 """Offline Groq prompt evaluation (manual; not CI).
 
 Compares current production prompts on ``GROQ_CHAT_MODEL`` against the
-rewritten prompts from the Groq prompt review on ``openai/gpt-oss-20b``.
+rewritten prompts on the same model (``rewrite_same_model``) and against
+the rewritten prompts on ``openai/gpt-oss-20b`` (``rewrite_20b``).
 
 Does not change production prompt constants. Does not run unless both
 ``RUN_GROQ_EVAL=1`` and ``GROQ_API_KEY`` are set.
@@ -28,7 +29,12 @@ import httpx
 
 from app.schemas.news import ALLOWED_NEWS_TAGS
 from app.services.ai_chat import SYSTEM_PROMPT as CHAT_SYSTEM_PROMPT
-from app.services.ai_chat import _headers
+from app.services.ai_chat import (
+    GroqUsage,
+    _headers,
+    estimate_groq_cost_usd,
+    parse_groq_usage,
+)
 from app.services.news_ingest import _SYSTEM_PROMPT as NEWS_SYSTEM_PROMPT
 from app.services.news_ingest import (
     NewsSourceConfig,
@@ -117,11 +123,6 @@ Do not include telegram_text.
 """
 
 CANDIDATE_MODEL = "openai/gpt-oss-20b"
-# Estimate-only list prices (USD per 1M tokens); not from a live pricing API.
-PRICE_PER_M: dict[str, tuple[float, float]] = {
-    "openai/gpt-oss-120b": (0.15, 0.60),
-    "openai/gpt-oss-20b": (0.075, 0.30),
-}
 
 FALLBACK_QUESTIONS = {
     "title": "What should I call this task?",
@@ -182,22 +183,14 @@ class ArmResult:
     failures: list[str] = field(default_factory=list)
     latency_s: float = 0.0
     prompt_tokens: int = 0
+    cached_tokens: int = 0
+    uncached_tokens: int = 0
     completion_tokens: int = 0
+    reasoning_tokens: int = 0
     finish_reason: str | None = None
     cost_estimate_usd: float | None = None
     content_preview: str = ""
     raw: dict[str, Any] | None = None
-
-
-def _estimate_cost(
-    model: str, prompt_tokens: int, completion_tokens: int
-) -> float | None:
-    """Return an estimate-only USD cost from public list prices."""
-    prices = PRICE_PER_M.get(model)
-    if prices is None:
-        return None
-    input_price, output_price = prices
-    return (prompt_tokens * input_price + completion_tokens * output_price) / 1_000_000
 
 
 async def _chat_completion(
@@ -268,17 +261,18 @@ def _finish_reason(payload: dict[str, Any]) -> str | None:
     return reason if isinstance(reason, str) else None
 
 
-def _usage(payload: dict[str, Any]) -> tuple[int, int]:
-    """Return prompt and completion token counts."""
-    usage = payload.get("usage")
-    if not isinstance(usage, dict):
-        return 0, 0
-    prompt = usage.get("prompt_tokens", 0)
-    completion = usage.get("completion_tokens", 0)
-    return (
-        int(prompt) if isinstance(prompt, int) else 0,
-        int(completion) if isinstance(completion, int) else 0,
-    )
+def _usage(payload: dict[str, Any]) -> GroqUsage:
+    """Return billing-split token counts from a completion payload."""
+    parsed = parse_groq_usage(payload.get("usage"))
+    if parsed is None:
+        return GroqUsage(
+            prompt_tokens=0,
+            cached_tokens=0,
+            uncached_tokens=0,
+            completion_tokens=0,
+            reasoning_tokens=0,
+        )
+    return parsed
 
 
 def _intake_service() -> TaskIntakeService:
@@ -640,7 +634,7 @@ async def _run_arm(
             failures=[f"request failed: {exc}"],
         )
 
-    prompt_tokens, completion_tokens = _usage(payload)
+    usage = _usage(payload)
     finish = _finish_reason(payload)
     content = _message_content(payload)
     failures: list[str] = []
@@ -684,10 +678,13 @@ async def _run_arm(
         ok=not failures,
         failures=failures,
         latency_s=latency,
-        prompt_tokens=prompt_tokens,
-        completion_tokens=completion_tokens,
+        prompt_tokens=usage.prompt_tokens,
+        cached_tokens=usage.cached_tokens,
+        uncached_tokens=usage.uncached_tokens,
+        completion_tokens=usage.completion_tokens,
+        reasoning_tokens=usage.reasoning_tokens,
         finish_reason=finish,
-        cost_estimate_usd=_estimate_cost(model, prompt_tokens, completion_tokens),
+        cost_estimate_usd=estimate_groq_cost_usd(model, usage),
         content_preview=content[:240].replace("\n", " "),
         raw=parsed,
     )
@@ -705,6 +702,8 @@ def _print_result(result: ArmResult) -> None:
         f"[{status}] {result.arm} {result.case_id} model={result.model} "
         f"latency={result.latency_s:.2f}s (estimate) "
         f"tokens={result.prompt_tokens}/{result.completion_tokens} "
+        f"cached={result.cached_tokens} uncached={result.uncached_tokens} "
+        f"reasoning={result.reasoning_tokens} "
         f"finish={result.finish_reason} cost={cost}",
     )
     if result.failures:
@@ -715,7 +714,7 @@ def _print_result(result: ArmResult) -> None:
 
 
 async def run_eval() -> int:
-    """Run the two-arm offline eval; return process exit code."""
+    """Run the three-arm offline eval; return process exit code."""
     if os.environ.get("RUN_GROQ_EVAL") != "1":
         print(  # noqa: T201
             "Refusing to run: set RUN_GROQ_EVAL=1 to enable this offline eval.",
@@ -761,7 +760,18 @@ async def run_eval() -> int:
         _print_result(current)
         results.append(current)
 
-        rewrite = await _run_arm(
+        rewrite_same = await _run_arm(
+            arm="rewrite_same_model",
+            case=case,
+            api_key=api_key,
+            base_url=base_url,
+            model=current_model,
+            system_prompt=_prompts_for(case.task, rewrite=True),
+        )
+        _print_result(rewrite_same)
+        results.append(rewrite_same)
+
+        rewrite_20b = await _run_arm(
             arm="rewrite_20b",
             case=case,
             api_key=api_key,
@@ -769,11 +779,15 @@ async def run_eval() -> int:
             model=CANDIDATE_MODEL,
             system_prompt=_prompts_for(case.task, rewrite=True),
         )
-        _print_result(rewrite)
-        results.append(rewrite)
+        _print_result(rewrite_20b)
+        results.append(rewrite_20b)
 
         # One extra probe only when a JSON arm hit the token cap.
-        for arm_result, use_rewrite in ((current, False), (rewrite, True)):
+        for arm_result, use_rewrite in (
+            (current, False),
+            (rewrite_same, True),
+            (rewrite_20b, True),
+        ):
             if case.json_object and arm_result.finish_reason == "length":
                 extra = await _run_arm(
                     arm=f"{arm_result.arm}+reasoning_low",
