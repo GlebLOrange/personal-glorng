@@ -44,6 +44,7 @@ async def test_complete_json_uses_base_url(monkeypatch: pytest.MonkeyPatch) -> N
         model="llama-test",
         system_prompt="sys",
         user_content="hello",
+        task="intake",
         api_base_url="https://example.test/v1",
     )
     assert result == {"ok": True}
@@ -89,6 +90,7 @@ async def test_complete_json_fails_fast_on_429_without_retry_after(
             model="llama-test",
             system_prompt="sys",
             user_content="hello",
+            task="news",
             api_base_url="https://example.test/v1",
         )
 

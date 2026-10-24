@@ -399,6 +399,7 @@ async def _summarize_item(
         model=settings.GROQ_CHAT_MODEL,
         system_prompt=_SYSTEM_PROMPT,
         user_content=user_content,
+        task="news",
         temperature=0.1,
         api_base_url=settings.GROQ_API_BASE_URL,
     )
