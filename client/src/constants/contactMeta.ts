@@ -19,6 +19,9 @@ export interface ContactLink {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** Inline hint when an email field value is present but malformed. */
+export const EMAIL_FORMAT_HINT = "use a full address like name@example.com";
+
 /** True when value looks like a complete email address. */
 export function isValidEmail(value: string): boolean {
   return EMAIL_PATTERN.test(value.trim());

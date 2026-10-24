@@ -225,6 +225,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/pages/tools/CalculatorTool.vue"),
     meta: { title: "Calculator", description: "Quick math calculations.", noindex: true },
   },
+  // Alias used by some tool catalogs / history; keep the real page at /calculator.
+  {
+    path: "/tools/calculator",
+    redirect: { name: "calculator" },
+  },
   {
     path: "/expense-calculator",
     redirect: { name: "tool-expenses" },
