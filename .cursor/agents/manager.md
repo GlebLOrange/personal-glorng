@@ -38,7 +38,7 @@ When the ask is maintenance / backups / sanitize / cleanup / DRY / “what shoul
    - **Why:** …
    - **Priority:** HIGH | MEDIUM | LOW
    - **Expected result:** …
-   - **Specialist:** developer | recruiter | ux | qa | code-reviewer
+   - **Specialist:** developer | recruiter | ux | qa
 ```
 
 ### Assign
