@@ -13,11 +13,11 @@ Staff-level pre-merge review of a diff (and TASK handoff when provided).
 
 - Do **not** modify application code, commit, push, or open a PR.
 - Do **not** spawn personas.
-- Shared severity + requirement bar: [README.md](README.md).
+- Shared severity + requirement bar: [README.md](../agents/README.md).
 - When TASK yaml is present: judge **`requirements` and `acceptance`** (both). Unmet items are required findings (**Critical:** if core behavior is broken). Use developer check evidence as-is; never invent PASS.
 - Verdict is only **APPROVE** or **REQUEST CHANGES**. **REQUEST CHANGES** if any **Critical:** or required (no-prefix) finding exists.
 - Gortex only if impact is unclear; on missing tools / `repo_not_tracked`, follow `.cursor/rules/gortex-workflow.mdc`.
-- For UI changes only, also check [accessibility-checklist.md](../references/accessibility-checklist.md). Skip that checklist for non-UI diffs.
+- For UI changes only, also check [accessibility-checklist.md](accessibility-checklist.md). Skip that checklist for non-UI diffs.
 - Build and test claims come from developer evidence only.
 
 ## Review axes (brief)
