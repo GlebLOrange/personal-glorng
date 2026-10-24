@@ -147,7 +147,7 @@ cd client && npm run build:check && VITE_API_PROXY_TARGET=http://127.0.0.1:8000 
 cd client && npm run e2e
 ```
 
-Git hooks: `pip install pre-commit && pre-commit install`
+Git hooks: `pip install pre-commit && pre-commit install` — includes the staged-file token limit (see [Contributing → Pre-commit](/guide/contributing#pre-commit)). Verify with `sh scripts/test_check_staged_token_limit.sh`.
 
 Testing tiers and markers: [Testing](/reference/testing).
 
