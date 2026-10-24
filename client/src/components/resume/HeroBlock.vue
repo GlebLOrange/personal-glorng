@@ -73,7 +73,7 @@ function printPage(): void {
     </p>
 
     <div
-      class="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 print:hidden"
+      class="relative z-[45] mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 print:hidden"
     >
       <button type="button" class="cta-hero" @click="emit('inquire')">get in touch</button>
       <button type="button" class="cta-secondary" :disabled="isDownloadingCv" @click="downloadCv">

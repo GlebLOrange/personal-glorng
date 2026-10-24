@@ -18,8 +18,6 @@ const menuToggleButton = ref<HTMLButtonElement | null>(null);
 /* Reserve chrome height before ResizeObserver to reduce CLS */
 const headerSpacerHeight = ref(72);
 let resizeObserver: ResizeObserver | null = null;
-let mobileNavMq: MediaQueryList | null = null;
-let syncMobileNav: (() => void) | null = null;
 
 const auth = useAuthStore();
 const { canUseAdminHub } = usePermissions();
@@ -27,10 +25,6 @@ const { preference: colorThemePreference, cyclePreference } = useColorTheme();
 const router = useRouter();
 const route = useRoute();
 const mobileOpen = ref(false);
-const isMobileNav = ref(false);
-const isPortfolioHome = computed(
-  () => route.path === "/" || route.name === "home" || route.name === "portfolio",
-);
 const navSection = computed(() => resolveNavSection(route.path));
 const menuToggleClass = computed(() =>
   ["md:hidden self-center", iconActionClass("1xx", mobileOpen.value)].join(" "),
@@ -43,8 +37,10 @@ const themeToggleLabel = computed(() => {
   return "color theme: dark. click for light.";
 });
 
+// Hide on scroll everywhere except while the mobile menu is open so fixed chrome
+// cannot steal taps on hero CTAs (esp. ~375px portfolio after scroll).
 const { isHidden: isHeaderHidden, show: showHeader } = useScrollDirection({
-  disabled: () => mobileOpen.value || isMobileNav.value || isPortfolioHome.value,
+  disabled: () => mobileOpen.value,
 });
 
 function setPageInert(open: boolean): void {
@@ -70,13 +66,6 @@ watch(mobileOpen, async (open) => {
 });
 
 onMounted(() => {
-  mobileNavMq = window.matchMedia("(max-width: 767px)");
-  syncMobileNav = (): void => {
-    isMobileNav.value = mobileNavMq?.matches ?? false;
-  };
-  syncMobileNav();
-  mobileNavMq.addEventListener("change", syncMobileNav);
-
   if (typeof ResizeObserver !== "undefined") {
     resizeObserver = new ResizeObserver(() => {
       headerSpacerHeight.value = headerEl.value?.offsetHeight ?? 0;
@@ -88,11 +77,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  if (mobileNavMq && syncMobileNav) {
-    mobileNavMq.removeEventListener("change", syncMobileNav);
-  }
-  mobileNavMq = null;
-  syncMobileNav = null;
   resizeObserver?.disconnect();
   resizeObserver = null;
   setPageInert(false);
@@ -126,7 +110,7 @@ async function handleGoHome(): Promise<void> {
       id="site-header"
       ref="headerEl"
       class="fixed left-0 right-0 top-0 z-40 bg-surface-dark/80 backdrop-blur-md transition-transform duration-200 pt-[env(safe-area-inset-top)]"
-      :class="isHeaderHidden ? '-translate-y-full' : 'translate-y-0'"
+      :class="isHeaderHidden ? '-translate-y-full pointer-events-none' : 'translate-y-0'"
     >
       <nav aria-label="main navigation" class="border-b border-surface-border">
         <div

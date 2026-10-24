@@ -161,7 +161,8 @@ const shellClass = computed(() => [
 ]);
 const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top" : "bottom"));
 const shellInputClass = computed(() => [
-  "relative z-10 h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent px-3 text-left text-sm leading-none text-surface-light outline-none",
+  // overflow-x-auto: long emails/URLs stay readable at ~375px (scroll within field).
+  "relative z-10 h-full min-h-0 min-w-0 flex-1 overflow-x-auto border-0 bg-transparent px-3 text-left text-sm leading-none text-surface-light outline-none",
   props.type === "number" && "font-data",
   props.type === "search" && "base-input-search",
 ]);

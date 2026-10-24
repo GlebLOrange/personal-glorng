@@ -3,6 +3,7 @@ import { computed, defineAsyncComponent, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
+import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
@@ -17,7 +18,6 @@ import { buildShareProfilePath, parseShareCsv } from "@/utils/resumeShare";
 
 const ExperienceList = defineAsyncComponent(() => import("@/components/resume/ExperienceList.vue"));
 const CaseStudies = defineAsyncComponent(() => import("@/components/resume/CaseStudies.vue"));
-const FeedbackModal = defineAsyncComponent(() => import("@/components/feedback/FeedbackModal.vue"));
 
 const route = useRoute();
 const loading = ref(true);
@@ -256,6 +256,10 @@ watch(
       </div>
     </SectionWrapper>
 
-    <FeedbackModal v-if="contactModal" :intent="contactModal" @close="contactModal = null" />
+    <FeedbackModal
+      :open="contactModal === 'inquiry'"
+      intent="inquiry"
+      @close="contactModal = null"
+    />
   </div>
 </template>
