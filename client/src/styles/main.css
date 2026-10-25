@@ -608,6 +608,23 @@ label {
   -webkit-tap-highlight-color: color-mix(in srgb, var(--color-accent-blue) 25%, transparent);
 }
 
+/* Portfolio CV: dark one-step surfaces + coral accent (scoped; leave product tokens alone) */
+.portfolio-cv {
+  --color-surface-dark: #0d1117;
+  --color-surface-card: #161b22;
+  --color-accent-blue: #f0a090;
+  background-color: var(--color-surface-dark);
+}
+
+/** Opaque 18% card wash on CV tiles — beats Card compact fill; alpha /18 looked invisible on page bg. */
+@utility portfolio-cv-tile-wash {
+  background-color: color-mix(
+    in srgb,
+    var(--color-surface-card) 18%,
+    var(--color-surface-dark)
+  ) !important;
+}
+
 /* Portfolio CV: body prose reads as primary; meta stays supporting */
 .portfolio-cv .text-body {
   color: var(--color-surface-light);
@@ -615,6 +632,14 @@ label {
 
 .portfolio-cv .text-meta {
   color: var(--color-surface-sage);
+}
+
+.portfolio-cv .experience-tech-details > summary {
+  list-style: none;
+}
+
+.portfolio-cv .experience-tech-details > summary::-webkit-details-marker {
+  display: none;
 }
 
 /* Block cards: underline title only on hover — never the whole body copy */
@@ -760,6 +785,15 @@ h6,
     border-color: #d1d5db !important;
     background: #ffffff !important;
     box-shadow: none !important;
+  }
+
+  /* Expand technical details for print; hide the disclosure chrome */
+  .portfolio-cv .experience-tech-details > summary {
+    display: none !important;
+  }
+
+  .portfolio-cv .experience-tech-details > *:not(summary) {
+    display: block !important;
   }
 
 }

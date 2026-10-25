@@ -77,9 +77,7 @@ export const RESUME_FALLBACK: ResumeData = {
       role: "Independent Python Backend Engineer",
       company: "Independent — personal website",
       period: "2022-Present",
-      description:
-        "Operate this FastAPI + Vue platform as a public hiring sample:" +
-        " cookie auth, CSRF, SSRF-safe fetches, workers, and CI.",
+      description: "Public FastAPI + Vue hiring sample.",
       highlights: [
         "Cookie auth with capability RBAC, CSRF origin checks on mutating /api (staging/production), and fail-closed rate limits",
         "SSRF-safe outbound HTTP: public DNS off the event loop, TLS SNI preserved on IP connect, redirect hop re-validation",

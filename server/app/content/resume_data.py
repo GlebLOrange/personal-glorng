@@ -91,10 +91,7 @@ _RESUME_RAW: dict[str, Any] = {
             "role": "Independent Python Backend Engineer",
             "company": "Independent — personal website",
             "period": "2022-Present",
-            "description": (
-                "Operate this FastAPI + Vue platform as a public hiring sample:"
-                " cookie auth, CSRF, SSRF-safe fetches, workers, and CI."
-            ),
+            "description": "Public FastAPI + Vue hiring sample.",
             "highlights": [
                 (
                     "Cookie auth with capability RBAC, CSRF origin checks on"

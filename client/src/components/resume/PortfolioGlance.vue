@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import { Card } from "@/components/ui/card";
+import { PORTFOLIO_CV_TILE_CLASS } from "@/constants/portfolioSections";
 import type { ResumeData } from "@/types";
 import { buildGlanceStats } from "@/utils/resumeGlance";
 
@@ -25,7 +26,7 @@ const stats = computed(() => buildGlanceStats(props.resume));
       :href="stat.href"
       variant="compact"
       hoverable
-      class="min-w-0 h-full"
+      :class="['min-w-0 h-full', PORTFOLIO_CV_TILE_CLASS]"
     >
       <p class="text-label text-accent-blue mb-2">{{ stat.label }}</p>
       <p class="font-data text-3xl font-semibold tracking-tight text-surface-light mb-2">

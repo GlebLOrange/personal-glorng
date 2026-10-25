@@ -3,6 +3,7 @@ import { RouterLink } from "vue-router";
 
 import { Card } from "@/components/ui/card";
 import { colorThemeResolved } from "@/composables/useColorTheme";
+import { PORTFOLIO_CV_TILE_CLASS } from "@/constants/portfolioSections";
 import { projectArtForSlug } from "@/constants/projectArt";
 import type { Project } from "@/types";
 
@@ -46,7 +47,7 @@ function artSrc(slug: string): string {
       v-for="proj in projects"
       :key="proj.slug"
       as="article"
-      class="min-w-0 overflow-hidden !p-0"
+      :class="['min-w-0 overflow-hidden !p-0', PORTFOLIO_CV_TILE_CLASS]"
     >
       <div class="overflow-hidden" aria-hidden="true">
         <img
