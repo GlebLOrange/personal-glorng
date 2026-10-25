@@ -8,7 +8,7 @@ Shared entry for Cursor, Antigravity, and Claude. Skills and rules stay under [`
 |-------------|------|
 | Edit application code | [`CODING_STANDARDS.md`](CODING_STANDARDS.md) |
 | Set up env, run services, or run checks | [`docs/guide/getting-started.md`](docs/guide/getting-started.md), [`docs/guide/contributing.md`](docs/guide/contributing.md), [`README.md`](README.md) |
-| Start a stack, back up, or maintain the DB | [`.cursor/commands/ops.md`](.cursor/commands/ops.md) (`/ops`) |
+| Start a stack, back up, or maintain the DB | [`.cursor/commands/ops.md`](.cursor/commands/ops.md) (`/ops`); preflight [`.cursor/commands/maintain.md`](.cursor/commands/maintain.md) (`/maintain`) |
 | Use Docker on a Cursor Cloud VM | [`docs/operations/cloud-vm.md`](docs/operations/cloud-vm.md) |
 
 Personas: [`.cursor/agents/README.md`](.cursor/agents/README.md). Orchestration: [`.cursor/commands/task-loop.md`](.cursor/commands/task-loop.md).
