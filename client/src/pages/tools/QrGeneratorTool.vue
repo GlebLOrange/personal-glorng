@@ -11,7 +11,6 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
-import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 import { ADMIN_MOBILE_LIST_CLASS, ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import { api } from "@/composables/useApi";
@@ -339,21 +338,6 @@ onMounted(() => {
           @next="goToPage(page + 1)"
           @last="goToPage(totalPages)"
         />
-      </section>
-      <section v-else class="min-w-0">
-        <EmptyState
-          title="sign in to manage"
-          description="save and list your QR codes after signing in."
-        >
-          <template #action>
-            <RouterLink
-              :to="{ name: 'login', query: { redirect: '/qr-generator' } }"
-              class="nav-link inline"
-            >
-              sign in
-            </RouterLink>
-          </template>
-        </EmptyState>
       </section>
     </div>
   </PageShell>

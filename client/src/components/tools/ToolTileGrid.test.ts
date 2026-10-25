@@ -244,35 +244,6 @@ describe("ToolTileGrid", () => {
     expect(docs.attributes("rel")).toBe("noopener noreferrer");
     expect(inApp.map((link) => link.props("to"))).not.toContain("https://example.test/docs");
 
-    const chips = wrapper.get("nav[aria-label='Sections']").findAll("a");
-    expect(chips.map((chip) => chip.attributes("href"))).toEqual(["#utilities", "#operations"]);
-    expect(chips[0].classes()).toEqual(expect.arrayContaining(["h-11", "min-w-11"]));
-    expect(wrapper.get("#utilities").classes()).toContain("scroll-mt-24");
-  });
-
-  it("omits the admin section chip row when only one section is present", () => {
-    const wrapper = mount(ToolTileGrid, {
-      props: {
-        presentation: "admin",
-        sections: [
-          {
-            category: "content",
-            label: "Content",
-            services: [
-              service({
-                slug: "news",
-                name: "manage news",
-                description: "curated worldwide news digest",
-                adminRoute: "/admin/news",
-              }),
-            ],
-          },
-        ],
-      },
-      global: { stubs: { RouterLink: routerLinkStub } },
-    });
-
-    expect(wrapper.find("nav").exists()).toBe(false);
-    expect(wrapper.get("#content h2").get("[aria-hidden='true']").text()).toBe("Content · 1");
+    expect(wrapper.find("nav[aria-label='Sections']").exists()).toBe(false);
   });
 });

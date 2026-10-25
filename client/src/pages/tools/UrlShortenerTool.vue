@@ -44,26 +44,6 @@ const hasNextPage = computed(() => page.value < totalPages.value);
 const hasPreviousPage = computed(() => page.value > 1);
 const canShorten = computed(() => Boolean(newUrl.value.trim()) && !loading.value);
 
-/** Guest demo rows — non-interactive sample short links. */
-const SAMPLE_URLS: UrlItem[] = [
-  {
-    id: -1,
-    code: "demo",
-    original_url: "https://example.com/portfolio",
-    title: "portfolio demo",
-    clicks: 12,
-    created_at: "2026-01-01T00:00:00Z",
-  },
-  {
-    id: -2,
-    code: "docs",
-    original_url: "https://example.com/docs",
-    title: "API docs sample",
-    clicks: 4,
-    created_at: "2026-01-02T00:00:00Z",
-  },
-];
-
 const URL_FORMAT_HINT = "enter a full URL like https://example.com";
 
 function isShortenableUrl(raw: string): boolean {
@@ -266,30 +246,6 @@ onMounted(loadUrls);
           @last="goToPage(totalPages)"
         />
       </template>
-    </div>
-    <div v-else class="min-w-0 space-y-3" aria-label="sample short links">
-      <p class="text-sm text-surface-mid">sample links (sign in to manage your own)</p>
-      <ul class="space-y-2">
-        <li
-          v-for="sample in SAMPLE_URLS"
-          :key="sample.id"
-          class="rounded-lg border border-transparent bg-surface-card px-3 py-3"
-        >
-          <p class="text-sm font-medium text-surface-light">{{ sample.title }}</p>
-          <p class="mt-0.5 font-data text-xs text-surface-mid">
-            /s/{{ sample.code }} → {{ sample.original_url }}
-          </p>
-        </li>
-      </ul>
-      <p class="text-sm text-surface-sage">
-        <RouterLink
-          :to="{ name: 'login', query: { redirect: '/shortener' } }"
-          class="nav-link inline"
-        >
-          sign in
-        </RouterLink>
-        to view, edit, and delete your short urls.
-      </p>
     </div>
   </PageShell>
 </template>

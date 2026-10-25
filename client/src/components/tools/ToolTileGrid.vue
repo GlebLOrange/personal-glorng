@@ -21,7 +21,7 @@ const props = withDefaults(
     /** Resolve in-app route for a service (Tools page). Ignored when service.external. */
     resolveRoute?: (tool: PlatformService) => string;
     gapClass?: string;
-    /** When false, hide per-section h2 (e.g. category already shown in tabs). */
+    /** When false, hide per-section category headings. */
     showCategoryHeadings?: boolean;
     /** Use h3 when this grid sits under a parent section heading (e.g. “your tools”). */
     categoryHeading?: "h2" | "h3";
@@ -47,9 +47,6 @@ const props = withDefaults(
 
 const isPublicPresentation = computed(() => props.presentation === "public");
 const isAdminPresentation = computed(() => props.presentation === "admin");
-const showAdminSectionChips = computed(
-  () => isAdminPresentation.value && props.sections.length > 1,
-);
 
 const sectionClass = computed(() =>
   props.showCategoryHeadings ? (props.density === "compact" ? "mb-6" : "mb-8") : "mb-0",
@@ -114,32 +111,14 @@ function chipFor(tool: PlatformService): ToolTileChip | undefined {
 function showAdminDemoChip(tool: PlatformService): boolean {
   return isAdminPresentation.value && ADMIN_HUB_DEMO_SLUGS.has(tool.slug);
 }
-
-function sectionDomId(section: ToolTileSection): string {
-  return section.category;
-}
 </script>
 
 <template>
-  <nav
-    v-if="showAdminSectionChips"
-    aria-label="Sections"
-    class="sticky top-0 z-20 mb-4 flex h-11 min-w-0 flex-nowrap items-stretch gap-2 overflow-x-auto bg-surface-dark"
-  >
-    <a
-      v-for="section in sections"
-      :key="section.category"
-      :href="`#${sectionDomId(section)}`"
-      class="inline-flex h-11 min-w-11 shrink-0 items-center whitespace-nowrap rounded-lg border border-transparent bg-surface-card px-3 text-sm text-surface-sage transition-colors hover:border-accent-coral/40 hover:bg-accent-coral/15 focus-visible:border-accent-coral/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50"
-    >
-      {{ section.label }}
-    </a>
-  </nav>
   <section
     v-for="section in sections"
-    :id="sectionDomId(section)"
+    :id="section.category"
     :key="section.category"
-    class="min-w-0 scroll-mt-24"
+    class="min-w-0"
     :class="sectionClass"
   >
     <component :is="categoryHeading" v-if="showSectionHeading(section)" :class="headingClass">
