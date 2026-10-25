@@ -129,6 +129,7 @@ What gets written to Google: event `summary=title`, start=end=`scheduled_at` (UT
 - **Tasks** = source of truth
 - **google_sync_queue** = durable outbox Task → Calendar
 - **Celery** = Telegram reminder delivery + periodic sync/overdue cleanup
+- **2026-10-25:** Sync now only drains pending queue rows — it does not backfill tasks that never got a CREATE enqueue (e.g. seed via plain `create_task`). Calendar create on task save requires `create_with_sync` + linked Google creds; Telegram “notify” is confirm reply + scheduled reminders, not a sync ack.
 
 ## Related
 
