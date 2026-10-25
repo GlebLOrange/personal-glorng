@@ -43,15 +43,23 @@ const catalogTools = computed((): PlatformService[] => {
 /** Ops hub tiles — only for logged-in superadmin on /tools. */
 const adminTools = computed((): PlatformService[] => {
   if (!isSuperuser.value) return [];
+  const catalogSlugs = new Set(catalogTools.value.map((tool) => tool.slug));
   return PLATFORM_SERVICES.filter((tool) => {
     if (!ADMIN_HUB_SERVICE_SLUGS.has(tool.slug)) return false;
+    if (catalogSlugs.has(tool.slug)) return false;
     if (tool.slug === "ai-chat" && !isAiChatEnabled()) return false;
     return Boolean(tool.adminRoute);
   });
 });
 
 const sections = computed(() => groupServicesForToolsPage(catalogTools.value));
-const adminSections = computed(() => groupAdminHub(adminTools.value));
+/** Prefix hub section ids so they do not collide with catalog ids (e.g. content). */
+const adminSections = computed(() =>
+  groupAdminHub(adminTools.value).map((section) => ({
+    ...section,
+    category: `hub-${section.category}`,
+  })),
+);
 
 const hasAnyTools = computed(
   () =>
