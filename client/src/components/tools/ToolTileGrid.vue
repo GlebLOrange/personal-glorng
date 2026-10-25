@@ -96,7 +96,7 @@ function showSectionHeading(section: ToolTileSection): boolean {
 }
 
 function tileHint(tool: PlatformService): string | undefined {
-  if (isPublicPresentation.value) {
+  if (isPublicPresentation.value || isAdminPresentation.value) {
     return publicTileBlurbForSlug(tool.slug);
   }
   return tileHintForSlug(tool.slug);
@@ -170,15 +170,9 @@ function showAdminDemoChip(tool: PlatformService): boolean {
               </span>
             </span>
             <p
-              v-if="isAdminPresentation"
-              class="mt-0.5 line-clamp-1 text-xs leading-snug break-words text-surface-mid"
-            >
-              {{ tool.description }}
-            </p>
-            <p
-              v-else-if="tileHint(tool)"
+              v-if="tileHint(tool)"
               class="mt-0.5 text-xs leading-snug break-words text-surface-mid"
-              :class="isPublicPresentation ? '' : 'line-clamp-2'"
+              :class="isAdminPresentation ? 'line-clamp-1' : isPublicPresentation ? '' : 'line-clamp-2'"
             >
               {{ tileHint(tool) }}
             </p>

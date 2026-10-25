@@ -1,11 +1,37 @@
 <script setup lang="ts">
+import { nextTick, onMounted, useTemplateRef, watch } from "vue";
+
+import { iconFitTransform } from "@/components/icons/iconFit";
+
 /**
  * Monoline catalog icons for admin/tools tiles.
  * Mapped by platform service slug; unknown slugs get a plain square.
  */
-defineProps<{
+const props = defineProps<{
   slug: string;
 }>();
+
+const glyph = useTemplateRef<SVGGElement>("glyph");
+
+function fitGlyph(): void {
+  const el = glyph.value;
+  if (!el) return;
+  try {
+    const transform = iconFitTransform(el.getBBox());
+    if (transform) el.setAttribute("transform", transform);
+    else el.removeAttribute("transform");
+  } catch {
+    // ponytail: happy-dom has no SVG layout, so getBBox throws. The browser still fits.
+  }
+}
+
+onMounted(fitGlyph);
+watch(
+  () => props.slug,
+  () => {
+    void nextTick(fitGlyph);
+  },
+);
 </script>
 
 <template>
@@ -17,8 +43,10 @@ defineProps<{
     stroke-width="1.75"
     stroke-linecap="round"
     stroke-linejoin="round"
+    class="tool-icon"
     aria-hidden="true"
   >
+    <g ref="glyph">
     <!-- tasks: checklist -->
     <template v-if="slug === 'tasks'">
       <rect x="4" y="4" width="16" height="16" rx="2" />
@@ -98,8 +126,10 @@ defineProps<{
 
     <!-- password-generator: key -->
     <template v-else-if="slug === 'password-generator'">
-      <circle cx="8" cy="12" r="4" />
-      <path d="M12 12h9M18 12v3M21 12v2" />
+      <circle cx="8" cy="15" r="5" />
+      <path d="m12.2 11.2 8-8" />
+      <path d="m16.2 6.2 2.4 2.4" />
+      <path d="m18.4 4 2.4 2.4" />
     </template>
 
     <!-- qr-generator: finder frames + filled modules (6-unit gaps) -->
@@ -168,7 +198,8 @@ defineProps<{
 
     <!-- app-logs: stacked lines -->
     <template v-else-if="slug === 'app-logs'">
-      <path d="M5 7h14M5 12h14M5 17h10" />
+      <rect x="6" y="3" width="12" height="18" rx="2" />
+      <path d="M9 8h6M9 12h6M9 16h4" />
     </template>
 
     <!-- search: magnifying glass -->
@@ -214,5 +245,12 @@ defineProps<{
     <template v-else>
       <rect data-icon="fallback" x="5" y="5" width="14" height="14" rx="2" />
     </template>
+    </g>
   </svg>
 </template>
+
+<style scoped>
+.tool-icon :deep(*) {
+  vector-effect: non-scaling-stroke;
+}
+</style>
