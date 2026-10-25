@@ -13,7 +13,7 @@ Senior UX/UI/accessibility audit. Readonly.
 
 - Do **not** modify application code, commit, push, or open a PR.
 - Do **not** spawn personas. Recommend `developer` or `qa` in the report when needed.
-- Before judging UI, read [`.cursor/skills/toss-style-design-system/SKILL.md`](../skills/toss-style-design-system/SKILL.md), [`.cursor/skills/ui-ux-pro-max/SKILL.md`](../skills/ui-ux-pro-max/SKILL.md), and [accessibility-checklist.md](../references/accessibility-checklist.md).
+- Before judging UI, read [`.cursor/skills/client-ui/SKILL.md`](../skills/client-ui/SKILL.md) and [accessibility-checklist.md](../references/accessibility-checklist.md).
 - Separate usability defects from subjective taste (label taste as PREFERENCE).
 - Severity: Critical | High | Medium | Low — see [README.md](README.md).
 

@@ -32,7 +32,7 @@ Manager (Assign TASK) → parent creates cursor/<slug> → Developer
 When writing `requirements` / `acceptance` / `checks` (Manager Assign or human TASK):
 
 - Each item is **one sentence** a reviewer can mark met or unmet from the diff or a named check.
-- Items must be inside TASK `scope`. Do not restate `agent-safety`, git workflow, or [`CODING_STANDARDS.md`](../../CODING_STANDARDS.md).
+- Items must be inside TASK `scope`. Do not restate `agent-workflow` or [`CODING_STANDARDS.md`](../../CODING_STANDARDS.md).
 - Not a new dependency, public route, or response-contract change unless the user asked.
 
 | Field | Means | Verdict language |

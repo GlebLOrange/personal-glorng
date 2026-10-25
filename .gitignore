@@ -80,8 +80,27 @@ Thumbs.db
 # Local git worktrees (created under repo root)
 .worktrees/
 
-# npx skills — personal/global installs; mirrors are local-only
-.agents/
-.claude/
+# npx skills lockfile stays local-only
 skills-lock.json
+
+# Shared agent activation for Cursor / Antigravity / Claude (tracked).
+# Ignore other local mirrors under .agents/ and .claude/ (e.g. npx skills dumps).
+.agents/*
+!.agents/skills
+!.agents/agents/
+!.agents/agents/**
+!.agents/rules/
+!.agents/rules/**
+!.agents/mcp_config.json
+!.agents/hooks.json
+!.agents/workflows/
+!.agents/workflows/**
+
+.claude/*
+!.claude/skills
+!.claude/agents/
+!.claude/agents/**
+!.claude/commands/
+!.claude/commands/**
+!.claude/settings.json
 

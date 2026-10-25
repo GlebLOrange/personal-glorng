@@ -47,7 +47,7 @@ sh scripts/test_check_staged_token_limit.sh
 - **Python:** Ruff, type annotations on functions, pytest for tests under `server/tests/`
 - **Vue/TS:** ESLint + Prettier; match existing component and composable patterns
 - **Dependencies:** check `server/pyproject.toml` and `client/package.json` before adding packages
-- **Agents:** [AGENTS.md](../../AGENTS.md) (entry map), [CODING_STANDARDS.md](../../CODING_STANDARDS.md) (skill index), [`.cursor/agents/README.md`](../../.cursor/agents/README.md). Keep project skills in `.cursor/skills/` only; do not commit `.agents/`, `.claude/`, or `skills-lock.json`.
+- **Agents:** [AGENTS.md](../../AGENTS.md) (entry map), [CODING_STANDARDS.md](../../CODING_STANDARDS.md) (skill index), [`.cursor/agents/README.md`](../../.cursor/agents/README.md). Keep skill and rule bodies in [`.cursor/skills/`](../../.cursor/skills/) and [`.cursor/rules/`](../../.cursor/rules/). Tracked [`.agents/`](../../.agents/) and [`.claude/`](../../.claude/) symlinks activate the same config for Antigravity and Claude; do not commit `skills-lock.json` or other local skill mirrors.
 
 ## Documentation
 

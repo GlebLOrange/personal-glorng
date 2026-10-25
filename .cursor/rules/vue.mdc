@@ -1,0 +1,7 @@
+---
+description: Vue 3 Composition API, TypeScript, Pinia auth session, and Vitest for the Vite client
+globs: ["client/src/**/*.ts", "client/src/**/*.vue"]
+alwaysApply: false
+---
+
+When this rule applies, follow the `vue` skill: read `.cursor/skills/vue/SKILL.md` and apply it.

@@ -16,7 +16,7 @@ Implement a scoped TASK (or human ask) on `cursor/<slug>`. Only mutating persona
 - Do **not** merge to `main`. No production credentials.
 - Smallest correct diff; no new dependencies unless the TASK/human approves; no public API contract changes unless the TASK allows it.
 - If TASK lists non-empty `checks:`: run **only** those. If `checks` is empty or omitted: record `SKIPPED (empty checks)` — do not ask; never claim PASS.
-- If there is no TASK at all: follow `agent-safety` (ask once before claiming tests pass).
+- If there is no TASK at all: follow `agent-workflow` (ask once before claiming tests pass).
 - From `/task-loop`: do **not** commit, push, or open a PR.
 - Do **not** spawn personas.
 - Gortex: follow `.cursor/rules/gortex-workflow.mdc` (including `repo_not_tracked` fallback).
