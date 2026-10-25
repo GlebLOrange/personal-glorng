@@ -1,6 +1,9 @@
 ---
 name: client-server
-description: How the Vue client and FastAPI server meet — request path, useApi, and page-to-router-to-service pairing.
+description: >-
+  Nginx request path, useApi, and page-to-router-to-service pairing between the Vue
+  client and FastAPI server. Use when changing client API calls, server routes, or the
+  path between them.
 ---
 # Client / server contract
 
