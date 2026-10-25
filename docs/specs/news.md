@@ -1,37 +1,45 @@
-# Spec: Curated News
+# Spec: Curated News (current state)
+
+**Status:** Shipped on `main`. This page is a status summary; path-level detail lives in the generated OpenAPI catalog.
 
 ## Objective
 
-Build a public curated news digest that publishes short, readable summaries from trusted RSS/Atom feeds. The feature should help visitors scan worldwide news by tag, while preserving attribution and linking to the original publisher for every item.
+Public curated news digest from trusted RSS/Atom feeds: short summaries with attribution and links to the original publisher. Visitors browse by tag; admins manage articles and sources.
 
-## Scope
+## Scope (shipped)
 
-Version 1 ingests only trusted feed metadata: title, excerpt, source, URL, and publication time. It does not scrape full article pages, bypass paywalls, or republish full articles.
+- Ingests feed metadata only (title, excerpt, source, URL, publication time) — no full-article scrape or paywall bypass.
+- AI rewrite (when configured) returns structured title/summary/bullets/tags; backend validates lengths and tags before save.
+- Telegram HTML is generated and escaped on the backend.
 
-## Source Policy
+## News sources (`NewsSourceResponse`)
 
-News sources are configured with an allowlist. Each source has a name, feed URL, language, default themes (used as fallback tags), enabled flag, and per-run cap. Items without a stable source URL are skipped. Duplicate source URLs are not republished.
+Admin source records expose (see `server/app/schemas/news.py`):
 
-## AI Contract
+| Field | Notes |
+|-------|--------|
+| `name` | Display name |
+| `feed_url` | RSS/Atom URL |
+| `host` | Optional host label |
+| `category` | Default `world` |
+| `region` | Default `global` |
+| `enabled` | Whether ingest includes the source |
+| `last_error` | Last fetch/parse error, if any |
+| `last_fetched_at` | Last successful/attempted fetch time |
 
-AI receives only feed metadata and must return structured JSON:
+Also returned: `id`, `created_at`, `updated_at`. Ingest config may still use language / default themes / per-run caps via `NEWS_SOURCES_JSON` and worker settings — see [Configuration](/reference/configuration#news-ingest).
 
-- `title`: readable title, 90 characters max.
-- `summary`: concise paragraph, 600 characters max.
-- `bullets`: 2-5 key points, 180 characters max each.
-- `tags`: 1-4 allowed tag names.
+## API (summary)
 
-The backend validates lengths and allowed tags before saving. The frontend renders structured fields directly. Telegram HTML is generated and escaped on the backend (not taken from the AI payload).
+Mounted under `/api/tools/news` (sources under `/api/tools/news/sources`). **Authoritative path list:** [API endpoints (generated)](/generated/api-endpoints) (regenerate with `make docs-generate`).
 
-## API Contract
+Public (rate limited):
 
-Public:
-
-- `GET /api/tools/news`
+- `GET /api/tools/news` — published list
 - `GET /api/tools/news/tags`
 - `GET /api/tools/news/{slug}`
 
-Admin (articles):
+Admin articles (`news:read` / `news:write`):
 
 - `GET /api/tools/news?manage=true` (optional `status`)
 - `GET /api/tools/news/stats`
@@ -43,37 +51,20 @@ Admin (articles):
 - `PUT /api/tools/news/{id}`
 - `DELETE /api/tools/news/{id}`
 
-Admin (sources):
+Admin sources (`news-sources:*`):
 
-- `GET /api/tools/news/sources`
-- `POST /api/tools/news/sources`
+- `GET|POST /api/tools/news/sources`
 - `POST /api/tools/news/sources/refresh`
-- `PUT /api/tools/news/sources/{id}`
-- `DELETE /api/tools/news/sources/{id}`
+- `PUT|DELETE /api/tools/news/sources/{id}`
 
-## Telegram Template
+## Ops pointers
 
-Telegram posts use HTML parse mode with escaped dynamic values:
+- Env: `NEWS_INGEST_ENABLED`, `NEWS_SOURCES_JSON`, Telegram channel vars — [Configuration](/reference/configuration#news-ingest)
+- Social preview: `/og/news/{slug}` + `nginx/social_preview_map.conf`
+- How-tos stay on owner pages (security, deployment); this spec does not duplicate them
 
-```text
-<b>{title}</b>
+## Success criteria (met)
 
-{summary}
-
-• {bullet_1}
-• {bullet_2}
-• {bullet_3}
-
-Tags: #{tag_1} #{tag_2}
-Source: <a href="{source_url}">{source_name}</a>
-Read on site: {site_url}/news/{slug}
-```
-
-## Success Criteria
-
-- `/news` lists published items and shows tags on each card.
-- `/news/:slug` shows a readable detail page with source attribution.
-- A scheduled job can ingest trusted feeds and skip duplicates.
-- Valid AI output auto-publishes to the site.
-- Telegram posting is retryable and records the message id when successful.
-- Admin users can trigger ingestion, change editorial status (draft → pending review → scheduled / future → published, or private / trash), delete items, and repost to Telegram.
+- `/news` and `/news/:slug` render published items with tags and source attribution
+- Ingest skips duplicates; Telegram publish is retryable and stores message id
+- Admins can ingest, edit status, delete, manage sources, and repost to Telegram
