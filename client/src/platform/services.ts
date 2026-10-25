@@ -302,7 +302,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     name: "db maintenance",
     category: "operations",
     categoryLabel: "operations",
-    description: "run backup and migrate with a captcha gate",
+    description: "backup, sync, cleanup, or seed with a captcha gate",
     apiPrefix: "/admin/maintenance",
     adminRoute: "/admin/db-maintenance",
     icon: "",

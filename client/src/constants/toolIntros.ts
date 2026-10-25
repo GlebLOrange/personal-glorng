@@ -2,7 +2,7 @@
 const TOOL_TILE_HINTS: Readonly<Record<string, string>> = {
   "health-checker": "Check uptime, latency, SSL, and DNS.",
   "data-extract": "Pull rows out of CSV, JSON, and XML.",
-  "db-maintenance": "Backup or migrate, behind a captcha.",
+  "db-maintenance": "Backup, sync, cleanup, or seed — behind a captcha.",
 };
 
 /** Optional launcher-tile hint for a platform service slug. */
