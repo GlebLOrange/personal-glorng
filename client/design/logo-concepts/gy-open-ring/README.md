@@ -2,7 +2,7 @@
 
 Primary brand lockup: **heavy open-ring G** (flat crossbar, square period / terminal cursor) with a quiet three-stroke Y and one junction node. Transparent ground. No gear teeth, no circuit board.
 
-**Live:** `lockup.svg` → `gy-logo.svg`; `mark.svg` → `gy-mark-simple.svg` / favicon. Light theme: `*-light.svg` → `gy-logo-light.svg` / `gy-mark-simple-light.svg` via `SiteLogo`. Welcome: `welcome-bg.svg` / `welcome-bg-light.svg` on the portfolio hero only.
+**Live:** `lockup.svg` → `gy-logo.svg`; `mark.svg` → `gy-mark-simple.svg` / favicon. Light theme: `*-light.svg` → `gy-logo-light.svg` / `gy-mark-simple-light.svg` via `SiteLogo`.
 
 ## Palette (site dark tokens)
 
@@ -28,7 +28,6 @@ Primary brand lockup: **heavy open-ring G** (flat crossbar, square period / term
 | --- | --- |
 | `mark.svg` / `mark-light.svg` | Open-ring G + square period |
 | `lockup.svg` / `lockup-light.svg` | Horizontal G · Y |
-| `welcome-bg.svg` / `welcome-bg-light.svg` | Portfolio hero decoration |
 
 ## Clear space
 
