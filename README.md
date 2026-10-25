@@ -34,7 +34,7 @@ make docs-dev   # local handbook → http://localhost:5173
 | **Handbook (local)** | `make docs-dev` → [http://localhost:5173](http://localhost:5173) |
 | **Handbook (source)** | [docs/index.md](docs/index.md) |
 | **Dev modes / make targets** | [Development](docs/guide/development.md) |
-| **API / Postman** | [docs/reference/postman.md](docs/reference/postman.md) |
+| **API / OpenAPI** | [docs/reference/api-tools.md](docs/reference/api-tools.md) |
 | **ADRs** | [docs/adr/](docs/adr/) |
 | **Cursor / agents** | [AGENTS.md](AGENTS.md), [CODING_STANDARDS.md](CODING_STANDARDS.md) |
 
