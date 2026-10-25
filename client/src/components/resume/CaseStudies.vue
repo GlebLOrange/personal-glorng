@@ -3,7 +3,10 @@ import { RouterLink } from "vue-router";
 
 import { Card } from "@/components/ui/card";
 import { colorThemeResolved } from "@/composables/useColorTheme";
-import { PORTFOLIO_CV_TILE_CLASS } from "@/constants/portfolioSections";
+import {
+  PORTFOLIO_CV_CHIP_CLASS,
+  PORTFOLIO_CV_TILE_CLASS,
+} from "@/constants/portfolioSections";
 import { projectArtForSlug } from "@/constants/projectArt";
 import type { Project } from "@/types";
 
@@ -84,7 +87,7 @@ function artSrc(slug: string): string {
           <span
             v-for="t in proj.tech"
             :key="t"
-            class="inline-flex items-center rounded-lg bg-surface-dark px-2.5 py-1 text-sm text-surface-sage"
+            :class="[PORTFOLIO_CV_CHIP_CLASS, 'text-sm']"
           >
             {{ t }}
           </span>
