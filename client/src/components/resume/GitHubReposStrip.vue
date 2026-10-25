@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Card } from "@/components/ui/card";
+import { PORTFOLIO_CV_TILE_CLASS } from "@/constants/portfolioSections";
 import type { PublicGitHubRepo } from "@/types";
 
 defineProps<{
@@ -32,6 +33,7 @@ defineProps<{
         target="_blank"
         rel="noopener noreferrer"
         hoverable
+        :class="PORTFOLIO_CV_TILE_CLASS"
       >
         <h3 class="card-title">
           {{ repo.name }}

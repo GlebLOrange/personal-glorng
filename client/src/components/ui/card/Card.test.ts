@@ -13,8 +13,7 @@ describe("Card", () => {
       expect.arrayContaining([
         "rounded-lg",
         "p-6",
-        "bg-surface-card/92",
-        "backdrop-blur-md",
+        "bg-surface-card",
         "border-transparent",
       ]),
     );

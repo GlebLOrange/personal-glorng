@@ -110,36 +110,14 @@ onUnmounted(() => {
     </div>
 
     <SectionWrapper width="full">
-      <div class="relative isolate overflow-hidden">
-        <div
-          class="pointer-events-none absolute inset-0 -z-10 print:hidden"
-          aria-hidden="true"
-        >
-          <img
-            src="/brand/welcome-bg.webp"
-            alt=""
-            class="absolute inset-0 h-full w-full object-cover object-center opacity-50 [html[data-theme=dark]_&]:opacity-85"
-            width="1280"
-            height="720"
-            decoding="async"
-          />
-          <!-- Center veil keeps the name AA; the photo stays visible toward the edges -->
-          <div
-            class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--color-surface-dark)_0%,transparent_72%)]"
-          />
-          <div
-            class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-dark to-transparent"
-          />
-        </div>
-        <HeroBlock
-          :name="resume.name"
-          :title="resume.title"
-          :tagline="resume.tagline"
-          :location="resume.location"
-          :availability="resume.availability"
-          @inquire="contactModal = 'inquiry'"
-        />
-      </div>
+      <HeroBlock
+        :name="resume.name"
+        :title="resume.title"
+        :tagline="resume.tagline"
+        :location="resume.location"
+        :availability="resume.availability"
+        @inquire="contactModal = 'inquiry'"
+      />
     </SectionWrapper>
 
     <SectionWrapper id="about" title="about" width="full" label-tone="primary">

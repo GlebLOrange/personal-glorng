@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Card } from "@/components/ui/card";
+import { PORTFOLIO_CV_TILE_CLASS } from "@/constants/portfolioSections";
 import type { SkillGroup } from "@/types";
 
 defineProps<{
@@ -9,7 +10,12 @@ defineProps<{
 
 <template>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <Card v-for="group in skills" :key="group.category" variant="compact" class="min-w-0 h-full">
+    <Card
+      v-for="group in skills"
+      :key="group.category"
+      variant="compact"
+      :class="['min-w-0 h-full', PORTFOLIO_CV_TILE_CLASS]"
+    >
       <h3 class="card-title mb-1">
         {{ group.category }}
       </h3>
@@ -20,7 +26,7 @@ defineProps<{
         <li
           v-for="item in group.items"
           :key="item"
-          class="inline-flex items-center rounded-lg bg-surface-dark px-2.5 py-1 text-xs text-surface-sage"
+          class="inline-flex items-center rounded-lg bg-surface-dark/28 px-2.5 py-1 text-xs text-surface-sage"
         >
           {{ item }}
         </li>
