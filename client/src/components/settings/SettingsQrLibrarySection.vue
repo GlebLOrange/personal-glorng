@@ -60,7 +60,7 @@ onMounted(() => {
       <CardHeader class="!mb-3 flex flex-wrap items-center justify-between gap-2">
         <CardTitle>saved qr codes</CardTitle>
         <RouterLink to="/qr-generator" class="text-sm text-accent hover:underline">
-          open generator
+          Open generator →
         </RouterLink>
       </CardHeader>
 

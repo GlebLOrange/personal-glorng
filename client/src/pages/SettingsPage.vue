@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, ref } from "vue";
+import * as CookieConsent from "vanilla-cookieconsent";
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from "vue";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
 import SettingsPreferencesSection from "@/components/settings/SettingsPreferencesSection.vue";
 import SettingsQrLibrarySection from "@/components/settings/SettingsQrLibrarySection.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
+import { Card, CardBody } from "@/components/ui/card";
 import { useUserPreferences } from "@/composables/useUserPreferences";
 import { useApiAction } from "@/composables/useApiAction";
+import {
+  useColorTheme,
+  type ColorThemePreference,
+} from "@/composables/useColorTheme";
 import { usePermissions } from "@/composables/usePermissions";
 import { PLATFORM_SERVICES } from "@/platform/services";
 import { useAuthStore } from "@/stores/auth";
@@ -17,9 +24,35 @@ const DevApiStatusBadge = import.meta.env.DEV
   ? defineAsyncComponent(() => import("@/components/dev/DevApiStatusBadge.vue"))
   : null;
 
+type SettingsSectionId = "profile" | "appearance" | "account" | "privacy" | "qr";
+
+interface SettingsNavItem {
+  id: SettingsSectionId;
+  label: string;
+}
+
 const auth = useAuthStore();
 const { permissions, canAccess } = usePermissions();
 const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPreferences();
+const { preference: colorThemePreference, setPreference } = useColorTheme();
+
+const showQrSection = computed(() => canAccess("qr-generator"));
+
+const navItems = computed((): SettingsNavItem[] => {
+  const items: SettingsNavItem[] = [
+    { id: "profile", label: "Profile" },
+    { id: "appearance", label: "Appearance" },
+    { id: "account", label: "Account" },
+    { id: "privacy", label: "Privacy" },
+  ];
+  if (showQrSection.value) {
+    items.push({ id: "qr", label: "Saved QR" });
+  }
+  return items;
+});
+
+const activeSection = ref<SettingsSectionId>("profile");
+let sectionObserver: IntersectionObserver | null = null;
 
 const accessibleTools = computed(() =>
   PLATFORM_SERVICES.filter(
@@ -38,23 +71,21 @@ const newPasswordConfirm = ref("");
 const { run: runProfile, loading: savingProfile } = useApiAction();
 const { run: runEmail, loading: savingEmail } = useApiAction();
 const { run: runPassword, loading: savingPassword } = useApiAction();
-const { run: runPrefs, loading: savingPrefs } = useApiAction();
 
 const passwordCheck = computed(() => passwordStrength(newPassword.value));
 const profileDisplayName = computed(() => displayName.value.trim() || null);
-const isProfileUnchanged = computed(
+const isNameUnchanged = computed(
   () => profileDisplayName.value === (auth.user?.display_name ?? null),
 );
-const canSaveProfile = computed(() => !isProfileUnchanged.value && !savingProfile.value);
 const isTimezoneUnchanged = computed(
   () => timezone.value.trim() === (auth.user?.timezone ?? "UTC"),
 );
 const isCurrencyUnchanged = computed(() => displayCurrency.value === savedCurrency.value);
-const canSavePrefs = computed(
+const canSaveProfile = computed(
   () =>
     !!timezone.value.trim() &&
-    (!isTimezoneUnchanged.value || !isCurrencyUnchanged.value) &&
-    !savingPrefs.value,
+    (!isNameUnchanged.value || !isTimezoneUnchanged.value || !isCurrencyUnchanged.value) &&
+    !savingProfile.value,
 );
 const isEmailUnchanged = computed(
   () => newEmail.value.trim().toLowerCase() === (auth.user?.email ?? "").toLowerCase(),
@@ -81,26 +112,77 @@ function syncFormFromUser(): void {
   newEmail.value = auth.user?.email ?? "";
 }
 
+function setTheme(next: ColorThemePreference): void {
+  setPreference(next);
+}
+
+function openCookiePreferences(): void {
+  CookieConsent.showPreferences();
+}
+
+function handleLogout(): void {
+  auth.logout();
+}
+
+function navClass(id: SettingsSectionId): string {
+  const base =
+    "shrink-0 rounded-md px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50";
+  if (activeSection.value === id) {
+    return `${base} bg-surface-card text-accent-coral`;
+  }
+  return `${base} text-surface-mid hover:text-surface-light`;
+}
+
+function observeSections(): void {
+  sectionObserver?.disconnect();
+  const ids = navItems.value.map((item) => item.id);
+  const elements = ids
+    .map((id) => document.getElementById(id))
+    .filter((el): el is HTMLElement => el !== null);
+  if (!elements.length) return;
+
+  sectionObserver = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      const top = visible[0]?.target.id as SettingsSectionId | undefined;
+      if (top) activeSection.value = top;
+    },
+    {
+      // Match sticky chip row + fixed site nav so the active link tracks the heading in view.
+      rootMargin: "-28% 0px -55% 0px",
+      threshold: [0.1, 0.35, 0.6],
+    },
+  );
+  for (const el of elements) sectionObserver.observe(el);
+}
+
 onMounted(async () => {
   syncFormFromUser();
   await loadPreferences();
   savedCurrency.value = displayCurrency.value;
+  const hash = window.location.hash.replace(/^#/, "") as SettingsSectionId;
+  if (navItems.value.some((item) => item.id === hash)) {
+    activeSection.value = hash;
+  }
+  observeSections();
+});
+
+onUnmounted(() => {
+  sectionObserver?.disconnect();
+  sectionObserver = null;
 });
 
 async function saveProfile(): Promise<void> {
   if (!canSaveProfile.value) return;
-  await runProfile(() => auth.updateProfile({ display_name: profileDisplayName.value }), {
-    successMessage: "Profile updated",
-    errorMessage: "Profile update failed",
-  });
-}
-
-async function savePreferences(): Promise<void> {
-  if (!canSavePrefs.value) return;
-  await runPrefs(
+  await runProfile(
     async () => {
-      if (!isTimezoneUnchanged.value) {
-        await auth.updateProfile({ timezone: timezone.value.trim() });
+      if (!isNameUnchanged.value || !isTimezoneUnchanged.value) {
+        await auth.updateProfile({
+          ...(!isNameUnchanged.value ? { display_name: profileDisplayName.value } : {}),
+          ...(!isTimezoneUnchanged.value ? { timezone: timezone.value.trim() } : {}),
+        });
       }
       if (!isCurrencyUnchanged.value) {
         await saveDisplayCurrency(displayCurrency.value);
@@ -109,8 +191,8 @@ async function savePreferences(): Promise<void> {
       return true;
     },
     {
-      successMessage: "Preferences saved",
-      errorMessage: "Preferences update failed",
+      successMessage: "Profile updated",
+      errorMessage: "Profile update failed",
     },
   );
 }
@@ -158,69 +240,158 @@ async function savePassword(): Promise<void> {
     max-width="5xl"
     :narrow="false"
   >
-    <div class="grid min-w-0 grid-cols-1 items-start gap-3 md:grid-cols-2">
-      <div class="flex min-w-0 flex-col gap-3">
-        <SettingsPreferencesSection
-          v-model:timezone="timezone"
-          v-model:display-currency="displayCurrency"
-          :permissions="permissions"
-          :saving="savingPrefs"
-          :can-save="canSavePrefs"
-          @save="savePreferences"
+    <div class="flex min-w-0 flex-col gap-6 md:flex-row md:items-start md:gap-8">
+      <nav
+        aria-label="Settings sections"
+        class="sticky top-20 z-10 -mx-1 overflow-x-auto bg-surface-dark/90 px-1 py-2 backdrop-blur-md md:top-24 md:w-44 md:shrink-0 md:overflow-visible md:bg-transparent md:px-0 md:py-0 md:backdrop-blur-none"
+      >
+        <ul class="flex gap-1 md:flex-col">
+          <li v-for="item in navItems" :key="item.id">
+            <a :href="`#${item.id}`" :class="navClass(item.id)">{{ item.label }}</a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="flex min-w-0 flex-1 flex-col gap-10">
+        <section id="profile" class="scroll-mt-40 md:scroll-mt-44" aria-labelledby="settings-profile-heading">
+          <h2 id="settings-profile-heading" class="mb-3 text-base font-medium text-surface-light">
+            Profile
+          </h2>
+          <SettingsPreferencesSection
+            v-model:display-name="displayName"
+            v-model:timezone="timezone"
+            v-model:display-currency="displayCurrency"
+            :saving="savingProfile"
+            :can-save="canSaveProfile"
+            @save="saveProfile"
+          />
+        </section>
+
+        <section
+          id="appearance"
+          class="scroll-mt-40 md:scroll-mt-44"
+          aria-labelledby="settings-appearance-heading"
         >
-          <div
-            v-if="DevApiStatusBadge"
-            class="flex flex-wrap items-center justify-between gap-2 px-3 py-2"
+          <h2 id="settings-appearance-heading" class="mb-3 text-base font-medium text-surface-light">
+            Appearance
+          </h2>
+          <Card variant="compact">
+            <CardBody>
+              <fieldset>
+                <legend class="mb-3 text-sm text-surface-mid">Theme</legend>
+                <div class="flex flex-wrap gap-4">
+                  <label class="inline-flex items-center gap-2 text-sm text-surface-light">
+                    <input
+                      type="radio"
+                      name="color-theme"
+                      class="size-4"
+                      style="accent-color: var(--color-accent-coral)"
+                      value="light"
+                      :checked="colorThemePreference === 'light'"
+                      @change="setTheme('light')"
+                    />
+                    light
+                  </label>
+                  <label class="inline-flex items-center gap-2 text-sm text-surface-light">
+                    <input
+                      type="radio"
+                      name="color-theme"
+                      class="size-4"
+                      style="accent-color: var(--color-accent-coral)"
+                      value="dark"
+                      :checked="colorThemePreference === 'dark'"
+                      @change="setTheme('dark')"
+                    />
+                    dark
+                  </label>
+                </div>
+              </fieldset>
+            </CardBody>
+          </Card>
+        </section>
+
+        <section id="account" class="scroll-mt-40 md:scroll-mt-44" aria-labelledby="settings-account-heading">
+          <h2 id="settings-account-heading" class="mb-3 text-base font-medium text-surface-light">
+            Account
+          </h2>
+          <SettingsAccountSection
+            v-model:new-email="newEmail"
+            v-model:email-password="emailPassword"
+            v-model:current-password="currentPassword"
+            v-model:new-password="newPassword"
+            v-model:new-password-confirm="newPasswordConfirm"
+            :permissions="permissions"
+            :saving-email="savingEmail"
+            :can-save-email="canSaveEmail"
+            :saving-password="savingPassword"
+            :can-save-password="canSavePassword"
+            @save-email="saveEmail"
+            @save-password="savePassword"
+            @logout="handleLogout"
+          />
+        </section>
+
+        <section id="privacy" class="scroll-mt-40 md:scroll-mt-44" aria-labelledby="settings-privacy-heading">
+          <h2 id="settings-privacy-heading" class="mb-3 text-base font-medium text-surface-light">
+            Privacy
+          </h2>
+          <Card variant="compact">
+            <CardBody class="space-y-3">
+              <p class="text-sm text-surface-mid">
+                Manage analytics and monitoring cookies, or read the full policy.
+              </p>
+              <div class="flex flex-wrap items-center gap-3">
+                <BaseButton type="button" variant="secondary" size="sm" @click="openCookiePreferences">
+                  cookie preferences
+                </BaseButton>
+                <RouterLink to="/privacy" class="nav-link text-sm">privacy policy</RouterLink>
+              </div>
+            </CardBody>
+          </Card>
+        </section>
+
+        <section
+          v-if="showQrSection"
+          id="qr"
+          class="scroll-mt-40 md:scroll-mt-44"
+          aria-labelledby="settings-qr-heading"
+        >
+          <h2 id="settings-qr-heading" class="mb-3 text-base font-medium text-surface-light">
+            Saved QR
+          </h2>
+          <SettingsQrLibrarySection />
+        </section>
+
+        <details
+          v-if="accessibleTools.length"
+          class="group rounded-lg border border-surface-border bg-surface-card p-4"
+        >
+          <summary
+            id="settings-tools-heading"
+            class="cursor-pointer list-none rounded text-sm font-medium text-surface-light marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 [&::-webkit-details-marker]:hidden"
           >
-            <p class="text-xs text-surface-mid">development API</p>
-            <component :is="DevApiStatusBadge" />
-          </div>
-        </SettingsPreferencesSection>
+            <span class="underline-offset-2 group-open:underline">tools you can open</span>
+          </summary>
+          <p class="mb-3 mt-3 text-sm text-surface-mid">
+            A tool you cannot access redirects to admin. Your account can open:
+          </p>
+          <ul class="flex flex-wrap gap-x-3 gap-y-2">
+            <li v-for="tool in accessibleTools" :key="tool.slug">
+              <RouterLink :to="tool.adminRoute" class="nav-link text-sm">
+                {{ tool.name }}
+              </RouterLink>
+            </li>
+          </ul>
+        </details>
 
-        <SettingsQrLibrarySection />
-      </div>
-
-      <div class="flex min-w-0 flex-col gap-3">
-        <SettingsAccountSection
-          v-model:display-name="displayName"
-          v-model:new-email="newEmail"
-          v-model:email-password="emailPassword"
-          v-model:current-password="currentPassword"
-          v-model:new-password="newPassword"
-          v-model:new-password-confirm="newPasswordConfirm"
-          :saving-profile="savingProfile"
-          :can-save-profile="canSaveProfile"
-          :saving-email="savingEmail"
-          :can-save-email="canSaveEmail"
-          :saving-password="savingPassword"
-          :can-save-password="canSavePassword"
-          @save-profile="saveProfile"
-          @save-email="saveEmail"
-          @save-password="savePassword"
-        />
+        <div
+          v-if="DevApiStatusBadge"
+          class="flex flex-wrap items-center justify-between gap-2 border-t border-surface-border pt-4"
+        >
+          <p class="text-xs text-surface-mid">development API</p>
+          <component :is="DevApiStatusBadge" />
+        </div>
       </div>
     </div>
-
-    <details
-      v-if="accessibleTools.length"
-      class="group mt-6 rounded-lg border border-surface-border bg-surface-card p-4"
-    >
-      <summary
-        id="settings-tools-heading"
-        class="cursor-pointer list-none text-sm font-medium text-surface-light marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded [&::-webkit-details-marker]:hidden"
-      >
-        <span class="underline-offset-2 group-open:underline">tools you can open</span>
-      </summary>
-      <p class="mb-3 mt-3 text-sm text-surface-mid">
-        A tool you cannot access redirects to admin. Your account can open:
-      </p>
-      <ul class="flex flex-wrap gap-x-3 gap-y-2">
-        <li v-for="tool in accessibleTools" :key="tool.slug">
-          <RouterLink :to="tool.adminRoute" class="nav-link text-sm">
-            {{ tool.name }}
-          </RouterLink>
-        </li>
-      </ul>
-    </details>
   </PageShell>
 </template>
