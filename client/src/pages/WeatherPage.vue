@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PageShell from "@/components/layout/PageShell.vue";
+import ToolBuildPanel from "@/components/tools/ToolBuildPanel.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
 import WeatherPinnedCitiesRow from "@/components/weather/WeatherPinnedCitiesRow.vue";
@@ -49,6 +50,7 @@ function handleSelect(query: string): void {
     :narrow="false"
     description="Guests can pin a few cities in this browser. Sign in to keep locations across devices."
   >
+    <ToolBuildPanel slug="weather" />
     <section class="mb-8 min-w-0">
       <WeatherLocationForm
         :add-location="handleAdd"

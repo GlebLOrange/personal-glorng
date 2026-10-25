@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
+import { storeToRefs } from "pinia";
 
 import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import PageShell from "@/components/layout/PageShell.vue";
+import ToolBuildPanel from "@/components/tools/ToolBuildPanel.vue";
 import RecipeCard from "@/components/recipes/RecipeCard.vue";
 import RecipeCookMode from "@/components/recipes/RecipeCookMode.vue";
 import RecipeDetailDrawer from "@/components/recipes/RecipeDetailDrawer.vue";
@@ -17,10 +19,45 @@ import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import { useRecipes } from "@/composables/useRecipes";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
+import { useAuthStore } from "@/stores/auth";
 import type { Recipe } from "@/types";
 
+const auth = useAuthStore();
+const { isAuthenticated } = storeToRefs(auth);
 const { can } = usePermissions();
 const canWrite = computed(() => can("recipes", "write"));
+
+/** Guest demo cards — static samples; no list API. */
+const SAMPLE_RECIPES: Recipe[] = [
+  {
+    id: -1,
+    title: "Weeknight pasta",
+    ingredients: ["spaghetti", "garlic", "olive oil", "chili flakes"],
+    steps: ["Boil pasta", "Sauté garlic", "Toss and serve"],
+    notes: "Sample recipe for guests.",
+    tags: ["demo", "pasta"],
+    image_url: null,
+    prep_time: 10,
+    cook_time: 15,
+    servings: 2,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+  },
+  {
+    id: -2,
+    title: "Citrus salad",
+    ingredients: ["oranges", "fennel", "olive oil", "salt"],
+    steps: ["Segment citrus", "Slice fennel", "Dress lightly"],
+    notes: null,
+    tags: ["demo", "salad"],
+    image_url: null,
+    prep_time: 15,
+    cook_time: null,
+    servings: 4,
+    created_at: "2026-01-02T00:00:00Z",
+    updated_at: "2026-01-02T00:00:00Z",
+  },
+];
 
 const {
   recipes,
@@ -62,6 +99,7 @@ const {
 useScrollListFingerprint(() => `${search.value}:${recipes.value.length}`);
 
 onMounted(async () => {
+  if (!isAuthenticated.value) return;
   await loadRecipes();
   await tryOpenFromQuery();
 });
@@ -93,7 +131,24 @@ function editRecipeFromCard(recipe: Recipe): void {
     :narrow="false"
     description="Personal recipe list with cook mode — saved to your account when signed in."
   >
-    <RecipeFilters v-model:search="search">
+    <ToolBuildPanel slug="recipes" />
+    <div v-if="!isAuthenticated" class="min-w-0 space-y-3" aria-label="sample recipes">
+      <p class="text-sm text-surface-mid">sample recipes (sign in to load your book)</p>
+      <ul class="space-y-2">
+        <li
+          v-for="recipe in SAMPLE_RECIPES"
+          :key="recipe.id"
+          class="rounded-lg border border-transparent bg-surface-card px-3 py-3"
+        >
+          <p class="text-sm font-medium text-surface-light">{{ recipe.title }}</p>
+          <p class="mt-0.5 text-xs text-surface-mid">
+            {{ recipe.tags.join(", ") }}
+            <span v-if="recipe.prep_time"> · {{ recipe.prep_time }}m prep</span>
+          </p>
+        </li>
+      </ul>
+    </div>
+    <RecipeFilters v-else v-model:search="search">
       <template v-if="canWrite" #actions>
         <ToolbarPillButton action="create" :disabled="listLoading" @click="openCreate">
           + recipe

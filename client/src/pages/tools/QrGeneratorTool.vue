@@ -7,6 +7,7 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import QrLibraryListItem from "@/components/admin/QrLibraryListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
+import ToolBuildPanel from "@/components/tools/ToolBuildPanel.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
@@ -191,6 +192,7 @@ onMounted(() => {
     :narrow="false"
     :description="pageDescription"
   >
+    <ToolBuildPanel slug="qr-generator" />
     <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
       <Card variant="ghost" class="min-w-0 lg:order-2">
         <form class="space-y-3" @submit.prevent="createQr">

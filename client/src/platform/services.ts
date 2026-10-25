@@ -13,20 +13,29 @@ export interface PlatformService {
   publicRoute?: string;
 }
 
-/** Ops hub tiles on /admin (not top-level personal tools). */
-export const ADMIN_HUB_SERVICE_SLUGS = new Set([
-  "feedback",
-  "audit",
-  "app-logs",
-  "search",
-  "api-docs",
-  "db-maintenance",
-  "ai-chat",
-  "email",
-  "news",
-  "news-sources",
-  "health-checker",
-]);
+/** /admin hub sections. Labels are sentence case; slugs are the tile order. */
+const ADMIN_HUB_SECTIONS = [
+  { category: "content", label: "Content", slugs: ["news", "news-sources"] },
+  { category: "productivity", label: "Productivity", slugs: ["email", "tasks"] },
+  {
+    category: "utilities",
+    label: "Utilities",
+    slugs: ["ai-chat", "url-shortener", "weather", "recipes", "health-checker"],
+  },
+  {
+    category: "operations",
+    label: "Operations",
+    slugs: ["feedback", "audit", "app-logs", "search", "api-docs", "db-maintenance"],
+  },
+] as const;
+
+/** Tiles shown on /admin, in hub section order. */
+export const ADMIN_HUB_SERVICE_SLUGS = new Set<string>(
+  ADMIN_HUB_SECTIONS.flatMap((section) => [...section.slugs]),
+);
+
+/** Sample tools that show a Demo chip on /admin. */
+export const ADMIN_HUB_DEMO_SLUGS = new Set<string>(["ai-chat", "url-shortener", "weather"]);
 
 /** Capability tools listed on /tools for signed-in users (alongside public tools). */
 export const TOOLS_PAGE_EXTRA_SLUGS = new Set([
@@ -356,4 +365,33 @@ export function groupServicesByCategory(
       label: PLATFORM_CATEGORIES[cat] ?? cat,
       services: grouped.get(cat)!,
     }));
+}
+
+export type AdminHubSection = {
+  category: string;
+  label: string;
+  services: PlatformService[];
+};
+
+/**
+ * Group /admin tiles into Content, Productivity, Utilities, then Operations.
+ * Omits empty sections. Does not change PlatformService.category.
+ */
+export function groupAdminHub(services: PlatformService[]): AdminHubSection[] {
+  const bySlug = new Map(services.map((service) => [service.slug, service]));
+  const sections: AdminHubSection[] = [];
+  for (const section of ADMIN_HUB_SECTIONS) {
+    const grouped: PlatformService[] = [];
+    for (const slug of section.slugs) {
+      const service = bySlug.get(slug);
+      if (service) grouped.push(service);
+    }
+    if (grouped.length === 0) continue;
+    sections.push({
+      category: section.category,
+      label: section.label,
+      services: grouped,
+    });
+  }
+  return sections;
 }

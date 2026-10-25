@@ -2,13 +2,12 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 
-import MaintenanceJobActions from "@/components/admin/MaintenanceJobActions.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
 import { usePlatformCatalog } from "@/composables/usePlatformCatalog";
-import { ADMIN_HUB_SERVICE_SLUGS, groupServicesByCategory } from "@/platform/services";
+import { ADMIN_HUB_SERVICE_SLUGS, groupAdminHub } from "@/platform/services";
 import { usePermissions } from "@/composables/usePermissions";
 import { isAiChatEnabled } from "@/utils/featureFlags";
 
@@ -32,7 +31,7 @@ const visibleServices = computed(() =>
   }),
 );
 
-const sections = computed(() => groupServicesByCategory(visibleServices.value));
+const sections = computed(() => groupAdminHub(visibleServices.value));
 
 onMounted(async () => {
   try {
@@ -59,11 +58,10 @@ onMounted(async () => {
     >
       You do not have access to that admin tool. Pick something below, or ask the site owner.
     </p>
-    <MaintenanceJobActions v-if="isSuperuser" mode="hub" class="mb-8" />
     <div v-if="catalogLoading" aria-busy="true" aria-label="loading tools">
       <section v-for="block in 2" :key="block" class="mb-8 min-w-0">
         <div class="mb-3 h-3 w-24 animate-pulse rounded bg-surface-card" aria-hidden="true" />
-        <div class="page-launcher-grid" data-density="compact">
+        <div class="page-launcher-grid" data-density="compact" data-presentation="admin">
           <Card v-for="i in 3" :key="`${block}-${i}`" class="page-tile-card animate-pulse" />
         </div>
       </section>
@@ -73,6 +71,6 @@ onMounted(async () => {
       title="no tools available"
       description="contact an admin if you need access."
     />
-    <ToolTileGrid v-else density="compact" :sections="sections" />
+    <ToolTileGrid v-else presentation="admin" density="compact" :sections="sections" />
   </AdminPageLayout>
 </template>
