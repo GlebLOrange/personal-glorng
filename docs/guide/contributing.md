@@ -36,7 +36,11 @@ Merge gates (`ci-ok`, `gitleaks`) are **disabled during development**; turn them
 pip install pre-commit && pre-commit install
 ```
 
-Runs ruff, client eslint/prettier/typecheck, and gitleaks.
+Runs ruff, client eslint/prettier/typecheck, gitleaks, and a **staged file token limit** (rejects staged text files over 5,000 tokens; `1 token = 4 bytes`). Skip patterns live in [`scripts/staged-token-limit.ignore`](../../scripts/staged-token-limit.ignore) (lockfiles, minified/generated paths, common binaries). Manual pass/fail check:
+
+```bash
+sh scripts/test_check_staged_token_limit.sh
+```
 
 ## Code conventions
 

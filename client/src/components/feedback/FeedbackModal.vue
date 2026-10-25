@@ -7,11 +7,9 @@ import BaseModal from "@/components/ui/BaseModal.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { isValidEmail } from "@/constants/contactMeta";
+import { EMAIL_FORMAT_HINT, isValidEmail } from "@/constants/contactMeta";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
-
-const EMAIL_HELP = "use a full address like name@example.com";
 
 const props = withDefaults(
   defineProps<{
@@ -36,7 +34,9 @@ const emailTone = computed<"error" | "success" | undefined>(() => {
   return isValidEmail(email.value) ? "success" : "error";
 });
 
-const emailError = computed(() => (emailTone.value === "error" ? EMAIL_HELP : undefined));
+const emailError = computed(() =>
+  emailTone.value === "error" ? EMAIL_FORMAT_HINT : undefined,
+);
 
 const canSubmit = computed(
   () =>

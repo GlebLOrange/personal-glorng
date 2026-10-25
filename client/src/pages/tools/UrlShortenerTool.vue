@@ -28,6 +28,7 @@ const total = ref(0);
 const totalPages = ref(0);
 const newUrl = ref("");
 const newTitle = ref("");
+const formError = ref("");
 const savingId = ref<number | null>(null);
 const deletingId = ref<number | null>(null);
 const { copy } = useClipboard();
@@ -35,13 +36,37 @@ const { can } = usePermissions();
 const canManage = computed(() => can("url-shortener", "read"));
 const canWrite = computed(() => can("url-shortener", "write"));
 const { loading: listLoading, run: runList } = useApiAction();
-const { loading, run: runCreate } = useApiAction();
+const { loading, lastError, run: runCreate } = useApiAction();
 const { run: runUpdate } = useApiAction();
 const { run: runDelete } = useApiAction();
 
 const hasNextPage = computed(() => page.value < totalPages.value);
 const hasPreviousPage = computed(() => page.value > 1);
 const canShorten = computed(() => Boolean(newUrl.value.trim()) && !loading.value);
+
+const URL_FORMAT_HINT = "enter a full URL like https://example.com";
+
+function isShortenableUrl(raw: string): boolean {
+  try {
+    const parsed = new URL(ensureHttpsUrl(raw));
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+const urlTone = computed<"error" | undefined>(() => {
+  if (!formError.value && !newUrl.value.trim()) return undefined;
+  if (formError.value) return "error";
+  if (newUrl.value.trim() && !isShortenableUrl(newUrl.value)) return "error";
+  return undefined;
+});
+
+const urlError = computed(() => {
+  if (formError.value) return formError.value;
+  if (newUrl.value.trim() && !isShortenableUrl(newUrl.value)) return URL_FORMAT_HINT;
+  return undefined;
+});
 
 async function loadUrls(): Promise<void> {
   if (!canManage.value) return;
@@ -69,11 +94,17 @@ function goToPage(nextPage: number): void {
 }
 
 async function createUrl(): Promise<void> {
-  if (!newUrl.value.trim()) return;
+  const trimmed = newUrl.value.trim();
+  if (!trimmed) return;
+  formError.value = "";
+  if (!isShortenableUrl(trimmed)) {
+    formError.value = URL_FORMAT_HINT;
+    return;
+  }
   const result = await runCreate(
     () =>
       api.post("/tools/url-shortener", {
-        original_url: ensureHttpsUrl(newUrl.value),
+        original_url: ensureHttpsUrl(trimmed),
         title: newTitle.value || null,
       }),
     { successMessage: "URL created", errorFallback: "Failed to create URL" },
@@ -81,11 +112,15 @@ async function createUrl(): Promise<void> {
   if (result) {
     newUrl.value = "";
     newTitle.value = "";
+    formError.value = "";
     if (canManage.value) {
       page.value = 1;
       await loadUrls();
     }
+    return;
   }
+  // Keep a durable inline error — toast alone is easy to miss after submit.
+  formError.value = lastError.value ?? "Failed to create URL";
 }
 
 async function updateUrl(id: number, title: string | null): Promise<void> {
@@ -134,6 +169,9 @@ onMounted(loadUrls);
         compact
         placeholder="url (example.com or https://…)"
         aria-label="url (example.com or https://…)"
+        :tone="urlTone"
+        :error="urlError"
+        @update:model-value="formError = ''"
       />
       <BaseInput
         v-model="newTitle"

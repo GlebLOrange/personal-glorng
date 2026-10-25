@@ -29,6 +29,16 @@ HTTPS termination is expected upstream of compose nginx (port 80 by default); `s
 - Users manage profile, password, email, and preferences via `/settings`; permissions are admin-only
 - GitHub/Google OAuth tokens are **encrypted at rest** (Fernet, key from `FERNET_SECRET`; decrypt falls back to `JWT_SECRET` for pre-split ciphertext). Production/staging require a dedicated `FERNET_SECRET` distinct from `JWT_SECRET` — see [`core/fernet_secrets.py`](../../server/app/core/fernet_secrets.py)
 
+## Public product surface (intentional gaps)
+
+This is a personal portfolio, not a multi-tenant SaaS. The following are **documented absences**, not missing features to ship casually:
+
+- **No public `/pricing` route** — compensation is role/contract specific; the site may link a donate/support path only.
+- **No public `/terms` route** — privacy is covered at `/privacy`; operator terms are not published as a product ToS.
+- **Public registration stays disabled** — login is operator sign-in only; do not enable self-serve signup without an explicit product decision.
+
+First-visitor QA notes live under [`qa/first-users/`](../../qa/first-users/).
+
 ## CSRF and CORS {#csrf-and-cors}
 
 The API uses `CORSMiddleware` with `allow_credentials=True`. In **production**:
@@ -173,7 +183,7 @@ Decisions for known risks. **Accept** = intentional tradeoff; **Mitigated** = co
 
 | Priority | Risk | Status | Notes |
 |----------|------|--------|-------|
-| Medium | Open registration | **Accept** | New users get zero permissions; email verification required; suitable for portfolio use |
+| Medium | Open registration | **Addressed** | Public `POST /api/auth/register` returns 403; accounts are owner-provisioned only (see Authentication) |
 | Medium | GitHub tokens in DB | **Addressed** | Encrypted at rest via Fernet; legacy plaintext decrypted on read until re-linked |
 | Medium | CSP `unsafe-inline` | **Accept** | Documented tradeoff; Vue escaping + DOMPurify are primary XSS defenses |
 | Low–Med | Public resource-heavy tools (vid-download, file-share) | **Mitigated** | Off by default (`UNTRUSTED_URL_TOOLS_ENABLED`); rate + concurrency when enabled |

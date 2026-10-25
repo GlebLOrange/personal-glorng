@@ -2,6 +2,7 @@
 import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref } from "vue";
 
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
+import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
 import GitHubReposStrip from "@/components/resume/GitHubReposStrip.vue";
@@ -20,7 +21,6 @@ const MIN_GITHUB_STRIP_REPOS = 2;
 
 const ExperienceList = defineAsyncComponent(() => import("@/components/resume/ExperienceList.vue"));
 const CaseStudies = defineAsyncComponent(() => import("@/components/resume/CaseStudies.vue"));
-const FeedbackModal = defineAsyncComponent(() => import("@/components/feedback/FeedbackModal.vue"));
 
 const {
   data: resumeApi,
@@ -147,16 +147,15 @@ onUnmounted(() => {
       />
     </div>
 
+    <!-- v-if (not opacity/invisible): avoids a fixed overlay intercepting hero CTA taps -->
     <div
-      class="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-4 transition-opacity duration-200 print:hidden"
-      :class="showSectionNav ? 'opacity-100' : 'opacity-0'"
+      v-if="showSectionNav"
+      class="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-4 print:hidden"
       :style="{ top: `${sectionNavTop}px` }"
     >
       <nav
         class="pointer-events-auto max-w-5xl rounded-b-lg border border-t-0 border-surface-border/60 bg-surface-dark/90 px-3 py-1 backdrop-blur-md"
-        :class="showSectionNav ? '' : 'invisible'"
         aria-label="On this page"
-        :inert="!showSectionNav"
       >
         <ul class="m-0 flex list-none flex-wrap items-center justify-center gap-y-0 p-0">
           <li
@@ -251,7 +250,13 @@ onUnmounted(() => {
       <div class="flex flex-wrap gap-4">
         <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
       </div>
-      <FeedbackModal v-if="contactModal" :intent="contactModal" @close="contactModal = null" />
     </SectionWrapper>
+
+    <!-- Sync import + page-root mount: first CTA click opens without async delay -->
+    <FeedbackModal
+      :open="contactModal === 'inquiry'"
+      intent="inquiry"
+      @close="contactModal = null"
+    />
   </div>
 </template>

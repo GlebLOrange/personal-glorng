@@ -366,6 +366,7 @@ class TaskIntakeService:
             model=self.settings.GROQ_CHAT_MODEL,
             system_prompt=EXTRACTION_SYSTEM_PROMPT,
             user_content=json.dumps(user_payload),
+            task="intake",
             api_base_url=self.settings.GROQ_API_BASE_URL,
         )
         return self._parse_extraction_payload(raw)
