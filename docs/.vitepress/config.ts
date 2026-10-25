@@ -124,10 +124,18 @@ export default defineConfig({
             },
             { text: "News", link: "/specs/news" },
             {
+              text: "agy-ai-tool (proposed)",
+              link: "/specs/agy-ai-tool",
+            },
+            {
               text: "Platform hardening",
               link: "/specs/platform-hardening",
             },
             { text: "P3 roadmap", link: "/specs/p3-roadmap" },
+            {
+              text: "Manager maintenance themes",
+              link: "/specs/manager-maintenance-themes",
+            },
           ],
         },
       ],

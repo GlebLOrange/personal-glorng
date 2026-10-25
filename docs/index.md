@@ -10,7 +10,7 @@
 | [Operations](/operations/deployment) | Prod container workflow, database, [logging](/operations/logging), backups, Cloudflare, [Cloud VM](/operations/cloud-vm), [DevOps / CI gates](/operations/devops-checklist) |
 | [Reference](/reference/platform) | API catalog, env vars, security, testing, automation |
 | [ADRs](/adr/) | Architecture decision records |
-| [Specs](/specs/handbook-structure) | Handbook structure, news, platform hardening, P3 roadmap |
+| [Specs](/specs/handbook-structure) | Handbook structure, news, agy-ai-tool (proposed), platform hardening, P3 roadmap, manager maintenance themes |
 | [API endpoints](/generated/api-endpoints) | Generated OpenAPI path table |
 | [Architecture inventory](/generated/architecture-inventory) | Generated platform + Compose inventory |
 

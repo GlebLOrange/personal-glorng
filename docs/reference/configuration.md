@@ -47,10 +47,16 @@ How to retain and browse app logs vs audit events: [Logging](/operations/logging
 
 ## MongoDB
 
-| Variable | Purpose |
-|----------|---------|
-| `MONGODB_USER`, `MONGODB_PASSWORD`, `MONGODB_DB` | Credentials and database name |
-| `MONGODB_URL` | Connection string (Docker host `mongodb`) |
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `MONGODB_USER`, `MONGODB_PASSWORD`, `MONGODB_DB` | — | Credentials and database name |
+| `MONGODB_URL` | — | Connection string (Docker host `mongodb`) |
+| `MONGODB_MAX_POOL_SIZE` | `10` | Motor `maxPoolSize` |
+| `MONGODB_MIN_POOL_SIZE` | `0` | Motor `minPoolSize` |
+| `MONGODB_MAX_IDLE_TIME_MS` | `60000` | Motor `maxIdleTimeMS` |
+| `MONGODB_WAIT_QUEUE_TIMEOUT_MS` | `5000` | Motor `waitQueueTimeoutMS` |
+| `MONGODB_CONNECT_TIMEOUT_MS` | `10000` | Motor `connectTimeoutMS` |
+| `MONGODB_SERVER_SELECTION_TIMEOUT_MS` | `5000` | Motor `serverSelectionTimeoutMS` |
 
 ## PostgreSQL (optional)
 
@@ -66,7 +72,9 @@ Enable with `ENABLE_POSTGRES=true` and `make dev-postgres` or `--profile postgre
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `ELASTICSEARCH_URL` | empty | Leave empty for dev-lite; set for `make dev-search` |
-| `ELASTICSEARCH_INDEX` | `search_documents` | Index name |
+| `ELASTICSEARCH_INDEX` | `search_documents` | Search documents index |
+| `ELASTICSEARCH_APP_LOGS_INDEX` | `app_logs` | App-log index when ES log shipping is on |
+| `APP_LOG_ES_ENABLED` | `true` | Ship app logs to Elasticsearch when `ELASTICSEARCH_URL` is set |
 
 ## Redis
 

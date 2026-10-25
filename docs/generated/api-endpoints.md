@@ -9,8 +9,8 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 
 | Method | Path | Tags | Summary |
 |--------|------|------|---------|
-| `GET` | `/api/admin/maintenance` | admin | Get DB maintenance status |
-| `POST` | `/api/admin/maintenance/run` | admin | Start DB maintenance |
+| `GET` | `/api/admin/maintenance` | admin | Get maintenance status |
+| `POST` | `/api/admin/maintenance/run` | admin | Start a maintenance job |
 | `GET` | `/api/admin/users` | admin | List users |
 | `GET` | `/api/admin/users/stats` | admin | Get user summary stats |
 | `GET` | `/api/admin/users/{public_id}` | admin | Get user |

@@ -1201,6 +1201,27 @@
         "title": "ExpenseCategoryCreate",
         "type": "object"
       },
+      "ExpenseCategoryDelete": {
+        "description": "Reassignment target when deleting a category that still has expenses.",
+        "properties": {
+          "replacement_category_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replacement Category Id"
+          }
+        },
+        "required": [
+          "replacement_category_id"
+        ],
+        "title": "ExpenseCategoryDelete",
+        "type": "object"
+      },
       "ExpenseCategoryResponse": {
         "properties": {
           "created_at": {
@@ -2858,8 +2879,19 @@
         "type": "object"
       },
       "MaintenanceRunRequest": {
-        "description": "Turnstile token from the admin panel widget.",
+        "description": "Turnstile token and which maintenance job to run.",
         "properties": {
+          "job": {
+            "enum": [
+              "backup",
+              "stale",
+              "sync",
+              "cleanup",
+              "seed"
+            ],
+            "title": "Job",
+            "type": "string"
+          },
           "turnstile_token": {
             "maxLength": 2048,
             "minLength": 1,
@@ -2868,7 +2900,8 @@
           }
         },
         "required": [
-          "turnstile_token"
+          "turnstile_token",
+          "job"
         ],
         "title": "MaintenanceRunRequest",
         "type": "object"
@@ -2879,6 +2912,16 @@
           "detail": {
             "default": "",
             "title": "Detail",
+            "type": "string"
+          },
+          "job": {
+            "default": "",
+            "title": "Job",
+            "type": "string"
+          },
+          "report": {
+            "default": "",
+            "title": "Report",
             "type": "string"
           },
           "status": {
@@ -2910,6 +2953,21 @@
             "default": false,
             "title": "Enabled",
             "type": "boolean"
+          },
+          "host_jobs_ready": {
+            "default": false,
+            "title": "Host Jobs Ready",
+            "type": "boolean"
+          },
+          "job": {
+            "default": "",
+            "title": "Job",
+            "type": "string"
+          },
+          "report": {
+            "default": "",
+            "title": "Report",
+            "type": "string"
           },
           "site_key": {
             "default": "",
@@ -3112,10 +3170,10 @@
           }
         },
         "required": [
-          "source_url",
           "original_title",
           "title",
           "summary",
+          "source_url",
           "tags"
         ],
         "title": "NewsArticleCreate",
@@ -7056,7 +7114,7 @@
             "OAuth2PasswordBearer": []
           }
         ],
-        "summary": "Get DB maintenance status",
+        "summary": "Get maintenance status",
         "tags": [
           "admin"
         ]
@@ -7142,7 +7200,7 @@
             "OAuth2PasswordBearer": []
           }
         ],
-        "summary": "Start DB maintenance",
+        "summary": "Start a maintenance job",
         "tags": [
           "admin"
         ]
@@ -7168,7 +7226,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -9595,7 +9653,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -9623,6 +9681,17 @@
               ],
               "description": "Filter by feedback status",
               "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "created_desc",
+              "pattern": "^created_(asc|desc)$",
+              "title": "Sort",
+              "type": "string"
             }
           }
         ],
@@ -11625,6 +11694,17 @@
             }
           },
           {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "when_desc",
+              "pattern": "^(when_desc|when_asc)$",
+              "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
             "description": "Inclusive start date (YYYY-MM-DD).",
             "in": "query",
             "name": "date_from",
@@ -11678,7 +11758,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -11861,6 +11941,17 @@
             }
           },
           {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "when_desc",
+              "pattern": "^(when_desc|when_asc)$",
+              "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
             "description": "Inclusive start date (YYYY-MM-DD).",
             "in": "query",
             "name": "date_from",
@@ -11914,7 +12005,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -12323,7 +12414,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -13352,7 +13443,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -13844,6 +13935,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ExpenseCategoryDelete"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "204": {
             "description": "Successful Response"
@@ -14853,7 +14961,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -15121,7 +15229,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -15793,7 +15901,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -16248,7 +16356,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -17369,7 +17477,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -17972,7 +18080,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -18595,7 +18703,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -18634,6 +18742,23 @@
                 }
               ],
               "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(when_desc|when_asc)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sort"
             }
           }
         ],
@@ -18815,7 +18940,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -18994,7 +19119,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
@@ -19637,7 +19762,7 @@
             "name": "per_page",
             "required": false,
             "schema": {
-              "default": 9,
+              "default": 25,
               "maximum": 100,
               "minimum": 1,
               "title": "Per Page",
