@@ -5,6 +5,14 @@
       {
         "command": ".cursor/hooks/session-start.sh cursor"
       }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/save-workspace-context.sh",
+        "loop_limit": 1,
+        "failClosed": false,
+        "timeout": 10
+      }
     ]
   }
 }
