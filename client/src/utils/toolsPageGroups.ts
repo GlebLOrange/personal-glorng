@@ -17,7 +17,7 @@ export const TOOLS_PAGE_GROUP_LABELS: Record<ToolsPageGroupId, string> = {
   builders: "Builders",
 };
 
-/** Six public demo tools — chip + ToolBuildPanel targets. */
+/** Six public demo tools — chip targets on the Tools catalog. */
 export const TOOLS_PAGE_DEMO_SLUGS = new Set([
   "weather",
   "calculator",
