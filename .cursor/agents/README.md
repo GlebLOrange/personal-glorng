@@ -16,11 +16,13 @@ The code-review prompt lives at [`../references/code-reviewer.md`](../references
 
 ## Orchestration
 
-**`/task-loop`** (`.cursor/commands/task-loop.md`) is the only repo slash orchestrator:
+**`/task-loop`** (`.cursor/commands/task-loop.md`) is the only repo slash **persona** orchestrator:
 
 ```text
 Manager (Assign TASK) → parent creates cursor/<slug> → Developer
 ```
+
+**`/ops`** (`.cursor/commands/ops.md`) is an **operator** command: it runs existing Make targets for stacks, DB maintenance, and backups. It does not spawn personas.
 
 - Parent Cursor chat spawns personas in order. Personas **never** spawn personas.
 - Gortex is a **tool**, not a persona. On missing tools or `repo_not_tracked`, follow `.cursor/rules/gortex-workflow.mdc`.
