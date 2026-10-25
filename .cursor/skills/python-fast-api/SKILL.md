@@ -1,6 +1,9 @@
 ---
 name: python-fast-api
-description: FastAPI and Python backend guidance for the server package.
+description: >-
+  FastAPI conventions for this repo's server package (Motor/MongoDB, uv, Ruff, thin
+  routers, pytest under server/tests). Use when editing server Python, routes, services,
+  or backend tests.
 ---
 # FastAPI Backend
 
