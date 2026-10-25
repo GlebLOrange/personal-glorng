@@ -55,16 +55,16 @@ describe("BaseButton", () => {
     expect(button.classes()).toContain("border-transparent");
   });
 
-  it("colorizes success with pale 2xx wash", () => {
+  it("colorizes success like pale primary wash", () => {
     const button = mount(BaseButton, {
       props: { variant: "success" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-status-success/10");
-    expect(button.classes()).toContain("text-status-success/88");
-    expect(button.classes()).toContain("hover:enabled:bg-status-success/12");
-    expect(button.classes()).toContain("active:enabled:bg-status-success/14");
-    expect(button.classes()).toContain("focus-visible:ring-status-success/50");
+    expect(button.classes()).toContain("bg-accent-coral/10");
+    expect(button.classes()).toContain("text-accent-coral/88");
+    expect(button.classes()).toContain("hover:enabled:bg-accent-coral/12");
+    expect(button.classes()).toContain("active:enabled:bg-accent-coral/14");
+    expect(button.classes()).toContain("focus-visible:ring-accent-coral/50");
   });
 
   it("colorizes primary as pale 1xx wash (matches cta-primary)", () => {
@@ -87,15 +87,25 @@ describe("BaseButton", () => {
     expect(button.classes()).toContain("text-accent-coral/88");
   });
 
-  it("colorizes cancel with 5xx critical family (pink-red dismiss)", () => {
+  it("paints cancel as neutral ghost", () => {
     const button = mount(BaseButton, {
       props: { variant: "cancel" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-status-critical/10");
-    expect(button.classes()).toContain("text-status-critical/88");
-    expect(button.classes()).toContain("hover:enabled:bg-status-critical/12");
-    expect(button.classes()).toContain("focus-visible:ring-status-critical/50");
+    expect(button.classes()).toContain("bg-transparent");
+    expect(button.classes()).toContain("text-surface-light/80");
+    expect(button.classes()).not.toContain("bg-status-critical/10");
+    expect(button.classes()).toContain("focus-visible:ring-accent-coral/50");
+  });
+
+  it("paints edit as surface secondary", () => {
+    const button = mount(BaseButton, {
+      props: { variant: "edit" },
+    }).get("button");
+
+    expect(button.classes()).toContain("bg-surface-card");
+    expect(button.classes()).toContain("border-surface-border");
+    expect(button.classes()).not.toContain("bg-status-warning/10");
   });
 
   it("keeps secondary grayscale without accent wash", () => {

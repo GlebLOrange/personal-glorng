@@ -102,7 +102,7 @@ function openPreferences() {
         You can change your cookie preferences at any time by opening the
         <button
           type="button"
-          class="text-accent-coral underline-offset-2 hover:text-accent-violet focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded transition-colors"
+          class="text-link transition-colors"
           @click="openPreferences"
         >
           cookie settings</button

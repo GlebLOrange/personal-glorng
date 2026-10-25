@@ -6,12 +6,12 @@ import {
 } from "@/constants/actionButtonVariants";
 
 describe("actionButtonVariants", () => {
-  it("maps semantic actions to HTTP families", () => {
+  it("maps semantic actions to HTTP families for pill/icon chrome", () => {
     expect(SEMANTIC_ACTION_HTTP_FAMILY).toEqual({
       create: "1xx",
       add: "1xx",
-      save: "2xx",
-      edit: "3xx",
+      save: "1xx",
+      edit: "1xx",
       remove: "4xx",
       delete: "4xx",
       cancel: "5xx",
@@ -27,13 +27,14 @@ describe("actionButtonVariants", () => {
     }
   });
 
-  it("paints save and success alias as 2xx wash", () => {
-    expect(classesForActionButton({ variant: "save" })).toContain("text-status-success/88");
-    expect(classesForActionButton({ variant: "success" })).toContain("text-status-success/88");
+  it("paints save and success as primary wash", () => {
+    expect(classesForActionButton({ variant: "save" })).toContain("text-accent-coral/88");
+    expect(classesForActionButton({ variant: "success" })).toContain("text-accent-coral/88");
   });
 
-  it("paints cancel as 5xx and delete as 4xx", () => {
-    expect(classesForActionButton({ variant: "cancel" })).toContain("text-status-critical/88");
+  it("paints cancel as ghost, edit as secondary, delete as 4xx", () => {
+    expect(classesForActionButton({ variant: "cancel" })).toContain("bg-transparent");
+    expect(classesForActionButton({ variant: "edit" })).toContain("bg-surface-card");
     expect(classesForActionButton({ variant: "delete" })).toContain("text-status-error/88");
   });
 

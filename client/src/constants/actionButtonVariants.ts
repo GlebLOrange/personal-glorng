@@ -7,11 +7,16 @@ import { familyToneClass, type HttpStatusFamily } from "@/constants/httpStatusCo
 export type SemanticButtonAction =
   "create" | "add" | "save" | "edit" | "remove" | "delete" | "cancel";
 
+/**
+ * HTTP family for pills/icons that still paint via familyToneClass.
+ * save → primary (1xx). edit → primary wash on icon chrome (transparentIdle).
+ * cancel stays 5xx for rare icon use; BaseButton `cancel` uses ghost via classesForActionButton.
+ */
 export const SEMANTIC_ACTION_HTTP_FAMILY: Record<SemanticButtonAction, HttpStatusFamily> = {
   create: "1xx",
   add: "1xx",
-  save: "2xx",
-  edit: "3xx",
+  save: "1xx",
+  edit: "1xx",
   remove: "4xx",
   delete: "4xx",
   cancel: "5xx",
@@ -29,16 +34,15 @@ const FOCUS_RING: Record<HttpStatusFamily, string> = {
   "5xx": "focus-visible:ring-status-critical/50",
 };
 
+/** Product chrome: primary wash + error wash. Edit/cancel use surface/ghost below. */
 const WASHED_VARIANT_FAMILY: Partial<Record<BaseButtonVariant, HttpStatusFamily>> = {
   primary: "1xx",
   create: "1xx",
   add: "1xx",
-  success: "2xx",
-  save: "2xx",
-  edit: "3xx",
+  success: "1xx",
+  save: "1xx",
   remove: "4xx",
   delete: "4xx",
-  cancel: "5xx",
 };
 
 const NEUTRAL_FOCUS = "focus-visible:ring-accent-coral/50";
@@ -91,7 +95,8 @@ export function classesForActionButton(input: ActionButtonClassInput): string {
     return washedFamilyClasses(family, selected);
   }
 
-  if (variant === "ghost") {
+  // cancel + ghost — muted until hover (sheet has no 5xx cancel hue)
+  if (variant === "ghost" || variant === "cancel") {
     if (quiet && !selected) {
       return NEUTRAL_GHOST_QUIET;
     }
@@ -101,7 +106,7 @@ export function classesForActionButton(input: ActionButtonClassInput): string {
     return `${NEUTRAL_GHOST_IDLE} ${NEUTRAL_FOCUS}`;
   }
 
-  // secondary — neutral OAuth / unlink / promote
+  // secondary + edit — surface outline (sheet secondary fill == primary)
   if (selected) {
     return `${NEUTRAL_SELECTED} ${NEUTRAL_FOCUS}`;
   }

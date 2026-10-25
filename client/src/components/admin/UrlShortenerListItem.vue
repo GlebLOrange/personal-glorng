@@ -160,7 +160,7 @@ function onRowClick(event: MouseEvent): void {
         :title="`${url.original_url} · ${shortLink}`"
         target="_blank"
         rel="noopener noreferrer"
-        class="block w-full truncate text-xs text-accent-coral underline-offset-2 hover:underline"
+        class="text-link block w-full truncate text-xs"
       >
         {{ shortLink }}
       </a>
@@ -195,7 +195,7 @@ function onRowClick(event: MouseEvent): void {
       :title="`${url.original_url} · ${shortLink}`"
       target="_blank"
       rel="noopener noreferrer"
-      class="max-w-[40%] shrink truncate text-xs text-accent-coral underline-offset-2 hover:underline"
+      class="text-link max-w-[40%] shrink truncate text-xs"
       @click.stop
     >
       {{ shortLink }}
@@ -226,7 +226,7 @@ function onRowClick(event: MouseEvent): void {
         :href="shortLink"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-accent-coral underline-offset-2"
+        class="text-link"
         @click.stop
       >
         {{ shortLink }}
