@@ -42,7 +42,7 @@ function printPage(): void {
 
 <template>
   <div class="py-12 md:py-16 text-center">
-    <p class="mb-2 text-lg font-medium tracking-tight text-surface-light sm:text-xl">{{ name }}</p>
+    <p class="mb-2 text-xl font-medium tracking-tight text-surface-light sm:text-2xl md:text-3xl">{{ name }}</p>
     <h1 class="mb-3 text-balance text-2xl font-bold tracking-tight text-surface-light sm:text-3xl md:text-4xl">
       {{ title }}
     </h1>
