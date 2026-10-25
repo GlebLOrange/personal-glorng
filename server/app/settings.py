@@ -616,9 +616,11 @@ class Settings(BaseSettings):
     # Cloudflare Turnstile (public site key; secret stays on the server)
     TURNSTILE_SITE_KEY: str = ""
     TURNSTILE_SECRET_KEY: str = ""
-    # Host-only DB maintenance button (ultra-lite / host API; off in Docker API)
+    # Host-only backup/stale script (ultra-lite / host API; off in Docker API)
     DB_MAINTENANCE_ENABLED: bool = False
     DB_MAINTENANCE_SCRIPT: str = ""
+    # Allow admin seed job in production (default: only non-production)
+    MAINTENANCE_SEED_ENABLED: bool = False
 
     def turnstile_configured(self) -> bool:
         """Whether both Turnstile keys are set."""
@@ -627,7 +629,7 @@ class Settings(BaseSettings):
         )
 
     def db_maintenance_ready(self) -> bool:
-        """Whether the admin button may spawn the maintenance script."""
+        """Whether backup/stale host-script jobs may spawn."""
         return (
             self.DB_MAINTENANCE_ENABLED
             and bool(self.DB_MAINTENANCE_SCRIPT.strip())
