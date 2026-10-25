@@ -38,7 +38,6 @@ docs/.vitepress/.temp/
 !.vscode/tasks.json
 .idea/
 .gortex/
-.postman/
 *.swp
 *.swo
 *.cursorrules

@@ -2,7 +2,7 @@
 
 How to connect external tools (shell scripts, n8n, Huginn, cron) to Gleb.Y without changing application code.
 
-See also [API & tools](/reference/api-tools) for the full endpoint catalog, [Postman](/reference/postman) for OpenAPI import, and [inbound webhooks](#inbound-webhooks) below.
+See also [API & tools](/reference/api-tools) for the full endpoint catalog and OpenAPI, and [inbound webhooks](#inbound-webhooks) below.
 
 ## Discover services
 

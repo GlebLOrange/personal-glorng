@@ -2,7 +2,7 @@
 
 All JSON routes live under **`/api`**. Platform tools mount at **`/api/tools/<slug>`** ([`server/app/routers/tools/__init__.py`](../../server/app/routers/tools/__init__.py)). The canonical catalog is in [`server/app/platform/registry.py`](../../server/app/platform/registry.py) and exposed at **`GET /api/platform/services`** (no auth required).
 
-**Interactive docs:** Swagger UI at **`/api/docs`** only when `APP_ENV=development` ([`server/app/main.py`](../../server/app/main.py)). **Static OpenAPI:** download [openapi.json](/openapi.json) (from `make docs-generate`). **Endpoint table:** [API endpoints (generated)](/generated/api-endpoints). **Postman:** [Postman guide](/reference/postman).
+**Interactive docs:** Swagger UI at **`/api/docs`** only when `APP_ENV=development` ([`server/app/main.py`](../../server/app/main.py)). **Static OpenAPI:** download [openapi.json](/openapi.json) (from `make docs-generate`). **Endpoint table:** [API endpoints (generated)](/generated/api-endpoints).
 
 **Auth model:** Admin tool routes require JWT (cookie or `Authorization: Bearer`) plus a capability like `expenses:read`. The bootstrap admin gets `platform:superuser` (all capabilities). New registered users start with **zero** tool permissions ([Security](/reference/security)).
 
