@@ -23,7 +23,6 @@ defineProps<{
 const emit = defineEmits<{
   saveEmail: [];
   savePassword: [];
-  logout: [];
 }>();
 
 const passwordCheck = computed(() => passwordStrength(newPassword.value));
@@ -122,9 +121,11 @@ const passwordsMatch = computed(
           </div>
         </form>
 
-        <div class="border-t border-surface-border pt-4">
-          <p class="mb-2 text-xs text-surface-mid">permissions</p>
-          <div v-if="permissions.length" class="flex flex-wrap gap-1.5">
+        <div
+          class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-surface-border pt-4"
+        >
+          <p class="text-xs text-surface-mid">permissions</p>
+          <div v-if="permissions.length" class="flex flex-wrap justify-end gap-1.5">
             <span
               v-for="perm in permissions"
               :key="perm"
@@ -136,13 +137,7 @@ const passwordsMatch = computed(
           <p v-else class="text-xs text-surface-mid">No tool permissions — contact an admin.</p>
         </div>
 
-        <div class="border-t border-surface-border pt-4">
-          <BaseButton type="button" variant="secondary" size="sm" danger @click="emit('logout')">
-            log out
-          </BaseButton>
-          <p class="mt-2 text-xs text-surface-mid">Signs out this device only.</p>
         </div>
-      </div>
     </CardBody>
   </Card>
 </template>

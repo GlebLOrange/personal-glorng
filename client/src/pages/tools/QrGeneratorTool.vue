@@ -196,14 +196,6 @@ onMounted(() => {
       >
         <Card variant="ghost" class="min-w-0 flex-1">
           <form id="qr-generator-form" class="space-y-3" @submit.prevent="createQr">
-            <BaseButton
-              v-if="isEditing"
-              variant="cancel"
-              type="button"
-              @click="clearEditSession"
-            >
-              new / discard
-            </BaseButton>
             <div class="flex flex-wrap gap-3">
               <BaseInput
                 v-model="label"
@@ -226,6 +218,41 @@ onMounted(() => {
               maxlength="2000"
               placeholder="URL, text, Wi‑Fi string, etc."
             />
+            <div class="flex flex-wrap items-center gap-2">
+              <BaseButton
+                v-if="isEditing"
+                variant="cancel"
+                type="button"
+                @click="clearEditSession"
+              >
+                new / discard
+              </BaseButton>
+              <BaseButton
+                v-if="canWriteLibrary"
+                variant="save"
+                type="button"
+                :disabled="!canSaveLibrary"
+                @click="saveToLibrary"
+              >
+                {{ savingLibrary ? "saving…" : isEditing ? "update saved qr" : "save to library" }}
+              </BaseButton>
+              <BaseButton
+                v-if="previewUrl"
+                variant="ghost"
+                type="button"
+                @click="downloadSvg"
+              >
+                download svg
+              </BaseButton>
+              <BaseButton
+                variant="primary"
+                type="submit"
+                class="ml-auto"
+                :disabled="!canCreate"
+              >
+                {{ creating ? "generating…" : "generate qr" }}
+              </BaseButton>
+            </div>
             <p v-if="detailLoading" class="text-xs text-surface-mid">Loading saved code…</p>
           </form>
         </Card>
@@ -234,16 +261,6 @@ onMounted(() => {
           variant="ghost"
           class="flex w-full max-w-64 shrink-0 flex-col items-stretch gap-3 self-center p-0 lg:self-start"
         >
-          <BaseButton
-            v-if="canWriteLibrary"
-            variant="save"
-            type="button"
-            class="w-full"
-            :disabled="!canSaveLibrary"
-            @click="saveToLibrary"
-          >
-            {{ savingLibrary ? "saving…" : isEditing ? "update saved qr" : "save to library" }}
-          </BaseButton>
           <p v-if="!previewUrl" class="text-center text-sm text-surface-mid lg:text-right">
             Generate a code to preview it here.
           </p>
@@ -255,30 +272,10 @@ onMounted(() => {
             height="256"
             class="h-auto w-full rounded-md bg-white p-2"
           />
-          <div class="flex w-full items-center gap-2">
-            <BaseButton
-              variant="primary"
-              type="submit"
-              form="qr-generator-form"
-              :disabled="!canCreate"
-            >
-              {{ creating ? "generating…" : "generate qr" }}
-            </BaseButton>
-            <BaseButton
-              v-if="previewUrl"
-              variant="ghost"
-              type="button"
-              class="ml-auto"
-              @click="downloadSvg"
-            >
-              download svg
-            </BaseButton>
-          </div>
         </Card>
       </div>
 
-      <section v-if="canReadLibrary" class="min-w-0">
-        <h2 class="mb-3 text-sm font-medium text-surface-mid">your saved qr codes</h2>
+      <section v-if="canReadLibrary" class="min-w-0" aria-label="saved QR codes">
         <AdminListSkeleton v-if="listLoading && items.length === 0" />
         <p
           v-else-if="!listLoading && items.length === 0"

@@ -56,41 +56,42 @@ const timezoneOptions = computed((): TimezoneOption[] => {
 <template>
   <Card variant="compact">
     <CardBody>
-      <form class="space-y-3" @submit.prevent="emit('save')">
+      <form
+        class="flex min-w-0 flex-wrap items-center gap-2"
+        @submit.prevent="emit('save')"
+      >
         <BaseInput
           v-model="displayName"
           name="display-name"
           autocomplete="name"
           placeholder="display name"
           aria-label="display name"
+          compact
+          class="min-w-0 flex-1 basis-40"
         />
-        <div class="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-          <BaseSelect
-            v-model="timezone"
-            compact
-            aria-label="timezone"
-            class="min-w-0 w-full"
-          >
-            <option v-for="zone in timezoneOptions" :key="zone.value" :value="zone.value">
-              {{ zone.label }}
-            </option>
-          </BaseSelect>
-          <BaseSelect
-            v-model="displayCurrency"
-            compact
-            aria-label="display currency"
-            class="w-full sm:w-auto sm:shrink-0"
-          >
-            <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
-              {{ code }}
-            </option>
-          </BaseSelect>
-        </div>
-        <div class="flex justify-end">
-          <BaseButton type="submit" variant="save" size="sm" :loading="saving" :disabled="!canSave">
-            {{ saving ? "saving…" : "save" }}
-          </BaseButton>
-        </div>
+        <BaseSelect
+          v-model="timezone"
+          compact
+          aria-label="timezone"
+          class="min-w-[7.5rem] w-auto shrink-0"
+        >
+          <option v-for="zone in timezoneOptions" :key="zone.value" :value="zone.value">
+            {{ zone.label }}
+          </option>
+        </BaseSelect>
+        <BaseSelect
+          v-model="displayCurrency"
+          compact
+          aria-label="display currency"
+          class="w-auto shrink-0"
+        >
+          <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">
+            {{ code }}
+          </option>
+        </BaseSelect>
+        <BaseButton type="submit" variant="save" size="sm" :loading="saving" :disabled="!canSave">
+          {{ saving ? "saving…" : "save" }}
+        </BaseButton>
       </form>
     </CardBody>
   </Card>

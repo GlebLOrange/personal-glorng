@@ -2,6 +2,7 @@
 import * as CookieConsent from "vanilla-cookieconsent";
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
 import SettingsPreferencesSection from "@/components/settings/SettingsPreferencesSection.vue";
@@ -118,10 +119,6 @@ function setTheme(next: ColorThemePreference): void {
 
 function openCookiePreferences(): void {
   CookieConsent.showPreferences();
-}
-
-function handleLogout(): void {
-  auth.logout();
 }
 
 function navClass(id: SettingsSectionId): string {
@@ -253,10 +250,15 @@ async function savePassword(): Promise<void> {
       </nav>
 
       <div class="flex min-w-0 flex-1 flex-col gap-10">
-        <section id="profile" class="scroll-mt-40 md:scroll-mt-44" aria-labelledby="settings-profile-heading">
-          <h2 id="settings-profile-heading" class="mb-3 text-base font-medium text-surface-light">
-            Profile
-          </h2>
+        <div
+          v-if="DevApiStatusBadge"
+          class="flex flex-wrap items-center justify-between gap-2 border-b border-surface-border pb-4"
+        >
+          <p class="text-xs text-surface-mid">development API</p>
+          <component :is="DevApiStatusBadge" />
+        </div>
+
+        <section id="profile" class="scroll-mt-40 md:scroll-mt-44" aria-label="Profile">
           <SettingsPreferencesSection
             v-model:display-name="displayName"
             v-model:timezone="timezone"
@@ -267,18 +269,11 @@ async function savePassword(): Promise<void> {
           />
         </section>
 
-        <section
-          id="appearance"
-          class="scroll-mt-40 md:scroll-mt-44"
-          aria-labelledby="settings-appearance-heading"
-        >
-          <h2 id="settings-appearance-heading" class="mb-3 text-base font-medium text-surface-light">
-            Appearance
-          </h2>
+        <section id="appearance" class="scroll-mt-40 md:scroll-mt-44" aria-label="Appearance">
           <Card variant="compact">
             <CardBody>
               <fieldset>
-                <legend class="mb-3 text-sm text-surface-mid">Theme</legend>
+                <legend class="sr-only">Theme</legend>
                 <div class="flex flex-wrap gap-4">
                   <label class="inline-flex items-center gap-2 text-sm text-surface-light">
                     <input
@@ -310,10 +305,7 @@ async function savePassword(): Promise<void> {
           </Card>
         </section>
 
-        <section id="account" class="scroll-mt-40 md:scroll-mt-44" aria-labelledby="settings-account-heading">
-          <h2 id="settings-account-heading" class="mb-3 text-base font-medium text-surface-light">
-            Account
-          </h2>
+        <section id="account" class="scroll-mt-40 md:scroll-mt-44" aria-label="Account">
           <SettingsAccountSection
             v-model:new-email="newEmail"
             v-model:email-password="emailPassword"
@@ -327,20 +319,16 @@ async function savePassword(): Promise<void> {
             :can-save-password="canSavePassword"
             @save-email="saveEmail"
             @save-password="savePassword"
-            @logout="handleLogout"
           />
         </section>
 
-        <section id="privacy" class="scroll-mt-40 md:scroll-mt-44" aria-labelledby="settings-privacy-heading">
-          <h2 id="settings-privacy-heading" class="mb-3 text-base font-medium text-surface-light">
-            Privacy
-          </h2>
+        <section id="privacy" class="scroll-mt-40 md:scroll-mt-44" aria-label="Privacy">
           <Card variant="compact">
             <CardBody class="space-y-3">
               <p class="text-sm text-surface-mid">
                 Manage analytics and monitoring cookies, or read the full policy.
               </p>
-              <div class="flex flex-wrap items-center gap-3">
+              <div class="flex flex-wrap items-center justify-end gap-3">
                 <BaseButton type="button" variant="secondary" size="sm" @click="openCookiePreferences">
                   cookie preferences
                 </BaseButton>
@@ -354,11 +342,8 @@ async function savePassword(): Promise<void> {
           v-if="showQrSection"
           id="qr"
           class="scroll-mt-40 md:scroll-mt-44"
-          aria-labelledby="settings-qr-heading"
+          aria-label="Saved QR"
         >
-          <h2 id="settings-qr-heading" class="mb-3 text-base font-medium text-surface-light">
-            Saved QR
-          </h2>
           <SettingsQrLibrarySection />
         </section>
 
@@ -368,9 +353,10 @@ async function savePassword(): Promise<void> {
         >
           <summary
             id="settings-tools-heading"
-            class="cursor-pointer list-none rounded text-sm font-medium text-surface-light marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 [&::-webkit-details-marker]:hidden"
+            class="flex cursor-pointer list-none items-center justify-between gap-2 rounded text-sm font-medium text-surface-light marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 [&::-webkit-details-marker]:hidden"
           >
             <span class="underline-offset-2 group-open:underline">tools you can open</span>
+            <ChevronIcon class-name="size-3.5 text-surface-mid group-open:rotate-180" />
           </summary>
           <p class="mb-3 mt-3 text-sm text-surface-mid">
             A tool you cannot access redirects to admin. Your account can open:
@@ -384,14 +370,7 @@ async function savePassword(): Promise<void> {
           </ul>
         </details>
 
-        <div
-          v-if="DevApiStatusBadge"
-          class="flex flex-wrap items-center justify-between gap-2 border-t border-surface-border pt-4"
-        >
-          <p class="text-xs text-surface-mid">development API</p>
-          <component :is="DevApiStatusBadge" />
         </div>
-      </div>
     </div>
   </PageShell>
 </template>
