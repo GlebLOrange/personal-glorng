@@ -33,6 +33,8 @@ export function useTasks() {
   const DEFAULT_FILTER_STATUS = "pending";
   const filterStatus = ref(DEFAULT_FILTER_STATUS);
   const searchQuery = ref("");
+  /** Null until When header is used; then when_desc | when_asc. */
+  const sort = ref<"when_desc" | "when_asc" | null>(null);
   const page = ref(1);
   const intakePage = ref(1);
   const syncPage = ref(1);
@@ -81,6 +83,9 @@ export function useTasks() {
     const q = effectiveSearchQuery(searchQuery.value);
     if (q) {
       params.q = q;
+    }
+    if (sort.value) {
+      params.sort = sort.value;
     }
 
     const data = await runList(
@@ -279,6 +284,27 @@ export function useTasks() {
     page.value = nextPage;
   }
 
+  function toggleWhenSort(): void {
+    sort.value = sort.value === "when_desc" ? "when_asc" : "when_desc";
+    if (page.value !== 1) {
+      page.value = 1;
+      return;
+    }
+    void loadTasks();
+  }
+
+  const whenAriaSort = computed(() => {
+    if (sort.value === "when_asc") return "ascending" as const;
+    if (sort.value === "when_desc") return "descending" as const;
+    return "none" as const;
+  });
+
+  const whenIndicator = computed(() => {
+    if (sort.value === "when_asc") return " ↑";
+    if (sort.value === "when_desc") return " ↓";
+    return "";
+  });
+
   function goToIntakePage(nextPage: number): void {
     if (nextPage < 1) return;
     if (intakeTotalPages.value > 0 && nextPage > intakeTotalPages.value) return;
@@ -330,6 +356,9 @@ export function useTasks() {
     stats,
     filterStatus,
     searchQuery,
+    sort,
+    whenAriaSort,
+    whenIndicator,
     page,
     intakePage,
     syncPage,
@@ -369,5 +398,6 @@ export function useTasks() {
     goToPage,
     goToIntakePage,
     goToSyncPage,
+    toggleWhenSort,
   };
 }

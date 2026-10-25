@@ -120,6 +120,25 @@ class TestListFeedback:
         assert len(data["items"]) == 1
         assert data["items"][0]["theme"] == "Unread"
 
+    async def test_list_sorts_by_created_at(
+        self, auth_client: AsyncClient, registry: DatabaseRegistry
+    ):
+        """Default is newest created_at first; created_asc reverses."""
+        first = await create_feedback(registry, theme="Older")
+        second = await create_feedback(registry, theme="Newer")
+        desc = await auth_client.get("/api/feedback")
+        assert desc.status_code == 200
+        desc_ids = [item["id"] for item in desc.json()["items"]]
+        assert desc_ids.index(second.id) < desc_ids.index(first.id)
+
+        asc = await auth_client.get(
+            "/api/feedback",
+            params={"sort": "created_asc"},
+        )
+        assert asc.status_code == 200
+        asc_ids = [item["id"] for item in asc.json()["items"]]
+        assert asc_ids.index(first.id) < asc_ids.index(second.id)
+
 
 class TestUpdateFeedbackStatus:
     async def test_update_status_requires_auth(self, client: AsyncClient):

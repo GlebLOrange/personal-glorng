@@ -5,6 +5,7 @@ import TaskCard from "@/components/tasks/TaskCard.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import {
   ADMIN_MOBILE_LIST_CLASS,
+  ADMIN_SORT_HEADER_BUTTON_CLASS,
   ADMIN_TH_CLASS,
 } from "@/constants/adminDataTable";
 import type { TaskItem } from "@/types";
@@ -13,9 +14,11 @@ defineProps<{
   tasks: TaskItem[];
   loading: boolean;
   filterStatus: string;
+  whenAriaSort: "ascending" | "descending" | "none";
+  whenIndicator: string;
 }>();
 
-const emit = defineEmits<{ select: [id: number] }>();
+const emit = defineEmits<{ select: [id: number]; sortWhen: [] }>();
 
 const emptyMessage = (filterStatus: string): string => {
   if (filterStatus === "pending") return "No pending tasks";
@@ -43,7 +46,16 @@ const emptyMessage = (filterStatus: string): string => {
     <AdminDataTable table-label="tasks">
       <template #header>
         <th :class="ADMIN_TH_CLASS">status</th>
-        <th :class="ADMIN_TH_CLASS">when</th>
+        <th :class="ADMIN_TH_CLASS" :aria-sort="whenAriaSort">
+          <button
+            type="button"
+            :class="ADMIN_SORT_HEADER_BUTTON_CLASS"
+            aria-label="sort by when"
+            @click="emit('sortWhen')"
+          >
+            when{{ whenIndicator }}
+          </button>
+        </th>
         <th :class="ADMIN_TH_CLASS">title</th>
         <th class="w-px px-2 text-right">
           <span class="sr-only">actions</span>

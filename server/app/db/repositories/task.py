@@ -309,11 +309,16 @@ class TaskRepository(MongoRepository[Task]):
         limit: int = 20,
         status: str | None = None,
         q: str | None = None,
+        sort: str | None = None,
     ) -> list[Task]:
         query = self._admin_list_query(status=status, q=q)
-        cursor = (
-            self._col().find(query).sort("created_at", -1).skip(offset).limit(limit)
-        )
+        if sort == "when_asc":
+            order: list[tuple[str, int]] = [("scheduled_at", 1)]
+        elif sort == "when_desc":
+            order = [("scheduled_at", -1)]
+        else:
+            order = [("created_at", -1)]
+        cursor = self._col().find(query).sort(order).skip(offset).limit(limit)
         return [_parse_doc(Task, row) async for row in cursor]
 
     async def count_all(

@@ -7,6 +7,8 @@ defineProps<{
   tasks: TaskItem[];
   loading: boolean;
   filterStatus: string;
+  whenAriaSort: "ascending" | "descending" | "none";
+  whenIndicator: string;
   total: number;
   page: number;
   totalPages: number;
@@ -17,6 +19,7 @@ defineProps<{
 
 const emit = defineEmits<{
   select: [id: number];
+  sortWhen: [];
   firstPage: [];
   prevPage: [];
   nextPage: [];
@@ -37,7 +40,10 @@ const emit = defineEmits<{
       :tasks="tasks"
       :loading="loading"
       :filter-status="filterStatus"
+      :when-aria-sort="whenAriaSort"
+      :when-indicator="whenIndicator"
       @select="emit('select', $event)"
+      @sort-when="emit('sortWhen')"
     />
     <AdminListFooter
       v-if="!loading"

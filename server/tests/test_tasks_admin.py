@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -128,6 +129,74 @@ async def test_list_tasks_filters_by_title_query(auth_client: AsyncClient) -> No
 
 
 @pytest.mark.asyncio
+async def test_list_tasks_sorts_by_scheduled_at(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+) -> None:
+    """when_* sorts by scheduled_at; omit sort keeps created_at desc."""
+    earlier_schedule = await create_task(
+        registry,
+        title="Earlier schedule",
+        scheduled_at=datetime(2026, 6, 1, 10, 0, tzinfo=UTC),
+    )
+    later_schedule = await create_task(
+        registry,
+        title="Later schedule",
+        scheduled_at=datetime(2026, 6, 2, 10, 0, tzinfo=UTC),
+    )
+    await registry.mongo_db.tasks.update_one(
+        {"id": earlier_schedule.id},
+        {"$set": {"created_at": datetime(2026, 1, 2, tzinfo=UTC)}},
+    )
+    await registry.mongo_db.tasks.update_one(
+        {"id": later_schedule.id},
+        {"$set": {"created_at": datetime(2026, 1, 1, tzinfo=UTC)}},
+    )
+
+    default = await auth_client.get(
+        "/api/tools/tasks",
+        params={"status": "pending", "per_page": 100},
+    )
+    assert default.status_code == 200
+    default_titles = [
+        item["title"]
+        for item in default.json()["items"]
+        if item["title"] in {"Earlier schedule", "Later schedule"}
+    ]
+    assert default_titles == ["Earlier schedule", "Later schedule"]
+
+    asc = await auth_client.get(
+        "/api/tools/tasks",
+        params={"status": "pending", "per_page": 100, "sort": "when_asc"},
+    )
+    assert asc.status_code == 200
+    asc_titles = [
+        item["title"]
+        for item in asc.json()["items"]
+        if item["title"] in {"Earlier schedule", "Later schedule"}
+    ]
+    assert asc_titles == ["Earlier schedule", "Later schedule"]
+
+    desc = await auth_client.get(
+        "/api/tools/tasks",
+        params={"status": "pending", "per_page": 100, "sort": "when_desc"},
+    )
+    assert desc.status_code == 200
+    desc_titles = [
+        item["title"]
+        for item in desc.json()["items"]
+        if item["title"] in {"Earlier schedule", "Later schedule"}
+    ]
+    assert desc_titles == ["Later schedule", "Earlier schedule"]
+
+    invalid = await auth_client.get(
+        "/api/tools/tasks",
+        params={"sort": "created_desc"},
+    )
+    assert invalid.status_code == 422
+
+
+@pytest.mark.asyncio
 async def test_sync_queue_includes_task_title(
     auth_client: AsyncClient,
     registry: DatabaseRegistry,
@@ -204,7 +273,7 @@ async def tasks_reader_client(client: AsyncClient, registry: DatabaseRegistry):
     user = await create_user(
         registry,
         email="reader@example.com",
-        permissions=["tasks:read", "tasks:write"],
+        permissions=["tasks:read"],
     )
     token = create_access_token(str(user.public_id))
     client.headers["Authorization"] = f"Bearer {token}"

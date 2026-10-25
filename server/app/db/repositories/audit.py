@@ -67,6 +67,7 @@ class AuditRepository:
         date_to: date | None = None,
         offset: int = 0,
         limit: int = 50,
+        sort: str = "when_desc",
     ) -> tuple[list[AuditEvent], int]:
         query: dict[str, Any] = {}
         if category:
@@ -89,10 +90,12 @@ class AuditRepository:
                 occurred["$lte"] = datetime.combine(date_to, datetime.max.time())
             query["occurred_at"] = occurred
 
+        occurred_dir = 1 if sort == "when_asc" else -1
+
         async def _fetch_items() -> list[AuditEvent]:
             cursor = (
                 self.db.audit_events.find(query)
-                .sort("occurred_at", -1)
+                .sort("occurred_at", occurred_dir)
                 .skip(offset)
                 .limit(limit)
             )

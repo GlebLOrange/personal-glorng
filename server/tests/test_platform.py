@@ -1,11 +1,14 @@
 """Tests for platform registry and audit trail."""
 
+from datetime import UTC, datetime
+
 import pytest
 from httpx import AsyncClient
 
 from app.db.documents.audit import (
     AuditActorType,
     AuditCategory,
+    AuditEvent,
     AuditSource,
 )
 from app.db.registry import DatabaseRegistry
@@ -77,6 +80,75 @@ async def test_audit_list_admin(
     data = resp.json()
     assert data["total"] >= 1
     assert any(i["action"] == "recipe.created" for i in data["items"])
+
+
+@pytest.mark.asyncio
+async def test_audit_list_sorts_by_occurred_at(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+) -> None:
+    assert registry.audit is not None
+    request_id = "sort-when-audit"
+    await registry.audit.record(
+        AuditEvent(
+            id=0,
+            occurred_at=datetime(2026, 1, 1, 12, 0, tzinfo=UTC),
+            category=AuditCategory.DOMAIN.value,
+            action="sort.older",
+            actor_type=AuditActorType.USER.value,
+            actor_id=1,
+            source=AuditSource.WEB_ADMIN.value,
+            request_id=request_id,
+        ),
+    )
+    await registry.audit.record(
+        AuditEvent(
+            id=0,
+            occurred_at=datetime(2026, 6, 1, 12, 0, tzinfo=UTC),
+            category=AuditCategory.DOMAIN.value,
+            action="sort.newer",
+            actor_type=AuditActorType.USER.value,
+            actor_id=1,
+            source=AuditSource.WEB_ADMIN.value,
+            request_id=request_id,
+        ),
+    )
+
+    default = await auth_client.get(
+        "/api/tools/audit",
+        params={"request_id": request_id},
+    )
+    assert default.status_code == 200
+    assert [item["action"] for item in default.json()["items"]] == [
+        "sort.newer",
+        "sort.older",
+    ]
+
+    asc = await auth_client.get(
+        "/api/tools/audit",
+        params={"request_id": request_id, "sort": "when_asc"},
+    )
+    assert asc.status_code == 200
+    assert [item["action"] for item in asc.json()["items"]] == [
+        "sort.older",
+        "sort.newer",
+    ]
+
+    desc = await auth_client.get(
+        "/api/tools/audit",
+        params={"request_id": request_id, "sort": "when_desc"},
+    )
+    assert desc.status_code == 200
+    assert [item["action"] for item in desc.json()["items"]] == [
+        "sort.newer",
+        "sort.older",
+    ]
+
+    invalid = await auth_client.get(
+        "/api/tools/audit",
+        params={"sort": "created_desc"},
+    )
+    assert invalid.status_code == 422
 
 
 @pytest.mark.asyncio

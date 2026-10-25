@@ -17,6 +17,7 @@ import StatusBadge from "@/components/ui/StatusBadge.vue";
 import {
   ADMIN_MOBILE_LIST_CLASS,
   ADMIN_MOBILE_ROW_WRAP_CLASS,
+  ADMIN_SORT_HEADER_BUTTON_CLASS,
   ADMIN_TD_CLASS,
   ADMIN_TD_MUTED_CLASS,
   ADMIN_TD_TITLE_CLASS,
@@ -50,6 +51,8 @@ type PeriodFilter = "yesterday" | "today" | "7d" | "all";
 const DEFAULT_LEVEL = "error";
 const DEFAULT_PERIOD: PeriodFilter = "yesterday";
 
+type WhenSort = "when_desc" | "when_asc";
+
 const items = ref<AppLogEntry[]>([]);
 const total = ref(0);
 const { loading, lastError: listError, run: runLoad } = useApiAction({ silent: true });
@@ -57,6 +60,12 @@ const level = ref(DEFAULT_LEVEL);
 const requestId = ref("");
 const page = ref(1);
 const period = ref<PeriodFilter>(DEFAULT_PERIOD);
+const sort = ref<WhenSort>("when_desc");
+
+const whenAriaSort = computed(() =>
+  sort.value === "when_asc" ? "ascending" : "descending",
+);
+const whenIndicator = computed(() => (sort.value === "when_asc" ? " ↑" : " ↓"));
 const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
 
@@ -126,6 +135,7 @@ async function load(): Promise<void> {
       const params: Record<string, string | number> = {
         page: page.value,
         per_page: ADMIN_LIST_PAGE_SIZE,
+        sort: sort.value,
       };
       if (level.value) params.level = level.value;
       if (appliedRequestId.value) params.request_id = appliedRequestId.value;
@@ -195,6 +205,12 @@ onUnmounted(() => {
 function goToPage(nextPage: number): void {
   if (nextPage < 1 || (totalPages.value > 0 && nextPage > totalPages.value)) return;
   page.value = nextPage;
+  void load();
+}
+
+function toggleWhenSort(): void {
+  sort.value = sort.value === "when_desc" ? "when_asc" : "when_desc";
+  page.value = 1;
   void load();
 }
 
@@ -333,7 +349,16 @@ onMounted(load);
         <AdminDataTable table-label="app log entries">
           <template #header>
             <th :class="ADMIN_TH_CLASS">type</th>
-            <th :class="ADMIN_TH_CLASS">when</th>
+            <th :class="ADMIN_TH_CLASS" :aria-sort="whenAriaSort">
+              <button
+                type="button"
+                :class="ADMIN_SORT_HEADER_BUTTON_CLASS"
+                aria-label="sort by when"
+                @click="toggleWhenSort"
+              >
+                when{{ whenIndicator }}
+              </button>
+            </th>
             <th :class="ADMIN_TH_CLASS">logger</th>
             <th :class="ADMIN_TH_CLASS">info</th>
           </template>

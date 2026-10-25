@@ -44,6 +44,7 @@ async def list_app_logs(
     level: Annotated[str | None, Query(pattern=r"^(debug|info|warning|error)$")] = None,
     request_id: str | None = None,
     message: str | None = None,
+    sort: Annotated[str, Query(pattern=r"^(when_desc|when_asc)$")] = "when_desc",
 ) -> AppLogListResponse:
     items, total = await svc.list_logs(
         level=level,
@@ -53,6 +54,7 @@ async def list_app_logs(
         date_to=filters.date_to,
         offset=pagination.offset,
         limit=pagination.limit,
+        sort=sort,
     )
     return build_paginated(
         [AppLogResponse.model_validate(item) for item in items],
