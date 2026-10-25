@@ -4,7 +4,6 @@ import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import TaskCard from "@/components/tasks/TaskCard.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import {
-  ADMIN_MOBILE_LIST_CLASS,
   ADMIN_SORT_HEADER_BUTTON_CLASS,
   ADMIN_TH_CLASS,
 } from "@/constants/adminDataTable";
@@ -33,20 +32,10 @@ const emptyMessage = (filterStatus: string): string => {
   <EmptyState v-else-if="tasks.length === 0" :description="emptyMessage(filterStatus)" />
 
   <div v-else class="min-w-0">
-    <div :class="ADMIN_MOBILE_LIST_CLASS">
-      <TaskCard
-        v-for="task in tasks"
-        :key="`m-${task.id}`"
-        layout="card"
-        :task="task"
-        @select="emit('select', $event)"
-      />
-    </div>
-
     <AdminDataTable table-label="tasks">
       <template #header>
-        <th :class="ADMIN_TH_CLASS">status</th>
-        <th :class="ADMIN_TH_CLASS" :aria-sort="whenAriaSort">
+        <th :class="ADMIN_TH_CLASS" scope="col">status</th>
+        <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="whenAriaSort">
           <button
             type="button"
             :class="ADMIN_SORT_HEADER_BUTTON_CLASS"
@@ -56,15 +45,12 @@ const emptyMessage = (filterStatus: string): string => {
             when{{ whenIndicator }}
           </button>
         </th>
-        <th :class="ADMIN_TH_CLASS">title</th>
-        <th class="w-px px-2 text-right">
-          <span class="sr-only">actions</span>
-        </th>
+        <th :class="ADMIN_TH_CLASS" scope="col">title</th>
+        <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
       </template>
       <TaskCard
         v-for="task in tasks"
         :key="task.id"
-        layout="table"
         :task="task"
         @select="emit('select', $event)"
       />

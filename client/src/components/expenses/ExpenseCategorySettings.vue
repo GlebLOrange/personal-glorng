@@ -10,12 +10,9 @@ import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import {
-  ADMIN_ACTIONS_CLASS,
-  ADMIN_MOBILE_LIST_CLASS,
-  ADMIN_MOBILE_ROW_WRAP_CLASS,
   ADMIN_TD_CLASS,
-  ADMIN_TD_TITLE_CLASS,
   ADMIN_TH_CLASS,
+  ADMIN_TH_ROW_CLASS,
   ADMIN_TR_CLASS,
 } from "@/constants/adminDataTable";
 import type { ExpenseCategory } from "@/types";
@@ -39,15 +36,8 @@ watch(
   async (id) => {
     if (id == null) return;
     await nextTick();
-    // Mobile + desktop edit fields both exist; focus the visible one.
-    const candidates = [
-      document.getElementById(`cat-name-${id}`),
-      document.getElementById(`cat-name-table-${id}`),
-    ];
-    const el = candidates.find(
-      (node): node is HTMLElement => node instanceof HTMLElement && node.offsetParent !== null,
-    );
-    el?.focus();
+    const el = document.getElementById(`cat-name-table-${id}`);
+    if (el instanceof HTMLElement) el.focus();
   },
 );
 
@@ -61,58 +51,10 @@ function onCategoryRowClick(category: ExpenseCategory): void {
   <EmptyState v-if="expenseCategories.length === 0" description="no categories yet" />
 
   <div v-else class="mt-1 min-w-0">
-    <div :class="ADMIN_MOBILE_LIST_CLASS">
-      <template v-for="category in expenseCategories" :key="`m-${category.id}`">
-        <div
-          v-if="editingCategoryId === category.id"
-          :class="[ADMIN_MOBILE_ROW_WRAP_CLASS, 'flex min-w-0 flex-wrap items-end gap-2']"
-        >
-          <BaseInput
-            :id="`cat-name-${category.id}`"
-            v-model="editingCategoryName"
-            label="name"
-            class="min-w-[8rem] flex-1"
-            @keyup.enter="emit('saveCategoryRename')"
-          />
-          <BaseButton variant="cancel" class="shrink-0" @click="emit('cancelEditCategory')">
-            cancel
-          </BaseButton>
-          <ToolbarPillButton action="save" class="shrink-0" @click="emit('saveCategoryRename')">
-            save
-          </ToolbarPillButton>
-        </div>
-        <div
-          v-else
-          :class="[ADMIN_MOBILE_ROW_WRAP_CLASS, 'flex min-w-0 cursor-pointer items-center gap-2']"
-          role="button"
-          tabindex="0"
-          @click="onCategoryRowClick(category)"
-          @keydown.enter.prevent="onCategoryRowClick(category)"
-          @keydown.space.prevent="onCategoryRowClick(category)"
-        >
-          <p class="min-w-0 flex-1 truncate text-sm text-surface-light" :title="category.name">
-            {{ category.name }}
-          </p>
-          <div :class="ADMIN_ACTIONS_CLASS" @click.stop @keydown.stop>
-            <IconEditButton
-              :aria-label="`rename ${category.name}`"
-              @click="emit('startEditCategory', category)"
-            />
-            <IconCloseButton
-              :aria-label="`delete ${category.name}`"
-              @click="emit('removeCategory', category)"
-            />
-          </div>
-        </div>
-      </template>
-    </div>
-
     <AdminDataTable table-label="expense categories">
       <template #header>
-        <th :class="ADMIN_TH_CLASS">name</th>
-        <th class="w-px px-2 text-right">
-          <span class="sr-only">actions</span>
-        </th>
+        <th :class="ADMIN_TH_CLASS" scope="col">name</th>
+        <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
       </template>
 
       <template v-for="category in expenseCategories" :key="category.id">
@@ -126,18 +68,10 @@ function onCategoryRowClick(category: ExpenseCategory): void {
                 class="min-w-[8rem] flex-1"
                 @keyup.enter="emit('saveCategoryRename')"
               />
-              <BaseButton
-                variant="cancel"
-                class="shrink-0"
-                @click="emit('cancelEditCategory')"
-              >
+              <BaseButton variant="cancel" class="shrink-0" @click="emit('cancelEditCategory')">
                 cancel
               </BaseButton>
-              <ToolbarPillButton
-                action="save"
-                class="shrink-0"
-                @click="emit('saveCategoryRename')"
-              >
+              <ToolbarPillButton action="save" class="shrink-0" @click="emit('saveCategoryRename')">
                 save
               </ToolbarPillButton>
             </div>
@@ -150,11 +84,11 @@ function onCategoryRowClick(category: ExpenseCategory): void {
           :col-span="2"
           @click="onCategoryRowClick(category)"
         >
-          <td :class="ADMIN_TD_TITLE_CLASS">
+          <th :class="ADMIN_TH_ROW_CLASS" scope="row">
             <p class="truncate text-sm text-surface-light" :title="category.name">
               {{ category.name }}
             </p>
-          </td>
+          </th>
           <template #actions>
             <IconEditButton
               :aria-label="`rename ${category.name}`"

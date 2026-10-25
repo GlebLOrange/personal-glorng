@@ -7,26 +7,21 @@ import {
   ADMIN_TD_ACTIONS_CLASS,
   ADMIN_TD_CLASS,
   ADMIN_TD_MUTED_CLASS,
-  ADMIN_TD_TITLE_CLASS,
+  ADMIN_TH_ROW_CLASS,
   ADMIN_TR_CLASS,
 } from "@/constants/adminDataTable";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExchangeRates, Expense } from "@/types";
 import { expenseSourceLabel } from "@/utils/expenseSource";
 
-const props = withDefaults(
-  defineProps<{
-    expense: Expense;
-    displayCurrency: CurrencyCode;
-    exchangeRates: ExchangeRates | null;
-    formatMoney: (amount: string | number, currency: string) => string;
-    formatExpenseDate: (iso: string) => string;
-    convertAmount: (amount: string, from: CurrencyCode, to: CurrencyCode) => number;
-    /** Compact table-row layout vs mobile card body. */
-    layout?: "card" | "table";
-  }>(),
-  { layout: "card" },
-);
+const props = defineProps<{
+  expense: Expense;
+  displayCurrency: CurrencyCode;
+  exchangeRates: ExchangeRates | null;
+  formatMoney: (amount: string | number, currency: string) => string;
+  formatExpenseDate: (iso: string) => string;
+  convertAmount: (amount: string, from: CurrencyCode, to: CurrencyCode) => number;
+}>();
 
 const emit = defineEmits<{
   edit: [expense: Expense];
@@ -54,7 +49,7 @@ function secondarySource(): string | null {
 </script>
 
 <template>
-  <tr v-if="layout === 'table'" :class="ADMIN_TR_CLASS">
+  <tr :class="ADMIN_TR_CLASS">
     <td :class="ADMIN_TD_MUTED_CLASS">
       {{ formatExpenseDate(expense.expense_date) }}
     </td>
@@ -66,7 +61,7 @@ function secondarySource(): string | null {
         {{ expense.category ?? "—" }}
       </span>
     </td>
-    <td :class="ADMIN_TD_TITLE_CLASS">
+    <th :class="ADMIN_TH_ROW_CLASS" scope="row">
       <p class="truncate text-sm text-surface-light" :title="expense.tool_name">
         {{ expense.tool_name }}
       </p>
@@ -79,7 +74,7 @@ function secondarySource(): string | null {
         <span v-if="expense.notes && secondarySource()"> · </span>
         <span v-if="secondarySource()">{{ secondarySource() }}</span>
       </p>
-    </td>
+    </th>
     <td :class="[ADMIN_TD_CLASS, 'whitespace-nowrap text-right leading-tight']">
       <div class="text-sm">{{ formatMoney(expense.amount, expense.currency) }}</div>
       <div v-if="convertedLabel()" class="text-xs text-surface-mid">≈ {{ convertedLabel() }}</div>
@@ -102,43 +97,4 @@ function secondarySource(): string | null {
       </div>
     </td>
   </tr>
-
-  <div v-else class="flex flex-col gap-2">
-    <div class="flex items-start justify-between gap-3">
-      <div class="min-w-0">
-        <p class="truncate text-sm font-semibold text-surface-light">{{ expense.tool_name }}</p>
-        <p class="mt-0.5 text-xs text-surface-mid">
-          {{ expense.category ?? "Uncategorized" }} ·
-          {{ formatExpenseDate(expense.expense_date) }}
-          <span v-if="secondarySource()" class="text-surface-mid/80">
-            · {{ secondarySource() }}
-          </span>
-        </p>
-        <p v-if="expense.notes" class="mt-1 truncate text-xs text-surface-mid">
-          {{ expense.notes }}
-        </p>
-      </div>
-      <div class="shrink-0 text-right font-data text-sm leading-tight text-surface-light">
-        <div>{{ formatMoney(expense.amount, expense.currency) }}</div>
-        <div v-if="convertedLabel()" class="text-xs text-surface-mid">≈ {{ convertedLabel() }}</div>
-      </div>
-    </div>
-    <div
-      class="flex flex-wrap items-center justify-end gap-0.5 border-t border-surface-border/40 pt-2"
-    >
-      <IconCopyButton
-        :aria-label="`duplicate ${expense.tool_name || 'expense'}`"
-        :quiet="false"
-        @click="emit('duplicate', expense)"
-      />
-      <IconEditButton
-        :aria-label="`edit ${expense.tool_name || 'expense'}`"
-        @click="emit('edit', expense)"
-      />
-      <IconCloseButton
-        :aria-label="`delete ${expense.tool_name || 'expense'}`"
-        @click="emit('delete', expense.id)"
-      />
-    </div>
-  </div>
 </template>

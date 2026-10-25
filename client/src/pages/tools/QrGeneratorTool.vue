@@ -12,7 +12,7 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import { Card } from "@/components/ui/card";
-import { ADMIN_MOBILE_LIST_CLASS, ADMIN_TH_CLASS } from "@/constants/adminDataTable";
+import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useQrLibrary } from "@/composables/useQrLibrary";
@@ -285,33 +285,18 @@ onMounted(() => {
           no saved QR codes yet. generate one and save it.
         </p>
         <div v-else class="min-w-0">
-          <div :class="ADMIN_MOBILE_LIST_CLASS">
-            <QrLibraryListItem
-              v-for="item in items"
-              :key="`m-${item.id}`"
-              layout="card"
-              :item="item"
-              :can-write="canWriteLibrary"
-              :deleting="deleting && deletingId === item.id"
-              @select="selectSaved(item)"
-              @delete="deleteSaved(item.id)"
-            />
-          </div>
           <AdminDataTable table-label="saved QR codes">
             <template #header>
-              <th class="w-px px-3 py-1.5">
-                <span class="sr-only">preview</span>
-              </th>
-              <th :class="ADMIN_TH_CLASS">content</th>
-              <th :class="ADMIN_TH_CLASS">level</th>
-              <th class="w-px px-2 text-right">
-                <span class="sr-only">actions</span>
-              </th>
+              <th :class="ADMIN_TH_CLASS" scope="col">preview</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">label</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">content</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">level</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">updated</th>
+              <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
             </template>
             <QrLibraryListItem
               v-for="item in items"
               :key="item.id"
-              layout="table"
               :item="item"
               :can-write="canWriteLibrary"
               :deleting="deleting && deletingId === item.id"

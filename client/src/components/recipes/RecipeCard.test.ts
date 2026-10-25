@@ -20,11 +20,10 @@ const recipe: Recipe = {
 };
 
 describe("RecipeCard", () => {
-  it("selects on row click and shows prep/cook meta under the title", async () => {
+  it("selects on row click and shows prep/cook meta", async () => {
     const wrapper = mount(RecipeCard, {
       props: {
         recipe,
-        layout: "card",
       },
       global: {
         stubs: {
@@ -33,6 +32,7 @@ describe("RecipeCard", () => {
       },
     });
 
+    expect(wrapper.element.tagName).toBe("TR");
     const row = wrapper.get('[aria-label="open recipe Tomato Soup"]');
     await row.trigger("click");
     expect(wrapper.emitted("select")).toEqual([[42]]);
@@ -51,7 +51,6 @@ describe("RecipeCard", () => {
       props: {
         recipe,
         canWrite: true,
-        layout: "card",
       },
       global: {
         stubs: {
@@ -76,23 +75,5 @@ describe("RecipeCard", () => {
 
     await wrapper.get('[aria-label="delete recipe"]').trigger("click");
     expect(wrapper.emitted("delete")?.[0]).toEqual([recipe]);
-  });
-
-  it("renders table cells when layout is table", () => {
-    const wrapper = mount(RecipeCard, {
-      props: {
-        recipe,
-        layout: "table",
-      },
-      global: {
-        stubs: {
-          BaseImage: true,
-        },
-      },
-    });
-
-    expect(wrapper.element.tagName).toBe("TR");
-    expect(wrapper.text()).toContain("Tomato Soup");
-    expect(wrapper.text()).toContain("10m prep");
   });
 });
