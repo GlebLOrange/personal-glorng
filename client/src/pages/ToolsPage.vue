@@ -7,22 +7,26 @@ import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import {
+  ADMIN_HUB_SERVICE_SLUGS,
+  groupAdminHub,
   PLATFORM_SERVICES,
   publicToolsAsServices,
   resolveToolRoute,
   TOOLS_PAGE_EXTRA_SLUGS,
   type PlatformService,
 } from "@/platform/services";
-import { isExpensesEnabled } from "@/utils/featureFlags";
+import { isAiChatEnabled, isExpensesEnabled } from "@/utils/featureFlags";
 import {
   groupServicesForToolsPage,
   toolsPageChipForSlug,
 } from "@/utils/toolsPageGroups";
 
 const route = useRoute();
-const { can, canAccess } = usePermissions();
+const { can, canAccess, isSuperuser } = usePermissions();
 
 const expensesOffNotice = computed(() => String(route.query.expenses ?? "") === "off");
+const aiChatOffNotice = computed(() => String(route.query.aichat ?? "") === "off");
+const accessDeniedNotice = computed(() => String(route.query.access ?? "") === "denied");
 
 const catalogTools = computed((): PlatformService[] => {
   const publicTools = publicToolsAsServices().filter(
@@ -36,9 +40,24 @@ const catalogTools = computed((): PlatformService[] => {
   return [...publicTools, ...extras];
 });
 
-const sections = computed(() => groupServicesForToolsPage(catalogTools.value));
+/** Ops hub tiles — only for logged-in superadmin on /tools. */
+const adminTools = computed((): PlatformService[] => {
+  if (!isSuperuser.value) return [];
+  return PLATFORM_SERVICES.filter((tool) => {
+    if (!ADMIN_HUB_SERVICE_SLUGS.has(tool.slug)) return false;
+    if (tool.slug === "ai-chat" && !isAiChatEnabled()) return false;
+    return Boolean(tool.adminRoute);
+  });
+});
 
-const hasAnyTools = computed(() => sections.value.some((section) => section.services.length > 0));
+const sections = computed(() => groupServicesForToolsPage(catalogTools.value));
+const adminSections = computed(() => groupAdminHub(adminTools.value));
+
+const hasAnyTools = computed(
+  () =>
+    sections.value.some((section) => section.services.length > 0) ||
+    adminSections.value.length > 0,
+);
 
 function toolRoute(tool: PlatformService): string {
   return resolveToolRoute(tool, can);
@@ -59,13 +78,39 @@ function toolRoute(tool: PlatformService): string {
     >
       Expenses are turned off on this deploy.
     </p>
+    <p
+      v-if="aiChatOffNotice"
+      class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
+      role="status"
+    >
+      AI chat is turned off on this deploy.
+    </p>
+    <p
+      v-if="accessDeniedNotice"
+      class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
+      role="status"
+    >
+      You do not have access to that admin tool. Pick something below, or ask the site owner.
+    </p>
     <EmptyState v-if="!hasAnyTools" description="no tools available." />
-    <ToolTileGrid
-      v-else
-      presentation="public"
-      :sections="sections"
-      :resolve-route="toolRoute"
-      :tile-chip="toolsPageChipForSlug"
-    />
+    <template v-else>
+      <ToolTileGrid
+        v-if="sections.length"
+        presentation="public"
+        :sections="sections"
+        :resolve-route="toolRoute"
+        :tile-chip="toolsPageChipForSlug"
+      />
+      <section v-if="adminSections.length" class="min-w-0">
+        <h2 class="text-meta mb-3 uppercase tracking-wider">admin</h2>
+        <ToolTileGrid
+          presentation="admin"
+          density="compact"
+          :sections="adminSections"
+          :resolve-route="toolRoute"
+          category-heading="h3"
+        />
+      </section>
+    </template>
   </PageShell>
 </template>

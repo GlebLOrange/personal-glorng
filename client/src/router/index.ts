@@ -392,7 +392,7 @@ router.beforeEach(async (to, _from) => {
     return { name: "admin-news", replace: true };
   }
   if (to.name === "tool-ai-chat" && !isAiChatEnabled()) {
-    return { name: "admin", query: { aichat: "off" }, replace: true };
+    return { name: "tools", query: { aichat: "off" }, replace: true };
   }
   if (!isExpensesEnabled() && to.name === "tool-expenses") {
     return { name: "tools", query: { expenses: "off" }, replace: true };
@@ -432,14 +432,14 @@ router.beforeEach(async (to, _from) => {
   if (to.meta.requiresSuperuser && auth.isAuthenticated) {
     const { isSuperuser } = usePermissions();
     if (!isSuperuser.value) {
-      return { name: "admin", query: { access: "denied" }, replace: true };
+      return { name: "tools", query: { access: "denied" }, replace: true };
     }
   }
   const toolSlug = typeof to.name === "string" ? TOOL_ROUTE_SLUGS[to.name] : undefined;
   if (toolSlug && auth.isAuthenticated) {
     const { canAccess } = usePermissions();
     if (!canAccess(toolSlug)) {
-      return { name: "admin", query: { access: "denied" }, replace: true };
+      return { name: "tools", query: { access: "denied" }, replace: true };
     }
   }
 });

@@ -73,10 +73,10 @@ onMounted(() => {
 
 <template>
   <AdminPageLayout
-    hub="admin"
+    hub="tools"
     title="health checker"
     max-width="5xl"
-    back-to="/admin"
+    back-to="/tools"
     description="Monitor URLs on a schedule — status history stays on this server."
   >
     <p

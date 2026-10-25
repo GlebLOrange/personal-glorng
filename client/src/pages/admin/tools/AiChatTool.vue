@@ -45,7 +45,7 @@ const {
 </script>
 
 <template>
-  <AdminPageLayout title="ai chat" back-to="/admin">
+  <AdminPageLayout hub="tools" title="ai chat" back-to="/tools">
     <AdminTabBar
       v-model="activeTab"
       panel-id-prefix="ai-chat"

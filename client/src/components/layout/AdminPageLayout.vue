@@ -17,8 +17,8 @@ const props = withDefaults(
     description?: string;
   }>(),
   {
-    backTo: "/admin",
-    hub: "admin",
+    backTo: "/tools",
+    hub: "tools",
     maxWidth: "5xl",
     description: undefined,
   },

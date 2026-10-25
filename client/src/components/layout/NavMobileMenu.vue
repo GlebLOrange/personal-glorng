@@ -3,7 +3,6 @@ import { computed, nextTick, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useAuthStore } from "@/stores/auth";
-import { usePermissions } from "@/composables/usePermissions";
 import { useScrollLock } from "@/composables/useScrollLock";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { resolveNavSection } from "@/utils/navCurrent";
@@ -15,7 +14,6 @@ const props = defineProps<{
 const emit = defineEmits<{ close: []; "go-home": [] }>();
 
 const auth = useAuthStore();
-const { canUseAdminHub } = usePermissions();
 const route = useRoute();
 const router = useRouter();
 const menuRoot = ref<HTMLElement | null>(null);
@@ -148,16 +146,6 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         @click="emit('close')"
       >
         tools
-      </RouterLink>
-      <RouterLink
-        v-if="canUseAdminHub"
-        to="/admin"
-        class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-coral': navSection === 'admin' }"
-        :aria-current="navSection === 'admin' ? 'page' : undefined"
-        @click="emit('close')"
-      >
-        admin
       </RouterLink>
 
       <RouterLink

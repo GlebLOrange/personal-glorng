@@ -35,12 +35,14 @@ test.describe("public pages", () => {
   test("guest sees tools nav and public tools catalog", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("link", { name: /^tools$/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^admin$/i })).toHaveCount(0);
 
     await page.getByRole("link", { name: /^tools$/i }).click();
     await expect(page).toHaveURL(/\/tools$/);
     await expect(page.getByRole("heading", { name: /^tools$/i })).toBeVisible();
     await expect(page).toHaveTitle(/Tools/i);
     await expectNoCriticalA11yViolations("/tools", page);
+    await expect(page.getByRole("heading", { name: /^admin$/i })).toHaveCount(0);
     await expect(page.getByRole("link", { name: /calculator/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /password generator/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /recipes/i })).toBeVisible();
@@ -170,12 +172,13 @@ test.describe("authenticated admin", () => {
     await expect(page.locator('a[href="/admin/users"]')).toHaveCount(0);
   });
 
-  test("admin dashboard loads after login", async ({ page }) => {
+  test("admin dashboard loads after login without hub tiles", async ({ page }) => {
     await loginAsAdmin(page);
 
     await page.goto("/admin");
-    await expect(page.getByRole("heading", { name: /^§ tools$/i })).toBeVisible();
-    await expect(page.locator('a[href="/admin/users"]')).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^admin$/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^§ tools$/i })).toHaveCount(0);
+    await expect(page.locator('a[href="/admin/users"]')).toHaveCount(0);
     await expect(page.getByRole("complementary", { name: /^weather$/i })).toHaveCount(0);
   });
 

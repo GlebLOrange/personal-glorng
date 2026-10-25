@@ -5,9 +5,9 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 
 <template>
   <AdminPageLayout
-    hub="admin"
+    hub="tools"
     title="db maintenance"
-    back-to="/admin"
+    back-to="/tools"
     description="run backup, stale check, calendar sync, cleanup, or seed. each finished job emails the operator."
   >
     <MaintenanceJobActions mode="page" />

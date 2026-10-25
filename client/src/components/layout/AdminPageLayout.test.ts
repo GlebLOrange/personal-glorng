@@ -14,7 +14,7 @@ function crumbNodes(wrapper: ReturnType<typeof mount>) {
 }
 
 describe("AdminPageLayout", () => {
-  it("renders admin / tool crumbs for admin hub pages", () => {
+  it("renders tools / tool crumbs by default", () => {
     const wrapper = mount(AdminPageLayout, {
       props: { title: "users" },
       global: { stubs: { PageShell: pageShellStub } },
@@ -22,8 +22,8 @@ describe("AdminPageLayout", () => {
     });
 
     const crumbs = crumbNodes(wrapper);
-    expect(crumbs.map((c) => c.text())).toEqual(["admin", "users"]);
-    expect(crumbs[0].attributes("data-to")).toBe("/admin");
+    expect(crumbs.map((c) => c.text())).toEqual(["tools", "users"]);
+    expect(crumbs[0].attributes("data-to")).toBe("/tools");
   });
 
   it("renders tools / tool crumbs when hub is tools", () => {
@@ -38,27 +38,26 @@ describe("AdminPageLayout", () => {
     expect(crumbs[0].attributes("data-to")).toBe("/tools");
   });
 
-  it("uses a single admin crumb on the admin hub", () => {
+  it("nests the admin page under tools when hub is tools", () => {
     const wrapper = mount(AdminPageLayout, {
-      props: { title: "admin", backTo: "/" },
+      props: { title: "admin", hub: "tools", backTo: "/tools" },
       global: { stubs: { PageShell: pageShellStub } },
       slots: { default: "content" },
     });
 
     const crumbs = crumbNodes(wrapper);
-    expect(crumbs).toHaveLength(1);
-    expect(crumbs[0].text()).toBe("admin");
-    expect(crumbs[0].attributes("data-to")).toBe("/admin");
+    expect(crumbs.map((c) => c.text())).toEqual(["tools", "admin"]);
+    expect(crumbs[0].attributes("data-to")).toBe("/tools");
   });
 
-  it("uses one-word users crumb under admin", () => {
+  it("uses one-word users crumb under tools", () => {
     const wrapper = mount(AdminPageLayout, {
       props: { title: "users" },
       global: { stubs: { PageShell: pageShellStub } },
       slots: { default: "content" },
     });
 
-    expect(crumbNodes(wrapper).map((c) => c.text())).toEqual(["admin", "users"]);
+    expect(crumbNodes(wrapper).map((c) => c.text())).toEqual(["tools", "users"]);
   });
 
   it("keeps multi-word admin titles as a phrase crumb", () => {

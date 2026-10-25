@@ -1,5 +1,6 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
+import { computed, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ToolsPage from "@/pages/ToolsPage.vue";
@@ -8,6 +9,7 @@ import { groupServicesForToolsPage } from "@/utils/toolsPageGroups";
 
 const useRouteMock = vi.fn(() => ({ query: {} as Record<string, string> }));
 const canAccessMock = vi.fn((_slug: string) => false);
+const isSuperuserRef = ref(false);
 
 vi.mock("vue-router", () => ({
   useRoute: () => useRouteMock(),
@@ -23,14 +25,27 @@ vi.mock("@/composables/usePermissions", () => ({
   usePermissions: () => ({
     can: () => false,
     canAccess: (slug: string) => canAccessMock(slug),
+    isSuperuser: computed(() => isSuperuserRef.value),
   }),
 }));
+
+vi.mock("@/utils/featureFlags", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/utils/featureFlags")>();
+  return {
+    ...actual,
+    isAiChatEnabled: vi.fn(() => true),
+  };
+});
+
+import { isAiChatEnabled } from "@/utils/featureFlags";
 
 describe("ToolsPage sectioned layout", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     useRouteMock.mockReturnValue({ query: {} });
     canAccessMock.mockReturnValue(false);
+    isSuperuserRef.value = false;
+    vi.mocked(isAiChatEnabled).mockReturnValue(true);
   });
 
   function mountPage() {
@@ -53,8 +68,10 @@ describe("ToolsPage sectioned layout", () => {
 
     expect(wrapper.findAll('[role="tab"]')).toHaveLength(0);
     expect(wrapper.find('nav[aria-label="tool sections"]').exists()).toBe(false);
-    expect(wrapper.text()).toContain("Everyday · 4");
-    expect(wrapper.text()).toContain("Content · 2");
+    expect(wrapper.text()).toContain("Everyday");
+    expect(wrapper.text()).toContain("Content");
+    expect(wrapper.text()).toContain("4 tools");
+    expect(wrapper.text()).toContain("2 tools");
     expect(wrapper.text()).toContain("recipes");
     expect(wrapper.text()).toContain("calculator");
     expect(wrapper.text()).toContain("Shorten a long link.");
@@ -66,6 +83,8 @@ describe("ToolsPage sectioned layout", () => {
     expect(wrapper.text()).not.toContain("Work");
     expect(wrapper.text()).not.toContain("Builders");
     expect(wrapper.text()).not.toContain("news");
+    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
+    expect(wrapper.text()).not.toContain("audit logs");
     expect(wrapper.get('[data-testid="crumbs"]').text()).toBe("tools");
   });
 
@@ -88,6 +107,47 @@ describe("ToolsPage sectioned layout", () => {
     const wrapper = mountPage();
     await flushPromises();
     expect(wrapper.text()).toContain("Expenses are turned off on this deploy.");
+  });
+
+  it("shows access-denied notice when redirected with access=denied", async () => {
+    useRouteMock.mockReturnValue({ query: { access: "denied" } });
+    const wrapper = mountPage();
+    await flushPromises();
+    expect(wrapper.text()).toContain("You do not have access to that admin tool");
+  });
+
+  it("hides admin hub tiles from capability-only users", async () => {
+    canAccessMock.mockImplementation((slug: string) => slug === "feedback");
+    isSuperuserRef.value = false;
+
+    const wrapper = mountPage();
+    await flushPromises();
+
+    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
+    expect(wrapper.text()).not.toContain("audit logs");
+  });
+
+  it("shows admin hub tiles for superusers", async () => {
+    isSuperuserRef.value = true;
+
+    const wrapper = mountPage();
+    await flushPromises();
+
+    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(true);
+    expect(wrapper.text()).toContain("audit logs");
+    expect(wrapper.text()).toContain("ai chat");
+  });
+
+  it("omits ai chat from admin tiles when the feature flag is off", async () => {
+    vi.mocked(isAiChatEnabled).mockReturnValue(false);
+    isSuperuserRef.value = true;
+
+    const wrapper = mountPage();
+    await flushPromises();
+
+    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(true);
+    expect(wrapper.text()).toContain("audit logs");
+    expect(wrapper.text()).not.toContain("ai chat");
   });
 });
 
