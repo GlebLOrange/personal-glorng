@@ -40,6 +40,8 @@ const props = withDefaults(
     /** Border tone when there is no error message (validation UI). */
     tone?: "error" | "success";
     compact?: boolean;
+    /** When false, hide the trailing clear control (default true). */
+    clearable?: boolean;
     /** Render the label inside the input bar instead of the outer border notch. */
     labelInside?: boolean;
     /**
@@ -50,6 +52,7 @@ const props = withDefaults(
   {
     labelInside: false,
     labelAlign: "end",
+    clearable: true,
   },
 );
 
@@ -84,9 +87,13 @@ const useShell = computed(() =>
     isInlineEnd.value,
   ),
 );
-const showClear = computed(() => useShell.value && hasClearableValue.value);
+const showClear = computed(
+  () => props.clearable && useShell.value && hasClearableValue.value,
+);
 /** Reserve clear width whenever shell is clearable so tip/value never jump. */
-const reserveClear = computed(() => useShell.value && isClearableType.value);
+const reserveClear = computed(
+  () => props.clearable && useShell.value && isClearableType.value,
+);
 /** Inside-label overlay mirrors tip: visible only while empty, then clear takes over. */
 const showInsideLabel = computed(
   () => Boolean(props.labelInside && props.label) && !hasTypedValue.value,
