@@ -84,24 +84,39 @@ watch(
         >
           {{ article.title }}
         </h1>
-        <div class="mb-4 flex w-full min-w-0 flex-wrap items-center gap-2 text-xs text-surface-muted">
-          <a
-            v-if="safeNavigationHref(article.source_url)"
-            :href="safeNavigationHref(article.source_url) ?? '#'"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="source"
-            class="shrink-0 text-accent-coral hover:underline"
+        <div class="mb-4 flex w-full min-w-0 flex-wrap items-center gap-x-4 gap-y-2 text-xs text-surface-muted">
+          <div class="flex min-w-0 flex-wrap items-center gap-2">
+            <a
+              v-if="safeNavigationHref(article.source_url)"
+              :href="safeNavigationHref(article.source_url) ?? '#'"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="source"
+              class="shrink-0 text-accent-coral hover:underline"
+            >
+              {{ article.source_name }}
+            </a>
+            <span v-else class="shrink-0 text-accent-coral">{{ article.source_name }}</span>
+            <time class="shrink-0 text-left" :datetime="newsArticleDisplayDate(article)">
+              {{ formatNewsDate(newsArticleDisplayDate(article)) }}
+            </time>
+            <FieldHelp
+              :text="`this is a curated summary — read the original article from ${article.source_name} for full context`"
+            />
+          </div>
+          <ul
+            v-if="article.tags.length"
+            class="m-0 ml-auto flex list-none flex-row-reverse flex-wrap justify-end gap-2 p-0"
+            aria-label="tags"
           >
-            {{ article.source_name }}
-          </a>
-          <span v-else class="shrink-0 text-accent-coral">{{ article.source_name }}</span>
-          <time class="shrink-0 text-left" :datetime="newsArticleDisplayDate(article)">
-            {{ formatNewsDate(newsArticleDisplayDate(article)) }}
-          </time>
-          <FieldHelp
-            :text="`this is a curated summary — read the original article from ${article.source_name} for full context`"
-          />
+            <li
+              v-for="tag in article.tags"
+              :key="tag"
+              class="news-tag-chip"
+            >
+              #{{ tag }}
+            </li>
+          </ul>
         </div>
         <p class="text-body break-words">{{ article.summary }}</p>
       </header>
@@ -115,19 +130,6 @@ watch(
             class="break-words border-l-2 border-accent-coral/40 pl-3 text-body"
           >
             {{ formatEmbeddedDates(bullet) }}
-          </li>
-        </ul>
-      </section>
-
-      <section v-if="article.tags.length" class="mb-8 min-w-0">
-        <h2 class="card-title mb-4">tags</h2>
-        <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
-          <li
-            v-for="tag in article.tags"
-            :key="tag"
-            class="news-tag-chip"
-          >
-            #{{ tag }}
           </li>
         </ul>
       </section>
