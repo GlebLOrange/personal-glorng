@@ -13,7 +13,7 @@ make backup-install   # install cron via scripts/install_backup_cron.sh
 
 ### Admin panel button (optional)
 
-Superusers can open **db maintenance** under `/admin` and start the same script after Cloudflare Turnstile plus a confirm dialog. This only works on a **host / ultra-lite API** process that can execute the script (the Docker API container has no compose socket and does not mount `scripts/`). Set `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `DB_MAINTENANCE_ENABLED=true`, and `DB_MAINTENANCE_SCRIPT` to the absolute path of `scripts/db_maintenance.sh`. Cron and `make backup` remain the normal path.
+Superusers can open **db maintenance** under `/admin` and pick a job (`backup`, `stale`, `sync`, `cleanup`, `seed`) after Cloudflare Turnstile plus a confirm dialog. Each finished job emails `ALLOWED_EMAIL` with a short report. **backup** / **stale** need a **host / ultra-lite API** that can execute the script (the Docker API container has no compose socket and does not mount `scripts/`) — set `DB_MAINTENANCE_ENABLED=true` and `DB_MAINTENANCE_SCRIPT` to the absolute path of `scripts/db_maintenance.sh`. **sync** / **cleanup** / **seed** run in-process when Turnstile is configured (`seed` is blocked in production unless `MAINTENANCE_SEED_ENABLED=true`). Cron and `make backup` remain the normal backup path; agent preflight is `/maintain`.
 
 ### What gets backed up
 
