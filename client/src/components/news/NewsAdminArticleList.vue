@@ -43,7 +43,7 @@ const emit = defineEmits<{
           :href="safeNavigationHref(item.source_url) ?? '#'"
           target="_blank"
           rel="noopener noreferrer"
-          class="shrink-0 text-accent-coral hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
+          class="text-link shrink-0"
           @click.stop
         >
           {{ item.source_name }}

@@ -2,10 +2,10 @@
 import { computed, useAttrs } from "vue";
 
 import {
-  SEMANTIC_ACTION_HTTP_FAMILY,
+  classesForActionButton,
   type SemanticButtonAction,
 } from "@/constants/actionButtonVariants";
-import { actionFamilyClass, type HttpStatusFamily } from "@/constants/httpStatusColors";
+import { ACTION_PILL_BASE, actionFamilyClass, type HttpStatusFamily } from "@/constants/httpStatusColors";
 
 defineOptions({ inheritAttrs: false });
 
@@ -29,14 +29,20 @@ const props = withDefaults(
 defineEmits<{ click: [MouseEvent] }>();
 
 const attrs = useAttrs();
-const resolvedFamily = computed((): HttpStatusFamily =>
-  props.action ? SEMANTIC_ACTION_HTTP_FAMILY[props.action] : props.family,
-);
 
-const classes = computed(() => [
-  actionFamilyClass(resolvedFamily.value, props.selected),
-  attrs.class,
-]);
+/** Shape without hardcoded ring — classesForActionButton supplies focus ring. */
+const PILL_SHAPE = ACTION_PILL_BASE.replace(" focus-visible:ring-accent-coral/50", "");
+
+const classes = computed(() => {
+  if (props.action) {
+    return [
+      PILL_SHAPE,
+      classesForActionButton({ variant: props.action, selected: props.selected }),
+      attrs.class,
+    ];
+  }
+  return [actionFamilyClass(props.family, props.selected), attrs.class];
+});
 const nativeAttrs = computed(() => {
   const next: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(attrs)) {

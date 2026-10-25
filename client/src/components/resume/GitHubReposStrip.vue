@@ -18,7 +18,7 @@ defineProps<{
         :href="profileUrl"
         target="_blank"
         rel="noopener noreferrer"
-        class="inline-flex min-h-11 items-center text-sm text-accent-coral underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
+        class="text-link inline-flex min-h-11 items-center text-sm"
       >
         view profile
         <span class="sr-only">(opens in new tab)</span>

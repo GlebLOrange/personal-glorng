@@ -20,24 +20,23 @@ Import explicitly per file (only `BaseImage` is global).
 
 ### Button action colors (standard)
 
-Semantic names live in `constants/actionButtonVariants.ts` (`SEMANTIC_ACTION_HTTP_FAMILY`). Prefer **named actions** over raw HTTP families so create/save/cancel stay consistent.
+Product chrome uses **three roles** from the Material sheet: primary wash, surface secondary/ghost, and error. Semantic names live in `constants/actionButtonVariants.ts`. Prefer **named actions** over raw HTTP families.
 
-| User action | `BaseButton` `variant` | `action` on pill / icon / menu | HTTP family | Look |
-|---|---|---|---|---|
-| Create | `create` | `create` | 1xx | Solid `accent-coral` (same as `primary`) |
-| Add | `add` | `add` | 1xx | Solid `accent-coral` |
-| Save / submit / confirm | `save` (alias: `success`) | `save` | 2xx | Pale green wash |
-| Edit / update | `edit` | `edit` | 3xx | Pale gold wash |
-| Remove / delete | `delete` or `remove` | `delete` / `remove` | 4xx | Pale rose wash (`danger` prop = 4xx legacy) |
-| Cancel / dismiss | `cancel` | `cancel` | 5xx | Pink–red wash |
-| Neutral (OAuth, unlink, promote) | `secondary` | — (or explicit `family`) | — | Grayscale |
-| Tertiary / filter clear | `ghost` (+ optional `quiet`) | — | — | Muted until hover |
+| User action | `BaseButton` `variant` | `action` on pill / icon / menu | Look |
+|---|---|---|---|
+| Create / Add / Primary | `create` / `add` / `primary` | `create` / `add` | Pale primary wash (`accent-coral` aliases `--color-primary`) |
+| Save / submit / confirm | `save` (alias: `success`) | `save` | Same primary wash |
+| Edit / update | `edit` | `edit` | Surface secondary (outline card) |
+| Remove / delete | `delete` or `remove` | `delete` / `remove` | Pale error wash (`danger` prop = error legacy) |
+| Cancel / dismiss | `cancel` | `cancel` | Ghost (muted until hover) |
+| Neutral (OAuth, unlink, promote) | `secondary` | — (or explicit `family` for HTTP tabs) | Grayscale surface |
+| Tertiary / filter clear | `ghost` (+ optional `quiet`) | — | Muted until hover |
 
 **Examples:** `variant="cancel"` + `variant="save"` in form footers; `action="create"` on `+ task` pills; `variant="delete"` on confirm dialogs with `danger`.
 
 Auth login/register submits may stay `primary`. Marketing `cta-*` stays separate. Do not invent new hex colors.
 
-`status-warning` is the 3xx family. Legacy `accent-red` / `accent-amber` map to error / warning.
+HTTP **status badges** and log rows still use 1xx–5xx families (`status-success`, `status-warning`, …). Legacy `accent-red` / `accent-amber` map to error / warning.
 
 ## Marketing CTAs vs product buttons vs toolbar pills
 
@@ -66,9 +65,11 @@ Product `BaseButton` / `ToolbarPillButton` labels must name the action with a sh
 | `IconActionButton` (+ wrappers) | **h-10 w-10** | Icon-only chrome; in-field clear uses `size="field"` (same square) |
 | `BaseSelect` | **h-10** (`compact` → h-9) | Dense toolbars only for compact |
 
-Wash recipe (idle → hover/selected → active): fill `/10` → `/12` + border `/22` → active `/14`; labels `text-*/88` (`ACTION_BUTTON_PAINT` in `httpStatusColors.ts`). Primary / `cta-primary` use the same pale 1xx wash. Icon clear/edit/remove/copy use `transparentIdle`. Do **not** re-add `min-h-10` / `h-10` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `action`, `family`, `quiet`, `transparentIdle`, and `selected`. Size tokens live in `constants/formClasses.ts` (`CONTROL_BUTTON_*`).
+Wash recipe (idle → hover/selected → active): fill `/10` → `/12` + border `/22` → active `/14`; labels `text-*/88` (`ACTION_BUTTON_PAINT` in `httpStatusColors.ts`). Primary / `cta-primary` use the same pale primary wash. Icon clear/edit/remove/copy use `transparentIdle`. Do **not** re-add `min-h-10` / `h-10` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `action`, `family`, `quiet`, `transparentIdle`, and `selected`. Size tokens live in `constants/formClasses.ts` (`CONTROL_BUTTON_*`).
 
-**Marketing vs product accents** — portfolio/marketing pages may use `accent-coral`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI uses only the **1xx–5xx** pale set + surfaces — no golden/violet on tools, chips, or product buttons.
+**Text links** — use the `text-link` utility (primary ink + underline on hover/focus). Do not paint every `<a>` (tiles, nav, breadcrumbs stay undecorated).
+
+**Marketing vs product accents** — portfolio/marketing may use `accent-violet` (tertiary), `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin chrome uses **primary + surfaces + error** — tertiary/custom only on labeled pills/chips (`section-label-pill--*`, CV/news chips).
 
 ## Card system (`components/ui/card/`)
 
@@ -91,21 +92,27 @@ See `NewsPage.vue` and `ExpenseList.vue` for reference implementations.
 
 ## Status / palette colors
 
-Canonical tokens live in `client/src/styles/main.css` as pale dual-theme CSS variables (`html[data-theme="dark"|"light"]`). Class names stay the same; values switch with theme. **Preference** is **dark** or **light** only (default dark); toggle: nav chrome flips dark ↔ light (`useColorTheme`, key `glorng-color-theme`). Legacy `system` values migrate once to the current OS theme.
+Canonical tokens live in `client/src/styles/main.css` as dual-theme CSS variables (`html[data-theme="dark"|"light"]`). Class names stay the same; values switch with theme. **Preference** is **dark** or **light** only (default dark); toggle: nav chrome flips dark ↔ light (`useColorTheme`, key `glorng-color-theme`). Legacy `system` values migrate once to the current OS theme.
 
-**Roles (both themes):** `surface-dark` = page background, `surface-card` = elevated surface, `surface-border` = borders, `surface-light` = primary text, `surface-sage` / `surface-mid` / `surface-muted` = body → secondary → muted. `on-accent` = dark ink on solid pale CTA fills. Product/admin uses pale 1xx–5xx + surfaces only; violet/golden are marketing-only.
+**Surfaces:** `surface-dark` = page, `surface-card` = elevated, `surface-border` = borders, `surface-grid` = container-low, `surface-light` = primary text, `surface-sage` / `surface-mid` / `surface-muted` = body → secondary → muted.
 
-| Family | Token | Dark (resolved) | Light |
+**Roles (sheet):** `primary` / `on-primary` / `primary-container` for chrome. `accent-coral` and `accent-lavender` **alias primary**. `tertiary` (`accent-violet`) and `custom` (`status-cyan`) for pills/chips. `error` for destructive. Secondary **controls** stay surface+outline (sheet secondary fill matches primary).
+
+| Role | Token | Dark | Light |
 |---|---|---|---|
-| 1xx | `accent-coral` | `#f0a090` | `#b56a5a` |
-| 2xx | `status-success` | `#7bc49a` | `#86c9a0` |
-| 3xx | `status-warning` | `#d4ce94` | `#d4b86a` |
-| 4xx | `status-error` | `#e88a8a` | `#e08a8a` |
-| 5xx | `status-critical` | `#d98aad` | `#d98aad` |
-| Page bg | `surface-dark` | `#111827` | `#e5e7eb` |
-| Primary text | `surface-light` | `#f9f9fb` | `#111827` |
+| Primary | `primary` / `accent-coral` | `#cfbdfe` | `#63588d` |
+| On primary | `on-primary` / `on-accent` | `#1e1545` | `#ffffff` |
+| Primary container | `primary-container` | `#4b4073` | `#cfc6e7` |
+| Tertiary | `tertiary` / `accent-violet` | `#ffb1c8` | `#8d4b60` |
+| Error | `status-error` | `#ffb4ab` | `#bf1c1e` |
+| Custom | `custom` / `status-cyan` | `#8dceed` | `#23648a` |
+| Success (status only) | `status-success` | `#a8d08d` | `#3b6d11` |
+| Warning (status only) | `status-warning` | `#e8c468` | `#8b6914` |
+| Page bg | `surface-dark` | `#141218` | `#fef7ff` |
+| Card | `surface-card` | `#1d1b20` | `#f2ecf4` |
+| Primary text | `surface-light` | `#e6e1e5` | `#1d1b20` |
 
-Use `text-status-*`, `alert-surface-error`, `alert-surface-warning` (pale yellow), etc. — not raw Tailwind `red-400` / `amber-400`. Wash pattern: idle `/3`, hover/selected `/15` + border `/40`. Never use saturated sheet hexes as solid button fills.
+Use `text-status-*`, `alert-surface-error`, `alert-surface-warning`, etc. — not raw Tailwind `red-400` / `amber-400`. Product button wash: idle `/10`, hover `/12` + border `/22`. Never invent one-off hex in components.
 
 Typography: IBM Plex Sans; use `font-data` for status codes, counts, and money.
 

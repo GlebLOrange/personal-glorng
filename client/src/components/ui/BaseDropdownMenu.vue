@@ -12,10 +12,12 @@ import {
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import {
+  classesForActionButton,
   SEMANTIC_ACTION_HTTP_FAMILY,
   type SemanticButtonAction,
 } from "@/constants/actionButtonVariants";
 import {
+  ACTION_PILL_BASE,
   actionFamilyClass,
   iconActionClass,
   type HttpStatusFamily,
@@ -62,9 +64,18 @@ const resolvedFamily = computed((): HttpStatusFamily =>
   props.action ? SEMANTIC_ACTION_HTTP_FAMILY[props.action] : props.family,
 );
 
+const pillShape = ACTION_PILL_BASE.replace(" focus-visible:ring-accent-coral/50", "");
+
 const triggerClass = computed(() => {
   if (isLabeledTrigger.value) {
-    // Labeled triggers (e.g. more actions) match ToolbarPillButton h-10.
+    // Labeled triggers match ToolbarPillButton — semantic actions use role paint.
+    if (props.action) {
+      return [
+        pillShape,
+        classesForActionButton({ variant: props.action, selected: open.value }),
+        "w-full",
+      ];
+    }
     return [actionFamilyClass(resolvedFamily.value, open.value), "w-full"];
   }
   // Icon-only — h-10 square chrome.

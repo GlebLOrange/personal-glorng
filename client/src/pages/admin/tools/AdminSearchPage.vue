@@ -163,7 +163,7 @@ onUnmounted(() => {
           <RouterLink
             v-if="hit.path"
             :to="hit.path"
-            class="font-medium text-accent-coral hover:underline"
+            class="text-link font-medium"
           >
             {{ hit.title }}
           </RouterLink>

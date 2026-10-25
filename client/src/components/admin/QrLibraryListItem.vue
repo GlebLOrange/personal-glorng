@@ -73,7 +73,7 @@ function onRowClick(event: MouseEvent): void {
           :href="item.content_preview"
           target="_blank"
           rel="noopener noreferrer"
-          class="mt-0.5 block w-full truncate text-xs text-accent-coral underline-offset-2 hover:underline"
+          class="text-link mt-0.5 block w-full truncate text-xs"
           :title="item.content_preview"
         >
           {{ item.content_preview }}
@@ -91,7 +91,7 @@ function onRowClick(event: MouseEvent): void {
         :href="item.content_preview"
         target="_blank"
         rel="noopener noreferrer"
-        class="block w-full truncate text-sm text-accent-coral underline-offset-2 hover:underline"
+        class="text-link block w-full truncate text-sm"
         :title="item.content_preview"
       >
         {{ item.content_preview }}
@@ -136,7 +136,7 @@ function onRowClick(event: MouseEvent): void {
           :href="item.content_preview"
           target="_blank"
           rel="noopener noreferrer"
-          class="mt-0.5 block truncate text-xs text-accent-coral underline-offset-2 hover:underline"
+          class="text-link mt-0.5 block truncate text-xs"
           :title="item.content_preview"
           @click.stop
         >
@@ -155,7 +155,7 @@ function onRowClick(event: MouseEvent): void {
         :href="item.content_preview"
         target="_blank"
         rel="noopener noreferrer"
-        class="block truncate text-sm text-accent-coral underline-offset-2 hover:underline"
+        class="text-link block truncate text-sm"
         :title="item.content_preview"
         @click.stop
       >
