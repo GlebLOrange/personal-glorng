@@ -7,6 +7,7 @@ import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import {
+  ADMIN_HUB_SERVICE_SLUGS,
   groupServicesByCategory,
   PLATFORM_SERVICES,
   publicToolsAsServices,
@@ -14,7 +15,7 @@ import {
   TOOLS_PAGE_EXTRA_SLUGS,
   type PlatformService,
 } from "@/platform/services";
-import { isExpensesEnabled } from "@/utils/featureFlags";
+import { isAiChatEnabled, isExpensesEnabled } from "@/utils/featureFlags";
 
 /**
  * Usefulness ranking within Content / Utilities (applied before groupServicesByCategory).
@@ -31,9 +32,11 @@ const PUBLIC_TILE_ORDER = [
 ];
 
 const route = useRoute();
-const { can, canAccess } = usePermissions();
+const { can, canAccess, isSuperuser } = usePermissions();
 
 const expensesOffNotice = computed(() => String(route.query.expenses ?? "") === "off");
+const aiChatOffNotice = computed(() => String(route.query.aichat ?? "") === "off");
+const accessDeniedNotice = computed(() => String(route.query.access ?? "") === "denied");
 
 function sortPublicTools(tools: PlatformService[]): PlatformService[] {
   return [...tools].sort((a, b) => {
@@ -61,10 +64,26 @@ const signedInTools = computed((): PlatformService[] => {
   });
 });
 
+/** Ops hub tiles — only for logged-in superadmin on /tools. */
+const adminTools = computed((): PlatformService[] => {
+  if (!isSuperuser.value) return [];
+  return PLATFORM_SERVICES.filter((tool) => {
+    if (!ADMIN_HUB_SERVICE_SLUGS.has(tool.slug)) return false;
+    if (tool.slug === "ai-chat" && !isAiChatEnabled()) return false;
+    return Boolean(tool.adminRoute);
+  });
+});
+
 const publicSections = computed(() => groupServicesByCategory(publicTools.value));
 const signedInSections = computed(() => groupServicesByCategory(signedInTools.value));
+const adminSections = computed(() => groupServicesByCategory(adminTools.value));
 
-const hasAnyTools = computed(() => publicTools.value.length > 0 || signedInTools.value.length > 0);
+const hasAnyTools = computed(
+  () =>
+    publicTools.value.length > 0 ||
+    signedInTools.value.length > 0 ||
+    adminTools.value.length > 0,
+);
 
 function toolRoute(tool: PlatformService): string {
   return resolveToolRoute(tool, can);
@@ -85,6 +104,20 @@ function toolRoute(tool: PlatformService): string {
     >
       Expenses are turned off on this deploy.
     </p>
+    <p
+      v-if="aiChatOffNotice"
+      class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
+      role="status"
+    >
+      AI chat is turned off on this deploy.
+    </p>
+    <p
+      v-if="accessDeniedNotice"
+      class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
+      role="status"
+    >
+      You do not have access to that admin tool. Pick something below, or ask the site owner.
+    </p>
     <EmptyState v-if="!hasAnyTools" description="no tools available." />
     <template v-else>
       <ToolTileGrid
@@ -99,6 +132,15 @@ function toolRoute(tool: PlatformService): string {
           :sections="signedInSections"
           :resolve-route="toolRoute"
           category-heading="h3"
+        />
+      </section>
+      <section v-if="adminSections.length" class="min-w-0">
+        <h2 class="text-meta mb-3 uppercase tracking-wider">admin</h2>
+        <ToolTileGrid
+          :sections="adminSections"
+          :resolve-route="toolRoute"
+          category-heading="h3"
+          density="compact"
         />
       </section>
     </template>

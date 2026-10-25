@@ -34,7 +34,7 @@ function isAuthEntryPath(pathname: string): boolean {
 }
 
 /** Return a same-origin path for auth redirects, or a safe fallback. */
-export function safeRedirectPath(value: unknown, fallback = "/admin"): string {
+export function safeRedirectPath(value: unknown, fallback = "/tools"): string {
   if (typeof value !== "string") {
     return fallback;
   }

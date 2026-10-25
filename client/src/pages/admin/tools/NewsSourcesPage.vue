@@ -69,7 +69,7 @@ const {
 </script>
 
 <template>
-  <AdminPageLayout hub="admin" title="manage news sources" max-width="5xl" back-to="/admin">
+  <AdminPageLayout hub="tools" title="manage news sources" max-width="5xl" back-to="/tools">
     <div class="mb-3 flex min-w-0 flex-wrap items-center gap-2">
       <AdminFilterDropdown
         ref="filterDropdown"

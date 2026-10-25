@@ -4,6 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ToolsPage from "@/pages/ToolsPage.vue";
 import { groupServicesByCategory, publicToolsAsServices } from "@/platform/services";
+import { useAuthStore } from "@/stores/auth";
+import type { UserResponse } from "@/types";
+import { SUPERUSER_PERMISSION } from "@/utils/permissions";
 
 const useRouteMock = vi.fn(() => ({ query: {} as Record<string, string> }));
 
@@ -17,10 +20,34 @@ vi.mock("vue-router", () => ({
   },
 }));
 
+vi.mock("@/utils/featureFlags", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/utils/featureFlags")>();
+  return {
+    ...actual,
+    isAiChatEnabled: vi.fn(() => true),
+  };
+});
+
+import { isAiChatEnabled } from "@/utils/featureFlags";
+
+function makeUser(permissions: string[]): UserResponse {
+  return {
+    id: "1",
+    email: "a@b.c",
+    permissions,
+    is_verified: true,
+    display_name: "User",
+    timezone: "UTC",
+    preferences: {},
+    created_at: "2026-01-01T00:00:00Z",
+  };
+}
+
 describe("ToolsPage sectioned layout", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     useRouteMock.mockReturnValue({ query: {} });
+    vi.mocked(isAiChatEnabled).mockReturnValue(true);
   });
 
   function mountPage() {
@@ -52,6 +79,8 @@ describe("ToolsPage sectioned layout", () => {
     expect(wrapper.text()).not.toContain("expenses");
     expect(wrapper.text()).not.toContain("productivity");
     expect(wrapper.text()).not.toContain("news");
+    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
+    expect(wrapper.text()).not.toContain("audit logs");
     expect(wrapper.get('[data-testid="crumbs"]').text()).toBe("tools");
     // Public presentation hides the visible count badge (sr-only count remains).
     const contentHeading = wrapper.findAll("h2").find((h) => h.text().includes("content"));
@@ -63,6 +92,49 @@ describe("ToolsPage sectioned layout", () => {
     const wrapper = mountPage();
     await flushPromises();
     expect(wrapper.text()).toContain("Expenses are turned off on this deploy.");
+  });
+
+  it("shows access-denied notice when redirected with access=denied", async () => {
+    useRouteMock.mockReturnValue({ query: { access: "denied" } });
+    const wrapper = mountPage();
+    await flushPromises();
+    expect(wrapper.text()).toContain("You do not have access to that admin tool");
+  });
+
+  it("hides admin hub tiles from capability-only users", async () => {
+    const auth = useAuthStore();
+    auth.user = makeUser(["feedback:read"]);
+
+    const wrapper = mountPage();
+    await flushPromises();
+
+    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
+    expect(wrapper.text()).not.toContain("audit logs");
+  });
+
+  it("shows admin hub tiles for superusers", async () => {
+    const auth = useAuthStore();
+    auth.user = makeUser([SUPERUSER_PERMISSION]);
+
+    const wrapper = mountPage();
+    await flushPromises();
+
+    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(true);
+    expect(wrapper.text()).toContain("audit logs");
+    expect(wrapper.text()).toContain("ai chat");
+  });
+
+  it("omits ai chat from admin tiles when the feature flag is off", async () => {
+    vi.mocked(isAiChatEnabled).mockReturnValue(false);
+    const auth = useAuthStore();
+    auth.user = makeUser([SUPERUSER_PERMISSION]);
+
+    const wrapper = mountPage();
+    await flushPromises();
+
+    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(true);
+    expect(wrapper.text()).toContain("audit logs");
+    expect(wrapper.text()).not.toContain("ai chat");
   });
 });
 

@@ -222,7 +222,7 @@ watch(articleId, () => {
 </script>
 
 <template>
-  <AdminPageLayout hub="admin" :title="chromeTitle" max-width="5xl" back-to="/admin/news">
+  <AdminPageLayout hub="tools" :title="chromeTitle" max-width="5xl" back-to="/admin/news">
     <header v-if="canWrite && article" class="page-intro">
       <p v-if="form.slug.trim()" class="mb-3 text-sm text-surface-mid">
         Public URL:

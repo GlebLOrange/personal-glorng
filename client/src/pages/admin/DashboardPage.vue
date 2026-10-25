@@ -1,78 +1,20 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
-
 import MaintenanceJobActions from "@/components/admin/MaintenanceJobActions.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
-import EmptyState from "@/components/ui/EmptyState.vue";
-import { Card } from "@/components/ui/card";
-import { usePlatformCatalog } from "@/composables/usePlatformCatalog";
-import { ADMIN_HUB_SERVICE_SLUGS, groupServicesByCategory } from "@/platform/services";
 import { usePermissions } from "@/composables/usePermissions";
-import { isAiChatEnabled } from "@/utils/featureFlags";
 
-const route = useRoute();
-const { canAccess, isSuperuser } = usePermissions();
-const { services, load } = usePlatformCatalog();
-const catalogLoading = ref(true);
-
-const aiChatOffNotice = computed(() => String(route.query.aichat ?? "") === "off");
-const accessDeniedNotice = computed(() => String(route.query.access ?? "") === "denied");
-
-const visibleServices = computed(() =>
-  services.value.filter((service) => {
-    if (!service.adminRoute) return false;
-    if (!ADMIN_HUB_SERVICE_SLUGS.has(service.slug)) return false;
-    if (service.slug === "ai-chat" && !isAiChatEnabled()) return false;
-    if (service.slug === "api-docs" || service.slug === "db-maintenance") {
-      return isSuperuser.value;
-    }
-    return canAccess(service.slug);
-  }),
-);
-
-const sections = computed(() => groupServicesByCategory(visibleServices.value));
-
-onMounted(async () => {
-  try {
-    await load();
-  } finally {
-    catalogLoading.value = false;
-  }
-});
+const { isSuperuser } = usePermissions();
 </script>
 
 <template>
-  <AdminPageLayout title="admin" max-width="5xl" back-to="/">
-    <p
-      v-if="aiChatOffNotice"
-      class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
-      role="status"
-    >
-      AI chat is turned off on this deploy.
-    </p>
-    <p
-      v-if="accessDeniedNotice"
-      class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
-      role="status"
-    >
-      You do not have access to that admin tool. Pick something below, or ask the site owner.
-    </p>
+  <AdminPageLayout title="admin" hub="tools" max-width="5xl" back-to="/tools">
     <MaintenanceJobActions v-if="isSuperuser" mode="hub" class="mb-8" />
-    <div v-if="catalogLoading" aria-busy="true" aria-label="loading tools">
-      <section v-for="block in 2" :key="block" class="mb-8 min-w-0">
-        <div class="mb-3 h-3 w-24 animate-pulse rounded bg-surface-card" aria-hidden="true" />
-        <div class="page-launcher-grid" data-density="compact">
-          <Card v-for="i in 3" :key="`${block}-${i}`" class="page-tile-card animate-pulse" />
-        </div>
-      </section>
-    </div>
-    <EmptyState
-      v-else-if="sections.length === 0"
-      title="no tools available"
-      description="contact an admin if you need access."
-    />
-    <ToolTileGrid v-else density="compact" :sections="sections" />
+    <p
+      v-else
+      class="rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
+      role="status"
+    >
+      Admin tools live on the tools page for site owners. Ask the site owner if you need access.
+    </p>
   </AdminPageLayout>
 </template>

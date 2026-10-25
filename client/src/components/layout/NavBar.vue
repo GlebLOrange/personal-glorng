@@ -6,7 +6,6 @@ import SiteLogo from "@/components/brand/SiteLogo.vue";
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import { useColorTheme } from "@/composables/useColorTheme";
-import { usePermissions } from "@/composables/usePermissions";
 import { useScrollDirection } from "@/composables/useScrollDirection";
 import { iconActionClass } from "@/constants/httpStatusColors";
 import { useAuthStore } from "@/stores/auth";
@@ -20,7 +19,6 @@ const headerSpacerHeight = ref(72);
 let resizeObserver: ResizeObserver | null = null;
 
 const auth = useAuthStore();
-const { canUseAdminHub } = usePermissions();
 const { preference: colorThemePreference, cyclePreference } = useColorTheme();
 const router = useRouter();
 const route = useRoute();
@@ -154,15 +152,6 @@ async function handleGoHome(): Promise<void> {
               :aria-current="navSection === 'tools' ? 'page' : undefined"
             >
               tools
-            </RouterLink>
-            <RouterLink
-              v-if="canUseAdminHub"
-              to="/admin"
-              class="nav-link-quiet inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
-              :class="{ 'text-accent-coral': navSection === 'admin' }"
-              :aria-current="navSection === 'admin' ? 'page' : undefined"
-            >
-              admin
             </RouterLink>
 
             <RouterLink

@@ -14,25 +14,25 @@ describe("safeRedirectPath", () => {
   });
 
   it("rejects protocol-relative open redirects", () => {
-    expect(safeRedirectPath("//evil.example")).toBe("/admin");
+    expect(safeRedirectPath("//evil.example")).toBe("/tools");
   });
 
   it("rejects absolute URLs", () => {
-    expect(safeRedirectPath("https://evil.example")).toBe("/admin");
+    expect(safeRedirectPath("https://evil.example")).toBe("/tools");
   });
 
   it("defaults when redirect is missing", () => {
-    expect(safeRedirectPath(undefined)).toBe("/admin");
+    expect(safeRedirectPath(undefined)).toBe("/tools");
   });
 
   it("rejects auth entry paths that would loop after login", () => {
-    expect(safeRedirectPath("/login")).toBe("/admin");
-    expect(safeRedirectPath("/login?redirect=/admin")).toBe("/admin");
-    expect(safeRedirectPath("/register")).toBe("/admin");
-    expect(safeRedirectPath("/forgot-password")).toBe("/admin");
-    expect(safeRedirectPath("/reset-password")).toBe("/admin");
-    expect(safeRedirectPath("/verify-email")).toBe("/admin");
-    expect(safeRedirectPath("/callback")).toBe("/admin");
-    expect(safeRedirectPath("/login/")).toBe("/admin");
+    expect(safeRedirectPath("/login")).toBe("/tools");
+    expect(safeRedirectPath("/login?redirect=/admin")).toBe("/tools");
+    expect(safeRedirectPath("/register")).toBe("/tools");
+    expect(safeRedirectPath("/forgot-password")).toBe("/tools");
+    expect(safeRedirectPath("/reset-password")).toBe("/tools");
+    expect(safeRedirectPath("/verify-email")).toBe("/tools");
+    expect(safeRedirectPath("/callback")).toBe("/tools");
+    expect(safeRedirectPath("/login/")).toBe("/tools");
   });
 });

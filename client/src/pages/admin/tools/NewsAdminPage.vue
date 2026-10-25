@@ -50,7 +50,7 @@ const {
 </script>
 
 <template>
-  <AdminPageLayout hub="admin" title="manage news" max-width="5xl" back-to="/admin">
+  <AdminPageLayout hub="tools" title="manage news" max-width="5xl" back-to="/tools">
     <AdminListToolbar v-if="!listLoading && !listError">
       <template #actions>
         <AdminFilterDropdown
