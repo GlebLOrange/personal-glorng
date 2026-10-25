@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title desc">
+  <title id="title">Gleb.Y</title>
+  <desc id="desc">Open-ring letter G monogram with square period</desc>
+  <defs>
+    <style>
+      .g-fill { fill: #e4c98a; }
+      .g-stroke { fill: none; stroke: #a38f5f; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+      .dot { fill: #e4c98a; stroke: #a38f5f; stroke-width: 1.5; }
+    </style>
+  </defs>
+  <g id="g">
+    <path class="g-fill" d="M 72.75,74.09 A 36,36 0 1 1 72.75,25.91 L 60.86,36.62 A 20,20 0 1 0 60.86,63.38 Z"/>
+    <rect class="g-fill" x="44" y="44" width="36" height="12" rx="1.5"/>
+    <path class="g-stroke" d="M 72.75,74.09 A 36,36 0 1 1 72.75,25.91 L 60.86,36.62 A 20,20 0 1 0 60.86,63.38 Z"/>
+    <rect class="g-stroke" x="44" y="44" width="36" height="12" rx="1.5"/>
+  </g>
+  <g id="dot">
+    <rect class="dot" x="82" y="70" width="10" height="10" rx="1"/>
+  </g>
+</svg>

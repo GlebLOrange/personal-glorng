@@ -17,7 +17,7 @@ Treat `$ARGUMENTS` as **one** name (first word only). Empty or unknown: print th
 - Do **not** add Compose flags or wrap Make in custom scripts.
 - Do **not** run tests.
 - Do **not** commit, push, or open a PR.
-- Map only the names listed below to Make targets. Anything else → menu and stop.
+- Map only the names listed below to Make targets (except `maintain` → follow [`.cursor/commands/maintain.md`](maintain.md)). Anything else → menu and stop.
 
 ## Menu (print when empty / unknown)
 
@@ -46,10 +46,11 @@ One-shot (wait; report success or error):
   cleanup        → make cleanup      (old tasks / shares / health results)
   logs-rotate    → make logs-rotate  (truncate Docker json-file logs)
   db-init | migrate → make db-init
-  seed           → make seed-db
+  seed           → make seed-db      (maintenance seed; prefer /admin/db-maintenance)
   reindex        → make reindex-search
   db-check       → make db-check
   db-current     → make db-current
+  maintain       → follow /maintain checklist (updates, CI, reviews, then jobs)
 
 Ask once before running:
   down           → make down
@@ -95,10 +96,11 @@ Run, wait for exit, then report success or the error output.
 | `cleanup` | `make cleanup` | Old tasks, expired shares, health results |
 | `logs-rotate` | `make logs-rotate` | Truncate json-file logs; `make logs` still follows |
 | `db-init`, `migrate` | `make db-init` | |
-| `seed` | `make seed-db` | |
+| `seed` | `make seed-db` | Maintenance seed (CLI alias); prefer admin job when Turnstile is up |
 | `reindex` | `make reindex-search` | |
 | `db-check` | `make db-check` | |
 | `db-current` | `make db-current` | |
+| `maintain` | follow `/maintain` | Preflight checklist then admin/Make jobs; do not invent shell |
 
 ## Confirm once (destructive / prod)
 

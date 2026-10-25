@@ -237,8 +237,12 @@ Used by [`scripts/db_maintenance.sh`](../../scripts/db_maintenance.sh). Always d
 | `BACKUP_TIMEZONE` | `Europe/Warsaw` | Cron timezone |
 | `BACKUP_OFFSITE_CMD` | | Shell command after verify (e.g. rsync without `--delete`); failure fails the run |
 | `BACKUP_REQUIRE_OFFSITE` | `false` | When `true`, fail if `BACKUP_OFFSITE_CMD` is empty (prod) |
+| `DB_MAINTENANCE_ENABLED` | `false` | Allow admin **backup** / **stale** to spawn the host script |
+| `DB_MAINTENANCE_SCRIPT` | | Absolute path to `scripts/db_maintenance.sh` |
+| `MAINTENANCE_SEED_ENABLED` | `false` | Allow admin **seed** when `APP_ENV=production` |
+| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | | Required for the admin maintenance panel |
 
-See [Backup & restore](/operations/backup-restore).
+Admin jobs (`backup`, `stale`, `sync`, `cleanup`, `seed`) email `ALLOWED_EMAIL` on completion. See [Backup & restore](/operations/backup-restore) and `/maintain`.
 
 ## Prod → dev pull
 
