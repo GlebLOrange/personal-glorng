@@ -861,25 +861,6 @@ h6,
 
 }
 
-/* Bottom hairline for AdminListRow — ::after so expand/hover rings (box-shadow) don't wipe it. */
-.admin-list-row-rule {
-  position: relative;
-}
-
-.admin-list-row-rule::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  height: 1px;
-  background: color-mix(in srgb, var(--color-surface-border) 70%, transparent);
-  pointer-events: none;
-}
-
-.admin-list-row-rule:last-child::after {
-  content: none;
-}
-
 /* Thin themed scrollbar for compact overflow panels (e.g. AI chat ? help). */
 .scrollbar-thin {
   scrollbar-width: thin;

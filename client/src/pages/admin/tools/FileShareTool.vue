@@ -2,13 +2,24 @@
 import { computed, onMounted, ref, useTemplateRef } from "vue";
 import axios from "axios";
 
-import ShareableListItem from "@/components/admin/ShareableListItem.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
+import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import FileDropZone from "@/components/ui/FileDropZone.vue";
+import IconCloseButton from "@/components/ui/IconCloseButton.vue";
+import IconCopyButton from "@/components/ui/IconCopyButton.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { Card } from "@/components/ui/card";
+import {
+  ADMIN_ACTIONS_CLASS,
+  ADMIN_TD_ACTIONS_CLASS,
+  ADMIN_TD_CLASS,
+  ADMIN_TD_MUTED_CLASS,
+  ADMIN_TH_CLASS,
+  ADMIN_TH_ROW_CLASS,
+  ADMIN_TR_CLASS,
+} from "@/constants/adminDataTable";
 import { LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
@@ -101,9 +112,8 @@ async function deleteFile(id: number): Promise<void> {
   }
 }
 
-function fileMeta(file: SharedFile): string {
-  const expiry = formatTimeRemaining(file.expires_at);
-  return `${formatBytes(file.file_size)} · ${file.downloads} downloads · ${expiry}`;
+function shareLink(file: SharedFile): string {
+  return publicUrl("f", file.code);
 }
 
 onMounted(loadFiles);
@@ -135,32 +145,50 @@ onMounted(loadFiles);
         />
       </div>
 
-      <div class="space-y-3">
-        <div
-          v-if="listLoading"
-          class="space-y-3"
-          aria-busy="true"
-          aria-label="loading shared files"
-        >
-          <Card v-for="n in 3" :key="n" variant="compact" class="animate-pulse">
-            <div class="h-4 w-48 bg-surface-border rounded mb-2" />
-            <div class="h-3 w-32 bg-surface-border rounded" />
-          </Card>
-        </div>
+      <div class="min-w-0">
+        <AdminListSkeleton v-if="listLoading" label="loading shared files" />
 
         <template v-else>
-          <ShareableListItem
-            v-for="f in files"
-            :key="f.id"
-            :title="f.original_filename"
-            :link="publicUrl('f', f.code)"
-            :meta="fileMeta(f)"
-            @copy="copy(publicUrl('f', f.code))"
-            @delete="deleteFile(f.id)"
-          />
+          <AdminDataTable v-if="files.length > 0" table-label="shared files">
+            <template #header>
+              <th :class="ADMIN_TH_CLASS" scope="col">file</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">link</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">size</th>
+              <th :class="[ADMIN_TH_CLASS, 'text-right']" scope="col">downloads</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">expires</th>
+              <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
+            </template>
+            <tr v-for="f in files" :key="f.id" :class="ADMIN_TR_CLASS">
+              <th :class="ADMIN_TH_ROW_CLASS" scope="row">
+                <p class="truncate text-sm text-surface-light" :title="f.original_filename">
+                  {{ f.original_filename }}
+                </p>
+              </th>
+              <td :class="ADMIN_TD_CLASS">
+                <code class="text-link block max-w-[14rem] truncate text-xs" :title="shareLink(f)">
+                  {{ shareLink(f) }}
+                </code>
+              </td>
+              <td :class="ADMIN_TD_MUTED_CLASS">{{ formatBytes(f.file_size) }}</td>
+              <td :class="[ADMIN_TD_MUTED_CLASS, 'text-right tabular-nums']">{{ f.downloads }}</td>
+              <td :class="ADMIN_TD_MUTED_CLASS">{{ formatTimeRemaining(f.expires_at) }}</td>
+              <td :class="ADMIN_TD_ACTIONS_CLASS">
+                <div :class="ADMIN_ACTIONS_CLASS">
+                  <IconCopyButton
+                    :aria-label="`copy link for ${f.original_filename}`"
+                    @click="copy(shareLink(f))"
+                  />
+                  <IconCloseButton
+                    :aria-label="`delete ${f.original_filename}`"
+                    @click="deleteFile(f.id)"
+                  />
+                </div>
+              </td>
+            </tr>
+          </AdminDataTable>
 
           <EmptyState
-            v-if="files.length === 0"
+            v-else
             title="no shared files"
             description="upload a file above to get a shareable link"
           />

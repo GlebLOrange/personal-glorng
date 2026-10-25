@@ -6,12 +6,10 @@ import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import {
-  ADMIN_MOBILE_LIST_CLASS,
-  ADMIN_MOBILE_ROW_WRAP_CLASS,
   ADMIN_TD_CLASS,
   ADMIN_TD_MUTED_CLASS,
-  ADMIN_TD_TITLE_CLASS,
   ADMIN_TH_CLASS,
+  ADMIN_TH_ROW_CLASS,
 } from "@/constants/adminDataTable";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
@@ -121,83 +119,13 @@ const {
         <EmptyState v-if="sources.length === 0" :description="emptyFilterDescription" />
 
         <div v-else class="mt-1 min-w-0">
-          <div :class="ADMIN_MOBILE_LIST_CLASS">
-            <div
-              v-for="source in sources"
-              :key="`m-${source.id}`"
-              :class="[
-                ADMIN_MOBILE_ROW_WRAP_CLASS,
-                'flex min-w-0 items-center gap-2',
-                canWrite ? 'cursor-pointer' : undefined,
-              ]"
-              :role="canWrite ? 'button' : undefined"
-              :tabindex="canWrite ? 0 : undefined"
-              @click="canWrite && openEditableSource(source)"
-              @keydown.enter.prevent="canWrite && openEditableSource(source)"
-              @keydown.space.prevent="canWrite && openEditableSource(source)"
-            >
-              <input
-                v-if="canWrite"
-                v-model="selectedSourceIds"
-                type="checkbox"
-                class="size-4 shrink-0 align-middle accent-accent-coral"
-                :value="source.id"
-                :disabled="refreshing || !source.enabled"
-                :aria-label="`select ${source.name} for parser refresh`"
-                @click.stop
-                @keydown.stop
-              />
-              <StatusBadge
-                :label="source.enabled ? 'enabled' : 'disabled'"
-                :class-name="newsSourceEnabledClass(source.enabled)"
-              />
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm text-surface-light" :title="source.name">
-                  {{ source.name }}
-                </p>
-                <p
-                  v-if="sourceMeta(source)"
-                  class="mt-0.5 truncate text-xs text-surface-mid"
-                  :title="sourceMeta(source)"
-                >
-                  {{ sourceMeta(source) }}
-                </p>
-              </div>
-              <div class="flex shrink-0 items-center gap-0.5" @click.stop @keydown.stop>
-                <span
-                  v-if="source.last_error"
-                  class="inline-flex text-status-warning"
-                  :title="source.last_error"
-                  aria-label="source has fetch error"
-                >
-                  <StatusIcon status="warning" class-name="size-4" />
-                </span>
-                <IconEditButton
-                  v-if="canWrite"
-                  aria-label="edit source"
-                  @click="openEditableSource(source)"
-                />
-                <IconCloseButton
-                  v-if="canWrite"
-                  aria-label="delete source"
-                  :disabled="deletingId === source.id"
-                  @click="requestDeleteSource(source, $event)"
-                />
-              </div>
-            </div>
-          </div>
-
           <AdminDataTable table-label="news sources">
             <template #header>
-              <th v-if="canWrite" class="w-px px-3 py-1.5">
-                <span class="sr-only">select</span>
-              </th>
-              <th :class="ADMIN_TH_CLASS">status</th>
-              <th :class="ADMIN_TH_CLASS">name</th>
-              <th :class="ADMIN_TH_CLASS">meta</th>
-              <th class="w-px px-2 text-right">
-                <span class="sr-only">actions</span>
-              </th>
+              <th v-if="canWrite" :class="ADMIN_TH_CLASS" scope="col">select</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">status</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">name</th>
+              <th :class="ADMIN_TH_CLASS" scope="col">meta</th>
+              <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
             </template>
 
             <AdminDataRow
@@ -224,11 +152,11 @@ const {
                   :class-name="newsSourceEnabledClass(source.enabled)"
                 />
               </td>
-              <td :class="ADMIN_TD_TITLE_CLASS">
+              <th :class="ADMIN_TH_ROW_CLASS" scope="row">
                 <p class="truncate text-sm text-surface-light" :title="source.name">
                   {{ source.name }}
                 </p>
-              </td>
+              </th>
               <td :class="ADMIN_TD_MUTED_CLASS" :title="sourceMeta(source) || undefined">
                 {{ sourceMeta(source) || "—" }}
               </td>

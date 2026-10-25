@@ -24,10 +24,6 @@ vi.mock("@/components/layout/AdminPageLayout.vue", () => ({
   default: { template: "<div><slot /></div>" },
 }));
 
-vi.mock("@/components/admin/ShareableListItem.vue", () => ({
-  default: { template: "<div />" },
-}));
-
 describe("FileShareTool", () => {
   it("toasts when file list load fails", async () => {
     getMock.mockRejectedValue(new Error("network down"));
