@@ -5,13 +5,15 @@ import { RouterLink } from "vue-router";
 import ToolIcon from "@/components/icons/ToolIcon.vue";
 import { Card } from "@/components/ui/card";
 import { publicTileBlurbForSlug, tileHintForSlug } from "@/constants/toolIntros";
-import type { PlatformService } from "@/platform/services";
+import { ADMIN_HUB_DEMO_SLUGS, type PlatformService } from "@/platform/services";
 
 export type ToolTileSection = {
   category: string;
   label: string;
   services: PlatformService[];
 };
+
+export type ToolTileChip = "demo" | "yours";
 
 const props = withDefaults(
   defineProps<{
@@ -27,9 +29,13 @@ const props = withDefaults(
     density?: "default" | "compact";
     /**
      * `public` — guest Tools catalog: larger touch targets, every-tile blurbs,
-     * no visible section counts. Default keeps admin / signed-in tile behavior.
+     * visible "Label · N" counts.
+     * `admin` — /admin hub: sentence-case "Label · N", one-line descriptions, demo chips.
+     * Default keeps signed-in tile behavior.
      */
-    presentation?: "default" | "public";
+    presentation?: "default" | "public" | "admin";
+    /** Optional per-slug chip (demo / yours). Admin omits this. */
+    tileChip?: (slug: string) => ToolTileChip | undefined;
   }>(),
   {
     showCategoryHeadings: true,
@@ -40,16 +46,21 @@ const props = withDefaults(
 );
 
 const isPublicPresentation = computed(() => props.presentation === "public");
+const isAdminPresentation = computed(() => props.presentation === "admin");
+const showAdminSectionChips = computed(
+  () => isAdminPresentation.value && props.sections.length > 1,
+);
 
 const sectionClass = computed(() =>
   props.showCategoryHeadings ? (props.density === "compact" ? "mb-6" : "mb-8") : "mb-0",
 );
 
-const headingClass = computed(() =>
-  props.density === "compact"
+const headingClass = computed(() => {
+  if (isAdminPresentation.value) return "mb-2 text-sm font-medium text-surface-light";
+  return props.density === "compact"
     ? "text-meta mb-2 uppercase tracking-wider"
-    : "text-meta mb-3 uppercase tracking-wider",
-);
+    : "text-meta mb-3 uppercase tracking-wider";
+});
 
 const tileTitleTag = computed(() => (props.categoryHeading === "h3" ? "h4" : "h3"));
 
@@ -59,6 +70,7 @@ const iconChipClass = computed(() => {
 });
 
 function tileTo(tool: PlatformService): string {
+  if (isAdminPresentation.value) return tool.adminRoute;
   return props.resolveRoute ? props.resolveRoute(tool) : tool.adminRoute;
 }
 
@@ -82,6 +94,7 @@ function toolCountLabel(count: number): string {
 /** Nested under a parent heading (e.g. “your tools”) — skip a lonely category label. */
 function showSectionHeading(section: ToolTileSection): boolean {
   if (!props.showCategoryHeadings) return false;
+  if (isAdminPresentation.value) return true;
   if (props.categoryHeading === "h3" && section.services.length === 1) return false;
   return true;
 }
@@ -92,25 +105,59 @@ function tileHint(tool: PlatformService): string | undefined {
   }
   return tileHintForSlug(tool.slug);
 }
+
+function chipFor(tool: PlatformService): ToolTileChip | undefined {
+  if (isAdminPresentation.value) return undefined;
+  return props.tileChip?.(tool.slug);
+}
+
+function showAdminDemoChip(tool: PlatformService): boolean {
+  return isAdminPresentation.value && ADMIN_HUB_DEMO_SLUGS.has(tool.slug);
+}
+
+function sectionDomId(section: ToolTileSection): string {
+  return section.category;
+}
 </script>
 
 <template>
+  <nav
+    v-if="showAdminSectionChips"
+    aria-label="Sections"
+    class="sticky top-0 z-20 mb-4 flex h-11 min-w-0 flex-nowrap items-stretch gap-2 overflow-x-auto bg-surface-dark"
+  >
+    <a
+      v-for="section in sections"
+      :key="section.category"
+      :href="`#${sectionDomId(section)}`"
+      class="inline-flex h-11 min-w-11 shrink-0 items-center whitespace-nowrap rounded-lg border border-transparent bg-surface-card px-3 text-sm text-surface-sage transition-colors hover:border-accent-coral/40 hover:bg-accent-coral/15 focus-visible:border-accent-coral/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50"
+    >
+      {{ section.label }}
+    </a>
+  </nav>
   <section
     v-for="section in sections"
+    :id="sectionDomId(section)"
     :key="section.category"
-    class="min-w-0"
+    class="min-w-0 scroll-mt-24"
     :class="sectionClass"
   >
     <component :is="categoryHeading" v-if="showSectionHeading(section)" :class="headingClass">
-      {{ section.label }}
-      <span class="sr-only">, {{ toolCountLabel(section.services.length) }}</span>
-      <span
-        v-if="!isPublicPresentation"
-        aria-hidden="true"
-        class="ml-2 font-normal tracking-normal text-surface-mid normal-case"
-      >
-        {{ section.services.length }}
-      </span>
+      <template v-if="isAdminPresentation">
+        <span aria-hidden="true">{{ `${section.label} · ${section.services.length}` }}</span>
+        <span class="sr-only">{{ section.label }}, {{ toolCountLabel(section.services.length) }}</span>
+      </template>
+      <template v-else>
+        {{ section.label }}
+        <span class="sr-only">, {{ toolCountLabel(section.services.length) }}</span>
+        <span
+          v-if="!isPublicPresentation"
+          aria-hidden="true"
+          class="ml-2 font-normal tracking-normal text-surface-mid normal-case"
+        >
+          {{ section.services.length }}
+        </span>
+      </template>
     </component>
     <div
       class="page-launcher-grid"
@@ -134,17 +181,37 @@ function tileHint(tool: PlatformService): string | undefined {
             <ToolIcon :slug="tool.slug" class="h-5 w-5" />
           </span>
           <span class="min-w-0 flex-1">
-            <component
-              :is="tileTitleTag"
-              class="text-sm font-semibold leading-snug break-words text-surface-light"
-            >
-              {{ tool.name }}
-              <span v-if="tool.external" class="font-normal text-surface-mid" aria-hidden="true">
-                ↗
+            <span class="flex min-w-0 flex-wrap items-center gap-2">
+              <component
+                :is="tileTitleTag"
+                class="text-sm font-semibold leading-snug break-words text-surface-light"
+              >
+                {{ tool.name }}
+                <span v-if="tool.external" class="font-normal text-surface-mid" aria-hidden="true">
+                  ↗
+                </span>
+              </component>
+              <span
+                v-if="showAdminDemoChip(tool)"
+                class="shrink-0 rounded border border-transparent bg-surface-grid px-1.5 py-0.5 text-xs font-medium text-surface-sage"
+              >
+                Demo
               </span>
-            </component>
+              <span
+                v-else-if="chipFor(tool)"
+                class="shrink-0 rounded border border-transparent bg-surface-grid px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-surface-mid"
+              >
+                {{ chipFor(tool) }}
+              </span>
+            </span>
             <p
-              v-if="tileHint(tool)"
+              v-if="isAdminPresentation"
+              class="mt-0.5 line-clamp-1 text-xs leading-snug break-words text-surface-mid"
+            >
+              {{ tool.description }}
+            </p>
+            <p
+              v-else-if="tileHint(tool)"
               class="mt-0.5 text-xs leading-snug break-words text-surface-mid"
               :class="isPublicPresentation ? '' : 'line-clamp-2'"
             >

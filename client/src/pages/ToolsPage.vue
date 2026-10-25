@@ -7,7 +7,6 @@ import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import {
-  groupServicesByCategory,
   PLATFORM_SERVICES,
   publicToolsAsServices,
   resolveToolRoute,
@@ -15,56 +14,31 @@ import {
   type PlatformService,
 } from "@/platform/services";
 import { isExpensesEnabled } from "@/utils/featureFlags";
-
-/**
- * Usefulness ranking within Content / Utilities (applied before groupServicesByCategory).
- * Phase 2 search: only when public tools reach 8, or a usability pass shows a visitor
- * cannot identify a tool within five seconds. Recents / favourites stay deferred.
- */
-const PUBLIC_TILE_ORDER = [
-  "weather",
-  "url-shortener",
-  "recipes",
-  "calculator",
-  "password-generator",
-  "qr-generator",
-];
+import {
+  groupServicesForToolsPage,
+  toolsPageChipForSlug,
+} from "@/utils/toolsPageGroups";
 
 const route = useRoute();
 const { can, canAccess } = usePermissions();
 
 const expensesOffNotice = computed(() => String(route.query.expenses ?? "") === "off");
 
-function sortPublicTools(tools: PlatformService[]): PlatformService[] {
-  return [...tools].sort((a, b) => {
-    const ai = PUBLIC_TILE_ORDER.indexOf(a.slug);
-    const bi = PUBLIC_TILE_ORDER.indexOf(b.slug);
-    if (ai === -1 && bi === -1) return 0;
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
-    return ai - bi;
-  });
-}
-
-const publicTools = computed((): PlatformService[] => {
-  const tools = publicToolsAsServices().filter(
+const catalogTools = computed((): PlatformService[] => {
+  const publicTools = publicToolsAsServices().filter(
     (tool) => !(tool.slug === "expenses" && !isExpensesEnabled()),
   );
-  return sortPublicTools(tools);
-});
-
-const signedInTools = computed((): PlatformService[] => {
-  return PLATFORM_SERVICES.filter((tool) => {
+  const extras = PLATFORM_SERVICES.filter((tool) => {
     if (!TOOLS_PAGE_EXTRA_SLUGS.has(tool.slug)) return false;
     if (tool.slug === "expenses" && !isExpensesEnabled()) return false;
     return canAccess(tool.slug);
   });
+  return [...publicTools, ...extras];
 });
 
-const publicSections = computed(() => groupServicesByCategory(publicTools.value));
-const signedInSections = computed(() => groupServicesByCategory(signedInTools.value));
+const sections = computed(() => groupServicesForToolsPage(catalogTools.value));
 
-const hasAnyTools = computed(() => publicTools.value.length > 0 || signedInTools.value.length > 0);
+const hasAnyTools = computed(() => sections.value.some((section) => section.services.length > 0));
 
 function toolRoute(tool: PlatformService): string {
   return resolveToolRoute(tool, can);
@@ -86,21 +60,12 @@ function toolRoute(tool: PlatformService): string {
       Expenses are turned off on this deploy.
     </p>
     <EmptyState v-if="!hasAnyTools" description="no tools available." />
-    <template v-else>
-      <ToolTileGrid
-        v-if="publicSections.length"
-        presentation="public"
-        :sections="publicSections"
-        :resolve-route="toolRoute"
-      />
-      <section v-if="signedInSections.length" class="min-w-0">
-        <h2 class="text-meta mb-3 uppercase tracking-wider">your tools</h2>
-        <ToolTileGrid
-          :sections="signedInSections"
-          :resolve-route="toolRoute"
-          category-heading="h3"
-        />
-      </section>
-    </template>
+    <ToolTileGrid
+      v-else
+      presentation="public"
+      :sections="sections"
+      :resolve-route="toolRoute"
+      :tile-chip="toolsPageChipForSlug"
+    />
   </PageShell>
 </template>
