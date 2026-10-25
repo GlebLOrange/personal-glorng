@@ -11,7 +11,6 @@ import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
-import { colorThemeResolved } from "@/composables/useColorTheme";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
 import type { PublicGitHubRepo, ResumeData } from "@/types";
@@ -34,12 +33,6 @@ const githubReposExtra = ref<PublicGitHubRepo[] | null>(null);
 let cancelGithubIdle: (() => void) | null = null;
 
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
-/** Portfolio hero decoration only — not used on /profile (shared HeroBlock). */
-const welcomeBgSrc = computed(() =>
-  colorThemeResolved.value === "light"
-    ? "/brand/welcome-bg-light.svg"
-    : "/brand/welcome-bg.svg",
-);
 const contactLinks = computed(() => buildContactLinks(resume.value.links));
 const education = computed(() => resume.value.education ?? []);
 const githubProfileUrl = computed(() => resume.value.links.github);
@@ -123,16 +116,16 @@ onUnmounted(() => {
           aria-hidden="true"
         >
           <img
-            :src="welcomeBgSrc"
+            src="/brand/welcome-bg.webp"
             alt=""
-            class="absolute inset-y-0 right-0 h-full w-[min(100%,42rem)] max-w-none object-contain object-right opacity-90"
-            width="800"
-            height="420"
+            class="absolute inset-0 h-full w-full object-cover object-center opacity-50 [html[data-theme=dark]_&]:opacity-85"
+            width="1280"
+            height="720"
             decoding="async"
           />
-          <!-- Scrim keeps hero copy AA against the faint lockup -->
+          <!-- Center veil keeps the name AA; the photo stays visible toward the edges -->
           <div
-            class="absolute inset-0 bg-gradient-to-r from-surface-dark via-surface-dark/85 to-surface-dark/40"
+            class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--color-surface-dark)_0%,transparent_72%)]"
           />
           <div
             class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-dark to-transparent"

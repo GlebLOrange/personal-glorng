@@ -10,13 +10,12 @@ Working copies here are the live mark source.
 | --- | --- |
 | `mark.svg` / `mark-light.svg` | Square segmented G (same art on both themes) |
 | `lockup.svg` / `lockup-light.svg` | Legacy horizontal G · Y (superseded by square mark) |
-| `welcome-bg.svg` / `welcome-bg-light.svg` | Portfolio hero decoration |
 
 ## Live use
 
 - App chrome: [`SiteLogo.vue`](../../src/components/brand/SiteLogo.vue) — `gy-mark-simple[-light].svg` / `gy-logo[-light].svg` (square mark)
 - Favicon / touch icons: [`client/public/favicon.svg`](../../public/favicon.svg) and PNG/ICO siblings
-- Portfolio hero: `welcome-bg[-light].svg` on [`PortfolioPage.vue`](../../src/pages/PortfolioPage.vue) only
+- Portfolio hero photo: [`welcome-bg.webp`](../../public/brand/welcome-bg.webp) on [`PortfolioPage.vue`](../../src/pages/PortfolioPage.vue) only
 - Social card: [`client/public/social-preview.png`](../../public/social-preview.png) (type-only OG until refreshed)
 
 ## Palette
@@ -33,7 +32,7 @@ Working copies here are the live mark source.
 | --- | --- |
 | `gy-logo.svg` / `gy-logo-light.svg` | Full variant (square mark) |
 | `gy-mark-simple.svg` / `gy-mark-simple-light.svg` | Nav / footer mark |
-| `welcome-bg.svg` / `welcome-bg-light.svg` | Hero decoration |
+| `welcome-bg.webp` | Hero photo |
 | `gy-logo-512.png` | Raster fallback (email, resume) |
 
 Also: `client/public/brand/`, `docs/public/`, `server/app/static/brand/gy-logo-512.png`.
