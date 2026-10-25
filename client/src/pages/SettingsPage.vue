@@ -11,10 +11,6 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card, CardBody } from "@/components/ui/card";
 import { useUserPreferences } from "@/composables/useUserPreferences";
 import { useApiAction } from "@/composables/useApiAction";
-import {
-  useColorTheme,
-  type ColorThemePreference,
-} from "@/composables/useColorTheme";
 import { usePermissions } from "@/composables/usePermissions";
 import { PLATFORM_SERVICES } from "@/platform/services";
 import { useAuthStore } from "@/stores/auth";
@@ -25,7 +21,7 @@ const DevApiStatusBadge = import.meta.env.DEV
   ? defineAsyncComponent(() => import("@/components/dev/DevApiStatusBadge.vue"))
   : null;
 
-type SettingsSectionId = "profile" | "appearance" | "account" | "privacy" | "qr";
+type SettingsSectionId = "profile" | "account" | "privacy" | "qr";
 
 interface SettingsNavItem {
   id: SettingsSectionId;
@@ -35,14 +31,12 @@ interface SettingsNavItem {
 const auth = useAuthStore();
 const { permissions, canAccess } = usePermissions();
 const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPreferences();
-const { preference: colorThemePreference, setPreference } = useColorTheme();
 
 const showQrSection = computed(() => canAccess("qr-generator"));
 
 const navItems = computed((): SettingsNavItem[] => {
   const items: SettingsNavItem[] = [
     { id: "profile", label: "Profile" },
-    { id: "appearance", label: "Appearance" },
     { id: "account", label: "Account" },
     { id: "privacy", label: "Privacy" },
   ];
@@ -111,10 +105,6 @@ function syncFormFromUser(): void {
   displayName.value = auth.user?.display_name ?? "";
   timezone.value = auth.user?.timezone ?? "UTC";
   newEmail.value = auth.user?.email ?? "";
-}
-
-function setTheme(next: ColorThemePreference): void {
-  setPreference(next);
 }
 
 function openCookiePreferences(): void {
@@ -269,42 +259,6 @@ async function savePassword(): Promise<void> {
           />
         </section>
 
-        <section id="appearance" class="scroll-mt-40 md:scroll-mt-44" aria-label="Appearance">
-          <Card variant="compact">
-            <CardBody>
-              <fieldset>
-                <legend class="sr-only">Theme</legend>
-                <div class="flex flex-wrap gap-4">
-                  <label class="inline-flex items-center gap-2 text-sm text-surface-light">
-                    <input
-                      type="radio"
-                      name="color-theme"
-                      class="size-4"
-                      style="accent-color: var(--color-accent-coral)"
-                      value="light"
-                      :checked="colorThemePreference === 'light'"
-                      @change="setTheme('light')"
-                    />
-                    light
-                  </label>
-                  <label class="inline-flex items-center gap-2 text-sm text-surface-light">
-                    <input
-                      type="radio"
-                      name="color-theme"
-                      class="size-4"
-                      style="accent-color: var(--color-accent-coral)"
-                      value="dark"
-                      :checked="colorThemePreference === 'dark'"
-                      @change="setTheme('dark')"
-                    />
-                    dark
-                  </label>
-                </div>
-              </fieldset>
-            </CardBody>
-          </Card>
-        </section>
-
         <section id="account" class="scroll-mt-40 md:scroll-mt-44" aria-label="Account">
           <SettingsAccountSection
             v-model:new-email="newEmail"
@@ -324,15 +278,12 @@ async function savePassword(): Promise<void> {
 
         <section id="privacy" class="scroll-mt-40 md:scroll-mt-44" aria-label="Privacy">
           <Card variant="compact">
-            <CardBody class="space-y-3">
-              <p class="text-sm text-surface-mid">
-                Manage analytics and monitoring cookies, or read the full policy.
-              </p>
-              <div class="flex flex-wrap items-center justify-end gap-3">
+            <CardBody>
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <RouterLink to="/privacy" class="nav-link text-sm">privacy policy</RouterLink>
                 <BaseButton type="button" variant="secondary" size="sm" @click="openCookiePreferences">
                   cookie preferences
                 </BaseButton>
-                <RouterLink to="/privacy" class="nav-link text-sm">privacy policy</RouterLink>
               </div>
             </CardBody>
           </Card>
@@ -358,10 +309,7 @@ async function savePassword(): Promise<void> {
             <span class="underline-offset-2 group-open:underline">tools you can open</span>
             <ChevronIcon class-name="size-3.5 text-surface-mid group-open:rotate-180" />
           </summary>
-          <p class="mb-3 mt-3 text-sm text-surface-mid">
-            A tool you cannot access redirects to admin. Your account can open:
-          </p>
-          <ul class="flex flex-wrap gap-x-3 gap-y-2">
+          <ul class="mt-3 flex flex-wrap gap-x-3 gap-y-2">
             <li v-for="tool in accessibleTools" :key="tool.slug">
               <RouterLink :to="tool.adminRoute" class="nav-link text-sm">
                 {{ tool.name }}
