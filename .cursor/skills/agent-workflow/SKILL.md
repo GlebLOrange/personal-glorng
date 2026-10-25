@@ -1,6 +1,10 @@
 ---
 name: agent-workflow
-description: Branch before edits, safety for commits/secrets/destructive git and tests, and verify packages before new imports
+description: >-
+  Branches off main before edits, blocks unrequested commits/pushes/secrets/destructive
+  git, checks existing packages before new imports, and asks before running tests. Use
+  when editing tracked files, committing, pushing, adding an import, or deciding whether
+  to run tests.
 ---
 
 # Agent workflow
