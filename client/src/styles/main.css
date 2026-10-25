@@ -16,31 +16,34 @@
 }
 
 /*
-  Pale dual-theme palette. Token *names* stay stable for Tailwind classes;
+  Material You dual-theme palette. Token *names* stay stable for Tailwind classes;
   values switch on html[data-theme]. surface-dark = page bg, surface-light = primary text.
+  Roles: accent-blue=primary, accent-golden=secondary, accent-violet=tertiary,
+  status-cyan=custom, status-error=error. Success/warning kept as harmonious status hues.
 */
 :root,
 html[data-theme="dark"] {
   color-scheme: dark;
-  /* GitHub Dark greys + pale orange/red — HTTP families (1xx–5xx) drive actions, badges, icon chrome */
-  --palette-accent-blue: #e8b07a;
-  --palette-status-success: #8dcea8;
-  --palette-status-cyan: #7ec8c4;
-  --palette-status-error: #f0a8a4;
-  --palette-status-critical: #e7a0b4;
-  --palette-status-warning: #e4c98a;
-  --palette-surface-light: #e6edf3;
-  --palette-surface-sage: #b1bac4;
-  --palette-surface-mid: #9198a1;
-  --palette-surface-muted: #7d8590;
-  --palette-surface-dark: #0d1117;
-  --palette-surface-card: #161b22;
-  --palette-surface-border: #30363d;
-  --palette-surface-grid: #21262d;
-  --palette-accent-violet: #f0a8a4;
-  --palette-accent-golden: #e4c98a;
-  --palette-on-accent: #0d1117;
-  --palette-theme-color: #0d1117;
+  --palette-accent-blue: #cfbdfe;
+  --palette-status-success: #a8d08d;
+  --palette-status-cyan: #8dceed;
+  --palette-status-error: #ffb4ab;
+  --palette-status-critical: #ffdad7;
+  --palette-status-warning: #e8c468;
+  --palette-surface-light: #e6e1e5;
+  --palette-surface-sage: #cac4d0;
+  --palette-surface-mid: #938f99;
+  --palette-surface-muted: #79747e;
+  --palette-surface-dark: #141218;
+  --palette-surface-card: #1d1b20;
+  --palette-surface-border: #49454e;
+  --palette-surface-grid: #2b2930;
+  --palette-accent-violet: #ffb1c8;
+  --palette-accent-golden: #cbc2db;
+  /* Section pills: light fills → dark ink */
+  --palette-label-ink: #1d1b20;
+  --palette-on-accent: #381e72;
+  --palette-theme-color: #141218;
   --site-bg-image: none;
   --site-bg-scrim: linear-gradient(
     180deg,
@@ -51,24 +54,26 @@ html[data-theme="dark"] {
 
 html[data-theme="light"] {
   color-scheme: light;
-  --palette-accent-blue: #c2410c;
-  --palette-status-success: #1a7f37;
-  --palette-status-cyan: #0f766e;
-  --palette-status-error: #b42318;
-  --palette-status-critical: #9f1239;
-  --palette-status-warning: #a16207;
-  --palette-surface-light: #111827;
-  --palette-surface-sage: #2e3640;
-  --palette-surface-mid: #3e4854;
-  --palette-surface-muted: #515b67;
-  --palette-surface-dark: #e5e7eb;
-  --palette-surface-card: #f7f8fa;
-  --palette-surface-border: #c3cad3;
-  --palette-surface-grid: #dde1e6;
-  --palette-accent-violet: #b42318;
-  --palette-accent-golden: #a16207;
+  --palette-accent-blue: #63588d;
+  --palette-status-success: #3b6d11;
+  --palette-status-cyan: #23648a;
+  --palette-status-error: #97030f;
+  --palette-status-critical: #94000c;
+  --palette-status-warning: #8b6914;
+  --palette-surface-light: #1d1b20;
+  --palette-surface-sage: #49454e;
+  --palette-surface-mid: #79747e;
+  --palette-surface-muted: #cac4d0;
+  --palette-surface-dark: #fef7ff;
+  --palette-surface-card: #f2ecf4;
+  --palette-surface-border: #848086;
+  --palette-surface-grid: #e8dffd;
+  --palette-accent-violet: #713448;
+  --palette-accent-golden: #625b71;
+  /* Section pills: mid-tone fills → white ink */
+  --palette-label-ink: #ffffff;
   --palette-on-accent: #ffffff;
-  --palette-theme-color: #e5e7eb;
+  --palette-theme-color: #fef7ff;
   --site-bg-scrim: linear-gradient(
     180deg,
     color-mix(in srgb, var(--palette-surface-dark) 94%, transparent) 0%,
@@ -114,9 +119,10 @@ html[data-theme="light"] {
   --color-surface-grid: var(--palette-surface-grid);
   /* Ink on solid pale accent fills (CTA) — always dark for contrast */
   --color-on-accent: var(--palette-on-accent);
-  /* Marketing / portfolio brand only */
+  /* Marketing / portfolio brand only (M3 tertiary / secondary) */
   --color-accent-violet: var(--palette-accent-violet);
   --color-accent-golden: var(--palette-accent-golden);
+  --color-label-ink: var(--palette-label-ink);
   /* Legacy aliases → families (prefer status-* / accent-blue in new code) */
   --color-accent-red: var(--palette-status-error);
   --color-accent-amber: var(--palette-status-warning);
@@ -363,6 +369,27 @@ html[data-theme="light"] {
 @utility section-title {
   /* Weight before size (Toss); scanning hierarchy for product + portfolio */
   @apply text-3xl font-semibold tracking-tight text-surface-light;
+}
+
+/** Overlapping M3-role name block on portfolio section frames (opt-in via SectionWrapper). */
+@utility section-label-pill {
+  @apply inline-flex max-w-full items-center rounded-full border-2 border-label-ink px-4 py-1.5 text-sm font-semibold uppercase tracking-wider text-label-ink;
+}
+
+.section-label-pill--primary {
+  background-color: var(--color-accent-blue);
+}
+.section-label-pill--secondary {
+  background-color: var(--color-accent-golden);
+}
+.section-label-pill--tertiary {
+  background-color: var(--color-accent-violet);
+}
+.section-label-pill--error {
+  background-color: var(--color-status-error);
+}
+.section-label-pill--custom {
+  background-color: var(--color-status-cyan);
 }
 
 @utility card-title {
@@ -697,6 +724,12 @@ h6,
   .portfolio-cv h1,
   .portfolio-cv h3 {
     color: #111827 !important;
+  }
+
+  .portfolio-cv .section-label-pill {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border-color: #111827 !important;
   }
 
   .portfolio-cv .text-body,

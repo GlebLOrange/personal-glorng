@@ -142,7 +142,7 @@ onUnmounted(() => {
       </div>
     </SectionWrapper>
 
-    <SectionWrapper id="about" title="about" width="full" alternate>
+    <SectionWrapper id="about" title="about" width="full" label-tone="primary">
       <PortfolioGlance :resume="resume" />
       <p class="text-body mb-4 mt-6 max-w-3xl text-pretty">
         {{ resume.bio }}
@@ -155,7 +155,7 @@ onUnmounted(() => {
       </div>
     </SectionWrapper>
 
-    <SectionWrapper id="experience" title="experience" width="full">
+    <SectionWrapper id="experience" title="experience" width="full" label-tone="tertiary">
       <Suspense>
         <ExperienceList :experience="resume.experience" />
         <template #fallback>
@@ -164,7 +164,7 @@ onUnmounted(() => {
       </Suspense>
     </SectionWrapper>
 
-    <SectionWrapper id="case-studies" title="case studies" width="full" alternate>
+    <SectionWrapper id="case-studies" title="case studies" width="full" label-tone="secondary">
       <Suspense>
         <CaseStudies :projects="resume.projects" />
         <template #fallback>
@@ -173,7 +173,7 @@ onUnmounted(() => {
       </Suspense>
     </SectionWrapper>
 
-    <SectionWrapper id="skills" title="skills" width="full">
+    <SectionWrapper id="skills" title="skills" width="full" label-tone="custom">
       <SkillsGrid :skills="resume.skills" />
     </SectionWrapper>
 
@@ -182,16 +182,12 @@ onUnmounted(() => {
       id="education"
       title="education"
       width="prose"
+      label-tone="secondary"
     >
       <EducationList :education="education" />
     </SectionWrapper>
 
-    <SectionWrapper
-      id="contacts"
-      title="contacts"
-      width="full"
-      :alternate="education.length > 0"
-    >
+    <SectionWrapper id="contacts" title="contacts" width="full" label-tone="error">
       <p class="text-body mb-3 max-w-2xl">
         open to full-time and contract — usually reply within 24h (EU timezone)
       </p>
