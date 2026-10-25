@@ -34,6 +34,7 @@ vi.mock("@/components/ui/ConfirmDialog.vue", () => ({
     template: `
       <div v-if="open" data-testid="confirm-dialog">
         <p>{{ title }}</p>
+        <slot />
         <button type="button" data-testid="confirm-run" @click="$emit('confirm')">
           {{ confirmLabel }}
         </button>
@@ -63,55 +64,50 @@ afterEach(() => {
   postMock.mockReset();
 });
 
+const readyStatus = {
+  site_key: "site",
+  enabled: true,
+  host_jobs_ready: true,
+  status: "idle",
+  detail: "",
+  job: "",
+  report: "",
+};
+
 describe("DbMaintenanceTool", () => {
-  it("keeps start disabled until a captcha token exists", async () => {
-    getMock.mockResolvedValue({
-      data: {
-        site_key: "site",
-        enabled: true,
-        status: "idle",
-        detail: "",
-      },
-    });
+  it("keeps job buttons disabled until a captcha token exists", async () => {
+    getMock.mockResolvedValue({ data: readyStatus });
 
     const wrapper = mount(DbMaintenanceTool);
     await flushPromises();
 
-    const start = wrapper.findAll("button").find((b) => b.text().includes("start maintenance"));
-    expect(start).toBeDefined();
-    expect(start!.attributes("disabled")).toBeDefined();
+    const sync = wrapper.findAll("button").find((b) => b.text() === "calendar sync");
+    expect(sync).toBeDefined();
+    expect(sync!.attributes("disabled")).toBeDefined();
 
     await wrapper.get('[data-testid="fake-captcha"]').trigger("click");
     await flushPromises();
 
-    expect(start!.attributes("disabled")).toBeUndefined();
+    expect(sync!.attributes("disabled")).toBeUndefined();
   });
 
-  it("opens confirm dialog before posting", async () => {
-    getMock.mockResolvedValue({
-      data: {
-        site_key: "site",
-        enabled: true,
-        status: "idle",
-        detail: "",
-      },
-    });
+  it("posts chosen job with turnstile token", async () => {
+    getMock.mockResolvedValue({ data: readyStatus });
     postMock.mockResolvedValue({
-      data: { status: "running", detail: "maintenance is running" },
+      data: { status: "running", detail: "sync is running", job: "sync", report: "" },
     });
 
     const wrapper = mount(DbMaintenanceTool);
     await flushPromises();
+
     await wrapper.get('[data-testid="fake-captcha"]').trigger("click");
     await flushPromises();
 
-    const start = wrapper.findAll("button").find((b) => b.text().includes("start maintenance"));
-    await start!.trigger("click");
+    const sync = wrapper.findAll("button").find((b) => b.text() === "calendar sync");
+    await sync!.trigger("click");
     await flushPromises();
 
-    expect(wrapper.get('[data-testid="confirm-dialog"]').text()).toContain(
-      "run database maintenance",
-    );
+    expect(wrapper.get('[data-testid="confirm-dialog"]').text()).toContain("run sync");
     expect(postMock).not.toHaveBeenCalled();
 
     await wrapper.get('[data-testid="confirm-run"]').trigger("click");
@@ -119,6 +115,7 @@ describe("DbMaintenanceTool", () => {
 
     expect(postMock).toHaveBeenCalledWith("/admin/maintenance/run", {
       turnstile_token: "tok",
+      job: "sync",
     });
   });
 });

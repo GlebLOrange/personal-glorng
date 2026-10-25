@@ -1,10 +1,11 @@
-"""Schemas for the admin DB maintenance endpoints."""
+"""Schemas for the admin maintenance endpoints."""
 
 from typing import Literal
 
 from pydantic import BaseModel, Field
 
 MaintenanceStatus = Literal["idle", "running", "ok", "failed"]
+MaintenanceJob = Literal["backup", "stale", "sync", "cleanup", "seed"]
 
 
 class MaintenanceStatusResponse(BaseModel):
@@ -12,14 +13,18 @@ class MaintenanceStatusResponse(BaseModel):
 
     site_key: str = ""
     enabled: bool = False
+    host_jobs_ready: bool = False
     status: MaintenanceStatus = "idle"
     detail: str = ""
+    job: str = ""
+    report: str = ""
 
 
 class MaintenanceRunRequest(BaseModel):
-    """Turnstile token from the admin panel widget."""
+    """Turnstile token and which maintenance job to run."""
 
     turnstile_token: str = Field(min_length=1, max_length=2048)
+    job: MaintenanceJob
 
 
 class MaintenanceRunResponse(BaseModel):
@@ -27,3 +32,5 @@ class MaintenanceRunResponse(BaseModel):
 
     status: MaintenanceStatus
     detail: str = ""
+    job: str = ""
+    report: str = ""
