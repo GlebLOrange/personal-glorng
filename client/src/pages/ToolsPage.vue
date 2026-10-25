@@ -101,16 +101,14 @@ function toolRoute(tool: PlatformService): string {
         :resolve-route="toolRoute"
         :tile-chip="toolsPageChipForSlug"
       />
-      <section v-if="adminSections.length" class="min-w-0">
-        <h2 class="text-meta mb-3 uppercase tracking-wider">admin</h2>
-        <ToolTileGrid
-          presentation="admin"
-          density="compact"
-          :sections="adminSections"
-          :resolve-route="toolRoute"
-          category-heading="h3"
-        />
-      </section>
+      <ToolTileGrid
+        v-if="adminSections.length"
+        presentation="admin"
+        density="compact"
+        :sections="adminSections"
+        :resolve-route="toolRoute"
+        category-heading="h3"
+      />
     </template>
   </PageShell>
 </template>

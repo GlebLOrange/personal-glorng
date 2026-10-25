@@ -133,7 +133,7 @@ describe("ToolsPage sectioned layout", () => {
     const wrapper = mountPage();
     await flushPromises();
 
-    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(true);
+    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
     expect(wrapper.text()).toContain("audit logs");
     expect(wrapper.text()).toContain("ai chat");
   });
@@ -145,7 +145,7 @@ describe("ToolsPage sectioned layout", () => {
     const wrapper = mountPage();
     await flushPromises();
 
-    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(true);
+    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
     expect(wrapper.text()).toContain("audit logs");
     expect(wrapper.text()).not.toContain("ai chat");
   });

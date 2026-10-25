@@ -37,7 +37,7 @@ const emit = defineEmits<{
       @click="canWrite ? emit('edit', item) : undefined"
       @keydown.enter.prevent="canWrite ? emit('edit', item) : undefined"
     >
-      <div class="mb-2 flex min-w-0 items-center gap-2 text-xs">
+      <div class="mb-2 flex min-w-0 flex-wrap items-center gap-2 text-xs">
         <a
           v-if="safeNavigationHref(item.source_url)"
           :href="safeNavigationHref(item.source_url) ?? '#'"
@@ -62,13 +62,7 @@ const emit = defineEmits<{
         <span v-if="item.telegram_message_id" class="shrink-0 text-accent-coral">
           Telegram #{{ item.telegram_message_id }}
         </span>
-        <h2 class="card-title ml-auto min-w-0 truncate text-right">{{ item.title }}</h2>
-      </div>
-
-      <p class="mb-2 break-words text-sm text-surface-mid">{{ item.summary }}</p>
-
-      <div class="flex w-full flex-col gap-3">
-        <div v-if="item.tags.length" class="flex flex-wrap gap-2">
+        <div v-if="item.tags.length" class="ml-auto flex min-w-0 flex-wrap justify-end gap-2">
           <span
             v-for="tag in item.tags"
             :key="tag"
@@ -77,37 +71,47 @@ const emit = defineEmits<{
             #{{ tag }}
           </span>
         </div>
+      </div>
 
-        <div v-if="canWrite" class="flex flex-wrap justify-end gap-2" @click.stop @keydown.stop>
-          <BaseButton
-            variant="ghost"
-            quiet
-            size="sm"
-            :disabled="actionLoading"
-            @click="emit('repost', item.id)"
-          >
-            repost telegram
-          </BaseButton>
-          <BaseButton
-            v-if="item.status !== 'published'"
-            variant="save"
-            size="sm"
-            :disabled="actionLoading"
-            @click="emit('setStatus', item.id, 'published')"
-          >
-            publish
-          </BaseButton>
-          <BaseButton
-            v-else
-            variant="ghost"
-            quiet
-            size="sm"
-            :disabled="actionLoading"
-            @click="emit('setStatus', item.id, 'private')"
-          >
-            unpublish
-          </BaseButton>
-        </div>
+      <h2 class="card-title mb-2 min-w-0 break-words">{{ item.title }}</h2>
+
+      <p class="mb-2 break-words text-sm text-surface-mid">{{ item.summary }}</p>
+
+      <div
+        v-if="canWrite"
+        class="flex w-full flex-wrap items-center justify-between gap-2"
+        @click.stop
+        @keydown.stop
+      >
+        <BaseButton
+          v-if="item.status !== 'published'"
+          variant="save"
+          size="sm"
+          :disabled="actionLoading"
+          @click="emit('setStatus', item.id, 'published')"
+        >
+          publish
+        </BaseButton>
+        <BaseButton
+          v-else
+          variant="ghost"
+          quiet
+          size="sm"
+          :disabled="actionLoading"
+          @click="emit('setStatus', item.id, 'private')"
+        >
+          unpublish
+        </BaseButton>
+        <BaseButton
+          variant="ghost"
+          quiet
+          size="sm"
+          class="ml-auto"
+          :disabled="actionLoading"
+          @click="emit('repost', item.id)"
+        >
+          repost telegram
+        </BaseButton>
       </div>
     </Card>
   </section>
