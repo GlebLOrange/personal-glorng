@@ -1,19 +1,19 @@
 /** Chart palette — resolves CSS theme tokens at runtime (canvas needs concrete colors). */
 
-/** Dark-theme pale fallbacks (match main.css :root / data-theme=dark). */
+/** Dark-theme M3 fallbacks (match main.css :root / data-theme=dark). */
 const CHART_COLOR_VARS = [
-  ["--color-accent-blue", "#e8b07a"],
-  ["--color-status-success", "#8dcea8"],
-  ["--color-status-warning", "#e4c98a"],
-  ["--color-status-error", "#f0a8a4"],
-  ["--color-status-critical", "#e7a0b4"],
-  ["--color-surface-mid", "#9198a1"],
-  ["--color-surface-muted", "#7d8590"],
-  ["--color-surface-border", "#30363d"],
+  ["--color-accent-blue", "#cfbdfe"],
+  ["--color-status-success", "#a8d08d"],
+  ["--color-status-warning", "#e8c468"],
+  ["--color-status-error", "#ffb4ab"],
+  ["--color-status-critical", "#ffdad7"],
+  ["--color-surface-mid", "#938f99"],
+  ["--color-surface-muted", "#79747e"],
+  ["--color-surface-border", "#49454e"],
 ] as const;
 
-const CHART_GRID_FALLBACK = "#21262d";
-const CHART_TEXT_FALLBACK = "#9198a1";
+const CHART_GRID_FALLBACK = "#2b2930";
+const CHART_TEXT_FALLBACK = "#938f99";
 const FONT_FAMILY = "IBM Plex Sans, Segoe UI, system-ui, sans-serif";
 
 function cssVar(name: string, fallback: string): string {
