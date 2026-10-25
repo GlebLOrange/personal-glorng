@@ -8,7 +8,7 @@
 |---------|--------|
 | [Guide](/guide/getting-started) | Setup, architecture, dev workflow, frontend, contributing |
 | [Operations](/operations/deployment) | Prod container workflow, database, [logging](/operations/logging), backups, Cloudflare, [Cloud VM](/operations/cloud-vm), [DevOps / CI gates](/operations/devops-checklist) |
-| [Reference](/reference/platform) | API catalog, Postman, env vars, security, testing, automation |
+| [Reference](/reference/platform) | API catalog, env vars, security, testing, automation |
 | [ADRs](/adr/) | Architecture decision records |
 | [Specs](/specs/handbook-structure) | Handbook structure, news, platform hardening, P3 roadmap |
 | [API endpoints](/generated/api-endpoints) | Generated OpenAPI path table |

@@ -87,7 +87,6 @@ export default defineConfig({
               text: "Architecture inventory (generated)",
               link: "/generated/architecture-inventory",
             },
-            { text: "Postman", link: "/reference/postman" },
             { text: "Configuration", link: "/reference/configuration" },
             {
               text: "Integration automation",
