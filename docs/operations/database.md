@@ -53,7 +53,7 @@ flowchart TD
 | `make dev-postgres` | Adds Postgres profile for search/audit secondary |
 | `make db-init` | Run migrations (`docker compose run --rm migrate`) |
 | `make migrate` | Alias for `db-init` |
-| `make seed-db` | Admin + fixed-volume mock test data (Mongo; wipe + fill) |
+| `make seed-db` | Maintenance seed CLI (admin + fixed-volume mock data; Mongo wipe + fill). Prefer the admin **seed** job on `/admin/db-maintenance` when Turnstile is configured |
 | `make seed-db-ultra-lite` | Same as `seed-db` against host ultra-lite API |
 
 Optional seed flags (pass after `python -m app.db.seed`): `--only recipes,expenses,…`, per-tool counts (`--expenses 50`), and `--no-multicooker` to skip the live TheMealDB fetch.
