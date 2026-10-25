@@ -22,7 +22,7 @@ export type BaseButtonVariant =
   "primary" | "secondary" | "ghost" | "success" | SemanticButtonAction;
 
 const FOCUS_RING: Record<HttpStatusFamily, string> = {
-  "1xx": "focus-visible:ring-accent-blue/50",
+  "1xx": "focus-visible:ring-accent-coral/50",
   "2xx": "focus-visible:ring-status-success/50",
   "3xx": "focus-visible:ring-status-warning/50",
   "4xx": "focus-visible:ring-status-error/50",
@@ -41,7 +41,7 @@ const WASHED_VARIANT_FAMILY: Partial<Record<BaseButtonVariant, HttpStatusFamily>
   cancel: "5xx",
 };
 
-const NEUTRAL_FOCUS = "focus-visible:ring-accent-blue/50";
+const NEUTRAL_FOCUS = "focus-visible:ring-accent-coral/50";
 
 const NEUTRAL_GHOST_IDLE =
   "border-transparent bg-transparent text-surface-light/80 hover:enabled:border-surface-light/40 hover:enabled:bg-surface-light/10 hover:enabled:text-surface-light active:enabled:bg-surface-light/15";

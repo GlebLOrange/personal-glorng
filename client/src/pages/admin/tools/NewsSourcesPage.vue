@@ -140,7 +140,7 @@ const {
                 v-if="canWrite"
                 v-model="selectedSourceIds"
                 type="checkbox"
-                class="size-4 shrink-0 align-middle accent-accent-blue"
+                class="size-4 shrink-0 align-middle accent-accent-coral"
                 :value="source.id"
                 :disabled="refreshing || !source.enabled"
                 :aria-label="`select ${source.name} for parser refresh`"
@@ -212,7 +212,7 @@ const {
                 <input
                   v-model="selectedSourceIds"
                   type="checkbox"
-                  class="size-4 shrink-0 align-middle accent-accent-blue"
+                  class="size-4 shrink-0 align-middle accent-accent-coral"
                   :value="source.id"
                   :disabled="refreshing || !source.enabled"
                   :aria-label="`select ${source.name} for parser refresh`"

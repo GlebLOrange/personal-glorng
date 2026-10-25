@@ -157,13 +157,13 @@ onUnmounted(() => {
       <p class="text-xs text-surface-muted">{{ resultSummary }} for “{{ query.trim() }}”</p>
       <Card v-for="hit in displayHits" :key="`${hit.source_type}:${hit.id}`" class="text-sm">
         <div class="flex flex-wrap items-center gap-2 mb-2">
-          <span class="text-xs px-2 py-0.5 rounded bg-accent-blue/20 text-accent-blue">
+          <span class="text-xs px-2 py-0.5 rounded bg-accent-coral/20 text-accent-coral">
             {{ sourceLabel(hit.source_type) }}
           </span>
           <RouterLink
             v-if="hit.path"
             :to="hit.path"
-            class="font-medium text-accent-blue hover:underline"
+            class="font-medium text-accent-coral hover:underline"
           >
             {{ hit.title }}
           </RouterLink>

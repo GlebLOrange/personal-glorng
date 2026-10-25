@@ -25,7 +25,7 @@ function openPreferences() {
     <p class="text-surface-muted text-sm mb-10">Last updated: May 26, 2026</p>
 
     <section class="mb-10">
-      <h2 class="text-xl font-semibold text-accent-blue mb-3">What data is collected</h2>
+      <h2 class="text-xl font-semibold text-accent-coral mb-3">What data is collected</h2>
       <p class="text-surface-sage leading-relaxed mb-3">
         This site collects minimal data to keep things running and to understand how visitors use
         it.
@@ -58,7 +58,7 @@ function openPreferences() {
     </section>
 
     <section class="mb-10">
-      <h2 class="text-xl font-semibold text-accent-blue mb-3">Cookies used</h2>
+      <h2 class="text-xl font-semibold text-accent-coral mb-3">Cookies used</h2>
       <div class="overflow-x-auto">
         <table
           class="w-full text-sm text-left border border-surface-border rounded-lg overflow-hidden"
@@ -97,12 +97,12 @@ function openPreferences() {
     </section>
 
     <section class="mb-10">
-      <h2 class="text-xl font-semibold text-accent-blue mb-3">Your choices</h2>
+      <h2 class="text-xl font-semibold text-accent-coral mb-3">Your choices</h2>
       <p class="text-surface-sage leading-relaxed">
         You can change your cookie preferences at any time by opening the
         <button
           type="button"
-          class="text-accent-blue underline-offset-2 hover:text-accent-violet focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded transition-colors"
+          class="text-accent-coral underline-offset-2 hover:text-accent-violet focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded transition-colors"
           @click="openPreferences"
         >
           cookie settings</button
@@ -121,14 +121,14 @@ function openPreferences() {
     </section>
 
     <section class="mb-10">
-      <h2 class="text-xl font-semibold text-accent-blue mb-3">Third parties</h2>
+      <h2 class="text-xl font-semibold text-accent-coral mb-3">Third parties</h2>
       <ul class="list-disc list-inside text-surface-sage space-y-1.5 ml-2">
         <li v-if="isFirebaseAnalyticsEnabled">
           <a
             href="https://policies.google.com/privacy"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-accent-blue hover:text-accent-violet transition-colors"
+            class="text-accent-coral hover:text-accent-violet transition-colors"
             >Firebase Analytics</a
           >
           — used for anonymous usage statistics.
@@ -138,7 +138,7 @@ function openPreferences() {
             href="https://sentry.io/privacy/"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-accent-blue hover:text-accent-violet transition-colors"
+            class="text-accent-coral hover:text-accent-violet transition-colors"
             >Sentry</a
           >
           — used for error and performance monitoring.
@@ -147,7 +147,7 @@ function openPreferences() {
     </section>
 
     <section class="mb-10">
-      <h2 class="text-xl font-semibold text-accent-blue mb-3">Contact</h2>
+      <h2 class="text-xl font-semibold text-accent-coral mb-3">Contact</h2>
       <p class="text-surface-sage leading-relaxed mb-3">
         Questions about this policy? Reach out through any of these:
       </p>

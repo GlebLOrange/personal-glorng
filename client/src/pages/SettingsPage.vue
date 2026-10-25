@@ -207,7 +207,7 @@ async function savePassword(): Promise<void> {
     >
       <summary
         id="settings-tools-heading"
-        class="cursor-pointer list-none text-sm font-medium text-surface-light marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded [&::-webkit-details-marker]:hidden"
+        class="cursor-pointer list-none text-sm font-medium text-surface-light marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded [&::-webkit-details-marker]:hidden"
       >
         <span class="underline-offset-2 group-open:underline">tools you can open</span>
       </summary>

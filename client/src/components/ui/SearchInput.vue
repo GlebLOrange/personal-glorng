@@ -52,7 +52,7 @@ function clear(): void {
     :class="[
       FIELD_WRAPPER_CLASS,
       CONTROL_SIZE,
-      'flex w-full items-center overflow-hidden rounded-lg bg-surface-dark transition-colors ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-blue/50',
+      'flex w-full items-center overflow-hidden rounded-lg bg-surface-dark transition-colors ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-coral/50',
       $attrs.class,
     ]"
   >

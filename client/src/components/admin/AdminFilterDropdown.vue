@@ -101,7 +101,7 @@ const bareTriggerClass = computed(() => {
   const active = open.value;
   return [
     "!bg-transparent hover:enabled:!bg-transparent",
-    active ? "!border-accent-blue/40" : "!border-transparent hover:enabled:!border-accent-blue/40",
+    active ? "!border-accent-coral/40" : "!border-transparent hover:enabled:!border-accent-coral/40",
   ];
 });
 

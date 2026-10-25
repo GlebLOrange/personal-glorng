@@ -22,19 +22,19 @@ const { toasts, tileHostClaimed, dismiss, pause, resume, claimTileHost, releaseT
 const TOAST_SURFACE: Record<Toast["type"], string> = {
   success: "text-status-success !bg-status-success/10 !border-status-success/30",
   error: "text-status-error !bg-status-error/10 !border-status-error/30",
-  info: "text-accent-blue !bg-accent-blue/10 !border-accent-blue/30",
+  info: "text-accent-coral !bg-accent-coral/10 !border-accent-coral/30",
 };
 
 const TOAST_HOVER: Record<Toast["type"], string> = {
   success: "hover:!bg-status-success/20 hover:!border-status-success/50",
   error: "hover:!bg-status-error/20 hover:!border-status-error/50",
-  info: "hover:!bg-accent-blue/20 hover:!border-accent-blue/50",
+  info: "hover:!bg-accent-coral/20 hover:!border-accent-coral/50",
 };
 
 const TOAST_TEXT: Record<Toast["type"], string> = {
   success: "text-status-success",
   error: "text-status-error",
-  info: "text-accent-blue",
+  info: "text-accent-coral",
 };
 
 const hasToasts = computed(() => toasts.value.length > 0);

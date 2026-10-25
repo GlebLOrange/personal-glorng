@@ -23,4 +23,4 @@ export const TOOLBAR_POPOVER_PANEL_CHROME_CLASS =
  * Locked h-9 so icon rows and text rows match (not toolbar h-10).
  */
 export const FILTER_MENU_ROW_CLASS =
-  "box-border flex h-9 w-full shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-left text-xs leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:cursor-not-allowed disabled:opacity-50";
+  "box-border flex h-9 w-full shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-left text-xs leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 disabled:cursor-not-allowed disabled:opacity-50";

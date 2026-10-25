@@ -117,7 +117,7 @@ function onTagsToggle(event: Event): void {
           :for="`news-edit-tag-${tag}`"
           class="inline-flex cursor-pointer items-center rounded px-2.5 py-1 text-xs lowercase transition-colors"
           :class="{
-            'bg-accent-blue/10 text-accent-blue': tagIsSelected(tag),
+            'bg-accent-coral/10 text-accent-coral': tagIsSelected(tag),
             'text-surface-mid hover:bg-surface-mid/10': !tagIsSelected(tag),
             'opacity-50': !tagIsSelected(tag) && parsedTags().length >= NEWS_TAG_LIMIT,
           }"

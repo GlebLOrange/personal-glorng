@@ -70,15 +70,15 @@ function artSrc(slug: string): string {
 
         <dl v-if="proj.problem || proj.approach || proj.result" class="space-y-2 text-sm">
           <div v-if="proj.problem">
-            <dt class="text-label text-accent-blue">problem</dt>
+            <dt class="text-label text-accent-coral">problem</dt>
             <dd class="text-body mt-0.5">{{ proj.problem }}</dd>
           </div>
           <div v-if="proj.approach">
-            <dt class="text-label text-accent-blue">approach</dt>
+            <dt class="text-label text-accent-coral">approach</dt>
             <dd class="text-body mt-0.5">{{ proj.approach }}</dd>
           </div>
           <div v-if="proj.result">
-            <dt class="text-label text-accent-blue">result</dt>
+            <dt class="text-label text-accent-coral">result</dt>
             <dd class="text-body mt-0.5">{{ proj.result }}</dd>
           </div>
         </dl>
@@ -99,7 +99,7 @@ function artSrc(slug: string): string {
             :href="proj.url"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-accent-blue underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+            class="text-accent-coral underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
           >
             {{ linkLabel(proj.url) }}
             <span class="sr-only">(opens in new tab)</span>
@@ -107,7 +107,7 @@ function artSrc(slug: string): string {
           <RouterLink
             v-else
             :to="proj.url"
-            class="text-accent-blue underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+            class="text-accent-coral underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
           >
             {{ linkLabel(proj.url) }}
           </RouterLink>

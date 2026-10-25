@@ -13,7 +13,7 @@ defineProps<{
       <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-2">
         <div class="min-w-0">
           <h3 class="card-title">{{ entry.degree }}</h3>
-          <p class="text-base text-accent-blue">{{ entry.institution }}</p>
+          <p class="text-base text-accent-coral">{{ entry.institution }}</p>
         </div>
         <span class="text-meta shrink-0">{{ entry.period }}</span>
       </div>

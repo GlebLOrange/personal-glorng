@@ -60,8 +60,8 @@ defineExpose({ clear });
     :class="[
       'cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors',
       dragOver
-        ? 'border-accent-blue bg-accent-blue/10'
-        : 'border-surface-border hover:border-accent-blue',
+        ? 'border-accent-coral bg-accent-coral/10'
+        : 'border-surface-border hover:border-accent-coral',
       props.class,
     ]"
     @dragover.prevent="dragOver = true"

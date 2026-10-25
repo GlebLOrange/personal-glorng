@@ -75,7 +75,7 @@ function toStringValue(value: string | number | null | undefined): string {
         @update:model-value="patch({ region: toStringValue($event) })"
       />
       <label
-        class="flex cursor-pointer items-center rounded-md px-2.5 py-1.5 text-sm has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent-blue/50"
+        class="flex cursor-pointer items-center rounded-md px-2.5 py-1.5 text-sm has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent-coral/50"
         :class="newsSourceEnabledClass(form.enabled)"
       >
         <input

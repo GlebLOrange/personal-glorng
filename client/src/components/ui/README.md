@@ -24,8 +24,8 @@ Semantic names live in `constants/actionButtonVariants.ts` (`SEMANTIC_ACTION_HTT
 
 | User action | `BaseButton` `variant` | `action` on pill / icon / menu | HTTP family | Look |
 |---|---|---|---|---|
-| Create | `create` | `create` | 1xx | Solid `accent-blue` (same as `primary`) |
-| Add | `add` | `add` | 1xx | Solid `accent-blue` |
+| Create | `create` | `create` | 1xx | Solid `accent-coral` (same as `primary`) |
+| Add | `add` | `add` | 1xx | Solid `accent-coral` |
 | Save / submit / confirm | `save` (alias: `success`) | `save` | 2xx | Pale green wash |
 | Edit / update | `edit` | `edit` | 3xx | Pale gold wash |
 | Remove / delete | `delete` or `remove` | `delete` / `remove` | 4xx | Pale rose wash (`danger` prop = 4xx legacy) |
@@ -68,7 +68,7 @@ Product `BaseButton` / `ToolbarPillButton` labels must name the action with a sh
 
 Wash recipe (idle → hover/selected → active): fill `/10` → `/12` + border `/22` → active `/14`; labels `text-*/88` (`ACTION_BUTTON_PAINT` in `httpStatusColors.ts`). Primary / `cta-primary` use the same pale 1xx wash. Icon clear/edit/remove/copy use `transparentIdle`. Do **not** re-add `min-h-10` / `h-10` / `!bg-*` / one-off hover colors on these primitives — use `variant`, `action`, `family`, `quiet`, `transparentIdle`, and `selected`. Size tokens live in `constants/formClasses.ts` (`CONTROL_BUTTON_*`).
 
-**Marketing vs product accents** — portfolio/marketing pages may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI uses only the **1xx–5xx** pale set + surfaces — no golden/violet on tools, chips, or product buttons.
+**Marketing vs product accents** — portfolio/marketing pages may use `accent-coral`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI uses only the **1xx–5xx** pale set + surfaces — no golden/violet on tools, chips, or product buttons.
 
 ## Card system (`components/ui/card/`)
 
@@ -97,7 +97,7 @@ Canonical tokens live in `client/src/styles/main.css` as pale dual-theme CSS var
 
 | Family | Token | Dark (resolved) | Light |
 |---|---|---|---|
-| 1xx | `accent-blue` | `#8ec4e0` | `#7aa3d4` |
+| 1xx | `accent-coral` | `#f0a090` | `#b56a5a` |
 | 2xx | `status-success` | `#7bc49a` | `#86c9a0` |
 | 3xx | `status-warning` | `#d4ce94` | `#d4b86a` |
 | 4xx | `status-error` | `#e88a8a` | `#e08a8a` |

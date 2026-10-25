@@ -66,7 +66,7 @@ function printPage(): void {
       <a
         v-if="availability"
         href="#contacts"
-        class="inline-flex min-h-11 items-center px-1 text-meta underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+        class="inline-flex min-h-11 items-center px-1 text-meta underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
       >
         {{ availability }}
       </a>
@@ -85,7 +85,7 @@ function printPage(): void {
       PDF unavailable.
       <button
         type="button"
-        class="ml-1 underline underline-offset-4 text-accent-blue hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+        class="ml-1 underline underline-offset-4 text-accent-coral hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
         @click="printPage"
       >
         print page instead

@@ -22,8 +22,8 @@ describe("actionButtonVariants", () => {
   it("paints create/add like pale primary (1xx wash)", () => {
     for (const variant of ["create", "add", "primary"] as const) {
       const classes = classesForActionButton({ variant });
-      expect(classes).toContain("bg-accent-blue/10");
-      expect(classes).toContain("text-accent-blue/88");
+      expect(classes).toContain("bg-accent-coral/10");
+      expect(classes).toContain("text-accent-coral/88");
     }
   });
 

@@ -80,7 +80,7 @@ watch(page, () => {
       >
         <div class="mb-2 flex min-w-0 items-center justify-between gap-2 text-xs text-surface-muted">
           <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <span class="shrink-0 text-xs text-accent-blue">
+            <span class="shrink-0 text-xs text-accent-coral">
               {{ item.source_name }}
             </span>
             <time

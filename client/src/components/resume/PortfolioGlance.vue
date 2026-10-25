@@ -28,7 +28,7 @@ const stats = computed(() => buildGlanceStats(props.resume));
       hoverable
       :class="['min-w-0 h-full', PORTFOLIO_CV_TILE_CLASS]"
     >
-      <p class="text-label text-accent-blue mb-2">{{ stat.label }}</p>
+      <p class="text-label text-accent-coral mb-2">{{ stat.label }}</p>
       <p class="font-data text-3xl font-semibold tracking-tight text-surface-light mb-2">
         {{ stat.value }}
       </p>

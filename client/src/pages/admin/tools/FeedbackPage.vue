@@ -246,7 +246,7 @@ onMounted(load);
           >
             <button
               type="button"
-              class="shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+              class="shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50"
               :aria-label="ADVANCE_STATUS_LABEL[item.status] ?? 'change status'"
               @click.stop="advanceStatus(item)"
               @keydown.stop
@@ -315,7 +315,7 @@ onMounted(load);
             <td :class="ADMIN_TD_CLASS">
               <button
                 type="button"
-                class="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+                class="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50"
                 :aria-label="ADVANCE_STATUS_LABEL[item.status] ?? 'change status'"
                 @click.stop="advanceStatus(item)"
                 @keydown.stop

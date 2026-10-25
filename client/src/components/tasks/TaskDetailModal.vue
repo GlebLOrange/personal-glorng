@@ -199,7 +199,7 @@ watch(
         <div class="flex min-w-0 items-center justify-between gap-3">
           <div v-if="task.google_event_id" class="flex min-w-0 items-center gap-2">
             <span
-              class="inline-flex items-center gap-1.5 rounded-full bg-accent-blue/10 px-2 py-0.5 text-xs text-accent-blue"
+              class="inline-flex items-center gap-1.5 rounded-full bg-accent-coral/10 px-2 py-0.5 text-xs text-accent-coral"
               title="synced to Google Calendar"
             >
               <SyncIcon class-name="size-3.5" />

@@ -127,9 +127,9 @@ async function download(): Promise<void> {
         </template>
         <div class="space-y-4 text-sm text-surface-light">
           <div>
-            <h3 class="mb-2 font-bold text-accent-blue">Format selection</h3>
+            <h3 class="mb-2 font-bold text-accent-coral">Format selection</h3>
             <p class="mb-1 text-surface-mid">
-              The <code class="text-accent-blue">-f</code> flag controls quality. Common values:
+              The <code class="text-accent-coral">-f</code> flag controls quality. Common values:
             </p>
             <ul class="ml-2 list-inside list-disc space-y-1 text-surface-mid">
               <li><code class="text-surface-light">best</code> -- best single file (default)</li>
@@ -146,7 +146,7 @@ async function download(): Promise<void> {
           </div>
 
           <div>
-            <h3 class="mb-2 font-bold text-accent-blue">Supported sites</h3>
+            <h3 class="mb-2 font-bold text-accent-coral">Supported sites</h3>
             <p class="text-surface-mid">
               Paste any public http(s) video URL yt-dlp can handle (YouTube, Vimeo, Twitter/X, and
               many more). Private or local addresses are rejected.
@@ -154,7 +154,7 @@ async function download(): Promise<void> {
           </div>
 
           <div>
-            <h3 class="mb-2 font-bold text-accent-blue">Audio extraction</h3>
+            <h3 class="mb-2 font-bold text-accent-coral">Audio extraction</h3>
             <p class="text-surface-mid">
               Check "Audio only" to extract the audio track as MP3. This uses
               <code class="text-surface-light">-x --audio-format mp3</code> under the hood. Great
@@ -163,7 +163,7 @@ async function download(): Promise<void> {
           </div>
 
           <div>
-            <h3 class="mb-2 font-bold text-accent-blue">Limits</h3>
+            <h3 class="mb-2 font-bold text-accent-coral">Limits</h3>
             <p class="text-surface-mid">
               Downloads are limited to 500 MB and 2 minutes per request. Each IP may run one
               download at a time, with at most two concurrent downloads across the server. Use is
@@ -175,7 +175,7 @@ async function download(): Promise<void> {
             href="https://github.com/yt-dlp/yt-dlp#readme"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-block text-accent-blue transition-colors hover:text-accent-blue/80"
+            class="inline-block text-accent-coral transition-colors hover:text-accent-coral/80"
           >
             Full yt-dlp documentation &rarr;
           </a>

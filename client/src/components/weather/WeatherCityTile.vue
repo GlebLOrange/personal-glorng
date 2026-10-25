@@ -24,7 +24,7 @@ const emit = defineEmits<{
 
 const cardClass = computed(() =>
   props.active
-    ? "page-weather-tile-card h-full border-accent-blue bg-accent-blue/10"
+    ? "page-weather-tile-card h-full border-accent-coral bg-accent-coral/10"
     : "page-weather-tile-card h-full",
 );
 

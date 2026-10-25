@@ -37,9 +37,9 @@ const rootClass = computed(() => [
   props.variant === "ghost" && "p-0 bg-transparent border-transparent",
   props.tint === "danger" && "border-status-error/60 bg-status-error/10",
   props.hoverable &&
-    "hover:border-accent-blue active:border-accent-blue/80 transition-colors duration-200",
+    "hover:border-accent-coral active:border-accent-coral/80 transition-colors duration-200",
   (props.interactive || props.as === "a") &&
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 transition-colors duration-200",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 transition-colors duration-200",
   attrs.class,
 ]);
 

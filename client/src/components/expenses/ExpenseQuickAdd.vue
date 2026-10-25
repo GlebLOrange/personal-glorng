@@ -201,7 +201,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
             v-for="name in filteredProductSuggestions"
             :key="name"
             role="option"
-            class="cursor-pointer truncate px-3 py-1.5 text-sm text-surface-light hover:bg-accent-blue/15"
+            class="cursor-pointer truncate px-3 py-1.5 text-sm text-surface-light hover:bg-accent-coral/15"
             @mousedown.prevent="selectProductSuggestion(name)"
           >
             {{ name }}

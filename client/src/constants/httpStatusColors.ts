@@ -21,7 +21,7 @@ type FamilyTone = {
 };
 
 const FAMILY_BADGE: Record<HttpStatusFamily, string> = {
-  "1xx": "text-accent-blue bg-accent-blue/15 border-accent-blue/30",
+  "1xx": "text-accent-coral bg-accent-coral/15 border-accent-coral/30",
   "2xx": "text-status-success bg-status-success/15 border-status-success/30",
   "3xx": "text-status-warning bg-status-warning/15 border-status-warning/30",
   "4xx": "text-status-error bg-status-error/15 border-status-error/30",
@@ -40,20 +40,20 @@ export const ACTION_BUTTON_PAINT = {
 
 const FAMILY_TONE: Record<HttpStatusFamily, FamilyTone> = {
   "1xx": {
-    text: "text-accent-blue/88",
-    wash: "bg-accent-blue/10",
-    tint: "bg-accent-blue/12",
-    border: "border-accent-blue/22",
-    hoverEnabledTint: "hover:enabled:bg-accent-blue/12",
-    hoverEnabledBorder: "hover:enabled:border-accent-blue/22",
-    hoverEnabledText: "hover:enabled:text-accent-blue/88",
-    hoverTint: "hover:bg-accent-blue/12",
-    hoverBorder: "hover:border-accent-blue/22",
-    hoverText: "hover:text-accent-blue/88",
-    activeEnabledTint: "active:enabled:bg-accent-blue/14",
-    focusBorder: "focus-visible:border-accent-blue/22",
-    focusTint: "focus-visible:bg-accent-blue/12",
-    focusText: "focus-visible:text-accent-blue/88",
+    text: "text-accent-coral/88",
+    wash: "bg-accent-coral/10",
+    tint: "bg-accent-coral/12",
+    border: "border-accent-coral/22",
+    hoverEnabledTint: "hover:enabled:bg-accent-coral/12",
+    hoverEnabledBorder: "hover:enabled:border-accent-coral/22",
+    hoverEnabledText: "hover:enabled:text-accent-coral/88",
+    hoverTint: "hover:bg-accent-coral/12",
+    hoverBorder: "hover:border-accent-coral/22",
+    hoverText: "hover:text-accent-coral/88",
+    activeEnabledTint: "active:enabled:bg-accent-coral/14",
+    focusBorder: "focus-visible:border-accent-coral/22",
+    focusTint: "focus-visible:bg-accent-coral/12",
+    focusText: "focus-visible:text-accent-coral/88",
   },
   "2xx": {
     text: "text-status-success/88",
@@ -211,7 +211,7 @@ export function familyToneClass(
 }
 
 /** Shared shape for toolbar/tab action pills. */
-export const ACTION_PILL_BASE = `inline-flex ${CONTROL_SIZE} shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50`;
+export const ACTION_PILL_BASE = `inline-flex ${CONTROL_SIZE} shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-4 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 disabled:opacity-50`;
 
 /** Square icon chrome matching CONTROL_SIZE (overrides pill padding). */
 export const ICON_ACTION_SIZE = CONTROL_SIZE_ICON;

@@ -23,7 +23,7 @@ const emit = defineEmits<{
         <div class="text-surface-light font-bold text-sm truncate">{{ title }}</div>
         <div v-if="subtitle" class="text-xs text-surface-mid truncate mt-1">{{ subtitle }}</div>
         <div v-if="meta" class="text-xs text-surface-mid mt-1">{{ meta }}</div>
-        <code class="text-xs text-accent-blue mt-2 block truncate">{{ link }}</code>
+        <code class="text-xs text-accent-coral mt-2 block truncate">{{ link }}</code>
       </div>
       <div class="flex gap-2 ml-4">
         <IconCopyButton @click="emit('copy')" />

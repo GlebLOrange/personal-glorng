@@ -53,7 +53,7 @@ const emit = defineEmits<{
       <div class="flex w-full flex-wrap items-center gap-2 text-xs">
         <span
           v-if="recipe.prep_time"
-          class="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-accent-blue/30 bg-accent-blue/15 px-2.5 text-accent-blue"
+          class="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-accent-coral/30 bg-accent-coral/15 px-2.5 text-accent-coral"
         >
           <ClockIcon class-name="size-3.5 shrink-0" />
           {{ formatRecipeTime(recipe.prep_time) }} prep
@@ -93,7 +93,7 @@ const emit = defineEmits<{
           </summary>
           <ul class="space-y-1 border-t border-surface-border px-2 py-2 text-sm text-surface-light">
             <li v-for="(ing, i) in recipe.ingredients" :key="i" class="flex gap-2">
-              <span class="text-accent-blue shrink-0">·</span>
+              <span class="text-accent-coral shrink-0">·</span>
               <span>{{ ing }}</span>
             </li>
           </ul>
@@ -108,7 +108,7 @@ const emit = defineEmits<{
           </summary>
           <ol class="space-y-2 border-t border-surface-border px-2 py-2 text-sm text-surface-light">
             <li v-for="(step, i) in recipe.steps" :key="i" class="flex gap-2">
-              <span class="w-5 shrink-0 font-data text-accent-blue">{{ i + 1 }}.</span>
+              <span class="w-5 shrink-0 font-data text-accent-coral">{{ i + 1 }}.</span>
               <span>{{ step }}</span>
             </li>
           </ol>
