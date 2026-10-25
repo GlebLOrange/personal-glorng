@@ -11,6 +11,7 @@ import PortfolioGlance from "@/components/resume/PortfolioGlance.vue";
 import SkillsGrid from "@/components/resume/SkillsGrid.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import { useCachedApi } from "@/composables/useCachedApi";
+import { colorThemeResolved } from "@/composables/useColorTheme";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
@@ -38,6 +39,12 @@ let heroObserver: IntersectionObserver | null = null;
 let cancelGithubIdle: (() => void) | null = null;
 
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
+/** Portfolio hero decoration only — not used on /profile (shared HeroBlock). */
+const welcomeBgSrc = computed(() =>
+  colorThemeResolved.value === "light"
+    ? "/brand/welcome-bg-light.svg"
+    : "/brand/welcome-bg.svg",
+);
 const contactLinks = computed(() => buildContactLinks(resume.value.links));
 const education = computed(() => resume.value.education ?? []);
 /** Sticky in-page nav — drop education when that section is empty. */
@@ -176,7 +183,27 @@ onUnmounted(() => {
     </div>
 
     <SectionWrapper width="full">
-      <div ref="heroSentinelRef">
+      <div ref="heroSentinelRef" class="relative isolate overflow-hidden">
+        <div
+          class="pointer-events-none absolute inset-0 -z-10 print:hidden"
+          aria-hidden="true"
+        >
+          <img
+            :src="welcomeBgSrc"
+            alt=""
+            class="absolute inset-y-0 right-0 h-full w-[min(100%,42rem)] max-w-none object-contain object-right opacity-90"
+            width="800"
+            height="420"
+            decoding="async"
+          />
+          <!-- Scrim keeps hero copy AA against the faint lockup -->
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-surface-dark via-surface-dark/85 to-surface-dark/40"
+          />
+          <div
+            class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-dark to-transparent"
+          />
+        </div>
         <HeroBlock
           :name="resume.name"
           :title="resume.title"
