@@ -74,8 +74,8 @@ describe("ToolsPage sectioned layout", () => {
     expect(wrapper.text()).toContain("2 tools");
     expect(wrapper.text()).toContain("recipes");
     expect(wrapper.text()).toContain("calculator");
-    expect(wrapper.text()).toContain("Shorten a long link.");
-    expect(wrapper.text()).toContain("Do a quick calculation.");
+    expect(wrapper.text()).toContain("short links");
+    expect(wrapper.text()).toContain("quick math");
     expect(wrapper.text()).toContain("demo");
     expect(wrapper.text()).not.toContain("expenses");
     expect(wrapper.text()).not.toContain("productivity");
@@ -98,6 +98,10 @@ describe("ToolsPage sectioned layout", () => {
     expect(wrapper.text()).toContain("Work");
     expect(wrapper.text()).toContain("Builders");
     expect(wrapper.text()).toContain("yours");
+    expect(wrapper.text()).toContain("tasks and reminders");
+    expect(wrapper.text()).toContain("share files");
+    expect(wrapper.text()).toContain("save videos");
+    expect(wrapper.text()).toContain("rows from files");
     expect(wrapper.find('nav[aria-label="tool sections"]').exists()).toBe(false);
     expect(wrapper.text()).not.toContain("your tools");
   });

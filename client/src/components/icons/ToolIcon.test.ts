@@ -2,6 +2,7 @@ import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
 import ToolIcon from "@/components/icons/ToolIcon.vue";
+import { iconFitTransform } from "@/components/icons/iconFit";
 import { PLATFORM_SERVICES } from "@/platform/services";
 
 const HUB_SLUGS = ["users", "sync", "location", "tools", "admin", "settings"] as const;
@@ -22,6 +23,14 @@ describe("ToolIcon", () => {
     expect(wrapper.find("svg").exists()).toBe(true);
     expect(wrapper.find("svg").attributes("aria-hidden")).toBe("true");
     expect(wrapper.find('[data-icon="fallback"]').exists()).toBe(false);
+  });
+
+  it("fits a glyph's longest side to 16 and leaves an already-fit box alone", () => {
+    expect(iconFitTransform({ x: 4, y: 4, width: 16, height: 16 })).toBeUndefined();
+    expect(iconFitTransform({ x: 3, y: 3, width: 18, height: 18 })).toBe(
+      "translate(12 12) scale(0.889) translate(-12 -12)",
+    );
+    expect(iconFitTransform({ x: 0, y: 0, width: 0, height: 0 })).toBeUndefined();
   });
 
   it("uses the fallback square for unknown slugs", () => {

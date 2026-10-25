@@ -48,7 +48,7 @@ describe("ToolTileGrid", () => {
     expect(wrapper.get("a").attributes("href")).toBe("/tools/calculator");
     expect(wrapper.get("a").attributes("target")).toBeUndefined();
     expect(wrapper.text()).not.toContain("short description");
-    expect(wrapper.text()).not.toContain("Do a quick calculation.");
+    expect(wrapper.text()).not.toContain("quick math");
   });
 
   it("shows a tile hint for ambiguous tool names only in the default presentation", () => {
@@ -72,7 +72,7 @@ describe("ToolTileGrid", () => {
       global: { stubs: { RouterLink: routerLinkStub } },
     });
 
-    expect(wrapper.text()).toContain("Check uptime, latency, SSL, and DNS.");
+    expect(wrapper.text()).toContain("uptime and dns");
     expect(wrapper.text()).not.toContain("catalog blurb should stay hidden");
     expect(wrapper.text()).not.toContain("short description");
   });
@@ -101,8 +101,8 @@ describe("ToolTileGrid", () => {
 
     const links = wrapper.findAll("a.page-tile");
     expect(links).toHaveLength(2);
-    expect(wrapper.text()).toContain("Check the weather and local time.");
-    expect(wrapper.text()).toContain("Do a quick calculation.");
+    expect(wrapper.text()).toContain("local weather and time");
+    expect(wrapper.text()).toContain("quick math");
     expect(wrapper.find(".page-tile-chevron").classes()).toContain("pointer-events-none");
     expect(wrapper.get('[data-presentation="public"]').exists()).toBe(true);
   });
@@ -221,10 +221,10 @@ describe("ToolTileGrid", () => {
     const weather = wrapper.get("a[href='/weather']");
     const description = weather.get("p");
     expect(description.classes()).toContain("line-clamp-1");
-    expect(description.text()).toBe("weather lookup, saved locations, and local time");
+    expect(description.text()).toBe("local weather and time");
     expect(weather.text()).toContain("Demo");
     expect(weather.text()).not.toContain("yours");
-    expect(weather.text()).not.toContain("Check the weather and local time.");
+    expect(weather.text()).not.toContain("weather lookup, saved locations, and local time");
 
     expect(wrapper.get("a[href='/recipes']").text()).not.toContain("Demo");
     expect(wrapper.get("a[href='/health-checker']").text()).not.toContain("Demo");
