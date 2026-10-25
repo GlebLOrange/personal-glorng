@@ -29,9 +29,9 @@ const props = withDefaults(
     density?: "default" | "compact";
     /**
      * `public` — guest Tools catalog: larger touch targets, every-tile blurbs,
-     * visible "Label · N" counts.
-     * `admin` — /admin hub: sentence-case "Label · N", one-line descriptions, demo chips.
-     * Default keeps signed-in tile behavior.
+     * sentence-case "Label · N" counts.
+     * `admin` — /admin hub: same heading pattern, one-line descriptions, demo chips.
+     * Default keeps signed-in tile behavior (same heading + count).
      */
     presentation?: "default" | "public" | "admin";
     /** Optional per-slug chip (demo / yours). Admin omits this. */
@@ -52,12 +52,11 @@ const sectionClass = computed(() =>
   props.showCategoryHeadings ? (props.density === "compact" ? "mb-6" : "mb-8") : "mb-0",
 );
 
-const headingClass = computed(() => {
-  if (isAdminPresentation.value) return "mb-2 text-sm font-medium text-surface-light";
-  return props.density === "compact"
-    ? "text-meta mb-2 uppercase tracking-wider"
-    : "text-meta mb-3 uppercase tracking-wider";
-});
+const headingClass = computed(() =>
+  props.density === "compact"
+    ? "mb-2 text-sm font-semibold text-surface-light"
+    : "mb-3 text-sm font-semibold text-surface-light",
+);
 
 const tileTitleTag = computed(() => (props.categoryHeading === "h3" ? "h4" : "h3"));
 
@@ -122,21 +121,8 @@ function showAdminDemoChip(tool: PlatformService): boolean {
     :class="sectionClass"
   >
     <component :is="categoryHeading" v-if="showSectionHeading(section)" :class="headingClass">
-      <template v-if="isAdminPresentation">
-        <span aria-hidden="true">{{ `${section.label} · ${section.services.length}` }}</span>
-        <span class="sr-only">{{ section.label }}, {{ toolCountLabel(section.services.length) }}</span>
-      </template>
-      <template v-else>
-        {{ section.label }}
-        <span class="sr-only">, {{ toolCountLabel(section.services.length) }}</span>
-        <span
-          v-if="!isPublicPresentation"
-          aria-hidden="true"
-          class="ml-2 font-normal tracking-normal text-surface-mid normal-case"
-        >
-          {{ section.services.length }}
-        </span>
-      </template>
+      <span aria-hidden="true">{{ `${section.label} · ${section.services.length}` }}</span>
+      <span class="sr-only">{{ section.label }}, {{ toolCountLabel(section.services.length) }}</span>
     </component>
     <div
       class="page-launcher-grid"
@@ -178,7 +164,7 @@ function showAdminDemoChip(tool: PlatformService): boolean {
               </span>
               <span
                 v-else-if="chipFor(tool)"
-                class="shrink-0 rounded border border-transparent bg-surface-grid px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-surface-mid"
+                class="shrink-0 rounded border border-transparent bg-surface-grid px-1.5 py-0.5 text-xs font-medium text-surface-mid"
               >
                 {{ chipFor(tool) }}
               </span>

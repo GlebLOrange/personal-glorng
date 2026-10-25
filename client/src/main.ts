@@ -25,17 +25,6 @@ app.mount("#app");
 
 void router.isReady().then(() => restoreAuth());
 
-function loadDeferredFonts(): void {
-  // 700 is critical (hero) — see index.html preload + main.css @font-face.
-  void import("@fontsource/ibm-plex-sans/latin-600.css");
-}
-
-if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-  window.requestIdleCallback(loadDeferredFonts, { timeout: 3000 });
-} else {
-  globalThis.setTimeout(loadDeferredFonts, 0);
-}
-
 globalThis.setTimeout(() => {
   void import("./composables/useCookieConsent").then(({ setupCookieConsent }) => {
     setupCookieConsent(app);

@@ -42,9 +42,9 @@ describe("ToolTileGrid", () => {
       global: { stubs: { RouterLink: routerLinkStub } },
     });
 
-    expect(wrapper.get("h2").text()).toContain("utilities");
-    expect(wrapper.get("h2").text()).toContain("1 tool");
-    expect(wrapper.get("h2").text()).toMatch(/\b1\b/);
+    const heading = wrapper.get("h2");
+    expect(heading.get("[aria-hidden='true']").text()).toBe("utilities · 1");
+    expect(heading.get(".sr-only").text()).toBe("utilities, 1 tool");
     expect(wrapper.get("a").attributes("href")).toBe("/tools/calculator");
     expect(wrapper.get("a").attributes("target")).toBeUndefined();
     expect(wrapper.text()).not.toContain("short description");
@@ -77,7 +77,7 @@ describe("ToolTileGrid", () => {
     expect(wrapper.text()).not.toContain("short description");
   });
 
-  it("public presentation shows blurbs, hides visible counts, and keeps one full-row link", () => {
+  it("public presentation shows blurbs, Label · N counts, and keeps one full-row link", () => {
     const wrapper = mount(ToolTileGrid, {
       props: {
         presentation: "public",
@@ -96,9 +96,8 @@ describe("ToolTileGrid", () => {
     });
 
     const heading = wrapper.get("h2");
-    expect(heading.text()).toContain("utilities");
-    expect(heading.text()).toContain("2 tools");
-    expect(heading.find("[aria-hidden=\"true\"]").exists()).toBe(false);
+    expect(heading.get("[aria-hidden='true']").text()).toBe("utilities · 2");
+    expect(heading.get(".sr-only").text()).toBe("utilities, 2 tools");
 
     const links = wrapper.findAll("a.page-tile");
     expect(links).toHaveLength(2);
