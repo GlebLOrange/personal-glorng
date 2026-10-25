@@ -1,14 +1,15 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
+import { computed, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ToolsPage from "@/pages/ToolsPage.vue";
-import { groupServicesByCategory, publicToolsAsServices } from "@/platform/services";
-import { useAuthStore } from "@/stores/auth";
-import type { UserResponse } from "@/types";
-import { SUPERUSER_PERMISSION } from "@/utils/permissions";
+import { publicToolsAsServices } from "@/platform/services";
+import { groupServicesForToolsPage } from "@/utils/toolsPageGroups";
 
 const useRouteMock = vi.fn(() => ({ query: {} as Record<string, string> }));
+const canAccessMock = vi.fn((_slug: string) => false);
+const isSuperuserRef = ref(false);
 
 vi.mock("vue-router", () => ({
   useRoute: () => useRouteMock(),
@@ -18,6 +19,14 @@ vi.mock("vue-router", () => ({
     props: ["to"],
     template: "<a :href=\"typeof to === 'string' ? to : '#'\"><slot /></a>",
   },
+}));
+
+vi.mock("@/composables/usePermissions", () => ({
+  usePermissions: () => ({
+    can: () => false,
+    canAccess: (slug: string) => canAccessMock(slug),
+    isSuperuser: computed(() => isSuperuserRef.value),
+  }),
 }));
 
 vi.mock("@/utils/featureFlags", async (importOriginal) => {
@@ -30,23 +39,12 @@ vi.mock("@/utils/featureFlags", async (importOriginal) => {
 
 import { isAiChatEnabled } from "@/utils/featureFlags";
 
-function makeUser(permissions: string[]): UserResponse {
-  return {
-    id: "1",
-    email: "a@b.c",
-    permissions,
-    is_verified: true,
-    display_name: "User",
-    timezone: "UTC",
-    preferences: {},
-    created_at: "2026-01-01T00:00:00Z",
-  };
-}
-
 describe("ToolsPage sectioned layout", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     useRouteMock.mockReturnValue({ query: {} });
+    canAccessMock.mockReturnValue(false);
+    isSuperuserRef.value = false;
     vi.mocked(isAiChatEnabled).mockReturnValue(true);
   });
 
@@ -64,27 +62,44 @@ describe("ToolsPage sectioned layout", () => {
     });
   }
 
-  it("shows all category headings and tiles without tabs", async () => {
+  it("shows Everyday and Content with demo chips for guests", async () => {
     const wrapper = mountPage();
     await flushPromises();
 
     expect(wrapper.findAll('[role="tab"]')).toHaveLength(0);
-    expect(wrapper.text()).toContain("content");
-    expect(wrapper.text()).toContain("utilities");
+    expect(wrapper.find('nav[aria-label="tool sections"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain("Everyday");
+    expect(wrapper.text()).toContain("Content");
+    expect(wrapper.text()).toContain("4 tools");
+    expect(wrapper.text()).toContain("2 tools");
     expect(wrapper.text()).toContain("recipes");
     expect(wrapper.text()).toContain("calculator");
     expect(wrapper.text()).toContain("Shorten a long link.");
     expect(wrapper.text()).toContain("Do a quick calculation.");
-    // expenses (only public productivity tool) is off by default via feature flag
+    expect(wrapper.text()).toContain("demo");
     expect(wrapper.text()).not.toContain("expenses");
     expect(wrapper.text()).not.toContain("productivity");
+    expect(wrapper.text()).not.toContain("utilities");
+    expect(wrapper.text()).not.toContain("Work");
+    expect(wrapper.text()).not.toContain("Builders");
     expect(wrapper.text()).not.toContain("news");
     expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
     expect(wrapper.text()).not.toContain("audit logs");
     expect(wrapper.get('[data-testid="crumbs"]').text()).toBe("tools");
-    // Public presentation hides the visible count badge (sr-only count remains).
-    const contentHeading = wrapper.findAll("h2").find((h) => h.text().includes("content"));
-    expect(contentHeading?.find("[aria-hidden=\"true\"]").exists()).toBe(false);
+  });
+
+  it("shows Work and Builders with yours chips when canAccess allows", async () => {
+    canAccessMock.mockImplementation((slug: string) =>
+      ["tasks", "file-share", "vid-download", "data-extract"].includes(slug),
+    );
+    const wrapper = mountPage();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Work");
+    expect(wrapper.text()).toContain("Builders");
+    expect(wrapper.text()).toContain("yours");
+    expect(wrapper.find('nav[aria-label="tool sections"]').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("your tools");
   });
 
   it("shows expenses-off notice when redirected with expenses=off", async () => {
@@ -102,8 +117,8 @@ describe("ToolsPage sectioned layout", () => {
   });
 
   it("hides admin hub tiles from capability-only users", async () => {
-    const auth = useAuthStore();
-    auth.user = makeUser(["feedback:read"]);
+    canAccessMock.mockImplementation((slug: string) => slug === "feedback");
+    isSuperuserRef.value = false;
 
     const wrapper = mountPage();
     await flushPromises();
@@ -113,8 +128,7 @@ describe("ToolsPage sectioned layout", () => {
   });
 
   it("shows admin hub tiles for superusers", async () => {
-    const auth = useAuthStore();
-    auth.user = makeUser([SUPERUSER_PERMISSION]);
+    isSuperuserRef.value = true;
 
     const wrapper = mountPage();
     await flushPromises();
@@ -126,8 +140,7 @@ describe("ToolsPage sectioned layout", () => {
 
   it("omits ai chat from admin tiles when the feature flag is off", async () => {
     vi.mocked(isAiChatEnabled).mockReturnValue(false);
-    const auth = useAuthStore();
-    auth.user = makeUser([SUPERUSER_PERMISSION]);
+    isSuperuserRef.value = true;
 
     const wrapper = mountPage();
     await flushPromises();
@@ -138,48 +151,19 @@ describe("ToolsPage sectioned layout", () => {
   });
 });
 
-describe("tools content tile order", () => {
-  /** Mirrors PUBLIC_TILE_ORDER usefulness ranking in ToolsPage.vue. */
-  const PUBLIC_TILE_ORDER = [
-    "weather",
-    "url-shortener",
-    "recipes",
-    "calculator",
-    "password-generator",
-    "qr-generator",
-  ];
-
-  function sortPublicTools<T extends { slug: string }>(tools: T[]): T[] {
-    return [...tools].sort((a, b) => {
-      const ai = PUBLIC_TILE_ORDER.indexOf(a.slug);
-      const bi = PUBLIC_TILE_ORDER.indexOf(b.slug);
-      if (ai === -1 && bi === -1) return 0;
-      if (ai === -1) return 1;
-      if (bi === -1) return -1;
-      return ai - bi;
-    });
-  }
-
-  it("lists url-shortener before recipes in the content section", () => {
-    const content = groupServicesByCategory(
-      sortPublicTools(publicToolsAsServices()),
-    ).find((section) => section.category === "content");
-    expect(content?.services.map((tool) => tool.slug)).not.toContain("news");
-    expect(content?.services.map((tool) => tool.slug)).toEqual([
-      "url-shortener",
-      "recipes",
-    ]);
-  });
-
-  it("lists utilities in usefulness order", () => {
-    const utilities = groupServicesByCategory(
-      sortPublicTools(publicToolsAsServices()),
-    ).find((section) => section.category === "utilities");
-    expect(utilities?.services.map((tool) => tool.slug)).toEqual([
+describe("tools page group order", () => {
+  it("lists Everyday utilities then Content without platform category labels", () => {
+    const sections = groupServicesForToolsPage(publicToolsAsServices());
+    expect(sections.map((s) => s.label)).toEqual(["Everyday", "Content"]);
+    expect(sections[0]?.services.map((tool) => tool.slug)).toEqual([
       "weather",
       "calculator",
       "password-generator",
       "qr-generator",
+    ]);
+    expect(sections[1]?.services.map((tool) => tool.slug)).toEqual([
+      "url-shortener",
+      "recipes",
     ]);
   });
 

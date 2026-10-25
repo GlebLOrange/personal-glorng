@@ -22,6 +22,7 @@ function service(
 }
 
 const routerLinkStub = {
+  name: "RouterLink",
   props: ["to"],
   template: '<a class="page-tile" :href="to"><slot /></a>',
 };
@@ -104,7 +105,7 @@ describe("ToolTileGrid", () => {
     expect(wrapper.text()).toContain("Check the weather and local time.");
     expect(wrapper.text()).toContain("Do a quick calculation.");
     expect(wrapper.find(".page-tile-chevron").classes()).toContain("pointer-events-none");
-    expect(wrapper.get("[data-presentation=\"public\"]").exists()).toBe(true);
+    expect(wrapper.get('[data-presentation="public"]').exists()).toBe(true);
   });
 
   it("hides a one-tool h3 category heading under a parent section", () => {
@@ -154,5 +155,124 @@ describe("ToolTileGrid", () => {
     expect(link.attributes("rel")).toBe("noopener noreferrer");
     expect(link.text()).not.toContain("openapi reference");
     expect(link.text()).toContain("opens in a new tab");
+  });
+
+  it("admin presentation shows Label · count, a clamped description, and a demo chip", () => {
+    const wrapper = mount(ToolTileGrid, {
+      props: {
+        presentation: "admin",
+        resolveRoute: () => "/should-not-use",
+        tileChip: () => "yours" as const,
+        sections: [
+          {
+            category: "utilities",
+            label: "Utilities",
+            services: [
+              service({
+                slug: "weather",
+                name: "weather",
+                description: "weather lookup, saved locations, and local time",
+                adminRoute: "/weather",
+              }),
+              service({
+                slug: "recipes",
+                name: "recipes",
+                description: "personal recipe book and food notes",
+                adminRoute: "/recipes",
+              }),
+              service({
+                slug: "health-checker",
+                name: "health checker",
+                description: "monitor website and api uptime, latency, ssl, and dns",
+                adminRoute: "/health-checker",
+              }),
+            ],
+          },
+          {
+            category: "operations",
+            label: "Operations",
+            services: [
+              service({
+                slug: "feedback",
+                name: "feedback",
+                category: "operations",
+                description: "read visitor feedback messages",
+                adminRoute: "/admin/feedback",
+              }),
+              service({
+                slug: "api-docs",
+                name: "api docs",
+                category: "operations",
+                external: true,
+                adminRoute: "https://example.test/docs",
+                description: "swagger api documentation",
+              }),
+            ],
+          },
+        ],
+      },
+      global: { stubs: { RouterLink: routerLinkStub } },
+    });
+
+    const utilitiesHeading = wrapper.get("#utilities h2");
+    expect(utilitiesHeading.get("[aria-hidden='true']").text()).toBe("Utilities · 3");
+    expect(utilitiesHeading.findAll("[aria-hidden='true']")).toHaveLength(1);
+    expect(wrapper.get("#operations h2").get("[aria-hidden='true']").text()).toBe("Operations · 2");
+
+    const weather = wrapper.get("a[href='/weather']");
+    const description = weather.get("p");
+    expect(description.classes()).toContain("line-clamp-1");
+    expect(description.text()).toBe("weather lookup, saved locations, and local time");
+    expect(weather.text()).toContain("Demo");
+    expect(weather.text()).not.toContain("yours");
+    expect(weather.text()).not.toContain("Check the weather and local time.");
+
+    expect(wrapper.get("a[href='/recipes']").text()).not.toContain("Demo");
+    expect(wrapper.get("a[href='/health-checker']").text()).not.toContain("Demo");
+    expect(wrapper.get("a[href='/admin/feedback']").text()).not.toContain("Demo");
+
+    const inApp = wrapper.findAllComponents({ name: "RouterLink" });
+    expect(inApp.map((link) => link.props("to"))).toEqual([
+      "/weather",
+      "/recipes",
+      "/health-checker",
+      "/admin/feedback",
+    ]);
+
+    const docs = wrapper.get("a[href='https://example.test/docs']");
+    expect(docs.attributes("target")).toBe("_blank");
+    expect(docs.attributes("rel")).toBe("noopener noreferrer");
+    expect(inApp.map((link) => link.props("to"))).not.toContain("https://example.test/docs");
+
+    const chips = wrapper.get("nav[aria-label='Sections']").findAll("a");
+    expect(chips.map((chip) => chip.attributes("href"))).toEqual(["#utilities", "#operations"]);
+    expect(chips[0].classes()).toEqual(expect.arrayContaining(["h-11", "min-w-11"]));
+    expect(wrapper.get("#utilities").classes()).toContain("scroll-mt-24");
+  });
+
+  it("omits the admin section chip row when only one section is present", () => {
+    const wrapper = mount(ToolTileGrid, {
+      props: {
+        presentation: "admin",
+        sections: [
+          {
+            category: "content",
+            label: "Content",
+            services: [
+              service({
+                slug: "news",
+                name: "manage news",
+                description: "curated worldwide news digest",
+                adminRoute: "/admin/news",
+              }),
+            ],
+          },
+        ],
+      },
+      global: { stubs: { RouterLink: routerLinkStub } },
+    });
+
+    expect(wrapper.find("nav").exists()).toBe(false);
+    expect(wrapper.get("#content h2").get("[aria-hidden='true']").text()).toBe("Content · 1");
   });
 });

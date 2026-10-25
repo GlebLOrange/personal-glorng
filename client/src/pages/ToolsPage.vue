@@ -8,7 +8,7 @@ import EmptyState from "@/components/ui/EmptyState.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import {
   ADMIN_HUB_SERVICE_SLUGS,
-  groupServicesByCategory,
+  groupAdminHub,
   PLATFORM_SERVICES,
   publicToolsAsServices,
   resolveToolRoute,
@@ -16,20 +16,10 @@ import {
   type PlatformService,
 } from "@/platform/services";
 import { isAiChatEnabled, isExpensesEnabled } from "@/utils/featureFlags";
-
-/**
- * Usefulness ranking within Content / Utilities (applied before groupServicesByCategory).
- * Phase 2 search: only when public tools reach 8, or a usability pass shows a visitor
- * cannot identify a tool within five seconds. Recents / favourites stay deferred.
- */
-const PUBLIC_TILE_ORDER = [
-  "weather",
-  "url-shortener",
-  "recipes",
-  "calculator",
-  "password-generator",
-  "qr-generator",
-];
+import {
+  groupServicesForToolsPage,
+  toolsPageChipForSlug,
+} from "@/utils/toolsPageGroups";
 
 const route = useRoute();
 const { can, canAccess, isSuperuser } = usePermissions();
@@ -38,30 +28,16 @@ const expensesOffNotice = computed(() => String(route.query.expenses ?? "") === 
 const aiChatOffNotice = computed(() => String(route.query.aichat ?? "") === "off");
 const accessDeniedNotice = computed(() => String(route.query.access ?? "") === "denied");
 
-function sortPublicTools(tools: PlatformService[]): PlatformService[] {
-  return [...tools].sort((a, b) => {
-    const ai = PUBLIC_TILE_ORDER.indexOf(a.slug);
-    const bi = PUBLIC_TILE_ORDER.indexOf(b.slug);
-    if (ai === -1 && bi === -1) return 0;
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
-    return ai - bi;
-  });
-}
-
-const publicTools = computed((): PlatformService[] => {
-  const tools = publicToolsAsServices().filter(
+const catalogTools = computed((): PlatformService[] => {
+  const publicTools = publicToolsAsServices().filter(
     (tool) => !(tool.slug === "expenses" && !isExpensesEnabled()),
   );
-  return sortPublicTools(tools);
-});
-
-const signedInTools = computed((): PlatformService[] => {
-  return PLATFORM_SERVICES.filter((tool) => {
+  const extras = PLATFORM_SERVICES.filter((tool) => {
     if (!TOOLS_PAGE_EXTRA_SLUGS.has(tool.slug)) return false;
     if (tool.slug === "expenses" && !isExpensesEnabled()) return false;
     return canAccess(tool.slug);
   });
+  return [...publicTools, ...extras];
 });
 
 /** Ops hub tiles — only for logged-in superadmin on /tools. */
@@ -74,15 +50,13 @@ const adminTools = computed((): PlatformService[] => {
   });
 });
 
-const publicSections = computed(() => groupServicesByCategory(publicTools.value));
-const signedInSections = computed(() => groupServicesByCategory(signedInTools.value));
-const adminSections = computed(() => groupServicesByCategory(adminTools.value));
+const sections = computed(() => groupServicesForToolsPage(catalogTools.value));
+const adminSections = computed(() => groupAdminHub(adminTools.value));
 
 const hasAnyTools = computed(
   () =>
-    publicTools.value.length > 0 ||
-    signedInTools.value.length > 0 ||
-    adminTools.value.length > 0,
+    sections.value.some((section) => section.services.length > 0) ||
+    adminSections.value.length > 0,
 );
 
 function toolRoute(tool: PlatformService): string {
@@ -121,26 +95,20 @@ function toolRoute(tool: PlatformService): string {
     <EmptyState v-if="!hasAnyTools" description="no tools available." />
     <template v-else>
       <ToolTileGrid
-        v-if="publicSections.length"
+        v-if="sections.length"
         presentation="public"
-        :sections="publicSections"
+        :sections="sections"
         :resolve-route="toolRoute"
+        :tile-chip="toolsPageChipForSlug"
       />
-      <section v-if="signedInSections.length" class="min-w-0">
-        <h2 class="text-meta mb-3 uppercase tracking-wider">your tools</h2>
-        <ToolTileGrid
-          :sections="signedInSections"
-          :resolve-route="toolRoute"
-          category-heading="h3"
-        />
-      </section>
       <section v-if="adminSections.length" class="min-w-0">
         <h2 class="text-meta mb-3 uppercase tracking-wider">admin</h2>
         <ToolTileGrid
+          presentation="admin"
+          density="compact"
           :sections="adminSections"
           :resolve-route="toolRoute"
           category-heading="h3"
-          density="compact"
         />
       </section>
     </template>

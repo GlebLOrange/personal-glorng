@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
+import ToolBuildPanel from "@/components/tools/ToolBuildPanel.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
@@ -114,6 +115,10 @@ async function generatePassword(): Promise<void> {
   }
 }
 
+onMounted(() => {
+  if (!generated.value) void generatePassword();
+});
+
 </script>
 
 <template>
@@ -125,6 +130,7 @@ async function generatePassword(): Promise<void> {
     :narrow="false"
     description="Generate passwords locally — nothing is sent to the server."
   >
+    <ToolBuildPanel slug="password-generator" />
     <Card variant="ghost" class="mx-auto w-full max-w-md">
       <form class="space-y-3" @submit.prevent="generatePassword">
         <div class="flex min-w-0 items-center justify-start gap-2">

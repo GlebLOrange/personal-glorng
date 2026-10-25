@@ -6,7 +6,6 @@ import { Card, CardBody } from "@/components/ui/card";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import { passwordStrength } from "@/utils/passwordPolicy";
 
-const displayName = defineModel<string>("displayName", { required: true });
 const newEmail = defineModel<string>("newEmail", { required: true });
 const emailPassword = defineModel<string>("emailPassword", { required: true });
 const currentPassword = defineModel<string>("currentPassword", { required: true });
@@ -14,8 +13,7 @@ const newPassword = defineModel<string>("newPassword", { required: true });
 const newPasswordConfirm = defineModel<string>("newPasswordConfirm", { required: true });
 
 defineProps<{
-  savingProfile: boolean;
-  canSaveProfile: boolean;
+  permissions: string[];
   savingEmail: boolean;
   canSaveEmail: boolean;
   savingPassword: boolean;
@@ -23,9 +21,9 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  saveProfile: [];
   saveEmail: [];
   savePassword: [];
+  logout: [];
 }>();
 
 const passwordCheck = computed(() => passwordStrength(newPassword.value));
@@ -38,33 +36,7 @@ const passwordsMatch = computed(
   <Card variant="compact">
     <CardBody>
       <div class="space-y-4">
-        <form
-          class="flex min-w-0 items-center gap-2"
-          @submit.prevent="emit('saveProfile')"
-        >
-          <BaseInput
-            v-model="displayName"
-            class="min-w-0 flex-1"
-            name="display-name"
-            autocomplete="name"
-            placeholder="display name"
-            aria-label="display name"
-          />
-          <BaseButton
-            type="submit"
-            variant="save"
-            size="sm"
-            :loading="savingProfile"
-            :disabled="!canSaveProfile"
-          >
-            {{ savingProfile ? "saving…" : "save" }}
-          </BaseButton>
-        </form>
-
-        <form
-          class="space-y-2 border-t border-surface-border pt-4"
-          @submit.prevent="emit('saveEmail')"
-        >
+        <form class="space-y-2" @submit.prevent="emit('saveEmail')">
           <BaseInput
             v-model="newEmail"
             type="email"
@@ -149,6 +121,27 @@ const passwordsMatch = computed(
             </BaseButton>
           </div>
         </form>
+
+        <div class="border-t border-surface-border pt-4">
+          <p class="mb-2 text-xs text-surface-mid">permissions</p>
+          <div v-if="permissions.length" class="flex flex-wrap gap-1.5">
+            <span
+              v-for="perm in permissions"
+              :key="perm"
+              class="break-words rounded-full border border-surface-border px-2 py-0.5 text-xs text-surface-muted"
+            >
+              {{ perm }}
+            </span>
+          </div>
+          <p v-else class="text-xs text-surface-mid">No tool permissions — contact an admin.</p>
+        </div>
+
+        <div class="border-t border-surface-border pt-4">
+          <BaseButton type="button" variant="secondary" size="sm" danger @click="emit('logout')">
+            log out
+          </BaseButton>
+          <p class="mt-2 text-xs text-surface-mid">Signs out this device only.</p>
+        </div>
       </div>
     </CardBody>
   </Card>

@@ -301,6 +301,49 @@ html[data-theme="light"] {
   }
 }
 
+/* Admin hub launcher: 1 col, 2 from sm (40rem), 3 from lg (64rem).
+   Overrides .page-shell / .page-tile-scope grids, including their :has() spans. */
+.page-shell .page-launcher-grid[data-presentation="admin"],
+.page-tile-scope .page-launcher-grid[data-presentation="admin"] {
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr);
+  max-width: none;
+}
+
+.page-launcher-grid[data-presentation="admin"] > .page-tile {
+  grid-column: auto;
+  height: 100%;
+  max-width: none;
+}
+
+@media (min-width: 40rem) {
+  .page-shell .page-launcher-grid[data-presentation="admin"],
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"],
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :only-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :only-child),
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(2):last-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(2):last-child),
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(4):last-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(4):last-child) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: none;
+  }
+}
+
+@media (min-width: 64rem) {
+  .page-shell .page-launcher-grid[data-presentation="admin"],
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"],
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :only-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :only-child),
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(2):last-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(2):last-child),
+  .page-shell .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(4):last-child),
+  .page-tile-scope .page-launcher-grid[data-presentation="admin"]:has(> :nth-child(4):last-child) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: none;
+  }
+}
+
 @utility font-data {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
