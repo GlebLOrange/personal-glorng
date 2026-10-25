@@ -139,7 +139,7 @@ onMounted(async () => {
           :kind="weatherKind"
           class-name="size-4 inline-block align-[-0.125em]"
         />
-        <span class="font-bold font-data text-accent-blue tabular-nums shrink-0"
+        <span class="font-bold font-data text-accent-coral tabular-nums shrink-0"
           >{{ temperature }}°C</span
         >
         <span aria-hidden="true" class="text-surface-muted">·</span>

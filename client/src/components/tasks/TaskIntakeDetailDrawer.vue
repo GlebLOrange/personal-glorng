@@ -52,7 +52,7 @@ const draftEntries = [
           :label="statusLabel(intake.status)"
           :class-name="statusBadgeClass(intake.status)"
         />
-        <span v-if="intake.task_id" class="text-xs text-accent-blue"
+        <span v-if="intake.task_id" class="text-xs text-accent-coral"
           >→ Task #{{ intake.task_id }}</span
         >
         <span class="text-xs text-surface-muted">{{ formatDate(intake.created_at) }}</span>

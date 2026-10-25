@@ -44,7 +44,7 @@ const primaryClass = computed(() =>
     hasMeta.value
       ? "min-w-0 shrink truncate rounded text-left text-sm font-medium leading-none text-surface-light"
       : "min-w-0 flex-1 truncate rounded text-left text-sm font-medium leading-none text-surface-light",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50",
   ].join(" "),
 );
 
@@ -54,10 +54,10 @@ const primaryClass = computed(() =>
  * Use ring-inset (not border) so CONTROL_SIZE matches BaseInput / icon buttons.
  */
 const STATUS_ROW_TONES: Record<string, { interactive: string; active: string }> = {
-  "accent-blue": {
+  "accent-coral": {
     interactive:
-      "hover:!ring-accent-blue/50 focus-visible:!ring-accent-blue/50 focus-within:!ring-accent-blue/50 hover:!bg-accent-blue/15 focus-visible:!bg-accent-blue/15 focus-within:!bg-accent-blue/15",
-    active: "!ring-accent-blue/50 !bg-accent-blue/15",
+      "hover:!ring-accent-coral/50 focus-visible:!ring-accent-coral/50 focus-within:!ring-accent-coral/50 hover:!bg-accent-coral/15 focus-visible:!bg-accent-coral/15 focus-within:!bg-accent-coral/15",
+    active: "!ring-accent-coral/50 !bg-accent-coral/15",
   },
   "status-success": {
     interactive:
@@ -108,7 +108,7 @@ const rowClass = computed(() => [
   props.interactive ? "cursor-pointer" : undefined,
   props.revealActionsOnHover ? "group relative" : undefined,
   showNeutralHover.value
-    ? "hover:ring-accent-blue/40 hover:bg-surface-light/10 focus-visible:ring-accent-blue/40 focus-within:ring-accent-blue/40"
+    ? "hover:ring-accent-coral/40 hover:bg-surface-light/10 focus-visible:ring-accent-coral/40 focus-within:ring-accent-coral/40"
     : undefined,
   statusToneClass.value || undefined,
 ]);

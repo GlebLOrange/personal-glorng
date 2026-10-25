@@ -51,7 +51,7 @@ describe("Card", () => {
 
     expect(wrapper.element.tagName).toBe("BUTTON");
     expect(wrapper.classes()).toEqual(
-      expect.arrayContaining(["hover:border-accent-blue", "focus-visible:ring-accent-blue/50"]),
+      expect.arrayContaining(["hover:border-accent-coral", "focus-visible:ring-accent-coral/50"]),
     );
   });
 

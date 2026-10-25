@@ -144,7 +144,7 @@ const toneShellRingClass = computed(() => {
   if (borderTone.value === "success") {
     return "ring-1 ring-inset ring-status-success focus-within:ring-status-success";
   }
-  return "ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-blue/50";
+  return "ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-coral/50";
 });
 const bareInputClass = computed(() => [
   props.compact ? FIELD_INPUT_CLASS_COMPACT : FIELD_INPUT_CLASS,

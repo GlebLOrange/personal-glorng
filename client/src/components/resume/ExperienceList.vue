@@ -43,7 +43,7 @@ const PROOF_COUNT = 3;
         class="experience-tech-details mt-3"
       >
         <summary
-          class="flex min-h-11 cursor-pointer list-none items-center text-sm text-accent-blue outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded-lg"
+          class="flex min-h-11 cursor-pointer list-none items-center text-sm text-accent-coral outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded-lg"
         >
           View technical details
         </summary>

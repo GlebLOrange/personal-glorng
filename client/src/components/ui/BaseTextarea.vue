@@ -120,7 +120,7 @@ const shellClass = computed(() => [
   showInlineEndLabel.value && props.hint ? "overflow-visible" : "overflow-hidden",
   props.error
     ? "ring-1 ring-inset ring-status-error focus-within:ring-status-error"
-    : "ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-blue/50",
+    : "ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-coral/50",
 ]);
 const shellTextareaClass = computed(() =>
   [

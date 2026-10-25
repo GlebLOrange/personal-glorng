@@ -54,7 +54,7 @@ onUnmounted(() => {
     <div class="text-center" role="status" aria-live="polite" :aria-busy="status === 'loading'">
       <div v-if="status === 'loading'" class="space-y-4">
         <div
-          class="animate-spin mx-auto h-8 w-8 border-2 border-accent-blue border-t-transparent rounded-full"
+          class="animate-spin mx-auto h-8 w-8 border-2 border-accent-coral border-t-transparent rounded-full"
           aria-hidden="true"
         />
         <p class="text-surface-mid">Linking GitHub account…</p>

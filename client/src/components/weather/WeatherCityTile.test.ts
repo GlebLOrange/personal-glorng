@@ -34,7 +34,7 @@ describe("WeatherCityTile", () => {
     const select = wrapper.get('button[aria-label="Wroclaw (active city)"]');
     expect(select.attributes("aria-current")).toBe("true");
     expect(select.attributes("aria-selected")).toBe("true");
-    expect(wrapper.get(".page-weather-tile-card").classes()).toContain("border-accent-blue");
+    expect(wrapper.get(".page-weather-tile-card").classes()).toContain("border-accent-coral");
     expect(wrapper.get('[data-testid="summary"]').attributes("data-interactive")).toBe("false");
   });
 });

@@ -128,7 +128,7 @@ onUnmounted(() => {
 
         <div class="h-1 bg-surface-border">
           <div
-            class="h-full bg-accent-blue motion-safe:transition-[width] motion-safe:duration-300"
+            class="h-full bg-accent-coral motion-safe:transition-[width] motion-safe:duration-300"
             :style="{ width: `${progress}%` }"
           />
         </div>
@@ -153,7 +153,7 @@ onUnmounted(() => {
             <li
               v-for="(ing, i) in recipe.ingredients"
               :key="i"
-              class="before:content-['·_'] before:text-accent-blue"
+              class="before:content-['·_'] before:text-accent-coral"
             >
               {{ ing }}
             </li>
@@ -165,7 +165,7 @@ onUnmounted(() => {
           role="region"
           aria-label="cook mode step"
         >
-          <div class="mb-6 font-data text-5xl text-accent-blue">{{ stepIndex + 1 }}</div>
+          <div class="mb-6 font-data text-5xl text-accent-coral">{{ stepIndex + 1 }}</div>
           <p class="max-w-2xl text-xl leading-relaxed text-surface-light sm:text-2xl">
             {{ currentStep }}
           </p>
@@ -183,7 +183,7 @@ onUnmounted(() => {
           >
             <ChevronIcon direction="left" class-name="size-4" />
           </IconActionButton>
-          <p class="min-w-0 text-center text-sm text-accent-blue" aria-live="polite">
+          <p class="min-w-0 text-center text-sm text-accent-coral" aria-live="polite">
             step {{ stepIndex + 1 }} of {{ totalSteps }}
           </p>
           <IconActionButton

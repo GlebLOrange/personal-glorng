@@ -21,7 +21,7 @@ describe("httpStatusColors", () => {
     expect(httpStatusClass(200)).toContain("status-success");
     expect(httpStatusClass(404)).toContain("status-error");
     expect(httpStatusClass(503)).toContain("status-critical");
-    expect(familyBadgeClass("1xx")).toContain("accent-blue");
+    expect(familyBadgeClass("1xx")).toContain("accent-coral");
   });
 
   it("uses pale idle wash (/10), /88 label, and /12 hover (ACTION_BUTTON_PAINT)", () => {
@@ -36,10 +36,10 @@ describe("httpStatusColors", () => {
 
     const preview = actionFamilyClass("1xx", false);
     expect(preview).toContain("border-transparent");
-    expect(preview).toContain("bg-accent-blue/10");
-    expect(preview).toContain("text-accent-blue/88");
-    expect(preview).toContain("hover:enabled:bg-accent-blue/12");
-    expect(preview).toContain("hover:enabled:border-accent-blue/22");
+    expect(preview).toContain("bg-accent-coral/10");
+    expect(preview).toContain("text-accent-coral/88");
+    expect(preview).toContain("hover:enabled:bg-accent-coral/12");
+    expect(preview).toContain("hover:enabled:border-accent-coral/22");
 
     const selected = actionFamilyClass("2xx", true);
     expect(selected).toContain("font-medium");
@@ -55,7 +55,7 @@ describe("httpStatusColors", () => {
     expect(icon).toContain("bg-status-warning/10");
     expect(iconActionClass("1xx", false, { quiet: true })).toContain("text-surface-light/60");
     expect(iconActionClass("1xx", false, { danger: true })).toContain("bg-status-error/10");
-    expect(iconActionClass("1xx", false, { anchor: true })).toContain("hover:bg-accent-blue/12");
+    expect(iconActionClass("1xx", false, { anchor: true })).toContain("hover:bg-accent-coral/12");
     expect(iconActionClass("1xx", false, { anchor: true })).not.toContain("hover:enabled:");
   });
 
@@ -74,8 +74,8 @@ describe("httpStatusColors", () => {
 
     const copyQuiet = iconActionClass("1xx", false, { quiet: true, transparentIdle: true });
     expect(copyQuiet).toContain("bg-transparent");
-    expect(copyQuiet).toContain("hover:enabled:bg-accent-blue/12");
-    expect(copyQuiet).toContain("focus-visible:bg-accent-blue/12");
+    expect(copyQuiet).toContain("hover:enabled:bg-accent-coral/12");
+    expect(copyQuiet).toContain("focus-visible:bg-accent-coral/12");
   });
 
   it("builds field-size icon action classes matching chrome", () => {

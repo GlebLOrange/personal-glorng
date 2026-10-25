@@ -63,7 +63,7 @@ const previewTags = computed(() =>
         <span
           v-for="tag in previewTags"
           :key="tag"
-          class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
+          class="rounded bg-accent-coral/10 px-2.5 py-1 text-xs text-accent-coral"
         >
           #{{ tag }}
         </span>

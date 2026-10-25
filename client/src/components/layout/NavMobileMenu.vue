@@ -122,7 +122,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         to="/"
         class="nav-link-accent text-base px-3 py-3 rounded-lg font-medium hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'portfolio' }"
+        :class="{ 'text-accent-coral': navSection === 'portfolio' }"
         :aria-current="navSection === 'portfolio' ? 'page' : undefined"
         @click.prevent="emit('go-home')"
       >
@@ -133,7 +133,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         to="/news"
         class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'news' }"
+        :class="{ 'text-accent-coral': navSection === 'news' }"
         :aria-current="navSection === 'news' ? 'page' : undefined"
         @click="emit('close')"
       >
@@ -143,7 +143,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <RouterLink
         to="/tools"
         class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'tools' }"
+        :class="{ 'text-accent-coral': navSection === 'tools' }"
         :aria-current="navSection === 'tools' ? 'page' : undefined"
         @click="emit('close')"
       >
@@ -153,7 +153,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         v-if="canUseAdminHub"
         to="/admin"
         class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'admin' }"
+        :class="{ 'text-accent-coral': navSection === 'admin' }"
         :aria-current="navSection === 'admin' ? 'page' : undefined"
         @click="emit('close')"
       >
@@ -164,7 +164,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         v-if="auth.isAuthenticated"
         to="/settings"
         class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'settings' }"
+        :class="{ 'text-accent-coral': navSection === 'settings' }"
         :aria-current="navSection === 'settings' ? 'page' : undefined"
         @click="emit('close')"
       >
@@ -183,7 +183,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         v-else
         to="/login"
         class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-blue': navSection === 'login' }"
+        :class="{ 'text-accent-coral': navSection === 'login' }"
         :aria-current="navSection === 'login' ? 'page' : undefined"
         @click="emit('close')"
       >

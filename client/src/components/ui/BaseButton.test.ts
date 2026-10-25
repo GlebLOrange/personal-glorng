@@ -72,10 +72,10 @@ describe("BaseButton", () => {
       props: { variant: "primary" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-accent-blue/10");
-    expect(button.classes()).toContain("text-accent-blue/88");
-    expect(button.classes()).toContain("hover:enabled:bg-accent-blue/12");
-    expect(button.classes()).toContain("active:enabled:bg-accent-blue/14");
+    expect(button.classes()).toContain("bg-accent-coral/10");
+    expect(button.classes()).toContain("text-accent-coral/88");
+    expect(button.classes()).toContain("hover:enabled:bg-accent-coral/12");
+    expect(button.classes()).toContain("active:enabled:bg-accent-coral/14");
   });
 
   it("colorizes create like pale primary (1xx)", () => {
@@ -83,8 +83,8 @@ describe("BaseButton", () => {
       props: { variant: "create" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-accent-blue/10");
-    expect(button.classes()).toContain("text-accent-blue/88");
+    expect(button.classes()).toContain("bg-accent-coral/10");
+    expect(button.classes()).toContain("text-accent-coral/88");
   });
 
   it("colorizes cancel with 5xx critical family (pink-red dismiss)", () => {
@@ -103,12 +103,13 @@ describe("BaseButton", () => {
       props: { variant: "secondary" },
     }).get("button");
 
-    expect(button.classes()).toContain("bg-transparent");
+    // Resting grayscale fill (NEUTRAL_SECONDARY_IDLE) — distinct from transparent ghost.
+    expect(button.classes()).toContain("bg-surface-card");
+    expect(button.classes()).toContain("border-surface-border");
     expect(button.classes()).toContain("text-surface-light/80");
     expect(button.classes()).toContain("hover:enabled:bg-surface-light/10");
-    expect(button.classes()).not.toContain("bg-accent-blue/10");
-    expect(button.classes()).not.toContain("text-accent-blue/88");
-    expect(button.classes()).toContain("border-transparent");
+    expect(button.classes()).not.toContain("bg-accent-coral/10");
+    expect(button.classes()).not.toContain("text-accent-coral/88");
   });
 
   it("uses selected 1xx tint when primary selected", () => {
@@ -117,8 +118,8 @@ describe("BaseButton", () => {
     }).get("button");
 
     expect(button.attributes("aria-pressed")).toBe("true");
-    expect(button.classes()).toContain("bg-accent-blue/12");
-    expect(button.classes()).toContain("text-accent-blue/88");
-    expect(button.classes()).toContain("border-accent-blue/22");
+    expect(button.classes()).toContain("bg-accent-coral/12");
+    expect(button.classes()).toContain("text-accent-coral/88");
+    expect(button.classes()).toContain("border-accent-coral/22");
   });
 });

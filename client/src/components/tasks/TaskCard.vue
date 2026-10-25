@@ -52,7 +52,7 @@ const emit = defineEmits<{ select: [id: number] }>();
         </p>
         <span
           v-if="task.google_event_id"
-          class="inline-flex shrink-0 text-accent-blue"
+          class="inline-flex shrink-0 text-accent-coral"
           title="synced to Google Calendar"
           aria-label="synced to Google Calendar"
         >
@@ -98,7 +98,7 @@ const emit = defineEmits<{ select: [id: number] }>();
         </p>
         <span
           v-if="task.google_event_id"
-          class="inline-flex shrink-0 text-accent-blue"
+          class="inline-flex shrink-0 text-accent-coral"
           title="synced to Google Calendar"
           aria-label="synced to Google Calendar"
         >

@@ -79,7 +79,7 @@ function statusBadges(user: AdminUserSummary): BadgeView[] {
         </p>
         <p
           v-if="user.is_protected"
-          class="rounded-lg border border-accent-blue/30 bg-accent-blue/10 px-3 py-2 text-xs text-accent-blue"
+          class="rounded-lg border border-accent-coral/30 bg-accent-coral/10 px-3 py-2 text-xs text-accent-coral"
         >
           Protected accounts are managed by the system and cannot be edited here.
         </p>

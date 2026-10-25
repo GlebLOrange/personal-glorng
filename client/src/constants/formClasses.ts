@@ -14,7 +14,7 @@ export const CONTROL_BUTTON_ICON = `${CONTROL_SIZE} ${CONTROL_SIZE_SQUARE} px-0 
 
 /** Shared chrome for square icon actions (size applied separately). */
 const CONTROL_SIZE_ICON_CHROME =
-  "inline-flex shrink-0 items-center justify-center box-border rounded-lg border !px-0 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 disabled:opacity-50";
+  "inline-flex shrink-0 items-center justify-center box-border rounded-lg border !px-0 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 disabled:opacity-50";
 
 /** Square icon control matching CONTROL_SIZE (40×40 touch target). */
 export const CONTROL_SIZE_ICON = `${CONTROL_SIZE_ICON_CHROME} ${CONTROL_SIZE} ${CONTROL_SIZE_SQUARE}`;
@@ -30,7 +30,7 @@ export const FIELD_CLEAR_SLOT = `flex h-full ${CONTROL_SIZE_SQUARE} shrink-0 ite
 export const FIELD_CLEAR_HIDDEN_CLASS = "invisible pointer-events-none";
 
 const FIELD_FOCUS =
-  "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 focus-visible:border-accent-blue";
+  "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 focus-visible:border-accent-coral";
 
 export const FIELD_WRAPPER_CLASS = "relative min-w-0";
 /** Field name on notch / inside / trailing — quieter than body text. */
@@ -60,11 +60,11 @@ export const FIELD_INPUT_CLASS_COMPACT =
 
 export const SELECT_CLASS =
   `field-select-chevron ${CONTROL_SIZE} w-full rounded-lg pl-4 pr-10 py-0 text-surface-light text-sm ` +
-  `ring-1 ring-inset ring-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 transition-colors`;
+  `ring-1 ring-inset ring-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 transition-colors`;
 
 export const SELECT_CLASS_COMPACT =
   "field-select-chevron box-border h-9 rounded-lg pl-2 pr-8 py-0 text-surface-light text-xs " +
-  "ring-1 ring-inset ring-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 transition-colors min-w-[7.5rem]";
+  "ring-1 ring-inset ring-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 transition-colors min-w-[7.5rem]";
 
 export const TEXTAREA_CLASS =
   "min-h-10 w-full bg-surface-card border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm " +

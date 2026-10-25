@@ -60,12 +60,12 @@ describe("AdminListRow", () => {
   it("uses accent and neutral status rings for news source tones", () => {
     const enabled = mount(AdminListRow, {
       props: {
-        statusClass: "text-accent-blue bg-accent-blue/15 border-accent-blue/30",
+        statusClass: "text-accent-coral bg-accent-coral/15 border-accent-coral/30",
         interactive: true,
       },
       slots: { primary: "DW" },
     });
-    expect(enabled.classes()).toContain("hover:!ring-accent-blue/50");
+    expect(enabled.classes()).toContain("hover:!ring-accent-coral/50");
 
     const disabled = mount(AdminListRow, {
       props: {

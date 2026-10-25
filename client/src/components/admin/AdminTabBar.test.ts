@@ -46,14 +46,14 @@ describe("AdminTabBar", () => {
     });
 
     const syncTab = wrapper.get("#admin-tab-tab-sync");
-    expect(syncTab.classes()).toContain("text-accent-blue/88");
-    expect(syncTab.classes()).toContain("bg-accent-blue/12");
-    expect(syncTab.classes()).toContain("border-accent-blue/22");
+    expect(syncTab.classes()).toContain("text-accent-coral/88");
+    expect(syncTab.classes()).toContain("bg-accent-coral/12");
+    expect(syncTab.classes()).toContain("border-accent-coral/22");
     expect(syncTab.classes()).not.toContain("text-accent-violet");
 
     const refreshTab = wrapper.get("#admin-tab-tab-refresh");
-    expect(refreshTab.classes()).toContain("text-accent-blue/88");
-    expect(refreshTab.classes()).toContain("bg-accent-blue/10");
+    expect(refreshTab.classes()).toContain("text-accent-coral/88");
+    expect(refreshTab.classes()).toContain("bg-accent-coral/10");
     expect(refreshTab.classes()).not.toContain("text-accent-violet");
   });
 

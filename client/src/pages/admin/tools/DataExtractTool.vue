@@ -117,7 +117,7 @@ function loadSampleCsv(): void {
             </p>
 
             <div>
-              <h3 class="mb-2 font-bold text-accent-blue">Formats</h3>
+              <h3 class="mb-2 font-bold text-accent-coral">Formats</h3>
               <p class="text-surface-mid">
                 Accepted types are listed on the drop zone. Use options to override auto format
                 detection.
@@ -125,7 +125,7 @@ function loadSampleCsv(): void {
             </div>
 
             <div>
-              <h3 class="mb-2 font-bold text-accent-blue">Delimited &amp; pipe embed</h3>
+              <h3 class="mb-2 font-bold text-accent-coral">Delimited &amp; pipe embed</h3>
               <p class="text-surface-mid">
                 Configure delimiters and pipe-embed profile in options. Promote moves staged
                 pipe-embed rows into embed storage.
@@ -133,14 +133,14 @@ function loadSampleCsv(): void {
             </div>
 
             <div>
-              <h3 class="mb-2 font-bold text-accent-blue">XML</h3>
+              <h3 class="mb-2 font-bold text-accent-coral">XML</h3>
               <p class="text-surface-mid">
                 Set row tag and rows/tree mode in options when format is XML.
               </p>
             </div>
 
             <div>
-              <h3 class="mb-2 font-bold text-accent-blue">Workflow</h3>
+              <h3 class="mb-2 font-bold text-accent-coral">Workflow</h3>
               <ul class="ml-2 list-inside list-disc space-y-1 text-surface-mid">
                 <li>
                   <code class="text-surface-light">extract</code> — preview rows in the browser (no

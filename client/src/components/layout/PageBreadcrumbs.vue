@@ -41,7 +41,7 @@ function currentClass(): string {
 }
 
 const ancestorClass =
-  "page-breadcrumb inline-flex items-center gap-2 text-surface-mid transition-colors hover:text-accent-blue";
+  "page-breadcrumb inline-flex items-center gap-2 text-surface-mid transition-colors hover:text-accent-coral";
 </script>
 
 <template>

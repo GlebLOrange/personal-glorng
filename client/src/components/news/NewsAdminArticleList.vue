@@ -43,12 +43,12 @@ const emit = defineEmits<{
           :href="safeNavigationHref(item.source_url) ?? '#'"
           target="_blank"
           rel="noopener noreferrer"
-          class="shrink-0 text-accent-blue hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 rounded"
+          class="shrink-0 text-accent-coral hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
           @click.stop
         >
           {{ item.source_name }}
         </a>
-        <span v-else class="shrink-0 text-accent-blue">{{ item.source_name }}</span>
+        <span v-else class="shrink-0 text-accent-coral">{{ item.source_name }}</span>
         <time
           class="text-datetime shrink-0 whitespace-nowrap lowercase"
           :datetime="item.published_at ?? item.created_at"
@@ -59,7 +59,7 @@ const emit = defineEmits<{
           :label="newsStatusLabel(item.status)"
           :class-name="newsStatusClass(item.status)"
         />
-        <span v-if="item.telegram_message_id" class="shrink-0 text-accent-blue">
+        <span v-if="item.telegram_message_id" class="shrink-0 text-accent-coral">
           Telegram #{{ item.telegram_message_id }}
         </span>
         <h2 class="card-title ml-auto min-w-0 truncate text-right">{{ item.title }}</h2>
@@ -72,7 +72,7 @@ const emit = defineEmits<{
           <span
             v-for="tag in item.tags"
             :key="tag"
-            class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
+            class="rounded bg-accent-coral/10 px-2.5 py-1 text-xs text-accent-coral"
           >
             #{{ tag }}
           </span>

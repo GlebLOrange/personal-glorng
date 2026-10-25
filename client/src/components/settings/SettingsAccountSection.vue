@@ -134,7 +134,7 @@ const passwordsMatch = computed(
           <div class="flex items-center justify-between gap-2">
             <RouterLink
               to="/forgot-password"
-              class="text-xs text-accent-blue hover:underline focus:underline"
+              class="text-xs text-accent-coral hover:underline focus:underline"
             >
               forgot password?
             </RouterLink>

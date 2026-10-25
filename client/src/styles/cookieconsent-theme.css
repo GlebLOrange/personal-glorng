@@ -4,9 +4,9 @@
   --cc-bg: var(--color-surface-card);
   --cc-primary-color: var(--color-surface-light);
   --cc-secondary-color: var(--color-surface-sage);
-  --cc-btn-primary-bg: var(--color-accent-blue);
+  --cc-btn-primary-bg: var(--color-accent-coral);
   --cc-btn-primary-color: var(--color-on-accent);
-  --cc-btn-primary-hover-bg: color-mix(in srgb, var(--color-accent-blue) 90%, white);
+  --cc-btn-primary-hover-bg: color-mix(in srgb, var(--color-accent-coral) 90%, white);
   --cc-btn-primary-hover-color: var(--color-on-accent);
   --cc-btn-secondary-bg: color-mix(
     in srgb,
@@ -32,7 +32,7 @@
     var(--color-surface-card)
   );
   --cc-overlay-bg: color-mix(in srgb, var(--color-surface-dark) 70%, transparent);
-  --cc-toggle-on-bg: var(--color-accent-blue);
+  --cc-toggle-on-bg: var(--color-accent-coral);
   --cc-toggle-off-bg: color-mix(
     in srgb,
     var(--color-surface-card) 70%,

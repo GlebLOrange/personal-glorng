@@ -50,8 +50,8 @@ const emit = defineEmits<{
             :class="[
               'w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors',
               selectedBatchId === batch.id
-                ? 'border-accent-blue/40 bg-accent-blue/15 text-accent-blue'
-                : 'border-surface-border text-surface-mid hover:border-accent-blue/40 hover:bg-accent-blue/15 hover:text-accent-blue',
+                ? 'border-accent-coral/40 bg-accent-coral/15 text-accent-coral'
+                : 'border-surface-border text-surface-mid hover:border-accent-coral/40 hover:bg-accent-coral/15 hover:text-accent-coral',
             ]"
             @click="emit('select', batch.id)"
           >

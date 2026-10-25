@@ -91,11 +91,11 @@ watch(
             target="_blank"
             rel="noopener noreferrer"
             title="source"
-            class="shrink-0 text-accent-blue hover:underline"
+            class="shrink-0 text-accent-coral hover:underline"
           >
             {{ article.source_name }}
           </a>
-          <span v-else class="shrink-0 text-accent-blue">{{ article.source_name }}</span>
+          <span v-else class="shrink-0 text-accent-coral">{{ article.source_name }}</span>
           <time class="shrink-0 text-left" :datetime="newsArticleDisplayDate(article)">
             {{ formatNewsDate(newsArticleDisplayDate(article)) }}
           </time>
@@ -112,7 +112,7 @@ watch(
           <li
             v-for="bullet in keyPoints"
             :key="bullet"
-            class="break-words border-l-2 border-accent-blue/40 pl-3 text-body"
+            class="break-words border-l-2 border-accent-coral/40 pl-3 text-body"
           >
             {{ formatEmbeddedDates(bullet) }}
           </li>

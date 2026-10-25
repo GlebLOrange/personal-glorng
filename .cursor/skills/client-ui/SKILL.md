@@ -55,7 +55,7 @@ If visual language and UX priorities conflict on look (decorative gradients, mul
 - Do not place important controls in low-contrast decorative surfaces.
 - Interactive cards, tiles, and action pills: **idle = `border-transparent`** (surface/fill separates units). **Hover / selected / active** = accent (or family) border; **focus-visible** = ring (not a permanent border).
 - Do not add idle `border-surface-border` on hoverable tiles to “fix” separation — use spacing, type, and surface contrast instead.
-- Exception: structural chrome (nav/page chrome dividers, form fields, tables) may keep always-on borders. Selected weather (`border-accent-blue` on the weather page) counts as selected and is allowed.
+- Exception: structural chrome (nav/page chrome dividers, form fields, tables) may keep always-on borders. Selected weather (`border-accent-coral` on the weather page) counts as selected and is allowed.
 
 ## Color
 
@@ -63,12 +63,12 @@ If visual language and UX priorities conflict on look (decorative gradients, mul
 - Use semantic colors for status only: success, warning, error, and information.
 - Keep disabled and secondary states in grayscale.
 - Ensure status is never communicated by color alone.
-- Prefer **pale** (desaturated) status/brand tokens — not saturated neon fills. Solid CTAs use pale `accent-blue` with `on-accent` ink.
+- Prefer **pale** (desaturated) status/brand tokens — not saturated neon fills. Solid CTAs use pale `accent-coral` with `on-accent` ink.
 - Dual theme: rebuild grayscale per mode via `html[data-theme]`; preference is **dark** or **light** (default dark). Same token names in light and dark.
 
 ## Marketing / portfolio exception
 
-Portfolio and marketing surfaces may use `accent-blue`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI stays on a single `accent-blue` accent — no decorative gradients on buttons or tool screens.
+Portfolio and marketing surfaces may use `accent-coral`, `accent-violet`, `accent-golden`, and `.accent-gradient` on brand name moments. Product and admin UI stays on a single `accent-coral` accent — no decorative gradients on buttons or tool screens.
 
 ## Dark mode
 

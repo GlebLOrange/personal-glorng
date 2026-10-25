@@ -80,7 +80,7 @@ const {
           :loading="loading"
           show-role-labels
           empty-message="ask anything — responses stream from the configured Groq model"
-          user-class="bg-accent-blue/10 border border-accent-blue/20 text-surface-light ml-8"
+          user-class="bg-accent-coral/10 border border-accent-coral/20 text-surface-light ml-8"
           assistant-class="bg-surface-dark border border-surface-border text-surface-sage mr-8"
         >
           <template #end>
@@ -131,7 +131,7 @@ const {
             type="button"
             :class="[
               ACTION_PILL_BASE,
-              'min-h-11 gap-1.5 shrink-0 border-transparent bg-accent-blue/3 text-accent-blue hover:enabled:border-accent-blue/40 hover:enabled:bg-accent-blue/15',
+              'min-h-11 gap-1.5 shrink-0 border-transparent bg-accent-coral/3 text-accent-coral hover:enabled:border-accent-coral/40 hover:enabled:bg-accent-coral/15',
             ]"
             :disabled="configLoading"
             @click="loadConfig"
@@ -191,7 +191,7 @@ const {
             <strong class="font-medium text-surface-light">Quota or rate limit</strong> — wait for
             the retry window, then try again. Check RPM limits in
             <a
-              class="text-accent-blue transition-colors hover:text-accent-blue/80"
+              class="text-accent-coral transition-colors hover:text-accent-coral/80"
               href="https://console.groq.com/"
               rel="noopener noreferrer"
               target="_blank"
@@ -261,7 +261,7 @@ const {
           <p class="text-xs text-surface-mid">
             Get a key from
             <a
-              class="text-accent-blue transition-colors hover:text-accent-blue/80"
+              class="text-accent-coral transition-colors hover:text-accent-coral/80"
               href="https://console.groq.com/keys"
               rel="noopener noreferrer"
               target="_blank"

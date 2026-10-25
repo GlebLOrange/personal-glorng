@@ -73,7 +73,7 @@ function onAddBudgetLine(): void {
         <p class="text-xs text-surface-mid">remaining</p>
         <p
           class="text-2xl font-bold font-data mt-1"
-          :class="budgetSummary.overBudget ? 'text-status-error' : 'text-accent-blue'"
+          :class="budgetSummary.overBudget ? 'text-status-error' : 'text-accent-coral'"
         >
           {{ formatMoney(budgetSummary.remaining, displayCurrency) }}
         </p>
@@ -130,7 +130,7 @@ function onAddBudgetLine(): void {
               <div class="h-1.5 bg-surface-border rounded-full overflow-hidden">
                 <div
                   class="h-full rounded-full motion-reduce:transition-none transition-[width] duration-200"
-                  :class="view.overBudget ? 'bg-status-error' : 'bg-accent-blue'"
+                  :class="view.overBudget ? 'bg-status-error' : 'bg-accent-coral'"
                   :style="{ width: `${Math.min(view.percent, 100)}%` }"
                 />
               </div>

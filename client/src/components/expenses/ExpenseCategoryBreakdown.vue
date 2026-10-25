@@ -48,7 +48,7 @@ const rows = computed(() => {
           :aria-label="`${row.category} ${row.percent}%`"
         >
           <div
-            class="h-full rounded-full bg-accent-blue motion-reduce:transition-none transition-[width] duration-200"
+            class="h-full rounded-full bg-accent-coral motion-reduce:transition-none transition-[width] duration-200"
             :style="{ width: `${Math.min(row.percent, 100)}%` }"
           />
         </div>
