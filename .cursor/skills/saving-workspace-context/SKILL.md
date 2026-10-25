@@ -1,6 +1,9 @@
 ---
 name: saving-workspace-context
-description: Persist durable workspace knowledge (decisions, research, conventions) into the right project homes so it survives across chats.
+description: >-
+  Persists durable decisions, research, and conventions into existing project homes
+  (AGENTS.md, docs/, .cursor/). Use when asked to save workspace context, persist
+  decisions, or carry conventions across chats.
 user-invocable: false
 ---
 

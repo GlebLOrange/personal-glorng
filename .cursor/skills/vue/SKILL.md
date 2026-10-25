@@ -1,6 +1,8 @@
 ---
 name: vue
-description: Vue 3 Composition API, TypeScript, Pinia auth session, composables, and Vitest for the Vite client
+description: >-
+  Vue 3 script-setup, TypeScript, Pinia auth session, composables, and Vitest for the
+  Vite client. Use when editing client Vue SFCs, stores, composables, or client tests.
 ---
 
 # Vue 3 client

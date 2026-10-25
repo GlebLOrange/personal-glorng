@@ -1,6 +1,8 @@
 ---
 name: client-ui
-description: Portfolio UI visual language (Toss-style) plus UX/a11y priorities for the Vue client
+description: >-
+  Toss-style visual language plus UX and accessibility priorities for the Vue client.
+  Use when changing pages, layout, styling, motion, forms, or accessibility.
 ---
 
 # Client UI
