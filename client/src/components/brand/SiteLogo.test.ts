@@ -26,7 +26,7 @@ describe("SiteLogo", () => {
 
     const img = wrapper.get("img");
     expect(img.attributes("src")).toBe("/brand/gy-logo.svg");
-    expect(img.attributes("width")).toBe("220");
+    expect(img.attributes("width")).toBe("100");
     expect(img.attributes("height")).toBe("100");
   });
 
