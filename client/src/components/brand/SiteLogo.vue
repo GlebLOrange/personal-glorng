@@ -29,14 +29,11 @@ const src = computed(() => {
   return light ? "/brand/gy-mark-simple-light.svg" : "/brand/gy-mark-simple.svg";
 });
 
-/** Intrinsic size matches SVG viewBox (mark 100×100, lockup 220×100). */
-const intrinsicWidth = computed(() => (isFull.value ? 220 : 100));
+/** Intrinsic size matches SVG viewBox (square mark 100×100 for mark and full). */
+const intrinsicWidth = 100;
 const intrinsicHeight = 100;
 
-const imgClass = computed(() => [
-  props.className,
-  isFull.value ? "aspect-[11/5]" : "aspect-square",
-]);
+const imgClass = computed(() => [props.className, "aspect-square"]);
 </script>
 
 <template>
