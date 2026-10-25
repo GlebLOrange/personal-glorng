@@ -99,7 +99,7 @@ function artSrc(slug: string): string {
             :href="proj.url"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-accent-coral underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
+            class="text-link"
           >
             {{ linkLabel(proj.url) }}
             <span class="sr-only">(opens in new tab)</span>
@@ -107,7 +107,7 @@ function artSrc(slug: string): string {
           <RouterLink
             v-else
             :to="proj.url"
-            class="text-accent-coral underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
+            class="text-link"
           >
             {{ linkLabel(proj.url) }}
           </RouterLink>

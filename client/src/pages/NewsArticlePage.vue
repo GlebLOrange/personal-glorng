@@ -92,7 +92,7 @@ watch(
               target="_blank"
               rel="noopener noreferrer"
               title="source"
-              class="shrink-0 text-accent-coral hover:underline"
+              class="text-link shrink-0"
             >
               {{ article.source_name }}
             </a>

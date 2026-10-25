@@ -2,7 +2,7 @@
 
 /** Dark-theme M3 fallbacks (match main.css :root / data-theme=dark). */
 const CHART_COLOR_VARS = [
-  ["--color-accent-coral", "#f0a090"],
+  ["--color-accent-coral", "#cfbdfe"],
   ["--color-status-success", "#a8d08d"],
   ["--color-status-warning", "#e8c468"],
   ["--color-status-error", "#ffb4ab"],
