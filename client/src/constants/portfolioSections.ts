@@ -3,7 +3,7 @@ export type PortfolioSectionLink = {
   label: string;
 };
 
-/** In-page CV anchors — order matches PortfolioPage section order. */
+/** Portfolio CV section anchors — order matches PortfolioPage; used by mobile nav. */
 export const PORTFOLIO_SECTION_LINKS: PortfolioSectionLink[] = [
   { href: "#about", label: "about" },
   { href: "#experience", label: "experience" },
