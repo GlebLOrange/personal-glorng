@@ -4,7 +4,7 @@ import { RouterLink } from "vue-router";
 
 import ToolIcon from "@/components/icons/ToolIcon.vue";
 import { Card } from "@/components/ui/card";
-import { tileHintForSlug } from "@/constants/toolIntros";
+import { publicTileBlurbForSlug, tileHintForSlug } from "@/constants/toolIntros";
 import type { PlatformService } from "@/platform/services";
 
 export type ToolTileSection = {
@@ -25,13 +25,21 @@ const props = withDefaults(
     categoryHeading?: "h2" | "h3";
     /** Compact rhythm for ops hubs (admin); default keeps airier tools layout. */
     density?: "default" | "compact";
+    /**
+     * `public` — guest Tools catalog: larger touch targets, every-tile blurbs,
+     * no visible section counts. Default keeps admin / signed-in tile behavior.
+     */
+    presentation?: "default" | "public";
   }>(),
   {
     showCategoryHeadings: true,
     categoryHeading: "h2",
     density: "default",
+    presentation: "default",
   },
 );
+
+const isPublicPresentation = computed(() => props.presentation === "public");
 
 const sectionClass = computed(() =>
   props.showCategoryHeadings ? (props.density === "compact" ? "mb-6" : "mb-8") : "mb-0",
@@ -45,7 +53,10 @@ const headingClass = computed(() =>
 
 const tileTitleTag = computed(() => (props.categoryHeading === "h3" ? "h4" : "h3"));
 
-const iconChipClass = computed(() => (props.density === "compact" ? "h-9 w-9" : "h-10 w-10"));
+const iconChipClass = computed(() => {
+  if (isPublicPresentation.value) return "h-11 w-11";
+  return props.density === "compact" ? "h-9 w-9" : "h-10 w-10";
+});
 
 function tileTo(tool: PlatformService): string {
   return props.resolveRoute ? props.resolveRoute(tool) : tool.adminRoute;
@@ -76,6 +87,9 @@ function showSectionHeading(section: ToolTileSection): boolean {
 }
 
 function tileHint(tool: PlatformService): string | undefined {
+  if (isPublicPresentation.value) {
+    return publicTileBlurbForSlug(tool.slug);
+  }
   return tileHintForSlug(tool.slug);
 }
 </script>
@@ -91,13 +105,19 @@ function tileHint(tool: PlatformService): string | undefined {
       {{ section.label }}
       <span class="sr-only">, {{ toolCountLabel(section.services.length) }}</span>
       <span
+        v-if="!isPublicPresentation"
         aria-hidden="true"
         class="ml-2 font-normal tracking-normal text-surface-mid normal-case"
       >
         {{ section.services.length }}
       </span>
     </component>
-    <div class="page-launcher-grid" :class="gapClass" :data-density="density">
+    <div
+      class="page-launcher-grid"
+      :class="gapClass"
+      :data-density="density"
+      :data-presentation="presentation"
+    >
       <component
         :is="tool.external ? 'a' : RouterLink"
         v-for="tool in section.services"
@@ -125,14 +145,15 @@ function tileHint(tool: PlatformService): string | undefined {
             </component>
             <p
               v-if="tileHint(tool)"
-              class="mt-0.5 line-clamp-2 text-xs leading-snug break-words text-surface-mid"
+              class="mt-0.5 text-xs leading-snug break-words text-surface-mid"
+              :class="isPublicPresentation ? '' : 'line-clamp-2'"
             >
               {{ tileHint(tool) }}
             </p>
             <span v-if="tool.external" class="sr-only">opens in a new tab</span>
           </span>
           <svg
-            class="page-tile-chevron h-4 w-4 shrink-0 text-surface-mid transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-surface-light group-focus-visible:translate-x-0.5 group-focus-visible:text-surface-light"
+            class="page-tile-chevron pointer-events-none h-4 w-4 shrink-0 text-surface-mid transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-surface-light group-focus-visible:translate-x-0.5 group-focus-visible:text-surface-light"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="none"

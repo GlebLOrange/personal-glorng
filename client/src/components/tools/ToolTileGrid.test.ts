@@ -21,8 +21,13 @@ function service(
   };
 }
 
+const routerLinkStub = {
+  props: ["to"],
+  template: '<a class="page-tile" :href="to"><slot /></a>',
+};
+
 describe("ToolTileGrid", () => {
-  it("shows a section count and opens in-app tools in place", () => {
+  it("shows a section count and opens in-app tools in place by default", () => {
     const wrapper = mount(ToolTileGrid, {
       props: {
         sections: [
@@ -33,24 +38,19 @@ describe("ToolTileGrid", () => {
           },
         ],
       },
-      global: {
-        stubs: {
-          RouterLink: {
-            props: ["to"],
-            template: '<a class="page-tile" :href="to"><slot /></a>',
-          },
-        },
-      },
+      global: { stubs: { RouterLink: routerLinkStub } },
     });
 
     expect(wrapper.get("h2").text()).toContain("utilities");
     expect(wrapper.get("h2").text()).toContain("1 tool");
+    expect(wrapper.get("h2").text()).toMatch(/\b1\b/);
     expect(wrapper.get("a").attributes("href")).toBe("/tools/calculator");
     expect(wrapper.get("a").attributes("target")).toBeUndefined();
     expect(wrapper.text()).not.toContain("short description");
+    expect(wrapper.text()).not.toContain("Do a quick calculation.");
   });
 
-  it("shows a tile hint for ambiguous tool names only", () => {
+  it("shows a tile hint for ambiguous tool names only in the default presentation", () => {
     const wrapper = mount(ToolTileGrid, {
       props: {
         sections: [
@@ -68,19 +68,43 @@ describe("ToolTileGrid", () => {
           },
         ],
       },
-      global: {
-        stubs: {
-          RouterLink: {
-            props: ["to"],
-            template: '<a class="page-tile" :href="to"><slot /></a>',
-          },
-        },
-      },
+      global: { stubs: { RouterLink: routerLinkStub } },
     });
 
     expect(wrapper.text()).toContain("Check uptime, latency, SSL, and DNS.");
     expect(wrapper.text()).not.toContain("catalog blurb should stay hidden");
     expect(wrapper.text()).not.toContain("short description");
+  });
+
+  it("public presentation shows blurbs, hides visible counts, and keeps one full-row link", () => {
+    const wrapper = mount(ToolTileGrid, {
+      props: {
+        presentation: "public",
+        sections: [
+          {
+            category: "utilities",
+            label: "utilities",
+            services: [
+              service({ slug: "weather", name: "weather" }),
+              service({ slug: "calculator", name: "calculator" }),
+            ],
+          },
+        ],
+      },
+      global: { stubs: { RouterLink: routerLinkStub } },
+    });
+
+    const heading = wrapper.get("h2");
+    expect(heading.text()).toContain("utilities");
+    expect(heading.text()).toContain("2 tools");
+    expect(heading.find("[aria-hidden=\"true\"]").exists()).toBe(false);
+
+    const links = wrapper.findAll("a.page-tile");
+    expect(links).toHaveLength(2);
+    expect(wrapper.text()).toContain("Check the weather and local time.");
+    expect(wrapper.text()).toContain("Do a quick calculation.");
+    expect(wrapper.find(".page-tile-chevron").classes()).toContain("pointer-events-none");
+    expect(wrapper.get("[data-presentation=\"public\"]").exists()).toBe(true);
   });
 
   it("hides a one-tool h3 category heading under a parent section", () => {
@@ -95,14 +119,7 @@ describe("ToolTileGrid", () => {
           },
         ],
       },
-      global: {
-        stubs: {
-          RouterLink: {
-            props: ["to"],
-            template: '<a class="page-tile" :href="to"><slot /></a>',
-          },
-        },
-      },
+      global: { stubs: { RouterLink: routerLinkStub } },
     });
 
     expect(wrapper.find("h3").exists()).toBe(false);

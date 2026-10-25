@@ -16,7 +16,11 @@ import {
 } from "@/platform/services";
 import { isExpensesEnabled } from "@/utils/featureFlags";
 
-/** Prefer demo-strong tools ahead of calculator / password / QR within each category. */
+/**
+ * Usefulness ranking within Content / Utilities (applied before groupServicesByCategory).
+ * Phase 2 search: only when public tools reach 8, or a usability pass shows a visitor
+ * cannot identify a tool within five seconds. Recents / favourites stay deferred.
+ */
 const PUBLIC_TILE_ORDER = [
   "weather",
   "url-shortener",
@@ -85,6 +89,7 @@ function toolRoute(tool: PlatformService): string {
     <template v-else>
       <ToolTileGrid
         v-if="publicSections.length"
+        presentation="public"
         :sections="publicSections"
         :resolve-route="toolRoute"
       />

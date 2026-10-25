@@ -61,7 +61,7 @@ watch(page, () => {
         hoverable
         class="min-w-0"
       >
-        <div class="mb-2 flex min-w-0 items-center gap-2 text-xs text-surface-muted">
+        <div class="mb-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-surface-muted">
           <a
             v-if="safeNavigationHref(item.source_url)"
             :href="safeNavigationHref(item.source_url) ?? '#'"
@@ -81,15 +81,16 @@ watch(page, () => {
           >
             {{ formatNewsDate(newsArticleDisplayDate(item)) }}
           </time>
-          <h2 class="card-title ml-auto min-w-0 truncate text-right">
-            <RouterLink
-              :to="{ name: 'news-article', params: { slug: item.slug } }"
-              class="rounded-sm text-inherit hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-            >
-              {{ item.title }}
-            </RouterLink>
-          </h2>
         </div>
+
+        <h2 class="card-title mb-2 min-w-0 text-balance">
+          <RouterLink
+            :to="{ name: 'news-article', params: { slug: item.slug } }"
+            class="rounded-sm text-inherit hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50"
+          >
+            {{ item.title }}
+          </RouterLink>
+        </h2>
 
         <p class="mb-2 break-words text-sm text-surface-mid">{{ item.summary }}</p>
 

@@ -150,14 +150,14 @@ onUnmounted(() => {
     </SectionWrapper>
 
     <SectionWrapper id="about" title="about" width="full" alternate>
-      <p class="text-body mb-4 max-w-3xl text-pretty">
+      <PortfolioGlance :resume="resume" />
+      <p class="text-body mb-4 mt-6 max-w-3xl text-pretty">
         {{ resume.bio }}
       </p>
       <p v-if="resume.hiring_note" class="text-body mb-6 max-w-3xl">
         {{ resume.hiring_note }}
       </p>
-      <PortfolioGlance :resume="resume" />
-      <div v-if="highlightedRepos.length" class="mt-8 print:hidden">
+      <div v-if="highlightedRepos.length" class="mt-2 print:hidden">
         <GitHubReposStrip :repos="highlightedRepos" :profile-url="githubProfileUrl" />
       </div>
     </SectionWrapper>

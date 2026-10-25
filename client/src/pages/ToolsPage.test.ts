@@ -46,11 +46,16 @@ describe("ToolsPage sectioned layout", () => {
     expect(wrapper.text()).toContain("utilities");
     expect(wrapper.text()).toContain("recipes");
     expect(wrapper.text()).toContain("calculator");
+    expect(wrapper.text()).toContain("Shorten a long link.");
+    expect(wrapper.text()).toContain("Do a quick calculation.");
     // expenses (only public productivity tool) is off by default via feature flag
     expect(wrapper.text()).not.toContain("expenses");
     expect(wrapper.text()).not.toContain("productivity");
     expect(wrapper.text()).not.toContain("news");
     expect(wrapper.get('[data-testid="crumbs"]').text()).toBe("tools");
+    // Public presentation hides the visible count badge (sr-only count remains).
+    const contentHeading = wrapper.findAll("h2").find((h) => h.text().includes("content"));
+    expect(contentHeading?.find("[aria-hidden=\"true\"]").exists()).toBe(false);
   });
 
   it("shows expenses-off notice when redirected with expenses=off", async () => {
@@ -62,12 +67,48 @@ describe("ToolsPage sectioned layout", () => {
 });
 
 describe("tools content tile order", () => {
+  /** Mirrors PUBLIC_TILE_ORDER usefulness ranking in ToolsPage.vue. */
+  const PUBLIC_TILE_ORDER = [
+    "weather",
+    "url-shortener",
+    "recipes",
+    "calculator",
+    "password-generator",
+    "qr-generator",
+  ];
+
+  function sortPublicTools<T extends { slug: string }>(tools: T[]): T[] {
+    return [...tools].sort((a, b) => {
+      const ai = PUBLIC_TILE_ORDER.indexOf(a.slug);
+      const bi = PUBLIC_TILE_ORDER.indexOf(b.slug);
+      if (ai === -1 && bi === -1) return 0;
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+  }
+
   it("lists url-shortener before recipes in the content section", () => {
-    const content = groupServicesByCategory(publicToolsAsServices()).find(
-      (section) => section.category === "content",
-    );
+    const content = groupServicesByCategory(
+      sortPublicTools(publicToolsAsServices()),
+    ).find((section) => section.category === "content");
     expect(content?.services.map((tool) => tool.slug)).not.toContain("news");
-    expect(content?.services.map((tool) => tool.slug)[0]).toBe("url-shortener");
+    expect(content?.services.map((tool) => tool.slug)).toEqual([
+      "url-shortener",
+      "recipes",
+    ]);
+  });
+
+  it("lists utilities in usefulness order", () => {
+    const utilities = groupServicesByCategory(
+      sortPublicTools(publicToolsAsServices()),
+    ).find((section) => section.category === "utilities");
+    expect(utilities?.services.map((tool) => tool.slug)).toEqual([
+      "weather",
+      "calculator",
+      "password-generator",
+      "qr-generator",
+    ]);
   });
 
   it("excludes health-checker and vid-download from the guest public catalog", () => {

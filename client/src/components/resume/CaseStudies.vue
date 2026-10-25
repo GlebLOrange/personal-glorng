@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
 
+import { Card } from "@/components/ui/card";
+import { colorThemeResolved } from "@/composables/useColorTheme";
+import { projectArtForSlug } from "@/constants/projectArt";
 import type { Project } from "@/types";
 
 defineProps<{
@@ -11,11 +14,19 @@ function isExternal(url: string): boolean {
   return /^https?:\/\//i.test(url);
 }
 
+/** Hostnames that count as a source repository (not docs or pages sites). */
+const REPO_HOST_SUFFIXES = ["github.com", "gitlab.com", "codeberg.org"] as const;
+
+function isRepoHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return REPO_HOST_SUFFIXES.some((suffix) => host === suffix || host.endsWith(`.${suffix}`));
+}
+
 /** Short label for recruiters — avoid dumping the raw URL. */
 function linkLabel(url: string): string {
   try {
-    const host = new URL(url, "https://example.invalid").hostname.toLowerCase();
-    if (host.includes("github.") || host.includes("gitlab.") || host.includes("codeberg.")) {
+    const host = new URL(url, "https://example.invalid").hostname;
+    if (isRepoHost(host)) {
       return "repository";
     }
   } catch {
@@ -23,20 +34,37 @@ function linkLabel(url: string): string {
   }
   return isExternal(url) ? "live site" : "open";
 }
+
+function artSrc(slug: string): string {
+  return projectArtForSlug(slug, colorThemeResolved.value);
+}
 </script>
 
 <template>
-  <div class="case-study-list flex flex-col divide-y divide-surface-border/60">
-    <details v-for="proj in projects" :key="proj.slug">
-      <summary
-        class="card-title min-h-11 cursor-pointer rounded-lg px-1 focus-visible:ring-2 focus-visible:ring-accent-blue/50"
-      >
-        {{ proj.name }}
-      </summary>
-      <div class="px-1 pb-4">
-        <p class="text-body">{{ proj.description }}</p>
+  <div class="case-study-list grid grid-cols-1 gap-4 md:grid-cols-2">
+    <Card
+      v-for="proj in projects"
+      :key="proj.slug"
+      as="article"
+      class="min-w-0 overflow-hidden !p-0"
+    >
+      <div class="overflow-hidden" aria-hidden="true">
+        <img
+          :src="artSrc(proj.slug)"
+          alt=""
+          class="h-28 w-full object-cover object-center sm:h-32"
+          width="640"
+          height="200"
+          decoding="async"
+          loading="lazy"
+        />
+      </div>
 
-        <dl v-if="proj.problem || proj.approach || proj.result" class="mt-4 space-y-2 text-sm">
+      <div class="flex flex-col gap-3 p-4 sm:p-5">
+        <h3 class="card-title text-balance">{{ proj.name }}</h3>
+        <p class="text-body text-pretty">{{ proj.description }}</p>
+
+        <dl v-if="proj.problem || proj.approach || proj.result" class="space-y-2 text-sm">
           <div v-if="proj.problem">
             <dt class="text-label text-accent-blue">problem</dt>
             <dd class="text-body mt-0.5">{{ proj.problem }}</dd>
@@ -51,7 +79,7 @@ function linkLabel(url: string): string {
           </div>
         </dl>
 
-        <div class="mt-3 flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2">
           <span
             v-for="t in proj.tech"
             :key="t"
@@ -61,7 +89,7 @@ function linkLabel(url: string): string {
           </span>
         </div>
 
-        <p v-if="proj.url" class="mt-3">
+        <p v-if="proj.url" class="mt-1">
           <a
             v-if="isExternal(proj.url)"
             :href="proj.url"
@@ -81,6 +109,6 @@ function linkLabel(url: string): string {
           </RouterLink>
         </p>
       </div>
-    </details>
+    </Card>
   </div>
 </template>
