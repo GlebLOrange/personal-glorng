@@ -18,13 +18,16 @@
 /*
   Material You dual-theme palette. Token *names* stay stable for Tailwind classes;
   values switch on html[data-theme]. surface-dark = page bg, surface-light = primary text.
-  Roles: accent-blue=primary, accent-golden=secondary, accent-violet=tertiary,
-  status-cyan=custom, status-error=error. Success/warning kept as harmonious status hues.
+  Roles: accent-coral=primary (Tailwind accent-blue utilities alias it), accent-golden=secondary,
+  accent-violet=tertiary, accent-lavender=CV tech/skill chips, status-cyan=custom, status-error=error.
+  Success/warning kept as harmonious status hues.
 */
 :root,
 html[data-theme="dark"] {
   color-scheme: dark;
-  --palette-accent-blue: #cfbdfe;
+  --palette-accent-coral: #f0a090;
+  /* Former Material You primary / dark accent-blue — CV chips only */
+  --palette-accent-lavender: #cfbdfe;
   --palette-status-success: #a8d08d;
   --palette-status-cyan: #8dceed;
   --palette-status-error: #ffb4ab;
@@ -42,7 +45,7 @@ html[data-theme="dark"] {
   --palette-accent-golden: #cbc2db;
   /* Section pills: light fills → dark ink */
   --palette-label-ink: #1d1b20;
-  --palette-on-accent: #381e72;
+  --palette-on-accent: #3d1f18;
   --palette-theme-color: #141218;
   --site-bg-image: none;
   --site-bg-scrim: linear-gradient(
@@ -54,7 +57,9 @@ html[data-theme="dark"] {
 
 html[data-theme="light"] {
   color-scheme: light;
-  --palette-accent-blue: #63588d;
+  --palette-accent-coral: #b56a5a;
+  /* Former light accent-blue — readable lavender on light surfaces */
+  --palette-accent-lavender: #63588d;
   --palette-status-success: #3b6d11;
   --palette-status-cyan: #23648a;
   --palette-status-error: #97030f;
@@ -101,7 +106,11 @@ html[data-theme="light"] {
   --text-3xl: 2.125rem;
   --text-3xl--line-height: 1.25;
   /* Product action families — pale, statuscode-aligned (1xx–5xx) */
-  --color-accent-blue: var(--palette-accent-blue);
+  --color-accent-coral: var(--palette-accent-coral);
+  /* Legacy Tailwind accent-blue utilities → coral primary */
+  --color-accent-blue: var(--color-accent-coral);
+  /* CV tech/skill chips (not product primary) */
+  --color-accent-lavender: var(--palette-accent-lavender);
   --color-status-success: var(--palette-status-success);
   --color-status-cyan: var(--palette-status-cyan);
   --color-status-error: var(--palette-status-error);
@@ -123,7 +132,7 @@ html[data-theme="light"] {
   --color-accent-violet: var(--palette-accent-violet);
   --color-accent-golden: var(--palette-accent-golden);
   --color-label-ink: var(--palette-label-ink);
-  /* Legacy aliases → families (prefer status-* / accent-blue in new code) */
+  /* Legacy aliases → families (prefer status-* / accent-coral in new code; accent-blue aliases coral) */
   --color-accent-red: var(--palette-status-error);
   --color-accent-amber: var(--palette-status-warning);
   --radius-interactive: 0.5rem;
@@ -608,21 +617,34 @@ label {
   -webkit-tap-highlight-color: color-mix(in srgb, var(--color-accent-blue) 25%, transparent);
 }
 
-/* Portfolio CV: dark one-step surfaces + coral accent (scoped; leave product tokens alone) */
+/* Portfolio CV: dark one-step surfaces (accent uses global coral / blue alias) */
 .portfolio-cv {
   --color-surface-dark: #0d1117;
   --color-surface-card: #161b22;
-  --color-accent-blue: #f0a090;
   background-color: var(--color-surface-dark);
 }
 
-/** Opaque 18% card wash on CV tiles — beats Card compact fill; alpha /18 looked invisible on page bg. */
+/** Opaque 9% #d3d3d3 wash on CV tiles — beats Card compact fill. */
 @utility portfolio-cv-tile-wash {
   background-color: color-mix(
     in srgb,
-    var(--color-surface-card) 18%,
+    #d3d3d3 9%,
     var(--color-surface-dark)
   ) !important;
+}
+
+/** Lavender tech/skill chips — 28% fill + matching text (uses --color-accent-lavender). */
+@utility portfolio-cv-chip {
+  @apply inline-flex items-center rounded-lg px-2.5 py-1;
+  background-color: color-mix(in srgb, var(--color-accent-lavender) 28%, transparent);
+  color: var(--color-accent-lavender);
+}
+
+/** Lavender news article tags — same 28% fill token; news pages are outside .portfolio-cv. */
+@utility news-tag-chip {
+  @apply rounded px-2.5 py-1 text-xs;
+  background-color: color-mix(in srgb, var(--color-accent-lavender) 28%, transparent);
+  color: var(--color-accent-lavender);
 }
 
 /* Portfolio CV: body prose reads as primary; meta stays supporting */

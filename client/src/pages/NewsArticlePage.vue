@@ -125,7 +125,7 @@ watch(
           <li
             v-for="tag in article.tags"
             :key="tag"
-            class="rounded bg-accent-blue/10 px-2.5 py-1 text-xs text-accent-blue"
+            class="news-tag-chip"
           >
             #{{ tag }}
           </li>

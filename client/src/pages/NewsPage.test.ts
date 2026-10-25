@@ -35,12 +35,20 @@ vi.mock("@/composables/useScrollListFingerprint", () => ({
   useScrollListFingerprint: () => undefined,
 }));
 
+const routerPush = vi.fn();
+
 vi.mock("vue-router", () => ({
-  RouterLink: {
-    name: "RouterLink",
-    props: ["to"],
-    template: "<a href=\"#\"><slot /></a>",
-  },
+  useRouter: () => ({
+    resolve: (to: { params?: { slug?: string } } | string) => ({
+      href:
+        typeof to === "string"
+          ? to
+          : to?.params?.slug
+            ? `/news/${to.params.slug}`
+            : "#",
+    }),
+    push: routerPush,
+  }),
 }));
 
 const sampleArticle: NewsArticle = {
@@ -91,27 +99,47 @@ describe("NewsPage card order", () => {
     totalPages.value = 0;
     loadNews.mockClear();
     goToPage.mockClear();
+    routerPush.mockClear();
   });
 
-  it("orders eyebrow, title, summary, then tags for scanning", async () => {
+  it("orders meta+tags row, then title and summary", async () => {
     articles.value = [sampleArticle];
     total.value = 1;
     totalPages.value = 1;
     const wrapper = mountPage();
     await flushPromises();
 
-    const card = wrapper.get("article");
+    const card = wrapper.get("a.card-as-link");
     const text = card.text();
     const sourceIdx = text.indexOf("Example Source");
     const titleIdx = text.indexOf("Scan-friendly title");
     const summaryIdx = text.indexOf("A concise summary for hiring managers.");
     const tagIdx = text.indexOf("#python");
 
+    expect(card.attributes("href")).toBe("/news/sample-article");
+    expect(card.find("a").exists()).toBe(false);
     expect(sourceIdx).toBeGreaterThanOrEqual(0);
-    expect(titleIdx).toBeGreaterThan(sourceIdx);
+    expect(tagIdx).toBeGreaterThan(sourceIdx);
+    expect(titleIdx).toBeGreaterThan(tagIdx);
     expect(summaryIdx).toBeGreaterThan(titleIdx);
-    expect(tagIdx).toBeGreaterThan(summaryIdx);
+    expect(card.find(".news-tag-chip").exists()).toBe(true);
     expect(card.find("h2").text()).toContain("Scan-friendly title");
+  });
+
+  it("navigates from a click anywhere on the tile", async () => {
+    articles.value = [sampleArticle];
+    total.value = 1;
+    totalPages.value = 1;
+    const wrapper = mountPage();
+    await flushPromises();
+
+    const card = wrapper.get("a.card-as-link");
+    await card.trigger("click");
+
+    expect(routerPush).toHaveBeenCalledWith({
+      name: "news-article",
+      params: { slug: "sample-article" },
+    });
   });
 
   it("keeps loading, error, and empty states", async () => {

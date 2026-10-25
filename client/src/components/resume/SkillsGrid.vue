@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { Card } from "@/components/ui/card";
-import { PORTFOLIO_CV_TILE_CLASS } from "@/constants/portfolioSections";
+import {
+  PORTFOLIO_CV_CHIP_CLASS,
+  PORTFOLIO_CV_TILE_CLASS,
+} from "@/constants/portfolioSections";
 import type { SkillGroup } from "@/types";
 
 defineProps<{
@@ -26,7 +29,7 @@ defineProps<{
         <li
           v-for="item in group.items"
           :key="item"
-          class="inline-flex items-center rounded-lg bg-surface-dark/28 px-2.5 py-1 text-xs text-surface-sage"
+          :class="[PORTFOLIO_CV_CHIP_CLASS, 'text-xs']"
         >
           {{ item }}
         </li>
