@@ -10,7 +10,6 @@ import {
   ADMIN_TH_CLASS,
 } from "@/constants/adminDataTable";
 import PageShell from "@/components/layout/PageShell.vue";
-import ToolBuildPanel from "@/components/tools/ToolBuildPanel.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -183,7 +182,6 @@ onMounted(loadUrls);
     :narrow="false"
     description="Short links resolve at /s/{code} — a FastAPI redirect, not a Vue page. Example path: /s/demo."
   >
-    <ToolBuildPanel slug="url-shortener" />
     <form class="mb-4 flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createUrl">
       <BaseInput
         v-model="newUrl"

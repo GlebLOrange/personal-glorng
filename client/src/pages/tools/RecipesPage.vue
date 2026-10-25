@@ -6,7 +6,6 @@ import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import PageShell from "@/components/layout/PageShell.vue";
-import ToolBuildPanel from "@/components/tools/ToolBuildPanel.vue";
 import RecipeCard from "@/components/recipes/RecipeCard.vue";
 import RecipeCookMode from "@/components/recipes/RecipeCookMode.vue";
 import RecipeDetailDrawer from "@/components/recipes/RecipeDetailDrawer.vue";
@@ -131,7 +130,6 @@ function editRecipeFromCard(recipe: Recipe): void {
     :narrow="false"
     description="Personal recipe list with cook mode — saved to your account when signed in."
   >
-    <ToolBuildPanel slug="recipes" />
     <div v-if="!isAuthenticated" class="min-w-0 space-y-3" aria-label="sample recipes">
       <p class="text-sm text-surface-mid">sample recipes (sign in to load your book)</p>
       <ul class="space-y-2">

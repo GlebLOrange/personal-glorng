@@ -7,7 +7,6 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import QrLibraryListItem from "@/components/admin/QrLibraryListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
-import ToolBuildPanel from "@/components/tools/ToolBuildPanel.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
@@ -192,7 +191,6 @@ onMounted(() => {
     :narrow="false"
     :description="pageDescription"
   >
-    <ToolBuildPanel slug="qr-generator" />
     <div class="flex min-w-0 flex-col gap-8">
       <div
         class="flex min-w-0 flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8"
