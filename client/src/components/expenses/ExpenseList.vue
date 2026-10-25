@@ -4,11 +4,7 @@ import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import ExpenseRow from "@/components/expenses/ExpenseRow.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
-import {
-  ADMIN_MOBILE_LIST_CLASS,
-  ADMIN_MOBILE_ROW_WRAP_CLASS,
-  ADMIN_TH_CLASS,
-} from "@/constants/adminDataTable";
+import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExpenseSortKey } from "@/composables/useExpenseSort";
 import type { ExchangeRates, Expense } from "@/types";
@@ -42,41 +38,24 @@ const sortButtonClass =
   <AdminListSkeleton v-if="loading" :rows="5" label="Loading expenses" />
 
   <template v-else>
-    <div :class="ADMIN_MOBILE_LIST_CLASS">
-      <div v-for="expense in expenses" :key="expense.id" :class="ADMIN_MOBILE_ROW_WRAP_CLASS">
-        <ExpenseRow
-          :expense="expense"
-          layout="card"
-          :display-currency="displayCurrency"
-          :exchange-rates="exchangeRates"
-          :format-money="formatMoney"
-          :format-expense-date="formatExpenseDate"
-          :convert-amount="convertAmount"
-          @edit="emit('edit', $event)"
-          @delete="emit('delete', $event)"
-          @duplicate="emit('duplicate', $event)"
-        />
-      </div>
-    </div>
-
     <AdminDataTable :table-label="`expenses for ${monthLabel}`">
       <template #header>
-        <th :class="ADMIN_TH_CLASS" :aria-sort="sortAriaSort('date')">
+        <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="sortAriaSort('date')">
           <button type="button" :class="sortButtonClass" @click="emit('sort', 'date')">
             date{{ sortIndicator("date") }}
           </button>
         </th>
-        <th :class="ADMIN_TH_CLASS" :aria-sort="sortAriaSort('category')">
+        <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="sortAriaSort('category')">
           <button type="button" :class="sortButtonClass" @click="emit('sort', 'category')">
             category{{ sortIndicator("category") }}
           </button>
         </th>
-        <th :class="ADMIN_TH_CLASS" :aria-sort="sortAriaSort('product')">
+        <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="sortAriaSort('product')">
           <button type="button" :class="sortButtonClass" @click="emit('sort', 'product')">
             name{{ sortIndicator("product") }}
           </button>
         </th>
-        <th :class="[ADMIN_TH_CLASS, 'text-right']" :aria-sort="sortAriaSort('amount')">
+        <th :class="[ADMIN_TH_CLASS, 'text-right']" scope="col" :aria-sort="sortAriaSort('amount')">
           <button
             type="button"
             :class="[sortButtonClass, 'w-full justify-end text-right']"
@@ -85,16 +64,13 @@ const sortButtonClass =
             amount{{ sortIndicator("amount") }}
           </button>
         </th>
-        <th class="w-px px-2 text-right">
-          <span class="sr-only">actions</span>
-        </th>
+        <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
       </template>
 
       <ExpenseRow
         v-for="expense in expenses"
         :key="expense.id"
         :expense="expense"
-        layout="table"
         :display-currency="displayCurrency"
         :exchange-rates="exchangeRates"
         :format-money="formatMoney"

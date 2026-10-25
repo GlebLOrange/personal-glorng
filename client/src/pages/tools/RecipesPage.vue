@@ -175,33 +175,16 @@ function editRecipeFromCard(recipe: Recipe): void {
       <ErrorState v-else-if="listError" :message="listError" show-retry @retry="loadRecipes" />
 
       <div v-else-if="recipes.length" class="mt-1 min-w-0">
-        <div class="flex flex-col md:hidden">
-          <RecipeCard
-            v-for="recipe in recipes"
-            :key="`m-${recipe.id}`"
-            layout="card"
-            :recipe="recipe"
-            :can-write="canWrite"
-            @select="openRecipeFromCard"
-            @edit="editRecipeFromCard"
-            @delete="requestDelete"
-          />
-        </div>
         <AdminDataTable table-label="recipes">
           <template #header>
-            <th class="w-px px-3 py-1.5 text-xs tracking-wider">
-              <span class="sr-only">thumb</span>
-            </th>
-            <th class="px-3 py-1.5 text-xs tracking-wider">title</th>
-            <th class="px-3 py-1.5 text-xs tracking-wider">meta</th>
-            <th class="w-px px-2 text-right">
-              <span class="sr-only">actions</span>
-            </th>
+            <th class="px-3 py-1.5 text-xs tracking-wider" scope="col">thumb</th>
+            <th class="px-3 py-1.5 text-xs tracking-wider" scope="col">title</th>
+            <th class="px-3 py-1.5 text-xs tracking-wider" scope="col">meta</th>
+            <th class="w-px px-2 text-right text-xs tracking-wider" scope="col">actions</th>
           </template>
           <RecipeCard
             v-for="recipe in recipes"
             :key="recipe.id"
-            layout="table"
             :recipe="recipe"
             :can-write="canWrite"
             @select="openRecipeFromCard"

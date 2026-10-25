@@ -9,14 +9,11 @@ import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
-import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import {
-  ADMIN_MOBILE_LIST_CLASS,
-  ADMIN_MOBILE_ROW_WRAP_CLASS,
   ADMIN_SORT_HEADER_BUTTON_CLASS,
   ADMIN_TD_CLASS,
   ADMIN_TD_MUTED_CLASS,
@@ -284,68 +281,6 @@ onMounted(load);
       <EmptyState v-else-if="items.length === 0" class="mt-4" :description="emptyDescription" />
 
       <div v-else class="mt-1 min-w-0">
-        <div :class="ADMIN_MOBILE_LIST_CLASS">
-          <div
-            v-for="entry in items"
-            :key="`m-${entry.id}`"
-            :class="ADMIN_MOBILE_ROW_WRAP_CLASS"
-          >
-            <component
-              :is="hasDetails(entry) ? 'button' : 'div'"
-              :type="hasDetails(entry) ? 'button' : undefined"
-              class="flex w-full min-w-0 items-center gap-2 text-left"
-              :class="hasDetails(entry) ? 'cursor-pointer' : undefined"
-              :aria-expanded="hasDetails(entry) ? isExpanded(entry.id) : undefined"
-              @click="onRowClick(entry)"
-            >
-              <div class="flex shrink-0 items-center gap-1">
-                <StatusBadge :label="entry.level" :class-name="logLevelClass(entry.level)" />
-                <StatusBadge
-                  v-if="contextStatus(entry) !== null"
-                  :label="String(contextStatus(entry))"
-                  :class-name="httpStatusClass(contextStatus(entry)!)"
-                />
-              </div>
-              <span class="shrink-0 text-xs lowercase text-surface-muted">
-                {{ formatDate(entry.occurred_at) }}
-              </span>
-              <span
-                class="min-w-0 shrink truncate font-data text-xs text-surface-muted"
-                :title="loggerLabel(entry)"
-              >
-                {{ loggerLabel(entry) }}
-              </span>
-              <p
-                class="min-w-0 flex-1 truncate text-sm lowercase text-surface-light"
-                :title="entry.message.toLowerCase()"
-              >
-                {{ entry.message }}
-              </p>
-              <ChevronIcon
-                v-if="hasDetails(entry)"
-                direction="right"
-                :open="isExpanded(entry.id)"
-                class-name="size-3.5 shrink-0 text-surface-muted"
-              />
-            </component>
-            <div
-              v-if="isExpanded(entry.id)"
-              class="mt-2 border-t border-surface-border pt-2 text-xs text-surface-mid"
-            >
-              <p v-if="entry.request_id" class="font-data">Request: {{ entry.request_id }}</p>
-              <p v-if="entry.error_type">Error: {{ entry.error_type }} — {{ entry.error }}</p>
-              <pre
-                v-if="entry.context"
-                class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
-                >{{ JSON.stringify(entry.context, null, 2) }}</pre>
-              <pre
-                v-if="entry.traceback"
-                class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs text-status-error/80"
-                >{{ entry.traceback }}</pre>
-            </div>
-          </div>
-        </div>
-
         <AdminDataTable table-label="app log entries">
           <template #header>
             <th :class="ADMIN_TH_CLASS">type</th>

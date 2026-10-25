@@ -14,8 +14,6 @@ import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import {
-  ADMIN_MOBILE_LIST_CLASS,
-  ADMIN_MOBILE_ROW_WRAP_CLASS,
   ADMIN_SORT_HEADER_BUTTON_CLASS,
   ADMIN_TD_CLASS,
   ADMIN_TD_MUTED_CLASS,
@@ -235,68 +233,6 @@ onMounted(load);
       />
 
       <div v-else class="mt-1 min-w-0">
-        <div :class="ADMIN_MOBILE_LIST_CLASS">
-          <div
-            v-for="event in items"
-            :key="`m-${event.id}`"
-            :class="ADMIN_MOBILE_ROW_WRAP_CLASS"
-          >
-            <button
-              type="button"
-              class="flex w-full min-w-0 items-center gap-2 text-left"
-              :aria-expanded="isExpanded(event.id)"
-              @click="toggleExpanded(event.id)"
-            >
-              <StatusBadge
-                :label="event.category"
-                :class-name="auditCategoryClass(event.category)"
-              />
-              <span class="shrink-0 text-xs lowercase text-surface-muted" :title="actorLabel(event)">
-                {{ actorLabel(event) }}
-              </span>
-              <span class="shrink-0 text-xs lowercase text-surface-muted">
-                {{ formatDate(event.occurred_at) }}
-              </span>
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm text-surface-light" :title="event.action">
-                  {{ event.action }}
-                </p>
-                <p
-                  v-if="resourceLabel(event)"
-                  class="mt-0.5 truncate text-xs text-surface-mid"
-                  :title="resourceLabel(event)!"
-                >
-                  {{ resourceLabel(event) }}
-                </p>
-              </div>
-              <ChevronIcon
-                direction="right"
-                :open="isExpanded(event.id)"
-                class-name="size-3.5 shrink-0 text-surface-muted"
-              />
-            </button>
-            <div
-              v-if="isExpanded(event.id)"
-              class="mt-2 border-t border-surface-border pt-2 text-xs text-surface-mid"
-            >
-              <p>
-                actor: {{ event.actor_type }}
-                <span v-if="event.actor_id">#{{ event.actor_id }}</span>
-                · source: {{ event.source }}
-              </p>
-              <p v-if="event.resource_type">
-                resource: {{ event.resource_type }}
-                <span v-if="event.resource_id">#{{ event.resource_id }}</span>
-              </p>
-              <p v-if="event.request_id" class="font-data">request: {{ event.request_id }}</p>
-              <pre
-                v-if="event.metadata"
-                class="mt-2 overflow-x-auto rounded bg-surface-dark p-2 text-xs"
-                >{{ JSON.stringify(event.metadata, null, 2) }}</pre>
-            </div>
-          </div>
-        </div>
-
         <AdminDataTable table-label="audit log events">
           <template #header>
             <th :class="ADMIN_TH_CLASS">type</th>
@@ -312,9 +248,7 @@ onMounted(load);
               </button>
             </th>
             <th :class="ADMIN_TH_CLASS">title</th>
-            <th class="w-px px-2 text-right">
-              <span class="sr-only">expand</span>
-            </th>
+            <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">expand</th>
           </template>
 
           <AdminDataRow

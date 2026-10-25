@@ -9,25 +9,22 @@ import IconCopyButton from "@/components/ui/IconCopyButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
 import {
   ADMIN_ACTIONS_CLASS,
-  ADMIN_MOBILE_ROW_WRAP_CLASS,
   ADMIN_TD_ACTIONS_CLASS,
   ADMIN_TD_CLASS,
-  ADMIN_TD_TITLE_CLASS,
+  ADMIN_TD_MUTED_CLASS,
+  ADMIN_TH_ROW_CLASS,
   ADMIN_TR_CLASS,
 } from "@/constants/adminDataTable";
 import type { UrlItem } from "@/types";
+import { formatDate } from "@/utils/format";
 import { publicUrl } from "@/utils/publicLinks";
 
-const props = withDefaults(
-  defineProps<{
-    url: UrlItem;
-    canWrite: boolean;
-    saving?: boolean;
-    deleting?: boolean;
-    layout?: "card" | "table";
-  }>(),
-  { layout: "card" },
-);
+const props = defineProps<{
+  url: UrlItem;
+  canWrite: boolean;
+  saving?: boolean;
+  deleting?: boolean;
+}>();
 
 const emit = defineEmits<{
   copy: [];
@@ -41,7 +38,7 @@ const showDeleteConfirm = ref(false);
 const titleInput = ref<{ focus: () => void } | null>(null);
 
 const shortLink = computed(() => publicUrl("s", props.url.code));
-const displayTitle = computed(() => props.url.title || props.url.original_url);
+const titleLabel = computed(() => props.url.title?.trim() || "—");
 
 watch(
   () => props.url.id,
@@ -105,8 +102,8 @@ function onRowClick(event: MouseEvent): void {
 </script>
 
 <template>
-  <tr v-if="editing && layout === 'table'" :class="ADMIN_TR_CLASS">
-    <td colspan="3" class="px-3 py-1.5">
+  <tr v-if="editing" :class="ADMIN_TR_CLASS">
+    <td colspan="6" class="px-3 py-1.5">
       <div class="flex w-full min-w-0 items-stretch gap-1">
         <BaseInput
           ref="titleInput"
@@ -125,45 +122,43 @@ function onRowClick(event: MouseEvent): void {
     </td>
   </tr>
 
-  <div
-    v-else-if="editing"
-    :class="[ADMIN_MOBILE_ROW_WRAP_CLASS, 'relative flex w-full min-w-0 items-stretch gap-1']"
-  >
-    <BaseInput
-      ref="titleInput"
-      v-model="draftTitle"
-      class="min-w-0 flex-1"
-      placeholder="title (optional)"
-      @keydown="onTitleKeydown"
-    />
-    <BaseButton variant="cancel" size="sm" class="shrink-0" :disabled="saving" @click="cancelEdit">
-      cancel
-    </BaseButton>
-    <BaseButton variant="save" size="sm" class="shrink-0" :disabled="saving" @click="saveEdit">
-      {{ saving ? "…" : "save" }}
-    </BaseButton>
-  </div>
-
   <tr
-    v-else-if="layout === 'table'"
+    v-else
     :class="[ADMIN_TR_CLASS, canWrite ? 'cursor-pointer' : undefined]"
     @click="onRowClick"
   >
-    <td :class="ADMIN_TD_TITLE_CLASS">
-      <p class="truncate text-sm text-surface-light" :title="displayTitle">
-        {{ displayTitle }}
+    <th :class="ADMIN_TH_ROW_CLASS" scope="row">
+      <p class="truncate text-sm text-surface-light" :title="titleLabel">
+        {{ titleLabel }}
       </p>
-    </td>
+    </th>
     <td :class="ADMIN_TD_CLASS">
       <a
         :href="shortLink"
-        :title="`${url.original_url} · ${shortLink}`"
+        :title="shortLink"
         target="_blank"
         rel="noopener noreferrer"
         class="text-link block w-full truncate text-xs"
       >
         {{ shortLink }}
       </a>
+    </td>
+    <td :class="ADMIN_TD_CLASS">
+      <a
+        :href="url.original_url"
+        :title="url.original_url"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-link block w-full max-w-[14rem] truncate text-xs"
+      >
+        {{ url.original_url }}
+      </a>
+    </td>
+    <td :class="[ADMIN_TD_MUTED_CLASS, 'text-right tabular-nums']">
+      {{ url.clicks }}
+    </td>
+    <td :class="ADMIN_TD_MUTED_CLASS">
+      {{ formatDate(url.created_at) }}
     </td>
     <td :class="ADMIN_TD_ACTIONS_CLASS" data-admin-row-stop @click.stop @keydown.stop>
       <div :class="ADMIN_ACTIONS_CLASS">
@@ -177,39 +172,6 @@ function onRowClick(event: MouseEvent): void {
       </div>
     </td>
   </tr>
-
-  <div
-    v-else
-    :class="[
-      ADMIN_MOBILE_ROW_WRAP_CLASS,
-      'flex min-w-0 items-center gap-2',
-      canWrite ? 'cursor-pointer' : undefined,
-    ]"
-    @click="onRowClick"
-  >
-    <p class="min-w-0 flex-1 truncate text-sm text-surface-light" :title="displayTitle">
-      {{ displayTitle }}
-    </p>
-    <a
-      :href="shortLink"
-      :title="`${url.original_url} · ${shortLink}`"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="text-link max-w-[40%] shrink truncate text-xs"
-      @click.stop
-    >
-      {{ shortLink }}
-    </a>
-    <div :class="ADMIN_ACTIONS_CLASS" data-admin-row-stop @click.stop @keydown.stop>
-      <IconEditButton v-if="canWrite" aria-label="edit title" @click="startEdit" />
-      <IconCopyButton aria-label="copy short link" @click="emit('copy')" />
-      <IconCloseButton
-        v-if="canWrite"
-        aria-label="delete short URL"
-        @click="showDeleteConfirm = true"
-      />
-    </div>
-  </div>
 
   <ConfirmDialog
     :open="showDeleteConfirm"
