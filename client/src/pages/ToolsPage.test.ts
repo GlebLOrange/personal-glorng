@@ -131,7 +131,11 @@ describe("ToolsPage sectioned layout", () => {
     expect(wrapper.text()).not.toContain("audit logs");
   });
 
-  it("shows admin hub tiles for superusers", async () => {
+  function tileTitleCount(wrapper: ReturnType<typeof mountPage>, name: string): number {
+    return wrapper.findAll("h3, h4").filter((heading) => heading.text().trim() === name).length;
+  }
+
+  it("shows admin hub tiles for superusers without duplicating catalog tools", async () => {
     isSuperuserRef.value = true;
 
     const wrapper = mountPage();
@@ -140,6 +144,21 @@ describe("ToolsPage sectioned layout", () => {
     expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
     expect(wrapper.text()).toContain("audit logs");
     expect(wrapper.text()).toContain("ai chat");
+    expect(tileTitleCount(wrapper, "weather")).toBe(1);
+    expect(tileTitleCount(wrapper, "url shortener")).toBe(1);
+    expect(tileTitleCount(wrapper, "recipes")).toBe(1);
+    expect(tileTitleCount(wrapper, "tasks")).toBe(1);
+  });
+
+  it("keeps tasks once when the catalog already lists them", async () => {
+    canAccessMock.mockImplementation((slug: string) => slug === "tasks");
+    isSuperuserRef.value = true;
+
+    const wrapper = mountPage();
+    await flushPromises();
+
+    expect(tileTitleCount(wrapper, "tasks")).toBe(1);
+    expect(wrapper.text()).toContain("audit logs");
   });
 
   it("omits ai chat from admin tiles when the feature flag is off", async () => {
