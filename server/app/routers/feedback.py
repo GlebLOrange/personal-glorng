@@ -81,6 +81,10 @@ async def list_feedback(
         Literal["unread", "read", "archived"] | None,
         Query(description="Filter by feedback status"),
     ] = None,
+    sort: Annotated[
+        str,
+        Query(pattern="^created_(asc|desc)$"),
+    ] = "created_desc",
 ) -> FeedbackListResponse:
     if registry.feedback is None:
         raise ApiError(503, "Feedback repository is not initialized")
@@ -89,6 +93,7 @@ async def list_feedback(
         page=page,
         per_page=per_page,
         status=status,
+        sort=sort,
     )
 
 

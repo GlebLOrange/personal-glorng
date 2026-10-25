@@ -12,8 +12,9 @@ async def list_feedback(
     page: int = 1,
     per_page: int = DEFAULT_PER_PAGE,
     status: str | None = None,
+    sort: str = "created_desc",
 ) -> FeedbackListResponse:
-    """List feedback entries with optional status filter."""
+    """List feedback entries with optional status filter and created_at sort."""
     if registry.feedback is None:
         msg = "Feedback repository is not initialized"
         raise RuntimeError(msg)
@@ -22,10 +23,11 @@ async def list_feedback(
     filters: dict[str, str] = {}
     if status:
         filters["status"] = status
+    created_dir = 1 if sort == "created_asc" else -1
     items = await registry.feedback.list(
         offset=offset,
         limit=limit,
-        sort=[("created_at", -1)],
+        sort=[("created_at", created_dir)],
         **filters,
     )
     total = await registry.feedback.count(**filters)

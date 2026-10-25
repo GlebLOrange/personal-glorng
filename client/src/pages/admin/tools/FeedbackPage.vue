@@ -12,6 +12,7 @@ import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import {
   ADMIN_MOBILE_LIST_CLASS,
   ADMIN_MOBILE_ROW_WRAP_CLASS,
+  ADMIN_SORT_HEADER_BUTTON_CLASS,
   ADMIN_TD_CLASS,
   ADMIN_TD_MUTED_CLASS,
   ADMIN_TD_TITLE_CLASS,
@@ -41,8 +42,10 @@ interface FeedbackItem {
 }
 
 type StatusFilter = "unread" | "read" | "archived";
+type CreatedSort = "created_asc" | "created_desc";
 
 const DEFAULT_STATUS_FILTER: StatusFilter = "unread";
+const DEFAULT_SORT: CreatedSort = "created_desc";
 
 const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
   { label: "unread", value: "unread" },
@@ -66,6 +69,7 @@ const items = ref<FeedbackItem[]>([]);
 const selectedItem = ref<FeedbackItem | null>(null);
 const drawerOpen = ref(false);
 const filter = ref<StatusFilter>(DEFAULT_STATUS_FILTER);
+const sort = ref<CreatedSort>(DEFAULT_SORT);
 const page = ref(1);
 const total = ref(0);
 const totalPages = ref(0);
@@ -103,6 +107,7 @@ async function load(): Promise<void> {
           page: page.value,
           per_page: ADMIN_LIST_PAGE_SIZE,
           status: filter.value,
+          sort: sort.value,
         },
       });
       return response.data;
@@ -120,6 +125,19 @@ function setFilter(next: StatusFilter): void {
   filter.value = next;
   page.value = 1;
   filterDropdownRef.value?.close();
+}
+
+function toggleCreatedSort(): void {
+  sort.value = sort.value === "created_desc" ? "created_asc" : "created_desc";
+  page.value = 1;
+}
+
+function sortIndicator(): string {
+  return sort.value === "created_asc" ? " ↑" : " ↓";
+}
+
+function sortAriaSort(): "ascending" | "descending" {
+  return sort.value === "created_asc" ? "ascending" : "descending";
 }
 
 function clearFilters(): void {
@@ -187,7 +205,7 @@ async function unarchiveItem(item: FeedbackItem): Promise<void> {
   if (selectedItem.value?.id === item.id) closeDrawer();
 }
 
-watch([filter, page], () => {
+watch([filter, page, sort], () => {
   void load();
 });
 
@@ -296,7 +314,16 @@ onMounted(load);
           <template #header>
             <th :class="ADMIN_TH_CLASS">status</th>
             <th :class="ADMIN_TH_CLASS">who</th>
-            <th :class="ADMIN_TH_CLASS">when</th>
+            <th :class="ADMIN_TH_CLASS" :aria-sort="sortAriaSort()">
+              <button
+                type="button"
+                :class="ADMIN_SORT_HEADER_BUTTON_CLASS"
+                aria-label="sort by when"
+                @click="toggleCreatedSort"
+              >
+                when{{ sortIndicator() }}
+              </button>
+            </th>
             <th :class="ADMIN_TH_CLASS">title</th>
             <th class="w-px px-2 text-right">
               <span class="sr-only">actions</span>

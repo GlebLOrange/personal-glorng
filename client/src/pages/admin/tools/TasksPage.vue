@@ -60,6 +60,8 @@ const {
   stats,
   filterStatus,
   searchQuery,
+  whenAriaSort,
+  whenIndicator,
   page,
   showCreateForm,
   createForm,
@@ -99,6 +101,7 @@ const {
   goToPage,
   goToIntakePage,
   goToSyncPage,
+  toggleWhenSort,
 } = useTasks();
 
 const activeFilterLabel = computed(
@@ -245,6 +248,8 @@ onMounted(() => {
         :tasks="tasks"
         :loading="listLoading"
         :filter-status="filterStatus"
+        :when-aria-sort="whenAriaSort"
+        :when-indicator="whenIndicator"
         :stats="stats"
         :total="total"
         :page="page"
@@ -252,6 +257,7 @@ onMounted(() => {
         :has-next-page="hasNextPage"
         :has-previous-page="hasPreviousPage"
         @select="openDetail"
+        @sort-when="toggleWhenSort"
         @failed-syncs="switchTab('sync')"
         @first-page="goToPage(1)"
         @prev-page="goToPage(page - 1)"

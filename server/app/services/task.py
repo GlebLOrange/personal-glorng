@@ -288,6 +288,7 @@ class TaskService:
         per_page: int = DEFAULT_PER_PAGE,
         status: str | None = None,
         q: str | None = None,
+        sort: str | None = None,
     ) -> TaskListResponse:
         offset, limit = paginate_params(page, per_page)
         if status:
@@ -303,6 +304,7 @@ class TaskService:
             limit=limit,
             status=status,
             q=search,
+            sort=sort,
         )
         total = await self._tasks().count_all(status=status, q=search)
         items = [TaskResponse.model_validate(t) for t in tasks]

@@ -65,6 +65,7 @@ class AppLogRepository:
         date_to: date | None = None,
         offset: int = 0,
         limit: int = 50,
+        sort: str = "when_desc",
     ) -> tuple[list[AppLog], int]:
         query: dict[str, Any] = {}
         if level:
@@ -85,9 +86,10 @@ class AppLogRepository:
             query["occurred_at"] = occurred
 
         total = await self.db.app_logs.count_documents(query)
+        occurred_dir = 1 if sort == "when_asc" else -1
         cursor = (
             self.db.app_logs.find(query)
-            .sort("occurred_at", -1)
+            .sort("occurred_at", occurred_dir)
             .skip(offset)
             .limit(limit)
         )
