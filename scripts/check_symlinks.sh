@@ -9,6 +9,11 @@ allowed_prefixes=(
   "./client/node_modules/"
   "./docs/node_modules/"
   "./server/.venv/"
+  # Shared agent config (Cursor / Antigravity / Claude) — see .agents/, .claude/
+  "./.agents/"
+  "./.claude/"
+  "./.cursor/mcp.json"
+  "./.mcp.json"
 )
 
 is_allowed() {

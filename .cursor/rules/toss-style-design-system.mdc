@@ -1,7 +1,0 @@
----
-description: Toss-style UI design rules for disciplined spacing, typography, grayscale hierarchy, restrained color, cards, metrics, dark mode, and accessibility
-globs: ["client/src/**/*.vue", "client/src/**/*.css", "client/src/**/*.scss", "client/tailwind.config.*"]
-alwaysApply: false
----
-
-When this rule applies, follow the `toss-style-design-system` skill: read `.cursor/skills/toss-style-design-system/SKILL.md` and apply it.

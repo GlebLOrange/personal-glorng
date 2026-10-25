@@ -1,0 +1,6 @@
+---
+description: Branch before edits, safety for commits/secrets/tests, verify packages before new imports
+alwaysApply: true
+---
+
+When this rule applies, follow the `agent-workflow` skill: read `.cursor/skills/agent-workflow/SKILL.md` and apply it.

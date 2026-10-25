@@ -1,0 +1,7 @@
+---
+description: Portfolio UI visual language and UX/a11y priorities for the Vue client
+globs: ["client/src/**/*.vue", "client/src/**/*.css", "client/src/**/*.scss", "client/tailwind.config.*"]
+alwaysApply: false
+---
+
+When this rule applies, follow the `client-ui` skill: read `.cursor/skills/client-ui/SKILL.md` and apply it.

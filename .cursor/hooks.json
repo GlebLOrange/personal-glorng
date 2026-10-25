@@ -3,7 +3,7 @@
   "hooks": {
     "sessionStart": [
       {
-        "command": ".cursor/hooks/session-start.sh"
+        "command": ".cursor/hooks/session-start.sh cursor"
       }
     ]
   }

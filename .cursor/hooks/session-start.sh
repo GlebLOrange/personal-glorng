@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+host="${1:-cursor}"
 branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
 
-python3 - <<'PY' "$branch"
+python3 - <<'PY' "$branch" "$host"
 import json
 import sys
 
 branch = sys.argv[1]
+host = sys.argv[2]
 context = f"""Git workflow for this repository:
 - Base branch: main
 - Create a feature branch before making code changes unless already on cursor/* or an explicit feature branch
@@ -17,5 +19,18 @@ context = f"""Git workflow for this repository:
 - Do not commit or push to main unless the user explicitly asks
 - Current branch: {branch}"""
 
-print(json.dumps({"additional_context": context}))
+if host == "antigravity":
+    print(
+        json.dumps(
+            {
+                "injectSteps": [
+                    {"systemMessage": {"systemMessage": context}},
+                ]
+            }
+        )
+    )
+elif host == "claude":
+    print(json.dumps({"additionalContext": context}))
+else:
+    print(json.dumps({"additional_context": context}))
 PY
