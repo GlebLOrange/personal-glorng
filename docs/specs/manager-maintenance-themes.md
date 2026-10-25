@@ -38,10 +38,11 @@ Success: on a maintenance-shaped ask, Manager inspects the repo and returns ≤3
 
 | Theme | Anchors | What to look for |
 |-------|---------|------------------|
-| **Backups** | [`scripts/db_maintenance.sh`](../../scripts/db_maintenance.sh), [`docs/operations/backup-restore.md`](../operations/backup-restore.md), `make backup` / `make backup-install`, admin maintenance APIs | Offsite/`BACKUP_REQUIRE_OFFSITE`, restore drill, `LAST_SUCCESS` / stale check gaps vs docs |
-| **Sanitize** | [`server/app/core/text.py`](../../server/app/core/text.py), [`client/src/utils/sanitizeEmailHtml.ts`](../../client/src/utils/sanitizeEmailHtml.ts), guest/converter sanitizers, [`docs/reference/security.md`](../reference/security.md) | Unsanitized `v-html`, missing schema validators on new inputs |
-| **Cleanup** | fileshare `cleanup_expired` + Celery job, backup rotation, temp/download cleanup (e.g. viddownload) | Expired data left on disk, missing periodic jobs, incomplete rotation |
-| **DRY** | Only when search finds duplicated logic | Scoped extract — not speculative “refactor everything” |
+| **Backups** | [`scripts/db_maintenance.sh`](../../scripts/db_maintenance.sh), [`docs/operations/backup-restore.md`](../operations/backup-restore.md), `make backup` / `make backup-install`, admin jobs `backup`/`stale` on `/admin/db-maintenance` | Offsite/`BACKUP_REQUIRE_OFFSITE`, restore drill, `LAST_SUCCESS` / stale check gaps vs docs |
+| **Sanitize** | [`server/app/core/text.py`](../../server/app/core/text.py), [`client/src/utils/sanitizeEmailHtml.ts`](../../client/src/utils/sanitizeEmailHtml.ts), guest/converter sanitizers, [`docs/reference/security.md`](../reference/security.md); agent preflight via `/maintain` | Unsanitized `v-html`, missing schema validators on new inputs |
+| **Cleanup** | fileshare `cleanup_expired` + Celery job, admin job `cleanup`, backup rotation, temp/download cleanup (e.g. viddownload) | Expired data left on disk, missing periodic jobs, incomplete rotation |
+| **DRY** | Only when search finds duplicated logic; agent preflight via `/maintain` | Scoped extract — not speculative “refactor everything” |
+| **Seed / sync** | Admin jobs `seed` / `sync` on `/admin/db-maintenance`; CLI `make seed-db` | Seed gated in production unless `MAINTENANCE_SEED_ENABLED`; calendar sync batch ceiling |
 
 ## Commands
 
