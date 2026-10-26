@@ -11,6 +11,8 @@ How to change Gleb.Y and open a pull request.
 
 Do not push directly to `main`. Never commit `.env` or credentials.
 
+- **2026-10-26:** Local cleanup deletes only branches merged into `main` and branches whose upstream is gone. Keep `main` and any branch checked out in a live worktree; `git fetch --prune` drops stale remote-tracking refs. Leave unmerged branches that still have a remote.
+
 ## Where facts live
 
 | Topic | Page |
