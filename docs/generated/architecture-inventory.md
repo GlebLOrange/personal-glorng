@@ -10,7 +10,7 @@ Auto-generated from [`server/app/platform/registry.py`](../../server/app/platfor
 | Slug | Category | API prefix | Admin route | Public | Public route | Capabilities |
 |------|----------|------------|-------------|--------|--------------|--------------|
 | tasks | productivity | `/tasks` | `/tasks` | no | — | read |
-| email | productivity | `/email` | `/admin/send-email` | no | — | write |
+| email | productivity | `/email` | `/tools/send-email` | no | — | write |
 | expenses | productivity | `/expenses` | `/expenses` | no | — | read, write |
 | recipes | content | `/recipes` | `/recipes` | yes | — | read, write |
 | news | content | `/tools/news` | `/admin/news` | no | — | read, write |

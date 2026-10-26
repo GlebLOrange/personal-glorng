@@ -123,9 +123,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/admin/send-email",
-    name: "tool-email",
-    component: () => import("@/pages/admin/tools/EmailTool.vue"),
-    meta: { requiresAuth: true, title: "Send email", noindex: true },
+    redirect: { name: "tool-email" },
   },
   {
     path: "/admin/news",
@@ -219,11 +217,65 @@ const routes: RouteRecordRaw[] = [
       description: "Curated news summary with source attribution.",
     },
   },
+  // Compact tab window for small utilities — each child keeps its public URL.
   {
-    path: "/calculator",
-    name: "calculator",
-    component: () => import("@/pages/tools/CalculatorTool.vue"),
-    meta: { title: "Calculator", description: "Quick math calculations.", noindex: true },
+    component: () => import("@/components/tools/SmallToolsWindow.vue"),
+    children: [
+      {
+        path: "/calculator",
+        name: "calculator",
+        component: () => import("@/pages/tools/CalculatorTool.vue"),
+        meta: { title: "Calculator", description: "Quick math calculations.", noindex: true },
+      },
+      {
+        path: "/password-generator",
+        name: "password-generator",
+        component: () => import("@/pages/tools/PasswordGeneratorTool.vue"),
+        meta: {
+          title: "Password generator",
+          description: "Generate strong random passwords.",
+          noindex: true,
+        },
+      },
+      {
+        path: "/qr-generator",
+        name: "qr-generator",
+        component: () => import("@/pages/tools/QrGeneratorTool.vue"),
+        meta: {
+          title: "QR generator",
+          description: "Generate QR codes as downloadable SVG.",
+          noindex: true,
+        },
+      },
+      {
+        path: "/vid-download",
+        name: "vid-download",
+        component: () => import("@/pages/tools/VidDownloadTool.vue"),
+        meta: {
+          requiresAuth: true,
+          title: "Video downloader",
+          description: "Download videos with yt-dlp.",
+          noindex: true,
+        },
+      },
+      {
+        path: "/tools/send-email",
+        name: "tool-email",
+        component: () => import("@/pages/admin/tools/EmailTool.vue"),
+        meta: { requiresAuth: true, title: "Send email", noindex: true },
+      },
+      {
+        path: "/weather",
+        name: WEATHER_ROUTE_NAME,
+        component: () => import("@/pages/WeatherPage.vue"),
+        meta: {
+          scrollRestore: "live",
+          title: "Weather",
+          description: "Weather lookup, saved locations, and local time.",
+          noindex: true,
+        },
+      },
+    ],
   },
   // Alias used by some tool catalogs / history; keep the real page at /calculator.
   {
@@ -233,26 +285,6 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/expense-calculator",
     redirect: { name: "tool-expenses" },
-  },
-  {
-    path: "/password-generator",
-    name: "password-generator",
-    component: () => import("@/pages/tools/PasswordGeneratorTool.vue"),
-    meta: {
-      title: "Password generator",
-      description: "Generate strong random passwords.",
-      noindex: true,
-    },
-  },
-  {
-    path: "/qr-generator",
-    name: "qr-generator",
-    component: () => import("@/pages/tools/QrGeneratorTool.vue"),
-    meta: {
-      title: "QR generator",
-      description: "Generate QR codes as downloadable SVG.",
-      noindex: true,
-    },
   },
   {
     path: "/recipes",
@@ -270,17 +302,6 @@ const routes: RouteRecordRaw[] = [
     name: "shortener",
     component: () => import("@/pages/tools/UrlShortenerTool.vue"),
     meta: { title: "URL shortener", description: "Create and manage short URLs.", noindex: true },
-  },
-  {
-    path: "/vid-download",
-    name: "vid-download",
-    component: () => import("@/pages/tools/VidDownloadTool.vue"),
-    meta: {
-      requiresAuth: true,
-      title: "Video downloader",
-      description: "Download videos with yt-dlp.",
-      noindex: true,
-    },
   },
   {
     path: "/file-share",
@@ -322,17 +343,6 @@ const routes: RouteRecordRaw[] = [
     name: "oauth-callback",
     component: () => import("@/pages/CallbackPage.vue"),
     meta: { requiresAuth: true, title: "GitHub callback", noindex: true },
-  },
-  {
-    path: "/weather",
-    name: WEATHER_ROUTE_NAME,
-    component: () => import("@/pages/WeatherPage.vue"),
-    meta: {
-      scrollRestore: "live",
-      title: "Weather",
-      description: "Weather lookup, saved locations, and local time.",
-      noindex: true,
-    },
   },
   {
     path: "/time-date-weather-location",

@@ -16,6 +16,7 @@ const PINNED_TOOLS_ROUTE_NAMES = new Set<string>([
   "recipes",
   "shortener",
   "vid-download",
+  "tool-email",
 ]);
 
 const route = useRoute();

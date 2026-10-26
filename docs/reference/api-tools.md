@@ -45,7 +45,7 @@ Regenerate after router or registry changes: `make docs-generate`.
 
 - **Public tools** appear on **`/tools`** ([`ToolsPage.vue`](../../client/src/pages/ToolsPage.vue)) and are rate-limited. Capability gates still apply on write paths where noted in OpenAPI summaries.
 - **QR generator:** public `POST /api/tools/qr-generator` (ephemeral inline SVG). Owner library at `/api/tools/qr-generator/library` (`GET` list preview-only, `POST`/`PATCH`/`DELETE`, `GET /{id}`, `GET /{id}/svg`) requires `qr-generator:read` / `write`.
-- **Admin hub** lives under **`/admin/*`** (feedback, audit-logs, app-logs, search, ai-chat, send-email, api docs, users). Capability tools use top-level paths (`/tasks`, `/expenses`, `/news`, …). API prefix is usually **`/api/tools/<slug>`** (feedback uses **`/api/feedback`**; news sources are **`/api/tools/news/sources`**).
+- **Admin hub** lives under **`/admin/*`** (feedback, audit-logs, app-logs, search, ai-chat, api docs, users). Send email is **`/tools/send-email`** (old `/admin/send-email` redirects). Capability tools use top-level paths (`/tasks`, `/expenses`, `/news`, …). API prefix is usually **`/api/tools/<slug>`** (feedback uses **`/api/feedback`**; news sources are **`/api/tools/news/sources`**).
 - **AI chat** requires `platform:superuser` plus `AI_CHAT_ENABLED` + `GROQ_API_KEY`.
 
 See the [architecture inventory](/generated/architecture-inventory) for slug, capability, and route columns.
