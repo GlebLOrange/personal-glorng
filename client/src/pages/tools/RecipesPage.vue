@@ -128,10 +128,10 @@ function editRecipeFromCard(recipe: Recipe): void {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
-    description="Personal recipe list with cook mode — saved to your account when signed in."
+    description="Personal recipe list with cook mode."
   >
     <div v-if="!isAuthenticated" class="min-w-0 space-y-3" aria-label="sample recipes">
-      <p class="text-sm text-surface-mid">sample recipes (sign in to load your book)</p>
+      <p class="text-sm text-surface-mid">sample recipes</p>
       <ul class="space-y-2">
         <li
           v-for="recipe in SAMPLE_RECIPES"

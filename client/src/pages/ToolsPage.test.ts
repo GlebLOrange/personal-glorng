@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ToolsPage from "@/pages/ToolsPage.vue";
 import { publicToolsAsServices } from "@/platform/services";
-import { useAuthStore } from "@/stores/auth";
 import { groupServicesForToolsPage } from "@/utils/toolsPageGroups";
 
 const useRouteMock = vi.fn(() => ({ query: {} as Record<string, string> }));
@@ -63,15 +62,14 @@ describe("ToolsPage spoiler catalog", () => {
     });
   }
 
-  it("opens utils and content spoilers; utils is tab pills only for guests", async () => {
+  it("shows static utils pills and open content spoilers for guests", async () => {
     const wrapper = mountPage();
     await flushPromises();
 
-    const spoilers = wrapper.findAll("details");
-    expect(spoilers.length).toBeGreaterThanOrEqual(2);
-    expect(spoilers.every((el) => el.attributes("open") !== undefined)).toBe(true);
-
     const utils = wrapper.get("#utils");
+    expect(utils.element.tagName.toLowerCase()).toBe("section");
+    expect(utils.text()).toContain("•");
+    expect(utils.text()).not.toContain("▸");
     expect(utils.find('[aria-label="utils tools"]').exists()).toBe(true);
     expect(utils.text()).toContain("weather");
     expect(utils.text()).toContain("calculator");
@@ -83,6 +81,11 @@ describe("ToolsPage spoiler catalog", () => {
     expect(utils.text()).not.toContain("demo");
     expect(utils.findAll("h3, h4")).toHaveLength(0);
 
+    const spoilers = wrapper.findAll("details");
+    expect(spoilers.length).toBeGreaterThanOrEqual(1);
+    expect(spoilers.every((el) => el.attributes("open") !== undefined)).toBe(true);
+    expect(spoilers.some((el) => el.attributes("id") === "utils")).toBe(false);
+
     expect(wrapper.text()).toContain("content");
     expect(wrapper.text()).toContain("recipes");
     expect(wrapper.text()).toContain("short links");
@@ -93,23 +96,15 @@ describe("ToolsPage spoiler catalog", () => {
     expect(wrapper.get('[data-testid="crumbs"]').text()).toBe("tools");
   });
 
-  it("shows Video pill when authenticated with access", async () => {
-    const auth = useAuthStore();
-    auth.sessionResolved = true;
-    auth.user = {
-      id: 1,
-      email: "op@example.com",
-      display_name: "op",
-      is_active: true,
-      permissions: ["vid-download:read"],
-    } as never;
+  it("shows video as a content tile when authenticated with access", async () => {
     canAccessMock.mockImplementation((slug: string) => slug === "vid-download");
 
     const wrapper = mountPage();
     await flushPromises();
 
-    expect(wrapper.get("#utils").text()).toContain("video downloader");
-    expect(wrapper.get("#utils").text()).not.toContain("save videos");
+    expect(wrapper.get("#utils").text()).not.toContain("video downloader");
+    expect(wrapper.get("#content").text()).toContain("video downloader");
+    expect(tileTitleCount(wrapper, "video downloader")).toBe(1);
   });
 
   it("shows yours chips on content tiles when canAccess allows extras", async () => {

@@ -42,8 +42,6 @@ describe("toolsPageGroups", () => {
       "calculator",
       "password-generator",
       "qr-generator",
-      "vid-download",
-      "email",
     ]);
     expect(sections.find((s) => s.category === "content")?.services.map((t) => t.slug)).toEqual([
       "recipes",
@@ -51,7 +49,9 @@ describe("toolsPageGroups", () => {
       "expenses",
       "url-shortener",
       "file-share",
+      "vid-download",
       "data-extract",
+      "email",
       "ai-chat",
       "health-checker",
       "news",
@@ -77,10 +77,12 @@ describe("toolsPageGroups", () => {
     expect(toolsPageChipForSlug("recipes")).toBe("demo");
     expect(toolsPageChipForSlug("url-shortener")).toBe("demo");
     expect(toolsPageChipForSlug("tasks")).toBe("yours");
+    expect(toolsPageChipForSlug("vid-download")).toBe("yours");
     expect(toolsPageChipForSlug("data-extract")).toBe("yours");
     expect(toolsPageChipForSlug("news")).toBeUndefined();
     expect(toolsPageGroupForSlug("file-share")).toBe("content");
-    expect(toolsPageGroupForSlug("vid-download")).toBe("utils");
+    expect(toolsPageGroupForSlug("vid-download")).toBe("content");
+    expect(toolsPageGroupForSlug("email")).toBe("content");
     expect(toolsPageGroupForSlug("feedback")).toBe("server");
   });
 });

@@ -218,7 +218,9 @@ const routes: RouteRecordRaw[] = [
     },
   },
   // Compact tab window for small utilities — each child keeps its public URL.
+  // Parent path is a non-URL shell so absolute children keep nesting without stealing `/`.
   {
+    path: "/_small-tools",
     component: () => import("@/components/tools/SmallToolsWindow.vue"),
     children: [
       {

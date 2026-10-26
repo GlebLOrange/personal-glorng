@@ -67,7 +67,7 @@ const pageDescription = computed(() => {
   }
   return canWriteLibrary.value
     ? `${base} Save to your library to reuse codes (your list only).`
-    : `${base} Sign in to save codes to your library.`;
+    : base;
 });
 
 function payloadBody() {

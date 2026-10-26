@@ -167,16 +167,6 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       >
         logout
       </button>
-      <RouterLink
-        v-else
-        to="/login"
-        class="nav-link-quiet text-sm px-3 py-3 rounded-lg hover:bg-surface-card"
-        :class="{ 'text-accent-coral': navSection === 'login' }"
-        :aria-current="navSection === 'login' ? 'page' : undefined"
-        @click="emit('close')"
-      >
-        login
-      </RouterLink>
     </div>
   </div>
 </template>

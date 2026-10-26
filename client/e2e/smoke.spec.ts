@@ -91,7 +91,6 @@ test.describe("public pages", () => {
     await page.goto("/shortener");
     await expect(page.getByRole("heading", { name: /url shortener/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /shorten/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /sign in to manage/i })).toBeVisible();
   });
 
   test("guest is redirected from video download to login", async ({ page }) => {

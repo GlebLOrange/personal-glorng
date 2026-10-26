@@ -72,7 +72,7 @@ watch(isLocalMode, (local) => {
 
 const pageDescription = computed(() =>
   isLocalMode.value
-    ? "Short links are saved in this browser only — codes do not redirect at /s/{code}. Sign in with url-shortener access for live redirects."
+    ? "Short links are saved in this browser only — codes do not redirect at /s/{code}."
     : "Short links resolve at /s/{code} — a FastAPI redirect, not a Vue page. Example path: /s/demo.",
 );
 

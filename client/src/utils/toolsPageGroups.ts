@@ -32,16 +32,16 @@ const YOURS_CHIP_SLUGS = new Set([
 ]);
 
 /**
- * Utils = small-window tab peers only.
- * Non-tab former utils (url-shortener, file-share, …) live under content as tiles.
+ * Utils = small-window tab peers only (weather / calc / password / QR).
+ * Video, email, and other non-tab tools live under content as tiles.
  */
 const SLUG_TO_GROUP: Record<string, ToolsPageGroupId> = {
   weather: "utils",
   calculator: "utils",
   "password-generator": "utils",
   "qr-generator": "utils",
-  "vid-download": "utils",
-  email: "utils",
+  "vid-download": "content",
+  email: "content",
   recipes: "content",
   tasks: "content",
   expenses: "content",
@@ -66,18 +66,18 @@ const SLUG_ORDER: Record<string, number> = {
   calculator: 1,
   "password-generator": 2,
   "qr-generator": 3,
-  "vid-download": 4,
-  email: 5,
   recipes: 0,
   tasks: 1,
   expenses: 2,
   "url-shortener": 3,
   "file-share": 4,
-  "data-extract": 5,
-  "ai-chat": 6,
-  "health-checker": 7,
-  news: 8,
-  "news-sources": 9,
+  "vid-download": 5,
+  "data-extract": 6,
+  email: 7,
+  "ai-chat": 8,
+  "health-checker": 9,
+  news: 10,
+  "news-sources": 11,
   feedback: 0,
   search: 1,
   "api-docs": 2,
