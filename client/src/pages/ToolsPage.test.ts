@@ -39,7 +39,7 @@ vi.mock("@/utils/featureFlags", async (importOriginal) => {
 
 import { isAiChatEnabled } from "@/utils/featureFlags";
 
-describe("ToolsPage sectioned layout", () => {
+describe("ToolsPage spoiler catalog", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     useRouteMock.mockReturnValue({ query: {} });
@@ -62,48 +62,43 @@ describe("ToolsPage sectioned layout", () => {
     });
   }
 
-  it("shows Everyday and Content with demo chips for guests", async () => {
+  it("shows closed utils and content spoilers with demo chips for guests", async () => {
     const wrapper = mountPage();
     await flushPromises();
 
+    const spoilers = wrapper.findAll("details");
+    expect(spoilers.length).toBeGreaterThanOrEqual(2);
+    expect(spoilers.every((el) => !el.attributes("open"))).toBe(true);
     expect(wrapper.findAll('[role="tab"]')).toHaveLength(0);
-    expect(wrapper.find('nav[aria-label="tool sections"]').exists()).toBe(false);
-    expect(wrapper.text()).toContain("Everyday");
-    expect(wrapper.text()).toContain("Content");
-    expect(wrapper.text()).toContain("4 tools");
-    expect(wrapper.text()).toContain("2 tools");
+    expect(wrapper.text()).toContain("utils");
+    expect(wrapper.text()).toContain("content");
+    expect(wrapper.text()).not.toContain("server");
     expect(wrapper.text()).toContain("recipes");
     expect(wrapper.text()).toContain("calculator");
     expect(wrapper.text()).toContain("short links");
     expect(wrapper.text()).toContain("quick math");
     expect(wrapper.text()).toContain("demo");
     expect(wrapper.text()).not.toContain("expenses");
-    expect(wrapper.text()).not.toContain("productivity");
-    expect(wrapper.text()).not.toContain("utilities");
+    expect(wrapper.text()).not.toContain("Everyday");
     expect(wrapper.text()).not.toContain("Work");
     expect(wrapper.text()).not.toContain("Builders");
-    expect(wrapper.text()).not.toContain("news");
-    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
     expect(wrapper.text()).not.toContain("audit logs");
     expect(wrapper.get('[data-testid="crumbs"]').text()).toBe("tools");
   });
 
-  it("shows Work and Builders with yours chips when canAccess allows", async () => {
+  it("shows yours chips when canAccess allows extras", async () => {
     canAccessMock.mockImplementation((slug: string) =>
       ["tasks", "file-share", "vid-download", "data-extract"].includes(slug),
     );
     const wrapper = mountPage();
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Work");
-    expect(wrapper.text()).toContain("Builders");
     expect(wrapper.text()).toContain("yours");
     expect(wrapper.text()).toContain("tasks and reminders");
     expect(wrapper.text()).toContain("share files");
     expect(wrapper.text()).toContain("save videos");
     expect(wrapper.text()).toContain("rows from files");
-    expect(wrapper.find('nav[aria-label="tool sections"]').exists()).toBe(false);
-    expect(wrapper.text()).not.toContain("your tools");
+    expect(wrapper.text()).not.toContain("server");
   });
 
   it("shows expenses-off notice when redirected with expenses=off", async () => {
@@ -120,14 +115,14 @@ describe("ToolsPage sectioned layout", () => {
     expect(wrapper.text()).toContain("You do not have access to that admin tool");
   });
 
-  it("hides admin hub tiles from capability-only users", async () => {
+  it("hides server and admin tiles from capability-only users", async () => {
     canAccessMock.mockImplementation((slug: string) => slug === "feedback");
     isSuperuserRef.value = false;
 
     const wrapper = mountPage();
     await flushPromises();
 
-    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
+    expect(wrapper.text()).not.toContain("server");
     expect(wrapper.text()).not.toContain("audit logs");
   });
 
@@ -135,15 +130,16 @@ describe("ToolsPage sectioned layout", () => {
     return wrapper.findAll("h3, h4").filter((heading) => heading.text().trim() === name).length;
   }
 
-  it("shows admin hub tiles for superusers without duplicating catalog tools", async () => {
+  it("shows server spoiler for superusers without duplicating catalog tools", async () => {
     isSuperuserRef.value = true;
 
     const wrapper = mountPage();
     await flushPromises();
 
-    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
+    expect(wrapper.text()).toContain("server");
     expect(wrapper.text()).toContain("audit logs");
     expect(wrapper.text()).toContain("ai chat");
+    expect(wrapper.findAll("details").some((el) => el.attributes("id") === "server")).toBe(true);
     expect(tileTitleCount(wrapper, "weather")).toBe(1);
     expect(tileTitleCount(wrapper, "url shortener")).toBe(1);
     expect(tileTitleCount(wrapper, "recipes")).toBe(1);
@@ -161,33 +157,30 @@ describe("ToolsPage sectioned layout", () => {
     expect(wrapper.text()).toContain("audit logs");
   });
 
-  it("omits ai chat from admin tiles when the feature flag is off", async () => {
+  it("omits ai chat when the feature flag is off", async () => {
     vi.mocked(isAiChatEnabled).mockReturnValue(false);
     isSuperuserRef.value = true;
 
     const wrapper = mountPage();
     await flushPromises();
 
-    expect(wrapper.findAll("h2").some((h) => h.text() === "admin")).toBe(false);
     expect(wrapper.text()).toContain("audit logs");
     expect(wrapper.text()).not.toContain("ai chat");
   });
 });
 
 describe("tools page group order", () => {
-  it("lists Everyday utilities then Content without platform category labels", () => {
+  it("lists utils then content without platform category labels", () => {
     const sections = groupServicesForToolsPage(publicToolsAsServices());
-    expect(sections.map((s) => s.label)).toEqual(["Everyday", "Content"]);
+    expect(sections.map((s) => s.label)).toEqual(["utils", "content"]);
     expect(sections[0]?.services.map((tool) => tool.slug)).toEqual([
       "weather",
       "calculator",
       "password-generator",
       "qr-generator",
-    ]);
-    expect(sections[1]?.services.map((tool) => tool.slug)).toEqual([
       "url-shortener",
-      "recipes",
     ]);
+    expect(sections[1]?.services.map((tool) => tool.slug)).toEqual(["recipes"]);
   });
 
   it("excludes health-checker and vid-download from the guest public catalog", () => {

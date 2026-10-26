@@ -151,7 +151,7 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
         :id="activeTab ? tabPanelId(activeTab.id) : undefined"
         role="tabpanel"
         :aria-labelledby="activeTab ? tabButtonId(activeTab.id) : undefined"
-        class="h-[32rem] overflow-y-auto overscroll-contain rounded-lg border border-transparent bg-surface-card/40 p-3"
+        class="h-[28rem] overflow-y-auto overscroll-contain rounded-lg border border-transparent bg-surface-card/40 p-3"
       >
         <RouterView />
       </div>

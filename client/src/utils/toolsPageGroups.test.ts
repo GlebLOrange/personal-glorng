@@ -12,46 +12,74 @@ import {
 } from "@/utils/toolsPageGroups";
 
 describe("toolsPageGroups", () => {
-  it("maps public slugs into Everyday then Content order", () => {
+  it("maps public slugs into utils then content order", () => {
     const sections = groupServicesForToolsPage(publicToolsAsServices());
-    expect(sections.map((s) => s.category)).toEqual(["everyday", "content"]);
+    expect(sections.map((s) => s.category)).toEqual(["utils", "content"]);
     expect(sections[0]?.services.map((t) => t.slug)).toEqual([
       "weather",
       "calculator",
       "password-generator",
       "qr-generator",
+      "url-shortener",
     ]);
-    expect(sections[1]?.services.map((t) => t.slug)).toEqual(["url-shortener", "recipes"]);
+    expect(sections[1]?.services.map((t) => t.slug)).toEqual(["recipes"]);
   });
 
-  it("places Work and Builders extras without changing platform categories", () => {
+  it("places extras and admin hub tools into utils / content / server", () => {
     const extras = PLATFORM_SERVICES.filter((tool) => TOOLS_PAGE_EXTRA_SLUGS.has(tool.slug));
-    const sections = groupServicesForToolsPage([...publicToolsAsServices(), ...extras]);
-    expect(sections.map((s) => s.category)).toEqual([
-      "everyday",
-      "content",
-      "work",
-      "builders",
+    const hub = PLATFORM_SERVICES.filter((tool) =>
+      ["email", "ai-chat", "health-checker", "news", "news-sources", "feedback", "audit"].includes(
+        tool.slug,
+      ),
+    );
+    const sections = groupServicesForToolsPage([
+      ...publicToolsAsServices(),
+      ...extras,
+      ...hub,
     ]);
-    expect(sections.find((s) => s.category === "work")?.services.map((t) => t.slug)).toEqual([
-      "tasks",
-      "expenses",
+    expect(sections.map((s) => s.category)).toEqual(["utils", "content", "server"]);
+    expect(sections.find((s) => s.category === "utils")?.services.map((t) => t.slug)).toEqual([
+      "weather",
+      "calculator",
+      "password-generator",
+      "qr-generator",
+      "url-shortener",
       "file-share",
-    ]);
-    expect(sections.find((s) => s.category === "builders")?.services.map((t) => t.slug)).toEqual([
       "vid-download",
       "data-extract",
+      "email",
+      "ai-chat",
+      "health-checker",
+    ]);
+    expect(sections.find((s) => s.category === "content")?.services.map((t) => t.slug)).toEqual([
+      "recipes",
+      "tasks",
+      "expenses",
+      "news",
+      "news-sources",
+    ]);
+    expect(sections.find((s) => s.category === "server")?.services.map((t) => t.slug)).toEqual([
+      "feedback",
+      "audit",
     ]);
     expect(PLATFORM_SERVICES.find((t) => t.slug === "tasks")?.category).toBe("productivity");
     expect(PLATFORM_SERVICES.find((t) => t.slug === "weather")?.category).toBe("utilities");
   });
 
-  it("returns demo chips for public tools and yours for Work/Builders", () => {
+  it("dedupes by slug when the same tool appears twice", () => {
+    const weather = PLATFORM_SERVICES.find((t) => t.slug === "weather")!;
+    const sections = groupServicesForToolsPage([weather, weather]);
+    expect(sections[0]?.services).toHaveLength(1);
+  });
+
+  it("returns demo chips for public tools and yours for capability extras", () => {
     expect(toolsPageChipForSlug("weather")).toBe("demo");
     expect(toolsPageChipForSlug("recipes")).toBe("demo");
+    expect(toolsPageChipForSlug("url-shortener")).toBe("demo");
     expect(toolsPageChipForSlug("tasks")).toBe("yours");
     expect(toolsPageChipForSlug("data-extract")).toBe("yours");
     expect(toolsPageChipForSlug("news")).toBeUndefined();
-    expect(toolsPageGroupForSlug("file-share")).toBe("work");
+    expect(toolsPageGroupForSlug("file-share")).toBe("utils");
+    expect(toolsPageGroupForSlug("feedback")).toBe("server");
   });
 });

@@ -8,7 +8,6 @@ import EmptyState from "@/components/ui/EmptyState.vue";
 import { usePermissions } from "@/composables/usePermissions";
 import {
   ADMIN_HUB_SERVICE_SLUGS,
-  groupAdminHub,
   PLATFORM_SERVICES,
   publicToolsAsServices,
   resolveToolRoute,
@@ -28,44 +27,38 @@ const expensesOffNotice = computed(() => String(route.query.expenses ?? "") === 
 const aiChatOffNotice = computed(() => String(route.query.aichat ?? "") === "off");
 const accessDeniedNotice = computed(() => String(route.query.access ?? "") === "denied");
 
-const catalogTools = computed((): PlatformService[] => {
-  const publicTools = publicToolsAsServices().filter(
-    (tool) => !(tool.slug === "expenses" && !isExpensesEnabled()),
-  );
-  const extras = PLATFORM_SERVICES.filter((tool) => {
-    if (!TOOLS_PAGE_EXTRA_SLUGS.has(tool.slug)) return false;
-    if (tool.slug === "expenses" && !isExpensesEnabled()) return false;
-    return canAccess(tool.slug);
-  });
-  return [...publicTools, ...extras];
+/** Public + capability extras + (superuser-only) admin hub tiles — one list, slug-deduped. */
+const visibleTools = computed((): PlatformService[] => {
+  const bySlug = new Map<string, PlatformService>();
+
+  for (const tool of publicToolsAsServices()) {
+    if (tool.slug === "expenses" && !isExpensesEnabled()) continue;
+    bySlug.set(tool.slug, tool);
+  }
+
+  for (const tool of PLATFORM_SERVICES) {
+    if (!TOOLS_PAGE_EXTRA_SLUGS.has(tool.slug)) continue;
+    if (tool.slug === "expenses" && !isExpensesEnabled()) continue;
+    if (!canAccess(tool.slug)) continue;
+    bySlug.set(tool.slug, tool);
+  }
+
+  if (isSuperuser.value) {
+    for (const tool of PLATFORM_SERVICES) {
+      if (!ADMIN_HUB_SERVICE_SLUGS.has(tool.slug)) continue;
+      if (tool.slug === "ai-chat" && !isAiChatEnabled()) continue;
+      if (!tool.adminRoute) continue;
+      if (bySlug.has(tool.slug)) continue;
+      bySlug.set(tool.slug, tool);
+    }
+  }
+
+  return [...bySlug.values()];
 });
 
-/** Ops hub tiles — only for logged-in superadmin on /tools. */
-const adminTools = computed((): PlatformService[] => {
-  if (!isSuperuser.value) return [];
-  const catalogSlugs = new Set(catalogTools.value.map((tool) => tool.slug));
-  return PLATFORM_SERVICES.filter((tool) => {
-    if (!ADMIN_HUB_SERVICE_SLUGS.has(tool.slug)) return false;
-    if (catalogSlugs.has(tool.slug)) return false;
-    if (tool.slug === "ai-chat" && !isAiChatEnabled()) return false;
-    return Boolean(tool.adminRoute);
-  });
-});
+const sections = computed(() => groupServicesForToolsPage(visibleTools.value));
 
-const sections = computed(() => groupServicesForToolsPage(catalogTools.value));
-/** Prefix hub section ids so they do not collide with catalog ids (e.g. content). */
-const adminSections = computed(() =>
-  groupAdminHub(adminTools.value).map((section) => ({
-    ...section,
-    category: `hub-${section.category}`,
-  })),
-);
-
-const hasAnyTools = computed(
-  () =>
-    sections.value.some((section) => section.services.length > 0) ||
-    adminSections.value.length > 0,
-);
+const hasAnyTools = computed(() => sections.value.some((section) => section.services.length > 0));
 
 function toolRoute(tool: PlatformService): string {
   return resolveToolRoute(tool, can);
@@ -101,22 +94,40 @@ function toolRoute(tool: PlatformService): string {
       You do not have access to that admin tool. Pick something below, or ask the site owner.
     </p>
     <EmptyState v-if="!hasAnyTools" description="no tools available." />
-    <template v-else>
-      <ToolTileGrid
-        v-if="sections.length"
-        presentation="public"
-        :sections="sections"
-        :resolve-route="toolRoute"
-        :tile-chip="toolsPageChipForSlug"
-      />
-      <ToolTileGrid
-        v-if="adminSections.length"
-        presentation="admin"
-        density="compact"
-        :sections="adminSections"
-        :resolve-route="toolRoute"
-        category-heading="h3"
-      />
-    </template>
+    <div v-else class="space-y-3">
+      <details
+        v-for="section in sections"
+        :id="section.category"
+        :key="section.category"
+        class="group rounded-lg border border-transparent bg-surface-card/40 open:border-surface-border"
+      >
+        <summary
+          class="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm font-semibold text-surface-light outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded-lg"
+        >
+          <span
+            class="inline-block text-surface-mid transition-transform duration-200 group-open:rotate-90"
+            aria-hidden="true"
+            >▸</span
+          >
+          <span aria-hidden="true">{{ section.label }}</span>
+          <span class="sr-only"
+            >{{ section.label }},
+            {{ section.services.length === 1 ? "1 tool" : `${section.services.length} tools` }}</span
+          >
+          <span class="ml-auto text-xs font-medium text-surface-mid" aria-hidden="true">{{
+            section.services.length
+          }}</span>
+        </summary>
+        <div class="border-t border-surface-border px-3 pb-3 pt-3">
+          <ToolTileGrid
+            presentation="public"
+            :sections="[section]"
+            :show-category-headings="false"
+            :resolve-route="toolRoute"
+            :tile-chip="toolsPageChipForSlug"
+          />
+        </div>
+      </details>
+    </div>
   </PageShell>
 </template>

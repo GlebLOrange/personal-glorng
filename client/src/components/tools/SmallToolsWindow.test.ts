@@ -150,6 +150,17 @@ describe("SmallToolsWindow", () => {
     wrapper.unmount();
   });
 
+  it("sizes the tool panel to the calculator frame", async () => {
+    const { wrapper } = await mountWindow("/calculator", false);
+
+    const panel = wrapper.get('[role="tabpanel"]');
+    expect(panel.classes()).toContain("h-[28rem]");
+    expect(panel.classes()).not.toContain("h-[32rem]");
+    expect(wrapper.find(".max-w-sm").exists()).toBe(true);
+
+    wrapper.unmount();
+  });
+
   it("switches route on arrow key navigation", async () => {
     const { wrapper, router } = await mountWindow("/weather", false);
 
