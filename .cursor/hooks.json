@@ -6,6 +6,13 @@
         "command": ".cursor/hooks/session-start.sh cursor"
       }
     ],
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/after-file-edit-mark.sh",
+        "failClosed": false,
+        "timeout": 5
+      }
+    ],
     "stop": [
       {
         "command": ".cursor/hooks/save-workspace-context.sh",
