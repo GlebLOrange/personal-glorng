@@ -1,19 +1,31 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import { useNotify } from "@/composables/useNotify";
 import { downloadResumeExport, resumeDownloadErrorMessage } from "@/utils/resumeDownload";
 
-defineProps<{
-  name: string;
-  title: string;
-  tagline?: string;
-  location?: string;
-  availability?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    name: string;
+    title: string;
+    tagline?: string;
+    location?: string;
+    availability?: string;
+    /** Quiet third meta chip for the public status-rail hero. */
+    sampleNote?: string;
+    /** `status-rail` = left-aligned public CV; default keeps the centered profile hero. */
+    layout?: "centered" | "status-rail";
+  }>(),
+  { layout: "centered" },
+);
 
 const emit = defineEmits<{ inquire: [] }>();
+
+const isStatusRail = computed(() => props.layout === "status-rail");
+const showMeta = computed(
+  () => Boolean(props.location || props.availability || (isStatusRail.value && props.sampleNote)),
+);
 
 const isDownloadingCv = ref(false);
 const showPrintFallback = ref(false);
@@ -41,16 +53,69 @@ function printPage(): void {
 </script>
 
 <template>
-  <div class="py-12 md:py-16 text-center">
-    <p class="mb-2 text-xl font-medium tracking-tight text-surface-light sm:text-2xl md:text-3xl">{{ name }}</p>
-    <h1 class="mb-3 text-balance text-2xl font-bold tracking-tight text-surface-light sm:text-3xl md:text-4xl">
+  <div
+    class="py-12 md:py-16"
+    :class="isStatusRail ? 'text-left' : 'text-center'"
+  >
+    <p
+      class="mb-2 font-medium tracking-tight text-surface-light"
+      :class="
+        isStatusRail
+          ? 'text-3xl sm:text-4xl md:text-5xl'
+          : 'text-xl sm:text-2xl md:text-3xl'
+      "
+    >
+      {{ name }}
+    </p>
+    <h1
+      class="mb-3 text-balance font-bold tracking-tight text-surface-light"
+      :class="
+        isStatusRail
+          ? 'text-xl sm:text-2xl md:text-3xl'
+          : 'text-2xl sm:text-3xl md:text-4xl'
+      "
+    >
       {{ title }}
     </h1>
-    <p v-if="tagline" class="text-lg text-surface-sage mb-3 text-pretty max-w-2xl mx-auto">
+    <p
+      v-if="tagline && !isStatusRail"
+      class="text-lg text-surface-sage mb-3 text-pretty max-w-2xl mx-auto"
+    >
       {{ tagline }}
     </p>
     <p
-      v-if="location || availability"
+      v-if="showMeta && isStatusRail"
+      class="text-meta mb-4 flex flex-wrap items-center justify-start gap-x-3 gap-y-1"
+    >
+      <a
+        v-if="availability"
+        href="#contacts"
+        class="inline-flex min-h-11 items-center px-1 text-meta underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
+      >
+        {{ availability }}
+      </a>
+      <span
+        v-if="availability && location"
+        class="hidden sm:inline-flex min-h-11 items-center"
+        aria-hidden="true"
+        >·</span
+      >
+      <span v-if="location" class="inline-flex min-h-11 items-center gap-1.5">
+        <LocationIcon class-name="size-3.5 shrink-0" />
+        {{ location }}
+      </span>
+      <template v-if="sampleNote">
+        <span
+          v-if="location || availability"
+          class="hidden sm:inline-flex min-h-11 items-center"
+          aria-hidden="true"
+          >·</span
+        >
+        <span class="inline-flex min-h-11 items-center text-surface-sage">{{ sampleNote }}</span>
+      </template>
+    </p>
+    <p
+      v-else-if="showMeta"
       class="text-meta mb-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1"
     >
       <span v-if="location" class="inline-flex min-h-11 items-center gap-1.5">
@@ -73,7 +138,8 @@ function printPage(): void {
     </p>
 
     <div
-      class="relative z-[45] mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 print:hidden"
+      class="relative z-[45] mt-6 flex flex-col sm:flex-row flex-wrap gap-2 print:hidden"
+      :class="isStatusRail ? 'items-stretch sm:items-center justify-start' : 'items-center justify-center'"
     >
       <button type="button" class="cta-hero" @click="emit('inquire')">get in touch</button>
       <button type="button" class="cta-secondary" :disabled="isDownloadingCv" @click="downloadCv">
@@ -81,7 +147,12 @@ function printPage(): void {
       </button>
     </div>
 
-    <p v-if="showPrintFallback" class="mt-3 text-meta print:hidden" role="status">
+    <p
+      v-if="showPrintFallback"
+      class="mt-3 text-meta print:hidden"
+      :class="isStatusRail ? 'text-left' : ''"
+      role="status"
+    >
       PDF unavailable.
       <button
         type="button"

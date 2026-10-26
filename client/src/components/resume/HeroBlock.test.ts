@@ -42,6 +42,24 @@ describe("HeroBlock", () => {
     expect(wrapper.text()).not.toContain("telegram");
   });
 
+  it("left-aligns the status-rail layout and shows the sample note", () => {
+    const wrapper = mount(HeroBlock, {
+      props: {
+        name: "Gleb.Y",
+        title: "Python Backend / FastAPI Engineer",
+        tagline: "I build production APIs",
+        location: "Wrocław, Poland",
+        availability: "open to full-time and contract (remote)",
+        sampleNote: "this site is the sample",
+        layout: "status-rail",
+      },
+    });
+
+    expect(wrapper.get("div.py-12").classes()).toContain("text-left");
+    expect(wrapper.text()).toContain("this site is the sample");
+    expect(wrapper.text()).not.toContain("I build production APIs");
+  });
+
   it("offers print fallback instead of auto-printing when PDF fails", async () => {
     window.print = window.print ?? (() => {});
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => {});
