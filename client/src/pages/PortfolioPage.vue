@@ -35,6 +35,7 @@ let cancelGithubIdle: (() => void) | null = null;
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
 const contactLinks = computed(() => buildContactLinks(resume.value.links));
 const education = computed(() => resume.value.education ?? []);
+const latestRole = computed(() => resume.value.experience.slice(0, 1));
 const githubProfileUrl = computed(() => resume.value.links.github);
 const highlightedRepos = computed(() => {
   const fromResume = resume.value.github?.repos ?? [];
@@ -111,17 +112,32 @@ onUnmounted(() => {
 
     <SectionWrapper width="full">
       <HeroBlock
+        layout="status-rail"
         :name="resume.name"
         :title="resume.title"
         :tagline="resume.tagline"
         :location="resume.location"
         :availability="resume.availability"
+        sample-note="this site is the sample"
         @inquire="contactModal = 'inquiry'"
       />
     </SectionWrapper>
 
     <SectionWrapper id="about" title="about" width="full" label-tone="primary">
-      <PortfolioGlance :resume="resume" />
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
+        <div class="min-w-0">
+          <PortfolioGlance :resume="resume" />
+        </div>
+        <div v-if="latestRole.length" class="min-w-0">
+          <p class="text-label text-accent-coral mb-3">latest role</p>
+          <Suspense>
+            <ExperienceList :experience="latestRole" />
+            <template #fallback>
+              <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
+            </template>
+          </Suspense>
+        </div>
+      </div>
       <p class="text-body mb-4 mt-6 max-w-3xl text-pretty">
         {{ resume.bio }}
       </p>
