@@ -20,10 +20,6 @@ vi.mock("@/composables/useNotify", () => ({
   useNotify: () => ({ toast: toastMock }),
 }));
 
-vi.mock("@/components/layout/AdminPageLayout.vue", () => ({
-  default: { template: "<div><slot /></div>" },
-}));
-
 afterEach(() => {
   sessionStorage.clear();
   postMock.mockReset();

@@ -4,7 +4,6 @@ import { computed, ref } from "vue";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import CollapsibleUsageGuide from "@/components/ui/CollapsibleUsageGuide.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -82,13 +81,10 @@ async function download(): Promise<void> {
 </script>
 
 <template>
-  <AdminPageLayout
-    hub="tools"
-    title="video downloader"
-    max-width="5xl"
-    back-to="/tools"
-    description="Download media via yt-dlp — pick quality or audio-only, then save the file."
-  >
+  <div class="min-w-0 space-y-3">
+    <p class="text-xs text-surface-mid">
+      Download media via yt-dlp — pick quality or audio-only, then save the file.
+    </p>
     <p
       v-if="toolDisabled"
       class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
@@ -189,5 +185,5 @@ async function download(): Promise<void> {
         class="w-full"
       />
     </form>
-  </AdminPageLayout>
+  </div>
 </template>

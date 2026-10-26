@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
@@ -96,15 +95,7 @@ function buttonAriaLabel(val: string): string | undefined {
 </script>
 
 <template>
-  <PageShell
-    title="calculator"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'calculator' }]"
-    back-to="/tools"
-    max-width="5xl"
-    :narrow="false"
-    description="Client-side arithmetic — results stay in the browser."
-  >
-    <Card class="mx-auto max-w-sm w-full">
+  <Card class="w-full">
       <div
         class="bg-surface-dark rounded-lg p-4 mb-4 text-right"
         role="status"
@@ -144,6 +135,5 @@ function buttonAriaLabel(val: string): string | undefined {
           {{ btn }}
         </BaseButton>
       </div>
-    </Card>
-  </PageShell>
+  </Card>
 </template>

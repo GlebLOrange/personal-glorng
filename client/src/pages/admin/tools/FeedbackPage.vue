@@ -87,7 +87,7 @@ function reply(item: FeedbackItem): void {
     subject: `Re: ${item.theme}`,
     body: `\n\n--- Original ---\n${item.message}`,
   });
-  void router.push({ path: "/admin/send-email" });
+  void router.push({ name: "tool-email" });
 }
 
 function removeFromList(id: number): void {

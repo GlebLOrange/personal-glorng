@@ -2,7 +2,6 @@
 import { computed, onMounted, ref } from "vue";
 
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
@@ -69,7 +68,7 @@ async function preview(): Promise<void> {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="email" back-to="/tools">
+  <div class="min-w-0 space-y-3">
     <AdminListToolbar>
       <template #start>
         <div class="flex w-full min-w-0 items-center justify-between gap-2">
@@ -127,5 +126,5 @@ async function preview(): Promise<void> {
         v-html="sanitizedPreviewHtml"
       />
     </div>
-  </AdminPageLayout>
+  </div>
 </template>

@@ -67,7 +67,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     categoryLabel: "productivity",
     description: "send styled emails",
     apiPrefix: "/email",
-    adminRoute: "/admin/send-email",
+    adminRoute: "/tools/send-email",
     icon: "",
     capabilities: ["write"],
     external: false,
