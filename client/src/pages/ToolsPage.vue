@@ -6,6 +6,8 @@ import PageShell from "@/components/layout/PageShell.vue";
 import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { usePermissions } from "@/composables/usePermissions";
+import { SMALL_TOOL_TABS } from "@/constants/smallToolTabs";
+import { actionFamilyClass } from "@/constants/httpStatusColors";
 import {
   ADMIN_HUB_SERVICE_SLUGS,
   PLATFORM_SERVICES,
@@ -14,13 +16,16 @@ import {
   TOOLS_PAGE_EXTRA_SLUGS,
   type PlatformService,
 } from "@/platform/services";
+import { useAuthStore } from "@/stores/auth";
 import { isAiChatEnabled, isExpensesEnabled } from "@/utils/featureFlags";
 import {
   groupServicesForToolsPage,
   toolsPageChipForSlug,
+  type ToolsPageSection,
 } from "@/utils/toolsPageGroups";
 
 const route = useRoute();
+const auth = useAuthStore();
 const { can, canAccess, isSuperuser } = usePermissions();
 
 const expensesOffNotice = computed(() => String(route.query.expenses ?? "") === "off");
@@ -58,10 +63,32 @@ const visibleTools = computed((): PlatformService[] => {
 
 const sections = computed(() => groupServicesForToolsPage(visibleTools.value));
 
-const hasAnyTools = computed(() => sections.value.some((section) => section.services.length > 0));
+/** Same visibility rules as SmallToolsWindow tabs. */
+const visibleUtilsTabs = computed(() =>
+  SMALL_TOOL_TABS.filter((tab) => {
+    if (!tab.requiresAuth) return true;
+    if (!auth.isAuthenticated) return false;
+    return tab.slug ? canAccess(tab.slug) : true;
+  }),
+);
+
+const hasAnyTools = computed(
+  () =>
+    visibleUtilsTabs.value.length > 0 ||
+    sections.value.some((section) => section.category !== "utils" && section.services.length > 0),
+);
 
 function toolRoute(tool: PlatformService): string {
   return resolveToolRoute(tool, can);
+}
+
+function sectionCount(section: ToolsPageSection): number {
+  if (section.category === "utils") return visibleUtilsTabs.value.length;
+  return section.services.length;
+}
+
+function tabPillClass(): string {
+  return actionFamilyClass("1xx", false);
 }
 </script>
 
@@ -99,6 +126,7 @@ function toolRoute(tool: PlatformService): string {
         v-for="section in sections"
         :id="section.category"
         :key="section.category"
+        open
         class="group rounded-lg border border-transparent bg-surface-card/40 open:border-surface-border"
       >
         <summary
@@ -112,14 +140,29 @@ function toolRoute(tool: PlatformService): string {
           <span aria-hidden="true">{{ section.label }}</span>
           <span class="sr-only"
             >{{ section.label }},
-            {{ section.services.length === 1 ? "1 tool" : `${section.services.length} tools` }}</span
+            {{ sectionCount(section) === 1 ? "1 tool" : `${sectionCount(section)} tools` }}</span
           >
           <span class="ml-auto text-xs font-medium text-surface-mid" aria-hidden="true">{{
-            section.services.length
+            sectionCount(section)
           }}</span>
         </summary>
         <div class="border-t border-surface-border px-3 pb-3 pt-3">
+          <div
+            v-if="section.category === 'utils'"
+            class="flex flex-wrap gap-2"
+            aria-label="utils tools"
+          >
+            <RouterLink
+              v-for="tab in visibleUtilsTabs"
+              :key="tab.id"
+              :to="tab.to"
+              :class="tabPillClass()"
+            >
+              {{ tab.label }}
+            </RouterLink>
+          </div>
           <ToolTileGrid
+            v-else
             presentation="public"
             :sections="[section]"
             :show-category-headings="false"

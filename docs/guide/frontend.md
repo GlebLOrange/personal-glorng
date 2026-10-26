@@ -68,7 +68,7 @@ Server flags are authoritative. Client `VITE_*` flags only hide UI:
 
 Shared UI primitives live in `client/src/components/ui/` (`BaseButton`, `BaseInput`, `BaseDrawer`, …). Coding standards for Vue/TS: path-triggered stubs in [`.cursor/rules/`](../../.cursor/rules/) and full guidance in [`.cursor/skills/`](../../.cursor/skills/) (`vue` and `client-ui`).
 
-**2026-10-26 — Tools catalog spoilers:** `/tools` groups (utils, content, server) are closed spoilers that expand to tiles; admin and edit tiles only for a superuser. Compact tabs stay, sized to the calculator: `max-w-sm` × `h-[28rem]`.
+**2026-10-26 — Tools catalog spoilers:** `/tools` groups (utils, content, server) start open. Utils is a row of small-tool tab pills only (Weather / Calc / Password / QR / Video / Email); content and server use tiles. Admin and edit tiles only for a superuser. Compact window stays `max-w-sm` × `h-[28rem]`.
 
 **2026-10-26 — Tools hub vs tabs:** Category buckets (e.g. utilities / content / server) are fine for the `/tools` catalog. Do not put the full tool set in one tab strip — tabs only for a small peer set (≈4–7 compact tools). Full tools (tasks, expenses, news admin, audit, logs, AI chat, …) stay full pages.
 

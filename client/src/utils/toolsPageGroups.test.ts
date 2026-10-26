@@ -12,7 +12,7 @@ import {
 } from "@/utils/toolsPageGroups";
 
 describe("toolsPageGroups", () => {
-  it("maps public slugs into utils then content order", () => {
+  it("maps public slugs into utils (tabs) then content (tiles)", () => {
     const sections = groupServicesForToolsPage(publicToolsAsServices());
     expect(sections.map((s) => s.category)).toEqual(["utils", "content"]);
     expect(sections[0]?.services.map((t) => t.slug)).toEqual([
@@ -20,9 +20,8 @@ describe("toolsPageGroups", () => {
       "calculator",
       "password-generator",
       "qr-generator",
-      "url-shortener",
     ]);
-    expect(sections[1]?.services.map((t) => t.slug)).toEqual(["recipes"]);
+    expect(sections[1]?.services.map((t) => t.slug)).toEqual(["recipes", "url-shortener"]);
   });
 
   it("places extras and admin hub tools into utils / content / server", () => {
@@ -43,18 +42,18 @@ describe("toolsPageGroups", () => {
       "calculator",
       "password-generator",
       "qr-generator",
-      "url-shortener",
-      "file-share",
       "vid-download",
-      "data-extract",
       "email",
-      "ai-chat",
-      "health-checker",
     ]);
     expect(sections.find((s) => s.category === "content")?.services.map((t) => t.slug)).toEqual([
       "recipes",
       "tasks",
       "expenses",
+      "url-shortener",
+      "file-share",
+      "data-extract",
+      "ai-chat",
+      "health-checker",
       "news",
       "news-sources",
     ]);
@@ -72,14 +71,16 @@ describe("toolsPageGroups", () => {
     expect(sections[0]?.services).toHaveLength(1);
   });
 
-  it("returns demo chips for public tools and yours for capability extras", () => {
-    expect(toolsPageChipForSlug("weather")).toBe("demo");
+  it("skips chips for tab slugs; demo/yours for content tiles", () => {
+    expect(toolsPageChipForSlug("weather")).toBeUndefined();
+    expect(toolsPageChipForSlug("calculator")).toBeUndefined();
     expect(toolsPageChipForSlug("recipes")).toBe("demo");
     expect(toolsPageChipForSlug("url-shortener")).toBe("demo");
     expect(toolsPageChipForSlug("tasks")).toBe("yours");
     expect(toolsPageChipForSlug("data-extract")).toBe("yours");
     expect(toolsPageChipForSlug("news")).toBeUndefined();
-    expect(toolsPageGroupForSlug("file-share")).toBe("utils");
+    expect(toolsPageGroupForSlug("file-share")).toBe("content");
+    expect(toolsPageGroupForSlug("vid-download")).toBe("utils");
     expect(toolsPageGroupForSlug("feedback")).toBe("server");
   });
 });

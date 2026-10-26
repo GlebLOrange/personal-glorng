@@ -1,4 +1,5 @@
 import type { PlatformService } from "@/platform/services";
+import { SMALL_TOOL_TAB_SLUGS } from "@/constants/smallToolTabs";
 
 /** Tools-page-only section ids — not PlatformService.category. */
 export const TOOLS_PAGE_GROUP_ORDER = ["utils", "content", "server"] as const;
@@ -11,7 +12,7 @@ export const TOOLS_PAGE_GROUP_LABELS: Record<ToolsPageGroupId, string> = {
   server: "server",
 };
 
-/** Six public demo tools — chip targets on the Tools catalog. */
+/** Six public demo tools — chip targets on the Tools catalog (tiles only). */
 export const TOOLS_PAGE_DEMO_SLUGS = new Set([
   "weather",
   "calculator",
@@ -21,7 +22,7 @@ export const TOOLS_PAGE_DEMO_SLUGS = new Set([
   "recipes",
 ]);
 
-/** Capability extras that show a "yours" chip when listed. */
+/** Capability extras that show a "yours" chip when listed as tiles. */
 const YOURS_CHIP_SLUGS = new Set([
   "tasks",
   "expenses",
@@ -30,21 +31,25 @@ const YOURS_CHIP_SLUGS = new Set([
   "data-extract",
 ]);
 
+/**
+ * Utils = small-window tab peers only.
+ * Non-tab former utils (url-shortener, file-share, …) live under content as tiles.
+ */
 const SLUG_TO_GROUP: Record<string, ToolsPageGroupId> = {
   weather: "utils",
   calculator: "utils",
   "password-generator": "utils",
   "qr-generator": "utils",
-  "url-shortener": "utils",
-  "file-share": "utils",
   "vid-download": "utils",
-  "data-extract": "utils",
   email: "utils",
-  "ai-chat": "utils",
-  "health-checker": "utils",
   recipes: "content",
   tasks: "content",
   expenses: "content",
+  "url-shortener": "content",
+  "file-share": "content",
+  "data-extract": "content",
+  "ai-chat": "content",
+  "health-checker": "content",
   news: "content",
   "news-sources": "content",
   feedback: "server",
@@ -61,18 +66,18 @@ const SLUG_ORDER: Record<string, number> = {
   calculator: 1,
   "password-generator": 2,
   "qr-generator": 3,
-  "url-shortener": 4,
-  "file-share": 5,
-  "vid-download": 6,
-  "data-extract": 7,
-  email: 8,
-  "ai-chat": 9,
-  "health-checker": 10,
+  "vid-download": 4,
+  email: 5,
   recipes: 0,
   tasks: 1,
   expenses: 2,
-  news: 3,
-  "news-sources": 4,
+  "url-shortener": 3,
+  "file-share": 4,
+  "data-extract": 5,
+  "ai-chat": 6,
+  "health-checker": 7,
+  news: 8,
+  "news-sources": 9,
   feedback: 0,
   search: 1,
   "api-docs": 2,
@@ -93,6 +98,8 @@ export function toolsPageGroupForSlug(slug: string): ToolsPageGroupId | undefine
 
 /** demo = public six; yours = capability extras (tasks, expenses, …). */
 export function toolsPageChipForSlug(slug: string): "demo" | "yours" | undefined {
+  // Utils spoiler uses tab pills — chips only apply to tile sections.
+  if (SMALL_TOOL_TAB_SLUGS.has(slug)) return undefined;
   if (TOOLS_PAGE_DEMO_SLUGS.has(slug)) return "demo";
   if (YOURS_CHIP_SLUGS.has(slug)) return "yours";
   return undefined;
