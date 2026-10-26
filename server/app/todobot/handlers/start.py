@@ -138,7 +138,7 @@ async def menu_my_tasks(
     await state.clear()
     from app.todobot.handlers.task_manage import cmd_tasks
 
-    await cmd_tasks(message, registry)
+    await cmd_tasks(message, registry, state)
 
 
 @router.message(F.text == LABEL_CALENDAR)

@@ -115,6 +115,7 @@ def confirmation() -> InlineKeyboardMarkup:
 
 
 def completion_options(task_id: int) -> InlineKeyboardMarkup:
+    """Status buttons for reminder-era flows (not My tasks)."""
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -135,6 +136,123 @@ def completion_options(task_id: int) -> InlineKeyboardMarkup:
             ],
         ],
     )
+
+
+def my_tasks_list(tasks: list[tuple[int, str]]) -> InlineKeyboardMarkup:
+    """One button per task: (task_id, label)."""
+    rows = [
+        [
+            InlineKeyboardButton(
+                text=label[:64],
+                callback_data=f"mt:o:{task_id}",
+            ),
+        ]
+        for task_id, label in tasks
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def my_task_detail(task_id: int) -> InlineKeyboardMarkup:
+    """Detail screen: Remove | Edit / Back | Main."""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Remove", callback_data=f"mt:rm:{task_id}"),
+                InlineKeyboardButton(text="Edit", callback_data=f"mt:e:{task_id}"),
+            ],
+            [
+                InlineKeyboardButton(text="Back", callback_data="mt:back"),
+                InlineKeyboardButton(text="Main", callback_data="mt:main"),
+            ],
+        ],
+    )
+
+
+def my_task_remove_choices(task_id: int) -> InlineKeyboardMarkup:
+    """Cancel or didn't finish; both allowed for future tasks."""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Cancel task",
+                    callback_data=f"mt:c:{task_id}:cancelled",
+                ),
+                InlineKeyboardButton(
+                    text="Didn't finish",
+                    callback_data=f"mt:c:{task_id}:not_completed",
+                ),
+            ],
+            [
+                InlineKeyboardButton(text="Back", callback_data=f"mt:o:{task_id}"),
+            ],
+        ],
+    )
+
+
+def my_task_date_picker(task_id: int) -> InlineKeyboardMarkup:
+    """Date picker for My tasks edit (separate callback prefix)."""
+    today = _now_in_tz().date()
+    tomorrow = today + timedelta(days=1)
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=f"📅 Today ({format_display_date(today)})",
+                    callback_data=f"mt:d:{task_id}:{today.isoformat()}",
+                ),
+                InlineKeyboardButton(
+                    text=f"📅 Tomorrow ({format_display_date(tomorrow)})",
+                    callback_data=f"mt:d:{task_id}:{tomorrow.isoformat()}",
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="🗓 Pick date...",
+                    callback_data=f"mt:d:{task_id}:custom",
+                ),
+                InlineKeyboardButton(text="Back", callback_data=f"mt:o:{task_id}"),
+            ],
+        ],
+    )
+
+
+def my_task_time_picker(
+    task_id: int,
+    selected_date: str | None = None,
+) -> InlineKeyboardMarkup:
+    """Time picker for My tasks edit (separate callback prefix)."""
+    now = _now_in_tz()
+    is_today = selected_date == now.date().isoformat() if selected_date else False
+
+    rows: list[list[InlineKeyboardButton]] = []
+    row: list[InlineKeyboardButton] = []
+    for label, emoji, _callback, slot_time in _TIME_SLOTS:
+        hhmm = slot_time.strftime("%H-%M")
+        if is_today and now.time() >= slot_time:
+            text = f"⚪ {label}"
+        else:
+            text = f"{emoji} {label}"
+        row.append(
+            InlineKeyboardButton(
+                text=text,
+                callback_data=f"mt:t:{task_id}:{hhmm}",
+            ),
+        )
+        if len(row) == 2:
+            rows.append(row)
+            row = []
+    if row:
+        rows.append(row)
+    rows.append(
+        [
+            InlineKeyboardButton(
+                text="⏰ Custom time...",
+                callback_data=f"mt:t:{task_id}:custom",
+            ),
+            InlineKeyboardButton(text="Back", callback_data=f"mt:o:{task_id}"),
+        ],
+    )
+    return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def reminder_actions(task_id: int) -> InlineKeyboardMarkup:

@@ -4,6 +4,7 @@ from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.core.utils import as_utc
 from app.db.documents.base import utc_now
 from app.db.documents.task import (
     GoogleSyncQueue,
@@ -103,6 +104,60 @@ class TaskRepository(MongoRepository[Task]):
             query["status"] = status.value
         cursor = self._col().find(query).sort("scheduled_at", 1)
         return [_parse_doc(Task, row) async for row in cursor]
+
+    async def list_closest_pending(
+        self,
+        telegram_user_id: int,
+        *,
+        now: datetime,
+        limit: int = 7,
+    ) -> list[Task]:
+        """Return up to ``limit`` pending tasks closest to ``now`` by |scheduled_at|."""
+        base: dict[str, Any] = {
+            "telegram_user_id": telegram_user_id,
+            "status": TaskStatus.PENDING.value,
+        }
+        upcoming = [
+            _parse_doc(Task, row)
+            async for row in self._col()
+            .find({**base, "scheduled_at": {"$gte": now}})
+            .sort("scheduled_at", 1)
+            .limit(limit)
+        ]
+        overdue = [
+            _parse_doc(Task, row)
+            async for row in self._col()
+            .find({**base, "scheduled_at": {"$lt": now}})
+            .sort("scheduled_at", -1)
+            .limit(limit)
+        ]
+        merged = upcoming + overdue
+        now_utc = as_utc(now)
+        merged.sort(
+            key=lambda task: abs((as_utc(task.scheduled_at) - now_utc).total_seconds()),
+        )
+        return merged[:limit]
+
+    async def list_pending_sync_for_task_ids(
+        self,
+        task_ids: list[int],
+        *,
+        limit: int = 50,
+    ) -> list[GoogleSyncQueue]:
+        """Pending sync rows for the given task ids (oldest first)."""
+        if not task_ids:
+            return []
+        cursor = (
+            self.db.google_sync_queue.find(
+                {
+                    "status": SyncStatus.PENDING.value,
+                    "task_id": {"$in": task_ids},
+                },
+            )
+            .sort("created_at", 1)
+            .limit(limit)
+        )
+        return [_sync_from_doc(row) async for row in cursor]
 
     async def add_status_history(
         self,
@@ -328,8 +383,10 @@ class TaskRepository(MongoRepository[Task]):
         status: str | None = None,
         q: str | None = None,
         sort: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
     ) -> list[Task]:
-        query = self._admin_list_query(status=status, q=q)
+        query = self._admin_list_query(status=status, q=q, start=start, end=end)
         if sort == "when_asc":
             order: list[tuple[str, int]] = [("scheduled_at", 1)]
         elif sort == "when_desc":
@@ -344,8 +401,10 @@ class TaskRepository(MongoRepository[Task]):
         *,
         status: str | None = None,
         q: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
     ) -> int:
-        query = self._admin_list_query(status=status, q=q)
+        query = self._admin_list_query(status=status, q=q, start=start, end=end)
         return await self._col().count_documents(query)
 
     @staticmethod
@@ -353,12 +412,21 @@ class TaskRepository(MongoRepository[Task]):
         *,
         status: str | None = None,
         q: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
     ) -> dict[str, Any]:
         query: dict[str, Any] = {}
         if status:
             query["status"] = status
         if q:
             query["title"] = {"$regex": re.escape(q), "$options": "i"}
+        if start is not None or end is not None:
+            scheduled: dict[str, datetime] = {}
+            if start is not None:
+                scheduled["$gte"] = start
+            if end is not None:
+                scheduled["$lt"] = end
+            query["scheduled_at"] = scheduled
         return query
 
     async def list_overdue_pending(
