@@ -10,6 +10,7 @@ import ListSkeleton from "@/components/ui/ListSkeleton.vue";
 import { Card } from "@/components/ui/card";
 import { formatNewsDate, newsArticleDisplayDate, useNews } from "@/composables/useNews";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
+import type { NewsArticle } from "@/types";
 
 const router = useRouter();
 
@@ -29,6 +30,10 @@ useScrollListFingerprint(() => `${page.value}:${total.value}:${articles.value[0]
 
 function articleHref(slug: string): string {
   return router.resolve({ name: "news-article", params: { slug } }).href;
+}
+
+function cardTitle(item: NewsArticle): string {
+  return item.original_title?.trim() || item.title;
 }
 
 /** SPA navigate on primary click; keep modifier/middle-click as native href. */
@@ -109,7 +114,7 @@ watch(page, () => {
           :id="`news-card-title-${item.id}`"
           class="card-title mb-2 min-w-0 text-balance"
         >
-          {{ item.title }}
+          {{ cardTitle(item) }}
         </h2>
 
         <p class="break-words text-sm text-surface-mid">{{ item.summary }}</p>

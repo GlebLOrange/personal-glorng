@@ -17,6 +17,7 @@ from app.core.utils import DEFAULT_PER_PAGE
 from app.db.documents.news import NewsStatus
 from app.openapi import requires_capability
 from app.routers.tools.news_sources import router as news_sources_router
+from app.schemas.date_filters import NewsDateFilter, news_date_filter
 from app.schemas.news import (
     NewsArticleCreate,
     NewsArticleListResponse,
@@ -26,6 +27,7 @@ from app.schemas.news import (
     NewsArticleUpdate,
     NewsIngestResponse,
     NewsStatsResponse,
+    NewsTag,
 )
 
 router = APIRouter(prefix="/news", tags=["news"])
@@ -46,8 +48,10 @@ router.include_router(news_sources_router)
 async def list_news(
     svc: NewsServiceDep,
     user: OptionalUser,
+    filters: Annotated[NewsDateFilter, Depends(news_date_filter)],
     manage: Annotated[bool, Query()] = False,
     status: NewsStatus | None = None,
+    tag: Annotated[NewsTag | None, Query()] = None,
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> NewsArticleListResponse:
@@ -55,6 +59,9 @@ async def list_news(
     if not manage and status is None:
         return await svc.list_articles(
             status="published",
+            tag=tag,
+            date_from=filters.date_from,
+            date_to=filters.date_to,
             page=page,
             per_page=per_page,
         )

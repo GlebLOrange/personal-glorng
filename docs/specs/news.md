@@ -2,6 +2,8 @@
 
 **Status:** Shipped on `main`. This page is a status summary; path-level detail lives in the generated OpenAPI catalog.
 
+- 2026-10-26: Ingest Deutsche Welle English only (`https://rss.dw.com/xml/rss-en-all`); `NEWS_INGEST_ENABLED` stays false in Settings and is set true on worker/beat compose; demo `ai_model=demo` articles are drafted; public list accepts one `tag` plus inclusive `date_from`/`date_to` on `source_published_at`; if Groq is unset, publish feed title and excerpt.
+
 ## Objective
 
 Public curated news digest from trusted RSS/Atom feeds: short summaries with attribution and links to the original publisher. Visitors browse by tag; admins manage articles and sources.
@@ -9,8 +11,9 @@ Public curated news digest from trusted RSS/Atom feeds: short summaries with att
 ## Scope (shipped)
 
 - Ingests feed metadata only (title, excerpt, source, URL, publication time) — no full-article scrape or paywall bypass.
-- AI rewrite (when configured) returns structured title/summary/bullets/tags; backend validates lengths and tags before save.
+- AI rewrite (when configured) returns structured title/summary/bullets/tags; backend validates lengths and tags before save. Without Groq, feed title and excerpt are published as-is.
 - Telegram HTML is generated and escaped on the backend.
+- Public `GET /api/tools/news` supports optional `tag`, `date_from`, and `date_to`.
 
 ## News sources (`NewsSourceResponse`)
 
@@ -35,7 +38,7 @@ Mounted under `/api/tools/news` (sources under `/api/tools/news/sources`). **Aut
 
 Public (rate limited):
 
-- `GET /api/tools/news` — published list
+- `GET /api/tools/news` — published list (optional `tag`, `date_from`, `date_to`)
 - `GET /api/tools/news/tags`
 - `GET /api/tools/news/{slug}`
 

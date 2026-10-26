@@ -1,6 +1,7 @@
 """Tests for news article repository list ordering."""
 
-from datetime import UTC, datetime, timedelta
+import json
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 
@@ -14,6 +15,7 @@ def _article(
     title: str,
     source_published_at: datetime,
     published_at: datetime,
+    tags: list[str] | None = None,
 ) -> NewsArticle:
     """Build a published article with explicit story and digest timestamps."""
     return NewsArticle(
@@ -26,6 +28,7 @@ def _article(
         original_title=title,
         title=title,
         summary="Summary",
+        tags=json.dumps(tags or ["world"]),
         published_at=published_at,
     )
 
@@ -61,3 +64,50 @@ async def test_list_articles_sorts_by_source_published_at_desc(
     articles = await registry.news.list_articles(status="published", limit=10)
 
     assert [article.title for article in articles] == ["Newer story", "Older story"]
+
+
+@pytest.mark.asyncio
+async def test_list_articles_filters_by_tag_and_date_range(
+    registry: DatabaseRegistry,
+) -> None:
+    """Public list filters match tag JSON and inclusive source_published_at bounds."""
+    assert registry.news is not None
+    mid = datetime(2026, 7, 15, 12, 0, tzinfo=UTC)
+    await registry.news.insert(
+        _article(
+            slug="tech-mid",
+            title="Tech mid",
+            source_published_at=mid,
+            published_at=mid,
+            tags=["tech", "world"],
+        ),
+    )
+    await registry.news.insert(
+        _article(
+            slug="world-old",
+            title="World old",
+            source_published_at=mid - timedelta(days=10),
+            published_at=mid,
+            tags=["world"],
+        ),
+    )
+    await registry.news.insert(
+        _article(
+            slug="tech-new",
+            title="Tech new",
+            source_published_at=mid + timedelta(days=2),
+            published_at=mid,
+            tags=["tech"],
+        ),
+    )
+
+    by_tag = await registry.news.list_articles(status="published", tag="tech", limit=10)
+    by_range = await registry.news.list_articles(
+        status="published",
+        date_from=date(2026, 7, 15),
+        date_to=date(2026, 7, 15),
+        limit=10,
+    )
+
+    assert [article.title for article in by_tag] == ["Tech new", "Tech mid"]
+    assert [article.title for article in by_range] == ["Tech mid"]

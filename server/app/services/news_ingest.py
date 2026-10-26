@@ -25,6 +25,8 @@ from app.schemas.news import (
     ALLOWED_NEWS_TAGS,
     NewsArticleCreate,
     NewsIngestResponse,
+    NewsSourceCreate,
+    NewsSourceUpdate,
 )
 from app.services.llm_json import complete_json, groq_api_key
 from app.services.news import NewsService
@@ -36,6 +38,10 @@ _XML_ENCODING_RE = re.compile(
     re.IGNORECASE,
 )
 _MAX_FEED_BYTES = 1_000_000
+# ponytail: DW-only allowlist; drop this skip when adding a second publisher.
+DW_FEED_URL = "https://rss.dw.com/xml/rss-en-all"
+DW_SOURCE_NAME = "DW"
+DW_HOST = "dw.com"
 _TRACKING_QUERY_KEYS = frozenset(
     {
         "utm_source",
@@ -371,6 +377,24 @@ def _validate_ai_payload(
     }
 
 
+def _feed_only_payload(
+    source: NewsSourceConfig,
+    item: FeedItem,
+) -> dict[str, Any]:
+    """Build a publishable payload from feed metadata when Groq is unset."""
+    title = _clean_text(item.title, max_length=90) or "Untitled"
+    summary = _clean_text(item.excerpt, max_length=600) or title
+    detail = _clean_text(item.excerpt, max_length=180) or (
+        "See the original article for details."
+    )
+    return {
+        "title": title,
+        "summary": summary,
+        "bullets": [_clean_text(item.title, max_length=180) or title, detail],
+        "tags": list(source.default_themes),
+    }
+
+
 async def _summarize_item(
     source: NewsSourceConfig,
     item: FeedItem,
@@ -446,6 +470,55 @@ class NewsIngestService:
     def __init__(self, news_svc: NewsService) -> None:
         """Initialize the ingestion service."""
         self.news_svc = news_svc
+
+    async def _prepare_dw_only(self) -> None:
+        """Enable Deutsche Welle English RSS only; draft seeded demo articles.
+
+        ponytail: allowlist is DW only; drop this skip when adding a second publisher.
+        """
+        if self.news_svc.registry.news_sources is None:
+            return
+        sources = await self.news_svc.list_all_sources()
+        dw = next(
+            (
+                source
+                for source in sources
+                if source.name == DW_SOURCE_NAME or source.host == DW_HOST
+            ),
+            None,
+        )
+        if dw is None:
+            dw = await self.news_svc.create_source(
+                NewsSourceCreate(
+                    name=DW_SOURCE_NAME,
+                    feed_url=DW_FEED_URL,
+                    host=DW_HOST,
+                    category="world",
+                    region="global",
+                    enabled=True,
+                )
+            )
+        elif (
+            dw.feed_url != DW_FEED_URL
+            or not dw.enabled
+            or dw.host != DW_HOST
+        ):
+            dw = await self.news_svc.update_source(
+                dw.id,
+                NewsSourceUpdate(
+                    feed_url=DW_FEED_URL,
+                    host=DW_HOST,
+                    enabled=True,
+                ),
+            )
+        for source in sources:
+            if source.id == dw.id or not source.enabled:
+                continue
+            await self.news_svc.update_source(
+                source.id,
+                NewsSourceUpdate(enabled=False),
+            )
+        await self.news_svc.draft_demo_articles()
 
     async def _load_sources(
         self,
@@ -524,11 +597,13 @@ class NewsIngestService:
     ) -> NewsIngestResponse:
         """Run ingestion for all enabled sources."""
         settings = get_settings()
+        await self._prepare_dw_only()
         sources = [
             source for source in await self._load_sources(source_ids) if source.enabled
         ]
         processed = created = skipped = failed = 0
         remaining = max(1, settings.NEWS_INGEST_MAX_ITEMS_PER_RUN)
+        use_groq = bool(groq_api_key())
         async with httpx.AsyncClient(timeout=15) as client:
             for source in sources:
                 if remaining <= 0:
@@ -553,7 +628,23 @@ class NewsIngestService:
                         skipped += 1
                         continue
                     try:
-                        ai = await _summarize_item(source, item)
+                        ai_model: str | None = None
+                        if use_groq:
+                            try:
+                                ai = await _summarize_item(source, item)
+                                ai_model = settings.GROQ_CHAT_MODEL
+                            except Exception as exc:
+                                logger.warning(
+                                    "News AI summarize failed; using feed metadata",
+                                    context={
+                                        "source": source.name,
+                                        "url": item.url,
+                                        "error": str(exc)[:200],
+                                    },
+                                )
+                                ai = _feed_only_payload(source, item)
+                        else:
+                            ai = _feed_only_payload(source, item)
                         article = await self.news_svc.create_article(
                             NewsArticleCreate(
                                 source_id=source.id,
@@ -568,7 +659,7 @@ class NewsIngestService:
                                 tags=ai["tags"],
                                 language=source.language,
                                 status="published",
-                                ai_model=settings.GROQ_CHAT_MODEL,
+                                ai_model=ai_model,
                                 ai_input_hash=_hash_input(source, item),
                             ),
                             actor_id=actor_id,

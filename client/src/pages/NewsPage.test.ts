@@ -102,7 +102,7 @@ describe("NewsPage card order", () => {
     routerPush.mockClear();
   });
 
-  it("orders meta+tags row, then title and summary", async () => {
+  it("orders meta+tags row, then original title and summary", async () => {
     articles.value = [sampleArticle];
     total.value = 1;
     totalPages.value = 1;
@@ -112,7 +112,7 @@ describe("NewsPage card order", () => {
     const card = wrapper.get("a.card-as-link");
     const text = card.text();
     const sourceIdx = text.indexOf("Example Source");
-    const titleIdx = text.indexOf("Scan-friendly title");
+    const titleIdx = text.indexOf("Original");
     const summaryIdx = text.indexOf("A concise summary for hiring managers.");
     const tagIdx = text.indexOf("#python");
 
@@ -123,7 +123,7 @@ describe("NewsPage card order", () => {
     expect(titleIdx).toBeGreaterThan(tagIdx);
     expect(summaryIdx).toBeGreaterThan(titleIdx);
     expect(card.find(".news-tag-chip").exists()).toBe(true);
-    expect(card.find("h2").text()).toContain("Scan-friendly title");
+    expect(card.find("h2").text()).toContain("Original");
   });
 
   it("navigates from a click anywhere on the tile", async () => {
