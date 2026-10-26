@@ -2,7 +2,7 @@
 
 from datetime import UTC, datetime, timedelta
 
-from app.core.exceptions import NotFoundError, ValidationError
+from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.core.logging import logger
 from app.core.pagination import build_paginated
 from app.core.utils import DEFAULT_PER_PAGE, as_utc, paginate_params
@@ -177,6 +177,13 @@ class TaskService:
         source: AuditSource = AuditSource.WORKER,
     ) -> Task:
         task = await self.require_task(task_id=task_id)
+        if (
+            new_status == TaskStatus.COMPLETED
+            and as_utc(task.scheduled_at) > datetime.now(UTC)
+        ):
+            raise ConflictError(
+                "Cannot mark a future task as completed",
+            )
         return await self.update_task_status(
             task=task,
             new_status=new_status,
@@ -289,6 +296,8 @@ class TaskService:
         status: str | None = None,
         q: str | None = None,
         sort: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
     ) -> TaskListResponse:
         offset, limit = paginate_params(page, per_page)
         if status:
@@ -296,17 +305,28 @@ class TaskService:
                 TaskStatus(status)
             except ValueError as exc:
                 raise ValidationError(f"Invalid task status: {status}") from exc
+        if start is not None and end is not None and start >= end:
+            raise ValidationError("start must be before end")
         search = q.strip() if q else None
         if search == "":
             search = None
+        range_start = as_utc(start) if start is not None else None
+        range_end = as_utc(end) if end is not None else None
         tasks = await self._tasks().list_admin(
             offset=offset,
             limit=limit,
             status=status,
             q=search,
             sort=sort,
+            start=range_start,
+            end=range_end,
         )
-        total = await self._tasks().count_all(status=status, q=search)
+        total = await self._tasks().count_all(
+            status=status,
+            q=search,
+            start=range_start,
+            end=range_end,
+        )
         items = [TaskResponse.model_validate(t) for t in tasks]
         safe_page = max(1, page)
         return build_paginated(
@@ -432,6 +452,85 @@ class TaskService:
             status=TaskStatus.PENDING,
         )
 
+    async def get_closest_pending_tasks(
+        self,
+        *,
+        telegram_user_id: int,
+        limit: int = 7,
+    ) -> list[Task]:
+        """Pending tasks closest to now (upcoming and overdue), capped."""
+        return await self._tasks().list_closest_pending(
+            telegram_user_id,
+            now=datetime.now(UTC),
+            limit=limit,
+        )
+
+    async def sync_calendar_for_telegram_user(
+        self,
+        *,
+        telegram_user_id: int,
+    ) -> int:
+        """Enqueue missing CREATE rows for this user and drain their pending sync."""
+        if self.registry.credentials is None:
+            return 0
+        cred = await self.registry.credentials.get_google_for_telegram_user(
+            telegram_user_id,
+        )
+        if cred is None:
+            return 0
+
+        tasks = await self.get_pending_tasks(
+            telegram_user_id=telegram_user_id,
+            limit=_TASK_WORKER_BATCH_LIMIT,
+        )
+        if not tasks:
+            return 0
+
+        task_ids = [task.id for task in tasks]
+        pending = await self._tasks().list_pending_sync_for_task_ids(
+            task_ids,
+            limit=_TASK_WORKER_BATCH_LIMIT,
+        )
+        pending_task_ids = {item.task_id for item in pending}
+
+        now = datetime.now(UTC)
+        for item in pending:
+            item.next_retry_at = now
+            await self._tasks().update_sync(item)
+
+        enqueued = 0
+        for task in tasks:
+            if task.google_event_id is not None:
+                continue
+            if task.id in pending_task_ids:
+                continue
+            await self.enqueue_calendar_sync(
+                task_id=task.id,
+                action=SyncAction.CREATE,
+            )
+            enqueued += 1
+
+        armed = len(pending)
+        # process_sync_queue drains 10 per tick; kick until this user's queue is idle.
+        max_kicks = max(1, ((armed + enqueued) // 10) + 1)
+        for _ in range(max_kicks):
+            await self._kick_calendar_sync_drain(
+                context={"telegram_user_id": telegram_user_id, "armed": armed},
+            )
+            remaining = await self._tasks().list_pending_sync_for_task_ids(
+                task_ids,
+                limit=1,
+            )
+            if not remaining:
+                break
+            item = remaining[0]
+            if item.next_retry_at and item.next_retry_at > datetime.now(UTC):
+                break
+            item.next_retry_at = datetime.now(UTC)
+            await self._tasks().update_sync(item)
+
+        return armed + enqueued
+
     async def get_unsent_reminders(
         self,
         *,
@@ -543,6 +642,24 @@ async def get_task(registry: DatabaseRegistry, *, task_id: int) -> Task | None:
 
 async def get_pending_tasks(registry: DatabaseRegistry, **kwargs: object) -> list[Task]:
     return await TaskService(registry).get_pending_tasks(**kwargs)  # type: ignore[arg-type]
+
+
+async def get_closest_pending_tasks(
+    registry: DatabaseRegistry,
+    **kwargs: object,
+) -> list[Task]:
+    return await TaskService(registry).get_closest_pending_tasks(
+        **kwargs,  # type: ignore[arg-type]
+    )
+
+
+async def sync_calendar_for_telegram_user(
+    registry: DatabaseRegistry,
+    **kwargs: object,
+) -> int:
+    return await TaskService(registry).sync_calendar_for_telegram_user(
+        **kwargs,  # type: ignore[arg-type]
+    )
 
 
 async def get_unsent_reminders(

@@ -17,7 +17,7 @@ from app.todobot.handlers.reminder import (
 )
 from app.todobot.handlers.task_create import confirm_task
 from app.todobot.handlers.task_manage import cmd_tasks, handle_status_update
-from app.todobot.keyboards.task import completion_options
+from app.todobot.keyboards.task import my_tasks_list
 from tests.factories import create_task
 
 
@@ -173,19 +173,21 @@ async def test_reminder_postpone_reschedules_task(
 
 
 @pytest.mark.asyncio
-async def test_cmd_tasks_sends_completion_options(
+async def test_cmd_tasks_sends_closest_list(
     registry: DatabaseRegistry,
 ) -> None:
-    """/tasks lists each pending task with status buttons."""
+    """/tasks sends one screen with up to 7 closest pending tasks."""
     task = await create_task(registry, telegram_user_id=123456, title="Button me")
     message = _message()
+    state = _fsm_context()
 
-    await cmd_tasks(message, registry)
+    await cmd_tasks(message, registry, state)
 
-    assert message.answer.await_count >= 2
-    task_call = message.answer.await_args_list[-1]
-    assert "Button me" in task_call.args[0]
-    markup: Any = task_call.kwargs.get("reply_markup")
+    assert message.answer.await_count == 1
+    list_call = message.answer.await_args_list[0]
+    assert "closest tasks" in list_call.args[0].lower()
+    markup: Any = list_call.kwargs.get("reply_markup")
     assert markup is not None
-    expected = completion_options(task.id)
-    assert markup.inline_keyboard == expected.inline_keyboard
+    expected = my_tasks_list([(task.id, f"Button me — {task.scheduled_at}")])
+    # Label uses format_scheduled_at; compare callback data only.
+    assert markup.inline_keyboard[0][0].callback_data == f"mt:o:{task.id}"

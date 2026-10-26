@@ -25,3 +25,11 @@ class TaskPostpone(StatesGroup):
     """FSM state for rescheduling a task from a reminder action."""
 
     waiting_for_datetime = State()
+
+
+class TaskBrowse(StatesGroup):
+    """FSM for My tasks two-level menu and date/time edit."""
+
+    browsing = State()
+    editing_date = State()
+    editing_time = State()
