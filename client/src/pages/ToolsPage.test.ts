@@ -62,6 +62,10 @@ describe("ToolsPage spoiler catalog", () => {
     });
   }
 
+  function tileTitleCount(wrapper: ReturnType<typeof mountPage>, name: string): number {
+    return wrapper.findAll("h3, h4").filter((heading) => heading.text().trim() === name).length;
+  }
+
   it("shows static utils pills and open content spoilers for guests", async () => {
     const wrapper = mountPage();
     await flushPromises();
@@ -70,16 +74,22 @@ describe("ToolsPage spoiler catalog", () => {
     expect(utils.element.tagName.toLowerCase()).toBe("section");
     expect(utils.text()).toContain("•");
     expect(utils.text()).not.toContain("▸");
-    expect(utils.find('[aria-label="utils tools"]').exists()).toBe(true);
-    expect(utils.text()).toContain("weather");
-    expect(utils.text()).toContain("calculator");
-    expect(utils.text()).toContain("password generator");
-    expect(utils.text()).toContain("qr generator");
+    const pills = utils.get('[aria-label="utils tools"]');
+    expect(pills.exists()).toBe(true);
+    expect(pills.text()).toContain("weather");
+    expect(pills.text()).toContain("calculator");
+    expect(pills.text()).toContain("password generator");
+    expect(pills.text()).toContain("qr generator");
+    expect(pills.text()).not.toContain("demo");
+    expect(utils.text()).toContain("url shortener");
+    expect(utils.text()).toContain("short links");
+    expect(utils.text()).toContain("demo");
+    expect(tileTitleCount(wrapper, "url shortener")).toBe(1);
+    expect(tileTitleCount(wrapper, "weather")).toBe(0);
     expect(utils.text()).not.toContain("video downloader");
     expect(utils.text()).not.toContain("send email");
     expect(utils.text()).not.toContain("quick math");
-    expect(utils.text()).not.toContain("demo");
-    expect(utils.findAll("h3, h4")).toHaveLength(0);
+    expect(wrapper.text()).not.toContain("health");
 
     const spoilers = wrapper.findAll("details");
     expect(spoilers.length).toBeGreaterThanOrEqual(1);
@@ -88,26 +98,27 @@ describe("ToolsPage spoiler catalog", () => {
 
     expect(wrapper.text()).toContain("content");
     expect(wrapper.text()).toContain("recipes");
-    expect(wrapper.text()).toContain("short links");
-    expect(wrapper.text()).toContain("demo");
+    expect(wrapper.get("#content").text()).toContain("recipes");
+    expect(wrapper.get("#content").text()).not.toContain("url shortener");
     expect(wrapper.text()).not.toContain("server");
     expect(wrapper.text()).not.toContain("expenses");
     expect(wrapper.text()).not.toContain("Everyday");
     expect(wrapper.get('[data-testid="crumbs"]').text()).toBe("tools");
   });
 
-  it("shows video as a content tile when authenticated with access", async () => {
+  it("shows video as a utils tile when authenticated with access", async () => {
     canAccessMock.mockImplementation((slug: string) => slug === "vid-download");
 
     const wrapper = mountPage();
     await flushPromises();
 
-    expect(wrapper.get("#utils").text()).not.toContain("video downloader");
-    expect(wrapper.get("#content").text()).toContain("video downloader");
+    expect(wrapper.get("#utils").text()).toContain("video downloader");
+    expect(wrapper.find("#content").exists()).toBe(true);
+    expect(wrapper.get("#content").text()).not.toContain("video downloader");
     expect(tileTitleCount(wrapper, "video downloader")).toBe(1);
   });
 
-  it("shows yours chips on content tiles when canAccess allows extras", async () => {
+  it("shows yours chips on utils tiles when canAccess allows extras", async () => {
     canAccessMock.mockImplementation((slug: string) =>
       ["tasks", "file-share", "data-extract"].includes(slug),
     );
@@ -116,8 +127,8 @@ describe("ToolsPage spoiler catalog", () => {
 
     expect(wrapper.text()).toContain("yours");
     expect(wrapper.text()).toContain("tasks and reminders");
-    expect(wrapper.text()).toContain("share files");
-    expect(wrapper.text()).toContain("rows from files");
+    expect(wrapper.get("#utils").text()).toContain("share files");
+    expect(wrapper.get("#utils").text()).toContain("rows from files");
     expect(wrapper.text()).not.toContain("server");
   });
 
@@ -146,10 +157,6 @@ describe("ToolsPage spoiler catalog", () => {
     expect(wrapper.text()).not.toContain("audit logs");
   });
 
-  function tileTitleCount(wrapper: ReturnType<typeof mountPage>, name: string): number {
-    return wrapper.findAll("h3, h4").filter((heading) => heading.text().trim() === name).length;
-  }
-
   it("shows server spoiler for superusers; utils stays pills without tile dupes", async () => {
     isSuperuserRef.value = true;
 
@@ -158,11 +165,14 @@ describe("ToolsPage spoiler catalog", () => {
 
     expect(wrapper.text()).toContain("server");
     expect(wrapper.text()).toContain("audit logs");
-    expect(wrapper.text()).toContain("ai chat");
+    expect(wrapper.get("#utils").text()).toContain("ai chat");
+    expect(wrapper.get("#utils").text()).toContain("send email");
     expect(wrapper.findAll("details").some((el) => el.attributes("id") === "server")).toBe(true);
+    expect(wrapper.get("#server").text()).toContain("health");
     expect(wrapper.get("#utils").text()).toContain("weather");
     expect(tileTitleCount(wrapper, "weather")).toBe(0);
     expect(tileTitleCount(wrapper, "url shortener")).toBe(1);
+    expect(wrapper.get("#utils").text()).toContain("url shortener");
     expect(tileTitleCount(wrapper, "recipes")).toBe(1);
     expect(tileTitleCount(wrapper, "tasks")).toBe(1);
   });
@@ -191,7 +201,7 @@ describe("ToolsPage spoiler catalog", () => {
 });
 
 describe("tools page group order", () => {
-  it("lists utils tab peers then content tiles including url-shortener", () => {
+  it("lists utils tab peers and url-shortener then content recipes", () => {
     const sections = groupServicesForToolsPage(publicToolsAsServices());
     expect(sections.map((s) => s.label)).toEqual(["utils", "content"]);
     expect(sections[0]?.services.map((tool) => tool.slug)).toEqual([
@@ -199,8 +209,9 @@ describe("tools page group order", () => {
       "calculator",
       "password-generator",
       "qr-generator",
+      "url-shortener",
     ]);
-    expect(sections[1]?.services.map((tool) => tool.slug)).toEqual(["recipes", "url-shortener"]);
+    expect(sections[1]?.services.map((tool) => tool.slug)).toEqual(["recipes"]);
   });
 
   it("excludes health-checker and vid-download from the guest public catalog", () => {

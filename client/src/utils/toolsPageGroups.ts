@@ -32,24 +32,24 @@ const YOURS_CHIP_SLUGS = new Set([
 ]);
 
 /**
- * Utils = small-window tab peers only (weather / calc / password / QR).
- * Video, email, and other non-tab tools live under content as tiles.
+ * Utils = small-window tab peers (weather / calc / password / QR) plus
+ * utility tiles (url-shortener, file-share, data-extract, vid-download, email, ai-chat).
+ * Content keeps recipes / tasks / expenses / news; server is ops + health-checker.
  */
 const SLUG_TO_GROUP: Record<string, ToolsPageGroupId> = {
   weather: "utils",
   calculator: "utils",
   "password-generator": "utils",
   "qr-generator": "utils",
-  "vid-download": "content",
-  email: "content",
+  "url-shortener": "utils",
+  "file-share": "utils",
+  "data-extract": "utils",
+  "vid-download": "utils",
+  email: "utils",
+  "ai-chat": "utils",
   recipes: "content",
   tasks: "content",
   expenses: "content",
-  "url-shortener": "content",
-  "file-share": "content",
-  "data-extract": "content",
-  "ai-chat": "content",
-  "health-checker": "content",
   news: "content",
   "news-sources": "content",
   feedback: "server",
@@ -58,6 +58,7 @@ const SLUG_TO_GROUP: Record<string, ToolsPageGroupId> = {
   audit: "server",
   "app-logs": "server",
   "db-maintenance": "server",
+  "health-checker": "server",
 };
 
 /** Stable order within each tools-page group. */
@@ -66,24 +67,24 @@ const SLUG_ORDER: Record<string, number> = {
   calculator: 1,
   "password-generator": 2,
   "qr-generator": 3,
+  "url-shortener": 4,
+  "file-share": 5,
+  "data-extract": 6,
+  "vid-download": 7,
+  email: 8,
+  "ai-chat": 9,
   recipes: 0,
   tasks: 1,
   expenses: 2,
-  "url-shortener": 3,
-  "file-share": 4,
-  "vid-download": 5,
-  "data-extract": 6,
-  email: 7,
-  "ai-chat": 8,
-  "health-checker": 9,
-  news: 10,
-  "news-sources": 11,
+  news: 3,
+  "news-sources": 4,
   feedback: 0,
   search: 1,
   "api-docs": 2,
   audit: 3,
   "app-logs": 4,
   "db-maintenance": 5,
+  "health-checker": 6,
 };
 
 export type ToolsPageSection = {
