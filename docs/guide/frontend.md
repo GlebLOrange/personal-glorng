@@ -68,9 +68,11 @@ Server flags are authoritative. Client `VITE_*` flags only hide UI:
 
 Shared UI primitives live in `client/src/components/ui/` (`BaseButton`, `BaseInput`, `BaseDrawer`, …). Coding standards for Vue/TS: path-triggered stubs in [`.cursor/rules/`](../../.cursor/rules/) and full guidance in [`.cursor/skills/`](../../.cursor/skills/) (`vue` and `client-ui`).
 
+**2026-10-26 — Tools catalog spoilers:** `/tools` groups (utils, content, server) start open. Utils is a row of small-tool tab pills only (Weather / Calc / Password / QR / Video / Email); content and server use tiles. Admin and edit tiles only for a superuser. Compact window stays `max-w-sm` × `h-[28rem]`.
+
 **2026-10-26 — Tools hub vs tabs:** Category buckets (e.g. utilities / content / server) are fine for the `/tools` catalog. Do not put the full tool set in one tab strip — tabs only for a small peer set (≈4–7 compact tools). Full tools (tasks, expenses, news admin, audit, logs, AI chat, …) stay full pages.
 
-**2026-10-26 — Small tools window:** Weather, calculator, password generator, QR, video downloader, and send email share one `max-w-sm` tab window (login-form size); each tab keeps its URL. Send email moves to `/tools/send-email` (`/admin/send-email` redirects). Video and email stay login-only and hidden from guests. Other tools stay full pages.
+**2026-10-26 — Small tools window:** Weather, calculator, password generator, QR, video downloader, and send email share one `max-w-sm` × `h-[28rem]` tab window; each tab keeps its URL. Send email moves to `/tools/send-email` (`/admin/send-email` redirects). Video and email stay login-only and hidden from guests. Other tools stay full pages.
 
 **2026-09-23 — Homepage hire path:** Public `/` section order is about → experience → projects → skills → contacts ([`portfolioSections.ts`](../../client/src/constants/portfolioSections.ts)). In-page jumps sit under the hero, not in the site header. The header stays visible on `/` only (hide-on-scroll remains elsewhere).
 

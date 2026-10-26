@@ -123,7 +123,7 @@ describe("SmallToolsWindow", () => {
     const { wrapper } = await mountWindow("/calculator", false);
 
     const selected = wrapper.get('[role="tab"][aria-selected="true"]');
-    expect(selected.text()).toBe("Calc");
+    expect(selected.text()).toBe("calculator");
     expect(selected.attributes("id")).toBe("small-tools-tab-calculator");
     expect(wrapper.get("h1").text()).toContain("Calculator");
 
@@ -134,9 +134,14 @@ describe("SmallToolsWindow", () => {
     const { wrapper } = await mountWindow("/weather", false);
 
     const labels = wrapper.findAll('[role="tab"]').map((tab) => tab.text());
-    expect(labels).toEqual(["Weather", "Calc", "Password", "QR"]);
-    expect(labels).not.toContain("Video");
-    expect(labels).not.toContain("Email");
+    expect(labels).toEqual([
+      "weather",
+      "calculator",
+      "password generator",
+      "qr generator",
+    ]);
+    expect(labels).not.toContain("video downloader");
+    expect(labels).not.toContain("send email");
 
     wrapper.unmount();
   });
@@ -145,7 +150,25 @@ describe("SmallToolsWindow", () => {
     const { wrapper } = await mountWindow("/weather", true);
 
     const labels = wrapper.findAll('[role="tab"]').map((tab) => tab.text());
-    expect(labels).toEqual(["Weather", "Calc", "Password", "QR", "Video", "Email"]);
+    expect(labels).toEqual([
+      "weather",
+      "calculator",
+      "password generator",
+      "qr generator",
+      "video downloader",
+      "send email",
+    ]);
+
+    wrapper.unmount();
+  });
+
+  it("sizes the tool panel to the calculator frame", async () => {
+    const { wrapper } = await mountWindow("/calculator", false);
+
+    const panel = wrapper.get('[role="tabpanel"]');
+    expect(panel.classes()).toContain("h-[28rem]");
+    expect(panel.classes()).not.toContain("h-[32rem]");
+    expect(wrapper.find(".max-w-sm").exists()).toBe(true);
 
     wrapper.unmount();
   });

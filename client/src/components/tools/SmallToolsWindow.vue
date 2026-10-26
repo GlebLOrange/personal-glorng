@@ -5,48 +5,9 @@ import { useRoute, useRouter } from "vue-router";
 import BackLink from "@/components/ui/BackLink.vue";
 import PinnedToolsRow from "@/components/layout/PinnedToolsRow.vue";
 import { usePermissions } from "@/composables/usePermissions";
-import { WEATHER_ROUTE_NAME } from "@/constants/weather";
+import { SMALL_TOOL_TABS, type SmallToolTab } from "@/constants/smallToolTabs";
 import { actionFamilyClass } from "@/constants/httpStatusColors";
 import { useAuthStore } from "@/stores/auth";
-
-type SmallToolTab = {
-  id: string;
-  label: string;
-  to: string;
-  name: string;
-  /** Login-only tools — hidden from guests. */
-  requiresAuth?: boolean;
-  /** Capability slug when requiresAuth. */
-  slug?: string;
-};
-
-const SMALL_TOOL_TABS: SmallToolTab[] = [
-  { id: "weather", label: "Weather", to: "/weather", name: WEATHER_ROUTE_NAME },
-  { id: "calculator", label: "Calc", to: "/calculator", name: "calculator" },
-  {
-    id: "password-generator",
-    label: "Password",
-    to: "/password-generator",
-    name: "password-generator",
-  },
-  { id: "qr-generator", label: "QR", to: "/qr-generator", name: "qr-generator" },
-  {
-    id: "vid-download",
-    label: "Video",
-    to: "/vid-download",
-    name: "vid-download",
-    requiresAuth: true,
-    slug: "vid-download",
-  },
-  {
-    id: "email",
-    label: "Email",
-    to: "/tools/send-email",
-    name: "tool-email",
-    requiresAuth: true,
-    slug: "email",
-  },
-];
 
 const route = useRoute();
 const router = useRouter();
@@ -151,7 +112,7 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
         :id="activeTab ? tabPanelId(activeTab.id) : undefined"
         role="tabpanel"
         :aria-labelledby="activeTab ? tabButtonId(activeTab.id) : undefined"
-        class="h-[32rem] overflow-y-auto overscroll-contain rounded-lg border border-transparent bg-surface-card/40 p-3"
+        class="h-[28rem] overflow-y-auto overscroll-contain rounded-lg border border-transparent bg-surface-card/40 p-3"
       >
         <RouterView />
       </div>
