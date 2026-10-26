@@ -51,13 +51,29 @@ const availableStatuses = computed(() => {
 
 const schedule = computed(() => (props.task ? formatScheduleDate(props.task.scheduled_at) : null));
 
-const primaryActionStatus = computed((): TaskStatus | null =>
-  props.task?.status === "pending" || props.task?.status === "not_completed" ? "completed" : null,
-);
+const isScheduledInFuture = computed(() => {
+  if (!props.task?.scheduled_at) return false;
+  return new Date(props.task.scheduled_at).getTime() > Date.now();
+});
 
-const menuStatuses = computed(() =>
-  availableStatuses.value.filter((status) => status !== primaryActionStatus.value),
-);
+const primaryActionStatus = computed((): TaskStatus | null => {
+  if (!props.task) return null;
+  if (isScheduledInFuture.value) return null;
+  if (props.task.status === "pending" || props.task.status === "not_completed") {
+    return "completed";
+  }
+  return null;
+});
+
+const menuStatuses = computed(() => {
+  const statuses = availableStatuses.value.filter(
+    (status) => status !== primaryActionStatus.value,
+  );
+  if (isScheduledInFuture.value) {
+    return statuses.filter((status) => status !== "completed");
+  }
+  return statuses;
+});
 
 const recentStatusHistory = computed(() => (props.task?.status_history ?? []).slice(-4));
 

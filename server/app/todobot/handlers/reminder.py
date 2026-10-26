@@ -6,6 +6,7 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from app.core.exceptions import ConflictError
 from app.core.utils import format_scheduled_at
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.db.documents.task import TaskStatus
@@ -47,14 +48,18 @@ async def handle_reminder_action(
         return
 
     if action == "complete":
-        task = await change_status(
-            registry,
-            task_id=task.id,
-            new_status=TaskStatus.COMPLETED,
-            actor_type=AuditActorType.TELEGRAM,
-            actor_id=callback.from_user.id if callback.from_user else None,
-            source=AuditSource.TODOBOT,
-        )
+        try:
+            task = await change_status(
+                registry,
+                task_id=task.id,
+                new_status=TaskStatus.COMPLETED,
+                actor_type=AuditActorType.TELEGRAM,
+                actor_id=callback.from_user.id if callback.from_user else None,
+                source=AuditSource.TODOBOT,
+            )
+        except ConflictError as exc:
+            await callback.message.answer(str(exc))
+            return
         await callback.message.answer(
             f'Task "{task.title}" completed!',
         )

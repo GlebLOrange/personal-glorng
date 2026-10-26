@@ -26,6 +26,8 @@ export interface TaskCreateForm {
 
 export function useTasks() {
   const tasks = ref<TaskItem[]>([]);
+  const calendarTasks = ref<TaskItem[]>([]);
+  const calendarTruncated = ref(false);
   const syncQueue = ref<SyncQueueItem[]>([]);
   const intakes = ref<TaskIntakeItem[]>([]);
   const selectedTask = ref<TaskDetail | null>(null);
@@ -54,6 +56,7 @@ export function useTasks() {
   });
 
   const { loading: listLoading, run: runList } = useApiAction();
+  const { loading: calendarLoading, run: runCalendar } = useApiAction();
   const { loading: intakesLoading, run: runIntakes } = useApiAction();
   const { loading: syncLoading, run: runSync } = useApiAction();
   const { loading: detailLoading, run: runDetail } = useApiAction();
@@ -99,6 +102,28 @@ export function useTasks() {
       tasks.value = data.items;
       totalPages.value = data.pages;
       total.value = data.total;
+    }
+  }
+
+  async function loadCalendarMonth(startIso: string, endIso: string): Promise<void> {
+    const data = await runCalendar(
+      async () => {
+        const response = await api.get<PaginatedList<TaskItem>>("/tools/tasks", {
+          params: {
+            page: 1,
+            per_page: 100,
+            start: startIso,
+            end: endIso,
+            sort: "when_asc",
+          },
+        });
+        return response.data;
+      },
+      { errorFallback: "Failed to load calendar" },
+    );
+    if (data) {
+      calendarTasks.value = data.items;
+      calendarTruncated.value = data.total > data.items.length;
     }
   }
 
@@ -350,6 +375,8 @@ export function useTasks() {
   return {
     DEFAULT_FILTER_STATUS,
     tasks,
+    calendarTasks,
+    calendarTruncated,
     syncQueue,
     intakes,
     selectedTask,
@@ -371,6 +398,7 @@ export function useTasks() {
     showCreateForm,
     createForm,
     listLoading,
+    calendarLoading,
     intakesLoading,
     syncLoading,
     detailLoading,
@@ -384,6 +412,7 @@ export function useTasks() {
     hasNextSyncPage,
     hasPreviousSyncPage,
     loadTasks,
+    loadCalendarMonth,
     loadIntakes,
     loadSyncQueue,
     loadStats,

@@ -15,10 +15,26 @@ Related security automation (not a test tier): [`.github/workflows/security.yml`
 
 ### P0 — PR gate (default)
 
-Jobs are path-filtered on pull requests; pushes to `main` run the full suite. Aggregator job `ci-ok` fails if any selected job failed. If no path filter matches (for example a root-only markdown change), every suite is skipped and `ci-ok` can still succeed — see the `ci-ok` job in [`ci.yml`](../../.github/workflows/ci.yml). During development the `main-protection` ruleset is **disabled**, so CI is advisory; enable required checks before production ([DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd)).
+<!--
+ci-ok keep: cursor/ci-ok-path-coverage (78bec9ed) so a pull request path outside the fast gate and the skip allowlist fails ci-ok.
+cursor/ai-brand-showcase stays unported because tip 617eef64 is only the agy-ai-tool spec already in docs/specs/agy-ai-tool.md.
+cursor/eval-groq-prompts stays unported because the offline eval already lives in server/scripts/eval_groq_prompts.py.
+cursor/space-theme stays unported because tip 35d7dbca has no space-theme commit and the atmosphere work was reverted.
+cursor/unify-admin-list-rows stays unported because tip 9bf2af40 is not the unify commit and admin rows are already AdminDataRow.
+pr-687-tmp stays unported because tip a2c261c4 pins weather while client/e2e/smoke.spec.ts expects weather in the tools catalog.
+-->
 
-- **backend** — Ruff check/format, mypy, `pytest -m "not integration"` with coverage (mongomock + FakeRedis)
-- **frontend** — `npm run lint` / `format:check`, `test:coverage`, `build:check`
+On pull requests, jobs are path-filtered. Pushes to `main` run backend and frontend. The aggregator **`ci-ok`** succeeds when the `changes` job succeeded, every selected job succeeded, and every changed path is a gate path or on the skip allowlist. Any other path fails `ci-ok`. During development the `main-protection` ruleset is **disabled**, so this check is advisory; require `ci-ok` and `gitleaks` before production ([DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd)).
+
+Gate paths:
+
+- **backend** — `server/**`, `shared/**`, `rabbitmq/**`, `deploy/**`, `scripts/**`, `nginx/**`, `Makefile`, `docker-compose*.yml`, `.github/workflows/**`, `.env.example`, `.env.production.example`, `.dockerignore`, `.pre-commit-config.yaml`. Runs Ruff check/format, advisory mypy, and `pytest -m "not integration"` with coverage (mongomock + FakeRedis).
+- **frontend** — `client/**`, `shared/**`, `nginx/**`, `docker-compose*.yml`, `.github/workflows/**`. Runs `npm run lint` / `format:check`, `test:coverage`, `build:check`, and the Playwright built-shell smoke (`e2e/built-shell.spec.ts`, vite preview, no API).
+
+Skip allowlist (both jobs may be skipped and `ci-ok` can still succeed): `docs/**`, `**/*.md`, `**/*.mdc`, GitHub metadata (issue templates, `FUNDING.yml`, `dependabot.yml`, copilot instructions, social preview), `.cursor/**`, `.devcontainer/**`, `.vscode/**`, `postman/**`, editor dotfiles (`.editorconfig`, `.nvmrc`, `.gitignore`, `.ignore`, `.rgignore`, `.cursorignore`), `.gitleaks.toml`, and `LICENSE`. Gitleaks still runs from [`security.yml`](../../.github/workflows/security.yml) on every pull request.
+
+Manual [`ci-extended.yml`](../../.github/workflows/ci-extended.yml) (`workflow_dispatch`):
+
 - **postgres-tests** — `pytest -m postgres` (Alembic + Postgres service; also marked `integration`)
 - **e2e** — Playwright (`client/e2e/*.spec.ts`, smoke + admin-tools) against compose API + preview
 - **docs** — `scripts/generate_docs.py` freshness check + VitePress build
@@ -29,7 +45,7 @@ Automated today ([`nightly.yml`](../../.github/workflows/nightly.yml)):
 
 - `pytest -m redis` — real Redis connectivity / round-trip (also marked `integration`)
 
-Postgres integration (`pytest -m postgres`) runs on every PR via the CI `postgres-tests` job, not nightly.
+Postgres integration (`pytest -m postgres`), API Playwright, and docs freshness run in manual [`ci-extended.yml`](../../.github/workflows/ci-extended.yml).
 
 ### P2 — Pre-release
 
@@ -109,7 +125,7 @@ npm run e2e
 | Middleware → app log | Built | `test_middleware_logging.py` |
 | App logs API | Built + maintain | `test_app_logs_api.py` (level, message, request_id, date, pagination) |
 | Audit trail | Built + maintain | `test_platform.py`, `test_audit_extended.py`, `test_audit_mutations.py` |
-| Postgres audit/search | Built (P0 CI `postgres-tests`) | `test_postgres_integration.py` |
+| Postgres audit/search | Built (manual `ci-extended` `postgres-tests`) | `test_postgres_integration.py` |
 | Health / readiness | Built | `test_health.py`, `test_broker_health.py` |
 | Sentry init (mock) | Built | `test_sentry_init.py` |
 | Feature flags | Built | `test_feature_flags.py` |
@@ -117,7 +133,7 @@ npm run e2e
 | Registry parity | Maintain | `test_platform_parity.py`, `services.parity.test.ts` |
 | Portfolio / resume UI | Built | `resumeGlance.test.ts`, E2E smoke |
 | Admin UI harness | Built | `adminToolHarness.test.ts` |
-| Admin Playwright flows | Built (P0 E2E) | `admin-tools.spec.ts` |
+| Admin Playwright flows | Built (manual `ci-extended` e2e; PR gate runs built-shell smoke) | `admin-tools.spec.ts` |
 
 ## Related
 
