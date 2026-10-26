@@ -15,6 +15,12 @@ class TaskCreation(StatesGroup):
     confirming = State()
 
 
+class OneShotCapture(StatesGroup):
+    """FSM for one clarifying reply after an idle dated message."""
+
+    waiting_for_missing = State()
+
+
 class TaskPostpone(StatesGroup):
     """FSM state for rescheduling a task from a reminder action."""
 

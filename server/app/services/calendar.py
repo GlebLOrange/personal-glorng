@@ -1,6 +1,7 @@
 """Google Calendar sync service."""
 
 import asyncio
+from datetime import timedelta
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -29,18 +30,24 @@ def _build_service(cred: GoogleCredential) -> object:
     return build("calendar", "v3", credentials=credentials)
 
 
+DEFAULT_EVENT_MINUTES = 30
+
+
 def _build_event_body(
     task: Task,
     *,
     reminder_minutes: list[int] | None = None,
 ) -> dict[str, object]:
     """Build Google Calendar event body from task."""
-    scheduled = calendar_datetime(task.scheduled_at)
+    start_dt = as_utc(task.scheduled_at)
+    end_dt = start_dt + timedelta(minutes=DEFAULT_EVENT_MINUTES)
+    scheduled = calendar_datetime(start_dt)
+    end = calendar_datetime(end_dt)
     minutes = reminder_minutes if reminder_minutes is not None else []
     body: dict[str, object] = {
         "summary": task.title,
         "start": {"dateTime": scheduled, "timeZone": "UTC"},
-        "end": {"dateTime": scheduled, "timeZone": "UTC"},
+        "end": {"dateTime": end, "timeZone": "UTC"},
         "reminders": {
             "useDefault": False,
             "overrides": [

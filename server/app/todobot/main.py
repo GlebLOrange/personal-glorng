@@ -13,6 +13,7 @@ from app.services.task import get_unsent_reminders
 from app.settings import get_settings
 from app.todobot.handlers import (
     calendar,
+    oneshot,
     reminder,
     start,
     task_create,
@@ -42,6 +43,8 @@ def _build_dispatcher(registry) -> Dispatcher:
     dp.include_router(task_manage.router)
     dp.include_router(reminder.router)
     dp.include_router(calendar.router)
+    # Last: idle one-shot only after commands/menus/FSM handlers.
+    dp.include_router(oneshot.router)
 
     return dp
 
@@ -102,6 +105,7 @@ async def main() -> None:
         [
             BotCommand(command="new", description="Quick-create a task"),
             BotCommand(command="tasks", description="View pending tasks"),
+            BotCommand(command="month", description="Month busy-day grid"),
             BotCommand(command="connect_calendar", description="Link Google Calendar"),
             BotCommand(command="help", description="Show help & menu"),
         ]
