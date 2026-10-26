@@ -4,7 +4,6 @@ import { computed, onMounted, ref } from "vue";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
-import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
@@ -121,15 +120,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <PageShell
-    title="password generator"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'password generator' }]"
-    back-to="/tools"
-    max-width="5xl"
-    :narrow="false"
-    description="Generate passwords locally — nothing is sent to the server."
-  >
-    <Card variant="ghost" class="mx-auto w-full max-w-md">
+  <Card variant="ghost" class="w-full">
       <form class="space-y-3" @submit.prevent="generatePassword">
         <div class="flex min-w-0 items-center justify-start gap-2">
           <AdminFilterDropdown
@@ -243,6 +234,5 @@ onMounted(() => {
           {{ strength.message }}
         </p>
       </div>
-    </Card>
-  </PageShell>
+  </Card>
 </template>

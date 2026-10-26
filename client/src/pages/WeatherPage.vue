@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import PageShell from "@/components/layout/PageShell.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
 import WeatherPinnedCitiesRow from "@/components/weather/WeatherPinnedCitiesRow.vue";
 import { useActiveWeatherQuery } from "@/composables/useActiveWeatherQuery";
-import { WEATHER_TOOL_NAME } from "@/constants/weather";
 import { useWeatherLocations } from "@/composables/useWeatherLocations";
 import { useNotify } from "@/composables/useNotify";
 
@@ -42,14 +40,11 @@ function handleSelect(query: string): void {
 </script>
 
 <template>
-  <PageShell
-    :title="WEATHER_TOOL_NAME"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'weather' }]"
-    back-to="/tools"
-    :narrow="false"
-    description="Guests can pin a few cities in this browser. Sign in to keep locations across devices."
-  >
-    <section class="mb-8 min-w-0">
+  <div class="min-w-0 space-y-4">
+    <p class="text-xs text-surface-mid">
+      Guests can pin a few cities in this browser. Sign in to keep locations across devices.
+    </p>
+    <section class="min-w-0">
       <WeatherLocationForm
         :add-location="handleAdd"
         :disabled="!canAddLocation"
@@ -71,5 +66,5 @@ function handleSelect(query: string): void {
       @select="handleSelect"
       @remove="handleRemove"
     />
-  </PageShell>
+  </div>
 </template>

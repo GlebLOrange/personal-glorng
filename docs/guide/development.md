@@ -102,6 +102,8 @@ VITE_PUBLIC_ORIGIN=https://your-domain.example npm run build:check
 
 Host Vite uses `client/.env.development` (`VITE_API_PROXY_TARGET=http://127.0.0.1:8000` by default) and also applies `VITE_*` from repo-root `.env`.
 
+- **2026-10-26:** Worktree UI checks must hit that worktree’s Vite (e.g. `:3001`) with API healthy on `:8000`; `http://localhost` nginx serves the primary checkout’s client, so `/api` 502 there is a down proxy target, not an app auth bug.
+
 ### Public route loading (perf / Lighthouse)
 
 | Route | Without API | Notes |

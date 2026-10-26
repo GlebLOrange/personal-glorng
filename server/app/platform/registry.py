@@ -64,7 +64,7 @@ PLATFORM_SERVICES: tuple[PlatformService, ...] = (
         category="productivity",
         description="send styled emails",
         api_prefix="/email",
-        admin_route="/admin/send-email",
+        admin_route="/tools/send-email",
         icon="✉",
         capabilities=("write",),
     ),

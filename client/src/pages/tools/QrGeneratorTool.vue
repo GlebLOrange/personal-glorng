@@ -6,7 +6,6 @@ import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import QrLibraryListItem from "@/components/admin/QrLibraryListItem.vue";
-import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
@@ -182,17 +181,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <PageShell
-    title="qr generator"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'qr generator' }]"
-    back-to="/tools"
-    max-width="5xl"
-    :narrow="false"
-    :description="pageDescription"
-  >
-    <div class="flex min-w-0 flex-col gap-8">
+  <div class="flex min-w-0 flex-col gap-6">
+    <p class="text-xs text-surface-mid">{{ pageDescription }}</p>
       <div
-        class="flex min-w-0 flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8"
+        class="flex min-w-0 flex-col gap-6"
       >
         <Card variant="ghost" class="min-w-0 flex-1">
           <form id="qr-generator-form" class="space-y-3" @submit.prevent="createQr">
@@ -259,9 +251,9 @@ onMounted(() => {
 
         <Card
           variant="ghost"
-          class="flex w-full max-w-64 shrink-0 flex-col items-stretch gap-3 self-center p-0 lg:self-start"
+          class="flex w-full max-w-64 shrink-0 flex-col items-stretch gap-3 self-center p-0"
         >
-          <p v-if="!previewUrl" class="text-center text-sm text-surface-mid lg:text-right">
+          <p v-if="!previewUrl" class="text-center text-sm text-surface-mid">
             Generate a code to preview it here.
           </p>
           <img
@@ -321,6 +313,5 @@ onMounted(() => {
           @last="goToPage(totalPages)"
         />
       </section>
-    </div>
-  </PageShell>
+  </div>
 </template>
