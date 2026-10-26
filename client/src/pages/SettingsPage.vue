@@ -6,7 +6,6 @@ import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
 import SettingsPreferencesSection from "@/components/settings/SettingsPreferencesSection.vue";
-import SettingsQrLibrarySection from "@/components/settings/SettingsQrLibrarySection.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card, CardBody } from "@/components/ui/card";
 import { useUserPreferences } from "@/composables/useUserPreferences";
@@ -21,7 +20,7 @@ const DevApiStatusBadge = import.meta.env.DEV
   ? defineAsyncComponent(() => import("@/components/dev/DevApiStatusBadge.vue"))
   : null;
 
-type SettingsSectionId = "profile" | "account" | "privacy" | "qr";
+type SettingsSectionId = "profile" | "account" | "privacy";
 
 interface SettingsNavItem {
   id: SettingsSectionId;
@@ -32,19 +31,11 @@ const auth = useAuthStore();
 const { permissions, canAccess } = usePermissions();
 const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPreferences();
 
-const showQrSection = computed(() => canAccess("qr-generator"));
-
-const navItems = computed((): SettingsNavItem[] => {
-  const items: SettingsNavItem[] = [
-    { id: "profile", label: "Profile" },
-    { id: "account", label: "Account" },
-    { id: "privacy", label: "Privacy" },
-  ];
-  if (showQrSection.value) {
-    items.push({ id: "qr", label: "Saved QR" });
-  }
-  return items;
-});
+const navItems = computed((): SettingsNavItem[] => [
+  { id: "profile", label: "Profile" },
+  { id: "account", label: "Account" },
+  { id: "privacy", label: "Privacy" },
+]);
 
 const activeSection = ref<SettingsSectionId>("profile");
 let sectionObserver: IntersectionObserver | null = null;
@@ -287,15 +278,6 @@ async function savePassword(): Promise<void> {
               </div>
             </CardBody>
           </Card>
-        </section>
-
-        <section
-          v-if="showQrSection"
-          id="qr"
-          class="scroll-mt-40 md:scroll-mt-44"
-          aria-label="Saved QR"
-        >
-          <SettingsQrLibrarySection />
         </section>
 
         <details
