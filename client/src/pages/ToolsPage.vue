@@ -6,7 +6,7 @@ import PageShell from "@/components/layout/PageShell.vue";
 import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { usePermissions } from "@/composables/usePermissions";
-import { SMALL_TOOL_TABS } from "@/constants/smallToolTabs";
+import { SMALL_TOOL_TAB_SLUGS, SMALL_TOOL_TABS } from "@/constants/smallToolTabs";
 import { actionFamilyClass } from "@/constants/httpStatusColors";
 import {
   ADMIN_HUB_SERVICE_SLUGS,
@@ -65,8 +65,25 @@ const tileSections = computed(() =>
   sections.value.filter((section) => section.category !== "utils"),
 );
 
-const showUtilsSection = computed(() =>
-  sections.value.some((section) => section.category === "utils") || SMALL_TOOL_TABS.length > 0,
+/** Utils-group tools that are tiles (not the four small-window tab pills). */
+const utilsTileServices = computed((): PlatformService[] => {
+  const utils = sections.value.find((section) => section.category === "utils");
+  if (!utils) return [];
+  return utils.services.filter((tool) => !SMALL_TOOL_TAB_SLUGS.has(tool.slug));
+});
+
+const utilsTileSection = computed((): ToolsPageSection => ({
+  category: "utils",
+  label: "utils",
+  services: utilsTileServices.value,
+}));
+
+const utilsSectionCount = computed(
+  () => SMALL_TOOL_TABS.length + utilsTileServices.value.length,
+);
+
+const showUtilsSection = computed(
+  () => SMALL_TOOL_TABS.length > 0 || utilsTileServices.value.length > 0,
 );
 
 const hasAnyTools = computed(
@@ -130,13 +147,13 @@ function tabPillClass(): string {
           <span aria-hidden="true">utils</span>
           <span class="sr-only"
             >utils,
-            {{ SMALL_TOOL_TABS.length === 1 ? "1 tool" : `${SMALL_TOOL_TABS.length} tools` }}</span
+            {{ utilsSectionCount === 1 ? "1 tool" : `${utilsSectionCount} tools` }}</span
           >
           <span class="ml-auto text-xs font-medium text-surface-mid" aria-hidden="true">{{
-            SMALL_TOOL_TABS.length
+            utilsSectionCount
           }}</span>
         </div>
-        <div class="border-t border-surface-border px-3 pb-3 pt-3">
+        <div class="space-y-3 border-t border-surface-border px-3 pb-3 pt-3">
           <div
             class="flex flex-wrap justify-start gap-2"
             aria-label="utils tools"
@@ -150,6 +167,14 @@ function tabPillClass(): string {
               {{ tab.label }}
             </RouterLink>
           </div>
+          <ToolTileGrid
+            v-if="utilsTileServices.length > 0"
+            presentation="public"
+            :sections="[utilsTileSection]"
+            :show-category-headings="false"
+            :resolve-route="toolRoute"
+            :tile-chip="toolsPageChipForSlug"
+          />
         </div>
       </section>
       <details

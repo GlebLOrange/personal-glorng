@@ -12,7 +12,7 @@ import {
 } from "@/utils/toolsPageGroups";
 
 describe("toolsPageGroups", () => {
-  it("maps public slugs into utils (tabs) then content (tiles)", () => {
+  it("maps public slugs into utils (tabs + tiles) then content", () => {
     const sections = groupServicesForToolsPage(publicToolsAsServices());
     expect(sections.map((s) => s.category)).toEqual(["utils", "content"]);
     expect(sections[0]?.services.map((t) => t.slug)).toEqual([
@@ -20,8 +20,9 @@ describe("toolsPageGroups", () => {
       "calculator",
       "password-generator",
       "qr-generator",
+      "url-shortener",
     ]);
-    expect(sections[1]?.services.map((t) => t.slug)).toEqual(["recipes", "url-shortener"]);
+    expect(sections[1]?.services.map((t) => t.slug)).toEqual(["recipes"]);
   });
 
   it("places extras and admin hub tools into utils / content / server", () => {
@@ -42,24 +43,24 @@ describe("toolsPageGroups", () => {
       "calculator",
       "password-generator",
       "qr-generator",
+      "url-shortener",
+      "file-share",
+      "data-extract",
+      "vid-download",
+      "email",
+      "ai-chat",
     ]);
     expect(sections.find((s) => s.category === "content")?.services.map((t) => t.slug)).toEqual([
       "recipes",
       "tasks",
       "expenses",
-      "url-shortener",
-      "file-share",
-      "vid-download",
-      "data-extract",
-      "email",
-      "ai-chat",
-      "health-checker",
       "news",
       "news-sources",
     ]);
     expect(sections.find((s) => s.category === "server")?.services.map((t) => t.slug)).toEqual([
       "feedback",
       "audit",
+      "health-checker",
     ]);
     expect(PLATFORM_SERVICES.find((t) => t.slug === "tasks")?.category).toBe("productivity");
     expect(PLATFORM_SERVICES.find((t) => t.slug === "weather")?.category).toBe("utilities");
@@ -71,7 +72,7 @@ describe("toolsPageGroups", () => {
     expect(sections[0]?.services).toHaveLength(1);
   });
 
-  it("skips chips for tab slugs; demo/yours for content tiles", () => {
+  it("skips chips for tab slugs; demo/yours for utils and content tiles", () => {
     expect(toolsPageChipForSlug("weather")).toBeUndefined();
     expect(toolsPageChipForSlug("calculator")).toBeUndefined();
     expect(toolsPageChipForSlug("recipes")).toBe("demo");
@@ -80,9 +81,10 @@ describe("toolsPageGroups", () => {
     expect(toolsPageChipForSlug("vid-download")).toBe("yours");
     expect(toolsPageChipForSlug("data-extract")).toBe("yours");
     expect(toolsPageChipForSlug("news")).toBeUndefined();
-    expect(toolsPageGroupForSlug("file-share")).toBe("content");
-    expect(toolsPageGroupForSlug("vid-download")).toBe("content");
-    expect(toolsPageGroupForSlug("email")).toBe("content");
+    expect(toolsPageGroupForSlug("file-share")).toBe("utils");
+    expect(toolsPageGroupForSlug("vid-download")).toBe("utils");
+    expect(toolsPageGroupForSlug("email")).toBe("utils");
+    expect(toolsPageGroupForSlug("health-checker")).toBe("server");
     expect(toolsPageGroupForSlug("feedback")).toBe("server");
   });
 });
