@@ -41,8 +41,8 @@ function handleSelect(query: string): void {
 
 <template>
   <div class="min-w-0 space-y-4">
-    <p class="text-xs text-surface-mid">
-      Guests can pin a few cities in this browser. Sign in to keep locations across devices.
+    <p v-if="guestLimitMessage" class="text-xs text-surface-mid">
+      Pinned cities stay in this browser.
     </p>
     <section class="min-w-0">
       <WeatherLocationForm

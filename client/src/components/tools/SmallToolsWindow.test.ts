@@ -130,45 +130,34 @@ describe("SmallToolsWindow", () => {
     wrapper.unmount();
   });
 
-  it("hides Video and Email tabs for guests", async () => {
-    const { wrapper } = await mountWindow("/weather", false);
-
-    const labels = wrapper.findAll('[role="tab"]').map((tab) => tab.text());
-    expect(labels).toEqual([
+  it("shows the same four utils tabs for guests and signed-in users", async () => {
+    const guest = await mountWindow("/weather", false);
+    const guestLabels = guest.wrapper.findAll('[role="tab"]').map((tab) => tab.text());
+    expect(guestLabels).toEqual([
       "weather",
       "calculator",
       "password generator",
       "qr generator",
     ]);
-    expect(labels).not.toContain("video downloader");
-    expect(labels).not.toContain("send email");
+    expect(guestLabels).not.toContain("video downloader");
+    expect(guestLabels).not.toContain("send email");
+    guest.wrapper.unmount();
 
-    wrapper.unmount();
+    const signedIn = await mountWindow("/weather", true);
+    const signedInLabels = signedIn.wrapper.findAll('[role="tab"]').map((tab) => tab.text());
+    expect(signedInLabels).toEqual(guestLabels);
+    signedIn.wrapper.unmount();
   });
 
-  it("shows Video and Email tabs when authenticated with access", async () => {
-    const { wrapper } = await mountWindow("/weather", true);
-
-    const labels = wrapper.findAll('[role="tab"]').map((tab) => tab.text());
-    expect(labels).toEqual([
-      "weather",
-      "calculator",
-      "password generator",
-      "qr generator",
-      "video downloader",
-      "send email",
-    ]);
-
-    wrapper.unmount();
-  });
-
-  it("sizes the tool panel to the calculator frame", async () => {
+  it("sizes the tool panel to max-w-sm and h-[28rem]", async () => {
     const { wrapper } = await mountWindow("/calculator", false);
 
     const panel = wrapper.get('[role="tabpanel"]');
     expect(panel.classes()).toContain("h-[28rem]");
+    expect(panel.classes()).toContain("max-h-[calc(100dvh-16rem)]");
     expect(panel.classes()).not.toContain("h-[32rem]");
     expect(wrapper.find(".max-w-sm").exists()).toBe(true);
+    expect(wrapper.find(".max-w-md").exists()).toBe(false);
 
     wrapper.unmount();
   });

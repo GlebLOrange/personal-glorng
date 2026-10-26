@@ -172,15 +172,6 @@ async function handleGoHome(): Promise<void> {
             >
               logout
             </button>
-            <RouterLink
-              v-else
-              to="/login"
-              class="nav-link-quiet inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
-              :class="{ 'text-accent-coral': navSection === 'login' }"
-              :aria-current="navSection === 'login' ? 'page' : undefined"
-            >
-              login
-            </RouterLink>
           </div>
 
           <IconActionButton
