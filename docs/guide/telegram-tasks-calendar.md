@@ -28,9 +28,9 @@ Entrypoint: [`server/app/todobot/main.py`](../../server/app/todobot/main.py) (`m
 - FSM state in Redis (`todobot_fsm` prefix)
 - Injects DB via `MongoRegistryMiddleware` (name is historical; tasks live in Postgres)
 - On startup: recover unsent reminders missing `job_id` via `schedule_reminder`
-- Bot commands: `/new`, `/tasks`, `/connect_calendar`, `/help`
+- Bot commands: `/new`, `/tasks`, `/month`, `/connect_calendar`, `/help`
 
-Routers: `start`, `task_create`, `task_manage`, `reminder`, `calendar`.
+Routers: `start`, `task_create`, `task_manage`, `reminder`, `calendar`, `oneshot` (last).
 
 ## Who can use the bot
 
@@ -59,13 +59,22 @@ Sync lookup: `sync_task_to_google` loads credentials with `get_google_for_telegr
 
 ## Task creation from Telegram
 
-[`start.py`](../../server/app/todobot/handlers/start.py) menu:
+**Priority path — idle one-shot** ([`oneshot.py`](../../server/app/todobot/handlers/oneshot.py), last router):
+
+- Idle text (no FSM, not a command/menu label) is parsed with local `parse_task_input` (no Groq).
+- Title + day + time → `create_with_sync` immediately (at-start Telegram reminder + Calendar enqueue).
+- Day/time present but incomplete → one clarifying question, then save (no reminder presets / confirm buttons).
+- No day and no time → message ignored (chatter stays chatter).
+
+[`start.py`](../../server/app/todobot/handlers/start.py) menu (unchanged for Quick/Guided):
 
 - **Quick task** → AI intake (`_start_ai_intake`)
 - **Guided task** → step FSM (`_start_guided`)
 - `/new` → same create flow in [`task_create.py`](../../server/app/todobot/handlers/task_create.py)
+- **Calendar** when already linked → `/month` busy-day text grid; otherwise OAuth connect
+- `/month` → plain-text month grid of pending tasks (`*` = busy day + list underneath)
 
-Confirm path:
+Confirm path (Quick/Guided):
 
 - With intake: `TaskIntakeService.confirm_intake(..., telegram_user_id=callback.from_user.id)` → `create_with_sync`
 - Guided: `create_with_sync(..., telegram_user_id=callback.from_user.id, ...)`
@@ -74,7 +83,7 @@ Confirm path:
 
 1. Insert task for that Telegram user
 2. Schedule Telegram reminders (always at-start + optional early)
-3. Enqueue Calendar `CREATE` and kick in-process drain
+3. Enqueue Calendar `CREATE` and kick in-process drain (event duration 30 minutes)
 
 Welcome (`/start`) lists pending tasks for that user and calendar link status.
 
@@ -118,7 +127,7 @@ Admin ops ([`tasks_admin.py`](../../server/app/routers/tools/tasks_admin.py) + V
 - `POST /api/tools/tasks/sync-queue/process` — arm pending + kick drain (“Sync now”)
 - `POST /api/tools/tasks/{id}/retry-sync` — reset failed rows for a task, then kick
 
-What gets written to Google: event `summary=title`, start=end=`scheduled_at` (UTC), description/location, custom popup reminders (including 0-minute). `CREATE` stores `google_event_id` on the task.
+What gets written to Google: event `summary=title`, start=`scheduled_at`, end=`scheduled_at + 30 minutes` (UTC), description/location, custom popup reminders (including 0-minute). `CREATE` stores `google_event_id` on the task.
 
 `DELETE` exists in the calendar service but is not enqueued from Telegram/admin production paths today.
 
@@ -129,6 +138,7 @@ What gets written to Google: event `summary=title`, start=end=`scheduled_at` (UT
 - **Tasks** = source of truth
 - **google_sync_queue** = durable outbox Task → Calendar
 - **Celery** = Telegram reminder delivery + periodic sync/overdue cleanup
+- **2026-10-26:** Priority-1 capture is an idle one-shot message (title + day + time) → local task + 30-minute Calendar event + at-start Telegram reminder. No Google Tasks API. `/month` is a text busy-day grid, not a site calendar.
 - **2026-10-25:** Sync now only drains pending queue rows — it does not backfill tasks that never got a CREATE enqueue (e.g. seed via plain `create_task`). Calendar create on task save requires `create_with_sync` + linked Google creds; Telegram “notify” is confirm reply + scheduled reminders, not a sync ack.
 
 ## Related
