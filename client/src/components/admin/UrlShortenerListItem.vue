@@ -19,12 +19,17 @@ import type { UrlItem } from "@/types";
 import { formatDate } from "@/utils/format";
 import { publicUrl } from "@/utils/publicLinks";
 
-const props = defineProps<{
-  url: UrlItem;
-  canWrite: boolean;
-  saving?: boolean;
-  deleting?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    url: UrlItem;
+    canWrite: boolean;
+    saving?: boolean;
+    deleting?: boolean;
+    /** Guest localStorage row — code is not a live /s/{code} redirect. */
+    localRow?: boolean;
+  }>(),
+  { localRow: false },
+);
 
 const emit = defineEmits<{
   copy: [];
@@ -38,7 +43,13 @@ const showDeleteConfirm = ref(false);
 const titleInput = ref<{ focus: () => void } | null>(null);
 
 const shortLink = computed(() => publicUrl("s", props.url.code));
+const codeDisplay = computed(() =>
+  props.localRow ? props.url.code : shortLink.value,
+);
 const titleLabel = computed(() => props.url.title?.trim() || "—");
+const copyAriaLabel = computed(() =>
+  props.localRow ? "copy original URL" : "copy short link",
+);
 
 watch(
   () => props.url.id,
@@ -134,6 +145,7 @@ function onRowClick(event: MouseEvent): void {
     </th>
     <td :class="ADMIN_TD_CLASS">
       <a
+        v-if="!localRow"
         :href="shortLink"
         :title="shortLink"
         target="_blank"
@@ -142,6 +154,13 @@ function onRowClick(event: MouseEvent): void {
       >
         {{ shortLink }}
       </a>
+      <p
+        v-else
+        class="truncate text-xs text-surface-mid"
+        :title="`${url.code} (browser only — does not redirect)`"
+      >
+        {{ codeDisplay }}
+      </p>
     </td>
     <td :class="ADMIN_TD_CLASS">
       <a
@@ -163,7 +182,7 @@ function onRowClick(event: MouseEvent): void {
     <td :class="ADMIN_TD_ACTIONS_CLASS" data-admin-row-stop @click.stop @keydown.stop>
       <div :class="ADMIN_ACTIONS_CLASS">
         <IconEditButton v-if="canWrite" aria-label="edit title" @click="startEdit" />
-        <IconCopyButton aria-label="copy short link" @click="emit('copy')" />
+        <IconCopyButton :aria-label="copyAriaLabel" @click="emit('copy')" />
         <IconCloseButton
           v-if="canWrite"
           aria-label="delete short URL"
@@ -185,6 +204,7 @@ function onRowClick(event: MouseEvent): void {
     <p>
       delete
       <a
+        v-if="!localRow"
         :href="shortLink"
         target="_blank"
         rel="noopener noreferrer"
@@ -193,6 +213,7 @@ function onRowClick(event: MouseEvent): void {
       >
         {{ shortLink }}
       </a>
+      <span v-else class="font-medium text-surface-light">{{ url.code }}</span>
       ? this cannot be undone
     </p>
   </ConfirmDialog>

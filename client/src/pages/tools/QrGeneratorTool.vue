@@ -26,11 +26,14 @@ const editingId = ref<number | null>(null);
 const deletingId = ref<number | null>(null);
 
 const {
+  isLocalMode,
   canReadLibrary,
   canWriteLibrary,
+  guestLimitLabel,
   loadOne,
   loadList,
   remove,
+  saveLocal,
   items,
   page,
   total,
@@ -45,15 +48,23 @@ const {
 
 const { loading: creating, run: runCreate } = useApiAction();
 const { loading: savingLibrary, run: runSaveLibrary } = useApiAction();
+const saveError = ref("");
 
 const canCreate = computed(() => Boolean(content.value.trim()) && !creating.value);
 const canSaveLibrary = computed(
-  () => canWriteLibrary.value && Boolean(content.value.trim()) && !savingLibrary.value,
+  () =>
+    canWriteLibrary.value &&
+    Boolean(content.value.trim()) &&
+    !savingLibrary.value &&
+    !creating.value,
 );
 const isEditing = computed(() => editingId.value != null);
 const pageDescription = computed(() => {
   const base =
     "Quick generate does not store anything on the server — download the SVG if you need it later.";
+  if (isLocalMode.value) {
+    return `${base} Saved codes stay in this browser.`;
+  }
   return canWriteLibrary.value
     ? `${base} Save to your library to reuse codes (your list only).`
     : `${base} Sign in to save codes to your library.`;
@@ -117,9 +128,58 @@ async function createQr(): Promise<void> {
   }
 }
 
+async function ensureGeneratedSvg(): Promise<string | null> {
+  if (generated.value?.svg) {
+    return generated.value.svg;
+  }
+  if (!content.value.trim()) return null;
+  const result = await runCreate(
+    () => api.post<QrGenerateResponse>("/tools/qr-generator", payloadBody()),
+    { errorFallback: "Failed to generate QR code" },
+  );
+  if (!result) return null;
+  generated.value = result.data;
+  return result.data.svg;
+}
+
 async function saveToLibrary(): Promise<void> {
   if (!canWriteLibrary.value || !content.value.trim()) return;
+  saveError.value = "";
   const isUpdate = editingId.value != null;
+
+  if (isLocalMode.value) {
+    const svg = await ensureGeneratedSvg();
+    if (!svg) {
+      saveError.value = "Generate a QR code before saving";
+      return;
+    }
+    const result = await runSaveLibrary(
+      async () => {
+        const local = saveLocal({
+          id: editingId.value,
+          content: content.value.trim(),
+          label: label.value.trim() || null,
+          error_level: errorLevel.value,
+          svg,
+        });
+        if (!local.ok) {
+          throw new Error(local.error);
+        }
+        return { data: local.item };
+      },
+      {
+        successMessage: isUpdate ? "Saved QR updated" : "QR saved to library",
+        errorFallback: "Failed to save QR code",
+      },
+    );
+    if (result) {
+      applyStored(result.data, result.data.svg);
+    } else {
+      saveError.value = "Failed to save QR code";
+    }
+    return;
+  }
+
   const result = await runSaveLibrary(
     () =>
       isUpdate
@@ -246,6 +306,7 @@ onMounted(() => {
               </BaseButton>
             </div>
             <p v-if="detailLoading" class="text-xs text-surface-mid">Loading saved code…</p>
+            <p v-if="saveError" class="text-xs text-status-error" role="alert">{{ saveError }}</p>
           </form>
         </Card>
 
@@ -268,6 +329,9 @@ onMounted(() => {
       </div>
 
       <section v-if="canReadLibrary" class="min-w-0" aria-label="saved QR codes">
+        <p v-if="guestLimitLabel" class="mb-2 text-xs text-surface-mid" role="status">
+          {{ guestLimitLabel }}
+        </p>
         <AdminListSkeleton v-if="listLoading && items.length === 0" />
         <p
           v-else-if="!listLoading && items.length === 0"
