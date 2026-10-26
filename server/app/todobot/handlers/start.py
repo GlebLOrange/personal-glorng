@@ -148,8 +148,16 @@ async def menu_calendar(
     registry: DatabaseRegistry,
 ) -> None:
     await state.clear()
-    from app.todobot.handlers.calendar import cmd_connect_calendar
+    from app.todobot.handlers.calendar import cmd_connect_calendar, send_month_view
 
+    telegram_user_id = message.from_user.id if message.from_user else None
+    connected = False
+    if telegram_user_id is not None and registry.credentials is not None:
+        cred = await registry.credentials.get_google_for_telegram_user(telegram_user_id)
+        connected = cred is not None
+    if connected:
+        await send_month_view(message, registry)
+        return
     await cmd_connect_calendar(message, registry)
 
 

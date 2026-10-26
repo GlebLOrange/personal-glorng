@@ -86,6 +86,24 @@ class TaskRepository(MongoRepository[Task]):
         )
         return [_parse_doc(Task, row) async for row in cursor]
 
+    async def list_for_user_between(
+        self,
+        telegram_user_id: int,
+        *,
+        start: datetime,
+        end: datetime,
+        status: TaskStatus | None = None,
+    ) -> list[Task]:
+        """List tasks with scheduled_at in [start, end) for a Telegram user."""
+        query: dict[str, Any] = {
+            "telegram_user_id": telegram_user_id,
+            "scheduled_at": {"$gte": start, "$lt": end},
+        }
+        if status is not None:
+            query["status"] = status.value
+        cursor = self._col().find(query).sort("scheduled_at", 1)
+        return [_parse_doc(Task, row) async for row in cursor]
+
     async def add_status_history(
         self,
         *,
