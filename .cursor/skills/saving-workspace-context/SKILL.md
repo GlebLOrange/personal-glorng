@@ -4,7 +4,7 @@ description: >-
   Persists durable decisions, research, and conventions into existing project homes
   (AGENTS.md, docs/, .cursor/). Use when asked to save workspace context, persist
   decisions, or carry conventions across chats.
-user-invocable: false
+user-invocable: true
 ---
 
 # Saving Workspace Context
@@ -15,10 +15,32 @@ Build institutional memory. Prefer the project's existing homes (`AGENTS.md`, `C
 
 | Mode | When | What to do |
 |------|------|------------|
-| **Micro-save** | Skill in context / auto-attached mid-task | One short append to the correct home; mention the path |
-| **Full pass** | User invokes this skill or asks to persist session memory | Discover homes → selective load → save → end checklist |
+| **Micro-save** | Gated stop hook (see below), or skill in context mid-task | One short dated append to the correct home; mention the path. If nothing durable, edit nothing and reply exactly: `No workspace context to save.` |
+| **Full pass** | User asks to persist session memory (slash / attach this skill) | Discover homes → selective load → save → end checklist |
 
 Do **not** load the whole memory tree at the start of unrelated coding tasks.
+
+## Stop hook (auto micro-save)
+
+Cursor’s `stop` payload is only `{ status, loop_count }` — no transcript or file list. Blind every-turn follow-ups are mostly noise.
+
+This repo gates micro-save:
+
+1. [`session-start.sh`](../../hooks/session-start.sh) exports `PORTFOLIO_CTX_SESSION` from `session_id`.
+2. [`after-file-edit-mark.sh`](../../hooks/after-file-edit-mark.sh) marks the session dirty after any agent file edit (temp state under `$TMPDIR/portfolio-glorng-ctx/`).
+3. [`save-workspace-context.sh`](../../hooks/save-workspace-context.sh) emits a follow-up only when `status == completed`, `loop_count == 0`, the session is dirty, and it has not already been prompted. Then it marks `prompted` so later stops stay silent.
+
+Wired in [`.cursor/hooks.json`](../../hooks.json) (`afterFileEdit` + `stop` with `loop_limit: 1`). Empty `{}` from the stop script means no chat follow-up.
+
+Ask / Plan turns with no edits never trigger micro-save. When a follow-up does fire and nothing is durable, **`No workspace context to save.`** is still the correct reply.
+
+Prefer this project skill over a global `~/.agents/skills/Saving-Workspace-Context/SKILL.md` copy (different router). `user-invocable: true` so slash / attach uses this file.
+
+## How to update this later
+
+- Policy (what to save, router, full-pass steps): this `SKILL.md`
+- Gate / empty reply / follow-up text: [`.cursor/hooks/save-workspace-context.sh`](../../hooks/save-workspace-context.sh), [`.cursor/hooks/after-file-edit-mark.sh`](../../hooks/after-file-edit-mark.sh), [`.cursor/hooks/session-start.sh`](../../hooks/session-start.sh), [`.cursor/hooks.json`](../../hooks.json)
+- Worktree checkouts only see hook edits after that commit lands on their branch
 
 ## Memory Router (Before Any Write)
 

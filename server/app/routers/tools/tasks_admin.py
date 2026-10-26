@@ -1,5 +1,6 @@
 """Todobot task admin API. Default: `tasks:read`; mutations require superuser."""
 
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
@@ -87,9 +88,17 @@ async def list_tasks(
     status: str | None = None,
     q: Annotated[str | None, Query(min_length=3, max_length=200)] = None,
     sort: Annotated[str | None, Query(pattern=r"^(when_desc|when_asc)$")] = None,
+    start: datetime | None = None,
+    end: datetime | None = None,
 ) -> TaskListResponse:
     return await svc.list_tasks(
-        page=page, per_page=per_page, status=status, q=q, sort=sort,
+        page=page,
+        per_page=per_page,
+        status=status,
+        q=q,
+        sort=sort,
+        start=start,
+        end=end,
     )
 
 

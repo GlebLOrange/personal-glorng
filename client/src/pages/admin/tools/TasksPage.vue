@@ -9,6 +9,7 @@ import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import SyncIcon from "@/components/icons/SyncIcon.vue";
 import TaskCreateModal from "@/components/tasks/TaskCreateModal.vue";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
+import TasksCalendarPanel from "@/components/tasks/TasksCalendarPanel.vue";
 import TasksIntakesPanel from "@/components/tasks/TasksIntakesPanel.vue";
 import TasksListPanel from "@/components/tasks/TasksListPanel.vue";
 import TasksSyncPanel from "@/components/tasks/TasksSyncPanel.vue";
@@ -23,7 +24,7 @@ import { useTasks } from "@/composables/useTasks";
 
 import type { HttpStatusFamily } from "@/constants/httpStatusColors";
 
-type Tab = "queue" | "intakes" | "sync";
+type Tab = "queue" | "calendar" | "intakes" | "sync";
 
 const TASK_TABS: {
   id: Tab;
@@ -32,9 +33,25 @@ const TASK_TABS: {
   family?: HttpStatusFamily;
 }[] = [
   { id: "queue", label: "queue" },
+  { id: "calendar", label: "calendar" },
   { id: "intakes", label: "intakes" },
   { id: "sync", label: "sync", icon: "sync", family: "5xx" },
 ];
+
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+function todayDateKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+}
+
+function monthRangeIso(year: number, month: number): { start: string; end: string } {
+  const start = new Date(year, month, 1);
+  const end = new Date(year, month + 1, 1);
+  return { start: start.toISOString(), end: end.toISOString() };
+}
 
 const STATUS_FILTERS = [
   { label: "pending", value: "pending" },
@@ -48,12 +65,18 @@ const route = useRoute();
 const router = useRouter();
 const activeTab = ref<Tab>("queue");
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
+const now = new Date();
+const calendarYear = ref(now.getFullYear());
+const calendarMonth = ref(now.getMonth());
+const selectedDate = ref(todayDateKey());
 
 const { isSuperuser } = usePermissions();
 
 const {
   DEFAULT_FILTER_STATUS,
   tasks,
+  calendarTasks,
+  calendarTruncated,
   syncQueue,
   intakes,
   selectedTask,
@@ -66,6 +89,7 @@ const {
   showCreateForm,
   createForm,
   listLoading,
+  calendarLoading,
   intakesLoading,
   syncLoading,
   detailLoading,
@@ -87,6 +111,7 @@ const {
   intakeTotal,
   syncTotal,
   loadTasks,
+  loadCalendarMonth,
   loadIntakes,
   loadSyncQueue,
   loadStats,
@@ -114,12 +139,56 @@ function parseTaskTab(value: unknown): Tab | null {
     : null;
 }
 
+async function reloadCalendar(): Promise<void> {
+  const { start, end } = monthRangeIso(calendarYear.value, calendarMonth.value);
+  await loadCalendarMonth(start, end);
+}
+
 function switchTab(tab: string): void {
   if (!TASK_TABS.some((item) => item.id === tab)) return;
   activeTab.value = tab as Tab;
-  void router.replace({ query: { ...route.query, tab } });
+  const query = { ...route.query, tab } as Record<string, string>;
+  if (tab === "calendar") {
+    query.date = selectedDate.value;
+  }
+  void router.replace({ query });
   if (tab === "intakes") void loadIntakes();
   if (tab === "sync") void loadSyncQueue();
+  if (tab === "calendar") void reloadCalendar();
+}
+
+function selectCalendarDate(date: string): void {
+  selectedDate.value = date;
+  void router.replace({ query: { ...route.query, tab: "calendar", date } });
+  const [y, m] = date.split("-").map(Number);
+  if (y !== calendarYear.value || m - 1 !== calendarMonth.value) {
+    calendarYear.value = y;
+    calendarMonth.value = m - 1;
+    void reloadCalendar();
+  }
+}
+
+function shiftCalendarMonth(delta: number): void {
+  const next = new Date(calendarYear.value, calendarMonth.value + delta, 1);
+  calendarYear.value = next.getFullYear();
+  calendarMonth.value = next.getMonth();
+  selectedDate.value = `${calendarYear.value}-${pad2(calendarMonth.value + 1)}-01`;
+  void router.replace({
+    query: { ...route.query, tab: "calendar", date: selectedDate.value },
+  });
+  void reloadCalendar();
+}
+
+async function onUpdateStatus(status: Parameters<typeof updateTaskStatus>[1]): Promise<void> {
+  if (!selectedTask.value) return;
+  await updateTaskStatus(selectedTask.value.id, status);
+  if (activeTab.value === "calendar") await reloadCalendar();
+}
+
+async function onReschedule(scheduledAtLocal: string): Promise<void> {
+  if (!selectedTask.value) return;
+  await rescheduleTask(selectedTask.value.id, scheduledAtLocal);
+  if (activeTab.value === "calendar") await reloadCalendar();
 }
 
 function setStatusFilter(status: string): void {
@@ -155,10 +224,18 @@ useScrollListFingerprint(
 
 onMounted(() => {
   const tab = parseTaskTab(route.query.tab);
+  const dateParam = route.query.date;
+  if (typeof dateParam === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+    selectedDate.value = dateParam;
+    const [y, m] = dateParam.split("-").map(Number);
+    calendarYear.value = y;
+    calendarMonth.value = m - 1;
+  }
   if (tab) {
     activeTab.value = tab;
     if (tab === "intakes") void loadIntakes();
     if (tab === "sync") void loadSyncQueue();
+    if (tab === "calendar") void reloadCalendar();
   }
   void loadTasks();
   void loadStats();
@@ -265,6 +342,20 @@ onMounted(() => {
         @last-page="goToPage(totalPages)"
       />
 
+      <TasksCalendarPanel
+        v-else-if="activeTab === 'calendar'"
+        :tasks="calendarTasks"
+        :loading="calendarLoading"
+        :truncated="calendarTruncated"
+        :year="calendarYear"
+        :month="calendarMonth"
+        :selected-date="selectedDate"
+        @prev-month="shiftCalendarMonth(-1)"
+        @next-month="shiftCalendarMonth(1)"
+        @select-date="selectCalendarDate"
+        @select-task="openDetail"
+      />
+
       <TasksIntakesPanel
         v-else-if="activeTab === 'intakes'"
         :intakes="intakes"
@@ -316,8 +407,8 @@ onMounted(() => {
         :rescheduling="rescheduling"
         @close="closeDetail"
         @retry-sync="retrySync"
-        @update-status="selectedTask && updateTaskStatus(selectedTask.id, $event)"
-        @reschedule="selectedTask && rescheduleTask(selectedTask.id, $event)"
+        @update-status="onUpdateStatus"
+        @reschedule="onReschedule"
       />
     </div>
   </AdminPageLayout>
