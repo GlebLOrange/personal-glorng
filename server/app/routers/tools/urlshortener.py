@@ -1,6 +1,7 @@
 """URL shortener API.
 
-Public create; list/delete require `url-shortener` capabilities.
+Create/list/update/delete require `url-shortener` capabilities.
+Guest demos use client localStorage instead of anonymous DB rows.
 """
 
 from typing import Annotated
@@ -8,10 +9,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import RedirectResponse
 
-from app.core.deps import AuthorizedUser, OptionalUser, require_capability
+from app.core.deps import AuthorizedUser, require_capability
 from app.core.permissions import (
     SUPERUSER_PERMISSION,
-    permission_key,
     user_has_permission,
 )
 from app.core.rate_limit import rate_limit_api, rate_limit_shortener_create
@@ -29,27 +29,22 @@ router = APIRouter(prefix="/url-shortener", tags=["url-shortener"])
     response_model=UrlResponse,
     status_code=201,
     summary="Create short URL",
-    description="Public short URL creation (rate limited).",
+    description=requires_capability("url-shortener", "write"),
     dependencies=[
         Depends(rate_limit_api),
         Depends(rate_limit_shortener_create),
+        Depends(require_capability("url-shortener", "write")),
     ],
 )
 async def create_url(
     data: UrlCreate,
     registry: DbRegistry,
-    user: OptionalUser,
+    user: AuthorizedUser,
 ) -> UrlResponse:
-    created_by = (
-        user.id
-        if user is not None
-        and user_has_permission(user, permission_key("url-shortener", "write"))
-        else None
-    )
     svc = UrlService(registry)
     url = await svc.create_short_url(
         original_url=str(data.original_url),
-        created_by=created_by,
+        created_by=user.id,
         title=data.title,
     )
     return UrlResponse.model_validate(url)

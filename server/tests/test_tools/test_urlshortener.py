@@ -12,16 +12,12 @@ async def test_create_url_unauthenticated(client: AsyncClient) -> None:
         "/api/tools/url-shortener",
         json={"original_url": "https://example.com"},
     )
-    assert resp.status_code == 201
-    data = resp.json()
-    assert data["original_url"] == "https://example.com/"
-    assert "code" in data
-    assert len(data["code"]) == 8
+    assert resp.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_create_url_blocks_private_host(client: AsyncClient) -> None:
-    resp = await client.post(
+async def test_create_url_blocks_private_host(auth_client: AsyncClient) -> None:
+    resp = await auth_client.post(
         "/api/tools/url-shortener",
         json={"original_url": "http://127.0.0.1/internal"},
     )
@@ -44,9 +40,9 @@ async def test_create_url(auth_client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_create_url_prepends_https_for_schemeless_host(
-    client: AsyncClient,
+    auth_client: AsyncClient,
 ) -> None:
-    resp = await client.post(
+    resp = await auth_client.post(
         "/api/tools/url-shortener",
         json={"original_url": "example.com/path"},
     )
@@ -55,8 +51,8 @@ async def test_create_url_prepends_https_for_schemeless_host(
 
 
 @pytest.mark.asyncio
-async def test_create_url_does_not_invent_www(client: AsyncClient) -> None:
-    resp = await client.post(
+async def test_create_url_does_not_invent_www(auth_client: AsyncClient) -> None:
+    resp = await auth_client.post(
         "/api/tools/url-shortener",
         json={"original_url": "example.com"},
     )

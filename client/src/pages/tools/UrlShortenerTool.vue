@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
@@ -14,8 +14,17 @@ import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
+import { useLocalStorage } from "@/composables/useLocalStorage";
 import { usePermissions } from "@/composables/usePermissions";
 import type { PaginatedList, UrlItem } from "@/types";
+import {
+  createGuestShortUrl,
+  deleteGuestShortUrl,
+  GUEST_URL_SHORTENER_KEY,
+  guestUrlLimitMessage,
+  sanitizeGuestShortUrls,
+  updateGuestShortUrlTitle,
+} from "@/utils/guestUrlShortener";
 import { ensureHttpsUrl } from "@/utils/safeUrl";
 import { publicUrl } from "@/utils/publicLinks";
 
@@ -31,11 +40,41 @@ const deletingId = ref<number | null>(null);
 const { copy } = useClipboard();
 const { can } = usePermissions();
 const canManage = computed(() => can("url-shortener", "read"));
-const canWrite = computed(() => can("url-shortener", "write"));
+const canWriteServer = computed(() => can("url-shortener", "write"));
+/** Local demo store when the account library is unavailable. */
+const isLocalMode = computed(() => !canManage.value);
+const canWrite = computed(() => isLocalMode.value || canWriteServer.value);
 const { loading: listLoading, run: runList } = useApiAction();
 const { loading, lastError, run: runCreate } = useApiAction();
 const { run: runUpdate } = useApiAction();
 const { run: runDelete } = useApiAction();
+
+const guestStored = useLocalStorage<unknown>(GUEST_URL_SHORTENER_KEY, []);
+const guestUrls = ref<UrlItem[]>(sanitizeGuestShortUrls(guestStored.value));
+
+watch(
+  guestUrls,
+  (next) => {
+    guestStored.value = next;
+  },
+  { deep: true },
+);
+
+watch(isLocalMode, (local) => {
+  if (local) {
+    guestUrls.value = sanitizeGuestShortUrls(guestStored.value);
+    page.value = 1;
+    syncLocalPage();
+  } else {
+    void loadUrls();
+  }
+});
+
+const pageDescription = computed(() =>
+  isLocalMode.value
+    ? "Short links are saved in this browser only — codes do not redirect at /s/{code}. Sign in with url-shortener access for live redirects."
+    : "Short links resolve at /s/{code} — a FastAPI redirect, not a Vue page. Example path: /s/demo.",
+);
 
 const hasNextPage = computed(() => page.value < totalPages.value);
 const hasPreviousPage = computed(() => page.value > 1);
@@ -65,7 +104,27 @@ const urlError = computed(() => {
   return undefined;
 });
 
+function syncLocalPage(): void {
+  const all = guestUrls.value;
+  total.value = all.length;
+  totalPages.value = Math.max(1, Math.ceil(all.length / ADMIN_LIST_PAGE_SIZE) || 1);
+  if (all.length === 0) {
+    totalPages.value = 0;
+    urls.value = [];
+    return;
+  }
+  if (page.value > totalPages.value) {
+    page.value = totalPages.value;
+  }
+  const start = (page.value - 1) * ADMIN_LIST_PAGE_SIZE;
+  urls.value = all.slice(start, start + ADMIN_LIST_PAGE_SIZE);
+}
+
 async function loadUrls(): Promise<void> {
+  if (isLocalMode.value) {
+    syncLocalPage();
+    return;
+  }
   if (!canManage.value) return;
   const data = await runList(
     () =>
@@ -98,6 +157,22 @@ async function createUrl(): Promise<void> {
     formError.value = URL_FORMAT_HINT;
     return;
   }
+
+  if (isLocalMode.value) {
+    const result = createGuestShortUrl(guestUrls.value, trimmed, newTitle.value || null);
+    if (!result.ok) {
+      formError.value = result.error;
+      return;
+    }
+    guestUrls.value = result.next;
+    newUrl.value = "";
+    newTitle.value = "";
+    formError.value = "";
+    page.value = 1;
+    syncLocalPage();
+    return;
+  }
+
   const result = await runCreate(
     () =>
       api.post("/tools/url-shortener", {
@@ -121,6 +196,13 @@ async function createUrl(): Promise<void> {
 }
 
 async function updateUrl(id: number, title: string | null): Promise<void> {
+  if (isLocalMode.value) {
+    savingId.value = id;
+    guestUrls.value = updateGuestShortUrlTitle(guestUrls.value, id, title);
+    savingId.value = null;
+    syncLocalPage();
+    return;
+  }
   savingId.value = id;
   const result = await runUpdate(
     () => api.patch<UrlItem>(`/tools/url-shortener/${id}`, { title }),
@@ -136,6 +218,13 @@ async function updateUrl(id: number, title: string | null): Promise<void> {
 }
 
 async function deleteUrl(id: number): Promise<void> {
+  if (isLocalMode.value) {
+    deletingId.value = id;
+    guestUrls.value = deleteGuestShortUrl(guestUrls.value, id);
+    deletingId.value = null;
+    syncLocalPage();
+    return;
+  }
   deletingId.value = id;
   const result = await runDelete(() => api.delete(`/tools/url-shortener/${id}`), {
     successMessage: "URL deleted",
@@ -147,7 +236,20 @@ async function deleteUrl(id: number): Promise<void> {
   }
 }
 
-onMounted(loadUrls);
+function onCopy(url: UrlItem): void {
+  if (isLocalMode.value) {
+    void copy(url.original_url);
+    return;
+  }
+  void copy(publicUrl("s", url.code));
+}
+
+onMounted(() => {
+  if (isLocalMode.value) {
+    guestUrls.value = sanitizeGuestShortUrls(guestStored.value);
+  }
+  void loadUrls();
+});
 </script>
 
 <template>
@@ -157,7 +259,7 @@ onMounted(loadUrls);
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
-    description="Short links resolve at /s/{code} — a FastAPI redirect, not a Vue page. Example path: /s/demo."
+    :description="pageDescription"
   >
     <form class="mb-4 flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createUrl">
       <BaseInput
@@ -182,8 +284,16 @@ onMounted(loadUrls);
       </ToolbarPillButton>
     </form>
 
-    <div v-if="canManage" class="min-w-0">
-      <AdminListSkeleton v-if="listLoading" label="loading shortened URLs" />
+    <p
+      v-if="isLocalMode && guestUrls.length > 0"
+      class="mb-2 text-xs text-surface-mid"
+      role="status"
+    >
+      {{ guestUrlLimitMessage(guestUrls.length) }}
+    </p>
+
+    <div class="min-w-0">
+      <AdminListSkeleton v-if="listLoading && !isLocalMode" label="loading shortened URLs" />
 
       <template v-else>
         <div v-if="urls.length > 0" class="min-w-0">
@@ -201,9 +311,10 @@ onMounted(loadUrls);
               :key="url.id"
               :url="url"
               :can-write="canWrite"
+              :local-row="isLocalMode"
               :saving="savingId === url.id"
               :deleting="deletingId === url.id"
-              @copy="copy(publicUrl('s', url.code))"
+              @copy="onCopy(url)"
               @save="updateUrl(url.id, $event)"
               @delete="deleteUrl(url.id)"
             />

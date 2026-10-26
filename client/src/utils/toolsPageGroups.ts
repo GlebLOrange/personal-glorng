@@ -1,23 +1,18 @@
 import type { PlatformService } from "@/platform/services";
+import { SMALL_TOOL_TAB_SLUGS } from "@/constants/smallToolTabs";
 
 /** Tools-page-only section ids — not PlatformService.category. */
-export const TOOLS_PAGE_GROUP_ORDER = [
-  "everyday",
-  "content",
-  "work",
-  "builders",
-] as const;
+export const TOOLS_PAGE_GROUP_ORDER = ["utils", "content", "server"] as const;
 
 export type ToolsPageGroupId = (typeof TOOLS_PAGE_GROUP_ORDER)[number];
 
 export const TOOLS_PAGE_GROUP_LABELS: Record<ToolsPageGroupId, string> = {
-  everyday: "Everyday",
-  content: "Content",
-  work: "Work",
-  builders: "Builders",
+  utils: "utils",
+  content: "content",
+  server: "server",
 };
 
-/** Six public demo tools — chip targets on the Tools catalog. */
+/** Six public demo tools — chip targets on the Tools catalog (tiles only). */
 export const TOOLS_PAGE_DEMO_SLUGS = new Set([
   "weather",
   "calculator",
@@ -27,18 +22,42 @@ export const TOOLS_PAGE_DEMO_SLUGS = new Set([
   "recipes",
 ]);
 
+/** Capability extras that show a "yours" chip when listed as tiles. */
+const YOURS_CHIP_SLUGS = new Set([
+  "tasks",
+  "expenses",
+  "file-share",
+  "vid-download",
+  "data-extract",
+]);
+
+/**
+ * Utils = small-window tab peers only.
+ * Non-tab former utils (url-shortener, file-share, …) live under content as tiles.
+ */
 const SLUG_TO_GROUP: Record<string, ToolsPageGroupId> = {
-  weather: "everyday",
-  calculator: "everyday",
-  "password-generator": "everyday",
-  "qr-generator": "everyday",
-  "url-shortener": "content",
+  weather: "utils",
+  calculator: "utils",
+  "password-generator": "utils",
+  "qr-generator": "utils",
+  "vid-download": "utils",
+  email: "utils",
   recipes: "content",
-  tasks: "work",
-  expenses: "work",
-  "file-share": "work",
-  "vid-download": "builders",
-  "data-extract": "builders",
+  tasks: "content",
+  expenses: "content",
+  "url-shortener": "content",
+  "file-share": "content",
+  "data-extract": "content",
+  "ai-chat": "content",
+  "health-checker": "content",
+  news: "content",
+  "news-sources": "content",
+  feedback: "server",
+  search: "server",
+  "api-docs": "server",
+  audit: "server",
+  "app-logs": "server",
+  "db-maintenance": "server",
 };
 
 /** Stable order within each tools-page group. */
@@ -47,13 +66,24 @@ const SLUG_ORDER: Record<string, number> = {
   calculator: 1,
   "password-generator": 2,
   "qr-generator": 3,
-  "url-shortener": 0,
-  recipes: 1,
-  tasks: 0,
-  expenses: 1,
-  "file-share": 2,
-  "vid-download": 0,
-  "data-extract": 1,
+  "vid-download": 4,
+  email: 5,
+  recipes: 0,
+  tasks: 1,
+  expenses: 2,
+  "url-shortener": 3,
+  "file-share": 4,
+  "data-extract": 5,
+  "ai-chat": 6,
+  "health-checker": 7,
+  news: 8,
+  "news-sources": 9,
+  feedback: 0,
+  search: 1,
+  "api-docs": 2,
+  audit: 3,
+  "app-logs": 4,
+  "db-maintenance": 5,
 };
 
 export type ToolsPageSection = {
@@ -66,11 +96,12 @@ export function toolsPageGroupForSlug(slug: string): ToolsPageGroupId | undefine
   return SLUG_TO_GROUP[slug];
 }
 
-/** demo = public six; yours = Work / Builders personal tools. */
+/** demo = public six; yours = capability extras (tasks, expenses, …). */
 export function toolsPageChipForSlug(slug: string): "demo" | "yours" | undefined {
+  // Utils spoiler uses tab pills — chips only apply to tile sections.
+  if (SMALL_TOOL_TAB_SLUGS.has(slug)) return undefined;
   if (TOOLS_PAGE_DEMO_SLUGS.has(slug)) return "demo";
-  const group = SLUG_TO_GROUP[slug];
-  if (group === "work" || group === "builders") return "yours";
+  if (YOURS_CHIP_SLUGS.has(slug)) return "yours";
   return undefined;
 }
 
@@ -80,7 +111,10 @@ export function toolsPageChipForSlug(slug: string): "demo" | "yours" | undefined
  */
 export function groupServicesForToolsPage(services: PlatformService[]): ToolsPageSection[] {
   const grouped = new Map<ToolsPageGroupId, PlatformService[]>();
+  const seen = new Set<string>();
   for (const svc of services) {
+    if (seen.has(svc.slug)) continue;
+    seen.add(svc.slug);
     const group = SLUG_TO_GROUP[svc.slug];
     if (!group) continue;
     const list = grouped.get(group) ?? [];

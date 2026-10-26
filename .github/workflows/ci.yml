@@ -15,36 +15,98 @@ permissions:
   actions: write
   pull-requests: read
 
-# P0 PR gate — backend + frontend only (postgres/e2e/docs: ci-extended.yml).
+# P0 PR gate — backend + frontend.
+# Postgres, API Playwright, and docs freshness: ci-extended.yml (workflow_dispatch).
+# ci-ok fails when `changes` fails, a selected job fails, or a PR path is outside
+# the gate filters and the skip allowlist (the `outside` filter below).
 jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.select.outputs.backend }}
       frontend: ${{ steps.select.outputs.frontend }}
+      outside: ${{ steps.select.outputs.outside }}
     steps:
       - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
         id: filter
         if: github.event_name == 'pull_request'
         with:
+          # ponytail: outside negations duplicate the gate + skip lists.
+          # Upgrade path: generate the three filters from one path manifest.
           filters: |
             backend:
               - 'server/**'
-              - '.github/workflows/ci.yml'
+              - 'shared/**'
+              - 'rabbitmq/**'
+              - 'deploy/**'
+              - 'scripts/**'
+              - 'nginx/**'
+              - 'Makefile'
+              - 'docker-compose*.yml'
+              - '.github/workflows/**'
+              - '.env.example'
+              - '.env.production.example'
+              - '.dockerignore'
+              - '.pre-commit-config.yaml'
             frontend:
               - 'client/**'
-              - '.github/workflows/ci.yml'
+              - 'shared/**'
+              - 'nginx/**'
+              - 'docker-compose*.yml'
+              - '.github/workflows/**'
+            outside:
+              - '**'
+              - '*'
+              - '.*'
+              - '**/.*'
+              - '**/.*/**'
+              - '!server/**'
+              - '!shared/**'
+              - '!rabbitmq/**'
+              - '!deploy/**'
+              - '!scripts/**'
+              - '!nginx/**'
+              - '!Makefile'
+              - '!docker-compose*.yml'
+              - '!.github/workflows/**'
+              - '!.env.example'
+              - '!.env.production.example'
+              - '!.dockerignore'
+              - '!.pre-commit-config.yaml'
+              - '!client/**'
+              - '!docs/**'
+              - '!**/*.md'
+              - '!**/*.mdc'
+              - '!.github/ISSUE_TEMPLATE/**'
+              - '!.github/FUNDING.yml'
+              - '!.github/copilot-instructions.md'
+              - '!.github/social-preview.png'
+              - '!.github/dependabot.yml'
+              - '!.cursor/**'
+              - '!.devcontainer/**'
+              - '!.vscode/**'
+              - '!postman/**'
+              - '!.editorconfig'
+              - '!.nvmrc'
+              - '!.gitignore'
+              - '!.ignore'
+              - '!.rgignore'
+              - '!.cursorignore'
+              - '!.gitleaks.toml'
+              - '!LICENSE'
       - name: Select jobs
         id: select
         run: |
           if [ "${{ github.event_name }}" != "pull_request" ]; then
             echo "backend=true" >> "$GITHUB_OUTPUT"
             echo "frontend=true" >> "$GITHUB_OUTPUT"
+            echo "outside=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "backend=${{ steps.filter.outputs.backend }}" >> "$GITHUB_OUTPUT"
           echo "frontend=${{ steps.filter.outputs.frontend }}" >> "$GITHUB_OUTPUT"
+          echo "outside=${{ steps.filter.outputs.outside }}" >> "$GITHUB_OUTPUT"
 
   backend:
     needs: changes
@@ -130,11 +192,17 @@ jobs:
     steps:
       - name: Verify selected jobs
         env:
+          CHANGES: ${{ needs.changes.result }}
           BACKEND: ${{ needs.changes.outputs.backend }}
           FRONTEND: ${{ needs.changes.outputs.frontend }}
+          OUTSIDE: ${{ needs.changes.outputs.outside }}
           BACKEND_RESULT: ${{ needs.backend.result }}
           FRONTEND_RESULT: ${{ needs.frontend.result }}
         run: |
+          if [ "$CHANGES" != "success" ]; then
+            echo "changes: $CHANGES"
+            exit 1
+          fi
           fail=0
           check() {
             local name="$1" selected="$2" result="$3"
@@ -149,4 +217,10 @@ jobs:
           }
           check backend "$BACKEND" "$BACKEND_RESULT"
           check frontend "$FRONTEND" "$FRONTEND_RESULT"
+          if [ "$OUTSIDE" != "false" ]; then
+            echo "outside: changed paths are outside the PR gate and the skip allowlist ($OUTSIDE)"
+            fail=1
+          else
+            echo "outside: false"
+          fi
           exit "$fail"

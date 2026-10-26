@@ -2,6 +2,8 @@
 
 One-way pipeline: **Telegram (or admin) → Task (Postgres) → Google Calendar**. Calendar edits do not flow back. The join key everywhere is `telegram_user_id`.
 
+2026-10-26: My tasks opens a two-level menu (sync that user's outbound calendar queue → one screen of the 7 closest pending tasks → detail with Remove/Edit/Back/Main). Remove is `cancelled` or `not_completed`. Edit is date/time only. A future task cannot be marked `completed` (shared `change_status` guard). Web Tasks **calendar** tab uses month grid + `?date=`; `GET /tools/tasks` accepts optional `start`/`end`.
+
 ```mermaid
 flowchart LR
   user[Telegram user] --> bot[todobot polling]
@@ -89,12 +91,27 @@ Welcome (`/start`) lists pending tasks for that user and calendar link status.
 
 Other create entry points (same service path): admin `POST /api/tools/tasks` and intake confirm from the service layer.
 
+## My tasks navigation
+
+**My tasks** / `/tasks` (`task_manage`):
+
+1. Sync this Telegram user's pending outbound calendar rows (CREATE for unsynced; arm + drain that user's queue only).
+2. Replace the previous My tasks screen with one message listing up to 7 pending tasks closest to now.
+3. Tap a task → same message becomes detail (title, when, where, notes) with **Remove | Edit** and **Back | Main**.
+4. **Remove** → cancel or didn't finish (`cancelled` / `not_completed`); then the list again.
+5. **Edit** → date then time pickers (`mt:` callbacks / `TaskBrowse` FSM) → `reschedule_task` → detail again.
+6. **Main** deletes the screen and sends the welcome dashboard.
+
+Legacy `status:` callbacks (complete / not / postponed) still work for old messages; `completed` is rejected when `scheduled_at` is in the future.
+
 ## Telegram mutations that touch Calendar
 
 | Telegram action | Handler | TaskService | Calendar |
 |-----------------|---------|-------------|----------|
-| Mark complete / not / postponed | `task_manage` `status:` | `change_status` | `UPDATE` if `google_event_id` |
-| Reminder → Complete | `reminder` `raction:…:complete` | `change_status` | same |
+| My tasks Remove (cancel / didn't finish) | `task_manage` `mt:c:` | `change_status` | `UPDATE` if `google_event_id` |
+| My tasks Edit date/time | `task_manage` `mt:d:` / `mt:t:` | `reschedule_task` | `UPDATE` if event id |
+| Legacy status buttons | `task_manage` `status:` | `change_status` (no future complete) | `UPDATE` if `google_event_id` |
+| Reminder → Complete | `reminder` `raction:…:complete` | `change_status` (no future complete) | same |
 | Reminder → Postpone | `reminder` + FSM | `reschedule_task` | `UPDATE` if event id |
 | Reminder → Snooze | `reminder` `raction:…:snooze` | new reminder only | **no** immediate Calendar sync (popups come from unsent reminders on next UPDATE/CREATE) |
 
