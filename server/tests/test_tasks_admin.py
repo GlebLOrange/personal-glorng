@@ -111,6 +111,39 @@ async def test_list_tasks_rejects_invalid_status(auth_client: AsyncClient) -> No
 
 
 @pytest.mark.asyncio
+async def test_list_tasks_filters_by_start_end(
+    auth_client: AsyncClient,
+    registry: DatabaseRegistry,
+) -> None:
+    """Optional start/end limit scheduled_at to [start, end)."""
+    in_range = await create_task(
+        registry,
+        title="In range",
+        scheduled_at=datetime(2026, 6, 15, 10, 0, tzinfo=UTC),
+    )
+    await create_task(
+        registry,
+        title="Out of range",
+        scheduled_at=datetime(2026, 7, 15, 10, 0, tzinfo=UTC),
+    )
+
+    resp = await auth_client.get(
+        "/api/tools/tasks",
+        params={
+            "start": "2026-06-01T00:00:00Z",
+            "end": "2026-07-01T00:00:00Z",
+            "sort": "when_asc",
+        },
+    )
+    assert resp.status_code == 200
+    ids = [item["id"] for item in resp.json()["items"]]
+    assert in_range.id in ids
+    assert all(
+        "2026-06" in item["scheduled_at"] for item in resp.json()["items"]
+    )
+
+
+@pytest.mark.asyncio
 async def test_list_tasks_filters_by_title_query(auth_client: AsyncClient) -> None:
     """Title search matches substring case-insensitively."""
     await auth_client.post(
