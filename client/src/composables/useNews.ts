@@ -55,13 +55,24 @@ export function useNews() {
     return `${total.value} article${total.value === 1 ? "" : "s"}`;
   });
 
-  async function loadNews(options: { admin?: boolean; status?: NewsStatus | null } = {}) {
+  async function loadNews(
+    options: {
+      admin?: boolean;
+      status?: NewsStatus | null;
+      tag?: string | null;
+      dateFrom?: string | null;
+      dateTo?: string | null;
+    } = {},
+  ) {
     const params: Record<string, string | number | boolean> = {
       page: page.value,
       per_page: LIST_PAGE_SIZE,
     };
     if (options.admin) params.manage = true;
     if (options.status) params.status = options.status;
+    if (options.tag) params.tag = options.tag;
+    if (options.dateFrom) params.date_from = options.dateFrom;
+    if (options.dateTo) params.date_to = options.dateTo;
     const data = await runList(
       async () => {
         const response = await api.get<PaginatedNews>("/tools/news", { params });
@@ -74,6 +85,17 @@ export function useNews() {
       total.value = data.total;
       totalPages.value = data.pages;
     }
+  }
+
+  async function loadNewsTags(): Promise<string[]> {
+    const data = await runAction(
+      async () => {
+        const response = await api.get<string[]>("/tools/news/tags");
+        return response.data;
+      },
+      { errorFallback: "Failed to load news tags", logContext: "news.loadTags" },
+    );
+    return data ?? [];
   }
 
   async function loadNewsStats(): Promise<void> {
@@ -228,6 +250,7 @@ export function useNews() {
     hasPreviousPage,
     countLabel,
     loadNews,
+    loadNewsTags,
     loadNewsStats,
     loadArticle,
     loadAdminArticle,

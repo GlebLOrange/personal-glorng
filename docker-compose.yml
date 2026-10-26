@@ -229,6 +229,7 @@ services:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
       OTEL_SERVICE_NAME: glorng-worker
+      NEWS_INGEST_ENABLED: "true"
     networks:
       - backend
     depends_on:
@@ -267,6 +268,7 @@ services:
       PYTHONPATH: /app
       GLORNG_ENV_FILE: /run/glorng/.env
       OTEL_SERVICE_NAME: glorng-beat
+      NEWS_INGEST_ENABLED: "true"
     networks:
       - backend
     depends_on:

@@ -3,6 +3,7 @@
 import html
 import json
 import re
+from datetime import date
 from html.parser import HTMLParser
 from math import ceil
 from typing import Any
@@ -683,22 +684,35 @@ class NewsService:
         )
         return self._to_response(article)
 
+    async def draft_demo_articles(self) -> int:
+        """Move seeded demo articles to draft so the public list stays real."""
+        return await self._news().draft_demo_articles()
+
     async def list_articles(
         self,
         *,
         status: NewsStatus | None = "published",
+        tag: str | None = None,
+        date_from: date | None = None,
+        date_to: date | None = None,
         page: int = 1,
         per_page: int = DEFAULT_PER_PAGE,
     ) -> NewsArticleListResponse:
-        """List articles with pagination."""
+        """List articles with pagination and optional public filters."""
         offset, limit = paginate_params(page, per_page)
         items = await self._news().list_articles(
             status=status,
+            tag=tag,
+            date_from=date_from,
+            date_to=date_to,
             offset=offset,
             limit=limit,
         )
         total = await self._news().count_articles(
             status=status,
+            tag=tag,
+            date_from=date_from,
+            date_to=date_to,
         )
         return NewsArticleListResponse(
             items=[self._to_response(item) for item in items],
