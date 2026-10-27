@@ -40,6 +40,7 @@ describe("toolsPageGroups", () => {
     expect(sections.map((s) => s.category)).toEqual(["utils", "content", "server"]);
     expect(sections.find((s) => s.category === "utils")?.services.map((t) => t.slug)).toEqual([
       "weather",
+      "ai-chat",
       "calculator",
       "password-generator",
       "qr-generator",
@@ -48,19 +49,18 @@ describe("toolsPageGroups", () => {
       "data-extract",
       "vid-download",
       "email",
-      "ai-chat",
     ]);
     expect(sections.find((s) => s.category === "content")?.services.map((t) => t.slug)).toEqual([
-      "recipes",
-      "tasks",
       "expenses",
+      "tasks",
+      "recipes",
       "news",
       "news-sources",
     ]);
     expect(sections.find((s) => s.category === "server")?.services.map((t) => t.slug)).toEqual([
+      "health-checker",
       "feedback",
       "audit",
-      "health-checker",
     ]);
     expect(PLATFORM_SERVICES.find((t) => t.slug === "tasks")?.category).toBe("productivity");
     expect(PLATFORM_SERVICES.find((t) => t.slug === "weather")?.category).toBe("utilities");
@@ -76,10 +76,10 @@ describe("toolsPageGroups", () => {
     expect(toolsPageChipForSlug("weather")).toBeUndefined();
     expect(toolsPageChipForSlug("calculator")).toBeUndefined();
     expect(toolsPageChipForSlug("recipes")).toBe("demo");
-    expect(toolsPageChipForSlug("url-shortener")).toBe("demo");
+    expect(toolsPageChipForSlug("url-shortener")).toBeUndefined();
     expect(toolsPageChipForSlug("tasks")).toBe("yours");
-    expect(toolsPageChipForSlug("vid-download")).toBe("yours");
-    expect(toolsPageChipForSlug("data-extract")).toBe("yours");
+    expect(toolsPageChipForSlug("vid-download")).toBeUndefined();
+    expect(toolsPageChipForSlug("data-extract")).toBeUndefined();
     expect(toolsPageChipForSlug("news")).toBeUndefined();
     expect(toolsPageGroupForSlug("file-share")).toBe("utils");
     expect(toolsPageGroupForSlug("vid-download")).toBe("utils");

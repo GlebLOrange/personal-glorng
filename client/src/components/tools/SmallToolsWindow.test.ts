@@ -118,7 +118,7 @@ describe("SmallToolsWindow", () => {
     wrapper.unmount();
   });
 
-  it("shows the same four utils tabs for guests and signed-in users", async () => {
+  it("shows public utils tabs plus access-gated video, in catalog order", async () => {
     const guest = await mountWindow("/weather", false);
     const guestLabels = guest.wrapper.findAll('[role="tab"]').map((tab) => tab.text());
     expect(guestLabels).toEqual([
@@ -126,9 +126,11 @@ describe("SmallToolsWindow", () => {
       "calculator",
       "password generator",
       "qr generator",
+      "url shortener",
+      "video downloader",
     ]);
-    expect(guestLabels).not.toContain("video downloader");
     expect(guestLabels).not.toContain("send email");
+    expect(guestLabels).not.toContain("ai chat");
     guest.wrapper.unmount();
 
     const signedIn = await mountWindow("/weather", true);

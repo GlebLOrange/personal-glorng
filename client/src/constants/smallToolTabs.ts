@@ -10,6 +10,7 @@ export type SmallToolTab = {
 /** Compact window peers — shared by SmallToolsWindow and /tools utils pills. */
 export const SMALL_TOOL_TABS: readonly SmallToolTab[] = [
   { id: "weather", label: "weather", to: "/weather", name: WEATHER_ROUTE_NAME },
+  { id: "ai-chat", label: "ai chat", to: "/admin/ai-chat", name: "tool-ai-chat" },
   { id: "calculator", label: "calculator", to: "/calculator", name: "calculator" },
   {
     id: "password-generator",
@@ -23,7 +24,6 @@ export const SMALL_TOOL_TABS: readonly SmallToolTab[] = [
   { id: "data-extract", label: "data extract", to: "/data-extract", name: "tool-data-extract" },
   { id: "vid-download", label: "video downloader", to: "/vid-download", name: "vid-download" },
   { id: "email", label: "send email", to: "/tools/send-email", name: "tool-email" },
-  { id: "ai-chat", label: "ai chat", to: "/admin/ai-chat", name: "tool-ai-chat" },
 ] as const;
 
 /** Slugs that belong in the compact utils window (tab pills only). */
