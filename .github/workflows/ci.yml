@@ -84,6 +84,7 @@ jobs:
               - '!.github/social-preview.png'
               - '!.github/dependabot.yml'
               - '!.cursor/**'
+              - '!.agents/**'
               - '!.devcontainer/**'
               - '!.vscode/**'
               - '!postman/**'
