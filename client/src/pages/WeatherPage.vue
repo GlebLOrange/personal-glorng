@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PageShell from "@/components/layout/PageShell.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import WeatherLocationForm from "@/components/weather/WeatherLocationForm.vue";
 import WeatherPinnedCitiesRow from "@/components/weather/WeatherPinnedCitiesRow.vue";
@@ -40,31 +41,39 @@ function handleSelect(query: string): void {
 </script>
 
 <template>
-  <div class="min-w-0 space-y-4">
-    <p v-if="guestLimitMessage" class="text-xs text-surface-mid">
-      Pinned cities stay in this browser.
-    </p>
-    <section class="min-w-0">
-      <WeatherLocationForm
-        :add-location="handleAdd"
-        :disabled="!canAddLocation"
-        :helper-text="guestLimitMessage"
-      >
-        <template #heading>
-          <LocationIcon class-name="size-5" />
-          locations
-        </template>
-      </WeatherLocationForm>
-    </section>
+  <PageShell
+    title="weather"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'weather' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
+    <div class="min-w-0 space-y-4">
+      <p v-if="guestLimitMessage" class="text-xs text-surface-mid">
+        Pinned cities stay in this browser.
+      </p>
+      <section class="min-w-0">
+        <WeatherLocationForm
+          :add-location="handleAdd"
+          :disabled="!canAddLocation"
+          :helper-text="guestLimitMessage"
+        >
+          <template #heading>
+            <LocationIcon class-name="size-5" />
+            locations
+          </template>
+        </WeatherLocationForm>
+      </section>
 
-    <WeatherPinnedCitiesRow
-      :locations="locations"
-      :active-query="activeQuery"
-      :loading="loading"
-      :seeding="seeding"
-      :is-default-location="isDefaultLocation"
-      @select="handleSelect"
-      @remove="handleRemove"
-    />
-  </div>
+      <WeatherPinnedCitiesRow
+        :locations="locations"
+        :active-query="activeQuery"
+        :loading="loading"
+        :seeding="seeding"
+        :is-default-location="isDefaultLocation"
+        @select="handleSelect"
+        @remove="handleRemove"
+      />
+    </div>
+  </PageShell>
 </template>

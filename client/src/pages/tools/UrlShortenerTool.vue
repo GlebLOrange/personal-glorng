@@ -246,6 +246,13 @@ onMounted(() => {
 </script>
 
 <template>
+  <PageShell
+    title="url shortener"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'url shortener' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
     <form class="mb-4 flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createUrl">
       <BaseInput
         v-model="newUrl"

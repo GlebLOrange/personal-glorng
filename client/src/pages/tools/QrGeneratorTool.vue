@@ -6,6 +6,7 @@ import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import QrLibraryListItem from "@/components/admin/QrLibraryListItem.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
@@ -241,6 +242,13 @@ onMounted(() => {
 </script>
 
 <template>
+  <PageShell
+    title="qr generator"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'qr generator' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
   <div class="flex min-w-0 flex-col gap-6">
     <p class="text-xs text-surface-mid">{{ pageDescription }}</p>
       <div
@@ -378,4 +386,5 @@ onMounted(() => {
         />
       </section>
   </div>
+  </PageShell>
 </template>
