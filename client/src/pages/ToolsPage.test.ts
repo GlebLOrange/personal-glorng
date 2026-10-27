@@ -80,12 +80,9 @@ describe("ToolsPage spoiler catalog", () => {
     expect(pills.text()).toContain("calculator");
     expect(pills.text()).toContain("password generator");
     expect(pills.text()).toContain("qr generator");
+    expect(pills.text()).toContain("url shortener");
     expect(pills.text()).not.toContain("demo");
-    expect(utils.text()).toContain("url shortener");
-    expect(utils.text()).toContain("short links");
-    expect(utils.text()).toContain("demo");
-    expect(tileTitleCount(wrapper, "url shortener")).toBe(1);
-    expect(tileTitleCount(wrapper, "weather")).toBe(0);
+    expect(tileTitleCount(wrapper, "url shortener")).toBe(0);
     expect(utils.text()).not.toContain("video downloader");
     expect(utils.text()).not.toContain("send email");
     expect(utils.text()).not.toContain("quick math");
@@ -99,6 +96,8 @@ describe("ToolsPage spoiler catalog", () => {
     expect(wrapper.text()).toContain("content");
     expect(wrapper.text()).toContain("recipes");
     expect(wrapper.get("#content").text()).toContain("recipes");
+    expect(tileTitleCount(wrapper, "recipes")).toBe(1);
+    expect(wrapper.get("#content").text()).toContain("demo");
     expect(wrapper.get("#content").text()).not.toContain("url shortener");
     expect(wrapper.text()).not.toContain("server");
     expect(wrapper.text()).not.toContain("expenses");
@@ -106,29 +105,32 @@ describe("ToolsPage spoiler catalog", () => {
     expect(wrapper.get('[data-testid="crumbs"]').text()).toBe("tools");
   });
 
-  it("shows video as a utils tile when authenticated with access", async () => {
+  it("shows video as a utils pill when authenticated with access", async () => {
     canAccessMock.mockImplementation((slug: string) => slug === "vid-download");
 
     const wrapper = mountPage();
     await flushPromises();
 
-    expect(wrapper.get("#utils").text()).toContain("video downloader");
+    const pills = wrapper.get("#utils").get('[aria-label="utils tools"]');
+    expect(pills.text()).toContain("video downloader");
     expect(wrapper.find("#content").exists()).toBe(true);
     expect(wrapper.get("#content").text()).not.toContain("video downloader");
-    expect(tileTitleCount(wrapper, "video downloader")).toBe(1);
+    expect(tileTitleCount(wrapper, "video downloader")).toBe(0);
   });
 
-  it("shows yours chips on utils tiles when canAccess allows extras", async () => {
+  it("shows file share and data extract as utils pills and yours on content cards", async () => {
     canAccessMock.mockImplementation((slug: string) =>
       ["tasks", "file-share", "data-extract"].includes(slug),
     );
     const wrapper = mountPage();
     await flushPromises();
 
-    expect(wrapper.text()).toContain("yours");
-    expect(wrapper.text()).toContain("tasks and reminders");
-    expect(wrapper.get("#utils").text()).toContain("share files");
-    expect(wrapper.get("#utils").text()).toContain("rows from files");
+    const pills = wrapper.get("#utils").get('[aria-label="utils tools"]');
+    expect(pills.text()).toContain("file share");
+    expect(pills.text()).toContain("data extract");
+    expect(wrapper.get("#content").text()).toContain("yours");
+    expect(wrapper.get("#content").text()).toContain("tasks and reminders");
+    expect(wrapper.get("#utils").text()).not.toContain("yours");
     expect(wrapper.text()).not.toContain("server");
   });
 
@@ -165,13 +167,15 @@ describe("ToolsPage spoiler catalog", () => {
 
     expect(wrapper.text()).toContain("server");
     expect(wrapper.text()).toContain("audit logs");
-    expect(wrapper.get("#utils").text()).toContain("ai chat");
-    expect(wrapper.get("#utils").text()).toContain("send email");
+    expect(wrapper.get("#utils").get('[aria-label="utils tools"]').text()).toContain("ai chat");
+    expect(wrapper.get("#utils").get('[aria-label="utils tools"]').text()).toContain("send email");
     expect(wrapper.findAll("details").some((el) => el.attributes("id") === "server")).toBe(true);
     expect(wrapper.get("#server").text()).toContain("health");
     expect(wrapper.get("#utils").text()).toContain("weather");
     expect(tileTitleCount(wrapper, "weather")).toBe(0);
-    expect(tileTitleCount(wrapper, "url shortener")).toBe(1);
+    expect(tileTitleCount(wrapper, "url shortener")).toBe(0);
+    expect(tileTitleCount(wrapper, "ai chat")).toBe(0);
+    expect(tileTitleCount(wrapper, "email")).toBe(0);
     expect(wrapper.get("#utils").text()).toContain("url shortener");
     expect(tileTitleCount(wrapper, "recipes")).toBe(1);
     expect(tileTitleCount(wrapper, "tasks")).toBe(1);

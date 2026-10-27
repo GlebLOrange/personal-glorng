@@ -6,7 +6,7 @@ import PageShell from "@/components/layout/PageShell.vue";
 import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { usePermissions } from "@/composables/usePermissions";
-import { SMALL_TOOL_TAB_SLUGS, SMALL_TOOL_TABS } from "@/constants/smallToolTabs";
+import { visibleSmallToolTabs } from "@/constants/smallToolTabs";
 import { actionFamilyClass } from "@/constants/httpStatusColors";
 import {
   ADMIN_HUB_SERVICE_SLUGS,
@@ -65,26 +65,18 @@ const tileSections = computed(() =>
   sections.value.filter((section) => section.category !== "utils"),
 );
 
-/** Utils-group tools that are tiles (not the four small-window tab pills). */
-const utilsTileServices = computed((): PlatformService[] => {
-  const utils = sections.value.find((section) => section.category === "utils");
-  if (!utils) return [];
-  return utils.services.filter((tool) => !SMALL_TOOL_TAB_SLUGS.has(tool.slug));
-});
-
-const utilsTileSection = computed((): ToolsPageSection => ({
-  category: "utils",
-  label: "utils",
-  services: utilsTileServices.value,
-}));
-
-const utilsSectionCount = computed(
-  () => SMALL_TOOL_TABS.length + utilsTileServices.value.length,
+/** Utils tools that open in the compact window. Same visibility as the catalog. */
+const utilsTabs = computed(() =>
+  visibleSmallToolTabs({
+    canAccess,
+    isSuperuser: isSuperuser.value,
+    aiChatEnabled: isAiChatEnabled(),
+  }),
 );
 
-const showUtilsSection = computed(
-  () => SMALL_TOOL_TABS.length > 0 || utilsTileServices.value.length > 0,
-);
+const utilsSectionCount = computed(() => utilsTabs.value.length);
+
+const showUtilsSection = computed(() => utilsTabs.value.length > 0);
 
 const hasAnyTools = computed(
   () =>
@@ -138,7 +130,7 @@ function tabPillClass(): string {
       <section
         v-if="showUtilsSection"
         id="utils"
-        class="rounded-lg border border-surface-border bg-surface-card/40"
+        class="rounded-lg bg-surface-card/40"
       >
         <div
           class="flex min-h-11 items-center gap-2 px-3 py-2 text-sm font-semibold text-surface-light"
@@ -153,13 +145,13 @@ function tabPillClass(): string {
             utilsSectionCount
           }}</span>
         </div>
-        <div class="space-y-3 border-t border-surface-border px-3 pb-3 pt-3">
+        <div class="px-3 pb-3 pt-3">
           <div
             class="flex flex-wrap justify-start gap-2"
             aria-label="utils tools"
           >
             <RouterLink
-              v-for="tab in SMALL_TOOL_TABS"
+              v-for="tab in utilsTabs"
               :key="tab.id"
               :to="tab.to"
               :class="tabPillClass()"
@@ -167,14 +159,6 @@ function tabPillClass(): string {
               {{ tab.label }}
             </RouterLink>
           </div>
-          <ToolTileGrid
-            v-if="utilsTileServices.length > 0"
-            presentation="public"
-            :sections="[utilsTileSection]"
-            :show-category-headings="false"
-            :resolve-route="toolRoute"
-            :tile-chip="toolsPageChipForSlug"
-          />
         </div>
       </section>
       <details

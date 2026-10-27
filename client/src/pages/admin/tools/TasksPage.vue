@@ -5,7 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import SyncIcon from "@/components/icons/SyncIcon.vue";
 import TaskCreateModal from "@/components/tasks/TaskCreateModal.vue";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
@@ -243,11 +243,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout
-    hub="tools"
+  <PageShell
     title="tasks"
-    max-width="5xl"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'tasks' }]"
     back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
     description="Telegram reminders and Google Calendar sync share this queue with the web UI."
   >
     <div class="min-w-0">
@@ -411,5 +412,5 @@ onMounted(() => {
         @reschedule="onReschedule"
       />
     </div>
-  </AdminPageLayout>
+  </PageShell>
 </template>
