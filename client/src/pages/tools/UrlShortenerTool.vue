@@ -6,7 +6,6 @@ import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
-import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -333,5 +332,4 @@ onMounted(() => {
         />
       </template>
     </div>
-  </PageShell>
 </template>

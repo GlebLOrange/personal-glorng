@@ -5,7 +5,6 @@ import axios from "axios";
 import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
-import PageShell from "@/components/layout/PageShell.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import FileDropZone from "@/components/ui/FileDropZone.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
@@ -217,5 +216,4 @@ onMounted(loadFiles);
         </template>
       </div>
     </template>
-  </PageShell>
 </template>
