@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import CollapsibleUsageGuide from "@/components/ui/CollapsibleUsageGuide.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
@@ -81,6 +82,13 @@ async function download(): Promise<void> {
 </script>
 
 <template>
+  <PageShell
+    title="video downloader"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'video downloader' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
   <div class="min-w-0 space-y-3">
     <p
       v-if="toolDisabled"
@@ -183,4 +191,5 @@ async function download(): Promise<void> {
       />
     </form>
   </div>
+  </PageShell>
 </template>

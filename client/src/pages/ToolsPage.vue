@@ -65,7 +65,7 @@ const tileSections = computed(() =>
   sections.value.filter((section) => section.category !== "utils"),
 );
 
-/** Utils tools that open in the compact window. Same visibility as the catalog. */
+/** Utils catalog pills — each opens a standalone PageShell page. */
 const utilsTabs = computed(() =>
   visibleSmallToolTabs({
     canAccess,

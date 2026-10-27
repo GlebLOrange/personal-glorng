@@ -7,7 +7,7 @@ export type SmallToolTab = {
   name: string;
 };
 
-/** Compact window peers — shared by SmallToolsWindow and /tools utils pills. */
+/** Utils catalog pills on /tools — each opens a standalone PageShell page. */
 export const SMALL_TOOL_TABS: readonly SmallToolTab[] = [
   { id: "weather", label: "weather", to: "/weather", name: WEATHER_ROUTE_NAME },
   { id: "ai-chat", label: "ai chat", to: "/admin/ai-chat", name: "tool-ai-chat" },
@@ -26,7 +26,7 @@ export const SMALL_TOOL_TABS: readonly SmallToolTab[] = [
   { id: "email", label: "send email", to: "/tools/send-email", name: "tool-email" },
 ] as const;
 
-/** Slugs that belong in the compact utils window (tab pills only). */
+/** Slugs listed as utils pills on /tools. */
 export const SMALL_TOOL_TAB_SLUGS = new Set(SMALL_TOOL_TABS.map((tab) => tab.id));
 
 const PUBLIC_SMALL_TOOL_IDS = new Set([

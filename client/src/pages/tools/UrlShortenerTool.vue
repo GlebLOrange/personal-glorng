@@ -6,6 +6,7 @@ import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -246,6 +247,13 @@ onMounted(() => {
 </script>
 
 <template>
+  <PageShell
+    title="url shortener"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'url shortener' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
     <form class="mb-4 flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createUrl">
       <BaseInput
         v-model="newUrl"
@@ -325,4 +333,5 @@ onMounted(() => {
         />
       </template>
     </div>
+  </PageShell>
 </template>

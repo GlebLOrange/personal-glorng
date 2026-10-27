@@ -32,7 +32,7 @@ const YOURS_CHIP_SLUGS = new Set([
 ]);
 
 /**
- * Utils tools open in the compact window. Content and server stay catalog cards.
+ * Utils tools open as standalone PageShell pages. Content and server stay catalog cards.
  * Pinned slugs lead each group; the rest keep their previous relative order.
  */
 const SLUG_TO_GROUP: Record<string, ToolsPageGroupId> = {
