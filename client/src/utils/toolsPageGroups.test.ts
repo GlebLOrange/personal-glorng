@@ -12,7 +12,7 @@ import {
 } from "@/utils/toolsPageGroups";
 
 describe("toolsPageGroups", () => {
-  it("maps public slugs into utils (tabs) then content (tiles)", () => {
+  it("maps public slugs into utils (tabs + tiles) then content", () => {
     const sections = groupServicesForToolsPage(publicToolsAsServices());
     expect(sections.map((s) => s.category)).toEqual(["utils", "content"]);
     expect(sections[0]?.services.map((t) => t.slug)).toEqual([
@@ -20,8 +20,9 @@ describe("toolsPageGroups", () => {
       "calculator",
       "password-generator",
       "qr-generator",
+      "url-shortener",
     ]);
-    expect(sections[1]?.services.map((t) => t.slug)).toEqual(["recipes", "url-shortener"]);
+    expect(sections[1]?.services.map((t) => t.slug)).toEqual(["recipes"]);
   });
 
   it("places extras and admin hub tools into utils / content / server", () => {
@@ -39,25 +40,25 @@ describe("toolsPageGroups", () => {
     expect(sections.map((s) => s.category)).toEqual(["utils", "content", "server"]);
     expect(sections.find((s) => s.category === "utils")?.services.map((t) => t.slug)).toEqual([
       "weather",
+      "ai-chat",
       "calculator",
       "password-generator",
       "qr-generator",
-    ]);
-    expect(sections.find((s) => s.category === "content")?.services.map((t) => t.slug)).toEqual([
-      "recipes",
-      "tasks",
-      "expenses",
       "url-shortener",
       "file-share",
-      "vid-download",
       "data-extract",
+      "vid-download",
       "email",
-      "ai-chat",
-      "health-checker",
+    ]);
+    expect(sections.find((s) => s.category === "content")?.services.map((t) => t.slug)).toEqual([
+      "expenses",
+      "tasks",
+      "recipes",
       "news",
       "news-sources",
     ]);
     expect(sections.find((s) => s.category === "server")?.services.map((t) => t.slug)).toEqual([
+      "health-checker",
       "feedback",
       "audit",
     ]);
@@ -71,18 +72,19 @@ describe("toolsPageGroups", () => {
     expect(sections[0]?.services).toHaveLength(1);
   });
 
-  it("skips chips for tab slugs; demo/yours for content tiles", () => {
+  it("skips chips for tab slugs; demo/yours for utils and content tiles", () => {
     expect(toolsPageChipForSlug("weather")).toBeUndefined();
     expect(toolsPageChipForSlug("calculator")).toBeUndefined();
     expect(toolsPageChipForSlug("recipes")).toBe("demo");
-    expect(toolsPageChipForSlug("url-shortener")).toBe("demo");
+    expect(toolsPageChipForSlug("url-shortener")).toBeUndefined();
     expect(toolsPageChipForSlug("tasks")).toBe("yours");
-    expect(toolsPageChipForSlug("vid-download")).toBe("yours");
-    expect(toolsPageChipForSlug("data-extract")).toBe("yours");
+    expect(toolsPageChipForSlug("vid-download")).toBeUndefined();
+    expect(toolsPageChipForSlug("data-extract")).toBeUndefined();
     expect(toolsPageChipForSlug("news")).toBeUndefined();
-    expect(toolsPageGroupForSlug("file-share")).toBe("content");
-    expect(toolsPageGroupForSlug("vid-download")).toBe("content");
-    expect(toolsPageGroupForSlug("email")).toBe("content");
+    expect(toolsPageGroupForSlug("file-share")).toBe("utils");
+    expect(toolsPageGroupForSlug("vid-download")).toBe("utils");
+    expect(toolsPageGroupForSlug("email")).toBe("utils");
+    expect(toolsPageGroupForSlug("health-checker")).toBe("server");
     expect(toolsPageGroupForSlug("feedback")).toBe("server");
   });
 });

@@ -15,7 +15,7 @@ vi.mock("@/composables/useApi", () => ({
   api: { get: getMock },
 }));
 
-vi.mock("@/components/layout/AdminPageLayout.vue", () => ({
+vi.mock("@/components/layout/PageShell.vue", () => ({
   default: { template: "<div><slot /></div>" },
 }));
 

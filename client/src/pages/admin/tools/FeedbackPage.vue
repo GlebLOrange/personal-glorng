@@ -17,7 +17,7 @@ import {
   ADMIN_TH_CLASS,
 } from "@/constants/adminDataTable";
 import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import ArchiveIcon from "@/components/icons/ArchiveIcon.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
@@ -211,7 +211,13 @@ onMounted(load);
 </script>
 
 <template>
-  <AdminPageLayout title="feedback">
+  <PageShell
+    title="feedback"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'feedback' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
     <AdminListSkeleton v-if="loading" label="Loading feedback" />
 
     <template v-else>
@@ -340,5 +346,5 @@ onMounted(load);
       @close="closeDrawer"
       @reply="handleReply"
     />
-  </AdminPageLayout>
+  </PageShell>
 </template>

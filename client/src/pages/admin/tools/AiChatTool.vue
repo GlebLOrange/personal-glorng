@@ -2,7 +2,6 @@
 import { ref } from "vue";
 
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import SearchChatMessages from "@/components/search/SearchChatMessages.vue";
@@ -45,7 +44,6 @@ const {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="ai chat" back-to="/tools">
     <AdminTabBar
       v-model="activeTab"
       panel-id-prefix="ai-chat"
@@ -273,5 +271,4 @@ const {
         </div>
       </details>
     </Card>
-  </AdminPageLayout>
 </template>

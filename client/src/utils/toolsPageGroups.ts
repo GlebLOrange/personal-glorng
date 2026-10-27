@@ -32,24 +32,23 @@ const YOURS_CHIP_SLUGS = new Set([
 ]);
 
 /**
- * Utils = small-window tab peers only (weather / calc / password / QR).
- * Video, email, and other non-tab tools live under content as tiles.
+ * Utils tools open as standalone PageShell pages. Content and server stay catalog cards.
+ * Pinned slugs lead each group; the rest keep their previous relative order.
  */
 const SLUG_TO_GROUP: Record<string, ToolsPageGroupId> = {
   weather: "utils",
   calculator: "utils",
   "password-generator": "utils",
   "qr-generator": "utils",
-  "vid-download": "content",
-  email: "content",
+  "url-shortener": "utils",
+  "file-share": "utils",
+  "data-extract": "utils",
+  "vid-download": "utils",
+  email: "utils",
+  "ai-chat": "utils",
   recipes: "content",
   tasks: "content",
   expenses: "content",
-  "url-shortener": "content",
-  "file-share": "content",
-  "data-extract": "content",
-  "ai-chat": "content",
-  "health-checker": "content",
   news: "content",
   "news-sources": "content",
   feedback: "server",
@@ -58,32 +57,33 @@ const SLUG_TO_GROUP: Record<string, ToolsPageGroupId> = {
   audit: "server",
   "app-logs": "server",
   "db-maintenance": "server",
+  "health-checker": "server",
 };
 
 /** Stable order within each tools-page group. */
 const SLUG_ORDER: Record<string, number> = {
   weather: 0,
-  calculator: 1,
-  "password-generator": 2,
-  "qr-generator": 3,
-  recipes: 0,
+  "ai-chat": 1,
+  calculator: 2,
+  "password-generator": 3,
+  "qr-generator": 4,
+  "url-shortener": 5,
+  "file-share": 6,
+  "data-extract": 7,
+  "vid-download": 8,
+  email: 9,
+  expenses: 0,
   tasks: 1,
-  expenses: 2,
-  "url-shortener": 3,
-  "file-share": 4,
-  "vid-download": 5,
-  "data-extract": 6,
-  email: 7,
-  "ai-chat": 8,
-  "health-checker": 9,
-  news: 10,
-  "news-sources": 11,
-  feedback: 0,
-  search: 1,
-  "api-docs": 2,
-  audit: 3,
-  "app-logs": 4,
-  "db-maintenance": 5,
+  recipes: 2,
+  news: 3,
+  "news-sources": 4,
+  "health-checker": 0,
+  "db-maintenance": 1,
+  search: 2,
+  feedback: 3,
+  "api-docs": 4,
+  audit: 5,
+  "app-logs": 6,
 };
 
 export type ToolsPageSection = {

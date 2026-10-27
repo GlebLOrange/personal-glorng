@@ -6,7 +6,7 @@ import ExpenseDashboardPanel from "@/components/expenses/ExpenseDashboardPanel.v
 import ExpenseFormDrawer from "@/components/expenses/ExpenseFormDrawer.vue";
 import ExpenseTransactionsPanel from "@/components/expenses/ExpenseTransactionsPanel.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -126,7 +126,13 @@ function focusAddFromInsights(): void {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="expenses" max-width="5xl" back-to="/tools">
+  <PageShell
+    title="expenses"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'expenses' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
     <div class="min-w-0">
       <div class="flex flex-col gap-3">
         <p
@@ -365,5 +371,5 @@ function focusAddFromInsights(): void {
         </div>
       </ConfirmDialog>
     </div>
-  </AdminPageLayout>
+  </PageShell>
 </template>

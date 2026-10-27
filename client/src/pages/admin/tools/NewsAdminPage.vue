@@ -3,7 +3,7 @@ import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import NewsAdminArticleList from "@/components/news/NewsAdminArticleList.vue";
 import NewsArticleDrawer from "@/components/news/NewsArticleDrawer.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -50,7 +50,13 @@ const {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="manage news" max-width="5xl" back-to="/tools">
+  <PageShell
+    title="manage news"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'manage news' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
     <AdminListToolbar v-if="!listLoading && !listError">
       <template #actions>
         <AdminFilterDropdown
@@ -139,5 +145,5 @@ const {
       @delete="deleteDrawerArticle"
       @save="saveDrawer"
     />
-  </AdminPageLayout>
+  </PageShell>
 </template>

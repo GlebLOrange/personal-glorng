@@ -6,7 +6,7 @@ import PageShell from "@/components/layout/PageShell.vue";
 import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { usePermissions } from "@/composables/usePermissions";
-import { SMALL_TOOL_TABS } from "@/constants/smallToolTabs";
+import { visibleSmallToolTabs } from "@/constants/smallToolTabs";
 import { actionFamilyClass } from "@/constants/httpStatusColors";
 import {
   ADMIN_HUB_SERVICE_SLUGS,
@@ -65,9 +65,18 @@ const tileSections = computed(() =>
   sections.value.filter((section) => section.category !== "utils"),
 );
 
-const showUtilsSection = computed(() =>
-  sections.value.some((section) => section.category === "utils") || SMALL_TOOL_TABS.length > 0,
+/** Utils catalog pills — each opens a standalone PageShell page. */
+const utilsTabs = computed(() =>
+  visibleSmallToolTabs({
+    canAccess,
+    isSuperuser: isSuperuser.value,
+    aiChatEnabled: isAiChatEnabled(),
+  }),
 );
+
+const utilsSectionCount = computed(() => utilsTabs.value.length);
+
+const showUtilsSection = computed(() => utilsTabs.value.length > 0);
 
 const hasAnyTools = computed(
   () =>
@@ -121,7 +130,6 @@ function tabPillClass(): string {
       <section
         v-if="showUtilsSection"
         id="utils"
-        class="rounded-lg border border-surface-border bg-surface-card/40"
       >
         <div
           class="flex min-h-11 items-center gap-2 px-3 py-2 text-sm font-semibold text-surface-light"
@@ -130,19 +138,19 @@ function tabPillClass(): string {
           <span aria-hidden="true">utils</span>
           <span class="sr-only"
             >utils,
-            {{ SMALL_TOOL_TABS.length === 1 ? "1 tool" : `${SMALL_TOOL_TABS.length} tools` }}</span
+            {{ utilsSectionCount === 1 ? "1 tool" : `${utilsSectionCount} tools` }}</span
           >
           <span class="ml-auto text-xs font-medium text-surface-mid" aria-hidden="true">{{
-            SMALL_TOOL_TABS.length
+            utilsSectionCount
           }}</span>
         </div>
-        <div class="border-t border-surface-border px-3 pb-3 pt-3">
+        <div class="px-3 pb-3 pt-3">
           <div
             class="flex flex-wrap justify-start gap-2"
             aria-label="utils tools"
           >
             <RouterLink
-              v-for="tab in SMALL_TOOL_TABS"
+              v-for="tab in utilsTabs"
               :key="tab.id"
               :to="tab.to"
               :class="tabPillClass()"

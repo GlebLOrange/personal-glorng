@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import MaintenanceJobActions from "@/components/admin/MaintenanceJobActions.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 </script>
 
 <template>
-  <AdminPageLayout
-    hub="tools"
+  <PageShell
     title="db maintenance"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'db maintenance' }]"
     back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
     description="run backup, stale check, calendar sync, cleanup, or seed. each finished job emails the operator."
   >
     <MaintenanceJobActions mode="page" />
-  </AdminPageLayout>
+  </PageShell>
 </template>

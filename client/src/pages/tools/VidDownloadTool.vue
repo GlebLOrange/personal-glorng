@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import CollapsibleUsageGuide from "@/components/ui/CollapsibleUsageGuide.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
@@ -82,9 +83,6 @@ async function download(): Promise<void> {
 
 <template>
   <div class="min-w-0 space-y-3">
-    <p class="text-xs text-surface-mid">
-      Download media via yt-dlp — pick quality or audio-only, then save the file.
-    </p>
     <p
       v-if="toolDisabled"
       class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"

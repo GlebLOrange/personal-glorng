@@ -7,9 +7,10 @@ export type SmallToolTab = {
   name: string;
 };
 
-/** Compact tab window peers — shared by SmallToolsWindow and /tools utils section. */
+/** Utils catalog pills on /tools — each opens a standalone PageShell page. */
 export const SMALL_TOOL_TABS: readonly SmallToolTab[] = [
   { id: "weather", label: "weather", to: "/weather", name: WEATHER_ROUTE_NAME },
+  { id: "ai-chat", label: "ai chat", to: "/admin/ai-chat", name: "tool-ai-chat" },
   { id: "calculator", label: "calculator", to: "/calculator", name: "calculator" },
   {
     id: "password-generator",
@@ -18,7 +19,37 @@ export const SMALL_TOOL_TABS: readonly SmallToolTab[] = [
     name: "password-generator",
   },
   { id: "qr-generator", label: "qr generator", to: "/qr-generator", name: "qr-generator" },
+  { id: "url-shortener", label: "url shortener", to: "/shortener", name: "shortener" },
+  { id: "file-share", label: "file share", to: "/file-share", name: "tool-file-share" },
+  { id: "data-extract", label: "data extract", to: "/data-extract", name: "tool-data-extract" },
+  { id: "vid-download", label: "video downloader", to: "/vid-download", name: "vid-download" },
+  { id: "email", label: "send email", to: "/tools/send-email", name: "tool-email" },
 ] as const;
 
-/** Slugs that belong in the /tools utils section (tab pills only). */
+/** Slugs listed as utils pills on /tools. */
 export const SMALL_TOOL_TAB_SLUGS = new Set(SMALL_TOOL_TABS.map((tab) => tab.id));
+
+const PUBLIC_SMALL_TOOL_IDS = new Set([
+  "weather",
+  "calculator",
+  "password-generator",
+  "qr-generator",
+  "url-shortener",
+]);
+
+const ACCESS_SMALL_TOOL_IDS = new Set(["file-share", "data-extract", "vid-download"]);
+
+/** Tabs a visitor can open. Public tools always; extras need access; email and ai chat need a superuser. */
+export function visibleSmallToolTabs(input: {
+  canAccess: (slug: string) => boolean;
+  isSuperuser: boolean;
+  aiChatEnabled: boolean;
+}): SmallToolTab[] {
+  return SMALL_TOOL_TABS.filter((tab) => {
+    if (PUBLIC_SMALL_TOOL_IDS.has(tab.id)) return true;
+    if (tab.id === "ai-chat") return input.isSuperuser && input.aiChatEnabled;
+    if (tab.id === "email") return input.isSuperuser;
+    if (ACCESS_SMALL_TOOL_IDS.has(tab.id)) return input.canAccess(tab.id);
+    return false;
+  });
+}

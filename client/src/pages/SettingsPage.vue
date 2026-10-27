@@ -167,7 +167,7 @@ async function savePassword(): Promise<void> {
         <component :is="DevApiStatusBadge" />
       </div>
 
-      <section id="profile" class="scroll-mt-40 md:scroll-mt-44" aria-label="Profile">
+      <section id="profile" class="scroll-mt-40 md:scroll-mt-44" aria-label="profile">
         <SettingsPreferencesSection
           v-model:display-name="displayName"
           v-model:timezone="timezone"
@@ -178,7 +178,7 @@ async function savePassword(): Promise<void> {
         />
       </section>
 
-      <section id="account" class="scroll-mt-40 md:scroll-mt-44" aria-label="Account">
+      <section id="account" class="scroll-mt-40 md:scroll-mt-44" aria-label="account">
         <SettingsAccountSection
           v-model:new-email="newEmail"
           v-model:email-password="emailPassword"
@@ -195,7 +195,7 @@ async function savePassword(): Promise<void> {
         />
       </section>
 
-      <section id="privacy" class="scroll-mt-40 md:scroll-mt-44" aria-label="Privacy">
+      <section id="privacy" class="scroll-mt-40 md:scroll-mt-44" aria-label="privacy">
         <Card variant="compact">
           <CardBody>
             <div class="flex flex-wrap items-center justify-between gap-3">

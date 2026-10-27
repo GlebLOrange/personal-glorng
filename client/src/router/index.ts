@@ -105,12 +105,6 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, title: "Search", noindex: true },
   },
   {
-    path: "/admin/ai-chat",
-    name: "tool-ai-chat",
-    component: () => import("@/pages/admin/tools/AiChatTool.vue"),
-    meta: { requiresAuth: true, requiresSuperuser: true, title: "AI chat", noindex: true },
-  },
-  {
     path: "/admin/db-maintenance",
     name: "tool-db-maintenance",
     component: () => import("@/pages/admin/tools/DbMaintenanceTool.vue"),
@@ -217,67 +211,84 @@ const routes: RouteRecordRaw[] = [
       description: "Curated news summary with source attribution.",
     },
   },
-  // Compact tab window for small utilities — each child keeps its public URL.
-  // Parent path is a non-URL shell so absolute children keep nesting without stealing `/`.
+  // Utils tools — standalone PageShell pages (not the old compact /_small-tools window).
   {
-    path: "/_small-tools",
-    component: () => import("@/components/tools/SmallToolsWindow.vue"),
-    children: [
-      {
-        path: "/calculator",
-        name: "calculator",
-        component: () => import("@/pages/tools/CalculatorTool.vue"),
-        meta: { title: "Calculator", description: "Quick math calculations.", noindex: true },
-      },
-      {
-        path: "/password-generator",
-        name: "password-generator",
-        component: () => import("@/pages/tools/PasswordGeneratorTool.vue"),
-        meta: {
-          title: "Password generator",
-          description: "Generate strong random passwords.",
-          noindex: true,
-        },
-      },
-      {
-        path: "/qr-generator",
-        name: "qr-generator",
-        component: () => import("@/pages/tools/QrGeneratorTool.vue"),
-        meta: {
-          title: "QR generator",
-          description: "Generate QR codes as downloadable SVG.",
-          noindex: true,
-        },
-      },
-      {
-        path: "/vid-download",
-        name: "vid-download",
-        component: () => import("@/pages/tools/VidDownloadTool.vue"),
-        meta: {
-          requiresAuth: true,
-          title: "Video downloader",
-          description: "Download videos with yt-dlp.",
-          noindex: true,
-        },
-      },
-      {
-        path: "/tools/send-email",
-        name: "tool-email",
-        component: () => import("@/pages/admin/tools/EmailTool.vue"),
-        meta: { requiresAuth: true, title: "Send email", noindex: true },
-      },
-      {
-        path: "/weather",
-        name: WEATHER_ROUTE_NAME,
-        component: () => import("@/pages/WeatherPage.vue"),
-        meta: {
-          scrollRestore: "live",
-          title: "Weather",
-          description: "Weather lookup, saved locations, and local time.",
-          noindex: true,
-        },
-      },
-    ],
+    path: "/calculator",
+    name: "calculator",
+    component: () => import("@/pages/tools/CalculatorTool.vue"),
+    meta: { title: "Calculator", description: "Quick math calculations.", noindex: true },
+  },
+  {
+    path: "/password-generator",
+    name: "password-generator",
+    component: () => import("@/pages/tools/PasswordGeneratorTool.vue"),
+    meta: {
+      title: "Password generator",
+      description: "Generate strong random passwords.",
+      noindex: true,
+    },
+  },
+  {
+    path: "/qr-generator",
+    name: "qr-generator",
+    component: () => import("@/pages/tools/QrGeneratorTool.vue"),
+    meta: {
+      title: "QR generator",
+      description: "Generate QR codes as downloadable SVG.",
+      noindex: true,
+    },
+  },
+  {
+    path: "/weather",
+    name: WEATHER_ROUTE_NAME,
+    component: () => import("@/pages/WeatherPage.vue"),
+    meta: {
+      scrollRestore: "live",
+      title: "Weather",
+      description: "Weather lookup, saved locations, and local time.",
+      noindex: true,
+    },
+  },
+  {
+    path: "/shortener",
+    name: "shortener",
+    component: () => import("@/pages/tools/UrlShortenerTool.vue"),
+    meta: { title: "URL shortener", description: "Create and manage short URLs.", noindex: true },
+  },
+  {
+    path: "/file-share",
+    name: "tool-file-share",
+    component: () => import("@/pages/admin/tools/FileShareTool.vue"),
+    meta: { requiresAuth: true, title: "File share", noindex: true },
+  },
+  {
+    path: "/data-extract",
+    name: "tool-data-extract",
+    component: () => import("@/pages/admin/tools/DataExtractTool.vue"),
+    meta: { requiresAuth: true, title: "Data extract", noindex: true },
+  },
+  {
+    path: "/vid-download",
+    name: "vid-download",
+    component: () => import("@/pages/tools/VidDownloadTool.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "Video downloader",
+      description: "Download videos with yt-dlp.",
+      noindex: true,
+    },
+  },
+  {
+    path: "/tools/send-email",
+    name: "tool-email",
+    component: () => import("@/pages/admin/tools/EmailTool.vue"),
+    meta: { requiresAuth: true, title: "Send email", noindex: true },
+  },
+  {
+    path: "/admin/ai-chat",
+    name: "tool-ai-chat",
+    component: () => import("@/pages/admin/tools/AiChatTool.vue"),
+    meta: { requiresAuth: true, requiresSuperuser: true, title: "AI chat", noindex: true },
   },
   // Alias used by some tool catalogs / history; keep the real page at /calculator.
   {
@@ -300,18 +311,6 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/shortener",
-    name: "shortener",
-    component: () => import("@/pages/tools/UrlShortenerTool.vue"),
-    meta: { title: "URL shortener", description: "Create and manage short URLs.", noindex: true },
-  },
-  {
-    path: "/file-share",
-    name: "tool-file-share",
-    component: () => import("@/pages/admin/tools/FileShareTool.vue"),
-    meta: { requiresAuth: true, title: "File share", noindex: true },
-  },
-  {
     path: "/tasks",
     name: "tool-tasks",
     component: () => import("@/pages/admin/tools/TasksPage.vue"),
@@ -322,12 +321,6 @@ const routes: RouteRecordRaw[] = [
     name: "tool-expenses",
     component: () => import("@/pages/admin/tools/ExpensesTool.vue"),
     meta: { requiresAuth: true, scrollRestore: "volatile", title: "Expenses", noindex: true },
-  },
-  {
-    path: "/data-extract",
-    name: "tool-data-extract",
-    component: () => import("@/pages/admin/tools/DataExtractTool.vue"),
-    meta: { requiresAuth: true, title: "Data extract", noindex: true },
   },
   {
     path: "/health-checker",

@@ -2,7 +2,6 @@
 import DataExtractBatchPanel from "@/components/admin/data-extract/DataExtractBatchPanel.vue";
 import DataExtractOptionsPanel from "@/components/admin/data-extract/DataExtractOptionsPanel.vue";
 import DataExtractResultPanel from "@/components/admin/data-extract/DataExtractResultPanel.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 import CollapsibleUsageGuide from "@/components/ui/CollapsibleUsageGuide.vue";
 import FileDropZone from "@/components/ui/FileDropZone.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
@@ -67,7 +66,6 @@ function loadSampleCsv(): void {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="data extract" back-to="/tools">
     <div class="min-w-0">
       <div class="mb-6 space-y-3">
         <CollapsibleUsageGuide title="data extract usage guide">
@@ -209,5 +207,4 @@ function loadSampleCsv(): void {
         @download="downloadResult"
       />
     </div>
-  </AdminPageLayout>
 </template>

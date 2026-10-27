@@ -3,7 +3,7 @@ import { computed, defineAsyncComponent, onMounted } from "vue";
 
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -72,11 +72,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout
-    hub="tools"
+  <PageShell
     title="health checker"
-    max-width="5xl"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'health checker' }]"
     back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
     description="Monitor URLs on a schedule — status history stays on this server."
   >
     <p
@@ -312,5 +313,5 @@ onMounted(() => {
         </EmptyState>
       </div>
     </template>
-  </AdminPageLayout>
+  </PageShell>
 </template>
