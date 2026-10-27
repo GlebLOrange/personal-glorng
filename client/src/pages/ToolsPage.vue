@@ -130,7 +130,6 @@ function tabPillClass(): string {
       <section
         v-if="showUtilsSection"
         id="utils"
-        class="rounded-lg bg-surface-card/40"
       >
         <div
           class="flex min-h-11 items-center gap-2 px-3 py-2 text-sm font-semibold text-surface-light"

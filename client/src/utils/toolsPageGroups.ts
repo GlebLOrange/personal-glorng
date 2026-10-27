@@ -32,9 +32,8 @@ const YOURS_CHIP_SLUGS = new Set([
 ]);
 
 /**
- * Utils = small-window tab peers (weather / calc / password / QR) plus
- * utility tiles (url-shortener, file-share, data-extract, vid-download, email, ai-chat).
- * Content keeps recipes / tasks / expenses / news; server is ops + health-checker.
+ * Utils tools open in the compact window. Content and server stay catalog cards.
+ * Pinned slugs lead each group; the rest keep their previous relative order.
  */
 const SLUG_TO_GROUP: Record<string, ToolsPageGroupId> = {
   weather: "utils",
@@ -64,27 +63,27 @@ const SLUG_TO_GROUP: Record<string, ToolsPageGroupId> = {
 /** Stable order within each tools-page group. */
 const SLUG_ORDER: Record<string, number> = {
   weather: 0,
-  calculator: 1,
-  "password-generator": 2,
-  "qr-generator": 3,
-  "url-shortener": 4,
-  "file-share": 5,
-  "data-extract": 6,
-  "vid-download": 7,
-  email: 8,
-  "ai-chat": 9,
-  recipes: 0,
+  "ai-chat": 1,
+  calculator: 2,
+  "password-generator": 3,
+  "qr-generator": 4,
+  "url-shortener": 5,
+  "file-share": 6,
+  "data-extract": 7,
+  "vid-download": 8,
+  email: 9,
+  expenses: 0,
   tasks: 1,
-  expenses: 2,
+  recipes: 2,
   news: 3,
   "news-sources": 4,
-  feedback: 0,
-  search: 1,
-  "api-docs": 2,
-  audit: 3,
-  "app-logs": 4,
-  "db-maintenance": 5,
-  "health-checker": 6,
+  "health-checker": 0,
+  "db-maintenance": 1,
+  search: 2,
+  feedback: 3,
+  "api-docs": 4,
+  audit: 5,
+  "app-logs": 6,
 };
 
 export type ToolsPageSection = {

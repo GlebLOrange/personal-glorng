@@ -6,7 +6,6 @@ import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import UrlShortenerListItem from "@/components/admin/UrlShortenerListItem.vue";
 import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
-import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -69,12 +68,6 @@ watch(isLocalMode, (local) => {
     void loadUrls();
   }
 });
-
-const pageDescription = computed(() =>
-  isLocalMode.value
-    ? "Short links are saved in this browser only — codes do not redirect at /s/{code}."
-    : "Short links resolve at /s/{code} — a FastAPI redirect, not a Vue page. Example path: /s/demo.",
-);
 
 const hasNextPage = computed(() => page.value < totalPages.value);
 const hasPreviousPage = computed(() => page.value > 1);
@@ -253,14 +246,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <PageShell
-    title="url shortener"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'url shortener' }]"
-    back-to="/tools"
-    max-width="5xl"
-    :narrow="false"
-    :description="pageDescription"
-  >
     <form class="mb-4 flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createUrl">
       <BaseInput
         v-model="newUrl"
@@ -340,5 +325,4 @@ onMounted(() => {
         />
       </template>
     </div>
-  </PageShell>
 </template>

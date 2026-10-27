@@ -81,13 +81,6 @@ async function download(): Promise<void> {
 </script>
 
 <template>
-  <PageShell
-    title="video downloader"
-    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'video downloader' }]"
-    back-to="/tools"
-    max-width="5xl"
-    :narrow="false"
-  >
   <div class="min-w-0 space-y-3">
     <p
       v-if="toolDisabled"
@@ -190,5 +183,4 @@ async function download(): Promise<void> {
       />
     </form>
   </div>
-  </PageShell>
 </template>
