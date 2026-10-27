@@ -90,22 +90,13 @@ onUnmounted(() => {
       aria-label="footer"
       class="mb-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 print:hidden"
     >
-      <router-link
-        to="/news"
-        class="nav-link-quiet inline-flex min-h-11 items-center px-1"
-      >
+      <router-link to="/news" class="nav-link-quiet inline-flex min-h-11 items-center px-1">
         news
       </router-link>
-      <router-link
-        to="/tools"
-        class="nav-link-quiet inline-flex min-h-11 items-center px-1"
-      >
+      <router-link to="/tools" class="nav-link-quiet inline-flex min-h-11 items-center px-1">
         tools
       </router-link>
-      <router-link
-        to="/privacy"
-        class="nav-link-quiet inline-flex min-h-11 items-center px-1"
-      >
+      <router-link to="/privacy" class="nav-link-quiet inline-flex min-h-11 items-center px-1">
         privacy policy
       </router-link>
     </nav>

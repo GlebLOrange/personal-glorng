@@ -66,9 +66,7 @@ const primaryActionStatus = computed((): TaskStatus | null => {
 });
 
 const menuStatuses = computed(() => {
-  const statuses = availableStatuses.value.filter(
-    (status) => status !== primaryActionStatus.value,
-  );
+  const statuses = availableStatuses.value.filter((status) => status !== primaryActionStatus.value);
   if (isScheduledInFuture.value) {
     return statuses.filter((status) => status !== "completed");
   }

@@ -3,10 +3,7 @@ import { RouterLink } from "vue-router";
 
 import { Card } from "@/components/ui/card";
 import { colorThemeResolved } from "@/composables/useColorTheme";
-import {
-  PORTFOLIO_CV_CHIP_CLASS,
-  PORTFOLIO_CV_TILE_CLASS,
-} from "@/constants/portfolioSections";
+import { PORTFOLIO_CV_CHIP_CLASS, PORTFOLIO_CV_TILE_CLASS } from "@/constants/portfolioSections";
 import { projectArtForSlug } from "@/constants/projectArt";
 import type { Project } from "@/types";
 
@@ -84,11 +81,7 @@ function artSrc(slug: string): string {
         </dl>
 
         <div class="flex flex-wrap gap-2">
-          <span
-            v-for="t in proj.tech"
-            :key="t"
-            :class="[PORTFOLIO_CV_CHIP_CLASS, 'text-sm']"
-          >
+          <span v-for="t in proj.tech" :key="t" :class="[PORTFOLIO_CV_CHIP_CLASS, 'text-sm']">
             {{ t }}
           </span>
         </div>
@@ -104,11 +97,7 @@ function artSrc(slug: string): string {
             {{ linkLabel(proj.url) }}
             <span class="sr-only">(opens in new tab)</span>
           </a>
-          <RouterLink
-            v-else
-            :to="proj.url"
-            class="text-link"
-          >
+          <RouterLink v-else :to="proj.url" class="text-link">
             {{ linkLabel(proj.url) }}
           </RouterLink>
         </p>

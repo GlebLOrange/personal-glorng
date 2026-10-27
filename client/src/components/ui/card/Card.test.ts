@@ -10,12 +10,7 @@ describe("Card", () => {
     });
 
     expect(wrapper.classes()).toEqual(
-      expect.arrayContaining([
-        "rounded-lg",
-        "p-6",
-        "bg-surface-card",
-        "border-transparent",
-      ]),
+      expect.arrayContaining(["rounded-lg", "p-6", "bg-surface-card", "border-transparent"]),
     );
     expect(wrapper.text()).toBe("content");
   });

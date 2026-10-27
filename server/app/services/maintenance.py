@@ -111,7 +111,9 @@ async def _send_report_email(
     """Email ALLOWED_EMAIL with the job outcome. Never fails the job."""
     status_label = "ok" if ok else "failed"
     subject = f"Maintenance {job}: {status_label}"
-    lines = [line for line in report.splitlines() if line.strip()] or [report or status_label]
+    lines = [line for line in report.splitlines() if line.strip()] or [
+        report or status_label
+    ]
     plain = render_plain_text(subject, lines)
     html_body = "".join(
         f'<p style="margin:0 0 8px;font-family:monospace;font-size:13px;">'
@@ -119,9 +121,9 @@ async def _send_report_email(
         for line in lines
     )
     html = (
-        "<!DOCTYPE html><html><body style=\"margin:0;padding:16px;\" "
-        f"background:#111827;color:#d1d5db;\">"
-        f"<h1 style=\"font-size:18px;\">{escape(subject)}</h1>{html_body}</body></html>"
+        '<!DOCTYPE html><html><body style="margin:0;padding:16px;" '
+        f'background:#111827;color:#d1d5db;">'
+        f'<h1 style="font-size:18px;">{escape(subject)}</h1>{html_body}</body></html>'
     )
     try:
         await get_email_backend().send(settings.ALLOWED_EMAIL, subject, html, plain)
@@ -179,8 +181,7 @@ async def _watch_process(
         job,
         ok=False,
         detail=(
-            f"{job} failed (exit {code}). "
-            "check the server log before running it again"
+            f"{job} failed (exit {code}). check the server log before running it again"
         ),
         report=report,
     )
@@ -242,11 +243,7 @@ async def _run_inproc_job(settings: Settings, job: MaintenanceJob) -> None:
 
 def _assert_not_running() -> None:
     """Raise if another maintenance job is still running."""
-    if (
-        _status == "running"
-        and _process is not None
-        and _process.returncode is None
-    ):
+    if _status == "running" and _process is not None and _process.returncode is None:
         raise ConflictError("maintenance is already running. wait for it to finish")
     if _status == "running" and _watch_task is not None and not _watch_task.done():
         raise ConflictError("maintenance is already running. wait for it to finish")

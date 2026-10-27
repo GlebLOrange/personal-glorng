@@ -3,10 +3,7 @@ import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import TaskCard from "@/components/tasks/TaskCard.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
-import {
-  ADMIN_SORT_HEADER_BUTTON_CLASS,
-  ADMIN_TH_CLASS,
-} from "@/constants/adminDataTable";
+import { ADMIN_SORT_HEADER_BUTTON_CLASS, ADMIN_TH_CLASS } from "@/constants/adminDataTable";
 import type { TaskItem } from "@/types";
 
 defineProps<{

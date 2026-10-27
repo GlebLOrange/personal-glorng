@@ -909,7 +909,6 @@ h6,
   .portfolio-cv .experience-tech-details > *:not(summary) {
     display: block !important;
   }
-
 }
 
 /* Thin themed scrollbar for compact overflow panels (e.g. AI chat ? help). */

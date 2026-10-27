@@ -46,9 +46,7 @@ export function useExpenseCategorySettings(onCategoriesChanged: () => void | Pro
     try {
       // Always send reassignment payload so in-use deletes succeed atomically.
       const replacement =
-        deleteCategoryReplacementId.value === undefined
-          ? null
-          : deleteCategoryReplacementId.value;
+        deleteCategoryReplacementId.value === undefined ? null : deleteCategoryReplacementId.value;
       const ok = await removeCategoryRaw(category, replacement);
       if (ok) {
         deleteCategoryTarget.value = null;

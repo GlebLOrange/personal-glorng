@@ -17,7 +17,6 @@ from app.todobot.handlers.reminder import (
 )
 from app.todobot.handlers.task_create import confirm_task
 from app.todobot.handlers.task_manage import cmd_tasks, handle_status_update
-from app.todobot.keyboards.task import my_tasks_list
 from tests.factories import create_task
 
 
@@ -188,6 +187,5 @@ async def test_cmd_tasks_sends_closest_list(
     assert "closest tasks" in list_call.args[0].lower()
     markup: Any = list_call.kwargs.get("reply_markup")
     assert markup is not None
-    expected = my_tasks_list([(task.id, f"Button me — {task.scheduled_at}")])
     # Label uses format_scheduled_at; compare callback data only.
     assert markup.inline_keyboard[0][0].callback_data == f"mt:o:{task.id}"

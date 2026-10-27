@@ -103,10 +103,7 @@ const passwordsMatch = computed(
             required
           />
           <div class="flex items-center justify-between gap-2">
-            <RouterLink
-              to="/forgot-password"
-              class="text-link text-xs"
-            >
+            <RouterLink to="/forgot-password" class="text-link text-xs">
               forgot password?
             </RouterLink>
             <BaseButton
@@ -136,8 +133,7 @@ const passwordsMatch = computed(
           </div>
           <p v-else class="text-xs text-surface-mid">No tool permissions — contact an admin.</p>
         </div>
-
-        </div>
+      </div>
     </CardBody>
   </Card>
 </template>

@@ -69,7 +69,10 @@ const pillClass = computed(() => [
       </div>
 
       <template v-else>
-        <div v-if="showHeader" class="mb-8 flex min-w-0 flex-wrap items-center justify-between gap-4">
+        <div
+          v-if="showHeader"
+          class="mb-8 flex min-w-0 flex-wrap items-center justify-between gap-4"
+        >
           <h2 v-if="title" class="section-title min-w-0">
             {{ title }}
           </h2>

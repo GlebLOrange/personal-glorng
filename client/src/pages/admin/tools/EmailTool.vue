@@ -76,64 +76,65 @@ async function preview(): Promise<void> {
     max-width="5xl"
     :narrow="false"
   >
-  <div class="min-w-0 space-y-3">
-    <AdminListToolbar>
-      <template #start>
-        <div class="flex w-full min-w-0 items-center justify-between gap-2">
-          <ToolbarPillButton
-            action="create"
-            :disabled="!subject || !body || loading"
-            @click="preview"
-          >
-            preview
-          </ToolbarPillButton>
-          <ToolbarPillButton
-            action="save"
-            type="button"
-            :disabled="!canSend || loading"
-            @click="send"
-          >
-            {{ loading ? "sending…" : "send" }}
-          </ToolbarPillButton>
-        </div>
-      </template>
-    </AdminListToolbar>
+    <div class="min-w-0 space-y-3">
+      <AdminListToolbar>
+        <template #start>
+          <div class="flex w-full min-w-0 items-center justify-between gap-2">
+            <ToolbarPillButton
+              action="create"
+              :disabled="!subject || !body || loading"
+              @click="preview"
+            >
+              preview
+            </ToolbarPillButton>
+            <ToolbarPillButton
+              action="save"
+              type="button"
+              :disabled="!canSend || loading"
+              @click="send"
+            >
+              {{ loading ? "sending…" : "send" }}
+            </ToolbarPillButton>
+          </div>
+        </template>
+      </AdminListToolbar>
 
-    <form class="space-y-3 mb-8" @submit.prevent="send">
-      <BaseInput
-        id="email-to"
-        v-model="to"
-        type="email"
-        placeholder="to"
-        aria-label="to"
-        autocomplete="email"
-        spellcheck="false"
-      />
-      <BaseInput
-        id="email-subject"
-        v-model="subject"
-        placeholder="subject"
-        aria-label="subject"
-        autocomplete="off"
-      />
-      <BaseTextarea
-        id="email-body"
-        v-model="body"
-        :rows="6"
-        placeholder="body"
-        aria-label="body"
-        autocomplete="off"
-      />
-    </form>
+      <form class="space-y-3 mb-8" @submit.prevent="send">
+        <BaseInput
+          id="email-to"
+          v-model="to"
+          type="email"
+          placeholder="to"
+          aria-label="to"
+          autocomplete="email"
+          spellcheck="false"
+        />
+        <BaseInput
+          id="email-subject"
+          v-model="subject"
+          placeholder="subject"
+          aria-label="subject"
+          autocomplete="off"
+        />
+        <BaseTextarea
+          id="email-body"
+          v-model="body"
+          :rows="6"
+          placeholder="body"
+          aria-label="body"
+          autocomplete="off"
+        />
+      </form>
 
-    <div v-if="previewHtml" class="space-y-2" role="status" aria-live="polite">
-      <h3 class="text-sm text-surface-mid">preview</h3>
-      <!-- eslint-disable-next-line vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
-      <div
-        class="border border-surface-border rounded-lg p-4 bg-white"
-        v-html="sanitizedPreviewHtml"
-      />
+      <div v-if="previewHtml" class="space-y-2" role="status" aria-live="polite">
+        <h3 class="text-sm text-surface-mid">preview</h3>
+        <!-- eslint-disable vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
+        <div
+          class="border border-surface-border rounded-lg p-4 bg-white"
+          v-html="sanitizedPreviewHtml"
+        />
+        <!-- eslint-enable vue/no-v-html -->
+      </div>
     </div>
-  </div>
   </PageShell>
 </template>

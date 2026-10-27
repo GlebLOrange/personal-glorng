@@ -117,7 +117,6 @@ async function generatePassword(): Promise<void> {
 onMounted(() => {
   if (!generated.value) void generatePassword();
 });
-
 </script>
 
 <template>

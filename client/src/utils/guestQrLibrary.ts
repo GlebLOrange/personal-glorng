@@ -77,8 +77,7 @@ export function sanitizeGuestQrLibrary(raw: unknown): QrStoredItem[] {
     }
 
     const labelRaw = item.label;
-    const label =
-      labelRaw == null ? null : trimField(labelRaw, MAX_LABEL_LENGTH) || null;
+    const label = labelRaw == null ? null : trimField(labelRaw, MAX_LABEL_LENGTH) || null;
 
     seenIds.add(item.id);
     sanitized.push({

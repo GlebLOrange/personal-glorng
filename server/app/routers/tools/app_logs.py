@@ -61,4 +61,5 @@ async def list_app_logs(
         total=total,
         page=pagination.page,
         per_page=pagination.per_page,
+        response_cls=AppLogListResponse,
     )

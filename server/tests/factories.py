@@ -125,6 +125,14 @@ async def create_feedback(
     theme: str = "Bug report",
     message: str = "Found a bug on the home page.",
     status: str = "unread",
+    created_at: datetime | None = None,
 ) -> Feedback:
-    entry = Feedback(email=email, theme=theme, message=message, status=status)
+    entry = Feedback(
+        email=email,
+        theme=theme,
+        message=message,
+        status=status,
+    )
+    if created_at is not None:
+        entry.created_at = created_at
     return await _require(registry, "feedback").insert(entry)

@@ -142,7 +142,13 @@ const {
               :col-span="canWrite ? 5 : 4"
               @click="openEditableSource(source)"
             >
-              <td v-if="canWrite" :class="ADMIN_TD_CLASS" data-admin-row-stop @click.stop @keydown.stop>
+              <td
+                v-if="canWrite"
+                :class="ADMIN_TD_CLASS"
+                data-admin-row-stop
+                @click.stop
+                @keydown.stop
+              >
                 <input
                   v-model="selectedSourceIds"
                   type="checkbox"

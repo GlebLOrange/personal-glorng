@@ -33,7 +33,10 @@ export default tseslint.config(
     },
     rules: {
       "vue/multi-word-component-names": "off",
-      "vue/require-default-prop": "warn",
+      // Optional props are explicit in TypeScript; `undefined` is often the
+      // meaningful default (e.g. no hint/error/image). Defaults would change
+      // aria/rendering behavior, so rely on `withDefaults` where it matters.
+      "vue/require-default-prop": "off",
       "vue/attributes-order": "warn",
       "vuejs-accessibility/label-has-for": [
         "error",

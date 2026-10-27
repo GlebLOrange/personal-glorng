@@ -121,7 +121,7 @@ Client: `VITE_SENTRY_ENABLED=false` in `client/.env.development` (Vite DEV needs
 
 ## EDOT OpenTelemetry (opt-in)
 
-Zero-code instrumentation via `elastic-opentelemetry` + `opentelemetry-instrument`. Core auto-instrumentation packages (FastAPI, httpx, Redis, Celery, Motor/pymongo, etc.) are locked in `server/pyproject.toml`. The Docker entrypoint wraps uvicorn/Celery only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (from process env or `GLORNG_ENV_FILE`), and runs `edot-bootstrap` for any extra instrumentations. Leave the endpoint empty for local lite (no overhead).
+Zero-code instrumentation via `elastic-opentelemetry` + `opentelemetry-instrument`. Core auto-instrumentation packages (FastAPI, httpx, Redis, Celery, Motor/pymongo, etc.) are locked in `server/pyproject.toml`. Elasticsearch client instrumentation is not bundled while its upstream package lags the coordinated OpenTelemetry release; Elasticsearch queries still work without spans. The Docker entrypoint wraps uvicorn/Celery only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (from process env or `GLORNG_ENV_FILE`), and runs `edot-bootstrap` for any extra instrumentations. Leave the endpoint empty for local lite (no overhead).
 
 | Variable | Purpose |
 |----------|---------|
@@ -168,6 +168,7 @@ Smoke check: set endpoint + headers, hit `/api/health`, confirm the service appe
 | `AI_SEARCH_ENABLED` | `true` | Public search chat |
 | `EXPENSES_ENABLED` | `false` | Expenses ledger + public calculator |
 | `UNTRUSTED_URL_TOOLS_ENABLED` | `false` | Mount yt-dlp, file-share, outbound health-checker |
+| `UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED` | `false` | Required acknowledgement in production/staging when untrusted tools are enabled |
 
 Client mirrors: `VITE_AI_CHAT_ENABLED`, `VITE_AI_SEARCH_ENABLED`.
 

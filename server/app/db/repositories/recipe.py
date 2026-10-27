@@ -85,5 +85,5 @@ class RecipeRepository(MongoRepository[Recipe]):
             return [_parse_doc(Recipe, row) async for row in cursor]
 
         sort_spec = RECIPE_SORTS.get(sort, RECIPE_SORTS["title_asc"])
-        cursor = self._col().find(query).sort(sort_spec).skip(offset).limit(limit)
-        return [_parse_doc(Recipe, row) async for row in cursor]
+        find_cursor = self._col().find(query).sort(sort_spec).skip(offset).limit(limit)
+        return [_parse_doc(Recipe, row) async for row in find_cursor]

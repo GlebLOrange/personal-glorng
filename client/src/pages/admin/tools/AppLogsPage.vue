@@ -59,9 +59,7 @@ const page = ref(1);
 const period = ref<PeriodFilter>(DEFAULT_PERIOD);
 const sort = ref<WhenSort>("when_desc");
 
-const whenAriaSort = computed(() =>
-  sort.value === "when_asc" ? "ascending" : "descending",
-);
+const whenAriaSort = computed(() => (sort.value === "when_asc" ? "ascending" : "descending"));
 const whenIndicator = computed(() => (sort.value === "when_asc" ? " ↑" : " ↓"));
 const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
@@ -117,9 +115,7 @@ const activeFilterLabel = computed(() => {
   if (appliedRequestId.value) parts.push(appliedRequestId.value);
   return parts.join(" · ");
 });
-const emptyDescription = computed(
-  () => `no ${level.value} logs ${periodLabel.value}`,
-);
+const emptyDescription = computed(() => `no ${level.value} logs ${periodLabel.value}`);
 
 useScrollListFingerprint(
   () =>

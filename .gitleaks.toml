@@ -10,6 +10,9 @@ useDefault = true
 [allowlist]
 description = "CI and pytest JWT/GitHub token fixtures (not production secrets)"
 regexTarget = "secret"
+paths = [
+  '''^server/tests/(\.env\.test|env/(ai-chat|ai-search|github-public|stripe|webhooks)\.env)$''',
+]
 regexes = [
   '''^ci-jwt-secret-at-least-32-characters-long$''',
   '''^test-jwt-secret-with-enough-characters$''',

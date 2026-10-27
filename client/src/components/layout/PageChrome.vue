@@ -60,13 +60,7 @@ const displaySegments = computed((): BreadcrumbSegment[] => {
       data-testid="page-chrome-help"
       class="absolute bottom-2 right-0 inline-flex"
     >
-      <FieldHelp
-        size="sm"
-        align="end"
-        placement="top"
-        :interactive="false"
-        :text="description"
-      />
+      <FieldHelp size="sm" align="end" placement="top" :interactive="false" :text="description" />
     </span>
   </div>
 </template>

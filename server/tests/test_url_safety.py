@@ -126,9 +126,11 @@ async def test_get_public_http_url_sni_and_relative_redirect() -> None:
         patch("app.core.url_safety.asyncio.to_thread", side_effect=tracking_to_thread),
     ):
         async with httpx.AsyncClient(transport=transport) as client:
-            response = await get_public_http_url(client, "https://example.com/start")
+            result = await get_public_http_url(client, "https://example.com/start")
 
-    assert response.status_code == 200
+    assert result.response.status_code == 200
+    assert result.url == "https://example.com/final"
+    assert result.resolved_ip == "93.184.216.34"
     assert len(seen) == 2
     assert seen[0].url.host == "93.184.216.34"
     assert seen[0].headers["Host"] == "example.com"

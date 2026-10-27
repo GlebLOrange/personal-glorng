@@ -112,8 +112,7 @@ async def _show_list(
     header = "*Your closest tasks:*"
     if not connected:
         header = (
-            "*Your closest tasks:*\n"
-            "_Calendar not connected — tap Calendar to link._"
+            "*Your closest tasks:*\n_Calendar not connected — tap Calendar to link._"
         )
 
     if not tasks:

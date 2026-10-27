@@ -6,11 +6,7 @@ import BaseSelect from "@/components/ui/BaseSelect.vue";
 import FieldHelp from "@/components/ui/FieldHelp.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import { Card } from "@/components/ui/card";
-import {
-  convertCurrency,
-  EXPENSE_CURRENCIES,
-  formatRate,
-} from "@/composables/useExpenseCurrency";
+import { convertCurrency, EXPENSE_CURRENCIES, formatRate } from "@/composables/useExpenseCurrency";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExchangeRates } from "@/types";
 import { readConverterSnapshot, writeConverterSnapshot } from "@/utils/expenseConverterStorage";

@@ -166,11 +166,7 @@ onUnmounted(() => {
           <span class="text-xs px-2 py-0.5 rounded bg-accent-coral/20 text-accent-coral">
             {{ sourceLabel(hit.source_type) }}
           </span>
-          <RouterLink
-            v-if="hit.path"
-            :to="hit.path"
-            class="text-link font-medium"
-          >
+          <RouterLink v-if="hit.path" :to="hit.path" class="text-link font-medium">
             {{ hit.title }}
           </RouterLink>
           <span v-else class="font-medium text-surface-light">{{ hit.title }}</span>

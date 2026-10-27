@@ -392,14 +392,15 @@ class NewsService:
         _require_public_feed_url(normalized_url)
         try:
             async with httpx.AsyncClient(timeout=_METADATA_TIMEOUT_SECONDS) as client:
-                response = await get_public_http_url(
+                result = await get_public_http_url(
                     client,
                     normalized_url,
                     headers={"Accept": "text/html,application/xhtml+xml"},
                 )
+            response = result.response
             try:
                 response.raise_for_status()
-                final_url = _canonical_url(str(response.url))
+                final_url = _canonical_url(result.url)
                 _require_public_feed_url(final_url)
                 content = response.content[:_METADATA_MAX_BYTES]
                 encoding = response.encoding or "utf-8"
@@ -569,6 +570,7 @@ class NewsService:
             total=total,
             page=safe_page,
             per_page=limit,
+            response_cls=NewsSourceListResponse,
         )
 
     async def list_all_sources(self) -> list[NewsSource]:

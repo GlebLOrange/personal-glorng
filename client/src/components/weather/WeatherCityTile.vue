@@ -45,12 +45,7 @@ function handleRemove(event: MouseEvent): void {
       @click="emit('select')"
     >
       <Card :hoverable="!props.active" :class="cardClass">
-        <WeatherSummaryContent
-          :query="query"
-          align="center"
-          dense
-          :interactive="!props.active"
-        />
+        <WeatherSummaryContent :query="query" align="center" dense :interactive="!props.active" />
       </Card>
     </button>
     <IconCloseButton

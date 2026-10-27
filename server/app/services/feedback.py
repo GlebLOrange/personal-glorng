@@ -38,4 +38,5 @@ async def list_feedback(
         total=total,
         page=safe_page,
         per_page=limit,
+        response_cls=FeedbackListResponse,
     )

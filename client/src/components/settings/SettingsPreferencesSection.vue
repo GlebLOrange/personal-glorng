@@ -56,10 +56,7 @@ const timezoneOptions = computed((): TimezoneOption[] => {
 <template>
   <Card variant="compact">
     <CardBody>
-      <form
-        class="flex min-w-0 flex-wrap items-center gap-2"
-        @submit.prevent="emit('save')"
-      >
+      <form class="flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="emit('save')">
         <BaseInput
           v-model="displayName"
           name="display-name"

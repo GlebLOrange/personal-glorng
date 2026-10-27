@@ -58,9 +58,7 @@ const page = ref(1);
 const period = ref<PeriodFilter>(DEFAULT_PERIOD);
 const sort = ref<WhenSort>("when_desc");
 
-const whenAriaSort = computed(() =>
-  sort.value === "when_asc" ? "ascending" : "descending",
-);
+const whenAriaSort = computed(() => (sort.value === "when_asc" ? "ascending" : "descending"));
 const whenIndicator = computed(() => (sort.value === "when_asc" ? " ↑" : " ↓"));
 const { has: isExpanded, toggle: toggleExpanded, clear: clearExpanded } = useExpandableIds();
 const filterDropdownRef = useTemplateRef<{ close: () => void }>("filterDropdown");
@@ -101,9 +99,7 @@ const activeFilterLabel = computed(() => {
   const categoryLabel = CATEGORY_FILTERS.find((chip) => chip.value === category.value)?.label;
   return [categoryLabel, periodLabel.value].filter(Boolean).join(" · ");
 });
-const emptyDescription = computed(
-  () => `no ${category.value} audit events ${periodLabel.value}`,
-);
+const emptyDescription = computed(() => `no ${category.value} audit events ${periodLabel.value}`);
 
 useScrollListFingerprint(
   () =>
@@ -174,9 +170,7 @@ function actorLabel(event: AuditEvent): string {
 
 function resourceLabel(event: AuditEvent): string | null {
   if (!event.resource_type) return null;
-  return event.resource_id
-    ? `${event.resource_type}#${event.resource_id}`
-    : event.resource_type;
+  return event.resource_id ? `${event.resource_type}#${event.resource_id}` : event.resource_type;
 }
 
 onMounted(load);
@@ -232,11 +226,7 @@ onMounted(load);
 
       <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
 
-      <EmptyState
-        v-else-if="items.length === 0"
-        class="mt-4"
-        :description="emptyDescription"
-      />
+      <EmptyState v-else-if="items.length === 0" class="mt-4" :description="emptyDescription" />
 
       <div v-else class="mt-1 min-w-0">
         <AdminDataTable table-label="audit log events">

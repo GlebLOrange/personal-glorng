@@ -86,9 +86,9 @@ async def _release_global_slot() -> None:
 async def _resolve_public_download_url(url: str) -> str:
     """Follow redirects with the same SSRF checks as other server-side fetches."""
     async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await get_public_http_url(client, url)
-        resolved = str(response.url)
-        await response.aclose()
+        result = await get_public_http_url(client, url)
+        resolved = result.url
+        await result.response.aclose()
     if not is_public_http_url(resolved):
         raise ApiError(422, "URL must be a public http(s) address")
     if not is_allowed_viddownload_host(resolved):

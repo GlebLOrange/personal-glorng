@@ -159,3 +159,40 @@ def test_cors_star_rejected_in_development(
         Settings()
 
     get_settings.cache_clear()
+
+
+def test_production_rejects_untrusted_tools_without_egress_isolation(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Enabling yt-dlp/file-share/probes requires an explicit isolation ack."""
+    env_file = scenario_env(
+        tmp_path,
+        base=ENV_SCENARIOS_DIR / "production-csrf.env",
+        UNTRUSTED_URL_TOOLS_ENABLED="true",
+    )
+    activate_env_file(monkeypatch, env_file)
+
+    with pytest.raises(ValueError, match="UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED"):
+        Settings()
+
+    get_settings.cache_clear()
+
+
+def test_production_accepts_untrusted_tools_with_egress_isolation(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    env_file = scenario_env(
+        tmp_path,
+        base=ENV_SCENARIOS_DIR / "production-csrf.env",
+        UNTRUSTED_URL_TOOLS_ENABLED="true",
+        UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED="true",
+    )
+    activate_env_file(monkeypatch, env_file)
+
+    settings = Settings()
+
+    assert settings.UNTRUSTED_URL_TOOLS_ENABLED is True
+    assert settings.UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED is True
+    get_settings.cache_clear()

@@ -16,8 +16,7 @@ const goToPage = vi.fn();
 
 vi.mock("@/composables/useNews", () => ({
   formatNewsDate: (value: string | null) => value ?? "",
-  newsArticleDisplayDate: (article: NewsArticle) =>
-    article.published_at ?? article.created_at,
+  newsArticleDisplayDate: (article: NewsArticle) => article.published_at ?? article.created_at,
   useNews: () => ({
     articles,
     page,
@@ -40,12 +39,7 @@ const routerPush = vi.fn();
 vi.mock("vue-router", () => ({
   useRouter: () => ({
     resolve: (to: { params?: { slug?: string } } | string) => ({
-      href:
-        typeof to === "string"
-          ? to
-          : to?.params?.slug
-            ? `/news/${to.params.slug}`
-            : "#",
+      href: typeof to === "string" ? to : to?.params?.slug ? `/news/${to.params.slug}` : "#",
     }),
     push: routerPush,
   }),

@@ -206,6 +206,7 @@ async def list_files(
         total=total,
         page=safe_page,
         per_page=limit,
+        response_cls=SharedFileListResponse,
     )
 
 

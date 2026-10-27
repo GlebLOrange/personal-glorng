@@ -6,6 +6,9 @@ import asyncio
 import ipaddress
 import re
 import socket
+from collections.abc import Mapping
+from dataclasses import dataclass
+from typing import Any, cast
 from urllib.parse import urljoin, urlparse, urlunparse
 
 import httpx
@@ -14,6 +17,19 @@ _BLOCKED_HOST_SUFFIXES = (".local", ".localhost", ".internal")
 _LOCALHOST_NAMES = frozenset({"localhost", "localhost.localdomain"})
 _MAX_PUBLIC_REDIRECTS = 5
 _HAS_AUTHORITY_SCHEME = re.compile(r"^[a-z][a-z0-9+.-]*://", re.IGNORECASE)
+
+
+@dataclass(frozen=True)
+class PublicFetchResult:
+    """A completed public GET with the canonical URL kept separate from the IP.
+
+    ``response.url`` is the pinned-IP connect URL and must not be used for
+    allowlist checks, storage, or user-visible links. Use ``url`` instead.
+    """
+
+    response: httpx.Response
+    url: str
+    resolved_ip: str
 
 
 def ensure_http_scheme(value: object) -> object:
@@ -194,12 +210,13 @@ async def get_public_http_url(
     *,
     max_redirects: int = _MAX_PUBLIC_REDIRECTS,
     **request_kwargs: object,
-) -> httpx.Response:
+) -> PublicFetchResult:
     """GET ``url`` without auto-follow; re-validate every hop including DNS.
 
     Connects to a resolved public IP while keeping Host and TLS SNI on the
     original hostname. Redirect Location values are joined against the
-    pre-rewrite URL so relative hops keep that host.
+    pre-rewrite URL so relative hops keep that host. Returns the canonical
+    final URL alongside the response; ``response.url`` is the connect URL.
     """
     current = url
     for _ in range(max_redirects + 1):
@@ -221,16 +238,26 @@ async def get_public_http_url(
         parsed_current = urlparse(current)
         connect_url = _url_with_ip_host(current, resolved_ip)
 
-        headers = dict(request_kwargs.get("headers", {}) or {})
+        raw_headers = request_kwargs.get("headers")
+        headers: dict[str, str] = (
+            {str(key): str(value) for key, value in raw_headers.items()}
+            if isinstance(raw_headers, Mapping)
+            else {}
+        )
         host_header = (
             host if parsed_current.port is None else f"{host}:{parsed_current.port}"
         )
         headers["Host"] = host_header
 
-        request_args = dict(request_kwargs)
+        request_args: dict[str, object] = dict(request_kwargs)
         request_args["headers"] = headers
         # Preserve TLS cert verification against the hostname, not the IP.
-        existing_extensions = dict(request_args.get("extensions") or {})  # type: ignore[arg-type]
+        raw_extensions = request_kwargs.get("extensions")
+        existing_extensions: dict[str, object] = (
+            {str(key): value for key, value in raw_extensions.items()}
+            if isinstance(raw_extensions, Mapping)
+            else {}
+        )
         existing_extensions["sni_hostname"] = host
         request_args["extensions"] = existing_extensions
 
@@ -238,7 +265,7 @@ async def get_public_http_url(
             "GET",
             connect_url,
             follow_redirects=False,
-            **request_args,  # type: ignore[arg-type]
+            **cast(dict[str, Any], request_args),
         )
         if response.is_redirect:
             location = response.headers.get("location")
@@ -249,6 +276,10 @@ async def get_public_http_url(
             # Join against the pre-rewrite URL — response.url is the IP connect URL.
             current = urljoin(current, location)
             continue
-        return response
+        return PublicFetchResult(
+            response=response,
+            url=current,
+            resolved_ip=resolved_ip,
+        )
     msg = "Too many redirects"
     raise ValueError(msg)

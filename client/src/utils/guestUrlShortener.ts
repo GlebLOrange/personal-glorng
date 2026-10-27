@@ -74,10 +74,7 @@ export function sanitizeGuestShortUrls(raw: unknown): UrlItem[] {
     }
 
     const titleRaw = item.title;
-    const title =
-      titleRaw == null
-        ? null
-        : trimField(titleRaw, MAX_TITLE_LENGTH) || null;
+    const title = titleRaw == null ? null : trimField(titleRaw, MAX_TITLE_LENGTH) || null;
 
     seenCodes.add(code);
     sanitized.push({

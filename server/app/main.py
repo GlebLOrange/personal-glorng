@@ -50,6 +50,14 @@ def _init_sentry() -> None:
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     settings = get_settings()
 
+    if settings.UNTRUSTED_URL_TOOLS_ENABLED:
+        logger.warning(
+            "Untrusted URL tools enabled",
+            context={
+                "egress_isolated": settings.UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED,
+            },
+        )
+
     await init_redis(settings.REDIS_URL, settings.REDIS_CACHE_URL or None)
 
     if settings.elasticsearch_enabled():

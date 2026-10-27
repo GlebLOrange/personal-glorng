@@ -26,7 +26,6 @@ export const ADMIN_TD_TITLE_CLASS = `${ADMIN_TD_CLASS} max-w-[16rem] font-sans`;
 /** Row identity cell (`th scope="row"`) — same weight as body cells. */
 export const ADMIN_TH_ROW_CLASS = `${ADMIN_TD_TITLE_CLASS} text-left font-normal`;
 
-export const ADMIN_TD_ACTIONS_CLASS =
-  "whitespace-nowrap px-2 py-1.5 align-middle text-right";
+export const ADMIN_TD_ACTIONS_CLASS = "whitespace-nowrap px-2 py-1.5 align-middle text-right";
 
 export const ADMIN_ACTIONS_CLASS = "inline-flex items-center justify-end gap-0.5";

@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -124,8 +125,18 @@ class TestListFeedback:
         self, auth_client: AsyncClient, registry: DatabaseRegistry
     ):
         """Default is newest created_at first; created_asc reverses."""
-        first = await create_feedback(registry, theme="Older")
-        second = await create_feedback(registry, theme="Newer")
+        # mongomock does not order tz-aware datetimes, so pass explicit naive
+        # timestamps to make the sort assertion deterministic.
+        first = await create_feedback(
+            registry,
+            theme="Older",
+            created_at=datetime(2026, 1, 1),
+        )
+        second = await create_feedback(
+            registry,
+            theme="Newer",
+            created_at=datetime(2026, 1, 2),
+        )
         desc = await auth_client.get("/api/feedback")
         assert desc.status_code == 200
         desc_ids = [item["id"] for item in desc.json()["items"]]

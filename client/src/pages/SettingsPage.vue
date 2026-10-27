@@ -200,7 +200,12 @@ async function savePassword(): Promise<void> {
           <CardBody>
             <div class="flex flex-wrap items-center justify-between gap-3">
               <RouterLink to="/privacy" class="nav-link text-sm">privacy policy</RouterLink>
-              <BaseButton type="button" variant="secondary" size="sm" @click="openCookiePreferences">
+              <BaseButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                @click="openCookiePreferences"
+              >
                 cookie preferences
               </BaseButton>
             </div>
