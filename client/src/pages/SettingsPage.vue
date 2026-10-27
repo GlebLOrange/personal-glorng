@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as CookieConsent from "vanilla-cookieconsent";
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
@@ -20,25 +20,9 @@ const DevApiStatusBadge = import.meta.env.DEV
   ? defineAsyncComponent(() => import("@/components/dev/DevApiStatusBadge.vue"))
   : null;
 
-type SettingsSectionId = "profile" | "account" | "privacy";
-
-interface SettingsNavItem {
-  id: SettingsSectionId;
-  label: string;
-}
-
 const auth = useAuthStore();
 const { permissions, canAccess } = usePermissions();
 const { displayCurrency, loadPreferences, saveDisplayCurrency } = useUserPreferences();
-
-const navItems = computed((): SettingsNavItem[] => [
-  { id: "profile", label: "Profile" },
-  { id: "account", label: "Account" },
-  { id: "privacy", label: "Privacy" },
-]);
-
-const activeSection = ref<SettingsSectionId>("profile");
-let sectionObserver: IntersectionObserver | null = null;
 
 const accessibleTools = computed(() =>
   PLATFORM_SERVICES.filter(
@@ -102,54 +86,10 @@ function openCookiePreferences(): void {
   CookieConsent.showPreferences();
 }
 
-function navClass(id: SettingsSectionId): string {
-  const base =
-    "shrink-0 rounded-md px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50";
-  if (activeSection.value === id) {
-    return `${base} bg-surface-card text-accent-coral`;
-  }
-  return `${base} text-surface-mid hover:text-surface-light`;
-}
-
-function observeSections(): void {
-  sectionObserver?.disconnect();
-  const ids = navItems.value.map((item) => item.id);
-  const elements = ids
-    .map((id) => document.getElementById(id))
-    .filter((el): el is HTMLElement => el !== null);
-  if (!elements.length) return;
-
-  sectionObserver = new IntersectionObserver(
-    (entries) => {
-      const visible = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-      const top = visible[0]?.target.id as SettingsSectionId | undefined;
-      if (top) activeSection.value = top;
-    },
-    {
-      // Match sticky chip row + fixed site nav so the active link tracks the heading in view.
-      rootMargin: "-28% 0px -55% 0px",
-      threshold: [0.1, 0.35, 0.6],
-    },
-  );
-  for (const el of elements) sectionObserver.observe(el);
-}
-
 onMounted(async () => {
   syncFormFromUser();
   await loadPreferences();
   savedCurrency.value = displayCurrency.value;
-  const hash = window.location.hash.replace(/^#/, "") as SettingsSectionId;
-  if (navItems.value.some((item) => item.id === hash)) {
-    activeSection.value = hash;
-  }
-  observeSections();
-});
-
-onUnmounted(() => {
-  sectionObserver?.disconnect();
-  sectionObserver = null;
 });
 
 async function saveProfile(): Promise<void> {
@@ -218,89 +158,75 @@ async function savePassword(): Promise<void> {
     max-width="5xl"
     :narrow="false"
   >
-    <div class="flex min-w-0 flex-col gap-6 md:flex-row md:items-start md:gap-8">
-      <nav
-        aria-label="Settings sections"
-        class="sticky top-20 z-10 -mx-1 overflow-x-auto bg-surface-dark/90 px-1 py-2 backdrop-blur-md md:top-24 md:w-44 md:shrink-0 md:overflow-visible md:bg-transparent md:px-0 md:py-0 md:backdrop-blur-none"
+    <div class="flex min-w-0 flex-col gap-10">
+      <div
+        v-if="DevApiStatusBadge"
+        class="flex flex-wrap items-center justify-between gap-2 border-b border-surface-border pb-4"
       >
-        <ul class="flex gap-1 md:flex-col">
-          <li v-for="item in navItems" :key="item.id">
-            <a :href="`#${item.id}`" :class="navClass(item.id)">{{ item.label }}</a>
+        <p class="text-xs text-surface-mid">development API</p>
+        <component :is="DevApiStatusBadge" />
+      </div>
+
+      <section id="profile" class="scroll-mt-40 md:scroll-mt-44" aria-label="Profile">
+        <SettingsPreferencesSection
+          v-model:display-name="displayName"
+          v-model:timezone="timezone"
+          v-model:display-currency="displayCurrency"
+          :saving="savingProfile"
+          :can-save="canSaveProfile"
+          @save="saveProfile"
+        />
+      </section>
+
+      <section id="account" class="scroll-mt-40 md:scroll-mt-44" aria-label="Account">
+        <SettingsAccountSection
+          v-model:new-email="newEmail"
+          v-model:email-password="emailPassword"
+          v-model:current-password="currentPassword"
+          v-model:new-password="newPassword"
+          v-model:new-password-confirm="newPasswordConfirm"
+          :permissions="permissions"
+          :saving-email="savingEmail"
+          :can-save-email="canSaveEmail"
+          :saving-password="savingPassword"
+          :can-save-password="canSavePassword"
+          @save-email="saveEmail"
+          @save-password="savePassword"
+        />
+      </section>
+
+      <section id="privacy" class="scroll-mt-40 md:scroll-mt-44" aria-label="Privacy">
+        <Card variant="compact">
+          <CardBody>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <RouterLink to="/privacy" class="nav-link text-sm">privacy policy</RouterLink>
+              <BaseButton type="button" variant="secondary" size="sm" @click="openCookiePreferences">
+                cookie preferences
+              </BaseButton>
+            </div>
+          </CardBody>
+        </Card>
+      </section>
+
+      <details
+        v-if="accessibleTools.length"
+        class="group rounded-lg border border-surface-border bg-surface-card p-4"
+      >
+        <summary
+          id="settings-tools-heading"
+          class="flex cursor-pointer list-none items-center justify-between gap-2 rounded text-sm font-medium text-surface-light marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 [&::-webkit-details-marker]:hidden"
+        >
+          <span class="underline-offset-2 group-open:underline">tools you can open</span>
+          <ChevronIcon class-name="size-3.5 text-surface-mid group-open:rotate-180" />
+        </summary>
+        <ul class="mt-3 flex flex-wrap gap-x-3 gap-y-2">
+          <li v-for="tool in accessibleTools" :key="tool.slug">
+            <RouterLink :to="tool.adminRoute" class="nav-link text-sm">
+              {{ tool.name }}
+            </RouterLink>
           </li>
         </ul>
-      </nav>
-
-      <div class="flex min-w-0 flex-1 flex-col gap-10">
-        <div
-          v-if="DevApiStatusBadge"
-          class="flex flex-wrap items-center justify-between gap-2 border-b border-surface-border pb-4"
-        >
-          <p class="text-xs text-surface-mid">development API</p>
-          <component :is="DevApiStatusBadge" />
-        </div>
-
-        <section id="profile" class="scroll-mt-40 md:scroll-mt-44" aria-label="Profile">
-          <SettingsPreferencesSection
-            v-model:display-name="displayName"
-            v-model:timezone="timezone"
-            v-model:display-currency="displayCurrency"
-            :saving="savingProfile"
-            :can-save="canSaveProfile"
-            @save="saveProfile"
-          />
-        </section>
-
-        <section id="account" class="scroll-mt-40 md:scroll-mt-44" aria-label="Account">
-          <SettingsAccountSection
-            v-model:new-email="newEmail"
-            v-model:email-password="emailPassword"
-            v-model:current-password="currentPassword"
-            v-model:new-password="newPassword"
-            v-model:new-password-confirm="newPasswordConfirm"
-            :permissions="permissions"
-            :saving-email="savingEmail"
-            :can-save-email="canSaveEmail"
-            :saving-password="savingPassword"
-            :can-save-password="canSavePassword"
-            @save-email="saveEmail"
-            @save-password="savePassword"
-          />
-        </section>
-
-        <section id="privacy" class="scroll-mt-40 md:scroll-mt-44" aria-label="Privacy">
-          <Card variant="compact">
-            <CardBody>
-              <div class="flex flex-wrap items-center justify-between gap-3">
-                <RouterLink to="/privacy" class="nav-link text-sm">privacy policy</RouterLink>
-                <BaseButton type="button" variant="secondary" size="sm" @click="openCookiePreferences">
-                  cookie preferences
-                </BaseButton>
-              </div>
-            </CardBody>
-          </Card>
-        </section>
-
-        <details
-          v-if="accessibleTools.length"
-          class="group rounded-lg border border-surface-border bg-surface-card p-4"
-        >
-          <summary
-            id="settings-tools-heading"
-            class="flex cursor-pointer list-none items-center justify-between gap-2 rounded text-sm font-medium text-surface-light marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 [&::-webkit-details-marker]:hidden"
-          >
-            <span class="underline-offset-2 group-open:underline">tools you can open</span>
-            <ChevronIcon class-name="size-3.5 text-surface-mid group-open:rotate-180" />
-          </summary>
-          <ul class="mt-3 flex flex-wrap gap-x-3 gap-y-2">
-            <li v-for="tool in accessibleTools" :key="tool.slug">
-              <RouterLink :to="tool.adminRoute" class="nav-link text-sm">
-                {{ tool.name }}
-              </RouterLink>
-            </li>
-          </ul>
-        </details>
-
-        </div>
+      </details>
     </div>
   </PageShell>
 </template>
