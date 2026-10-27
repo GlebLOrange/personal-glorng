@@ -88,14 +88,18 @@ def _resolve_dns(hostname: str) -> list[DnsRecord]:
     return records
 
 
-def _ssl_expiry(hostname: str, port: int = 443) -> datetime | None:
-    """Return certificate notAfter in UTC, or None on failure."""
+def _ssl_expiry(hostname: str, resolved_ip: str, port: int = 443) -> datetime | None:
+    """Return certificate notAfter in UTC, or None on failure.
+
+    Connects to the already-resolved public IP and keeps hostname verification
+    via SNI, so this probe cannot be redirected by a second DNS answer.
+    """
     context = ssl.create_default_context()
     context.minimum_version = ssl.TLSVersion.TLSv1_2
     try:
         with (
             socket.create_connection(
-                (hostname, port), timeout=PROBE_TIMEOUT_SECONDS
+                (resolved_ip, port), timeout=PROBE_TIMEOUT_SECONDS
             ) as sock,
             context.wrap_socket(sock, server_hostname=hostname) as ssock,
         ):
@@ -125,8 +129,6 @@ async def probe_url(url: str) -> ProbeOutcome:
     ssl_expires_at: datetime | None = None
     if hostname:
         dns = await asyncio.to_thread(_resolve_dns, hostname)
-        if urlparse(url).scheme == "https":
-            ssl_expires_at = await asyncio.to_thread(_ssl_expiry, hostname)
 
     status_code: int | None = None
     response_ms: float | None = None
@@ -135,13 +137,22 @@ async def probe_url(url: str) -> ProbeOutcome:
     started = time.perf_counter()
     try:
         async with httpx.AsyncClient(timeout=PROBE_TIMEOUT_SECONDS) as client:
-            response = await get_public_http_url(client, url)
+            result = await get_public_http_url(client, url)
+            response = result.response
             status_code = response.status_code
             response_ms = round((time.perf_counter() - started) * 1000, 2)
             await response.aclose()
             ok = 200 <= status_code < 400
             if not ok:
                 error = f"HTTP {status_code}"
+            if hostname and urlparse(url).scheme == "https":
+                port = urlparse(url).port or 443
+                ssl_expires_at = await asyncio.to_thread(
+                    _ssl_expiry,
+                    hostname,
+                    result.resolved_ip,
+                    port,
+                )
     except ValueError as exc:
         response_ms = round((time.perf_counter() - started) * 1000, 2)
         error = str(exc)
@@ -221,6 +232,7 @@ class HealthMonitorService:
             total=total,
             page=max(1, page),
             per_page=limit,
+            response_cls=HealthMonitorListResponse,
         )
 
     async def get_monitor(

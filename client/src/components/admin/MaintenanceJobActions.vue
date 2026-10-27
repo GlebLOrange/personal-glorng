@@ -75,9 +75,7 @@ const showPanel = computed(() => {
 });
 
 const confirmTitle = computed(() => (pendingJob.value ? `run ${pendingJob.value}` : "run job"));
-const confirmBody = computed(() =>
-  pendingJob.value ? CONFIRM_COPY[pendingJob.value] : "",
-);
+const confirmBody = computed(() => (pendingJob.value ? CONFIRM_COPY[pendingJob.value] : ""));
 
 function jobBlocked(job: (typeof JOBS)[number]): boolean {
   return Boolean(job.needsHost && info.value && !info.value.host_jobs_ready);
@@ -228,10 +226,7 @@ onUnmounted(() => {
           @click="openConfirm(job.id)"
         >
           {{ job.label }}
-          <span
-            v-if="jobBlocked(job)"
-            class="ml-1 text-xs opacity-70"
-          >
+          <span v-if="jobBlocked(job)" class="ml-1 text-xs opacity-70">
             (host script not ready)
           </span>
         </BaseButton>

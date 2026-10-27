@@ -32,9 +32,7 @@ const hasLeading = computed(() =>
   props.showLeading !== undefined ? props.showLeading : Boolean(slots.leading),
 );
 /** Hide empty-list chrome when the page already shows EmptyState. */
-const showBar = computed(
-  () => showPagination.value || hasLeading.value || props.total > 0,
-);
+const showBar = computed(() => showPagination.value || hasLeading.value || props.total > 0);
 
 const totalLabel = computed(() => {
   if (props.countLabel) return props.countLabel;
@@ -127,7 +125,9 @@ const navClass = computed(() => {
       <div v-if="hasLeading" class="min-w-0">
         <slot name="leading" />
       </div>
-      <span v-else class="font-data text-label tracking-wide text-surface-light">{{ totalLabel }}</span>
+      <span v-else class="font-data text-label tracking-wide text-surface-light">{{
+        totalLabel
+      }}</span>
     </template>
   </nav>
 </template>

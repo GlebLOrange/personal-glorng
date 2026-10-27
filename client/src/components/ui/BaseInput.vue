@@ -87,13 +87,9 @@ const useShell = computed(() =>
     isInlineEnd.value,
   ),
 );
-const showClear = computed(
-  () => props.clearable && useShell.value && hasClearableValue.value,
-);
+const showClear = computed(() => props.clearable && useShell.value && hasClearableValue.value);
 /** Reserve clear width whenever shell is clearable so tip/value never jump. */
-const reserveClear = computed(
-  () => props.clearable && useShell.value && isClearableType.value,
-);
+const reserveClear = computed(() => props.clearable && useShell.value && isClearableType.value);
 /** Inside-label overlay mirrors tip: visible only while empty, then clear takes over. */
 const showInsideLabel = computed(
   () => Boolean(props.labelInside && props.label) && !hasTypedValue.value,
@@ -112,9 +108,7 @@ const hasVisibleLabel = computed(
 );
 const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
 /** End alignment: only reserve trailing chrome for FieldHelp (no visible field name). */
-const showInlineEndLabel = computed(
-  () => isInlineEnd.value && Boolean(props.hint && !props.error),
-);
+const showInlineEndLabel = computed(() => isInlineEnd.value && Boolean(props.hint && !props.error));
 const showNotchRow = computed(() => !isInlineEnd.value && showLabelRow.value);
 const showSrOnlyLabel = computed(
   () => Boolean(props.label) && (props.labelInside || (isInlineEnd.value && !props.error)),
@@ -292,7 +286,7 @@ defineExpose({ focus });
             size="sm"
             :align="helpAlign"
             :placement="helpPlacement"
-            :text="hint"
+            :text="hint ?? ''"
             :content-id="hintId"
           />
         </div>

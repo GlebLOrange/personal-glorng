@@ -23,8 +23,8 @@ const props = withDefaults(
 const emit = defineEmits<{ inquire: [] }>();
 
 const isStatusRail = computed(() => props.layout === "status-rail");
-const showMeta = computed(
-  () => Boolean(props.location || props.availability || (isStatusRail.value && props.sampleNote)),
+const showMeta = computed(() =>
+  Boolean(props.location || props.availability || (isStatusRail.value && props.sampleNote)),
 );
 
 const isDownloadingCv = ref(false);
@@ -53,27 +53,16 @@ function printPage(): void {
 </script>
 
 <template>
-  <div
-    class="py-12 md:py-16"
-    :class="isStatusRail ? 'text-left' : 'text-center'"
-  >
+  <div class="py-12 md:py-16" :class="isStatusRail ? 'text-left' : 'text-center'">
     <p
       class="mb-2 font-medium tracking-tight text-surface-light"
-      :class="
-        isStatusRail
-          ? 'text-3xl sm:text-4xl md:text-5xl'
-          : 'text-xl sm:text-2xl md:text-3xl'
-      "
+      :class="isStatusRail ? 'text-3xl sm:text-4xl md:text-5xl' : 'text-xl sm:text-2xl md:text-3xl'"
     >
       {{ name }}
     </p>
     <h1
       class="mb-3 text-balance font-bold tracking-tight text-surface-light"
-      :class="
-        isStatusRail
-          ? 'text-xl sm:text-2xl md:text-3xl'
-          : 'text-2xl sm:text-3xl md:text-4xl'
-      "
+      :class="isStatusRail ? 'text-xl sm:text-2xl md:text-3xl' : 'text-2xl sm:text-3xl md:text-4xl'"
     >
       {{ title }}
     </h1>
@@ -139,7 +128,9 @@ function printPage(): void {
 
     <div
       class="relative z-[45] mt-6 flex flex-col sm:flex-row flex-wrap gap-2 print:hidden"
-      :class="isStatusRail ? 'items-stretch sm:items-center justify-start' : 'items-center justify-center'"
+      :class="
+        isStatusRail ? 'items-stretch sm:items-center justify-start' : 'items-center justify-center'
+      "
     >
       <button type="button" class="cta-hero" @click="emit('inquire')">get in touch</button>
       <button type="button" class="cta-secondary" :disabled="isDownloadingCv" @click="downloadCv">

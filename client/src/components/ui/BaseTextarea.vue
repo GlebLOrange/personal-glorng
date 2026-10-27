@@ -93,9 +93,7 @@ const hasVisibleLabel = computed(
 );
 const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
 /** End alignment: only reserve trailing chrome for FieldHelp (no visible field name). */
-const showInlineEndLabel = computed(
-  () => isInlineEnd.value && Boolean(props.hint && !props.error),
-);
+const showInlineEndLabel = computed(() => isInlineEnd.value && Boolean(props.hint && !props.error));
 const showNotchRow = computed(() => !isInlineEnd.value && showLabelRow.value);
 const showSrOnlyLabel = computed(
   () => Boolean(props.label) && (props.labelInside || (isInlineEnd.value && !props.error)),
@@ -206,7 +204,7 @@ function clear(): void {
             size="sm"
             :align="helpAlign"
             :placement="helpPlacement"
-            :text="hint"
+            :text="hint ?? ''"
             :content-id="hintId"
           />
         </div>

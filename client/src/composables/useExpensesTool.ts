@@ -17,20 +17,9 @@ import { useUserPreferences } from "@/composables/useUserPreferences";
 export type { ExpenseCalculatorMode, ExpenseQuickAddTarget };
 export { isCalculatorMode, normalizeCalculatorMode };
 
-export type ExpenseTab =
-  | "today"
-  | "activity"
-  | "insights"
-  | "categories"
-  | "converter";
+export type ExpenseTab = "today" | "activity" | "insights" | "categories" | "converter";
 
-const EXPENSE_TABS: ExpenseTab[] = [
-  "today",
-  "activity",
-  "insights",
-  "categories",
-  "converter",
-];
+const EXPENSE_TABS: ExpenseTab[] = ["today", "activity", "insights", "categories", "converter"];
 
 const TAB_LABELS: Record<ExpenseTab, string> = {
   today: "money",
@@ -136,9 +125,7 @@ export function useExpensesTool(quickAddRef: Ref<ExpenseQuickAddTarget | null> =
     if (typeof raw === "string" && raw !== tab) {
       const { mode: _mode, panel: _panel, ...rest } = route.query;
       const query =
-        tab === "converter"
-          ? { ...rest, tab, mode: converterMode.value }
-          : { ...rest, tab };
+        tab === "converter" ? { ...rest, tab, mode: converterMode.value } : { ...rest, tab };
       void router.replace({ query });
     }
   }

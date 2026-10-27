@@ -28,13 +28,9 @@ const emailTone = computed<"error" | undefined>(() => {
   return isValidEmail(email.value) ? undefined : "error";
 });
 
-const emailError = computed(() =>
-  emailTone.value === "error" ? EMAIL_FORMAT_HINT : undefined,
-);
+const emailError = computed(() => (emailTone.value === "error" ? EMAIL_FORMAT_HINT : undefined));
 
-const canSubmit = computed(
-  () => isValidEmail(email.value) && !!password.value && !loading.value,
-);
+const canSubmit = computed(() => isValidEmail(email.value) && !!password.value && !loading.value);
 
 /** Map opaque reserved-TLD / special-use API detail into a clear login hint. */
 function friendlyLoginError(raw: string): string {
@@ -54,9 +50,7 @@ async function handleLogin(): Promise<void> {
     router.push(safeRedirectPath(route.query.redirect));
   } catch (err) {
     if (import.meta.env.DEV) console.error(err);
-    formError.value = friendlyLoginError(
-      getApiErrorMessage(err, "Invalid email or password"),
-    );
+    formError.value = friendlyLoginError(getApiErrorMessage(err, "Invalid email or password"));
     toast(formError.value, "error");
     await focusAfterPaint(() => formErrorEl.value);
   } finally {

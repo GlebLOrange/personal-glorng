@@ -1,7 +1,7 @@
 """Pydantic schemas for curated news APIs."""
 
 from datetime import datetime
-from typing import Literal
+from typing import Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
@@ -25,7 +25,7 @@ NewsTag = Literal[
     "politics",
 ]
 
-ALLOWED_NEWS_TAGS: set[str] = set(NewsTag.__args__)
+ALLOWED_NEWS_TAGS: set[str] = set(get_args(NewsTag))
 
 
 class NewsArticleTextFields(BaseModel):

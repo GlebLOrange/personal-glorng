@@ -75,7 +75,9 @@ def test_select_resume_filters_skills_and_projects() -> None:
     )
     skill_labels = [item for group in selection.resume.skills for item in group.items]
     assert skill_labels == ["Python", "FastAPI"]
-    assert [project.slug for project in selection.resume.projects] == ["cookie-auth-csrf"]
+    assert [project.slug for project in selection.resume.projects] == [
+        "cookie-auth-csrf"
+    ]
     assert selection.ignored_skills == ["not-a-skill"]
     assert selection.ignored_projects == ["missing-project"]
 

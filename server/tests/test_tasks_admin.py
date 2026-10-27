@@ -138,9 +138,7 @@ async def test_list_tasks_filters_by_start_end(
     assert resp.status_code == 200
     ids = [item["id"] for item in resp.json()["items"]]
     assert in_range.id in ids
-    assert all(
-        "2026-06" in item["scheduled_at"] for item in resp.json()["items"]
-    )
+    assert all("2026-06" in item["scheduled_at"] for item in resp.json()["items"])
 
 
 @pytest.mark.asyncio

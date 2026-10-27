@@ -10,7 +10,7 @@ import {
 } from "@/utils/guestQrLibrary";
 import type { QrStoredItem } from "@/types";
 
-const SAMPLE_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>";
+const SAMPLE_SVG = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
 
 function sample(overrides: Partial<QrStoredItem> = {}): QrStoredItem {
   return {

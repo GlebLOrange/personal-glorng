@@ -56,10 +56,11 @@ async def test_list_users_search_escapes_regex_metacharacters(
 
     meta_resp = await auth_client.get(
         "/api/admin/users",
-        params={"search": ".*"},
+        params={"search": ".*x"},
     )
     assert meta_resp.status_code == 200
     meta_emails = {row["email"] for row in meta_resp.json()["items"]}
+    assert "literal.plus+user@glorng.dev" not in meta_emails
     assert "regex-bait@glorng.dev" not in meta_emails
 
 

@@ -1,12 +1,8 @@
 {
   "mcpServers": {
     "gortex": {
-      "command": "/opt/homebrew/bin/gortex",
-      "args": ["mcp", "--proxy"],
-      "cwd": "/Users/glorange/projects/portfolio-glorng",
-      "env": {
-        "PATH": "/opt/homebrew/bin:/usr/bin:/bin"
-      }
+      "command": "gortex",
+      "args": ["mcp", "--proxy"]
     }
   }
 }

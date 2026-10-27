@@ -128,6 +128,9 @@ async def test_search_postgres_mirror_failure_keeps_mongo(
         def enable_postgres(self) -> bool:
             return True
 
+        def postgres_mirror_enabled(self) -> bool:
+            return True
+
     monkeypatch.setattr(SearchIndexService, "_upsert_postgres", fail_upsert_postgres)
     monkeypatch.setattr(
         "app.services.search_index.get_settings",

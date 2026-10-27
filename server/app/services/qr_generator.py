@@ -146,6 +146,7 @@ class QrLibraryService:
             total=total,
             page=page,
             per_page=limit,
+            response_cls=QrCodeListResponse,
         )
 
     async def update_saved(

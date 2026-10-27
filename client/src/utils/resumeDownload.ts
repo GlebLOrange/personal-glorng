@@ -51,9 +51,6 @@ export async function downloadResumeExport(kind: ResumeDownloadKind): Promise<vo
   URL.revokeObjectURL(url);
 }
 
-export async function resumeDownloadErrorMessage(
-  err: unknown,
-  fallback: string,
-): Promise<string> {
+export async function resumeDownloadErrorMessage(err: unknown, fallback: string): Promise<string> {
   return getApiErrorMessageFromBlob(err, fallback);
 }

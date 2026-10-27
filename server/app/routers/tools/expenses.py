@@ -213,7 +213,7 @@ async def parse_expense(
     return ExpenseParseResponse(
         valid=True,
         amount=parsed.amount,
-        currency=parsed.currency,  # type: ignore[arg-type]
+        currency=parsed.currency,
         category=parsed.category,
         tool_name=parsed.tool_name,
         expense_date=parsed.expense_date,

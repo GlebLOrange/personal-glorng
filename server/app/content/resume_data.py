@@ -207,8 +207,6 @@ _RESUME_RAW: dict[str, Any] = {
 }
 
 RESUME_DOCUMENT = ResumeDocument.model_validate(_RESUME_RAW)
-if not (
-    RESUME_DOCUMENT.bio and RESUME_DOCUMENT.skills and RESUME_DOCUMENT.experience
-):
+if not (RESUME_DOCUMENT.bio and RESUME_DOCUMENT.skills and RESUME_DOCUMENT.experience):
     raise ValueError("Canonical resume must include bio, skills, and experience")
 RESUME_DATA: dict[str, Any] = RESUME_DOCUMENT.model_dump(mode="json")

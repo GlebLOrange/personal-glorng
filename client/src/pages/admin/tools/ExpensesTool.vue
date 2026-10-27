@@ -162,7 +162,6 @@ function focusAddFromInsights(): void {
 
         <ExpenseDashboardPanel
           v-show="activeTab === 'today'"
-          :aria-hidden="activeTab !== 'today'"
           ref="dashboardPanelRef"
           v-model:smart-text-open="smartTextOpen"
           v-model:quick-add-category="quickAdd.category"
@@ -172,6 +171,7 @@ function focusAddFromInsights(): void {
           v-model:quick-add-name-error="quickAddNameError"
           v-model:quick-add-amount-error="quickAddAmountError"
           v-model:display-currency="displayCurrency"
+          :aria-hidden="activeTab !== 'today'"
           :can-write="canWriteExpenses"
           :saving-expense="savingExpense"
           :category-options="categoryOptions"
@@ -192,7 +192,6 @@ function focusAddFromInsights(): void {
 
         <ExpenseTransactionsPanel
           v-show="activeTab === 'activity'"
-          :aria-hidden="activeTab !== 'activity'"
           v-model:product-filter="productFilter"
           v-model:category-filter="categoryFilter"
           v-model:display-currency="displayCurrency"
@@ -201,6 +200,7 @@ function focusAddFromInsights(): void {
           v-model:selected-month="selectedMonth"
           v-model:date-from="dateFrom"
           v-model:date-to="dateTo"
+          :aria-hidden="activeTab !== 'activity'"
           :category-options="categoryOptions"
           :list-error="listError"
           :expenses="expenses"
@@ -348,8 +348,8 @@ function focusAddFromInsights(): void {
       >
         <div class="flex flex-col gap-3">
           <p>
-            delete category '{{ deleteCategoryTarget?.name }}'? Expenses in this category will move to
-            the destination below.
+            delete category '{{ deleteCategoryTarget?.name }}'? Expenses in this category will move
+            to the destination below.
           </p>
           <BaseSelect
             :model-value="

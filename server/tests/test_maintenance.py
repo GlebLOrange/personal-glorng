@@ -267,6 +267,7 @@ async def test_run_seed_blocked_in_production(
         TURNSTILE_SECRET_KEY="secret-key-test",
         APP_ENV="production",
         MAINTENANCE_SEED_ENABLED="false",
+        UNTRUSTED_URL_TOOLS_ENABLED="false",
     )
     activate_env_file(monkeypatch, env)
     try:

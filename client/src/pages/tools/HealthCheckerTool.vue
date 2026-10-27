@@ -286,9 +286,7 @@ onMounted(() => {
               class="w-auto shrink-0"
               :model-value="selected.interval_minutes"
               aria-label="change interval"
-              @update:model-value="
-                updateInterval(selected, Number($event) as HealthInterval)
-              "
+              @update:model-value="updateInterval(selected, Number($event) as HealthInterval)"
             >
               <option v-for="mins in HEALTH_INTERVALS" :key="mins" :value="mins">
                 every {{ mins }}m

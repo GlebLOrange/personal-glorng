@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 from math import ceil
-from typing import Annotated, TypeVar
+from typing import Annotated, Any, TypeVar
 
 from fastapi import Query
 
@@ -11,6 +11,7 @@ from app.core.utils import DEFAULT_PER_PAGE, paginate_params
 from app.schemas.common import PaginatedResponse
 
 T = TypeVar("T")
+R = TypeVar("R", bound=PaginatedResponse[Any])
 
 
 @dataclass(frozen=True)
@@ -21,16 +22,17 @@ class PaginationParams:
     limit: int
 
 
-def build_paginated[T](
+def build_paginated[T, R: PaginatedResponse[Any]](
     items: list[T],
     *,
     total: int,
     page: int,
     per_page: int,
-) -> PaginatedResponse[T]:
-    """Build a paginated API response from a page slice and total count."""
+    response_cls: type[R],
+) -> R:
+    """Build a paginated API response of the caller's concrete response type."""
     pages = ceil(total / per_page) if total > 0 else 0
-    return PaginatedResponse(
+    return response_cls(
         items=items,
         total=total,
         page=page,

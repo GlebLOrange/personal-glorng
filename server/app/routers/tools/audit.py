@@ -58,4 +58,5 @@ async def list_audit_events(
         total=total,
         page=pagination.page,
         per_page=pagination.per_page,
+        response_cls=AuditEventListResponse,
     )

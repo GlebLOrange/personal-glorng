@@ -145,9 +145,9 @@ Client-side `VITE_AI_CHAT_ENABLED` hides the admin UI only; server flags and aut
 
 **URL shortener:** Creating short links is public (10 creates/hour/IP) with URL safety checks that block localhost and private-network targets. Public `/s/{code}` redirects to stored URLs — open redirects are an accepted risk for shorteners; your domain lends trust to destination sites.
 
-**Server-side URL fetch:** News metadata/ingest and similar fetchers use `is_public_http_url` with DNS resolution (fail closed) and manual redirect re-validation so names/hops that resolve to private or link-local addresses are rejected.
+**Server-side URL fetch:** News metadata/ingest and similar fetchers use `is_public_http_url` with DNS resolution (fail closed) and manual redirect re-validation so names/hops that resolve to private or link-local addresses are rejected. `get_public_http_url` connects to the pinned public IP while keeping `Host`/SNI, and returns the canonical final URL separately from the connect URL so allowlist checks and stored links never use the IP. Health-check TLS probes reuse that same resolved IP.
 
-**Vid download:** Off by default on public deploys (`UNTRUSTED_URL_TOOLS_ENABLED=false` — routers not mounted). When enabled, the download endpoint is public with strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). yt-dlp runs server-side; URLs must be public http(s) (private/local targets rejected). The same flag gates file-share and outbound health-checker.
+**Vid download:** Off by default on public deploys (`UNTRUSTED_URL_TOOLS_ENABLED=false` — routers not mounted). When enabled, the endpoint requires the `vid-download:write` capability and strict limits (5 downloads/hour/IP, one concurrent download per IP, two server-wide). The preflight resolves and validates the canonical URL before yt-dlp runs, but yt-dlp then performs its own DNS/redirect/CDN fetches; it cannot be fully contained by app-level checks. Production/staging startup therefore also requires `UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED=true` (network-isolated egress). The same flag gates file-share and outbound health-checker. Residual risk: enabling without real egress isolation allows server-side requests to internal networks.
 
 **QR generator** ([`qr_generator.py`](../../server/app/routers/tools/qr_generator.py)): **Public A1/B1** — `POST /api/tools/qr-generator` returns inline `svg` only (not stored). **Owner library** (url-shortener style) — `GET/POST/PATCH/DELETE /api/tools/qr-generator/library` and `GET …/library/{id}/svg` require `qr-generator:read` / `write`; list is always scoped to the caller’s `created_by` and returns **preview only** (full `content` on GET-by-id); get/update/delete/svg allow owner or superuser. SVG downloads use `Cache-Control: private`. Account deletion purges owned `qr_codes`.
 
@@ -174,7 +174,7 @@ Day-to-day retention and probe exclusion: [Logging](/operations/logging).
 
 - Never commit `.env` (see [Configuration](/reference/configuration))
 - Production/staging startup validates strength of `JWT_SECRET`, `FERNET_SECRET` (must differ from `JWT_SECRET`), `RABBITMQ_PASSWORD`, `POSTGRES_PASSWORD`, and the password embedded in `REDIS_URL` — see [`server/app/settings.py`](../../server/app/settings.py)
-- Weekly Dependabot updates for `/server` (uv + Docker), `/client` (npm + Docker), `/docs` (npm), and GitHub Actions; [`security.yml`](../../.github/workflows/security.yml) runs gitleaks on every PR/push, and pip-audit / npm audit on schedule (or when lockfiles change)
+- Weekly Dependabot updates for `/server` (uv + Docker), `/client` (npm + Docker), `/docs` (npm), and GitHub Actions; [`security.yml`](../../.github/workflows/security.yml) runs gitleaks on every PR/push, and blocking pip-audit / npm-audit checks on schedule or when lockfiles change
 - **Development:** GitHub branch ruleset / required checks are **disabled** so CI stays advisory. **Before production:** enable `main-protection` (require `ci-ok` + `gitleaks`), keep Actions token permissions read-only, and set any deploy secrets — full matrix in [DevOps checklist](/operations/devops-checklist#development-vs-production-github--cicd)
 
 ## Risk register
@@ -186,7 +186,7 @@ Decisions for known risks. **Accept** = intentional tradeoff; **Mitigated** = co
 | Medium | Open registration | **Addressed** | Public `POST /api/auth/register` returns 403; accounts are owner-provisioned only (see Authentication) |
 | Medium | GitHub tokens in DB | **Addressed** | Encrypted at rest via Fernet; legacy plaintext decrypted on read until re-linked |
 | Medium | CSP `unsafe-inline` | **Accept** | Documented tradeoff; Vue escaping + DOMPurify are primary XSS defenses |
-| Low–Med | Public resource-heavy tools (vid-download, file-share) | **Mitigated** | Off by default (`UNTRUSTED_URL_TOOLS_ENABLED`); rate + concurrency when enabled |
+| Low–Med | Public resource-heavy tools (vid-download, file-share) | **Mitigated** | Off by default; production/staging also requires `UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED`; rate + concurrency when enabled |
 | Low | Platform catalog info leak | **Accept** | Exposes service slugs/routes; acceptable for portfolio |
 | Low | Client feature flags bypassable | **Mitigated** | Server auth, flags, and rate limits are authoritative |
 | Low | Dev-lite API on all interfaces | **Accept** | Local development only; use firewall or bind to localhost |

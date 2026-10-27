@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { computed, useSlots } from "vue";
 
-import {
-  ADMIN_TD_ACTIONS_CLASS,
-  ADMIN_TD_CLASS,
-  ADMIN_TR_CLASS,
-} from "@/constants/adminDataTable";
+import { ADMIN_TD_ACTIONS_CLASS, ADMIN_TD_CLASS, ADMIN_TR_CLASS } from "@/constants/adminDataTable";
 
 const props = withDefaults(
   defineProps<{
@@ -69,7 +65,13 @@ function onKeydown(event: KeyboardEvent): void {
 <template>
   <tr :class="rowClass" v-bind="rowAttrs" @click="onClick" @keydown="onKeydown">
     <slot />
-    <td v-if="$slots.actions" :class="ADMIN_TD_ACTIONS_CLASS" data-admin-row-stop @click.stop @keydown.stop>
+    <td
+      v-if="$slots.actions"
+      :class="ADMIN_TD_ACTIONS_CLASS"
+      data-admin-row-stop
+      @click.stop
+      @keydown.stop
+    >
       <div class="inline-flex items-center justify-end gap-0.5">
         <slot name="actions" />
       </div>
@@ -78,7 +80,10 @@ function onKeydown(event: KeyboardEvent): void {
   <tr v-if="expanded && slots.detail">
     <td
       :colspan="colSpan"
-      :class="[ADMIN_TD_CLASS, 'border-b border-surface-border/60 bg-surface-dark/40 text-xs text-surface-mid']"
+      :class="[
+        ADMIN_TD_CLASS,
+        'border-b border-surface-border/60 bg-surface-dark/40 text-xs text-surface-mid',
+      ]"
     >
       <div class="py-1">
         <slot name="detail" />

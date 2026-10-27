@@ -37,7 +37,9 @@ const OPERATIONS_SLUGS = [
 
 describe("groupAdminHub", () => {
   it("returns sentence-case sections in slug order without changing categories", () => {
-    const services = PLATFORM_SERVICES.filter((service) => ADMIN_HUB_SERVICE_SLUGS.has(service.slug));
+    const services = PLATFORM_SERVICES.filter((service) =>
+      ADMIN_HUB_SERVICE_SLUGS.has(service.slug),
+    );
     const categoriesBefore = new Map(services.map((service) => [service.slug, service.category]));
     const sections = groupAdminHub([...services].reverse());
 
@@ -73,9 +75,9 @@ describe("groupAdminHub", () => {
     );
 
     const byCategory = groupServicesByCategory(services);
-    expect(byCategory.find((section) => section.category === "content")?.services.map((s) => s.slug)).toEqual(
-      expect.arrayContaining(["url-shortener", "recipes", "news"]),
-    );
+    expect(
+      byCategory.find((section) => section.category === "content")?.services.map((s) => s.slug),
+    ).toEqual(expect.arrayContaining(["url-shortener", "recipes", "news"]));
     expect(
       byCategory.find((section) => section.category === "utilities")?.services.map((s) => s.slug),
     ).toContain("weather");

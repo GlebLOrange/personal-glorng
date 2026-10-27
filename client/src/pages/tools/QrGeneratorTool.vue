@@ -249,11 +249,9 @@ onMounted(() => {
     max-width="5xl"
     :narrow="false"
   >
-  <div class="flex min-w-0 flex-col gap-6">
-    <p class="text-xs text-surface-mid">{{ pageDescription }}</p>
-      <div
-        class="flex min-w-0 flex-col gap-6"
-      >
+    <div class="flex min-w-0 flex-col gap-6">
+      <p class="text-xs text-surface-mid">{{ pageDescription }}</p>
+      <div class="flex min-w-0 flex-col gap-6">
         <Card variant="ghost" class="min-w-0 flex-1">
           <form id="qr-generator-form" class="space-y-3" @submit.prevent="createQr">
             <div class="flex flex-wrap gap-3">
@@ -279,12 +277,7 @@ onMounted(() => {
               placeholder="URL, text, Wi‑Fi string, etc."
             />
             <div class="flex flex-wrap items-center gap-2">
-              <BaseButton
-                v-if="isEditing"
-                variant="cancel"
-                type="button"
-                @click="clearEditSession"
-              >
+              <BaseButton v-if="isEditing" variant="cancel" type="button" @click="clearEditSession">
                 new / discard
               </BaseButton>
               <BaseButton
@@ -296,20 +289,10 @@ onMounted(() => {
               >
                 {{ savingLibrary ? "saving…" : isEditing ? "update saved qr" : "save to library" }}
               </BaseButton>
-              <BaseButton
-                v-if="previewUrl"
-                variant="ghost"
-                type="button"
-                @click="downloadSvg"
-              >
+              <BaseButton v-if="previewUrl" variant="ghost" type="button" @click="downloadSvg">
                 download svg
               </BaseButton>
-              <BaseButton
-                variant="primary"
-                type="submit"
-                class="ml-auto"
-                :disabled="!canCreate"
-              >
+              <BaseButton variant="primary" type="submit" class="ml-auto" :disabled="!canCreate">
                 {{ creating ? "generating…" : "generate qr" }}
               </BaseButton>
             </div>
@@ -385,6 +368,6 @@ onMounted(() => {
           @last="goToPage(totalPages)"
         />
       </section>
-  </div>
+    </div>
   </PageShell>
 </template>

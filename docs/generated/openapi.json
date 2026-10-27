@@ -15887,6 +15887,33 @@
           },
           {
             "in": "query",
+            "name": "tag",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "world",
+                    "business",
+                    "tech",
+                    "security",
+                    "climate",
+                    "science",
+                    "health",
+                    "culture",
+                    "politics"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tag"
+            }
+          },
+          {
+            "in": "query",
             "name": "page",
             "required": false,
             "schema": {
@@ -15906,6 +15933,44 @@
               "minimum": 1,
               "title": "Per Page",
               "type": "integer"
+            }
+          },
+          {
+            "description": "Inclusive start date (YYYY-MM-DD).",
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inclusive start date (YYYY-MM-DD).",
+              "title": "Date From"
+            }
+          },
+          {
+            "description": "Inclusive end date (YYYY-MM-DD).",
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inclusive end date (YYYY-MM-DD).",
+              "title": "Date To"
             }
           }
         ],
@@ -18760,6 +18825,40 @@
               ],
               "title": "Sort"
             }
+          },
+          {
+            "in": "query",
+            "name": "start",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "in": "query",
+            "name": "end",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
           }
         ],
         "responses": {
@@ -19843,7 +19942,7 @@
         ]
       },
       "post": {
-        "description": "Public short URL creation (rate limited).",
+        "description": "Requires permission `url-shortener:write`.",
         "operationId": "create_url_api_tools_url_shortener_post",
         "requestBody": {
           "content": {

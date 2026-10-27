@@ -135,8 +135,9 @@ How tasks, Telegram reminders, and Google Calendar sync connect: [Telegram + tas
 ## Quality checks
 
 ```bash
-make lint-check
+make lint-check type-check
 cd client && npm ci && npm run lint && npm run format:check
+cd client && npm audit --package-lock-only --audit-level=high
 VITE_PUBLIC_ORIGIN=https://your-domain.example npm run build:check
 make check   # local backend + frontend gate (CI also: coverage, postgres, e2e, docs)
 ```

@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { Card } from "@/components/ui/card";
-import {
-  PORTFOLIO_CV_CHIP_CLASS,
-  PORTFOLIO_CV_TILE_CLASS,
-} from "@/constants/portfolioSections";
+import { PORTFOLIO_CV_CHIP_CLASS, PORTFOLIO_CV_TILE_CLASS } from "@/constants/portfolioSections";
 import type { SkillGroup } from "@/types";
 
 defineProps<{
@@ -26,11 +23,7 @@ defineProps<{
         {{ group.summary.replace(/\.$/, "") }}
       </p>
       <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
-        <li
-          v-for="item in group.items"
-          :key="item"
-          :class="[PORTFOLIO_CV_CHIP_CLASS, 'text-xs']"
-        >
+        <li v-for="item in group.items" :key="item" :class="[PORTFOLIO_CV_CHIP_CLASS, 'text-xs']">
           {{ item }}
         </li>
       </ul>

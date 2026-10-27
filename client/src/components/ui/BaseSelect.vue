@@ -50,14 +50,10 @@ const isInlineEnd = computed(() => props.labelAlign === "end");
 const showLabelNotch = computed(() => Boolean(props.label) && !props.error);
 const showLabelRow = computed(() => showLabelNotch.value || Boolean(props.hint && !props.error));
 /** End alignment: only reserve trailing chrome for FieldHelp (no visible field name). */
-const showInlineEndLabel = computed(
-  () => isInlineEnd.value && Boolean(props.hint && !props.error),
-);
+const showInlineEndLabel = computed(() => isInlineEnd.value && Boolean(props.hint && !props.error));
 const showBorderNotchRow = computed(() => !isInlineEnd.value && showLabelRow.value);
 const hasBorderNotch = computed(() => showBorderNotchRow.value || Boolean(props.error));
-const showSrOnlyLabel = computed(
-  () => isInlineEnd.value && Boolean(props.label) && !props.error,
-);
+const showSrOnlyLabel = computed(() => isInlineEnd.value && Boolean(props.label) && !props.error);
 const describedBy = computed(() =>
   buildFieldDescribedBy({
     ariaDescribedBy: attrs["aria-describedby"],
@@ -113,7 +109,7 @@ const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top
           size="sm"
           :align="helpAlign"
           :placement="helpPlacement"
-          :text="hint"
+          :text="hint ?? ''"
           :content-id="hintId"
         />
       </span>

@@ -195,9 +195,7 @@ onUnmounted(() => {
           >
             <ChevronIcon direction="right" class-name="size-4" />
           </IconActionButton>
-          <BaseButton v-else variant="primary" size="sm" @click="emit('close')">
-            done
-          </BaseButton>
+          <BaseButton v-else variant="primary" size="sm" @click="emit('close')"> done </BaseButton>
         </footer>
       </div>
     </Transition>

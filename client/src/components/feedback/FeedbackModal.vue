@@ -34,9 +34,7 @@ const emailTone = computed<"error" | "success" | undefined>(() => {
   return isValidEmail(email.value) ? "success" : "error";
 });
 
-const emailError = computed(() =>
-  emailTone.value === "error" ? EMAIL_FORMAT_HINT : undefined,
-);
+const emailError = computed(() => (emailTone.value === "error" ? EMAIL_FORMAT_HINT : undefined));
 
 const canSubmit = computed(
   () =>

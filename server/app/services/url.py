@@ -85,6 +85,7 @@ class UrlService:
             total=total,
             page=safe_page,
             per_page=limit,
+            response_cls=UrlListResponse,
         )
 
     async def update_url(

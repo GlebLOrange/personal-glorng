@@ -32,11 +32,7 @@ describe("toolsPageGroups", () => {
         tool.slug,
       ),
     );
-    const sections = groupServicesForToolsPage([
-      ...publicToolsAsServices(),
-      ...extras,
-      ...hub,
-    ]);
+    const sections = groupServicesForToolsPage([...publicToolsAsServices(), ...extras, ...hub]);
     expect(sections.map((s) => s.category)).toEqual(["utils", "content", "server"]);
     expect(sections.find((s) => s.category === "utils")?.services.map((t) => t.slug)).toEqual([
       "weather",

@@ -122,7 +122,9 @@ function showAdminDemoChip(tool: PlatformService): boolean {
   >
     <component :is="categoryHeading" v-if="showSectionHeading(section)" :class="headingClass">
       <span aria-hidden="true">{{ `${section.label} · ${section.services.length}` }}</span>
-      <span class="sr-only">{{ section.label }}, {{ toolCountLabel(section.services.length) }}</span>
+      <span class="sr-only"
+        >{{ section.label }}, {{ toolCountLabel(section.services.length) }}</span
+      >
     </component>
     <div
       class="page-launcher-grid"
@@ -172,7 +174,9 @@ function showAdminDemoChip(tool: PlatformService): boolean {
             <p
               v-if="tileHint(tool)"
               class="mt-0.5 text-xs leading-snug break-words text-surface-mid"
-              :class="isAdminPresentation ? 'line-clamp-1' : isPublicPresentation ? '' : 'line-clamp-2'"
+              :class="
+                isAdminPresentation ? 'line-clamp-1' : isPublicPresentation ? '' : 'line-clamp-2'
+              "
             >
               {{ tileHint(tool) }}
             </p>

@@ -9,7 +9,9 @@ from app.db.seed.builders.expense import (
     build_random_expenses,
 )
 
-_MERCHANT_CATEGORY = {merchant: category for merchant, category, _, _ in EXPENSE_MERCHANTS}
+_MERCHANT_CATEGORY = {
+    merchant: category for merchant, category, _, _ in EXPENSE_MERCHANTS
+}
 
 
 def test_build_random_expenses_matches_merchant_category() -> None:

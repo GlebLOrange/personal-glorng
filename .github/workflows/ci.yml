@@ -133,9 +133,7 @@ jobs:
           wait "$ruff_check_pid"; ruff_check_exit=$?
           wait "$ruff_format_pid"; ruff_format_exit=$?
           exit $((ruff_check_exit || ruff_format_exit))
-      # Existing typing debt — keep signal without blocking merge gates.
-      - name: Mypy (advisory)
-        continue-on-error: true
+      - name: Mypy
         run: uv run mypy app
       - name: Pytest (P0 — exclude integration tier)
         env:

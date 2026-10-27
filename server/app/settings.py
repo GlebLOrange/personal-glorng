@@ -279,6 +279,16 @@ class Settings(BaseSettings):
         if is_deployed_env(self.APP_ENV) and self.LOG_REQUEST_BODIES:
             msg = "LOG_REQUEST_BODIES must be false in production/staging"
             raise ValueError(msg)
+        if (
+            is_deployed_env(self.APP_ENV)
+            and self.UNTRUSTED_URL_TOOLS_ENABLED
+            and not self.UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED
+        ):
+            msg = (
+                "UNTRUSTED_URL_TOOLS_ENABLED requires "
+                "UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED=true in production/staging"
+            )
+            raise ValueError(msg)
         if is_deployed_env(self.APP_ENV) and (
             len(self.RABBITMQ_PASSWORD) < 16
             or any(m in self.RABBITMQ_PASSWORD.lower() for m in _WEAK_SECRET_MARKERS)
@@ -612,6 +622,8 @@ class Settings(BaseSettings):
     EXPENSES_ENABLED: bool = False
     # yt-dlp, file-share, outbound health-checker (opt-in; off on public deploys)
     UNTRUSTED_URL_TOOLS_ENABLED: bool = False
+    # Operator acknowledgement that untrusted tools run with isolated egress.
+    UNTRUSTED_URL_TOOLS_EGRESS_ISOLATED: bool = False
 
     # Cloudflare Turnstile (public site key; secret stays on the server)
     TURNSTILE_SITE_KEY: str = ""

@@ -177,10 +177,9 @@ class TaskService:
         source: AuditSource = AuditSource.WORKER,
     ) -> Task:
         task = await self.require_task(task_id=task_id)
-        if (
-            new_status == TaskStatus.COMPLETED
-            and as_utc(task.scheduled_at) > datetime.now(UTC)
-        ):
+        if new_status == TaskStatus.COMPLETED and as_utc(
+            task.scheduled_at
+        ) > datetime.now(UTC):
             raise ConflictError(
                 "Cannot mark a future task as completed",
             )
@@ -334,6 +333,7 @@ class TaskService:
             total=total,
             page=safe_page,
             per_page=limit,
+            response_cls=TaskListResponse,
         )
 
     async def task_stats(self) -> TaskStatsResponse:
@@ -372,6 +372,7 @@ class TaskService:
             total=total,
             page=safe_page,
             per_page=limit,
+            response_cls=SyncQueueListResponse,
         )
 
     async def task_detail(self, task_id: int) -> TaskDetailResponse:

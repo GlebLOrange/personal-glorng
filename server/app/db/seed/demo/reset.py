@@ -29,7 +29,7 @@ async def reset_tool_tables(
     wipe_all = tools is None
 
     def wants(name: str) -> bool:
-        return wipe_all or name in tools
+        return wipe_all or (tools is not None and name in tools)
 
     mongo = registry.require_mongo()
     if wants("tasks"):

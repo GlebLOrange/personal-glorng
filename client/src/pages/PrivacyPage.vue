@@ -100,11 +100,7 @@ function openPreferences() {
       <h2 class="text-xl font-semibold text-accent-coral mb-3">Your choices</h2>
       <p class="text-surface-sage leading-relaxed">
         You can change your cookie preferences at any time by opening the
-        <button
-          type="button"
-          class="text-link transition-colors"
-          @click="openPreferences"
-        >
+        <button type="button" class="text-link transition-colors" @click="openPreferences">
           cookie settings</button
         >.
         <span v-if="isFirebaseAnalyticsEnabled && isSentryEnabled">

@@ -450,13 +450,12 @@ async def _read_feed_bytes(response: httpx.Response) -> bytes:
     content_length = response.headers.get("content-length")
     if content_length is not None:
         try:
-            declared = int(content_length)
+            declared_size = int(content_length)
         except ValueError:
-            declared = None
-        else:
-            if declared > _MAX_FEED_BYTES:
-                msg = "Feed response is too large"
-                raise ValueError(msg)
+            declared_size = None
+        if declared_size is not None and declared_size > _MAX_FEED_BYTES:
+            msg = "Feed response is too large"
+            raise ValueError(msg)
     content = await response.aread()
     if len(content) > _MAX_FEED_BYTES:
         msg = "Feed response is too large"
@@ -498,11 +497,7 @@ class NewsIngestService:
                     enabled=True,
                 )
             )
-        elif (
-            dw.feed_url != DW_FEED_URL
-            or not dw.enabled
-            or dw.host != DW_HOST
-        ):
+        elif dw.feed_url != DW_FEED_URL or not dw.enabled or dw.host != DW_HOST:
             dw = await self.news_svc.update_source(
                 dw.id,
                 NewsSourceUpdate(
@@ -564,17 +559,18 @@ class NewsIngestService:
         """Fetch and parse one feed. Return None when the feed is unchanged (304)."""
         if not is_public_http_url(source.feed_url):
             raise ValueError("Feed URL is not allowed")
-        response = await get_public_http_url(
+        result = await get_public_http_url(
             client,
             source.feed_url,
             headers=_conditional_headers(source),
         )
+        response = result.response
         try:
             if response.status_code == 304:
                 await self._record_fetch(source, clear_error=True)
                 return None
             response.raise_for_status()
-            if not is_public_http_url(str(response.url)):
+            if not is_public_http_url(result.url):
                 raise ValueError("Feed redirect target is not allowed")
             content = await _read_feed_bytes(response)
             xml_text = decode_feed_body(content, fallback_encoding=response.encoding)

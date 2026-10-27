@@ -326,6 +326,7 @@ class TaskIntakeService:
             total=total,
             page=safe_page,
             per_page=limit,
+            response_cls=TaskIntakeListResponse,
         )
 
     async def _load_inbound(self, intake: TaskIntake) -> TelegramInboundMessage:

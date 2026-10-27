@@ -43,13 +43,9 @@ const showDeleteConfirm = ref(false);
 const titleInput = ref<{ focus: () => void } | null>(null);
 
 const shortLink = computed(() => publicUrl("s", props.url.code));
-const codeDisplay = computed(() =>
-  props.localRow ? props.url.code : shortLink.value,
-);
+const codeDisplay = computed(() => (props.localRow ? props.url.code : shortLink.value));
 const titleLabel = computed(() => props.url.title?.trim() || "—");
-const copyAriaLabel = computed(() =>
-  props.localRow ? "copy original URL" : "copy short link",
-);
+const copyAriaLabel = computed(() => (props.localRow ? "copy original URL" : "copy short link"));
 
 watch(
   () => props.url.id,
@@ -123,7 +119,13 @@ function onRowClick(event: MouseEvent): void {
           placeholder="title (optional)"
           @keydown="onTitleKeydown"
         />
-        <BaseButton variant="cancel" size="sm" class="shrink-0" :disabled="saving" @click="cancelEdit">
+        <BaseButton
+          variant="cancel"
+          size="sm"
+          class="shrink-0"
+          :disabled="saving"
+          @click="cancelEdit"
+        >
           cancel
         </BaseButton>
         <BaseButton variant="save" size="sm" class="shrink-0" :disabled="saving" @click="saveEdit">
@@ -133,11 +135,7 @@ function onRowClick(event: MouseEvent): void {
     </td>
   </tr>
 
-  <tr
-    v-else
-    :class="[ADMIN_TR_CLASS, canWrite ? 'cursor-pointer' : undefined]"
-    @click="onRowClick"
-  >
+  <tr v-else :class="[ADMIN_TR_CLASS, canWrite ? 'cursor-pointer' : undefined]" @click="onRowClick">
     <th :class="ADMIN_TH_ROW_CLASS" scope="row">
       <p class="truncate text-sm text-surface-light" :title="titleLabel">
         {{ titleLabel }}

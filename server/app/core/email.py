@@ -141,7 +141,7 @@ def _brand_mark_html(site_url: str | None) -> str:
     """Site identity row — hosted logo when base URL is known, else text."""
     colors = EMAIL_COLORS
     if site_url:
-        logo_href = f'{site_url.rstrip("/")}/brand/gy-logo-512.png'
+        logo_href = f"{site_url.rstrip('/')}/brand/gy-logo-512.png"
         return (
             f'<img src="{escape(logo_href, quote=True)}" alt="{escape(SITE_NAME)}" '
             'style="display:block;height:48px;width:auto;margin:0 0 8px;" />'

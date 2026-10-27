@@ -83,7 +83,9 @@ watch(page, () => {
         :aria-labelledby="`news-card-title-${item.id}`"
         @click="onArticleClick($event, item.slug)"
       >
-        <div class="mb-2 flex min-w-0 items-center justify-between gap-2 text-xs text-surface-muted">
+        <div
+          class="mb-2 flex min-w-0 items-center justify-between gap-2 text-xs text-surface-muted"
+        >
           <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
             <span class="shrink-0 text-xs text-accent-coral">
               {{ item.source_name }}
@@ -100,20 +102,11 @@ watch(page, () => {
             v-if="item.tags.length"
             class="ml-auto flex shrink-0 flex-row-reverse flex-wrap items-center justify-end gap-2"
           >
-            <span
-              v-for="tag in item.tags"
-              :key="tag"
-              class="news-tag-chip"
-            >
-              #{{ tag }}
-            </span>
+            <span v-for="tag in item.tags" :key="tag" class="news-tag-chip"> #{{ tag }} </span>
           </div>
         </div>
 
-        <h2
-          :id="`news-card-title-${item.id}`"
-          class="card-title mb-2 min-w-0 text-balance"
-        >
+        <h2 :id="`news-card-title-${item.id}`" class="card-title mb-2 min-w-0 text-balance">
           {{ cardTitle(item) }}
         </h2>
 

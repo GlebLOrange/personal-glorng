@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, cast
+from typing import Any
 from urllib.parse import quote
 
 from app.content.resume_data import RESUME_DOCUMENT
@@ -78,7 +78,9 @@ def select_resume(
     known_projects = {project.slug for project in data.projects}
     known_sections = set(RESUME_SECTION_IDS)
 
-    ignored_skills = sorted({token for token in skill_tokens if token not in known_skills})
+    ignored_skills = sorted(
+        {token for token in skill_tokens if token not in known_skills}
+    )
     ignored_projects = sorted(
         {token for token in project_tokens if token not in known_projects},
     )
@@ -88,11 +90,7 @@ def select_resume(
 
     valid_skills = [token for token in skill_tokens if token in known_skills]
     valid_projects = [token for token in project_tokens if token in known_projects]
-    valid_sections = [
-        cast(ResumeSectionId, token)
-        for token in section_tokens
-        if token in known_sections
-    ]
+    valid_sections = [token for token in section_tokens if token in known_sections]
 
     if skill_tokens and valid_skills:
         wanted = set(valid_skills)
@@ -183,8 +181,8 @@ def render_resume_markdown(resume: ResumeDocument | None = None) -> str:
                 lines.append("")
                 lines.append(group.summary)
             lines.append("")
-            for item in group.items:
-                lines.append(f"- {item}")
+            for skill in group.items:
+                lines.append(f"- {skill}")
             lines.append("")
 
     if doc.experience:
@@ -220,28 +218,28 @@ def render_resume_markdown(resume: ResumeDocument | None = None) -> str:
 
     if doc.education:
         lines.extend(["## Education", ""])
-        for item in doc.education:
-            lines.append(f"### {item.degree} — {item.institution}")
+        for education in doc.education:
+            lines.append(f"### {education.degree} — {education.institution}")
             lines.append("")
-            lines.append(f"*{item.period}*")
+            lines.append(f"*{education.period}*")
             lines.append("")
-            if item.description:
-                lines.append(item.description)
+            if education.description:
+                lines.append(education.description)
                 lines.append("")
 
     if doc.certifications:
         lines.extend(["## Certifications", ""])
-        for item in doc.certifications:
-            issuer = f" — {item.issuer}" if item.issuer else ""
-            period = f" ({item.period})" if item.period else ""
-            lines.append(f"- {item.name}{issuer}{period}")
+        for certification in doc.certifications:
+            issuer = f" — {certification.issuer}" if certification.issuer else ""
+            period = f" ({certification.period})" if certification.period else ""
+            lines.append(f"- {certification.name}{issuer}{period}")
         lines.append("")
 
     if doc.languages:
         lines.extend(["## Languages", ""])
-        for item in doc.languages:
-            proficiency = f" — {item.proficiency}" if item.proficiency else ""
-            lines.append(f"- {item.language}{proficiency}")
+        for language in doc.languages:
+            proficiency = f" — {language.proficiency}" if language.proficiency else ""
+            lines.append(f"- {language.language}{proficiency}")
         lines.append("")
 
     link_pairs = [

@@ -47,204 +47,206 @@ watch(
     aria-hidden="true"
   >
     <g ref="glyph">
-    <!-- tasks: checklist -->
-    <template v-if="slug === 'tasks'">
-      <rect x="4" y="4" width="16" height="16" rx="2" />
-      <path d="M8 12l2.5 2.5L16 9" />
-    </template>
+      <!-- tasks: checklist -->
+      <template v-if="slug === 'tasks'">
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+        <path d="M8 12l2.5 2.5L16 9" />
+      </template>
 
-    <!-- tools hub: wrench -->
-    <template v-else-if="slug === 'tools'">
-      <path
-        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
-      />
-    </template>
+      <!-- tools hub: wrench -->
+      <template v-else-if="slug === 'tools'">
+        <path
+          d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+        />
+      </template>
 
-    <!-- admin: spaced dashboard (4-unit gaps so stroke 1.75 does not merge) -->
-    <template v-else-if="slug === 'admin'">
-      <rect x="3" y="3" width="7" height="9" rx="1.5" />
-      <rect x="14" y="3" width="7" height="5" rx="1.5" />
-      <rect x="14" y="12" width="7" height="9" rx="1.5" />
-      <rect x="3" y="16" width="7" height="5" rx="1.5" />
-    </template>
+      <!-- admin: spaced dashboard (4-unit gaps so stroke 1.75 does not merge) -->
+      <template v-else-if="slug === 'admin'">
+        <rect x="3" y="3" width="7" height="9" rx="1.5" />
+        <rect x="14" y="3" width="7" height="5" rx="1.5" />
+        <rect x="14" y="12" width="7" height="9" rx="1.5" />
+        <rect x="3" y="16" width="7" height="5" rx="1.5" />
+      </template>
 
-    <!-- settings: gear -->
-    <template v-else-if="slug === 'settings'">
-      <circle cx="12" cy="12" r="3" />
-      <path
-        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"
-      />
-    </template>
+      <!-- settings: gear -->
+      <template v-else-if="slug === 'settings'">
+        <circle cx="12" cy="12" r="3" />
+        <path
+          d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"
+        />
+      </template>
 
-    <!-- email: envelope -->
-    <template v-else-if="slug === 'email'">
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="m3 7 9 6 9-6" />
-    </template>
+      <!-- email: envelope -->
+      <template v-else-if="slug === 'email'">
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="m3 7 9 6 9-6" />
+      </template>
 
-    <!-- expenses: coin -->
-    <template v-else-if="slug === 'expenses'">
-      <circle cx="12" cy="12" r="8" />
-      <path
-        d="M12 7v10M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2 1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2-2.5-.9-2.5-2"
-      />
-    </template>
+      <!-- expenses: coin -->
+      <template v-else-if="slug === 'expenses'">
+        <circle cx="12" cy="12" r="8" />
+        <path
+          d="M12 7v10M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2 1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2-2.5-.9-2.5-2"
+        />
+      </template>
 
-    <!-- recipes: bowl + utensil -->
-    <template v-else-if="slug === 'recipes'">
-      <path d="M4 11h16v1a8 8 0 0 1-16 0v-1Z" />
-      <path d="M8 11V8a2 2 0 0 1 2-2h0" />
-      <path d="M16 4v4" />
-    </template>
+      <!-- recipes: bowl + utensil -->
+      <template v-else-if="slug === 'recipes'">
+        <path d="M4 11h16v1a8 8 0 0 1-16 0v-1Z" />
+        <path d="M8 11V8a2 2 0 0 1 2-2h0" />
+        <path d="M16 4v4" />
+      </template>
 
-    <!-- news: newspaper -->
-    <template v-else-if="slug === 'news'">
-      <path d="M4 6h12a2 2 0 0 1 2 2v10H6a2 2 0 0 1-2-2V6Z" />
-      <path d="M18 8h1a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2h-1" />
-      <path d="M8 10h6M8 13h6M8 16h3" />
-    </template>
+      <!-- news: newspaper -->
+      <template v-else-if="slug === 'news'">
+        <path d="M4 6h12a2 2 0 0 1 2 2v10H6a2 2 0 0 1-2-2V6Z" />
+        <path d="M18 8h1a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2h-1" />
+        <path d="M8 10h6M8 13h6M8 16h3" />
+      </template>
 
-    <!-- file-share: share nodes -->
-    <template v-else-if="slug === 'file-share'">
-      <circle cx="18" cy="5" r="2.5" />
-      <circle cx="6" cy="12" r="2.5" />
-      <circle cx="18" cy="19" r="2.5" />
-      <path d="M8.2 10.8 15.8 6.2M8.2 13.2l7.6 4.6" />
-    </template>
+      <!-- file-share: share nodes -->
+      <template v-else-if="slug === 'file-share'">
+        <circle cx="18" cy="5" r="2.5" />
+        <circle cx="6" cy="12" r="2.5" />
+        <circle cx="18" cy="19" r="2.5" />
+        <path d="M8.2 10.8 15.8 6.2M8.2 13.2l7.6 4.6" />
+      </template>
 
-    <!-- url-shortener: link chain -->
-    <template v-else-if="slug === 'url-shortener'">
-      <path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
-      <path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7.1 7.1l1.1-1.1" />
-    </template>
+      <!-- url-shortener: link chain -->
+      <template v-else-if="slug === 'url-shortener'">
+        <path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
+        <path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7.1 7.1l1.1-1.1" />
+      </template>
 
-    <!-- calculator: keypad -->
-    <template v-else-if="slug === 'calculator'">
-      <rect x="5" y="3" width="14" height="18" rx="2" />
-      <path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01" />
-    </template>
+      <!-- calculator: keypad -->
+      <template v-else-if="slug === 'calculator'">
+        <rect x="5" y="3" width="14" height="18" rx="2" />
+        <path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01" />
+      </template>
 
-    <!-- password-generator: key -->
-    <template v-else-if="slug === 'password-generator'">
-      <circle cx="8" cy="15" r="5" />
-      <path d="m12.2 11.2 8-8" />
-      <path d="m16.2 6.2 2.4 2.4" />
-      <path d="m18.4 4 2.4 2.4" />
-    </template>
+      <!-- password-generator: key -->
+      <template v-else-if="slug === 'password-generator'">
+        <circle cx="8" cy="15" r="5" />
+        <path d="m12.2 11.2 8-8" />
+        <path d="m16.2 6.2 2.4 2.4" />
+        <path d="m18.4 4 2.4 2.4" />
+      </template>
 
-    <!-- qr-generator: finder frames + filled modules (6-unit gaps) -->
-    <template v-else-if="slug === 'qr-generator'">
-      <rect x="3" y="3" width="6" height="6" rx="1" />
-      <rect x="15" y="3" width="6" height="6" rx="1" />
-      <rect x="3" y="15" width="6" height="6" rx="1" />
-      <rect x="14" y="14" width="2" height="2" fill="currentColor" stroke="none" />
-      <rect x="18" y="14" width="2" height="2" fill="currentColor" stroke="none" />
-      <rect x="14" y="18" width="2" height="2" fill="currentColor" stroke="none" />
-      <rect x="18" y="18" width="2" height="2" fill="currentColor" stroke="none" />
-    </template>
+      <!-- qr-generator: finder frames + filled modules (6-unit gaps) -->
+      <template v-else-if="slug === 'qr-generator'">
+        <rect x="3" y="3" width="6" height="6" rx="1" />
+        <rect x="15" y="3" width="6" height="6" rx="1" />
+        <rect x="3" y="15" width="6" height="6" rx="1" />
+        <rect x="14" y="14" width="2" height="2" fill="currentColor" stroke="none" />
+        <rect x="18" y="14" width="2" height="2" fill="currentColor" stroke="none" />
+        <rect x="14" y="18" width="2" height="2" fill="currentColor" stroke="none" />
+        <rect x="18" y="18" width="2" height="2" fill="currentColor" stroke="none" />
+      </template>
 
-    <!-- weather: sun + cloud -->
-    <template v-else-if="slug === 'weather'">
-      <circle cx="10" cy="10" r="3" />
-      <path
-        d="M10 4v1.5M10 14.5V16M4 10h1.5M14.5 10H16M5.8 5.8l1 1M13.2 13.2l1 1M5.8 14.2l1-1M13.2 6.8l1-1"
-      />
-      <path
-        d="M16 15.5a2.5 2.5 0 0 0-1.2-4.7 3.5 3.5 0 0 0-6.6 1.1A2.8 2.8 0 0 0 8.5 18H16a2.5 2.5 0 0 0 0-2.5Z"
-      />
-    </template>
+      <!-- weather: sun + cloud -->
+      <template v-else-if="slug === 'weather'">
+        <circle cx="10" cy="10" r="3" />
+        <path
+          d="M10 4v1.5M10 14.5V16M4 10h1.5M14.5 10H16M5.8 5.8l1 1M13.2 13.2l1 1M5.8 14.2l1-1M13.2 6.8l1-1"
+        />
+        <path
+          d="M16 15.5a2.5 2.5 0 0 0-1.2-4.7 3.5 3.5 0 0 0-6.6 1.1A2.8 2.8 0 0 0 8.5 18H16a2.5 2.5 0 0 0 0-2.5Z"
+        />
+      </template>
 
-    <!-- vid-download: play + down -->
-    <template v-else-if="slug === 'vid-download'">
-      <path d="M6 5.5v13l11-6.5L6 5.5Z" />
-      <path d="M18 14v5M16 17l2 2 2-2" />
-    </template>
+      <!-- vid-download: play + down -->
+      <template v-else-if="slug === 'vid-download'">
+        <path d="M6 5.5v13l11-6.5L6 5.5Z" />
+        <path d="M18 14v5M16 17l2 2 2-2" />
+      </template>
 
-    <!-- ai-chat: bubble + spark -->
-    <template v-else-if="slug === 'ai-chat'">
-      <path d="M4 6a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-3 3v-3H6a2 2 0 0 1-2-2V6Z" />
-      <path d="M18.5 4.5 19 6l1.5.5L19 7l-.5 1.5L18 7l-1.5-.5L18 6l.5-1.5Z" />
-    </template>
+      <!-- ai-chat: bubble + spark -->
+      <template v-else-if="slug === 'ai-chat'">
+        <path d="M4 6a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-3 3v-3H6a2 2 0 0 1-2-2V6Z" />
+        <path d="M18.5 4.5 19 6l1.5.5L19 7l-.5 1.5L18 7l-1.5-.5L18 6l.5-1.5Z" />
+      </template>
 
-    <!-- data-extract: table + arrow -->
-    <template v-else-if="slug === 'data-extract'">
-      <rect x="3" y="4" width="12" height="16" rx="1" />
-      <path d="M3 9h12M3 14h12M8 4v16M17 12h4M19 10v4" />
-    </template>
+      <!-- data-extract: table + arrow -->
+      <template v-else-if="slug === 'data-extract'">
+        <rect x="3" y="4" width="12" height="16" rx="1" />
+        <path d="M3 9h12M3 14h12M8 4v16M17 12h4M19 10v4" />
+      </template>
 
-    <!-- health-checker: pulse / activity -->
-    <template v-else-if="slug === 'health-checker'">
-      <path d="M22 12h-4l-3 7L9 5l-3 7H2" />
-    </template>
+      <!-- health-checker: pulse / activity -->
+      <template v-else-if="slug === 'health-checker'">
+        <path d="M22 12h-4l-3 7L9 5l-3 7H2" />
+      </template>
 
-    <!-- feedback: speech bubble -->
-    <template v-else-if="slug === 'feedback'">
-      <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-4 4v-4H6a2 2 0 0 1-2-2V5Z" />
-      <path d="M8 9h8M8 12h5" />
-    </template>
+      <!-- feedback: speech bubble -->
+      <template v-else-if="slug === 'feedback'">
+        <path
+          d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-4 4v-4H6a2 2 0 0 1-2-2V5Z"
+        />
+        <path d="M8 9h8M8 12h5" />
+      </template>
 
-    <!-- news-sources: RSS arcs -->
-    <template v-else-if="slug === 'news-sources'">
-      <circle cx="6" cy="18" r="1.5" fill="currentColor" stroke="none" />
-      <path d="M4 11a9 9 0 0 1 9 9" />
-      <path d="M4 6a14 14 0 0 1 14 14" />
-    </template>
+      <!-- news-sources: RSS arcs -->
+      <template v-else-if="slug === 'news-sources'">
+        <circle cx="6" cy="18" r="1.5" fill="currentColor" stroke="none" />
+        <path d="M4 11a9 9 0 0 1 9 9" />
+        <path d="M4 6a14 14 0 0 1 14 14" />
+      </template>
 
-    <!-- audit: shield check -->
-    <template v-else-if="slug === 'audit'">
-      <path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z" />
-      <path d="M9.5 12l2 2 3.5-3.5" />
-    </template>
+      <!-- audit: shield check -->
+      <template v-else-if="slug === 'audit'">
+        <path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z" />
+        <path d="M9.5 12l2 2 3.5-3.5" />
+      </template>
 
-    <!-- app-logs: stacked lines -->
-    <template v-else-if="slug === 'app-logs'">
-      <rect x="6" y="3" width="12" height="18" rx="2" />
-      <path d="M9 8h6M9 12h6M9 16h4" />
-    </template>
+      <!-- app-logs: stacked lines -->
+      <template v-else-if="slug === 'app-logs'">
+        <rect x="6" y="3" width="12" height="18" rx="2" />
+        <path d="M9 8h6M9 12h6M9 16h4" />
+      </template>
 
-    <!-- search: magnifying glass -->
-    <template v-else-if="slug === 'search'">
-      <circle cx="11" cy="11" r="6" />
-      <path d="m20 20-3.5-3.5" />
-    </template>
+      <!-- search: magnifying glass -->
+      <template v-else-if="slug === 'search'">
+        <circle cx="11" cy="11" r="6" />
+        <path d="m20 20-3.5-3.5" />
+      </template>
 
-    <!-- api-docs: braces -->
-    <template v-else-if="slug === 'api-docs'">
-      <path d="M9 5c-2 0-3 1.5-3 3.5S5 12 5 12s1 1.5 1 3.5S7 19 9 19" />
-      <path d="M15 5c2 0 3 1.5 3 3.5S19 12 19 12s-1 1.5-1 3.5S17 19 15 19" />
-    </template>
+      <!-- api-docs: braces -->
+      <template v-else-if="slug === 'api-docs'">
+        <path d="M9 5c-2 0-3 1.5-3 3.5S5 12 5 12s1 1.5 1 3.5S7 19 9 19" />
+        <path d="M15 5c2 0 3 1.5 3 3.5S19 12 19 12s-1 1.5-1 3.5S17 19 15 19" />
+      </template>
 
-    <!-- users: person -->
-    <template v-else-if="slug === 'users'">
-      <circle cx="12" cy="8" r="3.5" />
-      <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
-    </template>
+      <!-- users: person -->
+      <template v-else-if="slug === 'users'">
+        <circle cx="12" cy="8" r="3.5" />
+        <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+      </template>
 
-    <!-- db-maintenance: database cylinder -->
-    <template v-else-if="slug === 'db-maintenance'">
-      <ellipse cx="12" cy="6" rx="7" ry="2.5" />
-      <path d="M5 6v12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6" />
-      <path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5" />
-    </template>
+      <!-- db-maintenance: database cylinder -->
+      <template v-else-if="slug === 'db-maintenance'">
+        <ellipse cx="12" cy="6" rx="7" ry="2.5" />
+        <path d="M5 6v12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6" />
+        <path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5" />
+      </template>
 
-    <!-- sync: circular arrows (keep in sync with SyncIcon.vue) -->
-    <template v-else-if="slug === 'sync'">
-      <path d="M21 12a9 9 0 0 0-15.5-6.4" />
-      <path d="M5.5 5.6V9h3.4" />
-      <path d="M3 12a9 9 0 0 0 15.5 6.4" />
-      <path d="M18.5 18.4V15h-3.4" />
-    </template>
+      <!-- sync: circular arrows (keep in sync with SyncIcon.vue) -->
+      <template v-else-if="slug === 'sync'">
+        <path d="M21 12a9 9 0 0 0-15.5-6.4" />
+        <path d="M5.5 5.6V9h3.4" />
+        <path d="M3 12a9 9 0 0 0 15.5 6.4" />
+        <path d="M18.5 18.4V15h-3.4" />
+      </template>
 
-    <!-- location: map pin (keep in sync with LocationIcon.vue) -->
-    <template v-else-if="slug === 'location'">
-      <path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10Z" />
-      <circle cx="12" cy="11" r="2.25" />
-    </template>
+      <!-- location: map pin (keep in sync with LocationIcon.vue) -->
+      <template v-else-if="slug === 'location'">
+        <path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10Z" />
+        <circle cx="12" cy="11" r="2.25" />
+      </template>
 
-    <!-- fallback -->
-    <template v-else>
-      <rect data-icon="fallback" x="5" y="5" width="14" height="14" rx="2" />
-    </template>
+      <!-- fallback -->
+      <template v-else>
+        <rect data-icon="fallback" x="5" y="5" width="14" height="14" rx="2" />
+      </template>
     </g>
   </svg>
 </template>

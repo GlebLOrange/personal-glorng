@@ -22,6 +22,11 @@ updates:
       npm-dev:
         dependency-type: development
         update-types: [minor, patch]
+    # typescript-eslint 8 peers support TypeScript <6.1; do not auto-merge a
+    # TypeScript major until the lint/type toolchain supports it.
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /docs

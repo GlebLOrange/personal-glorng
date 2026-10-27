@@ -37,7 +37,12 @@ const emit = defineEmits<{
     max-width="lg"
     @close="emit('close')"
   >
-    <div v-if="loading || !recipe" class="space-y-3 animate-pulse" aria-busy="true" aria-label="loading recipe">
+    <div
+      v-if="loading || !recipe"
+      class="space-y-3 animate-pulse"
+      aria-busy="true"
+      aria-label="loading recipe"
+    >
       <div class="h-40 bg-surface-border rounded-md" />
       <div class="h-4 w-full bg-surface-border rounded" />
       <div class="h-4 w-3/4 bg-surface-border rounded" />

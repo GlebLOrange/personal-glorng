@@ -11,13 +11,32 @@ vi.mock("@/composables/useApi", () => ({
   },
 }));
 
+// PageShell renders PinnedToolsRow/BackLink, which need router context. The
+// RouterLink stub must expose slot props because BackLink destructures them.
+vi.mock("vue-router", () => ({
+  useRoute: () => ({ name: null }),
+}));
+
+const routerLinkStub = {
+  name: "RouterLink",
+  props: ["to"],
+  setup() {
+    return { href: "/", navigate: () => {}, isActive: false };
+  },
+  template: '<a :href="href"><slot :href="href" :navigate="navigate" :isActive="isActive" /></a>',
+};
+
+const mountOptions = {
+  global: { stubs: { RouterLink: routerLinkStub } },
+};
+
 describe("PasswordGeneratorTool", () => {
   beforeEach(() => {
     vi.mocked(api.post).mockClear();
   });
 
   it("renders with options dropdown first, then length input, then generate button and reset button", () => {
-    const wrapper = mount(PasswordGeneratorTool);
+    const wrapper = mount(PasswordGeneratorTool, mountOptions);
 
     const form = wrapper.find("form");
     expect(form.exists()).toBe(true);
@@ -37,7 +56,7 @@ describe("PasswordGeneratorTool", () => {
   });
 
   it("auto-generates a masked password on mount", async () => {
-    const wrapper = mount(PasswordGeneratorTool);
+    const wrapper = mount(PasswordGeneratorTool, mountOptions);
 
     await vi.waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
     await vi.waitFor(() =>
@@ -50,7 +69,7 @@ describe("PasswordGeneratorTool", () => {
   });
 
   it("resets options and forgets generated password when reset button is clicked", async () => {
-    const wrapper = mount(PasswordGeneratorTool);
+    const wrapper = mount(PasswordGeneratorTool, mountOptions);
 
     await vi.waitFor(() =>
       expect(wrapper.findAllComponents({ name: "BaseInput" })).toHaveLength(2),
@@ -65,6 +84,7 @@ describe("PasswordGeneratorTool", () => {
 
   it("forgets generated password on field clear without resetting options", async () => {
     const wrapper = mount(PasswordGeneratorTool, {
+      ...mountOptions,
       attachTo: document.body,
     });
 

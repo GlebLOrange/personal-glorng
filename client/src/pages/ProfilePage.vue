@@ -75,9 +75,7 @@ function applyProfileSeo(data: ResumeData): void {
             .map((project) => project.name)
             .join(", ")
         : data.title;
-  const descriptionParts = [
-    data.bio || data.tagline || `${data.name} — ${data.title}`,
-  ];
+  const descriptionParts = [data.bio || data.tagline || `${data.name} — ${data.title}`];
   const allSkills = data.skills.flatMap((group) => group.items).slice(0, 6);
   if (allSkills.length) {
     descriptionParts.push(`Skills: ${allSkills.join(", ")}.`);
@@ -149,11 +147,7 @@ watch(
       />
     </div>
 
-    <div
-      v-if="ignoredNote"
-      class="mx-auto max-w-5xl px-6 pt-4 print:hidden"
-      role="status"
-    >
+    <div v-if="ignoredNote" class="mx-auto max-w-5xl px-6 pt-4 print:hidden" role="status">
       <p class="text-meta rounded-lg border border-surface-border/60 bg-surface-card/40 px-3 py-2">
         Some share filters were ignored ({{ ignoredNote }}).
       </p>
@@ -207,13 +201,7 @@ watch(
       <SkillsGrid :skills="resume.skills" />
     </SectionWrapper>
 
-    <SectionWrapper
-      v-if="showEducation"
-      id="education"
-      title="education"
-      width="prose"
-      alternate
-    >
+    <SectionWrapper v-if="showEducation" id="education" title="education" width="prose" alternate>
       <EducationList :education="education" />
     </SectionWrapper>
 

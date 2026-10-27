@@ -7,8 +7,7 @@ vi.mock("@/components/weather/WeatherSummaryContent.vue", () => ({
   default: {
     name: "WeatherSummaryContent",
     props: ["query", "interactive"],
-    template:
-      '<div data-testid="summary" :data-interactive="interactive" :data-query="query" />',
+    template: '<div data-testid="summary" :data-interactive="interactive" :data-query="query" />',
   },
 }));
 
