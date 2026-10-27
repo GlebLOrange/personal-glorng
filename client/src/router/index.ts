@@ -105,12 +105,6 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, title: "Search", noindex: true },
   },
   {
-    path: "/admin/ai-chat",
-    name: "tool-ai-chat",
-    component: () => import("@/pages/admin/tools/AiChatTool.vue"),
-    meta: { requiresAuth: true, requiresSuperuser: true, title: "AI chat", noindex: true },
-  },
-  {
     path: "/admin/db-maintenance",
     name: "tool-db-maintenance",
     component: () => import("@/pages/admin/tools/DbMaintenanceTool.vue"),
@@ -250,6 +244,35 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: "/weather",
+        name: WEATHER_ROUTE_NAME,
+        component: () => import("@/pages/WeatherPage.vue"),
+        meta: {
+          scrollRestore: "live",
+          title: "Weather",
+          description: "Weather lookup, saved locations, and local time.",
+          noindex: true,
+        },
+      },
+      {
+        path: "/shortener",
+        name: "shortener",
+        component: () => import("@/pages/tools/UrlShortenerTool.vue"),
+        meta: { title: "URL shortener", description: "Create and manage short URLs.", noindex: true },
+      },
+      {
+        path: "/file-share",
+        name: "tool-file-share",
+        component: () => import("@/pages/admin/tools/FileShareTool.vue"),
+        meta: { requiresAuth: true, title: "File share", noindex: true },
+      },
+      {
+        path: "/data-extract",
+        name: "tool-data-extract",
+        component: () => import("@/pages/admin/tools/DataExtractTool.vue"),
+        meta: { requiresAuth: true, title: "Data extract", noindex: true },
+      },
+      {
         path: "/vid-download",
         name: "vid-download",
         component: () => import("@/pages/tools/VidDownloadTool.vue"),
@@ -267,15 +290,10 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, title: "Send email", noindex: true },
       },
       {
-        path: "/weather",
-        name: WEATHER_ROUTE_NAME,
-        component: () => import("@/pages/WeatherPage.vue"),
-        meta: {
-          scrollRestore: "live",
-          title: "Weather",
-          description: "Weather lookup, saved locations, and local time.",
-          noindex: true,
-        },
+        path: "/admin/ai-chat",
+        name: "tool-ai-chat",
+        component: () => import("@/pages/admin/tools/AiChatTool.vue"),
+        meta: { requiresAuth: true, requiresSuperuser: true, title: "AI chat", noindex: true },
       },
     ],
   },
@@ -300,18 +318,6 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/shortener",
-    name: "shortener",
-    component: () => import("@/pages/tools/UrlShortenerTool.vue"),
-    meta: { title: "URL shortener", description: "Create and manage short URLs.", noindex: true },
-  },
-  {
-    path: "/file-share",
-    name: "tool-file-share",
-    component: () => import("@/pages/admin/tools/FileShareTool.vue"),
-    meta: { requiresAuth: true, title: "File share", noindex: true },
-  },
-  {
     path: "/tasks",
     name: "tool-tasks",
     component: () => import("@/pages/admin/tools/TasksPage.vue"),
@@ -322,12 +328,6 @@ const routes: RouteRecordRaw[] = [
     name: "tool-expenses",
     component: () => import("@/pages/admin/tools/ExpensesTool.vue"),
     meta: { requiresAuth: true, scrollRestore: "volatile", title: "Expenses", noindex: true },
-  },
-  {
-    path: "/data-extract",
-    name: "tool-data-extract",
-    component: () => import("@/pages/admin/tools/DataExtractTool.vue"),
-    meta: { requiresAuth: true, title: "Data extract", noindex: true },
   },
   {
     path: "/health-checker",

@@ -4,7 +4,7 @@ import { RouterLink } from "vue-router";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
 import SearchInput from "@/components/ui/SearchInput.vue";
@@ -117,7 +117,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <AdminPageLayout title="search">
+  <PageShell
+    title="search"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'search' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
     <div class="mb-6 flex min-w-0 flex-wrap items-center gap-2">
       <AdminFilterDropdown
         ref="filterDropdown"
@@ -172,5 +178,5 @@ onUnmounted(() => {
         <p class="text-xs text-surface-mid">{{ hit.snippet }}</p>
       </Card>
     </div>
-  </AdminPageLayout>
+  </PageShell>
 </template>

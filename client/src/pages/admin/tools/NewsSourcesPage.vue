@@ -11,7 +11,7 @@ import {
   ADMIN_TH_CLASS,
   ADMIN_TH_ROW_CLASS,
 } from "@/constants/adminDataTable";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import NewsSourceDrawer from "@/components/news/NewsSourceDrawer.vue";
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -67,7 +67,13 @@ const {
 </script>
 
 <template>
-  <AdminPageLayout hub="tools" title="manage news sources" max-width="5xl" back-to="/tools">
+  <PageShell
+    title="manage news sources"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'manage news sources' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
     <div class="mb-3 flex min-w-0 flex-wrap items-center gap-2">
       <AdminFilterDropdown
         ref="filterDropdown"
@@ -225,5 +231,5 @@ const {
       @confirm="confirmDeleteSource"
       @cancel="cancelDeleteSource"
     />
-  </AdminPageLayout>
+  </PageShell>
 </template>

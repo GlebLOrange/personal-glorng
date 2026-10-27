@@ -80,18 +80,6 @@ async function mountWindow(
             component: StubPage,
             meta: { title: "QR generator" },
           },
-          {
-            path: "/vid-download",
-            name: "vid-download",
-            component: StubPage,
-            meta: { title: "Video downloader" },
-          },
-          {
-            path: "/tools/send-email",
-            name: "tool-email",
-            component: StubPage,
-            meta: { title: "Send email" },
-          },
         ],
       },
       { path: "/tools", name: "tools", component: StubPage },

@@ -4,15 +4,26 @@ import { useRoute, useRouter } from "vue-router";
 
 import BackLink from "@/components/ui/BackLink.vue";
 import PinnedToolsRow from "@/components/layout/PinnedToolsRow.vue";
-import { SMALL_TOOL_TABS, type SmallToolTab } from "@/constants/smallToolTabs";
+import { visibleSmallToolTabs, type SmallToolTab } from "@/constants/smallToolTabs";
 import { actionFamilyClass } from "@/constants/httpStatusColors";
+import { usePermissions } from "@/composables/usePermissions";
+import { isAiChatEnabled } from "@/utils/featureFlags";
 
 const route = useRoute();
 const router = useRouter();
+const { canAccess, isSuperuser } = usePermissions();
 const tablistRef = ref<HTMLElement | null>(null);
 
+const toolTabs = computed(() =>
+  visibleSmallToolTabs({
+    canAccess,
+    isSuperuser: isSuperuser.value,
+    aiChatEnabled: isAiChatEnabled(),
+  }),
+);
+
 const activeTab = computed(
-  () => SMALL_TOOL_TABS.find((tab) => tab.name === route.name) ?? SMALL_TOOL_TABS[0],
+  () => toolTabs.value.find((tab) => tab.name === route.name) ?? toolTabs.value[0],
 );
 
 const pageTitle = computed(() => {
@@ -33,7 +44,7 @@ function tabClass(tab: SmallToolTab): string {
 }
 
 async function activateTabAt(index: number, shouldFocus = false): Promise<void> {
-  const tab = SMALL_TOOL_TABS[index];
+  const tab = toolTabs.value[index];
   if (!tab) return;
   await router.push(tab.to);
   if (!shouldFocus) return;
@@ -42,7 +53,7 @@ async function activateTabAt(index: number, shouldFocus = false): Promise<void> 
 }
 
 function onTabKeydown(event: KeyboardEvent, index: number): void {
-  if (SMALL_TOOL_TABS.length === 0) return;
+  if (toolTabs.value.length === 0) return;
   if (event.key === "Home") {
     event.preventDefault();
     void activateTabAt(0, true);
@@ -50,14 +61,14 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
   }
   if (event.key === "End") {
     event.preventDefault();
-    void activateTabAt(SMALL_TOOL_TABS.length - 1, true);
+    void activateTabAt(toolTabs.value.length - 1, true);
     return;
   }
   if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
 
   event.preventDefault();
   const direction = event.key === "ArrowRight" ? 1 : -1;
-  const nextIndex = (index + direction + SMALL_TOOL_TABS.length) % SMALL_TOOL_TABS.length;
+  const nextIndex = (index + direction + toolTabs.value.length) % toolTabs.value.length;
   void activateTabAt(nextIndex, true);
 }
 </script>
@@ -80,7 +91,7 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
       aria-label="small tools"
     >
       <RouterLink
-        v-for="(tab, index) in SMALL_TOOL_TABS"
+        v-for="(tab, index) in toolTabs"
         :id="tabButtonId(tab.id)"
         :key="tab.id"
         :to="tab.to"

@@ -8,7 +8,7 @@ import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
-import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
@@ -183,7 +183,13 @@ onMounted(load);
 </script>
 
 <template>
-  <AdminPageLayout title="audit logs">
+  <PageShell
+    title="audit logs"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'audit logs' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
     <AdminListSkeleton
       v-if="loading && items.length === 0 && !listError"
       label="Loading audit events"
@@ -325,5 +331,5 @@ onMounted(load);
         @last="goToPage(totalPages)"
       />
     </template>
-  </AdminPageLayout>
+  </PageShell>
 </template>

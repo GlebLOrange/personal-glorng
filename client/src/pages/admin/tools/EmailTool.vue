@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
+import PageShell from "@/components/layout/PageShell.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
@@ -68,6 +69,13 @@ async function preview(): Promise<void> {
 </script>
 
 <template>
+  <PageShell
+    title="send email"
+    :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'send email' }]"
+    back-to="/tools"
+    max-width="5xl"
+    :narrow="false"
+  >
   <div class="min-w-0 space-y-3">
     <AdminListToolbar>
       <template #start>
@@ -127,4 +135,5 @@ async function preview(): Promise<void> {
       />
     </div>
   </div>
+  </PageShell>
 </template>
