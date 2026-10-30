@@ -6,7 +6,11 @@ import { useNotify } from "@/composables/useNotify";
 import { ADMIN_LIST_PAGE_SIZE } from "@/constants/pagination";
 import { effectiveSearchQuery } from "@/constants/search";
 import { statusLabel, type TaskStatus } from "@/constants/taskStatus";
-import { datetimeLocalValue, parseDatetimeLocalToIso } from "@/utils/dates";
+import {
+  datetimeLocalValue,
+  isValidIsoDate,
+  parseDatetimeLocalToIso,
+} from "@/utils/dates";
 import type {
   PaginatedList,
   SyncQueueItem,
@@ -21,6 +25,11 @@ export interface TaskCreateForm {
   scheduled_at: string;
   description: string;
   location: string;
+}
+
+export interface TaskCreateErrors {
+  title?: string;
+  scheduled_at?: string;
 }
 
 export function useTasks() {
@@ -52,6 +61,9 @@ export function useTasks() {
     description: "",
     location: "",
   });
+  const createErrors = ref<TaskCreateErrors>({});
+  /** Last calendar month window; reused to refresh month view after create. */
+  const calendarRange = ref<{ start: string; end: string } | null>(null);
 
   const { loading: listLoading, run: runList } = useApiAction();
   const { loading: calendarLoading, run: runCalendar } = useApiAction();
@@ -104,6 +116,7 @@ export function useTasks() {
   }
 
   async function loadCalendarMonth(startIso: string, endIso: string): Promise<void> {
+    calendarRange.value = { start: startIso, end: endIso };
     const data = await runCalendar(
       async () => {
         const response = await api.get<PaginatedList<TaskItem>>("/tools/tasks", {
@@ -253,10 +266,21 @@ export function useTasks() {
     await Promise.all([loadTasks(), loadStats()]);
   }
 
-  function openCreate(): void {
+  function scheduledAtFromSeed(seedDate?: string | null): string {
+    if (seedDate && isValidIsoDate(seedDate)) {
+      const now = new Date();
+      const [year, month, day] = seedDate.split("-").map(Number);
+      return datetimeLocalValue(new Date(year, month - 1, day, now.getHours(), now.getMinutes()));
+    }
+    return datetimeLocalValue();
+  }
+
+  /** Open create drawer; optional YYYY-MM-DD seeds scheduled_at for that day (current local time). */
+  function openCreate(seedDate?: string | null): void {
+    createErrors.value = {};
     createForm.value = {
       title: "",
-      scheduled_at: datetimeLocalValue(),
+      scheduled_at: scheduledAtFromSeed(seedDate),
       description: "",
       location: "",
     };
@@ -264,13 +288,18 @@ export function useTasks() {
   }
 
   async function createTask(): Promise<void> {
-    if (!createForm.value.title.trim() || !createForm.value.scheduled_at) {
-      toast("Title and scheduled time are required", "error");
-      return;
+    const nextErrors: TaskCreateErrors = {};
+    if (!createForm.value.title.trim()) {
+      nextErrors.title = "Title is required";
     }
     const scheduledAt = parseDatetimeLocalToIso(createForm.value.scheduled_at);
-    if (!scheduledAt) {
-      toast("Scheduled time is invalid", "error");
+    if (!createForm.value.scheduled_at) {
+      nextErrors.scheduled_at = "Scheduled time is required";
+    } else if (!scheduledAt) {
+      nextErrors.scheduled_at = "Scheduled time is invalid";
+    }
+    createErrors.value = nextErrors;
+    if (nextErrors.title || nextErrors.scheduled_at || !scheduledAt) {
       return;
     }
 
@@ -282,13 +311,21 @@ export function useTasks() {
           description: createForm.value.description.trim() || null,
           location: createForm.value.location.trim() || null,
         });
+        return true as const;
       },
       { successMessage: "Task created", errorFallback: "Failed to create task" },
     );
-    if (result !== null) {
+    if (result) {
       showCreateForm.value = false;
+      createErrors.value = {};
       page.value = 1;
-      await Promise.all([loadTasks(), loadStats()]);
+      const refreshes: Promise<void>[] = [loadTasks(), loadStats()];
+      if (calendarRange.value) {
+        refreshes.push(
+          loadCalendarMonth(calendarRange.value.start, calendarRange.value.end),
+        );
+      }
+      await Promise.all(refreshes);
     }
   }
 
@@ -386,6 +423,7 @@ export function useTasks() {
     syncTotal,
     showCreateForm,
     createForm,
+    createErrors,
     listLoading,
     calendarLoading,
     intakesLoading,

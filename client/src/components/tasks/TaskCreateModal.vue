@@ -7,12 +7,18 @@ import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import TaskReminderScheduleInfo from "@/components/tasks/TaskReminderScheduleInfo.vue";
-import type { TaskCreateForm } from "@/composables/useTasks";
+import type { TaskCreateErrors, TaskCreateForm } from "@/composables/useTasks";
 
-defineProps<{
-  open: boolean;
-  saving: boolean;
-}>();
+withDefaults(
+  defineProps<{
+    open: boolean;
+    saving: boolean;
+    errors?: TaskCreateErrors;
+  }>(),
+  {
+    errors: () => ({}),
+  },
+);
 
 const form = defineModel<TaskCreateForm>("form", { required: true });
 
@@ -22,19 +28,24 @@ const emit = defineEmits<{ submit: []; close: [] }>();
 <template>
   <BaseDrawer :open="open" title="new task" max-width="md" @close="emit('close')">
     <form id="task-create-drawer-form" class="space-y-4" @submit.prevent="emit('submit')">
-      <BaseInput v-model="form.title" placeholder="title" />
-      <BaseInput v-model="form.scheduled_at" type="datetime-local" aria-label="scheduled at" />
+      <BaseInput v-model="form.title" label="title" :error="errors.title" />
+      <BaseInput
+        v-model="form.scheduled_at"
+        type="datetime-local"
+        label="scheduled at"
+        :error="errors.scheduled_at"
+      />
       <TaskReminderScheduleInfo />
-      <BaseInput v-model="form.location" placeholder="(optional)" aria-label="location">
+      <BaseInput v-model="form.location" label="location" placeholder="(optional)">
         <template #prefix>
           <LocationIcon class-name="size-4 shrink-0" />
         </template>
       </BaseInput>
       <BaseTextarea
         v-model="form.description"
+        label="notes"
         :rows="3"
-        placeholder="notes (optional)"
-        aria-label="notes"
+        placeholder="(optional)"
       />
     </form>
 
