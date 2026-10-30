@@ -2,6 +2,7 @@
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
+import TaskReminderScheduleInfo from "@/components/tasks/TaskReminderScheduleInfo.vue";
 import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
 import { formatDate } from "@/utils/format";
 import type { TaskIntakeItem } from "@/types";
@@ -26,8 +27,6 @@ function draftFields(draft: Record<string, unknown> | null): DraftFields {
   if (!draft) return {};
   return draft as DraftFields;
 }
-
-const STATIC_REMINDER_LABEL = "Reminders: 90 / 60 / 30 min before + at start";
 
 const draftEntries = [
   { key: "title", label: "Title" },
@@ -78,9 +77,9 @@ const draftEntries = [
         </template>
       </dl>
 
-      <p class="mt-3 text-sm text-surface-mid" aria-label="reminder schedule">
-        {{ STATIC_REMINDER_LABEL }}
-      </p>
+      <div class="mt-3">
+        <TaskReminderScheduleInfo />
+      </div>
 
       <details v-if="intake.draft_json" class="mt-4 text-sm text-surface-mid">
         <summary class="cursor-pointer select-none hover:text-surface-light">raw draft</summary>
