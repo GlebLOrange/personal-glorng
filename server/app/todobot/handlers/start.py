@@ -61,7 +61,7 @@ def build_welcome_text(
     today_count: int,
     total_open: int,
 ) -> str:
-    """Build the /start dashboard message (tasks opened via list tasks)."""
+    """Build the /start dashboard message (tasks opened via tasks)."""
     if calendar_connected:
         calendar_line = "📅 Calendar: *connected*"
     else:
@@ -94,7 +94,7 @@ def build_welcome_text(
         [
             "⚡ *quick task* — one message",
             "🧭 *guided task* — step by step",
-            "📋 *list tasks* — open your task list",
+            "📋 *tasks* — open your task list",
             "",
             "Use the buttons below to navigate.",
         ],
@@ -115,7 +115,7 @@ def build_help_text(*, timezone_name: str) -> str:
             '• *idle message* — e.g. "Friday 15:00 dentist" saves when complete',
             "",
             "*Manage*",
-            "• *list tasks* — closest open tasks; mark done, remove, or edit",
+            "• *tasks* — closest open tasks; mark done, remove, or edit",
             "",
             "*Calendar*",
             "• Connect Google once; Sync now / month from the calendar hub",
@@ -126,7 +126,7 @@ def build_help_text(*, timezone_name: str) -> str:
             "• complete · snooze (ping only) · postpone (presets or custom)",
             "",
             "*Navigation*",
-            "• quick · guided · list tasks · calendar · help · restart",
+            "• quick · guided · tasks · calendar · help · restart",
             "• *restart* clears a flow and refreshes the dashboard",
         ],
     )

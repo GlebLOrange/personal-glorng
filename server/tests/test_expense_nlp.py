@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from app.todobot.utils import expense_nlp
+from app.services import expense_nlp
 
 
 @pytest.fixture
