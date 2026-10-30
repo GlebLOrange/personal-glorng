@@ -29,7 +29,7 @@ from app.schemas.task_intake import (
     TaskIntakeResponse,
 )
 from app.services.llm_json import complete_json, groq_api_key
-from app.services.task import TaskService
+from app.services.task import STATIC_REMINDER_LABEL, TaskService
 from app.settings import get_settings
 from app.todobot.utils.nlp import parse_task_input
 
@@ -43,7 +43,6 @@ Return JSON with this exact shape:
     "scheduled_time": "HH:MM"|null,
     "description": string|null,
     "location": string|null,
-    "reminder_minutes": integer|null,
     "assignee_hint": string|null
   },
   "confidence": {
@@ -51,8 +50,7 @@ Return JSON with this exact shape:
     "scheduled_date": 0.0-1.0,
     "scheduled_time": 0.0-1.0,
     "description": 0.0-1.0,
-    "location": 0.0-1.0,
-    "reminder_minutes": 0.0-1.0
+    "location": 0.0-1.0
   },
   "questions": [{"field": string, "question": string}]
 }
@@ -62,7 +60,7 @@ Rules:
 - If a rule-based hint is provided, prefer it when consistent with the message.
 - Add questions only for required fields (title, scheduled_date, scheduled_time)
   where value is missing or confidence is below 0.7.
-- reminder_minutes: common values 15, 30, 60, or null if unknown.
+- Do not set or ask about reminder timing; reminders are fixed by the app.
 - Keep questions short and conversational.
 """
 
@@ -240,8 +238,7 @@ class TaskIntakeService:
             lines.append(f"*Location:* {escape_md(draft.location)}")
         if draft.description:
             lines.append(f"*Notes:* {escape_md(draft.description)}")
-        if draft.reminder_minutes is not None:
-            lines.append(f"*Reminder:* {draft.reminder_minutes} min before")
+        lines.append(f"*{STATIC_REMINDER_LABEL}*")
         return "\n".join(lines)
 
     def draft_from_intake(self, intake: TaskIntake) -> TaskDraft:
@@ -263,6 +260,8 @@ class TaskIntakeService:
         telegram_user_id: int,
         reminder_minutes: int | None = None,
     ) -> Task:
+        # reminder_minutes kept for call-site compat; create_with_sync uses static offsets.
+        _ = reminder_minutes
         intake = await self.get_intake(intake_id)
         if intake.status == IntakeStatus.CONFIRMED and intake.task_id:
             task = await self._task_svc.get_task(task_id=intake.task_id)
@@ -276,9 +275,6 @@ class TaskIntakeService:
             raise ValidationError("Task date and time are required")
 
         scheduled_at = self.scheduled_at_from_draft(draft)
-        mins = (
-            reminder_minutes if reminder_minutes is not None else draft.reminder_minutes
-        )
 
         task = await self._task_svc.create_with_sync(
             telegram_user_id=telegram_user_id,
@@ -286,7 +282,6 @@ class TaskIntakeService:
             scheduled_at=scheduled_at,
             description=draft.description,
             location=draft.location,
-            reminder_minutes=int(mins) if mins else None,
             intake_id=intake.id,
         )
 

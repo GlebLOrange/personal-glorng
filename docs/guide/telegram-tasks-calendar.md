@@ -2,7 +2,9 @@
 
 One-way pipeline: **Telegram (or admin) → Task (Postgres) → Google Calendar**. Calendar edits do not flow back. The join key everywhere is `telegram_user_id`.
 
-2026-10-30: Todobot Steps 1–7 (unlocked proposals) — Welcome: counters + TZ, empty tips, edit-in-place, inline CTAs, keep 6 reply keys. Quick: Working…, Guided pickers for clarify, cancel after 3 fails (suggest Guided), always reminder presets, field-level Edit. Guided: Back/Cancel each step, block past times, bot-local dates. Oneshot: keep auto-save + at-start only; pickers + Cancel on clarify. My tasks: Overdue section, Mark Done, edit title/location/notes/when. Calendar: status hub (Sync/Reconnect/month), interactive day buttons, sync on Calendar open. Reminders: ownership check, allow Complete from reminder, postpone presets+custom + recreate at-start, snooze ping-only, strip keyboard after action.
+2026-10-30: Static create reminders — every task gets **90 / 60 / 30 min before + at start** (Telegram + Calendar popups). No create-time picker; confirm/admin UI only shows the fixed set. Caller `reminder_minutes` on create is ignored.
+
+2026-10-30: Todobot Steps 1–7 (unlocked proposals) — Welcome: counters + TZ, empty tips, edit-in-place, inline CTAs, keep 6 reply keys. Quick: Working…, Guided pickers for clarify, cancel after 3 fails (suggest Guided), field-level Edit (no reminder step). Guided: Back/Cancel each step, block past times, bot-local dates. Oneshot: auto-save with same static reminders; pickers + Cancel on clarify. My tasks: Overdue section, Mark Done, edit title/location/notes/when. Calendar: status hub (Sync/Reconnect/month), interactive day buttons, sync on Calendar open. Reminders: ownership check, allow Complete from reminder, postpone presets+custom + recreate at-start, snooze ping-only, strip keyboard after action.
 
 2026-10-26: My tasks opens a two-level menu (sync that user's outbound calendar queue → one screen of the 7 closest pending tasks → detail with Remove/Edit/Back/Main). Remove is `cancelled` or `not_completed`. Edit expanded 2026-10-30. Web Tasks **calendar** tab uses month grid + `?date=`; `GET /tools/tasks` accepts optional `start`/`end`.
 
@@ -66,8 +68,8 @@ Sync lookup: `sync_task_to_google` loads credentials with `get_google_for_telegr
 **Priority path — idle one-shot** ([`oneshot.py`](../../server/app/todobot/handlers/oneshot.py), last router):
 
 - Idle text (no FSM, not a command/menu label) is parsed with local `parse_task_input` (no Groq).
-- Title + day + time → `create_with_sync` immediately (at-start Telegram reminder + Calendar enqueue).
-- Day/time present but incomplete → one clarifying question, then save (no reminder presets / confirm buttons).
+- Title + day + time → `create_with_sync` immediately (static reminders + Calendar enqueue).
+- Day/time present but incomplete → one clarifying question, then save (no confirm buttons).
 - No day and no time → message ignored (chatter stays chatter).
 
 [`start.py`](../../server/app/todobot/handlers/start.py) welcome + menu:
@@ -75,7 +77,7 @@ Sync lookup: `sync_task_to_google` loads credentials with `get_google_for_telegr
 - Dashboard: timezone, open/today/overdue counts, empty tips; edit prior welcome in place
 - Inline (and matching reply keyboard): quick|guided → list tasks → calendar → help|restart (no per-task rows; no Menu ready bubble)
 - **list tasks** → My Tasks list; **/help** is a separate richer guide
-- **Quick task** → AI intake (`_start_ai_intake`) with Working…, picker clarify, always reminder presets, field-level Edit
+- **Quick task** → AI intake (`_start_ai_intake`) with Working…, picker clarify, confirm (static reminder line), field-level Edit
 - **Guided task** → step FSM with Back/Cancel; `/new` → same create flows in [`task_create.py`](../../server/app/todobot/handlers/task_create.py)
 - **Calendar** when linked → status hub (Sync now · month · Reconnect); else OAuth connect
 - `/month` → month grid + interactive busy-day buttons (bot pending only)
@@ -89,7 +91,7 @@ Confirm path (Quick/Guided):
 `create_with_sync` then:
 
 1. Insert task for that Telegram user
-2. Schedule Telegram reminders (always at-start + optional early)
+2. Schedule Telegram reminders (at-start + fixed 90 / 60 / 30 min early; skip past offsets)
 3. Enqueue Calendar `CREATE` and kick in-process drain (event duration 30 minutes)
 
 Post-create Telegram copy (oneshot + Quick/Guided) reflects that drain outcome: added / sync pending / not linked — not a blanket “queued”.
@@ -124,6 +126,7 @@ Legacy `status:` callbacks (complete / not / postponed) still work for old messa
 
 ## Telegram reminders (parallel to Calendar popups)
 
+- On create: fixed offsets **0 + 90 + 60 + 30** minutes before `scheduled_at` (`DEFAULT_EARLY_REMINDER_MINUTES` in [`task.py`](../../server/app/services/task.py)); past offsets are skipped
 - Reminder rows scheduled via Celery (`schedule_reminder`)
 - Worker [`send_reminder`](../../server/app/workers/tasks.py) DMs the bot with `reminder_actions` keyboard
 - Calendar event popups are derived from the **same** unsent reminder offsets when syncing (`_reminder_minutes_for_task` in [`calendar.py`](../../server/app/services/calendar.py))

@@ -21,7 +21,6 @@ export interface TaskCreateForm {
   scheduled_at: string;
   description: string;
   location: string;
-  reminder_minutes: string;
 }
 
 export function useTasks() {
@@ -52,7 +51,6 @@ export function useTasks() {
     scheduled_at: "",
     description: "",
     location: "",
-    reminder_minutes: "",
   });
 
   const { loading: listLoading, run: runList } = useApiAction();
@@ -261,7 +259,6 @@ export function useTasks() {
       scheduled_at: datetimeLocalValue(),
       description: "",
       location: "",
-      reminder_minutes: "",
     };
     showCreateForm.value = true;
   }
@@ -277,13 +274,6 @@ export function useTasks() {
       return;
     }
 
-    const reminderRaw = createForm.value.reminder_minutes.trim();
-    const reminderMinutes = reminderRaw ? Number(reminderRaw) : null;
-    if (reminderRaw && (!Number.isInteger(reminderMinutes) || (reminderMinutes ?? 0) < 1)) {
-      toast("Reminder minutes must be a positive integer", "error");
-      return;
-    }
-
     const result = await runSave(
       async () => {
         await api.post("/tools/tasks", {
@@ -291,7 +281,6 @@ export function useTasks() {
           scheduled_at: scheduledAt,
           description: createForm.value.description.trim() || null,
           location: createForm.value.location.trim() || null,
-          reminder_minutes: reminderMinutes,
         });
       },
       { successMessage: "Task created", errorFallback: "Failed to create task" },

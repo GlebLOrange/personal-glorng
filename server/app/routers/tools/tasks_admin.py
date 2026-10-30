@@ -66,7 +66,6 @@ async def create_task(
         scheduled_at=data.scheduled_at,
         description=data.description,
         location=data.location,
-        reminder_minutes=data.reminder_minutes,
         source=AuditSource.WEB_ADMIN,
         actor_type=AuditActorType.USER,
         actor_id=user.id,

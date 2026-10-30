@@ -147,10 +147,10 @@ async def test_menu_restart_clears_state_and_sends_welcome(
 
 
 @pytest.mark.asyncio
-async def test_create_with_sync_always_schedules_at_start(
+async def test_create_with_sync_schedules_static_reminders(
     registry: DatabaseRegistry,
 ) -> None:
-    """No early remind still creates an at-event Telegram reminder."""
+    """Create always schedules at-start plus 90/60/30 early reminders."""
     scheduled = datetime.now(UTC) + timedelta(days=2)
     with (
         patch(
@@ -162,35 +162,7 @@ async def test_create_with_sync_always_schedules_at_start(
         task = await create_with_sync(
             registry,
             telegram_user_id=123456,
-            title="At start only",
-            scheduled_at=scheduled,
-            reminder_minutes=None,
-        )
-
-    assert registry.tasks is not None
-    reminders = await registry.tasks.list_reminders_for_task(task.id)
-    assert len(reminders) == 1
-    assert abs((as_utc(reminders[0].remind_at) - scheduled).total_seconds()) < 1
-    assert mock_sched.await_count == 1
-
-
-@pytest.mark.asyncio
-async def test_create_with_sync_early_plus_at_start(
-    registry: DatabaseRegistry,
-) -> None:
-    """Early heads-up plus at-start yields two reminder rows."""
-    scheduled = datetime.now(UTC) + timedelta(days=3)
-    with (
-        patch(
-            "app.workers.scheduling.schedule_reminder",
-            new_callable=AsyncMock,
-        ),
-        patch("app.workers.tasks.process_sync_queue", new_callable=AsyncMock),
-    ):
-        task = await create_with_sync(
-            registry,
-            telegram_user_id=123456,
-            title="Early and start",
+            title="Static reminders",
             scheduled_at=scheduled,
             reminder_minutes=15,
         )
@@ -201,14 +173,15 @@ async def test_create_with_sync_early_plus_at_start(
         int((scheduled - as_utc(rem.remind_at)).total_seconds() // 60)
         for rem in reminders
     )
-    assert deltas == [0, 15]
+    assert deltas == [0, 30, 60, 90]
+    assert mock_sched.await_count == 4
 
 
 @pytest.mark.asyncio
 async def test_reminder_minutes_includes_zero_for_google(
     registry: DatabaseRegistry,
 ) -> None:
-    """At-start reminder maps to Google popup minutes=0."""
+    """Static reminders map to Google popup minutes including 0."""
     scheduled = datetime.now(UTC) + timedelta(days=1)
     with (
         patch(
@@ -221,17 +194,15 @@ async def test_reminder_minutes_includes_zero_for_google(
             telegram_user_id=99,
             title="Zero popup",
             scheduled_at=scheduled,
-            reminder_minutes=30,
         )
 
     minutes = await _reminder_minutes_for_task(registry, task)
-    assert 0 in minutes
-    assert 30 in minutes
+    assert sorted(minutes) == [0, 30, 60, 90]
 
     body = _build_event_body(task, reminder_minutes=minutes)
     overrides = body["reminders"]["overrides"]
     assert {"method": "popup", "minutes": 0} in overrides
-    assert {"method": "popup", "minutes": 30} in overrides
+    assert {"method": "popup", "minutes": 90} in overrides
 
 
 @pytest.mark.asyncio

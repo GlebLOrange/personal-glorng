@@ -32,6 +32,10 @@ from app.services.search_indexers.task import index_task, remove_task
 
 _TASK_WORKER_BATCH_LIMIT = 100
 
+# Static early Telegram + Calendar offsets; not user-configurable at create time.
+DEFAULT_EARLY_REMINDER_MINUTES: tuple[int, ...] = (90, 60, 30)
+STATIC_REMINDER_LABEL = "Reminders: 90 / 60 / 30 min before + at start"
+
 
 class TaskService:
     def __init__(
@@ -303,6 +307,8 @@ class TaskService:
         actor_type: AuditActorType = AuditActorType.TELEGRAM,
         actor_id: int | None = None,
     ) -> Task:
+        # reminder_minutes kept for call-site compat; ignored — early offsets are static.
+        _ = reminder_minutes
         task = await self.create_task(
             telegram_user_id=telegram_user_id,
             title=title,
@@ -314,17 +320,17 @@ class TaskService:
             actor_type=actor_type,
             actor_id=actor_id,
         )
-        # Always ping at event start; optional early heads-up when minutes > 0.
+        # Always ping at event start + fixed early heads-ups (skip past offsets).
         await self.schedule_reminder_minutes_before(
             task_id=task.id,
             scheduled_at=scheduled_at,
             minutes_before=0,
         )
-        if reminder_minutes and reminder_minutes > 0:
+        for minutes_before in DEFAULT_EARLY_REMINDER_MINUTES:
             await self.schedule_reminder_minutes_before(
                 task_id=task.id,
                 scheduled_at=scheduled_at,
-                minutes_before=reminder_minutes,
+                minutes_before=minutes_before,
             )
         await self.enqueue_calendar_sync(task_id=task.id, action=SyncAction.CREATE)
         return task
