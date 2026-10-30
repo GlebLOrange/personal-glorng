@@ -1,9 +1,10 @@
 import re
-from datetime import date, datetime
+from datetime import date
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.core.date_ranges import date_range_bounds
 from app.db.documents.app_log import AppLog
 from app.db.mongo.counter import next_sequence_ids
 
@@ -77,13 +78,9 @@ class AppLogRepository:
                 "$regex": re.escape(message.strip()),
                 "$options": "i",
             }
-        if date_from or date_to:
-            occurred: dict[str, datetime] = {}
-            if date_from:
-                occurred["$gte"] = datetime.combine(date_from, datetime.min.time())
-            if date_to:
-                occurred["$lte"] = datetime.combine(date_to, datetime.max.time())
-            query["occurred_at"] = occurred
+        bounds = date_range_bounds(date_from, date_to)
+        if bounds:
+            query["occurred_at"] = bounds
 
         total = await self.db.app_logs.count_documents(query)
         occurred_dir = 1 if sort == "when_asc" else -1

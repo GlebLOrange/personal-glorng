@@ -9,17 +9,15 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import RedirectResponse
 
-from app.core.deps import AuthorizedUser, require_capability
+from app.core.deps import AuthorizedUser, UrlServiceDep, require_capability
 from app.core.permissions import (
     SUPERUSER_PERMISSION,
     user_has_permission,
 )
 from app.core.rate_limit import rate_limit_api, rate_limit_shortener_create
 from app.core.utils import DEFAULT_PER_PAGE
-from app.db.deps import DbRegistry
 from app.openapi import requires_capability
 from app.schemas.url import UrlCreate, UrlListResponse, UrlResponse, UrlUpdate
-from app.services.url import UrlService
 
 router = APIRouter(prefix="/url-shortener", tags=["url-shortener"])
 
@@ -38,10 +36,9 @@ router = APIRouter(prefix="/url-shortener", tags=["url-shortener"])
 )
 async def create_url(
     data: UrlCreate,
-    registry: DbRegistry,
+    svc: UrlServiceDep,
     user: AuthorizedUser,
 ) -> UrlResponse:
-    svc = UrlService(registry)
     url = await svc.create_short_url(
         original_url=str(data.original_url),
         created_by=user.id,
@@ -58,12 +55,11 @@ async def create_url(
     dependencies=[Depends(require_capability("url-shortener", "read"))],
 )
 async def list_urls(
-    registry: DbRegistry,
+    svc: UrlServiceDep,
     user: AuthorizedUser,
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = DEFAULT_PER_PAGE,
 ) -> UrlListResponse:
-    svc = UrlService(registry)
     return await svc.list_by_owner(created_by=user.id, page=page, per_page=per_page)
 
 
@@ -77,10 +73,9 @@ async def list_urls(
 async def update_url(
     url_id: int,
     data: UrlUpdate,
-    registry: DbRegistry,
+    svc: UrlServiceDep,
     user: AuthorizedUser,
 ) -> UrlResponse:
-    svc = UrlService(registry)
     url = await svc.update_url(
         url_id,
         title=data.title,
@@ -99,10 +94,9 @@ async def update_url(
 )
 async def delete_url(
     url_id: int,
-    registry: DbRegistry,
+    svc: UrlServiceDep,
     user: AuthorizedUser,
 ) -> None:
-    svc = UrlService(registry)
     await svc.delete_url(
         url_id,
         actor_id=user.id,
@@ -119,10 +113,9 @@ redirect_router = APIRouter()
     dependencies=[Depends(rate_limit_api)],
 )
 async def redirect_short_url(
-    registry: DbRegistry,
+    svc: UrlServiceDep,
     code: str = Path(min_length=1, max_length=16, pattern=r"^[a-zA-Z0-9]+$"),
 ) -> RedirectResponse:
-    svc = UrlService(registry)
     url = await svc.get_by_code(code)
     await svc.increment_clicks(code)
     return RedirectResponse(url=url.original_url, status_code=307)

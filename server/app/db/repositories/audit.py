@@ -1,9 +1,10 @@
 import asyncio
-from datetime import date, datetime
+from datetime import date
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.core.date_ranges import date_range_bounds
 from app.db.documents.audit import AuditEvent
 from app.db.mongo.counter import next_sequence_id
 
@@ -82,13 +83,9 @@ class AuditRepository:
             query["resource_type"] = resource_type.strip()
         if resource_id is not None:
             query["resource_id"] = resource_id
-        if date_from or date_to:
-            occurred: dict[str, datetime] = {}
-            if date_from:
-                occurred["$gte"] = datetime.combine(date_from, datetime.min.time())
-            if date_to:
-                occurred["$lte"] = datetime.combine(date_to, datetime.max.time())
-            query["occurred_at"] = occurred
+        bounds = date_range_bounds(date_from, date_to)
+        if bounds:
+            query["occurred_at"] = bounds
 
         occurred_dir = 1 if sort == "when_asc" else -1
 

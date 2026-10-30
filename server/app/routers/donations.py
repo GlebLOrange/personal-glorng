@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 
+from app.core.deps import AppSettings
 from app.core.exceptions import ApiError
 from app.core.rate_limit import RateLimiter, rate_limit_api
 from app.core.uploads import read_request_body_bounded
@@ -16,7 +17,6 @@ from app.services.stripe_donations import (
     parse_stripe_event,
     verify_stripe_signature,
 )
-from app.settings import get_settings
 
 router = APIRouter(dependencies=[Depends(rate_limit_api)])
 
@@ -32,8 +32,7 @@ rate_limit_stripe_webhook = RateLimiter(requests=30, window=60, fail_open=False)
     summary="Get donation config",
     description="Public donation links for Stripe, PayPal, and Patreon.",
 )
-async def get_donations_config() -> DonationsConfigResponse:
-    settings = get_settings()
+async def get_donations_config(settings: AppSettings) -> DonationsConfigResponse:
     checkout_enabled = settings.stripe_checkout_enabled()
     legacy_link = settings.STRIPE_LINK
     return DonationsConfigResponse(
@@ -72,8 +71,10 @@ async def create_donation_checkout() -> CheckoutSessionResponse:
     description="Receives signed Stripe events (checkout.session.completed).",
     dependencies=[Depends(rate_limit_stripe_webhook)],
 )
-async def stripe_webhook(request: Request) -> WebhookAckResponse:
-    settings = get_settings()
+async def stripe_webhook(
+    request: Request,
+    settings: AppSettings,
+) -> WebhookAckResponse:
     if not settings.stripe_webhook_enabled():
         raise ApiError(503, "Stripe webhooks are not configured")
 

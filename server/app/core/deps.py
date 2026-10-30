@@ -15,16 +15,22 @@ from app.db.documents.user import User
 from app.db.registry import DatabaseRegistry
 from app.platform.registry import Capability, ServiceSlug
 from app.services.ai_chat import GroqChatService
+from app.services.app_log import AppLogService
 from app.services.audit import AuditService
 from app.services.currency import CurrencyService
 from app.services.expense import ExpenseService
 from app.services.expense_category import ExpenseCategoryService
+from app.services.health_checker import HealthMonitorService
 from app.services.news import NewsService
+from app.services.qr_generator import QrLibraryService
 from app.services.recipe import RecipeService
 from app.services.search_index import SearchIndexService
 from app.services.task import TaskService
 from app.services.task_intake import TaskIntakeService
+from app.services.url import UrlService
 from app.services.user import get_user_by_public_id
+from app.services.weather import WeatherService
+from app.services.weather_location import WeatherLocationService
 from app.settings import Settings, get_settings
 from app.workers.queue import JobQueue, get_job_queue
 
@@ -302,3 +308,51 @@ def get_news_service(
 
 
 NewsServiceDep = Annotated[NewsService, Depends(get_news_service)]
+
+
+def get_url_service(registry: DbRegistry) -> UrlService:
+    return UrlService(registry)
+
+
+UrlServiceDep = Annotated[UrlService, Depends(get_url_service)]
+
+
+def get_qr_library_service(registry: DbRegistry) -> QrLibraryService:
+    return QrLibraryService(registry)
+
+
+QrLibraryServiceDep = Annotated[QrLibraryService, Depends(get_qr_library_service)]
+
+
+def get_health_monitor_service(registry: DbRegistry) -> HealthMonitorService:
+    return HealthMonitorService(registry)
+
+
+HealthMonitorServiceDep = Annotated[
+    HealthMonitorService,
+    Depends(get_health_monitor_service),
+]
+
+
+def get_weather_service() -> WeatherService:
+    return WeatherService()
+
+
+WeatherServiceDep = Annotated[WeatherService, Depends(get_weather_service)]
+
+
+def get_weather_location_service(registry: DbRegistry) -> WeatherLocationService:
+    return WeatherLocationService(registry)
+
+
+WeatherLocationServiceDep = Annotated[
+    WeatherLocationService,
+    Depends(get_weather_location_service),
+]
+
+
+def get_app_log_service(registry: DbRegistry) -> AppLogService:
+    return AppLogService(registry)
+
+
+AppLogServiceDep = Annotated[AppLogService, Depends(get_app_log_service)]

@@ -2,12 +2,12 @@
 
 from fastapi import APIRouter, Depends
 
+from app.core.deps import AppSettings
 from app.core.exceptions import NotFoundError
 from app.core.rate_limit import rate_limit_api
 from app.db.deps import DbRegistry
 from app.schemas.github import GitHubRepoResponse
 from app.services.github_portfolio import get_public_github_repos
-from app.settings import get_settings
 
 router = APIRouter(dependencies=[Depends(rate_limit_api)])
 
@@ -21,8 +21,11 @@ router = APIRouter(dependencies=[Depends(rate_limit_api)])
         "(or the first GITHUB_ALLOWED_USERS entry)."
     ),
 )
-async def public_github_repos(registry: DbRegistry) -> list[GitHubRepoResponse]:
-    username, repos = await get_public_github_repos(get_settings(), registry=registry)
+async def public_github_repos(
+    registry: DbRegistry,
+    settings: AppSettings,
+) -> list[GitHubRepoResponse]:
+    username, repos = await get_public_github_repos(settings, registry=registry)
     if not username:
         raise NotFoundError("Public GitHub username is not configured")
     return repos
