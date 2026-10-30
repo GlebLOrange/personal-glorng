@@ -25,6 +25,13 @@ from app.todobot.keyboards.menu import (
     welcome_inline,
 )
 from app.todobot.keyboards.task import confirmation, my_task_detail
+from app.todobot.utils.calendar_status import (
+    LINE_ADDED,
+    LINE_NOT_LINKED,
+    LINE_PENDING,
+    calendar_post_create_line,
+)
+from tests.factories import create_google_credential, create_task
 
 
 def test_main_menu_has_quick_and_guided_without_expenses() -> None:
@@ -225,3 +232,60 @@ async def test_reminder_minutes_includes_zero_for_google(
     overrides = body["reminders"]["overrides"]
     assert {"method": "popup", "minutes": 0} in overrides
     assert {"method": "popup", "minutes": 30} in overrides
+
+
+@pytest.mark.asyncio
+async def test_calendar_post_create_line_not_linked(
+    registry: DatabaseRegistry,
+) -> None:
+    """Unlinked Telegram user gets connect-calendar copy."""
+    task = await create_task(registry, telegram_user_id=4242)
+    line = await calendar_post_create_line(
+        registry,
+        telegram_user_id=4242,
+        task=task,
+    )
+    assert line == LINE_NOT_LINKED
+
+
+@pytest.mark.asyncio
+async def test_calendar_post_create_line_added_after_reload(
+    registry: DatabaseRegistry,
+) -> None:
+    """Stale task without event id still reports Added after DB reload."""
+    telegram_user_id = 5151
+    await create_google_credential(registry, telegram_user_id=telegram_user_id)
+    stale = await create_task(
+        registry,
+        telegram_user_id=telegram_user_id,
+        google_event_id=None,
+    )
+    assert registry.tasks is not None
+    await registry.tasks.update_fields(stale.id, google_event_id="evt-synced")
+    line = await calendar_post_create_line(
+        registry,
+        telegram_user_id=telegram_user_id,
+        task=stale,
+    )
+    assert line == LINE_ADDED
+    assert stale.google_event_id is None
+
+
+@pytest.mark.asyncio
+async def test_calendar_post_create_line_pending_when_linked_without_event(
+    registry: DatabaseRegistry,
+) -> None:
+    """Linked but unsynced task gets Sync-now pending copy."""
+    telegram_user_id = 6161
+    await create_google_credential(registry, telegram_user_id=telegram_user_id)
+    task = await create_task(
+        registry,
+        telegram_user_id=telegram_user_id,
+        google_event_id=None,
+    )
+    line = await calendar_post_create_line(
+        registry,
+        telegram_user_id=telegram_user_id,
+        task=task,
+    )
+    assert line == LINE_PENDING

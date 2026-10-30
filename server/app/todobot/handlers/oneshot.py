@@ -16,6 +16,7 @@ from app.todobot.keyboards.task import (
     with_flow_nav,
 )
 from app.todobot.states.task import OneShotCapture
+from app.todobot.utils.calendar_status import calendar_post_create_line
 from app.todobot.utils.nlp import ParsedTask, parse_task_input
 from app.todobot.utils.oneshot import (
     OneshotAction,
@@ -47,13 +48,6 @@ class OneshotCandidateFilter(Filter):
         return {"parsed": parsed, "oneshot_gate": action}
 
 
-async def _calendar_linked(registry: DatabaseRegistry, telegram_user_id: int) -> bool:
-    if registry.credentials is None:
-        return False
-    cred = await registry.credentials.get_google_for_telegram_user(telegram_user_id)
-    return cred is not None
-
-
 async def _save_oneshot(
     message: Message,
     registry: DatabaseRegistry,
@@ -72,16 +66,17 @@ async def _save_oneshot(
         location=parsed.location,
         reminder_minutes=None,
     )
-    linked = await _calendar_linked(registry, message.from_user.id)
     when = format_scheduled_at(task.scheduled_at)
+    cal_line = await calendar_post_create_line(
+        registry,
+        telegram_user_id=message.from_user.id,
+        task=task,
+    )
     lines = [
         f'✅ Saved "{task.title}" for {when}.',
         "I'll message you at that time.",
+        cal_line,
     ]
-    if linked:
-        lines.append("📅 Also queued for Google Calendar.")
-    else:
-        lines.append("📅 Calendar not linked — /connect_calendar to sync events.")
     await message.answer("\n".join(lines), reply_markup=main_menu())
 
 
