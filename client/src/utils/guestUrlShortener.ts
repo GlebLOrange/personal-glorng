@@ -1,4 +1,5 @@
 import type { UrlItem } from "@/types";
+import { nextNegativeId, trimField } from "@/utils/guestStorage";
 import { ensureHttpsUrl } from "@/utils/safeUrl";
 
 /** localStorage key for guest (no url-shortener read) shortened URLs. */
@@ -14,13 +15,6 @@ const MAX_TITLE_LENGTH = 200;
 
 export function guestUrlLimitMessage(currentCount: number): string {
   return `${currentCount}/${MAX_GUEST_SHORT_URLS} short links saved in your browser`;
-}
-
-function trimField(value: unknown, maxLength: number): string {
-  if (typeof value !== "string") {
-    return "";
-  }
-  return value.trim().slice(0, maxLength);
 }
 
 function isGuestUrlItem(value: unknown): value is UrlItem {
@@ -103,13 +97,7 @@ export function generateGuestShortCode(): string {
 
 /** Next negative id so guest rows never collide with server ids. */
 export function nextGuestUrlId(items: UrlItem[]): number {
-  let min = 0;
-  for (const item of items) {
-    if (item.id < min) {
-      min = item.id;
-    }
-  }
-  return min - 1;
+  return nextNegativeId(items);
 }
 
 export function createGuestShortUrl(

@@ -1,4 +1,5 @@
 import type { QrErrorLevel, QrListItem, QrStoredItem } from "@/types";
+import { nextNegativeId, trimField } from "@/utils/guestStorage";
 
 /** localStorage key for guest (no qr-generator read) saved QR codes. */
 export const GUEST_QR_LIBRARY_KEY = "guest-qr-library";
@@ -12,13 +13,6 @@ const ERROR_LEVELS = new Set<QrErrorLevel>(["L", "M", "Q", "H"]);
 
 export function guestQrLimitMessage(currentCount: number): string {
   return `${currentCount}/${MAX_GUEST_QR_CODES} QR codes saved in your browser`;
-}
-
-function trimField(value: unknown, maxLength: number): string {
-  if (typeof value !== "string") {
-    return "";
-  }
-  return value.trim().slice(0, maxLength);
 }
 
 function isErrorLevel(value: unknown): value is QrErrorLevel {
@@ -97,13 +91,7 @@ export function sanitizeGuestQrLibrary(raw: unknown): QrStoredItem[] {
 }
 
 export function nextGuestQrId(items: Array<{ id: number }>): number {
-  let min = 0;
-  for (const item of items) {
-    if (item.id < min) {
-      min = item.id;
-    }
-  }
-  return min - 1;
+  return nextNegativeId(items);
 }
 
 export function toGuestQrListItem(item: QrStoredItem): QrListItem {
