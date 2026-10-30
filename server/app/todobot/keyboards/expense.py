@@ -28,7 +28,7 @@ def category_picker(category_names: list[str]) -> InlineKeyboardMarkup:
 def skip_place_button() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="Use category", callback_data=_SKIP_PLACE)],
+            [InlineKeyboardButton(text="use category", callback_data=_SKIP_PLACE)],
         ],
     )
 
@@ -37,8 +37,8 @@ def confirm_expense() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="Save", callback_data=_CONFIRM_YES),
-                InlineKeyboardButton(text="Cancel", callback_data=_CONFIRM_NO),
+                InlineKeyboardButton(text="save", callback_data=_CONFIRM_YES),
+                InlineKeyboardButton(text="cancel", callback_data=_CONFIRM_NO),
             ],
         ],
     )

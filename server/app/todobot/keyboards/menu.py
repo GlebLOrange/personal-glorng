@@ -14,7 +14,7 @@ LABEL_CALENDAR = "📅 calendar"
 LABEL_HELP = "❓ help"
 LABEL_RESTART = "🔄 restart"
 # Kept for expense module imports; expenses are hidden from the menu.
-LABEL_LOG_EXPENSE = "Log expense"
+LABEL_LOG_EXPENSE = "log expense"
 # Backward-compatible alias (maps to quick AI intake).
 LABEL_NEW_TASK = LABEL_QUICK_TASK
 

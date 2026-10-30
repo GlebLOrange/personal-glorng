@@ -30,7 +30,9 @@ router = Router()
 
 
 def _oauth_keyboard(auth_url: str, *, reconnect: bool = False) -> InlineKeyboardMarkup:
-    label = "Reconnect Google Calendar" if reconnect else "Connect Google Calendar"
+    label = (
+        "reconnect google calendar" if reconnect else "connect google calendar"
+    )
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text=label, url=auth_url)],
