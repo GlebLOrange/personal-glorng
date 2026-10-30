@@ -10,17 +10,22 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Chat, Message, User
 
 from app.core.utils import as_utc
-from app.db.documents.task import Task, TaskStatus
 from app.db.registry import DatabaseRegistry
 from app.services.calendar import _build_event_body, _reminder_minutes_for_task
 from app.services.task import TaskService, create_with_sync
-from app.todobot.handlers.start import build_welcome_text, menu_restart
+from app.todobot.handlers.start import (
+    build_help_text,
+    build_welcome_text,
+    menu_restart,
+)
 from app.todobot.keyboards.menu import (
     LABEL_GUIDED_TASK,
     LABEL_LOG_EXPENSE,
     LABEL_QUICK_TASK,
     main_menu,
+    welcome_inline,
 )
+from app.todobot.keyboards.task import confirmation, my_task_detail
 
 
 def test_main_menu_has_quick_and_guided_without_expenses() -> None:
@@ -32,21 +37,80 @@ def test_main_menu_has_quick_and_guided_without_expenses() -> None:
     assert LABEL_LOG_EXPENSE not in labels
 
 
-def test_build_welcome_text_lists_pending_and_calendar() -> None:
-    """Welcome dashboard shows calendar status and open tasks."""
-    task = Task(
-        telegram_user_id=1,
-        title="Buy milk",
-        scheduled_at=datetime(2026, 12, 1, 10, 0, tzinfo=UTC),
-        status=TaskStatus.PENDING,
-    )
-    connected = build_welcome_text(calendar_connected=True, pending_tasks=[task])
-    assert "Calendar: *connected*" in connected
-    assert "Buy milk" in connected
+def test_welcome_inline_fixed_menu_layout() -> None:
+    """Welcome inline: quick/guided, list tasks, calendar, help/restart."""
+    disconnected = welcome_inline(calendar_connected=False)
+    rows = [[btn.text for btn in row] for row in disconnected.inline_keyboard]
+    data = [btn.callback_data for row in disconnected.inline_keyboard for btn in row]
+    assert rows[0] == ["⚡ quick task", "🧭 guided task"]
+    assert rows[1] == ["📋 list tasks"]
+    assert rows[2] == ["📅 connect calendar"]
+    assert rows[3] == ["❓ help", "🔄 restart"]
+    assert "w:tasks" in data
+    assert not any(d and d.startswith("w:t:") for d in data)
 
-    empty = build_welcome_text(calendar_connected=False, pending_tasks=[])
+    connected = welcome_inline(calendar_connected=True)
+    assert connected.inline_keyboard[2][0].text == "📅 calendar"
+
+    reply_rows = [[btn.text for btn in row] for row in main_menu().keyboard]
+    assert reply_rows[0] == [LABEL_QUICK_TASK, LABEL_GUIDED_TASK]
+    assert reply_rows[1] == ["📋 list tasks"]
+    assert reply_rows[2] == ["📅 calendar"]
+    assert reply_rows[3] == ["❓ help", "🔄 restart"]
+
+
+def test_action_buttons_are_lowercase_with_icons() -> None:
+    """Confirm and detail action labels are lowercase with emoji icons."""
+    conf = [btn.text for row in confirmation().inline_keyboard for btn in row]
+    assert conf == ["✅ confirm", "✏️ edit", "❌ cancel"]
+
+    detail = [btn.text for row in my_task_detail(9).inline_keyboard for btn in row]
+    assert "✅ mark done" in detail
+    assert "🗑 remove" in detail
+    assert "✏️ edit" in detail
+    assert "◀️ back" in detail
+    assert "🏠 main" in detail
+
+
+def test_build_welcome_text_no_task_list() -> None:
+    """Welcome shows status/counters; no per-task bullets or tap-to-edit hint."""
+    connected = build_welcome_text(
+        calendar_connected=True,
+        has_open_tasks=True,
+        timezone_name="Europe/Berlin",
+        overdue_count=0,
+        today_count=0,
+        total_open=1,
+    )
+    assert "Calendar: *connected*" in connected
+    assert "Europe/Berlin" in connected
+    assert "*Open:* 1" in connected
+    assert "*Open tasks:*" not in connected
+    assert "tap a task" not in connected.lower()
+    assert "list tasks" in connected
+    assert "Use the buttons below to navigate." in connected
+
+    empty = build_welcome_text(
+        calendar_connected=False,
+        has_open_tasks=False,
+        timezone_name="Europe/Berlin",
+        overdue_count=0,
+        today_count=0,
+        total_open=0,
+    )
     assert "not connected" in empty
     assert "No open tasks" in empty
+    assert "Tips" in empty
+
+
+def test_build_help_text_is_richer_than_welcome() -> None:
+    """Help covers capture, manage, calendar, reminders."""
+    help_text = build_help_text(timezone_name="Europe/Berlin")
+    assert "TodoBot help" in help_text
+    assert "idle message" in help_text
+    assert "Reminders" in help_text
+    assert "Calendar" in help_text
+    assert "Europe/Berlin" in help_text
 
 
 @pytest.mark.asyncio
@@ -74,7 +138,7 @@ async def test_menu_restart_clears_state_and_sends_welcome(
 
     assert message.bot.delete_message.await_count == 2
     assert await state.get_data() == {}
-    mock_welcome.assert_awaited_once_with(message, registry)
+    mock_welcome.assert_awaited_once()
 
 
 @pytest.mark.asyncio

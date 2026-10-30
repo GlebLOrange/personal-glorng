@@ -2,7 +2,9 @@
 
 One-way pipeline: **Telegram (or admin) → Task (Postgres) → Google Calendar**. Calendar edits do not flow back. The join key everywhere is `telegram_user_id`.
 
-2026-10-26: My tasks opens a two-level menu (sync that user's outbound calendar queue → one screen of the 7 closest pending tasks → detail with Remove/Edit/Back/Main). Remove is `cancelled` or `not_completed`. Edit is date/time only. A future task cannot be marked `completed` (shared `change_status` guard). Web Tasks **calendar** tab uses month grid + `?date=`; `GET /tools/tasks` accepts optional `start`/`end`.
+2026-10-30: Todobot Steps 1–7 (unlocked proposals) — Welcome: counters + TZ, empty tips, edit-in-place, inline CTAs, keep 6 reply keys. Quick: Working…, Guided pickers for clarify, cancel after 3 fails (suggest Guided), always reminder presets, field-level Edit. Guided: Back/Cancel each step, block past times, bot-local dates. Oneshot: keep auto-save + at-start only; pickers + Cancel on clarify. My tasks: Overdue section, Mark Done, edit title/location/notes/when. Calendar: status hub (Sync/Reconnect/month), interactive day buttons, sync on Calendar open. Reminders: ownership check, allow Complete from reminder, postpone presets+custom + recreate at-start, snooze ping-only, strip keyboard after action.
+
+2026-10-26: My tasks opens a two-level menu (sync that user's outbound calendar queue → one screen of the 7 closest pending tasks → detail with Remove/Edit/Back/Main). Remove is `cancelled` or `not_completed`. Edit expanded 2026-10-30. Web Tasks **calendar** tab uses month grid + `?date=`; `GET /tools/tasks` accepts optional `start`/`end`.
 
 ```mermaid
 flowchart LR
@@ -68,13 +70,16 @@ Sync lookup: `sync_task_to_google` loads credentials with `get_google_for_telegr
 - Day/time present but incomplete → one clarifying question, then save (no reminder presets / confirm buttons).
 - No day and no time → message ignored (chatter stays chatter).
 
-[`start.py`](../../server/app/todobot/handlers/start.py) menu (unchanged for Quick/Guided):
+[`start.py`](../../server/app/todobot/handlers/start.py) welcome + menu:
 
-- **Quick task** → AI intake (`_start_ai_intake`)
-- **Guided task** → step FSM (`_start_guided`)
-- `/new` → same create flow in [`task_create.py`](../../server/app/todobot/handlers/task_create.py)
-- **Calendar** when already linked → `/month` busy-day text grid; otherwise OAuth connect
-- `/month` → plain-text month grid of pending tasks (`*` = busy day + list underneath)
+- Dashboard: timezone, open/today/overdue counts, empty tips; edit prior welcome in place
+- Inline (and matching reply keyboard): quick|guided → list tasks → calendar → help|restart (no per-task rows; no Menu ready bubble)
+- **list tasks** → My Tasks list; **/help** is a separate richer guide
+- **Quick task** → AI intake (`_start_ai_intake`) with Working…, picker clarify, always reminder presets, field-level Edit
+- **Guided task** → step FSM with Back/Cancel; `/new` → same create flows in [`task_create.py`](../../server/app/todobot/handlers/task_create.py)
+- **Calendar** when linked → status hub (Sync now · month · Reconnect); else OAuth connect
+- `/month` → month grid + interactive busy-day buttons (bot pending only)
+- Action buttons use lowercase labels with emoji icons (Telegram cannot attach SVG)
 
 Confirm path (Quick/Guided):
 
@@ -87,7 +92,7 @@ Confirm path (Quick/Guided):
 2. Schedule Telegram reminders (always at-start + optional early)
 3. Enqueue Calendar `CREATE` and kick in-process drain (event duration 30 minutes)
 
-Welcome (`/start`) lists pending tasks for that user and calendar link status.
+Welcome (`/start`) shows calendar status and counters; open the task list via **list tasks**.
 
 Other create entry points (same service path): admin `POST /api/tools/tasks` and intake confirm from the service layer.
 
@@ -96,11 +101,11 @@ Other create entry points (same service path): admin `POST /api/tools/tasks` and
 **My tasks** / `/tasks` (`task_manage`):
 
 1. Sync this Telegram user's pending outbound calendar rows (CREATE for unsynced; arm + drain that user's queue only).
-2. Replace the previous My tasks screen with one message listing up to 7 pending tasks closest to now.
-3. Tap a task → same message becomes detail (title, when, where, notes) with **Remove | Edit** and **Back | Main**.
-4. **Remove** → cancel or didn't finish (`cancelled` / `not_completed`); then the list again.
-5. **Edit** → date then time pickers (`mt:` callbacks / `TaskBrowse` FSM) → `reschedule_task` → detail again.
-6. **Main** deletes the screen and sends the welcome dashboard.
+2. Replace the previous My tasks screen with up to 7 closest pending tasks, **Overdue** above **Upcoming**.
+3. Tap a task → detail with **Mark Done | Remove | Edit** and **Back | Main**.
+4. **Remove** → cancel or didn't finish; **Mark Done** always allowed (`allow_future_complete`).
+5. **Edit** → title / location / notes / when (date+time pickers; past times blocked).
+6. **Main** deletes the screen and refreshes the welcome dashboard.
 
 Legacy `status:` callbacks (complete / not / postponed) still work for old messages; `completed` is rejected when `scheduled_at` is in the future.
 

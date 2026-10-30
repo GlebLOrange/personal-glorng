@@ -12,12 +12,20 @@ const props = withDefaults(
     title?: string;
     maxWidth?: OverlayMaxWidth;
     ariaLabel?: string;
+    /** Optional id(s) for dialog description (aria-describedby). */
+    describedBy?: string;
     /** Tighter header/body padding for short dialogs (e.g. confirm). */
     compact?: boolean;
+    /**
+     * Mobile: fill the visual viewport (100dvh) so sticky footers stay on-screen.
+     * Larger breakpoints keep the padded centered card.
+     */
+    fillViewport?: boolean;
   }>(),
   {
     maxWidth: "lg",
     compact: false,
+    fillViewport: false,
   },
 );
 
@@ -47,17 +55,25 @@ const hasCustomHeader = computed(() => Boolean(slots.header));
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        v-if="open"
+        class="fixed inset-0 z-50 flex items-center justify-center"
+        :class="props.fillViewport ? 'p-0 sm:p-4' : 'p-4'"
+      >
         <OverlayBackdrop @close="emit('close')" />
         <div
           ref="panelRef"
           role="dialog"
           aria-modal="true"
           :aria-labelledby="labelledBy"
+          :aria-describedby="props.describedBy"
           :aria-label="dialogLabel"
           tabindex="-1"
           :class="[
-            'relative flex max-h-[calc(100dvh-2rem)] w-full flex-col rounded-xl border border-surface-border bg-surface-card shadow-sm focus:outline-none',
+            'relative flex w-full flex-col border border-surface-border bg-surface-card shadow-sm focus:outline-none',
+            props.fillViewport
+              ? 'h-[100dvh] max-h-[100dvh] rounded-none sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:rounded-xl'
+              : 'max-h-[calc(100dvh-2rem)] rounded-xl',
             widthClass,
           ]"
           @click.stop

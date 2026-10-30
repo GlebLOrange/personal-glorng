@@ -3,12 +3,18 @@
 from aiogram import F, Router
 from aiogram.filters import Filter, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, Message
 
 from app.core.utils import format_scheduled_at
 from app.db.registry import DatabaseRegistry
 from app.services.task import create_with_sync
 from app.todobot.keyboards.menu import ALL_LABELS, main_menu
+from app.todobot.keyboards.task import (
+    clarify_cancel,
+    date_picker,
+    time_picker,
+    with_flow_nav,
+)
 from app.todobot.states.task import OneShotCapture
 from app.todobot.utils.nlp import ParsedTask, parse_task_input
 from app.todobot.utils.oneshot import (
@@ -89,7 +95,15 @@ async def _ask_missing(
         return
     await state.set_state(OneShotCapture.waiting_for_missing)
     await state.update_data(missing_field=field, **parsed_to_fsm(parsed))
-    await message.answer(clarification_prompt(parsed))
+    prompt = clarification_prompt(parsed)
+    if field == "date":
+        markup = with_flow_nav(date_picker())
+    elif field == "time":
+        date_iso = parsed.date.isoformat() if parsed.date else None
+        markup = with_flow_nav(time_picker(date_iso))
+    else:
+        markup = clarify_cancel()
+    await message.answer(prompt, reply_markup=markup)
 
 
 @router.message(StateFilter(None), OneshotCandidateFilter())
@@ -124,3 +138,58 @@ async def handle_oneshot_clarification(
         await _save_oneshot(message, registry, updated)
         return
     await _ask_missing(message, state, updated)
+
+
+@router.callback_query(F.data.startswith("date:"), OneShotCapture.waiting_for_missing)
+async def oneshot_date_pick(
+    callback: CallbackQuery,
+    state: FSMContext,
+    registry: DatabaseRegistry,
+) -> None:
+    if not callback.data or not callback.message:
+        return
+    value = callback.data.split(":", 1)[1]
+    await callback.answer()
+    if value == "custom":
+        await callback.message.answer("Send the date:", reply_markup=clarify_cancel())
+        return
+    data = await state.get_data()
+    draft = parsed_from_fsm(data)
+    updated = merge_clarification(draft, value, "date")
+    if updated.is_complete:
+        await state.clear()
+        await _save_oneshot(callback.message, registry, updated)
+        return
+    await _ask_missing(callback.message, state, updated)
+
+
+@router.callback_query(F.data.startswith("time:"), OneShotCapture.waiting_for_missing)
+async def oneshot_time_pick(
+    callback: CallbackQuery,
+    state: FSMContext,
+    registry: DatabaseRegistry,
+) -> None:
+    if not callback.data or not callback.message:
+        return
+    value = callback.data.split(":", 1)[1]
+    await callback.answer()
+    if value == "custom":
+        await callback.message.answer("Send the time:", reply_markup=clarify_cancel())
+        return
+    data = await state.get_data()
+    draft = parsed_from_fsm(data)
+    updated = merge_clarification(draft, value, "time")
+    if updated.is_complete:
+        await state.clear()
+        await _save_oneshot(callback.message, registry, updated)
+        return
+    await _ask_missing(callback.message, state, updated)
+
+
+@router.callback_query(F.data == "flow:cancel", OneShotCapture.waiting_for_missing)
+async def oneshot_cancel(callback: CallbackQuery, state: FSMContext) -> None:
+    if not callback.message:
+        return
+    await callback.answer()
+    await state.clear()
+    await callback.message.answer("Cancelled.", reply_markup=main_menu())

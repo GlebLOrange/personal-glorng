@@ -175,11 +175,14 @@ class TaskService:
         actor_type: AuditActorType = AuditActorType.SYSTEM,
         actor_id: int | None = None,
         source: AuditSource = AuditSource.WORKER,
+        allow_future_complete: bool = False,
     ) -> Task:
         task = await self.require_task(task_id=task_id)
-        if new_status == TaskStatus.COMPLETED and as_utc(
-            task.scheduled_at
-        ) > datetime.now(UTC):
+        if (
+            new_status == TaskStatus.COMPLETED
+            and not allow_future_complete
+            and as_utc(task.scheduled_at) > datetime.now(UTC)
+        ):
             raise ConflictError(
                 "Cannot mark a future task as completed",
             )
@@ -190,6 +193,48 @@ class TaskService:
             actor_id=actor_id,
             source=source,
         )
+
+    async def update_task_details(
+        self,
+        *,
+        task_id: int,
+        title: str | None = None,
+        description: str | None = None,
+        location: str | None = None,
+        actor_type: AuditActorType = AuditActorType.SYSTEM,
+        actor_id: int | None = None,
+        source: AuditSource = AuditSource.TODOBOT,
+    ) -> Task:
+        """Update title / notes / location without changing schedule."""
+        fields: dict[str, object] = {}
+        if title is not None:
+            fields["title"] = title
+        if description is not None:
+            fields["description"] = description
+        if location is not None:
+            fields["location"] = location
+        if not fields:
+            return await self.require_task(task_id=task_id)
+        task = await self._tasks().update_fields(task_id, **fields)
+        await index_task(self.registry, task)
+        await self._audit.record(
+            domain_event(
+                action="task.updated",
+                actor_type=actor_type,
+                actor_id=actor_id,
+                source=source,
+                resource_type="task",
+                resource_id=task.id,
+                metadata={"fields": sorted(fields)},
+            ),
+        )
+        if task.google_event_id:
+            await self.enqueue_calendar_sync(
+                task_id=task.id,
+                action=SyncAction.UPDATE,
+                google_event_id=task.google_event_id,
+            )
+        return task
 
     async def reschedule_task(
         self,
@@ -631,6 +676,10 @@ async def change_status(registry: DatabaseRegistry, **kwargs: object) -> Task:
 
 async def reschedule_task(registry: DatabaseRegistry, **kwargs: object) -> Task:
     return await TaskService(registry).reschedule_task(**kwargs)  # type: ignore[arg-type]
+
+
+async def update_task_details(registry: DatabaseRegistry, **kwargs: object) -> Task:
+    return await TaskService(registry).update_task_details(**kwargs)  # type: ignore[arg-type]
 
 
 async def create_with_sync(registry: DatabaseRegistry, **kwargs: object) -> Task:

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, useId } from "vue";
 
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -29,6 +29,9 @@ const theme = ref(isInquiry.value ? "work inquiry" : "");
 const message = ref("");
 const { run: runSubmit, loading } = useApiAction();
 
+const descriptionId = useId();
+const statusId = useId();
+
 const emailTone = computed<"error" | "success" | undefined>(() => {
   if (!email.value.trim()) return undefined;
   return isValidEmail(email.value) ? "success" : "error";
@@ -45,6 +48,7 @@ const copy = computed(() =>
   isInquiry.value
     ? {
         title: "get in touch",
+        description: "Send a work inquiry with your email, subject, and message.",
         emailLabel: "email",
         subjectLabel: "subject",
         messageLabel: "message",
@@ -56,6 +60,7 @@ const copy = computed(() =>
       }
     : {
         title: "send feedback",
+        description: "Send product feedback with your email, subject, and message.",
         emailLabel: "email",
         subjectLabel: "subject",
         messageLabel: "message",
@@ -67,8 +72,12 @@ const copy = computed(() =>
       },
 );
 
+const liveStatus = computed(() => (loading.value ? "sending…" : ""));
+const describedByIds = computed(() => `${descriptionId} ${statusId}`);
+
 async function submit(): Promise<void> {
-  if (!canSubmit.value) return;
+  // In-flight guard: button disable alone can race on double Enter.
+  if (loading.value || !canSubmit.value) return;
   const ok = await runSubmit(
     async () => {
       await api.post("/feedback", {
@@ -85,7 +94,18 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <BaseModal :open="open" :title="copy.title" max-width="md" @close="$emit('close')">
+  <BaseModal
+    :open="open"
+    :title="copy.title"
+    :described-by="describedByIds"
+    fill-viewport
+    max-width="md"
+    @close="$emit('close')"
+  >
+    <p :id="descriptionId" class="sr-only">{{ copy.description }}</p>
+    <p :id="statusId" role="status" aria-live="polite" class="sr-only">
+      {{ liveStatus }}
+    </p>
     <form id="feedback-modal-form" class="space-y-3" @submit.prevent="submit">
       <BaseInput
         v-model="email"
