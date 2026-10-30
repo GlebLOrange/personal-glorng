@@ -40,7 +40,7 @@ from app.schemas.expense_category import (
     ExpenseCategoryResponse,
     ExpenseCategoryUpdate,
 )
-from app.todobot.utils.expense_nlp import parse_expense_text
+from app.services.expense_nlp import parse_expense_text
 
 router = APIRouter(
     prefix="/expenses",
