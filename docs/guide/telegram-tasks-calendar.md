@@ -92,6 +92,8 @@ Confirm path (Quick/Guided):
 2. Schedule Telegram reminders (always at-start + optional early)
 3. Enqueue Calendar `CREATE` and kick in-process drain (event duration 30 minutes)
 
+Post-create Telegram copy (oneshot + Quick/Guided) reflects that drain outcome: added / sync pending / not linked — not a blanket “queued”.
+
 Welcome (`/start`) shows calendar status and counters; open the task list via **list tasks**.
 
 Other create entry points (same service path): admin `POST /api/tools/tasks` and intake confirm from the service layer.
