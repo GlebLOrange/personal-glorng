@@ -79,6 +79,10 @@ Thumbs.db
 # Local git worktrees (created under repo root)
 .worktrees/
 
+# Gortex Mermaid dumps (post-commit hook); see docs/architecture/README.md
+docs/architecture/*.mermaid
+
+
 # npx skills lockfile stays local-only
 skills-lock.json
 
