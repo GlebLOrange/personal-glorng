@@ -6,7 +6,7 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { statusBadgeClass, statusLabel } from "@/constants/taskStatus";
 import type { TaskItem } from "@/types";
-import { formatScheduleDate } from "@/utils/format";
+import { formatDate, formatScheduleDate } from "@/utils/format";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
@@ -261,7 +261,7 @@ function onDayKeydown(event: KeyboardEvent, key: string): void {
 
       <div class="border-t border-surface-border pt-4">
         <h3 class="mb-2 text-sm font-medium text-surface-mid">
-          {{ selectedDate }}
+          {{ formatDate(selectedDate) }}
         </h3>
         <p v-if="!selectedDayTasks.length" class="text-sm text-surface-mid">
           No tasks on this day.

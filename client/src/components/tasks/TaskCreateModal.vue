@@ -6,6 +6,7 @@ import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
+import TaskReminderScheduleInfo from "@/components/tasks/TaskReminderScheduleInfo.vue";
 import type { TaskCreateForm } from "@/composables/useTasks";
 
 defineProps<{
@@ -16,8 +17,6 @@ defineProps<{
 const form = defineModel<TaskCreateForm>("form", { required: true });
 
 const emit = defineEmits<{ submit: []; close: [] }>();
-
-const STATIC_REMINDER_LABEL = "Reminders: 90 / 60 / 30 min before + at start";
 </script>
 
 <template>
@@ -25,9 +24,7 @@ const STATIC_REMINDER_LABEL = "Reminders: 90 / 60 / 30 min before + at start";
     <form id="task-create-drawer-form" class="space-y-4" @submit.prevent="emit('submit')">
       <BaseInput v-model="form.title" placeholder="title" />
       <BaseInput v-model="form.scheduled_at" type="datetime-local" aria-label="scheduled at" />
-      <p class="text-sm text-surface-mid" aria-label="reminder schedule">
-        {{ STATIC_REMINDER_LABEL }}
-      </p>
+      <TaskReminderScheduleInfo />
       <BaseInput v-model="form.location" placeholder="(optional)" aria-label="location">
         <template #prefix>
           <LocationIcon class-name="size-4 shrink-0" />
