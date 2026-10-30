@@ -1,4 +1,4 @@
-"""Rule-based parsing for quick expense messages from Telegram."""
+"""Rule-based parsing for one-line expense messages."""
 
 from __future__ import annotations
 

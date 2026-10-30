@@ -20,7 +20,6 @@ from app.todobot.handlers.start import (
 )
 from app.todobot.keyboards.menu import (
     LABEL_GUIDED_TASK,
-    LABEL_LOG_EXPENSE,
     LABEL_QUICK_TASK,
     main_menu,
     welcome_inline,
@@ -34,29 +33,28 @@ def test_main_menu_has_quick_and_guided_without_expenses() -> None:
     labels = {btn.text for row in markup.keyboard for btn in row}
     assert LABEL_QUICK_TASK in labels
     assert LABEL_GUIDED_TASK in labels
-    assert LABEL_LOG_EXPENSE not in labels
+    assert "log expense" not in labels
+    assert "expense" not in " ".join(labels).lower()
 
 
 def test_welcome_inline_fixed_menu_layout() -> None:
-    """Welcome inline: quick/guided, list tasks, calendar, help/restart."""
+    """Welcome inline: quick|guided, tasks|calendar, help|restart."""
     disconnected = welcome_inline(calendar_connected=False)
     rows = [[btn.text for btn in row] for row in disconnected.inline_keyboard]
     data = [btn.callback_data for row in disconnected.inline_keyboard for btn in row]
     assert rows[0] == ["⚡ quick task", "🧭 guided task"]
-    assert rows[1] == ["📋 list tasks"]
-    assert rows[2] == ["📅 connect calendar"]
-    assert rows[3] == ["❓ help", "🔄 restart"]
+    assert rows[1] == ["📋 tasks", "📅 connect calendar"]
+    assert rows[2] == ["❓ help", "🔄 restart"]
     assert "w:tasks" in data
     assert not any(d and d.startswith("w:t:") for d in data)
 
     connected = welcome_inline(calendar_connected=True)
-    assert connected.inline_keyboard[2][0].text == "📅 calendar"
+    assert connected.inline_keyboard[1][1].text == "📅 calendar"
 
     reply_rows = [[btn.text for btn in row] for row in main_menu().keyboard]
     assert reply_rows[0] == [LABEL_QUICK_TASK, LABEL_GUIDED_TASK]
-    assert reply_rows[1] == ["📋 list tasks"]
-    assert reply_rows[2] == ["📅 calendar"]
-    assert reply_rows[3] == ["❓ help", "🔄 restart"]
+    assert reply_rows[1] == ["📋 tasks", "📅 calendar"]
+    assert reply_rows[2] == ["❓ help", "🔄 restart"]
 
 
 def test_action_buttons_are_lowercase_with_icons() -> None:
@@ -87,7 +85,7 @@ def test_build_welcome_text_no_task_list() -> None:
     assert "*Open:* 1" in connected
     assert "*Open tasks:*" not in connected
     assert "tap a task" not in connected.lower()
-    assert "list tasks" in connected
+    assert "📋 *tasks*" in connected
     assert "Use the buttons below to navigate." in connected
 
     empty = build_welcome_text(
