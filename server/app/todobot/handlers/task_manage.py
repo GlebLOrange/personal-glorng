@@ -2,6 +2,7 @@
 
 from contextlib import suppress
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from aiogram import F, Router
 from aiogram.filters import Command
@@ -9,7 +10,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from app.core.exceptions import ConflictError
-from app.core.utils import format_scheduled_at, local_naive_to_utc
+from app.core.utils import as_utc, format_scheduled_at, local_naive_to_utc, local_now
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.db.documents.task import Task, TaskStatus
 from app.db.registry import DatabaseRegistry
@@ -19,15 +20,19 @@ from app.services.task import (
     get_task,
     reschedule_task,
     sync_calendar_for_telegram_user,
+    update_task_details,
 )
+from app.settings import get_settings
 from app.todobot.keyboards.task import (
     my_task_date_picker,
     my_task_detail,
+    my_task_edit_fields,
     my_task_remove_choices,
     my_task_time_picker,
     my_tasks_list,
 )
 from app.todobot.states.task import TaskBrowse
+from app.todobot.utils.markdown import escape_md
 from app.todobot.utils.nlp import parse_task_input
 
 router = Router()
@@ -51,14 +56,27 @@ def _task_button_label(task: Task) -> str:
 def _detail_text(task: Task) -> str:
     scheduled = format_scheduled_at(task.scheduled_at) if task.scheduled_at else "—"
     lines = [
-        f"*{task.title}*",
+        f"*{escape_md(task.title)}*",
         f"When: {scheduled}",
     ]
     if task.location:
-        lines.append(f"Where: {task.location}")
+        lines.append(f"Where: {escape_md(task.location)}")
     if task.description:
-        lines.append(f"Notes: {task.description}")
+        lines.append(f"Notes: {escape_md(task.description)}")
     return "\n".join(lines)
+
+
+def _split_overdue_upcoming(tasks: list[Task]) -> tuple[list[Task], list[Task]]:
+    now = local_now()
+    tz = ZoneInfo(get_settings().TIMEZONE)
+    overdue: list[Task] = []
+    upcoming: list[Task] = []
+    for task in tasks:
+        if task.scheduled_at and as_utc(task.scheduled_at).astimezone(tz) < now:
+            overdue.append(task)
+        else:
+            upcoming.append(task)
+    return overdue, upcoming
 
 
 async def _calendar_connected(
@@ -119,8 +137,22 @@ async def _show_list(
         text = f"{header}\n\nNo pending tasks. Use Quick or Guided to add one."
         markup = None
     else:
-        text = header
-        markup = my_tasks_list([(t.id, _task_button_label(t)) for t in tasks])
+        overdue, upcoming = _split_overdue_upcoming(tasks)
+        lines = [header, ""]
+        buttons: list[tuple[int, str]] = []
+        if overdue:
+            lines.append("*Overdue:*")
+            for task in overdue:
+                lines.append(f"• {_task_button_label(task)}")
+                buttons.append((task.id, f"⚠ {_task_button_label(task)}"))
+            lines.append("")
+        if upcoming:
+            lines.append("*Upcoming:*")
+            for task in upcoming:
+                lines.append(f"• {_task_button_label(task)}")
+                buttons.append((task.id, _task_button_label(task)))
+        text = "\n".join(lines)
+        markup = my_tasks_list(buttons)
 
     await state.set_state(TaskBrowse.browsing)
 
@@ -179,6 +211,40 @@ async def _owned_task(
     return task
 
 
+async def open_task_field_edit(
+    *,
+    message: Message,
+    registry: DatabaseRegistry,
+    state: FSMContext,
+    task_id: int,
+    telegram_user_id: int,
+) -> bool:
+    """Show field-edit keyboard for an owned task. Returns False if missing."""
+    task = await _owned_task(
+        registry,
+        task_id=task_id,
+        telegram_user_id=telegram_user_id,
+    )
+    if not task:
+        return False
+    await state.set_state(TaskBrowse.browsing)
+    await state.update_data(**{_SCREEN_MSG_KEY: message.message_id})
+    with suppress(Exception):
+        await message.edit_text(
+            f"Edit *{escape_md(task.title)}* — what to change?",
+            parse_mode="Markdown",
+            reply_markup=my_task_edit_fields(task.id),
+        )
+        return True
+    sent = await message.answer(
+        f"Edit *{escape_md(task.title)}* — what to change?",
+        parse_mode="Markdown",
+        reply_markup=my_task_edit_fields(task.id),
+    )
+    await state.update_data(**{_SCREEN_MSG_KEY: sent.message_id})
+    return True
+
+
 @router.message(Command("tasks"))
 async def cmd_tasks(
     message: Message,
@@ -225,7 +291,35 @@ async def handle_my_tasks_callback(
         await state.clear()
         from app.todobot.handlers.start import _send_welcome
 
-        await _send_welcome(callback.message, registry)
+        await _send_welcome(callback.message, registry, state)
+        return
+
+    if action == "done" and len(parts) >= 3:
+        task_id = int(parts[2])
+        task = await _owned_task(
+            registry,
+            task_id=task_id,
+            telegram_user_id=telegram_user_id,
+        )
+        if not task:
+            await callback.answer("Task not found.", show_alert=True)
+            return
+        await change_status(
+            registry,
+            task_id=task.id,
+            new_status=TaskStatus.COMPLETED,
+            actor_type=AuditActorType.TELEGRAM,
+            actor_id=telegram_user_id,
+            source=AuditSource.TODOBOT,
+            allow_future_complete=True,
+        )
+        await callback.answer("Marked done.")
+        await _show_list(
+            message=callback.message,
+            registry=registry,
+            state=state,
+            edit=True,
+        )
         return
 
     if action == "o" and len(parts) >= 3:
@@ -293,6 +387,21 @@ async def handle_my_tasks_callback(
 
     if action == "e" and len(parts) >= 3:
         task_id = int(parts[2])
+        ok = await open_task_field_edit(
+            message=callback.message,
+            registry=registry,
+            state=state,
+            task_id=task_id,
+            telegram_user_id=telegram_user_id,
+        )
+        if not ok:
+            await callback.answer("Task not found.", show_alert=True)
+            return
+        await callback.answer()
+        return
+
+    if action == "ew" and len(parts) >= 3:
+        task_id = int(parts[2])
         task = await _owned_task(
             registry,
             task_id=task_id,
@@ -305,10 +414,34 @@ async def handle_my_tasks_callback(
         await state.set_state(TaskBrowse.editing_date)
         await state.update_data(**{_EDIT_TASK_KEY: task.id})
         await callback.message.edit_text(
-            f"Pick a new date for *{task.title}*:",
+            f"Pick a new date for *{escape_md(task.title)}*:",
             parse_mode="Markdown",
             reply_markup=my_task_date_picker(task.id),
         )
+        return
+
+    if action == "ef" and len(parts) >= 4:
+        task_id = int(parts[2])
+        field = parts[3]
+        task = await _owned_task(
+            registry,
+            task_id=task_id,
+            telegram_user_id=telegram_user_id,
+        )
+        if not task:
+            await callback.answer("Task not found.", show_alert=True)
+            return
+        await callback.answer()
+        await state.update_data(**{_EDIT_TASK_KEY: task.id})
+        if field == "title":
+            await state.set_state(TaskBrowse.editing_title)
+            await callback.message.edit_text("Send the new title:")
+        elif field == "location":
+            await state.set_state(TaskBrowse.editing_location)
+            await callback.message.edit_text("Send the new location:")
+        elif field == "notes":
+            await state.set_state(TaskBrowse.editing_notes)
+            await callback.message.edit_text("Send the new notes:")
         return
 
     if action == "d" and len(parts) >= 4:
@@ -366,8 +499,14 @@ async def handle_my_tasks_callback(
             await state.update_data(**{_EDIT_TASK_KEY: task.id})
             await callback.message.edit_text("Send the time (e.g. 14:30 or 3pm):")
             return
-        # value is HH-MM
+        # value is HH-MM; block past times on today
         hhmm = value.replace("-", ":")
+        now = local_now()
+        if str(date_iso) == now.date().isoformat():
+            hour, minute = map(int, hhmm.split(":"))
+            if (hour, minute) <= (now.hour, now.minute):
+                await callback.message.answer("That time is in the past. Pick another.")
+                return
         scheduled_at = local_naive_to_utc(
             datetime.fromisoformat(f"{date_iso}T{hhmm}:00"),
         )
@@ -382,6 +521,61 @@ async def handle_my_tasks_callback(
         await state.update_data(**{_EDIT_DATE_KEY: None, _EDIT_TASK_KEY: None})
         await _show_detail(callback=callback, task=task, state=state)
         return
+
+
+@router.message(TaskBrowse.editing_title)
+@router.message(TaskBrowse.editing_location)
+@router.message(TaskBrowse.editing_notes)
+async def handle_my_tasks_text_field(
+    message: Message,
+    state: FSMContext,
+    registry: DatabaseRegistry,
+) -> None:
+    if not message.text or not message.from_user:
+        await message.answer("Please send text.")
+        return
+    data = await state.get_data()
+    task_id = data.get(_EDIT_TASK_KEY)
+    if not task_id:
+        await state.clear()
+        await message.answer("Edit expired. Open My tasks again.")
+        return
+    task = await _owned_task(
+        registry,
+        task_id=int(task_id),
+        telegram_user_id=message.from_user.id,
+    )
+    if not task:
+        await state.clear()
+        await message.answer("Task not found.")
+        return
+
+    current = await state.get_state()
+    kwargs: dict[str, str] = {}
+    if current == TaskBrowse.editing_title.state:
+        kwargs["title"] = message.text.strip()
+    elif current == TaskBrowse.editing_location.state:
+        kwargs["location"] = message.text.strip()
+    else:
+        kwargs["description"] = message.text.strip()
+
+    task = await update_task_details(
+        registry,
+        task_id=task.id,
+        actor_type=AuditActorType.TELEGRAM,
+        actor_id=message.from_user.id,
+        source=AuditSource.TODOBOT,
+        **kwargs,
+    )
+    await state.set_state(TaskBrowse.browsing)
+    await state.update_data(**{_EDIT_TASK_KEY: None})
+    await _delete_screen(bot=message.bot, chat_id=message.chat.id, state=state)
+    sent = await message.answer(
+        _detail_text(task),
+        parse_mode="Markdown",
+        reply_markup=my_task_detail(task.id),
+    )
+    await state.update_data(**{_SCREEN_MSG_KEY: sent.message_id})
 
 
 @router.message(TaskBrowse.editing_date)

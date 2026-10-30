@@ -38,7 +38,8 @@ def clarification_prompt(parsed: ParsedTask) -> str:
         return "What should I call this?"
     if field == "date":
         return "Which day?"
-    return "What time?"
+    return "What time?"  # event time — not reminder lead
+
 
 
 def merge_clarification(parsed: ParsedTask, reply: str, field: str) -> ParsedTask:

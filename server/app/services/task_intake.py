@@ -209,11 +209,14 @@ class TaskIntakeService:
         result = await self.run_extraction(intake)
 
         if result.questions and intake.clarification_rounds >= MAX_CLARIFICATION_ROUNDS:
-            result = self._force_ready(result)
-            intake.draft_json = result.draft.model_dump()
-            intake.confidence_json = result.confidence.model_dump()
-            intake.status = IntakeStatus.READY
+            # Proposed: cancel + suggest Guided instead of force-ready defaults.
+            intake.status = IntakeStatus.CANCELLED
             await self._tasks().update_intake(intake)
+            return ExtractionResult(
+                draft=result.draft,
+                confidence=result.confidence,
+                questions=[],
+            )
 
         return result
 
@@ -226,15 +229,17 @@ class TaskIntakeService:
         return result.questions[0]
 
     def build_confirmation_summary(self, draft: TaskDraft) -> str:
-        lines = [f"*Task:* {draft.title or '—'}"]
+        from app.todobot.utils.markdown import escape_md
+
+        lines = [f"*Task:* {escape_md(draft.title) or '—'}"]
         if draft.scheduled_date:
             lines.append(f"*Date:* {format_display_date(draft.scheduled_date)}")
         if draft.scheduled_time:
             lines.append(f"*Time:* {draft.scheduled_time}")
         if draft.location:
-            lines.append(f"*Location:* {draft.location}")
+            lines.append(f"*Location:* {escape_md(draft.location)}")
         if draft.description:
-            lines.append(f"*Notes:* {draft.description}")
+            lines.append(f"*Notes:* {escape_md(draft.description)}")
         if draft.reminder_minutes is not None:
             lines.append(f"*Reminder:* {draft.reminder_minutes} min before")
         return "\n".join(lines)
@@ -422,9 +427,9 @@ class TaskIntakeService:
     ) -> list[ClarificationQuestion]:
         threshold = threshold or self.settings.TASK_INTAKE_CONFIDENCE_THRESHOLD
         prompts = {
-            "title": "What should I call this task?",
-            "scheduled_date": "What date should I schedule this for?",
-            "scheduled_time": "What time should I remind you?",
+            "title": "What should I call this?",
+            "scheduled_date": "Which day?",
+            "scheduled_time": "What time?",
         }
         questions: list[ClarificationQuestion] = []
         for field in REQUIRED_FIELDS:
