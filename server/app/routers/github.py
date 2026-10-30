@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends
 from fastapi.responses import RedirectResponse
 
-from app.core.deps import CurrentUser
+from app.core.deps import AppSettings, CurrentUser
 from app.core.exceptions import ApiError, UnauthorizedError
 from app.core.logging import logger
 from app.core.rate_limit import rate_limit_api
@@ -32,7 +32,6 @@ from app.services.github_credentials import (
     read_github_access_token,
     store_github_access_token,
 )
-from app.settings import get_settings
 
 router = APIRouter(dependencies=[Depends(rate_limit_api)])
 
@@ -84,8 +83,10 @@ async def github_unlink(
     summary="Start GitHub OAuth",
     description="Redirect the authenticated user to GitHub OAuth consent screen.",
 )
-async def github_authorize(user: CurrentUser) -> RedirectResponse:
-    settings = get_settings()
+async def github_authorize(
+    user: CurrentUser,
+    settings: AppSettings,
+) -> RedirectResponse:
     state = secrets.token_urlsafe(32)
     await security_set(
         _github_oauth_state_key(user_public_id=str(user.public_id)),

@@ -4,7 +4,12 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query
 
-from app.core.deps import AuthorizedUser, require_capability
+from app.core.deps import (
+    AppSettings,
+    AuditServiceDep,
+    AuthorizedUser,
+    require_capability,
+)
 from app.core.exceptions import ApiError
 from app.core.logging import logger
 from app.core.rate_limit import RateLimiter
@@ -21,10 +26,9 @@ from app.schemas.feedback import (
     FeedbackStatusUpdate,
 )
 from app.services import feedback as feedback_svc
-from app.services.audit import AuditRecord, AuditService
+from app.services.audit import AuditRecord
 from app.services.auth import _auth_log_email
 from app.services.search_indexers.feedback import index_feedback
-from app.settings import get_settings
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
@@ -39,7 +43,11 @@ rate_limit_feedback = RateLimiter(requests=5, window=300, fail_open=False)
     description="Public endpoint — visitors can submit feedback.",
     dependencies=[Depends(rate_limit_feedback)],
 )
-async def create_feedback(data: FeedbackCreate, registry: DbRegistry) -> Feedback:
+async def create_feedback(
+    data: FeedbackCreate,
+    registry: DbRegistry,
+    settings: AppSettings,
+) -> Feedback:
     if registry.feedback is None:
         raise ApiError(503, "Feedback repository is not initialized")
 
@@ -52,7 +60,7 @@ async def create_feedback(data: FeedbackCreate, registry: DbRegistry) -> Feedbac
     )
 
     truncated = data.message[:500] + ("..." if len(data.message) > 500 else "")
-    base_url = get_settings().BASE_URL.rstrip("/")
+    base_url = settings.BASE_URL.rstrip("/")
     link = f"{base_url}/admin/feedback"
     text = (
         f"<b>New feedback</b> from {escape(data.email)}\n"
@@ -109,6 +117,7 @@ async def update_feedback_status(
     data: FeedbackStatusUpdate,
     registry: DbRegistry,
     user: AuthorizedUser,
+    audit_svc: AuditServiceDep,
 ) -> Feedback:
     if registry.feedback is None:
         raise ApiError(503, "Feedback repository is not initialized")
@@ -116,7 +125,7 @@ async def update_feedback_status(
     entry = await registry.feedback.update_fields(feedback_id, status=data.status)
     await index_feedback(registry, entry)
 
-    await AuditService(registry).record(
+    await audit_svc.record(
         AuditRecord(
             category=AuditCategory.DOMAIN,
             action="feedback.status_changed",

@@ -7,7 +7,24 @@ from pathlib import Path
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
+from app.core.exceptions import ForbiddenError
+
 _ASCII_FILENAME_RE = re.compile(r"[^\x20-\x7E]+")
+
+
+def assert_owner_or_superuser(
+    owner_id: int | None,
+    actor_id: int,
+    *,
+    is_superuser: bool = False,
+    detail: str,
+) -> None:
+    """Raise 403 unless the actor owns the resource or is a superuser."""
+    if is_superuser:
+        return
+    if owner_id is not None and owner_id == actor_id:
+        return
+    raise ForbiddenError(detail)
 
 
 def utc_now() -> datetime:

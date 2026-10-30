@@ -1,6 +1,11 @@
 from app.core.exceptions import ApiError, NotFoundError
 from app.core.pagination import build_paginated
-from app.core.utils import DEFAULT_PER_PAGE, generate_short_code, paginate_params
+from app.core.utils import (
+    DEFAULT_PER_PAGE,
+    assert_owner_or_superuser,
+    generate_short_code,
+    paginate_params,
+)
 from app.db.documents.url import ShortenedUrl
 from app.db.registry import DatabaseRegistry
 from app.schemas.url import UrlListResponse, UrlResponse
@@ -97,8 +102,12 @@ class UrlService:
         is_superuser: bool = False,
     ) -> ShortenedUrl:
         url = await self._urls().get(url_id)
-        if not is_superuser and (url.created_by is None or url.created_by != actor_id):
-            raise ApiError(403, "You do not have permission to update this URL")
+        assert_owner_or_superuser(
+            url.created_by,
+            actor_id,
+            is_superuser=is_superuser,
+            detail="You do not have permission to update this URL",
+        )
         url = await self._urls().update_fields(url_id, title=title)
         await index_url(self.registry, url)
         await AuditService(self.registry).record_domain(
@@ -118,8 +127,12 @@ class UrlService:
         is_superuser: bool = False,
     ) -> None:
         url = await self._urls().get(url_id)
-        if not is_superuser and (url.created_by is None or url.created_by != actor_id):
-            raise ApiError(403, "You do not have permission to delete this URL")
+        assert_owner_or_superuser(
+            url.created_by,
+            actor_id,
+            is_superuser=is_superuser,
+            detail="You do not have permission to delete this URL",
+        )
         await self._urls().delete(url_id)
         await remove_url(self.registry, url_id)
         await AuditService(self.registry).record_domain(
