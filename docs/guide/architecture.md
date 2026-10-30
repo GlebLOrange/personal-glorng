@@ -142,3 +142,5 @@ Health: `/api/health` (liveness), `/api/ready` (Mongo + Redis; optional Postgres
 - [Logging](/operations/logging)
 - [API & tools](/reference/api-tools)
 - [Architecture inventory (generated)](/generated/architecture-inventory)
+
+Local Gortex Mermaid dumps under `docs/architecture/` (gitignored) are agent/export artifacts, not part of this handbook — see that folder’s README.

@@ -43,6 +43,7 @@ docs/reference/           Platform, API, config, security, testing
 docs/adr/                 Architecture decision records
 docs/specs/               Feature and program specs (this file)
 docs/generated/           OpenAPI + architecture inventory (generated)
+docs/architecture/        Local Gortex Mermaid dumps (gitignored *.mermaid; VitePress-excluded)
 AGENTS.md                 Agent entry map (dispatch only)
 CODING_STANDARDS.md       Skill index (pointer table)
 ```
@@ -67,7 +68,7 @@ Short sections, copy-paste command blocks, VitePress links like `/guide/developm
 
 - README links to Getting started for first-run setup and does not repeat the full first-run recipe.
 - The channel table exists only in Architecture.
-- Every hand-written page under `docs/` is in the sidebar, or is generated (`docs/generated/`).
+- Every hand-written page under `docs/` is in the sidebar, or is generated (`docs/generated/`), or VitePress-excluded local agent artifacts (`docs/architecture/`).
 - Getting started and the P3 roadmap no longer instruct a finished step.
 - `make docs-build` passes with dead-link checking on (handbook routes; localhost and `../../` source links allowlisted).
 - `AGENTS.md` and `CODING_STANDARDS.md` stay pointer tables.

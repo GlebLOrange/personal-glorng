@@ -7,6 +7,9 @@ export default defineConfig({
   title: "Gleb.Y",
   description: "Developer portfolio and personal platform documentation",
   base,
+  // Local Gortex export dumps + ownership README — not handbook pages.
+  srcExclude: ["architecture/**"],
+
   // Enforce handbook routes; allow localhost how-tos and repo-relative source links
   // (../../server/…, ../../AGENTS.md) which are outside the VitePress root.
   ignoreDeadLinks: [
