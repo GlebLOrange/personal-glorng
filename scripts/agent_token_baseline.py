@@ -81,12 +81,20 @@ def _skill_catalog_chars(skills_dir: Path) -> tuple[int, int, int]:
 def _session_start_inject_chars() -> int:
     """Chars of the injected context template (branch placeholder counted)."""
     script = _read(ROOT / ".cursor" / "hooks" / "session-start.sh")
-    # Extract the context = f"""...""" string roughly
     m = re.search(r'context = f?"""(.*?)"""', script, re.DOTALL)
+    if m:
+        return len(m.group(1).replace("{branch}", "cursor/example-branch"))
+    # context = ( f"..." "..." ) form
+    m = re.search(
+        r"context\s*=\s*\(\s*(.*?)\s*\)\s*\n\s*env\s*=",
+        script,
+        re.DOTALL,
+    )
     if not m:
         return 0
-    # Substitute a typical branch name length
-    return len(m.group(1).replace("{branch}", "cursor/example-branch"))
+    parts = re.findall(r'f?"((?:\\.|[^"\\])*)"', m.group(1))
+    joined = "".join(parts).replace("{branch}", "cursor/example-branch")
+    return len(joined)
 
 
 def collect() -> list[Row]:
