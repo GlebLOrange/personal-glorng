@@ -20,14 +20,10 @@ except json.JSONDecodeError:
     payload = {}
 
 session_id = str(payload.get("session_id") or "unknown")
-context = f"""Git workflow for this repository:
-- Base branch: main
-- Create a feature branch before making code changes unless already on cursor/* or an explicit feature branch
-- Branch naming: cursor/<short-kebab-description> (example: cursor/groq-only-ai-chat)
-- If the user starts a task on main, ask once: create branch cursor/<name> now? Then run git checkout -b before editing
-- Prefer isolated work via Worktree (/worktree) or Agents window Worktree location when starting a new chat
-- Do not commit or push to main unless the user explicitly asks
-- Current branch: {branch}"""
+context = (
+    f"Current branch: {branch}. "
+    "Git branch workflow: .cursor/skills/agent-workflow/SKILL.md"
+)
 
 env = {"PORTFOLIO_CTX_SESSION": session_id}
 

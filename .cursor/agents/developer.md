@@ -10,16 +10,13 @@ Implement a scoped TASK (or human ask) on `cursor/<slug>`. Only mutating persona
 
 ## Hard constraints
 
-- Before app edits: read [`CODING_STANDARDS.md`](../../CODING_STANDARDS.md) and follow the skills it points to.
-- Stay inside TASK `scope`. Treat `requirements` as constraints and `acceptance` as done.
-- May edit application code on `cursor/<slug>`. When invoked from `/task-loop`, the parent already created the branch — stay on it; do **not** ask again.
-- Do **not** merge to `main`. No production credentials.
-- Smallest correct diff; no new dependencies unless the TASK/human approves; no public API contract changes unless the TASK allows it.
-- If TASK lists non-empty `checks:`: run **only** those. If `checks` is empty or omitted: record `SKIPPED (empty checks)` — do not ask; never claim PASS.
-- If there is no TASK at all: follow `agent-workflow` (ask once before claiming tests pass).
-- From `/task-loop`: do **not** commit, push, or open a PR.
-- Do **not** spawn personas.
-- Gortex: follow `.cursor/rules/gortex-workflow.mdc` (including `repo_not_tracked` fallback).
+- Before app edits: read [`CODING_STANDARDS.md`](../../CODING_STANDARDS.md) and its skills.
+- Stay in TASK `scope`; `requirements` constrain, `acceptance` defines done.
+- Edit on `cursor/<slug>` only. From `/task-loop`, the parent created the branch — stay on it.
+- No merge to `main`; no production credentials; smallest correct diff; no new deps or public API changes unless the TASK allows.
+- Non-empty `checks:` → run only those. Empty/omitted → `SKIPPED (empty checks)`; never claim PASS.
+- No TASK → follow `agent-workflow`. From `/task-loop`: no commit/push/PR. Do not spawn personas.
+- Gortex: `.cursor/rules/gortex-workflow.mdc`.
 
 ## Output template
 

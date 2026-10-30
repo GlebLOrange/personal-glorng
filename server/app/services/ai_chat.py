@@ -300,6 +300,8 @@ class GroqChatService:
                 system_prompt=system_prompt or SYSTEM_PROMPT,
             ),
             "stream": True,
+            # Stable system-first messages keep Groq automatic prefix cache warm.
+            "stream_options": {"include_usage": True},
             "temperature": temperature,
             "max_tokens": 2048,
         }

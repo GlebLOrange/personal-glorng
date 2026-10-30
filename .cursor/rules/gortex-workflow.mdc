@@ -5,22 +5,18 @@ alwaysApply: true
 
 ## Gortex in Cursor
 
-Use Gortex MCP tools for indexed code. This is mandatory.
+Use Gortex MCP tools for indexed code when they are available.
 
-1. Start every coding task with **explore** using `operation: "task"` and the user's task text.
-2. Use **search**, **read**, **relations**, and **trace** instead of text search or whole-file source reads.
-3. Before mutation, call **change** with `operation: "impact"`; for a signature change, also call operation `verify` with the proposed signature.
-4. Mutate only with **edit** or **refactor**. After mutation, call **change** operations `detect`, `tests`, `guards`, and `contract`.
-5. Call **capabilities** with `domain`, `operation`, and `detail: "schema"` when exact arguments are not visible.
+1. Start coding tasks with `explore` (`operation: "task"`) and the user's task text.
+2. Prefer `search`, `read`, `relations`, and `trace` over whole-file reads or repo-wide text search.
+3. Before mutation, call `change` with `operation: "impact"`; for signature changes, also `verify` with the proposed signature.
+4. Mutate with `edit` or `refactor`. After mutation, call `change` operations `detect`, `tests`, `guards`, and `contract`.
+5. Call `capabilities` with `domain`, `operation`, and `detail: "schema"` when arguments are unclear.
 
-If the configured Gortex tools are missing from the callable MCP tools, report a Gortex MCP integration failure and stop. Do not start a daemon or use a CLI/shell fallback.
+If Gortex tools are missing or return `repo_not_tracked`: report once, then use Read/Grep/normal edits. Do not invent graph results. Do not run `gortex track` or start a daemon unless the user asks.
 
-Use **recall** before editing known code and **remember** for durable decisions or invariants.
+Use `recall` before editing known code and `remember` for durable decisions.
 
-## Worktree and branch routing
+Code-area map: `analyze(operation:"communities")`, [`.cursor/references/gortex-communities.md`](../references/gortex-communities.md), or offloaded skills under [`.cursor/references/gortex-skills/`](../references/gortex-skills/).
 
-- The session/CWD selects the view. A session-discovered checkout (a linked worktree included) is an automatic overlay; do not `track` it. Only an explicit user request to track creates a dedicated logical graph.
-- **Overall** means the selected overlay plus exactly one designated primary in its Git family, never a union of incompatible branches. Unique overlay/base matches keep normal relevance order; for a duplicate identity the overlay wins, and deletion/tombstone masks hide the base copy.
-- Freshness `exact:false` = the requested view was not served. Every fallback is read-only. `require_exact:true` refuses substitution; `require_fresh:true` awaits filesystem state under RFC3339 `wait_deadline`, routed automatic checkouts only; else `fresh:false`.
-- Select explicitly when CWD is not the target: `view:{kind:"worktree",checkout_id:"…"}` or `view:{kind:"git_ref",value:"refs/heads/release",graph_id:"…"}`. Inactive ref/commit views are immutable committed structural/source snapshots: no working-copy LSP, `search.text`, or edits. Approved coordinator-backed exact worktree edits are supported; fallback and ref/commit views are not.
-- Untracking a non-primary dedicated worktree demotes it to automatic only if another ready primary survives. Before primary closure, family forget, or `set-primary`, preview the effects and obtain user confirmation.
+Worktree / branch graph routing (rare): [`.cursor/references/gortex-worktree-routing.md`](../references/gortex-worktree-routing.md).
