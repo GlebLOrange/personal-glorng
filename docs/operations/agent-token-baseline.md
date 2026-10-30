@@ -23,11 +23,15 @@ Communities table also mirrored in `GEMINI.md` and `.github/copilot-instructions
 
 ## Flags / rollback
 
-| Flag change | How to roll back |
-|-------------|------------------|
-| Offloaded `gortex-*` skills | `git mv .cursor/references/gortex-skills/* .cursor/skills/` (or revert the move commit) |
-| Slim `gortex-workflow` / demoted communities | Revert that commit |
-| Trimmed task-loop / personas | Revert that commit |
+| Flag change | Status | How to roll back |
+|-------------|--------|------------------|
+| Offloaded `gortex-*` skills | **On** (2026-10-30): 27 dirs under `.cursor/references/gortex-skills/` | `git mv .cursor/references/gortex-skills/* .cursor/skills/` or revert move commit |
+| Slim `gortex-workflow` / demoted communities | See later commits | Revert that commit |
+| Trimmed task-loop / personas | See later commits | Revert that commit |
+
+Discovery without catalog entries: Gortex `analyze(operation:"communities")`, [`.cursor/references/gortex-communities.md`](../../.cursor/references/gortex-communities.md), or Read under `.cursor/references/gortex-skills/`.
+
+`.agents/skills` and `.claude/skills` symlink to `.cursor/skills` — they pick up the lean catalog automatically.
 
 Generator markers `<!-- gortex:communities:start -->` — re-sync from Gortex may reintroduce duplicate tables; keep a single always-on pointer and put the full table only under `.cursor/references/`.
 
