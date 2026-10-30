@@ -88,6 +88,7 @@ const {
   page,
   showCreateForm,
   createForm,
+  createErrors,
   listLoading,
   calendarLoading,
   intakesLoading,
@@ -306,17 +307,20 @@ onMounted(() => {
 
           <ToolbarPillButton
             v-if="isSuperuser"
-            v-show="activeTab === 'queue'"
+            v-show="activeTab === 'queue' || activeTab === 'calendar'"
             action="create"
             class="ml-auto"
-            :disabled="listLoading"
-            @click="openCreate"
+            :disabled="activeTab === 'calendar' ? calendarLoading : listLoading"
+            @click="openCreate(activeTab === 'calendar' ? selectedDate : undefined)"
           >
             + task
           </ToolbarPillButton>
         </div>
 
-        <p v-if="activeTab === 'queue' && !isSuperuser" class="text-xs text-surface-mid">
+        <p
+          v-if="(activeTab === 'queue' || activeTab === 'calendar') && !isSuperuser"
+          class="text-xs text-surface-mid"
+        >
           View only — creating and status changes need superuser.
         </p>
       </div>
@@ -395,6 +399,7 @@ onMounted(() => {
         v-model:form="createForm"
         :open="showCreateForm"
         :saving="saving"
+        :errors="createErrors"
         @submit="createTask"
         @close="showCreateForm = false"
       />
