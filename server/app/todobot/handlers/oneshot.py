@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery, Message
 
 from app.core.utils import format_scheduled_at
 from app.db.registry import DatabaseRegistry
-from app.services.task import create_with_sync
+from app.services.task import STATIC_REMINDER_LABEL, create_with_sync
 from app.todobot.keyboards.menu import ALL_LABELS, main_menu
 from app.todobot.keyboards.task import (
     clarify_cancel,
@@ -64,7 +64,6 @@ async def _save_oneshot(
         scheduled_at=scheduled_at,
         description=parsed.notes,
         location=parsed.location,
-        reminder_minutes=None,
     )
     when = format_scheduled_at(task.scheduled_at)
     cal_line = await calendar_post_create_line(
@@ -74,7 +73,7 @@ async def _save_oneshot(
     )
     lines = [
         f'✅ Saved "{task.title}" for {when}.',
-        "I'll message you at that time.",
+        f"{STATIC_REMINDER_LABEL}.",
         cal_line,
     ]
     await message.answer("\n".join(lines), reply_markup=main_menu())

@@ -111,7 +111,7 @@ def build_help_text(*, timezone_name: str) -> str:
             "",
             "*Capture*",
             "• *quick task* — one message; clarify if needed; always confirm",
-            "• *guided task* — title → date → time → optional details → reminder",
+            "• *guided task* — title → date → time → optional details → confirm",
             '• *idle message* — e.g. "Friday 15:00 dentist" saves when complete',
             "",
             "*Manage*",

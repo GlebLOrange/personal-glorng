@@ -70,7 +70,6 @@ Shape:
     "scheduled_time": "HH:MM" or null,
     "description": string or null,
     "location": string or null,
-    "reminder_minutes": integer or null,
     "assignee_hint": string or null
   },
   "confidence": {
@@ -78,8 +77,7 @@ Shape:
     "scheduled_date": number,
     "scheduled_time": number,
     "description": number,
-    "location": number,
-    "reminder_minutes": number
+    "location": number
   },
   "questions": [{"field": string, "question": string}]
 }
@@ -87,14 +85,14 @@ Shape:
 Use timezone and today to resolve relative dates such as tomorrow and next Friday.
 scheduled_date is today or later. scheduled_time is 24-hour HH:MM with no seconds.
 When a rule_based_hints value agrees with the message, copy it.
-reminder_minutes is 15, 30, 60, or null.
+Do not set or ask about reminder timing; reminders are fixed by the app.
 Each confidence is from 0.0 to 1.0. Use 0.0 when that draft field is null.
 questions is empty, or only title, scheduled_date, and scheduled_time when the value is null or confidence is below 0.7.
 Use these question strings exactly:
 - title: "What should I call this task?"
 - scheduled_date: "What date should I schedule this for?"
 - scheduled_time: "What time should I remind you?"
-Do not ask about description, location, reminder_minutes, or assignee_hint.
+Do not ask about description, location, or assignee_hint.
 Use null, not an empty string, for unknown draft fields.
 """
 

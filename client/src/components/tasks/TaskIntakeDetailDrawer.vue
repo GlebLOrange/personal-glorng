@@ -19,7 +19,6 @@ interface DraftFields {
   scheduled_time?: string | null;
   description?: string | null;
   location?: string | null;
-  reminder_minutes?: number | null;
   assignee_hint?: string | null;
 }
 
@@ -28,13 +27,14 @@ function draftFields(draft: Record<string, unknown> | null): DraftFields {
   return draft as DraftFields;
 }
 
+const STATIC_REMINDER_LABEL = "Reminders: 90 / 60 / 30 min before + at start";
+
 const draftEntries = [
   { key: "title", label: "Title" },
   { key: "scheduled_date", label: "Date" },
   { key: "scheduled_time", label: "Time" },
   { key: "location", label: "Location" },
   { key: "description", label: "Notes" },
-  { key: "reminder_minutes", label: "Reminder (min)" },
   { key: "assignee_hint", label: "Assignee" },
 ] as const;
 </script>
@@ -77,6 +77,10 @@ const draftEntries = [
           </template>
         </template>
       </dl>
+
+      <p class="mt-3 text-sm text-surface-mid" aria-label="reminder schedule">
+        {{ STATIC_REMINDER_LABEL }}
+      </p>
 
       <details v-if="intake.draft_json" class="mt-4 text-sm text-surface-mid">
         <summary class="cursor-pointer select-none hover:text-surface-light">raw draft</summary>

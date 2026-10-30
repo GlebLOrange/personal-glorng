@@ -79,25 +79,6 @@ def time_picker(
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
-def reminder_presets() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(text="⏰ 15 min", callback_data="remind:15"),
-                InlineKeyboardButton(text="⏰ 30 min", callback_data="remind:30"),
-                InlineKeyboardButton(text="⏰ 1 hour", callback_data="remind:60"),
-            ],
-            [
-                InlineKeyboardButton(text="⏰ 3 hours", callback_data="remind:180"),
-                InlineKeyboardButton(
-                    text="🔕 no reminder",
-                    callback_data="remind:none",
-                ),
-            ],
-        ],
-    )
-
-
 def confirmation() -> InlineKeyboardMarkup:
     """Build confirm/edit/cancel buttons."""
     return InlineKeyboardMarkup(

@@ -12,7 +12,7 @@ from app.core.utils import format_display_date, local_naive_to_utc, local_now
 from app.db.documents.task import IntakeStatus
 from app.db.registry import DatabaseRegistry
 from app.schemas.task_intake import ClarificationQuestion, TaskDraft
-from app.services.task import create_with_sync
+from app.services.task import STATIC_REMINDER_LABEL, create_with_sync
 from app.services.task_intake import TaskIntakeService
 from app.todobot.keyboards.menu import main_menu
 from app.todobot.keyboards.task import (
@@ -20,7 +20,6 @@ from app.todobot.keyboards.task import (
     confirmation,
     date_picker,
     field_edit_menu,
-    reminder_presets,
     skip_button,
     time_picker,
     with_flow_nav,
@@ -80,6 +79,7 @@ def _format_summary(data: dict[str, object]) -> str:
         lines.append(f"*Location:* {escape_md(str(data['location']))}")
     if data.get("notes"):
         lines.append(f"*Notes:* {escape_md(str(data['notes']))}")
+    lines.append(f"*{STATIC_REMINDER_LABEL}*")
     return "\n".join(lines)
 
 
@@ -204,17 +204,11 @@ async def _prompt_reminder_or_confirm(
     svc: TaskIntakeService,
     intake_id: int,
 ) -> None:
+    """Load intake draft into FSM and show confirmation (static reminders)."""
     intake = await svc.get_intake(intake_id)
     draft = svc.draft_from_intake(intake)
     await state.update_data(intake_id=intake_id, **_draft_to_fsm_data(draft))
-
-    # Always ask reminder presets (LLM rarely fills reminder_minutes).
-    await state.set_state(TaskCreation.waiting_for_reminder)
-    sent = await target.answer(
-        "How early should I remind you?",
-        reply_markup=with_flow_nav(reminder_presets()),
-    )
-    await _track_msg(state, sent.message_id)
+    await _show_intake_confirmation(target, state, svc, intake_id)
 
 
 async def _show_intake_confirmation(
@@ -323,7 +317,6 @@ async def handle_title(
         TaskCreation.waiting_for_time,
         TaskCreation.waiting_for_location,
         TaskCreation.waiting_for_notes,
-        TaskCreation.waiting_for_reminder,
         TaskCreation.clarifying,
         TaskCreation.confirming,
     ),
@@ -418,7 +411,6 @@ async def handle_date_text(
         TaskCreation.waiting_for_title,
         TaskCreation.waiting_for_location,
         TaskCreation.waiting_for_notes,
-        TaskCreation.waiting_for_reminder,
         TaskCreation.clarifying,
         TaskCreation.confirming,
     ),
@@ -556,39 +548,6 @@ async def handle_notes(message: Message, state: FSMContext) -> None:
     await _advance_to_next_missing(message, state)
 
 
-@router.callback_query(F.data.startswith("remind:"))
-async def handle_reminder_choice(
-    callback: CallbackQuery,
-    state: FSMContext,
-    registry: DatabaseRegistry,
-) -> None:
-    if not callback.data or not callback.message:
-        return
-    value = callback.data.split(":", 1)[1]
-    await callback.answer()
-
-    if value == "none":
-        await state.update_data(reminder_minutes=None)
-    else:
-        await state.update_data(reminder_minutes=int(value))
-
-    data = await state.get_data()
-    intake_id = data.get("intake_id")
-    if intake_id:
-        svc = TaskIntakeService(registry)
-        await _show_intake_confirmation(callback.message, state, svc, int(intake_id))
-        return
-
-    await state.set_state(TaskCreation.confirming)
-    summary = _format_summary(data)
-    sent = await callback.message.answer(
-        f"{summary}\n\nConfirm this task?",
-        reply_markup=confirmation(),
-        parse_mode="Markdown",
-    )
-    await _track_msg(state, sent.message_id)
-
-
 @router.callback_query(F.data == "confirm:yes")
 async def confirm_task(
     callback: CallbackQuery,
@@ -603,12 +562,10 @@ async def confirm_task(
 
     if intake_id:
         svc = TaskIntakeService(registry)
-        reminder_minutes = data.get("reminder_minutes")
         try:
             task = await svc.confirm_intake(
                 int(intake_id),
                 telegram_user_id=callback.from_user.id,
-                reminder_minutes=reminder_minutes,
             )
         except Exception:
             await callback.message.answer(
@@ -632,6 +589,7 @@ async def confirm_task(
         )
         await callback.message.answer(
             f'✅ Task saved! I\'ll remind you about "{escape_md(task.title)}".\n'
+            f"{STATIC_REMINDER_LABEL}.\n"
             f"{cal_line}",
             reply_markup=main_menu(),
         )
@@ -642,7 +600,6 @@ async def confirm_task(
     scheduled_at = local_naive_to_utc(
         datetime.fromisoformat(f"{task_date}T{task_time}:00"),
     )
-    reminder_minutes = data.get("reminder_minutes")
 
     task = await create_with_sync(
         registry,
@@ -653,7 +610,6 @@ async def confirm_task(
         location=(
             data.get("location") if isinstance(data.get("location"), str) else None
         ),
-        reminder_minutes=int(reminder_minutes) if reminder_minutes else None,
     )
 
     if callback.bot:
@@ -667,6 +623,7 @@ async def confirm_task(
     )
     await callback.message.answer(
         f'✅ Task saved! I\'ll remind you about "{escape_md(task.title)}".\n'
+        f"{STATIC_REMINDER_LABEL}.\n"
         f"{cal_line}",
         reply_markup=main_menu(),
     )
@@ -785,10 +742,9 @@ async def flow_back(callback: CallbackQuery, state: FSMContext) -> None:
         TaskCreation.waiting_for_time.state: "time",
         TaskCreation.waiting_for_location.state: "location",
         TaskCreation.waiting_for_notes.state: "notes",
-        TaskCreation.waiting_for_reminder.state: "reminder",
     }
     current_field = field_for_state.get(current or "")
-    if current_field and current_field != "reminder":
+    if current_field:
         await state.update_data(**{current_field: None})
         skipped = set(data.get("_skipped", []))
         skipped.discard(current_field)
@@ -905,9 +861,11 @@ async def _advance_to_next_missing(
             await _track_msg(state, sent.message_id)
             return
 
-    await state.set_state(TaskCreation.waiting_for_reminder)
+    summary = _format_summary(full_data)
+    await state.set_state(TaskCreation.confirming)
     sent = await target.answer(
-        "How early should I remind you?",
-        reply_markup=with_flow_nav(reminder_presets()),
+        f"{summary}\n\nConfirm this task?",
+        reply_markup=confirmation(),
+        parse_mode="Markdown",
     )
     await _track_msg(state, sent.message_id)
