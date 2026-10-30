@@ -2,18 +2,20 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, Path
 
-from app.core.deps import AppSettings, CurrentUser
+from app.core.deps import (
+    AppSettings,
+    CurrentUser,
+    WeatherLocationServiceDep,
+    WeatherServiceDep,
+)
 from app.core.exceptions import ApiError
 from app.core.rate_limit import rate_limit_api
-from app.db.deps import DbRegistry
 from app.schemas.weather import (
     WeatherLocationCreate,
     WeatherLocationReorder,
     WeatherLocationResponse,
 )
 from app.schemas.world_time import WorldTimeResponse
-from app.services.weather import WeatherService
-from app.services.weather_location import WeatherLocationService
 
 routes = APIRouter(dependencies=[Depends(rate_limit_api)])
 
@@ -31,8 +33,11 @@ async def get_weather_config(settings: AppSettings) -> dict[str, str]:
     summary="Lookup weather",
     description="Public weather lookup for a city name or lat,lon coordinate pair.",
 )
-async def lookup_weather(location: str = Path(max_length=100)) -> dict[str, Any]:
-    return await WeatherService().get_weather(location)
+async def lookup_weather(
+    svc: WeatherServiceDep,
+    location: str = Path(max_length=100),
+) -> dict[str, Any]:
+    return await svc.get_weather(location)
 
 
 def _world_time_from_weather(data: dict[str, Any]) -> WorldTimeResponse:
@@ -61,18 +66,21 @@ def _world_time_from_weather(data: dict[str, Any]) -> WorldTimeResponse:
 
 
 @routes.get("/time/{location:path}", response_model=WorldTimeResponse)
-async def lookup_world_time(location: str = Path(max_length=100)) -> WorldTimeResponse:
+async def lookup_world_time(
+    svc: WeatherServiceDep,
+    location: str = Path(max_length=100),
+) -> WorldTimeResponse:
     """Public world clock for a city name or lat,lon coordinate pair."""
-    data = await WeatherService().get_weather(location)
+    data = await svc.get_weather(location)
     return _world_time_from_weather(data)
 
 
 @routes.get("/locations", response_model=list[WeatherLocationResponse])
 async def list_weather_locations(
-    registry: DbRegistry,
+    svc: WeatherLocationServiceDep,
     user: CurrentUser,
 ) -> list[WeatherLocationResponse]:
-    locations = await WeatherLocationService(registry).list_locations(user.id)
+    locations = await svc.list_locations(user.id)
     return [WeatherLocationResponse.model_validate(loc) for loc in locations]
 
 
@@ -85,10 +93,10 @@ async def list_weather_locations(
 )
 async def add_weather_location(
     body: WeatherLocationCreate,
-    registry: DbRegistry,
+    svc: WeatherLocationServiceDep,
     user: CurrentUser,
 ) -> WeatherLocationResponse:
-    location = await WeatherLocationService(registry).add_location(
+    location = await svc.add_location(
         user.id,
         query=body.query,
     )
@@ -103,10 +111,10 @@ async def add_weather_location(
 )
 async def remove_weather_location(
     location_id: int,
-    registry: DbRegistry,
+    svc: WeatherLocationServiceDep,
     user: CurrentUser,
 ) -> None:
-    await WeatherLocationService(registry).remove_location(user.id, location_id)
+    await svc.remove_location(user.id, location_id)
 
 
 @routes.put(
@@ -117,10 +125,10 @@ async def remove_weather_location(
 )
 async def reorder_weather_locations(
     body: WeatherLocationReorder,
-    registry: DbRegistry,
+    svc: WeatherLocationServiceDep,
     user: CurrentUser,
 ) -> list[WeatherLocationResponse]:
-    locations = await WeatherLocationService(registry).reorder_locations(
+    locations = await svc.reorder_locations(
         user.id,
         body.ordered_ids,
     )

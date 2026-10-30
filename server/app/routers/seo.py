@@ -6,12 +6,12 @@ from typing import Annotated
 from fastapi import APIRouter, Path, Query
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 
+from app.core.deps import AppSettings
 from app.core.exceptions import NotFoundError
 from app.db.deps import DbRegistry
 from app.services.news_og_html import render_news_og_html
 from app.services.profile_og_html import render_profile_og_html
 from app.services.resume_export import build_share_query, parse_csv_ids, select_resume
-from app.settings import get_settings
 
 router = APIRouter(tags=["seo"])
 
@@ -48,8 +48,8 @@ def _url_entry(loc: str, changefreq: str, lastmod: str | None = None) -> str:
     summary="Get sitemap",
     description="Public XML sitemap for search engines.",
 )
-async def sitemap_xml(registry: DbRegistry) -> Response:
-    base = get_settings().BASE_URL.rstrip("/")
+async def sitemap_xml(registry: DbRegistry, settings: AppSettings) -> Response:
+    base = settings.BASE_URL.rstrip("/")
     static_urls = [_url_entry(f"{base}{path}", freq) for path, freq in _public_paths()]
     news_urls: list[str] = []
     if registry.news is not None:
@@ -97,6 +97,7 @@ _ROBOTS_DISALLOW: tuple[str, ...] = (
 )
 async def news_og_html(
     registry: DbRegistry,
+    settings: AppSettings,
     slug: Annotated[str, Path(pattern=r"^[a-z0-9][a-z0-9-]{0,119}$")],
 ) -> HTMLResponse:
     if registry.news is None:
@@ -104,7 +105,7 @@ async def news_og_html(
     article = await registry.news.get_by_slug(slug)
     if article is None or article.status != "published":
         raise NotFoundError("Article not found")
-    html = render_news_og_html(article, base_url=get_settings().BASE_URL)
+    html = render_news_og_html(article, base_url=settings.BASE_URL)
     return HTMLResponse(content=html)
 
 
@@ -119,6 +120,7 @@ async def news_og_html(
     ),
 )
 async def profile_og_html(
+    settings: AppSettings,
     skills: Annotated[str | None, Query()] = None,
     projects: Annotated[str | None, Query()] = None,
     sections: Annotated[str | None, Query()] = None,
@@ -131,7 +133,7 @@ async def profile_og_html(
     )
     html = render_profile_og_html(
         selection,
-        base_url=get_settings().BASE_URL,
+        base_url=settings.BASE_URL,
         query=query,
     )
     return HTMLResponse(content=html)
@@ -143,8 +145,8 @@ async def profile_og_html(
     summary="Get robots.txt",
     description="Public robots.txt for crawlers.",
 )
-async def robots_txt() -> PlainTextResponse:
-    base = get_settings().BASE_URL.rstrip("/")
+async def robots_txt(settings: AppSettings) -> PlainTextResponse:
+    base = settings.BASE_URL.rstrip("/")
     lines = [
         "User-agent: *",
         "Allow: /",

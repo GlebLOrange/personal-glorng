@@ -12,10 +12,10 @@ from urllib.parse import urlparse
 
 import httpx
 
-from app.core.exceptions import ConflictError, ForbiddenError, ValidationError
+from app.core.exceptions import ConflictError, ValidationError
 from app.core.pagination import build_paginated
 from app.core.url_safety import get_public_http_url, is_public_http_url
-from app.core.utils import DEFAULT_PER_PAGE, paginate_params
+from app.core.utils import DEFAULT_PER_PAGE, assert_owner_or_superuser, paginate_params
 from app.db.documents.base import utc_now
 from app.db.documents.health_checker import DnsRecord, HealthCheckResult, HealthMonitor
 from app.db.registry import DatabaseRegistry
@@ -195,10 +195,12 @@ class HealthMonitorService:
         *,
         is_superuser: bool = False,
     ) -> None:
-        if is_superuser:
-            return
-        if monitor.created_by != actor_id:
-            raise ForbiddenError("You do not have permission to access this monitor")
+        assert_owner_or_superuser(
+            monitor.created_by,
+            actor_id,
+            is_superuser=is_superuser,
+            detail="You do not have permission to access this monitor",
+        )
 
     async def _get_owned(
         self,

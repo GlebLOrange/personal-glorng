@@ -2,17 +2,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
-from app.core.deps import AuthorizedUser, require_capability
+from app.core.deps import AppLogServiceDep, AuthorizedUser, require_capability
 from app.core.pagination import (
     PaginationParams,
     audit_pagination_params,
     build_paginated,
 )
 from app.core.rate_limit import rate_limit_api
-from app.db.deps import DbRegistry
 from app.schemas.app_log import AppLogListResponse, AppLogResponse
 from app.schemas.date_filters import AuditDateFilter, audit_date_filter
-from app.services.app_log import AppLogService
 
 router = APIRouter(
     prefix="/app-logs",
@@ -22,13 +20,6 @@ router = APIRouter(
         Depends(require_capability("app-logs", "read")),
     ],
 )
-
-
-def get_app_log_service(registry: DbRegistry) -> AppLogService:
-    return AppLogService(registry)
-
-
-AppLogServiceDep = Annotated[AppLogService, Depends(get_app_log_service)]
 
 
 @router.get(
