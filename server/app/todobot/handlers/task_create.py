@@ -26,6 +26,7 @@ from app.todobot.keyboards.task import (
     with_flow_nav,
 )
 from app.todobot.states.task import TaskCreation
+from app.todobot.utils.calendar_status import calendar_post_create_line
 from app.todobot.utils.markdown import escape_md
 from app.todobot.utils.nlp import parse_task_input
 
@@ -624,8 +625,14 @@ async def confirm_task(
                 state,
             )
         await state.clear()
+        cal_line = await calendar_post_create_line(
+            registry,
+            telegram_user_id=callback.from_user.id,
+            task=task,
+        )
         await callback.message.answer(
-            f'✅ Task saved! I\'ll remind you about "{escape_md(task.title)}".',
+            f'✅ Task saved! I\'ll remind you about "{escape_md(task.title)}".\n'
+            f"{cal_line}",
             reply_markup=main_menu(),
         )
         return
@@ -653,8 +660,14 @@ async def confirm_task(
         await _cleanup_messages(callback.bot, callback.message.chat.id, state)
 
     await state.clear()
+    cal_line = await calendar_post_create_line(
+        registry,
+        telegram_user_id=callback.from_user.id,
+        task=task,
+    )
     await callback.message.answer(
-        f'✅ Task saved! I\'ll remind you about "{escape_md(task.title)}".',
+        f'✅ Task saved! I\'ll remind you about "{escape_md(task.title)}".\n'
+        f"{cal_line}",
         reply_markup=main_menu(),
     )
 
