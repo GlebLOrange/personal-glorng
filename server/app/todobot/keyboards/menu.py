@@ -9,12 +9,10 @@ from aiogram.types import (
 
 LABEL_QUICK_TASK = "⚡ quick task"
 LABEL_GUIDED_TASK = "🧭 guided task"
-LABEL_MY_TASKS = "📋 list tasks"
+LABEL_MY_TASKS = "📋 tasks"
 LABEL_CALENDAR = "📅 calendar"
 LABEL_HELP = "❓ help"
 LABEL_RESTART = "🔄 restart"
-# Kept for expense module imports; expenses are hidden from the menu.
-LABEL_LOG_EXPENSE = "log expense"
 # Backward-compatible alias (maps to quick AI intake).
 LABEL_NEW_TASK = LABEL_QUICK_TASK
 
@@ -36,8 +34,10 @@ def main_menu() -> ReplyKeyboardMarkup:
                 KeyboardButton(text=LABEL_QUICK_TASK),
                 KeyboardButton(text=LABEL_GUIDED_TASK),
             ],
-            [KeyboardButton(text=LABEL_MY_TASKS)],
-            [KeyboardButton(text=LABEL_CALENDAR)],
+            [
+                KeyboardButton(text=LABEL_MY_TASKS),
+                KeyboardButton(text=LABEL_CALENDAR),
+            ],
             [KeyboardButton(text=LABEL_HELP), KeyboardButton(text=LABEL_RESTART)],
         ],
         resize_keyboard=True,
@@ -46,7 +46,7 @@ def main_menu() -> ReplyKeyboardMarkup:
 
 
 def welcome_inline(*, calendar_connected: bool) -> InlineKeyboardMarkup:
-    """Fixed welcome menu: quick/guided, list tasks, calendar, help/restart."""
+    """Fixed welcome menu: quick|guided, tasks|calendar, help|restart."""
     calendar_btn = (
         InlineKeyboardButton(text="📅 calendar", callback_data="w:cal")
         if calendar_connected
@@ -62,9 +62,9 @@ def welcome_inline(*, calendar_connected: bool) -> InlineKeyboardMarkup:
                 InlineKeyboardButton(text="🧭 guided task", callback_data="w:guided"),
             ],
             [
-                InlineKeyboardButton(text="📋 list tasks", callback_data="w:tasks"),
+                InlineKeyboardButton(text="📋 tasks", callback_data="w:tasks"),
+                calendar_btn,
             ],
-            [calendar_btn],
             [
                 InlineKeyboardButton(text="❓ help", callback_data="w:help"),
                 InlineKeyboardButton(text="🔄 restart", callback_data="w:restart"),
