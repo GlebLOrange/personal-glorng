@@ -20,13 +20,21 @@ Before editing tracked project files:
 
 For new chats or risky/experimental work, prefer Cursor **Worktree** mode or start with `/worktree <task>` so changes stay isolated.
 
+Local cleanup, only when asked:
+
+- Prefer only `main` + the current checkout locally.
+- Remove unused worktrees first, then delete other local `cursor/*` branches (merged, gone-upstream, or abandoned locals even if `origin/cursor/…` still exists).
+- Keep remotes unless the user explicitly asks to delete them.
+- Never delete a branch checked out in a live worktree.
+- `git fetch --prune` drops stale remote-tracking refs; `git worktree prune` drops registrations whose directory is already gone.
+
 When the user asks to commit or open a PR, inspect status, diff, and recent history first; never commit, push, amend, or open a PR unless explicitly requested.
 
 ## Safety
 
 - Never commit unless the user explicitly requests it.
 - Never push to `main` unless the user explicitly requests it.
-- Never run destructive or irreversible git commands (force push, hard reset) unless explicitly requested.
+- Never run destructive or irreversible git commands (force push, hard reset, or branch deletion outside the local cleanup above) unless explicitly requested.
 - Never delete config, migrations, index scripts, or env files without explicit user confirmation.
 - Never commit `.env`, credentials, or other secret-bearing files.
 
