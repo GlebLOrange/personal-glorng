@@ -1,32 +1,6 @@
 ---
-description: Gortex code intelligence — prefer graph tools over file reads
+description: Gortex community code-area map (pointer only)
 alwaysApply: true
 ---
 
-<!-- gortex:communities:start -->
-## Community Skills
-
-| Area | Description | Explore |
-|------|-------------|---------|
-| Tests 17 Dirs | 665 symbols | `analyze(operation:"communities", id:"community-400")` |
-| Tests 5 Dirs | 388 symbols | `analyze(operation:"communities", id:"community-512")` |
-| Composables 4 Dirs Usetasks | 352 symbols | `analyze(operation:"communities", id:"community-119")` |
-| Tests 3 Dirs | 345 symbols | `analyze(operation:"communities", id:"community-509")` |
-| App Services 11 Dirs Delete | 339 symbols | `analyze(operation:"communities", id:"community-444")` |
-| Components Ui 29 Dirs | 336 symbols | `analyze(operation:"communities", id:"community-56")` |
-| Tests 10 Dirs | 255 symbols | `analyze(operation:"communities", id:"community-506")` |
-| App Schemas 8 Dirs | 247 symbols | `analyze(operation:"communities", id:"community-409")` |
-| App Services 15 Dirs | 208 symbols | `analyze(operation:"communities", id:"community-460")` |
-| Tests 7 Dirs | 186 symbols | `analyze(operation:"communities", id:"community-515")` |
-| 8 Dirs App Core Logging Logger | 185 symbols | `analyze(operation:"communities", id:"community-438")` |
-| App Services 8 Dirs Record | 163 symbols | `analyze(operation:"communities", id:"community-436")` |
-| Composables 7 Dirs Replace | 157 symbols | `analyze(operation:"communities", id:"community-213")` |
-| App Services 7 Dirs Upsert | 157 symbols | `analyze(operation:"communities", id:"community-463")` |
-| Tests 9 Dirs | 153 symbols | `analyze(operation:"communities", id:"community-399")` |
-| Tests 6 Dirs Create User | 150 symbols | `analyze(operation:"communities", id:"community-496")` |
-| App Services 10 Dirs Validationerror | 135 symbols | `analyze(operation:"communities", id:"community-378")` |
-| Composables 8 Dirs | 124 symbols | `analyze(operation:"communities", id:"community-76")` |
-| App Services 10 Dirs Create Article | 116 symbols | `analyze(operation:"communities", id:"community-450")` |
-| Composables 5 Dirs | 104 symbols | `analyze(operation:"communities", id:"community-82")` |
-
-<!-- gortex:communities:end -->
+Code areas: call `analyze(operation:"communities")`, or read [`.cursor/references/gortex-communities.md`](../references/gortex-communities.md). Offloaded community skill bodies: [`.cursor/references/gortex-skills/`](../references/gortex-skills/).

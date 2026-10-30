@@ -23,14 +23,9 @@ Keep the product focused on professional presentation.
 
 Verify against the repository before treating a technology as in use. Do not apply generic React, Nuxt, Svelte, or SQLAlchemy-first agent dumps.
 
-## Before changing code
+## Change constraints
 
-- Inspect the existing architecture first.
-- Preserve existing functionality.
-- Do not introduce unnecessary dependencies.
-- Do not make large architectural changes without approval.
-- Prefer simple solutions; do not rewrite working code unnecessarily.
-- Test changes before declaring a task complete.
+Inspect architecture first; preserve behavior; no new dependencies or large architecture shifts without approval; prefer the smallest fix. Declare done only after the agreed checks.
 
 ## Pointers
 
