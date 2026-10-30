@@ -73,6 +73,10 @@ export default defineConfig({
             { text: "Cloudflare", link: "/operations/cloudflare" },
             { text: "Cloud VM", link: "/operations/cloud-vm" },
             { text: "DevOps checklist", link: "/operations/devops-checklist" },
+            {
+              text: "Agent token baseline",
+              link: "/operations/agent-token-baseline",
+            },
           ],
         },
       ],
