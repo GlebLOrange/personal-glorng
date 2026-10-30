@@ -58,6 +58,12 @@ nginx/     Reverse proxy (:80)
 docs/      VitePress handbook
 ```
 
+## Branches
+
+Feature branches use `cursor/<short-kebab>`. Do not commit or push to `main` unless asked. Details: [Contributing → Branch workflow](docs/guide/contributing.md#branch-workflow).
+
+Prefer only `main` + the current checkout locally. When cleaning, remove unused worktrees first, then delete other local `cursor/*` (including abandoned unmerged locals); leave remotes unless asked. Never delete a branch checked out in a live worktree. `git fetch --prune` drops stale remote-tracking refs; `git worktree prune` drops registrations whose directory is already gone.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

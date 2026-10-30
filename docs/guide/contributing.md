@@ -9,9 +9,10 @@ How to change Gleb.Y and open a pull request.
 3. Run targeted checks before pushing (see [Quality checks](/guide/development#quality-checks) and [Testing](/reference/testing)).
 4. Open a PR with a short title and **Summary** + **Test plan** sections.
 
-Do not push directly to `main`. Never commit `.env` or credentials.
+Do not commit or push to `main` unless asked. Never commit `.env` or credentials.
 
-- **2026-10-26:** Local cleanup deletes only branches merged into `main` and branches whose upstream is gone. Keep `main` and any branch checked out in a live worktree; `git fetch --prune` drops stale remote-tracking refs. Leave unmerged branches that still have a remote.
+- **2026-10-30:** Prefer only `main` + the current checkout locally. When cleaning, remove unused worktrees first, then delete other local `cursor/*` (merged, gone-upstream, or abandoned locals even if `origin/cursor/…` still exists). Leave remotes unless asked. Never delete a branch checked out in a live worktree. `git fetch --prune` / `git worktree prune` as supporting steps.
+- **2026-10-26:** Local cleanup deletes only branches merged into `main` and branches whose upstream is gone. Keep `main` and any branch checked out in a live worktree; `git fetch --prune` drops stale remote-tracking refs. Leave unmerged branches that still have a remote. Superseded 2026-10-30.
 
 ## Where facts live
 
