@@ -38,7 +38,7 @@ Do not regenerate catalogs unless a page change depends on `scripts/generate_doc
 README.md                 Door — links into the handbook
 docs/                     VitePress handbook
 docs/guide/               Setup, architecture, development, frontend, contributing
-docs/operations/          Deployment, database, backups, Cloudflare, Cloud VM
+docs/operations/          Deployment, database, backups, Cloudflare, Cloud VM, agent-token-baseline
 docs/reference/           Platform, API, config, security, testing
 docs/adr/                 Architecture decision records
 docs/specs/               Feature and program specs (this file)

@@ -7,7 +7,7 @@
 | Section | Topics |
 |---------|--------|
 | [Guide](/guide/getting-started) | Setup, architecture, dev workflow, frontend, contributing |
-| [Operations](/operations/deployment) | Prod container workflow, database, [logging](/operations/logging), backups, Cloudflare, [Cloud VM](/operations/cloud-vm), [DevOps / CI gates](/operations/devops-checklist) |
+| [Operations](/operations/deployment) | Prod container workflow, database, [logging](/operations/logging), backups, Cloudflare, [Cloud VM](/operations/cloud-vm), [DevOps / CI gates](/operations/devops-checklist), [Agent token baseline](/operations/agent-token-baseline) |
 | [Reference](/reference/platform) | API catalog, env vars, security, testing, automation |
 | [ADRs](/adr/) | Architecture decision records |
 | [Specs](/specs/handbook-structure) | Handbook structure, news, agy-ai-tool (proposed), platform hardening, P3 roadmap, manager maintenance themes |
