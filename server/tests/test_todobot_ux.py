@@ -18,6 +18,7 @@ from app.todobot.handlers.start import (
     build_welcome_text,
     menu_restart,
 )
+from app.todobot.handlers.task_create import AI_PROMPT, GUIDED_PROMPT
 from app.todobot.keyboards.menu import (
     LABEL_GUIDED_TASK,
     LABEL_QUICK_TASK,
@@ -25,6 +26,7 @@ from app.todobot.keyboards.menu import (
     welcome_inline,
 )
 from app.todobot.keyboards.task import confirmation, my_task_detail
+from app.todobot.utils.action_help import HELP_SECTIONS, help_catalog_lines, toast_for
 from app.todobot.utils.calendar_status import (
     LINE_ADDED,
     LINE_NOT_LINKED,
@@ -109,13 +111,100 @@ def test_build_welcome_text_no_task_list() -> None:
 
 
 def test_build_help_text_is_richer_than_welcome() -> None:
-    """Help covers capture, manage, calendar, reminders."""
+    """Help covers capture, manage, calendar, reminders, navigation."""
     help_text = build_help_text(timezone_name="Europe/Berlin")
     assert "TodoBot help" in help_text
-    assert "idle message" in help_text
-    assert "Reminders" in help_text
-    assert "Calendar" in help_text
     assert "Europe/Berlin" in help_text
+    for heading, _bullets in HELP_SECTIONS:
+        assert f"*{heading}*" in help_text
+    assert "idle message" in help_text
+    assert "confirm" in help_text.lower()
+    assert "skip" in help_text.lower()
+    assert "mark done" in help_text
+    assert "remove" in help_text
+    assert "edit" in help_text
+    assert "connect" in help_text.lower()
+    assert "snooze" in help_text.lower()
+    assert "postpone" in help_text.lower()
+    assert "restart" in help_text.lower()
+    assert "/help" in help_text
+    assert help_catalog_lines()[0] == "*Capture*"
+    # Catalog is the sole body source (title + timezone + sections).
+    rebuilt = "\n".join(
+        [
+            "*TodoBot help*",
+            "_Timezone: Europe/Berlin_",
+            "",
+            *help_catalog_lines(),
+        ],
+    )
+    assert help_text == rebuilt
+
+
+def test_toast_for_wired_callback_prefixes() -> None:
+    """toast_for maps create/manage/calendar/reminder/welcome/status families."""
+    assert toast_for("w:quick") == "Quick task — one message"
+    assert toast_for("w:restart") == "Restarting…"
+    assert toast_for("confirm:yes") == "Saving task…"
+    assert toast_for("confirm:edit") == "Choose a field"
+    assert toast_for("confirm:cancel") == "Cancelled"
+    assert toast_for("skip:location") == "Skipped"
+    assert toast_for("flow:back") == "Going back"
+    assert toast_for("editf:title") == "Edit title"
+    assert toast_for("date:custom") == "Type a date"
+    assert toast_for("date:2026-11-01") == "Date set"
+    assert toast_for("time:custom") == "Type a time"
+    assert toast_for("time:18:00") == "Time set"
+    assert toast_for("mt:back") == "Back to list"
+    assert toast_for("mt:main") == "Main menu"
+    assert toast_for("mt:o:9") == "Opening task"
+    assert toast_for("mt:done:9") == "Marked done"
+    assert toast_for("mt:rm:9") == "Remove options"
+    assert toast_for("mt:e:9") == "Edit task"
+    assert toast_for("mt:ew:9") == "Change when"
+    assert toast_for("mt:ef:9:title") == "Edit title"
+    assert toast_for("mt:d:9:2026-11-01") == "Date set"
+    assert toast_for("mt:d:9:custom") == "Type a date"
+    assert toast_for("mt:t:9:18-00") == "Time set"
+    assert toast_for("mt:t:9:custom") == "Type a time"
+    assert toast_for("cal:sync") == "Syncing…"
+    assert toast_for("cal:month") == "This month"
+    assert toast_for("cal:hub") == "Calendar hub"
+    assert toast_for("cal:day:2026-11-01") == "Day agenda"
+    assert toast_for("raction:9:complete") == "Completing…"
+    assert toast_for("raction:9:snooze:15") == "Snooze 15 min"
+    assert toast_for("raction:9:snooze:30") == "Snooze 30 min"
+    assert toast_for("raction:9:snooze:60") == "Snooze 60 min"
+    assert toast_for("raction:9:postpone") == "Postpone…"
+    assert toast_for("pp:1h") == "Postpone +1 hour"
+    assert toast_for("pp:tm09") == "Tomorrow 09:00"
+    assert toast_for("pp:custom") == "Type a date/time"
+    assert toast_for("status:9:completed") == "Marked completed"
+    assert toast_for("status:9:not_completed") == "Marked not completed"
+    assert toast_for("") is None
+    assert toast_for("unknown:x") is None
+    for sample in (
+        "w:quick",
+        "date:2026-11-01",
+        "mt:o:1",
+        "cal:sync",
+        "raction:1:snooze:15",
+        "pp:1h",
+        "status:1:completed",
+    ):
+        text = toast_for(sample)
+        assert text is not None
+        assert len(text) <= 200
+
+
+def test_guided_prompt_has_howto_line() -> None:
+    """Guided entry prompt includes a short how-to; AI prompt unchanged."""
+    assert "What task?" in GUIDED_PROMPT
+    assert "\n" in GUIDED_PROMPT
+    assert AI_PROMPT == (
+        "Send your task in one message.\n\n"
+        'Example: "Tomorrow at 18:00 gym near city center"'
+    )
 
 
 @pytest.mark.asyncio
