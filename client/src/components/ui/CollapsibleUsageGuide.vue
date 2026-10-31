@@ -49,9 +49,11 @@ onBeforeUnmount(() => {
 <template>
   <div class="w-full min-w-0 max-w-full">
     <div class="mb-4 flex w-full min-w-0 flex-wrap items-center gap-2">
-      <slot name="start" />
+      <div v-if="slots.start" class="min-w-0">
+        <slot name="start" />
+      </div>
       <div
-        class="flex min-w-0 flex-wrap items-center gap-2"
+        class="flex shrink-0 items-center gap-2"
         :class="slots.start ? 'ml-auto' : undefined"
       >
         <slot name="actions" />

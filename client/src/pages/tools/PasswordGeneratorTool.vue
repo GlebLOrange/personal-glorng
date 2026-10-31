@@ -4,7 +4,7 @@ import { computed, onMounted, ref } from "vue";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import PageShell from "@/components/layout/PageShell.vue";
-import KeyGlyphIcon from "@/components/icons/KeyGlyphIcon.vue";
+import EyeIcon from "@/components/icons/EyeIcon.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -130,9 +130,9 @@ onMounted(() => {
     tool
   >
     <div class="page-tool-actions">
-      <Card variant="ghost" class="w-auto max-w-full">
+      <Card variant="ghost" class="w-full max-w-full">
         <form class="space-y-3" @submit.prevent="generatePassword">
-          <div class="flex min-w-0 flex-wrap items-center justify-start gap-2">
+          <div class="flex min-w-0 w-full flex-wrap items-center gap-2">
             <AdminFilterDropdown
               label="options"
               class="shrink-0"
@@ -191,7 +191,7 @@ onMounted(() => {
               auto-width
             />
 
-            <div class="flex min-w-0 shrink-0 items-center gap-2">
+            <div class="ml-auto flex min-w-0 shrink-0 items-center gap-2">
               <BaseButton
                 variant="primary"
                 type="submit"
@@ -222,38 +222,33 @@ onMounted(() => {
           </div>
         </form>
       </Card>
-    </div>
 
-    <div v-if="generated" class="mt-4 space-y-2">
-      <div class="flex min-w-0 items-end gap-2">
+      <div v-if="generated" class="w-full space-y-2">
         <BaseInput
           :model-value="displayPassword"
           readonly
           label="password"
           placeholder="generated password"
-          class="min-w-0 flex-1 font-data"
+          class="w-full font-data"
           @update:model-value="onPasswordModelUpdate"
-        />
-        <div class="flex shrink-0 items-end gap-2">
-          <BaseButton
-            variant="ghost"
-            size="field"
-            class="gap-1.5"
-            @click="showPassword = !showPassword"
-          >
-            <KeyGlyphIcon class-name="size-3.5 shrink-0" />
-            <span class="inline-grid justify-items-center">
-              <span class="invisible col-start-1 row-start-1" aria-hidden="true">show</span>
-              <span class="invisible col-start-1 row-start-1" aria-hidden="true">hide</span>
-              <span class="col-start-1 row-start-1">{{ showPassword ? "hide" : "show" }}</span>
-            </span>
-          </BaseButton>
-          <IconCopyButton :quiet="false" @click="copy(generated)" />
-        </div>
+        >
+          <template #suffix>
+            <IconActionButton
+              action="create"
+              size="field"
+              transparent-idle
+              :aria-label="showPassword ? 'hide password' : 'show password'"
+              @click="showPassword = !showPassword"
+            >
+              <EyeIcon :off="showPassword" class-name="size-4" />
+            </IconActionButton>
+            <IconCopyButton size="field" quiet @click="copy(generated)" />
+          </template>
+        </BaseInput>
+        <p v-if="!strength.valid" class="text-xs text-surface-mid">
+          {{ strength.message }}
+        </p>
       </div>
-      <p v-if="!strength.valid" class="text-xs text-surface-mid">
-        {{ strength.message }}
-      </p>
     </div>
   </PageShell>
 </template>

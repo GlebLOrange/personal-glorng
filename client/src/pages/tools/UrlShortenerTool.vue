@@ -305,7 +305,6 @@ onMounted(() => {
               <th :class="ADMIN_TH_CLASS" scope="col">title</th>
               <th :class="ADMIN_TH_CLASS" scope="col">short link</th>
               <th :class="ADMIN_TH_CLASS" scope="col">original URL</th>
-              <th :class="ADMIN_TH_CLASS" scope="col">created</th>
               <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
             </template>
             <UrlShortenerListItem
