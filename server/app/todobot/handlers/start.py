@@ -23,6 +23,7 @@ from app.todobot.keyboards.menu import (
     main_menu,
     welcome_inline,
 )
+from app.todobot.utils.action_help import help_catalog_lines, toast_for
 from app.todobot.utils.markdown import escape_md
 
 router = Router()
@@ -109,25 +110,7 @@ def build_help_text(*, timezone_name: str) -> str:
             "*TodoBot help*",
             f"_Timezone: {escape_md(timezone_name)}_",
             "",
-            "*Capture*",
-            "• *quick task* — one message; clarify if needed; always confirm",
-            "• *guided task* — title → date → time → optional details → confirm",
-            '• *idle message* — e.g. "Friday 15:00 dentist" saves when complete',
-            "",
-            "*Manage*",
-            "• *tasks* — closest open tasks; mark done, remove, or edit",
-            "",
-            "*Calendar*",
-            "• Connect Google once; Sync now / month from the calendar hub",
-            "• New tasks enqueue Calendar events when linked",
-            "",
-            "*Reminders*",
-            "• At-start ping always; optional early remind on Quick/Guided",
-            "• complete · snooze (ping only) · postpone (presets or custom)",
-            "",
-            "*Navigation*",
-            "• quick · guided · tasks · calendar · help · restart",
-            "• *restart* clears a flow and refreshes the dashboard",
+            *help_catalog_lines(),
         ],
     )
 
@@ -333,7 +316,7 @@ async def welcome_inline_actions(
     if len(parts) < 2:
         return
     action = parts[1]
-    await callback.answer()
+    await callback.answer(toast_for(callback.data))
 
     if action == "quick":
         await state.clear()

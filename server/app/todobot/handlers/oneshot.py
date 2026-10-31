@@ -16,6 +16,7 @@ from app.todobot.keyboards.task import (
     with_flow_nav,
 )
 from app.todobot.states.task import OneShotCapture
+from app.todobot.utils.action_help import toast_for
 from app.todobot.utils.calendar_status import calendar_post_create_line
 from app.todobot.utils.nlp import ParsedTask, parse_task_input
 from app.todobot.utils.oneshot import (
@@ -143,7 +144,7 @@ async def oneshot_date_pick(
     if not callback.data or not callback.message:
         return
     value = callback.data.split(":", 1)[1]
-    await callback.answer()
+    await callback.answer(toast_for(callback.data))
     if value == "custom":
         await callback.message.answer("Send the date:", reply_markup=clarify_cancel())
         return
@@ -166,7 +167,7 @@ async def oneshot_time_pick(
     if not callback.data or not callback.message:
         return
     value = callback.data.split(":", 1)[1]
-    await callback.answer()
+    await callback.answer(toast_for(callback.data))
     if value == "custom":
         await callback.message.answer("Send the time:", reply_markup=clarify_cancel())
         return
@@ -184,6 +185,6 @@ async def oneshot_time_pick(
 async def oneshot_cancel(callback: CallbackQuery, state: FSMContext) -> None:
     if not callback.message:
         return
-    await callback.answer()
+    await callback.answer(toast_for(callback.data or "flow:cancel"))
     await state.clear()
     await callback.message.answer("Cancelled.", reply_markup=main_menu())
