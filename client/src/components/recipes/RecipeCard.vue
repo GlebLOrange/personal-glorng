@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import ClockIcon from "@/components/icons/ClockIcon.vue";
+import TagIcon from "@/components/icons/TagIcon.vue";
+import UsersIcon from "@/components/icons/UsersIcon.vue";
 import BaseImage from "@/components/ui/BaseImage.vue";
 import IconCloseButton from "@/components/ui/IconCloseButton.vue";
 import IconEditButton from "@/components/ui/IconEditButton.vue";
@@ -8,7 +11,6 @@ import {
   ADMIN_ACTIONS_CLASS,
   ADMIN_TD_ACTIONS_CLASS,
   ADMIN_TD_CLASS,
-  ADMIN_TD_MUTED_CLASS,
   ADMIN_TH_ROW_CLASS,
   ADMIN_TR_CLASS,
 } from "@/constants/adminDataTable";
@@ -33,18 +35,21 @@ const thumbInitials = computed(() => {
   return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 });
 
-const recipeMeta = computed(() => {
+const prepLabel = computed(() => formatRecipeTime(props.recipe.prep_time));
+const cookLabel = computed(() => formatRecipeTime(props.recipe.cook_time));
+const firstTag = computed(() => props.recipe.tags[0] ?? "");
+const tagsTitle = computed(() => props.recipe.tags.join(", "));
+
+const recipeMetaTitle = computed(() => {
   const parts: string[] = [];
-  const prep = formatRecipeTime(props.recipe.prep_time);
-  if (prep) parts.push(`${prep} prep`);
-  const cook = formatRecipeTime(props.recipe.cook_time);
-  if (cook) parts.push(`${cook} cook`);
+  if (prepLabel.value) parts.push(`${prepLabel.value} prep`);
+  if (cookLabel.value) parts.push(`${cookLabel.value} cook`);
   if (props.recipe.servings) parts.push(`${props.recipe.servings} servings`);
-  if (props.recipe.tags.length) {
-    parts.push(props.recipe.tags.slice(0, 3).join(", "));
-  }
+  if (props.recipe.tags.length) parts.push(tagsTitle.value);
   return parts.join(" · ");
 });
+
+const hasMeta = computed(() => Boolean(recipeMetaTitle.value));
 </script>
 
 <template>
@@ -75,8 +80,47 @@ const recipeMeta = computed(() => {
     <th :class="ADMIN_TH_ROW_CLASS" scope="row">
       <p class="truncate text-sm text-surface-light" :title="recipe.title">{{ recipe.title }}</p>
     </th>
-    <td :class="ADMIN_TD_MUTED_CLASS" :title="recipeMeta || undefined">
-      {{ recipeMeta || "—" }}
+    <td
+      :class="[ADMIN_TD_CLASS, 'min-w-0 max-w-[14rem] overflow-hidden text-xs text-surface-mid']"
+      :title="recipeMetaTitle || undefined"
+    >
+      <div v-if="hasMeta" class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+        <span
+          v-if="prepLabel"
+          class="inline-flex min-w-0 items-center gap-1"
+          :title="`${prepLabel} prep`"
+          :aria-label="`${prepLabel} prep`"
+        >
+          <ClockIcon class-name="size-3.5 shrink-0" />
+          <span class="truncate">{{ prepLabel }}</span>
+        </span>
+        <span
+          v-if="cookLabel"
+          class="inline-flex min-w-0 items-center gap-1"
+          :title="`${cookLabel} cook`"
+          :aria-label="`${cookLabel} cook`"
+        >
+          <ClockIcon class-name="size-3.5 shrink-0" />
+          <span class="truncate">{{ cookLabel }}</span>
+        </span>
+        <span
+          v-if="recipe.servings"
+          class="inline-flex min-w-0 items-center gap-1"
+          :aria-label="`${recipe.servings} servings`"
+        >
+          <UsersIcon class-name="size-3.5 shrink-0" />
+          <span class="truncate">{{ recipe.servings }}</span>
+        </span>
+        <span
+          v-if="firstTag"
+          class="inline-flex min-w-0 max-w-full items-center gap-1"
+          :title="tagsTitle"
+        >
+          <TagIcon class-name="size-3.5 shrink-0" />
+          <span class="truncate">{{ firstTag }}</span>
+        </span>
+      </div>
+      <template v-else>—</template>
     </td>
     <td :class="ADMIN_TD_ACTIONS_CLASS" @click.stop @keydown.stop>
       <div v-if="canWrite" :class="ADMIN_ACTIONS_CLASS">
