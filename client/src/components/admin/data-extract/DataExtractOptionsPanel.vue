@@ -23,8 +23,8 @@ defineProps<{
 <template>
   <AdminFilterDropdown
     label="options"
-    anchor="local"
     :show-clear="false"
+    :match-trigger-width="false"
     :has-active-filters="hasCustomOptions"
     :active-label="optionsActiveLabel"
   >

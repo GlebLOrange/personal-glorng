@@ -47,33 +47,33 @@ function handleSelect(query: string): void {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
-    <div class="min-w-0 space-y-4">
-      <p v-if="guestLimitMessage" class="text-xs text-surface-mid">
-        Pinned cities stay in this browser.
-      </p>
-      <section class="min-w-0">
-        <WeatherLocationForm
-          :add-location="handleAdd"
-          :disabled="!canAddLocation"
-          :helper-text="guestLimitMessage"
-        >
-          <template #heading>
-            <LocationIcon class-name="size-5" />
-            locations
-          </template>
-        </WeatherLocationForm>
-      </section>
+    <p v-if="guestLimitMessage" class="mb-4 w-full self-stretch text-xs text-surface-mid">
+      Pinned cities stay in this browser.
+    </p>
+    <section class="page-tool-actions">
+      <WeatherLocationForm
+        :add-location="handleAdd"
+        :disabled="!canAddLocation"
+        :helper-text="guestLimitMessage"
+      >
+        <template #heading>
+          <LocationIcon class-name="size-5" />
+          locations
+        </template>
+      </WeatherLocationForm>
+    </section>
 
-      <WeatherPinnedCitiesRow
-        :locations="locations"
-        :active-query="activeQuery"
-        :loading="loading"
-        :seeding="seeding"
-        :is-default-location="isDefaultLocation"
-        @select="handleSelect"
-        @remove="handleRemove"
-      />
-    </div>
+    <WeatherPinnedCitiesRow
+      class="w-full self-stretch"
+      :locations="locations"
+      :active-query="activeQuery"
+      :loading="loading"
+      :seeding="seeding"
+      :is-default-location="isDefaultLocation"
+      @select="handleSelect"
+      @remove="handleRemove"
+    />
   </PageShell>
 </template>

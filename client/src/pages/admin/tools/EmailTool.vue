@@ -80,7 +80,7 @@ async function preview(): Promise<void> {
     <div class="page-tool-actions">
       <AdminListToolbar>
         <template #start>
-          <div class="flex w-full items-center justify-start gap-2">
+          <div class="flex w-full items-center justify-between gap-2">
             <ToolbarPillButton
               action="create"
               :disabled="!subject || !body || loading"

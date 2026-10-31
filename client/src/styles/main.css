@@ -205,7 +205,7 @@ html[data-theme="light"] {
 /** Shared tool action/form column — same width on every tool page. */
 @utility page-tool-actions {
   @apply mb-4 flex flex-col items-stretch gap-3;
-  width: min(100%, 375px);
+  width: min(100%, 750px);
   min-width: min(100%, 375px);
   max-width: 100%;
 }

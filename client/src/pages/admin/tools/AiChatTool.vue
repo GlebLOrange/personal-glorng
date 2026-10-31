@@ -133,161 +133,172 @@ const {
       </div>
     </Card>
 
-    <Card
-      v-else-if="activeTab === 'settings'"
-      id="ai-chat-panel-settings"
-      role="tabpanel"
-      aria-labelledby="ai-chat-tab-settings"
-      class="space-y-4 p-4"
-    >
-      <section class="space-y-2">
-        <div class="flex items-center justify-between gap-3">
-          <h2 class="text-sm font-semibold lowercase text-surface-light">current setup</h2>
-          <button
-            type="button"
-            :class="[
-              ACTION_PILL_BASE,
-              'min-h-11 gap-1.5 shrink-0 border-transparent bg-accent-coral/3 text-accent-coral hover:enabled:border-accent-coral/40 hover:enabled:bg-accent-coral/15',
-            ]"
-            :disabled="configLoading"
-            @click="loadConfig"
-          >
-            <RefreshIcon class-name="size-3.5 shrink-0" />
-            refresh
-          </button>
-        </div>
-        <p v-if="configLoading" class="text-sm lowercase text-surface-mid">loading…</p>
-        <dl v-else-if="chatConfig" class="grid gap-1.5 text-sm">
-          <div class="flex gap-2">
-            <dt class="w-28 shrink-0 lowercase text-surface-mid">provider</dt>
-            <dd class="text-surface-light">{{ chatConfig.provider }}</dd>
-          </div>
-          <div class="flex gap-2">
-            <dt class="w-28 shrink-0 lowercase text-surface-mid">model</dt>
-            <dd class="font-data text-xs text-surface-light">{{ chatConfig.model }}</dd>
-          </div>
-          <div class="flex gap-2">
-            <dt class="w-28 shrink-0 lowercase text-surface-mid">base url</dt>
-            <dd class="break-all font-data text-xs text-surface-light">
-              {{ chatConfig.base_url ?? "Groq API" }}
-            </dd>
-          </div>
-          <div class="flex gap-2">
-            <dt class="w-28 shrink-0 lowercase text-surface-mid">api key</dt>
-            <dd
-              class="lowercase"
-              :class="chatConfig.configured ? 'text-status-success' : 'text-status-warning'"
-            >
-              {{ chatConfig.configured ? "configured" : "missing" }}
-            </dd>
-          </div>
-          <div class="flex gap-2">
-            <dt class="w-28 shrink-0 lowercase text-surface-mid">enabled</dt>
-            <dd class="lowercase text-surface-light">
-              {{ chatConfig.enabled ? "yes" : "no" }}
-            </dd>
-          </div>
-        </dl>
-      </section>
-
-      <details
-        v-if="chatConfig?.configured"
-        class="group rounded-md border border-surface-border/60 open:border-surface-border"
+    <div v-else-if="activeTab === 'settings'" class="page-tool-actions">
+      <Card
+        id="ai-chat-panel-settings"
+        role="tabpanel"
+        aria-labelledby="ai-chat-tab-settings"
+        class="w-full min-w-0 space-y-4 p-4"
       >
-        <summary
-          class="flex min-h-11 cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
-        >
-          <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
-          troubleshooting
-        </summary>
-        <ul
-          class="list-disc space-y-2 border-t border-surface-border/60 px-2 py-2 pl-7 text-xs leading-relaxed text-surface-mid"
-        >
-          <li>
-            <strong class="font-medium text-surface-light">Quota or rate limit</strong> — wait for
-            the retry window, then try again. Check RPM limits in
-            <a
-              class="text-accent-coral transition-colors hover:text-accent-coral/80"
-              href="https://console.groq.com/"
-              rel="noopener noreferrer"
-              target="_blank"
+        <section class="min-w-0 space-y-2">
+          <div class="flex min-w-0 items-center justify-between gap-3">
+            <h2 class="text-sm font-semibold lowercase text-surface-light">current setup</h2>
+            <button
+              type="button"
+              :class="[
+                ACTION_PILL_BASE,
+                'min-h-11 gap-1.5 shrink-0 border-transparent bg-accent-coral/3 text-accent-coral hover:enabled:border-accent-coral/40 hover:enabled:bg-accent-coral/15',
+              ]"
+              :disabled="configLoading"
+              @click="loadConfig"
             >
-              Groq Console
-            </a>
-            . Disable competing features in
-            <code class="text-surface-sage">.env</code> while testing chat:
-            <code class="text-surface-sage">TASK_INTAKE_AI_ENABLED=false</code>,
-            <code class="text-surface-sage">NEWS_INGEST_ENABLED=false</code>
-          </li>
-          <li>
-            <strong class="font-medium text-surface-light">App rate limit</strong> — this tool caps
-            chat to 5 messages per 5 minutes per signed-in superuser
-          </li>
-          <li>
-            <strong class="font-medium text-surface-light">After .env changes</strong> — set
-            <code class="text-surface-sage">GROQ_API_KEY</code>,
-            <code class="text-surface-sage">GROQ_CHAT_MODEL</code>, and
-            <code class="text-surface-sage">AI_CHAT_ENABLED=true</code>, then restart the backend
-          </li>
-        </ul>
-      </details>
-
-      <details class="group rounded-md border border-surface-border/60 open:border-surface-border">
-        <summary
-          class="flex min-h-11 cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
-        >
-          <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
-          how it works
-        </summary>
-        <div
-          class="space-y-2 border-t border-surface-border/60 px-2 py-2 text-xs leading-relaxed text-surface-mid"
-        >
-          <p>
-            Superuser-only plain LLM chat. Set
-            <code class="text-surface-sage">GROQ_API_KEY</code> and
-            <code class="text-surface-sage">GROQ_CHAT_MODEL</code> in your server
-            <code class="text-surface-sage">.env</code>, then restart the backend. Set
-            <code class="text-surface-sage">AI_CHAT_ENABLED=false</code> to hide this tool entirely
-          </p>
-          <p>
-            The same Groq key is shared by AI chat, news ingest, and task intake. Groq enforces
-            per-model RPM limits. This app also caps chat to 5 messages per 5 minutes per superuser
-          </p>
-        </div>
-      </details>
-
-      <details class="group rounded-md border border-surface-border/60 open:border-surface-border">
-        <summary
-          class="flex min-h-11 cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
-        >
-          <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
-          example .env snippets
-        </summary>
-        <div class="space-y-3 border-t border-surface-border/60 px-2 py-2">
-          <div
-            v-for="example in PROVIDER_EXAMPLES"
-            :key="example.name"
-            class="space-y-2 rounded-lg border border-surface-border bg-surface-dark p-2.5"
-          >
-            <p class="text-xs font-medium text-surface-light">{{ example.name }}</p>
-            <pre class="whitespace-pre-wrap font-data text-xs text-surface-sage">{{
-              example.env
-            }}</pre>
+              <RefreshIcon class-name="size-3.5 shrink-0" />
+              refresh
+            </button>
           </div>
-          <p class="text-xs text-surface-mid">
-            Get a key from
-            <a
-              class="text-accent-coral transition-colors hover:text-accent-coral/80"
-              href="https://console.groq.com/keys"
-              rel="noopener noreferrer"
-              target="_blank"
+          <p v-if="configLoading" class="text-sm lowercase text-surface-mid">loading…</p>
+          <dl v-else-if="chatConfig" class="grid min-w-0 gap-1.5 text-sm">
+            <div class="flex min-w-0 gap-2">
+              <dt class="w-28 shrink-0 lowercase text-surface-mid">provider</dt>
+              <dd class="min-w-0 break-words text-surface-light">{{ chatConfig.provider }}</dd>
+            </div>
+            <div class="flex min-w-0 gap-2">
+              <dt class="w-28 shrink-0 lowercase text-surface-mid">model</dt>
+              <dd class="min-w-0 break-all font-data text-xs text-surface-light">
+                {{ chatConfig.model }}
+              </dd>
+            </div>
+            <div class="flex min-w-0 gap-2">
+              <dt class="w-28 shrink-0 lowercase text-surface-mid">base url</dt>
+              <dd class="min-w-0 break-all font-data text-xs text-surface-light">
+                {{ chatConfig.base_url ?? "Groq API" }}
+              </dd>
+            </div>
+            <div class="flex min-w-0 gap-2">
+              <dt class="w-28 shrink-0 lowercase text-surface-mid">api key</dt>
+              <dd
+                class="min-w-0 lowercase"
+                :class="chatConfig.configured ? 'text-status-success' : 'text-status-warning'"
+              >
+                {{ chatConfig.configured ? "configured" : "missing" }}
+              </dd>
+            </div>
+            <div class="flex min-w-0 gap-2">
+              <dt class="w-28 shrink-0 lowercase text-surface-mid">enabled</dt>
+              <dd class="min-w-0 lowercase text-surface-light">
+                {{ chatConfig.enabled ? "yes" : "no" }}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <details
+          v-if="chatConfig?.configured"
+          class="group min-w-0 w-full overflow-hidden rounded-md border border-surface-border/60 open:border-surface-border"
+        >
+          <summary
+            class="flex min-h-11 cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
+          >
+            <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
+            troubleshooting
+          </summary>
+          <ul
+            class="list-disc space-y-2 break-words border-t border-surface-border/60 px-2 py-2 pl-7 text-xs leading-relaxed text-surface-mid"
+          >
+            <li>
+              <strong class="font-medium text-surface-light">Quota or rate limit</strong> — wait for
+              the retry window, then try again. Check RPM limits in
+              <a
+                class="text-accent-coral transition-colors hover:text-accent-coral/80"
+                href="https://console.groq.com/"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Groq Console
+              </a>
+              . Disable competing features in
+              <code class="break-all text-surface-sage">.env</code> while testing chat:
+              <code class="break-all text-surface-sage">TASK_INTAKE_AI_ENABLED=false</code>,
+              <code class="break-all text-surface-sage">NEWS_INGEST_ENABLED=false</code>
+            </li>
+            <li>
+              <strong class="font-medium text-surface-light">App rate limit</strong> — this tool caps
+              chat to 5 messages per 5 minutes per signed-in superuser
+            </li>
+            <li>
+              <strong class="font-medium text-surface-light">After .env changes</strong> — set
+              <code class="break-all text-surface-sage">GROQ_API_KEY</code>,
+              <code class="break-all text-surface-sage">GROQ_CHAT_MODEL</code>, and
+              <code class="break-all text-surface-sage">AI_CHAT_ENABLED=true</code>, then restart the
+              backend
+            </li>
+          </ul>
+        </details>
+
+        <details
+          class="group min-w-0 w-full overflow-hidden rounded-md border border-surface-border/60 open:border-surface-border"
+        >
+          <summary
+            class="flex min-h-11 cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
+          >
+            <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
+            how it works
+          </summary>
+          <div
+            class="space-y-2 break-words border-t border-surface-border/60 px-2 py-2 text-xs leading-relaxed text-surface-mid"
+          >
+            <p>
+              Superuser-only plain LLM chat. Set
+              <code class="break-all text-surface-sage">GROQ_API_KEY</code> and
+              <code class="break-all text-surface-sage">GROQ_CHAT_MODEL</code> in your server
+              <code class="break-all text-surface-sage">.env</code>, then restart the backend. Set
+              <code class="break-all text-surface-sage">AI_CHAT_ENABLED=false</code> to hide this tool
+              entirely
+            </p>
+            <p>
+              The same Groq key is shared by AI chat, news ingest, and task intake. Groq enforces
+              per-model RPM limits. This app also caps chat to 5 messages per 5 minutes per
+              superuser
+            </p>
+          </div>
+        </details>
+
+        <details
+          class="group min-w-0 w-full overflow-hidden rounded-md border border-surface-border/60 open:border-surface-border"
+        >
+          <summary
+            class="flex min-h-11 cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 text-sm font-semibold lowercase text-surface-light [&::-webkit-details-marker]:hidden"
+          >
+            <ChevronIcon class-name="size-3.5 group-open:rotate-180" />
+            example .env snippets
+          </summary>
+          <div class="min-w-0 space-y-3 border-t border-surface-border/60 px-2 py-2">
+            <div
+              v-for="example in PROVIDER_EXAMPLES"
+              :key="example.name"
+              class="min-w-0 space-y-2 overflow-hidden rounded-lg border border-surface-border bg-surface-dark p-2.5"
             >
-              Groq Console
-            </a>
-            and restart the backend after changing server env
-          </p>
-        </div>
-      </details>
-    </Card>
+              <p class="text-xs font-medium text-surface-light">{{ example.name }}</p>
+              <pre
+                class="max-w-full whitespace-pre-wrap break-all font-data text-xs text-surface-sage"
+                >{{ example.env }}</pre
+              >
+            </div>
+            <p class="break-words text-xs text-surface-mid">
+              Get a key from
+              <a
+                class="text-accent-coral transition-colors hover:text-accent-coral/80"
+                href="https://console.groq.com/keys"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Groq Console
+              </a>
+              and restart the backend after changing server env
+            </p>
+          </div>
+        </details>
+      </Card>
+    </div>
   </PageShell>
 </template>

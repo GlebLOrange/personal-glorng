@@ -106,6 +106,7 @@ async function download(): Promise<void> {
               <AdminFilterDropdown
                 label="options"
                 :show-clear="false"
+                :match-trigger-width="false"
                 :has-active-filters="hasCustomOptions"
                 :active-label="optionsActiveLabel"
                 :option-labels="optionLabels"
@@ -123,18 +124,6 @@ async function download(): Promise<void> {
                   @click="audioOnly = !audioOnly"
                 />
               </AdminFilterDropdown>
-            </template>
-            <template #actions>
-              <ToolbarPillButton
-                action="save"
-                :icon="false"
-                type="submit"
-                class="w-auto"
-                :disabled="loading || !url.trim()"
-              >
-                <DownloadIcon class-name="size-3.5 shrink-0" />
-                {{ loading ? "downloading…" : "download" }}
-              </ToolbarPillButton>
             </template>
             <div class="min-w-0 space-y-4 break-words text-sm text-surface-light">
               <div>
@@ -207,6 +196,18 @@ async function download(): Promise<void> {
             tip="example.com or https://…"
             class="w-full min-w-0"
           />
+          <div class="flex w-full justify-end">
+            <ToolbarPillButton
+              action="save"
+              :icon="false"
+              type="submit"
+              class="w-auto"
+              :disabled="loading || !url.trim()"
+            >
+              <DownloadIcon class-name="size-3.5 shrink-0" />
+              {{ loading ? "downloading…" : "download" }}
+            </ToolbarPillButton>
+          </div>
         </form>
       </div>
     </div>

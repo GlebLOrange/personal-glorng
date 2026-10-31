@@ -40,12 +40,12 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <form @submit.prevent="submit">
+  <form class="w-full min-w-0" @submit.prevent="submit">
     <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-surface-light">
       <slot name="heading" />
       <FieldHelp v-if="props.helperText" :text="props.helperText" />
     </h2>
-    <div class="flex min-w-0 items-center gap-2">
+    <div class="flex w-full min-w-0 items-center gap-2">
       <BaseInput
         id="weather-city"
         v-model="city"

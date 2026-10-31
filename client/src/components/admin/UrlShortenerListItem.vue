@@ -11,12 +11,10 @@ import {
   ADMIN_ACTIONS_CLASS,
   ADMIN_TD_ACTIONS_CLASS,
   ADMIN_TD_CLASS,
-  ADMIN_TD_MUTED_CLASS,
   ADMIN_TH_ROW_CLASS,
   ADMIN_TR_CLASS,
 } from "@/constants/adminDataTable";
 import type { UrlItem } from "@/types";
-import { formatDate } from "@/utils/format";
 import { publicUrl } from "@/utils/publicLinks";
 
 const props = withDefaults(
@@ -171,9 +169,6 @@ function onRowClick(event: MouseEvent): void {
       >
         {{ url.original_url }}
       </a>
-    </td>
-    <td :class="ADMIN_TD_MUTED_CLASS">
-      {{ formatDate(url.created_at) }}
     </td>
     <td :class="ADMIN_TD_ACTIONS_CLASS" data-admin-row-stop @click.stop @keydown.stop>
       <div :class="ADMIN_ACTIONS_CLASS">
