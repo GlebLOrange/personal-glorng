@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -8,7 +10,7 @@ import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import { EXPENSE_CURRENCIES, type CurrencyCode } from "@/composables/useExpenseFilters";
 
-defineProps<{
+const props = defineProps<{
   open: boolean;
   loading: boolean;
   title: string;
@@ -23,14 +25,22 @@ const expenseDate = defineModel<string>("expenseDate", { required: true });
 const notes = defineModel<string>("notes", { required: true });
 
 const emit = defineEmits<{ submit: []; close: [] }>();
+
+/** Keep orphaned expense.category visible in the select until the user picks another. */
+const selectCategoryOptions = computed(() => {
+  const options = props.categoryOptions;
+  const current = category.value.trim();
+  if (!current || options.includes(current)) return options;
+  return [current, ...options];
+});
 </script>
 
 <template>
   <BaseDrawer :open="open" :title="title" max-width="md" @close="emit('close')">
     <form id="expense-form-drawer" class="space-y-4" @submit.prevent="emit('submit')">
-      <BaseSelect v-model="category" label="category">
+      <BaseSelect v-model="category" label="category" label-align="start">
         <option value="">—</option>
-        <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
+        <option v-for="cat in selectCategoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </BaseSelect>
 
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">

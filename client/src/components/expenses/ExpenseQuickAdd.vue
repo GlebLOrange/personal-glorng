@@ -208,7 +208,7 @@ defineExpose({ focusEntry, focusSmartText, clearSmartText });
           </li>
         </ul>
       </div>
-      <BaseSelect v-model="category" class="min-w-0 w-full" label="category">
+      <BaseSelect v-model="category" class="min-w-0 w-full" label="category" label-align="start">
         <option value="">—</option>
         <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
       </BaseSelect>
