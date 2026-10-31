@@ -58,7 +58,7 @@ watch(page, () => {
     title="news"
     :breadcrumbs="[{ label: 'news', to: '/news' }]"
     back-to="/"
-    :narrow="false"
+    body-width="full"
     description="Curated digest from scheduled RSS ingest — each article links back to its source."
   >
     <ListSkeleton

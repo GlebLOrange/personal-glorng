@@ -72,8 +72,7 @@ const {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'manage news sources' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <div class="page-tool-actions">
       <div class="flex min-w-0 flex-wrap items-center gap-2">

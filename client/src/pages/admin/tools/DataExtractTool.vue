@@ -72,8 +72,7 @@ function loadSampleCsv(): void {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'data extract' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <div class="w-full min-w-0 self-stretch">
       <div class="page-tool-actions mb-6">

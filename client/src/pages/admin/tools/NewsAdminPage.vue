@@ -55,8 +55,7 @@ const {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'manage news' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <div v-if="!listLoading && !listError" class="page-tool-actions">
       <AdminListToolbar>

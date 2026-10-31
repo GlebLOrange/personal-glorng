@@ -6,6 +6,7 @@ import PageChrome from "@/components/layout/PageChrome.vue";
 import PinnedToolsRow from "@/components/layout/PinnedToolsRow.vue";
 
 export type BreadcrumbSegment = { label: string; to?: RouteLocationRaw };
+export type PageBodyWidth = "full" | "content" | "column";
 
 const props = withDefaults(
   defineProps<{
@@ -13,6 +14,12 @@ const props = withDefaults(
     breadcrumbs: BreadcrumbSegment[];
     backTo?: RouteLocationRaw;
     maxWidth?: "sm" | "md" | "5xl";
+    /**
+     * Body width inside the shell: full (stretch), content (2-of-3 tiles),
+     * column (centred tool/settings panel). Prefer this over narrow/tool.
+     */
+    bodyWidth?: PageBodyWidth;
+    /** @deprecated Prefer bodyWidth="content". */
     narrow?: boolean;
     paddingY?: string;
     as?: "main" | "div";
@@ -21,7 +28,7 @@ const props = withDefaults(
     omitHeading?: boolean;
     /** Optional page help forwarded to chrome as a ? tip. */
     description?: string;
-    /** Wrap the default slot in page-tool-body (tool pages only). */
+    /** @deprecated Prefer bodyWidth="column". Wrap slot in page-tool-body. */
     tool?: boolean;
   }>(),
   {
@@ -33,8 +40,16 @@ const props = withDefaults(
     omitHeading: false,
     description: undefined,
     tool: false,
+    bodyWidth: undefined,
   },
 );
+
+const resolvedBodyWidth = computed<PageBodyWidth>(() => {
+  if (props.bodyWidth) return props.bodyWidth;
+  if (props.tool) return "column";
+  if (props.narrow) return "content";
+  return "full";
+});
 
 const shellClass = computed(() => {
   const widthClass =
@@ -44,7 +59,7 @@ const shellClass = computed(() => {
 
 const bodyClass = computed(() => [
   "page-body",
-  props.narrow && "page-body-narrow",
+  resolvedBodyWidth.value === "content" && "page-body-content page-body-narrow",
   props.bodyClass,
 ]);
 </script>
@@ -60,7 +75,7 @@ const bodyClass = computed(() => [
     />
     <div :class="bodyClass">
       <PinnedToolsRow />
-      <div v-if="tool" class="page-tool-body">
+      <div v-if="resolvedBodyWidth === 'column'" class="page-tool-body">
         <slot />
       </div>
       <slot v-else />
