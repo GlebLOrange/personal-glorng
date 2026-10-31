@@ -32,6 +32,7 @@ from app.todobot.keyboards.task import (
     my_tasks_list,
 )
 from app.todobot.states.task import TaskBrowse
+from app.todobot.utils.action_help import toast_for
 from app.todobot.utils.markdown import escape_md
 from app.todobot.utils.nlp import parse_task_input
 
@@ -272,7 +273,7 @@ async def handle_my_tasks_callback(
     telegram_user_id = callback.from_user.id
 
     if action == "back":
-        await callback.answer()
+        await callback.answer(toast_for(callback.data))
         await _show_list(
             message=callback.message,
             registry=registry,
@@ -282,7 +283,7 @@ async def handle_my_tasks_callback(
         return
 
     if action == "main":
-        await callback.answer()
+        await callback.answer(toast_for(callback.data))
         await _delete_screen(
             bot=callback.bot,
             chat_id=callback.message.chat.id,
@@ -332,7 +333,7 @@ async def handle_my_tasks_callback(
         if not task:
             await callback.answer("Task not found.", show_alert=True)
             return
-        await callback.answer()
+        await callback.answer(toast_for(callback.data))
         await _show_detail(callback=callback, task=task, state=state)
         return
 
@@ -346,7 +347,7 @@ async def handle_my_tasks_callback(
         if not task:
             await callback.answer("Task not found.", show_alert=True)
             return
-        await callback.answer()
+        await callback.answer(toast_for(callback.data))
         await callback.message.edit_text(
             f"Remove *{task.title}*?",
             parse_mode="Markdown",
@@ -397,7 +398,7 @@ async def handle_my_tasks_callback(
         if not ok:
             await callback.answer("Task not found.", show_alert=True)
             return
-        await callback.answer()
+        await callback.answer(toast_for(callback.data))
         return
 
     if action == "ew" and len(parts) >= 3:
@@ -410,7 +411,7 @@ async def handle_my_tasks_callback(
         if not task:
             await callback.answer("Task not found.", show_alert=True)
             return
-        await callback.answer()
+        await callback.answer(toast_for(callback.data))
         await state.set_state(TaskBrowse.editing_date)
         await state.update_data(**{_EDIT_TASK_KEY: task.id})
         await callback.message.edit_text(
@@ -431,7 +432,7 @@ async def handle_my_tasks_callback(
         if not task:
             await callback.answer("Task not found.", show_alert=True)
             return
-        await callback.answer()
+        await callback.answer(toast_for(callback.data))
         await state.update_data(**{_EDIT_TASK_KEY: task.id})
         if field == "title":
             await state.set_state(TaskBrowse.editing_title)
@@ -455,7 +456,7 @@ async def handle_my_tasks_callback(
         if not task:
             await callback.answer("Task not found.", show_alert=True)
             return
-        await callback.answer()
+        await callback.answer(toast_for(callback.data))
         if value == "custom":
             await state.set_state(TaskBrowse.editing_date)
             await state.update_data(**{_EDIT_TASK_KEY: task.id})
@@ -485,7 +486,7 @@ async def handle_my_tasks_callback(
         if not task:
             await callback.answer("Task not found.", show_alert=True)
             return
-        await callback.answer()
+        await callback.answer(toast_for(callback.data))
         data = await state.get_data()
         date_iso = data.get(_EDIT_DATE_KEY)
         if not date_iso:
@@ -723,7 +724,7 @@ async def handle_status_update(
         await callback.answer(str(exc), show_alert=True)
         return
 
-    await callback.answer()
+    await callback.answer(toast_for(callback.data))
     await callback.message.answer(
         f'Task "{task.title}" marked as {new_status.value}.',
     )

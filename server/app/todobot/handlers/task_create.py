@@ -25,6 +25,7 @@ from app.todobot.keyboards.task import (
     with_flow_nav,
 )
 from app.todobot.states.task import TaskCreation
+from app.todobot.utils.action_help import toast_for
 from app.todobot.utils.calendar_status import calendar_post_create_line
 from app.todobot.utils.markdown import escape_md
 from app.todobot.utils.nlp import parse_task_input
@@ -35,7 +36,10 @@ AI_PROMPT = (
     "Send your task in one message.\n\n"
     'Example: "Tomorrow at 18:00 gym near city center"'
 )
-GUIDED_PROMPT = "What task?"
+GUIDED_PROMPT = (
+    "What task?\n"
+    "Send a short title — then pick date and time."
+)
 
 _FIELD_ORDER = ("title", "date", "time", "location", "notes")
 
@@ -329,7 +333,7 @@ async def handle_date_callback(
     if not callback.data or not callback.message:
         return
     value = callback.data.split(":", 1)[1]
-    await callback.answer()
+    await callback.answer(toast_for(callback.data))
 
     current = await state.get_state()
     data = await state.get_data()
@@ -423,7 +427,7 @@ async def handle_time_callback(
     if not callback.data or not callback.message:
         return
     value = callback.data.split(":", 1)[1]
-    await callback.answer()
+    await callback.answer(toast_for(callback.data))
 
     data = await state.get_data()
     current = await state.get_state()
@@ -526,7 +530,7 @@ async def handle_location(message: Message, state: FSMContext) -> None:
 async def skip_location(callback: CallbackQuery, state: FSMContext) -> None:
     if not callback.message:
         return
-    await callback.answer()
+    await callback.answer(toast_for(callback.data or "skip:location"))
     await _advance_to_next_missing(callback.message, state, skip="location")
 
 
@@ -534,7 +538,7 @@ async def skip_location(callback: CallbackQuery, state: FSMContext) -> None:
 async def skip_notes(callback: CallbackQuery, state: FSMContext) -> None:
     if not callback.message:
         return
-    await callback.answer()
+    await callback.answer(toast_for(callback.data or "skip:notes"))
     await _advance_to_next_missing(callback.message, state, skip="notes")
 
 
@@ -556,7 +560,7 @@ async def confirm_task(
 ) -> None:
     if not callback.message or not callback.from_user:
         return
-    await callback.answer()
+    await callback.answer(toast_for(callback.data or "confirm:yes"))
     data = await state.get_data()
     intake_id = data.get("intake_id")
 
@@ -633,7 +637,7 @@ async def confirm_task(
 async def edit_task(callback: CallbackQuery, state: FSMContext) -> None:
     if not callback.message:
         return
-    await callback.answer()
+    await callback.answer(toast_for(callback.data or "confirm:edit"))
     await state.set_state(TaskCreation.confirming)
     sent = await callback.message.answer(
         "What do you want to change?",
@@ -651,7 +655,7 @@ async def handle_field_edit(
     if not callback.data or not callback.message:
         return
     field = callback.data.split(":", 1)[1]
-    await callback.answer()
+    await callback.answer(toast_for(callback.data))
     data = await state.get_data()
 
     if field == "back":
@@ -712,7 +716,7 @@ async def cancel_task(
 ) -> None:
     if not callback.message:
         return
-    await callback.answer()
+    await callback.answer(toast_for(callback.data or "confirm:cancel"))
 
     data = await state.get_data()
     intake_id = data.get("intake_id")
@@ -731,7 +735,7 @@ async def cancel_task(
 async def flow_back(callback: CallbackQuery, state: FSMContext) -> None:
     if not callback.message:
         return
-    await callback.answer()
+    await callback.answer(toast_for(callback.data or "flow:back"))
     data = await state.get_data()
     current = await state.get_state()
 

@@ -19,6 +19,7 @@ from app.services.task import (
 )
 from app.todobot.keyboards.task import postpone_presets
 from app.todobot.states.task import TaskPostpone
+from app.todobot.utils.action_help import toast_for
 from app.todobot.utils.markdown import escape_md
 from app.todobot.utils.nlp import parse_datetime_text
 from app.workers.scheduling import schedule_reminder, supersede_unsent_reminders
@@ -71,16 +72,16 @@ async def handle_reminder_action(
     task_id = int(parts[1])
     action = parts[2]
 
-    await callback.answer()
-
     task = await _owned_reminder_task(
         registry,
         task_id=task_id,
         telegram_user_id=callback.from_user.id,
     )
     if not task:
-        await callback.message.answer("Task not found.")
+        await callback.answer("Task not found.", show_alert=True)
         return
+
+    await callback.answer(toast_for(callback.data))
 
     if action == "complete":
         task = await change_status(
@@ -131,13 +132,13 @@ async def handle_postpone_preset(
     if not callback.data or not callback.message or not callback.from_user:
         return
     choice = callback.data.split(":", 1)[1]
-    await callback.answer()
 
     data = await state.get_data()
     task_id = data.get("postpone_task_id")
     if not task_id:
-        await callback.message.answer(
-            "Postpone session expired. Use the reminder buttons again.",
+        await callback.answer(
+            "Postpone session expired.",
+            show_alert=True,
         )
         return
 
@@ -148,8 +149,10 @@ async def handle_postpone_preset(
     )
     if not task:
         await state.clear()
-        await callback.message.answer("Task not found.")
+        await callback.answer("Task not found.", show_alert=True)
         return
+
+    await callback.answer(toast_for(callback.data))
 
     if choice == "custom":
         await callback.message.answer("Send a new date/time (e.g. tomorrow 3pm).")
