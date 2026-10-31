@@ -358,6 +358,52 @@
         "title": "Body_upload_file_api_tools_file_share_post",
         "type": "object"
       },
+      "BotPingResponse": {
+        "description": "Telegram todobot token + outbound DM healthcheck result.",
+        "properties": {
+          "bot_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bot Id"
+          },
+          "bot_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bot Username"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "message_sent": {
+            "default": false,
+            "title": "Message Sent",
+            "type": "boolean"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok",
+          "detail"
+        ],
+        "title": "BotPingResponse",
+        "type": "object"
+      },
       "CalculatorRequest": {
         "example": {
           "a": 10,
@@ -5987,7 +6033,6 @@
         "example": {
           "description": "Daily sync",
           "location": "Zoom",
-          "reminder_minutes": 15,
           "scheduled_at": "2026-06-09T09:00:00Z",
           "title": "Team standup"
         },
@@ -19013,6 +19058,83 @@
           }
         ],
         "summary": "Create Task",
+        "tags": [
+          "tasks"
+        ]
+      }
+    },
+    "/api/tools/tasks/bot-ping": {
+      "post": {
+        "description": "Requires platform superuser. Calls Telegram getMe with the todobot token and DMs TELEGRAM_ALLOWED_USER_ID. Does not prove polling is up.",
+        "operationId": "bot_ping_api_tools_tasks_bot_ping_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BotPingResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not authenticated"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Ping Telegram todobot",
         "tags": [
           "tasks"
         ]

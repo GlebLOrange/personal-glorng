@@ -130,6 +130,16 @@ class TaskStatsResponse(BaseModel):
     failed_syncs: int
 
 
+class BotPingResponse(BaseModel):
+    """Telegram todobot token + outbound DM healthcheck result."""
+
+    ok: bool
+    bot_username: str | None = None
+    bot_id: int | None = None
+    message_sent: bool = False
+    detail: str
+
+
 class TaskListResponse(PaginatedResponse[TaskResponse]):
     """Paginated task list."""
 

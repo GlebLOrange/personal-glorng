@@ -122,6 +122,8 @@ const {
   closeDetail,
   retrySync,
   processSyncQueueNow,
+  pingBot,
+  pingingBot,
   updateTaskStatus,
   rescheduleTask,
   openCreate,
@@ -328,9 +330,19 @@ onMounted(() => {
 
           <ToolbarPillButton
             v-if="isSuperuser"
+            family="2xx"
+            class="ml-auto"
+            :disabled="pingingBot"
+            title="Ping Telegram todobot (getMe + DM). Does not prove polling is up."
+            @click="pingBot"
+          >
+            ping bot
+          </ToolbarPillButton>
+
+          <ToolbarPillButton
+            v-if="isSuperuser"
             v-show="activeTab === 'queue' || activeTab === 'calendar'"
             action="create"
-            class="ml-auto"
             :disabled="createDisabled"
             :title="
               activeTab === 'calendar' && selectedDateIsPast

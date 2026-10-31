@@ -5,7 +5,7 @@
 
 Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Download the raw schema: [openapi.json](/openapi.json).
 
-**153** operations.
+**154** operations.
 
 | Method | Path | Tags | Summary |
 |--------|------|------|---------|
@@ -136,6 +136,7 @@ Auto-generated from the FastAPI OpenAPI schema (`create_app().openapi()`). Downl
 | `GET` | `/api/tools/search` | search | Keyword search over admin indexed content |
 | `GET` | `/api/tools/tasks` | tasks | List tasks |
 | `POST` | `/api/tools/tasks` | tasks | Create Task |
+| `POST` | `/api/tools/tasks/bot-ping` | tasks | Ping Telegram todobot |
 | `GET` | `/api/tools/tasks/intakes` | tasks | List task intakes |
 | `GET` | `/api/tools/tasks/stats` | tasks | Get task statistics |
 | `GET` | `/api/tools/tasks/sync-queue` | tasks | List calendar sync queue |

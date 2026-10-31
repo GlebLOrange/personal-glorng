@@ -4,7 +4,9 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import AsyncClient
 
+from app.core.exceptions import ValidationError
 from app.core.security import create_access_token
+from app.core.telegram import TodobotPingResult
 from app.db.documents.task import TaskStatus
 from app.db.registry import DatabaseRegistry
 from app.services.task import complete_past_due_tasks
@@ -265,6 +267,53 @@ async def test_process_sync_queue_now_endpoint(
     assert resp.status_code == 200
     assert "pending entries" in resp.json()["message"]
     mock_process.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_bot_ping_requires_admin(tasks_reader_client: AsyncClient) -> None:
+    """Tasks readers cannot ping the todobot."""
+    resp = await tasks_reader_client.post("/api/tools/tasks/bot-ping")
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+@patch("app.core.telegram.ping_todobot", new_callable=AsyncMock)
+async def test_bot_ping_endpoint(
+    mock_ping: AsyncMock,
+    auth_client: AsyncClient,
+) -> None:
+    """Superuser ping returns structured Telegram healthcheck payload."""
+    mock_ping.return_value = TodobotPingResult(
+        ok=True,
+        bot_username="test_todobot",
+        bot_id=42,
+        message_sent=True,
+        detail="TodoBot ping OK · @test_todobot",
+    )
+    resp = await auth_client.post("/api/tools/tasks/bot-ping")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["ok"] is True
+    assert body["bot_username"] == "test_todobot"
+    assert body["bot_id"] == 42
+    assert body["message_sent"] is True
+    assert "ping OK" in body["detail"]
+    mock_ping.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch("app.core.telegram.ping_todobot", new_callable=AsyncMock)
+async def test_bot_ping_missing_token(
+    mock_ping: AsyncMock,
+    auth_client: AsyncClient,
+) -> None:
+    """Missing todobot token surfaces a clean validation error."""
+    mock_ping.side_effect = ValidationError(
+        "TELEGRAM_BOT_TO_DO_TOKEN is not configured",
+    )
+    resp = await auth_client.post("/api/tools/tasks/bot-ping")
+    assert resp.status_code == 422
+    assert "TELEGRAM_BOT_TO_DO_TOKEN" in resp.json()["detail"]
 
 
 @pytest.mark.asyncio
