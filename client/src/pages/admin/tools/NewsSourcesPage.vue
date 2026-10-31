@@ -73,42 +73,45 @@ const {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
-    <div class="mb-3 flex min-w-0 flex-wrap items-center gap-2">
-      <AdminFilterDropdown
-        ref="filterDropdown"
-        :has-active-filters="hasActiveFilters"
-        :active-label="activeFilterLabel"
-        :option-labels="ENABLED_FILTERS.map((chip) => chip.label)"
-        @clear="clearFilters"
-      >
-        <template #chips>
-          <AdminFilterChip
-            v-for="chip in ENABLED_FILTERS"
-            :key="chip.value"
-            :label="chip.label"
-            :active="enabledFilter === chip.value"
-            :color-class="newsSourceEnabledClass(chip.value === 'enabled')"
-            :disabled="loading"
-            @click="setEnabledFilter(chip.value)"
-          />
-        </template>
-      </AdminFilterDropdown>
-
-      <template v-if="canWrite">
-        <ToolbarPillButton
-          action="create"
-          class="ml-auto gap-1.5"
-          :disabled="refreshing || loading"
-          @click="refreshSources"
+    <div class="page-tool-actions">
+      <div class="flex min-w-0 flex-wrap items-center gap-2">
+        <AdminFilterDropdown
+          ref="filterDropdown"
+          :has-active-filters="hasActiveFilters"
+          :active-label="activeFilterLabel"
+          :option-labels="ENABLED_FILTERS.map((chip) => chip.label)"
+          @clear="clearFilters"
         >
-          <RefreshIcon class-name="size-3.5" />
-          {{ refreshButtonText }}
-        </ToolbarPillButton>
-        <ToolbarPillButton action="create" :disabled="loading" @click="openCreate">
-          + source
-        </ToolbarPillButton>
-      </template>
+          <template #chips>
+            <AdminFilterChip
+              v-for="chip in ENABLED_FILTERS"
+              :key="chip.value"
+              :label="chip.label"
+              :active="enabledFilter === chip.value"
+              :color-class="newsSourceEnabledClass(chip.value === 'enabled')"
+              :disabled="loading"
+              @click="setEnabledFilter(chip.value)"
+            />
+          </template>
+        </AdminFilterDropdown>
+
+        <template v-if="canWrite">
+          <ToolbarPillButton
+            action="create"
+            class="w-auto gap-1.5"
+            :disabled="refreshing || loading"
+            @click="refreshSources"
+          >
+            <RefreshIcon class-name="size-3.5" />
+            {{ refreshButtonText }}
+          </ToolbarPillButton>
+          <ToolbarPillButton action="create" class="w-auto" :disabled="loading" @click="openCreate">
+            + source
+          </ToolbarPillButton>
+        </template>
+      </div>
     </div>
 
     <div class="min-w-0">

@@ -230,6 +230,7 @@ onMounted(load);
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
     <AdminListSkeleton
       v-if="loading && items.length === 0 && !listError"
@@ -237,46 +238,49 @@ onMounted(load);
     />
 
     <template v-else>
-      <AdminListToolbar>
-        <template #start>
-          <AdminFilterDropdown
-            ref="filterDropdown"
-            :has-active-filters="hasActiveFilters"
-            :active-label="activeFilterLabel"
-            :option-labels="[
-              ...LEVEL_FILTERS.map((chip) => chip.label),
-              ...PERIOD_FILTERS.map((chip) => chip.label),
-            ]"
-            @clear="clearFilters"
-          >
-            <template #chips>
-              <AdminFilterChip
-                v-for="chip in LEVEL_FILTERS"
-                :key="chip.value"
-                :label="chip.label"
-                :active="level === chip.value"
-                :color-class="logLevelClass(chip.value)"
-                @click="setLevelFilter(chip.value)"
+      <div class="page-tool-actions">
+        <AdminListToolbar>
+          <template #start>
+            <AdminFilterDropdown
+              ref="filterDropdown"
+              :has-active-filters="hasActiveFilters"
+              :active-label="activeFilterLabel"
+              :option-labels="[
+                ...LEVEL_FILTERS.map((chip) => chip.label),
+                ...PERIOD_FILTERS.map((chip) => chip.label),
+              ]"
+              @clear="clearFilters"
+            >
+              <template #chips>
+                <AdminFilterChip
+                  v-for="chip in LEVEL_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="level === chip.value"
+                  :color-class="logLevelClass(chip.value)"
+                  @click="setLevelFilter(chip.value)"
+                />
+                <AdminFilterChip
+                  v-for="chip in PERIOD_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="period === chip.value"
+                  :color-class="PERIOD_CHIP_CLASS"
+                  @click="setPeriodFilter(chip.value)"
+                />
+              </template>
+              <BaseInput
+                :model-value="requestId"
+                compact
+                auto-width
+                placeholder="request id (3+ chars)"
+                aria-label="request id"
+                @update:model-value="onRequestIdChange"
               />
-              <AdminFilterChip
-                v-for="chip in PERIOD_FILTERS"
-                :key="chip.value"
-                :label="chip.label"
-                :active="period === chip.value"
-                :color-class="PERIOD_CHIP_CLASS"
-                @click="setPeriodFilter(chip.value)"
-              />
-            </template>
-            <BaseInput
-              :model-value="requestId"
-              compact
-              placeholder="request id (3+ chars)"
-              aria-label="request id"
-              @update:model-value="onRequestIdChange"
-            />
-          </AdminFilterDropdown>
-        </template>
-      </AdminListToolbar>
+            </AdminFilterDropdown>
+          </template>
+        </AdminListToolbar>
+      </div>
 
       <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
 

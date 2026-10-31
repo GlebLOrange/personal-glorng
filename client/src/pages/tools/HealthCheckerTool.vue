@@ -79,6 +79,7 @@ onMounted(() => {
     max-width="5xl"
     :narrow="false"
     description="Monitor URLs on a schedule — status history stays on this server."
+    tool
   >
     <p
       v-if="toolDisabled"
@@ -88,39 +89,39 @@ onMounted(() => {
       This tool is turned off on this server.
     </p>
     <template v-else>
-      <form
-        v-if="canWrite"
-        class="mb-4 flex min-w-0 flex-wrap items-center gap-2"
-        @submit.prevent="createMonitor"
-      >
-        <BaseInput
-          v-model="newUrl"
-          class="min-w-0 flex-1"
-          compact
-          placeholder="url (example.com or https://…)"
-          aria-label="url to monitor"
-        />
-        <BaseInput
-          v-model="newLabel"
-          class="min-w-0 w-full max-w-[12rem]"
-          compact
-          placeholder="label (optional)"
-          aria-label="monitor label"
-        />
-        <BaseSelect
-          v-model="newInterval"
-          class="w-auto shrink-0"
-          compact
-          aria-label="check interval minutes"
-        >
-          <option v-for="mins in HEALTH_INTERVALS" :key="mins" :value="mins">
-            every {{ mins }}m
-          </option>
-        </BaseSelect>
-        <ToolbarPillButton action="add" type="submit" class="shrink-0" :disabled="!canCreate">
-          {{ creating ? "adding…" : "add" }}
-        </ToolbarPillButton>
-      </form>
+      <div v-if="canWrite" class="page-tool-actions">
+        <form class="flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createMonitor">
+          <BaseInput
+            v-model="newUrl"
+            class="min-w-0"
+            compact
+            auto-width
+            placeholder="url (example.com or https://…)"
+            aria-label="url to monitor"
+          />
+          <BaseInput
+            v-model="newLabel"
+            class="min-w-0"
+            compact
+            auto-width
+            placeholder="label (optional)"
+            aria-label="monitor label"
+          />
+          <BaseSelect
+            v-model="newInterval"
+            class="w-auto shrink-0"
+            compact
+            aria-label="check interval minutes"
+          >
+            <option v-for="mins in HEALTH_INTERVALS" :key="mins" :value="mins">
+              every {{ mins }}m
+            </option>
+          </BaseSelect>
+          <ToolbarPillButton action="add" type="submit" class="w-auto shrink-0" :disabled="!canCreate">
+            {{ creating ? "adding…" : "add" }}
+          </ToolbarPillButton>
+        </form>
+      </div>
 
       <p v-else-if="!canRead" class="text-sm text-surface-muted">
         You need health-checker access to use this tool.

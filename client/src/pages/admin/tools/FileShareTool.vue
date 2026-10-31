@@ -126,6 +126,7 @@ onMounted(loadFiles);
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
     <p
       v-if="toolDisabled"
@@ -135,16 +136,21 @@ onMounted(loadFiles);
       This tool is turned off on this server.
     </p>
     <template v-if="!toolDisabled">
-      <div class="mb-10 space-y-3">
-        <div class="mb-3 flex w-full min-w-0 items-center justify-end">
-          <ToolbarPillButton action="save" :disabled="uploading || !selectedFile" @click="upload">
+      <div class="page-tool-actions mb-10">
+        <div class="flex items-center justify-center gap-2">
+          <ToolbarPillButton
+            action="save"
+            class="w-auto"
+            :disabled="uploading || !selectedFile"
+            @click="upload"
+          >
             {{ uploading ? "uploading…" : "upload & share" }}
           </ToolbarPillButton>
         </div>
 
         <FileDropZone
           ref="dropZone"
-          class="w-full"
+          class="w-auto max-w-full"
           aria-label="choose a file to share"
           :selected-name="selectedName"
           @select="onSelectFile"

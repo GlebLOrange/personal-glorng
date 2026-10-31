@@ -197,6 +197,17 @@ html[data-theme="light"] {
   margin-top: var(--page-chrome-offset);
 }
 
+/** Tool slot inside page-body (PageShell tool prop). */
+@utility page-tool-body {
+  @apply w-full min-w-0;
+}
+
+/** Smaller action/form panel; tables/results stay siblings under page-tool-body. */
+@utility page-tool-actions {
+  @apply mb-4 flex w-fit max-w-full min-w-0 flex-col items-center space-y-3;
+  min-width: min(100%, 375px);
+}
+
 @media (min-width: 768px) {
   .page-shell {
     --page-chrome-offset: 1.5rem;

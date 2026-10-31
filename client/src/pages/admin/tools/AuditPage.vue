@@ -183,6 +183,7 @@ onMounted(load);
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
     <AdminListSkeleton
       v-if="loading && items.length === 0 && !listError"
@@ -190,39 +191,41 @@ onMounted(load);
     />
 
     <template v-else>
-      <AdminListToolbar>
-        <template #start>
-          <AdminFilterDropdown
-            ref="filterDropdown"
-            :has-active-filters="hasActiveFilters"
-            :active-label="activeFilterLabel"
-            :option-labels="[
-              ...CATEGORY_FILTERS.map((chip) => chip.label),
-              ...PERIOD_FILTERS.map((chip) => chip.label),
-            ]"
-            @clear="clearFilters"
-          >
-            <template #chips>
-              <AdminFilterChip
-                v-for="chip in CATEGORY_FILTERS"
-                :key="chip.value"
-                :label="chip.label"
-                :active="category === chip.value"
-                :color-class="auditCategoryClass(chip.value)"
-                @click="setCategoryFilter(chip.value)"
-              />
-              <AdminFilterChip
-                v-for="chip in PERIOD_FILTERS"
-                :key="chip.value"
-                :label="chip.label"
-                :active="period === chip.value"
-                :color-class="PERIOD_CHIP_CLASS"
-                @click="setPeriodFilter(chip.value)"
-              />
-            </template>
-          </AdminFilterDropdown>
-        </template>
-      </AdminListToolbar>
+      <div class="page-tool-actions">
+        <AdminListToolbar>
+          <template #start>
+            <AdminFilterDropdown
+              ref="filterDropdown"
+              :has-active-filters="hasActiveFilters"
+              :active-label="activeFilterLabel"
+              :option-labels="[
+                ...CATEGORY_FILTERS.map((chip) => chip.label),
+                ...PERIOD_FILTERS.map((chip) => chip.label),
+              ]"
+              @clear="clearFilters"
+            >
+              <template #chips>
+                <AdminFilterChip
+                  v-for="chip in CATEGORY_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="category === chip.value"
+                  :color-class="auditCategoryClass(chip.value)"
+                  @click="setCategoryFilter(chip.value)"
+                />
+                <AdminFilterChip
+                  v-for="chip in PERIOD_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="period === chip.value"
+                  :color-class="PERIOD_CHIP_CLASS"
+                  @click="setPeriodFilter(chip.value)"
+                />
+              </template>
+            </AdminFilterDropdown>
+          </template>
+        </AdminListToolbar>
+      </div>
 
       <ErrorState v-if="listError" class="mt-4" :message="listError" show-retry @retry="load" />
 

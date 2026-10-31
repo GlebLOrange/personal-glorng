@@ -21,6 +21,8 @@ const props = withDefaults(
     omitHeading?: boolean;
     /** Optional page help forwarded to chrome as a ? tip. */
     description?: string;
+    /** Wrap the default slot in page-tool-body (tool pages only). */
+    tool?: boolean;
   }>(),
   {
     narrow: true,
@@ -30,6 +32,7 @@ const props = withDefaults(
     bodyClass: "",
     omitHeading: false,
     description: undefined,
+    tool: false,
   },
 );
 
@@ -57,7 +60,10 @@ const bodyClass = computed(() => [
     />
     <div :class="bodyClass">
       <PinnedToolsRow />
-      <slot />
+      <div v-if="tool" class="page-tool-body">
+        <slot />
+      </div>
+      <slot v-else />
     </div>
   </component>
 </template>

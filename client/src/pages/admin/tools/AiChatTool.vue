@@ -51,13 +51,16 @@ const {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
-    <AdminTabBar
-      v-model="activeTab"
-      panel-id-prefix="ai-chat"
-      :tabs="[...AI_CHAT_TABS]"
-      aria-label="ai chat sections"
-    />
+    <div class="page-tool-actions">
+      <AdminTabBar
+        v-model="activeTab"
+        panel-id-prefix="ai-chat"
+        :tabs="[...AI_CHAT_TABS]"
+        aria-label="ai chat sections"
+      />
+    </div>
 
     <Card
       v-if="activeTab === 'chat'"
@@ -95,32 +98,39 @@ const {
         </SearchChatMessages>
       </div>
 
-      <form
-        class="flex items-stretch gap-3 border-t border-surface-border pt-4"
-        @submit.prevent="handleSend"
-      >
-        <!-- Match clear + send stack: h-10 + gap-2 + h-10 -->
-        <BaseTextarea
-          v-model="input"
-          class="min-w-0 flex-1 [&>div]:box-border [&>div]:min-h-[calc(2.5rem+0.5rem+2.5rem)] [&>div]:items-stretch [&_textarea]:h-full [&_textarea]:min-h-full [&_textarea]:resize-none"
-          :rows="3"
-          placeholder="message the assistant…"
-          aria-label="message"
-          @keydown.enter.exact.prevent="handleSend"
-        />
-        <div class="flex flex-col gap-2">
-          <ToolbarPillButton action="delete" type="button" :disabled="loading" @click="clear">
-            clear
-          </ToolbarPillButton>
-          <ToolbarPillButton
-            action="save"
-            type="submit"
-            :disabled="loading || !input.trim() || !isReady || !canSend"
-          >
-            {{ loading ? "…" : "send" }}
-          </ToolbarPillButton>
-        </div>
-      </form>
+      <div class="page-tool-actions mb-0 border-t border-surface-border pt-4">
+        <form class="flex w-fit max-w-full items-stretch gap-3" @submit.prevent="handleSend">
+          <!-- Match clear + send stack: h-10 + gap-2 + h-10 -->
+          <BaseTextarea
+            v-model="input"
+            class="min-w-0 [&>div]:box-border [&>div]:min-h-[calc(2.5rem+0.5rem+2.5rem)] [&>div]:items-stretch [&_textarea]:h-full [&_textarea]:min-h-full [&_textarea]:resize-none"
+            :rows="3"
+            auto-width
+            placeholder="message the assistant…"
+            aria-label="message"
+            @keydown.enter.exact.prevent="handleSend"
+          />
+          <div class="flex flex-col gap-2">
+            <ToolbarPillButton
+              action="delete"
+              type="button"
+              class="w-auto"
+              :disabled="loading"
+              @click="clear"
+            >
+              clear
+            </ToolbarPillButton>
+            <ToolbarPillButton
+              action="save"
+              type="submit"
+              class="w-auto"
+              :disabled="loading || !input.trim() || !isReady || !canSend"
+            >
+              {{ loading ? "…" : "send" }}
+            </ToolbarPillButton>
+          </div>
+        </form>
+      </div>
     </Card>
 
     <Card

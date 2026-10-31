@@ -274,9 +274,10 @@ onMounted(() => {
     max-width="5xl"
     :narrow="false"
     description="Telegram reminders and Google Calendar sync share this queue with the web UI."
+    tool
   >
     <div class="min-w-0">
-      <div class="mb-3 space-y-2">
+      <div class="page-tool-actions">
         <div class="flex min-w-0 flex-wrap items-center gap-2">
           <AdminFilterDropdown
             v-show="activeTab === 'queue'"
@@ -316,7 +317,8 @@ onMounted(() => {
           <SearchInput
             v-if="activeTab === 'queue'"
             v-model="searchQuery"
-            class="min-w-0 flex-1"
+            class="min-w-0"
+            auto-width
             placeholder="search tasks"
           />
 
@@ -331,7 +333,7 @@ onMounted(() => {
           <ToolbarPillButton
             v-if="isSuperuser"
             family="2xx"
-            class="ml-auto"
+            class="w-auto"
             :disabled="pingingBot"
             title="Ping Telegram todobot (getMe + DM). Does not prove polling is up."
             @click="pingBot"
@@ -343,6 +345,7 @@ onMounted(() => {
             v-if="isSuperuser"
             v-show="activeTab === 'queue' || activeTab === 'calendar'"
             action="create"
+            class="w-auto"
             :disabled="createDisabled"
             :title="
               activeTab === 'calendar' && selectedDateIsPast

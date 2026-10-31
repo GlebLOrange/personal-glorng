@@ -253,29 +253,34 @@ onMounted(() => {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
-    <form class="mb-4 flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createUrl">
-      <BaseInput
-        v-model="newUrl"
-        class="min-w-0 flex-1"
-        compact
-        placeholder="url (example.com or https://…)"
-        aria-label="url (example.com or https://…)"
-        :tone="urlTone"
-        :error="urlError"
-        @update:model-value="formError = ''"
-      />
-      <BaseInput
-        v-model="newTitle"
-        class="min-w-0 w-full max-w-[14rem]"
-        compact
-        placeholder="title (optional)"
-        aria-label="title"
-      />
-      <ToolbarPillButton action="create" type="submit" class="shrink-0" :disabled="!canShorten">
-        {{ loading ? "creating…" : "shorten" }}
-      </ToolbarPillButton>
-    </form>
+    <div class="page-tool-actions">
+      <form class="flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createUrl">
+        <BaseInput
+          v-model="newUrl"
+          class="min-w-0"
+          compact
+          auto-width
+          placeholder="url (example.com or https://…)"
+          aria-label="url (example.com or https://…)"
+          :tone="urlTone"
+          :error="urlError"
+          @update:model-value="formError = ''"
+        />
+        <BaseInput
+          v-model="newTitle"
+          class="min-w-0"
+          compact
+          auto-width
+          placeholder="title (optional)"
+          aria-label="title"
+        />
+        <ToolbarPillButton action="create" type="submit" class="w-auto shrink-0" :disabled="!canShorten">
+          {{ loading ? "creating…" : "shorten" }}
+        </ToolbarPillButton>
+      </form>
+    </div>
 
     <p
       v-if="isLocalMode && guestUrls.length > 0"

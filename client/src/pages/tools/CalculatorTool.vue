@@ -102,8 +102,10 @@ function buttonAriaLabel(val: string): string | undefined {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
-    <Card class="w-full">
+    <div class="page-tool-actions">
+    <Card class="w-auto max-w-full">
       <div
         class="bg-surface-dark rounded-lg p-4 mb-4 text-right"
         role="status"
@@ -144,5 +146,6 @@ function buttonAriaLabel(val: string): string | undefined {
         </BaseButton>
       </div>
     </Card>
+    </div>
   </PageShell>
 </template>

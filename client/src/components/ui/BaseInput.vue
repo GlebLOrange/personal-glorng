@@ -48,11 +48,14 @@ const props = withDefaults(
      * When not labelInside: `start` = border notch; `end` = inside trailing (before clear).
      */
     labelAlign?: "start" | "end";
+    /** Shrink shell/input to content (tool action panels) instead of w-full. */
+    autoWidth?: boolean;
   }>(),
   {
     labelInside: false,
     labelAlign: "end",
     clearable: true,
+    autoWidth: false,
   },
 );
 
@@ -149,13 +152,15 @@ const toneShellRingClass = computed(() => {
 });
 const bareInputClass = computed(() => [
   props.compact ? FIELD_INPUT_CLASS_COMPACT : FIELD_INPUT_CLASS,
+  props.autoWidth && "!w-auto max-w-full",
   props.type === "number" && "font-data",
   toneBorderClass.value,
 ]);
 const shellClass = computed(() => [
   // Inset ring (not border) — content height matches CONTROL_SIZE / icon buttons.
   // Overflow visible when trailing help can open above the shell (top-right tip).
-  "relative flex w-full items-center rounded-lg bg-surface-dark transition-colors",
+  "relative flex items-center rounded-lg bg-surface-dark transition-colors",
+  props.autoWidth ? "w-auto max-w-full" : "w-full",
   showInlineEndLabel.value && props.hint ? "overflow-visible" : "overflow-hidden",
   props.compact ? "box-border h-9" : CONTROL_SIZE,
   toneShellRingClass.value,

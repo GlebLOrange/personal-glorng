@@ -15,14 +15,22 @@ const props = withDefaults(
     hub?: "admin" | "tools";
     /** Optional page help (forwarded to PageShell → chrome ?). */
     description?: string;
+    /**
+     * Wrap body in page-tool-body. Defaults on for tools hub; off for admin hub
+     * unless overridden.
+     */
+    tool?: boolean;
   }>(),
   {
     backTo: "/tools",
     hub: "tools",
     maxWidth: "5xl",
     description: undefined,
+    tool: undefined,
   },
 );
+
+const useToolBody = computed(() => props.tool ?? props.hub === "tools");
 
 const breadcrumbLabel = computed(() => formatBreadcrumbLabel(props.title));
 
@@ -46,6 +54,7 @@ const breadcrumbs = computed((): BreadcrumbSegment[] => {
     :max-width="maxWidth"
     :narrow="false"
     :description="description"
+    :tool="useToolBody"
     as="div"
   >
     <slot />

@@ -25,9 +25,12 @@ const props = withDefaults(
     ariaLabel?: string;
     /** HTML minlength hint; search APIs gate at SEARCH_MIN_QUERY_LENGTH. */
     minLength?: number;
+    /** Shrink control to content (tool action panels) instead of w-full. */
+    autoWidth?: boolean;
   }>(),
   {
     minLength: SEARCH_MIN_QUERY_LENGTH,
+    autoWidth: false,
   },
 );
 
@@ -52,7 +55,8 @@ function clear(): void {
     :class="[
       FIELD_WRAPPER_CLASS,
       CONTROL_SIZE,
-      'flex w-full items-center overflow-hidden rounded-lg bg-surface-dark transition-colors ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-coral/50',
+      'flex items-center overflow-hidden rounded-lg bg-surface-dark transition-colors ring-1 ring-inset ring-surface-border focus-within:ring-2 focus-within:ring-accent-coral/50',
+      props.autoWidth ? 'w-auto max-w-full' : 'w-full',
       $attrs.class,
     ]"
   >

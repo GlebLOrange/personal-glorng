@@ -55,49 +55,52 @@ function clearFilters(): void {
 </script>
 
 <template>
-  <AdminListToolbar>
-    <template #start>
-      <div class="flex w-full min-w-0 flex-col gap-3">
-        <AdminFilterDropdown
-          ref="filterDropdown"
-          :has-active-filters="hasActiveFilters"
-          :active-label="activeFilterLabel"
-          :option-labels="[
-            ...ROLE_FILTERS.map((chip) => chip.label),
-            ...STATUS_FILTERS.map((chip) => chip.label),
-          ]"
-          @clear="clearFilters"
-        >
-          <div class="flex flex-col gap-2">
-            <AdminFilterChip
-              v-for="chip in ROLE_FILTERS"
-              :key="chip.value"
-              :label="chip.label"
-              :active="roleFilter === chip.value"
-              :color-class="userRoleClass(chip.value)"
-              @click="setRoleFilter(chip.value)"
-            />
-          </div>
+  <div class="page-tool-actions">
+    <AdminListToolbar>
+      <template #start>
+        <div class="flex w-fit min-w-0 flex-col gap-3">
+          <AdminFilterDropdown
+            ref="filterDropdown"
+            :has-active-filters="hasActiveFilters"
+            :active-label="activeFilterLabel"
+            :option-labels="[
+              ...ROLE_FILTERS.map((chip) => chip.label),
+              ...STATUS_FILTERS.map((chip) => chip.label),
+            ]"
+            @clear="clearFilters"
+          >
+            <div class="flex flex-col gap-2">
+              <AdminFilterChip
+                v-for="chip in ROLE_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :active="roleFilter === chip.value"
+                :color-class="userRoleClass(chip.value)"
+                @click="setRoleFilter(chip.value)"
+              />
+            </div>
 
-          <div class="border-t border-surface-border" />
+            <div class="border-t border-surface-border" />
 
-          <div class="flex flex-col gap-2">
-            <AdminFilterChip
-              v-for="chip in STATUS_FILTERS"
-              :key="chip.value"
-              :label="chip.label"
-              :active="statusFilter === chip.value"
-              :color-class="userStatusClass(chip.value)"
-              @click="setUserStatusFilter(chip.value)"
-            />
-          </div>
-        </AdminFilterDropdown>
-        <SearchInput
-          v-model="searchQuery"
-          placeholder="search users by name or email"
-          class="w-full"
-        />
-      </div>
-    </template>
-  </AdminListToolbar>
+            <div class="flex flex-col gap-2">
+              <AdminFilterChip
+                v-for="chip in STATUS_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :active="statusFilter === chip.value"
+                :color-class="userStatusClass(chip.value)"
+                @click="setUserStatusFilter(chip.value)"
+              />
+            </div>
+          </AdminFilterDropdown>
+          <SearchInput
+            v-model="searchQuery"
+            placeholder="search users by name or email"
+            class="min-w-0"
+            auto-width
+          />
+        </div>
+      </template>
+    </AdminListToolbar>
+  </div>
 </template>
