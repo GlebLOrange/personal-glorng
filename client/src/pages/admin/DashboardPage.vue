@@ -8,7 +8,9 @@ const { isSuperuser } = usePermissions();
 
 <template>
   <AdminPageLayout title="admin" hub="tools" max-width="5xl" back-to="/tools">
-    <MaintenanceJobActions v-if="isSuperuser" mode="hub" class="mb-8" />
+    <div v-if="isSuperuser" class="page-tool-actions mb-8">
+      <MaintenanceJobActions mode="hub" />
+    </div>
     <p
       v-else
       class="rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"

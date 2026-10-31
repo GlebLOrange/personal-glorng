@@ -41,4 +41,33 @@ describe("PageShell", () => {
 
     expect(wrapper.get('[data-testid="chrome"]').attributes("data-description")).toBe("");
   });
+
+  it("wraps the slot in page-tool-body when tool is true", () => {
+    const wrapper = mount(PageShell, {
+      props: {
+        title: "send email",
+        breadcrumbs: [{ label: "tools", to: "/tools" }, { label: "send email" }],
+        tool: true,
+      },
+      global: { stubs },
+      slots: { default: '<div data-testid="slot-body">body</div>' },
+    });
+
+    expect(wrapper.find(".page-tool-body").exists()).toBe(true);
+    expect(wrapper.get(".page-tool-body").get('[data-testid="slot-body"]').text()).toBe("body");
+  });
+
+  it("does not wrap the slot in page-tool-body by default", () => {
+    const wrapper = mount(PageShell, {
+      props: {
+        title: "news",
+        breadcrumbs: [{ label: "news" }],
+      },
+      global: { stubs },
+      slots: { default: '<div data-testid="slot-body">body</div>' },
+    });
+
+    expect(wrapper.find(".page-tool-body").exists()).toBe(false);
+    expect(wrapper.get('[data-testid="slot-body"]').text()).toBe("body");
+  });
 });

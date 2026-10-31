@@ -88,6 +88,7 @@ async function download(): Promise<void> {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
     <div class="min-w-0 space-y-3">
       <p
@@ -97,99 +98,107 @@ async function download(): Promise<void> {
       >
         This tool is turned off on this server.
       </p>
-      <form v-else class="mb-8 space-y-3" @submit.prevent="download">
-        <CollapsibleUsageGuide title="yt-dlp usage guide">
-          <template #start>
-            <AdminFilterDropdown
-              label="options"
-              :show-clear="false"
-              :has-active-filters="hasCustomOptions"
-              :active-label="optionsActiveLabel"
-              :option-labels="optionLabels"
-            >
-              <BaseSelect id="vid-download-quality" v-model="format" compact aria-label="quality">
-                <option v-for="f in formats" :key="f.value" :value="f.value">
-                  {{ f.label }}
-                </option>
-              </BaseSelect>
+      <div v-else class="page-tool-actions">
+        <form class="space-y-3" @submit.prevent="download">
+          <CollapsibleUsageGuide title="yt-dlp usage guide">
+            <template #start>
+              <AdminFilterDropdown
+                label="options"
+                :show-clear="false"
+                :has-active-filters="hasCustomOptions"
+                :active-label="optionsActiveLabel"
+                :option-labels="optionLabels"
+              >
+                <BaseSelect id="vid-download-quality" v-model="format" compact aria-label="quality">
+                  <option v-for="f in formats" :key="f.value" :value="f.value">
+                    {{ f.label }}
+                  </option>
+                </BaseSelect>
 
-              <AdminFilterChip
-                label="audio only"
-                :active="audioOnly"
-                :color-class="familyBadgeClass('1xx')"
-                @click="audioOnly = !audioOnly"
-              />
-            </AdminFilterDropdown>
-          </template>
-          <template #actions>
-            <ToolbarPillButton action="save" type="submit" :disabled="loading || !url.trim()">
-              {{ loading ? "downloading…" : "download" }}
-            </ToolbarPillButton>
-          </template>
-          <div class="space-y-4 text-sm text-surface-light">
-            <div>
-              <h3 class="mb-2 font-bold text-accent-coral">Format selection</h3>
-              <p class="mb-1 text-surface-mid">
-                The <code class="text-accent-coral">-f</code> flag controls quality. Common values:
-              </p>
-              <ul class="ml-2 list-inside list-disc space-y-1 text-surface-mid">
-                <li><code class="text-surface-light">best</code> -- best single file (default)</li>
-                <li>
-                  <code class="text-surface-light">bestvideo+bestaudio/best</code> -- merge best
-                  streams (needs ffmpeg)
-                </li>
-                <li>
-                  <code class="text-surface-light">bestvideo[height&lt;=720]+bestaudio</code> -- cap
-                  at 720p
-                </li>
-                <li><code class="text-surface-light">bestaudio</code> -- audio stream only</li>
-              </ul>
+                <AdminFilterChip
+                  label="audio only"
+                  :active="audioOnly"
+                  :color-class="familyBadgeClass('1xx')"
+                  @click="audioOnly = !audioOnly"
+                />
+              </AdminFilterDropdown>
+            </template>
+            <template #actions>
+              <ToolbarPillButton
+                action="save"
+                type="submit"
+                class="w-auto"
+                :disabled="loading || !url.trim()"
+              >
+                {{ loading ? "downloading…" : "download" }}
+              </ToolbarPillButton>
+            </template>
+            <div class="space-y-4 text-sm text-surface-light">
+              <div>
+                <h3 class="mb-2 font-bold text-accent-coral">Format selection</h3>
+                <p class="mb-1 text-surface-mid">
+                  The <code class="text-accent-coral">-f</code> flag controls quality. Common values:
+                </p>
+                <ul class="ml-2 list-inside list-disc space-y-1 text-surface-mid">
+                  <li><code class="text-surface-light">best</code> -- best single file (default)</li>
+                  <li>
+                    <code class="text-surface-light">bestvideo+bestaudio/best</code> -- merge best
+                    streams (needs ffmpeg)
+                  </li>
+                  <li>
+                    <code class="text-surface-light">bestvideo[height&lt;=720]+bestaudio</code> -- cap
+                    at 720p
+                  </li>
+                  <li><code class="text-surface-light">bestaudio</code> -- audio stream only</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 class="mb-2 font-bold text-accent-coral">Supported sites</h3>
+                <p class="text-surface-mid">
+                  Paste any public http(s) video URL yt-dlp can handle (YouTube, Vimeo, Twitter/X, and
+                  many more). Private or local addresses are rejected.
+                </p>
+              </div>
+
+              <div>
+                <h3 class="mb-2 font-bold text-accent-coral">Audio extraction</h3>
+                <p class="text-surface-mid">
+                  Check "Audio only" to extract the audio track as MP3. This uses
+                  <code class="text-surface-light">-x --audio-format mp3</code> under the hood. Great
+                  for downloading music or podcast episodes.
+                </p>
+              </div>
+
+              <div>
+                <h3 class="mb-2 font-bold text-accent-coral">Limits</h3>
+                <p class="text-surface-mid">
+                  Downloads are limited to 500 MB and 2 minutes per request. Each IP may run one
+                  download at a time, with at most two concurrent downloads across the server. Use is
+                  also rate limited to five downloads per hour per IP.
+                </p>
+              </div>
+
+              <a
+                href="https://github.com/yt-dlp/yt-dlp#readme"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-block text-accent-coral transition-colors hover:text-accent-coral/80"
+              >
+                Full yt-dlp documentation &rarr;
+              </a>
             </div>
+          </CollapsibleUsageGuide>
 
-            <div>
-              <h3 class="mb-2 font-bold text-accent-coral">Supported sites</h3>
-              <p class="text-surface-mid">
-                Paste any public http(s) video URL yt-dlp can handle (YouTube, Vimeo, Twitter/X, and
-                many more). Private or local addresses are rejected.
-              </p>
-            </div>
-
-            <div>
-              <h3 class="mb-2 font-bold text-accent-coral">Audio extraction</h3>
-              <p class="text-surface-mid">
-                Check "Audio only" to extract the audio track as MP3. This uses
-                <code class="text-surface-light">-x --audio-format mp3</code> under the hood. Great
-                for downloading music or podcast episodes.
-              </p>
-            </div>
-
-            <div>
-              <h3 class="mb-2 font-bold text-accent-coral">Limits</h3>
-              <p class="text-surface-mid">
-                Downloads are limited to 500 MB and 2 minutes per request. Each IP may run one
-                download at a time, with at most two concurrent downloads across the server. Use is
-                also rate limited to five downloads per hour per IP.
-              </p>
-            </div>
-
-            <a
-              href="https://github.com/yt-dlp/yt-dlp#readme"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-block text-accent-coral transition-colors hover:text-accent-coral/80"
-            >
-              Full yt-dlp documentation &rarr;
-            </a>
-          </div>
-        </CollapsibleUsageGuide>
-
-        <BaseInput
-          v-model="url"
-          placeholder="url (example.com or https://…)"
-          aria-label="url (example.com or https://…)"
-          class="w-full"
-        />
-      </form>
+          <BaseInput
+            v-model="url"
+            placeholder="url (example.com or https://…)"
+            aria-label="url (example.com or https://…)"
+            class="min-w-0"
+            auto-width
+          />
+        </form>
+      </div>
     </div>
   </PageShell>
 </template>

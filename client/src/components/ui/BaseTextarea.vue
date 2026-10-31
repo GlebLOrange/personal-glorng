@@ -42,10 +42,13 @@ const props = withDefaults(
      * When not labelInside: `start` = border notch; `end` = inside trailing (before clear).
      */
     labelAlign?: "start" | "end";
+    /** Shrink shell/textarea to content (tool action panels) instead of w-full. */
+    autoWidth?: boolean;
   }>(),
   {
     labelInside: false,
     labelAlign: "end",
+    autoWidth: false,
   },
 );
 
@@ -110,11 +113,13 @@ const describedBy = computed(() =>
 );
 const bareClass = computed(() => [
   props.compact ? TEXTAREA_CLASS_COMPACT : TEXTAREA_CLASS,
+  props.autoWidth && "!w-auto max-w-full",
   props.error && "border-status-error",
 ]);
 const shellClass = computed(() => [
   // Inset ring (not border) — matches BaseInput field chrome.
-  "relative flex w-full items-start rounded-lg bg-surface-dark transition-colors",
+  "relative flex items-start rounded-lg bg-surface-dark transition-colors",
+  props.autoWidth ? "w-auto max-w-full" : "w-full",
   showInlineEndLabel.value && props.hint ? "overflow-visible" : "overflow-hidden",
   props.error
     ? "ring-1 ring-inset ring-status-error focus-within:ring-status-error"

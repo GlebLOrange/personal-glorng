@@ -132,6 +132,7 @@ function focusAddFromInsights(): void {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
     <div class="min-w-0">
       <div class="flex flex-col gap-3">
@@ -143,7 +144,7 @@ function focusAddFromInsights(): void {
           view only — you can browse expenses but not add or edit them
         </p>
 
-        <div class="border-b border-surface-border/50 pb-3">
+        <div class="page-tool-actions border-b border-surface-border/50 pb-3">
           <AdminTabBar
             flush
             panel-id-prefix="expenses-tab"
@@ -153,7 +154,12 @@ function focusAddFromInsights(): void {
             @update:model-value="switchTab"
           >
             <template #end>
-              <ToolbarPillButton action="save" :disabled="exporting" @click="exportCsv">
+              <ToolbarPillButton
+                action="save"
+                class="w-auto"
+                :disabled="exporting"
+                @click="exportCsv"
+              >
                 {{ exporting ? "exporting…" : "export csv" }}
               </ToolbarPillButton>
             </template>

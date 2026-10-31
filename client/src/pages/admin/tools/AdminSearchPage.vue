@@ -123,32 +123,36 @@ onUnmounted(() => {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
-    <div class="mb-6 flex min-w-0 flex-wrap items-center gap-2">
-      <AdminFilterDropdown
-        ref="filterDropdown"
-        :has-active-filters="hasActiveFilters"
-        :active-label="activeFilterLabel"
-        :option-labels="sourceTypeOptions.map((option) => option.label)"
-        @clear="clearFilters"
-      >
-        <template #chips>
-          <AdminFilterChip
-            v-for="option in sourceTypeOptions"
-            :key="option.value"
-            :label="option.label"
-            :active="sourceType === option.value"
-            @click="setSourceTypeFilter(option.value)"
-          />
-        </template>
-      </AdminFilterDropdown>
-      <SearchInput
-        :model-value="query"
-        placeholder="search (admin content)"
-        aria-label="search admin content"
-        class="min-w-0 flex-1"
-        @update:model-value="onQueryChange"
-      />
+    <div class="page-tool-actions">
+      <div class="flex min-w-0 flex-wrap items-center gap-2">
+        <AdminFilterDropdown
+          ref="filterDropdown"
+          :has-active-filters="hasActiveFilters"
+          :active-label="activeFilterLabel"
+          :option-labels="sourceTypeOptions.map((option) => option.label)"
+          @clear="clearFilters"
+        >
+          <template #chips>
+            <AdminFilterChip
+              v-for="option in sourceTypeOptions"
+              :key="option.value"
+              :label="option.label"
+              :active="sourceType === option.value"
+              @click="setSourceTypeFilter(option.value)"
+            />
+          </template>
+        </AdminFilterDropdown>
+        <SearchInput
+          :model-value="query"
+          placeholder="search (admin content)"
+          aria-label="search admin content"
+          class="min-w-0"
+          auto-width
+          @update:model-value="onQueryChange"
+        />
+      </div>
     </div>
 
     <section v-if="loading" class="space-y-3" aria-busy="true" aria-label="searching">

@@ -4,9 +4,9 @@ import { describe, expect, it } from "vitest";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 
 const pageShellStub = {
-  props: ["breadcrumbs", "backTo", "title", "description"],
+  props: ["breadcrumbs", "backTo", "title", "description", "tool"],
   template:
-    '<div><span data-testid="description">{{ description || "" }}</span><span v-for="(seg, i) in breadcrumbs" :key="i" data-testid="crumb" :data-to="seg.to || undefined">{{ seg.label }}</span></div>',
+    '<div><span data-testid="description">{{ description || "" }}</span><span data-testid="tool">{{ tool ? "1" : "0" }}</span><span v-for="(seg, i) in breadcrumbs" :key="i" data-testid="crumb" :data-to="seg.to || undefined">{{ seg.label }}</span></div>',
 };
 
 function crumbNodes(wrapper: ReturnType<typeof mount>) {
@@ -83,5 +83,25 @@ describe("AdminPageLayout", () => {
     expect(wrapper.get('[data-testid="description"]').text()).toBe(
       "Monitor URLs on a schedule — status history stays on this server.",
     );
+  });
+
+  it("enables tool body when hub is tools", () => {
+    const wrapper = mount(AdminPageLayout, {
+      props: { title: "users", hub: "tools" },
+      global: { stubs: { PageShell: pageShellStub } },
+      slots: { default: "content" },
+    });
+
+    expect(wrapper.get('[data-testid="tool"]').text()).toBe("1");
+  });
+
+  it("disables tool body when hub is admin unless overridden", () => {
+    const wrapper = mount(AdminPageLayout, {
+      props: { title: "admin", hub: "admin", backTo: "/admin" },
+      global: { stubs: { PageShell: pageShellStub } },
+      slots: { default: "content" },
+    });
+
+    expect(wrapper.get('[data-testid="tool"]').text()).toBe("0");
   });
 });

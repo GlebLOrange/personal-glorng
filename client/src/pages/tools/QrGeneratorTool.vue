@@ -248,65 +248,88 @@ onMounted(() => {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
     <div class="flex min-w-0 flex-col gap-6">
       <p class="text-xs text-surface-mid">{{ pageDescription }}</p>
       <div class="grid min-w-0 gap-4 lg:grid-cols-2">
-        <Card variant="ghost" class="min-w-0">
-          <form id="qr-generator-form" class="space-y-2" @submit.prevent="createQr">
-            <div class="flex flex-wrap gap-2">
-              <BaseInput
-                v-model="label"
-                label="label (optional)"
-                placeholder="My link"
-                class="min-w-0 flex-1"
-                maxlength="120"
+        <div class="page-tool-actions mb-0">
+          <Card variant="ghost" class="min-w-0 w-auto max-w-full">
+            <form id="qr-generator-form" class="space-y-2" @submit.prevent="createQr">
+              <div class="flex flex-wrap gap-2">
+                <BaseInput
+                  v-model="label"
+                  label="label (optional)"
+                  placeholder="My link"
+                  class="min-w-0"
+                  maxlength="120"
+                  compact
+                  auto-width
+                />
+                <BaseSelect
+                  v-model="errorLevel"
+                  label="error correction"
+                  class="min-w-[10rem] w-auto"
+                  compact
+                >
+                  <option value="L">L (~7%)</option>
+                  <option value="M">M (~15%)</option>
+                  <option value="Q">Q (~25%)</option>
+                  <option value="H">H (~30%)</option>
+                </BaseSelect>
+              </div>
+              <BaseTextarea
+                v-model="content"
+                label="payload"
+                :rows="2"
+                maxlength="2000"
+                placeholder="URL, text, Wi‑Fi string, etc."
                 compact
+                auto-width
               />
-              <BaseSelect
-                v-model="errorLevel"
-                label="error correction"
-                class="min-w-[10rem]"
-                compact
-              >
-                <option value="L">L (~7%)</option>
-                <option value="M">M (~15%)</option>
-                <option value="Q">Q (~25%)</option>
-                <option value="H">H (~30%)</option>
-              </BaseSelect>
-            </div>
-            <BaseTextarea
-              v-model="content"
-              label="payload"
-              :rows="2"
-              maxlength="2000"
-              placeholder="URL, text, Wi‑Fi string, etc."
-              compact
-            />
-            <div class="flex flex-wrap items-center gap-2">
-              <BaseButton v-if="isEditing" variant="cancel" type="button" @click="clearEditSession">
-                new / discard
-              </BaseButton>
-              <BaseButton
-                v-if="canWriteLibrary"
-                variant="save"
-                type="button"
-                :disabled="!canSaveLibrary"
-                @click="saveToLibrary"
-              >
-                {{ savingLibrary ? "saving…" : isEditing ? "update saved qr" : "save to library" }}
-              </BaseButton>
-              <BaseButton v-if="previewUrl" variant="ghost" type="button" @click="downloadSvg">
-                download svg
-              </BaseButton>
-              <BaseButton variant="primary" type="submit" class="ml-auto" :disabled="!canCreate">
-                {{ creating ? "generating…" : "generate qr" }}
-              </BaseButton>
-            </div>
-            <p v-if="detailLoading" class="text-xs text-surface-mid">Loading saved code…</p>
-            <p v-if="saveError" class="text-xs text-status-error" role="alert">{{ saveError }}</p>
-          </form>
-        </Card>
+              <div class="flex flex-wrap items-center gap-2">
+                <BaseButton
+                  v-if="isEditing"
+                  variant="cancel"
+                  type="button"
+                  class="w-auto"
+                  @click="clearEditSession"
+                >
+                  new / discard
+                </BaseButton>
+                <BaseButton
+                  v-if="canWriteLibrary"
+                  variant="save"
+                  type="button"
+                  class="w-auto"
+                  :disabled="!canSaveLibrary"
+                  @click="saveToLibrary"
+                >
+                  {{ savingLibrary ? "saving…" : isEditing ? "update saved qr" : "save to library" }}
+                </BaseButton>
+                <BaseButton
+                  v-if="previewUrl"
+                  variant="ghost"
+                  type="button"
+                  class="w-auto"
+                  @click="downloadSvg"
+                >
+                  download svg
+                </BaseButton>
+                <BaseButton
+                  variant="primary"
+                  type="submit"
+                  class="w-auto"
+                  :disabled="!canCreate"
+                >
+                  {{ creating ? "generating…" : "generate qr" }}
+                </BaseButton>
+              </div>
+              <p v-if="detailLoading" class="text-xs text-surface-mid">Loading saved code…</p>
+              <p v-if="saveError" class="text-xs text-status-error" role="alert">{{ saveError }}</p>
+            </form>
+          </Card>
+        </div>
 
         <Card
           variant="ghost"

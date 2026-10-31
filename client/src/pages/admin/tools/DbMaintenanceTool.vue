@@ -11,7 +11,10 @@ import PageShell from "@/components/layout/PageShell.vue";
     max-width="5xl"
     :narrow="false"
     description="run backup, stale check, calendar sync, cleanup, or seed. each finished job emails the operator."
+    tool
   >
-    <MaintenanceJobActions mode="page" />
+    <div class="page-tool-actions">
+      <MaintenanceJobActions mode="page" />
+    </div>
   </PageShell>
 </template>

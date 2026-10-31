@@ -75,11 +75,12 @@ async function preview(): Promise<void> {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
-    <div class="min-w-0 space-y-3">
+    <div class="page-tool-actions">
       <AdminListToolbar>
         <template #start>
-          <div class="flex w-full min-w-0 items-center justify-between gap-2">
+          <div class="flex items-center justify-center gap-2">
             <ToolbarPillButton
               action="create"
               :disabled="!subject || !body || loading"
@@ -99,7 +100,7 @@ async function preview(): Promise<void> {
         </template>
       </AdminListToolbar>
 
-      <form class="space-y-3 mb-8" @submit.prevent="send">
+      <form class="space-y-3" @submit.prevent="send">
         <BaseInput
           id="email-to"
           v-model="to"
@@ -108,6 +109,7 @@ async function preview(): Promise<void> {
           aria-label="to"
           autocomplete="email"
           spellcheck="false"
+          auto-width
         />
         <BaseInput
           id="email-subject"
@@ -115,6 +117,7 @@ async function preview(): Promise<void> {
           placeholder="subject"
           aria-label="subject"
           autocomplete="off"
+          auto-width
         />
         <BaseTextarea
           id="email-body"
@@ -123,18 +126,19 @@ async function preview(): Promise<void> {
           placeholder="body"
           aria-label="body"
           autocomplete="off"
+          auto-width
         />
       </form>
+    </div>
 
-      <div v-if="previewHtml" class="space-y-2" role="status" aria-live="polite">
-        <h3 class="text-sm text-surface-mid">preview</h3>
-        <!-- eslint-disable vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
-        <div
-          class="border border-surface-border rounded-lg p-4 bg-white"
-          v-html="sanitizedPreviewHtml"
-        />
-        <!-- eslint-enable vue/no-v-html -->
-      </div>
+    <div v-if="previewHtml" class="space-y-2" role="status" aria-live="polite">
+      <h3 class="text-sm text-surface-mid">preview</h3>
+      <!-- eslint-disable vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
+      <div
+        class="border border-surface-border rounded-lg p-4 bg-white"
+        v-html="sanitizedPreviewHtml"
+      />
+      <!-- eslint-enable vue/no-v-html -->
     </div>
   </PageShell>
 </template>

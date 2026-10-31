@@ -217,32 +217,35 @@ onMounted(load);
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
     <AdminListSkeleton v-if="loading" label="Loading feedback" />
 
     <template v-else>
-      <AdminListToolbar>
-        <template #start>
-          <AdminFilterDropdown
-            ref="filterDropdown"
-            :has-active-filters="hasActiveFilters"
-            :active-label="activeFilterLabel"
-            :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
-            @clear="clearFilters"
-          >
-            <template #chips>
-              <AdminFilterChip
-                v-for="chip in STATUS_FILTERS"
-                :key="chip.value"
-                :label="chip.label"
-                :active="filter === chip.value"
-                :color-class="feedbackStatusClass(chip.value)"
-                @click="setFilter(chip.value)"
-              />
-            </template>
-          </AdminFilterDropdown>
-        </template>
-      </AdminListToolbar>
+      <div class="page-tool-actions">
+        <AdminListToolbar>
+          <template #start>
+            <AdminFilterDropdown
+              ref="filterDropdown"
+              :has-active-filters="hasActiveFilters"
+              :active-label="activeFilterLabel"
+              :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
+              @clear="clearFilters"
+            >
+              <template #chips>
+                <AdminFilterChip
+                  v-for="chip in STATUS_FILTERS"
+                  :key="chip.value"
+                  :label="chip.label"
+                  :active="filter === chip.value"
+                  :color-class="feedbackStatusClass(chip.value)"
+                  @click="setFilter(chip.value)"
+                />
+              </template>
+            </AdminFilterDropdown>
+          </template>
+        </AdminListToolbar>
+      </div>
 
       <EmptyState
         v-if="items.length === 0"

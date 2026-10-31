@@ -56,44 +56,52 @@ const {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
-    <AdminListToolbar v-if="!listLoading && !listError">
-      <template #actions>
-        <AdminFilterDropdown
-          ref="filterDropdown"
-          :has-active-filters="hasActiveFilters"
-          :active-label="activeFilterLabel"
-          :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
-          @clear="clearFilters"
-        >
-          <template #chips>
-            <AdminFilterChip
-              v-for="chip in STATUS_FILTERS"
-              :key="chip.value"
-              :label="chip.label"
-              :title="newsStatusDescription(chip.value)"
-              :active="statusFilter === chip.value"
-              :color-class="newsStatusClass(chip.value)"
-              @click="setStatusFilter(chip.value)"
-            />
+    <div v-if="!listLoading && !listError" class="page-tool-actions">
+      <AdminListToolbar>
+        <template #actions>
+          <AdminFilterDropdown
+            ref="filterDropdown"
+            :has-active-filters="hasActiveFilters"
+            :active-label="activeFilterLabel"
+            :option-labels="STATUS_FILTERS.map((chip) => chip.label)"
+            @clear="clearFilters"
+          >
+            <template #chips>
+              <AdminFilterChip
+                v-for="chip in STATUS_FILTERS"
+                :key="chip.value"
+                :label="chip.label"
+                :title="newsStatusDescription(chip.value)"
+                :active="statusFilter === chip.value"
+                :color-class="newsStatusClass(chip.value)"
+                @click="setStatusFilter(chip.value)"
+              />
+            </template>
+          </AdminFilterDropdown>
+          <template v-if="canWrite">
+            <ToolbarPillButton
+              action="edit"
+              class="w-auto"
+              :disabled="actionLoading"
+              @click="runIngest"
+            >
+              run ingest
+            </ToolbarPillButton>
           </template>
-        </AdminFilterDropdown>
-        <template v-if="canWrite">
-          <ToolbarPillButton action="edit" :disabled="actionLoading" @click="runIngest">
-            run ingest
-          </ToolbarPillButton>
         </template>
-      </template>
-      <ToolbarPillButton
-        v-if="canWrite"
-        action="create"
-        class="ml-auto"
-        :disabled="actionLoading"
-        @click="openCreate"
-      >
-        + article
-      </ToolbarPillButton>
-    </AdminListToolbar>
+        <ToolbarPillButton
+          v-if="canWrite"
+          action="create"
+          class="w-auto"
+          :disabled="actionLoading"
+          @click="openCreate"
+        >
+          + article
+        </ToolbarPillButton>
+      </AdminListToolbar>
+    </div>
 
     <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="loading news">
       <Card v-for="i in 5" :key="i" class="h-36 animate-pulse" />

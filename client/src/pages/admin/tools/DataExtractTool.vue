@@ -73,9 +73,10 @@ function loadSampleCsv(): void {
     back-to="/tools"
     max-width="5xl"
     :narrow="false"
+    tool
   >
     <div class="min-w-0">
-      <div class="mb-6 space-y-3">
+      <div class="page-tool-actions mb-6">
         <CollapsibleUsageGuide title="data extract usage guide">
           <template #start>
             <DataExtractOptionsPanel
@@ -95,6 +96,7 @@ function loadSampleCsv(): void {
             <ToolbarPillButton
               action="save"
               type="button"
+              class="w-auto"
               :disabled="loading || !selectedFile"
               @click="
                 activeTab = 'extract';
@@ -107,6 +109,7 @@ function loadSampleCsv(): void {
               v-if="canWrite"
               action="edit"
               type="button"
+              class="w-auto"
               :disabled="loading || !selectedFile"
               @click="
                 activeTab = 'import';
@@ -166,6 +169,7 @@ function loadSampleCsv(): void {
         </CollapsibleUsageGuide>
 
         <FileDropZone
+          class="w-auto max-w-full"
           aria-label="choose a file to extract"
           :accept="acceptAttr"
           :hint="acceptHint"
@@ -173,7 +177,7 @@ function loadSampleCsv(): void {
           @select="selectFile"
         />
         <div class="mt-2">
-          <ToolbarPillButton action="create" type="button" @click="loadSampleCsv">
+          <ToolbarPillButton action="create" type="button" class="w-auto" @click="loadSampleCsv">
             load sample csv
           </ToolbarPillButton>
         </div>

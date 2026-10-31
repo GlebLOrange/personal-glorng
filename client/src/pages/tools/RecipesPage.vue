@@ -129,6 +129,7 @@ function editRecipeFromCard(recipe: Recipe): void {
     max-width="5xl"
     :narrow="false"
     description="Personal recipe list with cook mode."
+    tool
   >
     <div v-if="!isAuthenticated" class="min-w-0 space-y-3" aria-label="sample recipes">
       <p class="text-sm text-surface-mid">sample recipes</p>
@@ -148,7 +149,12 @@ function editRecipeFromCard(recipe: Recipe): void {
     </div>
     <RecipeFilters v-else v-model:search="search">
       <template v-if="canWrite" #actions>
-        <ToolbarPillButton action="create" :disabled="listLoading" @click="openCreate">
+        <ToolbarPillButton
+          action="create"
+          class="w-auto"
+          :disabled="listLoading"
+          @click="openCreate"
+        >
           + recipe
         </ToolbarPillButton>
       </template>
