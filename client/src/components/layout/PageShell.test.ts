@@ -57,6 +57,21 @@ describe("PageShell", () => {
     expect(wrapper.get(".page-tool-body").get('[data-testid="slot-body"]').text()).toBe("body");
   });
 
+  it("wraps the slot in page-tool-body when bodyWidth is column", () => {
+    const wrapper = mount(PageShell, {
+      props: {
+        title: "settings",
+        breadcrumbs: [{ label: "settings" }],
+        bodyWidth: "column",
+      },
+      global: { stubs },
+      slots: { default: '<div data-testid="slot-body">body</div>' },
+    });
+
+    expect(wrapper.find(".page-tool-body").exists()).toBe(true);
+    expect(wrapper.get(".page-tool-body").get('[data-testid="slot-body"]').text()).toBe("body");
+  });
+
   it("does not wrap the slot in page-tool-body by default", () => {
     const wrapper = mount(PageShell, {
       props: {

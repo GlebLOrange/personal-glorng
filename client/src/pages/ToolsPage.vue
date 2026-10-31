@@ -101,8 +101,7 @@ function tabPillClass(): string {
     title="tools"
     :breadcrumbs="[{ label: 'tools', to: '/tools' }]"
     back-to="/"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <p
       v-if="expensesOffNotice"

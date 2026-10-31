@@ -88,8 +88,7 @@ async function download(): Promise<void> {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'video downloader' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <div class="min-w-0 space-y-3">
       <p

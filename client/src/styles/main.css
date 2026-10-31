@@ -185,6 +185,8 @@ html[data-theme="light"] {
   --tile: calc((100% - 2rem) / 3);
   --content: calc(var(--tile) * 2 + 1rem);
   --page-chrome-offset: 4rem;
+  --page-column: 750px;
+  --page-column-min: 375px;
 }
 
 /** Icon chrome parked in the gutter just past the content shell’s right edge. */
@@ -197,6 +199,11 @@ html[data-theme="light"] {
   margin-top: var(--page-chrome-offset);
 }
 
+/** Content column (2-of-3 tiles) — formerly page-body-narrow. */
+@utility page-body-content {
+  @apply w-full min-w-0;
+}
+
 /** Tool slot inside page-body (PageShell tool prop). Centers action panels; full-bleed siblings use w-full self-stretch. */
 @utility page-tool-body {
   @apply flex w-full min-w-0 flex-col items-center;
@@ -205,8 +212,8 @@ html[data-theme="light"] {
 /** Shared tool action/form column — same width on every tool page. */
 @utility page-tool-actions {
   @apply mb-4 flex flex-col items-stretch gap-3;
-  width: min(100%, 750px);
-  min-width: min(100%, 375px);
+  width: min(100%, var(--page-column));
+  min-width: min(100%, var(--page-column-min));
   max-width: 100%;
 }
 
@@ -328,7 +335,9 @@ html[data-theme="light"] {
 
 @media (min-width: 768px) {
   .page-shell > .page-body-narrow,
-  .page-tile-scope > .page-body-narrow {
+  .page-tile-scope > .page-body-narrow,
+  .page-shell .page-body-content,
+  .page-tile-scope .page-body-content {
     max-width: var(--content);
   }
 

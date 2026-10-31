@@ -157,9 +157,9 @@ async function savePassword(): Promise<void> {
     :breadcrumbs="[{ label: 'settings', to: '/settings' }]"
     back-to="/"
     max-width="5xl"
-    :narrow="false"
+    body-width="column"
   >
-    <div class="flex min-w-0 flex-col gap-10">
+    <div class="page-tool-actions gap-8">
       <div
         v-if="DevApiStatusBadge"
         class="flex flex-wrap items-center justify-between gap-2 border-b border-surface-border pb-4"

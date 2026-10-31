@@ -79,9 +79,8 @@ onMounted(() => {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'health checker' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
+    body-width="column"
     description="Monitor URLs on a schedule — status history stays on this server."
-    tool
   >
     <p
       v-if="toolDisabled"

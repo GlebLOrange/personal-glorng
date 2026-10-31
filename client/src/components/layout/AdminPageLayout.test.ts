@@ -4,9 +4,9 @@ import { describe, expect, it } from "vitest";
 import AdminPageLayout from "@/components/layout/AdminPageLayout.vue";
 
 const pageShellStub = {
-  props: ["breadcrumbs", "backTo", "title", "description", "tool"],
+  props: ["breadcrumbs", "backTo", "title", "description", "bodyWidth"],
   template:
-    '<div><span data-testid="description">{{ description || "" }}</span><span data-testid="tool">{{ tool ? "1" : "0" }}</span><span v-for="(seg, i) in breadcrumbs" :key="i" data-testid="crumb" :data-to="seg.to || undefined">{{ seg.label }}</span></div>',
+    '<div><span data-testid="description">{{ description || "" }}</span><span data-testid="body-width">{{ bodyWidth || "" }}</span><span v-for="(seg, i) in breadcrumbs" :key="i" data-testid="crumb" :data-to="seg.to || undefined">{{ seg.label }}</span></div>',
 };
 
 function crumbNodes(wrapper: ReturnType<typeof mount>) {
@@ -85,23 +85,23 @@ describe("AdminPageLayout", () => {
     );
   });
 
-  it("enables tool body when hub is tools", () => {
+  it("uses column body width when hub is tools", () => {
     const wrapper = mount(AdminPageLayout, {
       props: { title: "users", hub: "tools" },
       global: { stubs: { PageShell: pageShellStub } },
       slots: { default: "content" },
     });
 
-    expect(wrapper.get('[data-testid="tool"]').text()).toBe("1");
+    expect(wrapper.get('[data-testid="body-width"]').text()).toBe("column");
   });
 
-  it("disables tool body when hub is admin unless overridden", () => {
+  it("uses full body width when hub is admin unless overridden", () => {
     const wrapper = mount(AdminPageLayout, {
       props: { title: "admin", hub: "admin", backTo: "/admin" },
       global: { stubs: { PageShell: pageShellStub } },
       slots: { default: "content" },
     });
 
-    expect(wrapper.get('[data-testid="tool"]').text()).toBe("0");
+    expect(wrapper.get('[data-testid="body-width"]').text()).toBe("full");
   });
 });

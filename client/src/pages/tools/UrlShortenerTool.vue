@@ -252,8 +252,7 @@ onMounted(() => {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'url shortener' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <div class="page-tool-actions">
       <form class="flex w-full min-w-0 flex-col gap-2" @submit.prevent="createUrl">

@@ -125,8 +125,7 @@ onMounted(loadFiles);
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'file share' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <p
       v-if="toolDisabled"
