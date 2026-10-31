@@ -24,6 +24,7 @@ from app.services.task import sync_calendar_for_telegram_user
 from app.settings import get_settings
 from app.todobot.keyboards.menu import main_menu
 from app.todobot.keyboards.task import calendar_hub, month_day_buttons
+from app.todobot.utils.action_help import toast_for
 from app.todobot.utils.oneshot import format_month_grid
 
 router = Router()
@@ -208,7 +209,7 @@ async def handle_calendar_callbacks(
         return
     parts = callback.data.split(":")
     action = parts[1] if len(parts) > 1 else ""
-    await callback.answer()
+    await callback.answer(toast_for(callback.data))
 
     if action == "hub":
         await send_calendar_hub(callback.message, registry)
