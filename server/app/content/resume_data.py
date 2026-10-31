@@ -16,13 +16,15 @@ _RESUME_RAW: dict[str, Any] = {
     "location": "Wrocław, Poland",
     "availability": "open to full-time and contract (remote)",
     "bio": (
-        "Backend-first: FastAPI, auth, Redis/Celery, Docker."
-        " I own a Vue UI when the product needs one."
+        "Backend engineer who ships FastAPI services — auth, workers, Redis,"
+        " and Docker deploys that stay operable. When the product needs a UI,"
+        " I own the Vue side end to end. Based in Wrocław; open to remote"
+        " full-time and contract."
     ),
     "hiring_note": (
-        "This site is the live product — auth, jobs, search, OpenAPI, tests, and CI."
-        " Independent since 2017; this personal website (2022-present)"
-        " is the public sample."
+        "This site is the live product sample: auth, jobs, search, OpenAPI,"
+        " tests, and CI. Independent since 2017; the personal website"
+        " (2022–present) is what you can click through."
     ),
     "skills": [
         {
