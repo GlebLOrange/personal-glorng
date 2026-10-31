@@ -251,18 +251,24 @@ onMounted(() => {
   >
     <div class="flex min-w-0 flex-col gap-6">
       <p class="text-xs text-surface-mid">{{ pageDescription }}</p>
-      <div class="flex min-w-0 flex-col gap-6">
-        <Card variant="ghost" class="min-w-0 flex-1">
-          <form id="qr-generator-form" class="space-y-3" @submit.prevent="createQr">
-            <div class="flex flex-wrap gap-3">
+      <div class="grid min-w-0 gap-4 lg:grid-cols-2">
+        <Card variant="ghost" class="min-w-0">
+          <form id="qr-generator-form" class="space-y-2" @submit.prevent="createQr">
+            <div class="flex flex-wrap gap-2">
               <BaseInput
                 v-model="label"
                 label="label (optional)"
                 placeholder="My link"
                 class="min-w-0 flex-1"
                 maxlength="120"
+                compact
               />
-              <BaseSelect v-model="errorLevel" label="error correction" class="min-w-[10rem]">
+              <BaseSelect
+                v-model="errorLevel"
+                label="error correction"
+                class="min-w-[10rem]"
+                compact
+              >
                 <option value="L">L (~7%)</option>
                 <option value="M">M (~15%)</option>
                 <option value="Q">Q (~25%)</option>
@@ -272,9 +278,10 @@ onMounted(() => {
             <BaseTextarea
               v-model="content"
               label="payload"
-              :rows="4"
+              :rows="2"
               maxlength="2000"
               placeholder="URL, text, Wi‑Fi string, etc."
+              compact
             />
             <div class="flex flex-wrap items-center gap-2">
               <BaseButton v-if="isEditing" variant="cancel" type="button" @click="clearEditSession">
@@ -303,19 +310,24 @@ onMounted(() => {
 
         <Card
           variant="ghost"
-          class="flex w-full max-w-64 shrink-0 flex-col items-stretch gap-3 self-center p-0"
+          class="flex w-full max-w-64 shrink-0 flex-col items-stretch self-center p-0 lg:self-start"
         >
-          <p v-if="!previewUrl" class="text-center text-sm text-surface-mid">
-            Generate a code to preview it here.
-          </p>
-          <img
-            v-else
-            :src="previewUrl"
-            :alt="previewAlt"
-            width="256"
-            height="256"
-            class="h-auto w-full rounded-md bg-white p-2"
-          />
+          <div class="aspect-square w-full">
+            <p
+              v-if="!previewUrl"
+              class="flex h-full items-center justify-center px-3 text-center text-sm text-surface-mid"
+            >
+              Generate a code to preview it here.
+            </p>
+            <img
+              v-else
+              :src="previewUrl"
+              :alt="previewAlt"
+              width="256"
+              height="256"
+              class="h-full w-full rounded-md bg-white p-2 object-contain"
+            />
+          </div>
         </Card>
       </div>
 
