@@ -102,7 +102,7 @@ VITE_PUBLIC_ORIGIN=https://your-domain.example npm run build:check
 
 Host Vite uses `client/.env.development` (`VITE_API_PROXY_TARGET=http://127.0.0.1:8000` by default) and also applies `VITE_*` from repo-root `.env`.
 
-- **2026-10-31:** Cursor does not expand `${workspaceFolder}` in MCP `env` (literal string); set `CURSOR_WORKSPACE` to an absolute repo path (project [`.cursor/mcp.json`](../../.cursor/mcp.json) or `~/.cursor/mcp.json`) with `mcp --proxy`. Inactive/`mcp_auth`-only often means wrong cwd or unexpanded env — reconnect MCP; do not `gortex track` `$HOME`.
+- **2026-10-31:** Cursor does not expand `${workspaceFolder}` in MCP `env` (literal string); set `CURSOR_WORKSPACE` and `mcp --proxy --index` to the same absolute repo path (project [`.cursor/mcp.json`](../../.cursor/mcp.json) → [`.agents/mcp_config.json`](../../.agents/mcp_config.json), or `~/.cursor/mcp.json`). Tilde session roots (`~/projects/...`) fail against absolute tracks — reconnect MCP after edits; do not `gortex track` `$HOME`.
 - **2026-10-30:** Superseded 2026-10-31 — Cursor Gortex MCP inactive for `$HOME` while `portfolio-glorng` is tracked means the MCP process cwd is home — set `CURSOR_WORKSPACE=${workspaceFolder}` (and `mcp --proxy`) in mcp.json; do not `gortex track` home.
 - **2026-10-26:** Worktree UI checks must hit that worktree’s Vite (e.g. `:3001`) with API healthy on `:8000`; `http://localhost` nginx serves the primary checkout’s client, so `/api` 502 there is a down proxy target, not an app auth bug.
 
