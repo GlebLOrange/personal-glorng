@@ -65,6 +65,7 @@ const emit = defineEmits<{ submit: []; close: [] }>();
             type="submit"
             form="task-create-drawer-form"
             action="create"
+            :icon="false"
             class="gap-1.5"
             :disabled="saving"
           >

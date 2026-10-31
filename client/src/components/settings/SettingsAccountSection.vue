@@ -41,8 +41,8 @@ const passwordsMatch = computed(
             type="email"
             name="email"
             autocomplete="email"
-            placeholder="email address"
-            aria-label="email address"
+            label="email"
+            tip="email@example.com"
             required
           />
           <div class="flex min-w-0 items-center gap-2">
@@ -52,8 +52,7 @@ const passwordsMatch = computed(
               type="password"
               name="current-password-for-email"
               autocomplete="current-password"
-              placeholder="current password"
-              aria-label="current password for email change"
+              label="current password"
               required
             />
             <BaseButton
@@ -78,8 +77,7 @@ const passwordsMatch = computed(
             type="password"
             name="current-password"
             autocomplete="current-password"
-            placeholder="current password"
-            aria-label="current password"
+            label="current password"
             required
           />
           <BaseInput
@@ -87,8 +85,7 @@ const passwordsMatch = computed(
             type="password"
             name="new-password"
             autocomplete="new-password"
-            placeholder="new password"
-            aria-label="new password"
+            label="new password"
             :error="newPassword && !passwordCheck.valid ? passwordCheck.message : undefined"
             required
           />
@@ -97,8 +94,7 @@ const passwordsMatch = computed(
             type="password"
             name="confirm-new-password"
             autocomplete="new-password"
-            placeholder="confirm new password"
-            aria-label="confirm new password"
+            label="confirm new password"
             :error="newPasswordConfirm && !passwordsMatch ? 'Passwords do not match' : undefined"
             required
           />

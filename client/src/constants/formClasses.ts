@@ -1,10 +1,10 @@
-/** Shared form control classes — 8px grid: default h-10 (40px), compact h-9 (36px). */
+/** Shared form control classes — 8px grid: default h-11 (44px), compact h-9 (36px). */
 
-/** Default interactive control height — inputs, buttons, icon actions (40px). */
-export const CONTROL_SIZE = "box-border h-10";
+/** Default interactive control height — inputs, buttons, icon actions (44px). */
+export const CONTROL_SIZE = "box-border h-11 min-h-11";
 
 /** Square side matching CONTROL_SIZE (for icon buttons / clear slots). */
-export const CONTROL_SIZE_SQUARE = "w-10 min-w-10";
+export const CONTROL_SIZE_SQUARE = "w-11 min-w-11";
 
 /** Labeled button sizes — height from CONTROL_SIZE except lg. */
 export const CONTROL_BUTTON_MD = `${CONTROL_SIZE} px-4 text-sm`;
@@ -16,14 +16,14 @@ export const CONTROL_BUTTON_ICON = `${CONTROL_SIZE} ${CONTROL_SIZE_SQUARE} px-0 
 const CONTROL_SIZE_ICON_CHROME =
   "inline-flex shrink-0 items-center justify-center box-border rounded-lg border !px-0 text-sm font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 disabled:opacity-50";
 
-/** Square icon control matching CONTROL_SIZE (40×40 touch target). */
+/** Square icon control matching CONTROL_SIZE (44×44 touch target). */
 export const CONTROL_SIZE_ICON = `${CONTROL_SIZE_ICON_CHROME} ${CONTROL_SIZE} ${CONTROL_SIZE_SQUARE}`;
 
 /**
- * In-field clear — fill the shell (not another h-10 outside the border box).
+ * In-field clear — fill the shell (not another h-11 outside the border box).
  * (ponytail: ceiling is nested bordered icons; upgrade to size token if shells gain padding.)
  */
-export const CONTROL_SIZE_ICON_FIELD = `${CONTROL_SIZE_ICON_CHROME} !h-full !w-10 !min-h-0 !min-w-10`;
+export const CONTROL_SIZE_ICON_FIELD = `${CONTROL_SIZE_ICON_CHROME} !h-full !w-11 !min-h-0 !min-w-11`;
 
 /** Reserved clear-slot inside field shells (matches shell content box). */
 export const FIELD_CLEAR_SLOT = `flex h-full ${CONTROL_SIZE_SQUARE} shrink-0 items-center justify-center`;
@@ -67,7 +67,7 @@ export const SELECT_CLASS_COMPACT =
   "ring-1 ring-inset ring-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 transition-colors min-w-[7.5rem]";
 
 export const TEXTAREA_CLASS =
-  "min-h-10 w-full bg-surface-card border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm " +
+  "min-h-11 w-full bg-surface-card border border-surface-border rounded-lg px-4 py-2 text-surface-light text-sm " +
   `${FIELD_FOCUS} transition-colors placeholder:text-surface-mid/85 resize-y disabled:opacity-60`;
 
 export const TEXTAREA_CLASS_COMPACT =

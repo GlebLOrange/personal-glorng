@@ -2,6 +2,7 @@
 import { computed, nextTick, ref, watch } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import TagIcon from "@/components/icons/TagIcon.vue";
 import { RECIPE_TAG_LIMIT, RECIPE_TAG_SET, RECIPE_TAGS } from "@/constants/recipes";
 
 const props = defineProps<{
@@ -67,7 +68,7 @@ function toggleTag(tag: string): void {
         v-for="tag in tagChoices"
         :key="tag"
         type="button"
-        class="inline-flex items-center rounded border px-2 py-1 text-xs transition-colors"
+        class="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs transition-colors"
         :class="{
           'border-transparent bg-accent-coral/15 text-accent-coral': tagIsSelected(tag),
           'border-transparent text-surface-mid hover:bg-surface-mid/10': !tagIsSelected(tag),
@@ -77,6 +78,7 @@ function toggleTag(tag: string): void {
         :disabled="!tagIsSelected(tag) && selectedTags.length >= RECIPE_TAG_LIMIT"
         @click="toggleTag(tag)"
       >
+        <TagIcon class-name="size-3 shrink-0" />
         {{ tag }}
       </button>
     </div>

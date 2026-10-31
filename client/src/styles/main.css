@@ -197,15 +197,17 @@ html[data-theme="light"] {
   margin-top: var(--page-chrome-offset);
 }
 
-/** Tool slot inside page-body (PageShell tool prop). */
+/** Tool slot inside page-body (PageShell tool prop). Centers action panels; full-bleed siblings use w-full self-stretch. */
 @utility page-tool-body {
-  @apply w-full min-w-0;
+  @apply flex w-full min-w-0 flex-col items-center;
 }
 
-/** Smaller action/form panel; tables/results stay siblings under page-tool-body. */
+/** Shared tool action/form column — same width on every tool page. */
 @utility page-tool-actions {
-  @apply mb-4 flex w-fit max-w-full min-w-0 flex-col items-center space-y-3;
+  @apply mb-4 flex flex-col items-stretch gap-3;
+  width: min(100%, 375px);
   min-width: min(100%, 375px);
+  max-width: 100%;
 }
 
 @media (min-width: 768px) {

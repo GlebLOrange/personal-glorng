@@ -68,6 +68,8 @@ Server flags are authoritative. Client `VITE_*` flags only hide UI:
 
 Shared UI primitives live in `client/src/components/ui/` (`BaseButton`, `BaseInput`, `BaseDrawer`, …). Coding standards for Vue/TS: path-triggered stubs in [`.cursor/rules/`](../../.cursor/rules/) and full guidance in [`.cursor/skills/`](../../.cursor/skills/) (`vue` and `client-ui`).
 
+**2026-10-31 — Tool chrome + button/input bar:** `.page-tool-body` centers children; `CollapsibleUsageGuide` stays within `.page-tool-actions` width. URL shortener hides clicks in the UI only (server still increments). Sitewide: every button gets an action-matching SVG (including calculator keys and ghost chrome; already icon-only controls stay as-is); inputs use visible labels, not aria/placeholder-only names.
+
 **2026-10-27 — Utils pills → full PageShell:** On `/tools`, every visible utils tool is a pill (order: weather, ai chat, then the remainder). Each opens a standalone public `PageShell` page (tools breadcrumb, back to `/tools`, `max-w-5xl`) — not `AdminPageLayout` and not the old `SmallToolsWindow` / `/_small-tools` shell. Content and server stay card spoilers. Supersedes the same-day compact-window note and the 2026-10-26 lines that limited the compact window to four peers.
 
 **2026-10-26 — Tools utils static + router shell:** Superseded 2026-10-27 — utils no longer use `SmallToolsWindow`. Content and server groups stay open `<details>` spoilers with tiles; admin/edit tiles only for a superuser. Route `meta.requiresAuth` for `/vid-download` and `/tools/send-email` is unchanged.

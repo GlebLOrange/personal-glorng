@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 
+import CalendarIcon from "@/components/icons/CalendarIcon.vue";
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
@@ -251,6 +252,7 @@ function onDayKeydown(event: KeyboardEvent, key: string): void {
           @keydown="onDayKeydown($event, cell.key)"
           @focus="focusDate = cell.key"
         >
+          <CalendarIcon class-name="size-3 shrink-0 opacity-70" />
           <span class="leading-none">{{ cell.day }}</span>
           <span class="mt-0.5 text-[10px] leading-none text-surface-mid">
             <template v-if="cell.isToday">today · </template>
@@ -277,6 +279,7 @@ function onDayKeydown(event: KeyboardEvent, key: string): void {
               class="flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-lg border border-transparent px-3 py-2 text-left transition-colors duration-150 hover:bg-surface-mid/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50"
               @click="emit('selectTask', task.id)"
             >
+              <ChevronIcon direction="right" class-name="size-3.5 shrink-0" />
               <span class="min-w-0 flex-1 truncate text-sm lowercase text-surface-light">
                 {{ task.title }}
               </span>

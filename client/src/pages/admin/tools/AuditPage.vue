@@ -231,7 +231,7 @@ onMounted(load);
 
       <EmptyState v-else-if="items.length === 0" class="mt-4" :description="emptyDescription" />
 
-      <div v-else class="mt-1 min-w-0">
+      <div v-else class="mt-1 w-full min-w-0 self-stretch">
         <AdminDataTable table-label="audit log events">
           <template #header>
             <th :class="ADMIN_TH_CLASS">type</th>
@@ -243,6 +243,7 @@ onMounted(load);
                 aria-label="sort by when"
                 @click="toggleWhenSort"
               >
+                <ChevronIcon class-name="size-3 shrink-0" />
                 when{{ whenIndicator }}
               </button>
             </th>

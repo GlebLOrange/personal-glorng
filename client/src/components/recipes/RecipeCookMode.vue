@@ -139,6 +139,7 @@ onUnmounted(() => {
             variant="ghost"
             quiet
             size="sm"
+            :icon="false"
             class="gap-1.5"
             :aria-expanded="showIngredients"
             @click="showIngredients = !showIngredients"

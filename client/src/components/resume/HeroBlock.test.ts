@@ -42,7 +42,7 @@ describe("HeroBlock", () => {
     expect(wrapper.text()).not.toContain("telegram");
   });
 
-  it("left-aligns the status-rail layout and shows the sample note", () => {
+  it("centers the status-rail layout and shows the sample note", () => {
     const wrapper = mount(HeroBlock, {
       props: {
         name: "Gleb.Y",
@@ -55,7 +55,7 @@ describe("HeroBlock", () => {
       },
     });
 
-    expect(wrapper.get("div.py-12").classes()).toContain("text-left");
+    expect(wrapper.get("div.py-12").classes()).toContain("text-center");
     expect(wrapper.text()).toContain("this site is the sample");
     expect(wrapper.text()).not.toContain("I build production APIs");
   });

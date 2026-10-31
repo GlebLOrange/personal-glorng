@@ -3,6 +3,7 @@ import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from "vue
 
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
 import GitHubReposStrip from "@/components/resume/GitHubReposStrip.vue";
@@ -125,12 +126,12 @@ onUnmounted(() => {
 
     <SectionWrapper id="about" title="about" width="full" label-tone="primary">
       <div class="space-y-4">
-        <p class="text-body max-w-prose text-pretty">
+        <p class="text-body w-full text-pretty">
           {{ resume.bio }}
         </p>
         <aside
           v-if="resume.hiring_note"
-          class="max-w-prose border-l-2 border-accent-coral bg-surface-card/40 px-4 py-3"
+          class="w-full border-l-2 border-accent-coral bg-surface-card/40 px-4 py-3"
         >
           <p class="text-label text-accent-coral mb-2">for recruiters</p>
           <p class="text-body text-pretty">
@@ -194,7 +195,12 @@ onUnmounted(() => {
       </p>
       <p class="text-meta mb-6 flex flex-wrap items-center gap-x-2 gap-y-2">
         <span>fastest: telegram or email. or</span>
-        <button type="button" class="cta-primary print:hidden" @click="contactModal = 'inquiry'">
+        <button
+          type="button"
+          class="cta-primary inline-flex items-center gap-1.5 print:hidden"
+          @click="contactModal = 'inquiry'"
+        >
+          <ChevronIcon class-name="size-3.5 shrink-0" />
           send inquiry
         </button>
       </p>

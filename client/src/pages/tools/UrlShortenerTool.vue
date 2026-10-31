@@ -256,41 +256,46 @@ onMounted(() => {
     tool
   >
     <div class="page-tool-actions">
-      <form class="flex min-w-0 flex-wrap items-center gap-2" @submit.prevent="createUrl">
+      <form class="flex w-full min-w-0 flex-col gap-2" @submit.prevent="createUrl">
         <BaseInput
           v-model="newUrl"
-          class="min-w-0"
+          class="w-full min-w-0"
           compact
-          auto-width
-          placeholder="url (example.com or https://…)"
-          aria-label="url (example.com or https://…)"
+          label="url"
+          tip="example.com or https://…"
           :tone="urlTone"
           :error="urlError"
           @update:model-value="formError = ''"
         />
-        <BaseInput
-          v-model="newTitle"
-          class="min-w-0"
-          compact
-          auto-width
-          placeholder="title (optional)"
-          aria-label="title"
-        />
-        <ToolbarPillButton action="create" type="submit" class="w-auto shrink-0" :disabled="!canShorten">
-          {{ loading ? "creating…" : "shorten" }}
-        </ToolbarPillButton>
+        <div class="flex w-full min-w-0 flex-wrap items-center gap-2">
+          <BaseInput
+            v-model="newTitle"
+            class="min-w-0 flex-1"
+            compact
+            label="title"
+            tip="optional"
+          />
+          <ToolbarPillButton
+            action="create"
+            type="submit"
+            class="w-auto shrink-0"
+            :disabled="!canShorten"
+          >
+            {{ loading ? "creating…" : "shorten" }}
+          </ToolbarPillButton>
+        </div>
       </form>
     </div>
 
     <p
       v-if="isLocalMode && guestUrls.length > 0"
-      class="mb-2 text-xs text-surface-mid"
+      class="mb-2 w-full self-stretch text-xs text-surface-mid"
       role="status"
     >
       {{ guestUrlLimitMessage(guestUrls.length) }}
     </p>
 
-    <div class="min-w-0">
+    <div class="w-full min-w-0 self-stretch">
       <AdminListSkeleton v-if="listLoading && !isLocalMode" label="loading shortened URLs" />
 
       <template v-else>
@@ -300,7 +305,6 @@ onMounted(() => {
               <th :class="ADMIN_TH_CLASS" scope="col">title</th>
               <th :class="ADMIN_TH_CLASS" scope="col">short link</th>
               <th :class="ADMIN_TH_CLASS" scope="col">original URL</th>
-              <th :class="[ADMIN_TH_CLASS, 'text-right']" scope="col">clicks</th>
               <th :class="ADMIN_TH_CLASS" scope="col">created</th>
               <th :class="[ADMIN_TH_CLASS, 'w-px text-right']" scope="col">actions</th>
             </template>

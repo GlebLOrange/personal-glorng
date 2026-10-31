@@ -2,6 +2,7 @@
 import * as CookieConsent from "vanilla-cookieconsent";
 
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
+import FilterIcon from "@/components/icons/FilterIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import { buildContactLinks } from "@/constants/contactMeta";
 import { RESUME_FALLBACK } from "@/constants/resumeFallback";
@@ -100,7 +101,12 @@ function openPreferences() {
       <h2 class="text-xl font-semibold text-accent-coral mb-3">Your choices</h2>
       <p class="text-surface-sage leading-relaxed">
         You can change your cookie preferences at any time by opening the
-        <button type="button" class="text-link transition-colors" @click="openPreferences">
+        <button
+          type="button"
+          class="text-link inline-flex items-center gap-1 transition-colors"
+          @click="openPreferences"
+        >
+          <FilterIcon class-name="size-3.5 shrink-0" />
           cookie settings</button
         >.
         <span v-if="isFirebaseAnalyticsEnabled && isSentryEnabled">

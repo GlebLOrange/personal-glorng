@@ -11,6 +11,7 @@ import {
 } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import CloseIcon from "@/components/icons/CloseIcon.vue";
 import FilterIcon from "@/components/icons/FilterIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import {
@@ -321,6 +322,7 @@ defineExpose({ close });
             :disabled="!hasActiveFilters"
             @click="onClear"
           >
+            <CloseIcon class-name="size-3.5 shrink-0" />
             clear
           </button>
         </div>

@@ -7,6 +7,7 @@ import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import PlusIcon from "@/components/icons/PlusIcon.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import SyncIcon from "@/components/icons/SyncIcon.vue";
 import TaskCreateModal from "@/components/tasks/TaskCreateModal.vue";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
@@ -276,7 +277,7 @@ onMounted(() => {
     description="Telegram reminders and Google Calendar sync share this queue with the web UI."
     tool
   >
-    <div class="min-w-0">
+    <div class="w-full min-w-0 self-stretch">
       <div class="page-tool-actions">
         <div class="flex min-w-0 flex-wrap items-center gap-2">
           <AdminFilterDropdown
@@ -333,11 +334,12 @@ onMounted(() => {
           <ToolbarPillButton
             v-if="isSuperuser"
             family="2xx"
-            class="w-auto"
+            class="w-auto gap-1.5"
             :disabled="pingingBot"
             title="Ping Telegram todobot (getMe + DM). Does not prove polling is up."
             @click="pingBot"
           >
+            <RefreshIcon class-name="size-3.5 shrink-0" />
             ping bot
           </ToolbarPillButton>
 
@@ -345,6 +347,7 @@ onMounted(() => {
             v-if="isSuperuser"
             v-show="activeTab === 'queue' || activeTab === 'calendar'"
             action="create"
+            :icon="false"
             class="w-auto"
             :disabled="createDisabled"
             :title="

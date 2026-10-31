@@ -166,10 +166,11 @@ watch(
           v-model="scheduleDraft"
           type="datetime-local"
           class="min-w-0 flex-1"
-          aria-label="reschedule"
+          label="reschedule"
         />
         <ToolbarPillButton
           action="save"
+          :icon="false"
           class="gap-1.5"
           :disabled="!scheduleDirty || rescheduling"
           @click="emit('reschedule', scheduleDraft)"
@@ -241,6 +242,7 @@ watch(
           <ToolbarPillButton
             v-else
             action="create"
+            :icon="false"
             class="gap-1.5"
             title="try syncing again"
             @click="emit('retrySync', task.id)"
@@ -252,6 +254,7 @@ watch(
             variant="ghost"
             quiet
             size="sm"
+            :icon="false"
             class="ml-auto gap-1.5"
             :selected="technicalOpen"
             :aria-expanded="technicalOpen"
@@ -313,6 +316,7 @@ watch(
         <template v-if="primaryActionStatus" #primary>
           <ToolbarPillButton
             action="save"
+            :icon="false"
             class="gap-1.5"
             :disabled="statusUpdating"
             @click="emit('updateStatus', primaryActionStatus)"

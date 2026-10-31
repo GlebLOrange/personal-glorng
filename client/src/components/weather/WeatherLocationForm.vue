@@ -49,20 +49,20 @@ async function submit(): Promise<void> {
       <BaseInput
         id="weather-city"
         v-model="city"
-        placeholder="location (3+ chars)"
+        label="location"
+        tip="3+ chars"
         class="min-w-0 flex-1"
-        aria-label="location"
         :minlength="SEARCH_MIN_QUERY_LENGTH"
         :error="error ?? undefined"
       />
       <ToolbarPillButton
         type="submit"
-        action="save"
+        action="create"
         class="shrink-0"
         aria-label="add location"
         :disabled="!canSubmit"
       >
-        {{ saving ? "adding…" : "+ location" }}
+        {{ saving ? "adding…" : "location" }}
       </ToolbarPillButton>
     </div>
   </form>

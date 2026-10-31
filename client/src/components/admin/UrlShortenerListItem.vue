@@ -116,7 +116,8 @@ function onRowClick(event: MouseEvent): void {
           ref="titleInput"
           v-model="draftTitle"
           class="min-w-0 flex-1"
-          placeholder="title (optional)"
+          label="title"
+          tip="optional"
           @keydown="onTitleKeydown"
         />
         <BaseButton
@@ -170,9 +171,6 @@ function onRowClick(event: MouseEvent): void {
       >
         {{ url.original_url }}
       </a>
-    </td>
-    <td :class="[ADMIN_TD_MUTED_CLASS, 'text-right tabular-nums']">
-      {{ url.clicks }}
     </td>
     <td :class="ADMIN_TD_MUTED_CLASS">
       {{ formatDate(url.created_at) }}

@@ -32,8 +32,8 @@ const props = withDefaults(
     error?: string;
     compact?: boolean;
     /**
-     * `start` — border-notch label.
-     * `end` — label + help inside the control, left of the chevron (default).
+     * `end` — no visible name (sr-only / aria; default).
+     * `start` — border-notch label (opt-in).
      */
     labelAlign?: "start" | "end";
   }>(),

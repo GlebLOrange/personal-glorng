@@ -13,8 +13,8 @@ import { ACTION_PILL_BASE } from "@/constants/httpStatusColors";
 import { useAiChat } from "@/composables/useAiChat";
 
 const AI_CHAT_TABS = [
-  { id: "chat", label: "chat" },
-  { id: "settings", label: "settings" },
+  { id: "chat", label: "chat", icon: "queue" as const },
+  { id: "settings", label: "settings", icon: "sync" as const },
 ] as const;
 
 const PROVIDER_EXAMPLES = [
@@ -106,8 +106,8 @@ const {
             class="min-w-0 [&>div]:box-border [&>div]:min-h-[calc(2.5rem+0.5rem+2.5rem)] [&>div]:items-stretch [&_textarea]:h-full [&_textarea]:min-h-full [&_textarea]:resize-none"
             :rows="3"
             auto-width
-            placeholder="message the assistant…"
-            aria-label="message"
+            label="message"
+            tip="message the assistant…"
             @keydown.enter.exact.prevent="handleSend"
           />
           <div class="flex flex-col gap-2">

@@ -6,9 +6,11 @@ import IntakesIcon from "@/components/icons/IntakesIcon.vue";
 import QueueIcon from "@/components/icons/QueueIcon.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import SyncIcon from "@/components/icons/SyncIcon.vue";
+import TagIcon from "@/components/icons/TagIcon.vue";
+import UsersIcon from "@/components/icons/UsersIcon.vue";
 import { actionFamilyClass, type HttpStatusFamily } from "@/constants/httpStatusColors";
 
-export type AdminTabIcon = "queue" | "calendar" | "intakes" | "sync" | "refresh";
+export type AdminTabIcon = "queue" | "calendar" | "intakes" | "sync" | "refresh" | "tag" | "users";
 
 export interface AdminTab {
   id: string;
@@ -101,6 +103,8 @@ function onTabKeydown(event: KeyboardEvent, index: number): void {
         <IntakesIcon v-else-if="tab.icon === 'intakes'" class-name="size-3.5 shrink-0" />
         <SyncIcon v-else-if="tab.icon === 'sync'" class-name="size-3.5 shrink-0" />
         <RefreshIcon v-else-if="tab.icon === 'refresh'" class-name="size-3.5 shrink-0" />
+        <TagIcon v-else-if="tab.icon === 'tag'" class-name="size-3.5 shrink-0" />
+        <UsersIcon v-else-if="tab.icon === 'users'" class-name="size-3.5 shrink-0" />
         {{ tab.label }}
       </button>
     </div>

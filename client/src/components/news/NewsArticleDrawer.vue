@@ -103,7 +103,7 @@ function onTagsToggle(event: Event): void {
       <section class="space-y-4">
         <BaseSelect
           :model-value="form.source_id ?? ''"
-          aria-label="source"
+          label="source"
           @update:model-value="patch({ source_id: toSourceId(toStringValue($event)) })"
         >
           <option value="">auto from URL host</option>
@@ -113,27 +113,28 @@ function onTagsToggle(event: Event): void {
         </BaseSelect>
         <BaseInput
           :model-value="form.source_url"
-          placeholder="article url (example.com or https://…)"
-          aria-label="article url (example.com or https://…)"
+          label="article url"
+          tip="example.com or https://…"
           type="url"
           @update:model-value="patch({ source_url: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_name"
-          placeholder="source name (e.g. DW)"
+          label="source name"
+          tip="e.g. DW"
           @update:model-value="patch({ source_name: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_feed_url"
-          placeholder="source feed/home url (example.com or https://…)"
-          aria-label="source feed/home url (example.com or https://…)"
+          label="feed url"
+          tip="example.com or https://…"
           type="url"
           @update:model-value="patch({ source_feed_url: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.source_published_at"
           type="datetime-local"
-          aria-label="source published at"
+          label="published at"
           @update:model-value="patch({ source_published_at: toStringValue($event) })"
         />
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-3" role="group" aria-label="status">
@@ -155,23 +156,24 @@ function onTagsToggle(event: Event): void {
         <BaseInput
           v-if="mode === 'edit'"
           :model-value="form.slug"
-          placeholder="slug (article-url-slug)"
+          label="slug"
+          tip="article-url-slug"
           @update:model-value="patch({ slug: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.title"
-          placeholder="title"
+          label="title"
           @update:model-value="patch({ title: toStringValue($event) })"
         />
         <BaseInput
           :model-value="form.original_title"
-          placeholder="original title"
+          label="original title"
           @update:model-value="patch({ original_title: toStringValue($event) })"
         />
         <BaseTextarea
           :model-value="form.summary"
           :rows="4"
-          placeholder="summary"
+          label="summary"
           @update:model-value="patch({ summary: toStringValue($event) })"
         />
         <details class="rounded border border-surface-border px-3 py-2" @toggle="onTagsToggle">
@@ -214,6 +216,7 @@ function onTagsToggle(event: Event): void {
         <template #start>
           <BaseButton
             v-if="mode === 'edit'"
+            variant="delete"
             danger
             type="button"
             :disabled="loading"

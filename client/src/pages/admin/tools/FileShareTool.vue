@@ -157,7 +157,7 @@ onMounted(loadFiles);
         />
       </div>
 
-      <div class="min-w-0">
+      <div class="w-full min-w-0 self-stretch">
         <AdminListSkeleton v-if="listLoading" label="loading shared files" />
 
         <template v-else>

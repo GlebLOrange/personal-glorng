@@ -86,7 +86,7 @@ function onAddBudgetLine(): void {
 
     <Card class="space-y-4">
       <div class="flex items-center justify-end gap-3">
-        <BaseButton variant="add" size="sm" @click="onAddBudgetLine">+ budget line</BaseButton>
+        <BaseButton variant="add" size="sm" @click="onAddBudgetLine">budget line</BaseButton>
       </div>
 
       <ul role="list" class="space-y-4">
@@ -96,20 +96,27 @@ function onAddBudgetLine(): void {
           class="space-y-2 border-b border-surface-border pb-4 last:border-0 last:pb-0"
         >
           <div class="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-3 items-end">
-            <BaseInput v-model="row.name" data-budget-name placeholder="name (food, transport…)" />
+            <BaseInput
+              v-model="row.name"
+              data-budget-name
+              label="name"
+              tip="food, transport…"
+            />
             <BaseInput
               v-model="row.budget"
               type="number"
               step="0.01"
               min="0"
-              placeholder="budget (0.00)"
+              label="budget"
+              tip="0.00"
             />
             <BaseInput
               v-model="row.spent"
               type="number"
               step="0.01"
               min="0"
-              placeholder="spent (0.00)"
+              label="spent"
+              tip="0.00"
             />
             <IconCloseButton
               :aria-label="`remove ${row.name || 'budget line'}`"

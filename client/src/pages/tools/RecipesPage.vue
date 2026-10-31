@@ -11,6 +11,7 @@ import RecipeCookMode from "@/components/recipes/RecipeCookMode.vue";
 import RecipeDetailDrawer from "@/components/recipes/RecipeDetailDrawer.vue";
 import RecipeFilters from "@/components/recipes/RecipeFilters.vue";
 import RecipeFormDrawer from "@/components/recipes/RecipeFormDrawer.vue";
+import CloseIcon from "@/components/icons/CloseIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
@@ -155,7 +156,7 @@ function editRecipeFromCard(recipe: Recipe): void {
           :disabled="listLoading"
           @click="openCreate"
         >
-          + recipe
+          recipe
         </ToolbarPillButton>
       </template>
 
@@ -180,7 +181,7 @@ function editRecipeFromCard(recipe: Recipe): void {
 
       <ErrorState v-else-if="listError" :message="listError" show-retry @retry="loadRecipes" />
 
-      <div v-else-if="recipes.length" class="mt-1 min-w-0">
+      <div v-else-if="recipes.length" class="mt-1 w-full min-w-0 self-stretch">
         <AdminDataTable table-label="recipes">
           <template #header>
             <th class="px-3 py-1.5 text-xs tracking-wider" scope="col">thumb</th>
@@ -209,11 +210,18 @@ function editRecipeFromCard(recipe: Recipe): void {
         "
       >
         <template v-if="hasFilters || canWrite" #action>
-          <BaseButton v-if="hasFilters" variant="ghost" size="sm" @click="clearFilters">
+          <BaseButton
+            v-if="hasFilters"
+            variant="ghost"
+            size="sm"
+            class="gap-1.5"
+            @click="clearFilters"
+          >
+            <CloseIcon class-name="size-3.5 shrink-0" />
             clear filters
           </BaseButton>
           <BaseButton v-else-if="canWrite" variant="create" size="sm" @click="openCreate">
-            + your first recipe
+            your first recipe
           </BaseButton>
         </template>
       </EmptyState>

@@ -50,8 +50,8 @@ async function handleSubmit(): Promise<void> {
         type="email"
         name="email"
         autocomplete="email"
+        label="email"
         placeholder="email@example.com"
-        aria-label="email"
         required
       />
       <p

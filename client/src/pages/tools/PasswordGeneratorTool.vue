@@ -4,6 +4,7 @@ import { computed, onMounted, ref } from "vue";
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import PageShell from "@/components/layout/PageShell.vue";
+import KeyGlyphIcon from "@/components/icons/KeyGlyphIcon.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -194,9 +195,11 @@ onMounted(() => {
               <BaseButton
                 variant="primary"
                 type="submit"
-                class="w-auto min-w-0"
+                :icon="false"
+                class="w-auto min-w-0 gap-1.5"
                 :disabled="loading || !hasCharset"
               >
+                <RefreshIcon class-name="size-3.5 shrink-0" />
                 <span class="inline-grid justify-items-center">
                   <span class="invisible col-start-1 row-start-1" aria-hidden="true"
                     >generating…</span
@@ -232,7 +235,13 @@ onMounted(() => {
           @update:model-value="onPasswordModelUpdate"
         />
         <div class="flex shrink-0 items-end gap-2">
-          <BaseButton variant="ghost" size="field" @click="showPassword = !showPassword">
+          <BaseButton
+            variant="ghost"
+            size="field"
+            class="gap-1.5"
+            @click="showPassword = !showPassword"
+          >
+            <KeyGlyphIcon class-name="size-3.5 shrink-0" />
             <span class="inline-grid justify-items-center">
               <span class="invisible col-start-1 row-start-1" aria-hidden="true">show</span>
               <span class="invisible col-start-1 row-start-1" aria-hidden="true">hide</span>

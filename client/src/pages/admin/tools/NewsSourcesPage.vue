@@ -100,6 +100,7 @@ const {
         <template v-if="canWrite">
           <ToolbarPillButton
             action="create"
+            :icon="false"
             class="w-auto gap-1.5"
             :disabled="refreshing || loading"
             @click="refreshSources"
@@ -108,13 +109,13 @@ const {
             {{ refreshButtonText }}
           </ToolbarPillButton>
           <ToolbarPillButton action="create" class="w-auto" :disabled="loading" @click="openCreate">
-            + source
+            source
           </ToolbarPillButton>
         </template>
       </div>
     </div>
 
-    <div class="min-w-0">
+    <div class="w-full min-w-0 self-stretch">
       <AdminListSkeleton v-if="loading" label="Loading sources" />
 
       <ErrorState

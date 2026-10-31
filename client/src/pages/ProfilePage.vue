@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 
 import ContactLinkChip from "@/components/contact/ContactLinkChip.vue";
 import FeedbackModal from "@/components/feedback/FeedbackModal.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import SectionWrapper from "@/components/layout/SectionWrapper.vue";
 import EducationList from "@/components/resume/EducationList.vue";
 import HeroBlock from "@/components/resume/HeroBlock.vue";
@@ -235,7 +236,12 @@ watch(
       </p>
       <p class="text-meta mb-6 flex flex-wrap items-center gap-x-2 gap-y-2">
         <span>fastest: telegram or email. or</span>
-        <button type="button" class="cta-primary print:hidden" @click="contactModal = 'inquiry'">
+        <button
+          type="button"
+          class="cta-primary inline-flex items-center gap-1.5 print:hidden"
+          @click="contactModal = 'inquiry'"
+        >
+          <ChevronIcon class-name="size-3.5 shrink-0" />
           send inquiry
         </button>
       </p>

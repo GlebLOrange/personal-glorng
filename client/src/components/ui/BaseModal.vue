@@ -83,7 +83,7 @@ const hasCustomHeader = computed(() => Boolean(slots.header));
             class="flex shrink-0 items-center gap-3 border-b border-surface-border px-4"
             :class="props.compact ? 'py-2' : 'py-3'"
           >
-            <div class="flex min-w-0 items-center" :class="props.compact ? 'min-h-8' : 'h-10'">
+            <div class="flex min-w-0 items-center" :class="props.compact ? 'min-h-11' : 'h-11'">
               <slot name="header" :title-id="titleId">
                 <h2
                   v-if="title"
@@ -97,13 +97,12 @@ const hasCustomHeader = computed(() => Boolean(slots.header));
             </div>
             <div
               class="ml-auto flex shrink-0 items-center gap-1"
-              :class="props.compact ? 'min-h-8' : 'h-10'"
+              :class="props.compact ? 'min-h-11' : 'h-11'"
             >
               <slot name="header-actions" />
               <IconCloseButton
                 ref="closeButton"
                 aria-label="close"
-                :class="props.compact ? '!h-8 !w-8 !min-w-8' : undefined"
                 @click="emit('close')"
               />
             </div>

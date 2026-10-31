@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, type Component } from "vue";
 
 import {
   CONTROL_BUTTON_ICON,
@@ -7,6 +7,7 @@ import {
   CONTROL_BUTTON_MD,
   CONTROL_BUTTON_SM,
 } from "@/constants/formClasses";
+import { ACTION_BUTTON_ICON } from "@/constants/actionButtonIcons";
 import { classesForActionButton, type BaseButtonVariant } from "@/constants/actionButtonVariants";
 
 const props = withDefaults(
@@ -28,14 +29,32 @@ const props = withDefaults(
     disabled?: boolean;
     loading?: boolean;
     type?: "button" | "submit" | "reset";
+    /**
+     * Leading action SVG. Default true (shows when `variant` has a mapped icon).
+     * Set false when the default slot already supplies the icon (icon-only / custom).
+     * Vue boolean props default to false when omitted — keep this explicit true.
+     */
+    icon?: boolean;
   }>(),
   {
     size: "md",
+    icon: true,
   },
 );
 
 const isDisabled = computed(() => Boolean(props.disabled || props.loading));
 const resolvedSize = computed(() => (props.size === "field" ? "md" : props.size));
+const resolvedVariant = computed(() => props.variant ?? "secondary");
+
+const mappedIcon = computed((): Component | undefined => {
+  return ACTION_BUTTON_ICON[resolvedVariant.value];
+});
+
+const showLeadingIcon = computed(() => {
+  if (props.icon === false) return false;
+  if (props.icon === true) return Boolean(mappedIcon.value);
+  return Boolean(mappedIcon.value);
+});
 
 const sizeClass = computed(() => {
   if (resolvedSize.value === "lg") return CONTROL_BUTTON_LG;
@@ -46,7 +65,7 @@ const sizeClass = computed(() => {
 
 const variantClass = computed(() =>
   classesForActionButton({
-    variant: props.variant ?? "secondary",
+    variant: resolvedVariant.value,
     selected: Boolean(props.selected),
     quiet: props.quiet,
     danger: props.danger,
@@ -61,13 +80,14 @@ const variantClass = computed(() =>
     :aria-busy="loading ? true : undefined"
     :aria-pressed="selected ? true : undefined"
     :class="[
-      'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg border font-medium leading-none transition-colors duration-200',
+      'inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border font-medium leading-none transition-colors duration-200',
       'focus-visible:outline-none focus-visible:ring-2',
       'disabled:cursor-not-allowed disabled:opacity-50',
       variantClass,
       sizeClass,
     ]"
   >
+    <component :is="mappedIcon" v-if="showLeadingIcon" class-name="size-3.5 shrink-0" />
     <slot />
   </button>
 </template>

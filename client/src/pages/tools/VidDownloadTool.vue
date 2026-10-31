@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 
 import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import DownloadIcon from "@/components/icons/DownloadIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import CollapsibleUsageGuide from "@/components/ui/CollapsibleUsageGuide.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
@@ -99,7 +100,7 @@ async function download(): Promise<void> {
         This tool is turned off on this server.
       </p>
       <div v-else class="page-tool-actions">
-        <form class="space-y-3" @submit.prevent="download">
+        <form class="flex w-full flex-col gap-3" @submit.prevent="download">
           <CollapsibleUsageGuide title="yt-dlp usage guide">
             <template #start>
               <AdminFilterDropdown
@@ -109,7 +110,7 @@ async function download(): Promise<void> {
                 :active-label="optionsActiveLabel"
                 :option-labels="optionLabels"
               >
-                <BaseSelect id="vid-download-quality" v-model="format" compact aria-label="quality">
+                <BaseSelect id="vid-download-quality" v-model="format" compact label="quality">
                   <option v-for="f in formats" :key="f.value" :value="f.value">
                     {{ f.label }}
                   </option>
@@ -126,30 +127,40 @@ async function download(): Promise<void> {
             <template #actions>
               <ToolbarPillButton
                 action="save"
+                :icon="false"
                 type="submit"
                 class="w-auto"
                 :disabled="loading || !url.trim()"
               >
+                <DownloadIcon class-name="size-3.5 shrink-0" />
                 {{ loading ? "downloading…" : "download" }}
               </ToolbarPillButton>
             </template>
-            <div class="space-y-4 text-sm text-surface-light">
+            <div class="min-w-0 space-y-4 break-words text-sm text-surface-light">
               <div>
                 <h3 class="mb-2 font-bold text-accent-coral">Format selection</h3>
                 <p class="mb-1 text-surface-mid">
-                  The <code class="text-accent-coral">-f</code> flag controls quality. Common values:
+                  The <code class="break-all text-accent-coral">-f</code> flag controls quality. Common
+                  values:
                 </p>
                 <ul class="ml-2 list-inside list-disc space-y-1 text-surface-mid">
-                  <li><code class="text-surface-light">best</code> -- best single file (default)</li>
                   <li>
-                    <code class="text-surface-light">bestvideo+bestaudio/best</code> -- merge best
-                    streams (needs ffmpeg)
+                    <code class="break-all text-surface-light">best</code> -- best single file
+                    (default)
                   </li>
                   <li>
-                    <code class="text-surface-light">bestvideo[height&lt;=720]+bestaudio</code> -- cap
-                    at 720p
+                    <code class="break-all text-surface-light">bestvideo+bestaudio/best</code> -- merge
+                    best streams (needs ffmpeg)
                   </li>
-                  <li><code class="text-surface-light">bestaudio</code> -- audio stream only</li>
+                  <li>
+                    <code class="break-all text-surface-light"
+                      >bestvideo[height&lt;=720]+bestaudio</code
+                    >
+                    -- cap at 720p
+                  </li>
+                  <li>
+                    <code class="break-all text-surface-light">bestaudio</code> -- audio stream only
+                  </li>
                 </ul>
               </div>
 
@@ -192,10 +203,9 @@ async function download(): Promise<void> {
 
           <BaseInput
             v-model="url"
-            placeholder="url (example.com or https://…)"
-            aria-label="url (example.com or https://…)"
-            class="min-w-0"
-            auto-width
+            label="url"
+            tip="example.com or https://…"
+            class="w-full min-w-0"
           />
         </form>
       </div>

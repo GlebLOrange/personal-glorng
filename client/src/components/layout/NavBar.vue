@@ -3,6 +3,8 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router";
 
 import SiteLogo from "@/components/brand/SiteLogo.vue";
+import CloseIcon from "@/components/icons/CloseIcon.vue";
+import MenuIcon from "@/components/icons/MenuIcon.vue";
 import NavMobileMenu from "@/components/layout/NavMobileMenu.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import { useColorTheme } from "@/composables/useColorTheme";
@@ -167,9 +169,10 @@ async function handleGoHome(): Promise<void> {
             <button
               v-if="auth.isAuthenticated"
               type="button"
-              class="nav-link-quiet text-status-error inline-flex min-h-11 items-center px-2.5 py-2 rounded-lg"
+              class="nav-link-quiet text-status-error inline-flex min-h-11 items-center gap-1.5 px-2.5 py-2 rounded-lg"
               @click="handleLogout"
             >
+              <CloseIcon class-name="size-3.5 shrink-0" />
               logout
             </button>
           </div>
@@ -265,18 +268,7 @@ async function handleGoHome(): Promise<void> {
               aria-label="toggle navigation menu"
               @click="toggleMobileMenu"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="size-4"
-                aria-hidden="true"
-              >
-                <path v-if="!mobileOpen" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
-                <path v-else stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
-              </svg>
+              <MenuIcon :open="mobileOpen" class-name="size-4" />
             </button>
           </div>
         </div>

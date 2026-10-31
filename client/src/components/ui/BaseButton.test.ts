@@ -13,34 +13,54 @@ describe("BaseButton", () => {
     const button = wrapper.get("button");
     expect(button.attributes("aria-busy")).toBe("true");
     expect(button.attributes("disabled")).toBeDefined();
-    expect(button.text()).toBe("Save");
+    expect(button.text()).toContain("Save");
   });
 
-  it("keeps sm/md/field at input height; lg is taller; icon is square h-10", () => {
+  it("prepends a mapped action icon for semantic variants", () => {
+    const wrapper = mount(BaseButton, {
+      props: { variant: "create" },
+      slots: { default: "recipe" },
+    });
+    expect(wrapper.find("svg").exists()).toBe(true);
+    expect(wrapper.text()).toContain("recipe");
+  });
+
+  it("skips the mapped icon when icon is false", () => {
+    const wrapper = mount(BaseButton, {
+      props: { variant: "create", icon: false },
+      slots: {
+        default: '<span data-testid="custom-icon">x</span> recipe',
+      },
+    });
+    expect(wrapper.find('[data-testid="custom-icon"]').exists()).toBe(true);
+    expect(wrapper.findAll("svg")).toHaveLength(0);
+  });
+
+  it("keeps sm/md/field at input height; lg is taller; icon is square h-11", () => {
     expect(
       mount(BaseButton, { props: { size: "sm" } })
         .get("button")
         .classes(),
-    ).toContain("h-10");
+    ).toContain("h-11");
     expect(
       mount(BaseButton, { props: { size: "md" } })
         .get("button")
         .classes(),
-    ).toContain("h-10");
+    ).toContain("h-11");
     expect(
       mount(BaseButton, { props: { size: "field" } })
         .get("button")
         .classes(),
-    ).toContain("h-10");
+    ).toContain("h-11");
     expect(
       mount(BaseButton, { props: { size: "lg" } })
         .get("button")
         .classes(),
     ).toContain("h-12");
     const icon = mount(BaseButton, { props: { size: "icon" } }).get("button");
-    expect(icon.classes()).toContain("h-10");
-    expect(icon.classes()).toContain("w-10");
-    expect(icon.classes()).toContain("min-w-10");
+    expect(icon.classes()).toContain("h-11");
+    expect(icon.classes()).toContain("w-11");
+    expect(icon.classes()).toContain("min-w-11");
     expect(icon.classes()).toContain("px-0");
   });
 

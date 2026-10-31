@@ -115,7 +115,13 @@ const totalParts = computed((): { amount: string; unit: string | null } | null =
         role="alert"
       >
         <span>{{ summaryError || ratesError }}</span>
-        <BaseButton variant="ghost" size="sm" class="gap-1.5" @click="emit('retry')">
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          :icon="false"
+          class="gap-1.5"
+          @click="emit('retry')"
+        >
           <RefreshIcon class-name="size-3.5" />
           retry
         </BaseButton>

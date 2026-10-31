@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
+import SyncIcon from "@/components/icons/SyncIcon.vue";
 import TaskList from "@/components/tasks/TaskList.vue";
 import type { TaskItem, TaskStats } from "@/types";
 
@@ -76,9 +77,10 @@ const emit = defineEmits<{
             <span class="text-surface-border">·</span>
             <button
               type="button"
-              class="text-status-critical underline-offset-2 hover:underline"
+              class="inline-flex items-center gap-1 text-status-critical underline-offset-2 hover:underline"
               @click="emit('failedSyncs')"
             >
+              <SyncIcon class-name="size-3.5 shrink-0" />
               {{ stats.failed_syncs }} failed syncs
             </button>
           </template>

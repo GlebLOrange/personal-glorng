@@ -47,7 +47,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div>
+  <div class="w-full min-w-0 max-w-full">
     <div class="mb-4 flex w-full min-w-0 flex-wrap items-center gap-2">
       <slot name="start" />
       <div
@@ -62,6 +62,7 @@ onBeforeUnmount(() => {
         >
           <ToolbarPillButton
             action="create"
+            :icon="false"
             class="!w-10 !min-w-10 !px-0"
             :aria-label="props.title"
             :aria-expanded="open"
@@ -82,7 +83,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <Card v-if="open">
+    <Card v-if="open" class="w-full min-w-0 max-w-full break-words">
       <slot />
     </Card>
   </div>

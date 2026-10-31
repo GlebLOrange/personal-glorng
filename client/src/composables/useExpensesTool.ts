@@ -42,9 +42,18 @@ const TAB_ALIASES: Record<string, ExpenseTab> = {
   calculator: "converter",
 };
 
+const TAB_ICONS: Record<ExpenseTab, "calendar" | "queue" | "intakes" | "tag" | "sync"> = {
+  today: "calendar",
+  activity: "queue",
+  insights: "intakes",
+  categories: "tag",
+  converter: "sync",
+};
+
 export const expenseTabItems = EXPENSE_TABS.map((id) => ({
   id,
   label: TAB_LABELS[id],
+  icon: TAB_ICONS[id],
 }));
 
 function resolveExpenseTab(value: unknown): ExpenseTab | null {

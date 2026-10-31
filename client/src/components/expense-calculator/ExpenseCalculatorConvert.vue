@@ -5,7 +5,6 @@ import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import FieldHelp from "@/components/ui/FieldHelp.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
-import { Card } from "@/components/ui/card";
 import { convertCurrency, EXPENSE_CURRENCIES, formatRate } from "@/composables/useExpenseCurrency";
 import type { CurrencyCode } from "@/composables/useExpenseFilters";
 import type { ExchangeRates } from "@/types";
@@ -130,22 +129,22 @@ watch(
 </script>
 
 <template>
-  <Card variant="compact" class="space-y-3">
-    <div class="flex items-start justify-end gap-1">
-      <p class="text-xs text-surface-mid text-right">
+  <div class="flex min-w-0 flex-col gap-3">
+    <div class="flex items-center justify-start gap-1">
+      <p class="text-xs text-surface-mid">
         Live EUR, USD, PLN, and BYN rates. Amount and pair stay on this device.
       </p>
-      <FieldHelp v-if="ratesHelpText" align="end" :text="ratesHelpText" />
+      <FieldHelp v-if="ratesHelpText" :text="ratesHelpText" />
     </div>
 
-    <div class="flex flex-wrap items-end justify-center gap-2">
+    <div class="flex flex-wrap items-end justify-start gap-2">
       <BaseInput
         v-model="amount"
         type="number"
         step="0.01"
         min="0.01"
         label="amount"
-        placeholder="100.00"
+        tip="100.00"
         inputmode="decimal"
         class="w-[3cm] max-w-[3cm] shrink-0"
       />
@@ -193,5 +192,5 @@ watch(
         <span v-else>result</span>
       </p>
     </div>
-  </Card>
+  </div>
 </template>
