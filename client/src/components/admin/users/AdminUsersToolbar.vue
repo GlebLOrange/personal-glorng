@@ -58,7 +58,7 @@ function clearFilters(): void {
   <div class="page-tool-actions">
     <AdminListToolbar>
       <template #start>
-        <div class="flex w-fit min-w-0 flex-col gap-3">
+        <div class="flex w-full min-w-0 flex-col gap-3">
           <AdminFilterDropdown
             ref="filterDropdown"
             :has-active-filters="hasActiveFilters"
