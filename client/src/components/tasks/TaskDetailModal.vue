@@ -6,7 +6,9 @@ import BaseDropdownMenu from "@/components/ui/BaseDropdownMenu.vue";
 import BaseDropdownMenuItem from "@/components/ui/BaseDropdownMenuItem.vue";
 import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
+import CheckIcon from "@/components/icons/CheckIcon.vue";
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import ClockIcon from "@/components/icons/ClockIcon.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import PencilIcon from "@/components/icons/PencilIcon.vue";
 import SyncIcon from "@/components/icons/SyncIcon.vue";
@@ -56,8 +58,18 @@ const isScheduledInFuture = computed(() => {
   return new Date(props.task.scheduled_at).getTime() > Date.now();
 });
 
+/** Past scheduled events are fully read-only for reschedule/status mutations. */
+const isPastScheduled = computed(() => {
+  if (!props.task?.scheduled_at) return false;
+  return new Date(props.task.scheduled_at).getTime() < Date.now();
+});
+
+const canMutateScheduleAndStatus = computed(
+  () => Boolean(props.canMutate) && !isPastScheduled.value,
+);
+
 const primaryActionStatus = computed((): TaskStatus | null => {
-  if (!props.task) return null;
+  if (!props.task || isPastScheduled.value) return null;
   if (isScheduledInFuture.value) return null;
   if (props.task.status === "pending" || props.task.status === "not_completed") {
     return "completed";
@@ -66,6 +78,7 @@ const primaryActionStatus = computed((): TaskStatus | null => {
 });
 
 const menuStatuses = computed(() => {
+  if (isPastScheduled.value) return [];
   const statuses = availableStatuses.value.filter((status) => status !== primaryActionStatus.value);
   if (isScheduledInFuture.value) {
     return statuses.filter((status) => status !== "completed");
@@ -145,7 +158,10 @@ watch(
         </div>
       </section>
 
-      <div v-if="canMutate" class="flex min-w-0 flex-wrap items-end gap-2">
+      <div
+        v-if="canMutateScheduleAndStatus"
+        class="flex min-w-0 flex-wrap items-end gap-2"
+      >
         <BaseInput
           v-model="scheduleDraft"
           type="datetime-local"
@@ -154,9 +170,11 @@ watch(
         />
         <ToolbarPillButton
           action="save"
+          class="gap-1.5"
           :disabled="!scheduleDirty || rescheduling"
           @click="emit('reschedule', scheduleDraft)"
         >
+          <ClockIcon class-name="size-3.5 shrink-0" />
           {{ rescheduling ? "saving…" : "reschedule" }}
         </ToolbarPillButton>
       </div>
@@ -270,7 +288,7 @@ watch(
       </section>
     </div>
 
-    <template v-if="canMutate && task" #footer>
+    <template v-if="canMutateScheduleAndStatus && task" #footer>
       <DrawerFooterActions>
         <template v-if="menuStatuses.length" #dismiss>
           <BaseDropdownMenu placement="top" icon-only action="edit" aria-label="edit">
@@ -295,9 +313,11 @@ watch(
         <template v-if="primaryActionStatus" #primary>
           <ToolbarPillButton
             action="save"
+            class="gap-1.5"
             :disabled="statusUpdating"
             @click="emit('updateStatus', primaryActionStatus)"
           >
+            <CheckIcon class-name="size-3.5 shrink-0" />
             {{ statusActionLabel(primaryActionStatus) }}
           </ToolbarPillButton>
         </template>

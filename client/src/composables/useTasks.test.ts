@@ -67,13 +67,41 @@ describe("useTasks", () => {
     expect(api.post).not.toHaveBeenCalled();
   });
 
+  it("createTask rejects a past scheduled_at without posting", async () => {
+    const { openCreate, createForm, createErrors, createTask } = useTasks();
+    openCreate();
+    createForm.value.title = "late standup";
+    createForm.value.scheduled_at = "2020-01-01T09:00";
+
+    await createTask();
+
+    expect(createErrors.value.scheduled_at).toBe("Scheduled time must not be in the past");
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
   it("createTask reloads calendar month after a successful create", async () => {
+    const future = new Date();
+    future.setDate(future.getDate() + 14);
+    const y = future.getFullYear();
+    const m = String(future.getMonth() + 1).padStart(2, "0");
+    const d = String(future.getDate()).padStart(2, "0");
+    const seedDate = `${y}-${m}-${d}`;
+    const monthStart = new Date(y, future.getMonth(), 1).toISOString();
+    const monthEnd = new Date(y, future.getMonth() + 1, 1).toISOString();
+
     vi.mocked(api.get).mockImplementation(async (_url, config) => {
       const params = config?.params as { start?: string; end?: string; page?: number };
       if (params?.start && params?.end) {
         return {
           data: {
-            items: [{ id: 9, title: "seeded", scheduled_at: "2026-06-15T10:00:00Z", status: "pending" }],
+            items: [
+              {
+                id: 9,
+                title: "seeded",
+                scheduled_at: `${seedDate}T10:00:00.000Z`,
+                status: "pending",
+              },
+            ],
             total: 1,
             pages: 1,
             page: 1,
@@ -97,10 +125,10 @@ describe("useTasks", () => {
     vi.mocked(api.post).mockResolvedValue({ data: undefined });
 
     const { loadCalendarMonth, openCreate, createForm, createTask, calendarTasks } = useTasks();
-    await loadCalendarMonth("2026-06-01T00:00:00.000Z", "2026-07-01T00:00:00.000Z");
+    await loadCalendarMonth(monthStart, monthEnd);
     expect(calendarTasks.value).toHaveLength(1);
 
-    openCreate("2026-06-15");
+    openCreate(seedDate);
     createForm.value.title = "standup";
 
     vi.mocked(api.get).mockClear();
