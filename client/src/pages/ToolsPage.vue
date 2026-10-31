@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 
+import ToolIcon from "@/components/icons/ToolIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import ToolTileGrid from "@/components/tools/ToolTileGrid.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -141,6 +142,7 @@ function tabPillClass(): string {
         <div class="px-3 pb-3 pt-3">
           <div class="flex flex-wrap justify-start gap-2" aria-label="utils tools">
             <RouterLink v-for="tab in utilsTabs" :key="tab.id" :to="tab.to" :class="tabPillClass()">
+              <ToolIcon :slug="tab.id" class="size-3.5 shrink-0" />
               {{ tab.label }}
             </RouterLink>
           </div>

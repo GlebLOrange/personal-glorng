@@ -297,6 +297,8 @@ export function useTasks() {
       nextErrors.scheduled_at = "Scheduled time is required";
     } else if (!scheduledAt) {
       nextErrors.scheduled_at = "Scheduled time is invalid";
+    } else if (new Date(scheduledAt).getTime() < Date.now()) {
+      nextErrors.scheduled_at = "Scheduled time must not be in the past";
     }
     createErrors.value = nextErrors;
     if (nextErrors.title || nextErrors.scheduled_at || !scheduledAt) {

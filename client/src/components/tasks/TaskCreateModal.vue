@@ -4,7 +4,9 @@ import BaseDrawer from "@/components/ui/BaseDrawer.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseTextarea from "@/components/ui/BaseTextarea.vue";
 import DrawerFooterActions from "@/components/ui/DrawerFooterActions.vue";
+import ClockIcon from "@/components/icons/ClockIcon.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
+import PlusIcon from "@/components/icons/PlusIcon.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
 import TaskReminderScheduleInfo from "@/components/tasks/TaskReminderScheduleInfo.vue";
 import type { TaskCreateErrors, TaskCreateForm } from "@/composables/useTasks";
@@ -34,7 +36,11 @@ const emit = defineEmits<{ submit: []; close: [] }>();
         type="datetime-local"
         label="scheduled at"
         :error="errors.scheduled_at"
-      />
+      >
+        <template #prefix>
+          <ClockIcon class-name="size-4 shrink-0" />
+        </template>
+      </BaseInput>
       <TaskReminderScheduleInfo />
       <BaseInput v-model="form.location" label="location" placeholder="(optional)">
         <template #prefix>
@@ -59,8 +65,10 @@ const emit = defineEmits<{ submit: []; close: [] }>();
             type="submit"
             form="task-create-drawer-form"
             action="create"
+            class="gap-1.5"
             :disabled="saving"
           >
+            <PlusIcon class-name="size-3.5 shrink-0" />
             {{ saving ? "creating…" : "create" }}
           </ToolbarPillButton>
         </template>

@@ -82,6 +82,8 @@ describe("ToolsPage spoiler catalog", () => {
     expect(pills.text()).toContain("qr generator");
     expect(pills.text()).toContain("url shortener");
     expect(pills.text()).not.toContain("demo");
+    // Guest utils: weather, calculator, password-generator, qr-generator, url-shortener.
+    expect(pills.findAll("svg.tool-icon")).toHaveLength(5);
     expect(tileTitleCount(wrapper, "url shortener")).toBe(0);
     expect(utils.text()).not.toContain("video downloader");
     expect(utils.text()).not.toContain("send email");

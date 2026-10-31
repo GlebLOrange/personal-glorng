@@ -202,23 +202,27 @@ function onDayKeydown(event: KeyboardEvent, key: string): void {
 
     <div
       v-if="loading"
-      class="grid grid-cols-7 gap-1"
+      class="grid grid-cols-7 border-l border-t border-surface-border/15"
       aria-busy="true"
       aria-label="loading calendar"
     >
       <div
         v-for="n in 28"
         :key="n"
-        class="min-h-11 animate-pulse rounded-lg bg-surface-border/40"
+        class="min-h-11 animate-pulse border-b border-r border-surface-border/15 bg-surface-border/20"
       />
     </div>
 
     <div v-else class="space-y-4">
-      <div class="grid grid-cols-7 gap-1" role="grid" aria-label="month calendar">
+      <div
+        class="grid grid-cols-7 border-l border-t border-surface-border/15"
+        role="grid"
+        aria-label="month calendar"
+      >
         <div
           v-for="label in WEEKDAYS"
           :key="label"
-          class="px-1 py-1 text-center text-xs text-surface-mid"
+          class="border-b border-r border-surface-border/15 px-1 py-1 text-center text-xs text-surface-mid"
           role="columnheader"
         >
           {{ label }}
@@ -229,11 +233,11 @@ function onDayKeydown(event: KeyboardEvent, key: string): void {
           :key="cell.key"
           type="button"
           role="gridcell"
-          class="flex min-h-11 min-w-0 cursor-pointer flex-col items-center justify-center rounded-lg border border-transparent px-1 py-1 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50"
+          class="flex min-h-11 min-w-0 cursor-pointer flex-col items-center justify-center border-b border-r border-surface-border/15 px-1 py-1 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 focus-visible:ring-inset"
           :class="[
             cell.inMonth ? 'text-surface-light' : 'text-surface-mid/50',
             cell.key === selectedDate
-              ? 'border-accent-coral bg-accent-coral/10'
+              ? 'bg-accent-coral/10 text-accent-coral'
               : 'hover:bg-surface-mid/10',
           ]"
           :aria-label="

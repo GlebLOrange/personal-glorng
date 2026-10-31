@@ -6,6 +6,7 @@ import AdminFilterChip from "@/components/admin/AdminFilterChip.vue";
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
 import AdminTabBar from "@/components/admin/AdminTabBar.vue";
 import PageShell from "@/components/layout/PageShell.vue";
+import PlusIcon from "@/components/icons/PlusIcon.vue";
 import SyncIcon from "@/components/icons/SyncIcon.vue";
 import TaskCreateModal from "@/components/tasks/TaskCreateModal.vue";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal.vue";
@@ -22,6 +23,7 @@ import { usePermissions } from "@/composables/usePermissions";
 import { useScrollListFingerprint } from "@/composables/useScrollListFingerprint";
 import { useTasks } from "@/composables/useTasks";
 
+import type { AdminTabIcon } from "@/components/admin/AdminTabBar.vue";
 import type { HttpStatusFamily } from "@/constants/httpStatusColors";
 
 type Tab = "queue" | "calendar" | "intakes" | "sync";
@@ -29,12 +31,12 @@ type Tab = "queue" | "calendar" | "intakes" | "sync";
 const TASK_TABS: {
   id: Tab;
   label: string;
-  icon?: "sync" | "refresh";
+  icon: AdminTabIcon;
   family?: HttpStatusFamily;
 }[] = [
-  { id: "queue", label: "queue" },
-  { id: "calendar", label: "calendar" },
-  { id: "intakes", label: "intakes" },
+  { id: "queue", label: "queue", icon: "queue" },
+  { id: "calendar", label: "calendar", icon: "calendar" },
+  { id: "intakes", label: "intakes", icon: "intakes" },
   { id: "sync", label: "sync", icon: "sync", family: "5xx" },
 ];
 
@@ -209,6 +211,25 @@ const hasActiveFilters = computed(
     Boolean(effectiveSearchQuery(searchQuery.value)),
 );
 
+/** Calendar create is blocked for local dates before today. */
+const selectedDateIsPast = computed(() => selectedDate.value < todayDateKey());
+
+const createDisabled = computed(() => {
+  if (activeTab.value === "calendar") {
+    return calendarLoading.value || selectedDateIsPast.value;
+  }
+  return listLoading.value;
+});
+
+function onCreateClick(): void {
+  if (activeTab.value === "calendar") {
+    if (selectedDateIsPast.value) return;
+    openCreate(selectedDate.value);
+    return;
+  }
+  openCreate();
+}
+
 function onFailedSyncs(): void {
   filterDropdownRef.value?.close();
   switchTab("sync");
@@ -310,10 +331,16 @@ onMounted(() => {
             v-show="activeTab === 'queue' || activeTab === 'calendar'"
             action="create"
             class="ml-auto"
-            :disabled="activeTab === 'calendar' ? calendarLoading : listLoading"
-            @click="openCreate(activeTab === 'calendar' ? selectedDate : undefined)"
+            :disabled="createDisabled"
+            :title="
+              activeTab === 'calendar' && selectedDateIsPast
+                ? 'Cannot create tasks on past days'
+                : undefined
+            "
+            @click="onCreateClick"
           >
-            + task
+            <PlusIcon class-name="size-3.5 shrink-0" />
+            task
           </ToolbarPillButton>
         </div>
 
