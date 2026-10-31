@@ -327,6 +327,14 @@ export interface TaskStats {
   failed_syncs: number;
 }
 
+export interface BotPingResult {
+  ok: boolean;
+  bot_username: string | null;
+  bot_id: number | null;
+  message_sent: boolean;
+  detail: string;
+}
+
 export interface TaskIntakeItem {
   id: number;
   status: string;

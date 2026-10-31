@@ -12,6 +12,7 @@ import {
   parseDatetimeLocalToIso,
 } from "@/utils/dates";
 import type {
+  BotPingResult,
   PaginatedList,
   SyncQueueItem,
   TaskDetail,
@@ -73,6 +74,7 @@ export function useTasks() {
   const { loading: saving, run: runSave } = useApiAction();
   const { loading: statusUpdating, run: runStatusUpdate } = useApiAction();
   const { loading: rescheduling, run: runReschedule } = useApiAction();
+  const { loading: pingingBot, run: runPingBot } = useApiAction();
   const { run: runRetry } = useApiAction();
   const { run: runStats } = useApiAction();
   const { toast } = useNotify();
@@ -225,6 +227,19 @@ export function useTasks() {
     );
     await loadSyncQueue();
     await loadStats();
+  }
+
+  async function pingBot(): Promise<void> {
+    const result = await runPingBot(
+      async () => {
+        const { data } = await api.post<BotPingResult>("/tools/tasks/bot-ping");
+        return data;
+      },
+      { errorFallback: "Failed to ping TodoBot" },
+    );
+    if (!result) return;
+    const label = result.bot_username ? `@${result.bot_username}` : "TodoBot";
+    toast(`TodoBot ${label} OK`, "success");
   }
 
   async function updateTaskStatus(taskId: number, status: TaskStatus): Promise<void> {
@@ -434,6 +449,7 @@ export function useTasks() {
     saving,
     statusUpdating,
     rescheduling,
+    pingingBot,
     hasNextPage,
     hasPreviousPage,
     hasNextIntakePage,
@@ -449,6 +465,7 @@ export function useTasks() {
     closeDetail,
     retrySync,
     processSyncQueueNow,
+    pingBot,
     updateTaskStatus,
     rescheduleTask,
     openCreate,

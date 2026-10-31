@@ -15,11 +15,13 @@ from app.core.deps import (
 )
 from app.core.exceptions import ValidationError
 from app.core.rate_limit import rate_limit_api
+from app.core.telegram import ping_todobot
 from app.core.utils import DEFAULT_PER_PAGE
 from app.db.documents.audit import AuditActorType, AuditSource
 from app.openapi import requires_capability
 from app.schemas.common import MessageResponse
 from app.schemas.task import (
+    BotPingResponse,
     ReminderResponse,
     SyncQueueListResponse,
     TaskCreate,
@@ -157,6 +159,26 @@ async def process_sync_queue_now(
     count = await svc.process_sync_queue_now()
     return MessageResponse(
         message=f"Sync drain kicked for {count} pending entries",
+    )
+
+
+@router.post(
+    "/bot-ping",
+    response_model=BotPingResponse,
+    summary="Ping Telegram todobot",
+    description=(
+        "Requires platform superuser. Calls Telegram getMe with the todobot "
+        "token and DMs TELEGRAM_ALLOWED_USER_ID. Does not prove polling is up."
+    ),
+)
+async def bot_ping(_user: AdminUser) -> BotPingResponse:
+    result = await ping_todobot()
+    return BotPingResponse(
+        ok=result.ok,
+        bot_username=result.bot_username,
+        bot_id=result.bot_id,
+        message_sent=result.message_sent,
+        detail=result.detail,
     )
 
 
