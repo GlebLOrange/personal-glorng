@@ -2,6 +2,8 @@
 import { computed, onMounted, onUnmounted, ref, useTemplateRef } from "vue";
 
 import TurnstileWidget from "@/components/admin/TurnstileWidget.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
+import TrashIcon from "@/components/icons/TrashIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import ConfirmDialog from "@/components/ui/ConfirmDialog.vue";
 import { api } from "@/composables/useApi";
@@ -220,11 +222,15 @@ onUnmounted(() => {
           :key="job.id"
           :variant="job.danger ? 'delete' : 'secondary'"
           :danger="job.danger"
+          :icon="false"
           size="sm"
+          class="gap-1.5"
           :disabled="!canStartJob(job)"
           :loading="starting && pendingJob === job.id"
           @click="openConfirm(job.id)"
         >
+          <TrashIcon v-if="job.danger" class-name="size-3.5 shrink-0" />
+          <RefreshIcon v-else class-name="size-3.5 shrink-0" />
           {{ job.label }}
           <span v-if="jobBlocked(job)" class="ml-1 text-xs opacity-70">
             (host script not ready)

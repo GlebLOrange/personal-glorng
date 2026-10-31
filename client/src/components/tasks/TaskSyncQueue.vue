@@ -4,6 +4,7 @@ import { ref } from "vue";
 import AdminDataRow from "@/components/admin/AdminDataRow.vue";
 import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import SyncIcon from "@/components/icons/SyncIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -86,9 +87,12 @@ function syncPrimary(item: SyncQueueItem): string {
             v-if="item.last_error"
             variant="ghost"
             size="sm"
+            :icon="false"
+            class="gap-1.5"
             :aria-expanded="expandedIds.has(item.id)"
             @click="toggleExpanded(item.id)"
           >
+            <ChevronIcon :open="expandedIds.has(item.id)" class-name="size-3.5 shrink-0" />
             {{ expandedIds.has(item.id) ? "hide error" : "show error" }}
           </BaseButton>
           <BaseButton
@@ -96,6 +100,7 @@ function syncPrimary(item: SyncQueueItem): string {
             variant="ghost"
             quiet
             size="sm"
+            :icon="false"
             class="gap-1.5"
             aria-label="retry sync"
             @click="emit('retry', item.task_id)"

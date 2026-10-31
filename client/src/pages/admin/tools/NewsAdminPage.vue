@@ -98,12 +98,17 @@ const {
           :disabled="actionLoading"
           @click="openCreate"
         >
-          + article
+          article
         </ToolbarPillButton>
       </AdminListToolbar>
     </div>
 
-    <section v-if="listLoading" class="space-y-3" aria-busy="true" aria-label="loading news">
+    <section
+      v-if="listLoading"
+      class="w-full min-w-0 space-y-3 self-stretch"
+      aria-busy="true"
+      aria-label="loading news"
+    >
       <Card v-for="i in 5" :key="i" class="h-36 animate-pulse" />
     </section>
 

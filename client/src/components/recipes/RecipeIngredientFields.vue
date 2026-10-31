@@ -113,8 +113,8 @@ function onIngredientPaste(event: ClipboardEvent, index: number): void {
             compact
             :model-value="ingredients[idx]"
             class="min-w-0 w-full flex-1"
-            placeholder="200g flour"
-            :aria-label="`ingredient ${idx + 1}`"
+            :label="`ingredient ${idx + 1}`"
+            tip="200g flour"
             data-recipe-ingredient
             @update:model-value="updateIngredient(idx, toStringValue($event))"
             @keydown="onIngredientEnter($event, idx)"

@@ -116,7 +116,7 @@ onMounted(async () => {
 
     <div v-else-if="error" class="text-sm space-y-2" :class="stackClass">
       <p class="text-status-error">{{ error }}</p>
-      <BaseButton variant="ghost" size="sm" class="gap-1.5" @click="refresh">
+      <BaseButton variant="ghost" size="sm" :icon="false" class="gap-1.5" @click="refresh">
         <RefreshIcon class-name="size-3.5" />
         retry
       </BaseButton>
@@ -157,7 +157,7 @@ onMounted(async () => {
       :class="stackClass"
     >
       weather unavailable.
-      <BaseButton variant="ghost" size="sm" class="gap-1.5" @click="refresh">
+      <BaseButton variant="ghost" size="sm" :icon="false" class="gap-1.5" @click="refresh">
         <RefreshIcon class-name="size-3.5" />
         retry
       </BaseButton>

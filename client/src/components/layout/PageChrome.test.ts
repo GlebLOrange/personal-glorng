@@ -124,7 +124,7 @@ describe("PageChrome", () => {
     expect(help.attributes("data-size")).toBe("sm");
     expect(help.attributes("data-align")).toBe("end");
     expect(help.attributes("data-placement")).toBe("top");
-    expect(help.attributes("data-interactive")).toBe("false");
+    expect(help.attributes("data-interactive")).toBe("true");
   });
 
   it("omits FieldHelp when description is unset", () => {

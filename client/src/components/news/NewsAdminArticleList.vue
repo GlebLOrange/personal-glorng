@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import CloseIcon from "@/components/icons/CloseIcon.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 import { Card } from "@/components/ui/card";
@@ -22,7 +24,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="space-y-3 min-w-0">
+  <section class="w-full min-w-0 space-y-3 self-stretch">
     <Card
       v-for="item in articles"
       :key="item.id"
@@ -97,19 +99,22 @@ const emit = defineEmits<{
           variant="ghost"
           quiet
           size="sm"
+          class="gap-1.5"
           :disabled="actionLoading"
           @click="emit('setStatus', item.id, 'private')"
         >
+          <CloseIcon class-name="size-3.5 shrink-0" />
           unpublish
         </BaseButton>
         <BaseButton
           variant="ghost"
           quiet
           size="sm"
-          class="ml-auto"
+          class="ml-auto gap-1.5"
           :disabled="actionLoading"
           @click="emit('repost', item.id)"
         >
+          <RefreshIcon class-name="size-3.5 shrink-0" />
           repost telegram
         </BaseButton>
       </div>

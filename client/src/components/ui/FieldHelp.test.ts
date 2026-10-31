@@ -28,4 +28,40 @@ describe("FieldHelp", () => {
 
     wrapper.unmount();
   });
+
+  it("keeps sm glyph small while exposing a ≥44×44 hit box", () => {
+    const wrapper = mount(FieldHelp, {
+      props: {
+        text: "page description",
+        size: "sm",
+      },
+      attachTo: document.body,
+    });
+
+    const button = wrapper.get('button[aria-label="help"]');
+    expect(button.classes()).toEqual(
+      expect.arrayContaining(["min-h-11", "min-w-11"]),
+    );
+    expect(button.find("svg").classes()).toEqual(expect.arrayContaining(["size-3"]));
+
+    wrapper.unmount();
+  });
+
+  it("opens on keyboard focus when interactive (default)", async () => {
+    const wrapper = mount(FieldHelp, {
+      props: {
+        text: "keyboard reachable tip",
+        size: "sm",
+      },
+      attachTo: document.body,
+    });
+
+    const button = wrapper.get('button[aria-label="help"]');
+    await button.trigger("focus");
+
+    expect(button.attributes("aria-expanded")).toBe("true");
+    expect(document.body.querySelector('[role="tooltip"]')).not.toBeNull();
+
+    wrapper.unmount();
+  });
 });

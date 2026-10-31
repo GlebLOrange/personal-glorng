@@ -2,6 +2,8 @@
 import { computed, useTemplateRef } from "vue";
 
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import FilterIcon from "@/components/icons/FilterIcon.vue";
+import TagIcon from "@/components/icons/TagIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 
 const props = defineProps<{
@@ -38,20 +40,24 @@ function clearCategory(): void {
     <template #chips>
       <BaseButton
         size="sm"
-        class="w-full justify-start"
+        :icon="false"
+        class="w-full justify-start gap-1.5"
         :variant="categoryFilter === null ? 'primary' : 'ghost'"
         @click="selectCategory(null)"
       >
+        <FilterIcon class-name="size-3.5 shrink-0" />
         all
       </BaseButton>
       <BaseButton
         v-for="category in categoryOptions"
         :key="category"
         size="sm"
-        class="w-full justify-start"
+        :icon="false"
+        class="w-full justify-start gap-1.5"
         :variant="categoryFilter === category ? 'primary' : 'ghost'"
         @click="selectCategory(category)"
       >
+        <TagIcon class-name="size-3.5 shrink-0" />
         {{ category }}
       </BaseButton>
     </template>

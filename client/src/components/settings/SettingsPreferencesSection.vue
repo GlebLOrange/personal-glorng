@@ -61,15 +61,14 @@ const timezoneOptions = computed((): TimezoneOption[] => {
           v-model="displayName"
           name="display-name"
           autocomplete="name"
-          placeholder="display name"
-          aria-label="display name"
+          label="display name"
           compact
           class="min-w-0 flex-1 basis-40"
         />
         <BaseSelect
           v-model="timezone"
           compact
-          aria-label="timezone"
+          label="timezone"
           class="min-w-[7.5rem] w-auto shrink-0"
         >
           <option v-for="zone in timezoneOptions" :key="zone.value" :value="zone.value">
@@ -79,7 +78,7 @@ const timezoneOptions = computed((): TimezoneOption[] => {
         <BaseSelect
           v-model="displayCurrency"
           compact
-          aria-label="display currency"
+          label="currency"
           class="w-auto shrink-0"
         >
           <option v-for="code in EXPENSE_CURRENCIES" :key="code" :value="code">

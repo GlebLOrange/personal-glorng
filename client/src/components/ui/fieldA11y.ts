@@ -49,14 +49,15 @@ export function buildFieldAccessibleName({
   return tip || undefined;
 }
 
-/** Visible title + overlay tip from one name; placeholder only when it differs. */
+/** Visible title + overlay tip; `tip` wins over `placeholder` when both differ from the label. */
 export function resolveFieldCopy(
   label?: string,
   placeholder?: string,
+  tip?: string,
 ): { name: string | undefined; tip: string | undefined } {
-  // ponytail: one name drives title + tip; placeholder only when it actually differs
+  // ponytail: label is the title; tip/placeholder only when they actually differ
   const name = label || undefined;
-  const tipCandidate = (placeholder ?? label) || undefined;
+  const tipCandidate = (tip ?? placeholder) || undefined;
   if (!tipCandidate || tipCandidate === name) return { name, tip: undefined };
   return { name, tip: tipCandidate };
 }

@@ -39,6 +39,7 @@ const emit = defineEmits<{
       <BaseButton
         variant="ghost"
         size="sm"
+        :icon="false"
         class="gap-1.5"
         :disabled="loading || processing"
         aria-label="process sync queue now"

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
+import KeyGlyphIcon from "@/components/icons/KeyGlyphIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
@@ -105,47 +106,51 @@ function buttonAriaLabel(val: string): string | undefined {
     tool
   >
     <div class="page-tool-actions">
-    <Card class="w-auto max-w-full">
-      <div
-        class="bg-surface-dark rounded-lg p-4 mb-4 text-right"
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <div class="text-xs text-surface-mid h-5" aria-hidden="true">
-          {{ expression || "\u00a0" }}
-        </div>
-        <div class="text-2xl font-bold text-surface-light">
-          <span class="sr-only">Result: </span>
-          {{ loading ? "…" : display }}
-        </div>
-      </div>
-
-      <div class="tool-grid">
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          class="col-span-2"
-          aria-label="all clear"
-          @click="clear"
+      <Card class="w-auto max-w-full">
+        <div
+          class="mb-4 rounded-lg bg-surface-dark p-4 text-right"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
         >
-          AC
-        </BaseButton>
-        <div class="col-span-2" aria-hidden="true" />
+          <div class="h-5 text-xs text-surface-mid" aria-hidden="true">
+            {{ expression || "\u00a0" }}
+          </div>
+          <div class="text-2xl font-bold text-surface-light">
+            <span class="sr-only">Result: </span>
+            {{ loading ? "…" : display }}
+          </div>
+        </div>
 
-        <BaseButton
-          v-for="btn in buttons"
-          :key="btn"
-          :variant="isOperator(btn) || btn === '=' ? 'primary' : 'secondary'"
-          size="lg"
-          :disabled="loading"
-          :aria-label="buttonAriaLabel(btn)"
-          @click="handleInput(btn)"
-        >
-          {{ btn }}
-        </BaseButton>
-      </div>
-    </Card>
+        <div class="tool-grid">
+          <BaseButton
+            variant="ghost"
+            size="sm"
+            class="col-span-2 gap-1.5"
+            aria-label="all clear"
+            :icon="false"
+            @click="clear"
+          >
+            <KeyGlyphIcon glyph="AC" class-name="size-4" />
+            <span class="sr-only">AC</span>
+          </BaseButton>
+          <div class="col-span-2" aria-hidden="true" />
+
+          <BaseButton
+            v-for="btn in buttons"
+            :key="btn"
+            :variant="isOperator(btn) || btn === '=' ? 'primary' : 'secondary'"
+            size="lg"
+            :disabled="loading"
+            :aria-label="buttonAriaLabel(btn)"
+            :icon="false"
+            @click="handleInput(btn)"
+          >
+            <KeyGlyphIcon :glyph="btn" class-name="size-5" />
+            <span class="sr-only">{{ buttonAriaLabel(btn) ?? btn }}</span>
+          </BaseButton>
+        </div>
+      </Card>
     </div>
   </PageShell>
 </template>

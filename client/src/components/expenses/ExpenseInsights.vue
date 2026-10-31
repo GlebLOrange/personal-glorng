@@ -2,6 +2,7 @@
 import { computed, defineAsyncComponent } from "vue";
 
 import ExpenseCategoryBreakdown from "@/components/expenses/ExpenseCategoryBreakdown.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { Card } from "@/components/ui/card";
@@ -206,7 +207,15 @@ const currency = computed(() => props.summary?.currency ?? "PLN");
     description="add expenses for this period to see trends and breakdowns."
   >
     <template #action>
-      <BaseButton variant="add" size="sm" @click="emit('addExpense')"> go to today </BaseButton>
+      <BaseButton
+        variant="ghost"
+        size="sm"
+        class="gap-1.5"
+        @click="emit('addExpense')"
+      >
+        <ChevronIcon class-name="size-3.5 shrink-0" />
+        go to today
+      </BaseButton>
     </template>
   </EmptyState>
 </template>

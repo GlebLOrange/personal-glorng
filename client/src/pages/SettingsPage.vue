@@ -3,6 +3,7 @@ import * as CookieConsent from "vanilla-cookieconsent";
 import { computed, defineAsyncComponent, onMounted, ref } from "vue";
 
 import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import FilterIcon from "@/components/icons/FilterIcon.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import SettingsAccountSection from "@/components/settings/SettingsAccountSection.vue";
 import SettingsPreferencesSection from "@/components/settings/SettingsPreferencesSection.vue";
@@ -204,8 +205,11 @@ async function savePassword(): Promise<void> {
                 type="button"
                 variant="secondary"
                 size="sm"
+                :icon="false"
+                class="gap-1.5"
                 @click="openCookiePreferences"
               >
+                <FilterIcon class-name="size-3.5 shrink-0" />
                 cookie preferences
               </BaseButton>
             </div>

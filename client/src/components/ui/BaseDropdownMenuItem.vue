@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+
 defineProps<{
   destructive?: boolean;
   /** Optional text + hover classes (overrides default / destructive styling). */
@@ -19,7 +21,7 @@ function onClick(): void {
     type="button"
     role="menuitem"
     :class="[
-      'w-[calc(100%-0.5rem)] text-left px-3 py-2 text-sm transition-colors border border-transparent rounded-md mx-1 my-0.5',
+      'mx-1 my-0.5 flex w-[calc(100%-0.5rem)] items-center gap-1.5 rounded-md border border-transparent px-3 py-2 text-left text-sm transition-colors',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50',
       colorClass
         ? [colorClass, 'hover:border-current/35 focus-visible:border-current/35']
@@ -29,6 +31,7 @@ function onClick(): void {
     ]"
     @click="onClick"
   >
+    <ChevronIcon direction="right" class-name="size-3.5 shrink-0 opacity-70" />
     <slot />
   </button>
 </template>

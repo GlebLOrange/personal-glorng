@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
+import CheckIcon from "@/components/icons/CheckIcon.vue";
+import QueueIcon from "@/components/icons/QueueIcon.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import { Card } from "@/components/ui/card";
@@ -38,7 +40,7 @@ const emit = defineEmits<{
     <Card v-if="batchHistory.length" class="mb-6 space-y-3">
       <div class="flex items-center justify-between gap-3">
         <h2 class="text-lg font-semibold text-surface-light">recent imports</h2>
-        <BaseButton variant="ghost" class="gap-1.5" @click="emit('refresh')">
+        <BaseButton variant="ghost" :icon="false" class="gap-1.5" @click="emit('refresh')">
           <RefreshIcon class-name="size-3.5" />
           refresh
         </BaseButton>
@@ -48,13 +50,14 @@ const emit = defineEmits<{
           <button
             type="button"
             :class="[
-              'w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors',
+              'inline-flex w-full items-center gap-1.5 rounded-lg border px-3 py-2 text-left text-sm transition-colors',
               selectedBatchId === batch.id
                 ? 'border-accent-coral/40 bg-accent-coral/15 text-accent-coral'
                 : 'border-surface-border text-surface-mid hover:border-accent-coral/40 hover:bg-accent-coral/15 hover:text-accent-coral',
             ]"
             @click="emit('select', batch.id)"
           >
+            <QueueIcon class-name="size-3.5 shrink-0" />
             {{ batchLabel(batch) }}
           </button>
         </li>
@@ -90,9 +93,12 @@ const emit = defineEmits<{
         <BaseButton
           v-if="canPromoteSelected"
           variant="secondary"
+          :icon="false"
+          class="gap-1.5"
           :disabled="loading"
           @click="emit('promote')"
         >
+          <CheckIcon class-name="size-3.5 shrink-0" />
           {{ loading ? "working…" : "promote pipe embed rows" }}
         </BaseButton>
       </div>

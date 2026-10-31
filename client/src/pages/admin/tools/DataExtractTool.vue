@@ -75,7 +75,7 @@ function loadSampleCsv(): void {
     :narrow="false"
     tool
   >
-    <div class="min-w-0">
+    <div class="w-full min-w-0 self-stretch">
       <div class="page-tool-actions mb-6">
         <CollapsibleUsageGuide title="data extract usage guide">
           <template #start>

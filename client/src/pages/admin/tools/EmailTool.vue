@@ -80,7 +80,7 @@ async function preview(): Promise<void> {
     <div class="page-tool-actions">
       <AdminListToolbar>
         <template #start>
-          <div class="flex items-center justify-center gap-2">
+          <div class="flex w-full items-center justify-start gap-2">
             <ToolbarPillButton
               action="create"
               :disabled="!subject || !body || loading"
@@ -100,38 +100,41 @@ async function preview(): Promise<void> {
         </template>
       </AdminListToolbar>
 
-      <form class="space-y-3" @submit.prevent="send">
+      <form class="flex w-full flex-col gap-3" @submit.prevent="send">
         <BaseInput
           id="email-to"
           v-model="to"
           type="email"
-          placeholder="to"
-          aria-label="to"
+          label="to"
+          tip="email@example.com"
           autocomplete="email"
           spellcheck="false"
-          auto-width
+          class="w-full"
         />
         <BaseInput
           id="email-subject"
           v-model="subject"
-          placeholder="subject"
-          aria-label="subject"
+          label="subject"
           autocomplete="off"
-          auto-width
+          class="w-full"
         />
         <BaseTextarea
           id="email-body"
           v-model="body"
           :rows="6"
-          placeholder="body"
-          aria-label="body"
+          label="body"
           autocomplete="off"
-          auto-width
+          class="w-full"
         />
       </form>
     </div>
 
-    <div v-if="previewHtml" class="space-y-2" role="status" aria-live="polite">
+    <div
+      v-if="previewHtml"
+      class="w-full min-w-0 self-stretch space-y-2"
+      role="status"
+      aria-live="polite"
+    >
       <h3 class="text-sm text-surface-mid">preview</h3>
       <!-- eslint-disable vue/no-v-html -- preview HTML is sanitized with DOMPurify -->
       <div

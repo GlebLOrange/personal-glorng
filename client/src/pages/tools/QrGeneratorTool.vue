@@ -7,6 +7,8 @@ import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import QrLibraryListItem from "@/components/admin/QrLibraryListItem.vue";
 import PageShell from "@/components/layout/PageShell.vue";
+import DownloadIcon from "@/components/icons/DownloadIcon.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
@@ -250,7 +252,7 @@ onMounted(() => {
     :narrow="false"
     tool
   >
-    <div class="flex min-w-0 flex-col gap-6">
+    <div class="flex w-full min-w-0 flex-col gap-6 self-stretch">
       <p class="text-xs text-surface-mid">{{ pageDescription }}</p>
       <div class="grid min-w-0 gap-4 lg:grid-cols-2">
         <div class="page-tool-actions mb-0">
@@ -311,17 +313,20 @@ onMounted(() => {
                   v-if="previewUrl"
                   variant="ghost"
                   type="button"
-                  class="w-auto"
+                  class="w-auto gap-1.5"
                   @click="downloadSvg"
                 >
+                  <DownloadIcon class-name="size-3.5 shrink-0" />
                   download svg
                 </BaseButton>
                 <BaseButton
                   variant="primary"
                   type="submit"
-                  class="w-auto"
+                  :icon="false"
+                  class="w-auto gap-1.5"
                   :disabled="!canCreate"
                 >
+                  <RefreshIcon class-name="size-3.5 shrink-0" />
                   {{ creating ? "generating…" : "generate qr" }}
                 </BaseButton>
               </div>
@@ -354,7 +359,11 @@ onMounted(() => {
         </Card>
       </div>
 
-      <section v-if="canReadLibrary" class="min-w-0" aria-label="saved QR codes">
+      <section
+        v-if="canReadLibrary"
+        class="w-full min-w-0 self-stretch"
+        aria-label="saved QR codes"
+      >
         <p v-if="guestLimitLabel" class="mb-2 text-xs text-surface-mid" role="status">
           {{ guestLimitLabel }}
         </p>
@@ -366,7 +375,7 @@ onMounted(() => {
         >
           no saved QR codes yet. generate one and save it.
         </p>
-        <div v-else class="min-w-0">
+        <div v-else class="w-full min-w-0 self-stretch">
           <AdminDataTable table-label="saved QR codes">
             <template #header>
               <th :class="ADMIN_TH_CLASS" scope="col">preview</th>

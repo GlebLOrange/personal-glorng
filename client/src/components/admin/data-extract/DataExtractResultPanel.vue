@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import DownloadIcon from "@/components/icons/DownloadIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import IconCopyButton from "@/components/ui/IconCopyButton.vue";
 import { Card } from "@/components/ui/card";
@@ -31,8 +33,12 @@ const emit = defineEmits<{
       </div>
       <div class="flex gap-2">
         <IconCopyButton aria-label="copy json" @click="emit('copy')" />
-        <BaseButton variant="ghost" @click="emit('download')">download json</BaseButton>
-        <BaseButton variant="ghost" @click="showRawJson = !showRawJson">
+        <BaseButton variant="ghost" class="gap-1.5" @click="emit('download')">
+          <DownloadIcon class-name="size-3.5 shrink-0" />
+          download json
+        </BaseButton>
+        <BaseButton variant="ghost" class="gap-1.5" @click="showRawJson = !showRawJson">
+          <ChevronIcon :open="showRawJson" class-name="size-3.5 shrink-0" />
           {{ showRawJson ? "hide raw json" : "show raw json" }}
         </BaseButton>
       </div>

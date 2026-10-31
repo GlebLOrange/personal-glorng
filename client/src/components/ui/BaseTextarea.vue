@@ -29,6 +29,8 @@ const props = withDefaults(
     id?: string;
     /** Faint tip drawn behind the value (full-width textarea). */
     placeholder?: string;
+    /** Explicit overlay tip; preferred over `placeholder` when both are set. */
+    tip?: string;
     /** Optional left-side field name inside the control. */
     prefix?: string;
     label?: string;
@@ -39,7 +41,8 @@ const props = withDefaults(
     /** Render the label inside the control instead of the trailing / notch title. */
     labelInside?: boolean;
     /**
-     * When not labelInside: `start` = border notch; `end` = inside trailing (before clear).
+     * When not labelInside: `end` = no visible name (sr-only / aria; default);
+     * `start` = border notch (opt-in).
      */
     labelAlign?: "start" | "end";
     /** Shrink shell/textarea to content (tool action panels) instead of w-full. */
@@ -58,7 +61,7 @@ const textareaId = computed(() => props.id ?? `base-textarea-${fallbackId}`);
 const hintId = computed(() => `${textareaId.value}-hint`);
 const errorId = computed(() => `${textareaId.value}-error`);
 const tipId = computed(() => `${textareaId.value}-tip`);
-const fieldCopy = computed(() => resolveFieldCopy(props.label, props.placeholder));
+const fieldCopy = computed(() => resolveFieldCopy(props.label, props.placeholder, props.tip));
 const hasClearableValue = computed(() => Boolean(model.value?.length));
 const isInlineEnd = computed(() => props.labelAlign === "end" && !props.labelInside);
 const useShell = computed(() =>
@@ -128,7 +131,7 @@ const shellClass = computed(() => [
 const shellTextareaClass = computed(() =>
   [
     "relative z-10 min-w-0 flex-1 resize-y border-0 bg-transparent px-3 text-left text-sm text-surface-light outline-none disabled:opacity-60",
-    props.compact ? "min-h-9 py-1.5" : "min-h-10 py-2",
+    props.compact ? "min-h-9 py-1.5" : "min-h-11 py-2",
   ].join(" "),
 );
 const textareaAttrs = computed(() => {
@@ -202,7 +205,7 @@ function clear(): void {
       </span>
       <div
         v-if="reserveClear || showInlineEndLabel"
-        class="absolute right-0 top-0 z-10 flex h-10 items-center gap-0.5 pr-2"
+        class="absolute right-0 top-0 z-10 flex h-11 items-center gap-0.5 pr-2"
       >
         <div v-if="showInlineEndLabel" class="flex max-w-[11rem] items-center gap-1 bg-transparent">
           <FieldHelp
@@ -215,7 +218,7 @@ function clear(): void {
         </div>
         <div
           v-if="reserveClear"
-          class="flex h-10 w-10 items-center justify-center"
+          class="flex h-11 w-11 items-center justify-center"
           :class="showClear ? undefined : FIELD_CLEAR_HIDDEN_CLASS"
         >
           <IconCloseButton v-if="showClear" size="field" aria-label="clear" @click="clear" />

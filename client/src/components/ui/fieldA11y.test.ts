@@ -31,6 +31,13 @@ describe("resolveFieldCopy", () => {
   it("returns empty copy when both are absent", () => {
     expect(resolveFieldCopy()).toEqual({ name: undefined, tip: undefined });
   });
+
+  it("prefers explicit tip over placeholder", () => {
+    expect(resolveFieldCopy("url", "https://…", "example.com or https://…")).toEqual({
+      name: "url",
+      tip: "example.com or https://…",
+    });
+  });
 });
 
 describe("buildFieldAccessibleName", () => {

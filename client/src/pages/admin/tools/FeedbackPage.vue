@@ -19,6 +19,8 @@ import {
 import FeedbackDetailDrawer from "@/components/admin/FeedbackDetailDrawer.vue";
 import PageShell from "@/components/layout/PageShell.vue";
 import ArchiveIcon from "@/components/icons/ArchiveIcon.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
@@ -253,7 +255,7 @@ onMounted(load);
         :description="`no feedback messages with status '${filter}'`"
       />
 
-      <div v-else class="mt-1 min-w-0">
+      <div v-else class="mt-1 w-full min-w-0 self-stretch">
         <AdminDataTable table-label="feedback messages">
           <template #header>
             <th :class="ADMIN_TH_CLASS">status</th>
@@ -265,6 +267,7 @@ onMounted(load);
                 aria-label="sort by when"
                 @click="toggleCreatedSort"
               >
+                <ChevronIcon class-name="size-3 shrink-0" />
                 when{{ sortIndicator() }}
               </button>
             </th>
@@ -284,11 +287,12 @@ onMounted(load);
             <td :class="ADMIN_TD_CLASS">
               <button
                 type="button"
-                class="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50"
+                class="inline-flex items-center gap-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50"
                 :aria-label="ADVANCE_STATUS_LABEL[item.status] ?? 'change status'"
                 @click.stop="advanceStatus(item)"
                 @keydown.stop
               >
+                <RefreshIcon class-name="size-3.5 shrink-0" />
                 <StatusBadge :label="item.status" :class-name="feedbackStatusClass(item.status)" />
               </button>
             </td>

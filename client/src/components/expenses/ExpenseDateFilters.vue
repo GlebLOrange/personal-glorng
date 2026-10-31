@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import AdminFilterDropdown from "@/components/admin/AdminFilterDropdown.vue";
+import CalendarIcon from "@/components/icons/CalendarIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import type { DateFilterMode, MonthPreset } from "@/composables/useExpenseFilters";
@@ -56,10 +57,12 @@ function selectPreset(preset: MonthPreset): void {
         v-for="preset in PERIOD_PRESETS"
         :key="preset.id"
         size="sm"
-        class="w-full justify-start"
+        :icon="false"
+        class="w-full justify-start gap-1.5"
         :variant="monthPreset === preset.id ? 'primary' : 'ghost'"
         @click="selectPreset(preset.id)"
       >
+        <CalendarIcon class-name="size-3.5 shrink-0" />
         {{ preset.label }}
       </BaseButton>
     </template>

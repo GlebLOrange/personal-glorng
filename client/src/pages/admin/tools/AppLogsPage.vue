@@ -9,6 +9,7 @@ import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListToolbar from "@/components/admin/AdminListToolbar.vue";
 import PageShell from "@/components/layout/PageShell.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import ErrorState from "@/components/ui/ErrorState.vue";
@@ -273,8 +274,8 @@ onMounted(load);
                 :model-value="requestId"
                 compact
                 auto-width
-                placeholder="request id (3+ chars)"
-                aria-label="request id"
+                label="request id"
+                tip="3+ chars"
                 @update:model-value="onRequestIdChange"
               />
             </AdminFilterDropdown>
@@ -286,7 +287,7 @@ onMounted(load);
 
       <EmptyState v-else-if="items.length === 0" class="mt-4" :description="emptyDescription" />
 
-      <div v-else class="mt-1 min-w-0">
+      <div v-else class="mt-1 w-full min-w-0 self-stretch">
         <AdminDataTable table-label="app log entries">
           <template #header>
             <th :class="ADMIN_TH_CLASS">type</th>
@@ -297,6 +298,7 @@ onMounted(load);
                 aria-label="sort by when"
                 @click="toggleWhenSort"
               >
+                <ChevronIcon class-name="size-3 shrink-0" />
                 when{{ whenIndicator }}
               </button>
             </th>

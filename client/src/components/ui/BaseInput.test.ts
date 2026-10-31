@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import BaseInput from "@/components/ui/BaseInput.vue";
 
 describe("BaseInput", () => {
-  it("names the control with sr-only by default (no visible trailing label)", () => {
+  it("hides the field name by default and keeps sr-only naming", () => {
     const wrapper = mount(BaseInput, {
       props: {
         id: "email",
@@ -16,7 +16,20 @@ describe("BaseInput", () => {
     expect(wrapper.get("label.sr-only").text()).toBe("Email");
     expect(wrapper.find("label:not(.sr-only)").exists()).toBe(false);
     expect(wrapper.get("input").attributes("id")).toBe("email");
-    expect(wrapper.get("input").attributes("aria-label")).toBeUndefined();
+  });
+
+  it("names the control with sr-only when labelAlign is end", () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        id: "email",
+        label: "Email",
+        labelAlign: "end",
+      },
+    });
+
+    expect(wrapper.get("label.sr-only").attributes("for")).toBe("email");
+    expect(wrapper.get("label.sr-only").text()).toBe("Email");
+    expect(wrapper.find("label:not(.sr-only)").exists()).toBe(false);
   });
 
   it("renders a border-notch label when labelAlign is start", () => {

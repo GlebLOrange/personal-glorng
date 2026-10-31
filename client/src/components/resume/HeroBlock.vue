@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import DownloadIcon from "@/components/icons/DownloadIcon.vue";
 import LocationIcon from "@/components/icons/LocationIcon.vue";
 import { useNotify } from "@/composables/useNotify";
 import { downloadResumeExport, resumeDownloadErrorMessage } from "@/utils/resumeDownload";
@@ -14,7 +16,7 @@ const props = withDefaults(
     availability?: string;
     /** Quiet third meta chip for the public status-rail hero. */
     sampleNote?: string;
-    /** `status-rail` = left-aligned public CV; default keeps the centered profile hero. */
+    /** `status-rail` = public CV type scale + sample note; both layouts are centered. */
     layout?: "centered" | "status-rail";
   }>(),
   { layout: "centered" },
@@ -53,7 +55,7 @@ function printPage(): void {
 </script>
 
 <template>
-  <div class="py-12 md:py-16" :class="isStatusRail ? 'text-left' : 'text-center'">
+  <div class="py-12 md:py-16 text-center">
     <p
       class="mb-2 font-medium tracking-tight text-surface-light"
       :class="isStatusRail ? 'text-3xl sm:text-4xl md:text-5xl' : 'text-xl sm:text-2xl md:text-3xl'"
@@ -74,7 +76,7 @@ function printPage(): void {
     </p>
     <p
       v-if="showMeta && isStatusRail"
-      class="text-meta mb-4 flex flex-wrap items-center justify-start gap-x-3 gap-y-1"
+      class="text-meta mb-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1"
     >
       <a
         v-if="availability"
@@ -127,13 +129,19 @@ function printPage(): void {
     </p>
 
     <div
-      class="relative z-[45] mt-6 flex flex-col sm:flex-row flex-wrap gap-2 print:hidden"
-      :class="
-        isStatusRail ? 'items-stretch sm:items-center justify-start' : 'items-center justify-center'
-      "
+      class="relative z-[45] mt-6 flex flex-col flex-wrap items-center justify-center gap-2 sm:flex-row print:hidden"
     >
-      <button type="button" class="cta-hero" @click="emit('inquire')">get in touch</button>
-      <button type="button" class="cta-secondary" :disabled="isDownloadingCv" @click="downloadCv">
+      <button type="button" class="cta-hero inline-flex items-center gap-1.5" @click="emit('inquire')">
+        <ChevronIcon class-name="size-3.5 shrink-0" />
+        get in touch
+      </button>
+      <button
+        type="button"
+        class="cta-secondary inline-flex items-center gap-1.5"
+        :disabled="isDownloadingCv"
+        @click="downloadCv"
+      >
+        <DownloadIcon class-name="size-3.5 shrink-0" />
         {{ isDownloadingCv ? "downloading…" : "download cv" }}
       </button>
     </div>
@@ -141,15 +149,15 @@ function printPage(): void {
     <p
       v-if="showPrintFallback"
       class="mt-3 text-meta print:hidden"
-      :class="isStatusRail ? 'text-left' : ''"
       role="status"
     >
       PDF unavailable.
       <button
         type="button"
-        class="ml-1 underline underline-offset-4 text-accent-coral hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
+        class="ml-1 inline-flex items-center gap-1 underline underline-offset-4 text-accent-coral hover:text-surface-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-coral/50 rounded"
         @click="printPage"
       >
+        <DownloadIcon class-name="size-3.5 shrink-0" />
         print page instead
       </button>
     </p>

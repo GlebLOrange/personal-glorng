@@ -10,7 +10,6 @@ import PageShell from "@/components/layout/PageShell.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import ToolbarPillButton from "@/components/ui/ToolbarPillButton.vue";
-import { Card } from "@/components/ui/card";
 import { useExpensesTool, type ExpenseQuickAddTarget } from "@/composables/useExpensesTool";
 import { usePermissions } from "@/composables/usePermissions";
 
@@ -134,7 +133,7 @@ function focusAddFromInsights(): void {
     :narrow="false"
     tool
   >
-    <div class="min-w-0">
+    <div class="w-full min-w-0 self-stretch">
       <div class="flex flex-col gap-3">
         <p
           v-if="!canWriteExpenses"
@@ -269,26 +268,22 @@ function focusAddFromInsights(): void {
           class="outline-none"
         >
           <div class="flex flex-col gap-3">
-            <Card
+            <form
               v-if="canWriteExpenses"
-              variant="compact"
-              class="flex min-w-0 flex-wrap items-end gap-2"
+              class="flex min-w-0 flex-wrap items-end justify-start gap-2"
+              @submit.prevent="addCategory"
             >
-              <form
-                class="flex min-w-0 flex-1 flex-wrap items-end gap-2"
-                @submit.prevent="addCategory"
-              >
-                <BaseInput
-                  v-model="newCategoryName"
-                  placeholder="title"
-                  aria-label="title"
-                  class="min-w-0 flex-1"
-                />
-                <ToolbarPillButton type="submit" action="save" class="shrink-0">
-                  + category
-                </ToolbarPillButton>
-              </form>
-            </Card>
+              <BaseInput
+                v-model="newCategoryName"
+                label="title"
+                tip="category name"
+                class="min-w-0"
+                auto-width
+              />
+              <ToolbarPillButton type="submit" action="create" class="shrink-0">
+                category
+              </ToolbarPillButton>
+            </form>
             <ExpenseCategorySettings
               v-model:editing-category-name="editingCategoryName"
               :expense-categories="expenseCategories"

@@ -2,6 +2,7 @@
 import { computed, nextTick, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import CloseIcon from "@/components/icons/CloseIcon.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useScrollLock } from "@/composables/useScrollLock";
 import { PORTFOLIO_SECTION_LINKS } from "@/constants/portfolioSections";
@@ -162,9 +163,10 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
       <button
         v-if="auth.isAuthenticated"
         type="button"
-        class="nav-link-quiet text-status-error text-sm px-3 py-3 rounded-lg hover:bg-surface-card text-left"
+        class="nav-link-quiet text-status-error inline-flex items-center gap-1.5 text-sm px-3 py-3 rounded-lg hover:bg-surface-card text-left"
         @click="handleLogout"
       >
+        <CloseIcon class-name="size-3.5 shrink-0" />
         logout
       </button>
     </div>

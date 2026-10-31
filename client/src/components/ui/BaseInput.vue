@@ -32,6 +32,8 @@ const props = withDefaults(
     type?: string;
     /** In-bar overlay tip (decorative); shown only when empty. Not the accessible name. */
     placeholder?: string;
+    /** Explicit overlay tip; preferred over `placeholder` when both are set. */
+    tip?: string;
     /** Optional left-side field name inside the control. */
     prefix?: string;
     label?: string;
@@ -45,7 +47,8 @@ const props = withDefaults(
     /** Render the label inside the input bar instead of the outer border notch. */
     labelInside?: boolean;
     /**
-     * When not labelInside: `start` = border notch; `end` = inside trailing (before clear).
+     * When not labelInside: `end` = no visible name (sr-only / aria; default);
+     * `start` = border notch (opt-in).
      */
     labelAlign?: "start" | "end";
     /** Shrink shell/input to content (tool action panels) instead of w-full. */
@@ -67,7 +70,7 @@ const inputId = computed(() => props.id ?? `base-input-${fallbackId}`);
 const hintId = computed(() => `${inputId.value}-hint`);
 const errorId = computed(() => `${inputId.value}-error`);
 const tipId = computed(() => `${inputId.value}-tip`);
-const fieldCopy = computed(() => resolveFieldCopy(props.label, props.placeholder));
+const fieldCopy = computed(() => resolveFieldCopy(props.label, props.placeholder, props.tip));
 const hasSuffix = computed(() => Boolean(slots.suffix));
 const hasPrefixSlot = computed(() => Boolean(slots.prefix));
 const hasPrefix = computed(() => Boolean(props.prefix) || hasPrefixSlot.value);

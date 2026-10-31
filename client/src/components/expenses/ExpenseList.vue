@@ -2,6 +2,7 @@
 import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import ExpenseRow from "@/components/expenses/ExpenseRow.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { ADMIN_TH_CLASS } from "@/constants/adminDataTable";
@@ -31,7 +32,7 @@ const emit = defineEmits<{
 }>();
 
 const sortButtonClass =
-  "inline-flex h-8 items-center text-left text-xs tracking-wider transition-colors hover:text-surface-light";
+  "inline-flex h-8 items-center gap-1.5 text-left text-xs tracking-wider transition-colors hover:text-surface-light";
 </script>
 
 <template>
@@ -42,16 +43,19 @@ const sortButtonClass =
       <template #header>
         <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="sortAriaSort('date')">
           <button type="button" :class="sortButtonClass" @click="emit('sort', 'date')">
+            <ChevronIcon class-name="size-3 shrink-0" />
             date{{ sortIndicator("date") }}
           </button>
         </th>
         <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="sortAriaSort('category')">
           <button type="button" :class="sortButtonClass" @click="emit('sort', 'category')">
+            <ChevronIcon class-name="size-3 shrink-0" />
             category{{ sortIndicator("category") }}
           </button>
         </th>
         <th :class="ADMIN_TH_CLASS" scope="col" :aria-sort="sortAriaSort('product')">
           <button type="button" :class="sortButtonClass" @click="emit('sort', 'product')">
+            <ChevronIcon class-name="size-3 shrink-0" />
             name{{ sortIndicator("product") }}
           </button>
         </th>
@@ -61,6 +65,7 @@ const sortButtonClass =
             :class="[sortButtonClass, 'w-full justify-end text-right']"
             @click="emit('sort', 'amount')"
           >
+            <ChevronIcon class-name="size-3 shrink-0" />
             amount{{ sortIndicator("amount") }}
           </button>
         </th>

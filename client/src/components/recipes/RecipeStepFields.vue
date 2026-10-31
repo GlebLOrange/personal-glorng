@@ -111,8 +111,8 @@ function onStepPaste(event: ClipboardEvent, index: number): void {
             :model-value="steps[idx]"
             class="min-w-0 w-full flex-1"
             :rows="2"
-            placeholder="Preheat oven to 200°C"
-            :aria-label="`step ${idx + 1}`"
+            :label="`step ${idx + 1}`"
+            tip="Preheat oven to 200°C"
             data-recipe-step
             @update:model-value="updateStep(idx, String($event ?? ''))"
             @keydown="onStepModEnter($event, idx)"

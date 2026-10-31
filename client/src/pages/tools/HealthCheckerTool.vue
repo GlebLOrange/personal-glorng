@@ -4,6 +4,8 @@ import { computed, defineAsyncComponent, onMounted } from "vue";
 import AdminListFooter from "@/components/admin/AdminListFooter.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
 import PageShell from "@/components/layout/PageShell.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import BaseSelect from "@/components/ui/BaseSelect.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -96,22 +98,22 @@ onMounted(() => {
             class="min-w-0"
             compact
             auto-width
-            placeholder="url (example.com or https://…)"
-            aria-label="url to monitor"
+            label="url"
+            tip="example.com or https://…"
           />
           <BaseInput
             v-model="newLabel"
             class="min-w-0"
             compact
             auto-width
-            placeholder="label (optional)"
-            aria-label="monitor label"
+            label="label"
+            tip="optional"
           />
           <BaseSelect
             v-model="newInterval"
             class="w-auto shrink-0"
             compact
-            aria-label="check interval minutes"
+            label="interval"
           >
             <option v-for="mins in HEALTH_INTERVALS" :key="mins" :value="mins">
               every {{ mins }}m
@@ -140,54 +142,59 @@ onMounted(() => {
               >
                 <button
                   type="button"
-                  class="min-w-0 flex-1 rounded-lg text-left"
+                  class="flex min-w-0 flex-1 items-start gap-1.5 rounded-lg text-left"
                   :class="selectedId === monitor.id ? 'bg-surface-muted/30 -mx-2 px-2 py-1' : ''"
                   @click="selectMonitor(monitor.id)"
                 >
-                  <div class="truncate text-sm font-medium text-surface-light">
-                    {{ monitor.label || monitor.url }}
-                  </div>
-                  <div v-if="monitor.label" class="truncate text-xs text-surface-muted">
-                    {{ monitor.url }}
-                  </div>
-                  <div class="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                    <span
-                      v-if="monitor.last_status_code != null"
-                      :class="httpStatusClass(monitor.last_status_code)"
-                      class="rounded px-1.5 py-0.5 font-mono"
-                    >
-                      {{ monitor.last_status_code }}
-                    </span>
-                    <span
-                      :class="
-                        monitor.last_ok
-                          ? 'text-status-success'
-                          : monitor.last_ok === false
-                            ? 'text-status-error'
-                            : 'text-surface-muted'
-                      "
-                    >
-                      {{
-                        monitor.last_ok === true
-                          ? "up"
-                          : monitor.last_ok === false
-                            ? "down"
-                            : "pending"
-                      }}
-                    </span>
-                    <span class="text-surface-muted">
-                      {{ formatMs(monitor.last_response_ms) }}
-                    </span>
-                    <span v-if="!monitor.enabled" class="text-surface-muted"> paused </span>
+                  <ChevronIcon direction="right" class-name="mt-0.5 size-3.5 shrink-0" />
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-medium text-surface-light">
+                      {{ monitor.label || monitor.url }}
+                    </div>
+                    <div v-if="monitor.label" class="truncate text-xs text-surface-muted">
+                      {{ monitor.url }}
+                    </div>
+                    <div class="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                      <span
+                        v-if="monitor.last_status_code != null"
+                        :class="httpStatusClass(monitor.last_status_code)"
+                        class="rounded px-1.5 py-0.5 font-mono"
+                      >
+                        {{ monitor.last_status_code }}
+                      </span>
+                      <span
+                        :class="
+                          monitor.last_ok
+                            ? 'text-status-success'
+                            : monitor.last_ok === false
+                              ? 'text-status-error'
+                              : 'text-surface-muted'
+                        "
+                      >
+                        {{
+                          monitor.last_ok === true
+                            ? "up"
+                            : monitor.last_ok === false
+                              ? "down"
+                              : "pending"
+                        }}
+                      </span>
+                      <span class="text-surface-muted">
+                        {{ formatMs(monitor.last_response_ms) }}
+                      </span>
+                      <span v-if="!monitor.enabled" class="text-surface-muted"> paused </span>
+                    </div>
                   </div>
                 </button>
                 <div v-if="canWrite" class="flex shrink-0 flex-col gap-1">
                   <ToolbarPillButton
                     action="create"
+                    :icon="false"
                     type="button"
-                    class="!h-8 !px-2 !text-xs"
+                    class="!h-8 !px-2 !text-xs gap-1"
                     @click="toggleEnabled(monitor)"
                   >
+                    <RefreshIcon class-name="size-3 shrink-0" />
                     {{ monitor.enabled ? "pause" : "resume" }}
                   </ToolbarPillButton>
                   <ToolbarPillButton
@@ -286,7 +293,7 @@ onMounted(() => {
             <BaseSelect
               class="w-auto shrink-0"
               :model-value="selected.interval_minutes"
-              aria-label="change interval"
+              label="interval"
               @update:model-value="updateInterval(selected, Number($event) as HealthInterval)"
             >
               <option v-for="mins in HEALTH_INTERVALS" :key="mins" :value="mins">

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminDataTable from "@/components/admin/AdminDataTable.vue";
 import AdminListSkeleton from "@/components/admin/AdminListSkeleton.vue";
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import TaskCard from "@/components/tasks/TaskCard.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
 import { ADMIN_SORT_HEADER_BUTTON_CLASS, ADMIN_TH_CLASS } from "@/constants/adminDataTable";
@@ -39,6 +40,7 @@ const emptyMessage = (filterStatus: string): string => {
             aria-label="sort by when"
             @click="emit('sortWhen')"
           >
+            <ChevronIcon class-name="size-3 shrink-0" />
             when{{ whenIndicator }}
           </button>
         </th>

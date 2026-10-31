@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import ChevronIcon from "@/components/icons/ChevronIcon.vue";
 import { api } from "@/composables/useApi";
 import type { DonationsConfig } from "@/types";
 import { safeNavigationHref } from "@/utils/safeUrl";
@@ -92,10 +93,11 @@ async function startStripeCheckout(): Promise<void> {
         <button
           v-else-if="primaryAction.id === 'stripe-checkout'"
           type="button"
-          :class="`donation-brand-${primaryAction.brand}`"
+          :class="[`donation-brand-${primaryAction.brand}`, 'inline-flex items-center gap-1.5']"
           :disabled="isStartingCheckout"
           @click="startStripeCheckout"
         >
+          <ChevronIcon class-name="size-3.5 shrink-0" />
           {{ isStartingCheckout ? "opening…" : primaryAction.brand }}
         </button>
       </template>
