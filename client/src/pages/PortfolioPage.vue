@@ -124,7 +124,15 @@ onUnmounted(() => {
     </SectionWrapper>
 
     <SectionWrapper id="about" title="about" width="full" label-tone="primary">
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
+      <div class="max-w-prose space-y-4 text-pretty">
+        <p class="text-body">
+          {{ resume.bio }}
+        </p>
+        <p v-if="resume.hiring_note" class="text-body">
+          {{ resume.hiring_note }}
+        </p>
+      </div>
+      <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
         <div class="min-w-0">
           <PortfolioGlance :resume="resume" />
         </div>
@@ -138,13 +146,7 @@ onUnmounted(() => {
           </Suspense>
         </div>
       </div>
-      <p class="text-body mb-4 mt-6 max-w-3xl text-pretty">
-        {{ resume.bio }}
-      </p>
-      <p v-if="resume.hiring_note" class="text-body mb-6 max-w-3xl">
-        {{ resume.hiring_note }}
-      </p>
-      <div v-if="highlightedRepos.length" class="mt-2 print:hidden">
+      <div v-if="highlightedRepos.length" class="mt-6 print:hidden">
         <GitHubReposStrip :repos="highlightedRepos" :profile-url="githubProfileUrl" />
       </div>
     </SectionWrapper>
