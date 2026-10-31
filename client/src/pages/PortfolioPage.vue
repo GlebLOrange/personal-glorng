@@ -35,7 +35,7 @@ let cancelGithubIdle: (() => void) | null = null;
 const resume = computed(() => resumeApi.value ?? RESUME_FALLBACK);
 const contactLinks = computed(() => buildContactLinks(resume.value.links));
 const education = computed(() => resume.value.education ?? []);
-const latestRole = computed(() => resume.value.experience.slice(0, 1));
+const currentRole = computed(() => resume.value.experience[0] ?? null);
 const githubProfileUrl = computed(() => resume.value.links.github);
 const highlightedRepos = computed(() => {
   const fromResume = resume.value.github?.repos ?? [];
@@ -124,27 +124,32 @@ onUnmounted(() => {
     </SectionWrapper>
 
     <SectionWrapper id="about" title="about" width="full" label-tone="primary">
-      <div class="max-w-prose space-y-4 text-pretty">
-        <p class="text-body">
+      <div class="space-y-4">
+        <p class="text-body max-w-prose text-pretty">
           {{ resume.bio }}
         </p>
-        <p v-if="resume.hiring_note" class="text-body">
-          {{ resume.hiring_note }}
-        </p>
+        <aside
+          v-if="resume.hiring_note"
+          class="max-w-prose border-l-2 border-accent-coral bg-surface-card/40 px-4 py-3"
+        >
+          <p class="text-label text-accent-coral mb-2">for recruiters</p>
+          <p class="text-body text-pretty">
+            {{ resume.hiring_note }}
+          </p>
+        </aside>
       </div>
-      <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
-        <div class="min-w-0">
-          <PortfolioGlance :resume="resume" />
-        </div>
-        <div v-if="latestRole.length" class="min-w-0">
-          <p class="text-label text-accent-coral mb-3">latest role</p>
-          <Suspense>
-            <ExperienceList :experience="latestRole" />
-            <template #fallback>
-              <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
-            </template>
-          </Suspense>
-        </div>
+      <div class="mt-6">
+        <PortfolioGlance :resume="resume" />
+      </div>
+      <div
+        v-if="currentRole"
+        class="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-meta"
+      >
+        <p class="text-label text-accent-coral">now</p>
+        <span>
+          {{ currentRole.role }} · {{ currentRole.company }} · {{ currentRole.period }}
+        </span>
+        <a href="#experience" class="text-link">experience</a>
       </div>
       <div v-if="highlightedRepos.length" class="mt-6 print:hidden">
         <GitHubReposStrip :repos="highlightedRepos" :profile-url="githubProfileUrl" />
