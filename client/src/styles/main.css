@@ -209,12 +209,14 @@ html[data-theme="light"] {
   @apply flex w-full min-w-0 flex-col items-center;
 }
 
-/** Shared tool action/form column — same width on every tool page. */
+/** Shared tool actions — full-width, fills the tool body; space distributed between children. */
 @utility page-tool-actions {
-  @apply mb-4 flex flex-col items-stretch gap-3;
-  width: min(100%, var(--page-column));
-  min-width: min(100%, var(--page-column-min));
+  @apply mb-4 flex w-full min-w-0 flex-col items-stretch justify-between gap-3 self-stretch;
   max-width: 100%;
+}
+
+.page-tool-actions > * {
+  @apply w-full min-w-0;
 }
 
 @media (min-width: 768px) {

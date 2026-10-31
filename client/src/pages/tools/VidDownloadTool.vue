@@ -90,16 +90,15 @@ async function download(): Promise<void> {
     max-width="5xl"
     body-width="column"
   >
-    <div class="min-w-0 space-y-3">
-      <p
-        v-if="toolDisabled"
-        class="mb-4 rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
-        role="status"
-      >
-        This tool is turned off on this server.
-      </p>
-      <div v-else class="page-tool-actions">
-        <form class="flex w-full flex-col gap-3" @submit.prevent="download">
+    <p
+      v-if="toolDisabled"
+      class="mb-4 w-full self-stretch rounded-lg border border-surface-border bg-surface-card px-3 py-2 text-sm text-surface-sage"
+      role="status"
+    >
+      This tool is turned off on this server.
+    </p>
+    <div v-else class="page-tool-actions">
+      <form class="flex w-full min-w-0 flex-col gap-3" @submit.prevent="download">
           <CollapsibleUsageGuide title="yt-dlp usage guide">
             <template #start>
               <AdminFilterDropdown
@@ -124,7 +123,7 @@ async function download(): Promise<void> {
                 />
               </AdminFilterDropdown>
             </template>
-            <div class="min-w-0 space-y-4 break-words text-sm text-surface-light">
+            <div class="min-w-0 max-w-full space-y-4 break-words text-sm text-surface-light [overflow-wrap:anywhere]">
               <div>
                 <h3 class="mb-2 font-bold text-accent-coral">Format selection</h3>
                 <p class="mb-1 text-surface-mid">
@@ -207,8 +206,7 @@ async function download(): Promise<void> {
               {{ loading ? "downloading…" : "download" }}
             </ToolbarPillButton>
           </div>
-        </form>
-      </div>
+      </form>
     </div>
   </PageShell>
 </template>
