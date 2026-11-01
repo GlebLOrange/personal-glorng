@@ -96,11 +96,13 @@ Fill only with observed values; leave blank if not measured.
 
 | # | Task | Rules | Skills | MCP | Tools | Conversation | Total ctx | Input tok | Cache-read tok | Cache-read % |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | | | | | | | | | | |
-| 2 | | | | | | | | | | |
-| 3 | | | | | | | | | | |
-| 4 | | | | | | | | | | |
-| 5 | | | | | | | | | | |
+| 1 | UI: browser-selected button element fix (`9306d455`) | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ |
+| 2 | UI/UX audit (ui-ux-pro-max + design skills) (`1ece12d5`) | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ |
+| 3 | Edit expense: category via dropdown (`edc00d6d`) | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ |
+| 4 | Gortex settings review, audit and setup usage (`e7db2aca`) | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ |
+| 5 | Todobot: help text for each action (`fbfe3127`) | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ | n/a¹ |
+
+¹ Source limitation (2026-11-01): local Cursor agent transcripts (`~/.cursor/projects/Users-glorange-projects-portfolio-glorng/agent-transcripts/*.jsonl`) store only message text/tool calls — no token, cache-read, or context-ring fields; `~/.cursor/ai-tracking/ai-code-tracking.db` has no token columns either. Ring split must be read from the Cursor chat context ring; input/cache-read from the Cursor dashboard usage export.
 
 **Done when:** the dominant bucket is known (expected: Conversation + tool results).
 
