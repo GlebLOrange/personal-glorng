@@ -1,6 +1,6 @@
 .PHONY: dev rebuild dev-lite dev-lite-client dev-docker docs-dev docs-build docs-generate adr-new
 .PHONY: dev-ultra-lite-infra dev-ultra-lite-server dev-search dev-postgres dev-worker dev-bot dev-full
-.PHONY: prod prod-cloudflare test lint lint-check type-check check check-symlinks migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed-db seed-db-ultra-lite reindex-search backup backup-install db-pull-prod down logs bot-logs
+.PHONY: prod prod-cloudflare test lint lint-check type-check check check-symlinks check-communities-drift migrate db-init db-init-ultra-lite db-reset db-revision db-current db-downgrade db-check seed-db seed-db-ultra-lite reindex-search backup backup-install db-pull-prod down logs bot-logs
 .PHONY: maintenance sync cleanup logs-rotate docker-maintain update ops-self-check
 .PHONY: update-deps
 
@@ -91,6 +91,9 @@ type-check:
 
 check-symlinks:
 	bash scripts/check_symlinks.sh
+
+check-communities-drift:
+	bash scripts/check_communities_drift.sh
 
 # Public HTTPS origin required for client production build (Open Graph in index.html).
 CLIENT_BUILD_ORIGIN ?= https://ci.example.test
