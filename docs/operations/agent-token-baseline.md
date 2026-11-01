@@ -127,3 +127,5 @@ Fill only with observed values; leave blank if not measured.
 - Cannot set Cursor cache breakpoints or offload built-in Cursor tools.
 - Cannot pass reasoning items for Cursor models.
 - Model routing / reasoning-effort defaults: propose only (product-side).
+
+- Workspace-context retrieval: `python3 scripts/workspace_context_search.py <keywords>` (≤3 hits); sessionStart points at the Active task slice (fixed text, cache-stable). Communities drift guard runs in CI (`changes` job).

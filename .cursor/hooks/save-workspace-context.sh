@@ -52,12 +52,14 @@ path.write_text(json.dumps({"edited": True, "prompted": True}) + "\n", encoding=
 
 followup = (
     "Micro-save only (saving-workspace-context). "
-    "If this turn produced a durable decision or non-obvious constraint, "
-    "append one short dated line to the first matching home from that skill "
-    "and mention the path. "
-    "Do not create skills, rules, or new files; do not commit or push; "
-    "do not save secrets, logs, or anything obvious from the code. "
-    "If nothing durable, edit nothing and reply exactly: "
+    "Update the '## Active task' block in .cursor/workspace-context/workspace_context.md "
+    "(Goal, Branch, Relevant files, Decisions, Open questions, Next action, Test command, "
+    "Key symbols, TODOs, Summary): short fields only, 5-20 lines total, overwrite stale values. "
+    "Optionally prepend one entry to .cursor/workspace-context/index.yaml. "
+    "Touch '## Durable project facts' only for a genuinely durable, non-obvious fact. "
+    "Mention the path. Do not create skills or rules; do not commit or push; "
+    "do not save secrets, logs, transcripts, or anything obvious from the code. "
+    "If nothing session-worthy or durable, edit nothing and reply exactly: "
     "No workspace context to save."
 )
 print(json.dumps({"followup_message": followup}))

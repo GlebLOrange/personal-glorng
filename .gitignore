@@ -107,3 +107,6 @@ skills-lock.json
 !.claude/commands/**
 !.claude/settings.json
 
+
+# Workspace context archives (template + index.yaml are tracked)
+.cursor/workspace-context/sessions/
