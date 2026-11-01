@@ -17,7 +17,7 @@ import {
   type SemanticButtonAction,
 } from "@/constants/actionButtonVariants";
 import {
-  ACTION_PILL_BASE,
+  ACTION_PILL_SHAPE,
   actionFamilyClass,
   iconActionClass,
   type HttpStatusFamily,
@@ -64,7 +64,7 @@ const resolvedFamily = computed((): HttpStatusFamily =>
   props.action ? SEMANTIC_ACTION_HTTP_FAMILY[props.action] : props.family,
 );
 
-const pillShape = ACTION_PILL_BASE.replace(" focus-visible:ring-accent-coral/50", "");
+const pillShape = ACTION_PILL_SHAPE;
 
 const triggerClass = computed(() => {
   if (isLabeledTrigger.value) {
