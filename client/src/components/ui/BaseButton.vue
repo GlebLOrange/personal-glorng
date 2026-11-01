@@ -15,7 +15,7 @@ const props = withDefaults(
     /** Semantic actions (`create`, `add`, `save`, …) map to HTTP 1xx–5xx colors — see ui/README.md. */
     variant?: BaseButtonVariant;
     /**
-     * Shared control height with inputs (h-10), except lg (h-12).
+     * Shared control height with inputs (h-11 / 44px), except lg (h-12).
      * sm/md/field share the same height; sm only tightens padding/type.
      * `field` is an alias of `md`. `icon` is a square hit target matching field height.
      */

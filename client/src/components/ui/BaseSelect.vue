@@ -98,7 +98,9 @@ const helpPlacement = computed<"bottom" | "top">(() => (isInlineEnd.value ? "top
       :class="[
         selectClass,
         'w-full',
-        error ? 'ring-status-error focus-visible:ring-status-error' : undefined,
+        error
+          ? 'ring-1 ring-inset ring-status-error focus-visible:ring-2 focus-visible:ring-status-error'
+          : undefined,
       ]"
     >
       <slot />
