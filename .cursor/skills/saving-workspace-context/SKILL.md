@@ -1,21 +1,35 @@
 ---
 name: saving-workspace-context
 description: >-
-  Persists durable decisions, research, and conventions into existing project homes
-  (AGENTS.md, docs/, .cursor/). Use when asked to save workspace context, persist
-  decisions, or carry conventions across chats.
+  Local workspace context manager: saves a short structured Active-task slice to
+  .cursor/workspace-context/workspace_context.md, loads only that slice (+ matching
+  index hits) next session, and routes durable decisions to AGENTS.md/docs/rules.
+  Use when asked to save or resume workspace context or carry decisions across chats.
 user-invocable: true
 ---
 
 # Saving Workspace Context
 
-Build institutional memory. Prefer the project's existing homes (`AGENTS.md`, `CODING_STANDARDS.md`, `docs/`, `.cursor/rules/`, `.cursor/skills/`).
+Context should be a query result, not a dump. Session state lives in [`.cursor/workspace-context/workspace_context.md`](../../workspace-context/workspace_context.md) (**Active task** block, 5–20 lines); a keyword index lives in [`index.yaml`](../../workspace-context/index.yaml). Institutional knowledge still goes to existing homes (router below).
+
+## Load (session start / resume)
+
+1. Read only the `## Active task` block of `workspace_context.md`.
+2. If the task differs, keyword-match it against `index.yaml` (`task`, `files`, `symbols`); load at most 3 hits (and their `path` archive only if needed).
+3. Read `## Durable project facts` only when the task touches architecture/conventions/pitfalls.
+4. Never load full transcripts, the whole memory tree, or whole repo files for context.
+
+## Save
+
+- **Session state** → rewrite the Active task fields (short values; overwrite stale ones). Optionally prepend an `index.yaml` entry; long archives go to gitignored `sessions/`.
+- **Durable project facts** → append/update sparingly (non-obvious, still true next month).
+- **Institutional homes** → use the Memory Router for conventions, workflows, ADRs.
 
 ## Modes
 
 | Mode | When | What to do |
 |------|------|------------|
-| **Micro-save** | Gated stop hook (see below), or skill in context mid-task | One short dated append to the correct home; mention the path. If nothing durable, edit nothing and reply exactly: `No workspace context to save.` |
+| **Micro-save** | Gated stop hook (see below), or skill in context mid-task | Update Active task in `workspace_context.md` (short fields); route anything institutional via the router; mention the path. If nothing durable, edit nothing and reply exactly: `No workspace context to save.` |
 | **Full pass** | User asks to persist session memory (slash / attach this skill) | Discover homes → selective load → save → end checklist |
 
 Do **not** load the whole memory tree at the start of unrelated coding tasks.
@@ -28,7 +42,7 @@ This repo gates micro-save:
 
 1. [`session-start.sh`](../../hooks/session-start.sh) exports `PORTFOLIO_CTX_SESSION` from `session_id`.
 2. [`after-file-edit-mark.sh`](../../hooks/after-file-edit-mark.sh) marks the session dirty after any agent file edit (temp state under `$TMPDIR/portfolio-glorng-ctx/`).
-3. [`save-workspace-context.sh`](../../hooks/save-workspace-context.sh) emits a follow-up only when `status == completed`, `loop_count == 0`, the session is dirty, and it has not already been prompted. Then it marks `prompted` so later stops stay silent.
+3. [`save-workspace-context.sh`](../../hooks/save-workspace-context.sh) emits a follow-up only when `status == completed`, `loop_count == 0`, the session is dirty, and it has not already been prompted. Then it marks `prompted` so later stops stay silent. The follow-up asks the agent to update the Active task block (not to paste the session).
 
 Wired in [`.cursor/hooks.json`](../../hooks.json) (`afterFileEdit` + `stop` with `loop_limit: 1`). Empty `{}` from the stop script means no chat follow-up.
 
