@@ -48,9 +48,9 @@ describe("httpStatusColors", () => {
     expect(selected).toContain("border-status-success/22");
   });
 
-  it("builds h-10 icon action classes", () => {
+  it("builds h-11 icon action classes", () => {
     const icon = iconActionClass("3xx", false);
-    expect(icon).toContain("h-10");
+    expect(icon).toContain("h-11");
     expect(icon).toContain("box-border");
     expect(icon).toContain("bg-status-warning/10");
     expect(iconActionClass("1xx", false, { quiet: true })).toContain("text-surface-light/60");
@@ -81,7 +81,7 @@ describe("httpStatusColors", () => {
   it("builds field-size icon action classes matching chrome", () => {
     const field = iconActionClass("4xx", false, { size: "field", danger: true });
     expect(field).toContain("!h-full");
-    expect(field).toContain("!w-10");
+    expect(field).toContain("!w-11");
     expect(field).toContain("bg-status-error/10");
   });
 });
