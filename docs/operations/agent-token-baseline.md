@@ -81,6 +81,36 @@ Generator markers `<!-- gortex:communities:start -->` — re-sync from Gortex ma
 | 7 | Groq | `stream_options.include_usage` | Cache telemetry | Low | Multi-turn chat logs cached_tokens | revert |
 | 8 | Propose only | Cursor model mix / product cache | N/A in-repo | — | — | — |
 
+## Phase 0 — measure (2026-11-01)
+
+Auto re-run on branch `chore/token-phase0-1`: `python3 scripts/agent_token_baseline.py` → primary always-on **~1661 tok** (unchanged; Antigravity stub is a pointer and not counted in the Cursor sum).
+
+| Step | Who | How |
+|---|---|---|
+| Static baseline | Auto | `python3 scripts/agent_token_baseline.py` |
+| Communities drift | Auto | `make check-communities-drift` (`scripts/check_communities_drift.sh`) |
+| Context-ring split | Human | Cursor chat context ring after task done: Rules / Skills / MCP / Tools / Conversation |
+| Cache-read vs input | Human | Cursor usage export (dashboard) for the same request(s) |
+
+Fill only with observed values; leave blank if not measured.
+
+| # | Task | Rules | Skills | MCP | Tools | Conversation | Total ctx | Input tok | Cache-read tok | Cache-read % |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | | | | | | | | | | |
+| 2 | | | | | | | | | | |
+| 3 | | | | | | | | | | |
+| 4 | | | | | | | | | | |
+| 5 | | | | | | | | | | |
+
+**Done when:** the dominant bucket is known (expected: Conversation + tool results).
+
+## Phase 1 — guards
+
+- **Communities re-sync guard:** full Community Skills table lives only in `.cursor/references/gortex-communities.md`. `scripts/check_communities_drift.sh` fails if `gortex:communities` markers or a `Community Skills` heading appear in `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md`, `.cursor/rules/gortex-communities.mdc`, or `.agents/rules/gortex-communities.md`. If Gortex re-sync re-injects it, delete the block and re-run.
+- **Antigravity stub:** `.agents/rules/gortex-communities.md` → `@/.cursor/rules/gortex-communities.mdc`.
+- **sessionStart byte-stable (audited):** context is only `Current branch: <name>` + agent-workflow skill pointer (~25 tok). `session_id` goes to `env`, not the injected text, so the prefix changes only on branch switch. No change needed.
+- **MCP diet + snippets:** see [`.cursor/references/mcp-diet.md`](../../.cursor/references/mcp-diet.md) (on-demand; not always-on). `gortex-workflow.mdc` step 2 already states the snippet preference.
+
 ## Test plan (flagged)
 
 1. Simple Vue copy tweak — branch + coding standards still followed; no need for community skills.
