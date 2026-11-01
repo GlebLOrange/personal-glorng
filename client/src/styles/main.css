@@ -182,11 +182,15 @@ html[data-theme="light"] {
 
 @utility page-shell {
   @apply mx-auto w-full px-6;
-  --tile: calc((100% - 2rem) / 3);
-  --content: calc(var(--tile) * 2 + 1rem);
+  /* Compact tile unit: 3 cards/row at ≥420px each (+ 1rem gaps). */
+  --tile-min: 420px;
+  --tile-gap: 1rem;
+  --tile: calc((100% - 2 * var(--tile-gap)) / 3);
+  --content: calc(var(--tile) * 2 + var(--tile-gap));
   --page-chrome-offset: 4rem;
-  --page-column: 750px;
-  --page-column-min: 375px;
+  /* Default tool container width. */
+  --page-column: 420px;
+  --page-column-min: 420px;
 }
 
 /** Icon chrome parked in the gutter just past the content shell’s right edge. */
@@ -209,10 +213,17 @@ html[data-theme="light"] {
   @apply flex w-full min-w-0 flex-col items-center;
 }
 
-/** Shared tool actions — full-width, fills the tool body; space distributed between children. */
+/** Shared tool actions — default 420px tool column (not w-full / self-stretch). */
 @utility page-tool-actions {
-  @apply mb-4 flex w-full min-w-0 flex-col items-stretch justify-between gap-3 self-stretch;
+  display: flex;
+  min-width: 0;
+  width: min(100%, var(--page-column, 420px));
   max-width: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: calc(var(--spacing) * 3);
+  margin-bottom: calc(var(--spacing) * 4);
 }
 
 .page-tool-actions > * {
@@ -234,8 +245,10 @@ html[data-theme="light"] {
 }
 
 @utility page-tile-scope {
-  --tile: calc((100% - 2rem) / 3);
-  --content: calc(var(--tile) * 2 + 1rem);
+  --tile-min: 420px;
+  --tile-gap: 1rem;
+  --tile: calc((100% - 2 * var(--tile-gap)) / 3);
+  --content: calc(var(--tile) * 2 + var(--tile-gap));
 }
 
 @utility page-tool-grid {
@@ -267,7 +280,8 @@ html[data-theme="light"] {
   @apply flex h-full min-h-16 min-w-0 w-full items-center gap-3 !p-4 text-left;
 }
 
-.page-launcher-grid[data-density="compact"] .page-tile-card {
+.page-launcher-grid[data-density="compact"] .page-tile-card,
+.page-tool-grid .page-tile-card {
   min-height: 3.5rem;
   gap: 0.625rem;
   padding: 0.75rem !important;
@@ -345,7 +359,8 @@ html[data-theme="light"] {
 
   .page-shell .page-tool-grid,
   .page-tile-scope .page-tool-grid {
-    grid-template-columns: repeat(3, var(--tile));
+    /* Three compact tiles per row (each resolves toward --tile-min when shell is wide). */
+    grid-template-columns: repeat(3, minmax(0, var(--tile)));
   }
 
   .page-shell .page-launcher-grid,

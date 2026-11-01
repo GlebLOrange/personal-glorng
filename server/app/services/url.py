@@ -1,4 +1,4 @@
-from app.core.exceptions import ApiError, NotFoundError
+from app.core.exceptions import ApiError, ConflictError, NotFoundError
 from app.core.pagination import build_paginated
 from app.core.utils import (
     DEFAULT_PER_PAGE,
@@ -30,17 +30,11 @@ class UrlService:
         original_url: str,
         created_by: int | None,
         title: str | None = None,
+        code: str | None = None,
     ) -> ShortenedUrl:
-        for attempt in range(_MAX_CODE_RETRIES):
-            code = generate_short_code(8)
-            existing = await self._urls().get_by_code(code)
-            if existing is not None:
-                if attempt == _MAX_CODE_RETRIES - 1:
-                    raise ApiError(503, "Failed to generate unique short code")
-                continue
-
+        async def _insert(chosen: str) -> ShortenedUrl:
             url = ShortenedUrl(
-                code=code,
+                code=chosen,
                 original_url=original_url,
                 title=title,
                 created_by=created_by,
@@ -55,6 +49,21 @@ class UrlService:
                 metadata={"code": url.code},
             )
             return url
+
+        if code:
+            existing = await self._urls().get_by_code(code)
+            if existing is not None:
+                raise ConflictError("Short link code is already taken")
+            return await _insert(code)
+
+        for attempt in range(_MAX_CODE_RETRIES):
+            generated = generate_short_code(8)
+            existing = await self._urls().get_by_code(generated)
+            if existing is not None:
+                if attempt == _MAX_CODE_RETRIES - 1:
+                    raise ApiError(503, "Failed to generate unique short code")
+                continue
+            return await _insert(generated)
         raise ApiError(503, "Failed to generate unique short code")
 
     async def get_by_code(self, code: str) -> ShortenedUrl:

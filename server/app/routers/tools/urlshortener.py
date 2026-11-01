@@ -43,6 +43,7 @@ async def create_url(
         original_url=str(data.original_url),
         created_by=user.id,
         title=data.title,
+        code=data.code,
     )
     return UrlResponse.model_validate(url)
 

@@ -52,8 +52,13 @@ const resolvedBodyWidth = computed<PageBodyWidth>(() => {
 });
 
 const shellClass = computed(() => {
+  // Default shell fits three 420px tiles + 1rem gaps + px-6 padding.
   const widthClass =
-    props.maxWidth === "sm" ? "max-w-sm" : props.maxWidth === "md" ? "max-w-3xl" : "max-w-5xl";
+    props.maxWidth === "sm"
+      ? "max-w-sm"
+      : props.maxWidth === "md"
+        ? "max-w-3xl"
+        : "max-w-[calc(3*420px+2*1rem+3rem)]";
   return ["page-shell", widthClass, props.paddingY].filter(Boolean);
 });
 

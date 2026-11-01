@@ -20,11 +20,20 @@ HttpRedirectUrl = Annotated[HttpUrl, BeforeValidator(ensure_http_scheme)]
 class UrlCreate(BaseModel):
     original_url: HttpRedirectUrl
     title: str | None = Field(None, max_length=255)
+    code: str | None = Field(None, min_length=1, max_length=16, pattern=r"^[a-zA-Z0-9]+$")
 
     @field_validator("title")
     @classmethod
     def clean_title(cls, value: str | None) -> str | None:
         return validate_clean_optional(value, max_length=255)
+
+    @field_validator("code")
+    @classmethod
+    def clean_code(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        cleaned = value.strip()
+        return cleaned or None
 
     @field_validator("original_url")
     @classmethod
@@ -37,6 +46,7 @@ class UrlCreate(BaseModel):
             "example": {
                 "original_url": "https://example.com/very-long-url",
                 "title": "Example Site",
+                "code": "docs",
             }
         }
     )
