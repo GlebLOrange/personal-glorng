@@ -22,7 +22,10 @@ except json.JSONDecodeError:
 session_id = str(payload.get("session_id") or "unknown")
 context = (
     f"Current branch: {branch}. "
-    "Git branch workflow: .cursor/skills/agent-workflow/SKILL.md"
+    "Git branch workflow: .cursor/skills/agent-workflow/SKILL.md. "
+    "Resume: read only the Active task block of "
+    ".cursor/workspace-context/workspace_context.md "
+    "(+ <=3 hits: scripts/workspace_context_search.py <keywords>)."
 )
 
 env = {"PORTFOLIO_CTX_SESSION": session_id}
