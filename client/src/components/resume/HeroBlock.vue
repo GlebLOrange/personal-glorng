@@ -56,21 +56,22 @@ function printPage(): void {
 
 <template>
   <div class="py-12 md:py-16 text-center">
-    <p
-      class="mb-2 font-medium tracking-tight text-surface-light"
-      :class="isStatusRail ? 'text-3xl sm:text-4xl md:text-5xl' : 'text-xl sm:text-2xl md:text-3xl'"
+    <h1
+      class="mb-2 text-balance font-bold tracking-tight text-surface-light"
+      :class="isStatusRail ? 'text-3xl sm:text-4xl md:text-5xl' : 'text-2xl sm:text-3xl md:text-4xl'"
     >
       {{ name }}
-    </p>
-    <h1
-      class="mb-3 text-balance font-bold tracking-tight text-surface-light"
-      :class="isStatusRail ? 'text-xl sm:text-2xl md:text-3xl' : 'text-2xl sm:text-3xl md:text-4xl'"
-    >
-      {{ title }}
     </h1>
     <p
-      v-if="tagline && !isStatusRail"
-      class="text-lg text-surface-sage mb-3 text-pretty max-w-2xl mx-auto"
+      class="mb-3 text-balance font-medium tracking-tight text-surface-light"
+      :class="isStatusRail ? 'text-xl sm:text-2xl md:text-3xl' : 'text-xl sm:text-2xl'"
+    >
+      {{ title }}
+    </p>
+    <p
+      v-if="tagline"
+      class="text-surface-sage mb-3 text-pretty max-w-2xl mx-auto"
+      :class="isStatusRail ? 'text-base line-clamp-2' : 'text-lg'"
     >
       {{ tagline }}
     </p>

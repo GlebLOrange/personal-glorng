@@ -152,7 +152,18 @@ onUnmounted(() => {
         </span>
         <a href="#experience" class="text-link">experience</a>
       </div>
-      <div v-if="highlightedRepos.length" class="mt-6 print:hidden">
+    </SectionWrapper>
+
+    <SectionWrapper id="case-studies" title="case studies" width="full" label-tone="secondary">
+      <Suspense>
+        <CaseStudies :projects="resume.projects" />
+        <template #fallback>
+          <div class="min-h-[28rem] space-y-4" aria-hidden="true">
+            <div v-for="n in 3" :key="n" class="h-36 animate-pulse rounded-lg bg-surface-card" />
+          </div>
+        </template>
+      </Suspense>
+      <div v-if="highlightedRepos.length" class="mt-8 print:hidden">
         <GitHubReposStrip :repos="highlightedRepos" :profile-url="githubProfileUrl" />
       </div>
     </SectionWrapper>
@@ -161,16 +172,9 @@ onUnmounted(() => {
       <Suspense>
         <ExperienceList :experience="resume.experience" />
         <template #fallback>
-          <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
-        </template>
-      </Suspense>
-    </SectionWrapper>
-
-    <SectionWrapper id="case-studies" title="case studies" width="full" label-tone="secondary">
-      <Suspense>
-        <CaseStudies :projects="resume.projects" />
-        <template #fallback>
-          <div class="h-40 animate-pulse rounded-lg bg-surface-card" aria-hidden="true" />
+          <div class="min-h-[28rem] space-y-4" aria-hidden="true">
+            <div v-for="n in 3" :key="n" class="h-36 animate-pulse rounded-lg bg-surface-card" />
+          </div>
         </template>
       </Suspense>
     </SectionWrapper>
@@ -193,8 +197,8 @@ onUnmounted(() => {
       <p class="text-body mb-3 max-w-2xl">
         open to full-time and contract — usually reply within 24h (EU timezone)
       </p>
-      <p class="text-meta mb-6 flex flex-wrap items-center gap-x-2 gap-y-2">
-        <span>fastest: telegram or email. or</span>
+      <div class="text-meta mb-6 flex flex-wrap items-center gap-x-2 gap-y-2">
+        <p>fastest: telegram or email. or</p>
         <button
           type="button"
           class="cta-primary inline-flex items-center gap-1.5 print:hidden"
@@ -203,7 +207,7 @@ onUnmounted(() => {
           <ChevronIcon class-name="size-3.5 shrink-0" />
           send inquiry
         </button>
-      </p>
+      </div>
       <div class="flex flex-wrap gap-4">
         <ContactLinkChip v-for="link in contactLinks" :key="link.id" :link="link" />
       </div>

@@ -22,7 +22,7 @@ describe("HeroBlock", () => {
     apiGet.mockReset();
   });
 
-  it("uses the role as the page heading and keeps bio out of the hero", () => {
+  it("uses the name as the page heading and keeps bio out of the hero", () => {
     const wrapper = mount(HeroBlock, {
       props: {
         name: "Gleb.Y",
@@ -31,8 +31,8 @@ describe("HeroBlock", () => {
       },
     });
 
-    expect(wrapper.get("h1").text()).toBe("Python Backend / FastAPI Engineer");
-    expect(wrapper.text()).toContain("Gleb.Y");
+    expect(wrapper.get("h1").text()).toBe("Gleb.Y");
+    expect(wrapper.text()).toContain("Python Backend / FastAPI Engineer");
     expect(wrapper.text()).toContain("I build production APIs");
     expect(wrapper.find("img").exists()).toBe(false);
     expect(wrapper.find(".accent-gradient").exists()).toBe(false);
@@ -42,7 +42,7 @@ describe("HeroBlock", () => {
     expect(wrapper.text()).not.toContain("telegram");
   });
 
-  it("centers the status-rail layout and shows the sample note", () => {
+  it("centers the status-rail layout and shows the sample note and tagline", () => {
     const wrapper = mount(HeroBlock, {
       props: {
         name: "Gleb.Y",
@@ -57,7 +57,7 @@ describe("HeroBlock", () => {
 
     expect(wrapper.get("div.py-12").classes()).toContain("text-center");
     expect(wrapper.text()).toContain("this site is the sample");
-    expect(wrapper.text()).not.toContain("I build production APIs");
+    expect(wrapper.text()).toContain("I build production APIs");
   });
 
   it("offers print fallback instead of auto-printing when PDF fails", async () => {
