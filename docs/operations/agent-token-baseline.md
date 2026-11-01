@@ -72,11 +72,13 @@ Generator markers `<!-- gortex:communities:start -->` — re-sync from Gortex ma
 
 | Rank | Layer | What | Est. savings | Quality risk | Validate | Rollback |
 |------|-------|------|--------------|--------------|----------|----------|
-| 1 | Tool/skill offload | Move `gortex-*` out of catalog | ~800 catalog tok/turn | Med | Community-area edit still finds code via MCP/refs | git mv back |
-| 2 | Prompt dedupe | Drop communities from AGENTS/mirrors | ~500–1500 | Low | Dispatch table still works | revert dedupe commit |
-| 3 | Prompt rewrite | Thin communities rule | ~450 | Low | Pointer still loads table on demand | revert |
-| 4 | Prompt rewrite | Slim workflow + soft fallback | ~270 + fewer abort turns | Med | Gortex-down task completes | revert |
-| 5 | Injected context | Slim sessionStart | ~120 | Low | Branch still injected | revert |
+| 1 | UI: browser-selected button element fix (`9306d455`) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| 2 | UI/UX audit (ui-ux-pro-max + design skills) (`1ece12d5`) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| 3 | Edit expense: category via dropdown (`edc00d6d`) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| 4 | Gortex settings review, audit and setup usage (`e7db2aca`) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| 5 | Todobot: help text for each action (`fbfe3127`) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+
+¹ Source limitation (2026-11-01): local Cursor agent transcripts (`~/.cursor/projects/Users-glorange-projects-portfolio-glorng/agent-transcripts/*.jsonl`) store only message text/tool calls — no token, cache-read, or context-ring fields; `~/.cursor/ai-tracking/ai-code-tracking.db` has no token columns either. Ring split must be read from the Cursor chat context ring; input/cache-read from the Cursor dashboard usage export.
 | 6 | Subagents | Trim task-loop/personas | Small per loop | Low | `/task-loop` smoke | revert |
 | 7 | Groq | `stream_options.include_usage` | Cache telemetry | Low | Multi-turn chat logs cached_tokens | revert |
 | 8 | Propose only | Cursor model mix / product cache | N/A in-repo | — | — | — |
