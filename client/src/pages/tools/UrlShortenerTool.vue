@@ -33,7 +33,7 @@ const page = ref(1);
 const total = ref(0);
 const totalPages = ref(0);
 const newUrl = ref("");
-const newTitle = ref("");
+const newCode = ref("");
 const formError = ref("");
 const savingId = ref<number | null>(null);
 const deletingId = ref<number | null>(null);
@@ -153,14 +153,19 @@ async function createUrl(): Promise<void> {
   }
 
   if (isLocalMode.value) {
-    const result = createGuestShortUrl(guestUrls.value, trimmed, newTitle.value || null);
+    const result = createGuestShortUrl(
+      guestUrls.value,
+      trimmed,
+      null,
+      newCode.value || null,
+    );
     if (!result.ok) {
       formError.value = result.error;
       return;
     }
     guestUrls.value = result.next;
     newUrl.value = "";
-    newTitle.value = "";
+    newCode.value = "";
     formError.value = "";
     page.value = 1;
     syncLocalPage();
@@ -171,13 +176,14 @@ async function createUrl(): Promise<void> {
     () =>
       api.post("/tools/url-shortener", {
         original_url: ensureHttpsUrl(trimmed),
-        title: newTitle.value || null,
+        title: null,
+        code: newCode.value.trim() || null,
       }),
     { successMessage: "URL created", errorFallback: "Failed to create URL" },
   );
   if (result) {
     newUrl.value = "";
-    newTitle.value = "";
+    newCode.value = "";
     formError.value = "";
     if (canManage.value) {
       page.value = 1;
@@ -252,38 +258,39 @@ onMounted(() => {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'url shortener' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <div class="page-tool-actions">
-      <form class="flex w-full min-w-0 flex-col gap-2" @submit.prevent="createUrl">
+      <form
+        class="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-start"
+        @submit.prevent="createUrl"
+      >
+        <BaseInput
+          v-model="newCode"
+          class="w-full min-w-0 sm:max-w-[12rem] sm:flex-none"
+          compact
+          label="short link"
+          tip="optional · auto"
+          @update:model-value="formError = ''"
+        />
         <BaseInput
           v-model="newUrl"
-          class="w-full min-w-0"
+          class="min-w-0 flex-1"
           compact
-          label="url"
+          label="original url"
           tip="example.com or https://…"
           :tone="urlTone"
           :error="urlError"
           @update:model-value="formError = ''"
         />
-        <div class="flex w-full min-w-0 flex-wrap items-center gap-2">
-          <BaseInput
-            v-model="newTitle"
-            class="min-w-0 flex-1"
-            compact
-            label="title"
-            tip="optional"
-          />
-          <ToolbarPillButton
-            action="create"
-            type="submit"
-            class="w-auto shrink-0"
-            :disabled="!canShorten"
-          >
-            {{ loading ? "creating…" : "shorten" }}
-          </ToolbarPillButton>
-        </div>
+        <ToolbarPillButton
+          action="create"
+          type="submit"
+          class="w-full shrink-0 sm:mt-0 sm:w-auto"
+          :disabled="!canShorten"
+        >
+          {{ loading ? "creating…" : "shorten" }}
+        </ToolbarPillButton>
       </form>
     </div>
 

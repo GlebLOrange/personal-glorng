@@ -273,9 +273,8 @@ onMounted(() => {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'tasks' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
+    body-width="column"
     description="Telegram reminders and Google Calendar sync share this queue with the web UI."
-    tool
   >
     <div class="w-full min-w-0 self-stretch">
       <div class="page-tool-actions">

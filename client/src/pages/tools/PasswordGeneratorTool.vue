@@ -10,7 +10,6 @@ import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseInput from "@/components/ui/BaseInput.vue";
 import IconActionButton from "@/components/ui/IconActionButton.vue";
 import IconCopyButton from "@/components/ui/IconCopyButton.vue";
-import { Card } from "@/components/ui/card";
 import { api } from "@/composables/useApi";
 import { useApiAction } from "@/composables/useApiAction";
 import { useClipboard } from "@/composables/useClipboard";
@@ -126,129 +125,135 @@ onMounted(() => {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'password generator' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <div class="page-tool-actions">
-      <Card variant="ghost" class="w-full max-w-full">
-        <form class="space-y-3" @submit.prevent="generatePassword">
-          <div class="flex min-w-0 w-full flex-wrap items-center gap-2">
-            <AdminFilterDropdown
-              label="options"
-              class="shrink-0"
-              :match-trigger-width="false"
-              :has-active-filters="hasCustomOptions"
-              :active-label="optionsActiveLabel"
-              @clear="resetState"
-            >
-              <template #chips>
-                <AdminFilterChip
-                  label="uppercase"
-                  title="uppercase (A-Z)"
-                  :active="uppercase"
-                  :color-class="familyBadgeClass('1xx')"
-                  @click="uppercase = !uppercase"
-                />
-                <AdminFilterChip
-                  label="lowercase"
-                  title="lowercase (a-z)"
-                  :active="lowercase"
-                  :color-class="familyBadgeClass('1xx')"
-                  @click="lowercase = !lowercase"
-                />
-                <AdminFilterChip
-                  label="numbers"
-                  title="numbers (0-9)"
-                  :active="digits"
-                  :color-class="familyBadgeClass('1xx')"
-                  @click="digits = !digits"
-                />
-                <AdminFilterChip
-                  label="symbols"
-                  title="symbols (!@#$…)"
-                  :active="symbols"
-                  :color-class="familyBadgeClass('1xx')"
-                  @click="symbols = !symbols"
-                />
-                <AdminFilterChip
-                  label="exclude ambiguous"
-                  title="exclude ambiguous (0, O, 1, l, I)"
-                  :active="excludeAmbiguous"
-                  :color-class="familyBadgeClass('3xx')"
-                  @click="excludeAmbiguous = !excludeAmbiguous"
-                />
-              </template>
-            </AdminFilterDropdown>
+      <form class="flex w-full min-w-0 flex-col gap-2" @submit.prevent="generatePassword">
+        <div class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5">
+          <AdminFilterDropdown
+            label="options"
+            class="min-w-0 w-full"
+            anchor="local"
+            :match-trigger-width="false"
+            :has-active-filters="hasCustomOptions"
+            :active-label="optionsActiveLabel"
+            @clear="resetState"
+          >
+            <template #chips>
+              <AdminFilterChip
+                label="uppercase"
+                title="uppercase (A-Z)"
+                :active="uppercase"
+                :color-class="familyBadgeClass('1xx')"
+                @click="uppercase = !uppercase"
+              />
+              <AdminFilterChip
+                label="lowercase"
+                title="lowercase (a-z)"
+                :active="lowercase"
+                :color-class="familyBadgeClass('1xx')"
+                @click="lowercase = !lowercase"
+              />
+              <AdminFilterChip
+                label="numbers"
+                title="numbers (0-9)"
+                :active="digits"
+                :color-class="familyBadgeClass('1xx')"
+                @click="digits = !digits"
+              />
+              <AdminFilterChip
+                label="symbols"
+                title="symbols (!@#$…)"
+                :active="symbols"
+                :color-class="familyBadgeClass('1xx')"
+                @click="symbols = !symbols"
+              />
+              <AdminFilterChip
+                label="exclude ambiguous"
+                title="exclude ambiguous (0, O, 1, l, I)"
+                :active="excludeAmbiguous"
+                :color-class="familyBadgeClass('3xx')"
+                @click="excludeAmbiguous = !excludeAmbiguous"
+              />
+            </template>
+          </AdminFilterDropdown>
 
-            <BaseInput
-              v-model.number="length"
-              type="number"
-              :min="PASSWORD_MIN_LENGTH"
-              :max="128"
-              label="length"
-              :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
-              class="w-auto shrink-0"
-              auto-width
-            />
+          <BaseInput
+            v-model.number="length"
+            type="number"
+            :min="PASSWORD_MIN_LENGTH"
+            :max="128"
+            compact
+            label="length"
+            :placeholder="`${PASSWORD_MIN_LENGTH}–128`"
+            class="w-auto shrink-0"
+            auto-width
+          />
+        </div>
 
-            <div class="ml-auto flex min-w-0 shrink-0 items-center gap-2">
-              <BaseButton
-                variant="primary"
-                type="submit"
-                :icon="false"
-                class="w-auto min-w-0 gap-1.5"
-                :disabled="loading || !hasCharset"
-              >
-                <RefreshIcon class-name="size-3.5 shrink-0" />
-                <span class="inline-grid justify-items-center">
-                  <span class="invisible col-start-1 row-start-1" aria-hidden="true"
-                    >generating…</span
-                  >
-                  <span class="col-start-1 row-start-1">
-                    {{ loading ? "generating…" : "generate" }}
-                  </span>
-                </span>
-              </BaseButton>
+        <div class="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-1.5">
+          <IconActionButton
+            action="create"
+            size="field"
+            class="shrink-0"
+            aria-label="reset options and clear generated password"
+            title="reset state & clear password"
+            @click="resetState"
+          >
+            <RefreshIcon class-name="size-3.5" />
+          </IconActionButton>
 
+          <BaseButton
+            variant="primary"
+            type="submit"
+            size="sm"
+            :icon="false"
+            class="!h-9 !min-h-9 min-w-0 w-full gap-1.5 px-3 text-xs"
+            :disabled="loading || !hasCharset"
+          >
+            <span class="inline-grid justify-items-center">
+              <span class="invisible col-start-1 row-start-1" aria-hidden="true">generating…</span>
+              <span class="col-start-1 row-start-1">
+                {{ loading ? "generating…" : "generate" }}
+              </span>
+            </span>
+          </BaseButton>
+        </div>
+
+        <div class="w-full min-w-0 space-y-1">
+          <BaseInput
+            :model-value="displayPassword"
+            readonly
+            compact
+            label="password"
+            placeholder="generated password"
+            class="w-full font-data"
+            @update:model-value="onPasswordModelUpdate"
+          >
+            <template #suffix>
               <IconActionButton
                 action="create"
-                :aria-label="'reset options and clear generated password'"
-                title="reset state & clear password"
-                @click="resetState"
+                size="field"
+                transparent-idle
+                :disabled="!generated"
+                :aria-label="showPassword ? 'hide password' : 'show password'"
+                @click="showPassword = !showPassword"
               >
-                <RefreshIcon class-name="size-4" />
+                <EyeIcon :off="showPassword" class-name="size-4" />
               </IconActionButton>
-            </div>
-          </div>
-        </form>
-      </Card>
-
-      <div v-if="generated" class="w-full space-y-2">
-        <BaseInput
-          :model-value="displayPassword"
-          readonly
-          label="password"
-          placeholder="generated password"
-          class="w-full font-data"
-          @update:model-value="onPasswordModelUpdate"
-        >
-          <template #suffix>
-            <IconActionButton
-              action="create"
-              size="field"
-              transparent-idle
-              :aria-label="showPassword ? 'hide password' : 'show password'"
-              @click="showPassword = !showPassword"
-            >
-              <EyeIcon :off="showPassword" class-name="size-4" />
-            </IconActionButton>
-            <IconCopyButton size="field" quiet @click="copy(generated)" />
-          </template>
-        </BaseInput>
-        <p v-if="!strength.valid" class="text-xs text-surface-mid">
-          {{ strength.message }}
-        </p>
-      </div>
+              <IconCopyButton
+                size="field"
+                quiet
+                :disabled="!generated"
+                @click="copy(generated)"
+              />
+            </template>
+          </BaseInput>
+          <p v-if="generated && !strength.valid" class="text-xs text-surface-mid">
+            {{ strength.message }}
+          </p>
+        </div>
+      </form>
     </div>
   </PageShell>
 </template>

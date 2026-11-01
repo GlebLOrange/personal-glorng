@@ -47,9 +47,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="w-full min-w-0 max-w-full">
+  <div class="w-full min-w-0 max-w-full overflow-x-clip">
     <div class="mb-4 flex w-full min-w-0 flex-wrap items-center gap-2">
-      <div v-if="slots.start" class="min-w-0">
+      <div v-if="slots.start" class="min-w-0 flex-1 overflow-hidden">
         <slot name="start" />
       </div>
       <div
@@ -85,8 +85,13 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <Card v-if="open" class="w-full min-w-0 max-w-full break-words">
-      <slot />
+    <Card
+      v-if="open"
+      class="w-full min-w-0 max-w-full overflow-x-auto break-words [overflow-wrap:anywhere]"
+    >
+      <div class="min-w-0 max-w-full">
+        <slot />
+      </div>
     </Card>
   </div>
 </template>

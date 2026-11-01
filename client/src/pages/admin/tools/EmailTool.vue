@@ -74,8 +74,7 @@ async function preview(): Promise<void> {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'send email' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <div class="page-tool-actions">
       <AdminListToolbar>

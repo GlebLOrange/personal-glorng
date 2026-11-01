@@ -46,8 +46,7 @@ function handleSelect(query: string): void {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'weather' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <p v-if="guestLimitMessage" class="mb-4 w-full self-stretch text-xs text-surface-mid">
       Pinned cities stay in this browser.

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, useTemplateRef } from "vue";
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
 
 import TurnstileWidget from "@/components/admin/TurnstileWidget.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
@@ -106,8 +106,6 @@ async function loadStatus(): Promise<void> {
         if (data.status === "ok") actionError.value = "";
       }
     }
-    if (data.status === "running") startPolling();
-    else stopPolling();
   } catch {
     loadError.value = "could not load maintenance status";
   } finally {
@@ -127,6 +125,14 @@ function stopPolling(): void {
   clearInterval(pollTimer);
   pollTimer = null;
 }
+
+watch(
+  () => info.value?.status,
+  (status) => {
+    if (status === "running") startPolling();
+    else stopPolling();
+  },
+);
 
 function onCaptchaError(message: string): void {
   actionError.value = message;

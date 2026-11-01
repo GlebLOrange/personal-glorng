@@ -230,8 +230,7 @@ onMounted(load);
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'app logs' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <AdminListSkeleton
       v-if="loading && items.length === 0 && !listError"

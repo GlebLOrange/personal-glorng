@@ -127,3 +127,7 @@ Typography: IBM Plex Sans; use `font-data` for status codes, counts, and money.
 When tabs are shareable, sync with `router.replace({ query: { ...route.query, tab } })`.
 
 Examples: `ExpensesTool` (`?tab=expenses`), `TasksPage` (`?tab=sync`).
+
+## PageShell body width
+
+Use `body-width` on `PageShell` / `AdminPageLayout`: `full` (stretch), `content` (2-of-3 tile column), `column` (centred ~750px tool/settings panel). Prefer this over the deprecated `narrow` and `tool` props.

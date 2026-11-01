@@ -60,7 +60,7 @@ watch(
     :title="articleTitle"
     :breadcrumbs="breadcrumbs"
     back-to="/news"
-    :narrow="false"
+    body-width="full"
     omit-heading
   >
     <Card

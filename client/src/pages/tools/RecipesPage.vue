@@ -128,9 +128,8 @@ function editRecipeFromCard(recipe: Recipe): void {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'recipes' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
+    body-width="column"
     description="Personal recipe list with cook mode."
-    tool
   >
     <div v-if="!isAuthenticated" class="min-w-0 space-y-3" aria-label="sample recipes">
       <p class="text-sm text-surface-mid">sample recipes</p>

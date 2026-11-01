@@ -249,8 +249,7 @@ onMounted(() => {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'qr generator' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <div class="flex w-full min-w-0 flex-col gap-6 self-stretch">
       <p class="text-xs text-surface-mid">{{ pageDescription }}</p>

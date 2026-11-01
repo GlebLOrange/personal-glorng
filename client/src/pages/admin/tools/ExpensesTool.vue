@@ -130,8 +130,7 @@ function focusAddFromInsights(): void {
     :breadcrumbs="[{ label: 'tools', to: '/tools' }, { label: 'expenses' }]"
     back-to="/tools"
     max-width="5xl"
-    :narrow="false"
-    tool
+    body-width="column"
   >
     <div class="w-full min-w-0 self-stretch">
       <div class="flex flex-col gap-3">

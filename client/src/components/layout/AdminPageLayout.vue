@@ -4,7 +4,7 @@ import type { RouteLocationRaw } from "vue-router";
 
 import PageShell from "@/components/layout/PageShell.vue";
 import { formatBreadcrumbLabel } from "@/utils/format";
-import type { BreadcrumbSegment } from "@/components/layout/PageShell.vue";
+import type { BreadcrumbSegment, PageBodyWidth } from "@/components/layout/PageShell.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -15,8 +15,10 @@ const props = withDefaults(
     hub?: "admin" | "tools";
     /** Optional page help (forwarded to PageShell → chrome ?). */
     description?: string;
+    /** Body width inside the shell. Defaults to column for tools hub. */
+    bodyWidth?: PageBodyWidth;
     /**
-     * Wrap body in page-tool-body. Defaults on for tools hub; off for admin hub
+     * @deprecated Prefer bodyWidth. Defaults on for tools hub; off for admin hub
      * unless overridden.
      */
     tool?: boolean;
@@ -27,10 +29,15 @@ const props = withDefaults(
     maxWidth: "5xl",
     description: undefined,
     tool: undefined,
+    bodyWidth: undefined,
   },
 );
 
-const useToolBody = computed(() => props.tool ?? props.hub === "tools");
+const resolvedBodyWidth = computed<PageBodyWidth>(() => {
+  if (props.bodyWidth) return props.bodyWidth;
+  const useToolBody = props.tool ?? props.hub === "tools";
+  return useToolBody ? "column" : "full";
+});
 
 const breadcrumbLabel = computed(() => formatBreadcrumbLabel(props.title));
 
@@ -52,9 +59,8 @@ const breadcrumbs = computed((): BreadcrumbSegment[] => {
     :breadcrumbs="breadcrumbs"
     :back-to="backTo"
     :max-width="maxWidth"
-    :narrow="false"
+    :body-width="resolvedBodyWidth"
     :description="description"
-    :tool="useToolBody"
     as="div"
   >
     <slot />

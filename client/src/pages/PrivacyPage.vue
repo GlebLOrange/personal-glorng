@@ -22,6 +22,7 @@ function openPreferences() {
     :breadcrumbs="[{ label: 'Privacy policy' }]"
     back-to="/"
     max-width="md"
+    body-width="content"
   >
     <p class="text-surface-muted text-sm mb-10">Last updated: May 26, 2026</p>
 

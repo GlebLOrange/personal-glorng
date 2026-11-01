@@ -104,6 +104,7 @@ export function createGuestShortUrl(
   items: UrlItem[],
   originalUrl: string,
   title: string | null,
+  customCode?: string | null,
 ): { ok: true; item: UrlItem; next: UrlItem[] } | { ok: false; error: string } {
   if (items.length >= MAX_GUEST_SHORT_URLS) {
     return { ok: false, error: guestUrlLimitMessage(items.length) };
@@ -114,14 +115,26 @@ export function createGuestShortUrl(
   }
 
   const used = new Set(items.map((item) => item.code));
-  let code = generateGuestShortCode();
-  let attempts = 0;
-  while (used.has(code) && attempts < 16) {
+  const requested = customCode?.trim() ?? "";
+  let code: string;
+  if (requested) {
+    if (!/^[a-zA-Z0-9]{1,16}$/.test(requested)) {
+      return { ok: false, error: "short link: letters and numbers only (max 16)" };
+    }
+    if (used.has(requested)) {
+      return { ok: false, error: "short link code is already taken" };
+    }
+    code = requested;
+  } else {
     code = generateGuestShortCode();
-    attempts += 1;
-  }
-  if (used.has(code)) {
-    return { ok: false, error: "Could not allocate a unique short code" };
+    let attempts = 0;
+    while (used.has(code) && attempts < 16) {
+      code = generateGuestShortCode();
+      attempts += 1;
+    }
+    if (used.has(code)) {
+      return { ok: false, error: "Could not allocate a unique short code" };
+    }
   }
 
   let original_url = normalized;
