@@ -28,6 +28,8 @@ jobs:
       outside: ${{ steps.select.outputs.outside }}
     steps:
       - uses: actions/checkout@v7
+      - name: Communities drift guard
+        run: bash scripts/check_communities_drift.sh
       - uses: dorny/paths-filter@v4
         id: filter
         if: github.event_name == 'pull_request'

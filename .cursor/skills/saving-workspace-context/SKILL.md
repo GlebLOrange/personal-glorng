@@ -15,7 +15,7 @@ Context should be a query result, not a dump. Session state lives in [`.cursor/w
 ## Load (session start / resume)
 
 1. Read only the `## Active task` block of `workspace_context.md`.
-2. If the task differs, keyword-match it against `index.yaml` (`task`, `files`, `symbols`); load at most 3 hits (and their `path` archive only if needed).
+2. If the task differs, keyword-match it against `index.yaml` (`task`, `files`, `symbols`); load at most 3 hits (and their `path` archive only if needed): `python3 scripts/workspace_context_search.py <keywords>`.
 3. Read `## Durable project facts` only when the task touches architecture/conventions/pitfalls.
 4. Never load full transcripts, the whole memory tree, or whole repo files for context.
 

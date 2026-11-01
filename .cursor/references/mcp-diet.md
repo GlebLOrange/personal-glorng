@@ -17,3 +17,6 @@ Do not edit `~/.cursor/mcp.json` from the repo; toggle servers in Cursor setting
 2. `relations` / `trace` for callers/callees instead of opening every file.
 3. Whole-file Read only when editing most of the file or Gortex is unavailable.
 4. Large tool outputs: let Cursor spill to files; keep MCP replies lean.
+
+## Prefer a Gortex-only profile
+When a task only needs code navigation, run with Gortex as the sole enabled MCP server (toggle others off in Cursor Settings → MCP for the session); re-enable extras only when a task calls them. Tool schemas cost tokens every request — fewer servers, smaller prefix. Do not commit edits to `~/.cursor/mcp.json`.
