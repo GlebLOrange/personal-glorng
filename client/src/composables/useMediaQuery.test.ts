@@ -17,9 +17,11 @@ describe("useMediaQuery", () => {
       addEventListener: vi.fn((_type: string, listener: (event: MediaQueryListEvent) => void) => {
         listeners.add(listener);
       }),
-      removeEventListener: vi.fn((_type: string, listener: (event: MediaQueryListEvent) => void) => {
-        listeners.delete(listener);
-      }),
+      removeEventListener: vi.fn(
+        (_type: string, listener: (event: MediaQueryListEvent) => void) => {
+          listeners.delete(listener);
+        },
+      ),
     };
     vi.stubGlobal(
       "matchMedia",

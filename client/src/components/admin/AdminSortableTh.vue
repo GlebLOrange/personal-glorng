@@ -44,7 +44,10 @@ const nextLabel = computed(() =>
       <span>{{ label }}</span>
       <span
         aria-hidden="true"
-        :class="['inline-block w-3 text-center', active ? 'text-accent-coral' : 'text-surface-muted']"
+        :class="[
+          'inline-block w-3 text-center',
+          active ? 'text-accent-coral' : 'text-surface-muted',
+        ]"
         >{{ arrow }}</span
       >
     </button>

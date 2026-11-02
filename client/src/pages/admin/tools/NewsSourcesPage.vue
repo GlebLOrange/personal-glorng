@@ -198,7 +198,6 @@ const {
             </AdminDataRow>
           </AdminDataTable>
         </div>
-
       </template>
     </div>
 

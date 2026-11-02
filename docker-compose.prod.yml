@@ -256,8 +256,8 @@ services:
   client:
     <<: *default-harden
     build:
-      context: ./client
-      dockerfile: Dockerfile.prod
+      context: .
+      dockerfile: client/Dockerfile.prod
       args:
         # OG/Twitter image absolute URLs; fall back to BASE_URL when unset.
         VITE_PUBLIC_ORIGIN: ${VITE_PUBLIC_ORIGIN:-${BASE_URL:-}}

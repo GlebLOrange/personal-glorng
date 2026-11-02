@@ -2,11 +2,12 @@ FROM node:26.12.1-alpine AS build
 
 WORKDIR /app
 
-COPY package*.json .npmrc ./
+COPY client/package*.json client/.npmrc ./
 RUN --mount=type=cache,target=/root/.npm \
     npm ci
 
-COPY . .
+COPY client/ ./
+COPY shared/expense_catalog.json ../shared/expense_catalog.json
 ARG VITE_PUBLIC_ORIGIN
 ARG VITE_FIREBASE_ENABLED
 ARG VITE_FIREBASE_API_KEY
