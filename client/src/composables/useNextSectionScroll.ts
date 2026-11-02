@@ -2,9 +2,13 @@
 export function getSectionTargets(root: ParentNode = document): HTMLElement[] {
   const main = root.querySelector("#main-content");
   if (!main) return [];
-  return Array.from(main.querySelectorAll<HTMLElement>("section[id]")).sort(
-    (a, b) => a.offsetTop - b.offsetTop,
-  );
+  return Array.from(main.querySelectorAll<HTMLElement>("section[id]"))
+    .sort((a, b) => sectionTop(a) - sectionTop(b));
+}
+
+/** Absolute document top (offsetTop is relative to offsetParent, not the page). */
+export function sectionTop(el: HTMLElement): number {
+  return el.getBoundingClientRect().top + window.scrollY;
 }
 
 function scrollBehavior(): ScrollBehavior {
@@ -20,9 +24,9 @@ export function scrollStepPx(viewportHeight: number): number {
 export function findNextSection(
   sections: HTMLElement[],
   scrollY: number,
-  offset = 48,
+  offset = 8,
 ): HTMLElement | null {
-  return sections.find((section) => section.offsetTop > scrollY + offset) ?? null;
+  return sections.find((section) => sectionTop(section) > scrollY + offset) ?? null;
 }
 
 export function useNextSectionScroll(): {
@@ -33,8 +37,8 @@ export function useNextSectionScroll(): {
     const behavior = scrollBehavior();
     const step = scrollStepPx(window.innerHeight);
     const sections = getSectionTargets();
-    // Skip sections still near the viewport — land on one ~a screen down when possible.
-    const next = findNextSection(sections, window.scrollY, step);
+    // Next section whose top is below the current viewport top (no skipping).
+    const next = findNextSection(sections, window.scrollY);
     if (next) {
       next.scrollIntoView({ behavior, block: "start" });
       return;

@@ -35,8 +35,18 @@ function closeDrawer(): void {
   selectedIntake.value = null;
 }
 
-function intakeText(item: TaskIntakeItem): string {
+function intakeInfo(item: TaskIntakeItem): string {
+  const title = item.draft_json?.title;
+  if (typeof title === "string" && title.trim()) return title.trim();
   return item.inbound_text?.trim() || `Intake #${item.id}`;
+}
+
+function intakeTask(item: TaskIntakeItem): string | null {
+  return item.task_id ? `#${item.task_id}` : null;
+}
+
+function intakeUpdated(item: TaskIntakeItem): string {
+  return formatDate(item.updated_at ?? item.created_at);
 }
 </script>
 
@@ -49,10 +59,9 @@ function intakeText(item: TaskIntakeItem): string {
     <AdminDataTable table-label="task intakes">
       <template #header>
         <th :class="ADMIN_TH_CLASS" scope="col">status</th>
-        <th :class="ADMIN_TH_CLASS" scope="col">text</th>
-        <th :class="ADMIN_TH_CLASS" scope="col">intake id</th>
         <th :class="ADMIN_TH_CLASS" scope="col">task</th>
-        <th :class="ADMIN_TH_CLASS" scope="col">created</th>
+        <th :class="ADMIN_TH_CLASS" scope="col">info</th>
+        <th :class="ADMIN_TH_CLASS" scope="col">updated</th>
       </template>
       <tr
         v-for="item in intakes"
@@ -70,14 +79,14 @@ function intakeText(item: TaskIntakeItem): string {
             :class-name="statusBadgeClass(item.status)"
           />
         </td>
-        <th :class="ADMIN_TH_ROW_CLASS" scope="row">
-          <span class="line-clamp-1" :title="intakeText(item)">{{ intakeText(item) }}</span>
-        </th>
-        <td :class="ADMIN_TD_MUTED_CLASS">#{{ item.id }}</td>
         <td :class="ADMIN_TD_MUTED_CLASS">
-          {{ item.task_id ? `#${item.task_id}` : "—" }}
+          <span v-if="intakeTask(item)">{{ intakeTask(item) }}</span>
+          <span v-else class="text-muted" aria-label="no linked task">—</span>
         </td>
-        <td :class="ADMIN_TD_MUTED_CLASS">{{ formatDate(item.created_at) }}</td>
+        <th :class="ADMIN_TH_ROW_CLASS" scope="row">
+          <span class="line-clamp-1" :title="intakeInfo(item)">{{ intakeInfo(item) }}</span>
+        </th>
+        <td :class="ADMIN_TD_MUTED_CLASS">{{ intakeUpdated(item) }}</td>
       </tr>
     </AdminDataTable>
   </div>
