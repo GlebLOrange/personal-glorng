@@ -208,8 +208,8 @@ jobs:
           target: production
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: |
-            ${{ vars.DOCKERHUB_USERNAME }}/glorng-server:latest
-            ${{ vars.DOCKERHUB_USERNAME }}/glorng-server:sha-${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME || 'ci' }}/glorng-server:latest
+            ${{ vars.DOCKERHUB_USERNAME || 'ci' }}/glorng-server:sha-${{ github.sha }}
           cache-from: type=gha,scope=server-production
           cache-to: type=gha,scope=server-production,mode=max
       - name: Build production frontend image
@@ -219,8 +219,8 @@ jobs:
           file: ./client/Dockerfile.prod
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: |
-            ${{ vars.DOCKERHUB_USERNAME }}/glorng-client:latest
-            ${{ vars.DOCKERHUB_USERNAME }}/glorng-client:sha-${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME || 'ci' }}/glorng-client:latest
+            ${{ vars.DOCKERHUB_USERNAME || 'ci' }}/glorng-client:sha-${{ github.sha }}
           build-args: |
             VITE_PUBLIC_ORIGIN=https://ci.example.test
           cache-from: type=gha,scope=client-production
